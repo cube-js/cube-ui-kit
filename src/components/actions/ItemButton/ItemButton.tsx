@@ -4,6 +4,7 @@ import {
   forwardRef,
   ReactNode,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -50,29 +51,27 @@ const ActionsWrapper = tasty({
       '[data-size="large"]': '$size-lg',
       '[data-size="xlarge"]': '$size-xl',
     },
-  },
-});
 
-const ActionsContainer = tasty({
-  styles: {
-    position: 'absolute',
-    inset: '1bw 1bw auto auto',
-    display: 'flex',
-    gap: '1bw',
-    placeItems: 'center',
-    placeContent: 'end',
-    pointerEvents: 'auto',
-    padding: '0 .5x 0 0',
-    height: '$size',
-    opacity: {
-      '': 1,
-      hidden: 0,
+    '& > [data-element="Actions"]': {
+      position: 'absolute',
+      inset: '1bw 1bw auto auto',
+      display: 'flex',
+      gap: '1bw',
+      placeItems: 'center',
+      placeContent: 'end',
+      pointerEvents: 'auto',
+      padding: '0 .5x 0 0',
+      height: 'min ($size - 2bw)',
+      opacity: {
+        '': 1,
+        'actions-hidden': 0,
+      },
+      translate: {
+        '': '0 0',
+        'actions-hidden': '.5x 0',
+      },
+      transition: 'theme, translate',
     },
-    translate: {
-      '': '0 0',
-      hidden: '.5x 0',
-    },
-    transition: 'theme, translate',
   },
 });
 
@@ -90,6 +89,8 @@ const ItemButton = forwardRef(function ItemButton(
     onPress,
     actions,
     size = 'medium',
+    styles,
+    wrapperStyles,
     showActionsOnHover = false,
     ...rest
   } = allProps as CubeItemButtonProps & {
@@ -99,6 +100,7 @@ const ItemButton = forwardRef(function ItemButton(
   const actionsRef = useRef<HTMLDivElement>(null);
   const [actionsWidth, setActionsWidth] = useState(0);
   const [areActionsVisible, setAreActionsVisible] = useState(false);
+  const [areActionsShown, setAreActionsShown] = useState(false);
 
   useLayoutEffect(() => {
     if (actions && actionsRef.current) {
@@ -107,9 +109,23 @@ const ItemButton = forwardRef(function ItemButton(
         setActionsWidth(width);
       }
     }
-  }, [actions]);
+  }, [actions, areActionsVisible]);
 
   const { hoverProps, isHovered } = useHover({});
+
+  const finalWrapperStyles = useMemo(() => {
+    return wrapperStyles
+      ? {
+          ...wrapperStyles,
+          ...(wrapperStyles?.Actions
+            ? {
+                '& > [data-element="Actions"]': wrapperStyles.Actions,
+                Actions: undefined,
+              }
+            : undefined),
+        }
+      : undefined;
+  }, [wrapperStyles]);
 
   const { actionProps } = useAction(
     { ...(allProps as any), htmlType, to, as, mods },
@@ -131,7 +147,8 @@ const ItemButton = forwardRef(function ItemButton(
     return (
       <ActionsWrapper
         {...hoverProps}
-        data-size={typeof size === 'number' ? undefined : size}
+        mods={{ 'actions-hidden': !areActionsShown && showActionsOnHover }}
+        styles={finalWrapperStyles}
         style={
           {
             '--actions-width':
@@ -143,33 +160,38 @@ const ItemButton = forwardRef(function ItemButton(
         }
       >
         {button}
-        {showActionsOnHover ? (
-          <DisplayTransition
-            exposeUnmounted
-            isShown={isHovered}
-            onPhaseChange={(phase) => {
-              setAreActionsVisible(phase !== 'unmounted');
-            }}
-          >
-            {({ isShown, ref: transitionRef }) => {
-              return (
-                <ActionsContainer
-                  ref={(node: any) => {
-                    actionsRef.current = node;
-                    transitionRef(node);
-                  }}
-                  mods={{ hidden: !isShown }}
-                >
-                  <ItemActionProvider type={type}>{actions}</ItemActionProvider>
-                </ActionsContainer>
-              );
-            }}
-          </DisplayTransition>
-        ) : (
-          <ActionsContainer ref={actionsRef}>
-            <ItemActionProvider type={type}>{actions}</ItemActionProvider>
-          </ActionsContainer>
-        )}
+        <ItemActionProvider type={type}>
+          {showActionsOnHover ? (
+            <DisplayTransition
+              exposeUnmounted
+              isShown={isHovered}
+              onPhaseChange={(phase) => {
+                setAreActionsVisible(phase !== 'unmounted');
+              }}
+              onToggle={(isShown) => {
+                setAreActionsShown(isShown);
+              }}
+            >
+              {({ ref: transitionRef }) => {
+                return (
+                  <div
+                    ref={(node: any) => {
+                      actionsRef.current = node;
+                      transitionRef(node);
+                    }}
+                    data-element="Actions"
+                  >
+                    {actions}
+                  </div>
+                );
+              }}
+            </DisplayTransition>
+          ) : (
+            <div ref={actionsRef} data-element="Actions">
+              {actions}
+            </div>
+          )}
+        </ItemActionProvider>
       </ActionsWrapper>
     );
   }

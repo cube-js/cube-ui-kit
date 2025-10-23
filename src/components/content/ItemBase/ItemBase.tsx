@@ -551,11 +551,12 @@ export function useAutoTooltip({
 
         // Boolean tooltip - auto tooltip on overflow
         if (tooltip === true) {
-          if ((children || labelProps) && isLabelOverflowed) {
+          if (children || labelProps) {
             return (
               <TooltipProvider
                 placement={defaultTooltipPlacement}
                 title={children}
+                isDisabled={!isLabelOverflowed}
               >
                 {(triggerProps, ref) => renderElement(triggerProps, ref)}
               </TooltipProvider>
@@ -580,11 +581,14 @@ export function useAutoTooltip({
           }
 
           // If title is provided with auto=true, OR no title but auto behavior enabled
-          if ((children || labelProps) && isLabelOverflowed) {
+          if (children || labelProps) {
             return (
               <TooltipProvider
                 placement={defaultTooltipPlacement}
                 title={tooltipProps.title ?? children}
+                isDisabled={
+                  !isLabelOverflowed && tooltipProps.isDisabled !== true
+                }
                 {...tooltipProps}
               >
                 {(triggerProps, ref) => renderElement(triggerProps, ref)}

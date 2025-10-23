@@ -148,7 +148,6 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
 
   let { triggerProps, tooltipProps } = useTooltipTrigger(
     {
-      isDisabled,
       trigger: triggerAction,
       delay,
       isOpen,
@@ -227,7 +226,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
       ) : (
         trigger
       )}
-      <DisplayTransition isShown={state.isOpen}>
+      <DisplayTransition isShown={state.isOpen && !isDisabled}>
         {({ phase, isShown, ref: transitionRef }) => (
           <TooltipContext.Provider
             value={{

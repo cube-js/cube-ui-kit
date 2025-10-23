@@ -33,6 +33,7 @@ export const ItemAction = forwardRef(function ItemAction(
 
   return (
     <StyledButton
+      tabIndex={contextType ? -1 : undefined}
       {...rest}
       ref={ref}
       mods={{ context: !!contextType }}
