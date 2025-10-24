@@ -11,6 +11,7 @@ const Button = Object.assign(
 export * from './Button';
 export * from './Action/Action';
 export * from './ItemAction';
+export * from './ItemActionContext';
 export * from './ItemButton';
 export * from './Menu';
 export * from './CommandMenu';

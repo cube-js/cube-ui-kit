@@ -37,6 +37,12 @@ ItemButton inherits all properties from [ItemBase](/docs/content-itembase--docs)
 - Interactive properties: `hotkeys`, `tooltip`, `isSelected`
 - Styling properties: `size`, `type`, `theme`, `styles`
 
+### Content Properties
+
+#### actions
+- **Type**: `ReactNode`
+- **Description**: Inline action buttons displayed on the right side of the button. Use `ItemButton.Action` for consistent styling. Actions automatically inherit the parent button's `type` prop and the component reserves space to prevent content overlap.
+
 ### Action Properties
 
 #### onPress
@@ -161,6 +167,27 @@ Inherits all modifiers from [ItemBase](/docs/content-itembase--docs) plus:
 </ItemButton>
 ```
 
+### Button with Actions
+
+ItemButton supports inline actions that appear on the right side. Use the `ItemButton.Action` compound component for consistent styling:
+
+```jsx
+<ItemButton 
+  icon={<IconFile />}
+  actions={
+    <>
+      <ItemButton.Action icon={<IconEdit />} aria-label="Edit" onPress={handleEdit} />
+      <ItemButton.Action icon={<IconTrash />} aria-label="Delete" onPress={handleDelete} />
+    </>
+  }
+  onPress={handleOpen}
+>
+  Document with Actions
+</ItemButton>
+```
+
+Actions automatically inherit the parent button's `type` prop and adjust their styling accordingly. The component reserves space for actions to prevent content overlap.
+
 ## Accessibility
 
 ### Keyboard Navigation
@@ -207,13 +234,46 @@ Inherits all modifiers from [ItemBase](/docs/content-itembase--docs) plus:
    </ItemButton>
    ```
 
-4. **Don't**: Use vague or unclear button text
+4. **Do**: Use `ItemButton.Action` for inline actions
+   ```jsx
+   <ItemButton 
+     icon={<IconFile />}
+     actions={
+       <>
+         <ItemButton.Action icon={<IconEdit />} aria-label="Edit" />
+         <ItemButton.Action icon={<IconTrash />} aria-label="Delete" />
+       </>
+     }
+     onPress={handleOpen}
+   >
+     Open Document
+   </ItemButton>
+   ```
+
+5. **Don't**: Use vague or unclear button text
    ```jsx
    {/* Avoid this - unclear what "OK" does */}
    <ItemButton onPress={handleAction}>OK</ItemButton>
    ```
 
-5. **Don't**: Overcrowd buttons with too many visual elements
+6. **Don't**: Add too many actions (limit to 2-3 for clarity)
+   ```jsx
+   {/* Avoid this - too many action buttons */}
+   <ItemButton 
+     actions={
+       <>
+         <ItemButton.Action icon={<IconEdit />} aria-label="Edit" />
+         <ItemButton.Action icon={<IconCopy />} aria-label="Copy" />
+         <ItemButton.Action icon={<IconShare />} aria-label="Share" />
+         <ItemButton.Action icon={<IconTrash />} aria-label="Delete" />
+       </>
+     }
+   >
+     Button with too many actions
+   </ItemButton>
+   ```
+
+7. **Don't**: Overcrowd buttons with too many visual elements
    ```jsx
    {/* Avoid this - too many competing elements */}
    <ItemButton 
@@ -227,7 +287,7 @@ Inherits all modifiers from [ItemBase](/docs/content-itembase--docs) plus:
    </ItemButton>
    ```
 
-6. **Accessibility**: Always ensure buttons have clear, descriptive labels and proper keyboard support
+8. **Accessibility**: Always ensure buttons have clear, descriptive labels, proper keyboard support, and provide `aria-label` for action buttons
 
 ## Integration with Forms
 
@@ -248,6 +308,7 @@ ItemButton integrates seamlessly with forms when using the `buttonType` prop:
 ## Related Components
 
 - [ItemBase](/docs/content-itembase--docs) - The foundational component that ItemButton extends
+- [ItemButton.Action](/docs/actions-itemaction--docs) - Action button component for inline actions (also available as `ItemBase.Action`, `Menu.Item.Action`, etc.)
 - [Button](/docs/actions-button--docs) - Traditional button component for simpler use cases
 - [Link](/docs/navigation-link--docs) - Text link component for navigation
 - [Menu.Item](/docs/actions-menu--docs) - Menu item component that also uses ItemBase

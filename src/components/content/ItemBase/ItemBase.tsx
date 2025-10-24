@@ -2,6 +2,9 @@ import {
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
+  KeyboardEvent,
+  MouseEvent,
+  PointerEvent,
   ReactNode,
   RefObject,
   useCallback,
@@ -54,12 +57,15 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { mergeProps, useCombinedRefs } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react';
+import { ItemAction } from '../../actions/ItemAction';
+import { ItemActionProvider } from '../../actions/ItemActionContext';
 import {
   CubeTooltipProviderProps,
   TooltipProvider,
 } from '../../overlays/Tooltip/TooltipProvider';
 import { HotKeys } from '../HotKeys';
+import { ItemBadge } from '../ItemBadge';
 
 export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
   icon?: ReactNode | 'checkbox';
@@ -68,7 +74,17 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
   suffix?: ReactNode;
   description?: ReactNode;
   descriptionPlacement?: 'inline' | 'block' | 'auto';
+  /**
+   * Whether the item is selected.
+   * @default false
+   */
   isSelected?: boolean;
+  /**
+   * Actions to render inline or placeholder mode for ItemButton wrapper.
+   * - ReactNode: renders actions inline as part of the grid layout
+   * - true: placeholder mode for ItemButton (enables --actions-width calculation)
+   */
+  actions?: ReactNode | true;
   size?:
     | 'xsmall'
     | 'small'
@@ -76,6 +92,7 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
     | 'large'
     | 'xlarge'
     | 'inline'
+    | number
     | (string & {});
   type?:
     | 'item'
@@ -121,6 +138,10 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
    */
   isLoading?: boolean;
   /**
+   * When true, applies card styling with increased border radius.
+   */
+  isCard?: boolean;
+  /**
    * @private
    * Default tooltip placement for the item.
    * @default "top"
@@ -155,6 +176,19 @@ const ADDITION_STYLES: Styles = {
   gridRow: 'span 2',
 };
 
+const ACTIONS_EVENT_HANDLERS = {
+  onClick: (e: MouseEvent) => e.stopPropagation(),
+  onPointerDown: (e: PointerEvent) => e.stopPropagation(),
+  onPointerUp: (e: PointerEvent) => e.stopPropagation(),
+  onMouseDown: (e: MouseEvent) => e.stopPropagation(),
+  onMouseUp: (e: MouseEvent) => e.stopPropagation(),
+  onKeyDown: (e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.stopPropagation();
+    }
+  },
+};
+
 const ItemBaseElement = tasty({
   styles: {
     display: 'inline-grid',
@@ -165,9 +199,14 @@ const ItemBaseElement = tasty({
     placeContent: 'stretch',
     gridColumns: {
       '': '1sf max-content max-content',
+      'with-actions': '1sf max-content max-content max-content',
       'with-icon ^ with-prefix': 'max-content 1sf max-content max-content',
+      'with-icon ^ with-prefix & with-actions':
+        'max-content 1sf max-content max-content max-content',
       'with-icon & with-prefix':
         'max-content max-content 1sf max-content max-content',
+      'with-icon & with-prefix & with-actions':
+        'max-content max-content 1sf max-content max-content max-content',
       '(with-icon ^ with-right-icon) & !with-description & !with-prefix & !with-suffix & !with-label':
         'max-content',
     },
@@ -179,7 +218,10 @@ const ItemBaseElement = tasty({
     position: 'relative',
     padding: 0,
     margin: 0,
-    radius: true,
+    radius: {
+      '': true,
+      card: '1cr',
+    },
     height: {
       '': 'min $size',
       '[data-size="inline"]': 'initial',
@@ -253,17 +295,17 @@ const ItemBaseElement = tasty({
         '': '$block-padding $inline-padding',
         '(with-icon | with-prefix)':
           '$block-padding $inline-padding $block-padding 0',
-        '(with-right-icon | with-suffix)':
+        '(with-right-icon | with-suffix | with-actions)':
           '$block-padding 0 $block-padding $inline-padding',
-        '(with-icon | with-prefix) & (with-right-icon | with-suffix)':
+        '(with-icon | with-prefix) & (with-right-icon | with-suffix | with-actions)':
           '$block-padding 0',
         'with-description & !with-description-block':
           '$block-padding $inline-padding 0 $inline-padding',
         'with-description & !with-description-block & (with-icon | with-prefix)':
           '$block-padding $inline-padding 0 0',
-        'with-description & !with-description-block & (with-right-icon | with-suffix)':
+        'with-description & !with-description-block & (with-right-icon | with-suffix | with-actions)':
           '$block-padding 0 0 $inline-padding',
-        'with-description & !with-description-block & (with-icon | with-prefix) & (with-right-icon | with-suffix)':
+        'with-description & !with-description-block & (with-icon | with-prefix) & (with-right-icon | with-suffix | with-actions)':
           '$block-padding 0 0 0',
       },
       gridRow: {
@@ -297,14 +339,17 @@ const ItemBaseElement = tasty({
         '(with-icon | with-prefix) & (with-right-icon | with-suffix)':
           '0 0 $block-padding 0',
         'with-description-block':
-          '0 ($inline-padding - $inline-compensation + 1bw) $block-padding ($inline-padding - $inline-compensation + 1bw)',
+          '0 ($inline-padding - $inline-compensation + 1bw) $bottom-padding ($inline-padding - $inline-compensation + 1bw)',
         'with-description-block & !with-icon':
-          '0 ($inline-padding - $inline-compensation + 1bw) $block-padding $inline-padding',
+          '0 ($inline-padding - $inline-compensation + 1bw) $bottom-padding $inline-padding',
         'with-description-block & !with-right-icon':
-          '0 $inline-padding $block-padding ($inline-padding - $inline-compensation + 1bw)',
+          '0 $inline-padding $bottom-padding ($inline-padding - $inline-compensation + 1bw)',
         'with-description-block & !with-right-icon & !with-icon':
-          '0 $inline-padding $block-padding $inline-padding',
+          '0 $inline-padding $bottom-padding $inline-padding',
       },
+
+      '$bottom-padding':
+        'max($block-padding, (($size - 4x) / 2) + $block-padding)',
     },
 
     Prefix: {
@@ -321,6 +366,26 @@ const ItemBaseElement = tasty({
         '': '$inline-padding right',
         'with-right-icon': 0,
       },
+    },
+
+    Actions: {
+      display: 'flex',
+      gap: '1bw',
+      placeItems: 'center',
+      placeContent: 'stretch',
+      placeSelf: 'stretch',
+      padding: '0 $side-padding',
+      boxSizing: 'border-box',
+      height: 'min ($size - 2bw)',
+      gridRow: 'span 2',
+      width: {
+        '': 'var(--actions-width, 0px)',
+        'with-actions-content': 'calc-size(max-content, size)',
+      },
+      transition: 'width $transition ease-out',
+      interpolateSize: 'allow-keywords',
+
+      '$side-padding': 'max(min(.5x, (($size - 3x + 2bw) / 2)), 1bw)',
     },
   },
   variants: {
@@ -364,10 +429,12 @@ export function useAutoTooltip({
   tooltip,
   children,
   labelProps,
+  isDynamicLabel = false, // if actions are set
 }: {
   tooltip: CubeItemBaseProps['tooltip'];
   children: ReactNode;
   labelProps?: Props;
+  isDynamicLabel?: boolean;
 }) {
   // Determine if auto tooltip is enabled
   // Auto tooltip only works when children is a string (overflow detection needs text)
@@ -501,11 +568,15 @@ export function useAutoTooltip({
 
         // Boolean tooltip - auto tooltip on overflow
         if (tooltip === true) {
-          if ((children || labelProps) && isLabelOverflowed) {
+          if (
+            (children || labelProps) &&
+            (isLabelOverflowed || isDynamicLabel)
+          ) {
             return (
               <TooltipProvider
                 placement={defaultTooltipPlacement}
                 title={children}
+                isDisabled={!isLabelOverflowed && isDynamicLabel}
               >
                 {(triggerProps, ref) => renderElement(triggerProps, ref)}
               </TooltipProvider>
@@ -530,11 +601,19 @@ export function useAutoTooltip({
           }
 
           // If title is provided with auto=true, OR no title but auto behavior enabled
-          if ((children || labelProps) && isLabelOverflowed) {
+          if (
+            (children || labelProps) &&
+            (isLabelOverflowed || isDynamicLabel)
+          ) {
             return (
               <TooltipProvider
                 placement={defaultTooltipPlacement}
                 title={tooltipProps.title ?? children}
+                isDisabled={
+                  !isLabelOverflowed &&
+                  isDynamicLabel &&
+                  tooltipProps.isDisabled !== true
+                }
                 {...tooltipProps}
               >
                 {(triggerProps, ref) => renderElement(triggerProps, ref)}
@@ -565,7 +644,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
 ) => {
   let {
     children,
-    size,
+    size = 'medium',
     type = 'item',
     theme = 'default',
     mods,
@@ -584,8 +663,11 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     hotkeys,
     tooltip = true,
     isDisabled,
+    style,
     loadingSlot = 'auto',
     isLoading = false,
+    isCard = false,
+    actions,
     defaultTooltipPlacement = 'top',
     ...rest
   } = props;
@@ -605,6 +687,12 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     if (rightIcon && !icon) return 'rightIcon';
     return 'icon'; // fallback
   }, [loadingSlot, icon, rightIcon]);
+
+  const showDescriptions = useMemo(() => {
+    const copyProps = { ...descriptionProps };
+    delete copyProps.id;
+    return !!(description || Object.keys(copyProps).length > 0);
+  }, [description, descriptionProps]);
 
   // Apply loading state to appropriate slots
   const finalIcon =
@@ -662,13 +750,16 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       'with-label': !!(children || labelProps),
       'with-prefix': !!finalPrefix,
       'with-suffix': !!finalSuffix,
-      'with-description': !!description,
+      'with-description': showDescriptions,
       'with-description-block':
-        !!description && descriptionPlacement === 'block',
+        showDescriptions && descriptionPlacement === 'block',
+      'with-actions': !!actions,
+      'with-actions-content': !!(actions && actions !== true),
       checkbox: hasCheckbox,
       disabled: finalIsDisabled,
       selected: isSelected === true,
       loading: isLoading,
+      card: isCard === true,
       ...mods,
     };
   }, [
@@ -676,11 +767,13 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     finalRightIcon,
     finalPrefix,
     finalSuffix,
-    description,
+    showDescriptions,
     descriptionPlacement,
     hasCheckbox,
     isSelected,
     isLoading,
+    isCard,
+    actions,
     mods,
   ]);
 
@@ -688,7 +781,12 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     labelProps: finalLabelProps,
     labelRef,
     renderWithTooltip,
-  } = useAutoTooltip({ tooltip, children, labelProps });
+  } = useAutoTooltip({
+    tooltip,
+    children,
+    labelProps,
+    isDynamicLabel: !!actions,
+  });
 
   // Create a stable render function that doesn't call hooks
   const renderItemElement = useCallback(
@@ -710,6 +808,12 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
         }
       };
 
+      // Merge custom size style with provided style
+      const finalStyle =
+        typeof size === 'number'
+          ? ({ ...style, '--size': `${size}px` } as any)
+          : style;
+
       return (
         <ItemBaseElement
           ref={handleRef}
@@ -717,7 +821,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
             theme && type ? (`${theme}.${type}` as ItemVariant) : undefined
           }
           disabled={finalIsDisabled}
-          data-size={size}
+          data-size={typeof size === 'number' ? undefined : size}
           data-type={type}
           data-theme={theme}
           aria-disabled={finalIsDisabled}
@@ -726,6 +830,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
           styles={styles}
           type={htmlType as any}
           {...mergeProps(rest, tooltipTriggerProps || {})}
+          style={finalStyle}
         >
           {finalIcon && (
             <div data-element="Icon">
@@ -738,7 +843,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
               {children}
             </div>
           ) : null}
-          {description || descriptionProps ? (
+          {showDescriptions ? (
             <div data-element="Description" {...descriptionProps}>
               {description}
             </div>
@@ -746,6 +851,15 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
           {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
           {finalRightIcon && (
             <div data-element="RightIcon">{finalRightIcon}</div>
+          )}
+          {actions && (
+            <div data-element="Actions" {...ACTIONS_EVENT_HANDLERS}>
+              {actions !== true ? (
+                <ItemActionProvider type={type} theme={theme}>
+                  {actions}
+                </ItemActionProvider>
+              ) : null}
+            </div>
           )}
         </ItemBaseElement>
       );
@@ -771,12 +885,18 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       descriptionProps,
       finalSuffix,
       finalRightIcon,
+      actions,
+      size,
+      style,
     ],
   );
 
   return renderWithTooltip(renderItemElement, defaultTooltipPlacement);
 };
 
-const _ItemBase = forwardRef(ItemBase);
+const _ItemBase = Object.assign(forwardRef(ItemBase), {
+  Action: ItemAction,
+  Badge: ItemBadge,
+});
 
 export { _ItemBase as ItemBase };

@@ -14,6 +14,7 @@ import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
 import {
   CheckIcon,
+  ClearIcon,
   CloseCircleIcon,
   CloseIcon,
   CopyIcon,
@@ -46,6 +47,7 @@ import { baseProps } from '../../../stories/lists/baseProps';
 import { ComboBox } from '../../fields/ComboBox';
 import { FilterPicker } from '../../fields/FilterPicker';
 import { Select } from '../../fields/Select';
+import { ItemAction } from '../ItemAction';
 
 export default {
   title: 'Actions/Menu',
@@ -1968,4 +1970,97 @@ export const ComprehensivePopoverSynchronization = () => {
       </Flex>
     </Flow>
   );
+};
+
+export const ItemsWithActions = (props) => {
+  const handleAction = (key) => {
+    console.log('Menu action:', key);
+  };
+
+  const handleItemAction = (itemKey, actionKey) => {
+    console.log(`Action "${actionKey}" triggered on item "${itemKey}"`);
+  };
+
+  return (
+    <div style={{ padding: '20px', width: '190px' }}>
+      <Menu id="menu-with-actions" {...props} onAction={handleAction}>
+        <Menu.Item
+          key="file1"
+          icon={<IconBook />}
+          actions={
+            <>
+              <ItemAction
+                icon={<EditIcon />}
+                tooltip="Edit"
+                onPress={() => handleItemAction('file1', 'edit')}
+              />
+              <ItemAction
+                icon={<ClearIcon />}
+                tooltip="Delete"
+                onPress={() => handleItemAction('file1', 'delete')}
+              />
+            </>
+          }
+        >
+          Document.pdf
+        </Menu.Item>
+        <Menu.Item
+          key="file2"
+          icon={<IconReload />}
+          actions={
+            <>
+              <Menu.Item.Action
+                icon={<EditIcon />}
+                tooltip="Edit"
+                theme="danger"
+                onPress={() => handleItemAction('file2', 'edit')}
+              />
+              <Menu.Item.Action
+                icon={<ClearIcon />}
+                tooltip="Delete"
+                theme="danger"
+                onPress={() => handleItemAction('file2', 'delete')}
+              />
+            </>
+          }
+        >
+          Spreadsheet.xlsx
+        </Menu.Item>
+        <Menu.Item
+          key="file3"
+          icon={<IconPlus />}
+          actions={
+            <>
+              <ItemAction
+                icon={<EditIcon />}
+                tooltip="Edit"
+                theme="success"
+                onPress={() => handleItemAction('file3', 'edit')}
+              />
+              <ItemAction
+                icon={<ClearIcon />}
+                tooltip="Delete"
+                theme="success"
+                onPress={() => handleItemAction('file3', 'delete')}
+              />
+            </>
+          }
+        >
+          Presentation.pptx
+        </Menu.Item>
+        <Menu.Item key="file4" icon={<IconBulb />}>
+          Item without actions
+        </Menu.Item>
+      </Menu>
+    </div>
+  );
+};
+
+ItemsWithActions.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates Menu.Item with inline actions. Actions are displayed on the right side of each item and inherit the item type through ItemActionProvider context. Hover over items to see the actions.',
+    },
+  },
 };

@@ -29,6 +29,8 @@ const EditableSegmentElement = tasty({
     fontVariantNumeric: 'tabular-nums lining-nums',
     textAlign: 'right',
     font: 'monospace',
+    border: 0,
+    outline: 0,
     color: {
       '': 'inherit',
       ':focus': '#white',

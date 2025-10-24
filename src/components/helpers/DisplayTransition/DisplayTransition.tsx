@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 
-const AUTO_FALLBACK_DURATION = 180;
+const AUTO_FALLBACK_DURATION = 500;
 
 type Phase = 'enter' | 'entered' | 'exit' | 'unmounted';
 
@@ -19,6 +19,10 @@ export type DisplayTransitionProps = {
   duration?: number;
   /** Fires after enter settles or after exit completes (unmount). */
   onRest?: (transition: 'enter' | 'exit') => void;
+  /** Fires when phase changes. */
+  onPhaseChange?: (phase: Phase) => void;
+  /** Fires when isShown (derived from phase) changes. */
+  onToggle?: (isShown: boolean) => void;
   /** Keep calling children during "unmounted" (you decide what to render). */
   exposeUnmounted?: boolean;
   /** If false and initially shown, start at "entered" (no first-mount animation/SSR pop). */
@@ -48,6 +52,8 @@ export function DisplayTransition({
   isShown: targetShown,
   duration,
   onRest,
+  onPhaseChange,
+  onToggle,
   exposeUnmounted = false,
   animateOnMount = true,
   respectReducedMotion = true,
@@ -77,6 +83,8 @@ export function DisplayTransition({
   phaseRef.current = phase;
 
   const onRestEvent = useEvent(onRest);
+  const onPhaseChangeEvent = useEvent(onPhaseChange);
+  const onToggleEvent = useEvent(onToggle);
 
   // Versioned scheduling (Strict Mode & rapid toggles safe)
   const flowRef = useRef(0);
@@ -276,8 +284,22 @@ export function DisplayTransition({
     return cancelRAF;
   }, [phase]);
 
+  // Call onPhaseChange when phase changes
+  useLayoutEffect(() => {
+    onPhaseChangeEvent?.(phase);
+  }, [phase, onPhaseChangeEvent]);
+
   // Render-time boolean (true only when visually shown)
   const isShownNow = phase === 'entered';
+  const prevIsShownRef = useRef(isShownNow);
+
+  // Call onToggle when isShown changes
+  useLayoutEffect(() => {
+    if (prevIsShownRef.current !== isShownNow) {
+      prevIsShownRef.current = isShownNow;
+      onToggleEvent?.(isShownNow);
+    }
+  }, [isShownNow, onToggleEvent]);
 
   // Ref callback to attach to transitioned element
   const refCallback: RefCallback<HTMLElement> = (node) => {

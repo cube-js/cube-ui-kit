@@ -47,17 +47,34 @@ export const MultipleSelection: Story = {
   },
 };
 
-export const WithClearButton: Story = {
-  args: {
-    placeholder: 'Select a fruit',
-    label: 'Favorite Fruit',
-    selectionMode: 'single',
-    isClearable: true,
-    defaultSelectedKey: 'apple',
-    children: fruits.map((fruit) => (
-      <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
-    )),
-  },
+export const IsClearable: Story = {
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <Picker
+        placeholder="Select a fruit"
+        label="Single Selection (Clearable)"
+        selectionMode="single"
+        isClearable={true}
+        defaultSelectedKey="apple"
+      >
+        {fruits.map((fruit) => (
+          <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
+        ))}
+      </Picker>
+      <Picker
+        placeholder="Select fruits"
+        label="Multiple Selection (Clearable)"
+        selectionMode="multiple"
+        isCheckable={true}
+        isClearable={true}
+        defaultSelectedKeys={['apple', 'banana']}
+      >
+        {fruits.map((fruit) => (
+          <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
+        ))}
+      </Picker>
+    </div>
+  ),
 };
 
 export const WithSelectAll: Story = {

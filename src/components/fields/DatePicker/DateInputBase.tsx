@@ -55,6 +55,7 @@ interface CubeDateAtomInputProps extends ContainerStyleProps {
   size?: 'small' | 'medium' | 'large' | (string & {});
   validationState?: ValidationState;
   isLoading?: boolean;
+  suffix?: React.ReactNode;
 }
 
 function DateInputBase(props: CubeDateAtomInputProps, ref) {
@@ -70,6 +71,7 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
     validationState,
     isLoading,
     size = 'medium',
+    suffix,
   } = props;
 
   let styles = extractStyles(props, CONTAINER_STYLES);
@@ -92,6 +94,7 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
         disabled: isDisabled,
         focused: isFocused && !disableFocusRing,
         invalid: isInvalid,
+        suffix: (validationState && !isLoading) || isLoading || !!suffix,
       }}
       {...mergeProps(fieldProps ?? {}, focusProps)}
       style={style}
@@ -106,7 +109,16 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
           {children}
         </DateInputElement>
       </div>
-      {validationState && !isLoading ? validation : undefined}
+      {(validationState && !isLoading) || isLoading || suffix ? (
+        <div data-element="Suffix">
+          {(validationState && !isLoading) || isLoading ? (
+            <div data-element="State">
+              {validationState && !isLoading ? validation : null}
+            </div>
+          ) : null}
+          {suffix}
+        </div>
+      ) : null}
     </DateInputWrapperElement>
   );
 }

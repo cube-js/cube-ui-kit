@@ -14,6 +14,8 @@ export { Block } from './components/Block';
 export type { CubeBlockProps } from './components/Block';
 export { ItemBase } from './components/content/ItemBase/ItemBase';
 export type { CubeItemBaseProps } from './components/content/ItemBase/ItemBase';
+export { ItemBadge } from './components/content/ItemBadge/ItemBadge';
+export type { CubeItemBadgeProps } from './components/content/ItemBadge/ItemBadge';
 export { ActiveZone } from './components/content/ActiveZone/ActiveZone';
 export type { CubeActiveZoneProps } from './components/content/ActiveZone/ActiveZone';
 export * from './components/content/CopySnippet';

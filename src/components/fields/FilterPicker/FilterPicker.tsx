@@ -731,7 +731,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         isDisabled={isDisabled || isLoading}
         mods={{
           placeholder: !hasSelection,
-          selected: hasSelection,
           ...externalMods,
         }}
         icon={icon}

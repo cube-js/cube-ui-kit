@@ -25,6 +25,12 @@ A foundational component that provides a standardized layout and styling for ite
 
 <Controls of={ItemBaseStories.Default} />
 
+### Content Properties
+
+#### actions
+- **Type**: `ReactNode`
+- **Description**: Inline action buttons displayed on the right side of the item. Use `ItemBase.Action` for consistent styling. Actions automatically inherit the parent's `type` prop and the component reserves space to prevent content overlap.
+
 ### Base Properties
 
 Supports [Base properties](/BaseProperties)
@@ -138,6 +144,26 @@ The `mods` property accepts the following modifiers:
 </ItemBase>
 ```
 
+### With Actions
+
+ItemBase supports inline actions that appear on the right side. Use the `ItemBase.Action` compound component for consistent styling:
+
+```jsx
+<ItemBase 
+  icon={<IconFile />}
+  actions={
+    <>
+      <ItemBase.Action icon={<IconEdit />} aria-label="Edit" onPress={handleEdit} />
+      <ItemBase.Action icon={<IconTrash />} aria-label="Delete" onPress={handleDelete} />
+    </>
+  }
+>
+  Document with Actions
+</ItemBase>
+```
+
+Actions automatically inherit the parent's `type` prop and adjust their styling accordingly. The component reserves space for actions to prevent content overlap.
+
 ### With Tooltip
 
 By default, ItemBase shows an auto tooltip when content overflows.
@@ -227,7 +253,39 @@ By default, ItemBase shows an auto tooltip when content overflows.
    </ItemBase>
    ```
 
-4. **Don't**: Overcrowd the component with too many elements
+4. **Do**: Use `ItemBase.Action` for inline actions
+   ```jsx
+   <ItemBase 
+     icon={<IconFile />}
+     actions={
+       <>
+         <ItemBase.Action icon={<IconEdit />} aria-label="Edit" />
+         <ItemBase.Action icon={<IconTrash />} aria-label="Delete" />
+       </>
+     }
+   >
+     File with Actions
+   </ItemBase>
+   ```
+
+5. **Don't**: Add too many actions (limit to 2-3 for clarity)
+   ```jsx
+   {/* Avoid this - too many action buttons */}
+   <ItemBase 
+     actions={
+       <>
+         <ItemBase.Action icon={<IconEdit />} aria-label="Edit" />
+         <ItemBase.Action icon={<IconCopy />} aria-label="Copy" />
+         <ItemBase.Action icon={<IconShare />} aria-label="Share" />
+         <ItemBase.Action icon={<IconTrash />} aria-label="Delete" />
+       </>
+     }
+   >
+     Item with too many actions
+   </ItemBase>
+   ```
+
+6. **Don't**: Overcrowd the component with too many elements
    ```jsx
    {/* Avoid this - too many elements competing for attention */}
    <ItemBase 
@@ -241,11 +299,12 @@ By default, ItemBase shows an auto tooltip when content overflows.
    </ItemBase>
    ```
 
-5. **Accessibility**: Always ensure interactive items are focusable and have proper ARIA attributes
+7. **Accessibility**: Always ensure interactive items are focusable and have proper ARIA attributes, and provide `aria-label` for action buttons
 
 ## Related Components
 
 - [ItemButton](/docs/actions-itembutton--docs) - Interactive button built on ItemBase
+- [ItemBase.Action](/docs/actions-itemaction--docs) - Action button component for inline actions (also available as `ItemButton.Action`, `Menu.Item.Action`, etc.)
 - [Select](/docs/fields-select--docs) - Dropdown selection component using ItemBase
 - [ComboBox](/docs/fields-combobox--docs) - Searchable dropdown component using ItemBase
 - [ListBox](/docs/fields-listbox--docs) - List selection component using ItemBase

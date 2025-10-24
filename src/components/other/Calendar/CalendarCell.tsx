@@ -8,7 +8,7 @@ const CalendarCellElement = tasty({
   styles: {
     preset: 't3m',
     margin: 0,
-    padding: '1bw right bottom',
+    padding: '2bw right bottom',
   },
 });
 
@@ -16,8 +16,8 @@ const CalendarButtonElement = tasty({
   styles: {
     display: 'grid',
     placeItems: 'center',
-    width: '3.5x',
-    height: '3.5x',
+    width: '3x',
+    height: '3x',
     fill: {
       '': '#purple.0',
       ':hover': '#purple.16',
@@ -35,13 +35,10 @@ const CalendarButtonElement = tasty({
       'disabled | unavailable': '#dark.30',
     },
     outline: {
-      '': '(1ow - 1bw) #purple-03.0',
-      focused: '(1ow - 1bw) #purple-03',
+      '': '1bw #purple-text.0',
+      focused: '1bw #purple-text',
     },
-    shadow: {
-      '': '0 0 0 1bw #purple-03.0 inset',
-      focused: '0 0 0 1bw #purple-03 inset',
-    },
+    outlineOffset: 0.5,
     radius: true,
     cursor: 'pointer',
   },

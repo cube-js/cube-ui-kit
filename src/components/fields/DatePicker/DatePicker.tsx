@@ -24,7 +24,6 @@ import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerButton } from './DatePickerButton';
-import { DatePickerElement } from './DatePickerElement';
 import { DatePickerInput } from './DatePickerInput';
 import { dateMessages } from './intl';
 import { DEFAULT_DATE_PROPS } from './props';
@@ -118,56 +117,52 @@ function DatePicker<T extends DateValue>(
   // let visibleMonths = useVisibleMonths(maxVisibleMonths);
 
   const component = (
-    <DatePickerElement
+    <DateInputBase
       ref={targetRef}
       styles={props.wrapperStyles}
-      mods={{ focused: isFocused && !isFocusedButton }}
+      disableFocusRing={isFocusedButton}
+      isDisabled={isDisabled}
+      validationState={validationState}
+      size={size}
       {...focusProps}
+      suffix={
+        <DialogTrigger
+          hideArrow
+          type="popover"
+          mobileType="tray"
+          placement="bottom right"
+          targetRef={targetRef}
+          isOpen={isOpen}
+          shouldFlip={props.shouldFlip}
+          onOpenChange={setOpen}
+        >
+          <DatePickerButton
+            size={size}
+            {...mergeProps(buttonProps, focusPropsButton)}
+            isDisabled={isDisabled}
+          />
+          <Dialog {...dialogProps} width="max-content">
+            <Calendar {...calendarProps} />
+            {showTimeField && (
+              <TimeInput
+                padding="1x"
+                label={dateMessages['time']}
+                value={state.timeValue}
+                placeholderValue={timePlaceholder}
+                granularity={timeGranularity}
+                minValue={timeMinValue}
+                maxValue={timeMaxValue}
+                hourCycle={props.hourCycle}
+                hideTimeZone={props.hideTimeZone}
+                onChange={state.setTimeValue}
+              />
+            )}
+          </Dialog>
+        </DialogTrigger>
+      }
     >
-      <DateInputBase
-        disableFocusRing
-        radius="left"
-        border="top left bottom"
-        isDisabled={isDisabled}
-        validationState={validationState}
-        size={size}
-      >
-        <DatePickerInput useLocale={useLocaleProp} {...fieldProps} />
-      </DateInputBase>
-      <DialogTrigger
-        hideArrow
-        type="popover"
-        mobileType="tray"
-        placement="bottom right"
-        targetRef={targetRef}
-        isOpen={isOpen}
-        shouldFlip={props.shouldFlip}
-        onOpenChange={setOpen}
-      >
-        <DatePickerButton
-          size={size}
-          {...mergeProps(buttonProps, focusPropsButton)}
-          isDisabled={isDisabled}
-        />
-        <Dialog {...dialogProps} width="max-content">
-          <Calendar {...calendarProps} />
-          {showTimeField && (
-            <TimeInput
-              padding="1x"
-              label={dateMessages['time']}
-              value={state.timeValue}
-              placeholderValue={timePlaceholder}
-              granularity={timeGranularity}
-              minValue={timeMinValue}
-              maxValue={timeMaxValue}
-              hourCycle={props.hourCycle}
-              hideTimeZone={props.hideTimeZone}
-              onChange={state.setTimeValue}
-            />
-          )}
-        </Dialog>
-      </DialogTrigger>
-    </DatePickerElement>
+      <DatePickerInput useLocale={useLocaleProp} {...fieldProps} />
+    </DateInputBase>
   );
 
   return wrapWithField(component, domRef, {

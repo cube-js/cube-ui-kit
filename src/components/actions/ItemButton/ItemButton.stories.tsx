@@ -1,4 +1,13 @@
-import { IconExternalLink, IconFile } from '@tabler/icons-react';
+import {
+  IconEdit,
+  IconExternalLink,
+  IconFile,
+  IconTrash,
+} from '@tabler/icons-react';
+import { userEvent, within } from 'storybook/test';
+
+import { timeout } from '../../../utils/promise';
+import { ItemAction } from '../ItemAction';
 
 import { ItemButton } from './ItemButton';
 
@@ -67,6 +76,11 @@ const meta: Meta<typeof ItemButton> = {
       options: ['auto', 'icon', 'rightIcon', 'prefix', 'suffix'],
       description:
         'Which slot to replace with loading icon (auto intelligently selects)',
+    },
+    showActionsOnHover: {
+      control: 'boolean',
+      description:
+        'When true, actions are hidden by default and fade in on hover',
     },
     // Icon controls are typically not included in argTypes since they're complex ReactNode objects
     // prefix and suffix are also ReactNode, so omitted from controls
@@ -591,6 +605,557 @@ export const AutoTooltipOnOverflow: Story = {
       description: {
         story:
           'Demonstrates the auto tooltip functionality that shows tooltips only when button text overflows. Use `tooltip={true}` for simple auto tooltips or `tooltip={{ auto: true, ...config }}` for advanced configuration. When text is not overflowed, no tooltip is shown. Explicit `title` in tooltip config takes priority over auto behavior. Auto tooltips work with all button types, hotkeys, and other features.',
+      },
+    },
+  },
+};
+
+export const WithActionsLayouts: Story = {
+  render: (args) => (
+    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
+      <div>
+        <h4>Different Sizes</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            size="xsmall"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            XSmall Size
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            size="small"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Small Size
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            size="medium"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Medium Size
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            size="large"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Large Size
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            size="xlarge"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            XLarge Size
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Only Actions</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Item with Actions
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Very long item name that should truncate properly with actions
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>With Left Icon</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Item with Icon
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Very long item name with icon that should truncate properly
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>With Prefix</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            prefix="$"
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Item with Prefix
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            prefix="$"
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Very long item name with prefix that should truncate properly
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>With Left Icon and Prefix</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            prefix="$"
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Item with Both
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            prefix="$"
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Very long item name with icon and prefix that should truncate
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>With Inline Description</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            description="Additional info"
+            descriptionPlacement="inline"
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Item with Inline Description
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            description="Additional info"
+            descriptionPlacement="inline"
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Very long item name with inline description that should truncate
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>With Inline Description and Left Icon</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            description="Additional info"
+            descriptionPlacement="inline"
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Item with Both
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            description="Additional info"
+            descriptionPlacement="inline"
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Very long item name with icon and inline description
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>With Block Description</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            description="Additional information"
+            descriptionPlacement="block"
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Item with Block Description
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            description="Additional information"
+            descriptionPlacement="block"
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Very long item name with block description that should truncate
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>With Block Description and Left Icon</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            description="Additional information"
+            descriptionPlacement="block"
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Item with Both
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            description="Additional information"
+            descriptionPlacement="block"
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Very long item name with icon and block description
+          </ItemButton>
+        </div>
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates ItemButton with actions in various layouts. Each layout shows a regular version and a truncated version (with long text and limited width). The actions are absolutely positioned on the right side, and the button automatically reserves space for them to prevent content overlap.',
+      },
+    },
+  },
+};
+
+export const WithActionsHoverBehavior: Story = {
+  render: (args) => (
+    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
+      <div>
+        <h4>Only Actions</h4>
+        <p style={{ fontSize: 14, color: '#666', marginBottom: 16 }}>
+          Hover over the buttons to see the difference in action visibility
+        </p>
+        <div
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}
+        >
+          <ItemButton
+            {...args}
+            type="outline"
+            showActionsOnHover={false}
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Long item name always showing actions
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            showActionsOnHover={true}
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Long item name with hover actions
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>With Left Icon</h4>
+        <div
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}
+        >
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            showActionsOnHover={false}
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Long item name with icon always showing actions
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            showActionsOnHover={true}
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Long item name with icon and hover actions
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>With Left Icon and Inline Description</h4>
+        <div
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}
+        >
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            description="Additional info"
+            descriptionPlacement="inline"
+            showActionsOnHover={false}
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Long item name with icon and inline description
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            description="Additional info"
+            descriptionPlacement="inline"
+            showActionsOnHover={true}
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Long item name with icon and inline description
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>With Left Icon and Block Description</h4>
+        <div
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}
+        >
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            description="Additional information"
+            descriptionPlacement="block"
+            showActionsOnHover={false}
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Long item name with icon and block description
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            description="Additional information"
+            descriptionPlacement="block"
+            showActionsOnHover={true}
+            wrapperStyles={{ width: 'max 250px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Long item name with icon and block description
+          </ItemButton>
+        </div>
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const buttons = canvas.getAllByRole('button');
+
+    // Find the first button with showActionsOnHover={true}
+    // It should be the second button in the first row
+    if (buttons[3]) {
+      await userEvent.hover(buttons[3]);
+    }
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the `showActionsOnHover` flag behavior. Each row compares two buttons side-by-side: one with actions always visible (left) and one with actions shown only on hover (right). The play function automatically hovers over the first button with `showActionsOnHover={true}` to demonstrate the hover behavior.',
       },
     },
   },
