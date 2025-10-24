@@ -67,7 +67,7 @@ const ActionsWrapper = tasty({
       placeItems: 'center',
       placeContent: 'center end',
       pointerEvents: 'auto',
-      padding: '0 $side-padding 0 0',
+      padding: '0 $side-padding',
       height: 'min ($size - 2bw)',
       opacity: {
         '': 1,
