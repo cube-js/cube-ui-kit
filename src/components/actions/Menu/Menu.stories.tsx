@@ -1982,7 +1982,7 @@ export const ItemsWithActions = (props) => {
   };
 
   return (
-    <div style={{ padding: '20px', width: '200px' }}>
+    <div style={{ padding: '20px', width: '190px' }}>
       <Menu id="menu-with-actions" {...props} onAction={handleAction}>
         <Menu.Item
           key="file1"
