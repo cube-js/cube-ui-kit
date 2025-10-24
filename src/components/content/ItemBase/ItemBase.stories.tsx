@@ -974,6 +974,7 @@ export const WithDescriptionBlock: StoryFn<CubeItemBaseProps> = (args) => (
       <ItemBase
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconUser />}
         description="This description appears inside the content area"
         descriptionPlacement="inline"
@@ -983,6 +984,7 @@ export const WithDescriptionBlock: StoryFn<CubeItemBaseProps> = (args) => (
       <ItemBase
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconUser />}
         description="This description appears below the entire item"
         descriptionPlacement="block"
@@ -996,6 +998,7 @@ export const WithDescriptionBlock: StoryFn<CubeItemBaseProps> = (args) => (
       <ItemBase
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         size="small"
         icon={<IconSettings />}
         description="Small size description block"
@@ -1006,6 +1009,7 @@ export const WithDescriptionBlock: StoryFn<CubeItemBaseProps> = (args) => (
       <ItemBase
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         size="medium"
         icon={<IconSettings />}
         description="Medium size description block"
@@ -1016,6 +1020,7 @@ export const WithDescriptionBlock: StoryFn<CubeItemBaseProps> = (args) => (
       <ItemBase
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         size="large"
         icon={<IconSettings />}
         description="Large size description block"
@@ -1030,6 +1035,7 @@ export const WithDescriptionBlock: StoryFn<CubeItemBaseProps> = (args) => (
       <ItemBase
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconCoin />}
         rightIcon={<IconSettings />}
         prefix="$"
@@ -1042,6 +1048,7 @@ export const WithDescriptionBlock: StoryFn<CubeItemBaseProps> = (args) => (
       <ItemBase
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconUser />}
         hotkeys="cmd+u"
         description="User management with hotkey and description block"
@@ -1055,6 +1062,7 @@ export const WithDescriptionBlock: StoryFn<CubeItemBaseProps> = (args) => (
     <ItemBase
       {...args}
       styles={{ ...DEFAULT_STYLES, width: '350px' }}
+      type="outline"
       icon={<IconCoin />}
       description="This is a very long description that demonstrates how the description text flows when positioned below the item. It can contain multiple lines and will wrap naturally."
       descriptionPlacement="block"

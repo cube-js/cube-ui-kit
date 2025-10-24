@@ -332,14 +332,17 @@ const ItemBaseElement = tasty({
         '(with-icon | with-prefix) & (with-right-icon | with-suffix)':
           '0 0 $block-padding 0',
         'with-description-block':
-          '0 ($inline-padding - $inline-compensation + 1bw) $block-padding ($inline-padding - $inline-compensation + 1bw)',
+          '0 ($inline-padding - $inline-compensation + 1bw) $bottom-padding ($inline-padding - $inline-compensation + 1bw)',
         'with-description-block & !with-icon':
-          '0 ($inline-padding - $inline-compensation + 1bw) $block-padding $inline-padding',
+          '0 ($inline-padding - $inline-compensation + 1bw) $bottom-padding $inline-padding',
         'with-description-block & !with-right-icon':
-          '0 $inline-padding $block-padding ($inline-padding - $inline-compensation + 1bw)',
+          '0 $inline-padding $bottom-padding ($inline-padding - $inline-compensation + 1bw)',
         'with-description-block & !with-right-icon & !with-icon':
-          '0 $inline-padding $block-padding $inline-padding',
+          '0 $inline-padding $bottom-padding $inline-padding',
       },
+
+      '$bottom-padding':
+        'max($block-padding, (($size - 4x) / 2) + $block-padding)',
     },
 
     Prefix: {
