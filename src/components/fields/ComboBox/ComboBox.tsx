@@ -881,12 +881,15 @@ function ComboBoxOverlay({
     <DisplayTransition isShown={isOpen}>
       {({ phase, isShown, ref: transitionRef }) => (
         <ComboBoxOverlayWrapper
-          {...mergeProps(overlayPositionProps, overlayBehaviorProps)}
+          {...mergeProps(
+            overlayPositionProps,
+            overlayBehaviorProps,
+            compositeFocusProps,
+          )}
           ref={popoverRef}
           style={overlayPositionProps.style}
         >
           <ComboBoxOverlayElement
-            {...compositeFocusProps}
             ref={transitionRef}
             data-placement={placementDirection}
             data-phase={phase}
