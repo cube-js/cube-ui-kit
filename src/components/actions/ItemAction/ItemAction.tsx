@@ -152,11 +152,11 @@ export const ItemAction = forwardRef(function ItemAction(
   allProps: CubeItemActionProps,
   ref: FocusableRef<HTMLElement>,
 ) {
-  const { type: contextType } = useItemActionContext();
+  const { type: contextType, theme: contextTheme } = useItemActionContext();
 
   const {
     type = contextType ?? 'neutral',
-    theme = 'default',
+    theme = contextTheme ?? 'default',
     icon,
     children,
     isLoading = false,
@@ -238,6 +238,10 @@ export const ItemAction = forwardRef(function ItemAction(
     return {};
   }, [tooltip]);
 
+  const finalType = useMemo(() => {
+    return theme !== 'default' && type === 'neutral' ? 'clear' : type;
+  }, [theme, type]);
+
   // Render function that accepts tooltip trigger props and ref
   const renderButton = (
     tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
@@ -267,9 +271,9 @@ export const ItemAction = forwardRef(function ItemAction(
     return (
       <ItemActionElement
         {...mergedProps}
-        variant={`${theme}.${type}` as ItemActionVariant}
+        variant={`${theme}.${finalType}` as ItemActionVariant}
         data-theme={theme}
-        data-type={type}
+        data-type={finalType}
         tabIndex={finalTabIndex}
       >
         {finalIcon && <div data-element="Icon">{finalIcon}</div>}

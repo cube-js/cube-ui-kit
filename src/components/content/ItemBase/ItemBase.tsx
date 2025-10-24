@@ -840,7 +840,9 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
           {actions && (
             <div data-element="Actions" {...ACTIONS_EVENT_HANDLERS}>
               {actions !== true ? (
-                <ItemActionProvider type={type}>{actions}</ItemActionProvider>
+                <ItemActionProvider type={type} theme={theme}>
+                  {actions}
+                </ItemActionProvider>
               ) : null}
             </div>
           )}

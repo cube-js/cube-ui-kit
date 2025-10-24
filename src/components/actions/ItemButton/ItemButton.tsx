@@ -168,7 +168,7 @@ const ItemButton = forwardRef(function ItemButton(
         }
       >
         {button}
-        <ItemActionProvider type={type}>
+        <ItemActionProvider type={type} theme={theme}>
           {showActionsOnHover ? (
             <DisplayTransition
               exposeUnmounted

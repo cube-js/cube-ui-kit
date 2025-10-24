@@ -1991,13 +1991,11 @@ export const ItemsWithActions = (props) => {
             <>
               <ItemAction
                 icon={<EditIcon />}
-                aria-label="Edit"
                 tooltip="Edit"
                 onPress={() => handleItemAction('file1', 'edit')}
               />
               <ItemAction
                 icon={<ClearIcon />}
-                aria-label="Delete"
                 tooltip="Delete"
                 onPress={() => handleItemAction('file1', 'delete')}
               />
@@ -2013,12 +2011,14 @@ export const ItemsWithActions = (props) => {
             <>
               <Menu.Item.Action
                 icon={<EditIcon />}
-                aria-label="Edit"
+                tooltip="Edit"
+                theme="danger"
                 onPress={() => handleItemAction('file2', 'edit')}
               />
               <Menu.Item.Action
                 icon={<ClearIcon />}
-                aria-label="Delete"
+                tooltip="Delete"
+                theme="danger"
                 onPress={() => handleItemAction('file2', 'delete')}
               />
             </>
@@ -2033,12 +2033,14 @@ export const ItemsWithActions = (props) => {
             <>
               <ItemAction
                 icon={<EditIcon />}
-                aria-label="Edit"
+                tooltip="Edit"
+                theme="success"
                 onPress={() => handleItemAction('file3', 'edit')}
               />
               <ItemAction
                 icon={<ClearIcon />}
-                aria-label="Delete"
+                tooltip="Delete"
+                theme="success"
                 onPress={() => handleItemAction('file3', 'delete')}
               />
             </>
