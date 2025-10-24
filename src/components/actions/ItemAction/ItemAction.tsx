@@ -17,6 +17,7 @@ import {
   DEFAULT_NEUTRAL_STYLES,
   DEFAULT_PRIMARY_STYLES,
   DEFAULT_SECONDARY_STYLES,
+  ITEM_ACTION_BASE_STYLES,
   SPECIAL_CLEAR_STYLES,
   SPECIAL_NEUTRAL_STYLES,
   SPECIAL_PRIMARY_STYLES,
@@ -70,56 +71,11 @@ type ItemActionVariant =
 const ItemActionElement = tasty({
   qa: 'ItemAction',
   styles: {
-    display: 'inline-grid',
-    flow: 'column',
-    placeItems: 'center',
-    placeContent: 'center',
-    gap: '.75x',
-    position: 'relative',
-    margin: {
-      '': '0 1bw 0 1bw',
-      ':last-child & !:first-child': '0 $side-padding 0 0',
-      '!:last-child & :first-child': '0 0 0 $side-padding',
-      ':last-child & :first-child': '0 $side-padding',
-      context: '0',
-    },
-    padding: 0,
+    ...ITEM_ACTION_BASE_STYLES,
     reset: 'button',
     outline: 0,
     outlineOffset: 1,
     cursor: { '': 'pointer', disabled: 'default' },
-    radius: true,
-    transition: 'theme',
-    flexShrink: 0,
-    textDecoration: 'none',
-    boxSizing: 'border-box',
-    whiteSpace: 'nowrap',
-    border: 0,
-    height: '$action-size',
-    width: {
-      '': '$action-size',
-      'with-label': 'auto',
-    },
-    placeSelf: 'center',
-
-    // Size using custom property
-    '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (3x - 2bw))',
-    // Side padding for the button
-    '$side-padding': 'max(min(.5x, (($size - 3x + 2bw) / 2)), 1bw)',
-
-    // Icon styles
-    Icon: {
-      display: 'grid',
-      placeItems: 'center',
-      aspectRatio: '1 / 1',
-      width: '$action-size',
-      opacity: {
-        '': 1,
-        'checkbox & selected': 1,
-        'checkbox & !selected': 0,
-        'checkbox & !selected & hovered': 0.4,
-      },
-    },
   },
   variants: {
     // Default theme

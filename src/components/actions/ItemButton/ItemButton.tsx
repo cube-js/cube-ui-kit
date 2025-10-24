@@ -12,6 +12,7 @@ import { useHover } from 'react-aria';
 
 import { Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
+import { ItemBadge } from '../../content/ItemBadge';
 import { CubeItemBaseProps, ItemBase } from '../../content/ItemBase';
 import { DisplayTransition } from '../../helpers';
 import { CubeItemActionProps, ItemAction } from '../ItemAction';
@@ -209,6 +210,7 @@ const ItemButton = forwardRef(function ItemButton(
 
 const _ItemButton = Object.assign(ItemButton, {
   Action: ItemAction,
+  Badge: ItemBadge,
 });
 
 export { _ItemButton as ItemButton };

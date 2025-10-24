@@ -194,6 +194,8 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
             ? 'valid'
             : undefined),
       ...(isRequired && { isRequired }),
+      isInvalid: field?.status === 'invalid',
+      isValid: field?.status === 'valid',
       message:
         message !== undefined
           ? message

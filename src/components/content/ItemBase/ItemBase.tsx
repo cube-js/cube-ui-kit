@@ -65,6 +65,7 @@ import {
   TooltipProvider,
 } from '../../overlays/Tooltip/TooltipProvider';
 import { HotKeys } from '../HotKeys';
+import { ItemBadge } from '../ItemBadge';
 
 export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
   icon?: ReactNode | 'checkbox';
@@ -881,6 +882,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
 
 const _ItemBase = Object.assign(forwardRef(ItemBase), {
   Action: ItemAction,
+  Badge: ItemBadge,
 });
 
 export { _ItemBase as ItemBase };
