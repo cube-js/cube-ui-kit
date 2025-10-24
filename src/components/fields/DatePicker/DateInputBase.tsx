@@ -111,12 +111,12 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
       </div>
       {(validationState && !isLoading) || isLoading || suffix ? (
         <div data-element="Suffix">
-          {suffix}
           {(validationState && !isLoading) || isLoading ? (
             <div data-element="State">
               {validationState && !isLoading ? validation : null}
             </div>
           ) : null}
+          {suffix}
         </div>
       ) : null}
     </DateInputWrapperElement>
