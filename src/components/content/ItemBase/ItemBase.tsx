@@ -375,6 +375,7 @@ const ItemBaseElement = tasty({
       placeContent: 'stretch',
       placeSelf: 'stretch',
       padding: '0 $side-padding',
+      boxSizing: 'border-box',
       height: 'min ($size - 2bw)',
       gridRow: 'span 2',
       width: {
