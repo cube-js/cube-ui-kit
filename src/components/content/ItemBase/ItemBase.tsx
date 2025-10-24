@@ -138,6 +138,10 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
    */
   isLoading?: boolean;
   /**
+   * When true, applies card styling with increased border radius.
+   */
+  isCard?: boolean;
+  /**
    * @private
    * Default tooltip placement for the item.
    * @default "top"
@@ -214,7 +218,10 @@ const ItemBaseElement = tasty({
     position: 'relative',
     padding: 0,
     margin: 0,
-    radius: true,
+    radius: {
+      '': true,
+      card: '1cr',
+    },
     height: {
       '': 'min $size',
       '[data-size="inline"]': 'initial',
@@ -658,6 +665,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     style,
     loadingSlot = 'auto',
     isLoading = false,
+    isCard = false,
     actions,
     defaultTooltipPlacement = 'top',
     ...rest
@@ -750,6 +758,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       disabled: finalIsDisabled,
       selected: isSelected === true,
       loading: isLoading,
+      card: isCard === true,
       ...mods,
     };
   }, [
@@ -762,6 +771,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     hasCheckbox,
     isSelected,
     isLoading,
+    isCard,
     actions,
     mods,
   ]);
