@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.85.0
+
+### Minor Changes
+
+- [#842](https://github.com/cube-js/cube-ui-kit/pull/842) [`2ad48fe7`](https://github.com/cube-js/cube-ui-kit/commit/2ad48fe7a2e2624c067c9f0f1ac8500d3eb5ce0a) Thanks [@tenphi](https://github.com/tenphi)! - Allow to add actions to Item, ItemButton, and ItemBase.
+
+- [#842](https://github.com/cube-js/cube-ui-kit/pull/842) [`2ad48fe7`](https://github.com/cube-js/cube-ui-kit/commit/2ad48fe7a2e2624c067c9f0f1ac8500d3eb5ce0a) Thanks [@tenphi](https://github.com/tenphi)! - Add ItemBadge component.
+
+### Patch Changes
+
+- [#842](https://github.com/cube-js/cube-ui-kit/pull/842) [`2ad48fe7`](https://github.com/cube-js/cube-ui-kit/commit/2ad48fe7a2e2624c067c9f0f1ac8500d3eb5ce0a) Thanks [@tenphi](https://github.com/tenphi)! - Add isCard flag to ItemBase component.
+
+- [#842](https://github.com/cube-js/cube-ui-kit/pull/842) [`2ad48fe7`](https://github.com/cube-js/cube-ui-kit/commit/2ad48fe7a2e2624c067c9f0f1ac8500d3eb5ce0a) Thanks [@tenphi](https://github.com/tenphi)! - Fix popover height limit for Select and ComboBox.
+
 ## 0.84.0
 
 ### Minor Changes
