@@ -7,7 +7,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { Button } from '../../actions';
+import { ItemAction } from '../../actions';
 import { useFieldProps } from '../../form';
 import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
@@ -48,15 +48,9 @@ function PasswordInput(
   const wrappedSuffix = (
     <>
       {suffix}
-      <Button
-        excludeFromTabOrder
+      <ItemAction
         type="neutral"
-        htmlType="button"
-        placeSelf="stretch"
-        height="auto"
-        radius="right"
-        width="4x"
-        label="Toggle masking"
+        tooltip="Toggle masking"
         icon={type === 'password' ? <EyeInvisibleIcon /> : <EyeIcon />}
         onPress={toggleType}
       />

@@ -26,7 +26,6 @@ import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerButton } from './DatePickerButton';
-import { DatePickerElement } from './DatePickerElement';
 import { DatePickerInput } from './DatePickerInput';
 import { dateMessages } from './intl';
 import { DEFAULT_DATE_PROPS } from './props';
@@ -130,71 +129,68 @@ function DateRangePicker<T extends DateValue>(
   // let visibleMonths = useVisibleMonths(maxVisibleMonths);
 
   const component = (
-    <DatePickerElement
+    <DateInputBase
       ref={targetRef}
       styles={props.wrapperStyles}
-      mods={{ focused: isFocused && !isFocusedButton }}
+      disableFocusRing={isFocusedButton}
+      isDisabled={isDisabled}
+      validationState={validationState}
+      size={size}
       {...focusProps}
+      suffix={
+        <DialogTrigger
+          hideArrow
+          type="popover"
+          mobileType="tray"
+          placement="bottom right"
+          targetRef={targetRef}
+          isOpen={isOpen}
+          shouldFlip={shouldFlip}
+          onOpenChange={setOpen}
+        >
+          <DatePickerButton
+            size={size}
+            {...mergeProps(buttonProps, focusPropsButton)}
+            isDisabled={isDisabled}
+          />
+          <Dialog {...dialogProps} width="max-content">
+            <RangeCalendar {...calendarProps} />
+            {showTimeField && (
+              <Space>
+                <TimeInput
+                  padding="1x"
+                  label={dateMessages['startTime']}
+                  value={state.timeRange?.start || null}
+                  placeholderValue={timePlaceholder}
+                  granularity={timeGranularity}
+                  minValue={timeMinValue}
+                  maxValue={timeMaxValue}
+                  hourCycle={props.hourCycle}
+                  hideTimeZone={props.hideTimeZone}
+                  onChange={(v) => state.setTime('start', v)}
+                />
+                <TimeInput
+                  padding="1x"
+                  label={dateMessages['endTime']}
+                  value={state.timeRange?.end || null}
+                  placeholderValue={timePlaceholder}
+                  granularity={timeGranularity}
+                  minValue={timeMinValue}
+                  maxValue={timeMaxValue}
+                  hourCycle={props.hourCycle}
+                  hideTimeZone={props.hideTimeZone}
+                  onChange={(v) => state.setTime('end', v)}
+                />
+              </Space>
+            )}
+          </Dialog>
+        </DialogTrigger>
+      }
     >
-      <DateInputBase
-        disableFocusRing
-        isDisabled={isDisabled}
-        validationState={validationState}
-        size={size}
-        styles={{ radius: 'left', border: 'top left bottom' }}
-      >
-        <DatePickerInput useLocale={useLocaleProp} {...startFieldProps} />
-        <DateRangeDash />
-        <DatePickerInput useLocale={useLocaleProp} {...endFieldProps} />
-      </DateInputBase>
-      <DialogTrigger
-        hideArrow
-        type="popover"
-        mobileType="tray"
-        placement="bottom right"
-        targetRef={targetRef}
-        isOpen={isOpen}
-        shouldFlip={shouldFlip}
-        onOpenChange={setOpen}
-      >
-        <DatePickerButton
-          size={size}
-          {...mergeProps(buttonProps, focusPropsButton)}
-          isDisabled={isDisabled}
-        />
-        <Dialog {...dialogProps} width="max-content">
-          <RangeCalendar {...calendarProps} />
-          {showTimeField && (
-            <Space>
-              <TimeInput
-                padding="1x"
-                label={dateMessages['startTime']}
-                value={state.timeRange?.start || null}
-                placeholderValue={timePlaceholder}
-                granularity={timeGranularity}
-                minValue={timeMinValue}
-                maxValue={timeMaxValue}
-                hourCycle={props.hourCycle}
-                hideTimeZone={props.hideTimeZone}
-                onChange={(v) => state.setTime('start', v)}
-              />
-              <TimeInput
-                padding="1x"
-                label={dateMessages['endTime']}
-                value={state.timeRange?.end || null}
-                placeholderValue={timePlaceholder}
-                granularity={timeGranularity}
-                minValue={timeMinValue}
-                maxValue={timeMaxValue}
-                hourCycle={props.hourCycle}
-                hideTimeZone={props.hideTimeZone}
-                onChange={(v) => state.setTime('end', v)}
-              />
-            </Space>
-          )}
-        </Dialog>
-      </DialogTrigger>
-    </DatePickerElement>
+      <DatePickerInput useLocale={useLocaleProp} {...startFieldProps} />
+      <DateRangeDash />
+      <DatePickerInput useLocale={useLocaleProp} {...endFieldProps} />
+    </DateInputBase>
   );
 
   return wrapWithField(component, domRef, {

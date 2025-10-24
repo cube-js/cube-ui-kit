@@ -363,7 +363,7 @@ const ItemBaseElement = tasty({
       placeItems: 'center',
       placeContent: 'stretch',
       placeSelf: 'stretch',
-      padding: '0 .5x 0 0',
+      padding: '0 $side-padding 0 0',
       height: 'min ($size - 2bw)',
       gridRow: 'span 2',
       width: {
@@ -372,6 +372,8 @@ const ItemBaseElement = tasty({
       },
       transition: 'width $transition ease-out',
       interpolateSize: 'allow-keywords',
+
+      '$side-padding': 'max(min(.5x, (($size - 3x + 2bw) / 2)), 1bw)',
     },
   },
   variants: {

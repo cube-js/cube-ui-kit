@@ -585,7 +585,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
         isDisabled={isDisabled || isLoading}
         mods={{
           placeholder: !hasSelection,
-          selected: hasSelection,
           ...externalMods,
         }}
         icon={icon}

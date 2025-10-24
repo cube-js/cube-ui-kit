@@ -43,6 +43,11 @@ const ActionsWrapper = tasty({
     position: 'relative',
     placeContent: 'stretch',
     placeItems: 'stretch',
+    preset: {
+      '': 't3m',
+      '[data-size="xsmall"]': 't4',
+      '[data-size="xlarge"]': 't2m',
+    },
 
     $size: {
       '': '$size-md',
@@ -59,9 +64,9 @@ const ActionsWrapper = tasty({
       display: 'flex',
       gap: '1bw',
       placeItems: 'center',
-      placeContent: 'end',
+      placeContent: 'center end',
       pointerEvents: 'auto',
-      padding: '0 .5x 0 0',
+      padding: '0 $side-padding 0 0',
       height: 'min ($size - 2bw)',
       opacity: {
         '': 1,
@@ -72,6 +77,8 @@ const ActionsWrapper = tasty({
         'actions-hidden': '.5x 0',
       },
       transition: 'theme, translate',
+
+      '$side-padding': 'max(min(.5x, (($size - 3x + 2bw) / 2)), 1bw)',
     },
   },
 });
@@ -147,6 +154,7 @@ const ItemButton = forwardRef(function ItemButton(
     return (
       <ActionsWrapper
         {...hoverProps}
+        data-size={size}
         mods={{ 'actions-hidden': !areActionsShown && showActionsOnHover }}
         styles={finalWrapperStyles}
         style={

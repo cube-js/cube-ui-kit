@@ -71,8 +71,8 @@ function Calendar(props: CubeCalendarProps, ref: FocusableRef<HTMLElement>) {
           {title}
         </Title>
         <Button.Group gap=".5x">
-          <Button size="small" {...prevButtonProps} icon={<LeftIcon />} />
-          <Button size="small" {...nextButtonProps} icon={<RightIcon />} />
+          <Button size="xsmall" {...prevButtonProps} icon={<LeftIcon />} />
+          <Button size="xsmall" {...nextButtonProps} icon={<RightIcon />} />
         </Button.Group>
       </CalendarHeaderElement>
       <CalendarGrid state={state} selectedRange={props.selectedRange} />

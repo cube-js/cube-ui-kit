@@ -450,7 +450,6 @@ function Select<T extends object>(
           ) : showClearButton ? (
             <ItemAction
               icon={<CloseIcon />}
-              size={size}
               theme={validationState === 'invalid' ? 'danger' : undefined}
               qa="SelectClearButton"
               mods={{ pressed: false }}
