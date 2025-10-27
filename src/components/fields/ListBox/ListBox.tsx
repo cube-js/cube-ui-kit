@@ -303,6 +303,12 @@ export interface CubeListBoxProps<T>
    * Useful for implementing search/filter functionality.
    */
   filter?: (nodes: Iterable<any>) => Iterable<any>;
+
+  /**
+   * Label to display when the list is empty (no items available).
+   * Defaults to "No items".
+   */
+  emptyLabel?: ReactNode;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -508,6 +514,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     selectAllLabel,
     allValueProps,
     filter,
+    emptyLabel = 'No items',
     form,
     ...otherProps
   } = props;
@@ -886,110 +893,121 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       )}
       {/* Scroll container wrapper */}
       <ListBoxScrollElement ref={scrollRef} mods={mods} {...focusProps}>
-        <ListElement
-          qa={qa || 'ListBox'}
-          {...mergedListBoxProps}
-          ref={listRef}
-          styles={listStyles}
-          aria-disabled={isDisabled || undefined}
-          mods={{ sections: hasSections }}
-          style={
-            shouldVirtualize
-              ? {
-                  position: 'relative',
-                  height: `${rowVirtualizer.getTotalSize() + 3}px`,
-                }
-              : undefined
-          }
-        >
-          {shouldVirtualize
-            ? rowVirtualizer.getVirtualItems().map((virtualItem) => {
-                const item = itemsArray[virtualItem.index];
+        {listState.collection.size === 0 ? (
+          <ItemBase
+            preset="t4"
+            color="#dark-03"
+            size={size}
+            padding="(.5x - 1bw)"
+          >
+            {emptyLabel}
+          </ItemBase>
+        ) : (
+          <ListElement
+            qa={qa || 'ListBox'}
+            {...mergedListBoxProps}
+            ref={listRef}
+            styles={listStyles}
+            aria-disabled={isDisabled || undefined}
+            mods={{ sections: hasSections }}
+            style={
+              shouldVirtualize
+                ? {
+                    position: 'relative',
+                    height: `${rowVirtualizer.getTotalSize() + 3}px`,
+                  }
+                : undefined
+            }
+          >
+            {shouldVirtualize
+              ? rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                  const item = itemsArray[virtualItem.index];
 
-                return (
-                  <Option
-                    key={virtualItem.key}
-                    size={size}
-                    item={item}
-                    state={listState}
-                    styles={optionStyles}
-                    isParentDisabled={isDisabled}
-                    validationState={validationState}
-                    focusOnHover={focusOnHover}
-                    isCheckable={isCheckable}
-                    // We don't need to measure the element here, because the height is already set by the virtualizer
-                    // This is a workaround to avoid glitches when selecting/deselecting items
-                    virtualRef={rowVirtualizer.measureElement as any}
-                    virtualStyle={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      transform: `translateY(${virtualItem.start}px)`,
-                    }}
-                    virtualIndex={virtualItem.index}
-                    lastFocusSourceRef={lastFocusSourceRef}
-                    onClick={onOptionClick}
-                  />
-                );
-              })
-            : (() => {
-                const renderedItems: ReactNode[] = [];
-                let isFirstSection = true;
+                  return (
+                    <Option
+                      key={virtualItem.key}
+                      size={size}
+                      item={item}
+                      state={listState}
+                      styles={optionStyles}
+                      isParentDisabled={isDisabled}
+                      validationState={validationState}
+                      focusOnHover={focusOnHover}
+                      isCheckable={isCheckable}
+                      // We don't need to measure the element here, because the height is already set by the virtualizer
+                      // This is a workaround to avoid glitches when selecting/deselecting items
+                      virtualRef={rowVirtualizer.measureElement as any}
+                      virtualStyle={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        transform: `translateY(${virtualItem.start}px)`,
+                      }}
+                      virtualIndex={virtualItem.index}
+                      lastFocusSourceRef={lastFocusSourceRef}
+                      onClick={onOptionClick}
+                    />
+                  );
+                })
+              : (() => {
+                  const renderedItems: ReactNode[] = [];
+                  let isFirstSection = true;
 
-                for (const item of listState.collection) {
-                  if (item.type === 'section') {
-                    if (!isFirstSection) {
+                  for (const item of listState.collection) {
+                    if (item.type === 'section') {
+                      if (!isFirstSection) {
+                        renderedItems.push(
+                          <StyledDivider
+                            key={`divider-${String(item.key)}`}
+                            role="separator"
+                            aria-orientation="horizontal"
+                          />,
+                        );
+                      }
+
                       renderedItems.push(
-                        <StyledDivider
-                          key={`divider-${String(item.key)}`}
-                          role="separator"
-                          aria-orientation="horizontal"
+                        <ListBoxSection
+                          key={item.key}
+                          item={item}
+                          state={listState}
+                          optionStyles={optionStyles}
+                          headingStyles={headingStyles}
+                          sectionStyles={sectionStyles}
+                          isParentDisabled={isDisabled}
+                          validationState={validationState}
+                          focusOnHover={focusOnHover}
+                          isCheckable={isCheckable}
+                          size={size}
+                          lastFocusSourceRef={lastFocusSourceRef}
+                          onClick={onOptionClick}
+                        />,
+                      );
+
+                      isFirstSection = false;
+                    } else {
+                      renderedItems.push(
+                        <Option
+                          key={item.key}
+                          size={size}
+                          item={item}
+                          state={listState}
+                          styles={optionStyles}
+                          isParentDisabled={isDisabled}
+                          validationState={validationState}
+                          focusOnHover={focusOnHover}
+                          isCheckable={isCheckable}
+                          lastFocusSourceRef={lastFocusSourceRef}
+                          onClick={onOptionClick}
                         />,
                       );
                     }
-
-                    renderedItems.push(
-                      <ListBoxSection
-                        key={item.key}
-                        item={item}
-                        state={listState}
-                        optionStyles={optionStyles}
-                        headingStyles={headingStyles}
-                        sectionStyles={sectionStyles}
-                        isParentDisabled={isDisabled}
-                        validationState={validationState}
-                        focusOnHover={focusOnHover}
-                        isCheckable={isCheckable}
-                        size={size}
-                        lastFocusSourceRef={lastFocusSourceRef}
-                        onClick={onOptionClick}
-                      />,
-                    );
-
-                    isFirstSection = false;
-                  } else {
-                    renderedItems.push(
-                      <Option
-                        key={item.key}
-                        size={size}
-                        item={item}
-                        state={listState}
-                        styles={optionStyles}
-                        isParentDisabled={isDisabled}
-                        validationState={validationState}
-                        focusOnHover={focusOnHover}
-                        isCheckable={isCheckable}
-                        lastFocusSourceRef={lastFocusSourceRef}
-                        onClick={onOptionClick}
-                      />,
-                    );
                   }
-                }
 
-                return renderedItems;
-              })()}
-        </ListElement>
+                  return renderedItems;
+                })()}
+          </ListElement>
+        )}
       </ListBoxScrollElement>
       {footer ? (
         <StyledFooter styles={footerStyles} data-size={size}>
