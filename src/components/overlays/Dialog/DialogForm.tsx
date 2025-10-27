@@ -134,18 +134,18 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
           {typeof children === 'function' ? children(onLocalDismiss) : children}
 
           {!noActions ? (
-            <ButtonGroup>
-              <SubmitButton
-                qa={`${qa || ''}SubmitButton`}
-                theme={danger ? 'danger' : undefined}
-                label="Submit"
-                {...(submitProps || {})}
-              />
+            <ButtonGroup align="end">
               <Button
                 qa={`${qa || ''}CancelButton`}
                 label="Cancel"
                 onPress={onLocalDismiss}
                 {...(cancelProps || {})}
+              />
+              <SubmitButton
+                qa={`${qa || ''}SubmitButton`}
+                theme={danger ? 'danger' : undefined}
+                label="Submit"
+                {...(submitProps || {})}
               />
             </ButtonGroup>
           ) : undefined}

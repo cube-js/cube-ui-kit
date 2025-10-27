@@ -85,15 +85,13 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
       {!noActions && (confirmProps || secondaryProps || cancelProps) ? (
         <Footer>
           <ButtonGroup align="end">
-            {confirmProps && (
+            {cancelProps && (
               <Button
-                autoFocus
-                theme={danger ? 'danger' : undefined}
-                {...confirmProps}
+                {...cancelProps}
                 onPress={(e) =>
                   chain(
-                    (confirmProps as CubeButtonProps)?.onPress?.(e),
-                    onClose?.('confirm'),
+                    (cancelProps as CubeButtonProps)?.onPress?.(e),
+                    onClose?.('cancel'),
                   )
                 }
               />
@@ -106,13 +104,15 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
                 }
               />
             )}
-            {cancelProps && (
+            {confirmProps && (
               <Button
-                {...cancelProps}
+                autoFocus
+                theme={danger ? 'danger' : undefined}
+                {...confirmProps}
                 onPress={(e) =>
                   chain(
-                    (cancelProps as CubeButtonProps)?.onPress?.(e),
-                    onClose?.('cancel'),
+                    (confirmProps as CubeButtonProps)?.onPress?.(e),
+                    onClose?.('confirm'),
                   )
                 }
               />
