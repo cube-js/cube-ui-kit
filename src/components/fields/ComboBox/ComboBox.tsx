@@ -877,7 +877,6 @@ function ComboBoxOverlay({
         updatePosition();
       }, 3);
     }
-     
   }, [isOpen]);
 
   // Extract primary placement direction for consistent styling

@@ -533,7 +533,6 @@ export function ListBoxPopup({
         updatePosition();
       }, 3);
     }
-     
   }, [state.isOpen]);
 
   // Get props for the listbox
