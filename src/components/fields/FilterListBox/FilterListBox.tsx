@@ -894,7 +894,13 @@ export const FilterListBox = forwardRef(function FilterListBox<
         items={items as any}
         allValueProps={allValueProps}
         filter={filterFn}
-        emptyLabel={emptyLabel !== undefined ? emptyLabel : 'No results found'}
+        emptyLabel={
+          searchValue.trim()
+            ? emptyLabel !== undefined
+              ? emptyLabel
+              : 'No results found'
+            : 'No items'
+        }
         onSelectionChange={handleSelectionChange}
         onEscape={onEscape}
         onOptionClick={handleOptionClick}
