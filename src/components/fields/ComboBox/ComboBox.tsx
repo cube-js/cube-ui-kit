@@ -146,6 +146,8 @@ export interface CubeComboBoxProps<T>
   placeholder?: string;
   /** Whether the input should have autofocus */
   autoFocus?: boolean;
+  /** HTML autocomplete attribute for the input */
+  autoComplete?: string;
   /** Callback fired when focus enters the component (input, trigger, or popover). Does not receive event object. */
   onFocus?: () => void;
   /** Callback fired when focus leaves the component entirely. Does not receive event object. */
@@ -689,6 +691,7 @@ interface ComboBoxInputProps {
   isDisabled?: boolean;
   isReadOnly?: boolean;
   autoFocus?: boolean;
+  autoComplete?: string;
   size: string;
   mods: Record<string, any>;
   inputStyles?: Styles;
@@ -713,6 +716,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
       isDisabled,
       isReadOnly,
       autoFocus,
+      autoComplete,
       size,
       mods,
       inputStyles,
@@ -740,6 +744,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         isDisabled={isDisabled}
         readOnly={isReadOnly}
         autoFocus={autoFocus}
+        autoComplete={autoComplete}
         data-autofocus={autoFocus ? '' : undefined}
         onChange={onChange}
         onFocus={onFocus}
@@ -973,6 +978,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     prefix,
     isDisabled,
     autoFocus,
+    autoComplete = 'off',
     wrapperRef,
     inputRef,
     triggerRef,
@@ -1700,6 +1706,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         isDisabled={isDisabled}
         isReadOnly={isReadOnly}
         autoFocus={autoFocus}
+        autoComplete={autoComplete}
         size={size}
         mods={mods}
         inputStyles={inputStyles}
