@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.85.2
+
+### Patch Changes
+
+- [#851](https://github.com/cube-js/cube-ui-kit/pull/851) [`a2b237ee`](https://github.com/cube-js/cube-ui-kit/commit/a2b237ee687bfab2462ab6ed7ff5fe56ceb7599f) Thanks [@tenphi](https://github.com/tenphi)! - Fix FilterListBox filtering bug.
+
 ## 0.85.1
 
 ### Patch Changes
