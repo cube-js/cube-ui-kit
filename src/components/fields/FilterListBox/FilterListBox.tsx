@@ -438,88 +438,45 @@ export const FilterListBox = forwardRef(function FilterListBox<
     [filter, contains],
   );
 
-  // Filter children based on search value
-  const filteredChildren = useMemo(() => {
-    const term = searchValue.trim();
+  // Create a filter function for collection nodes (similar to ComboBox pattern)
+  const filterFn = useCallback(
+    (nodes: Iterable<any>) => {
+      const term = searchValue.trim();
 
-    if (!term || !mergedChildren) {
-      return mergedChildren;
-    }
+      // Don't filter if no search term
+      if (!term) {
+        return nodes;
+      }
 
-    // Helper to check if a node matches the search term
-    const nodeMatches = (node: any): boolean => {
-      if (!node?.props) return false;
+      // Filter nodes based on their textValue and preserve section structure
+      return [...nodes]
+        .map((node: any) => {
+          if (node.type === 'section' && node.childNodes) {
+            const filteredNodes = [...node.childNodes].filter((child: any) =>
+              textFilterFn(child.textValue || '', term),
+            );
 
-      // Get text content from the node
-      const textValue =
-        node.props.textValue ||
-        (typeof node.props.children === 'string' ? node.props.children : '') ||
-        String(node.props.children || '');
+            if (filteredNodes.length === 0) {
+              return null;
+            }
 
-      return textFilterFn(textValue, term);
-    };
-
-    // Helper to filter React children recursively
-    const filterChildren = (childNodes: ReactNode): ReactNode => {
-      if (!childNodes) return null;
-
-      const childArray = Array.isArray(childNodes) ? childNodes : [childNodes];
-      const filteredNodes: ReactNode[] = [];
-
-      childArray.forEach((child: any) => {
-        if (!child || typeof child !== 'object') {
-          return;
-        }
-
-        // Handle ListBox.Section
-        if (
-          child.type === BaseSection ||
-          child.type?.displayName === 'Section'
-        ) {
-          const sectionChildren = Array.isArray(child.props.children)
-            ? child.props.children
-            : [child.props.children];
-
-          const filteredSectionChildren = sectionChildren.filter(
-            (sectionChild: any) => {
-              return (
-                sectionChild &&
-                typeof sectionChild === 'object' &&
-                nodeMatches(sectionChild)
-              );
-            },
-          );
-
-          if (filteredSectionChildren.length > 0) {
-            // Store filtered children in a way that doesn't require cloning the section
-            const filteredSection = {
-              ...child,
-              filteredChildren: filteredSectionChildren,
+            return {
+              ...node,
+              childNodes: filteredNodes,
+              hasChildNodes: true,
             };
-            filteredNodes.push(filteredSection);
           }
-        }
-        // Handle ListBox.Item
-        else if (child.type === Item) {
-          if (nodeMatches(child)) {
-            filteredNodes.push(child);
-          }
-        }
-        // Handle other components
-        else if (nodeMatches(child)) {
-          filteredNodes.push(child);
-        }
-      });
 
-      return filteredNodes;
-    };
-
-    return filterChildren(mergedChildren);
-  }, [mergedChildren, searchValue, textFilterFn]);
+          return textFilterFn(node.textValue || '', term) ? node : null;
+        })
+        .filter(Boolean);
+    },
+    [searchValue, textFilterFn],
+  );
 
   // Handle custom values if allowed
   const enhancedChildren = useMemo(() => {
-    let childrenToProcess = filteredChildren;
+    let childrenToProcess = mergedChildren;
 
     // Handle custom values if allowed
     if (!allowsCustomValue) return childrenToProcess;
@@ -570,39 +527,15 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }
 
     return customOption;
-  }, [allowsCustomValue, filteredChildren, mergedChildren, searchValue]);
-
-  // Convert custom objects back to React elements for rendering
-  const finalChildren = useMemo(() => {
-    if (!enhancedChildren) return enhancedChildren;
-
-    const convertToReactElements = (nodes: ReactNode): ReactNode => {
-      if (!nodes) return nodes;
-
-      const nodeArray = Array.isArray(nodes) ? nodes : [nodes];
-
-      return nodeArray.map((node: any, index) => {
-        if (!node || typeof node !== 'object') {
-          return node;
-        }
-
-        // Handle our custom filtered section objects
-        if (node.filteredChildren) {
-          const childrenToUse = node.filteredChildren;
-          // Return the original section but with the processed children
-          return React.cloneElement(node, {
-            key: node.key || index,
-            children: childrenToUse,
-          });
-        }
-
-        // Handle regular React elements
-        return node;
-      });
-    };
-
-    return convertToReactElements(enhancedChildren);
-  }, [enhancedChildren]);
+  }, [
+    allowsCustomValue,
+    mergedChildren,
+    searchValue,
+    customKeys,
+    localCollectionState.collection,
+    customValueProps,
+    newCustomValueProps,
+  ]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -632,14 +565,11 @@ export const FilterListBox = forwardRef(function FilterListBox<
     const { selectionManager, collection } = listState;
 
     // Helper to collect visible item keys (supports sections)
+    // Collection is already filtered by React Stately via filterFn
     const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
-      const term = searchValue.trim();
       for (const node of nodes) {
         if (node.type === 'item') {
-          const text = node.textValue ?? String(node.rendered ?? '');
-          if (!term || textFilterFn(text, term)) {
-            out.push(node.key);
-          }
+          out.push(node.key);
         } else if (node.childNodes) {
           collectVisibleKeys(node.childNodes, out);
         }
@@ -663,7 +593,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
     // Set focus to the first visible item
     selectionManager.setFocusedKey(visibleKeys[0]);
-  }, [searchValue, enhancedChildren, textFilterFn]);
+  }, [searchValue, enhancedChildren]);
 
   // Keyboard navigation handler for search input
   const { keyboardProps } = useKeyboard({
@@ -677,14 +607,11 @@ export const FilterListBox = forwardRef(function FilterListBox<
         const { selectionManager, collection } = listState;
 
         // Helper to collect visible item keys (supports sections)
+        // Collection is already filtered by React Stately via filterFn
         const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
-          const term = searchValue.trim();
           for (const node of nodes) {
             if (node.type === 'item') {
-              const text = node.textValue ?? String(node.rendered ?? '');
-              if (!term || textFilterFn(text, term)) {
-                out.push(node.key);
-              }
+              out.push(node.key);
             } else if (node.childNodes) {
               collectVisibleKeys(node.childNodes, out);
             }
@@ -749,14 +676,11 @@ export const FilterListBox = forwardRef(function FilterListBox<
         const { selectionManager, collection } = listState;
 
         // Helper to collect visible item keys (supports sections)
+        // Collection is already filtered by React Stately via filterFn
         const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
-          const term = searchValue.trim();
           for (const node of nodes) {
             if (node.type === 'item') {
-              const text = node.textValue ?? String(node.rendered ?? '');
-              if (!term || textFilterFn(text, term)) {
-                out.push(node.key);
-              }
+              out.push(node.key);
             } else if (node.childNodes) {
               collectVisibleKeys(node.childNodes, out);
             }
@@ -835,11 +759,16 @@ export const FilterListBox = forwardRef(function FilterListBox<
     ],
   );
 
-  const hasResults =
-    enhancedChildren &&
-    (Array.isArray(enhancedChildren)
-      ? enhancedChildren.length > 0
-      : enhancedChildren !== null);
+  const hasResults = useMemo(() => {
+    if (!listStateRef.current?.collection) return !!enhancedChildren;
+
+    // Collection is already filtered by React Stately, just check if it has items
+    for (const node of listStateRef.current.collection) {
+      if (node.type === 'item') return true;
+      if (node.childNodes && [...node.childNodes].length > 0) return true;
+    }
+    return false;
+  }, [listStateRef.current?.collection, enhancedChildren, searchValue]);
 
   const showEmptyMessage = !hasResults && searchValue.trim();
 
@@ -988,11 +917,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
           isCheckable={isCheckable}
           items={items as any}
           allValueProps={allValueProps}
+          filter={filterFn}
           onSelectionChange={handleSelectionChange}
           onEscape={onEscape}
           onOptionClick={handleOptionClick}
         >
-          {finalChildren as any}
+          {enhancedChildren as any}
         </ListBox>
       )}
     </FilterListBoxWrapperElement>
