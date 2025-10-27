@@ -94,6 +94,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     selected: isSelected,
     disabled: isDisabled,
     submenu: !!submenuContext,
+    menuitem: true,
   };
 
   return (

@@ -116,9 +116,6 @@ export const ListBoxElement = tasty({
 const OptionItem = tasty(Item, {
   as: 'li',
   qa: 'Option',
-  mods: {
-    listboxitem: true,
-  },
   styles: {
     '$inline-compensation': '0px',
   },
@@ -719,6 +716,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
       ref={ref}
       qa={qa}
       mods={{
+        listboxitem: true,
         selected: isSelected,
         focused: shouldUseVirtualFocus ? isVirtualFocused : isFocused,
         disabled: isDisabled,

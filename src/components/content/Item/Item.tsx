@@ -253,7 +253,7 @@ const ItemElement = tasty({
     outlineOffset: 1,
     cursor: {
       '': 'default',
-      ':is(button) | :is(a) | listboxitem': 'pointer',
+      ':is(button) | :is(a)': 'pointer',
       disabled: 'not-allowed',
     },
 

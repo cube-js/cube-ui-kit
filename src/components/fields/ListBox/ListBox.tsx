@@ -114,9 +114,6 @@ const ListBoxScrollElement = tasty({
 // Create an extended Item for ListBox options with 'all' modifier support
 const ListBoxItem = tasty(Item, {
   as: 'li',
-  mods: {
-    listboxitem: true,
-  },
   styles: {
     margin: {
       '': '0 0 1bw 0',
@@ -425,6 +422,7 @@ const SelectAllOption = ({
         isDisabled={isDisabled}
         icon={checkboxIcon}
         mods={{
+          listboxitem: true,
           disabled: isDisabled,
           checkable: isCheckable,
           hovered: isHovered,
@@ -1222,6 +1220,7 @@ function Option({
       tooltip={item.props?.tooltip}
       defaultTooltipPlacement="right"
       mods={{
+        listboxitem: true,
         focused: isFocused,
         pressed: isPressed,
         valid: isSelected && validationState === 'valid',
