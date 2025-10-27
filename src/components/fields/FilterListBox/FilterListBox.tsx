@@ -27,9 +27,9 @@ import {
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { StyledHeader } from '../../actions/Menu/styled';
-import { ItemBase } from '../../content/ItemBase';
+import { CubeCollectionItemProps } from '../../CollectionItem';
+import { Item as ItemElement } from '../../content/Item';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { CubeItemProps } from '../../Item';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import {
   DEFAULT_INPUT_STYLES,
@@ -155,13 +155,13 @@ export interface CubeFilterListBoxProps<T>
   /**
    * Props to apply to existing custom values (values that are already selected but not in the predefined options).
    */
-  customValueProps?: Partial<CubeItemProps<T>>;
+  customValueProps?: Partial<CubeCollectionItemProps<T>>;
 
   /**
    * Props to apply to new custom values (values typed in the search input that are about to be added).
    * These are merged with customValueProps for new custom values.
    */
-  newCustomValueProps?: Partial<CubeItemProps<T>>;
+  newCustomValueProps?: Partial<CubeCollectionItemProps<T>>;
 
   /**
    * Controlled search value. When provided, the search input becomes controlled.
@@ -877,14 +877,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
       )}
       {searchInput}
       {showEmptyMessage ? (
-        <ItemBase
+        <ItemElement
           preset="t4"
           color="#dark-03"
           size={size}
           padding="(.5x - 1bw)"
         >
           {emptyLabel !== undefined ? emptyLabel : 'No results found'}
-        </ItemBase>
+        </ItemElement>
       ) : (
         <ListBox
           ref={listBoxRef}

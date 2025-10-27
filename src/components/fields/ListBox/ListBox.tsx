@@ -47,9 +47,9 @@ import {
   StyledHeader,
   StyledSectionHeading,
 } from '../../actions/Menu/styled';
-import { ItemBase } from '../../content/ItemBase/ItemBase';
+import { CollectionItem, CubeCollectionItemProps } from '../../CollectionItem';
+import { Item } from '../../content/Item/Item';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { CubeItemProps, Item } from '../../Item';
 
 import type { CollectionBase, Key } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
@@ -111,9 +111,12 @@ const ListBoxScrollElement = tasty({
   },
 });
 
-// Create an extended ItemBase for ListBox options with 'all' modifier support
-const ListBoxItemBase = tasty(ItemBase, {
+// Create an extended Item for ListBox options with 'all' modifier support
+const ListBoxItem = tasty(Item, {
   as: 'li',
+  mods: {
+    listboxitem: true,
+  },
   styles: {
     margin: {
       '': '0 0 1bw 0',
@@ -295,7 +298,7 @@ export interface CubeListBoxProps<T>
   /**
    * Props to apply to the "Select All" option.
    */
-  allValueProps?: Partial<CubeItemProps<T>>;
+  allValueProps?: Partial<CubeCollectionItemProps<T>>;
 
   /**
    * Filter function to apply to the collection nodes.
@@ -328,7 +331,7 @@ const SelectAllOption = ({
   state: any;
   lastFocusSourceRef: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
   onClick: (propagate?: boolean) => void;
-  allValueProps?: Partial<CubeItemProps<any>>;
+  allValueProps?: Partial<CubeCollectionItemProps<any>>;
 }) => {
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
@@ -412,7 +415,7 @@ const SelectAllOption = ({
 
   return (
     <>
-      <ListBoxItemBase
+      <ListBoxItem
         ref={localRef}
         data-size={size}
         size={size}
@@ -433,7 +436,7 @@ const SelectAllOption = ({
         })}
       >
         {label}
-      </ListBoxItemBase>
+      </ListBoxItem>
       <StyledDivider />
     </>
   );
@@ -1010,7 +1013,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   );
 }) as unknown as (<T>(
   props: CubeListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
-) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
+) => ReactElement) & {
+  Item: typeof CollectionItem;
+  Section: typeof BaseSection;
+};
 
 function Option({
   size = 'medium',
@@ -1184,7 +1190,7 @@ function Option({
     { valid: 'success', invalid: 'danger' }[validationState] || 'default';
 
   return (
-    <ListBoxItemBase
+    <ListBoxItem
       ref={combinedRef}
       qa={item.props?.qa}
       id={`ListBoxItem-${String(item.key)}`}
@@ -1226,7 +1232,7 @@ function Option({
       }}
     >
       {item.rendered}
-    </ListBoxItemBase>
+    </ListBoxItem>
   );
 }
 
@@ -1306,7 +1312,7 @@ const ListBoxSectionComponent = Object.assign(BaseSection, {
   displayName: 'Section',
 }) as SectionComponent;
 
-ListBox.Item = Item;
+ListBox.Item = CollectionItem;
 
 ListBox.Section = ListBoxSectionComponent;
 

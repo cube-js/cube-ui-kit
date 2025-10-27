@@ -12,23 +12,23 @@ import { useHover } from 'react-aria';
 
 import { Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
+import { CubeItemProps, Item } from '../../content/Item';
 import { ItemBadge } from '../../content/ItemBadge';
-import { CubeItemBaseProps, ItemBase } from '../../content/ItemBase';
 import { DisplayTransition } from '../../helpers';
 import { CubeItemActionProps, ItemAction } from '../ItemAction';
 import { ItemActionProvider } from '../ItemActionContext';
 import { CubeUseActionProps, useAction } from '../use-action';
 
 export interface CubeItemButtonProps
-  extends Omit<CubeItemBaseProps, 'size'>,
+  extends Omit<CubeItemProps, 'size'>,
     Omit<CubeUseActionProps, 'as'> {
   actions?: ReactNode;
-  size?: Omit<CubeItemBaseProps['size'], 'inline'>;
+  size?: Omit<CubeItemProps['size'], 'inline'>;
   wrapperStyles?: Styles;
   showActionsOnHover?: boolean;
 }
 
-const StyledItemBase = tasty(ItemBase, {
+const StyledItem = tasty(Item, {
   as: 'button',
   type: 'neutral',
   theme: 'default',
@@ -141,7 +141,7 @@ const ItemButton = forwardRef(function ItemButton(
   );
 
   const button = (
-    <StyledItemBase
+    <StyledItem
       actions={actions ? true : undefined}
       {...(mergeProps(rest, actionProps) as any)}
       htmlType={actionProps.type}

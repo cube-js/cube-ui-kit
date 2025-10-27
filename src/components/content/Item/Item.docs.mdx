@@ -1,12 +1,12 @@
 import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
-import { ItemBase } from './ItemBase';
-import * as ItemBaseStories from './ItemBase.stories';
+import { Item } from './Item';
+import * as ItemStories from './Item.stories';
 
-<Meta of={ItemBaseStories} />
+<Meta of={ItemStories} />
 
-# ItemBase
+# Item
 
-A foundational component that provides a standardized layout and styling for item-like elements across the design system. ItemBase offers a flexible grid-based structure with support for icons, labels, descriptions, prefixes, suffixes, and interactive features like hotkeys and tooltips.
+A foundational component that provides a standardized layout and styling for item-like elements across the design system. Item offers a flexible grid-based structure with support for icons, labels, descriptions, prefixes, suffixes, and interactive features like hotkeys and tooltips.
 
 ## When to Use
 
@@ -17,19 +17,19 @@ A foundational component that provides a standardized layout and styling for ite
 
 ## Component
 
-<Story of={ItemBaseStories.Default} />
+<Story of={ItemStories.Default} />
 
 ---
 
 ## Properties
 
-<Controls of={ItemBaseStories.Default} />
+<Controls of={ItemStories.Default} />
 
 ### Content Properties
 
 #### actions
 - **Type**: `ReactNode`
-- **Description**: Inline action buttons displayed on the right side of the item. Use `ItemBase.Action` for consistent styling. Actions automatically inherit the parent's `type` prop and the component reserves space to prevent content overlap.
+- **Description**: Inline action buttons displayed on the right side of the item. Use `Item.Action` for consistent styling. Actions automatically inherit the parent's `type` prop and the component reserves space to prevent content overlap.
 
 ### Base Properties
 
@@ -101,72 +101,72 @@ The `mods` property accepts the following modifiers:
 ### Basic Usage
 
 ```jsx
-<ItemBase>Simple item content</ItemBase>
+<Item>Simple item content</Item>
 ```
 
 ### With Icons
 
 ```jsx
-<ItemBase icon={<IconUser />} rightIcon={<IconSettings />}>
+<Item icon={<IconUser />} rightIcon={<IconSettings />}>
   Item with icons
-</ItemBase>
+</Item>
 ```
 
 ### With Description
 
 ```jsx
-<ItemBase 
+<Item 
   icon={<IconFile />}
   description="Secondary description text"
   descriptionPlacement="inline"
 >
   Main item content
-</ItemBase>
+</Item>
 ```
 
 ### With Hotkeys
 
 ```jsx
-<ItemBase 
+<Item 
   as="button"
   hotkeys="cmd+s"
   onClick={() => console.log('Save triggered')}
 >
   Save Document
-</ItemBase>
+</Item>
 ```
 
 ### With Selection State
 
 ```jsx
-<ItemBase icon="checkbox" isSelected={true}>
+<Item icon="checkbox" isSelected={true}>
   Selected item with checkbox
-</ItemBase>
+</Item>
 ```
 
 ### With Actions
 
-ItemBase supports inline actions that appear on the right side. Use the `ItemBase.Action` compound component for consistent styling:
+Item supports inline actions that appear on the right side. Use the `Item.Action` compound component for consistent styling:
 
 ```jsx
-<ItemBase 
+<Item 
   icon={<IconFile />}
   actions={
     <>
-      <ItemBase.Action icon={<IconEdit />} aria-label="Edit" onPress={handleEdit} />
-      <ItemBase.Action icon={<IconTrash />} aria-label="Delete" onPress={handleDelete} />
+      <Item.Action icon={<IconEdit />} aria-label="Edit" onPress={handleEdit} />
+      <Item.Action icon={<IconTrash />} aria-label="Delete" onPress={handleDelete} />
     </>
   }
 >
   Document with Actions
-</ItemBase>
+</Item>
 ```
 
 Actions automatically inherit the parent's `type` prop and adjust their styling accordingly. The component reserves space for actions to prevent content overlap.
 
 ### With Tooltip
 
-By default, ItemBase shows an auto tooltip when content overflows.
+By default, Item shows an auto tooltip when content overflows.
 
 **Type:** `string | boolean | object`
 
@@ -182,32 +182,32 @@ By default, ItemBase shows an auto tooltip when content overflows.
 
 ```jsx
 {/* Auto tooltip on overflow (default) */}
-<ItemBase style={{ width: '200px' }}>
+<Item style={{ width: '200px' }}>
   This is a very long text that will show a tooltip when overflowed
-</ItemBase>
+</Item>
 
 {/* Disable tooltip */}
-<ItemBase tooltip={false} style={{ width: '200px' }}>
+<Item tooltip={false} style={{ width: '200px' }}>
   This text will be truncated without a tooltip
-</ItemBase>
+</Item>
 
 {/* Always show custom tooltip */}
-<ItemBase tooltip={{ title: 'Custom tooltip text' }}>
+<Item tooltip={{ title: 'Custom tooltip text' }}>
   Hover to see custom tooltip
-</ItemBase>
+</Item>
 
 {/* Auto tooltip with custom placement */}
-<ItemBase tooltip={{ placement: 'right' }} style={{ width: '200px' }}>
+<Item tooltip={{ placement: 'right' }} style={{ width: '200px' }}>
   Long text with tooltip on the right when overflowed
-</ItemBase>
+</Item>
 
 {/* Custom tooltip only on overflow */}
-<ItemBase 
+<Item 
   tooltip={{ title: 'Custom overflow tooltip', auto: true }}
   style={{ width: '200px' }}
 >
   This shows custom tooltip only when text overflows
-</ItemBase>
+</Item>
 ```
 
 ## Accessibility
@@ -236,59 +236,59 @@ By default, ItemBase shows an auto tooltip when content overflows.
 
 1. **Do**: Use clear, descriptive text for the main content
    ```jsx
-   <ItemBase icon={<IconUser />}>User Profile</ItemBase>
+   <Item icon={<IconUser />}>User Profile</Item>
    ```
 
 2. **Do**: Use descriptions to provide additional context
    ```jsx
-   <ItemBase icon={<IconFile />} description="Last edited 2 hours ago">
+   <Item icon={<IconFile />} description="Last edited 2 hours ago">
      Document.pdf
-   </ItemBase>
+   </Item>
    ```
 
 3. **Do**: Use hotkeys for frequently accessed actions
    ```jsx
-   <ItemBase as="button" hotkeys="cmd+s" onPress={handleSave}>
+   <Item as="button" hotkeys="cmd+s" onPress={handleSave}>
      Save Document
-   </ItemBase>
+   </Item>
    ```
 
-4. **Do**: Use `ItemBase.Action` for inline actions
+4. **Do**: Use `Item.Action` for inline actions
    ```jsx
-   <ItemBase 
+   <Item 
      icon={<IconFile />}
      actions={
        <>
-         <ItemBase.Action icon={<IconEdit />} aria-label="Edit" />
-         <ItemBase.Action icon={<IconTrash />} aria-label="Delete" />
+         <Item.Action icon={<IconEdit />} aria-label="Edit" />
+         <Item.Action icon={<IconTrash />} aria-label="Delete" />
        </>
      }
    >
      File with Actions
-   </ItemBase>
+   </Item>
    ```
 
 5. **Don't**: Add too many actions (limit to 2-3 for clarity)
    ```jsx
    {/* Avoid this - too many action buttons */}
-   <ItemBase 
+   <Item 
      actions={
        <>
-         <ItemBase.Action icon={<IconEdit />} aria-label="Edit" />
-         <ItemBase.Action icon={<IconCopy />} aria-label="Copy" />
-         <ItemBase.Action icon={<IconShare />} aria-label="Share" />
-         <ItemBase.Action icon={<IconTrash />} aria-label="Delete" />
+         <Item.Action icon={<IconEdit />} aria-label="Edit" />
+         <Item.Action icon={<IconCopy />} aria-label="Copy" />
+         <Item.Action icon={<IconShare />} aria-label="Share" />
+         <Item.Action icon={<IconTrash />} aria-label="Delete" />
        </>
      }
    >
      Item with too many actions
-   </ItemBase>
+   </Item>
    ```
 
 6. **Don't**: Overcrowd the component with too many elements
    ```jsx
    {/* Avoid this - too many elements competing for attention */}
-   <ItemBase 
+   <Item 
      icon={<IconA />} 
      rightIcon={<IconB />} 
      prefix="Pre" 
@@ -296,22 +296,22 @@ By default, ItemBase shows an auto tooltip when content overflows.
      description="Very long description with lots of details"
    >
      Complex item with everything
-   </ItemBase>
+   </Item>
    ```
 
 7. **Accessibility**: Always ensure interactive items are focusable and have proper ARIA attributes, and provide `aria-label` for action buttons
 
 ## Related Components
 
-- [ItemButton](/docs/actions-itembutton--docs) - Interactive button built on ItemBase
-- [ItemBase.Action](/docs/actions-itemaction--docs) - Action button component for inline actions (also available as `ItemButton.Action`, `Menu.Item.Action`, etc.)
-- [Select](/docs/fields-select--docs) - Dropdown selection component using ItemBase
-- [ComboBox](/docs/fields-combobox--docs) - Searchable dropdown component using ItemBase
-- [ListBox](/docs/fields-listbox--docs) - List selection component using ItemBase
-- [FilterListBox](/docs/fields-filterlistbox--docs) - Filterable list component using ItemBase
-- [FilterPicker](/docs/fields-filterpicker--docs) - Filter selection component using ItemBase
-- [Menu](/docs/actions-menu--docs) - Context menu component using ItemBase
-- [CommandMenu](/docs/actions-commandmenu--docs) - Command palette component using ItemBase
+- [ItemButton](/docs/actions-itembutton--docs) - Interactive button built on Item
+- [Item.Action](/docs/actions-itemaction--docs) - Action button component for inline actions (also available as `ItemButton.Action`, `Menu.Item.Action`, etc.)
+- [Select](/docs/fields-select--docs) - Dropdown selection component using Item
+- [ComboBox](/docs/fields-combobox--docs) - Searchable dropdown component using Item
+- [ListBox](/docs/fields-listbox--docs) - List selection component using Item
+- [FilterListBox](/docs/fields-filterlistbox--docs) - Filterable list component using Item
+- [FilterPicker](/docs/fields-filterpicker--docs) - Filter selection component using Item
+- [Menu](/docs/actions-menu--docs) - Context menu component using Item
+- [CommandMenu](/docs/actions-commandmenu--docs) - Command palette component using Item
 - [Button](/docs/actions-button--docs) - Traditional button component
 - [Link](/docs/navigation-link--docs) - Text link component
 - [Text](/docs/generic-text--docs) - Typography component for simple text

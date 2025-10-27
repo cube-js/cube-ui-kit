@@ -57,10 +57,10 @@ import {
   StyledSectionHeading as ListSectionHeading,
   StyledSection as ListSectionWrapper,
 } from '../../actions/Menu/styled';
-import { ItemBase } from '../../content/ItemBase';
+import { CollectionItem } from '../../CollectionItem';
+import { Item } from '../../content/Item';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DisplayTransition } from '../../helpers';
-import { Item } from '../../Item';
 import { Portal } from '../../portal';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
@@ -84,7 +84,7 @@ const SelectWrapperElement = tasty({
   },
 });
 
-const SelectTrigger = tasty(ItemBase, {
+const SelectTrigger = tasty(Item, {
   as: 'button',
   qa: 'Trigger',
   styles: {
@@ -112,10 +112,13 @@ export const ListBoxElement = tasty({
   },
 });
 
-// Use ItemBase for options to unify item visuals and reduce custom styling
-const OptionItem = tasty(ItemBase, {
+// Use Item for options to unify item visuals and reduce custom styling
+const OptionItem = tasty(Item, {
   as: 'li',
   qa: 'Option',
+  mods: {
+    listboxitem: true,
+  },
   styles: {
     '$inline-compensation': '0px',
   },
@@ -808,11 +811,11 @@ const SelectSectionComponent = Object.assign(BaseSection, {
 
 const __Select = Object.assign(
   _Select as typeof _Select & {
-    Item: typeof Item;
+    Item: typeof CollectionItem;
     Section: typeof SelectSectionComponent;
   },
   {
-    Item,
+    Item: CollectionItem,
     Section: SelectSectionComponent,
   },
 );

@@ -1138,7 +1138,7 @@ export const WithHotkeys: Story = {
     docs: {
       description: {
         story:
-          'ListBox options now support hotkeys via the ItemBase integration. Press the specified keyboard shortcuts to select options. The hotkey hint is automatically displayed as a suffix.',
+          'ListBox options now support hotkeys via the Item integration. Press the specified keyboard shortcuts to select options. The hotkey hint is automatically displayed as a suffix.',
       },
     },
   },
@@ -1179,7 +1179,7 @@ export const WithSuffixAndRightIcon: Story = {
     docs: {
       description: {
         story:
-          'ListBox options now support suffix content and right icons via ItemBase integration. This allows for rich option layouts with status indicators, counts, and action icons.',
+          'ListBox options now support suffix content and right icons via Item integration. This allows for rich option layouts with status indicators, counts, and action icons.',
       },
     },
   },
@@ -1223,7 +1223,7 @@ export const WithTooltips: Story = {
     docs: {
       description: {
         story:
-          'ListBox options now support tooltips via ItemBase integration. Provide either a simple string or a full tooltip configuration object.',
+          'ListBox options now support tooltips via Item integration. Provide either a simple string or a full tooltip configuration object.',
       },
     },
   },
@@ -1273,7 +1273,7 @@ export const RichContentOptions: Story = {
     docs: {
       description: {
         story:
-          'This story demonstrates the full capabilities of ListBox options with ItemBase integration: descriptions, prefix/suffix content, right icons, and hotkeys all working together.',
+          'This story demonstrates the full capabilities of ListBox options with Item integration: descriptions, prefix/suffix content, right icons, and hotkeys all working together.',
       },
     },
   },

@@ -38,8 +38,8 @@ import {
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { ItemAction } from '../../actions';
+import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { Item } from '../../Item';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
@@ -492,7 +492,7 @@ export const LegacyComboBox = forwardRef(function LegacyComboBox<
         ) : null}
         {suffixPosition === 'after' ? suffix : null}
         {showClearButton && (
-          <ItemAction
+          <Item.Action
             icon={<CloseIcon />}
             size={size}
             theme={validationState === 'invalid' ? 'danger' : undefined}

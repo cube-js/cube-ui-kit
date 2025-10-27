@@ -67,7 +67,7 @@ import {
 import { HotKeys } from '../HotKeys';
 import { ItemBadge } from '../ItemBadge';
 
-export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
+export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   icon?: ReactNode | 'checkbox';
   rightIcon?: ReactNode;
   prefix?: ReactNode;
@@ -189,7 +189,7 @@ const ACTIONS_EVENT_HANDLERS = {
   },
 };
 
-const ItemBaseElement = tasty({
+const ItemElement = tasty({
   styles: {
     display: 'inline-grid',
     flow: 'column dense',
@@ -253,7 +253,7 @@ const ItemBaseElement = tasty({
     outlineOffset: 1,
     cursor: {
       '': 'default',
-      ':is(button) | :is(a)': 'pointer',
+      ':is(button) | :is(a) | listboxitem': 'pointer',
       disabled: 'not-allowed',
     },
 
@@ -431,7 +431,7 @@ export function useAutoTooltip({
   labelProps,
   isDynamicLabel = false, // if actions are set
 }: {
-  tooltip: CubeItemBaseProps['tooltip'];
+  tooltip: CubeItemProps['tooltip'];
   children: ReactNode;
   labelProps?: Props;
   isDynamicLabel?: boolean;
@@ -638,8 +638,8 @@ export function useAutoTooltip({
   };
 }
 
-const ItemBase = <T extends HTMLElement = HTMLDivElement>(
-  props: CubeItemBaseProps,
+const Item = <T extends HTMLElement = HTMLDivElement>(
+  props: CubeItemProps,
   ref: ForwardedRef<T>,
 ) => {
   let {
@@ -815,7 +815,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
           : style;
 
       return (
-        <ItemBaseElement
+        <ItemElement
           ref={handleRef}
           variant={
             theme && type ? (`${theme}.${type}` as ItemVariant) : undefined
@@ -861,7 +861,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
               ) : null}
             </div>
           )}
-        </ItemBaseElement>
+        </ItemElement>
       );
     },
     [
@@ -894,9 +894,15 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   return renderWithTooltip(renderItemElement, defaultTooltipPlacement);
 };
 
-const _ItemBase = Object.assign(forwardRef(ItemBase), {
+const _Item = Object.assign(forwardRef(Item), {
   Action: ItemAction,
   Badge: ItemBadge,
 });
 
-export { _ItemBase as ItemBase };
+export { _Item as Item };
+
+/**
+ * @deprecated Use `Item` instead. This export will be removed in a future version.
+ */
+export { _Item as ItemBase };
+export type { CubeItemProps as CubeItemBaseProps };

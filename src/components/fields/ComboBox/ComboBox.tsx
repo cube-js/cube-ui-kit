@@ -44,10 +44,9 @@ import {
 } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
-import { ItemAction } from '../../actions';
+import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DisplayTransition } from '../../helpers';
-import { Item } from '../../Item';
 import { Portal } from '../../portal';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
@@ -1722,7 +1721,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         ) : null}
         {suffixPosition === 'after' ? suffix : null}
         {showClearButton && (
-          <ItemAction
+          <Item.Action
             icon={<CloseIcon />}
             size={size}
             theme={validationState === 'invalid' ? 'danger' : undefined}
@@ -1733,7 +1732,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           />
         )}
         {!hideTrigger ? (
-          <ItemAction
+          <Item.Action
             ref={triggerRef}
             data-popover-trigger
             icon={<DirectionIcon to={isPopoverOpen ? 'up' : 'down'} />}
