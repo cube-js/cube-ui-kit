@@ -46,6 +46,14 @@ export const SIZES = {
   XL: 48,
 };
 
+export const SIZES_MAP = {
+  xsmall: 'XS',
+  small: 'SM',
+  medium: 'MD',
+  large: 'LG',
+  xlarge: 'XL',
+};
+
 function color(name, opacity = 1) {
   return `rgb(${colors[name]} / ${opacity})`;
 }

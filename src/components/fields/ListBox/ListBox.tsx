@@ -37,7 +37,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { SIZES } from '../../../tokens';
+import { SIZES, SIZES_MAP } from '../../../tokens';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 // Import Menu styled components for header and footer
@@ -248,7 +248,7 @@ export interface CubeListBoxProps<T>
   /** Additional modifiers for styling the ListBox */
   mods?: Record<string, boolean>;
   /** Size variant of the ListBox */
-  size?: 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large';
 
   /**
    * When `true`, clicking an already-selected item keeps it selected instead of toggling it off.
@@ -324,7 +324,7 @@ const SelectAllOption = ({
   isIndeterminate: boolean;
   isDisabled?: boolean;
   isCheckable?: boolean;
-  size?: 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large';
   state: any;
   lastFocusSourceRef: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
   onClick: (propagate?: boolean) => void;
@@ -766,7 +766,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       if (currentItem?.props?.description) {
         return SIZES.XL + 1;
       }
-      return size === 'large' ? SIZES.XL + 1 : SIZES.MD + 1;
+      return SIZES[SIZES_MAP[size] as keyof typeof SIZES] + 1;
     },
     measureElement: (el) => {
       return el.offsetHeight + 1;
@@ -1027,7 +1027,7 @@ function Option({
   virtualIndex,
   lastFocusSourceRef,
 }: {
-  size?: 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large';
   item: any;
   state: any;
   styles?: Styles;
@@ -1241,7 +1241,7 @@ interface ListBoxSectionProps<T> {
   focusOnHover?: boolean;
   isCheckable?: boolean;
   onClick?: (key: Key) => void;
-  size?: 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large';
   lastFocusSourceRef?: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
 }
 

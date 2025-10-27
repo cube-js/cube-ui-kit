@@ -806,6 +806,7 @@ interface ComboBoxOverlayProps {
     onBlur: (e: React.FocusEvent) => void;
   };
   filter?: (nodes: Iterable<any>) => Iterable<any>;
+  size?: 'small' | 'medium' | 'large' | (string & {});
 }
 
 function ComboBoxOverlay({
@@ -835,6 +836,7 @@ function ComboBoxOverlay({
   ariaLabel,
   compositeFocusProps,
   filter,
+  size = 'medium',
 }: ComboBoxOverlayProps) {
   // Overlay positioning
   const {
@@ -927,6 +929,7 @@ function ComboBoxOverlay({
               sectionStyles={sectionStyles}
               headingStyles={headingStyles}
               stateRef={listStateRef}
+              size="medium"
               mods={{
                 popover: true,
               }}
@@ -1796,6 +1799,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         ariaLabel={(props as any)['aria-label']}
         compositeFocusProps={compositeFocusProps}
         filter={filterFn}
+        size={size}
         onSelectionChange={handleSelectionChange}
         onClose={() => setIsPopoverOpen(false)}
       >
