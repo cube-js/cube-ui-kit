@@ -42,6 +42,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty/index';
+import { chainRaf } from '../../../utils/raf';
 import { generateRandomId } from '../../../utils/random';
 import {
   forwardRefWithGenerics,
@@ -525,15 +526,15 @@ export function ListBoxPopup({
 
   // Update position when overlay opens
   useLayoutEffect(() => {
-    if (state.isOpen) {
-      // Use double RAF to ensure layout is complete before positioning
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          updatePosition?.();
-        });
-      });
+    if (state.isOpen && updatePosition) {
+      // Use triple RAF to ensure layout is complete before positioning
+      // This gives enough time for the DisplayTransition and content to render
+      return chainRaf(() => {
+        updatePosition();
+      }, 3);
     }
-  }, [state.isOpen, updatePosition]);
+     
+  }, [state.isOpen]);
 
   // Get props for the listbox
   let { listBoxProps } = useListBox(
