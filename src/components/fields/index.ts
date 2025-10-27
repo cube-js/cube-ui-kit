@@ -12,7 +12,6 @@ export * from './Slider';
 export * from './Switch/Switch';
 export * from './Select';
 export * from './ComboBox';
-export * from './LegacyComboBox';
 export * from './ListBox';
 export * from './FilterListBox';
 export * from './FilterPicker';

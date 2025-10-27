@@ -186,7 +186,7 @@ export type {
   ShortGridStyles,
 } from './tasty';
 
-export * from './utils/react';
+export * from './utils';
 export * from './tasty';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';
