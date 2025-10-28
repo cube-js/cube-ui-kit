@@ -79,7 +79,10 @@ const ActionsWrapper = tasty({
       },
       transition: 'theme, translate',
 
-      '$side-padding': 'max(min(.5x, (($size - 3x + 2bw) / 2)), 1bw)',
+      // Size for the action buttons
+      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (4x - 2bw))',
+      // Side padding for the button
+      '$side-padding': '(($size - $action-size - 2bw) / 2)',
     },
   },
 });
