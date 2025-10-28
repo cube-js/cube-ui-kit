@@ -77,11 +77,11 @@ export const Default: Story = {
 export const Themes: Story = {
   render: () => (
     <Space gap="1x" placeItems="center">
-      <Badge theme="special">special</Badge>
-      <Badge theme="note">note</Badge>
-      <Badge theme="success">success</Badge>
-      <Badge theme="danger">danger</Badge>
-      <Badge theme="disabled">disabled</Badge>
+      <Badge theme="special">Special</Badge>
+      <Badge theme="note">Note</Badge>
+      <Badge theme="success">Success</Badge>
+      <Badge theme="danger">Danger</Badge>
+      <Badge theme="disabled">Disabled</Badge>
     </Space>
   ),
 };
