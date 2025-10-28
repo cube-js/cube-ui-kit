@@ -214,7 +214,6 @@ const ItemElement = tasty({
       '': 'auto auto',
       'with-description-block': 'auto auto auto',
     },
-    flexShrink: 0,
     position: 'relative',
     padding: 0,
     margin: 0,
@@ -224,7 +223,11 @@ const ItemElement = tasty({
     },
     height: {
       '': 'min $size',
-      '[data-size="inline"]': 'initial',
+      '[data-size="inline"]': '(1lh + 2bw)',
+    },
+    width: {
+      '': 'min $size',
+      '[data-size="inline"]': 'min (1lh + 2bw)',
     },
     border: '#clear',
     fill: {
@@ -245,6 +248,7 @@ const ItemElement = tasty({
       '': 't3m',
       '[data-size="xsmall"]': 't4',
       '[data-size="xlarge"]': 't2m',
+      '[data-size="inline"]': 'tag',
     },
     boxSizing: 'border-box',
     textDecoration: 'none',
@@ -264,11 +268,11 @@ const ItemElement = tasty({
       '[data-size="medium"]': '$size-md',
       '[data-size="large"]': '$size-lg',
       '[data-size="xlarge"]': '$size-xl',
-      '[data-size="inline"]': '',
+      '[data-size="inline"]': '1lh',
     },
     '$inline-padding': {
       '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
-      '[data-size="inline"]': 0,
+      '[data-size="inline"]': '.25x',
     },
     '$block-padding': {
       '': '.5x',
@@ -277,6 +281,7 @@ const ItemElement = tasty({
     },
     '$inline-compensation': '.5x',
     '$min-inline-padding': '(1x - 1bw)',
+    '$action-icon-size': '$icon-size',
 
     Icon: DEFAULT_ICON_STYLES,
 
@@ -385,7 +390,10 @@ const ItemElement = tasty({
       transition: 'width $transition ease-out',
       interpolateSize: 'allow-keywords',
 
-      '$side-padding': 'max(min(.5x, (($size - 3x + 2bw) / 2)), 1bw)',
+      // Size for the action buttons
+      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (4x - 2bw))',
+      // Side padding for the button
+      '$side-padding': '(($size - $action-size - 2bw) / 2)',
     },
   },
   variants: {

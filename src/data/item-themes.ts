@@ -23,7 +23,7 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
     context: '0',
   },
   padding: 0,
-  radius: true,
+  radius: '(1r - 1bw)',
   transition: 'theme',
   flexShrink: 0,
   textDecoration: 'none',
@@ -38,9 +38,7 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
   placeSelf: 'center',
 
   // Size using custom property
-  '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (3x - 2bw))',
-  // Side padding for the button
-  '$side-padding': 'max(min(.5x, (($size - 3x + 2bw) / 2)), 1bw)',
+  '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (4x - 2bw))',
 
   // Icon styles
   Icon: {

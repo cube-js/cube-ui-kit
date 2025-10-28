@@ -76,6 +76,8 @@ const ItemActionElement = tasty({
     outline: 0,
     outlineOffset: 1,
     cursor: { '': 'pointer', disabled: 'default' },
+
+    '$icon-size': 'min($action-icon-size, ($action-size - .5x))',
   },
   variants: {
     // Default theme

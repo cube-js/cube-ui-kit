@@ -1,99 +1,182 @@
-import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
 
-import { CubeTagProps, Tag } from './Tag';
+import { Space } from '../../layout/Space';
 
-export default {
+import { Tag } from './Tag';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
+
+const meta = {
   title: 'Content/Tag',
   component: Tag,
+  args: {
+    children: 'Tag',
+  },
   argTypes: {
-    type: {
-      control: {
-        type: 'inline-radio',
-        options: [undefined, 'note', 'success', 'danger'],
-      },
-      description: 'Type of the alert',
-      defaultValue: undefined,
+    /* Content */
+    children: {
+      control: 'text',
+      description: 'Tag content',
       table: {
-        type: { summary: 'string' },
-        defaultValue: { summary: 'note' },
+        type: { summary: 'ReactNode' },
       },
     },
-    isClosable: {
-      defaultValue: false,
-      description: 'Whether the tag is closable',
-      control: {
-        type: 'boolean',
+    icon: {
+      control: { type: null },
+      description: 'Icon to display before the tag content',
+      table: {
+        type: { summary: 'ReactNode' },
       },
+    },
+
+    /* Presentation */
+    theme: {
+      control: 'radio',
+      options: [undefined, 'note', 'success', 'danger', 'special', 'disabled'],
+      description: 'Visual theme of the tag',
+      table: {
+        type: { summary: 'string' },
+        defaultValue: { summary: 'undefined' },
+      },
+    },
+    type: {
+      control: { type: null },
+      description: 'Deprecated: Use theme instead',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    size: {
+      control: 'radio',
+      options: ['inline', 'xsmall', 'small', 'medium', 'large'],
+      description: 'Size of the tag',
+      table: {
+        type: { summary: 'string' },
+        defaultValue: { summary: 'inline' },
+      },
+    },
+
+    /* Behavior */
+    isClosable: {
+      control: 'boolean',
+      description: 'Whether the tag can be closed',
       table: {
         type: { summary: 'boolean' },
         defaultValue: { summary: false },
       },
     },
-    color: {
-      control: {
-        type: 'inline-radio',
-        options: [undefined, '#dark.50', '#danger', '#success', '#note'],
-      },
-      description: 'Type of the alert',
-      defaultValue: undefined,
+
+    /* Events */
+    onClose: {
+      action: 'close',
+      description: 'Handler called when close button is pressed',
       table: {
-        type: { summary: 'string' },
-        defaultValue: { summary: 'note' },
+        type: { summary: '() => void' },
+      },
+    },
+
+    /* Styles */
+    closeButtonStyles: {
+      control: { type: null },
+      description: 'Custom styles for the close button',
+      table: {
+        type: { summary: 'Styles' },
       },
     },
   },
+} satisfies Meta<typeof Tag>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: {
+    children: 'Default Tag',
+  },
 };
 
-const Template: StoryFn<CubeTagProps> = ({ ...props }) => (
-  <Tag {...props} onClose={() => console.log('! onClose')} />
-);
-
-export const Default = Template.bind({});
-Default.args = {
-  children: 'Tag name or content',
+export const Themes: Story = {
+  render: () => (
+    <Space gap="1x">
+      <Tag>Default</Tag>
+      <Tag theme="note">Note</Tag>
+      <Tag theme="success">Success</Tag>
+      <Tag theme="danger">Danger</Tag>
+      <Tag theme="special">Special</Tag>
+      <Tag theme="disabled">Disabled</Tag>
+    </Space>
+  ),
 };
 
-export const Danger = Template.bind({});
-Danger.args = {
-  children: 'Tag name or content',
-  theme: 'danger',
+export const WithIcons: Story = {
+  render: () => (
+    <Space gap="1x">
+      <Tag icon={<IconCoin />}>With Icon</Tag>
+      <Tag icon={<IconCoin />} theme="success">
+        Success
+      </Tag>
+      <Tag icon={<IconCoin />} theme="danger">
+        Danger
+      </Tag>
+    </Space>
+  ),
 };
 
-export const Success = Template.bind({});
-Success.args = {
-  children: 'Tag name or content',
-  theme: 'success',
+export const Closable: Story = {
+  render: () => (
+    <Space gap="1x">
+      <Tag isClosable>Default</Tag>
+      <Tag isClosable theme="note">
+        Note
+      </Tag>
+      <Tag isClosable theme="success">
+        Success
+      </Tag>
+      <Tag isClosable theme="danger">
+        Danger
+      </Tag>
+      <Tag isClosable theme="special">
+        Special
+      </Tag>
+    </Space>
+  ),
 };
 
-export const Note = Template.bind({});
-Note.args = {
-  children: 'Tag name or content',
-  theme: 'note',
+export const ClosableWithIcons: Story = {
+  render: () => (
+    <Space gap="1x">
+      <Tag isClosable icon={<IconCoin />}>
+        Default
+      </Tag>
+      <Tag isClosable icon={<IconCoin />} theme="success">
+        Success
+      </Tag>
+      <Tag isClosable icon={<IconCoin />} theme="danger">
+        Danger
+      </Tag>
+    </Space>
+  ),
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  children: 'Tag name or content',
-  theme: 'disabled',
+export const Sizes: Story = {
+  render: () => (
+    <Space gap="1x" placeItems="center">
+      <Tag size="inline">Inline (default)</Tag>
+      <Tag size="xsmall">Extra Small</Tag>
+      <Tag size="small">Small</Tag>
+      <Tag size="medium">Medium</Tag>
+      <Tag size="large">Large</Tag>
+    </Space>
+  ),
 };
 
-export const Special = Template.bind({});
-Special.args = {
-  children: 'Tag name or content',
-  theme: 'special',
-};
-
-export const WithIcon = Template.bind({});
-WithIcon.args = {
-  children: 'Tag name or content',
-  icon: <IconCoin />,
-  label: 'Tag name or content',
-};
-
-export const Closable = Template.bind({});
-Closable.args = {
-  children: 'Tag name or content',
-  label: 'Tag name or content',
-  isClosable: true,
+export const CustomStyles: Story = {
+  args: {
+    children: 'Custom Tag',
+    styles: {
+      fill: '#purple.10',
+      color: '#purple',
+      border: '#purple.30',
+    },
+  },
 };

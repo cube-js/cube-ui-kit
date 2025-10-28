@@ -1070,6 +1070,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
       <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconUser />}
         actions={
           <>
@@ -1083,6 +1084,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
       <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconCoin />}
         actions={
           <>
@@ -1099,6 +1101,22 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
       <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
+        size="xsmall"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        XSmall item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
         size="small"
         icon={<IconUser />}
         actions={
@@ -1113,6 +1131,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
       <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         size="medium"
         icon={<IconUser />}
         actions={
@@ -1127,6 +1146,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
       <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         size="large"
         icon={<IconUser />}
         actions={
@@ -1137,6 +1157,36 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
         }
       >
         Large item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="xlarge"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        XLarge item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="inline"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Inline item
       </Item>
     </Space>
 
@@ -1205,6 +1255,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
       <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconCoin />}
         rightIcon={<IconSettings />}
         actions={
@@ -1219,6 +1270,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
       <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconCoin />}
         prefix="$"
         suffix=".99"
@@ -1234,6 +1286,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
       <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconUser />}
         description="Additional information"
         descriptionPlacement="inline"
@@ -1249,6 +1302,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
       <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconUser />}
         description="Additional information"
         descriptionPlacement="block"
@@ -1267,6 +1321,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
     <Item
       {...args}
       styles={{ ...DEFAULT_STYLES, width: '400px' }}
+      type="outline"
       icon={<IconUser />}
       actions={
         <>
@@ -1301,6 +1356,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
       {...args}
       showActionsOnHover
       styles={{ ...DEFAULT_STYLES, width: '400px' }}
+      type="outline"
       icon={<IconUser />}
       actions={
         <>
@@ -1318,6 +1374,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
         {...args}
         showActionsOnHover
         styles={DEFAULT_STYLES}
+        type="outline"
         size="small"
         icon={<IconUser />}
         actions={
@@ -1333,6 +1390,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
         {...args}
         showActionsOnHover
         styles={DEFAULT_STYLES}
+        type="outline"
         size="medium"
         icon={<IconUser />}
         actions={
@@ -1348,6 +1406,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
         {...args}
         showActionsOnHover
         styles={DEFAULT_STYLES}
+        type="outline"
         size="large"
         icon={<IconUser />}
         actions={
@@ -1367,6 +1426,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
       showActionsOnHover
       width="150px"
       styles={DEFAULT_STYLES}
+      type="outline"
       icon={<IconUser />}
       description="Additional information"
       actions={
