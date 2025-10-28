@@ -281,7 +281,6 @@ const ItemElement = tasty({
     },
     '$inline-compensation': '.5x',
     '$min-inline-padding': '(1x - 1bw)',
-    '$action-icon-size': '$icon-size',
 
     Icon: DEFAULT_ICON_STYLES,
 
