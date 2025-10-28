@@ -72,7 +72,7 @@ function Tag(allProps: CubeTagProps, ref) {
           <Item.Action
             aria-label="Close"
             styles={{ color: 'currentColor', ...closeButtonStyles }}
-            icon={<CloseIcon stroke={2} />}
+            icon={<CloseIcon />}
             onPress={onClose}
           />
         ) : undefined
