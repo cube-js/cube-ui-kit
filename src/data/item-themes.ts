@@ -44,6 +44,7 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
 
   // Icon styles
   Icon: {
+    $: '>',
     display: 'grid',
     placeItems: 'center',
     height: '($action-size - 2bw) ($action-size - 2bw)',

@@ -81,11 +81,13 @@ const ItemActionElement = tasty({
     '$local-icon-size': 'var(--icon-size)',
 
     Icon: {
+      $: '>',
       ...(ITEM_ACTION_BASE_STYLES.Icon as Styles),
       '$icon-size': 'min($local-icon-size, ($action-size - .25x))',
     },
 
     RightIcon: {
+      $: '>',
       ...(ITEM_ACTION_BASE_STYLES.Icon as Styles),
       '$icon-size': 'min($local-icon-size, ($action-size - .25x))',
     },

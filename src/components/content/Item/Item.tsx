@@ -154,6 +154,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
 }
 
 const DEFAULT_ICON_STYLES: Styles = {
+  $: '>',
   display: 'grid',
   placeItems: 'center',
   placeContent: 'stretch',
@@ -169,6 +170,7 @@ const DEFAULT_ICON_STYLES: Styles = {
 };
 
 const ADDITION_STYLES: Styles = {
+  $: '>',
   display: 'grid',
   flow: 'column',
   placeItems: 'center',
@@ -289,6 +291,7 @@ const ItemElement = tasty({
     RightIcon: DEFAULT_ICON_STYLES,
 
     Label: {
+      $: '>',
       display: 'block',
       placeSelf: 'center start',
       boxSizing: 'border-box',
@@ -322,6 +325,7 @@ const ItemElement = tasty({
     },
 
     Description: {
+      $: '>',
       preset: 't4',
       color: 'inherit',
       opacity: 0.75,
@@ -375,6 +379,7 @@ const ItemElement = tasty({
     },
 
     Actions: {
+      $: '>',
       display: 'flex',
       gap: '1bw',
       placeItems: 'center',

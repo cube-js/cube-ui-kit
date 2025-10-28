@@ -59,7 +59,8 @@ const ActionsWrapper = tasty({
       '[data-size="xlarge"]': '$size-xl',
     },
 
-    '& > [data-element="Actions"]': {
+    Actions: {
+      $: '>',
       position: 'absolute',
       inset: '1bw 1bw auto auto',
       display: 'flex',

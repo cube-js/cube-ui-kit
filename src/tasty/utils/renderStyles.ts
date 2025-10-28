@@ -75,7 +75,7 @@ export function isSelector(key: string): boolean {
 /**
  * Get the selector suffix for a key
  */
-function getSelector(key: string): string | null {
+function getSelector(key: string, styles?: Styles): string | null {
   if (key.startsWith('&')) {
     return key.slice(1);
   }
@@ -85,7 +85,9 @@ function getSelector(key: string): string | null {
   }
 
   if (key.match(/^[A-Z]/)) {
-    return ` [data-element="${key}"]`;
+    // Check if styles object has $: '>' for direct child selector
+    const combinator = styles && (styles as any).$ === '>' ? ' > ' : ' ';
+    return `${combinator}[data-element="${key}"]`;
   }
 
   return null;
@@ -613,9 +615,11 @@ function generateLogicalRules(
 
     // Recurse into nested selectors first to compute proper suffix chaining
     for (const key of selectorKeys) {
-      const suffix = getSelector(key);
+      const suffix = getSelector(key, currentStyles[key] as Styles);
       if (suffix && currentStyles[key]) {
-        processStyles(currentStyles[key] as Styles, `${parentSuffix}${suffix}`);
+        // Remove $ key to prevent it from being processed as a style property
+        const { $: _omit, ...cleanedStyles } = currentStyles[key] as any;
+        processStyles(cleanedStyles as Styles, `${parentSuffix}${suffix}`);
       }
     }
 
