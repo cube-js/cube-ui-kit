@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.85.2
+
+### Patch Changes
+
+- [#851](https://github.com/cube-js/cube-ui-kit/pull/851) [`a2b237ee`](https://github.com/cube-js/cube-ui-kit/commit/a2b237ee687bfab2462ab6ed7ff5fe56ceb7599f) Thanks [@tenphi](https://github.com/tenphi)! - Fix FilterListBox filtering bug.
+
+## 0.85.1
+
+### Patch Changes
+
+- [#844](https://github.com/cube-js/cube-ui-kit/pull/844) [`1c2b44f2`](https://github.com/cube-js/cube-ui-kit/commit/1c2b44f2e4a3c10d8b50c3a5fcd8e602d52501d8) Thanks [@tenphi](https://github.com/tenphi)! - Disable autocomplete in ComboBox be default.
+
+- [#848](https://github.com/cube-js/cube-ui-kit/pull/848) [`677f06cb`](https://github.com/cube-js/cube-ui-kit/commit/677f06cb00ecb01c575570cf4ad93cca7c5e8aba) Thanks [@tenphi](https://github.com/tenphi)! - Fix position of ComboBox and Select popovers.
+
+- [#845](https://github.com/cube-js/cube-ui-kit/pull/845) [`a5fa4e6a`](https://github.com/cube-js/cube-ui-kit/commit/a5fa4e6aab277011528bf08e19baffcab611e55b) Thanks [@tenphi](https://github.com/tenphi)! - Optimize FilterListBox filtering logic.
+
 ## 0.85.0
 
 ### Minor Changes

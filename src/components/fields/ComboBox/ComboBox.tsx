@@ -36,6 +36,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import { chainRaf } from '../../../utils/raf';
 import { generateRandomId } from '../../../utils/random';
 import {
   mergeProps,
@@ -805,6 +806,7 @@ interface ComboBoxOverlayProps {
     onBlur: (e: React.FocusEvent) => void;
   };
   filter?: (nodes: Iterable<any>) => Iterable<any>;
+  size?: 'small' | 'medium' | 'large' | (string & {});
 }
 
 function ComboBoxOverlay({
@@ -834,6 +836,7 @@ function ComboBoxOverlay({
   ariaLabel,
   compositeFocusProps,
   filter,
+  size = 'medium',
 }: ComboBoxOverlayProps) {
   // Overlay positioning
   const {
@@ -866,17 +869,16 @@ function ComboBoxOverlay({
     popoverRef as any,
   );
 
-  // Update position when overlay opens
+  // Update position when overlay opens or content changes
   useLayoutEffect(() => {
-    if (isOpen) {
-      // Use double RAF to ensure layout is complete before positioning
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          updatePosition?.();
-        });
-      });
+    if (isOpen && updatePosition) {
+      // Use triple RAF to ensure layout is complete before positioning
+      // This gives enough time for the DisplayTransition and content to render
+      return chainRaf(() => {
+        updatePosition();
+      }, 3);
     }
-  }, [isOpen, updatePosition]);
+  }, [isOpen]);
 
   // Extract primary placement direction for consistent styling
   const placementDirection = placement?.split(' ')[0] || direction;
@@ -926,6 +928,7 @@ function ComboBoxOverlay({
               sectionStyles={sectionStyles}
               headingStyles={headingStyles}
               stateRef={listStateRef}
+              size="medium"
               mods={{
                 popover: true,
               }}
@@ -1795,6 +1798,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         ariaLabel={(props as any)['aria-label']}
         compositeFocusProps={compositeFocusProps}
         filter={filterFn}
+        size={size}
         onSelectionChange={handleSelectionChange}
         onClose={() => setIsPopoverOpen(false)}
       >

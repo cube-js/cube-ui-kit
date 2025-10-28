@@ -685,7 +685,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
                 mods={{
                   popover: true,
                 }}
-                size={size === 'small' ? 'medium' : size}
+                size="medium"
                 showSelectAll={showSelectAll}
                 selectAllLabel={selectAllLabel}
                 header={header}

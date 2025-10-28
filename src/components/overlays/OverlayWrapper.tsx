@@ -2,7 +2,6 @@ import { ReactNode, useRef } from 'react';
 import { Placement } from 'react-aria';
 import { CSSTransition } from 'react-transition-group';
 
-import { OverlayTransitionCSSProps } from '../../utils/transitions';
 import { Portal } from '../portal';
 
 export interface CubeOverlayWrapperProps {
@@ -24,23 +23,6 @@ export function OverlayWrapper({
 }: CubeOverlayWrapperProps) {
   const containerRef = useRef(container);
   const nodeRef = useRef<HTMLDivElement>(null);
-  const options: OverlayTransitionCSSProps = {};
-
-  if (typeof minOffset === 'number') {
-    minOffset = `${minOffset}px`;
-  }
-
-  if (placement != null) {
-    options.placement = placement;
-  }
-
-  if (minScale != null) {
-    options.minScale = minScale;
-  }
-
-  if (minOffset != null) {
-    options.minOffset = minOffset;
-  }
 
   const contents = (
     <CSSTransition

@@ -437,6 +437,12 @@ export const CheckableMultipleSelection: Story = {
 export const DifferentSizes: Story = {
   render: (args) => (
     <Space gap="2x" flow="column" placeItems="start">
+      <ListBox width="150px" {...args} size="small" label="Small ListBox">
+        {fruits.slice(0, 4).map((fruit) => (
+          <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+        ))}
+      </ListBox>
+
       <ListBox width="150px" {...args} size="medium" label="Medium ListBox">
         {fruits.slice(0, 4).map((fruit) => (
           <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>

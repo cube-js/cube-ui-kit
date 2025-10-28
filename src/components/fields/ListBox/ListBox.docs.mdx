@@ -232,6 +232,7 @@ Groups related items together with an optional heading.
 
 ### Sizes
 
+- `small` - Compact size for dense interfaces (28px item height)
 - `medium` - Standard size for general use (32px item height, default)
 - `large` - Emphasized size for important sections (40px item height)
 
@@ -498,6 +499,11 @@ const [selectedKey, setSelectedKey] = useState('apple');
 <Story of={ListBoxStories.DifferentSizes} />
 
 ```jsx
+<ListBox size="small" label="Small Size">
+  <ListBox.Item key="apple">Apple</ListBox.Item>
+  <ListBox.Item key="banana">Banana</ListBox.Item>
+</ListBox>
+
 <ListBox size="medium" label="Medium Size (Default)">
   <ListBox.Item key="apple">Apple</ListBox.Item>
   <ListBox.Item key="banana">Banana</ListBox.Item>
