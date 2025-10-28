@@ -286,16 +286,16 @@ const Template: StoryFn<typeof Form> = (args) => {
           tooltip="Additional field description"
         >
           <Select>
-            <Item key="one">One</Item>
-            <Item key="two">Two</Item>
-            <Item key="three">Three</Item>
+            <Select.Item key="one">One</Select.Item>
+            <Select.Item key="two">Two</Select.Item>
+            <Select.Item key="three">Three</Select.Item>
           </Select>
         </Field>
         <Field name="combobox" label="ComboBox field">
           <ComboBox>
-            <Item key="one">One</Item>
-            <Item key="two">Two</Item>
-            <Item key="three">Three</Item>
+            <ComboBox.Item key="one">One</ComboBox.Item>
+            <ComboBox.Item key="two">Two</ComboBox.Item>
+            <ComboBox.Item key="three">Three</ComboBox.Item>
           </ComboBox>
         </Field>
         <Field
