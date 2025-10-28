@@ -11,6 +11,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { DirectionIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button, ItemAction } from '../../actions';
+import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { Title } from '../Title';
 
@@ -945,80 +946,495 @@ WithLoading.parameters = {
   },
 };
 
-export const WithDescriptionBlock: StoryFn<CubeItemProps> = (args) => (
+export const WithDescription: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
-    <Title level={5}>Description Position Comparison</Title>
+    <Title level={5}>Description Placement: Inline (Default)</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Inline description appears next to the label"
+        descriptionPlacement="inline"
+      >
+        User Account
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconSettings />}
+        description="Settings"
+        descriptionPlacement="inline"
+      >
+        Application Settings
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconCoin />}
+        rightIcon={<DirectionIcon to="bottom" />}
+        description="$99.99"
+        descriptionPlacement="inline"
+      >
+        Premium Plan
+      </Item>
+    </Space>
+
+    <Title level={5}>Description Placement: Block</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Block description appears below the entire item"
+        descriptionPlacement="block"
+      >
+        User Account
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconSettings />}
+        description="Configure your application preferences"
+        descriptionPlacement="block"
+      >
+        Application Settings
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconCoin />}
+        rightIcon={<DirectionIcon to="bottom" />}
+        description="Access all premium features for $99.99/month"
+        descriptionPlacement="block"
+      >
+        Premium Plan
+      </Item>
+    </Space>
+
+    <Title level={5}>Description Placement: Auto</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Auto placement chooses based on content"
+        descriptionPlacement="auto"
+      >
+        User Account
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconSettings />}
+        description="Auto adapts to layout"
+        descriptionPlacement="auto"
+      >
+        Application Settings
+      </Item>
+    </Space>
+
+    <Title level={5}>Comparison: All Placements</Title>
     <Space gap="2x" flow="column" placeItems="start">
       <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
         icon={<IconUser />}
-        description="This description appears inside the content area"
+        description="Inline: Description next to label"
         descriptionPlacement="inline"
       >
-        Item with description inline (default)
+        Inline Placement
       </Item>
       <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
         icon={<IconUser />}
-        description="This description appears below the entire item"
+        description="Block: Description below item"
         descriptionPlacement="block"
       >
-        Item with description block
+        Block Placement
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Auto: Smart placement"
+        descriptionPlacement="auto"
+      >
+        Auto Placement
       </Item>
     </Space>
+  </Space>
+);
 
-    <Title level={5}>Different Sizes with Description Block</Title>
+WithDescription.args = {
+  width: '400px',
+};
+
+WithDescription.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the `description` prop with different `descriptionPlacement` values: "inline" (default, appears next to the label), "block" (appears below the entire item), and "auto" (smart placement based on content). Use inline for short secondary text, block for longer descriptions, and auto for adaptive behavior.',
+    },
+  },
+};
+
+export const DescriptionWithSizes: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Inline Description Across Sizes</Title>
     <Space gap="1x" flow="column" placeItems="start">
       <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
-        size="small"
-        icon={<IconSettings />}
-        description="Small size description block"
-        descriptionPlacement="block"
+        size="xsmall"
+        icon={<IconUser />}
+        description="XSmall"
+        descriptionPlacement="inline"
       >
-        Small item
+        XSmall Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="small"
+        icon={<IconUser />}
+        description="Small"
+        descriptionPlacement="inline"
+      >
+        Small Item
       </Item>
       <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
         size="medium"
-        icon={<IconSettings />}
-        description="Medium size description block"
-        descriptionPlacement="block"
+        icon={<IconUser />}
+        description="Medium"
+        descriptionPlacement="inline"
       >
-        Medium item
+        Medium Item
       </Item>
       <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
         size="large"
-        icon={<IconSettings />}
-        description="Large size description block"
-        descriptionPlacement="block"
+        icon={<IconUser />}
+        description="Large"
+        descriptionPlacement="inline"
       >
-        Large item
+        Large Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="xlarge"
+        icon={<IconUser />}
+        description="XLarge"
+        descriptionPlacement="inline"
+      >
+        XLarge Item
       </Item>
     </Space>
 
-    <Title level={5}>With Multiple Elements and Description Block</Title>
+    <Title level={5}>Block Description Across Sizes</Title>
     <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="xsmall"
+        icon={<IconUser />}
+        description="XSmall size with block description"
+        descriptionPlacement="block"
+      >
+        XSmall Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="small"
+        icon={<IconUser />}
+        description="Small size with block description"
+        descriptionPlacement="block"
+      >
+        Small Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="medium"
+        icon={<IconUser />}
+        description="Medium size with block description"
+        descriptionPlacement="block"
+      >
+        Medium Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="large"
+        icon={<IconUser />}
+        description="Large size with block description"
+        descriptionPlacement="block"
+      >
+        Large Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="xlarge"
+        icon={<IconUser />}
+        description="XLarge size with block description"
+        descriptionPlacement="block"
+      >
+        XLarge Item
+      </Item>
+    </Space>
+  </Space>
+);
+
+DescriptionWithSizes.args = {
+  width: '400px',
+};
+
+DescriptionWithSizes.parameters = {
+  docs: {
+    description: {
+      story:
+        'Shows how descriptions render across all Item sizes with both inline and block placements. Notice how the description scales appropriately with each size while maintaining readability and proper spacing.',
+    },
+  },
+};
+
+export const DescriptionWithTypes: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Inline Description with Different Types</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="item"
+        icon={<IconUser />}
+        description="Item type"
+        descriptionPlacement="inline"
+      >
+        Item Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="primary"
+        icon={<IconUser />}
+        description="Primary type"
+        descriptionPlacement="inline"
+      >
+        Primary Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="secondary"
+        icon={<IconUser />}
+        description="Secondary type"
+        descriptionPlacement="inline"
+      >
+        Secondary Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Outline type"
+        descriptionPlacement="inline"
+      >
+        Outline Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="neutral"
+        icon={<IconUser />}
+        description="Neutral type"
+        descriptionPlacement="inline"
+      >
+        Neutral Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="clear"
+        icon={<IconUser />}
+        description="Clear type"
+        descriptionPlacement="inline"
+      >
+        Clear Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="link"
+        icon={<IconUser />}
+        description="Link type"
+        descriptionPlacement="inline"
+      >
+        Link Type
+      </Item>
+    </Space>
+
+    <Title level={5}>Block Description with Different Types</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="item"
+        icon={<IconUser />}
+        description="Item type with block description"
+        descriptionPlacement="block"
+      >
+        Item Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="primary"
+        icon={<IconUser />}
+        description="Primary type with block description"
+        descriptionPlacement="block"
+      >
+        Primary Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="secondary"
+        icon={<IconUser />}
+        description="Secondary type with block description"
+        descriptionPlacement="block"
+      >
+        Secondary Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Outline type with block description"
+        descriptionPlacement="block"
+      >
+        Outline Type
+      </Item>
+    </Space>
+  </Space>
+);
+
+DescriptionWithTypes.args = {
+  width: '400px',
+};
+
+DescriptionWithTypes.parameters = {
+  docs: {
+    description: {
+      story:
+        "Demonstrates how descriptions work with all Item type variants. The description inherits the color scheme and adapts to each type's visual style, ensuring consistent readability across different type configurations.",
+    },
+  },
+};
+
+export const DescriptionWithComplexContent: StoryFn<CubeItemProps> = (args) => (
+  <Flow gap="2x">
+    <Title level={5}>Inline Description with All Elements</Title>
+    <Flow gap="1x">
       <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
         icon={<IconCoin />}
         rightIcon={<IconSettings />}
+        description="With both icons"
+        descriptionPlacement="inline"
+      >
+        Complete Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconCoin />}
         prefix="$"
         suffix=".99"
-        description="Complete configuration with description positioned below the item"
+        description="Price information"
+        descriptionPlacement="inline"
+      >
+        Product Name
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        hotkeys="cmd+u"
+        description="Keyboard shortcut"
+        descriptionPlacement="inline"
+      >
+        User Settings
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        rightIcon={<DirectionIcon to="bottom" />}
+        prefix="+"
+        suffix="more"
+        description="Full configuration"
+        descriptionPlacement="inline"
+      >
+        All Elements
+      </Item>
+    </Flow>
+
+    <Title level={5}>Block Description with All Elements</Title>
+    <Flow gap="1x">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconCoin />}
+        rightIcon={<IconSettings />}
+        description="Block description with both icons providing more context"
+        descriptionPlacement="block"
+      >
+        Complete Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconCoin />}
+        prefix="$"
+        suffix=".99"
+        description="Premium pricing tier with annual billing discount"
         descriptionPlacement="block"
       >
         Product Name
@@ -1029,36 +1445,162 @@ export const WithDescriptionBlock: StoryFn<CubeItemProps> = (args) => (
         type="outline"
         icon={<IconUser />}
         hotkeys="cmd+u"
-        description="User management with hotkey and description block"
+        description="Access user settings and preferences quickly with keyboard shortcut"
         descriptionPlacement="block"
       >
-        Manage Users
+        User Settings
       </Item>
-    </Space>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        rightIcon={<DirectionIcon to="bottom" />}
+        prefix="+"
+        suffix="more"
+        description="This item demonstrates the full configuration with all available slots and a detailed description"
+        descriptionPlacement="block"
+      >
+        All Elements
+      </Item>
+    </Flow>
 
-    <Title level={5}>Long Description Block</Title>
-    <Item
-      {...args}
-      styles={{ ...DEFAULT_STYLES, width: '350px' }}
-      type="outline"
-      icon={<IconCoin />}
-      description="This is a very long description that demonstrates how the description text flows when positioned below the item. It can contain multiple lines and will wrap naturally."
-      descriptionPlacement="block"
-    >
-      Item with long description
-    </Item>
-  </Space>
+    <Title level={5}>Description with Actions</Title>
+    <Flow gap="1x">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Inline with actions"
+        descriptionPlacement="inline"
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        User Record
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Block description below the item with inline actions"
+        descriptionPlacement="block"
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        User Record
+      </Item>
+    </Flow>
+  </Flow>
 );
 
-WithDescriptionBlock.args = {
-  width: '400px',
+DescriptionWithComplexContent.args = {
+  width: '500px',
 };
 
-WithDescriptionBlock.parameters = {
+DescriptionWithComplexContent.parameters = {
   docs: {
     description: {
       story:
-        'Demonstrates the `descriptionPlacement="block"` functionality where descriptions are positioned below the entire Item component instead of inside the content area. This is useful for longer descriptions or when you want to maintain a clean main content area.',
+        'Demonstrates descriptions combined with complex Item configurations including icons, prefix/suffix, hotkeys, and actions. Shows how inline descriptions fit within the grid layout versus block descriptions that span below the entire item.',
+    },
+  },
+};
+
+export const DescriptionOverflow: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Long Inline Descriptions (with overflow)</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={{ ...DEFAULT_STYLES, width: '300px' }}
+        type="outline"
+        icon={<IconUser />}
+        description="This is a very long inline description that will be truncated with ellipsis when it exceeds the available width"
+        descriptionPlacement="inline"
+      >
+        Short Label
+      </Item>
+      <Item
+        {...args}
+        styles={{ ...DEFAULT_STYLES, width: '250px' }}
+        type="outline"
+        icon={<IconSettings />}
+        description="Another example of text overflow with even narrower container width"
+        descriptionPlacement="inline"
+      >
+        Settings
+      </Item>
+    </Space>
+
+    <Title level={5}>Long Block Descriptions (with wrapping)</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={{ ...DEFAULT_STYLES, width: '300px' }}
+        type="outline"
+        icon={<IconUser />}
+        description="This is a very long block description that will wrap naturally to multiple lines when it exceeds the available container width, providing a better reading experience for detailed information"
+        descriptionPlacement="block"
+      >
+        Short Label
+      </Item>
+      <Item
+        {...args}
+        styles={{ ...DEFAULT_STYLES, width: '250px' }}
+        type="outline"
+        icon={<IconSettings />}
+        description="Another example with narrower container demonstrating how block descriptions wrap text naturally without truncation, making them ideal for longer explanatory content that needs to be fully visible"
+        descriptionPlacement="block"
+      >
+        Settings
+      </Item>
+    </Space>
+
+    <Title level={5}>Comparison: Inline vs Block with Long Text</Title>
+    <Space gap="2x" flow="column" placeItems="start">
+      <div>
+        <Item
+          {...args}
+          styles={{ ...DEFAULT_STYLES, width: '350px' }}
+          type="outline"
+          icon={<IconCoin />}
+          description="This is a comprehensive description that demonstrates how inline placement handles longer text content by truncating it with an ellipsis to maintain the single-line layout"
+          descriptionPlacement="inline"
+        >
+          Inline Example
+        </Item>
+      </div>
+      <div>
+        <Item
+          {...args}
+          styles={{ ...DEFAULT_STYLES, width: '350px' }}
+          type="outline"
+          icon={<IconCoin />}
+          description="This is a comprehensive description that demonstrates how block placement handles longer text content by allowing it to wrap naturally across multiple lines for better readability"
+          descriptionPlacement="block"
+        >
+          Block Example
+        </Item>
+      </div>
+    </Space>
+  </Space>
+);
+
+DescriptionOverflow.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates how descriptions handle overflow: inline descriptions use text-overflow ellipsis to truncate long content while maintaining single-line layout, whereas block descriptions wrap text naturally across multiple lines for full visibility. Choose inline for compact layouts and block for detailed descriptions.',
     },
   },
 };
@@ -1345,111 +1887,6 @@ WithActions.parameters = {
     description: {
       story:
         'Demonstrates the `actions` prop which allows rendering action buttons inline as part of the grid layout. Unlike ItemButton which positions actions absolutely, Item renders actions as a native grid column that automatically sizes to fit the content. Actions are rendered using the ItemAction component for consistent styling.',
-    },
-  },
-};
-
-export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
-  <Space gap="2x" flow="column">
-    <Title level={4}>Actions on Hover</Title>
-    <Item
-      {...args}
-      showActionsOnHover
-      styles={{ ...DEFAULT_STYLES, width: '400px' }}
-      type="outline"
-      icon={<IconUser />}
-      actions={
-        <>
-          <ItemAction icon={<IconEdit />} aria-label="Edit" />
-          <ItemAction icon={<IconTrash />} aria-label="Delete" />
-        </>
-      }
-    >
-      Hover to see actions
-    </Item>
-
-    <Title level={5}>Different Sizes</Title>
-    <Space gap="1x" flow="column">
-      <Item
-        {...args}
-        showActionsOnHover
-        styles={DEFAULT_STYLES}
-        type="outline"
-        size="small"
-        icon={<IconUser />}
-        actions={
-          <>
-            <ItemAction icon={<IconEdit />} aria-label="Edit" />
-            <ItemAction icon={<IconTrash />} aria-label="Delete" />
-          </>
-        }
-      >
-        Small with hover actions
-      </Item>
-      <Item
-        {...args}
-        showActionsOnHover
-        styles={DEFAULT_STYLES}
-        type="outline"
-        size="medium"
-        icon={<IconUser />}
-        actions={
-          <>
-            <ItemAction icon={<IconEdit />} aria-label="Edit" />
-            <ItemAction icon={<IconTrash />} aria-label="Delete" />
-          </>
-        }
-      >
-        Medium with hover actions
-      </Item>
-      <Item
-        {...args}
-        showActionsOnHover
-        styles={DEFAULT_STYLES}
-        type="outline"
-        size="large"
-        icon={<IconUser />}
-        actions={
-          <>
-            <ItemAction icon={<IconEdit />} aria-label="Edit" />
-            <ItemAction icon={<IconTrash />} aria-label="Delete" />
-          </>
-        }
-      >
-        Large with hover actions
-      </Item>
-    </Space>
-
-    <Title level={5}>With Description</Title>
-    <Item
-      {...args}
-      showActionsOnHover
-      width="150px"
-      styles={DEFAULT_STYLES}
-      type="outline"
-      icon={<IconUser />}
-      description="Additional information"
-      actions={
-        <>
-          <ItemAction icon={<IconEdit />} aria-label="Edit" />
-          <ItemAction icon={<IconTrash />} aria-label="Delete" />
-        </>
-      }
-    >
-      With description
-    </Item>
-  </Space>
-);
-
-WithActionsOnHover.args = {
-  width: '450px',
-};
-
-WithActionsOnHover.parameters = {
-  docs: {
-    description: {
-      story:
-        'Demonstrates the `showActionsOnHover` prop which hides actions until the item is hovered, with a smooth transition. The actions space is reserved in the layout to prevent layout shift on hover.',
     },
   },
 };

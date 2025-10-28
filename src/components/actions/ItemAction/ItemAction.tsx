@@ -29,7 +29,7 @@ import {
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { tasty } from '../../../tasty';
+import { Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useItemActionContext } from '../ItemActionContext';
@@ -48,6 +48,7 @@ export interface CubeItemActionProps
     | (Omit<ComponentProps<typeof TooltipProvider>, 'children'> & {
         title?: string;
       });
+  styles?: Styles;
 }
 
 type ItemActionVariant =
@@ -77,12 +78,14 @@ const ItemActionElement = tasty({
     outlineOffset: 1,
     cursor: { '': 'pointer', disabled: 'default' },
 
+    '$local-icon-size': 'var(--icon-size)',
+
     Icon: {
-      fontSize: 'min($icon-size, ($action-size - .5x))',
+      '$icon-size': 'min($local-icon-size, ($action-size - .5x))',
     },
 
     RightIcon: {
-      fontSize: 'min($icon-size, ($action-size - .5x))',
+      '$icon-size': 'min($local-icon-size, ($action-size - .5x))',
     },
   },
   variants: {
@@ -127,6 +130,7 @@ export const ItemAction = forwardRef(function ItemAction(
     isSelected = false,
     tooltip,
     mods,
+    styles,
     ...rest
   } = allProps;
 
@@ -239,6 +243,7 @@ export const ItemAction = forwardRef(function ItemAction(
         data-theme={theme}
         data-type={finalType}
         tabIndex={finalTabIndex}
+        styles={styles}
       >
         {finalIcon && <div data-element="Icon">{finalIcon}</div>}
         {children}

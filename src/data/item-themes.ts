@@ -46,8 +46,8 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
   Icon: {
     display: 'grid',
     placeItems: 'center',
-    aspectRatio: '1 / 1',
-    width: '$action-size',
+    height: '($action-size - 2bw) ($action-size - 2bw)',
+    width: '($action-size - 2bw) ($action-size - 2bw)',
     opacity: {
       '': 1,
       'checkbox & selected': 1,
