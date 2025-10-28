@@ -13,7 +13,7 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
   flow: 'column',
   placeItems: 'center',
   placeContent: 'center',
-  gap: '.75x',
+  gap: 0,
   position: 'relative',
   margin: {
     '': '0 1bw 0 1bw',
