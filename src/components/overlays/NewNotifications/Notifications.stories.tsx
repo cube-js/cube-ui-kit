@@ -280,8 +280,8 @@ export const NotificationWithDialog: StoryFn<CubeNotificationProps> = (
       </Content>
       <Footer>
         <Button.Group>
-          <Button type="primary">Action</Button>
           <Button>Cancel</Button>
+          <Button type="primary">Action</Button>
         </Button.Group>
       </Footer>
 
