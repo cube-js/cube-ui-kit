@@ -789,46 +789,42 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     }
   }, [shouldVirtualize, itemsArray, rowVirtualizer]);
 
-  // Keep focused item visible when virtualizing, but only for keyboard navigation
-  useEffect(() => {
-    if (!shouldVirtualize) return;
+  // Keep focused item visible, but only for keyboard navigation
+  useLayoutEffect(() => {
     const focusedKey = listState.selectionManager.focusedKey;
-    if (focusedKey != null) {
-      const idx = itemsArrayRef.current.findIndex(
-        (it) => it.key === focusedKey,
-      );
-      if (idx !== -1) {
-        // Check if the focused item is actually visible in the current viewport
-        // (not just rendered due to overscan)
-        const scrollElement = scrollRef.current;
-        if (scrollElement) {
-          const scrollTop = scrollElement.scrollTop;
-          const viewportHeight = scrollElement.clientHeight;
-          const viewportBottom = scrollTop + viewportHeight;
+    if (focusedKey == null) return;
 
-          // Find the virtual item for this index
-          const virtualItems = rowVirtualizer.getVirtualItems();
-          const virtualItem = virtualItems.find((item) => item.index === idx);
+    // Only scroll on keyboard navigation
+    if (lastFocusSourceRef.current !== 'keyboard') return;
 
-          let isAlreadyVisible = false;
-          if (virtualItem) {
-            const itemTop = virtualItem.start;
-            const itemBottom = virtualItem.start + virtualItem.size;
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
 
-            // Check if the item is fully visible in the viewport
-            // We should scroll if the item is partially hidden
-            isAlreadyVisible =
-              itemTop >= scrollTop && itemBottom <= viewportBottom;
-          }
+    const itemElement = scrollElement.querySelector(
+      `[data-key="${CSS.escape(String(focusedKey))}"]`,
+    ) as HTMLElement;
+    if (!itemElement) return;
 
-          // Only scroll if the item is not already visible AND the focus change was due to keyboard navigation
-          if (!isAlreadyVisible && lastFocusSourceRef.current === 'keyboard') {
-            rowVirtualizer.scrollToIndex(idx, { align: 'auto' });
-          }
-        }
-      }
+    const scrollTop = scrollElement.scrollTop;
+    const viewportHeight = scrollElement.clientHeight;
+    const viewportBottom = scrollTop + viewportHeight;
+
+    const itemRect = itemElement.getBoundingClientRect();
+    const scrollRect = scrollElement.getBoundingClientRect();
+
+    // Calculate item position relative to scroll container
+    const itemTop = itemRect.top - scrollRect.top + scrollTop;
+    const itemBottom = itemTop + itemRect.height;
+
+    // Check if the item is fully visible in the viewport
+    const isAlreadyVisible =
+      itemTop >= scrollTop && itemBottom <= viewportBottom;
+
+    if (!isAlreadyVisible) {
+      // Use scrollIntoView with block: 'nearest' to minimize scroll jumps
+      itemElement.scrollIntoView({ block: 'nearest', behavior: 'auto' });
     }
-  }, [shouldVirtualize, listState.selectionManager.focusedKey, itemsArray]);
+  }, [listState.selectionManager.focusedKey, itemsArray]);
 
   // Merge React Aria listbox props with custom keyboard props so both sets of
   // event handlers (e.g. Arrow navigation *and* our Escape handler) are
@@ -1205,6 +1201,7 @@ function Option({
       ref={combinedRef}
       qa={item.props?.qa}
       id={`ListBoxItem-${String(item.key)}`}
+      data-key={String(item.key)}
       {...mergeProps(filteredOptionProps, hoverProps, {
         onClick: handleOptionClick,
         onKeyDown,
