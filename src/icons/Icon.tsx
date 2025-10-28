@@ -32,6 +32,7 @@ const IconElement = tasty({
       width: 'min 1em',
       height: '1em 1em',
       strokeWidth: '$stroke-width',
+      fontSize: 'inherit',
     },
   },
   styleProps: [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES],
