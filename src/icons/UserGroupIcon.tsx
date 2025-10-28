@@ -4,22 +4,23 @@ export const UserGroupIcon = wrapIcon(
   'UserGroupIcon',
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
+    width="24"
+    height="24"
     fill="none"
-    viewBox="0 0 16 16"
+    viewBox="0 0 24 24"
   >
-    <g clipPath="url(#a)">
-      <path
-        fill="currentColor"
-        fillRule="evenodd"
-        d="M8.198 3.604a2.301 2.301 0 1 0-2.424 2.99c-.086.39-.119.81-.091 1.22-1.8.151-3.267 1.561-3.533 3.388-.048.328-.312.598-.644.598-.331 0-.603-.27-.566-.6a5.2 5.2 0 0 1 2.929-4.123 3.5 3.5 0 1 1 5.481-3.81 4.3 4.3 0 0 0-1.152.337m-.362 6.69a3.5 3.5 0 1 1 4.275 0 5.2 5.2 0 0 1 2.929 4.124c.037.329-.235.599-.567.599s-.595-.27-.643-.598c-.275-1.888-1.832-3.33-3.714-3.4a4 4 0 0 1-.285 0c-1.882.07-3.44 1.512-3.715 3.4-.047.327-.311.598-.643.598-.331 0-.603-.27-.566-.6a5.2 5.2 0 0 1 2.929-4.123m2.005-.476a5 5 0 0 1 .265 0 2.3 2.3 0 1 0-.265 0"
-        clipRule="evenodd"
-      />
+    <g
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.5"
+      clipPath="url(#a)"
+    >
+      <path d="M5 7a4 4 0 1 0 8 0 4 4 0 0 0-8 0M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85" />
     </g>
     <defs>
       <clipPath id="a">
-        <path fill="#fff" d="M0 0h16v16H0z" />
+        <path fill="#fff" d="M0 0h24v24H0z" />
       </clipPath>
     </defs>
   </svg>,
