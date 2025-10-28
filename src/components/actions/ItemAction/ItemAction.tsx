@@ -90,7 +90,7 @@ const ItemActionElement = tasty({
     },
     '$inline-compensation': '.5x',
     '$min-inline-padding': '(.5x - 1bw)',
-    '$local-icon-size': 'var(--icon-size)',
+    '$local-icon-size': '$icon-size',
 
     Icon: {
       $: '>',

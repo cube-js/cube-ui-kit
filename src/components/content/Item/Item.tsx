@@ -390,7 +390,7 @@ const ItemElement = tasty({
       height: 'min ($size - 2bw)',
       gridRow: 'span 2',
       width: {
-        '': 'var(--actions-width, 0px)',
+        '': '($actions-width, 0px)',
         'with-actions-content': 'calc-size(max-content, size)',
       },
       transition: 'width $transition ease-out',
