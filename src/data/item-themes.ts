@@ -40,7 +40,8 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
   // Side padding for the action buttons
   '$side-padding': '(($size - $action-size - 2bw) / 2)',
   // Size using custom property
-  '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (4x - 2bw))',
+  '$action-size':
+    'min(max((2x + 2bw), (var(--size, $size-md) - 1x - 2bw)), (4x - 2bw))',
 
   // Icon styles
   Icon: {
