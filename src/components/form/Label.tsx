@@ -68,6 +68,7 @@ export const LABEL_STYLES: Styles = {
   width: {
     '': 'initial',
     side: '($label-width, initial)',
+    split: 'initial',
   },
 };
 

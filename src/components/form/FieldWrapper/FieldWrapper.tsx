@@ -3,7 +3,6 @@ import { forwardRef } from 'react';
 import { InfoCircleIcon } from '../../../icons/index';
 import { tasty } from '../../../tasty/index';
 import { wrapNodeIfPlain } from '../../../utils/react/index';
-import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
@@ -20,9 +19,14 @@ const FieldElement = tasty({
     gridColumns: {
       '': 'minmax(0, 1fr)',
       'has-sider': '($full-label-width, auto) minmax(0, 1fr)',
+      'has-split': 'auto auto',
     },
     gap: 0,
     placeItems: 'baseline stretch',
+    placeContent: {
+      '': 'initial',
+      'has-split': 'space-between',
+    },
     '$full-label-width': '($label-width + 1x)',
 
     LabelArea: {
@@ -34,6 +38,7 @@ const FieldElement = tasty({
       margin: {
         '': '1x bottom',
         'has-sider': '1x right',
+        'has-split': '1x right',
         ':empty': '0',
       },
     },
@@ -45,6 +50,7 @@ const FieldElement = tasty({
       gridColumn: {
         '': 'initial',
         'has-sider': 2,
+        'has-split': 2,
       },
     },
   },
@@ -161,12 +167,15 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
 
   // Description positioning based on label position
   const descriptionForLabel =
-    labelPosition === 'side' ? createDescriptionComponent() : null;
+    labelPosition === 'side' || labelPosition === 'split'
+      ? createDescriptionComponent()
+      : null;
   const descriptionForInput =
     labelPosition === 'top' ? createDescriptionComponent() : null;
 
   const mods = {
     'has-sider': labelPosition === 'side',
+    'has-split': labelPosition === 'split',
     'has-description': !!description,
     invalid: validationState === 'invalid',
     valid: validationState === 'valid',

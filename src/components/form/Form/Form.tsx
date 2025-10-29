@@ -236,7 +236,11 @@ function Form<T extends FieldTypes>(
       ref={domRef}
       noValidate
       styles={styles}
-      mods={{ 'has-sider': labelPosition === 'side', horizontal: isHorizontal }}
+      mods={{
+        'has-sider': labelPosition === 'side',
+        'has-split': labelPosition === 'split',
+        horizontal: isHorizontal,
+      }}
       onSubmit={onSubmitCallback}
     >
       <FormContext.Provider value={ctx}>

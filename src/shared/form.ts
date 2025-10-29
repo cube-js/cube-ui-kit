@@ -13,7 +13,7 @@ export interface ValidationResult {
 }
 
 /** Where to place label relative to input */
-export type LabelPosition = 'side' | 'top';
+export type LabelPosition = 'side' | 'top' | 'split';
 /** The type of necessity indicator */
 export type NecessityIndicator = 'icon' | 'label';
 
