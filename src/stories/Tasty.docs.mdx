@@ -567,6 +567,33 @@ const Card = tasty({
 </Card>
 ```
 
+#### Selector Affix (`$`)
+
+Control sub-element selector combinator using the `$` property:
+
+```jsx
+const Table = tasty({
+  styles: {
+    // Direct child selector
+    Row: {
+      $: '>',                     // .table > [data-element="Row"]
+      padding: '1x',
+    },
+    
+    // Chained selectors (auto-transforms capitalized words)
+    Cell: {
+      $: '> Body > Row >',        // .table > [data-element="Body"] > [data-element="Row"] > [data-element="Cell"]
+      border: '1bw solid #border',
+    },
+    
+    // Default: descendant selector (space)
+    Text: {
+      color: '#text',             // .table [data-element="Text"]
+    },
+  },
+});
+```
+
 ### Variants & Theming
 
 Create themed component variations:
