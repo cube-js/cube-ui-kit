@@ -13,3 +13,5 @@ export { useEventBus, useEventListener, EventBusProvider } from './useEventBus';
 export type { EventBusListener, EventBusContextValue } from './useEventBus';
 export { useControlledFocusVisible } from './useControlledFocusVisible';
 export type { UseControlledFocusVisibleResult } from './useControlledFocusVisible';
+export { RenderCache } from './RenderCache';
+export type { RenderCacheProps } from './RenderCache';
