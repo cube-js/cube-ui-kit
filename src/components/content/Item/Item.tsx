@@ -217,7 +217,10 @@ const ItemElement = tasty({
       'with-description-block': 'auto auto auto',
     },
     // Prevent items from shrinking inside vertical flex layouts (Menu, ListBox, etc)
-    flexShrink: 0,
+    flexShrink: {
+      '': 'initial',
+      'menuitem | listboxitem': 0,
+    },
     position: 'relative',
     padding: 0,
     margin: 0,
