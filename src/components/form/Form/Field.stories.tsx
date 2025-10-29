@@ -53,7 +53,7 @@ export default {
 
     /* Presentation */
     labelPosition: {
-      options: ['top', 'side'],
+      options: ['top', 'side', 'split'],
       control: { type: 'radio' },
       description: 'Position of the field label',
       table: {

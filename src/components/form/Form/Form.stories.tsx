@@ -28,7 +28,7 @@ const meta: Meta<typeof Form> = {
     },
     labelPosition: {
       control: { type: 'radio' },
-      options: ['top', 'side'],
+      options: ['top', 'side', 'split'],
       description: 'Where to place labels relative to inputs',
       table: {
         defaultValue: { summary: 'top' },

@@ -60,7 +60,7 @@ These properties are inherited by all input components within the form:
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `labelPosition` | `'top' \| 'side'` | Where to place labels relative to inputs |
+| `labelPosition` | `'top' \| 'side' \| 'split'` | Where to place labels relative to inputs. `'top'` places labels above inputs, `'side'` places labels beside inputs with fixed width, `'split'` places labels and inputs on opposite sides without fixed label width |
 | `requiredMark` | `boolean` | Whether to show required field indicators |
 | `isRequired` | `boolean` | Whether fields are required by default |
 | `necessityIndicator` | `'icon' \| 'label'` | Type of necessity indicator |
@@ -86,6 +86,7 @@ The `mods` property accepts the following modifiers:
 | Modifier | Type | Description |
 |----------|------|-------------|
 | `has-sider` | `boolean` | Applied when `labelPosition="side"` |
+| `has-split` | `boolean` | Applied when `labelPosition="split"` |
 | `horizontal` | `boolean` | Applied when `orientation="horizontal"` |
 
 ## Variants

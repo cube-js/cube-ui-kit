@@ -374,6 +374,9 @@ export const Default = Template.bind({});
 export const ComplexFormSideLabel = Template.bind({});
 ComplexFormSideLabel.args = { labelPosition: 'side' };
 
+export const ComplexFormSplitLabel = Template.bind({});
+ComplexFormSplitLabel.args = { labelPosition: 'split' };
+
 export const ComplexErrorMessage = ComplexErrorTemplate.bind({});
 
 export const AsyncValidation = AsyncValidationTemplate.bind({});

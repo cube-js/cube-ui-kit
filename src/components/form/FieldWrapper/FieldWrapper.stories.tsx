@@ -165,3 +165,33 @@ ErrorMessageOverridesMessage.args = {
   errorMessage: 'This error message takes precedence',
   description: 'Description is shown alongside error message',
 };
+
+export const SplitLabel = Template.bind({});
+SplitLabel.args = {
+  labelPosition: 'split',
+  styles: { width: '(100vw - 6x)' },
+};
+
+export const SplitLabelWithTooltip = Template.bind({});
+SplitLabelWithTooltip.args = {
+  labelPosition: 'split',
+  styles: { width: '(100vw - 6x)' },
+  tooltip: 'Long description',
+};
+
+export const SplitLabelWithDescription = Template.bind({});
+SplitLabelWithDescription.args = {
+  labelPosition: 'split',
+  styles: { width: '(100vw - 6x)' },
+  description:
+    'This is a helpful description that explains what this field is for',
+};
+
+export const SplitLabelWithDescriptionAndErrorMessage = Template.bind({});
+SplitLabelWithDescriptionAndErrorMessage.args = {
+  labelPosition: 'split',
+  styles: { width: '(100vw - 6x)' },
+  description:
+    'This is a helpful description that explains what this field is for',
+  errorMessage: 'This field has an error that needs to be fixed',
+};
