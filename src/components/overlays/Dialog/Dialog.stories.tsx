@@ -114,13 +114,13 @@ const Template: StoryFn<
             <Paragraph>Test content</Paragraph>
             <Paragraph>Test content</Paragraph>
           </Content>
-          <Footer align="end">
-            <Button.Group align="end">
-              <Button onPress={close}>Cancel</Button>
-              <Button onPress={close}>Sec</Button>
+          <Footer>
+            <Button.Group>
               <Button type="primary" onPress={close}>
                 Action
               </Button>
+              <Button onPress={close}>Sec</Button>
+              <Button onPress={close}>Cancel</Button>
             </Button.Group>
             <Text>Footer</Text>
           </Footer>
@@ -145,13 +145,13 @@ const TemplateWithInput: StoryFn<
           <Content>
             <TextInput autoFocus label="Text input" />
           </Content>
-          <Footer align="end">
-            <Button.Group align="end">
-              <Button onPress={close}>Cancel</Button>
-              <Button onPress={close}>Sec</Button>
+          <Footer>
+            <Button.Group>
               <Button type="primary" onPress={close}>
                 Action
               </Button>
+              <Button onPress={close}>Sec</Button>
+              <Button onPress={close}>Cancel</Button>
             </Button.Group>
             <Text>Footer</Text>
           </Footer>
