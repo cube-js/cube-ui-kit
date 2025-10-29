@@ -264,10 +264,15 @@ const DialogContent = forwardRef(function DialogContent(
       styles: {
         display: 'flex',
         gap: '1x',
-        flow: 'row',
+        flow: 'row-reverse',
         placeItems: 'baseline stretch',
         placeContent: 'space-between',
         padding: '$dialog-footer-v $dialog-padding-h',
+      },
+    },
+    buttonGroup: {
+      styles: {
+        flow: 'row-reverse',
       },
     },
   };

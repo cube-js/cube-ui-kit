@@ -84,7 +84,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
       ) : null}
       {!noActions && (confirmProps || secondaryProps || cancelProps) ? (
         <Footer>
-          <ButtonGroup align="end">
+          <ButtonGroup>
             {confirmProps && (
               <Button
                 autoFocus

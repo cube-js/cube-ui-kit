@@ -15,6 +15,7 @@ import { useProviderProps } from '../../../provider';
 import { tasty } from '../../../tasty';
 import { Button } from '../../actions';
 import { Title } from '../../content/Title';
+import { Space } from '../../layout/Space';
 
 import { CalendarGrid } from './CalendarGrid';
 
@@ -70,10 +71,10 @@ function Calendar(props: CubeCalendarProps, ref: FocusableRef<HTMLElement>) {
         <Title level={6} preset="h6">
           {title}
         </Title>
-        <Button.Group gap=".5x">
+        <Space gap=".5x">
           <Button size="xsmall" {...prevButtonProps} icon={<LeftIcon />} />
           <Button size="xsmall" {...nextButtonProps} icon={<RightIcon />} />
-        </Button.Group>
+        </Space>
       </CalendarHeaderElement>
       <CalendarGrid state={state} selectedRange={props.selectedRange} />
     </CalendarElement>

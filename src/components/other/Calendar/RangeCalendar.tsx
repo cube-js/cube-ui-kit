@@ -15,6 +15,7 @@ import { useProviderProps } from '../../../provider';
 import { tasty } from '../../../tasty';
 import { Button } from '../../actions';
 import { Title } from '../../content/Title';
+import { Space } from '../../layout/Space';
 
 import { CalendarGrid } from './CalendarGrid';
 
@@ -64,10 +65,10 @@ function RangeCalendar<T extends DateValue>(
         <Title level={6} preset="h6">
           {title}
         </Title>
-        <Button.Group gap=".5x">
+        <Space gap=".5x">
           <Button size="small" {...prevButtonProps} icon={<LeftIcon />} />
           <Button size="small" {...nextButtonProps} icon={<RightIcon />} />
-        </Button.Group>
+        </Space>
       </CalendarHeaderElement>
       <CalendarGrid state={state} />
     </CalendarElement>
