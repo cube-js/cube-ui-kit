@@ -1,0 +1,181 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import * as RenderCacheStories from './RenderCache.stories';
+
+<Meta of={RenderCacheStories} />
+
+# RenderCache
+
+RenderCache is a performance optimization component that caches rendered React elements and only re-renders specific items when needed. It's useful for lists where most items remain unchanged but you need fine-grained control over which items to re-render.
+
+## When to Use
+
+- When rendering lists where only specific items need to re-render based on state changes
+- When child components are expensive to render and don't need to update on every parent re-render
+- When you want more control than React.memo provides, with explicit per-item cache invalidation
+- When building complex UI where selective re-rendering improves performance significantly
+
+## Component
+
+<Story of={RenderCacheStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={RenderCacheStories.Default} />
+
+### Property Details
+
+- **items**: Array of items to render
+- **renderKeys**: Array of keys that should trigger re-render. Only items with keys in this array will be re-rendered
+- **getKey**: Function that extracts a unique key from each item
+- **children**: Render function that takes an item and returns a React element
+
+### Base Properties
+
+This is a headless component and does not support base properties.
+
+## How It Works
+
+The component maintains an internal cache of rendered elements. When rendering:
+
+1. For each item, it checks if the item's key is in renderKeys
+2. If the key is in renderKeys or the item hasn't been rendered before, it calls the children function to render/re-render
+3. Otherwise, it returns the cached element from the previous render
+4. It automatically cleans up cache entries for items that are no longer in the list
+
+## Examples
+
+### Basic Usage
+
+```jsx
+import { RenderCache } from '@cube-dev/ui-kit';
+
+const items = [
+  { id: 1, name: 'Item 1' },
+  { id: 2, name: 'Item 2' },
+  { id: 3, name: 'Item 3' },
+];
+
+const [selectedId, setSelectedId] = useState(1);
+
+<RenderCache
+  items={items}
+  renderKeys={[selectedId]}
+  getKey={(item) => item.id}
+>
+  {(item) => <ExpensiveItem item={item} isSelected={item.id === selectedId} />}
+</RenderCache>
+```
+
+### With List of Expensive Components
+
+```jsx
+import { RenderCache } from '@cube-dev/ui-kit';
+
+function ExpensiveListItem({ item, isActive }) {
+  // Complex rendering logic
+  return <div className={isActive ? 'active' : ''}>{item.name}</div>;
+}
+
+const [activeId, setActiveId] = useState(1);
+
+<RenderCache
+  items={data}
+  renderKeys={[activeId]}
+  getKey={(item) => item.id}
+>
+  {(item) => (
+    <ExpensiveListItem 
+      item={item} 
+      isActive={item.id === activeId}
+    />
+  )}
+</RenderCache>
+```
+
+## Performance Considerations
+
+- **Cache management**: The component uses useRef to maintain the cache across renders, avoiding unnecessary re-allocations
+- **Automatic cleanup**: Removes cached entries for items no longer in the list to prevent memory leaks
+- **Selective invalidation**: Only items with keys in renderKeys are re-rendered, others use cached elements
+- **Best for expensive renders**: Most effective when child components have significant render cost
+
+## Best Practices
+
+1. **Use stable keys**: Ensure getKey returns consistent keys for the same items across renders
+   ```jsx
+   // Good: Using stable IDs
+   <RenderCache
+     items={items}
+     getKey={(item) => item.id}
+     renderKeys={[selectedId]}
+   >
+     {(item) => <Item {...item} />}
+   </RenderCache>
+   
+   // Bad: Using indices (unstable when list changes)
+   <RenderCache
+     items={items}
+     getKey={(item, index) => index}
+     renderKeys={[selectedIndex]}
+   >
+     {(item) => <Item {...item} />}
+   </RenderCache>
+   ```
+
+2. **Minimize renderKeys**: Only include keys that truly need re-rendering to maximize cache benefits
+   ```jsx
+   // Good: Only re-render the active item
+   <RenderCache
+     items={items}
+     renderKeys={[activeItemId]}
+     getKey={(item) => item.id}
+   >
+     {(item) => <Item {...item} />}
+   </RenderCache>
+   
+   // Bad: Re-rendering all items defeats the purpose
+   <RenderCache
+     items={items}
+     renderKeys={items.map(item => item.id)}
+     getKey={(item) => item.id}
+   >
+     {(item) => <Item {...item} />}
+   </RenderCache>
+   ```
+
+3. **Consider alternatives**: For simple cases, React.memo might be sufficient and simpler
+
+4. **Profile first**: Use React DevTools Profiler to confirm you have a performance issue before adding this optimization
+
+5. **Avoid inline functions**: Use stable render functions to prevent unnecessary cache invalidation
+   ```jsx
+   // Good: Stable render function
+   const renderItem = useCallback((item) => (
+     <ExpensiveItem item={item} />
+   ), []);
+   
+   <RenderCache
+     items={items}
+     renderKeys={[selectedId]}
+     getKey={(item) => item.id}
+   >
+     {renderItem}
+   </RenderCache>
+   ```
+
+## When NOT to Use
+
+- **Simple lists**: For simple lists without performance issues, regular rendering is simpler
+- **All items update frequently**: If all items need to re-render on every change, the cache overhead isn't worth it
+- **Small lists**: Lists with < 10 items typically don't benefit from caching
+- **Simple components**: If child components render quickly, the optimization overhead may outweigh benefits
+
+## Related Components
+
+- **React.memo** - For simple component memoization
+- **useMemo** - For memoizing computed values
+- **useCallback** - For memoizing callback functions
+- **DisplayTransition** - For animating component mount/unmount
+
