@@ -75,7 +75,7 @@ export const StyledHeader = tasty(Space, {
     placeContent: 'space-between',
     placeItems: 'center',
     whiteSpace: 'nowrap',
-    padding: '.5x $inline-padding',
+    padding: '.5x 1.5x',
     height: 'min $size',
     boxSizing: 'border-box',
     border: 'bottom',
@@ -87,10 +87,6 @@ export const StyledHeader = tasty(Space, {
       '[data-size="medium"]': '$size-md',
       '[data-size="large"]': '$size-lg',
     },
-    '$inline-padding':
-      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
-    '$inline-compensation': '1x',
-    '$min-inline-padding': '1x',
   },
 });
 
@@ -216,8 +212,8 @@ export const StyledSectionHeading = tasty(Space, {
     placeContent: 'center space-between',
     align: 'start',
     padding: {
-      '': '.5x $inline-padding',
-      prefix: '0 $inline-padding 0 .5x',
+      '': '.5x .75x',
+      prefix: '0 .75x 0 .5x',
     },
 
     $size: {
@@ -226,9 +222,5 @@ export const StyledSectionHeading = tasty(Space, {
       '[data-size="medium"]': '$size-md',
       '[data-size="large"]': '$size-lg',
     },
-    '$inline-padding':
-      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation - 1bw))',
-    '$inline-compensation': '.5x',
-    '$min-inline-padding': '1x',
   },
 });

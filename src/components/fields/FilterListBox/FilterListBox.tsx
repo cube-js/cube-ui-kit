@@ -13,6 +13,7 @@ import React, {
 } from 'react';
 import { useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, Item, useListState } from 'react-stately';
+import { CubeCollectionItemProps } from 'src/components/CollectionItem';
 
 import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
@@ -27,9 +28,7 @@ import {
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { StyledHeader } from '../../actions/Menu/styled';
-import { ItemBase } from '../../content/ItemBase';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { CubeItemProps } from '../../Item';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import {
   DEFAULT_INPUT_STYLES,
@@ -91,13 +90,9 @@ const SearchInputElement = tasty({
     ...DEFAULT_INPUT_STYLES,
     fill: '#clear',
     padding: {
-      '': '.5x $inline-padding',
-      prefix: '0 $inline-padding 0 .5x',
+      '': '.5x 1.5x',
+      prefix: '0 1.5x 0 .5x',
     },
-    '$inline-padding':
-      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
-    '$inline-compensation': '1x',
-    '$min-inline-padding': '1x',
   },
 });
 
@@ -155,13 +150,13 @@ export interface CubeFilterListBoxProps<T>
   /**
    * Props to apply to existing custom values (values that are already selected but not in the predefined options).
    */
-  customValueProps?: Partial<CubeItemProps<T>>;
+  customValueProps?: Partial<CubeCollectionItemProps<T>>;
 
   /**
    * Props to apply to new custom values (values typed in the search input that are about to be added).
    * These are merged with customValueProps for new custom values.
    */
-  newCustomValueProps?: Partial<CubeItemProps<T>>;
+  newCustomValueProps?: Partial<CubeCollectionItemProps<T>>;
 
   /**
    * Controlled search value. When provided, the search input becomes controlled.
@@ -759,19 +754,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
     ],
   );
 
-  const hasResults = useMemo(() => {
-    if (!listStateRef.current?.collection) return !!enhancedChildren;
-
-    // Collection is already filtered by React Stately, just check if it has items
-    for (const node of listStateRef.current.collection) {
-      if (node.type === 'item') return true;
-      if (node.childNodes && [...node.childNodes].length > 0) return true;
-    }
-    return false;
-  }, [listStateRef.current?.collection, enhancedChildren, searchValue]);
-
-  const showEmptyMessage = !hasResults && searchValue.trim();
-
   // Handler must be defined before we render ListBox so we can pass it.
   const handleSelectionChange = (selection: any) => {
     if (allowsCustomValue) {
@@ -876,55 +858,51 @@ export const FilterListBox = forwardRef(function FilterListBox<
         <div role="presentation" />
       )}
       {searchInput}
-      {showEmptyMessage ? (
-        <ItemBase
-          preset="t4"
-          color="#dark-03"
-          size={size}
-          padding="(.5x - 1bw)"
-        >
-          {emptyLabel !== undefined ? emptyLabel : 'No results found'}
-        </ItemBase>
-      ) : (
-        <ListBox
-          ref={listBoxRef}
-          aria-label={innerAriaLabel}
-          selectedKey={selectedKey}
-          defaultSelectedKey={defaultSelectedKey}
-          selectedKeys={selectedKeys}
-          defaultSelectedKeys={defaultSelectedKeys}
-          selectionMode={selectionMode}
-          isDisabled={isDisabled}
-          listRef={listRef}
-          stateRef={listStateRef}
-          listStyles={listStyles}
-          shouldFocusWrap={shouldFocusWrap}
-          optionStyles={optionStyles}
-          sectionStyles={sectionStyles}
-          headingStyles={headingStyles}
-          validationState={validationState}
-          disallowEmptySelection={props.disallowEmptySelection}
-          disabledKeys={props.disabledKeys}
-          focusOnHover={focusOnHover}
-          shouldUseVirtualFocus={true}
-          showSelectAll={showSelectAll}
-          selectAllLabel={selectAllLabel}
-          footer={footer}
-          footerStyles={footerStyles}
-          mods={mods}
-          size="medium"
-          styles={listBoxStyles}
-          isCheckable={isCheckable}
-          items={items as any}
-          allValueProps={allValueProps}
-          filter={filterFn}
-          onSelectionChange={handleSelectionChange}
-          onEscape={onEscape}
-          onOptionClick={handleOptionClick}
-        >
-          {enhancedChildren as any}
-        </ListBox>
-      )}
+      <ListBox
+        ref={listBoxRef}
+        aria-label={innerAriaLabel}
+        selectedKey={selectedKey}
+        defaultSelectedKey={defaultSelectedKey}
+        selectedKeys={selectedKeys}
+        defaultSelectedKeys={defaultSelectedKeys}
+        selectionMode={selectionMode}
+        isDisabled={isDisabled}
+        listRef={listRef}
+        stateRef={listStateRef}
+        listStyles={listStyles}
+        shouldFocusWrap={shouldFocusWrap}
+        optionStyles={optionStyles}
+        sectionStyles={sectionStyles}
+        headingStyles={headingStyles}
+        validationState={validationState}
+        disallowEmptySelection={props.disallowEmptySelection}
+        disabledKeys={props.disabledKeys}
+        focusOnHover={focusOnHover}
+        shouldUseVirtualFocus={true}
+        showSelectAll={showSelectAll}
+        selectAllLabel={selectAllLabel}
+        footer={footer}
+        footerStyles={footerStyles}
+        mods={mods}
+        size="medium"
+        styles={listBoxStyles}
+        isCheckable={isCheckable}
+        items={items as any}
+        allValueProps={allValueProps}
+        filter={filterFn}
+        emptyLabel={
+          searchValue.trim()
+            ? emptyLabel !== undefined
+              ? emptyLabel
+              : 'No results found'
+            : 'No items'
+        }
+        onSelectionChange={handleSelectionChange}
+        onEscape={onEscape}
+        onOptionClick={handleOptionClick}
+      >
+        {enhancedChildren as any}
+      </ListBox>
     </FilterListBoxWrapperElement>
   );
 

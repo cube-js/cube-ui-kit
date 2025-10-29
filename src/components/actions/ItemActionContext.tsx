@@ -1,9 +1,9 @@
 import { createContext, ReactNode, useContext } from 'react';
 
-import { CubeItemBaseProps } from '../content/ItemBase';
+import { CubeItemProps } from '../content/Item';
 
 interface ItemActionContextValue {
-  type?: CubeItemBaseProps['type'];
+  type?: CubeItemProps['type'];
   theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
 }
 
@@ -12,7 +12,7 @@ const ItemActionContext = createContext<ItemActionContextValue | undefined>(
 );
 
 export interface ItemActionProviderProps {
-  type?: CubeItemBaseProps['type'];
+  type?: CubeItemProps['type'];
   theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
   children: ReactNode;
 }

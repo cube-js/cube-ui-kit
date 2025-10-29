@@ -1,0 +1,209 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import * as BadgeStories from './Badge.stories';
+
+<Meta of={BadgeStories} />
+
+# Badge
+
+Badges are small, circular indicators that display numerical counts or short status text. They are typically used to draw attention to new, updated, or important information.
+
+## When to Use
+
+- **Notification counts**: Show unread messages, notifications, or pending items
+- **Status indicators**: Display simple status like "NEW", "HOT", or error counts
+- **Numerical data**: Show counts, quantities, or metrics at a glance
+- **Activity indicators**: Highlight areas with recent activity or updates
+- **Completion tracking**: Display progress counts (e.g., "3/10")
+
+## When Not to Use
+
+- **Long text**: Use `Tag` for longer labels or categorization
+- **Interactive elements**: Use `Button` for clickable actions
+- **Detailed information**: Use `Tooltip` or expanded content for complex details
+- **Navigation**: Use `Button` or `Link` for navigation purposes
+
+## Component
+
+<Story of={BadgeStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={BadgeStories.Default} />
+
+### Base Properties
+
+Badge extends from `Item` component and supports all base design system properties including:
+- Layout props: `width`, `height`, `margin`, `padding`
+- Color props: `fill`, `color`, `border`
+- Typography props: `preset`, `fontSize`, `fontWeight`
+- Other Item props: `tooltip`, `isDisabled`, `qa`
+
+## Examples
+
+### Themes
+
+Badges support multiple themes for different semantic meanings:
+
+<Story of={BadgeStories.Themes} />
+
+Available themes:
+- **Special** (default): Purple/yellow background, highlighted features
+- **Note**: Blue background, informational content
+- **Success**: Green background, positive states
+- **Danger**: Red background, errors or urgent items
+- **Disabled**: Gray background, inactive items
+
+### Numbers
+
+Badges commonly display numerical counts:
+
+<Story of={BadgeStories.Numbers} />
+
+Best practices for numbers:
+- Use single digits for small counts (1-9)
+- Show exact numbers up to 99
+- Consider "99+" format for counts over 99
+- Keep numerical badges concise and scannable
+
+```jsx
+<Badge>5</Badge>
+<Badge>99</Badge>
+<Badge theme="danger">12</Badge>
+```
+
+### Text Content
+
+Short text labels work well in badges:
+
+<Story of={BadgeStories.TextContent} />
+
+Guidelines for text badges:
+- Keep text to 2-4 characters maximum
+- Use uppercase for better readability
+- Common patterns: "NEW", "HOT", "BETA", "PRO"
+
+```jsx
+<Badge>NEW</Badge>
+<Badge theme="success">OK</Badge>
+<Badge theme="danger">ERR</Badge>
+```
+
+### Sizes
+
+Badges support multiple sizes inherited from the Item component:
+
+<Story of={BadgeStories.Sizes} />
+
+- **inline** (default): Compact, inline badge optimized for text flow
+- **xsmall**: Extra small size
+- **small**: Small size
+- **medium**: Medium size
+- **large**: Large size
+- **xlarge**: Extra large size
+
+### With Icons
+
+Badges can include icons for additional visual context:
+
+<Story of={BadgeStories.WithIcon} />
+
+Add an icon before the badge content using the `icon` prop:
+
+```jsx
+import { IconCoin } from '@tabler/icons-react';
+
+<Badge icon={<IconCoin />} theme="success">
+  12
+</Badge>
+```
+
+### With Right Icon
+
+Place icons after the content using the `rightIcon` prop:
+
+<Story of={BadgeStories.WithRightIcon} />
+
+```jsx
+<Badge rightIcon={<IconCoin />} theme="danger">
+  ERR
+</Badge>
+```
+
+### With Both Icons
+
+Combine both `icon` and `rightIcon` for complex layouts:
+
+<Story of={BadgeStories.WithBothIcons} />
+
+```jsx
+<Badge icon={<IconCoin />} rightIcon={<IconCoin />} theme="success">
+  NEW
+</Badge>
+```
+
+## Best Practices
+
+### Content
+
+- Keep badge content concise and scannable
+- Use numbers for counts ("3" not "three")
+- Use uppercase for text badges for better readability
+- Consider "99+" format for very large counts
+
+### Placement
+
+- Position badges near related content without obscuring it
+- Maintain consistent positioning across similar contexts
+
+### Visual Design
+
+- Use theme colors consistently for semantic meaning
+- Ensure adequate spacing from surrounding content
+
+### Accessibility
+
+- Provide context for counts via tooltips when needed
+- Don't rely solely on color to convey meaning
+- All themes maintain sufficient color contrast
+
+## Use Cases
+
+### Navigation Badges
+
+Display notification counts on menu items:
+
+```jsx
+<Item icon={<IconBell />}>
+  Notifications
+  <Badge theme="danger">5</Badge>
+</Item>
+```
+
+### Status Indicators
+
+Show item status or state:
+
+```jsx
+<Item>
+  Beta Feature <Badge theme="special">BETA</Badge>
+</Item>
+```
+
+### Inline Counts
+
+Display counts within text:
+
+```jsx
+<Text>
+  Unread Messages <Badge>12</Badge>
+</Text>
+```
+
+## Related Components
+
+- **Tag**: For longer labels, categorization, or closable elements
+- **Chip**: For interactive selection chips
+- **Item**: Base component that Badge extends from
+- **Text**: For displaying badge content inline with text

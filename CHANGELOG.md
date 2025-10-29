@@ -1,5 +1,27 @@
 # @cube-dev/ui-kit
 
+## 0.86.0
+
+### Minor Changes
+
+- [#847](https://github.com/cube-js/cube-ui-kit/pull/847) [`c1445d56`](https://github.com/cube-js/cube-ui-kit/commit/c1445d560ed1e04305032669341fb7b051df0d73) Thanks [@tenphi](https://github.com/tenphi)! - New Tag component based on Item component.
+
+- [#847](https://github.com/cube-js/cube-ui-kit/pull/847) [`c1445d56`](https://github.com/cube-js/cube-ui-kit/commit/c1445d560ed1e04305032669341fb7b051df0d73) Thanks [@tenphi](https://github.com/tenphi)! - Rename ItemBase -> Item. Item -> CollectionItem. Be careful.
+
+### Patch Changes
+
+- [#847](https://github.com/cube-js/cube-ui-kit/pull/847) [`c1445d56`](https://github.com/cube-js/cube-ui-kit/commit/c1445d560ed1e04305032669341fb7b051df0d73) Thanks [@tenphi](https://github.com/tenphi)! - New Badge component based on Item component.
+
+- [#847](https://github.com/cube-js/cube-ui-kit/pull/847) [`c1445d56`](https://github.com/cube-js/cube-ui-kit/commit/c1445d560ed1e04305032669341fb7b051df0d73) Thanks [@tenphi](https://github.com/tenphi)! - Fix auto-scroll in ListBox with sections.
+
+- [#847](https://github.com/cube-js/cube-ui-kit/pull/847) [`c1445d56`](https://github.com/cube-js/cube-ui-kit/commit/c1445d560ed1e04305032669341fb7b051df0d73) Thanks [@tenphi](https://github.com/tenphi)! - A new property for sub-element styles `# @cube-dev/ui-kit. Set `$: '>'` for sub-elements styles so they will only apply to the direct child of the root element.
+
+## 0.85.2
+
+### Patch Changes
+
+- [#851](https://github.com/cube-js/cube-ui-kit/pull/851) [`a2b237ee`](https://github.com/cube-js/cube-ui-kit/commit/a2b237ee687bfab2462ab6ed7ff5fe56ceb7599f) Thanks [@tenphi](https://github.com/tenphi)! - Fix FilterListBox filtering bug.
+
 ## 0.85.1
 
 ### Patch Changes

@@ -1,64 +1,63 @@
 import { forwardRef } from 'react';
 
 import THEMES from '../../../data/themes';
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  extractStyles,
-  filterBaseProps,
-  tasty,
-} from '../../../tasty';
+import { tasty } from '../../../tasty';
+import { CubeItemProps, Item } from '../Item';
 
-const BadgeElement = tasty({
+const BadgeElement = tasty(Item, {
   qa: 'Badge',
-  role: 'region',
+  role: 'status',
   styles: {
-    display: 'inline-flex',
-    placeContent: 'center',
-    placeItems: 'center',
-    padding: {
-      '': '0',
-      long: '0 .5x',
-    },
     radius: 'round',
-    preset: 'tag',
-    width: 'min 16px',
-    height: '16px 16px',
-    textAlign: 'center',
     color: '#white',
     fill: {
       '': '#purple',
       ...Object.keys(THEMES).reduce((map, type) => {
-        map[`[data-type="${type}"]`] = THEMES[type].color;
+        map[`[data-theme="${type}"]`] =
+          type === 'special' ? THEMES[type].fill : THEMES[type].color;
 
         return map;
       }, {}),
     },
+
+    '$inline-padding': {
+      '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
+      '[data-size="inline"]': '.5x',
+    },
+
+    Label: {
+      textAlign: 'center',
+      placeSelf: 'center',
+    },
   },
 });
 
-export interface CubeBadgeProps extends BaseProps, ContainerStyleProps {
+export interface CubeBadgeProps extends CubeItemProps {
+  /* @deprecated Use theme instead */
   type?: keyof typeof THEMES | string;
+  theme?: keyof typeof THEMES | string;
 }
 
-export const Badge = forwardRef(function Badge(allProps: CubeBadgeProps, ref) {
-  let { type, children, mods, ...props } = allProps;
+function Badge(allProps: CubeBadgeProps, ref) {
+  let {
+    type,
+    theme = 'special',
+    children,
+    size = 'inline',
+    ...props
+  } = allProps;
 
-  const styles = extractStyles(props, CONTAINER_STYLES);
+  const badgeTheme = theme ?? type;
 
   return (
-    <BadgeElement
-      {...filterBaseProps(props, { eventProps: true })}
-      ref={ref}
-      data-type={type}
-      mods={{
-        long: typeof children !== 'string' || children.length > 1,
-        ...mods,
-      }}
-      styles={styles}
-    >
+    <BadgeElement ref={ref} size={size} data-theme={badgeTheme} {...props}>
       {children}
     </BadgeElement>
   );
-});
+}
+
+const _Badge = forwardRef(Badge);
+
+_Badge.displayName = 'Badge';
+
+export { _Badge as Badge };

@@ -2,7 +2,7 @@ import { Meta, StoryObj } from '@storybook/react-vite';
 
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { KeyIcon } from '../../../icons/KeyIcon';
-import { ItemBase } from '../ItemBase';
+import { Item } from '../Item';
 
 import { ItemBadge } from './ItemBadge';
 
@@ -70,40 +70,36 @@ export const Selected: Story = {
   },
 };
 
-export const WithItemBase: Story = {
+export const WithItem: Story = {
   render: () => (
-    <ItemBase
+    <Item
       size="large"
       actions={
         <>
-          <ItemBase.Badge icon={<KeyIcon />} tooltip="Primary" />
-          <ItemBase.Badge
-            icon={<CheckIcon />}
-            theme="success"
-            tooltip="Success"
-          />
+          <Item.Badge icon={<KeyIcon />} tooltip="Primary" />
+          <Item.Badge icon={<CheckIcon />} theme="success" tooltip="Success" />
         </>
       }
     >
       Item with badges
-    </ItemBase>
+    </Item>
   ),
 };
 
 export const InContext: Story = {
   render: () => (
-    <ItemBase
+    <Item
       size="large"
       type="primary"
       theme="success"
       actions={
         <>
-          <ItemBase.Badge icon={<CheckIcon />} tooltip="Verified" />
-          <ItemBase.Badge icon={<KeyIcon />} tooltip="Primary" />
+          <Item.Badge icon={<CheckIcon />} tooltip="Verified" />
+          <Item.Badge icon={<KeyIcon />} tooltip="Primary" />
         </>
       }
     >
       Item with badges in context
-    </ItemBase>
+    </Item>
   ),
 };

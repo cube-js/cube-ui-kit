@@ -35,7 +35,7 @@ import { generateRandomId } from '../../../utils/random';
 import { mergeProps } from '../../../utils/react';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
-import { CubeItemBaseProps } from '../../content/ItemBase';
+import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
@@ -45,7 +45,7 @@ import type { FieldBaseProps } from '../../../shared';
 
 export interface CubePickerProps<T>
   extends Omit<CubeListBoxProps<T>, 'size' | 'tooltip'>,
-    Omit<CubeItemBaseProps, 'children' | 'size'>,
+    Omit<CubeItemProps, 'children' | 'size'>,
     BasePropsWithoutChildren,
     BaseStyleProps,
     OuterStyleProps,
@@ -70,9 +70,9 @@ export interface CubePickerProps<T>
   /** Whether to flip the popover placement */
   shouldFlip?: boolean;
   /** Tooltip for the trigger button (separate from field tooltip) */
-  triggerTooltip?: CubeItemBaseProps['tooltip'];
+  triggerTooltip?: CubeItemProps['tooltip'];
   /** Description for the trigger button (separate from field description) */
-  triggerDescription?: CubeItemBaseProps['description'];
+  triggerDescription?: CubeItemProps['description'];
 
   /**
    * Custom renderer for the summary shown inside the trigger when there is a selection.

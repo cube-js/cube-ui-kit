@@ -67,7 +67,7 @@ import {
 import { HotKeys } from '../HotKeys';
 import { ItemBadge } from '../ItemBadge';
 
-export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
+export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   icon?: ReactNode | 'checkbox';
   rightIcon?: ReactNode;
   prefix?: ReactNode;
@@ -154,6 +154,7 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
 }
 
 const DEFAULT_ICON_STYLES: Styles = {
+  $: '>',
   display: 'grid',
   placeItems: 'center',
   placeContent: 'stretch',
@@ -169,6 +170,7 @@ const DEFAULT_ICON_STYLES: Styles = {
 };
 
 const ADDITION_STYLES: Styles = {
+  $: '>',
   display: 'grid',
   flow: 'column',
   placeItems: 'center',
@@ -189,7 +191,7 @@ const ACTIONS_EVENT_HANDLERS = {
   },
 };
 
-const ItemBaseElement = tasty({
+const ItemElement = tasty({
   styles: {
     display: 'inline-grid',
     flow: 'column dense',
@@ -214,6 +216,7 @@ const ItemBaseElement = tasty({
       '': 'auto auto',
       'with-description-block': 'auto auto auto',
     },
+    // Prevent items from shrinking inside vertical flex layouts (Menu, ListBox, etc)
     flexShrink: 0,
     position: 'relative',
     padding: 0,
@@ -224,7 +227,11 @@ const ItemBaseElement = tasty({
     },
     height: {
       '': 'min $size',
-      '[data-size="inline"]': 'initial',
+      '[data-size="inline"]': '(1lh + 2bw)',
+    },
+    width: {
+      '': 'min $size',
+      '[data-size="inline"]': 'min (1lh + 2bw)',
     },
     border: '#clear',
     fill: {
@@ -245,6 +252,7 @@ const ItemBaseElement = tasty({
       '': 't3m',
       '[data-size="xsmall"]': 't4',
       '[data-size="xlarge"]': 't2m',
+      '[data-size="inline"]': 'tag',
     },
     boxSizing: 'border-box',
     textDecoration: 'none',
@@ -264,11 +272,11 @@ const ItemBaseElement = tasty({
       '[data-size="medium"]': '$size-md',
       '[data-size="large"]': '$size-lg',
       '[data-size="xlarge"]': '$size-xl',
-      '[data-size="inline"]': '',
+      '[data-size="inline"]': '1lh',
     },
     '$inline-padding': {
       '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
-      '[data-size="inline"]': 0,
+      '[data-size="inline"]': '.25x',
     },
     '$block-padding': {
       '': '.5x',
@@ -283,6 +291,7 @@ const ItemBaseElement = tasty({
     RightIcon: DEFAULT_ICON_STYLES,
 
     Label: {
+      $: '>',
       display: 'block',
       placeSelf: 'center start',
       boxSizing: 'border-box',
@@ -316,6 +325,7 @@ const ItemBaseElement = tasty({
     },
 
     Description: {
+      $: '>',
       preset: 't4',
       color: 'inherit',
       opacity: 0.75,
@@ -369,6 +379,7 @@ const ItemBaseElement = tasty({
     },
 
     Actions: {
+      $: '>',
       display: 'flex',
       gap: '1bw',
       placeItems: 'center',
@@ -379,13 +390,16 @@ const ItemBaseElement = tasty({
       height: 'min ($size - 2bw)',
       gridRow: 'span 2',
       width: {
-        '': 'var(--actions-width, 0px)',
+        '': '($actions-width, 0px)',
         'with-actions-content': 'calc-size(max-content, size)',
       },
       transition: 'width $transition ease-out',
       interpolateSize: 'allow-keywords',
 
-      '$side-padding': 'max(min(.5x, (($size - 3x + 2bw) / 2)), 1bw)',
+      // Size for the action buttons
+      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (4x - 2bw))',
+      // Side padding for the button
+      '$side-padding': '(($size - $action-size - 2bw) / 2)',
     },
   },
   variants: {
@@ -431,7 +445,7 @@ export function useAutoTooltip({
   labelProps,
   isDynamicLabel = false, // if actions are set
 }: {
-  tooltip: CubeItemBaseProps['tooltip'];
+  tooltip: CubeItemProps['tooltip'];
   children: ReactNode;
   labelProps?: Props;
   isDynamicLabel?: boolean;
@@ -638,8 +652,8 @@ export function useAutoTooltip({
   };
 }
 
-const ItemBase = <T extends HTMLElement = HTMLDivElement>(
-  props: CubeItemBaseProps,
+const Item = <T extends HTMLElement = HTMLDivElement>(
+  props: CubeItemProps,
   ref: ForwardedRef<T>,
 ) => {
   let {
@@ -815,7 +829,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
           : style;
 
       return (
-        <ItemBaseElement
+        <ItemElement
           ref={handleRef}
           variant={
             theme && type ? (`${theme}.${type}` as ItemVariant) : undefined
@@ -861,7 +875,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
               ) : null}
             </div>
           )}
-        </ItemBaseElement>
+        </ItemElement>
       );
     },
     [
@@ -894,9 +908,15 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   return renderWithTooltip(renderItemElement, defaultTooltipPlacement);
 };
 
-const _ItemBase = Object.assign(forwardRef(ItemBase), {
+const _Item = Object.assign(forwardRef(Item), {
   Action: ItemAction,
   Badge: ItemBadge,
 });
 
-export { _ItemBase as ItemBase };
+export { _Item as Item };
+
+/**
+ * @deprecated Use `Item` instead. This export will be removed in a future version.
+ */
+export { _Item as ItemBase };
+export type { CubeItemProps as CubeItemBaseProps };

@@ -4,16 +4,17 @@ export const BooleanIcon = wrapIcon(
   'BooleanIcon',
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
+    width="24"
+    height="24"
     fill="none"
+    viewBox="0 0 24 24"
   >
     <path
-      fill="currentColor"
-      fillRule="evenodd"
-      d="M12.427 1.013 4.195 15.001H2.833l8.232-13.988h1.362ZM.04 2.964V1.821H5.25v1.143H3.292V8H1.997V2.964H.04Zm11.736 5.038v6.2h1.238v-2.22h2.591v-1.144h-2.59V9.145h2.868V8.002h-4.107Z"
-      clipRule="evenodd"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.5"
+      d="M17 17h3m1-4h-4v8M3 3h6M6 3v8M3 21 21 3"
     />
   </svg>,
 );

@@ -6,8 +6,7 @@ import { TreeState } from 'react-stately';
 import { RightIcon } from '../../../icons';
 import { Styles } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
-import { HotKeys } from '../../content/HotKeys';
-import { ItemBase } from '../../content/ItemBase/ItemBase';
+import { Item } from '../../content/Item/Item';
 
 import { useMenuContext } from './context';
 import { SubmenuTriggerContext } from './SubmenuTriggerContext';
@@ -85,7 +84,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     ...restCleanProps
   } = cleanItemProps as any;
 
-  // Selection indicator will be handled by ItemBase component
+  // Selection indicator will be handled by Item component
   const isVirtualFocused = state.selectionManager.focusedKey === key;
 
   const mods = {
@@ -95,11 +94,12 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     selected: isSelected,
     disabled: isDisabled,
     submenu: !!submenuContext,
+    menuitem: true,
   };
 
   return (
     <FocusRing>
-      <ItemBase
+      <Item
         {...mergeProps(menuItemProps, restCleanProps, {
           'data-popover-trigger': true,
           qa: itemQa ? itemQa : `MenuItem-${key}`,
@@ -142,7 +142,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
         size={size === 'small' ? 'small' : 'medium'}
       >
         {rendered}
-      </ItemBase>
+      </Item>
     </FocusRing>
   );
 }

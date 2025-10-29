@@ -29,18 +29,10 @@ const IconElement = tasty({
 
     '& svg': {
       transition: 'all',
-    },
-
-    '& svg.tabler-icon': {
       width: 'min 1em',
       height: '1em 1em',
       strokeWidth: '$stroke-width',
-    },
-
-    '& svg:not(.tabler-icon)': {
-      width: 'min (1em - 2px)',
-      height: '(1em - 2px) (1em - 2px)',
-      strokeWidth: '$stroke-width',
+      fontSize: 'inherit',
     },
   },
   styleProps: [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES],

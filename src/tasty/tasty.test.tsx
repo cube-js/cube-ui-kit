@@ -1132,6 +1132,44 @@ describe('tastyGlobal() API', () => {
     expect(styleContent).toContain('background-color: var(--surface-color)');
   });
 
+  it('should support direct child selector for sub-elements with $: ">"', () => {
+    const Card = tasty({
+      styles: {
+        padding: '2x',
+        Actions: {
+          $: '>',
+          display: 'flex',
+          gap: '1x',
+        },
+        Content: {
+          color: '#text',
+        },
+      },
+    });
+
+    const { container } = render(
+      <Card>
+        <div data-element="Actions">
+          <button>Action 1</button>
+        </div>
+        <div data-element="Content">Content text</div>
+      </Card>,
+    );
+
+    // Verify direct child selector is used for Actions
+    const styleElements = document.head.querySelectorAll('[data-tasty]');
+    const styleContent = Array.from(styleElements)
+      .map((el) => el.textContent)
+      .join('');
+
+    // Should have direct child selector for Actions
+    expect(styleContent).toMatch(/>\s*\[data-element="Actions"\]/);
+    // Should have descendant selector for Content (backward compatibility)
+    expect(styleContent).toMatch(/\s+\[data-element="Content"\]/);
+    // Should not match "> [data-element="Content"]"
+    expect(styleContent).not.toMatch(/>\s*\[data-element="Content"\]/);
+  });
+
   it('should support multiple global style components with different selectors', () => {
     const GlobalHeading = tasty('h1.special', {
       preset: 'h1',

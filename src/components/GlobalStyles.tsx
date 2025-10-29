@@ -90,11 +90,13 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
     padding: 0 var(--outline-width);
   }
 
-  :not([data-qa="Icon"]) .tabler-icon {
-    max-width: var(--icon-size);
-    min-width: var(--icon-size);
-    min-height: var(--icon-size);
-    max-height: var(--icon-size);
+  :not([data-qa$="Icon"]) > .tabler-icon {
+    font-size: var(--icon-size);
+    width: 1em;
+    height: 1em;
+    min-width: 1em;
+    min-height: 1em;
+    max-height: 1em;
     stroke-width: var(--stroke-width);
   }
 

@@ -47,9 +47,9 @@ import {
   StyledHeader,
   StyledSectionHeading,
 } from '../../actions/Menu/styled';
-import { ItemBase } from '../../content/ItemBase/ItemBase';
+import { CollectionItem, CubeCollectionItemProps } from '../../CollectionItem';
+import { Item } from '../../content/Item/Item';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { CubeItemProps, Item } from '../../Item';
 
 import type { CollectionBase, Key } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
@@ -111,8 +111,8 @@ const ListBoxScrollElement = tasty({
   },
 });
 
-// Create an extended ItemBase for ListBox options with 'all' modifier support
-const ListBoxItemBase = tasty(ItemBase, {
+// Create an extended Item for ListBox options with 'all' modifier support
+const ListBoxItem = tasty(Item, {
   as: 'li',
   styles: {
     margin: {
@@ -295,7 +295,7 @@ export interface CubeListBoxProps<T>
   /**
    * Props to apply to the "Select All" option.
    */
-  allValueProps?: Partial<CubeItemProps<T>>;
+  allValueProps?: Partial<CubeCollectionItemProps<T>>;
 
   /**
    * Filter function to apply to the collection nodes.
@@ -303,6 +303,12 @@ export interface CubeListBoxProps<T>
    * Useful for implementing search/filter functionality.
    */
   filter?: (nodes: Iterable<any>) => Iterable<any>;
+
+  /**
+   * Label to display when the list is empty (no items available).
+   * Defaults to "No items".
+   */
+  emptyLabel?: ReactNode;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -328,7 +334,7 @@ const SelectAllOption = ({
   state: any;
   lastFocusSourceRef: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
   onClick: (propagate?: boolean) => void;
-  allValueProps?: Partial<CubeItemProps<any>>;
+  allValueProps?: Partial<CubeCollectionItemProps<any>>;
 }) => {
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
@@ -412,7 +418,7 @@ const SelectAllOption = ({
 
   return (
     <>
-      <ListBoxItemBase
+      <ListBoxItem
         ref={localRef}
         data-size={size}
         size={size}
@@ -422,6 +428,7 @@ const SelectAllOption = ({
         isDisabled={isDisabled}
         icon={checkboxIcon}
         mods={{
+          listboxitem: true,
           disabled: isDisabled,
           checkable: isCheckable,
           hovered: isHovered,
@@ -433,7 +440,7 @@ const SelectAllOption = ({
         })}
       >
         {label}
-      </ListBoxItemBase>
+      </ListBoxItem>
       <StyledDivider />
     </>
   );
@@ -508,6 +515,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     selectAllLabel,
     allValueProps,
     filter,
+    emptyLabel = 'No items',
     form,
     ...otherProps
   } = props;
@@ -781,46 +789,42 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     }
   }, [shouldVirtualize, itemsArray, rowVirtualizer]);
 
-  // Keep focused item visible when virtualizing, but only for keyboard navigation
-  useEffect(() => {
-    if (!shouldVirtualize) return;
+  // Keep focused item visible, but only for keyboard navigation
+  useLayoutEffect(() => {
     const focusedKey = listState.selectionManager.focusedKey;
-    if (focusedKey != null) {
-      const idx = itemsArrayRef.current.findIndex(
-        (it) => it.key === focusedKey,
-      );
-      if (idx !== -1) {
-        // Check if the focused item is actually visible in the current viewport
-        // (not just rendered due to overscan)
-        const scrollElement = scrollRef.current;
-        if (scrollElement) {
-          const scrollTop = scrollElement.scrollTop;
-          const viewportHeight = scrollElement.clientHeight;
-          const viewportBottom = scrollTop + viewportHeight;
+    if (focusedKey == null) return;
 
-          // Find the virtual item for this index
-          const virtualItems = rowVirtualizer.getVirtualItems();
-          const virtualItem = virtualItems.find((item) => item.index === idx);
+    // Only scroll on keyboard navigation
+    if (lastFocusSourceRef.current !== 'keyboard') return;
 
-          let isAlreadyVisible = false;
-          if (virtualItem) {
-            const itemTop = virtualItem.start;
-            const itemBottom = virtualItem.start + virtualItem.size;
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
 
-            // Check if the item is fully visible in the viewport
-            // We should scroll if the item is partially hidden
-            isAlreadyVisible =
-              itemTop >= scrollTop && itemBottom <= viewportBottom;
-          }
+    const itemElement = scrollElement.querySelector(
+      `[data-key="${CSS.escape(String(focusedKey))}"]`,
+    ) as HTMLElement;
+    if (!itemElement) return;
 
-          // Only scroll if the item is not already visible AND the focus change was due to keyboard navigation
-          if (!isAlreadyVisible && lastFocusSourceRef.current === 'keyboard') {
-            rowVirtualizer.scrollToIndex(idx, { align: 'auto' });
-          }
-        }
-      }
+    const scrollTop = scrollElement.scrollTop;
+    const viewportHeight = scrollElement.clientHeight;
+    const viewportBottom = scrollTop + viewportHeight;
+
+    const itemRect = itemElement.getBoundingClientRect();
+    const scrollRect = scrollElement.getBoundingClientRect();
+
+    // Calculate item position relative to scroll container
+    const itemTop = itemRect.top - scrollRect.top + scrollTop;
+    const itemBottom = itemTop + itemRect.height;
+
+    // Check if the item is fully visible in the viewport
+    const isAlreadyVisible =
+      itemTop >= scrollTop && itemBottom <= viewportBottom;
+
+    if (!isAlreadyVisible) {
+      // Use scrollIntoView with block: 'nearest' to minimize scroll jumps
+      itemElement.scrollIntoView({ block: 'nearest', behavior: 'auto' });
     }
-  }, [shouldVirtualize, listState.selectionManager.focusedKey, itemsArray]);
+  }, [listState.selectionManager.focusedKey, itemsArray]);
 
   // Merge React Aria listbox props with custom keyboard props so both sets of
   // event handlers (e.g. Arrow navigation *and* our Escape handler) are
@@ -886,110 +890,116 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       )}
       {/* Scroll container wrapper */}
       <ListBoxScrollElement ref={scrollRef} mods={mods} {...focusProps}>
-        <ListElement
-          qa={qa || 'ListBox'}
-          {...mergedListBoxProps}
-          ref={listRef}
-          styles={listStyles}
-          aria-disabled={isDisabled || undefined}
-          mods={{ sections: hasSections }}
-          style={
-            shouldVirtualize
-              ? {
-                  position: 'relative',
-                  height: `${rowVirtualizer.getTotalSize() + 3}px`,
-                }
-              : undefined
-          }
-        >
-          {shouldVirtualize
-            ? rowVirtualizer.getVirtualItems().map((virtualItem) => {
-                const item = itemsArray[virtualItem.index];
+        {listState.collection.size === 0 ? (
+          <Item preset="t4" color="#dark-03" size={size} padding="(.5x - 1bw)">
+            {emptyLabel}
+          </Item>
+        ) : (
+          <ListElement
+            qa={qa || 'ListBox'}
+            {...mergedListBoxProps}
+            ref={listRef}
+            styles={listStyles}
+            aria-disabled={isDisabled || undefined}
+            mods={{ sections: hasSections }}
+            style={
+              shouldVirtualize
+                ? {
+                    position: 'relative',
+                    height: `${rowVirtualizer.getTotalSize() + 3}px`,
+                  }
+                : undefined
+            }
+          >
+            {shouldVirtualize
+              ? rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                  const item = itemsArray[virtualItem.index];
 
-                return (
-                  <Option
-                    key={virtualItem.key}
-                    size={size}
-                    item={item}
-                    state={listState}
-                    styles={optionStyles}
-                    isParentDisabled={isDisabled}
-                    validationState={validationState}
-                    focusOnHover={focusOnHover}
-                    isCheckable={isCheckable}
-                    // We don't need to measure the element here, because the height is already set by the virtualizer
-                    // This is a workaround to avoid glitches when selecting/deselecting items
-                    virtualRef={rowVirtualizer.measureElement as any}
-                    virtualStyle={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      transform: `translateY(${virtualItem.start}px)`,
-                    }}
-                    virtualIndex={virtualItem.index}
-                    lastFocusSourceRef={lastFocusSourceRef}
-                    onClick={onOptionClick}
-                  />
-                );
-              })
-            : (() => {
-                const renderedItems: ReactNode[] = [];
-                let isFirstSection = true;
+                  return (
+                    <Option
+                      key={virtualItem.key}
+                      size={size}
+                      item={item}
+                      state={listState}
+                      styles={optionStyles}
+                      isParentDisabled={isDisabled}
+                      validationState={validationState}
+                      focusOnHover={focusOnHover}
+                      isCheckable={isCheckable}
+                      // We don't need to measure the element here, because the height is already set by the virtualizer
+                      // This is a workaround to avoid glitches when selecting/deselecting items
+                      virtualRef={rowVirtualizer.measureElement as any}
+                      virtualStyle={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        transform: `translateY(${virtualItem.start}px)`,
+                      }}
+                      virtualIndex={virtualItem.index}
+                      lastFocusSourceRef={lastFocusSourceRef}
+                      onClick={onOptionClick}
+                    />
+                  );
+                })
+              : (() => {
+                  const renderedItems: ReactNode[] = [];
+                  let isFirstSection = true;
 
-                for (const item of listState.collection) {
-                  if (item.type === 'section') {
-                    if (!isFirstSection) {
+                  for (const item of listState.collection) {
+                    if (item.type === 'section') {
+                      if (!isFirstSection) {
+                        renderedItems.push(
+                          <StyledDivider
+                            key={`divider-${String(item.key)}`}
+                            role="separator"
+                            aria-orientation="horizontal"
+                          />,
+                        );
+                      }
+
                       renderedItems.push(
-                        <StyledDivider
-                          key={`divider-${String(item.key)}`}
-                          role="separator"
-                          aria-orientation="horizontal"
+                        <ListBoxSection
+                          key={item.key}
+                          item={item}
+                          state={listState}
+                          optionStyles={optionStyles}
+                          headingStyles={headingStyles}
+                          sectionStyles={sectionStyles}
+                          isParentDisabled={isDisabled}
+                          validationState={validationState}
+                          focusOnHover={focusOnHover}
+                          isCheckable={isCheckable}
+                          size={size}
+                          lastFocusSourceRef={lastFocusSourceRef}
+                          onClick={onOptionClick}
+                        />,
+                      );
+
+                      isFirstSection = false;
+                    } else {
+                      renderedItems.push(
+                        <Option
+                          key={item.key}
+                          size={size}
+                          item={item}
+                          state={listState}
+                          styles={optionStyles}
+                          isParentDisabled={isDisabled}
+                          validationState={validationState}
+                          focusOnHover={focusOnHover}
+                          isCheckable={isCheckable}
+                          lastFocusSourceRef={lastFocusSourceRef}
+                          onClick={onOptionClick}
                         />,
                       );
                     }
-
-                    renderedItems.push(
-                      <ListBoxSection
-                        key={item.key}
-                        item={item}
-                        state={listState}
-                        optionStyles={optionStyles}
-                        headingStyles={headingStyles}
-                        sectionStyles={sectionStyles}
-                        isParentDisabled={isDisabled}
-                        validationState={validationState}
-                        focusOnHover={focusOnHover}
-                        isCheckable={isCheckable}
-                        size={size}
-                        lastFocusSourceRef={lastFocusSourceRef}
-                        onClick={onOptionClick}
-                      />,
-                    );
-
-                    isFirstSection = false;
-                  } else {
-                    renderedItems.push(
-                      <Option
-                        key={item.key}
-                        size={size}
-                        item={item}
-                        state={listState}
-                        styles={optionStyles}
-                        isParentDisabled={isDisabled}
-                        validationState={validationState}
-                        focusOnHover={focusOnHover}
-                        isCheckable={isCheckable}
-                        lastFocusSourceRef={lastFocusSourceRef}
-                        onClick={onOptionClick}
-                      />,
-                    );
                   }
-                }
 
-                return renderedItems;
-              })()}
-        </ListElement>
+                  return renderedItems;
+                })()}
+          </ListElement>
+        )}
       </ListBoxScrollElement>
       {footer ? (
         <StyledFooter styles={footerStyles} data-size={size}>
@@ -1010,7 +1020,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   );
 }) as unknown as (<T>(
   props: CubeListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
-) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
+) => ReactElement) & {
+  Item: typeof CollectionItem;
+  Section: typeof BaseSection;
+};
 
 function Option({
   size = 'medium',
@@ -1184,10 +1197,11 @@ function Option({
     { valid: 'success', invalid: 'danger' }[validationState] || 'default';
 
   return (
-    <ListBoxItemBase
+    <ListBoxItem
       ref={combinedRef}
       qa={item.props?.qa}
       id={`ListBoxItem-${String(item.key)}`}
+      data-key={String(item.key)}
       {...mergeProps(filteredOptionProps, hoverProps, {
         onClick: handleOptionClick,
         onKeyDown,
@@ -1216,6 +1230,7 @@ function Option({
       tooltip={item.props?.tooltip}
       defaultTooltipPlacement="right"
       mods={{
+        listboxitem: true,
         focused: isFocused,
         pressed: isPressed,
         valid: isSelected && validationState === 'valid',
@@ -1226,7 +1241,7 @@ function Option({
       }}
     >
       {item.rendered}
-    </ListBoxItemBase>
+    </ListBoxItem>
   );
 }
 
@@ -1306,7 +1321,7 @@ const ListBoxSectionComponent = Object.assign(BaseSection, {
   displayName: 'Section',
 }) as SectionComponent;
 
-ListBox.Item = Item;
+ListBox.Item = CollectionItem;
 
 ListBox.Section = ListBoxSectionComponent;
 

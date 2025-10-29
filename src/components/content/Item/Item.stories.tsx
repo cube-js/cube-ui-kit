@@ -11,17 +11,18 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { DirectionIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button, ItemAction } from '../../actions';
+import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { Title } from '../Title';
 
-import { CubeItemBaseProps, ItemBase } from './ItemBase';
+import { CubeItemProps, Item } from './Item';
 
 // Using any type due to Storybook type compatibility issues
 type StoryFn<T = {}> = any;
 
 export default {
-  title: 'Content/ItemBase',
-  component: ItemBase,
+  title: 'Content/Item',
+  component: Item,
   parameters: {
     controls: {
       exclude: baseProps,
@@ -31,7 +32,7 @@ export default {
     /* Content */
     children: {
       control: { type: 'text' },
-      description: 'The content inside the ItemBase',
+      description: 'The content inside the Item',
     },
     icon: {
       control: { type: null },
@@ -67,7 +68,7 @@ export default {
     size: {
       options: ['xsmall', 'small', 'medium', 'large', 'xlarge', 'inline'],
       control: { type: 'radio' },
-      description: 'ItemBase size',
+      description: 'Item size',
       table: {
         defaultValue: { summary: 'medium' },
       },
@@ -80,90 +81,88 @@ const DEFAULT_STYLES = {
   // radius: true,
 };
 
-const DefaultTemplate: StoryFn<CubeItemBaseProps> = (props) => (
-  <ItemBase {...props} />
-);
+const DefaultTemplate: StoryFn<CubeItemProps> = (props) => <Item {...props} />;
 
-const Template: StoryFn<CubeItemBaseProps> = (props) => (
-  <ItemBase styles={DEFAULT_STYLES} {...props} />
+const Template: StoryFn<CubeItemProps> = (props) => (
+  <Item styles={DEFAULT_STYLES} {...props} />
 );
 
 export const Default = DefaultTemplate.bind({});
 Default.args = {
-  children: 'Default ItemBase',
+  children: 'Default Item',
 };
 
 export const WithIcon = Template.bind({});
 WithIcon.args = {
-  children: 'ItemBase with icon',
+  children: 'Item with icon',
   icon: <IconUser />,
 };
 
 export const WithRightIcon = Template.bind({});
 WithRightIcon.args = {
-  children: 'ItemBase with right icon',
+  children: 'Item with right icon',
   rightIcon: <IconSettings />,
 };
 
 export const WithBothIcons = Template.bind({});
 WithBothIcons.args = {
-  children: 'ItemBase with both icons',
+  children: 'Item with both icons',
   icon: <IconUser />,
   rightIcon: <IconSettings />,
 };
 
 export const WithPrefix = Template.bind({});
 WithPrefix.args = {
-  children: 'ItemBase with prefix',
+  children: 'Item with prefix',
   prefix: '$',
 };
 
 export const WithSuffix = Template.bind({});
 WithSuffix.args = {
-  children: 'ItemBase with suffix',
+  children: 'Item with suffix',
   suffix: '.00',
 };
 
 export const FullConfiguration = Template.bind({});
 FullConfiguration.args = {
-  children: 'Complete ItemBase',
+  children: 'Complete Item',
   icon: <IconCoin />,
   rightIcon: <IconSettings />,
   prefix: '$',
   suffix: '.00',
 };
 
-export const DifferentSizes: StoryFn<CubeItemBaseProps> = (args) => (
+export const DifferentSizes: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
-    <Title level={5}>XSmall ItemBase</Title>
-    <ItemBase {...args} size="xsmall" styles={DEFAULT_STYLES}>
+    <Title level={5}>XSmall Item</Title>
+    <Item {...args} size="xsmall" styles={DEFAULT_STYLES}>
       XSmall size
-    </ItemBase>
+    </Item>
 
-    <Title level={5}>Small ItemBase</Title>
-    <ItemBase {...args} size="small" styles={DEFAULT_STYLES}>
+    <Title level={5}>Small Item</Title>
+    <Item {...args} size="small" styles={DEFAULT_STYLES}>
       Small size
-    </ItemBase>
+    </Item>
 
-    <Title level={5}>Medium ItemBase</Title>
-    <ItemBase {...args} size="medium" styles={DEFAULT_STYLES}>
+    <Title level={5}>Medium Item</Title>
+    <Item {...args} size="medium" styles={DEFAULT_STYLES}>
       Medium size
-    </ItemBase>
+    </Item>
 
-    <Title level={5}>Large ItemBase</Title>
-    <ItemBase {...args} size="large" styles={DEFAULT_STYLES}>
+    <Title level={5}>Large Item</Title>
+    <Item {...args} size="large" styles={DEFAULT_STYLES}>
       Large size
-    </ItemBase>
+    </Item>
 
-    <Title level={5}>XLarge ItemBase</Title>
-    <ItemBase {...args} size="xlarge" styles={DEFAULT_STYLES}>
+    <Title level={5}>XLarge Item</Title>
+    <Item {...args} size="xlarge" styles={DEFAULT_STYLES}>
       XLarge size
-    </ItemBase>
+    </Item>
 
-    <Title level={5}>Inline ItemBase</Title>
-    <ItemBase {...args} size="inline" styles={DEFAULT_STYLES}>
+    <Title level={5}>Inline Item</Title>
+    <Item {...args} size="inline" styles={DEFAULT_STYLES}>
       Inline size
-    </ItemBase>
+    </Item>
   </Space>
 );
 
@@ -175,15 +174,15 @@ DifferentSizes.parameters = {
   docs: {
     description: {
       story:
-        'ItemBase supports six sizes: `xsmall`, `small`, `medium` (default), `large`, `xlarge`, and `inline` to accommodate different interface requirements.',
+        'Item supports six sizes: `xsmall`, `small`, `medium` (default), `large`, `xlarge`, and `inline` to accommodate different interface requirements.',
     },
   },
 };
 
-export const SizesWithIcons: StoryFn<CubeItemBaseProps> = (args) => (
+export const SizesWithIcons: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>XSmall with Icons</Title>
-    <ItemBase
+    <Item
       {...args}
       size="xsmall"
       styles={DEFAULT_STYLES}
@@ -191,10 +190,10 @@ export const SizesWithIcons: StoryFn<CubeItemBaseProps> = (args) => (
       rightIcon={<DirectionIcon to="bottom" />}
     >
       XSmall with icons
-    </ItemBase>
+    </Item>
 
     <Title level={5}>Small with Icons</Title>
-    <ItemBase
+    <Item
       {...args}
       size="small"
       styles={DEFAULT_STYLES}
@@ -202,10 +201,10 @@ export const SizesWithIcons: StoryFn<CubeItemBaseProps> = (args) => (
       rightIcon={<DirectionIcon to="bottom" />}
     >
       Small with icons
-    </ItemBase>
+    </Item>
 
     <Title level={5}>Medium with Icons</Title>
-    <ItemBase
+    <Item
       {...args}
       size="medium"
       styles={DEFAULT_STYLES}
@@ -213,10 +212,10 @@ export const SizesWithIcons: StoryFn<CubeItemBaseProps> = (args) => (
       rightIcon={<DirectionIcon to="bottom" />}
     >
       Medium with icons
-    </ItemBase>
+    </Item>
 
     <Title level={5}>Large with Icons</Title>
-    <ItemBase
+    <Item
       {...args}
       size="large"
       styles={DEFAULT_STYLES}
@@ -224,10 +223,10 @@ export const SizesWithIcons: StoryFn<CubeItemBaseProps> = (args) => (
       rightIcon={<DirectionIcon to="bottom" />}
     >
       Large with icons
-    </ItemBase>
+    </Item>
 
     <Title level={5}>XLarge with Icons</Title>
-    <ItemBase
+    <Item
       {...args}
       size="xlarge"
       styles={DEFAULT_STYLES}
@@ -235,10 +234,10 @@ export const SizesWithIcons: StoryFn<CubeItemBaseProps> = (args) => (
       rightIcon={<DirectionIcon to="bottom" />}
     >
       XLarge with icons
-    </ItemBase>
+    </Item>
 
     <Title level={5}>Inline with Icons</Title>
-    <ItemBase
+    <Item
       {...args}
       size="inline"
       styles={DEFAULT_STYLES}
@@ -246,7 +245,7 @@ export const SizesWithIcons: StoryFn<CubeItemBaseProps> = (args) => (
       rightIcon={<DirectionIcon to="bottom" />}
     >
       Inline with icons
-    </ItemBase>
+    </Item>
   </Space>
 );
 
@@ -258,15 +257,15 @@ SizesWithIcons.parameters = {
   docs: {
     description: {
       story:
-        'Comparison of all ItemBase sizes when used with icons to show how the component adapts to different content configurations.',
+        'Comparison of all Item sizes when used with icons to show how the component adapts to different content configurations.',
     },
   },
 };
 
-export const TextOverflow: StoryFn<CubeItemBaseProps> = (args) => (
+export const TextOverflow: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Text Overflow with Limited Width</Title>
-    <ItemBase
+    <Item
       {...args}
       styles={{ ...DEFAULT_STYLES, width: '200px' }}
       icon={<IconUser />}
@@ -274,10 +273,10 @@ export const TextOverflow: StoryFn<CubeItemBaseProps> = (args) => (
     >
       This is a very long text that should overflow and show ellipsis when the
       container width is limited
-    </ItemBase>
+    </Item>
 
     <Title level={5}>Text Overflow with Prefix and Suffix</Title>
-    <ItemBase
+    <Item
       {...args}
       styles={{ ...DEFAULT_STYLES, width: '180px' }}
       icon={<IconCoin />}
@@ -285,34 +284,34 @@ export const TextOverflow: StoryFn<CubeItemBaseProps> = (args) => (
       suffix=".00"
     >
       Very long product name that exceeds container width
-    </ItemBase>
+    </Item>
 
     <Title level={5}>Different Sizes with Text Overflow</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         size="small"
         styles={{ ...DEFAULT_STYLES, width: '150px' }}
         icon={<IconUser />}
       >
         Long text in small size component
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         size="medium"
         styles={{ ...DEFAULT_STYLES, width: '150px' }}
         icon={<IconUser />}
       >
         Long text in medium size component
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         size="large"
         styles={{ ...DEFAULT_STYLES, width: '150px' }}
         icon={<IconUser />}
       >
         Long text in large size component
-      </ItemBase>
+      </Item>
     </Space>
   </Space>
 );
@@ -321,25 +320,25 @@ TextOverflow.parameters = {
   docs: {
     description: {
       story:
-        'Demonstrates how ItemBase handles text overflow with ellipsis when content exceeds the available width. The component uses `text-overflow: ellipsis` and `white-space: nowrap` to gracefully handle long content.',
+        'Demonstrates how Item handles text overflow with ellipsis when content exceeds the available width. The component uses `text-overflow: ellipsis` and `white-space: nowrap` to gracefully handle long content.',
     },
   },
 };
 
-export const ExtraWidth: StoryFn<CubeItemBaseProps> = (args) => (
+export const ExtraWidth: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Short Text with Extra Width</Title>
-    <ItemBase
+    <Item
       {...args}
       styles={{ ...DEFAULT_STYLES, width: '500px' }}
       icon={<IconUser />}
       rightIcon={<DirectionIcon to="bottom" />}
     >
       Short text
-    </ItemBase>
+    </Item>
 
     <Title level={5}>Medium Text with Extra Width</Title>
-    <ItemBase
+    <Item
       {...args}
       styles={{ ...DEFAULT_STYLES, width: '400px' }}
       icon={<IconCoin />}
@@ -347,45 +346,45 @@ export const ExtraWidth: StoryFn<CubeItemBaseProps> = (args) => (
       suffix=".00"
     >
       Product name
-    </ItemBase>
+    </Item>
 
     <Title level={5}>Different Sizes with Extra Width</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         size="small"
         styles={{ ...DEFAULT_STYLES, width: '350px' }}
         icon={<IconUser />}
       >
         Small size
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         size="medium"
         styles={{ ...DEFAULT_STYLES, width: '350px' }}
         icon={<IconUser />}
       >
         Medium size
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         size="large"
         styles={{ ...DEFAULT_STYLES, width: '350px' }}
         icon={<IconUser />}
       >
         Large size
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Icon Only with Extra Width</Title>
-    <ItemBase
+    <Item
       {...args}
       styles={{ ...DEFAULT_STYLES, width: '300px' }}
       icon={<IconUser />}
       rightIcon={<DirectionIcon to="bottom" />}
     >
       Icon
-    </ItemBase>
+    </Item>
   </Space>
 );
 
@@ -393,98 +392,78 @@ ExtraWidth.parameters = {
   docs: {
     description: {
       story:
-        'Shows how ItemBase behaves when given more width than needed for its content. The component maintains its grid layout with proper spacing, and content alignment is controlled by the `placeItems` property.',
+        'Shows how Item behaves when given more width than needed for its content. The component maintains its grid layout with proper spacing, and content alignment is controlled by the `placeItems` property.',
     },
   },
 };
 
-export const WithCheckbox: StoryFn<CubeItemBaseProps> = (args) => (
+export const WithCheckbox: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Selected Items (Checkbox Visible)</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase {...args} styles={DEFAULT_STYLES} isSelected={true}>
+      <Item {...args} styles={DEFAULT_STYLES} isSelected={true}>
         Selected item with checkbox
-      </ItemBase>
-      <ItemBase
-        {...args}
-        styles={DEFAULT_STYLES}
-        isSelected={true}
-        size="small"
-      >
+      </Item>
+      <Item {...args} styles={DEFAULT_STYLES} isSelected={true} size="small">
         Small selected item
-      </ItemBase>
-      <ItemBase
-        {...args}
-        styles={DEFAULT_STYLES}
-        isSelected={true}
-        size="large"
-      >
+      </Item>
+      <Item {...args} styles={DEFAULT_STYLES} isSelected={true} size="large">
         Large selected item
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Non-Selected Items (Checkbox Hidden)</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase {...args} styles={DEFAULT_STYLES} isSelected={false}>
+      <Item {...args} styles={DEFAULT_STYLES} isSelected={false}>
         Non-selected item with hidden checkbox
-      </ItemBase>
-      <ItemBase
-        {...args}
-        styles={DEFAULT_STYLES}
-        isSelected={false}
-        size="small"
-      >
+      </Item>
+      <Item {...args} styles={DEFAULT_STYLES} isSelected={false} size="small">
         Small non-selected item
-      </ItemBase>
-      <ItemBase
-        {...args}
-        styles={DEFAULT_STYLES}
-        isSelected={false}
-        size="large"
-      >
+      </Item>
+      <Item {...args} styles={DEFAULT_STYLES} isSelected={false} size="large">
         Large non-selected item
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Mixed Selection States</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         isSelected={true}
         suffix="Selected"
       >
         Item 1
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         isSelected={false}
         suffix="Not selected"
       >
         Item 2
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         isSelected={true}
         suffix="Selected"
       >
         Item 3
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Comparison: Checkbox vs Regular Icon</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase {...args} styles={DEFAULT_STYLES} isSelected={true}>
+      <Item {...args} styles={DEFAULT_STYLES} isSelected={true}>
         With checkbox (selected)
-      </ItemBase>
-      <ItemBase {...args} styles={DEFAULT_STYLES} isSelected={false}>
+      </Item>
+      <Item {...args} styles={DEFAULT_STYLES} isSelected={false}>
         With checkbox (not selected)
-      </ItemBase>
-      <ItemBase {...args} styles={DEFAULT_STYLES} icon={<IconUser />}>
+      </Item>
+      <Item {...args} styles={DEFAULT_STYLES} icon={<IconUser />}>
         With regular icon
-      </ItemBase>
+      </Item>
     </Space>
   </Space>
 );
@@ -502,11 +481,11 @@ WithCheckbox.parameters = {
   },
 };
 
-export const WithHotkeys: StoryFn<CubeItemBaseProps> = (args) => (
+export const WithHotkeys: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
-    <Title level={5}>ItemBase with Hotkeys</Title>
+    <Title level={5}>Item with Hotkeys</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         hotkeys="cmd+s"
@@ -514,8 +493,8 @@ export const WithHotkeys: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Save action triggered!')}
       >
         Save Document
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         hotkeys="cmd+shift+n"
@@ -525,8 +504,8 @@ export const WithHotkeys: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('New action triggered!')}
       >
         New Item
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         hotkeys="esc"
@@ -535,12 +514,12 @@ export const WithHotkeys: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Cancel action triggered!')}
       >
         Cancel
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Different Sizes with Hotkeys</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         size="small"
@@ -549,8 +528,8 @@ export const WithHotkeys: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Small button clicked!')}
       >
         Small with hotkey
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         size="large"
@@ -559,11 +538,11 @@ export const WithHotkeys: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Large button clicked!')}
       >
         Large with hotkey
-      </ItemBase>
+      </Item>
     </Space>
 
-    <Title level={5}>Disabled ItemBase with Hotkeys</Title>
-    <ItemBase
+    <Title level={5}>Disabled Item with Hotkeys</Title>
+    <Item
       {...args}
       styles={DEFAULT_STYLES}
       hotkeys="cmd+d"
@@ -572,7 +551,7 @@ export const WithHotkeys: StoryFn<CubeItemBaseProps> = (args) => (
       onClick={() => alert('This should not trigger!')}
     >
       Disabled (hotkey won't work)
-    </ItemBase>
+    </Item>
   </Space>
 );
 
@@ -589,11 +568,11 @@ WithHotkeys.parameters = {
   },
 };
 
-export const WithTooltip: StoryFn<CubeItemBaseProps> = (args) => (
+export const WithTooltip: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Simple String Tooltips</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         tooltip={{ title: 'Simple tooltip text', activeWrap: true }}
@@ -602,8 +581,8 @@ export const WithTooltip: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Button clicked!')}
       >
         Hover for tooltip
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         tooltip={{
@@ -615,12 +594,12 @@ export const WithTooltip: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Primary button clicked!')}
       >
         Primary with tooltip
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Advanced Tooltip Configuration</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         tooltip={{
@@ -633,8 +612,8 @@ export const WithTooltip: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Top tooltip clicked!')}
       >
         Top placement
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         tooltip={{
@@ -646,11 +625,11 @@ export const WithTooltip: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Right tooltip clicked!')}
       >
         Right placement
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Tooltip with Hotkeys</Title>
-    <ItemBase
+    <Item
       {...args}
       styles={DEFAULT_STYLES}
       tooltip={{
@@ -664,11 +643,11 @@ export const WithTooltip: StoryFn<CubeItemBaseProps> = (args) => (
       onClick={() => alert('Save triggered!')}
     >
       Save Document
-    </ItemBase>
+    </Item>
 
     <Title level={5}>Different Sizes with Tooltips</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         size="small"
@@ -677,8 +656,8 @@ export const WithTooltip: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Small clicked!')}
       >
         Small
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         size="large"
@@ -687,7 +666,7 @@ export const WithTooltip: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Large clicked!')}
       >
         Large
-      </ItemBase>
+      </Item>
     </Space>
   </Space>
 );
@@ -705,11 +684,11 @@ WithTooltip.parameters = {
   },
 };
 
-export const CombinedFeatures: StoryFn<CubeItemBaseProps> = (args) => (
+export const CombinedFeatures: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Hotkeys + Tooltip + Icons</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         hotkeys="cmd+n"
@@ -724,8 +703,8 @@ export const CombinedFeatures: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('New document created!')}
       >
         New Document
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         hotkeys="cmd+o"
@@ -739,12 +718,12 @@ export const CombinedFeatures: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Open document!')}
       >
         Open Document
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>With Checkbox Selection</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         isSelected={true}
@@ -757,8 +736,8 @@ export const CombinedFeatures: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Selection toggled!')}
       >
         Selected item
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         isSelected={false}
@@ -771,11 +750,11 @@ export const CombinedFeatures: StoryFn<CubeItemBaseProps> = (args) => (
         onClick={() => alert('Item selected!')}
       >
         Unselected item
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Complete Configuration</Title>
-    <ItemBase
+    <Item
       {...args}
       styles={DEFAULT_STYLES}
       hotkeys="cmd+shift+s"
@@ -794,7 +773,7 @@ export const CombinedFeatures: StoryFn<CubeItemBaseProps> = (args) => (
       onClick={() => alert('Special save!')}
     >
       Save Special
-    </ItemBase>
+    </Item>
   </Space>
 );
 
@@ -806,16 +785,16 @@ CombinedFeatures.parameters = {
   docs: {
     description: {
       story:
-        'Demonstrates the combination of hotkeys, tooltips, icons, checkboxes, and other ItemBase features working together. This shows the full potential of the enhanced ItemBase component.',
+        'Demonstrates the combination of hotkeys, tooltips, icons, checkboxes, and other Item features working together. This shows the full potential of the enhanced Item component.',
     },
   },
 };
 
-export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
+export const WithLoading: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Auto Loading Slot Selection</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         isLoading={true}
@@ -824,8 +803,8 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         rightIcon={<IconSettings />}
       >
         Auto: icon present (loads in icon)
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         isLoading={true}
@@ -833,8 +812,8 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         rightIcon={<IconSettings />}
       >
         Auto: no icon, rightIcon present (loads in rightIcon)
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         isLoading={true}
@@ -843,12 +822,12 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         suffix=".00"
       >
         Auto: no icons present (fallback to icon)
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Specific Loading Slots</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         isLoading={true}
@@ -857,8 +836,8 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         rightIcon={<IconSettings />}
       >
         Explicit icon slot
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         isLoading={true}
@@ -867,8 +846,8 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         rightIcon={<IconSettings />}
       >
         Explicit rightIcon slot
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         isLoading={true}
@@ -877,8 +856,8 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         prefix="$"
       >
         Explicit prefix slot
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         isLoading={true}
@@ -887,12 +866,12 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         suffix=".00"
       >
         Explicit suffix slot
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Different Sizes with Auto Loading</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         size="small"
@@ -900,8 +879,8 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         icon={<IconUser />}
       >
         Small size
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         size="medium"
@@ -909,8 +888,8 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         icon={<IconUser />}
       >
         Medium size
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         size="large"
@@ -918,12 +897,12 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         icon={<IconUser />}
       >
         Large size
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Loading with Different Visual Types</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="item"
@@ -931,8 +910,8 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         icon={<IconUser />}
       >
         Item type
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="primary"
@@ -940,8 +919,8 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         icon={<IconUser />}
       >
         Primary type
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="secondary"
@@ -949,7 +928,7 @@ export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
         icon={<IconUser />}
       >
         Secondary type
-      </ItemBase>
+      </Item>
     </Space>
   </Space>
 );
@@ -967,131 +946,673 @@ WithLoading.parameters = {
   },
 };
 
-export const WithDescriptionBlock: StoryFn<CubeItemBaseProps> = (args) => (
+export const WithDescription: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
-    <Title level={5}>Description Position Comparison</Title>
-    <Space gap="2x" flow="column" placeItems="start">
-      <ItemBase
+    <Title level={5}>Description Placement: Inline (Default)</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
         icon={<IconUser />}
-        description="This description appears inside the content area"
+        description="Inline description appears next to the label"
         descriptionPlacement="inline"
       >
-        Item with description inline (default)
-      </ItemBase>
-      <ItemBase
+        User Account
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconSettings />}
+        description="Settings"
+        descriptionPlacement="inline"
+      >
+        Application Settings
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconCoin />}
+        rightIcon={<DirectionIcon to="bottom" />}
+        description="$99.99"
+        descriptionPlacement="inline"
+      >
+        Premium Plan
+      </Item>
+    </Space>
+
+    <Title level={5}>Description Placement: Block</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
         icon={<IconUser />}
-        description="This description appears below the entire item"
+        description="Block description appears below the entire item"
         descriptionPlacement="block"
       >
-        Item with description block
-      </ItemBase>
+        User Account
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconSettings />}
+        description="Configure your application preferences"
+        descriptionPlacement="block"
+      >
+        Application Settings
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconCoin />}
+        rightIcon={<DirectionIcon to="bottom" />}
+        description="Access all premium features for $99.99/month"
+        descriptionPlacement="block"
+      >
+        Premium Plan
+      </Item>
     </Space>
 
-    <Title level={5}>Different Sizes with Description Block</Title>
+    <Title level={5}>Description Placement: Auto</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Auto placement chooses based on content"
+        descriptionPlacement="auto"
+      >
+        User Account
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconSettings />}
+        description="Auto adapts to layout"
+        descriptionPlacement="auto"
+      >
+        Application Settings
+      </Item>
+    </Space>
+
+    <Title level={5}>Comparison: All Placements</Title>
+    <Space gap="2x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Inline: Description next to label"
+        descriptionPlacement="inline"
+      >
+        Inline Placement
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Block: Description below item"
+        descriptionPlacement="block"
+      >
+        Block Placement
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Auto: Smart placement"
+        descriptionPlacement="auto"
+      >
+        Auto Placement
+      </Item>
+    </Space>
+  </Space>
+);
+
+WithDescription.args = {
+  width: '400px',
+};
+
+WithDescription.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the `description` prop with different `descriptionPlacement` values: "inline" (default, appears next to the label), "block" (appears below the entire item), and "auto" (smart placement based on content). Use inline for short secondary text, block for longer descriptions, and auto for adaptive behavior.',
+    },
+  },
+};
+
+export const DescriptionWithSizes: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Inline Description Across Sizes</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="xsmall"
+        icon={<IconUser />}
+        description="XSmall"
+        descriptionPlacement="inline"
+      >
+        XSmall Item
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
         size="small"
-        icon={<IconSettings />}
-        description="Small size description block"
-        descriptionPlacement="block"
+        icon={<IconUser />}
+        description="Small"
+        descriptionPlacement="inline"
       >
-        Small item
-      </ItemBase>
-      <ItemBase
+        Small Item
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
         size="medium"
-        icon={<IconSettings />}
-        description="Medium size description block"
-        descriptionPlacement="block"
+        icon={<IconUser />}
+        description="Medium"
+        descriptionPlacement="inline"
       >
-        Medium item
-      </ItemBase>
-      <ItemBase
+        Medium Item
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
         size="large"
-        icon={<IconSettings />}
-        description="Large size description block"
-        descriptionPlacement="block"
+        icon={<IconUser />}
+        description="Large"
+        descriptionPlacement="inline"
       >
-        Large item
-      </ItemBase>
+        Large Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="xlarge"
+        icon={<IconUser />}
+        description="XLarge"
+        descriptionPlacement="inline"
+      >
+        XLarge Item
+      </Item>
     </Space>
 
-    <Title level={5}>With Multiple Elements and Description Block</Title>
+    <Title level={5}>Block Description Across Sizes</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="xsmall"
+        icon={<IconUser />}
+        description="XSmall size with block description"
+        descriptionPlacement="block"
+      >
+        XSmall Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="small"
+        icon={<IconUser />}
+        description="Small size with block description"
+        descriptionPlacement="block"
+      >
+        Small Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="medium"
+        icon={<IconUser />}
+        description="Medium size with block description"
+        descriptionPlacement="block"
+      >
+        Medium Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="large"
+        icon={<IconUser />}
+        description="Large size with block description"
+        descriptionPlacement="block"
+      >
+        Large Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="xlarge"
+        icon={<IconUser />}
+        description="XLarge size with block description"
+        descriptionPlacement="block"
+      >
+        XLarge Item
+      </Item>
+    </Space>
+  </Space>
+);
+
+DescriptionWithSizes.args = {
+  width: '400px',
+};
+
+DescriptionWithSizes.parameters = {
+  docs: {
+    description: {
+      story:
+        'Shows how descriptions render across all Item sizes with both inline and block placements. Notice how the description scales appropriately with each size while maintaining readability and proper spacing.',
+    },
+  },
+};
+
+export const DescriptionWithTypes: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Inline Description with Different Types</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="item"
+        icon={<IconUser />}
+        description="Item type"
+        descriptionPlacement="inline"
+      >
+        Item Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="primary"
+        icon={<IconUser />}
+        description="Primary type"
+        descriptionPlacement="inline"
+      >
+        Primary Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="secondary"
+        icon={<IconUser />}
+        description="Secondary type"
+        descriptionPlacement="inline"
+      >
+        Secondary Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Outline type"
+        descriptionPlacement="inline"
+      >
+        Outline Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="neutral"
+        icon={<IconUser />}
+        description="Neutral type"
+        descriptionPlacement="inline"
+      >
+        Neutral Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="clear"
+        icon={<IconUser />}
+        description="Clear type"
+        descriptionPlacement="inline"
+      >
+        Clear Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="link"
+        icon={<IconUser />}
+        description="Link type"
+        descriptionPlacement="inline"
+      >
+        Link Type
+      </Item>
+    </Space>
+
+    <Title level={5}>Block Description with Different Types</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="item"
+        icon={<IconUser />}
+        description="Item type with block description"
+        descriptionPlacement="block"
+      >
+        Item Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="primary"
+        icon={<IconUser />}
+        description="Primary type with block description"
+        descriptionPlacement="block"
+      >
+        Primary Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="secondary"
+        icon={<IconUser />}
+        description="Secondary type with block description"
+        descriptionPlacement="block"
+      >
+        Secondary Type
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Outline type with block description"
+        descriptionPlacement="block"
+      >
+        Outline Type
+      </Item>
+    </Space>
+  </Space>
+);
+
+DescriptionWithTypes.args = {
+  width: '400px',
+};
+
+DescriptionWithTypes.parameters = {
+  docs: {
+    description: {
+      story:
+        "Demonstrates how descriptions work with all Item type variants. The description inherits the color scheme and adapts to each type's visual style, ensuring consistent readability across different type configurations.",
+    },
+  },
+};
+
+export const DescriptionWithComplexContent: StoryFn<CubeItemProps> = (args) => (
+  <Flow gap="2x">
+    <Title level={5}>Inline Description with All Elements</Title>
+    <Flow gap="1x">
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
         icon={<IconCoin />}
         rightIcon={<IconSettings />}
+        description="With both icons"
+        descriptionPlacement="inline"
+      >
+        Complete Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconCoin />}
         prefix="$"
         suffix=".99"
-        description="Complete configuration with description positioned below the item"
-        descriptionPlacement="block"
+        description="Price information"
+        descriptionPlacement="inline"
       >
         Product Name
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
         icon={<IconUser />}
         hotkeys="cmd+u"
-        description="User management with hotkey and description block"
+        description="Keyboard shortcut"
+        descriptionPlacement="inline"
+      >
+        User Settings
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        rightIcon={<DirectionIcon to="bottom" />}
+        prefix="+"
+        suffix="more"
+        description="Full configuration"
+        descriptionPlacement="inline"
+      >
+        All Elements
+      </Item>
+    </Flow>
+
+    <Title level={5}>Block Description with All Elements</Title>
+    <Flow gap="1x">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconCoin />}
+        rightIcon={<IconSettings />}
+        description="Block description with both icons providing more context"
         descriptionPlacement="block"
       >
-        Manage Users
-      </ItemBase>
-    </Space>
+        Complete Item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconCoin />}
+        prefix="$"
+        suffix=".99"
+        description="Premium pricing tier with annual billing discount"
+        descriptionPlacement="block"
+      >
+        Product Name
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        hotkeys="cmd+u"
+        description="Access user settings and preferences quickly with keyboard shortcut"
+        descriptionPlacement="block"
+      >
+        User Settings
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        rightIcon={<DirectionIcon to="bottom" />}
+        prefix="+"
+        suffix="more"
+        description="This item demonstrates the full configuration with all available slots and a detailed description"
+        descriptionPlacement="block"
+      >
+        All Elements
+      </Item>
+    </Flow>
 
-    <Title level={5}>Long Description Block</Title>
-    <ItemBase
-      {...args}
-      styles={{ ...DEFAULT_STYLES, width: '350px' }}
-      type="outline"
-      icon={<IconCoin />}
-      description="This is a very long description that demonstrates how the description text flows when positioned below the item. It can contain multiple lines and will wrap naturally."
-      descriptionPlacement="block"
-    >
-      Item with long description
-    </ItemBase>
-  </Space>
+    <Title level={5}>Description with Actions</Title>
+    <Flow gap="1x">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Inline with actions"
+        descriptionPlacement="inline"
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        User Record
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Block description below the item with inline actions"
+        descriptionPlacement="block"
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        User Record
+      </Item>
+    </Flow>
+  </Flow>
 );
 
-WithDescriptionBlock.args = {
-  width: '400px',
+DescriptionWithComplexContent.args = {
+  width: '500px',
 };
 
-WithDescriptionBlock.parameters = {
+DescriptionWithComplexContent.parameters = {
   docs: {
     description: {
       story:
-        'Demonstrates the `descriptionPlacement="block"` functionality where descriptions are positioned below the entire ItemBase component instead of inside the content area. This is useful for longer descriptions or when you want to maintain a clean main content area.',
+        'Demonstrates descriptions combined with complex Item configurations including icons, prefix/suffix, hotkeys, and actions. Shows how inline descriptions fit within the grid layout versus block descriptions that span below the entire item.',
     },
   },
 };
 
-export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
+export const DescriptionOverflow: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Long Inline Descriptions (with overflow)</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={{ ...DEFAULT_STYLES, width: '300px' }}
+        type="outline"
+        icon={<IconUser />}
+        description="This is a very long inline description that will be truncated with ellipsis when it exceeds the available width"
+        descriptionPlacement="inline"
+      >
+        Short Label
+      </Item>
+      <Item
+        {...args}
+        styles={{ ...DEFAULT_STYLES, width: '250px' }}
+        type="outline"
+        icon={<IconSettings />}
+        description="Another example of text overflow with even narrower container width"
+        descriptionPlacement="inline"
+      >
+        Settings
+      </Item>
+    </Space>
+
+    <Title level={5}>Long Block Descriptions (with wrapping)</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={{ ...DEFAULT_STYLES, width: '300px' }}
+        type="outline"
+        icon={<IconUser />}
+        description="This is a very long block description that will wrap naturally to multiple lines when it exceeds the available container width, providing a better reading experience for detailed information"
+        descriptionPlacement="block"
+      >
+        Short Label
+      </Item>
+      <Item
+        {...args}
+        styles={{ ...DEFAULT_STYLES, width: '250px' }}
+        type="outline"
+        icon={<IconSettings />}
+        description="Another example with narrower container demonstrating how block descriptions wrap text naturally without truncation, making them ideal for longer explanatory content that needs to be fully visible"
+        descriptionPlacement="block"
+      >
+        Settings
+      </Item>
+    </Space>
+
+    <Title level={5}>Comparison: Inline vs Block with Long Text</Title>
+    <Space gap="2x" flow="column" placeItems="start">
+      <div>
+        <Item
+          {...args}
+          styles={{ ...DEFAULT_STYLES, width: '350px' }}
+          type="outline"
+          icon={<IconCoin />}
+          description="This is a comprehensive description that demonstrates how inline placement handles longer text content by truncating it with an ellipsis to maintain the single-line layout"
+          descriptionPlacement="inline"
+        >
+          Inline Example
+        </Item>
+      </div>
+      <div>
+        <Item
+          {...args}
+          styles={{ ...DEFAULT_STYLES, width: '350px' }}
+          type="outline"
+          icon={<IconCoin />}
+          description="This is a comprehensive description that demonstrates how block placement handles longer text content by allowing it to wrap naturally across multiple lines for better readability"
+          descriptionPlacement="block"
+        >
+          Block Example
+        </Item>
+      </div>
+    </Space>
+  </Space>
+);
+
+DescriptionOverflow.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates how descriptions handle overflow: inline descriptions use text-overflow ellipsis to truncate long content while maintaining single-line layout, whereas block descriptions wrap text naturally across multiple lines for full visibility. Choose inline for compact layouts and block for detailed descriptions.',
+    },
+  },
+};
+
+export const WithActions: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Basic Item with Inline Actions</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconUser />}
         actions={
           <>
@@ -1101,10 +1622,11 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         Item with actions
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconCoin />}
         actions={
           <>
@@ -1113,14 +1635,30 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         Single action
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Different Sizes with Actions</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
+        size="xsmall"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        XSmall item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
         size="small"
         icon={<IconUser />}
         actions={
@@ -1131,10 +1669,11 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         Small item
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         size="medium"
         icon={<IconUser />}
         actions={
@@ -1145,10 +1684,11 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         Medium item
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         size="large"
         icon={<IconUser />}
         actions={
@@ -1159,12 +1699,42 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         Large item
-      </ItemBase>
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="xlarge"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        XLarge item
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="inline"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Inline item
+      </Item>
     </Space>
 
     <Title level={5}>Different Types with Actions</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="item"
@@ -1177,8 +1747,8 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         Item type
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="primary"
@@ -1191,8 +1761,8 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         Primary type
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="secondary"
@@ -1205,8 +1775,8 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         Secondary type
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
         type="outline"
@@ -1219,14 +1789,15 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         Outline type
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>With Complex Configurations</Title>
     <Space gap="1x" flow="column" placeItems="start">
-      <ItemBase
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconCoin />}
         rightIcon={<IconSettings />}
         actions={
@@ -1237,10 +1808,11 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         With both icons
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconCoin />}
         prefix="$"
         suffix=".99"
@@ -1252,10 +1824,11 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         Product Item
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconUser />}
         description="Additional information"
         descriptionPlacement="inline"
@@ -1267,10 +1840,11 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         With inline description
-      </ItemBase>
-      <ItemBase
+      </Item>
+      <Item
         {...args}
         styles={DEFAULT_STYLES}
+        type="outline"
         icon={<IconUser />}
         description="Additional information"
         descriptionPlacement="block"
@@ -1282,13 +1856,14 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
         }
       >
         With block description
-      </ItemBase>
+      </Item>
     </Space>
 
     <Title level={5}>Long Text with Actions</Title>
-    <ItemBase
+    <Item
       {...args}
       styles={{ ...DEFAULT_STYLES, width: '400px' }}
+      type="outline"
       icon={<IconUser />}
       actions={
         <>
@@ -1299,7 +1874,7 @@ export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
     >
       This is a very long item name that demonstrates how the actions are
       positioned inline as part of the grid layout
-    </ItemBase>
+    </Item>
   </Space>
 );
 
@@ -1311,107 +1886,7 @@ WithActions.parameters = {
   docs: {
     description: {
       story:
-        'Demonstrates the `actions` prop which allows rendering action buttons inline as part of the grid layout. Unlike ItemButton which positions actions absolutely, ItemBase renders actions as a native grid column that automatically sizes to fit the content. Actions are rendered using the ItemAction component for consistent styling.',
-    },
-  },
-};
-
-export const WithActionsOnHover: StoryFn<CubeItemBaseProps> = (args) => (
-  <Space gap="2x" flow="column">
-    <Title level={4}>Actions on Hover</Title>
-    <ItemBase
-      {...args}
-      showActionsOnHover
-      styles={{ ...DEFAULT_STYLES, width: '400px' }}
-      icon={<IconUser />}
-      actions={
-        <>
-          <ItemAction icon={<IconEdit />} aria-label="Edit" />
-          <ItemAction icon={<IconTrash />} aria-label="Delete" />
-        </>
-      }
-    >
-      Hover to see actions
-    </ItemBase>
-
-    <Title level={5}>Different Sizes</Title>
-    <Space gap="1x" flow="column">
-      <ItemBase
-        {...args}
-        showActionsOnHover
-        styles={DEFAULT_STYLES}
-        size="small"
-        icon={<IconUser />}
-        actions={
-          <>
-            <ItemAction icon={<IconEdit />} aria-label="Edit" />
-            <ItemAction icon={<IconTrash />} aria-label="Delete" />
-          </>
-        }
-      >
-        Small with hover actions
-      </ItemBase>
-      <ItemBase
-        {...args}
-        showActionsOnHover
-        styles={DEFAULT_STYLES}
-        size="medium"
-        icon={<IconUser />}
-        actions={
-          <>
-            <ItemAction icon={<IconEdit />} aria-label="Edit" />
-            <ItemAction icon={<IconTrash />} aria-label="Delete" />
-          </>
-        }
-      >
-        Medium with hover actions
-      </ItemBase>
-      <ItemBase
-        {...args}
-        showActionsOnHover
-        styles={DEFAULT_STYLES}
-        size="large"
-        icon={<IconUser />}
-        actions={
-          <>
-            <ItemAction icon={<IconEdit />} aria-label="Edit" />
-            <ItemAction icon={<IconTrash />} aria-label="Delete" />
-          </>
-        }
-      >
-        Large with hover actions
-      </ItemBase>
-    </Space>
-
-    <Title level={5}>With Description</Title>
-    <ItemBase
-      {...args}
-      showActionsOnHover
-      width="150px"
-      styles={DEFAULT_STYLES}
-      icon={<IconUser />}
-      description="Additional information"
-      actions={
-        <>
-          <ItemAction icon={<IconEdit />} aria-label="Edit" />
-          <ItemAction icon={<IconTrash />} aria-label="Delete" />
-        </>
-      }
-    >
-      With description
-    </ItemBase>
-  </Space>
-);
-
-WithActionsOnHover.args = {
-  width: '450px',
-};
-
-WithActionsOnHover.parameters = {
-  docs: {
-    description: {
-      story:
-        'Demonstrates the `showActionsOnHover` prop which hides actions until the item is hovered, with a smooth transition. The actions space is reserved in the layout to prevent layout shift on hover.',
+        'Demonstrates the `actions` prop which allows rendering action buttons inline as part of the grid layout. Unlike ItemButton which positions actions absolutely, Item renders actions as a native grid column that automatically sizes to fit the content. Actions are rendered using the ItemAction component for consistent styling.',
     },
   },
 };
@@ -1419,15 +1894,15 @@ WithActionsOnHover.parameters = {
 const timeout = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
-export const WithAutoTooltip: StoryFn<CubeItemBaseProps> = () => (
-  <ItemBase
+export const WithAutoTooltip: StoryFn<CubeItemProps> = () => (
+  <Item
     qa="auto-tooltip-item"
     icon={<IconUser />}
     style={{ width: '200px' }}
     tooltip={{ delay: 0 }}
   >
     This is a very long label that will overflow and trigger the auto tooltip
-  </ItemBase>
+  </Item>
 );
 
 WithAutoTooltip.play = async ({ canvasElement }) => {
@@ -1453,19 +1928,19 @@ WithAutoTooltip.parameters = {
   },
 };
 
-export const DynamicAutoTooltip: StoryFn<CubeItemBaseProps> = () => {
+export const DynamicAutoTooltip: StoryFn<CubeItemProps> = () => {
   const [width, setWidth] = useState('400px');
 
   return (
     <div>
-      <ItemBase
+      <Item
         qa="dynamic-tooltip-item"
         icon={<IconUser />}
         style={{ width }}
         tooltip={{ delay: 0 }}
       >
         This is a very long label that will eventually overflow
-      </ItemBase>
+      </Item>
       <Button
         qa="resize-button"
         onPress={() =>
