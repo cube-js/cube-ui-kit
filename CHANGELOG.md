@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.87.1
+
+### Patch Changes
+
+- [#858](https://github.com/cube-js/cube-ui-kit/pull/858) [`b27ab4b4`](https://github.com/cube-js/cube-ui-kit/commit/b27ab4b4a16aff15c579874d590cc5275a078fc6) Thanks [@tenphi](https://github.com/tenphi)! - Enhanced selector affix syntax (`# @cube-dev/ui-kit) for sub-element styling in tasty. Capitalized words in the affix are now automatically transformed to sub-element selectors, allowing complex selector chains like `$: '> Body > Row >'`which generates`.table > [data-element="Body"] > [data-element="Row"] > [data-element="Cell"]`.
+
+- [#857](https://github.com/cube-js/cube-ui-kit/pull/857) [`f6db220c`](https://github.com/cube-js/cube-ui-kit/commit/f6db220c01865273078e17617fa8f31976cf2d8a) Thanks [@tenphi](https://github.com/tenphi)! - Introduces a new render helper component `<RenderCache/>`. Now you can optimize rendering of intensive items like IDE tabs.
+
 ## 0.87.0
 
 ### Minor Changes
