@@ -1170,6 +1170,66 @@ describe('tastyGlobal() API', () => {
     expect(styleContent).not.toMatch(/>\s*\[data-element="Content"\]/);
   });
 
+  it('should support empty affix for sub-elements with $: ""', () => {
+    const Card = tasty({
+      styles: {
+        padding: '2x',
+        Content: {
+          $: '',
+          color: '#primary',
+        },
+      },
+    });
+
+    render(
+      <Card>
+        <div data-element="Content">Content text</div>
+      </Card>,
+    );
+
+    const styleElements = document.head.querySelectorAll('[data-tasty]');
+    const styleContent = Array.from(styleElements)
+      .map((el) => el.textContent)
+      .join('');
+
+    // Empty affix should result in descendant selector (space only)
+    expect(styleContent).toMatch(/\s+\[data-element="Content"\]/);
+    expect(styleContent).not.toMatch(/>\s*\[data-element="Content"\]/);
+  });
+
+  it('should support complex selector chain with $: "> Body > Row >"', () => {
+    const Table = tasty({
+      styles: {
+        display: 'table',
+        Cell: {
+          $: '> Body > Row >',
+          padding: '1x',
+          border: '1px solid #border',
+        },
+      },
+    });
+
+    render(
+      <Table>
+        <div data-element="Body">
+          <div data-element="Row">
+            <div data-element="Cell">Cell content</div>
+          </div>
+        </div>
+      </Table>,
+    );
+
+    const styleElements = document.head.querySelectorAll('[data-tasty]');
+    const styleContent = Array.from(styleElements)
+      .map((el) => el.textContent)
+      .join('');
+
+    // Should transform to: > [data-element="Body"] > [data-element="Row"] > [data-element="Cell"]
+    expect(styleContent).toMatch(
+      />\s*\[data-element="Body"\]\s*>\s*\[data-element="Row"\]\s*>\s*\[data-element="Cell"\]/,
+    );
+  });
+
   it('should support multiple global style components with different selectors', () => {
     const GlobalHeading = tasty('h1.special', {
       preset: 'h1',
