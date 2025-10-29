@@ -22,7 +22,10 @@ const FieldElement = tasty({
       'has-split': 'auto auto',
     },
     gap: 0,
-    placeItems: 'baseline stretch',
+    placeItems: {
+      '': 'baseline stretch',
+      'has-split': 'center',
+    },
     placeContent: {
       '': 'initial',
       'has-split': 'space-between',
