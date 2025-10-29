@@ -73,6 +73,27 @@ export function isSelector(key: string): boolean {
 }
 
 /**
+ * Transform selector affix by converting capitalized words to sub-element selectors.
+ * Returns a selector prefix with leading and trailing spaces.
+ *
+ * Examples:
+ *   '> Body > Row'     -> ' > [data-element="Body"] > [data-element="Row"] '
+ *   '> Body > Row >'   -> ' > [data-element="Body"] > [data-element="Row"] > '
+ *   '>'                -> ' > '
+ */
+function transformSelectorAffix(affix: string): string {
+  const trimmed = affix.trim();
+  if (!trimmed) return ' ';
+
+  const tokens = trimmed.split(/\s+/);
+  const transformed = tokens.map((token) =>
+    /^[A-Z]/.test(token) ? `[data-element="${token}"]` : token,
+  );
+
+  return ` ${transformed.join(' ')} `;
+}
+
+/**
  * Get the selector suffix for a key
  */
 function getSelector(key: string, styles?: Styles): string | null {
@@ -85,9 +106,12 @@ function getSelector(key: string, styles?: Styles): string | null {
   }
 
   if (key.match(/^[A-Z]/)) {
-    // Check if styles object has $: '>' for direct child selector
-    const combinator = styles && (styles as any).$ === '>' ? ' > ' : ' ';
-    return `${combinator}[data-element="${key}"]`;
+    const affix = styles?.$;
+    if (affix !== undefined) {
+      const prefix = transformSelectorAffix(String(affix));
+      return `${prefix}[data-element="${key}"]`;
+    }
+    return ` [data-element="${key}"]`;
   }
 
   return null;
