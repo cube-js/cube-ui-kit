@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.87.2
+
+### Patch Changes
+
+- [#860](https://github.com/cube-js/cube-ui-kit/pull/860) [`81235aef`](https://github.com/cube-js/cube-ui-kit/commit/81235aefee01497c12e13db3a53a516ca78abaa3) Thanks [@tenphi](https://github.com/tenphi)! - Fix alignment in label position `split`.
+
 ## 0.87.1
 
 ### Patch Changes
