@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.87.0
+
+### Minor Changes
+
+- [#854](https://github.com/cube-js/cube-ui-kit/pull/854) [`9e502b78`](https://github.com/cube-js/cube-ui-kit/commit/9e502b788335c2d7acce6685b71166a760258ad2) Thanks [@tenphi](https://github.com/tenphi)! - Add `split` value for `labelPosition` in all field components.
+
+### Patch Changes
+
+- [#855](https://github.com/cube-js/cube-ui-kit/pull/855) [`18fe5cda`](https://github.com/cube-js/cube-ui-kit/commit/18fe5cda0579ca041fbded397a65bf28f8a9a138) Thanks [@tenphi](https://github.com/tenphi)! - Allow flex shrinking for Item.
+
+- [#850](https://github.com/cube-js/cube-ui-kit/pull/850) [`e0947b58`](https://github.com/cube-js/cube-ui-kit/commit/e0947b58f9bbacd0341b7c54a0dc840a59808017) Thanks [@tenphi](https://github.com/tenphi)! - Reverse the order of buttons in dialogs.
+
 ## 0.86.0
 
 ### Minor Changes
