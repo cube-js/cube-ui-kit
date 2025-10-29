@@ -29,14 +29,15 @@ import {
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { tasty } from '../../../tasty';
+import { BaseProps, Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useItemActionContext } from '../ItemActionContext';
 import { CubeUseActionProps, useAction } from '../use-action';
 
 export interface CubeItemActionProps
-  extends Omit<CubeUseActionProps, 'as' | 'htmlType'> {
+  extends Omit<CubeUseActionProps, 'as' | 'htmlType'>,
+    Omit<BaseProps, 'as'> {
   icon?: ReactNode | 'checkbox';
   children?: ReactNode;
   isLoading?: boolean;
@@ -48,6 +49,7 @@ export interface CubeItemActionProps
     | (Omit<ComponentProps<typeof TooltipProvider>, 'children'> & {
         title?: string;
       });
+  styles?: Styles;
 }
 
 type ItemActionVariant =
@@ -76,6 +78,25 @@ const ItemActionElement = tasty({
     outline: 0,
     outlineOffset: 1,
     cursor: { '': 'pointer', disabled: 'default' },
+    padding: {
+      '': '0 $inline-padding',
+      'with-icon': 0,
+      'with-icon & with-label': '0 $inline-padding 0 0',
+    },
+
+    '$inline-padding': {
+      '': 'max($min-inline-padding, (($action-size - 1lh - 2bw) / 2 + $inline-compensation))',
+      '[data-size="inline"]': '.25x',
+    },
+    '$inline-compensation': '.5x',
+    '$min-inline-padding': '(.5x - 1bw)',
+    '$local-icon-size': '$icon-size',
+
+    Icon: {
+      $: '>',
+      ...(ITEM_ACTION_BASE_STYLES.Icon as Styles),
+      '$icon-size': 'min($local-icon-size, ($action-size - .25x))',
+    },
   },
   variants: {
     // Default theme
@@ -119,6 +140,7 @@ export const ItemAction = forwardRef(function ItemAction(
     isSelected = false,
     tooltip,
     mods,
+    styles,
     ...rest
   } = allProps;
 
@@ -142,6 +164,7 @@ export const ItemAction = forwardRef(function ItemAction(
       loading: isLoading,
       'with-label': !!children,
       context: !!contextType,
+      'with-icon': !!icon,
       ...mods,
     }),
     [hasCheckbox, isSelected, isLoading, children, contextType, mods],
@@ -231,6 +254,7 @@ export const ItemAction = forwardRef(function ItemAction(
         data-theme={theme}
         data-type={finalType}
         tabIndex={finalTabIndex}
+        styles={styles}
       >
         {finalIcon && <div data-element="Icon">{finalIcon}</div>}
         {children}

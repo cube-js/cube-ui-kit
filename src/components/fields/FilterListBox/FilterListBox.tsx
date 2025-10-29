@@ -13,6 +13,7 @@ import React, {
 } from 'react';
 import { useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, Item, useListState } from 'react-stately';
+import { CubeCollectionItemProps } from 'src/components/CollectionItem';
 
 import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
@@ -28,7 +29,6 @@ import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { StyledHeader } from '../../actions/Menu/styled';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { CubeItemProps } from '../../Item';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import {
   DEFAULT_INPUT_STYLES,
@@ -90,13 +90,9 @@ const SearchInputElement = tasty({
     ...DEFAULT_INPUT_STYLES,
     fill: '#clear',
     padding: {
-      '': '.5x $inline-padding',
-      prefix: '0 $inline-padding 0 .5x',
+      '': '.5x 1.5x',
+      prefix: '0 1.5x 0 .5x',
     },
-    '$inline-padding':
-      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
-    '$inline-compensation': '1x',
-    '$min-inline-padding': '1x',
   },
 });
 
@@ -154,13 +150,13 @@ export interface CubeFilterListBoxProps<T>
   /**
    * Props to apply to existing custom values (values that are already selected but not in the predefined options).
    */
-  customValueProps?: Partial<CubeItemProps<T>>;
+  customValueProps?: Partial<CubeCollectionItemProps<T>>;
 
   /**
    * Props to apply to new custom values (values typed in the search input that are about to be added).
    * These are merged with customValueProps for new custom values.
    */
-  newCustomValueProps?: Partial<CubeItemProps<T>>;
+  newCustomValueProps?: Partial<CubeCollectionItemProps<T>>;
 
   /**
    * Controlled search value. When provided, the search input becomes controlled.

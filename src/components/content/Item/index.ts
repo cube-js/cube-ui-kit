@@ -1,2 +1,2 @@
-export * from './ItemBase';
+export * from './Item';
 export * from '../ItemBadge';

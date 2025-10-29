@@ -49,11 +49,10 @@ export const parameters = {
   },
   docs: {},
   backgrounds: {
-    default: 'transparent',
-    values: [
-      { name: 'transparent', value: 'transparent' },
-      { name: 'gray', value: 'rgba(243,243,250, 1)' },
-    ],
+    options: {
+      transparent: { name: 'transparent', value: 'transparent' },
+      gray: { name: 'gray', value: 'rgba(243,243,250, 1)' },
+    },
   },
   actions: {
     // Disable only while the test runner is active
@@ -69,3 +68,9 @@ export const decorators = [
   ),
 ];
 export const tags = ['autodocs'];
+
+export const initialGlobals = {
+  backgrounds: {
+    value: 'transparent',
+  },
+};

@@ -1,0 +1,176 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import * as TagStories from './Tag.stories';
+
+<Meta of={TagStories} />
+
+# Tag
+
+Tags are compact, inline elements used to label, categorize, or organize items. They provide visual metadata and can optionally be dismissed by users.
+
+## When to Use
+
+- **Categorization**: Label items with topics, categories, or types
+- **Filtering**: Display active filters or search criteria
+- **Status**: Show status indicators or states
+- **User Input**: Display selected items in multi-select scenarios
+- **Metadata**: Show additional information about content
+
+## When Not to Use
+
+- **Navigation**: Use `Button` or `Link` for navigation actions
+- **Actions**: Use `Button` for primary or secondary actions
+- **Long text**: Tags should contain short, scannable text
+- **Complex content**: For multi-line or detailed content, use `Badge` or `Card`
+
+## Component
+
+<Story of={TagStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={TagStories.Default} />
+
+### Base Properties
+
+Tag extends from `Item` component and supports all base design system properties including:
+- Layout props: `width`, `height`, `margin`, `padding`
+- Color props: `fill`, `color`, `border`
+- Typography props: `preset`, `fontSize`, `fontWeight`
+- Other Item props: `tooltip`, `isDisabled`, `qa`
+
+## Examples
+
+### Themes
+
+Tags support multiple themes for different semantic meanings:
+
+<Story of={TagStories.Themes} />
+
+Available themes:
+- **Default**: Neutral, for general categorization
+- **Note**: Informational content
+- **Success**: Positive states or completed actions
+- **Danger**: Errors, warnings, or destructive actions
+- **Special**: Highlighted or premium features
+- **Disabled**: Inactive or unavailable items
+
+### With Icons
+
+Icons can be added to provide additional visual context:
+
+<Story of={TagStories.WithIcons} />
+
+```jsx
+import { IconCoin } from '@tabler/icons-react';
+
+<Tag icon={<IconCoin />}>With Icon</Tag>
+```
+
+### Closable Tags
+
+Tags can be made dismissible with the `isClosable` prop:
+
+<Story of={TagStories.Closable} />
+
+All themes support the closable variant:
+
+```jsx
+<Tag isClosable onClose={() => console.log('Tag closed')}>
+  Closable Tag
+</Tag>
+```
+
+### Closable with Icons
+
+Combine icons with closable functionality:
+
+<Story of={TagStories.ClosableWithIcons} />
+
+### Sizes
+
+Tags support multiple sizes inherited from the Item component:
+
+<Story of={TagStories.Sizes} />
+
+- **inline** (default): Compact size that fits inline with text
+- **xsmall**: Extra small button-like size
+- **small**: Small button-like size
+- **medium**: Medium button-like size
+- **large**: Large button-like size
+
+### Custom Styles
+
+Apply custom styling using the `styles` prop:
+
+<Story of={TagStories.CustomStyles} />
+
+```jsx
+<Tag
+  styles={{
+    fill: '#purple.10',
+    color: '#purple',
+    border: '#purple.30',
+  }}
+>
+  Custom Tag
+</Tag>
+```
+
+## Best Practices
+
+### Content
+
+- Keep tag text short and scannable (1-3 words ideal)
+- Use sentence case for tag labels
+- Use consistent terminology across similar tags
+- Avoid punctuation unless necessary
+
+### Interaction
+
+- Only make tags closable when users can dismiss them
+- Provide feedback when a tag is closed (e.g., update list)
+- Consider confirmation for destructive closures
+- Ensure close buttons are accessible via keyboard
+
+### Visual Design
+
+- Use theme consistently for semantic meaning
+- Don't mix too many themes in the same group
+- Maintain adequate spacing between tags
+- Consider wrapping behavior for multiple tags
+
+### Accessibility
+
+- Tags have `role="status"` for screen readers
+- Close buttons include `aria-label="Close"`
+- All themes maintain sufficient color contrast
+- Keyboard navigation is fully supported via Item
+
+## Related Components
+
+- **Badge**: For numerical indicators or counts
+- **Chip**: For interactive selection chips
+- **Button**: For actions and navigation
+- **Item**: Base component that Tag extends from
+
+## Migration from Legacy Tag
+
+The Tag component now extends from `Item`, providing enhanced functionality:
+
+```jsx
+// Old API still works
+<Tag type="success">Legacy</Tag>
+
+// New API (preferred)
+<Tag theme="success">Modern</Tag>
+
+// New features from Item
+<Tag tooltip="Additional info" isDisabled>
+  With Tooltip
+</Tag>
+```
+
+The `type` prop is deprecated in favor of `theme` for consistency with other components.
+

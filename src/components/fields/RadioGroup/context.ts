@@ -1,13 +1,13 @@
 import { createContext, useContext } from 'react';
 import { RadioGroupState } from 'react-stately';
 
-import { CubeItemBaseProps } from '../../content/ItemBase/ItemBase';
+import { CubeItemProps } from '../../content/Item/Item';
 
 interface CubeRadioGroupState {
   name?: string;
   state: RadioGroupState;
-  size?: CubeItemBaseProps['size'];
-  buttonType?: CubeItemBaseProps['type'];
+  size?: CubeItemProps['size'];
+  buttonType?: CubeItemProps['type'];
   type?: 'radio' | 'button' | 'tabs';
   isDisabled?: boolean;
 }

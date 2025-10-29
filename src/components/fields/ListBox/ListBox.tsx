@@ -47,9 +47,9 @@ import {
   StyledHeader,
   StyledSectionHeading,
 } from '../../actions/Menu/styled';
-import { ItemBase } from '../../content/ItemBase/ItemBase';
+import { CollectionItem, CubeCollectionItemProps } from '../../CollectionItem';
+import { Item } from '../../content/Item/Item';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { CubeItemProps, Item } from '../../Item';
 
 import type { CollectionBase, Key } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
@@ -111,8 +111,8 @@ const ListBoxScrollElement = tasty({
   },
 });
 
-// Create an extended ItemBase for ListBox options with 'all' modifier support
-const ListBoxItemBase = tasty(ItemBase, {
+// Create an extended Item for ListBox options with 'all' modifier support
+const ListBoxItem = tasty(Item, {
   as: 'li',
   styles: {
     margin: {
@@ -295,7 +295,7 @@ export interface CubeListBoxProps<T>
   /**
    * Props to apply to the "Select All" option.
    */
-  allValueProps?: Partial<CubeItemProps<T>>;
+  allValueProps?: Partial<CubeCollectionItemProps<T>>;
 
   /**
    * Filter function to apply to the collection nodes.
@@ -334,7 +334,7 @@ const SelectAllOption = ({
   state: any;
   lastFocusSourceRef: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
   onClick: (propagate?: boolean) => void;
-  allValueProps?: Partial<CubeItemProps<any>>;
+  allValueProps?: Partial<CubeCollectionItemProps<any>>;
 }) => {
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
@@ -418,7 +418,7 @@ const SelectAllOption = ({
 
   return (
     <>
-      <ListBoxItemBase
+      <ListBoxItem
         ref={localRef}
         data-size={size}
         size={size}
@@ -428,6 +428,7 @@ const SelectAllOption = ({
         isDisabled={isDisabled}
         icon={checkboxIcon}
         mods={{
+          listboxitem: true,
           disabled: isDisabled,
           checkable: isCheckable,
           hovered: isHovered,
@@ -439,7 +440,7 @@ const SelectAllOption = ({
         })}
       >
         {label}
-      </ListBoxItemBase>
+      </ListBoxItem>
       <StyledDivider />
     </>
   );
@@ -788,46 +789,42 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     }
   }, [shouldVirtualize, itemsArray, rowVirtualizer]);
 
-  // Keep focused item visible when virtualizing, but only for keyboard navigation
-  useEffect(() => {
-    if (!shouldVirtualize) return;
+  // Keep focused item visible, but only for keyboard navigation
+  useLayoutEffect(() => {
     const focusedKey = listState.selectionManager.focusedKey;
-    if (focusedKey != null) {
-      const idx = itemsArrayRef.current.findIndex(
-        (it) => it.key === focusedKey,
-      );
-      if (idx !== -1) {
-        // Check if the focused item is actually visible in the current viewport
-        // (not just rendered due to overscan)
-        const scrollElement = scrollRef.current;
-        if (scrollElement) {
-          const scrollTop = scrollElement.scrollTop;
-          const viewportHeight = scrollElement.clientHeight;
-          const viewportBottom = scrollTop + viewportHeight;
+    if (focusedKey == null) return;
 
-          // Find the virtual item for this index
-          const virtualItems = rowVirtualizer.getVirtualItems();
-          const virtualItem = virtualItems.find((item) => item.index === idx);
+    // Only scroll on keyboard navigation
+    if (lastFocusSourceRef.current !== 'keyboard') return;
 
-          let isAlreadyVisible = false;
-          if (virtualItem) {
-            const itemTop = virtualItem.start;
-            const itemBottom = virtualItem.start + virtualItem.size;
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
 
-            // Check if the item is fully visible in the viewport
-            // We should scroll if the item is partially hidden
-            isAlreadyVisible =
-              itemTop >= scrollTop && itemBottom <= viewportBottom;
-          }
+    const itemElement = scrollElement.querySelector(
+      `[data-key="${CSS.escape(String(focusedKey))}"]`,
+    ) as HTMLElement;
+    if (!itemElement) return;
 
-          // Only scroll if the item is not already visible AND the focus change was due to keyboard navigation
-          if (!isAlreadyVisible && lastFocusSourceRef.current === 'keyboard') {
-            rowVirtualizer.scrollToIndex(idx, { align: 'auto' });
-          }
-        }
-      }
+    const scrollTop = scrollElement.scrollTop;
+    const viewportHeight = scrollElement.clientHeight;
+    const viewportBottom = scrollTop + viewportHeight;
+
+    const itemRect = itemElement.getBoundingClientRect();
+    const scrollRect = scrollElement.getBoundingClientRect();
+
+    // Calculate item position relative to scroll container
+    const itemTop = itemRect.top - scrollRect.top + scrollTop;
+    const itemBottom = itemTop + itemRect.height;
+
+    // Check if the item is fully visible in the viewport
+    const isAlreadyVisible =
+      itemTop >= scrollTop && itemBottom <= viewportBottom;
+
+    if (!isAlreadyVisible) {
+      // Use scrollIntoView with block: 'nearest' to minimize scroll jumps
+      itemElement.scrollIntoView({ block: 'nearest', behavior: 'auto' });
     }
-  }, [shouldVirtualize, listState.selectionManager.focusedKey, itemsArray]);
+  }, [listState.selectionManager.focusedKey, itemsArray]);
 
   // Merge React Aria listbox props with custom keyboard props so both sets of
   // event handlers (e.g. Arrow navigation *and* our Escape handler) are
@@ -894,14 +891,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       {/* Scroll container wrapper */}
       <ListBoxScrollElement ref={scrollRef} mods={mods} {...focusProps}>
         {listState.collection.size === 0 ? (
-          <ItemBase
-            preset="t4"
-            color="#dark-03"
-            size={size}
-            padding="(.5x - 1bw)"
-          >
+          <Item preset="t4" color="#dark-03" size={size} padding="(.5x - 1bw)">
             {emptyLabel}
-          </ItemBase>
+          </Item>
         ) : (
           <ListElement
             qa={qa || 'ListBox'}
@@ -1028,7 +1020,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   );
 }) as unknown as (<T>(
   props: CubeListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
-) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
+) => ReactElement) & {
+  Item: typeof CollectionItem;
+  Section: typeof BaseSection;
+};
 
 function Option({
   size = 'medium',
@@ -1202,10 +1197,11 @@ function Option({
     { valid: 'success', invalid: 'danger' }[validationState] || 'default';
 
   return (
-    <ListBoxItemBase
+    <ListBoxItem
       ref={combinedRef}
       qa={item.props?.qa}
       id={`ListBoxItem-${String(item.key)}`}
+      data-key={String(item.key)}
       {...mergeProps(filteredOptionProps, hoverProps, {
         onClick: handleOptionClick,
         onKeyDown,
@@ -1234,6 +1230,7 @@ function Option({
       tooltip={item.props?.tooltip}
       defaultTooltipPlacement="right"
       mods={{
+        listboxitem: true,
         focused: isFocused,
         pressed: isPressed,
         valid: isSelected && validationState === 'valid',
@@ -1244,7 +1241,7 @@ function Option({
       }}
     >
       {item.rendered}
-    </ListBoxItemBase>
+    </ListBoxItem>
   );
 }
 
@@ -1324,7 +1321,7 @@ const ListBoxSectionComponent = Object.assign(BaseSection, {
   displayName: 'Section',
 }) as SectionComponent;
 
-ListBox.Item = Item;
+ListBox.Item = CollectionItem;
 
 ListBox.Section = ListBoxSectionComponent;
 

@@ -13,7 +13,7 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
   flow: 'column',
   placeItems: 'center',
   placeContent: 'center',
-  gap: '.75x',
+  gap: 0,
   position: 'relative',
   margin: {
     '': '0 1bw 0 1bw',
@@ -23,7 +23,7 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
     context: '0',
   },
   padding: 0,
-  radius: true,
+  radius: '(1r - 1bw)',
   transition: 'theme',
   flexShrink: 0,
   textDecoration: 'none',
@@ -37,17 +37,19 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
   },
   placeSelf: 'center',
 
+  // Side padding for the action buttons
+  '$side-padding': '(($size - $action-size - 2bw) / 2)',
   // Size using custom property
-  '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (3x - 2bw))',
-  // Side padding for the button
-  '$side-padding': 'max(min(.5x, (($size - 3x + 2bw) / 2)), 1bw)',
+  '$action-size':
+    'min(max((2x + 2bw), (($size, $size-md) - 1x - 2bw)), (4x - 2bw))',
 
   // Icon styles
   Icon: {
+    $: '>',
     display: 'grid',
     placeItems: 'center',
-    aspectRatio: '1 / 1',
-    width: '$action-size',
+    height: '($action-size - 2bw) ($action-size - 2bw)',
+    width: '($action-size - 2bw) ($action-size - 2bw)',
     opacity: {
       '': 1,
       'checkbox & selected': 1,

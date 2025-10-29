@@ -74,6 +74,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     '': '#purple-03.0',
     'invalid & focused': '#danger.50',
   },
+  preset: 't3',
   radius: true,
   cursor: 'text',
   color: {

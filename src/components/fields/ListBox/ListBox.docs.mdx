@@ -112,7 +112,7 @@ The `mods` property accepts the following modifiers you can override:
 
 **allValueProps** (`Partial<CubeItemProps>`)
 - Props to customize the styling and behavior of the "Select All" option
-- Accepts any ItemBase props like `styles`, `icon`, etc.
+- Accepts any Item props like `styles`, `icon`, etc.
 
 **disallowEmptySelection** (`boolean`, default: `false`)
 - When `true`, prevents the user from deselecting the last selected item
@@ -168,11 +168,11 @@ The `mods` property accepts the following modifiers you can override:
 
 ### ListBox.Item
 
-Individual items within the ListBox. Each item is rendered using [ItemBase](/docs/content-itembase--docs) and supports all ItemBase properties for layout, icons, descriptions, and interactive features.
+Individual items within the ListBox. Each item is rendered using [Item](/docs/content-item--docs) and supports all Item properties for layout, icons, descriptions, and interactive features.
 
 #### Item API
 
-ListBox.Item is built using [ItemBase](/docs/content-itembase--docs), which provides rich layout and interaction capabilities. All ItemBase properties are supported:
+ListBox.Item is built using [Item](/docs/content-item--docs), which provides rich layout and interaction capabilities. All Item properties are supported:
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -633,7 +633,7 @@ const [selectedKey, setSelectedKey] = useState('apple');
    </ListBox.Item>
    ```
 
-7. **Do**: Leverage ItemBase features for rich content
+7. **Do**: Leverage Item features for rich content
    ```jsx
    <ListBox.Item
      key="admin"

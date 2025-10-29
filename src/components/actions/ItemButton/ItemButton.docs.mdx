@@ -6,12 +6,12 @@ import * as ItemButtonStories from './ItemButton.stories';
 
 # ItemButton
 
-An interactive button component built on top of `ItemBase` that provides all the layout and styling capabilities of ItemBase with full button functionality. ItemButton supports actions, links, form submissions, and all the advanced features like hotkeys, tooltips, and selection states.
+An interactive button component built on top of `Item` that provides all the layout and styling capabilities of Item with full button functionality. ItemButton supports actions, links, form submissions, and all the advanced features like hotkeys, tooltips, and selection states.
 
 ## When to Use
 
 - For buttons that need structured content with icons, descriptions, or prefixes/suffixes
-- When you need button functionality with the flexible layout capabilities of ItemBase
+- When you need button functionality with the flexible layout capabilities of Item
 - For interactive items in lists, menus, or toolbars that need consistent styling
 - When building buttons that support features like keyboard shortcuts or overflow tooltips
 - As an alternative to traditional buttons when you need more layout control
@@ -30,9 +30,9 @@ An interactive button component built on top of `ItemBase` that provides all the
 
 Supports [Base properties](/BaseProperties)
 
-### ItemBase Properties
+### Item Properties
 
-ItemButton inherits all properties from [ItemBase](/docs/content-itembase--docs), including:
+ItemButton inherits all properties from [Item](/docs/content-item--docs), including:
 - Layout properties: `icon`, `rightIcon`, `prefix`, `suffix`, `description`, `descriptionPlacement`
 - Interactive properties: `hotkeys`, `tooltip`, `isSelected`
 - Styling properties: `size`, `type`, `theme`, `styles`
@@ -68,7 +68,7 @@ These properties allow direct style application without using the `styles` prop:
 
 ### Modifiers
 
-Inherits all modifiers from [ItemBase](/docs/content-itembase--docs) plus:
+Inherits all modifiers from [Item](/docs/content-item--docs) plus:
 
 | Modifier | Type | Description |
 |----------|------|-------------|
@@ -307,7 +307,8 @@ ItemButton integrates seamlessly with forms when using the `buttonType` prop:
 
 ## Related Components
 
-- [ItemBase](/docs/content-itembase--docs) - The foundational component that ItemButton extends
+- [Item](/docs/content-item--docs) - The foundational component that ItemButton extends
+- [ItemButton.Action](/docs/actions-itemaction--docs) - Action button component for inline actions (also available as `Item.Action`, `Menu.Item.Action`, etc.)
 - [Button](/docs/actions-button--docs) - Traditional button component for simpler use cases
 - [Link](/docs/navigation-link--docs) - Text link component for navigation
-- [Menu.Item](/docs/actions-menu--docs) - Menu item component that also uses ItemBase
+- [Menu.Item](/docs/actions-menu--docs) - Menu item component that also uses Item

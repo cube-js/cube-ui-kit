@@ -14,7 +14,7 @@ import {
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
-import { CubeItemBaseProps, ItemBase } from '../../content/ItemBase/ItemBase';
+import { CubeItemProps, Item } from '../../content/Item/Item';
 import { INLINE_LABEL_STYLES, useFieldProps, useFormProps } from '../../form';
 import { HiddenInput } from '../../HiddenInput';
 
@@ -26,7 +26,7 @@ import type { AriaRadioProps } from 'react-aria';
 export { AriaRadioProps };
 export { useRadio };
 
-const RadioButtonElement = tasty(ItemBase, {
+const RadioButtonElement = tasty(Item, {
   qa: 'RadioButton',
   as: 'label',
   styles: {
@@ -130,26 +130,26 @@ export interface CubeRadioProps
     OuterStyleProps {
   /* The visual type of the radio button */
   type?: 'button' | 'radio';
-  buttonType?: Exclude<CubeItemBaseProps['type'], 'secondary'>;
+  buttonType?: Exclude<CubeItemProps['type'], 'secondary'>;
   value?: string;
   /* Whether the radio is invalid */
   isInvalid?: boolean;
   /* Size of the button (for button type only) */
-  size?: Omit<CubeItemBaseProps['size'], 'inline'>;
+  size?: Omit<CubeItemProps['size'], 'inline'>;
   /* Icon to display (for button type only) */
-  icon?: CubeItemBaseProps['icon'];
+  icon?: CubeItemProps['icon'];
   /* Icon to display on the right (for button type only) */
-  rightIcon?: CubeItemBaseProps['rightIcon'];
+  rightIcon?: CubeItemProps['rightIcon'];
   /* Prefix element (for button type only) */
-  prefix?: CubeItemBaseProps['prefix'];
+  prefix?: CubeItemProps['prefix'];
   /* Suffix element (for button type only) */
-  suffix?: CubeItemBaseProps['suffix'];
+  suffix?: CubeItemProps['suffix'];
   /* Description text (for button type only) */
-  description?: CubeItemBaseProps['description'];
+  description?: CubeItemProps['description'];
   /* Tooltip configuration (for button type only) */
-  tooltip?: CubeItemBaseProps['tooltip'];
+  tooltip?: CubeItemProps['tooltip'];
   /* Keyboard shortcut (for button type only) */
-  hotkeys?: CubeItemBaseProps['hotkeys'];
+  hotkeys?: CubeItemProps['hotkeys'];
 }
 
 function Radio(props: CubeRadioProps, ref) {
@@ -208,11 +208,9 @@ function Radio(props: CubeRadioProps, ref) {
   let isButton = effectiveType === 'button' || effectiveType === 'tabs';
 
   // Determine effective size with priority: prop > context > default
-  let effectiveSize: CubeItemBaseProps['size'] = (size ??
+  let effectiveSize: CubeItemProps['size'] = (size ??
     contextSize ??
-    (effectiveType === 'tabs'
-      ? 'small'
-      : 'medium')) as CubeItemBaseProps['size'];
+    (effectiveType === 'tabs' ? 'small' : 'medium')) as CubeItemProps['size'];
 
   // Apply size mapping for tabs mode button radios
   if (effectiveType === 'tabs' && isButton) {
@@ -289,7 +287,7 @@ function Radio(props: CubeRadioProps, ref) {
     ],
   );
 
-  // Render button type using ItemBase
+  // Render button type using Item
   if (isButton) {
     const ButtonElement =
       isRadioSelected && contextType === 'tabs'

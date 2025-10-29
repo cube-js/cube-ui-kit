@@ -14,7 +14,7 @@ import {
   Styles,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
-import { Item } from '../../Item';
+import { CollectionItem } from '../../CollectionItem';
 
 import { useMenuContext } from './context';
 import { MenuItem } from './MenuItem';
@@ -279,14 +279,14 @@ const Section = Object.assign(BaseSection, {
 }) as SectionComponent;
 
 type __MenuComponent = typeof _Menu & {
-  Item: typeof Item;
+  Item: typeof CollectionItem;
   Section: typeof Section;
   SubMenuTrigger: typeof SubMenuTrigger;
   Trigger: typeof MenuTrigger;
 };
 
 const __Menu = Object.assign(_Menu as __MenuComponent, {
-  Item,
+  Item: CollectionItem,
   Section,
   SubMenuTrigger,
   Trigger: MenuTrigger,

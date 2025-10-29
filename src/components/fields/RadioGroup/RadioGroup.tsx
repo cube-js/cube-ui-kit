@@ -18,7 +18,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { CubeItemBaseProps } from '../../content/ItemBase/ItemBase';
+import { CubeItemProps } from '../../content/Item/Item';
 import {
   FormContext,
   useFieldProps,
@@ -41,9 +41,9 @@ export interface CubeRadioGroupProps
   /* Whether the radio group is invalid */
   isInvalid?: boolean;
   /* Size for all radio buttons in the group */
-  size?: Omit<CubeItemBaseProps['size'], 'inline'>;
+  size?: Omit<CubeItemProps['size'], 'inline'>;
   /* Button type for all button-style radios (ignored in tabs mode). When set to 'primary', selected buttons use 'primary' and non-selected use 'secondary' */
-  buttonType?: Exclude<CubeItemBaseProps['type'], 'secondary'>;
+  buttonType?: Exclude<CubeItemProps['type'], 'secondary'>;
   /* Visual type for all radios in the group: radio (default), button, or tabs */
   type?: 'radio' | 'button' | 'tabs';
 }
