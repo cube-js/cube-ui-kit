@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.87.5
+
+### Patch Changes
+
+- [#866](https://github.com/cube-js/cube-ui-kit/pull/866) [`2c077631`](https://github.com/cube-js/cube-ui-kit/commit/2c077631940b2a07438069ff3f15fb08212aca6a) Thanks [@tenphi](https://github.com/tenphi)! - Fix Tag label alignment.
+
 ## 0.87.4
 
 ### Patch Changes
