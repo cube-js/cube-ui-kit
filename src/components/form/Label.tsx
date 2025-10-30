@@ -59,7 +59,7 @@ export const INLINE_LABEL_STYLES: Styles = {
 
 export const LABEL_STYLES: Styles = {
   display: 'block',
-  preset: 'h6',
+  preset: 't3m',
   color: {
     '': '#dark',
     invalid: '#danger-text',
