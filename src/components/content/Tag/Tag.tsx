@@ -33,6 +33,11 @@ const TagElement = tasty(Item, {
         return map;
       }, {}),
     },
+
+    Label: {
+      textAlign: 'center',
+      placeSelf: 'center',
+    },
   },
 });
 
