@@ -79,7 +79,7 @@ const ListBoxWrapperElement = tasty({
       valid: '#success-text.50',
       invalid: '#danger-text.50',
       disabled: true,
-      'popover | searchable': false,
+      'popover | searchable | !card': false,
     },
   },
 });
@@ -93,7 +93,7 @@ const ListElement = tasty({
     boxSizing: 'border-box',
     margin: {
       '': '.5x .5x 0 .5x',
-      sections: '.5x .5x 0 .5x',
+      '!card': '0',
     },
     height: 'max-content',
   },
@@ -309,6 +309,13 @@ export interface CubeListBoxProps<T>
    * Defaults to "No items".
    */
   emptyLabel?: ReactNode;
+
+  /**
+   * Whether to remove the card styling (border and outer margin).
+   * When true, removes the border and outer margin while keeping section margins.
+   * Defaults to false (card styling is applied).
+   */
+  noCard?: boolean;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -516,6 +523,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     allValueProps,
     filter,
     emptyLabel = 'No items',
+    noCard = false,
     form,
     ...otherProps
   } = props;
@@ -840,6 +848,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       header: !!header || (showSelectAll && props.selectionMode === 'multiple'),
       footer: !!footer,
       selectAll: showSelectAll && props.selectionMode === 'multiple',
+      card: !noCard,
       ...externalMods,
     }),
     [
@@ -851,6 +860,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       footer,
       showSelectAll,
       props.selectionMode,
+      noCard,
       externalMods,
     ],
   );
@@ -901,7 +911,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             ref={listRef}
             styles={listStyles}
             aria-disabled={isDisabled || undefined}
-            mods={{ sections: hasSections }}
+            mods={{ sections: hasSections, card: !noCard }}
             style={
               shouldVirtualize
                 ? {

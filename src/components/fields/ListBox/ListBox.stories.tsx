@@ -82,6 +82,13 @@ const meta: any = {
         defaultValue: { summary: 'medium' },
       },
     },
+    noCard: {
+      control: { type: 'boolean' },
+      description: 'Remove card styling (border and outer margin)',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
     header: {
       control: { type: 'text' },
       description: 'Custom header content',
@@ -1388,6 +1395,84 @@ export const AllValuePropsExample: Story = {
       description: {
         story:
           'The `allValueProps` prop allows you to customize the styling and behavior of the "Select All" option. In this example, the "Select All" option uses the `t3m` preset and purple text color.',
+      },
+    },
+  },
+};
+
+export const NoCardStyling: Story = {
+  render: () => (
+    <Space gap="4x" flow="column">
+      <div>
+        <Text preset="t3" weight="600">
+          Default Card Styling
+        </Text>
+        <Text preset="t4" color="#dark.60">
+          With border and outer margin
+        </Text>
+        <Space height="1x" />
+        <ListBox
+          label="Select a fruit"
+          selectionMode="single"
+          defaultSelectedKey="apple"
+        >
+          {fruits.slice(0, 4).map((fruit) => (
+            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+          ))}
+        </ListBox>
+      </div>
+
+      <div>
+        <Text preset="t3" weight="600">
+          No Card Styling (noCard=true)
+        </Text>
+        <Text preset="t4" color="#dark.60">
+          Without border and outer margin
+        </Text>
+        <Space height="1x" />
+        <ListBox
+          noCard
+          label="Select a fruit"
+          selectionMode="single"
+          defaultSelectedKey="banana"
+        >
+          {fruits.slice(0, 4).map((fruit) => (
+            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+          ))}
+        </ListBox>
+      </div>
+
+      <div>
+        <Text preset="t3" weight="600">
+          No Card with Sections
+        </Text>
+        <Text preset="t4" color="#dark.60">
+          Section margins are preserved
+        </Text>
+        <Space height="1x" />
+        <ListBox
+          noCard
+          label="Select food items"
+          selectionMode="single"
+          defaultSelectedKey="carrot"
+        >
+          <ListBox.Section title="Fruits">
+            <ListBox.Item key="apple">Apple</ListBox.Item>
+            <ListBox.Item key="banana">Banana</ListBox.Item>
+          </ListBox.Section>
+          <ListBox.Section title="Vegetables">
+            <ListBox.Item key="carrot">Carrot</ListBox.Item>
+            <ListBox.Item key="broccoli">Broccoli</ListBox.Item>
+          </ListBox.Section>
+        </ListBox>
+      </div>
+    </Space>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `noCard` prop removes the border and outer margin from the ListBox, making it suitable for use in contexts where the card styling is not needed (e.g., inside popovers or dialogs). Section margins are preserved to maintain proper spacing.',
       },
     },
   },
