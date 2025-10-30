@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.87.4
+
+### Patch Changes
+
+- [#864](https://github.com/cube-js/cube-ui-kit/pull/864) [`7d59ddd8`](https://github.com/cube-js/cube-ui-kit/commit/7d59ddd8f617eae6ef63e473a761906c792bf23e) Thanks [@tenphi](https://github.com/tenphi)! - Replace `noCard` prop with `type` prop in ListBox component. The new `type` prop accepts three values:
+
+  - `card` (default): Standard card styling with border and margin
+  - `plain`: No border, no margin, no radius - suitable for embedded use
+  - `popover`: No border, but keeps margin and radius - suitable for overlay use
+
+- [#864](https://github.com/cube-js/cube-ui-kit/pull/864) [`7d59ddd8`](https://github.com/cube-js/cube-ui-kit/commit/7d59ddd8f617eae6ef63e473a761906c792bf23e) Thanks [@tenphi](https://github.com/tenphi)! - Remove the hardcoded default width for NumberInput.
+
+- [#864](https://github.com/cube-js/cube-ui-kit/pull/864) [`7d59ddd8`](https://github.com/cube-js/cube-ui-kit/commit/7d59ddd8f617eae6ef63e473a761906c792bf23e) Thanks [@tenphi](https://github.com/tenphi)! - Fix right padding in NumberInput.
+
 ## 0.87.3
 
 ### Patch Changes
