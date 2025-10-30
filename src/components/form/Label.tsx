@@ -59,7 +59,10 @@ export const INLINE_LABEL_STYLES: Styles = {
 
 export const LABEL_STYLES: Styles = {
   display: 'block',
-  preset: 't3m',
+  preset: {
+    '': 't3m',
+    '[data-size="small"]': 't4',
+  },
   color: {
     '': '#dark',
     invalid: '#danger-text',
@@ -86,6 +89,7 @@ export interface CubeLabelProps extends BaseProps, ContainerStyleProps {
   htmlFor?: string;
   for?: string;
   validationState?: ValidationState;
+  size?: 'medium' | 'small';
 }
 
 function Label(props: CubeLabelProps, ref) {
@@ -102,6 +106,7 @@ function Label(props: CubeLabelProps, ref) {
     htmlFor,
     isDisabled,
     validationState,
+    size = 'medium',
     for: labelFor,
     ...otherProps
   } = props;
@@ -132,6 +137,7 @@ function Label(props: CubeLabelProps, ref) {
       ref={domRef}
       styles={styles}
       htmlFor={labelFor || htmlFor}
+      data-size={size}
       mods={{
         side: labelPosition === 'side',
         disabled: isDisabled,
