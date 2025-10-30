@@ -142,6 +142,10 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    */
   isCard?: boolean;
   /**
+   * When true, adds button modifier to the component styling.
+   */
+  isButton?: boolean;
+  /**
    * @private
    * Default tooltip placement for the item.
    * @default "top"
@@ -252,9 +256,11 @@ const ItemElement = tasty({
       disabled: '#dark-04',
     },
     preset: {
-      '': 't3m',
+      '': 't3',
+      button: 't3m',
       '[data-size="xsmall"]': 't4',
-      '[data-size="xlarge"]': 't2m',
+      '[data-size="xlarge"]': 't2',
+      '[data-size="xlarge"] & button': 't2m',
       '[data-size="inline"]': 'tag',
     },
     boxSizing: 'border-box',
@@ -685,6 +691,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isLoading = false,
     isCard = false,
     actions,
+    isButton = false,
     defaultTooltipPlacement = 'top',
     ...rest
   } = props;
@@ -777,6 +784,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       selected: isSelected === true,
       loading: isLoading,
       card: isCard === true,
+      button: isButton === true,
       ...mods,
     };
   }, [
@@ -790,6 +798,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isSelected,
     isLoading,
     isCard,
+    isButton,
     actions,
     mods,
   ]);
