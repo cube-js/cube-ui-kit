@@ -126,6 +126,16 @@ The `mods` property accepts the following modifiers you can override:
 - Array of keys for items that should be disabled
 - Disabled items cannot be selected and are visually distinguished
 
+### Visual Styling
+
+**type** (`'card' | 'plain' | 'popover'`, default: `'card'`)
+- Controls the visual styling of the ListBox container
+- `card`: Standard card styling with border and margin (default)
+- `plain`: No border, no margin, no radius - suitable for embedded use
+- `popover`: No border, but keeps margin and radius - suitable for overlay use
+- Use `plain` when embedding ListBox directly into another component
+- Use `popover` when using ListBox inside overlays (Dialog, ComboBox, Picker)
+
 ### Focus and Interaction
 
 **focusOnHover** (`boolean`, default: `true`)
@@ -510,6 +520,30 @@ const [selectedKey, setSelectedKey] = useState('apple');
 </ListBox>
 
 <ListBox size="large" label="Large Size">
+  <ListBox.Item key="apple">Apple</ListBox.Item>
+  <ListBox.Item key="banana">Banana</ListBox.Item>
+</ListBox>
+```
+
+### Visual Type Variants
+
+<Story of={ListBoxStories.TypeVariants} />
+
+```jsx
+{/* Card type (default) - with border and margin */}
+<ListBox type="card" label="Select a fruit" selectionMode="single">
+  <ListBox.Item key="apple">Apple</ListBox.Item>
+  <ListBox.Item key="banana">Banana</ListBox.Item>
+</ListBox>
+
+{/* Plain type - no border, no margin, no radius */}
+<ListBox type="plain" label="Select a fruit" selectionMode="single">
+  <ListBox.Item key="apple">Apple</ListBox.Item>
+  <ListBox.Item key="banana">Banana</ListBox.Item>
+</ListBox>
+
+{/* Popover type - no border, but keeps margin and radius */}
+<ListBox type="popover" label="Select a fruit" selectionMode="single">
   <ListBox.Item key="apple">Apple</ListBox.Item>
   <ListBox.Item key="banana">Banana</ListBox.Item>
 </ListBox>

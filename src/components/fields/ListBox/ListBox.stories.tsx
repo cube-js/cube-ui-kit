@@ -82,6 +82,14 @@ const meta: any = {
         defaultValue: { summary: 'medium' },
       },
     },
+    type: {
+      options: ['card', 'plain', 'popover'],
+      control: { type: 'radio' },
+      description: 'Visual type of the ListBox',
+      table: {
+        defaultValue: { summary: 'card' },
+      },
+    },
     header: {
       control: { type: 'text' },
       description: 'Custom header content',
@@ -1388,6 +1396,105 @@ export const AllValuePropsExample: Story = {
       description: {
         story:
           'The `allValueProps` prop allows you to customize the styling and behavior of the "Select All" option. In this example, the "Select All" option uses the `t3m` preset and purple text color.',
+      },
+    },
+  },
+};
+
+export const TypeVariants: Story = {
+  render: () => (
+    <Space gap="4x" flow="column">
+      <div>
+        <Text preset="t3" weight="600">
+          Card Type (default)
+        </Text>
+        <Text preset="t4" color="#dark.60">
+          Standard card styling with border and margin
+        </Text>
+        <Space height="1x" />
+        <ListBox
+          type="card"
+          label="Select a fruit"
+          selectionMode="single"
+          defaultSelectedKey="apple"
+        >
+          {fruits.slice(0, 4).map((fruit) => (
+            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+          ))}
+        </ListBox>
+      </div>
+
+      <div>
+        <Text preset="t3" weight="600">
+          Plain Type
+        </Text>
+        <Text preset="t4" color="#dark.60">
+          No border, no margin, no radius - suitable for embedded use
+        </Text>
+        <Space height="1x" />
+        <ListBox
+          type="plain"
+          label="Select a fruit"
+          selectionMode="single"
+          defaultSelectedKey="banana"
+        >
+          {fruits.slice(0, 4).map((fruit) => (
+            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+          ))}
+        </ListBox>
+      </div>
+
+      <div>
+        <Text preset="t3" weight="600">
+          Popover Type
+        </Text>
+        <Text preset="t4" color="#dark.60">
+          No border, but keeps margin and radius - suitable for overlay use
+        </Text>
+        <Space height="1x" />
+        <ListBox
+          type="popover"
+          label="Select a fruit"
+          selectionMode="single"
+          defaultSelectedKey="cherry"
+        >
+          {fruits.slice(0, 4).map((fruit) => (
+            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+          ))}
+        </ListBox>
+      </div>
+
+      <div>
+        <Text preset="t3" weight="600">
+          Plain Type with Sections
+        </Text>
+        <Text preset="t4" color="#dark.60">
+          Section margins are preserved even with plain type
+        </Text>
+        <Space height="1x" />
+        <ListBox
+          type="plain"
+          label="Select food items"
+          selectionMode="single"
+          defaultSelectedKey="carrot"
+        >
+          <ListBox.Section title="Fruits">
+            <ListBox.Item key="apple">Apple</ListBox.Item>
+            <ListBox.Item key="banana">Banana</ListBox.Item>
+          </ListBox.Section>
+          <ListBox.Section title="Vegetables">
+            <ListBox.Item key="carrot">Carrot</ListBox.Item>
+            <ListBox.Item key="broccoli">Broccoli</ListBox.Item>
+          </ListBox.Section>
+        </ListBox>
+      </div>
+    </Space>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `type` prop controls the visual styling of the ListBox. Use `card` for standalone use, `plain` for embedded use without decoration, and `popover` for use inside overlays where borders are handled by the container.',
       },
     },
   },
