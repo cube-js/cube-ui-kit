@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.87.6
+
+### Patch Changes
+
+- [#868](https://github.com/cube-js/cube-ui-kit/pull/868) [`7327f98d`](https://github.com/cube-js/cube-ui-kit/commit/7327f98d1a14ccf6cd83d4cfc1ff89254d1aeec8) Thanks [@tenphi](https://github.com/tenphi)! - Add `size` prop for Label with `small` and `medium` (default) values.
+
 ## 0.87.5
 
 ### Patch Changes
