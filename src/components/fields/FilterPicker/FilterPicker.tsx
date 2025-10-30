@@ -723,6 +723,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <ItemButton
         ref={triggerRef as any}
         data-popover-trigger
+        isButton={false}
         qa={qa || 'FilterPicker'}
         id={id}
         type={type}

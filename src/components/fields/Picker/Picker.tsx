@@ -577,6 +577,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
       <ItemButton
         ref={triggerRef as any}
         data-popover-trigger
+        isButton={false}
         id={id}
         qa={qa || 'PickerTrigger'}
         type={type}

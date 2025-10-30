@@ -32,6 +32,7 @@ const StyledItem = tasty(Item, {
   as: 'button',
   type: 'neutral',
   theme: 'default',
+  isButton: true,
   styles: {
     reset: 'button',
     placeContent: 'center stretch',
