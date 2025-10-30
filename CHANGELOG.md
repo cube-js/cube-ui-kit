@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.87.3
+
+### Patch Changes
+
+- [#862](https://github.com/cube-js/cube-ui-kit/pull/862) [`3f3a12dc`](https://github.com/cube-js/cube-ui-kit/commit/3f3a12dc3a6af52172aba199e085d7fee1035192) Thanks [@tenphi](https://github.com/tenphi)! - Change the default Label preset to `t3m`.
+
+- [#862](https://github.com/cube-js/cube-ui-kit/pull/862) [`3f3a12dc`](https://github.com/cube-js/cube-ui-kit/commit/3f3a12dc3a6af52172aba199e085d7fee1035192) Thanks [@tenphi](https://github.com/tenphi)! - Fix font weight for Item and Item Button.
+
+- [#862](https://github.com/cube-js/cube-ui-kit/pull/862) [`3f3a12dc`](https://github.com/cube-js/cube-ui-kit/commit/3f3a12dc3a6af52172aba199e085d7fee1035192) Thanks [@tenphi](https://github.com/tenphi)! - Use right text alignment in NumberInput component.
+
 ## 0.87.2
 
 ### Patch Changes
