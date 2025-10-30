@@ -175,7 +175,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
     '[data-size="small"]': '(1x - 1bw)',
     '[data-size="large"]': '(1.25x - 1bw)',
     '[data-size="xlarge"]': '(1.5x - 1bw)',
-    suffix: '(.5x - 1bw)',
+    suffix: '0',
   },
 };
 

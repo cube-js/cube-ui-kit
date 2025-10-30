@@ -36,6 +36,7 @@ const StepperContainer = tasty({
     gridRows: '1sf 1sf',
     flow: 'column',
     placeSelf: 'stretch',
+    margin: '(.5x - 1bw) left',
   },
 });
 
