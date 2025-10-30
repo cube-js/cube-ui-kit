@@ -39,6 +39,11 @@ const Template: StoryFn<CubeFieldWrapperProps> = (args) => (
 
 export const Default = Template.bind({});
 
+export const Small = Template.bind({});
+Small.args = {
+  labelProps: { size: 'small' },
+};
+
 export const WithTooltip = Template.bind({});
 WithTooltip.args = {
   tooltip: 'Long description',
