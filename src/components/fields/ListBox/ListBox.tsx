@@ -65,7 +65,11 @@ const ListBoxWrapperElement = tasty({
     flow: 'column',
     gap: 0,
     position: 'relative',
-    radius: '1cr',
+    radius: {
+      '': '1cr',
+      '[data-type="popover"]': '(1cr - 1bw)',
+      '[data-type="plain"]': '0',
+    },
     color: '#dark-02',
     transition: 'theme',
     outline: {
@@ -79,7 +83,7 @@ const ListBoxWrapperElement = tasty({
       valid: '#success-text.50',
       invalid: '#danger-text.50',
       disabled: true,
-      'popover | searchable | !card': false,
+      '[data-type="plain"] | [data-type="popover"] | searchable': false,
     },
   },
 });
@@ -93,7 +97,7 @@ const ListElement = tasty({
     boxSizing: 'border-box',
     margin: {
       '': '.5x .5x 0 .5x',
-      '!card': '0',
+      '[data-type="plain"]': '0',
     },
     height: 'max-content',
   },
@@ -311,11 +315,13 @@ export interface CubeListBoxProps<T>
   emptyLabel?: ReactNode;
 
   /**
-   * Whether to remove the card styling (border and outer margin).
-   * When true, removes the border and outer margin while keeping section margins.
-   * Defaults to false (card styling is applied).
+   * Visual type of the ListBox styling.
+   * - `card` (default): Standard card styling with border and margin
+   * - `plain`: No border, no margin, no radius - suitable for embedded use
+   * - `popover`: No border, but keeps margin and radius - suitable for overlay use
+   * Defaults to 'card'.
    */
-  noCard?: boolean;
+  type?: 'card' | 'plain' | 'popover';
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -523,7 +529,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     allValueProps,
     filter,
     emptyLabel = 'No items',
-    noCard = false,
+    type = 'card',
     form,
     ...otherProps
   } = props;
@@ -848,7 +854,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       header: !!header || (showSelectAll && props.selectionMode === 'multiple'),
       footer: !!footer,
       selectAll: showSelectAll && props.selectionMode === 'multiple',
-      card: !noCard,
       ...externalMods,
     }),
     [
@@ -860,7 +865,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       footer,
       showSelectAll,
       props.selectionMode,
-      noCard,
       externalMods,
     ],
   );
@@ -871,6 +875,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       qa="ListBoxWrapper"
       mods={mods}
       styles={styles}
+      data-type={type}
     >
       {header ? (
         <StyledHeader styles={headerStyles} data-size={size}>
@@ -911,7 +916,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             ref={listRef}
             styles={listStyles}
             aria-disabled={isDisabled || undefined}
-            mods={{ sections: hasSections, card: !noCard }}
+            mods={{ sections: hasSections }}
+            data-type={type}
             style={
               shouldVirtualize
                 ? {

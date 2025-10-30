@@ -929,9 +929,7 @@ function ComboBoxOverlay({
               headingStyles={headingStyles}
               stateRef={listStateRef}
               size="medium"
-              mods={{
-                popover: true,
-              }}
+              type="popover"
               onSelectionChange={onSelectionChange}
             >
               {children as any}

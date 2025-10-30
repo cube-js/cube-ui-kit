@@ -82,11 +82,12 @@ const meta: any = {
         defaultValue: { summary: 'medium' },
       },
     },
-    noCard: {
-      control: { type: 'boolean' },
-      description: 'Remove card styling (border and outer margin)',
+    type: {
+      options: ['card', 'plain', 'popover'],
+      control: { type: 'radio' },
+      description: 'Visual type of the ListBox',
       table: {
-        defaultValue: { summary: false },
+        defaultValue: { summary: 'card' },
       },
     },
     header: {
@@ -1400,18 +1401,19 @@ export const AllValuePropsExample: Story = {
   },
 };
 
-export const NoCardStyling: Story = {
+export const TypeVariants: Story = {
   render: () => (
     <Space gap="4x" flow="column">
       <div>
         <Text preset="t3" weight="600">
-          Default Card Styling
+          Card Type (default)
         </Text>
         <Text preset="t4" color="#dark.60">
-          With border and outer margin
+          Standard card styling with border and margin
         </Text>
         <Space height="1x" />
         <ListBox
+          type="card"
           label="Select a fruit"
           selectionMode="single"
           defaultSelectedKey="apple"
@@ -1424,14 +1426,14 @@ export const NoCardStyling: Story = {
 
       <div>
         <Text preset="t3" weight="600">
-          No Card Styling (noCard=true)
+          Plain Type
         </Text>
         <Text preset="t4" color="#dark.60">
-          Without border and outer margin
+          No border, no margin, no radius - suitable for embedded use
         </Text>
         <Space height="1x" />
         <ListBox
-          noCard
+          type="plain"
           label="Select a fruit"
           selectionMode="single"
           defaultSelectedKey="banana"
@@ -1444,14 +1446,34 @@ export const NoCardStyling: Story = {
 
       <div>
         <Text preset="t3" weight="600">
-          No Card with Sections
+          Popover Type
         </Text>
         <Text preset="t4" color="#dark.60">
-          Section margins are preserved
+          No border, but keeps margin and radius - suitable for overlay use
         </Text>
         <Space height="1x" />
         <ListBox
-          noCard
+          type="popover"
+          label="Select a fruit"
+          selectionMode="single"
+          defaultSelectedKey="cherry"
+        >
+          {fruits.slice(0, 4).map((fruit) => (
+            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+          ))}
+        </ListBox>
+      </div>
+
+      <div>
+        <Text preset="t3" weight="600">
+          Plain Type with Sections
+        </Text>
+        <Text preset="t4" color="#dark.60">
+          Section margins are preserved even with plain type
+        </Text>
+        <Space height="1x" />
+        <ListBox
+          type="plain"
           label="Select food items"
           selectionMode="single"
           defaultSelectedKey="carrot"
@@ -1472,7 +1494,7 @@ export const NoCardStyling: Story = {
     docs: {
       description: {
         story:
-          'The `noCard` prop removes the border and outer margin from the ListBox, making it suitable for use in contexts where the card styling is not needed (e.g., inside popovers or dialogs). Section margins are preserved to maintain proper spacing.',
+          'The `type` prop controls the visual styling of the ListBox. Use `card` for standalone use, `plain` for embedded use without decoration, and `popover` for use inside overlays where borders are handled by the container.',
       },
     },
   },
