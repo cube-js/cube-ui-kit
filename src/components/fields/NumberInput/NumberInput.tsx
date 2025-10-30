@@ -24,9 +24,6 @@ const StyledTextInputBase = tasty(TextInputBase, {
   styles: {
     textAlign: 'right',
   },
-  wrapperStyles: {
-    width: 'initial 13x 100%',
-  },
 });
 
 const StepperContainer = tasty({
