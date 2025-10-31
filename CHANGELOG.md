@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.88.0
+
+### Minor Changes
+
+- [`b817bcbc`](https://github.com/cube-js/cube-ui-kit/commit/b817bcbce9a962dfeb579a40020620ea11ab96bf) Thanks [@tenphi](https://github.com/tenphi)! - Rename ClearIcon -> TrashIcon. Add a new ClearIcon.
+
+- [`bc28fc33`](https://github.com/cube-js/cube-ui-kit/commit/bc28fc3387d607733fa98f9d802ff2f31826e2f4) Thanks [@tenphi](https://github.com/tenphi)! - Rename `type` prop in ListBox to `shape`.
+
+### Patch Changes
+
+- [`bc28fc33`](https://github.com/cube-js/cube-ui-kit/commit/bc28fc3387d607733fa98f9d802ff2f31826e2f4) Thanks [@tenphi](https://github.com/tenphi)! - Add `shape` prop to Item component with three values: `card`, `button` (default), and `sharp` to control border radius styling.
+
 ## 0.87.6
 
 ### Patch Changes
