@@ -44,7 +44,7 @@ import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import type { FieldBaseProps } from '../../../shared';
 
 export interface CubePickerProps<T>
-  extends Omit<CubeListBoxProps<T>, 'size' | 'tooltip' | 'type'>,
+  extends Omit<CubeListBoxProps<T>, 'size' | 'tooltip' | 'shape'>,
     Omit<CubeItemProps, 'children' | 'size'>,
     BasePropsWithoutChildren,
     BaseStyleProps,
@@ -683,7 +683,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
                 isLoading={isLoading}
                 stateRef={internalListStateRef}
                 isCheckable={isCheckable}
-                type="popover"
+                shape="popover"
                 size="medium"
                 showSelectAll={showSelectAll}
                 selectAllLabel={selectAllLabel}
