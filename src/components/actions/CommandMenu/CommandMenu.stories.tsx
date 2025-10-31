@@ -13,7 +13,7 @@ import {
 import React, { useState } from 'react';
 import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
-import { ClearIcon, EditIcon } from '../../../icons';
+import { EditIcon, TrashIcon } from '../../../icons';
 import { tasty } from '../../../tasty';
 import { Card } from '../../content/Card/Card';
 import { HotKeys } from '../../content/HotKeys';
@@ -412,7 +412,7 @@ export const ItemsWithActions = (props) => {
               onPress={() => handleItemAction('file1', 'edit')}
             />
             <ItemAction
-              icon={<ClearIcon />}
+              icon={<TrashIcon />}
               aria-label="Delete"
               onPress={() => handleItemAction('file1', 'delete')}
             />
@@ -433,7 +433,7 @@ export const ItemsWithActions = (props) => {
               onPress={() => handleItemAction('file2', 'edit')}
             />
             <ItemAction
-              icon={<ClearIcon />}
+              icon={<TrashIcon />}
               aria-label="Delete"
               onPress={() => handleItemAction('file2', 'delete')}
             />
@@ -454,7 +454,7 @@ export const ItemsWithActions = (props) => {
               onPress={() => handleItemAction('file3', 'edit')}
             />
             <ItemAction
-              icon={<ClearIcon />}
+              icon={<TrashIcon />}
               aria-label="Delete"
               onPress={() => handleItemAction('file3', 'delete')}
             />

@@ -14,7 +14,6 @@ import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
 import {
   CheckIcon,
-  ClearIcon,
   CloseCircleIcon,
   CloseIcon,
   CopyIcon,
@@ -23,6 +22,7 @@ import {
   Icon,
   MoreIcon,
   PlusIcon,
+  TrashIcon,
 } from '../../../icons';
 import {
   Alert,
@@ -1995,7 +1995,7 @@ export const ItemsWithActions = (props) => {
                 onPress={() => handleItemAction('file1', 'edit')}
               />
               <ItemAction
-                icon={<ClearIcon />}
+                icon={<TrashIcon />}
                 tooltip="Delete"
                 onPress={() => handleItemAction('file1', 'delete')}
               />
@@ -2016,7 +2016,7 @@ export const ItemsWithActions = (props) => {
                 onPress={() => handleItemAction('file2', 'edit')}
               />
               <Menu.Item.Action
-                icon={<ClearIcon />}
+                icon={<TrashIcon />}
                 tooltip="Delete"
                 theme="danger"
                 onPress={() => handleItemAction('file2', 'delete')}
@@ -2038,7 +2038,7 @@ export const ItemsWithActions = (props) => {
                 onPress={() => handleItemAction('file3', 'edit')}
               />
               <ItemAction
-                icon={<ClearIcon />}
+                icon={<TrashIcon />}
                 tooltip="Delete"
                 theme="success"
                 onPress={() => handleItemAction('file3', 'delete')}

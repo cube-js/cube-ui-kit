@@ -111,6 +111,7 @@ export { ThunderboltCrossedIcon } from './ThunderboltCrossedIcon';
 export { ThunderboltFilledIcon } from './ThunderboltFilledIcon';
 export { ThunderboltIcon } from './ThunderboltIcon';
 export { TimeIcon } from './TimeIcon';
+export { TrashIcon } from './TrashIcon';
 export { UnlockIcon } from './UnlockIcon';
 export { UpIcon } from './UpIcon';
 export { UserGroupIcon } from './UserGroupIcon';
