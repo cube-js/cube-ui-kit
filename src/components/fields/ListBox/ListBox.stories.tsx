@@ -82,10 +82,10 @@ const meta: any = {
         defaultValue: { summary: 'medium' },
       },
     },
-    type: {
+    shape: {
       options: ['card', 'plain', 'popover'],
       control: { type: 'radio' },
-      description: 'Visual type of the ListBox',
+      description: 'Visual shape of the ListBox',
       table: {
         defaultValue: { summary: 'card' },
       },
@@ -1401,100 +1401,68 @@ export const AllValuePropsExample: Story = {
   },
 };
 
-export const TypeVariants: Story = {
+export const DifferentShapes: Story = {
   render: () => (
     <Space gap="4x" flow="column">
-      <div>
-        <Text preset="t3" weight="600">
-          Card Type (default)
-        </Text>
-        <Text preset="t4" color="#dark.60">
-          Standard card styling with border and margin
-        </Text>
-        <Space height="1x" />
-        <ListBox
-          type="card"
-          label="Select a fruit"
-          selectionMode="single"
-          defaultSelectedKey="apple"
-        >
-          {fruits.slice(0, 4).map((fruit) => (
-            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
-          ))}
-        </ListBox>
-      </div>
+      <ListBox
+        shape="card"
+        label="Card Shape (default)"
+        description="Standard card styling with border and margin"
+        selectionMode="single"
+        defaultSelectedKey="apple"
+      >
+        {fruits.slice(0, 4).map((fruit) => (
+          <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+        ))}
+      </ListBox>
 
-      <div>
-        <Text preset="t3" weight="600">
-          Plain Type
-        </Text>
-        <Text preset="t4" color="#dark.60">
-          No border, no margin, no radius - suitable for embedded use
-        </Text>
-        <Space height="1x" />
-        <ListBox
-          type="plain"
-          label="Select a fruit"
-          selectionMode="single"
-          defaultSelectedKey="banana"
-        >
-          {fruits.slice(0, 4).map((fruit) => (
-            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
-          ))}
-        </ListBox>
-      </div>
+      <ListBox
+        shape="plain"
+        label="Plain Shape"
+        description="No border, no margin, no radius - suitable for embedded use"
+        selectionMode="single"
+        defaultSelectedKey="banana"
+      >
+        {fruits.slice(0, 4).map((fruit) => (
+          <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+        ))}
+      </ListBox>
 
-      <div>
-        <Text preset="t3" weight="600">
-          Popover Type
-        </Text>
-        <Text preset="t4" color="#dark.60">
-          No border, but keeps margin and radius - suitable for overlay use
-        </Text>
-        <Space height="1x" />
-        <ListBox
-          type="popover"
-          label="Select a fruit"
-          selectionMode="single"
-          defaultSelectedKey="cherry"
-        >
-          {fruits.slice(0, 4).map((fruit) => (
-            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
-          ))}
-        </ListBox>
-      </div>
+      <ListBox
+        shape="popover"
+        label="Popover Shape"
+        description="No border, but keeps margin and radius - suitable for overlay use"
+        selectionMode="single"
+        defaultSelectedKey="cherry"
+      >
+        {fruits.slice(0, 4).map((fruit) => (
+          <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+        ))}
+      </ListBox>
 
-      <div>
-        <Text preset="t3" weight="600">
-          Plain Type with Sections
-        </Text>
-        <Text preset="t4" color="#dark.60">
-          Section margins are preserved even with plain type
-        </Text>
-        <Space height="1x" />
-        <ListBox
-          type="plain"
-          label="Select food items"
-          selectionMode="single"
-          defaultSelectedKey="carrot"
-        >
-          <ListBox.Section title="Fruits">
-            <ListBox.Item key="apple">Apple</ListBox.Item>
-            <ListBox.Item key="banana">Banana</ListBox.Item>
-          </ListBox.Section>
-          <ListBox.Section title="Vegetables">
-            <ListBox.Item key="carrot">Carrot</ListBox.Item>
-            <ListBox.Item key="broccoli">Broccoli</ListBox.Item>
-          </ListBox.Section>
-        </ListBox>
-      </div>
+      <ListBox
+        shape="plain"
+        label="Plain Shape with Sections"
+        description="Section margins are preserved even with plain shape"
+        selectionMode="single"
+        defaultSelectedKey="carrot"
+      >
+        <ListBox.Section title="Fruits">
+          <ListBox.Item key="apple">Apple</ListBox.Item>
+          <ListBox.Item key="banana">Banana</ListBox.Item>
+        </ListBox.Section>
+        <ListBox.Section title="Vegetables">
+          <ListBox.Item key="carrot">Carrot</ListBox.Item>
+          <ListBox.Item key="broccoli">Broccoli</ListBox.Item>
+        </ListBox.Section>
+      </ListBox>
     </Space>
   ),
   parameters: {
     docs: {
       description: {
         story:
-          'The `type` prop controls the visual styling of the ListBox. Use `card` for standalone use, `plain` for embedded use without decoration, and `popover` for use inside overlays where borders are handled by the container.',
+          'The `shape` prop controls the visual styling of the ListBox. Use `card` for standalone use, `plain` for embedded use without decoration, and `popover` for use inside overlays where borders are handled by the container.',
       },
     },
   },

@@ -73,6 +73,14 @@ export default {
         defaultValue: { summary: 'medium' },
       },
     },
+    shape: {
+      options: ['card', 'button', 'sharp'],
+      control: { type: 'radio' },
+      description: 'Shape of the item border radius',
+      table: {
+        defaultValue: { summary: 'button' },
+      },
+    },
   },
 };
 
@@ -1987,6 +1995,87 @@ DynamicAutoTooltip.parameters = {
     description: {
       story:
         'Tests the dynamic auto tooltip behavior that responds to width changes. Initially the item is wide and no tooltip appears. When the width is reduced, the label overflows and the tooltip automatically appears on hover.',
+    },
+  },
+};
+
+export const DifferentShapes: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Card Shape</Title>
+    <Item
+      {...args}
+      styles={DEFAULT_STYLES}
+      type="outline"
+      shape="card"
+      icon={<IconUser />}
+    >
+      Card shape with larger border radius
+    </Item>
+
+    <Title level={5}>Button Shape (Default)</Title>
+    <Item
+      {...args}
+      styles={DEFAULT_STYLES}
+      type="outline"
+      shape="button"
+      icon={<IconUser />}
+    >
+      Button shape with default border radius
+    </Item>
+
+    <Title level={5}>Sharp Shape</Title>
+    <Item
+      {...args}
+      styles={DEFAULT_STYLES}
+      type="outline"
+      shape="sharp"
+      icon={<IconUser />}
+    >
+      Sharp shape with no border radius
+    </Item>
+
+    <Title level={5}>All Shapes Comparison</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        shape="card"
+        icon={<IconCoin />}
+      >
+        Card shape
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        shape="button"
+        icon={<IconCoin />}
+      >
+        Button shape
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        shape="sharp"
+        icon={<IconCoin />}
+      >
+        Sharp shape
+      </Item>
+    </Space>
+  </Space>
+);
+
+DifferentShapes.args = {
+  width: '300px',
+};
+
+DifferentShapes.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the three shape variants: `card` (larger border radius), `button` (default border radius), and `sharp` (no border radius). Use card for card-like interfaces, button for interactive elements, and sharp for minimal or technical interfaces.',
     },
   },
 };

@@ -67,6 +67,9 @@ The `mods` property accepts the following modifiers:
 | with-description-block | `boolean` | Applied when description placement is "block" |
 | checkbox | `boolean` | Applied when using checkbox icon (icon="checkbox") |
 | selected | `boolean` | Applied when isSelected is true |
+| shape-card | `boolean` | Applied when shape is "card" |
+| shape-button | `boolean` | Applied when shape is "button" |
+| shape-sharp | `boolean` | Applied when shape is "sharp" |
 
 ## Variants
 
@@ -95,6 +98,12 @@ The `mods` property accepts the following modifiers:
 - `large` - Large size for prominent items
 - `xlarge` - Extra large size for emphasized items
 - `inline` - Inline size that adapts to content
+
+### Shapes
+
+- `card` - Card shape with larger border radius (`1cr`)
+- `button` - Button shape with default border radius (default)
+- `sharp` - Sharp corners with no border radius (`0`)
 
 ## Examples
 
@@ -143,6 +152,10 @@ The `mods` property accepts the following modifiers:
   Selected item with checkbox
 </Item>
 ```
+
+### With Different Shapes
+
+<Story of={ItemStories.DifferentShapes} />
 
 ### With Actions
 

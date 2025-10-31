@@ -128,7 +128,7 @@ The `mods` property accepts the following modifiers you can override:
 
 ### Visual Styling
 
-**type** (`'card' | 'plain' | 'popover'`, default: `'card'`)
+**shape** (`'card' | 'plain' | 'popover'`, default: `'card'`)
 - Controls the visual styling of the ListBox container
 - `card`: Standard card styling with border and margin (default)
 - `plain`: No border, no margin, no radius - suitable for embedded use
@@ -525,25 +525,25 @@ const [selectedKey, setSelectedKey] = useState('apple');
 </ListBox>
 ```
 
-### Visual Type Variants
+### Visual Shape Variants
 
-<Story of={ListBoxStories.TypeVariants} />
+<Story of={ListBoxStories.DifferentShapes} />
 
 ```jsx
-{/* Card type (default) - with border and margin */}
-<ListBox type="card" label="Select a fruit" selectionMode="single">
+{/* Card shape (default) - with border and margin */}
+<ListBox shape="card" label="Select a fruit" selectionMode="single">
   <ListBox.Item key="apple">Apple</ListBox.Item>
   <ListBox.Item key="banana">Banana</ListBox.Item>
 </ListBox>
 
-{/* Plain type - no border, no margin, no radius */}
-<ListBox type="plain" label="Select a fruit" selectionMode="single">
+{/* Plain shape - no border, no margin, no radius */}
+<ListBox shape="plain" label="Select a fruit" selectionMode="single">
   <ListBox.Item key="apple">Apple</ListBox.Item>
   <ListBox.Item key="banana">Banana</ListBox.Item>
 </ListBox>
 
-{/* Popover type - no border, but keeps margin and radius */}
-<ListBox type="popover" label="Select a fruit" selectionMode="single">
+{/* Popover shape - no border, but keeps margin and radius */}
+<ListBox shape="popover" label="Select a fruit" selectionMode="single">
   <ListBox.Item key="apple">Apple</ListBox.Item>
   <ListBox.Item key="banana">Banana</ListBox.Item>
 </ListBox>

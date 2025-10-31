@@ -146,6 +146,14 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    */
   isButton?: boolean;
   /**
+   * Shape of the item's border radius.
+   * - `card` - Card shape with larger border radius (`1cr`)
+   * - `button` - Button shape with default border radius (default)
+   * - `sharp` - Sharp corners with no border radius (`0`)
+   * @default "button"
+   */
+  shape?: 'card' | 'button' | 'sharp';
+  /**
    * @private
    * Default tooltip placement for the item.
    * @default "top"
@@ -230,7 +238,9 @@ const ItemElement = tasty({
     margin: 0,
     radius: {
       '': true,
-      card: '1cr',
+      'shape-card': '1cr',
+      'shape-button': true,
+      'shape-sharp': '0',
     },
     height: {
       '': 'min $size',
@@ -692,6 +702,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isCard = false,
     actions,
     isButton = false,
+    shape = 'button',
     defaultTooltipPlacement = 'top',
     ...rest
   } = props;
@@ -785,6 +796,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       loading: isLoading,
       card: isCard === true,
       button: isButton === true,
+      [`shape-${shape}`]: true,
       ...mods,
     };
   }, [
@@ -799,6 +811,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isLoading,
     isCard,
     isButton,
+    shape,
     actions,
     mods,
   ]);
@@ -850,6 +863,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           data-size={typeof size === 'number' ? undefined : size}
           data-type={type}
           data-theme={theme}
+          data-shape={shape}
           aria-disabled={finalIsDisabled}
           aria-selected={isSelected}
           mods={mods}
@@ -914,6 +928,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       actions,
       size,
       style,
+      shape,
     ],
   );
 

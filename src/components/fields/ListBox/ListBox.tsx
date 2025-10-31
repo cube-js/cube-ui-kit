@@ -67,8 +67,8 @@ const ListBoxWrapperElement = tasty({
     position: 'relative',
     radius: {
       '': '1cr',
-      '[data-type="popover"]': '(1cr - 1bw)',
-      '[data-type="plain"]': '0',
+      '[data-shape="popover"]': '(1cr - 1bw)',
+      '[data-shape="plain"]': '0',
     },
     color: '#dark-02',
     transition: 'theme',
@@ -83,7 +83,7 @@ const ListBoxWrapperElement = tasty({
       valid: '#success-text.50',
       invalid: '#danger-text.50',
       disabled: true,
-      '[data-type="plain"] | [data-type="popover"] | searchable': false,
+      '[data-shape="plain"] | [data-shape="popover"] | searchable': false,
     },
   },
 });
@@ -97,7 +97,7 @@ const ListElement = tasty({
     boxSizing: 'border-box',
     margin: {
       '': '.5x .5x 0 .5x',
-      '[data-type="plain"]': '0',
+      '[data-shape="plain"]': '0',
     },
     height: 'max-content',
   },
@@ -315,13 +315,13 @@ export interface CubeListBoxProps<T>
   emptyLabel?: ReactNode;
 
   /**
-   * Visual type of the ListBox styling.
+   * Visual shape of the ListBox styling.
    * - `card` (default): Standard card styling with border and margin
    * - `plain`: No border, no margin, no radius - suitable for embedded use
    * - `popover`: No border, but keeps margin and radius - suitable for overlay use
    * Defaults to 'card'.
    */
-  type?: 'card' | 'plain' | 'popover';
+  shape?: 'card' | 'plain' | 'popover';
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -529,7 +529,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     allValueProps,
     filter,
     emptyLabel = 'No items',
-    type = 'card',
+    shape = 'card',
     form,
     ...otherProps
   } = props;
@@ -875,7 +875,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       qa="ListBoxWrapper"
       mods={mods}
       styles={styles}
-      data-type={type}
+      data-shape={shape}
     >
       {header ? (
         <StyledHeader styles={headerStyles} data-size={size}>
@@ -917,7 +917,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             styles={listStyles}
             aria-disabled={isDisabled || undefined}
             mods={{ sections: hasSections }}
-            data-type={type}
+            data-shape={shape}
             style={
               shouldVirtualize
                 ? {
