@@ -57,7 +57,7 @@ interface ItemWithKey {
 }
 
 export interface CubeFilterPickerProps<T>
-  extends Omit<CubeFilterListBoxProps<T>, 'size' | 'tooltip'>,
+  extends Omit<CubeFilterListBoxProps<T>, 'size' | 'tooltip' | 'shape'>,
     Omit<CubeItemProps, 'children' | 'size'>,
     BasePropsWithoutChildren,
     BaseStyleProps,
