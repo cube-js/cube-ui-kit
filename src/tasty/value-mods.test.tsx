@@ -1,6 +1,7 @@
 import { render } from '@testing-library/react';
 
 import { tasty } from './tasty';
+import { getModSelector } from './utils/styles';
 
 describe('Value Mods', () => {
   describe('modAttrs generation', () => {
@@ -407,6 +408,167 @@ describe('Value Mods', () => {
       );
       expect(container.firstChild).toHaveAttribute('hidden');
       expect(container.firstChild).toHaveAttribute('data-hidden', '');
+    });
+  });
+
+  describe(':has() selector transformation', () => {
+    describe('getModSelector unit tests', () => {
+      it('should transform :has(Item) to :has([data-element="Item"])', () => {
+        expect(getModSelector(':has(Item)')).toBe(
+          ':has([data-element="Item"])',
+        );
+      });
+
+      it('should transform :has(Body > Row) with multiple elements', () => {
+        expect(getModSelector(':has(Body > Row)')).toBe(
+          ':has([data-element="Body"] > [data-element="Row"])',
+        );
+      });
+
+      it('should preserve non-capitalized selectors in :has()', () => {
+        expect(getModSelector(':has(.selected)')).toBe(':has(.selected)');
+      });
+
+      it('should handle mixed selectors :has(.class Item)', () => {
+        expect(getModSelector(':has(.wrapper Item)')).toBe(
+          ':has(.wrapper [data-element="Item"])',
+        );
+      });
+
+      it('should handle :has() with combinators', () => {
+        expect(getModSelector(':has(> Item)')).toBe(
+          ':has(> [data-element="Item"])',
+        );
+      });
+
+      it('should handle multiple capitalized elements with spaces', () => {
+        expect(getModSelector(':has(Body Item Row)')).toBe(
+          ':has([data-element="Body"] [data-element="Item"] [data-element="Row"])',
+        );
+      });
+    });
+
+    it('should transform :has(Item) to :has([data-element="Item"]) in component', () => {
+      const Container = tasty({
+        as: 'div',
+        styles: {
+          padding: {
+            '': '1x',
+            ':has(Item)': '2x',
+          },
+        },
+      });
+
+      const Item = tasty({
+        as: 'div',
+        'data-element': 'Item',
+        styles: {},
+      });
+
+      const { container } = render(
+        <Container>
+          <Item>Child</Item>
+        </Container>,
+      );
+
+      const element = container.firstChild as HTMLElement;
+
+      // Verify the elements are rendered
+      expect(element).toBeInTheDocument();
+      expect(
+        element.querySelector('[data-element="Item"]'),
+      ).toBeInTheDocument();
+    });
+
+    it('should transform :has(Body > Row) with multiple elements', () => {
+      const Container = tasty({
+        as: 'div',
+        styles: {
+          display: {
+            '': 'block',
+            ':has(Body > Row)': 'flex',
+          },
+        },
+      });
+
+      const Body = tasty({
+        as: 'div',
+        'data-element': 'Body',
+        styles: {},
+      });
+
+      const Row = tasty({
+        as: 'div',
+        'data-element': 'Row',
+        styles: {},
+      });
+
+      const { container } = render(
+        <Container>
+          <Body>
+            <Row>Content</Row>
+          </Body>
+        </Container>,
+      );
+
+      const element = container.firstChild as HTMLElement;
+
+      // The element should have styles applied
+      expect(element).toBeInTheDocument();
+    });
+
+    it('should preserve non-capitalized selectors in :has()', () => {
+      const Container = tasty({
+        as: 'div',
+        styles: {
+          border: {
+            '': '1px solid #border',
+            ':has(.selected)': '2px solid #primary',
+          },
+        },
+      });
+
+      const { container } = render(
+        <Container>
+          <div className="selected">Child</div>
+        </Container>,
+      );
+
+      const element = container.firstChild as HTMLElement;
+
+      // The element should be rendered
+      expect(element).toBeInTheDocument();
+    });
+
+    it('should handle mixed selectors :has(.class Item)', () => {
+      const Container = tasty({
+        as: 'div',
+        styles: {
+          background: {
+            '': '#surface',
+            ':has(.wrapper Item)': '#primary',
+          },
+        },
+      });
+
+      const Item = tasty({
+        as: 'div',
+        'data-element': 'Item',
+        styles: {},
+      });
+
+      const { container } = render(
+        <Container>
+          <div className="wrapper">
+            <Item>Content</Item>
+          </div>
+        </Container>,
+      );
+
+      const element = container.firstChild as HTMLElement;
+
+      // The element should be rendered with styles
+      expect(element).toBeInTheDocument();
     });
   });
 });

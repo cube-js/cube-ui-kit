@@ -85,6 +85,74 @@ const TokenCard = tasty({
 
 ---
 
+## 📚 Dictionary
+
+Key concepts for working with Tasty:
+
+### Style Mapping
+
+Object where keys represent states and values are the styles to apply. Used for state-based styling without conditional logic.
+
+```jsx
+fill: { '': '#white', hovered: '#gray.05', 'theme=danger': '#red' }
+```
+
+### Sub-element
+
+Element styled using a capitalized key. Identified by `data-element` attribute. Capitalized words in selectors (`:has(Item)`, `> Body > Row`) transform to `[data-element="..."]`.
+
+```jsx
+styles: { Title: { preset: 'h3' } }
+// Targets: <div data-element="Title">
+```
+
+### Custom Styles
+
+Tasty properties that enhance native CSS with design system integration: `fill` (background), `radius` (border-radius), `border`, `preset` (typography), `gap`.
+
+### Modifier
+
+State value via `mods` prop that generates `data-*` attributes for styling.
+
+```jsx
+mods={{ hovered: true, theme: 'danger' }}
+// → data-hovered="" data-theme="danger"
+```
+
+### Color Token
+
+Named color prefixed with `#` that maps to CSS custom properties. Supports opacity with `.N` suffix.
+
+```jsx
+fill: '#purple.5'  // → var(--purple-color) with 50% opacity
+```
+
+### Custom Unit
+
+Shorthand units referencing design system values: `x` (gap), `r` (radius), `bw` (border-width), `fs` (font-size), `sf` (stable grid fractions).
+
+### Responsive Array
+
+Array of values mapping to breakpoints (large to small). Configure with `<BreakpointsProvider>`.
+
+```jsx
+padding: ['4x', '2x', '1x']  // Large → Medium → Small
+```
+
+### Style Props
+
+Style properties exposed as direct props via `styleProps` config. Provides cleaner API than using `styles` prop.
+
+### Selector Affix (`$`)
+
+Property controlling combinator for sub-element selectors. Default: descendant (space).
+
+```jsx
+Row: { $: '>', padding: '1x' }  // Direct child selector
+```
+
+---
+
 ## 🎯 Core Concepts
 
 ### Component Creation

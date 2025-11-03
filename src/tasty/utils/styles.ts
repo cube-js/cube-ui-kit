@@ -140,8 +140,20 @@ export function getModSelector(modName: string): string {
       // Boolean mod: convert camelCase to kebab-case
       selector = `[data-${camelToKebab(modName)}]`;
     } else {
-      // Pass through (e.g., :hover, .class, [attr])
-      selector = modName;
+      // Check if it contains :has() with capitalized element names
+      if (modName.includes(':has(')) {
+        selector = modName.replace(/:has\(([^)]+)\)/g, (match, content) => {
+          // Transform capitalized words to [data-element="..."] selectors
+          const tokens = content.split(/\s+/);
+          const transformed = tokens.map((token: string) =>
+            /^[A-Z]/.test(token) ? `[data-element="${token}"]` : token,
+          );
+          return `:has(${transformed.join(' ')})`;
+        });
+      } else {
+        // Pass through (e.g., :hover, .class, [attr])
+        selector = modName;
+      }
     }
 
     MOD_NAME_CACHE.set(modName, selector);
