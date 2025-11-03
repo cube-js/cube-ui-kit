@@ -155,6 +155,220 @@ describe('Value Mods', () => {
     });
   });
 
+  describe('Priority order for same-attribute selectors', () => {
+    it('should respect first-match priority when boolean has higher priority than value', () => {
+      const Component = tasty({
+        as: 'div',
+        styles: {
+          color: {
+            'theme=danger': 'red',
+            theme: 'blue', // Higher priority after reversal
+          },
+        },
+      });
+
+      const { container } = render(<Component mods={{ theme: 'danger' }} />);
+      const element = container.firstChild as HTMLElement;
+
+      // Element should have data-theme="danger"
+      expect(element).toHaveAttribute('data-theme', 'danger');
+
+      // Check computed color - should use boolean selector (higher priority)
+      // The value selector should be filtered out before CSS generation
+      const style = window.getComputedStyle(element);
+      expect(style.color).not.toBe('red'); // Value selector should not apply
+    });
+
+    it('should allow both selectors when value has higher priority', () => {
+      const Component = tasty({
+        as: 'div',
+        styles: {
+          color: {
+            theme: 'blue',
+            'theme=danger': 'red', // Higher priority after reversal
+          },
+        },
+      });
+
+      const { container } = render(<Component mods={{ theme: 'danger' }} />);
+      const element = container.firstChild as HTMLElement;
+
+      expect(element).toHaveAttribute('data-theme', 'danger');
+      // Both CSS rules should be generated, value selector wins via cascade
+    });
+
+    it('should handle multiple attributes independently', () => {
+      const Component = tasty({
+        as: 'div',
+        styles: {
+          color: {
+            theme: 'blue', // Boolean higher priority
+            'theme=danger': 'red',
+          },
+          fontSize: {
+            'size=large': '20px', // Value higher priority
+            size: '16px',
+          },
+        },
+      });
+
+      const { container } = render(
+        <Component mods={{ theme: 'danger', size: 'large' }} />,
+      );
+      const element = container.firstChild as HTMLElement;
+
+      expect(element).toHaveAttribute('data-theme', 'danger');
+      expect(element).toHaveAttribute('data-size', 'large');
+      // theme=danger should be filtered, size=large should not
+    });
+
+    it('should work with complex combinations', () => {
+      const Component = tasty({
+        as: 'div',
+        styles: {
+          color: {
+            'theme=danger & hovered': 'lightcoral',
+            'theme & hovered': 'lightblue', // Boolean theme higher priority
+          },
+        },
+      });
+
+      const { container } = render(
+        <Component mods={{ theme: 'danger', hovered: true }} />,
+      );
+      const element = container.firstChild as HTMLElement;
+
+      expect(element).toHaveAttribute('data-theme', 'danger');
+      expect(element).toHaveAttribute('data-hovered', '');
+      // First combination should be filtered due to boolean theme priority
+    });
+
+    it('should not filter when only value selectors exist', () => {
+      const Component = tasty({
+        as: 'div',
+        styles: {
+          color: {
+            'theme=danger': 'red',
+            'theme=warning': 'yellow',
+            'theme=success': 'green',
+          },
+        },
+      });
+
+      const { container } = render(<Component mods={{ theme: 'danger' }} />);
+      const element = container.firstChild as HTMLElement;
+
+      expect(element).toHaveAttribute('data-theme', 'danger');
+      // All value selectors should remain (no boolean to filter them)
+    });
+
+    it('should not filter when only boolean selectors exist', () => {
+      const Component = tasty({
+        as: 'div',
+        styles: {
+          color: {
+            theme: 'blue',
+            hovered: 'lightblue',
+          },
+        },
+      });
+
+      const { container } = render(
+        <Component mods={{ theme: 'danger', hovered: true }} />,
+      );
+      const element = container.firstChild as HTMLElement;
+
+      expect(element).toHaveAttribute('data-theme', 'danger');
+      expect(element).toHaveAttribute('data-hovered', '');
+      // Both boolean selectors should remain
+    });
+
+    it('should work with full attribute selector syntax for boolean', () => {
+      const Component = tasty({
+        as: 'button',
+        styles: {
+          color: {
+            '[aria-label="Submit"]': 'red',
+            '[aria-label]': 'blue', // Higher priority after reversal
+          },
+        },
+      });
+
+      const { container } = render(
+        <Component aria-label="Submit">Click me</Component>,
+      );
+      const element = container.firstChild as HTMLElement;
+
+      expect(element).toHaveAttribute('aria-label', 'Submit');
+
+      // Check computed color - should use boolean selector (higher priority)
+      const style = window.getComputedStyle(element);
+      expect(style.color).not.toBe('red'); // Value selector should not apply
+    });
+
+    it('should work with full attribute selector syntax when value has priority', () => {
+      const Component = tasty({
+        as: 'button',
+        styles: {
+          color: {
+            '[aria-label]': 'blue',
+            '[aria-label="Submit"]': 'red', // Higher priority after reversal
+          },
+        },
+      });
+
+      const { container } = render(
+        <Component aria-label="Submit">Click me</Component>,
+      );
+      const element = container.firstChild as HTMLElement;
+
+      expect(element).toHaveAttribute('aria-label', 'Submit');
+      // Both CSS rules should be generated, value selector wins via cascade
+    });
+
+    it('should work with mixed shorthand and full selector syntax', () => {
+      const Component = tasty({
+        as: 'div',
+        styles: {
+          color: {
+            'theme=danger': 'red',
+            '[data-theme]': 'blue', // Higher priority after reversal
+          },
+        },
+      });
+
+      const { container } = render(<Component mods={{ theme: 'danger' }} />);
+      const element = container.firstChild as HTMLElement;
+
+      expect(element).toHaveAttribute('data-theme', 'danger');
+
+      // Check computed color - should use boolean selector (higher priority)
+      const style = window.getComputedStyle(element);
+      expect(style.color).not.toBe('red'); // Value selector should not apply
+    });
+
+    it('should work with data-* prefix in full selector syntax', () => {
+      const Component = tasty({
+        as: 'div',
+        styles: {
+          fontSize: {
+            '[data-size="large"]': '20px',
+            '[data-size]': '16px', // Higher priority after reversal
+          },
+        },
+      });
+
+      const { container } = render(<Component mods={{ size: 'large' }} />);
+      const element = container.firstChild as HTMLElement;
+
+      expect(element).toHaveAttribute('data-size', 'large');
+
+      // Check computed fontSize - should use boolean selector (higher priority)
+      const style = window.getComputedStyle(element);
+      expect(style.fontSize).not.toBe('20px'); // Value selector should not apply
+    });
+  });
+
   describe('Migration from data-is-* to data-*', () => {
     it('should generate data-disabled instead of data-is-disabled', () => {
       const DisabledElement = tasty({
@@ -176,7 +390,7 @@ describe('Value Mods', () => {
       });
 
       const { container } = render(
-        <CheckboxElement type="checkbox" isChecked={true} />,
+        <CheckboxElement readOnly type="checkbox" isChecked={true} />,
       );
       expect(container.firstChild).toHaveAttribute('checked');
       expect(container.firstChild).toHaveAttribute('data-checked', '');
