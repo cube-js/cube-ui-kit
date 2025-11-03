@@ -47,17 +47,17 @@ const ActionsWrapper = tasty({
     placeItems: 'stretch',
     preset: {
       '': 't3m',
-      '[data-size="xsmall"]': 't4',
-      '[data-size="xlarge"]': 't2m',
+      'size=xsmall': 't4',
+      'size=xlarge': 't2m',
     },
 
     $size: {
       '': '$size-md',
-      '[data-size="xsmall"]': '$size-xs',
-      '[data-size="small"]': '$size-sm',
-      '[data-size="medium"]': '$size-md',
-      '[data-size="large"]': '$size-lg',
-      '[data-size="xlarge"]': '$size-xl',
+      'size=xsmall': '$size-xs',
+      'size=small': '$size-sm',
+      'size=medium': '$size-md',
+      'size=large': '$size-lg',
+      'size=xlarge': '$size-xl',
     },
 
     Actions: {

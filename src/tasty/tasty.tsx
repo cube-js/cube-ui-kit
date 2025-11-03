@@ -460,9 +460,9 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         'data-element': (element as string | undefined) || defaultElement,
         'data-qa': (qa as string | undefined) || defaultQa,
         'data-qaval': (qaVal as string | undefined) || defaultQaVal,
+        ...(modProps || {}),
         ...(otherDefaultProps as unknown as Record<string, unknown>),
         ...(otherProps as unknown as Record<string, unknown>),
-        ...(modProps || {}),
         className: finalClassName,
         ref,
       } as Record<string, unknown>;
