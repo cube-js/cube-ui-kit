@@ -213,20 +213,20 @@ const ItemElement = tasty({
     placeContent: 'stretch',
     gridColumns: {
       '': '1sf max-content max-content',
-      'with-actions': '1sf max-content max-content max-content',
-      'with-icon ^ with-prefix': 'max-content 1sf max-content max-content',
-      'with-icon ^ with-prefix & with-actions':
+      ':has(Actions)': '1sf max-content max-content max-content',
+      ':has(Icon) ^ :has(Prefix)': 'max-content 1sf max-content max-content',
+      ':has(Icon) ^ :has(Prefix) & :has(Actions)':
         'max-content 1sf max-content max-content max-content',
-      'with-icon & with-prefix':
+      ':has(Icon) & :has(Prefix)':
         'max-content max-content 1sf max-content max-content',
-      'with-icon & with-prefix & with-actions':
+      ':has(Icon) & :has(Prefix) & :has(Actions)':
         'max-content max-content 1sf max-content max-content max-content',
-      '(with-icon ^ with-right-icon) & !with-description & !with-prefix & !with-suffix & !with-label':
+      '(:has(Icon) ^ :has(RightIcon)) & !:has(Description) & !:has(Prefix) & !:has(Suffix) & !:has(Label)':
         'max-content',
     },
     gridRows: {
       '': 'auto auto',
-      'with-description-block': 'auto auto auto',
+      'has-description-block': 'auto auto auto',
     },
     // Prevent items from shrinking inside vertical flex layouts (Menu, ListBox, etc)
     flexShrink: {
@@ -321,25 +321,25 @@ const ItemElement = tasty({
       maxWidth: '100%',
       padding: {
         '': '$block-padding $inline-padding',
-        '(with-icon | with-prefix)':
+        '(:has(Icon) | :has(Prefix))':
           '$block-padding $inline-padding $block-padding 0',
-        '(with-right-icon | with-suffix | with-actions)':
+        '(:has(RightIcon) | :has(Suffix) | :has(Actions))':
           '$block-padding 0 $block-padding $inline-padding',
-        '(with-icon | with-prefix) & (with-right-icon | with-suffix | with-actions)':
+        '(:has(Icon) | :has(Prefix)) & (:has(RightIcon) | :has(Suffix) | :has(Actions))':
           '$block-padding 0',
-        'with-description & !with-description-block':
+        ':has(Description) & !has-description-block':
           '$block-padding $inline-padding 0 $inline-padding',
-        'with-description & !with-description-block & (with-icon | with-prefix)':
+        ':has(Description) & !has-description-block & (:has(Icon) | :has(Prefix))':
           '$block-padding $inline-padding 0 0',
-        'with-description & !with-description-block & (with-right-icon | with-suffix | with-actions)':
+        ':has(Description) & !has-description-block & (:has(RightIcon) | :has(Suffix) | :has(Actions))':
           '$block-padding 0 0 $inline-padding',
-        'with-description & !with-description-block & (with-icon | with-prefix) & (with-right-icon | with-suffix | with-actions)':
+        ':has(Description) & !has-description-block & (:has(Icon) | :has(Prefix)) & (:has(RightIcon) | :has(Suffix) | :has(Actions))':
           '$block-padding 0 0 0',
       },
       gridRow: {
         '': 'span 2',
-        'with-description': 'span 1',
-        'with-description-block': 'span 2',
+        ':has(Description)': 'span 1',
+        'has-description-block': 'span 2',
       },
     },
 
@@ -355,25 +355,26 @@ const ItemElement = tasty({
       textAlign: 'left',
       gridRow: {
         '': 'span 1',
-        'with-description-block': '3 / span 1',
+        'has-description-block': '3 / span 1',
       },
       gridColumn: {
         '': 'span 1',
-        'with-description-block': '1 / -1',
+        'has-description-block': '1 / -1',
       },
       padding: {
         '': '0 $inline-padding $block-padding $inline-padding',
-        '(with-icon | with-prefix)': '0 $inline-padding $block-padding 0',
-        '(with-right-icon | with-suffix)': '0 0 $block-padding $inline-padding',
-        '(with-icon | with-prefix) & (with-right-icon | with-suffix)':
+        '(:has(Icon) | :has(Prefix))': '0 $inline-padding $block-padding 0',
+        '(:has(RightIcon) | :has(Suffix))':
+          '0 0 $block-padding $inline-padding',
+        '(:has(Icon) | :has(Prefix)) & (:has(RightIcon) | :has(Suffix))':
           '0 0 $block-padding 0',
-        'with-description-block':
+        'has-description-block':
           '0 ($inline-padding - $inline-compensation + 1bw) $bottom-padding ($inline-padding - $inline-compensation + 1bw)',
-        'with-description-block & !with-icon':
+        'has-description-block & !:has(Icon)':
           '0 ($inline-padding - $inline-compensation + 1bw) $bottom-padding $inline-padding',
-        'with-description-block & !with-right-icon':
+        'has-description-block & !:has(RightIcon)':
           '0 $inline-padding $bottom-padding ($inline-padding - $inline-compensation + 1bw)',
-        'with-description-block & !with-right-icon & !with-icon':
+        'has-description-block & !:has(RightIcon) & !:has(Icon)':
           '0 $inline-padding $bottom-padding $inline-padding',
       },
 
@@ -385,7 +386,7 @@ const ItemElement = tasty({
       ...ADDITION_STYLES,
       padding: {
         '': '$inline-padding left',
-        'with-icon': 0,
+        ':has(Icon)': 0,
       },
     },
 
@@ -393,7 +394,7 @@ const ItemElement = tasty({
       ...ADDITION_STYLES,
       padding: {
         '': '$inline-padding right',
-        'with-right-icon': 0,
+        ':has(RightIcon)': 0,
       },
     },
 
@@ -410,7 +411,7 @@ const ItemElement = tasty({
       gridRow: 'span 2',
       width: {
         '': '($actions-width, 0px)',
-        'with-actions-content': 'calc-size(max-content, size)',
+        'has-actions-content': 'calc-size(max-content, size)',
       },
       transition: 'width $transition ease-out',
       interpolateSize: 'allow-keywords',
@@ -779,16 +780,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   );
 
   mods = {
-    'with-icon': !!finalIcon,
-    'with-right-icon': !!finalRightIcon,
-    'with-label': !!(children || labelProps),
-    'with-prefix': !!finalPrefix,
-    'with-suffix': !!finalSuffix,
-    'with-description': showDescriptions,
-    'with-description-block':
+    'has-description-block':
       showDescriptions && descriptionPlacement === 'block',
-    'with-actions': !!actions,
-    'with-actions-content': !!(actions && actions !== true),
+    'has-actions-content': !!(actions && actions !== true),
     checkbox: hasCheckbox,
     disabled: finalIsDisabled,
     selected: isSelected === true,

@@ -59,17 +59,15 @@ The `mods` property accepts the following modifiers:
 
 | Modifier | Type | Description |
 |----------|------|-------------|
-| with-icon | `boolean` | Applied when an icon is present |
-| with-right-icon | `boolean` | Applied when a right icon is present |
-| with-prefix | `boolean` | Applied when a prefix is present |
-| with-suffix | `boolean` | Applied when a suffix is present |
-| with-description | `boolean` | Applied when a description is present |
-| with-description-block | `boolean` | Applied when description placement is "block" |
+| has-description-block | `boolean` | Applied when description placement is "block" |
+| has-actions-content | `boolean` | Applied when actions have actual content (not just placeholder) |
 | checkbox | `boolean` | Applied when using checkbox icon (icon="checkbox") |
 | selected | `boolean` | Applied when isSelected is true |
 | shape-card | `boolean` | Applied when shape is "card" |
 | shape-button | `boolean` | Applied when shape is "button" |
 | shape-sharp | `boolean` | Applied when shape is "sharp" |
+
+**Note:** Element presence (Icon, RightIcon, Prefix, Suffix, Description, Actions) is now automatically detected via CSS `:has()` selectors and doesn't require manual modifiers.
 
 ## Variants
 
