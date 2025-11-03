@@ -86,7 +86,7 @@ const ItemActionElement = tasty({
 
     '$inline-padding': {
       '': 'max($min-inline-padding, (($action-size - 1lh - 2bw) / 2 + $inline-compensation))',
-      '[data-size="inline"]': '.25x',
+      'size=inline': '.25x',
     },
     '$inline-compensation': '.5x',
     '$min-inline-padding': '(.5x - 1bw)',

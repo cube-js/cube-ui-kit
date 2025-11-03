@@ -63,12 +63,12 @@ const CopyPasteBlockElement = tasty(Card, {
     cursor: 'pointer',
     preset: {
       '': 't3',
-      '[data-size="large"]': 't2',
+      'size=large': 't2',
     },
     height: {
       '': '5x',
-      '[data-size="small"]': '4x',
-      '[data-size="large"]': '6x',
+      'size=small': '4x',
+      'size=large': '6x',
     },
     boxSizing: 'border-box',
 

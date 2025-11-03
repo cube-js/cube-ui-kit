@@ -83,9 +83,9 @@ export const StyledHeader = tasty(Space, {
 
     $size: {
       '': '$size-md',
-      '[data-size="small"]': '$size-sm',
-      '[data-size="medium"]': '$size-md',
-      '[data-size="large"]': '$size-lg',
+      'size=small': '$size-sm',
+      'size=medium': '$size-md',
+      'size=large': '$size-lg',
     },
   },
 });
@@ -103,7 +103,7 @@ export const StyledFooter = tasty(Space, {
     padding: '.5x 1.5x',
     height: {
       '': 'min $size-md',
-      '[data-size="large"]': 'min $size-lg',
+      'size=large': 'min $size-lg',
     },
     boxSizing: 'border-box',
     border: 'top',
@@ -140,7 +140,7 @@ export const StyledItem = tasty({
     flexShrink: 0,
     height: {
       '': 'min $size-md',
-      '[data-size="large"]': 'min $size-lg',
+      'size=large': 'min $size-lg',
     },
     border: false,
     boxSizing: 'border-box',
@@ -218,9 +218,9 @@ export const StyledSectionHeading = tasty(Space, {
 
     $size: {
       '': '$size-md',
-      '[data-size="small"]': '$size-sm',
-      '[data-size="medium"]': '$size-md',
-      '[data-size="large"]': '$size-lg',
+      'size=small': '$size-sm',
+      'size=medium': '$size-md',
+      'size=large': '$size-lg',
     },
   },
 });

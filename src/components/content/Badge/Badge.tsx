@@ -13,7 +13,7 @@ const BadgeElement = tasty(Item, {
     fill: {
       '': '#purple',
       ...Object.keys(THEMES).reduce((map, type) => {
-        map[`[data-theme="${type}"]`] =
+        map[`theme=${type}`] =
           type === 'special' ? THEMES[type].fill : THEMES[type].color;
 
         return map;
@@ -22,7 +22,7 @@ const BadgeElement = tasty(Item, {
 
     '$inline-padding': {
       '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
-      '[data-size="inline"]': '.5x',
+      'size=inline': '.5x',
     },
 
     Label: {

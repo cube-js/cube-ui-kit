@@ -61,7 +61,7 @@ export const LABEL_STYLES: Styles = {
   display: 'block',
   preset: {
     '': 't3m',
-    '[data-size="small"]': 't4',
+    'size=small': 't4',
   },
   color: {
     '': '#dark',

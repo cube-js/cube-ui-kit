@@ -77,9 +77,9 @@ const SearchWrapperElement = tasty({
     height: '($size + 1x)',
     $size: {
       '': '$size-md',
-      '[data-size="small"]': '$size-sm',
-      '[data-size="medium"]': '$size-md',
-      '[data-size="large"]': '$size-lg',
+      'size=small': '$size-sm',
+      'size=medium': '$size-md',
+      'size=large': '$size-lg',
     },
   },
 });

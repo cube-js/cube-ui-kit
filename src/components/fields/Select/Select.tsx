@@ -74,7 +74,7 @@ const SelectWrapperElement = tasty({
     fill: {
       '': '#white',
       disabled: '#dark.04',
-      '[data-theme="special"]': '#clear',
+      'theme=special': '#clear',
     },
     color: {
       '': '#dark.85',
