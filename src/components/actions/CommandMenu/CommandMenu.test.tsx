@@ -859,7 +859,7 @@ describe('CommandMenu', () => {
       );
 
       const commandMenu = screen.getByTestId('test-command-menu');
-      expect(commandMenu).toHaveAttribute('data-is-popover');
+      expect(commandMenu).toHaveAttribute('data-popover');
     });
 
     it('should apply tray mod when used with MenuTrigger', () => {
@@ -875,7 +875,7 @@ describe('CommandMenu', () => {
       );
 
       const commandMenu = screen.getByTestId('test-command-menu');
-      expect(commandMenu).toHaveAttribute('data-is-tray');
+      expect(commandMenu).toHaveAttribute('data-tray');
     });
 
     it('should not apply any special mods when used standalone', () => {
@@ -887,8 +887,8 @@ describe('CommandMenu', () => {
       );
 
       const commandMenu = screen.getByTestId('test-command-menu');
-      expect(commandMenu).not.toHaveAttribute('data-is-popover');
-      expect(commandMenu).not.toHaveAttribute('data-is-tray');
+      expect(commandMenu).not.toHaveAttribute('data-popover');
+      expect(commandMenu).not.toHaveAttribute('data-tray');
     });
   });
 });

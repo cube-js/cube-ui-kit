@@ -41,7 +41,7 @@ const IS_PROPERTIES_ENTRIES = Object.entries(IS_PROPERTIES_MAP);
 
 /**
  * Helper function to handle is* properties consistently
- * Transforms is* props to HTML attributes and adds corresponding data-is-* attributes
+ * Transforms is* props to HTML attributes and adds corresponding data-* attributes
  */
 function handleIsProperties(props: Record<string, unknown>) {
   for (const [isProperty, targetAttribute] of IS_PROPERTIES_ENTRIES) {
@@ -50,8 +50,8 @@ function handleIsProperties(props: Record<string, unknown>) {
       delete props[isProperty];
     }
 
-    // Add data-is-* attribute if target attribute is truthy and doesn't already exist
-    const dataAttribute = `data-is-${targetAttribute}`;
+    // Add data-* attribute if target attribute is truthy and doesn't already exist
+    const dataAttribute = `data-${targetAttribute}`;
     if (!(dataAttribute in props) && props[targetAttribute]) {
       props[dataAttribute] = '';
     }

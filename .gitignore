@@ -17,3 +17,4 @@ coverage
 size-limit-report/stats.json
 docs-static
 *.plan.md
+*.spec.md

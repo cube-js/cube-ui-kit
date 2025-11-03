@@ -49,9 +49,9 @@ const TabsPanelElement = tasty(Space, {
     padding: '1ow 1ow 0 1ow',
     fade: {
       '': false,
-      '[data-is-left-fade]': '3x left',
-      '[data-is-right-fade]': '3x right',
-      '[data-is-right-fade] & [data-is-left-fade]': '3x left right',
+      'left-fade': '3x left',
+      'right-fade': '3x right',
+      'right-fade & left-fade': '3x left right',
     },
     transition: 'fade',
     '--scrollbar-radius': '1ow',
@@ -349,8 +349,8 @@ export function FileTabs({
       >
         <TabsPanelElement
           ref={tabsRef}
-          data-is-left-fade={leftFade || null}
-          data-is-right-fade={rightFade || null}
+          data-left-fade={leftFade || null}
+          data-right-fade={rightFade || null}
         >
           {tabs.map((tab) => {
             return (

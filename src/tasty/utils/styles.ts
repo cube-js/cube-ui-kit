@@ -118,10 +118,33 @@ const MOD_NAME_CACHE = new Map();
 
 export function getModSelector(modName: string): string {
   if (!MOD_NAME_CACHE.has(modName)) {
-    MOD_NAME_CACHE.set(
-      modName,
-      modName.match(/^[a-z]/) ? `[data-is-${camelToKebab(modName)}]` : modName,
-    );
+    let selector: string;
+
+    // Check if it's a shorthand value mod: key=value, key="value", or key='value'
+    const valueModMatch = modName.match(/^([a-z][a-z0-9-]*)=(.+)$/i);
+    if (valueModMatch) {
+      const key = valueModMatch[1];
+      let value = valueModMatch[2];
+
+      // Remove quotes if present
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+
+      // Convert to full attribute selector
+      selector = `[data-${camelToKebab(key)}="${value}"]`;
+    } else if (modName.match(/^[a-z]/)) {
+      // Boolean mod: convert camelCase to kebab-case
+      selector = `[data-${camelToKebab(modName)}]`;
+    } else {
+      // Pass through (e.g., :hover, .class, [attr])
+      selector = modName;
+    }
+
+    MOD_NAME_CACHE.set(modName, selector);
   }
 
   return MOD_NAME_CACHE.get(modName);
@@ -339,7 +362,7 @@ export function extractStyles(
 }
 
 const STATES_REGEXP =
-  /([&|!^])|([()])|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9-]+\([^)]+\)|:[a-z][a-z0-9-]+)|(\.[a-z][a-z0-9-]+)|(\[[^\]]+])/gi;
+  /([&|!^])|([()])|([a-z][a-z0-9-]+=(?:"[^"]*"|'[^']*'|[^\s&|!^()]+))|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9-]+\([^)]+\)|:[a-z][a-z0-9-]+)|(\.[a-z][a-z0-9-]+)|(\[[^\]]+])/gi;
 export const STATE_OPERATORS = {
   NOT: '!',
   AND: '&',

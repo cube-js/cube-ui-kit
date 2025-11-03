@@ -462,25 +462,91 @@ fade: '3x 1x top bottom',         // Different widths per edge
 
 ### Modifiers & State Binding
 
-Modifiers create `data-is-*` attributes for state-based styling:
+Modifiers create `data-*` attributes for state-based styling:
 
 ```jsx
 const Button = tasty({
   styles: {
     fill: {
       '': '#blue',
-      hovered: '#blue.8',          // Custom modifier
-      pressed: '#blue.6',          // Custom modifier
+      hovered: '#blue.8',          // Custom boolean modifier
+      pressed: '#blue.6',          // Custom boolean modifier
+      'theme=danger': '#red',      // Value modifier
+      'size=large': '#blue.10',    // Value modifier
       disabled: '#gray',           // Built-in state
     },
   },
 });
 
-// Usage with mods
+// Usage with boolean mods
 <Button mods={{ hovered: true, pressed: false }} disabled>
   Click me
 </Button>
-// Renders: <button data-is-hovered disabled>
+// Renders: <button data-hovered="" disabled>
+
+// Usage with value mods
+<Button mods={{ theme: 'danger', size: 'large' }}>
+  Delete
+</Button>
+// Renders: <button data-theme="danger" data-size="large">
+```
+
+#### Value Modifiers
+
+Modifiers now accept string values in addition to boolean:
+
+```jsx
+// Boolean mods
+mods={{ hovered: true }}         // → data-hovered=""
+mods={{ isSelected: true }}      // → data-selected="" (preserves 'is' via kebab-case)
+
+// String value mods
+mods={{ theme: 'danger' }}       // → data-theme="danger"
+mods={{ size: 'large' }}         // → data-size="large"
+mods={{ variant: 'primary' }}    // → data-variant="primary"
+
+// Number mods (converted to string)
+mods={{ level: 2 }}              // → data-level="2"
+
+// Empty string (explicit empty value)
+mods={{ label: '' }}             // → data-label=""
+
+// Mixed boolean and value mods
+mods={{ 
+  hovered: true, 
+  theme: 'danger',
+  size: 'large'
+}}
+// → data-hovered="" data-theme="danger" data-size="large"
+```
+
+#### Shorthand Syntax for Value Mods
+
+Use shorthand syntax in style definitions for value mods:
+
+```jsx
+const Button = tasty({
+  styles: {
+    fill: {
+      '': '#surface',
+      // Recommended shorthand (unquoted values)
+      'theme=danger': '#red',
+      'theme=warning': '#yellow',
+      'size=large': '#blue.10',
+      
+      // Also supported (quoted values)
+      'variant="primary"': '#purple',
+      "variant='secondary'": '#gray',
+      
+      // Full attribute selector (pass-through)
+      '[data-theme="danger"]': '#red',
+      
+      // Combining with boolean mods
+      'hovered & theme=danger': '#light-red',
+      'theme=danger & size=large': '#dark-red',
+    },
+  },
+});
 ```
 
 ### Complex State Logic

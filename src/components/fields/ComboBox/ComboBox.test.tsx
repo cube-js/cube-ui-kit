@@ -839,7 +839,7 @@ describe('<ComboBox />', () => {
     );
 
     await waitFor(() => {
-      const wrapper = combobox.closest('[data-is-invalid]');
+      const wrapper = combobox.closest('[data-invalid]');
       expect(wrapper).toBeInTheDocument();
     });
 
@@ -852,7 +852,7 @@ describe('<ComboBox />', () => {
     );
 
     await waitFor(() => {
-      const wrapper = combobox.closest('[data-is-valid]');
+      const wrapper = combobox.closest('[data-valid]');
       expect(wrapper).toBeInTheDocument();
     });
 

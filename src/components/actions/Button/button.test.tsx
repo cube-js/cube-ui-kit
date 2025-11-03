@@ -11,7 +11,7 @@ describe('<Button />', () => {
     expect(screen.getByTestId('test')).toBeInTheDocument();
   });
 
-  it('should have data-is-loading', () => {
+  it('should have data-loading', () => {
     render(
       <Button isLoading data-qa="ApplyDbConnection">
         Apply
@@ -19,12 +19,12 @@ describe('<Button />', () => {
     );
 
     expect(screen.getByTestId('ApplyDbConnection')).toHaveAttribute(
-      'data-is-loading',
+      'data-loading',
       '',
     );
   });
 
-  it('should have data-is-loading after rerender', () => {
+  it('should have data-loading after rerender', () => {
     const { rerender } = render(
       <Button isLoading={false} data-qa="ApplyDbConnection">
         Apply
@@ -38,7 +38,7 @@ describe('<Button />', () => {
     );
 
     expect(screen.getByTestId('ApplyDbConnection')).toHaveAttribute(
-      'data-is-loading',
+      'data-loading',
       '',
     );
   });

@@ -72,11 +72,11 @@ const StyledTabElement = styled(TabElement)`
       box-shadow linear 0.2s;
   }
 
-  &[data-is-selected]::before {
+  &[data-selected]::before {
     --outline-size: 2px;
   }
 
-  &:not([data-is-selected]):not([disabled])[data-is-hovered]::before {
+  &:not([data-selected]):not([disabled])[data-hovered]::before {
     --outline-size: 1px;
   }
 `;
@@ -163,8 +163,8 @@ const StyledTabsContainerElement = styled(TabsContainerElement)`
     z-index: 1;
   }
 
-  &[data-is-left-fade]::before,
-  &[data-is-right-fade]::after {
+  &[data-left-fade]::before,
+  &[data-right-fade]::after {
     opacity: 1;
   }
 `;
@@ -332,8 +332,8 @@ export function LegacyTabs({
 
   return (
     <StyledTabsContainerElement
-      data-is-left-fade={leftFade || null}
-      data-is-right-fade={rightFade || null}
+      data-left-fade={leftFade || null}
+      data-right-fade={rightFade || null}
       {...props}
     >
       <LegacyTabsContext.Provider

@@ -138,7 +138,7 @@ function parseAttributeSelector(
     return cached;
   }
 
-  // Match patterns like [data-size="medium"] or [data-is-selected]
+  // Match patterns like [data-size="medium"] or [data-selected]
   const match = selector.match(/^\[([^=\]]+)(?:="([^"]+)")?\]$/);
   const result = match
     ? {
@@ -234,6 +234,55 @@ function buildAttributeMaps(
   return { allAttributes, currentAttributes, parsedMods };
 }
 
+/**
+ * Check if a combination of positive and negative selectors creates a contradiction
+ * Returns true if the combination is INVALID and should be pruned
+ */
+function hasContradiction(
+  currentMods: string[],
+  notMods: string[],
+  parsedMods: Map<string, ParsedAttributeSelector | null>,
+): boolean {
+  // Build maps of positive selector states
+  const positiveAttributes = new Map<string, string[]>();
+  const positiveBooleans = new Set<string>();
+
+  for (const mod of currentMods) {
+    const parsed = parsedMods.get(mod);
+    if (parsed) {
+      if (parsed.value === 'true') {
+        // Boolean attribute (e.g., [data-theme])
+        positiveBooleans.add(parsed.attribute);
+      } else {
+        // Value attribute (e.g., [data-theme="danger"])
+        if (!positiveAttributes.has(parsed.attribute)) {
+          positiveAttributes.set(parsed.attribute, []);
+        }
+        positiveAttributes.get(parsed.attribute)!.push(parsed.value);
+      }
+    }
+  }
+
+  // Check negative selectors for contradictions
+  for (const mod of notMods) {
+    const parsed = parsedMods.get(mod);
+    if (parsed) {
+      if (parsed.value === 'true') {
+        // Negative boolean: !([data-theme])
+        // Case 6: Value positive + attribute negative = CONTRADICTION
+        if (positiveAttributes.has(parsed.attribute)) {
+          return true; // INVALID: can't have value without attribute
+        }
+      } else {
+        // Negative value: !([data-theme="danger"])
+        // No contradiction - this is valid
+      }
+    }
+  }
+
+  return false;
+}
+
 function optimizeNotSelectors(
   currentMods: string[],
   allMods: string[],
@@ -244,13 +293,57 @@ function optimizeNotSelectors(
   const notMods = allMods.filter((mod) => !currentMods.includes(mod));
   const optimizedNotMods: string[] = [];
 
+  // Build maps of positive selector states for subsumption optimization
+  const positiveAttributes = new Map<string, string[]>();
+  const positiveBooleans = new Set<string>();
+
+  for (const mod of currentMods) {
+    const parsed = maps.parsedMods.get(mod);
+    if (parsed) {
+      if (parsed.value === 'true') {
+        positiveBooleans.add(parsed.attribute);
+      } else {
+        if (!positiveAttributes.has(parsed.attribute)) {
+          positiveAttributes.set(parsed.attribute, []);
+        }
+        positiveAttributes.get(parsed.attribute)!.push(parsed.value);
+      }
+    }
+  }
+
   for (const mod of notMods) {
     const parsed = maps.parsedMods.get(mod);
 
     if (parsed && parsed.value !== 'true') {
+      // Negative value selector
       // If we already have a value for this attribute, skip this not selector
-      // because it's already mutually exclusive
+      // because it's already mutually exclusive (optimization)
       if (maps.currentAttributes.has(parsed.attribute)) {
+        continue;
+      }
+    }
+
+    // Case 4 subsumption: If we have a value positive and boolean positive for same attribute
+    // The value implies the boolean, so we can skip the boolean from positive mods
+    // (This is handled elsewhere - the value selector is more specific)
+
+    // Case 7 subsumption: If we have a value negative and boolean negative for same attribute
+    // The boolean negative implies value negative, so skip the value negative
+    if (parsed && parsed.value !== 'true') {
+      // Check if we also have the boolean attribute in negative mods
+      const booleanMod = allMods.find((m) => {
+        const p = maps.parsedMods.get(m);
+        return (
+          p &&
+          p.value === 'true' &&
+          p.attribute === parsed.attribute &&
+          !currentMods.includes(m)
+        );
+      });
+
+      if (booleanMod) {
+        // We have both !([data-attr]) and !([data-attr="value"])
+        // Skip the value negative as it's subsumed by attribute negative
         continue;
       }
     }
@@ -792,6 +885,18 @@ function generateLogicalRules(
                 allModsArray,
                 currentMaps,
               );
+
+              // Check for contradictions between positive and negative selectors
+              if (
+                hasContradiction(
+                  modCombination,
+                  optimizedNotMods,
+                  currentMaps.parsedMods,
+                )
+              ) {
+                return; // Skip this invalid combination
+              }
+
               const modsSelectors = `${modCombination
                 .map(getModSelector)
                 .join('')}${optimizedNotMods
@@ -895,6 +1000,18 @@ function generateLogicalRules(
               allModsArray,
               currentMaps,
             );
+
+            // Check for contradictions between positive and negative selectors
+            if (
+              hasContradiction(
+                modCombination,
+                optimizedNotMods,
+                currentMaps.parsedMods,
+              )
+            ) {
+              return; // Skip this invalid combination
+            }
+
             const modsSelectors = `${modCombination
               .map(getModSelector)
               .join('')}${optimizedNotMods

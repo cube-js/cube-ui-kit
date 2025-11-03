@@ -141,11 +141,11 @@ export const Base64Upload = styled(
     border: var(--border-width) solid rgb(var(--dark-02-color-rgb) / 0.1);
   }
 
-  &&:not([data-is-hovered]) {
+  &&:not([data-hovered]) {
     background: rgb(var(--purple-color) / 0);
   }
 
-  &&[data-is-hovered] {
+  &&[data-hovered] {
     background: rgb(var(--purple-color) / 0.1);
   }
 `;
