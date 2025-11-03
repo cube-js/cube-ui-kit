@@ -213,15 +213,16 @@ const ItemElement = tasty({
     placeContent: 'stretch',
     gridColumns: {
       '': '1sf max-content max-content',
-      ':has(Actions)': '1sf max-content max-content max-content',
-      ':has(Icon) ^ :has(Prefix)': 'max-content 1sf max-content max-content',
-      ':has(Icon) ^ :has(Prefix) & :has(Actions)':
+      ':has(> Actions)': '1sf max-content max-content max-content',
+      ':has(> Icon) ^ :has(> Prefix)':
+        'max-content 1sf max-content max-content',
+      '(:has(> Icon) ^ :has(> Prefix)) & :has(> Actions)':
         'max-content 1sf max-content max-content max-content',
-      ':has(Icon) & :has(Prefix)':
+      ':has(> Icon) & :has(> Prefix)':
         'max-content max-content 1sf max-content max-content',
-      ':has(Icon) & :has(Prefix) & :has(Actions)':
+      ':has(> Icon) & :has(> Prefix) & :has(> Actions)':
         'max-content max-content 1sf max-content max-content max-content',
-      '(:has(Icon) ^ :has(RightIcon)) & !:has(Description) & !:has(Prefix) & !:has(Suffix) & !:has(Label)':
+      '(:has(> Icon) ^ :has(> RightIcon)) & !:has(> Description) & !:has(> Prefix) & !:has(> Suffix) & !:has(> Label)':
         'max-content',
     },
     gridRows: {
@@ -244,11 +245,11 @@ const ItemElement = tasty({
     },
     height: {
       '': 'min $size',
-      '[data-size="inline"]': '(1lh + 2bw)',
+      'size=inline': '(1lh + 2bw)',
     },
     width: {
       '': 'min $size',
-      '[data-size="inline"]': 'min (1lh + 2bw)',
+      'size=inline': 'min (1lh + 2bw)',
     },
     border: '#clear',
     fill: {
@@ -268,10 +269,10 @@ const ItemElement = tasty({
     preset: {
       '': 't3',
       button: 't3m',
-      '[data-size="xsmall"]': 't4',
-      '[data-size="xlarge"]': 't2',
-      '[data-size="xlarge"] & button': 't2m',
-      '[data-size="inline"]': 'tag',
+      'size=xsmall': 't4',
+      'size=xlarge': 't2',
+      'size=xlarge & button': 't2m',
+      'size=inline': 'tag',
     },
     boxSizing: 'border-box',
     textDecoration: 'none',
@@ -286,21 +287,21 @@ const ItemElement = tasty({
 
     $size: {
       '': '$size-md',
-      '[data-size="xsmall"]': '$size-xs',
-      '[data-size="small"]': '$size-sm',
-      '[data-size="medium"]': '$size-md',
-      '[data-size="large"]': '$size-lg',
-      '[data-size="xlarge"]': '$size-xl',
-      '[data-size="inline"]': '1lh',
+      'size=xsmall': '$size-xs',
+      'size=small': '$size-sm',
+      'size=medium': '$size-md',
+      'size=large': '$size-lg',
+      'size=xlarge': '$size-xl',
+      'size=inline': '1lh',
     },
     '$inline-padding': {
       '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
-      '[data-size="inline"]': '.25x',
+      'size=inline': '.25x',
     },
     '$block-padding': {
       '': '.5x',
-      '[data-size="xsmall"] | [data-size="small"]': '.25x',
-      '[data-size="inline"]': 0,
+      'size=xsmall | size=small': '.25x',
+      'size=inline': 0,
     },
     '$inline-compensation': '.5x',
     '$min-inline-padding': '(1x - 1bw)',
@@ -321,24 +322,24 @@ const ItemElement = tasty({
       maxWidth: '100%',
       padding: {
         '': '$block-padding $inline-padding',
-        '(:has(Icon) | :has(Prefix))':
+        ':has(> Icon) | :has(> Prefix)':
           '$block-padding $inline-padding $block-padding 0',
-        '(:has(RightIcon) | :has(Suffix) | :has(Actions))':
+        ':has(> RightIcon) | :has(> Suffix) | :has(> Actions)':
           '$block-padding 0 $block-padding $inline-padding',
-        '(:has(Icon) | :has(Prefix)) & (:has(RightIcon) | :has(Suffix) | :has(Actions))':
+        '(:has(> Icon) | :has(> Prefix)) & (:has(> RightIcon) | :has(> Suffix) | :has(> Actions))':
           '$block-padding 0',
-        ':has(Description) & !has-description-block':
+        ':has(> Description) & !has-description-block':
           '$block-padding $inline-padding 0 $inline-padding',
-        ':has(Description) & !has-description-block & (:has(Icon) | :has(Prefix))':
+        ':has(> Description) & !has-description-block & (:has(> Icon) | :has(> Prefix))':
           '$block-padding $inline-padding 0 0',
-        ':has(Description) & !has-description-block & (:has(RightIcon) | :has(Suffix) | :has(Actions))':
+        ':has(> Description) & !has-description-block & (:has(> RightIcon) | :has(> Suffix) | :has(> Actions))':
           '$block-padding 0 0 $inline-padding',
-        ':has(Description) & !has-description-block & (:has(Icon) | :has(Prefix)) & (:has(RightIcon) | :has(Suffix) | :has(Actions))':
+        ':has(> Description) & !has-description-block & (:has(> Icon) | :has(> Prefix)) & (:has(> RightIcon) | :has(> Suffix) | :has(> Actions))':
           '$block-padding 0 0 0',
       },
       gridRow: {
         '': 'span 2',
-        ':has(Description)': 'span 1',
+        ':has(> Description)': 'span 1',
         'has-description-block': 'span 2',
       },
     },
@@ -363,18 +364,18 @@ const ItemElement = tasty({
       },
       padding: {
         '': '0 $inline-padding $block-padding $inline-padding',
-        '(:has(Icon) | :has(Prefix))': '0 $inline-padding $block-padding 0',
-        '(:has(RightIcon) | :has(Suffix))':
+        ':has(> Icon) | :has(> Prefix)': '0 $inline-padding $block-padding 0',
+        ':has(> RightIcon) | :has(> Suffix)':
           '0 0 $block-padding $inline-padding',
-        '(:has(Icon) | :has(Prefix)) & (:has(RightIcon) | :has(Suffix))':
+        '(:has(> Icon) | :has(> Prefix)) & (:has(> RightIcon) | :has(> Suffix))':
           '0 0 $block-padding 0',
         'has-description-block':
           '0 ($inline-padding - $inline-compensation + 1bw) $bottom-padding ($inline-padding - $inline-compensation + 1bw)',
-        'has-description-block & !:has(Icon)':
+        'has-description-block & !:has(> Icon)':
           '0 ($inline-padding - $inline-compensation + 1bw) $bottom-padding $inline-padding',
-        'has-description-block & !:has(RightIcon)':
+        'has-description-block & !:has(> RightIcon)':
           '0 $inline-padding $bottom-padding ($inline-padding - $inline-compensation + 1bw)',
-        'has-description-block & !:has(RightIcon) & !:has(Icon)':
+        'has-description-block & !:has(> RightIcon) & !:has(> Icon)':
           '0 $inline-padding $bottom-padding $inline-padding',
       },
 
@@ -386,7 +387,7 @@ const ItemElement = tasty({
       ...ADDITION_STYLES,
       padding: {
         '': '$inline-padding left',
-        ':has(Icon)': 0,
+        ':has(> Icon)': 0,
       },
     },
 
@@ -394,7 +395,7 @@ const ItemElement = tasty({
       ...ADDITION_STYLES,
       padding: {
         '': '$inline-padding right',
-        ':has(RightIcon)': 0,
+        ':has(> RightIcon)': 0,
       },
     },
 
