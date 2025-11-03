@@ -143,6 +143,18 @@ export function getModSelector(modName: string): string {
       // Check if it contains :has() with capitalized element names
       if (modName.includes(':has(')) {
         selector = modName.replace(/:has\(([^)]+)\)/g, (match, content) => {
+          // Validate that combinators have spaces around them
+          // Check for capitalized words adjacent to combinators without spaces
+          const invalidPattern = /[A-Z][a-z]*[>+~]|[>+~][A-Z][a-z]*/;
+          if (invalidPattern.test(content)) {
+            console.error(
+              `[Tasty] Invalid :has() selector syntax: "${modName}"\n` +
+                `Combinators (>, +, ~) must have spaces around them when used with element names.\n` +
+                `Example: Use ":has(Body > Row)" instead of ":has(Body>Row)"\n` +
+                `This is a design choice: the parser uses simple whitespace splitting for performance.`,
+            );
+          }
+
           // Transform capitalized words to [data-element="..."] selectors
           const tokens = content.split(/\s+/);
           const transformed = tokens.map((token: string) =>

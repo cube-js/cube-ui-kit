@@ -27,13 +27,13 @@ module.exports = [
     path: './dist/es/index.js',
     webpack: true,
     import: '{ Button }',
-    limit: '33 kB',
+    limit: '34 kB',
   },
   {
     name: 'Tree shaking (just an Icon)',
     path: './dist/es/index.js',
     webpack: true,
     import: '{ AiIcon }',
-    limit: '20 kB',
+    limit: '21 kB',
   },
 ];

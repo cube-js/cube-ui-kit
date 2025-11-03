@@ -101,6 +101,8 @@ fill: { '': '#white', hovered: '#gray.05', 'theme=danger': '#red' }
 
 Element styled using a capitalized key. Identified by `data-element` attribute. Capitalized words in selectors (`:has(Item)`, `> Body > Row`) transform to `[data-element="..."]`.
 
+**Important:** Combinators (`>`, `+`, `~`) must have spaces around them: `:has(Body > Row)` ✅, not `:has(Body>Row)` ❌. This is a design choice for parser performance.
+
 ```jsx
 styles: { Title: { preset: 'h3' } }
 // Targets: <div data-element="Title">
@@ -715,8 +717,11 @@ const Table = tasty({
     },
     
     // Chained selectors (auto-transforms capitalized words)
+    // ⚠️ Important: Spaces required around combinators for parsing
     Cell: {
-      $: '> Body > Row >',        // .table > [data-element="Body"] > [data-element="Row"] > [data-element="Cell"]
+      $: '> Body > Row >',        // ✅ Correct: spaces around > 
+                                  // ❌ Wrong: '>Body>Row>' (parser can't split)
+                                  // → .table > [data-element="Body"] > [data-element="Row"] > [data-element="Cell"]
       border: '1bw solid #border',
     },
     
@@ -727,6 +732,33 @@ const Table = tasty({
   },
 });
 ```
+
+> **⚠️ Space Requirements:** Combinators (`>`, `+`, `~`) in selector affixes **must have spaces** around them when used with capitalized element names. Use `$: '> Body > Row'` ✅, not `$: '>Body>Row'` ❌. This is a performance consideration—the parser uses simple whitespace splitting to identify element names.
+
+#### `:has()` Selector with Sub-elements
+
+Style components based on their children using the `:has()` pseudo-class:
+
+```jsx
+const List = tasty({
+  styles: {
+    border: {
+      '': 'none',
+      // ⚠️ Spaces required around combinators (>, +, ~)
+      ':has(Body > Row)': '1bw solid #border',  // ✅ Correct
+      // ':has(Body>Row)': ...                   // ❌ Wrong: parser can't split
+    },
+    
+    padding: {
+      '': '2x',
+      ':has(Item)': '4x',                       // Single element, no combinator
+      'hovered & :has(Item)': '6x',             // Combining with other modifiers
+    },
+  },
+});
+```
+
+> **⚠️ Space Requirements:** Combinators (`>`, `+`, `~`) **must have spaces** around them when used with capitalized element names. Use `:has(Body > Row)` ✅, not `:has(Body>Row)` ❌. This is a performance consideration—the parser uses whitespace splitting to identify element names. A console error will warn if spaces are missing.
 
 ### Variants & Theming
 

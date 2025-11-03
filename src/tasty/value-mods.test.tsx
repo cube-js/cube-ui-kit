@@ -446,6 +446,52 @@ describe('Value Mods', () => {
           ':has([data-element="Body"] [data-element="Item"] [data-element="Row"])',
         );
       });
+
+      it('should warn when combinator lacks spaces in :has()', () => {
+        const consoleErrorSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
+
+        // Test various invalid patterns
+        getModSelector(':has(Body>Row)');
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          expect.stringContaining('[Tasty] Invalid :has() selector syntax'),
+        );
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          expect.stringContaining(':has(Body>Row)'),
+        );
+
+        consoleErrorSpy.mockClear();
+
+        getModSelector(':has(Header+Content)');
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          expect.stringContaining('[Tasty] Invalid :has() selector syntax'),
+        );
+
+        consoleErrorSpy.mockClear();
+
+        getModSelector(':has(List~Item)');
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          expect.stringContaining('[Tasty] Invalid :has() selector syntax'),
+        );
+
+        consoleErrorSpy.mockRestore();
+      });
+
+      it('should not warn when combinator has proper spaces in :has()', () => {
+        const consoleErrorSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
+
+        getModSelector(':has(Body > Row)');
+        getModSelector(':has(Header + Content)');
+        getModSelector(':has(List ~ Item)');
+        getModSelector(':has(> Item)');
+
+        expect(consoleErrorSpy).not.toHaveBeenCalled();
+
+        consoleErrorSpy.mockRestore();
+      });
     });
 
     it('should transform :has(Item) to :has([data-element="Item"]) in component', () => {

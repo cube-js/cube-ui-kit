@@ -85,6 +85,18 @@ function transformSelectorAffix(affix: string): string {
   const trimmed = affix.trim();
   if (!trimmed) return ' ';
 
+  // Validate that combinators have spaces around them
+  // Check for capitalized words adjacent to combinators without spaces
+  const invalidPattern = /[A-Z][a-z]*[>+~]|[>+~][A-Z][a-z]*/;
+  if (invalidPattern.test(trimmed)) {
+    console.error(
+      `[Tasty] Invalid selector affix ($) syntax: "${affix}"\n` +
+        `Combinators (>, +, ~) must have spaces around them when used with element names.\n` +
+        `Example: Use "$: '> Body > Row'" instead of "$: '>Body>Row'"\n` +
+        `This is a design choice: the parser uses simple whitespace splitting for performance.`,
+    );
+  }
+
   const tokens = trimmed.split(/\s+/);
   const transformed = tokens.map((token) =>
     /^[A-Z]/.test(token) ? `[data-element="${token}"]` : token,

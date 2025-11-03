@@ -1230,6 +1230,53 @@ describe('tastyGlobal() API', () => {
     );
   });
 
+  it('should warn when combinator lacks spaces in selector affix ($)', () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const Component = tasty({
+      styles: {
+        Item: {
+          $: '>Body>Row',
+          color: '#primary',
+        },
+      },
+    });
+
+    render(<Component />);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[Tasty] Invalid selector affix ($) syntax'),
+    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('>Body>Row'),
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('should not warn when combinator has proper spaces in selector affix ($)', () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const Component = tasty({
+      styles: {
+        Item: {
+          $: '> Body > Row',
+          color: '#primary',
+        },
+      },
+    });
+
+    render(<Component />);
+
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
+  });
+
   it('should support multiple global style components with different selectors', () => {
     const GlobalHeading = tasty('h1.special', {
       preset: 'h1',
