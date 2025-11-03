@@ -778,43 +778,30 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     [hotkeys, finalIsDisabled],
   );
 
-  mods = useMemo(() => {
-    return {
-      'with-icon': !!finalIcon,
-      'with-right-icon': !!finalRightIcon,
-      'with-label': !!(children || labelProps),
-      'with-prefix': !!finalPrefix,
-      'with-suffix': !!finalSuffix,
-      'with-description': showDescriptions,
-      'with-description-block':
-        showDescriptions && descriptionPlacement === 'block',
-      'with-actions': !!actions,
-      'with-actions-content': !!(actions && actions !== true),
-      checkbox: hasCheckbox,
-      disabled: finalIsDisabled,
-      selected: isSelected === true,
-      loading: isLoading,
-      card: isCard === true,
-      button: isButton === true,
-      [`shape-${shape}`]: true,
-      ...mods,
-    };
-  }, [
-    finalIcon,
-    finalRightIcon,
-    finalPrefix,
-    finalSuffix,
-    showDescriptions,
-    descriptionPlacement,
-    hasCheckbox,
-    isSelected,
-    isLoading,
-    isCard,
-    isButton,
-    shape,
-    actions,
-    mods,
-  ]);
+  mods = {
+    'with-icon': !!finalIcon,
+    'with-right-icon': !!finalRightIcon,
+    'with-label': !!(children || labelProps),
+    'with-prefix': !!finalPrefix,
+    'with-suffix': !!finalSuffix,
+    'with-description': showDescriptions,
+    'with-description-block':
+      showDescriptions && descriptionPlacement === 'block',
+    'with-actions': !!actions,
+    'with-actions-content': !!(actions && actions !== true),
+    checkbox: hasCheckbox,
+    disabled: finalIsDisabled,
+    selected: isSelected === true,
+    loading: isLoading,
+    card: isCard === true,
+    button: isButton === true,
+    [`shape-${shape}`]: true,
+    // Use value mods for data-* attributes
+    size: typeof size === 'number' ? undefined : size,
+    type,
+    theme,
+    ...mods,
+  };
 
   const {
     labelProps: finalLabelProps,
@@ -860,10 +847,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
             theme && type ? (`${theme}.${type}` as ItemVariant) : undefined
           }
           disabled={finalIsDisabled}
-          data-size={typeof size === 'number' ? undefined : size}
-          data-type={type}
-          data-theme={theme}
-          data-shape={shape}
           aria-disabled={finalIsDisabled}
           aria-selected={isSelected}
           mods={mods}
