@@ -955,12 +955,12 @@ describe('tastyGlobal() API', () => {
         '': '#white',
         ':hover': '#gray.05',
         ':focus': '#blue.05',
-        disabled: '#gray.20',
+        '[id]': '#gray.20',
       },
       color: {
         '': '#text',
         ':hover': '#text-hover',
-        disabled: '#text-disabled',
+        '[id]': '#text-disabled',
       },
       transition: 'fill 0.2s, color 0.2s',
     });
@@ -969,8 +969,8 @@ describe('tastyGlobal() API', () => {
       <div>
         <GlobalInteractive />
         <div className="interactive-element">Interactive Element</div>
-        <div data-disabled className="interactive-element">
-          Disabled Element
+        <div id="test-id" className="interactive-element">
+          Element with ID
         </div>
       </div>,
     );
@@ -983,7 +983,7 @@ describe('tastyGlobal() API', () => {
 
     expect(styleContent).toContain('.interactive-element');
     expect(styleContent).toContain(':hover');
-    expect(styleContent).toContain('[data-disabled]');
+    expect(styleContent).toContain('[id]');
     expect(styleContent).toContain('background-color: var(--white-color)');
   });
 
