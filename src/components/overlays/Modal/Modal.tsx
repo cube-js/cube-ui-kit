@@ -59,7 +59,7 @@ const ModalElement = tasty({
     transform: {
       '': 'initial',
       'type=modal & !open': 'translate(0, -3x) scale(1, 1)',
-      '([data-type^="fullscreen"] | type=panel) & !open':
+      '(type^=fullscreen | type=panel) & !open':
         'translate(0, 0) scale(1.02, 1.02)',
     },
     opacity: {

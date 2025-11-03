@@ -492,6 +492,40 @@ describe('Value Mods', () => {
 
         consoleErrorSpy.mockRestore();
       });
+
+      it('should transform type^=fullscreen to [data-type^="fullscreen"]', () => {
+        expect(getModSelector('type^=fullscreen')).toBe(
+          '[data-type^="fullscreen"]',
+        );
+      });
+
+      it('should transform type$=screen to [data-type$="screen"]', () => {
+        expect(getModSelector('type$=screen')).toBe('[data-type$="screen"]');
+      });
+
+      it('should transform type*=full to [data-type*="full"]', () => {
+        expect(getModSelector('type*=full')).toBe('[data-type*="full"]');
+      });
+
+      it('should handle quoted values with ^= operator', () => {
+        expect(getModSelector('type^="fullscreen"')).toBe(
+          '[data-type^="fullscreen"]',
+        );
+      });
+
+      it('should handle single-quoted values with $= operator', () => {
+        expect(getModSelector("type$='screen'")).toBe('[data-type$="screen"]');
+      });
+
+      it('should handle quoted values with *= operator', () => {
+        expect(getModSelector('name*="test"')).toBe('[data-name*="test"]');
+      });
+
+      it('should convert camelCase keys with operators', () => {
+        expect(getModSelector('dataType^=fullscreen')).toBe(
+          '[data-data-type^="fullscreen"]',
+        );
+      });
     });
 
     it('should transform :has(Item) to :has([data-element="Item"]) in component', () => {

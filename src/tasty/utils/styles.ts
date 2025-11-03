@@ -120,11 +120,15 @@ export function getModSelector(modName: string): string {
   if (!MOD_NAME_CACHE.has(modName)) {
     let selector: string;
 
-    // Check if it's a shorthand value mod: key=value, key="value", or key='value'
-    const valueModMatch = modName.match(/^([a-z][a-z0-9-]*)=(.+)$/i);
+    // Check if it's a shorthand value mod: key=value, key^=value, key$=value, key*=value
+    // Supports: key=value, key="value", key='value', and with ^=, $=, *= operators
+    const valueModMatch = modName.match(
+      /^([a-z][a-z0-9-]*)(\^=|\$=|\*=|=)(.+)$/i,
+    );
     if (valueModMatch) {
       const key = valueModMatch[1];
-      let value = valueModMatch[2];
+      const operator = valueModMatch[2];
+      let value = valueModMatch[3];
 
       // Remove quotes if present
       if (
@@ -134,8 +138,8 @@ export function getModSelector(modName: string): string {
         value = value.slice(1, -1);
       }
 
-      // Convert to full attribute selector
-      selector = `[data-${camelToKebab(key)}="${value}"]`;
+      // Convert to full attribute selector with the appropriate operator
+      selector = `[data-${camelToKebab(key)}${operator}"${value}"]`;
     } else if (modName.match(/^[a-z]/)) {
       // Boolean mod: convert camelCase to kebab-case
       selector = `[data-${camelToKebab(modName)}]`;
