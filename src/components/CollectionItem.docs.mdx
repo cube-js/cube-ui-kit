@@ -4,175 +4,110 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # CollectionItem
 
-`CollectionItem` is the building block for all collection-based components. It represents a single item in lists, menus, and selectors, providing a consistent API across the UI Kit.
+`CollectionItem` is the building block for all collection-based components in the UI Kit, providing a consistent API for list items, menu options, and selectors.
 
 ## Used By
 
-- **ListBox** - Standalone list with selection
-- **FilterListBox** - List with built-in search
-- **Select** - Dropdown selector with single selection
-- **ComboBox** - Searchable input with suggestions
-- **FilterPicker** - Filter selector with search and multiple selection
-- **Picker** - Simple picker with single/multiple selection
-- **Menu** - Context menu with actions
-- **CommandMenu** - Keyboard-driven command palette
+ListBox, FilterListBox, Select, ComboBox, FilterPicker, Picker, Menu, CommandMenu
 
-## Two Usage Patterns
+## Usage Patterns
 
-### 1. Static JSX
+### Static JSX
 
-Define items directly in JSX. You **must** provide `key` props manually:
+Define items directly. You **must** provide `key` props:
 
 ```jsx live=false
-import { ListBox } from '@cube-dev/ui-kit';
-
 <ListBox>
   <ListBox.Item key="apple">Apple</ListBox.Item>
   <ListBox.Item key="banana">Banana</ListBox.Item>
 </ListBox>
 ```
 
-### 2. Data-driven (Recommended)
+### Data-driven (Recommended)
 
-Use the `items` prop with a render function. **Do NOT** pass `key` manually - it's extracted automatically:
+Use `items` prop with render function. You **must** pass `key` explicitly:
 
 ```jsx live=false
-import { ListBox } from '@cube-dev/ui-kit';
-
 const items = [
   { id: 'apple', name: 'Apple' },
   { id: 'banana', name: 'Banana' },
 ];
 
 <ListBox items={items}>
-  {(item) => <ListBox.Item>{item.name}</ListBox.Item>}
+  {(item) => <ListBox.Item key={item.id}>{item.name}</ListBox.Item>}
 </ListBox>
 ```
 
-## Data Requirements
+## Item Requirements
 
-When using the data-driven approach, each item object must include:
+| Property | Required | Type | Purpose |
+|----------|----------|------|---------|
+| `id` or `key` | ✅ **Required** | `string \| number` | Unique identifier - **critical for selection callbacks** |
+| `textValue` | ⚠️ Recommended | `string` | For filtering & accessibility |
 
-| Property | Required | Type | Purpose | Fallback |
-|----------|----------|------|---------|----------|
-| `id` or `key` | ✅ Yes | `string \| number` | Unique identifier | None - will error |
-| `textValue` | ⚠️ Recommended | `string` | For filtering & accessibility | 1. Rendered content<br/>2. Key/ID |
+**Without `id`/`key`:** React Aria falls back to using order-based keys (e.g., `"0"`, `"1"`), which breaks selection functionality in select components as these values are meaningless for identifying specific items.
 
-### Unique Identifier Rules
+**Without `textValue`:** Falls back to rendered content, then to key/id.
+
+### Rules
 
 ```jsx live=false
-// ✅ Good - Using 'id'
-const items = [{ id: 'apple', name: 'Apple' }];
-
-// ✅ Good - Using 'key'
-const items = [{ key: 'apple', name: 'Apple' }];
-
-// ❌ Bad - Missing unique identifier
-const items = [{ name: 'Apple' }];
-
-// ❌ Bad - Mixed types (inconsistent)
+// ✅ Using 'id'
 const items = [
-  { id: 1, name: 'First' },      // number
-  { id: '2', name: 'Second' },   // string
+  { id: 'apple', name: 'Apple' },
+  { id: 'banana', name: 'Banana' },
 ];
-```
 
-### textValue Rules
+// ✅ Using 'key'
+const items = [
+  { key: 'apple', name: 'Apple' },
+  { key: 'banana', name: 'Banana' },
+];
 
-The `textValue` determines what text is used for filtering (in searchable components) and screen readers:
+// ✅ Consistent types
+const items = [
+  { id: '1', name: 'First' },
+  { id: '2', name: 'Second' },
+];
 
-**1. Explicit (Best)** - Provide it directly for complex content:
-
-```jsx live=false
+// ✅ Explicit textValue for complex content
 const items = [{
   id: 'user-1',
   firstName: 'John',
   lastName: 'Smith',
-  textValue: 'John Smith', // ✅ Explicit
+  textValue: 'John Smith',
 }];
-
-<ComboBox items={items}>
-  {(item) => (
-    <ComboBox.Item textValue={item.textValue}>
-      {item.firstName} {item.lastName}
-    </ComboBox.Item>
-  )}
-</ComboBox>
 ```
 
-**2. Auto-derived (Good)** - Extracted from rendered content:
-
-```jsx live=false
-const items = [{ id: 'apple', name: 'Apple' }];
-
-<ComboBox items={items}>
-  {(item) => <ComboBox.Item>{item.name}</ComboBox.Item>}
-  {/* textValue = "Apple" (auto-derived from rendered content) */}
-</ComboBox>
-```
-
-**3. Fallback to Key (Last Resort)** - Not ideal for UX:
-
-```jsx live=false
-const items = [{ id: 'uuid-abc-123', icon: <IconUser /> }];
-
-<ComboBox items={items}>
-  {(item) => <ComboBox.Item icon={item.icon} />}
-  {/* ⚠️ textValue = "uuid-abc-123" (fallback to key) */}
-</ComboBox>
-```
-
-**Always provide explicit `textValue` when:**
-- Rendering icons/images without text
-- Using formatted/complex content
-- Keys aren't human-readable (UUIDs, database IDs)
-- Working with searchable components (ComboBox, FilterListBox, FilterPicker, CommandMenu)
+**Always provide explicit `textValue` for:**
+- Icons/images without text
+- Formatted/complex content
+- Non-readable keys (UUIDs)
+- Searchable components (ComboBox, FilterListBox, FilterPicker, CommandMenu)
 
 ## Properties
 
-`CollectionItem` extends all props from the [Item component](/components/Item) including:
+Extends all [Item component](/components/Item) props:
 
-### Content Props
-
-- `children` - The content of the item
-- `icon` - Leading icon
-- `rightIcon` - Trailing icon
-- `prefix` - Content before the label
-- `suffix` - Content after the label
-- `description` - Secondary text below the label
-- `descriptionPlacement` - Where to place description (`'inline'` | `'block'` | `'auto'`)
-
-### Item-specific Props
-
-- `textValue` - Text representation for filtering and accessibility
-- `onAction` - Action handler for menu items
-- `wrapper` - Custom wrapper for the rendered item
-
-### Styling Props
-
-All standard Item styling props are supported. See [Item documentation](/components/Item) for details.
+- `children` - Item content
+- `icon` / `rightIcon` - Icons
+- `prefix` / `suffix` - Additional content
+- `description` - Secondary text
+- `textValue` - Text for filtering/accessibility
+- `onAction` - Action handler (Menu items)
 
 ## Examples
 
-### Basic Usage
+### Basic
 
 ```jsx live=false
-import { ListBox } from '@cube-dev/ui-kit';
-
-// Static
-<ListBox>
-  <ListBox.Item key="read">Read</ListBox.Item>
-  <ListBox.Item key="write">Write</ListBox.Item>
-</ListBox>
-
-// Data-driven
 const permissions = [
   { id: 'read', name: 'Read' },
   { id: 'write', name: 'Write' },
 ];
 
 <ListBox items={permissions}>
-  {(item) => <ListBox.Item>{item.name}</ListBox.Item>}
+  {(item) => <ListBox.Item key={item.id}>{item.name}</ListBox.Item>}
 </ListBox>
 ```
 
@@ -187,11 +122,7 @@ const items = [
 ];
 
 <Menu items={items}>
-  {(item) => (
-    <Menu.Item icon={item.icon}>
-      {item.name}
-    </Menu.Item>
-  )}
+  {(item) => <Menu.Item key={item.id} icon={item.icon}>{item.name}</Menu.Item>}
 </Menu>
 ```
 
@@ -207,9 +138,9 @@ const users = [
   },
 ];
 
-<ComboBox items={users} placeholder="Search users...">
+<ComboBox items={users}>
   {(item) => (
-    <ComboBox.Item description={item.email}>
+    <ComboBox.Item key={item.id} description={item.email}>
       {item.name}
     </ComboBox.Item>
   )}
@@ -218,10 +149,7 @@ const users = [
 
 ### With Sections
 
-Group related items using sections:
-
 ```jsx live=false
-// Static
 <ListBox>
   <ListBox.Section title="Fruits">
     <ListBox.Item key="apple">Apple</ListBox.Item>
@@ -231,38 +159,14 @@ Group related items using sections:
     <ListBox.Item key="carrot">Carrot</ListBox.Item>
   </ListBox.Section>
 </ListBox>
-
-// Data-driven with nested structure
-const sections = [
-  {
-    key: 'fruits',
-    title: 'Fruits',
-    children: [
-      { key: 'apple', name: 'Apple' },
-      { key: 'banana', name: 'Banana' },
-    ],
-  },
-];
-
-<ListBox items={sections}>
-  {(section) => (
-    <ListBox.Section title={section.title}>
-      {section.children.map((item) => (
-        <ListBox.Item key={item.key}>{item.name}</ListBox.Item>
-      ))}
-    </ListBox.Section>
-  )}
-</ListBox>
 ```
-
-**Note:** When using `.map()` directly (not the `items` prop), you **must** provide `key` manually.
 
 ### Disabled Items
 
 ```jsx live=false
 const items = [
-  { id: 'read', name: 'Read', disabled: false },
-  { id: 'write', name: 'Write', disabled: false },
+  { id: 'read', name: 'Read' },
+  { id: 'write', name: 'Write' },
   { id: 'delete', name: 'Delete', disabled: true },
 ];
 
@@ -270,149 +174,100 @@ const items = [
   items={items}
   disabledKeys={items.filter(i => i.disabled).map(i => i.id)}
 >
-  {(item) => <ListBox.Item>{item.name}</ListBox.Item>}
+  {(item) => <ListBox.Item key={item.id}>{item.name}</ListBox.Item>}
 </ListBox>
 ```
 
 ## Best Practices
 
-### ✅ Do
-
 ```jsx live=false
-// Provide explicit textValue for complex content
-const items = [{
-  id: 'user-1',
-  name: 'John Smith',
-  email: 'john@example.com',
-  textValue: 'John Smith john@example.com',
-}];
+// ✅ Always provide id/key in data
+const items = [{ id: 'user-1', name: 'John' }];
 
-// Use consistent key types across all items
+// ✅ Always pass key prop
+<ListBox items={items}>
+  {(item) => <ListBox.Item key={item.id}>{item.name}</ListBox.Item>}
+</ListBox>
+
+// ✅ Consistent types
 const items = [
   { id: '1', name: 'First' },
   { id: '2', name: 'Second' },
 ];
 
-// Memoize large collections to prevent re-renders
+// ✅ Explicit textValue for complex content
+const items = [{
+  id: 'user-1',
+  name: 'John Smith',
+  textValue: 'John Smith',
+}];
+
+// ✅ Memoize large collections
 const items = useMemo(
-  () => data.map(d => ({
-    id: d.id,
-    name: d.name,
-    textValue: d.name,
-  })),
+  () => data.map(d => ({ id: d.id, name: d.name })),
   [data]
 );
 
-// Use human-readable keys
-const items = [
-  { id: 'draft', status: 'Draft' },
-  { id: 'published', status: 'Published' },
-];
-```
-
-### ❌ Don't
-
-```jsx live=false
-// Don't manually pass key with items prop
+// ❌ Don't omit key prop
 <ListBox items={items}>
-  {(item) => <ListBox.Item key={item.id}>{item.name}</ListBox.Item>}
-  {/*                      ^^^^^^^^^^^^^^ Remove this! */}
+  {(item) => <ListBox.Item>{item.name}</ListBox.Item>}
 </ListBox>
 
-// Don't mix key types
+// ❌ Don't mix types
 const items = [
-  { id: 1, name: 'First' },      // number
-  { id: '2', name: 'Second' },   // string - inconsistent!
-];
-
-// Don't skip textValue for non-text content
-const items = [
-  { id: 'uuid-abc', icon: <IconUser /> }, // Missing textValue
-];
-
-<ComboBox items={items}>
-  {(item) => <ComboBox.Item icon={item.icon} />}
-  {/* Screen reader will announce "uuid-abc" - not helpful! */}
-</ComboBox>
-
-// Don't use non-human-readable keys without textValue
-const items = [
-  { id: 'a1b2c3d4', name: 'Item' }, // UUID without textValue
+  { id: 1, name: 'First' },
+  { id: '2', name: 'Second' },
 ];
 ```
 
 ## TypeScript
 
-Define item types for better type safety:
-
 ```tsx live=false
-import { ListBox } from '@cube-dev/ui-kit';
-
 interface User {
-  id: string;
+  id: string;          // Required!
   name: string;
-  email: string;
   textValue?: string;
 }
 
-function UserList() {
-  const items: User[] = [
-    {
-      id: '1',
-      name: 'John',
-      email: 'john@example.com',
-      textValue: 'John john@example.com',
-    },
-  ];
+const items: User[] = [
+  { id: '1', name: 'John', textValue: 'John' },
+];
 
-  return (
-    <ListBox items={items}>
-      {(item: User) => (
-        <ListBox.Item description={item.email}>
-          {item.name}
-        </ListBox.Item>
-      )}
-    </ListBox>
-  );
-}
+<ListBox items={items}>
+  {(item: User) => <ListBox.Item key={item.id}>{item.name}</ListBox.Item>}
+</ListBox>
 ```
 
 ## Quick Reference
 
-### Key Prop Handling
+| Approach | Key Prop | Source |
+|----------|----------|--------|
+| Static JSX | ✅ Required | Hardcoded value |
+| Data-driven (`items`) | ✅ Required | Pass `item.key` or `item.id` |
+| Using `.map()` | ✅ Required | Pass `item.key` or `item.id` |
 
-| Approach | Key Prop | Extracted From |
-|----------|----------|----------------|
-| Static JSX | ✅ Required manually | N/A |
-| Data-driven (`items` prop) | ❌ Don't pass | `item.key` or `item.id` |
-| Using `.map()` directly | ✅ Required manually | N/A |
-
-### Component Capabilities
-
-| Component | Selection | Search | Use Case |
-|-----------|-----------|--------|----------|
-| ListBox | Single/Multiple | ❌ | Visible list |
-| FilterListBox | Single/Multiple | ✅ | Searchable list |
-| Select | Single | ❌ | Dropdown |
-| ComboBox | Single | ✅ | Dropdown with search |
-| FilterPicker | Single/Multiple | ✅ | Filter selector |
-| Picker | Single/Multiple | ❌ | Simple selector |
-| Menu | Single action | ❌ | Action menu |
-| CommandMenu | Single action | ✅ | Command palette |
+| Component | Selection | Search |
+|-----------|-----------|--------|
+| ListBox | Single/Multiple | ❌ |
+| FilterListBox | Single/Multiple | ✅ |
+| Select | Single | ❌ |
+| ComboBox | Single | ✅ |
+| FilterPicker | Single/Multiple | ✅ |
+| Picker | Single/Multiple | ❌ |
+| Menu | Single action | ❌ |
+| CommandMenu | Single action | ✅ |
 
 ## Essential Rules
 
-1. **Unique ID required** - Every item needs `id` or `key` property
-2. **No manual keys in data-driven mode** - React Stately handles it automatically
-3. **Provide textValue explicitly** - For icons, complex content, or searchable components
-4. **Consistent types** - Keep key types uniform across all items
-5. **Use `.map()` exception** - When mapping directly, provide `key` manually
+1. **🚨 Always provide `id` or `key` in data** - Required for selection callbacks to work properly. Without it, React Aria uses order-based keys which are useless in select components.
+2. **🚨 Always pass `key` prop to Item** - Must explicitly pass `key={item.id}` or `key={item.key}` in the render function
+3. **Provide explicit `textValue`** - For icons, complex content, or searchable components
+4. **Use consistent types** - All strings or all numbers, never mixed
 
 ## Related Components
 
-- [Item](/components/Item) - Base item component with styling
+- [Item](/components/Item) - Base item component
 - [ListBox](/components/ListBox) - List with selection
 - [Select](/components/Select) - Dropdown selector
 - [ComboBox](/components/ComboBox) - Searchable input
 - [Menu](/components/Menu) - Action menu
-
