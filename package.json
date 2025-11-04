@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "1.0.0",
+  "version": "0.89.0",
   "type": "module",
   "description": "UIKit for Cube Projects",
   "repository": {

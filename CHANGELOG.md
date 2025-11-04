@@ -2,13 +2,11 @@
 
 ## 1.0.0
 
-### Major Changes
+### Minor Changes
 
 - [#872](https://github.com/cube-js/cube-ui-kit/pull/872) [`4b8a6d6e`](https://github.com/cube-js/cube-ui-kit/commit/4b8a6d6e4342303ec6ba6c58a2c17b38eeef2964) Thanks [@tenphi](https://github.com/tenphi)! - **BREAKING:** Boolean mods now generate `data-*` instead of `data-is-*` attributes (`mods={{ hovered: true }}` → `data-hovered=""` instead of `data-is-hovered=""`).
 
   **NEW:** Value mods support - `mods` now accepts string values (`mods={{ theme: 'danger' }}` → `data-theme="danger"`). Includes shorthand syntax in styles (`theme=danger`, `theme="danger"`). See Tasty documentation for details.
-
-### Minor Changes
 
 - [#872](https://github.com/cube-js/cube-ui-kit/pull/872) [`4b8a6d6e`](https://github.com/cube-js/cube-ui-kit/commit/4b8a6d6e4342303ec6ba6c58a2c17b38eeef2964) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `:has(Item)` syntax in style mappings. Capitalized element names inside `:has()` pseudo-class selectors are now automatically transformed to `data-element` attribute selectors (`:has(Item)` → `:has([data-element="Item"])`).
 
