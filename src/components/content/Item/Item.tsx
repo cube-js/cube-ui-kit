@@ -73,7 +73,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   prefix?: ReactNode;
   suffix?: ReactNode;
   description?: ReactNode;
-  descriptionPlacement?: 'inline' | 'block' | 'auto';
+  descriptionPlacement?: 'inline' | 'block';
   /**
    * Whether the item is selected.
    * @default false

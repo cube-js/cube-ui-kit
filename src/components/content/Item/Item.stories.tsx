@@ -55,7 +55,7 @@ export default {
       description: 'Description text displayed with the item',
     },
     descriptionPlacement: {
-      options: ['inline', 'block', 'auto'],
+      options: ['inline', 'block'],
       control: { type: 'radio' },
       description:
         'How the description is positioned relative to the main content',
@@ -1026,31 +1026,7 @@ export const WithDescription: StoryFn<CubeItemProps> = (args) => (
       </Item>
     </Space>
 
-    <Title level={5}>Description Placement: Auto</Title>
-    <Space gap="1x" flow="column" placeItems="start">
-      <Item
-        {...args}
-        styles={DEFAULT_STYLES}
-        type="outline"
-        icon={<IconUser />}
-        description="Auto placement chooses based on content"
-        descriptionPlacement="auto"
-      >
-        User Account
-      </Item>
-      <Item
-        {...args}
-        styles={DEFAULT_STYLES}
-        type="outline"
-        icon={<IconSettings />}
-        description="Auto adapts to layout"
-        descriptionPlacement="auto"
-      >
-        Application Settings
-      </Item>
-    </Space>
-
-    <Title level={5}>Comparison: All Placements</Title>
+    <Title level={5}>Comparison: Inline vs Block</Title>
     <Space gap="2x" flow="column" placeItems="start">
       <Item
         {...args}
@@ -1072,16 +1048,6 @@ export const WithDescription: StoryFn<CubeItemProps> = (args) => (
       >
         Block Placement
       </Item>
-      <Item
-        {...args}
-        styles={DEFAULT_STYLES}
-        type="outline"
-        icon={<IconUser />}
-        description="Auto: Smart placement"
-        descriptionPlacement="auto"
-      >
-        Auto Placement
-      </Item>
     </Space>
   </Space>
 );
@@ -1094,7 +1060,7 @@ WithDescription.parameters = {
   docs: {
     description: {
       story:
-        'Demonstrates the `description` prop with different `descriptionPlacement` values: "inline" (default, appears next to the label), "block" (appears below the entire item), and "auto" (smart placement based on content). Use inline for short secondary text, block for longer descriptions, and auto for adaptive behavior.',
+        'Demonstrates the `description` prop with different `descriptionPlacement` values: "inline" (default, appears next to the label) and "block" (appears below the entire item). Use inline for short secondary text and block for longer descriptions.',
     },
   },
 };
