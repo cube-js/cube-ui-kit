@@ -189,7 +189,7 @@ describe('<ComboBox />', () => {
     });
   });
 
-  it.skip('should manage selection correctly', async () => {
+  it('should manage selection correctly', async () => {
     const onSelectionChange = jest.fn();
 
     const { getByRole, getAllByRole, queryByRole } = renderWithRoot(

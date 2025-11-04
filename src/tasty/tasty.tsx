@@ -353,8 +353,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
 
       for (const prop of propsToCheck) {
         const key = prop as unknown as string;
-        if (Object.prototype.hasOwnProperty.call(otherProps as object, key)) {
-          if (!propStyles) propStyles = {};
+
+        if (!propStyles) propStyles = {};
+
+        if (key in otherProps) {
           (propStyles as any)[key] = (otherProps as any)[key];
           delete (otherProps as any)[key];
         }
@@ -375,6 +377,8 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         () => (breakpoints as number[] | undefined)?.join(',') || '',
         [breakpoints?.join(',')],
       );
+
+      const propStylesKey = stringifyStyles(propStyles);
 
       // Optimize style computation and cache key generation
       const { allStyles, cacheKey, useDefaultStyles } = useMemo(() => {
@@ -399,7 +403,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
           cacheKey: key,
           useDefaultStyles: useDefault,
         };
-      }, [styles, propStyles, breakpointsKey]);
+      }, [styles, propStylesKey, breakpointsKey]);
 
       // Compute rules synchronously; inject via insertion effect
       const directResult: RenderResult = useMemo(() => {
