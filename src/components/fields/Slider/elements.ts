@@ -13,7 +13,7 @@ export const SliderThumbElement = tasty({
       dragged: '#purple',
       disabled: '#dark-04',
     },
-    cursor: 'pointer',
+    cursor: '$pointer',
     outline: {
       '': '#purple-text.0',
       focused: '1bw #purple-text',

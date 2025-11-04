@@ -19,7 +19,7 @@ export const HiddenInput = tasty({
     height: '100%',
     cursor: {
       '': 'default',
-      button: 'pointer',
+      button: '$pointer',
       disabled: 'not-allowed',
     },
   },

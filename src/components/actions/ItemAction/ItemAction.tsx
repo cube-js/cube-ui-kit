@@ -77,7 +77,7 @@ const ItemActionElement = tasty({
     reset: 'button',
     outline: 0,
     outlineOffset: 1,
-    cursor: { '': 'pointer', disabled: 'default' },
+    cursor: { '': '$pointer', disabled: 'default' },
     padding: {
       '': '0 $inline-padding',
       'with-icon': 0,

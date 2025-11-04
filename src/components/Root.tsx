@@ -24,7 +24,6 @@ import { PortalProvider } from './portal';
 
 const RootElement = tasty({
   id: 'cube-ui-kit-root',
-  // className: 'root',
 });
 
 const DEFAULT_STYLES = {
@@ -49,6 +48,7 @@ export interface CubeRootProps extends BaseProps {
   monospaceFont?: string;
   applyLegacyTokens?: boolean;
   tracking?: TrackingProps;
+  cursorStrategy?: 'web' | 'native';
 }
 
 const IS_DVH_SUPPORTED =
@@ -70,6 +70,7 @@ export function Root(allProps: CubeRootProps) {
     monospaceFont,
     applyLegacyTokens,
     tracking,
+    cursorStrategy = 'web',
     style,
     ...props
   } = allProps;
@@ -138,6 +139,7 @@ export function Root(allProps: CubeRootProps) {
               '--cube-dynamic-viewport-height': height
                 ? height + 'px'
                 : '100dvh',
+              '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
               ...style,
             }}
           >

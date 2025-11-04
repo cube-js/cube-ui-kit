@@ -100,8 +100,10 @@ export const DEFAULT_BUTTON_STYLES = {
   margin: 0,
   boxSizing: 'border-box',
   cursor: {
-    '': 'pointer',
-    disabled: 'default',
+    '': 'default',
+    ':is(a)': 'pointer',
+    ':is(button)': '$pointer',
+    disabled: 'not-allowed',
   },
   gap: {
     '': '.75x',

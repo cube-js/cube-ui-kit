@@ -122,7 +122,7 @@ export const Base64Upload = styled(
   }),
 )`
   appearance: none;
-  cursor: pointer;
+  cursor: var(--pointer);
   outline: none;
 
   & input {
@@ -132,7 +132,7 @@ export const Base64Upload = styled(
     bottom: 0;
     left: 0;
     opacity: 0;
-    cursor: pointer;
+    cursor: var(--pointer);
     width: 100%;
     height: 100%;
   }

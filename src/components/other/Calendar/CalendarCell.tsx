@@ -40,7 +40,7 @@ const CalendarButtonElement = tasty({
     },
     outlineOffset: 0.5,
     radius: true,
-    cursor: 'pointer',
+    cursor: '$pointer',
   },
 });
 

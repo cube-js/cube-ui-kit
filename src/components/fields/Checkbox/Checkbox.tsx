@@ -64,7 +64,7 @@ const CheckboxWrapperElement = tasty({
     gap: '1x',
     flow: 'row',
     preset: 'default',
-    cursor: 'pointer',
+    cursor: '$pointer',
     width: 'max max-content',
     color: '#dark-02',
   },
