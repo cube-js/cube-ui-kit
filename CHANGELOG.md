@@ -1,6 +1,6 @@
 # @cube-dev/ui-kit
 
-## 1.0.0
+## 0.89.0
 
 ### Minor Changes
 
