@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.89.0
+
+### Minor Changes
+
+- [#872](https://github.com/cube-js/cube-ui-kit/pull/872) [`4b8a6d6e`](https://github.com/cube-js/cube-ui-kit/commit/4b8a6d6e4342303ec6ba6c58a2c17b38eeef2964) Thanks [@tenphi](https://github.com/tenphi)! - **BREAKING:** Boolean mods now generate `data-*` instead of `data-is-*` attributes (`mods={{ hovered: true }}` → `data-hovered=""` instead of `data-is-hovered=""`).
+
+  **NEW:** Value mods support - `mods` now accepts string values (`mods={{ theme: 'danger' }}` → `data-theme="danger"`). Includes shorthand syntax in styles (`theme=danger`, `theme="danger"`). See Tasty documentation for details.
+
+- [#872](https://github.com/cube-js/cube-ui-kit/pull/872) [`4b8a6d6e`](https://github.com/cube-js/cube-ui-kit/commit/4b8a6d6e4342303ec6ba6c58a2c17b38eeef2964) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `:has(Item)` syntax in style mappings. Capitalized element names inside `:has()` pseudo-class selectors are now automatically transformed to `data-element` attribute selectors (`:has(Item)` → `:has([data-element="Item"])`).
+
+- [#873](https://github.com/cube-js/cube-ui-kit/pull/873) [`c29bee57`](https://github.com/cube-js/cube-ui-kit/commit/c29bee5708e4aa75e75e80ffb3509de5a6ac9d13) Thanks [@tenphi](https://github.com/tenphi)! - Allow to set cursorStrategy to `web` or `native` in Root component.
+
 ## 0.88.0
 
 ### Minor Changes
