@@ -80,13 +80,13 @@ const ItemActionElement = tasty({
     cursor: { '': '$pointer', disabled: 'default' },
     padding: {
       '': '0 $inline-padding',
-      'with-icon': 0,
-      'with-icon & with-label': '0 $inline-padding 0 0',
+      'has-icon': 0,
+      'has-icon & has-label': '0 $inline-padding 0 0',
     },
 
     '$inline-padding': {
       '': 'max($min-inline-padding, (($action-size - 1lh - 2bw) / 2 + $inline-compensation))',
-      '[data-size="inline"]': '.25x',
+      'size=inline': '.25x',
     },
     '$inline-compensation': '.5x',
     '$min-inline-padding': '(.5x - 1bw)',
@@ -162,9 +162,9 @@ export const ItemAction = forwardRef(function ItemAction(
       checkbox: hasCheckbox,
       selected: isSelected,
       loading: isLoading,
-      'with-label': !!children,
+      'has-label': !!children,
       context: !!contextType,
-      'with-icon': !!icon,
+      'has-icon': !!icon,
       ...mods,
     }),
     [hasCheckbox, isSelected, isLoading, children, contextType, mods],

@@ -64,7 +64,7 @@ export interface BasePropsWithoutChildren<K extends TagName = TagName>
   /** Whether the element has the inline layout outside */
   inline?: boolean;
   /** The list of element modifiers **/
-  mods?: { [key: string]: boolean | undefined | null };
+  mods?: { [key: string]: boolean | string | number | undefined | null };
   /** Whether the element is hidden (`hidden` attribute is set) */
   isHidden?: boolean;
   /** Whether the element is disabled (`disabled` attribute is set) */

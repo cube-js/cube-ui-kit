@@ -268,7 +268,7 @@ describe('<ListBox />', () => {
     );
 
     const listbox = getByRole('listbox');
-    expect(listbox.closest('[data-is-invalid]')).toBeInTheDocument();
+    expect(listbox.closest('[data-invalid]')).toBeInTheDocument();
 
     // Test valid state
     rerender(
@@ -277,7 +277,7 @@ describe('<ListBox />', () => {
       </ListBox>,
     );
 
-    expect(listbox.closest('[data-is-valid]')).toBeInTheDocument();
+    expect(listbox.closest('[data-valid]')).toBeInTheDocument();
   });
 
   it('should clear selection when null is passed', async () => {
@@ -551,8 +551,8 @@ describe('<ListBox />', () => {
     const bananaOption = getByText('Banana');
 
     // Initially no item should be focused
-    expect(appleOption.closest('li')).not.toHaveAttribute('data-is-focused');
-    expect(bananaOption.closest('li')).not.toHaveAttribute('data-is-focused');
+    expect(appleOption.closest('li')).not.toHaveAttribute('data-focused');
+    expect(bananaOption.closest('li')).not.toHaveAttribute('data-focused');
 
     // Focus the listbox and navigate down
     await act(async () => {
@@ -561,7 +561,7 @@ describe('<ListBox />', () => {
     });
 
     // First item should now be focused
-    const focusedItem = listbox.querySelector('[data-is-focused]');
+    const focusedItem = listbox.querySelector('[data-focused]');
     expect(focusedItem).toBeInTheDocument();
 
     // Navigate to next item
@@ -570,7 +570,7 @@ describe('<ListBox />', () => {
     });
 
     // Should still have a focused item (next one)
-    const newFocusedItem = listbox.querySelector('[data-is-focused]');
+    const newFocusedItem = listbox.querySelector('[data-focused]');
     expect(newFocusedItem).toBeInTheDocument();
   });
 
@@ -597,7 +597,7 @@ describe('<ListBox />', () => {
     });
 
     // Should have a focused item
-    let focusedItem = listbox.querySelector('[data-is-focused]');
+    let focusedItem = listbox.querySelector('[data-focused]');
     expect(focusedItem).toBeInTheDocument();
 
     // Navigate through several items
@@ -608,7 +608,7 @@ describe('<ListBox />', () => {
     });
 
     // Should still have a focused item (after navigating through sections)
-    focusedItem = listbox.querySelector('[data-is-focused]');
+    focusedItem = listbox.querySelector('[data-focused]');
     expect(focusedItem).toBeInTheDocument();
   });
 

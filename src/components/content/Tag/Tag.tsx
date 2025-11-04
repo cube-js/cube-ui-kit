@@ -12,7 +12,7 @@ const TagElement = tasty(Item, {
     fill: {
       '': '#dark.04',
       ...Object.keys(THEMES).reduce((map, type) => {
-        map[`[data-type="${type}"]`] = THEMES[type].fill;
+        map[`type=${type}`] = THEMES[type].fill;
 
         return map;
       }, {}),
@@ -20,7 +20,7 @@ const TagElement = tasty(Item, {
     color: {
       '': '#dark.65',
       ...Object.keys(THEMES).reduce((map, type) => {
-        map[`[data-type="${type}"]`] = THEMES[type].color;
+        map[`type=${type}`] = THEMES[type].color;
 
         return map;
       }, {}),
@@ -28,7 +28,7 @@ const TagElement = tasty(Item, {
     border: {
       '': true,
       ...Object.keys(THEMES).reduce((map, type) => {
-        map[`[data-type="${type}"]`] = THEMES[type].border;
+        map[`type=${type}`] = THEMES[type].border;
 
         return map;
       }, {}),

@@ -33,7 +33,7 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
   height: '$action-size',
   width: {
     '': '$action-size',
-    'with-label': 'auto',
+    'has-label': 'auto',
   },
   placeSelf: 'center',
 

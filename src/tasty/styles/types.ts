@@ -484,5 +484,10 @@ export type StylesWithoutSelectors = {
 export type Styles = StylesWithoutSelectors & {
   [key: string]:
     | ResponsiveStyleValue<string | number | boolean | undefined>
-    | StylesWithoutSelectors;
+    | Styles;
+  /**
+   * Selector combinator: `undefined` (descendant, default), `'>'` (child), `'+'` (adjacent), `'~'` (sibling).
+   * Can chain with capitalized names: `'> Body > Row >'`. Spaces required around combinators.
+   */
+  $?: string;
 };

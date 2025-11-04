@@ -25,12 +25,6 @@ A foundational component that provides a standardized layout and styling for ite
 
 <Controls of={ItemStories.Default} />
 
-### Content Properties
-
-#### actions
-- **Type**: `ReactNode`
-- **Description**: Inline action buttons displayed on the right side of the item. Use `Item.Action` for consistent styling. Actions automatically inherit the parent's `type` prop and the component reserves space to prevent content overlap.
-
 ### Base Properties
 
 Supports [Base properties](/BaseProperties)
@@ -48,10 +42,11 @@ Customizes the root element of the component.
 - `Description` - The secondary text below or inline with the main content
 - `Prefix` - Additional content displayed before the main content
 - `Suffix` - Additional content displayed after the main content
+- `Actions` - Container for inline action buttons displayed on the right side
 
 ### Style Properties
 
-Direct style application without using the `styles` prop: `width`, `height`, `padding`, `margin`, `color`, `fill`, `opacity`, `display`, `position`, `zIndex`, `gap`, `flow`, `placeItems`, `placeContent`, `alignItems`, `justifyContent`, `border`, `radius`, `shadow`, `overflow`.
+Direct style application without using the `styles` prop: `width`, `height`, `padding`, `paddingInline`, `paddingBlock`, `margin`, `inset`, `color`, `fill`, `fade`, `opacity`, `display`, `font`, `preset`, `hide`, `whiteSpace`, `position`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `gap`, `columnGap`, `rowGap`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`, `border`, `radius`, `shadow`, `overflow`, `scrollbar`, `outline`, `textAlign`, `reset`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `fontWeight`, `fontStyle`, `textTransform`.
 
 ### Modifiers
 
@@ -59,17 +54,27 @@ The `mods` property accepts the following modifiers:
 
 | Modifier | Type | Description |
 |----------|------|-------------|
-| with-icon | `boolean` | Applied when an icon is present |
-| with-right-icon | `boolean` | Applied when a right icon is present |
-| with-prefix | `boolean` | Applied when a prefix is present |
-| with-suffix | `boolean` | Applied when a suffix is present |
-| with-description | `boolean` | Applied when a description is present |
-| with-description-block | `boolean` | Applied when description placement is "block" |
+| has-icon | `boolean` | Applied when icon prop is provided |
+| has-right-icon | `boolean` | Applied when rightIcon prop is provided |
+| has-prefix | `boolean` | Applied when prefix prop is provided |
+| has-suffix | `boolean` | Applied when suffix prop is provided |
+| has-label | `boolean` | Applied when children or labelProps are provided |
+| has-start-content | `boolean` | Applied when icon or prefix is present |
+| has-end-content | `boolean` | Applied when rightIcon, suffix, or actions are present |
+| has-description | `boolean` | Applied when description is provided |
+| has-description-block | `boolean` | Applied when description placement is "block" |
+| has-actions | `boolean` | Applied when actions prop is provided |
+| has-actions-content | `boolean` | Applied when actions have actual content (not just placeholder) |
 | checkbox | `boolean` | Applied when using checkbox icon (icon="checkbox") |
 | selected | `boolean` | Applied when isSelected is true |
-| shape-card | `boolean` | Applied when shape is "card" |
-| shape-button | `boolean` | Applied when shape is "button" |
-| shape-sharp | `boolean` | Applied when shape is "sharp" |
+| disabled | `boolean` | Applied when isDisabled is true or when loading |
+| loading | `boolean` | Applied when isLoading is true |
+| card | `boolean` | Applied when isCard is true |
+| button | `boolean` | Applied when isButton is true |
+| size | `string` | Applied based on size prop value (xsmall, small, medium, large, xlarge, inline) |
+| type | `string` | Applied based on type prop value (item, primary, secondary, outline, neutral, clear, link) |
+| theme | `string` | Applied based on theme prop value (default, danger, success, special) |
+| shape | `string` | Applied based on shape prop value (card, button, sharp) |
 
 ## Variants
 
@@ -156,6 +161,31 @@ The `mods` property accepts the following modifiers:
 ### With Different Shapes
 
 <Story of={ItemStories.DifferentShapes} />
+
+### With Loading State
+
+The `isLoading` prop displays a loading indicator and disables the item. The `loadingSlot` prop controls which slot the loading icon replaces:
+
+```jsx
+<Item 
+  icon={<IconSave />}
+  isLoading={true}
+  loadingSlot="icon"
+>
+  Saving...
+</Item>
+
+<Item 
+  icon={<IconFile />}
+  rightIcon={<IconDownload />}
+  isLoading={true}
+  loadingSlot="rightIcon"
+>
+  Downloading...
+</Item>
+```
+
+When `loadingSlot="auto"` (default), the loading icon intelligently selects the best slot: prefers `icon` if present, then `rightIcon`, or falls back to `icon`.
 
 ### With Actions
 

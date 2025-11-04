@@ -800,7 +800,7 @@ describe('<FilterListBox />', () => {
         </FilterListBox>,
       );
 
-      expect(container.firstChild).toHaveAttribute('data-is-valid');
+      expect(container.firstChild).toHaveAttribute('data-valid');
 
       rerender(
         <FilterListBox label="Select a fruit" validationState="invalid">
@@ -808,7 +808,7 @@ describe('<FilterListBox />', () => {
         </FilterListBox>,
       );
 
-      expect(container.firstChild).toHaveAttribute('data-is-invalid');
+      expect(container.firstChild).toHaveAttribute('data-invalid');
     });
   });
 

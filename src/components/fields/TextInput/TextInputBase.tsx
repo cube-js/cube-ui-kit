@@ -97,9 +97,9 @@ export const INPUT_WRAPPER_STYLES: Styles = {
 
   $size: {
     '': '$size-md',
-    '[data-size="small"]': '$size-sm',
-    '[data-size="medium"]': '$size-md',
-    '[data-size="large"]': '$size-lg',
+    'size=small': '$size-sm',
+    'size=medium': '$size-md',
+    'size=large': '$size-lg',
   },
 
   Prefix: ADD_STYLES,
@@ -154,8 +154,8 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   margin: {
     '': 0,
     multiline: '((($size-md - 1lh) / 2) - 1bw) 0',
-    'multiline & [data-size="small"]': '((($size-sm - 1lh) / 2) - 1bw) 0',
-    'multiline & [data-size="large"]': '((($size-lg - 1lh) / 2) - 1bw) 0',
+    'multiline & size=small': '((($size-sm - 1lh) / 2) - 1bw) 0',
+    'multiline & size=large': '((($size-lg - 1lh) / 2) - 1bw) 0',
   },
   resize: 'none',
   boxSizing: 'border-box',
@@ -165,16 +165,16 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   '$vertical-padding': 0,
   '$left-padding': {
     '': '(1x - 1bw)',
-    '[data-size="small"]': '(1x - 1bw)',
-    '[data-size="large"]': '(1.25x - 1bw)',
-    '[data-size="xlarge"]': '(1.5x - 1bw)',
+    'size=small': '(1x - 1bw)',
+    'size=large': '(1.25x - 1bw)',
+    'size=xlarge': '(1.5x - 1bw)',
     prefix: '0',
   },
   '$right-padding': {
     '': '(1x - 1bw)',
-    '[data-size="small"]': '(1x - 1bw)',
-    '[data-size="large"]': '(1.25x - 1bw)',
-    '[data-size="xlarge"]': '(1.5x - 1bw)',
+    'size=small': '(1x - 1bw)',
+    'size=large': '(1.25x - 1bw)',
+    'size=xlarge': '(1.5x - 1bw)',
     suffix: '0',
   },
 };

@@ -68,13 +68,13 @@ const SwitchElement = tasty({
     },
     width: {
       '': '5x 5x',
-      '[data-size="medium"]': '4x 4x',
-      '[data-size="small"]': '3x 3x',
+      'size=medium': '4x 4x',
+      'size=small': '3x 3x',
     },
     height: {
       '': '3x 3x',
-      '[data-size="medium"]': '2.5x 2.5x',
-      '[data-size="small"]': '2x 2x',
+      'size=medium': '2.5x 2.5x',
+      'size=small': '2x 2x',
     },
     outline: {
       '': '#purple-text.0',
@@ -88,13 +88,13 @@ const SwitchElement = tasty({
       position: 'absolute',
       width: {
         '': '2x 2x',
-        '[data-size="medium"]': '1.5x 1.5x',
-        '[data-size="small"]': '1.25x 1.25x',
+        'size=medium': '1.5x 1.5x',
+        'size=small': '1.25x 1.25x',
       },
       height: {
         '': '2x 2x',
-        '[data-size="medium"]': '1.5x 1.5x',
-        '[data-size="small"]': '1.25x 1.25x',
+        'size=medium': '1.5x 1.5x',
+        'size=small': '1.25x 1.25x',
       },
       radius: 'round',
       fill: {
@@ -104,16 +104,16 @@ const SwitchElement = tasty({
       },
       top: {
         '': '.375x',
-        '[data-size="medium"]': '.375x',
-        '[data-size="small"]': '.25x',
+        'size=medium': '.375x',
+        'size=small': '.25x',
       },
       left: {
         '': '.375x',
-        '[data-size="medium"]': '.375x',
-        '[data-size="small"]': '.25x',
+        'size=medium': '.375x',
+        'size=small': '.25x',
         checked: '2.25x',
-        'checked & [data-size="medium"]': '1.75x',
-        'checked & [data-size="small"]': '1.25x',
+        'checked & size=medium': '1.75x',
+        'checked & size=small': '1.25x',
       },
       transition: 'left, theme',
       cursor: '$pointer',

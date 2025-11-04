@@ -1,6 +1,14 @@
 /**
- * Style rendering that works with structured style objects
- * Eliminates CSS string parsing for better performance
+ * Style rendering that works with structured style objects.
+ * Eliminates CSS string parsing for better performance.
+ *
+ * Key optimizations:
+ * - Early exit checks (hasSameAttributeConflicts) handle common cases without overhead
+ * - Logical rule caching (logicalRulesCache) memoizes expensive style processing
+ * - Conflict detection prevents invalid CSS selector combinations
+ * - Not-selector optimization reduces CSS size
+ * - Priority-based filtering handles mod precedence correctly
+ * - Consolidated mod processing eliminates code duplication
  */
 
 import { Lru } from '../parser/lru';
@@ -16,6 +24,7 @@ import {
 import {
   computeState,
   getModSelector,
+  stringifyStyles,
   StyleHandler,
   StyleMap,
   styleStateMapToStyleStateDataList,
@@ -54,6 +63,9 @@ type HandlerQueueItem = {
   isResponsive: boolean;
 };
 
+// Cache logical rules per styles+breakpoints to avoid recomputation across identical calls
+const logicalRulesCache = new Lru<string, LogicalRule[]>(5000);
+
 // Normalize selector suffixes coming from `$` in style handler results.
 // Some legacy handlers return suffixes starting with `&` (e.g. '& > *').
 // The renderer expects suffixes without the ampersand because it adds
@@ -84,6 +96,18 @@ export function isSelector(key: string): boolean {
 function transformSelectorAffix(affix: string): string {
   const trimmed = affix.trim();
   if (!trimmed) return ' ';
+
+  // Validate that combinators have spaces around them
+  // Check for capitalized words adjacent to combinators without spaces
+  const invalidPattern = /[A-Z][a-z]*[>+~]|[>+~][A-Z][a-z]*/;
+  if (invalidPattern.test(trimmed)) {
+    console.error(
+      `[Tasty] Invalid selector affix ($) syntax: "${affix}"\n` +
+        `Combinators (>, +, ~) must have spaces around them when used with element names.\n` +
+        `Example: Use "$: '> Body > Row'" instead of "$: '>Body>Row'"\n` +
+        `This is a design choice: the parser uses simple whitespace splitting for performance.`,
+    );
+  }
 
   const tokens = trimmed.split(/\s+/);
   const transformed = tokens.map((token) =>
@@ -124,53 +148,49 @@ interface ParsedAttributeSelector {
   fullSelector: string;
 }
 
-// Cache for parsed attribute selectors with bounded size to prevent memory leaks
-const attributeSelectorCache = new Lru<string, ParsedAttributeSelector | null>(
-  5000,
-);
-
+/**
+ * Parse attribute selector into its components.
+ * Simple regex parsing - JS engines optimize repeated patterns internally.
+ */
 function parseAttributeSelector(
   selector: string,
 ): ParsedAttributeSelector | null {
-  // Check cache first
-  const cached = attributeSelectorCache.get(selector);
-  if (cached !== undefined) {
-    return cached;
-  }
-
-  // Match patterns like [data-size="medium"] or [data-is-selected]
+  // Match patterns like [data-size="medium"] or [data-selected]
   const match = selector.match(/^\[([^=\]]+)(?:="([^"]+)")?\]$/);
-  const result = match
+  return match
     ? {
         attribute: match[1],
         value: match[2] || 'true', // Handle boolean attributes
         fullSelector: selector,
       }
     : null;
-
-  // Cache the result
-  attributeSelectorCache.set(selector, result);
-  return result;
 }
 
 function hasConflictingAttributeSelectors(
   mods: string[],
   parsedMods?: Map<string, ParsedAttributeSelector | null>,
 ): boolean {
-  const attributeMap = new Map<string, string[]>();
+  const attributeValues = new Map<string, string[]>();
+  const attributeBooleans = new Set<string>();
 
   for (const mod of mods) {
     const parsed = parsedMods?.get(mod) ?? parseAttributeSelector(mod);
-    if (parsed && parsed.value !== 'true') {
-      if (!attributeMap.has(parsed.attribute)) {
-        attributeMap.set(parsed.attribute, []);
+    if (!parsed) continue;
+
+    if (parsed.value === 'true') {
+      // Boolean attribute
+      attributeBooleans.add(parsed.attribute);
+    } else {
+      // Value attribute
+      if (!attributeValues.has(parsed.attribute)) {
+        attributeValues.set(parsed.attribute, []);
       }
-      attributeMap.get(parsed.attribute)!.push(parsed.value);
+      attributeValues.get(parsed.attribute)!.push(parsed.value);
     }
   }
 
-  // Check if any attribute has multiple values
-  for (const values of attributeMap.values()) {
+  // Check for multiple different values for the same attribute
+  for (const values of attributeValues.values()) {
     if (values.length > 1) return true;
   }
 
@@ -199,16 +219,20 @@ interface AttributeMaps {
 function buildAttributeMaps(
   currentMods: string[],
   allMods: string[],
+  parsedModsCache?: Map<string, ParsedAttributeSelector | null>,
 ): AttributeMaps {
   const allAttributes = new Map<string, Set<string>>();
   const currentAttributes = new Map<string, string>();
-  const parsedMods = new Map<string, ParsedAttributeSelector | null>();
+  const parsedMods =
+    parsedModsCache || new Map<string, ParsedAttributeSelector | null>();
 
-  // Parse all mods once and cache results
-  const allModsSet = new Set([...currentMods, ...allMods]);
-  for (const mod of allModsSet) {
-    if (!parsedMods.has(mod)) {
-      parsedMods.set(mod, parseAttributeSelector(mod));
+  // Parse all mods once and cache results (only if cache not provided)
+  if (!parsedModsCache) {
+    const allModsSet = new Set([...currentMods, ...allMods]);
+    for (const mod of allModsSet) {
+      if (!parsedMods.has(mod)) {
+        parsedMods.set(mod, parseAttributeSelector(mod));
+      }
     }
   }
 
@@ -234,6 +258,58 @@ function buildAttributeMaps(
   return { allAttributes, currentAttributes, parsedMods };
 }
 
+/**
+ * Check if a combination of positive and negative selectors creates a contradiction
+ * Returns true if the combination is INVALID and should be pruned
+ */
+function hasContradiction(
+  currentMods: string[],
+  notMods: string[],
+  parsedMods: Map<string, ParsedAttributeSelector | null>,
+): boolean {
+  // Build maps of positive selector states
+  const positiveAttributes = new Map<string, string[]>();
+  const positiveBooleans = new Set<string>();
+
+  for (const mod of currentMods) {
+    const parsed = parsedMods.get(mod);
+    if (parsed) {
+      if (parsed.value === 'true') {
+        // Boolean attribute (e.g., [data-theme])
+        positiveBooleans.add(parsed.attribute);
+      } else {
+        // Value attribute (e.g., [data-theme="danger"])
+        if (!positiveAttributes.has(parsed.attribute)) {
+          positiveAttributes.set(parsed.attribute, []);
+        }
+        positiveAttributes.get(parsed.attribute)!.push(parsed.value);
+      }
+    }
+  }
+
+  // Check negative selectors for contradictions
+  for (const mod of notMods) {
+    const parsed = parsedMods.get(mod);
+    if (parsed) {
+      if (parsed.value === 'true') {
+        // Negative boolean: !([data-theme])
+        // Case 6: Value positive + attribute negative = CONTRADICTION
+        if (
+          positiveAttributes.has(parsed.attribute) ||
+          positiveBooleans.has(parsed.attribute)
+        ) {
+          return true; // INVALID: can't have value without attribute
+        }
+      } else {
+        // Negative value: !([data-theme="danger"])
+        // No contradiction - this is valid
+      }
+    }
+  }
+
+  return false;
+}
+
 function optimizeNotSelectors(
   currentMods: string[],
   allMods: string[],
@@ -244,13 +320,62 @@ function optimizeNotSelectors(
   const notMods = allMods.filter((mod) => !currentMods.includes(mod));
   const optimizedNotMods: string[] = [];
 
+  // Precompute presence of negative boolean attributes to avoid repeated scans
+  const negativeBooleanByAttr = new Set<string>();
+  for (const mod of notMods) {
+    const p = maps.parsedMods.get(mod);
+    if (p && p.value === 'true') {
+      negativeBooleanByAttr.add(p.attribute);
+    }
+  }
+
+  // Build maps of positive selector states for subsumption optimization
+  const positiveAttributes = new Map<string, string[]>();
+  const positiveBooleans = new Set<string>();
+
+  for (const mod of currentMods) {
+    const parsed = maps.parsedMods.get(mod);
+    if (parsed) {
+      if (parsed.value === 'true') {
+        positiveBooleans.add(parsed.attribute);
+      } else {
+        if (!positiveAttributes.has(parsed.attribute)) {
+          positiveAttributes.set(parsed.attribute, []);
+        }
+        positiveAttributes.get(parsed.attribute)!.push(parsed.value);
+      }
+    }
+  }
+
   for (const mod of notMods) {
     const parsed = maps.parsedMods.get(mod);
 
     if (parsed && parsed.value !== 'true') {
+      // Negative value selector
       // If we already have a value for this attribute, skip this not selector
-      // because it's already mutually exclusive
+      // because it's already mutually exclusive (optimization)
       if (maps.currentAttributes.has(parsed.attribute)) {
+        continue;
+      }
+    }
+
+    // If we have a positive value for this attribute, skip the negative boolean
+    // This avoids producing selectors like [data-attr="x"]:not([data-attr])
+    if (parsed && parsed.value === 'true') {
+      if (maps.currentAttributes.has(parsed.attribute)) {
+        continue;
+      }
+    }
+
+    // Case 4 subsumption: If we have a value positive and boolean positive for same attribute
+    // The value implies the boolean, so we can skip the boolean from positive mods
+    // (This is handled elsewhere - the value selector is more specific)
+
+    // Case 7 subsumption: If we have a value negative and boolean negative for same attribute
+    // The boolean negative implies value negative, so skip the value negative
+    if (parsed && parsed.value !== 'true') {
+      // If we also have the boolean attribute in negative mods, skip the value negative
+      if (negativeBooleanByAttr.has(parsed.attribute)) {
         continue;
       }
     }
@@ -259,6 +384,147 @@ function optimizeNotSelectors(
   }
 
   return optimizedNotMods;
+}
+
+/**
+ * Quick check if there are any same-attribute conflicts (boolean vs value for same attribute).
+ * Returns true if conflicts exist, false if filtering can be skipped.
+ * This early exit optimization handles the common case efficiently.
+ */
+function hasSameAttributeConflicts(
+  allMods: string[],
+  parsedModsCache: Map<string, ParsedAttributeSelector | null>,
+): boolean {
+  const attributeCounts = new Map<
+    string,
+    { hasBool: boolean; hasValue: boolean }
+  >();
+
+  for (const mod of allMods) {
+    const parsed = parsedModsCache.get(mod);
+    if (!parsed) continue;
+
+    const isBool = parsed.value === 'true';
+    const existing = attributeCounts.get(parsed.attribute);
+
+    if (existing) {
+      // Already have both types for this attribute - conflict exists!
+      if ((isBool && existing.hasValue) || (!isBool && existing.hasBool)) {
+        return true;
+      }
+      // Update the types we've seen
+      if (isBool) existing.hasBool = true;
+      else existing.hasValue = true;
+    } else {
+      attributeCounts.set(parsed.attribute, {
+        hasBool: isBool,
+        hasValue: !isBool,
+      });
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Filter mods based on priority order for same-attribute conflicts.
+ * If a boolean selector has higher priority than value selectors for the same attribute,
+ * remove the value selectors (they would be shadowed by the boolean).
+ *
+ * Priority is determined by order in the styleStates (after reversal - earlier = higher priority)
+ */
+function filterModsByPriority(
+  allMods: string[],
+  styleStates: Record<string, any>,
+  lookupStyles: string[],
+  parsedModsCache: Map<string, ParsedAttributeSelector | null>,
+): string[] {
+  // Early exit: if no same-attribute conflicts exist, skip all the expensive work
+  // This handles the common case efficiently without any cache overhead
+  if (!hasSameAttributeConflicts(allMods, parsedModsCache)) {
+    return allMods;
+  }
+
+  // Build priority map: for each mod, find its earliest appearance in any state list
+  const modPriorities = new Map<string, number>();
+
+  for (const style of lookupStyles) {
+    const states = styleStates[style];
+    if (!states || states.length === 0) continue; // Skip empty states
+
+    // states are already reversed (higher priority = lower index)
+    for (let index = 0; index < states.length; index++) {
+      const state = states[index];
+      if (!state.mods || state.mods.length === 0) continue; // Skip empty mods
+
+      for (const mod of state.mods) {
+        const currentPriority = modPriorities.get(mod);
+        if (currentPriority === undefined || index < currentPriority) {
+          modPriorities.set(mod, index);
+        }
+      }
+    }
+  }
+
+  // Group mods by attribute
+  const attributeGroups = new Map<
+    string,
+    Array<{
+      mod: string;
+      isBool: boolean;
+      priority: number;
+    }>
+  >();
+
+  for (const mod of allMods) {
+    const parsed = parsedModsCache.get(mod);
+    if (!parsed) continue;
+
+    const priority = modPriorities.get(mod);
+    if (priority === undefined) continue;
+
+    const isBool = parsed.value === 'true';
+
+    let group = attributeGroups.get(parsed.attribute);
+    if (!group) {
+      group = [];
+      attributeGroups.set(parsed.attribute, group);
+    }
+
+    group.push({
+      mod,
+      isBool,
+      priority,
+    });
+  }
+
+  // Filter: for each attribute, if boolean has higher priority than any value, remove values
+  const modsToRemove = new Set<string>();
+
+  for (const [attribute, group] of attributeGroups.entries()) {
+    // Only process attributes with more than one mod
+    if (group.length <= 1) continue;
+
+    const boolMods = group.filter((m) => m.isBool);
+    const valueMods = group.filter((m) => !m.isBool);
+
+    // Only check if we have both types
+    if (boolMods.length === 0 || valueMods.length === 0) continue;
+
+    // Check if any boolean has higher priority (lower index) than all values
+    for (const boolMod of boolMods) {
+      const hasHigherPriorityThanAllValues = valueMods.every(
+        (valueMod) => boolMod.priority < valueMod.priority,
+      );
+
+      if (hasHigherPriorityThanAllValues) {
+        // This boolean shadows all value mods for this attribute
+        valueMods.forEach((valueMod) => modsToRemove.add(valueMod.mod));
+      }
+    }
+  }
+
+  return allMods.filter((mod) => !modsToRemove.has(mod));
 }
 
 /**
@@ -456,6 +722,190 @@ function convertHandlerResultToCSS(result: any, selectorSuffix = ''): string {
 
   const normalizedSingle = $ ? normalizeDollarSelectorSuffix(String($)) : '';
   return `&${finalSelectorSuffix}${normalizedSingle}{\n${renderedStyles}}\n`;
+}
+
+/**
+ * Process state maps with mod combinations and generate logical rules.
+ * This consolidates the common logic for handling mod combinations, priority filtering,
+ * contradiction checking, and selector optimization.
+ */
+function processStateMapsWithModCombinations(
+  styleStates: Record<string, any>,
+  lookupStyles: string[],
+  zones: ResponsiveZone[],
+  handler: StyleHandler,
+  parentSuffix: string,
+  allLogicalRules: LogicalRule[],
+  cachedNormalizeStyleZones: (value: any, zoneNumber: number) => any,
+  breakpointIdx?: number,
+  responsiveOrigin: boolean = false,
+): void {
+  // Collect all mods from style states
+  const allMods: string[] = [];
+  const seenMods = new Set<string>();
+
+  for (const style of lookupStyles) {
+    const states = styleStates[style];
+    if (!states) continue;
+
+    for (const state of states) {
+      if (state.mods) {
+        for (const mod of state.mods) {
+          if (!seenMods.has(mod)) {
+            seenMods.add(mod);
+            allMods.push(mod);
+          }
+        }
+      }
+    }
+  }
+
+  if (allMods.length === 0) {
+    // No mods - just call handler with default state values
+    const stateProps: Record<string, any> = {};
+    lookupStyles.forEach((style) => {
+      const states = styleStates[style];
+      if (states && states.length > 0) {
+        stateProps[style] = states[0].value;
+      }
+    });
+    const result = handler(stateProps as any);
+    if (!result) return;
+
+    const logicalRules = explodeHandlerResult(
+      result,
+      zones,
+      parentSuffix,
+      breakpointIdx,
+      responsiveOrigin,
+    );
+    allLogicalRules.push(...logicalRules);
+    return;
+  }
+
+  // Parse all mods once and share the cache across all operations
+  const parsedModsCache = new Map<string, ParsedAttributeSelector | null>();
+  for (const mod of allMods) {
+    parsedModsCache.set(mod, parseAttributeSelector(getModSelector(mod)));
+  }
+
+  // Apply priority-based filtering for same-attribute boolean vs value conflicts
+  const filteredMods = filterModsByPriority(
+    allMods,
+    styleStates,
+    lookupStyles,
+    parsedModsCache,
+  );
+
+  // Precompute attribute maps once for all combinations
+  const attributeMaps = buildAttributeMaps([], filteredMods, parsedModsCache);
+
+  // Generate combinations with conflict-aware pruning
+  const conflictChecker = createAttributeConflictChecker(
+    attributeMaps.parsedMods,
+  );
+  const combinations = getModCombinationsIterative(
+    filteredMods,
+    true,
+    conflictChecker,
+  );
+
+  // Process each mod combination
+  combinations.forEach((modCombination) => {
+    const stateProps: Record<string, any> = {};
+
+    // Find matching state for each style
+    lookupStyles.forEach((style) => {
+      const states = styleStates[style];
+      const matchingState = states.find((state: any) =>
+        computeState(state.model, (mod) => modCombination.includes(mod)),
+      );
+      if (matchingState) {
+        stateProps[style] = matchingState.value;
+      }
+    });
+
+    // Use precomputed maps for efficient not selector optimization
+    const currentMaps = buildAttributeMaps(
+      modCombination,
+      filteredMods,
+      parsedModsCache,
+    );
+
+    // Compute raw NOTs for contradiction check (before optimization)
+    const rawNotMods = filteredMods.filter(
+      (mod) => !modCombination.includes(mod),
+    );
+
+    // Check for contradictions between positive and negative selectors
+    if (hasContradiction(modCombination, rawNotMods, currentMaps.parsedMods)) {
+      return; // Skip this invalid combination
+    }
+
+    // Optimize NOT selectors afterwards (pure simplification)
+    const optimizedNotMods = optimizeNotSelectors(
+      modCombination,
+      filteredMods,
+      currentMaps,
+    );
+
+    // Build the mod selector string
+    const modsSelectors = `${modCombination
+      .map(getModSelector)
+      .join('')}${optimizedNotMods
+      .map((mod) => {
+        const sel = getModSelector(mod);
+        return sel.startsWith(':not(') ? sel.slice(5, -1) : `:not(${sel})`;
+      })
+      .join('')}`;
+
+    // Check if any state value is responsive (array)
+    const hasResponsiveStateValues = lookupStyles.some((style) =>
+      Array.isArray(stateProps[style]),
+    );
+
+    if (hasResponsiveStateValues) {
+      // Fan out by breakpoint for responsive state values
+      const propsByPoint = zones.map((_, i) => {
+        const pointProps: Record<string, any> = {};
+        lookupStyles.forEach((style) => {
+          const v = stateProps[style];
+          if (Array.isArray(v)) {
+            const arr = cachedNormalizeStyleZones(v, zones.length);
+            pointProps[style] = arr?.[i];
+          } else {
+            pointProps[style] = v;
+          }
+        });
+        return pointProps;
+      });
+
+      propsByPoint.forEach((props, bpIdx) => {
+        const res = handler(props as any);
+        if (!res) return;
+        const logical = explodeHandlerResult(
+          res,
+          zones,
+          `${modsSelectors}${parentSuffix}`,
+          bpIdx,
+          true,
+        );
+        allLogicalRules.push(...logical);
+      });
+    } else {
+      // Simple non-responsive state values
+      const result = handler(stateProps as any);
+      if (!result) return;
+      const logical = explodeHandlerResult(
+        result,
+        zones,
+        `${modsSelectors}${parentSuffix}`,
+        breakpointIdx,
+        responsiveOrigin,
+      );
+      allLogicalRules.push(...logical);
+    }
+  });
 }
 
 /**
@@ -738,83 +1188,30 @@ function generateLogicalRules(
           });
 
           if (hasStateMapsAtPoint) {
-            const allMods = new Set<string>();
+            // Build styleStates from point props
             const styleStates: Record<string, any> = {};
-
             lookupStyles.forEach((style) => {
               const v = pointProps[style];
               if (v && typeof v === 'object' && !Array.isArray(v)) {
-                const { states, mods } = styleStateMapToStyleStateDataList(v);
+                const { states } = styleStateMapToStyleStateDataList(v);
                 styleStates[style] = states;
-                mods.forEach((m: string) => allMods.add(m));
               } else {
                 styleStates[style] = [{ mods: [], notMods: [], value: v }];
               }
             });
 
-            const allModsArray = Array.from(allMods);
-
-            // Precompute attribute maps once for all combinations
-            const attributeMaps = buildAttributeMaps([], allModsArray);
-
-            // Generate combinations with conflict-aware pruning
-            const conflictChecker = createAttributeConflictChecker(
-              attributeMaps.parsedMods,
-            );
-            const combinations = getModCombinationsIterative(
-              allModsArray,
+            // Use the consolidated helper for mod combination processing
+            processStateMapsWithModCombinations(
+              styleStates,
+              lookupStyles,
+              zones || [],
+              handler,
+              parentSuffix,
+              allLogicalRules,
+              cachedNormalizeStyleZones,
+              breakpointIdx,
               true,
-              conflictChecker,
             );
-
-            combinations.forEach((modCombination) => {
-              const stateProps: Record<string, any> = {};
-
-              lookupStyles.forEach((style) => {
-                const states = styleStates[style];
-                const matchingState = states.find((state: any) =>
-                  computeState(state.model, (mod) =>
-                    modCombination.includes(mod),
-                  ),
-                );
-                if (matchingState) {
-                  stateProps[style] = matchingState.value;
-                }
-              });
-
-              // Use precomputed maps for efficient not selector optimization
-              const currentMaps = buildAttributeMaps(
-                modCombination,
-                allModsArray,
-              );
-              const optimizedNotMods = optimizeNotSelectors(
-                modCombination,
-                allModsArray,
-                currentMaps,
-              );
-              const modsSelectors = `${modCombination
-                .map(getModSelector)
-                .join('')}${optimizedNotMods
-                .map((mod) => {
-                  const sel = getModSelector(mod);
-                  return sel.startsWith(':not(')
-                    ? sel.slice(5, -1)
-                    : `:not(${sel})`;
-                })
-                .join('')}`;
-
-              const result = handler(stateProps as any);
-              if (!result) return;
-
-              const logicalRules = explodeHandlerResult(
-                result,
-                zones || [],
-                `${modsSelectors}${parentSuffix}`,
-                breakpointIdx,
-                true,
-              );
-              allLogicalRules.push(...logicalRules);
-            });
           } else {
             const result = handler(pointProps as any);
             if (!result) return;
@@ -837,119 +1234,29 @@ function generateLogicalRules(
         });
 
         if (hasStateMaps) {
-          // Process each style property individually for state resolution
-          const allMods = new Set<string>();
+          // Build styleStates from styleMap
           const styleStates: Record<string, any> = {};
-
           lookupStyles.forEach((style) => {
             const value = styleMap[style];
             if (value && typeof value === 'object' && !Array.isArray(value)) {
-              const { states, mods } = styleStateMapToStyleStateDataList(value);
+              const { states } = styleStateMapToStyleStateDataList(value);
               styleStates[style] = states;
-              mods.forEach((mod) => allMods.add(mod));
             } else {
               // Simple value, create a single state
               styleStates[style] = [{ mods: [], notMods: [], value }];
             }
           });
 
-          // Generate all possible mod combinations
-          const allModsArray = Array.from(allMods);
-
-          // Precompute attribute maps once for all combinations
-          const attributeMaps = buildAttributeMaps([], allModsArray);
-
-          // Generate combinations with conflict-aware pruning
-          const conflictChecker = createAttributeConflictChecker(
-            attributeMaps.parsedMods,
+          // Use the consolidated helper for mod combination processing
+          processStateMapsWithModCombinations(
+            styleStates,
+            lookupStyles,
+            zones || [],
+            handler,
+            parentSuffix,
+            allLogicalRules,
+            cachedNormalizeStyleZones,
           );
-          const combinations = getModCombinationsIterative(
-            allModsArray,
-            true,
-            conflictChecker,
-          );
-
-          combinations.forEach((modCombination) => {
-            const stateProps: Record<string, any> = {};
-
-            lookupStyles.forEach((style) => {
-              const states = styleStates[style];
-              // Find the matching state for this mod combination
-              const matchingState = states.find((state) => {
-                return computeState(state.model, (mod) =>
-                  modCombination.includes(mod),
-                );
-              });
-              if (matchingState) {
-                stateProps[style] = matchingState.value;
-              }
-            });
-
-            // Use precomputed maps for efficient not selector optimization
-            const currentMaps = buildAttributeMaps(
-              modCombination,
-              allModsArray,
-            );
-            const optimizedNotMods = optimizeNotSelectors(
-              modCombination,
-              allModsArray,
-              currentMaps,
-            );
-            const modsSelectors = `${modCombination
-              .map(getModSelector)
-              .join('')}${optimizedNotMods
-              .map((mod) => {
-                const sel = getModSelector(mod);
-                return sel.startsWith(':not(')
-                  ? sel.slice(5, -1)
-                  : `:not(${sel})`;
-              })
-              .join('')}`;
-
-            // If any state value is responsive (array), fan-out by breakpoint
-            const hasResponsiveStateValues = lookupStyles.some((style) =>
-              Array.isArray(stateProps[style]),
-            );
-
-            if (hasResponsiveStateValues) {
-              const propsByPoint = zones.map((_, i) => {
-                const pointProps: Record<string, any> = {};
-                lookupStyles.forEach((style) => {
-                  const v = stateProps[style];
-                  if (Array.isArray(v)) {
-                    const arr = cachedNormalizeStyleZones(v, zones.length);
-                    pointProps[style] = arr?.[i];
-                  } else {
-                    pointProps[style] = v;
-                  }
-                });
-                return pointProps;
-              });
-
-              propsByPoint.forEach((props, breakpointIdx) => {
-                const res = handler(props as any);
-                if (!res) return;
-                const logical = explodeHandlerResult(
-                  res,
-                  zones || [],
-                  `${modsSelectors}${parentSuffix}`,
-                  breakpointIdx,
-                  true,
-                );
-                allLogicalRules.push(...logical);
-              });
-            } else {
-              // Simple non-responsive state values
-              const result = handler(stateProps as any);
-              if (!result) return;
-              const logical = explodeHandlerResult(
-                result,
-                zones || [],
-                `${modsSelectors}${parentSuffix}`,
-              );
-              allLogicalRules.push(...logical);
-            }
-          });
         } else {
           // Simple case: no state maps, call handler directly
           const result = handler(styleMap as any);
@@ -1011,8 +1318,15 @@ export function renderStyles(
     return directSelector ? [] : { rules: [] };
   }
 
-  // Generate logical rules using shared pipeline
-  const allLogicalRules = generateLogicalRules(styles, responsive);
+  // Generate logical rules using shared pipeline (memoized per styles+breakpoints)
+  const stylesKey = stringifyStyles(styles);
+  const bpKey = (responsive || []).join(',');
+  const lrKey = `${stylesKey}#${bpKey}`;
+  let allLogicalRules = logicalRulesCache.get(lrKey);
+  if (!allLogicalRules) {
+    allLogicalRules = generateLogicalRules(styles, responsive);
+    logicalRulesCache.set(lrKey, allLogicalRules);
+  }
   const zones = pointsToZones(responsive || []);
 
   if (directSelector) {

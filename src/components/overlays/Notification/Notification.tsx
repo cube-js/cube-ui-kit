@@ -41,7 +41,7 @@ const NotificationElement = tasty(Card, {
       color: {
         '': '#dark-02',
         ...Object.keys(THEMES).reduce((map, theme) => {
-          map[`[data-theme="${theme}"]`] = THEMES[theme].color;
+          map[`theme=${theme}`] = THEMES[theme].color;
 
           return map;
         }, {}),
@@ -49,7 +49,7 @@ const NotificationElement = tasty(Card, {
       fill: {
         '': '#clear',
         ...Object.keys(THEMES).reduce((map, theme) => {
-          map[`[data-theme="${theme}"]`] = THEMES[theme].fill;
+          map[`theme=${theme}`] = THEMES[theme].fill;
 
           return map;
         }, {}),

@@ -73,7 +73,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   prefix?: ReactNode;
   suffix?: ReactNode;
   description?: ReactNode;
-  descriptionPlacement?: 'inline' | 'block' | 'auto';
+  descriptionPlacement?: 'inline' | 'block';
   /**
    * Whether the item is selected.
    * @default false
@@ -178,7 +178,6 @@ const DEFAULT_ICON_STYLES: Styles = {
     'checkbox & !selected': 0,
     'checkbox & !selected & hovered': 0.4,
   },
-  gridRow: 'span 2',
 };
 
 const ADDITION_STYLES: Styles = {
@@ -187,7 +186,6 @@ const ADDITION_STYLES: Styles = {
   flow: 'column',
   placeItems: 'center',
   placeContent: 'stretch',
-  gridRow: 'span 2',
 };
 
 const ACTIONS_EVENT_HANDLERS = {
@@ -204,6 +202,7 @@ const ACTIONS_EVENT_HANDLERS = {
 };
 
 const ItemElement = tasty({
+  as: 'div',
   styles: {
     display: 'inline-grid',
     flow: 'column dense',
@@ -211,22 +210,12 @@ const ItemElement = tasty({
     outline: 0,
     placeItems: 'stretch',
     placeContent: 'stretch',
-    gridColumns: {
-      '': '1sf max-content max-content',
-      'with-actions': '1sf max-content max-content max-content',
-      'with-icon ^ with-prefix': 'max-content 1sf max-content max-content',
-      'with-icon ^ with-prefix & with-actions':
-        'max-content 1sf max-content max-content max-content',
-      'with-icon & with-prefix':
-        'max-content max-content 1sf max-content max-content',
-      'with-icon & with-prefix & with-actions':
-        'max-content max-content 1sf max-content max-content max-content',
-      '(with-icon ^ with-right-icon) & !with-description & !with-prefix & !with-suffix & !with-label':
-        'max-content',
-    },
-    gridRows: {
-      '': 'auto auto',
-      'with-description-block': 'auto auto auto',
+    gridTemplate: {
+      '': '"icon prefix label suffix rightIcon actions" auto "icon prefix label suffix rightIcon actions" auto / max-content max-content 1sf max-content max-content max-content',
+      'description=inline':
+        '"icon prefix label suffix rightIcon actions" auto "icon prefix description suffix rightIcon actions" auto / max-content max-content 1sf max-content max-content max-content',
+      'description=block':
+        '"icon prefix label suffix rightIcon actions" auto "description description description description description description" auto / max-content max-content 1sf max-content max-content max-content',
     },
     // Prevent items from shrinking inside vertical flex layouts (Menu, ListBox, etc)
     flexShrink: {
@@ -238,17 +227,17 @@ const ItemElement = tasty({
     margin: 0,
     radius: {
       '': true,
-      'shape-card': '1cr',
-      'shape-button': true,
-      'shape-sharp': '0',
+      'shape=card': '1cr',
+      'shape=button': true,
+      'shape=sharp': '0',
     },
     height: {
       '': 'min $size',
-      '[data-size="inline"]': '(1lh + 2bw)',
+      'size=inline': '(1lh + 2bw)',
     },
     width: {
       '': 'min $size',
-      '[data-size="inline"]': 'min (1lh + 2bw)',
+      'size=inline': 'min (1lh + 2bw)',
     },
     border: '#clear',
     fill: {
@@ -268,10 +257,10 @@ const ItemElement = tasty({
     preset: {
       '': 't3',
       button: 't3m',
-      '[data-size="xsmall"]': 't4',
-      '[data-size="xlarge"]': 't2',
-      '[data-size="xlarge"] & button': 't2m',
-      '[data-size="inline"]': 'tag',
+      'size=xsmall': 't4',
+      'size=xlarge': 't2',
+      'size=xlarge & button': 't2m',
+      'size=inline': 'tag',
     },
     boxSizing: 'border-box',
     textDecoration: 'none',
@@ -287,31 +276,63 @@ const ItemElement = tasty({
 
     $size: {
       '': '$size-md',
-      '[data-size="xsmall"]': '$size-xs',
-      '[data-size="small"]': '$size-sm',
-      '[data-size="medium"]': '$size-md',
-      '[data-size="large"]': '$size-lg',
-      '[data-size="xlarge"]': '$size-xl',
-      '[data-size="inline"]': '1lh',
+      'size=xsmall': '$size-xs',
+      'size=small': '$size-sm',
+      'size=medium': '$size-md',
+      'size=large': '$size-lg',
+      'size=xlarge': '$size-xl',
+      'size=inline': '1lh',
     },
     '$inline-padding': {
       '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
-      '[data-size="inline"]': '.25x',
+      'size=inline': '.25x',
     },
     '$block-padding': {
       '': '.5x',
-      '[data-size="xsmall"] | [data-size="small"]': '.25x',
-      '[data-size="inline"]': 0,
+      'size=xsmall | size=small': '.25x',
+      'size=inline': 0,
     },
     '$inline-compensation': '.5x',
     '$min-inline-padding': '(1x - 1bw)',
 
-    Icon: DEFAULT_ICON_STYLES,
+    '$label-padding-left': {
+      '': '$inline-padding',
+      'has-start-content': '0',
+    },
+    '$label-padding-right': {
+      '': '$inline-padding',
+      'has-end-content': '0',
+    },
+    '$label-padding-bottom': {
+      '': '$block-padding',
+      'description=inline': '0',
+    },
+    '$description-padding-left': {
+      '': '$inline-padding',
+      'has-start-content': 0,
+      'description=block': '($inline-padding - $inline-compensation + 1bw)',
+      'description=block & !has-start-content': '$inline-padding',
+    },
+    '$description-padding-right': {
+      '': '$inline-padding',
+      'has-end-content': 0,
+      'description=block': '($inline-padding - $inline-compensation + 1bw)',
+      'description=block & !has-end-content': '$inline-padding',
+    },
+    '$description-padding-bottom': {
+      '': '$block-padding',
+      'description=block': '$bottom-padding',
+    },
+    '$bottom-padding':
+      'max($block-padding, (($size - 4x) / 2) + $block-padding)',
 
-    RightIcon: DEFAULT_ICON_STYLES,
+    Icon: { ...DEFAULT_ICON_STYLES, gridArea: 'icon' },
+
+    RightIcon: { ...DEFAULT_ICON_STYLES, gridArea: 'rightIcon' },
 
     Label: {
       $: '>',
+      gridArea: 'label',
       display: 'block',
       placeSelf: 'center start',
       boxSizing: 'border-box',
@@ -320,32 +341,13 @@ const ItemElement = tasty({
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       maxWidth: '100%',
-      padding: {
-        '': '$block-padding $inline-padding',
-        '(with-icon | with-prefix)':
-          '$block-padding $inline-padding $block-padding 0',
-        '(with-right-icon | with-suffix | with-actions)':
-          '$block-padding 0 $block-padding $inline-padding',
-        '(with-icon | with-prefix) & (with-right-icon | with-suffix | with-actions)':
-          '$block-padding 0',
-        'with-description & !with-description-block':
-          '$block-padding $inline-padding 0 $inline-padding',
-        'with-description & !with-description-block & (with-icon | with-prefix)':
-          '$block-padding $inline-padding 0 0',
-        'with-description & !with-description-block & (with-right-icon | with-suffix | with-actions)':
-          '$block-padding 0 0 $inline-padding',
-        'with-description & !with-description-block & (with-icon | with-prefix) & (with-right-icon | with-suffix | with-actions)':
-          '$block-padding 0 0 0',
-      },
-      gridRow: {
-        '': 'span 2',
-        'with-description': 'span 1',
-        'with-description-block': 'span 2',
-      },
+      padding:
+        '$block-padding $label-padding-right $label-padding-bottom $label-padding-left',
     },
 
     Description: {
       $: '>',
+      gridArea: 'description',
       preset: 't4',
       color: 'inherit',
       opacity: 0.75,
@@ -354,52 +356,31 @@ const ItemElement = tasty({
       textOverflow: 'ellipsis',
       maxWidth: '100%',
       textAlign: 'left',
-      gridRow: {
-        '': 'span 1',
-        'with-description-block': '3 / span 1',
-      },
-      gridColumn: {
-        '': 'span 1',
-        'with-description-block': '1 / -1',
-      },
-      padding: {
-        '': '0 $inline-padding $block-padding $inline-padding',
-        '(with-icon | with-prefix)': '0 $inline-padding $block-padding 0',
-        '(with-right-icon | with-suffix)': '0 0 $block-padding $inline-padding',
-        '(with-icon | with-prefix) & (with-right-icon | with-suffix)':
-          '0 0 $block-padding 0',
-        'with-description-block':
-          '0 ($inline-padding - $inline-compensation + 1bw) $bottom-padding ($inline-padding - $inline-compensation + 1bw)',
-        'with-description-block & !with-icon':
-          '0 ($inline-padding - $inline-compensation + 1bw) $bottom-padding $inline-padding',
-        'with-description-block & !with-right-icon':
-          '0 $inline-padding $bottom-padding ($inline-padding - $inline-compensation + 1bw)',
-        'with-description-block & !with-right-icon & !with-icon':
-          '0 $inline-padding $bottom-padding $inline-padding',
-      },
-
-      '$bottom-padding':
-        'max($block-padding, (($size - 4x) / 2) + $block-padding)',
+      padding:
+        '0 $description-padding-right $description-padding-bottom $description-padding-left',
     },
 
     Prefix: {
       ...ADDITION_STYLES,
+      gridArea: 'prefix',
       padding: {
         '': '$inline-padding left',
-        'with-icon': 0,
+        'has-icon': 0,
       },
     },
 
     Suffix: {
       ...ADDITION_STYLES,
+      gridArea: 'suffix',
       padding: {
         '': '$inline-padding right',
-        'with-right-icon': 0,
+        'has-right-icon': 0,
       },
     },
 
     Actions: {
       $: '>',
+      gridArea: 'actions',
       display: 'flex',
       gap: '1bw',
       placeItems: 'center',
@@ -408,10 +389,9 @@ const ItemElement = tasty({
       padding: '0 $side-padding',
       boxSizing: 'border-box',
       height: 'min ($size - 2bw)',
-      gridRow: 'span 2',
       width: {
         '': '($actions-width, 0px)',
-        'with-actions-content': 'calc-size(max-content, size)',
+        'has-actions-content': 'calc-size(max-content, size)',
       },
       transition: 'width $transition ease-out',
       interpolateSize: 'allow-keywords',
@@ -724,7 +704,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     return 'icon'; // fallback
   }, [loadingSlot, icon, rightIcon]);
 
-  const showDescriptions = useMemo(() => {
+  const showDescription = useMemo(() => {
     const copyProps = { ...descriptionProps };
     delete copyProps.id;
     return !!(description || Object.keys(copyProps).length > 0);
@@ -781,23 +761,27 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
 
   mods = useMemo(() => {
     return {
-      'with-icon': !!finalIcon,
-      'with-right-icon': !!finalRightIcon,
-      'with-label': !!(children || labelProps),
-      'with-prefix': !!finalPrefix,
-      'with-suffix': !!finalSuffix,
-      'with-description': showDescriptions,
-      'with-description-block':
-        showDescriptions && descriptionPlacement === 'block',
-      'with-actions': !!actions,
-      'with-actions-content': !!(actions && actions !== true),
+      'has-icon': !!finalIcon,
+      'has-start-content': !!(finalIcon || finalPrefix),
+      'has-end-content': !!(finalRightIcon || finalSuffix || actions),
+      'has-right-icon': !!finalRightIcon,
+      'has-label': !!(children || labelProps),
+      'has-prefix': !!finalPrefix,
+      'has-suffix': !!finalSuffix,
+      'has-description': showDescription,
+      'has-actions': !!actions,
+      'has-actions-content': !!(actions && actions !== true),
       checkbox: hasCheckbox,
       disabled: finalIsDisabled,
       selected: isSelected === true,
       loading: isLoading,
       card: isCard === true,
       button: isButton === true,
-      [`shape-${shape}`]: true,
+      ...(typeof size === 'number' ? {} : { size }),
+      description: showDescription ? descriptionPlacement : 'none',
+      type,
+      theme,
+      shape,
       ...mods,
     };
   }, [
@@ -805,7 +789,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     finalRightIcon,
     finalPrefix,
     finalSuffix,
-    showDescriptions,
+    showDescription,
     descriptionPlacement,
     hasCheckbox,
     isSelected,
@@ -814,6 +798,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isButton,
     shape,
     actions,
+    size,
+    type,
+    theme,
     mods,
   ]);
 
@@ -861,10 +848,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
             theme && type ? (`${theme}.${type}` as ItemVariant) : undefined
           }
           disabled={finalIsDisabled}
-          data-size={typeof size === 'number' ? undefined : size}
-          data-type={type}
-          data-theme={theme}
-          data-shape={shape}
           aria-disabled={finalIsDisabled}
           aria-selected={isSelected}
           mods={mods}
@@ -884,7 +867,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
               {children}
             </div>
           ) : null}
-          {showDescriptions ? (
+          {showDescription ? (
             <div data-element="Description" {...descriptionProps}>
               {description}
             </div>

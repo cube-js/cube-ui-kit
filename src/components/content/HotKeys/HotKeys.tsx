@@ -41,15 +41,15 @@ const KeyElement = tasty({
     padding: '0 (.5x - 1bw)',
     color: {
       '': '#dark.65',
-      '[data-type="primary"]': '#white',
+      'type=primary': '#white',
     },
     fill: {
       '': '#dark.04',
-      '[data-type="primary"]': '#clear',
+      'type=primary': '#clear',
     },
     border: {
       '': true,
-      '[data-type="primary"]': '#white',
+      'type=primary': '#white',
     },
   },
 });

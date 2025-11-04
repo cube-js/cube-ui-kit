@@ -18,12 +18,12 @@ const AlertElement = tasty({
     preset: 't3',
     color: {
       '': '#dark-02',
-      '[data-type="disabled"]': THEMES.disabled.color,
+      'type=disabled': THEMES.disabled.color,
     },
     fill: {
       '': '#clear',
       ...Object.keys(THEMES).reduce((map, type) => {
-        map[`[data-type="${type}"]`] = THEMES[type].fill;
+        map[`type=${type}`] = THEMES[type].fill;
 
         return map;
       }, {}),

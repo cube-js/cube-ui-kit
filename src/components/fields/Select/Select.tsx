@@ -59,7 +59,7 @@ import {
   StyledSection as ListSectionWrapper,
 } from '../../actions/Menu/styled';
 import { CollectionItem } from '../../CollectionItem';
-import { Item } from '../../content/Item';
+import { CubeItemProps, Item } from '../../content/Item';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
@@ -74,7 +74,7 @@ const SelectWrapperElement = tasty({
     fill: {
       '': '#white',
       disabled: '#dark.04',
-      '[data-theme="special"]': '#clear',
+      'theme=special': '#clear',
     },
     color: {
       '': '#dark.85',
@@ -143,7 +143,6 @@ const OverlayElement = tasty({
     padding: '.5x',
     border: true,
     boxSizing: 'border-box',
-
     transition:
       'translate $transition ease-out, scale $transition ease-out, theme $transition ease-out',
     translate: {
@@ -183,7 +182,7 @@ export interface CubeSelectBaseProps<T>
   suffix?: ReactNode;
   /** Description text for the trigger. Note: Different from field-level description. */
   description?: ReactNode;
-  descriptionPlacement?: 'inline' | 'block' | 'auto';
+  descriptionPlacement?: 'inline' | 'block';
   /** Keyboard shortcut that triggers the select when pressed */
   hotkeys?: string;
   /**
@@ -695,20 +694,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
     descriptionPlacement,
     tooltip,
     styles: itemStyles,
-  } = ((item as any)?.props || {}) as {
-    description?: React.ReactNode;
-    icon?: React.ReactElement;
-    prefix?: React.ReactNode;
-    suffix?: React.ReactNode;
-    rightIcon?: React.ReactElement;
-    styles?: Styles;
-    descriptionPlacement?: 'inline' | 'block' | 'auto';
-    tooltip?:
-      | string
-      | boolean
-      | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
-    qa?: string;
-  };
+  } = ((item as any)?.props || {}) as CubeItemProps;
 
   return (
     <OptionItem

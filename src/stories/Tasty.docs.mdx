@@ -85,6 +85,76 @@ const TokenCard = tasty({
 
 ---
 
+## 📚 Dictionary
+
+Key concepts for working with Tasty:
+
+### Style Mapping
+
+Object where keys represent states and values are the styles to apply. Used for state-based styling without conditional logic.
+
+```jsx
+fill: { '': '#white', hovered: '#gray.05', 'theme=danger': '#red' }
+```
+
+### Sub-element
+
+Element styled using a capitalized key. Identified by `data-element` attribute. Capitalized words in selectors (`:has(Item)`, `> Body > Row`) transform to `[data-element="..."]`.
+
+**Important:** Combinators (`>`, `+`, `~`) must have spaces around them: `:has(Body > Row)` ✅, not `:has(Body>Row)` ❌. This is a design choice for parser performance.
+
+```jsx
+styles: { Title: { preset: 'h3' } }
+// Targets: <div data-element="Title">
+```
+
+### Custom Styles
+
+Tasty properties that enhance native CSS with design system integration: `fill` (background), `radius` (border-radius), `border`, `preset` (typography), `gap`.
+
+### Modifier
+
+State value via `mods` prop that generates `data-*` attributes for styling.
+
+```jsx
+mods={{ hovered: true, theme: 'danger' }}
+// → data-hovered="" data-theme="danger"
+```
+
+### Color Token
+
+Named color prefixed with `#` that maps to CSS custom properties. Supports opacity with `.N` suffix.
+
+```jsx
+fill: '#purple.5'  // → var(--purple-color) with 50% opacity
+```
+
+### Custom Unit
+
+Shorthand units referencing design system values: `x` (gap), `r` (radius), `bw` (border-width), `fs` (font-size), `sf` (stable grid fractions).
+
+### Responsive Array
+
+Array of values mapping to breakpoints (large to small). Configure with `<BreakpointsProvider>`.
+
+```jsx
+padding: ['4x', '2x', '1x']  // Large → Medium → Small
+```
+
+### Style Props
+
+Style properties exposed as direct props via `styleProps` config. Provides cleaner API than using `styles` prop.
+
+### Selector Affix (`$`)
+
+Property controlling combinator for sub-element selectors. Default: descendant (space).
+
+```jsx
+Row: { $: '>', padding: '1x' }  // Direct child selector
+```
+
+---
+
 ## 🎯 Core Concepts
 
 ### Component Creation
@@ -462,25 +532,91 @@ fade: '3x 1x top bottom',         // Different widths per edge
 
 ### Modifiers & State Binding
 
-Modifiers create `data-is-*` attributes for state-based styling:
+Modifiers create `data-*` attributes for state-based styling:
 
 ```jsx
 const Button = tasty({
   styles: {
     fill: {
       '': '#blue',
-      hovered: '#blue.8',          // Custom modifier
-      pressed: '#blue.6',          // Custom modifier
+      hovered: '#blue.8',          // Custom boolean modifier
+      pressed: '#blue.6',          // Custom boolean modifier
+      'theme=danger': '#red',      // Value modifier
+      'size=large': '#blue.10',    // Value modifier
       disabled: '#gray',           // Built-in state
     },
   },
 });
 
-// Usage with mods
+// Usage with boolean mods
 <Button mods={{ hovered: true, pressed: false }} disabled>
   Click me
 </Button>
-// Renders: <button data-is-hovered disabled>
+// Renders: <button data-hovered="" disabled>
+
+// Usage with value mods
+<Button mods={{ theme: 'danger', size: 'large' }}>
+  Delete
+</Button>
+// Renders: <button data-theme="danger" data-size="large">
+```
+
+#### Value Modifiers
+
+Modifiers now accept string values in addition to boolean:
+
+```jsx
+// Boolean mods
+mods={{ hovered: true }}         // → data-hovered=""
+mods={{ isSelected: true }}      // → data-selected="" (preserves 'is' via kebab-case)
+
+// String value mods
+mods={{ theme: 'danger' }}       // → data-theme="danger"
+mods={{ size: 'large' }}         // → data-size="large"
+mods={{ variant: 'primary' }}    // → data-variant="primary"
+
+// Number mods (converted to string)
+mods={{ level: 2 }}              // → data-level="2"
+
+// Empty string (explicit empty value)
+mods={{ label: '' }}             // → data-label=""
+
+// Mixed boolean and value mods
+mods={{ 
+  hovered: true, 
+  theme: 'danger',
+  size: 'large'
+}}
+// → data-hovered="" data-theme="danger" data-size="large"
+```
+
+#### Shorthand Syntax for Value Mods
+
+Use shorthand syntax in style definitions for value mods:
+
+```jsx
+const Button = tasty({
+  styles: {
+    fill: {
+      '': '#surface',
+      // Recommended shorthand (unquoted values)
+      'theme=danger': '#red',
+      'theme=warning': '#yellow',
+      'size=large': '#blue.10',
+      
+      // Also supported (quoted values)
+      'variant="primary"': '#purple',
+      "variant='secondary'": '#gray',
+      
+      // Full attribute selector (pass-through)
+      '[data-theme="danger"]': '#red',
+      
+      // Combining with boolean mods
+      'hovered & theme=danger': '#light-red',
+      'theme=danger & size=large': '#dark-red',
+    },
+  },
+});
 ```
 
 ### Complex State Logic
@@ -581,8 +717,11 @@ const Table = tasty({
     },
     
     // Chained selectors (auto-transforms capitalized words)
+    // ⚠️ Important: Spaces required around combinators for parsing
     Cell: {
-      $: '> Body > Row >',        // .table > [data-element="Body"] > [data-element="Row"] > [data-element="Cell"]
+      $: '> Body > Row >',        // ✅ Correct: spaces around > 
+                                  // ❌ Wrong: '>Body>Row>' (parser can't split)
+                                  // → .table > [data-element="Body"] > [data-element="Row"] > [data-element="Cell"]
       border: '1bw solid #border',
     },
     
@@ -593,6 +732,33 @@ const Table = tasty({
   },
 });
 ```
+
+> **⚠️ Space Requirements:** Combinators (`>`, `+`, `~`) in selector affixes **must have spaces** around them when used with capitalized element names. Use `$: '> Body > Row'` ✅, not `$: '>Body>Row'` ❌. This is a performance consideration—the parser uses simple whitespace splitting to identify element names.
+
+#### `:has()` Selector with Sub-elements
+
+Style components based on their children using the `:has()` pseudo-class:
+
+```jsx
+const List = tasty({
+  styles: {
+    border: {
+      '': 'none',
+      // ⚠️ Spaces required around combinators (>, +, ~)
+      ':has(Body > Row)': '1bw solid #border',  // ✅ Correct
+      // ':has(Body>Row)': ...                   // ❌ Wrong: parser can't split
+    },
+    
+    padding: {
+      '': '2x',
+      ':has(Item)': '4x',                       // Single element, no combinator
+      'hovered & :has(Item)': '6x',             // Combining with other modifiers
+    },
+  },
+});
+```
+
+> **⚠️ Space Requirements:** Combinators (`>`, `+`, `~`) **must have spaces** around them when used with capitalized element names. Use `:has(Body > Row)` ✅, not `:has(Body>Row)` ❌. This is a performance consideration—the parser uses whitespace splitting to identify element names. A console error will warn if spaces are missing.
 
 ### Variants & Theming
 

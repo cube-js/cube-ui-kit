@@ -40,9 +40,9 @@ const NotificationContainer = tasty({
     outline: 0,
     border: {
       '': '#border',
-      '[data-type="success"]': '#success.4',
-      '[data-type="danger"]': '#danger.4',
-      '[data-type="attention"]': '#border',
+      'type=success': '#success.4',
+      'type=danger': '#danger.4',
+      'type=attention': '#border',
       // Clear border when inside dialog
       'inside-dialog': false,
     },

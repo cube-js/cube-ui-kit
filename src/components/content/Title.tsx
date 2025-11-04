@@ -34,12 +34,12 @@ const TitleElement = tasty({
     color: '#dark',
     preset: {
       '': 'h6',
-      '[data-level="1"]': 'h1',
-      '[data-level="2"]': 'h2',
-      '[data-level="3"]': 'h3',
-      '[data-level="4"]': 'h4',
-      '[data-level="5"]': 'h5',
-      '[data-level="6"]': 'h6',
+      'level=1': 'h1',
+      'level=2': 'h2',
+      'level=3': 'h3',
+      'level=4': 'h4',
+      'level=5': 'h5',
+      'level=6': 'h6',
     },
     margin: '0',
     whiteSpace: {

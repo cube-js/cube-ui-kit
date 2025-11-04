@@ -132,7 +132,7 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
         checkbox: hasCheckbox,
         selected: isSelected,
         loading: isLoading,
-        'with-label': !!children,
+        'has-label': !!children,
         context: !!contextType,
         ...mods,
       }),

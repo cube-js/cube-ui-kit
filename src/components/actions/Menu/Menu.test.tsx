@@ -556,7 +556,7 @@ describe('<Menu />', () => {
     );
 
     // With first strategy, first menu item gets focus
-    const focusedItem = container.querySelector('[data-is-focused]');
+    const focusedItem = container.querySelector('[data-focused]');
     expect(focusedItem).toBeInTheDocument();
   });
 
@@ -568,7 +568,7 @@ describe('<Menu />', () => {
     );
 
     // With last strategy, last menu item gets focus
-    const focusedItem = container.querySelector('[data-is-focused]');
+    const focusedItem = container.querySelector('[data-focused]');
     expect(focusedItem).toBeInTheDocument();
   });
 
@@ -646,12 +646,12 @@ describe('<Menu />', () => {
 
     // Check wrapper mods (header, footer are on wrapper)
     const menuWrapper = container.querySelector('[data-qa="Menu"]');
-    expect(menuWrapper).toHaveAttribute('data-is-header', '');
-    expect(menuWrapper).toHaveAttribute('data-is-footer', '');
+    expect(menuWrapper).toHaveAttribute('data-header', '');
+    expect(menuWrapper).toHaveAttribute('data-footer', '');
 
     // Check menu list mods (sections mod is on the menu list)
     const menu = getByRole('menu');
-    expect(menu).toHaveAttribute('data-is-sections', '');
+    expect(menu).toHaveAttribute('data-sections', '');
   });
 
   // Ref tests
@@ -1048,7 +1048,7 @@ describe('Menu popover mod', () => {
     );
 
     const menuWrapper = container.querySelector('[data-qa="Menu"]');
-    expect(menuWrapper).toHaveAttribute('data-is-popover');
+    expect(menuWrapper).toHaveAttribute('data-popover');
   });
 
   it('should not apply popover mod when used standalone', () => {
@@ -1060,7 +1060,7 @@ describe('Menu popover mod', () => {
     );
 
     const menuWrapper = container.querySelector('[data-qa="Menu"]');
-    expect(menuWrapper).not.toHaveAttribute('data-is-popover');
+    expect(menuWrapper).not.toHaveAttribute('data-popover');
   });
 
   it('should not apply popover mod when context provides false', () => {
@@ -1076,7 +1076,7 @@ describe('Menu popover mod', () => {
     );
 
     const menuWrapper = container.querySelector('[data-qa="Menu"]');
-    expect(menuWrapper).not.toHaveAttribute('data-is-popover');
+    expect(menuWrapper).not.toHaveAttribute('data-popover');
   });
 });
 

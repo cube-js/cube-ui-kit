@@ -18,7 +18,7 @@ describe('DisplayTransition', () => {
     let result = render(
       <DisplayTransition exposeUnmounted isShown={false}>
         {({ phase, isShown, ref }) => (
-          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
+          <div ref={ref} data-phase={phase} data-shown={isShown}>
             content
           </div>
         )}
@@ -29,7 +29,7 @@ describe('DisplayTransition', () => {
       result.container.querySelector('[data-phase="unmounted"]'),
     ).toBeInTheDocument();
     expect(
-      result.container.querySelector('[data-is-shown="false"]'),
+      result.container.querySelector('[data-shown="false"]'),
     ).toBeInTheDocument();
 
     result.unmount();
@@ -38,7 +38,7 @@ describe('DisplayTransition', () => {
     result = render(
       <DisplayTransition isShown={false}>
         {({ phase, isShown, ref }) => (
-          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
+          <div ref={ref} data-phase={phase} data-shown={isShown}>
             content
           </div>
         )}
@@ -55,7 +55,7 @@ describe('DisplayTransition', () => {
     result = render(
       <DisplayTransition isShown={true} animateOnMount={false}>
         {({ phase, isShown, ref }) => (
-          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
+          <div ref={ref} data-phase={phase} data-shown={isShown}>
             content
           </div>
         )}
@@ -66,7 +66,7 @@ describe('DisplayTransition', () => {
       result.container.querySelector('[data-phase="entered"]'),
     ).toBeInTheDocument();
     expect(
-      result.container.querySelector('[data-is-shown="true"]'),
+      result.container.querySelector('[data-shown="true"]'),
     ).toBeInTheDocument();
 
     result.unmount();
@@ -75,7 +75,7 @@ describe('DisplayTransition', () => {
     result = render(
       <DisplayTransition isShown={true} animateOnMount={true}>
         {({ phase, isShown, ref }) => (
-          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
+          <div ref={ref} data-phase={phase} data-shown={isShown}>
             content
           </div>
         )}
@@ -86,7 +86,7 @@ describe('DisplayTransition', () => {
       result.container.querySelector('[data-phase="enter"]'),
     ).toBeInTheDocument();
     expect(
-      result.container.querySelector('[data-is-shown="false"]'),
+      result.container.querySelector('[data-shown="false"]'),
     ).toBeInTheDocument();
   });
 
@@ -99,7 +99,7 @@ describe('DisplayTransition', () => {
         {({ phase, isShown, ref }) => {
           phases.push(`${phase}:${isShown}`);
           return (
-            <div ref={ref} data-phase={phase} data-is-shown={isShown}>
+            <div ref={ref} data-phase={phase} data-shown={isShown}>
               content
             </div>
           );
@@ -109,9 +109,7 @@ describe('DisplayTransition', () => {
 
     // Initial: enter phase, isShown=false
     expect(container.querySelector('[data-phase="enter"]')).toBeInTheDocument();
-    expect(
-      container.querySelector('[data-is-shown="false"]'),
-    ).toBeInTheDocument();
+    expect(container.querySelector('[data-shown="false"]')).toBeInTheDocument();
 
     // Advance through double-rAF to reach "entered"
     act(() => {
@@ -121,9 +119,7 @@ describe('DisplayTransition', () => {
     expect(
       container.querySelector('[data-phase="entered"]'),
     ).toBeInTheDocument();
-    expect(
-      container.querySelector('[data-is-shown="true"]'),
-    ).toBeInTheDocument();
+    expect(container.querySelector('[data-shown="true"]')).toBeInTheDocument();
     expect(onRest).not.toHaveBeenCalled();
 
     // After duration, onRest should fire
@@ -147,7 +143,7 @@ describe('DisplayTransition', () => {
         onRest={onRest}
       >
         {({ phase, isShown, ref }) => (
-          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
+          <div ref={ref} data-phase={phase} data-shown={isShown}>
             content
           </div>
         )}
@@ -158,9 +154,7 @@ describe('DisplayTransition', () => {
     expect(
       container.querySelector('[data-phase="entered"]'),
     ).toBeInTheDocument();
-    expect(
-      container.querySelector('[data-is-shown="true"]'),
-    ).toBeInTheDocument();
+    expect(container.querySelector('[data-shown="true"]')).toBeInTheDocument();
 
     // Trigger exit
     rerender(
@@ -172,7 +166,7 @@ describe('DisplayTransition', () => {
         onRest={onRest}
       >
         {({ phase, isShown, ref }) => (
-          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
+          <div ref={ref} data-phase={phase} data-shown={isShown}>
             content
           </div>
         )}
@@ -181,9 +175,7 @@ describe('DisplayTransition', () => {
 
     // Should be in exit phase, isShown=false
     expect(container.querySelector('[data-phase="exit"]')).toBeInTheDocument();
-    expect(
-      container.querySelector('[data-is-shown="false"]'),
-    ).toBeInTheDocument();
+    expect(container.querySelector('[data-shown="false"]')).toBeInTheDocument();
     expect(onRest).not.toHaveBeenCalled();
 
     // After duration, should reach unmounted and fire onRest
@@ -206,7 +198,7 @@ describe('DisplayTransition', () => {
         onRest={onRest}
       >
         {({ phase, isShown, ref }) => (
-          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
+          <div ref={ref} data-phase={phase} data-shown={isShown}>
             content
           </div>
         )}
@@ -223,7 +215,7 @@ describe('DisplayTransition', () => {
     const { container, rerender } = render(
       <DisplayTransition isShown={true} duration={0} onRest={onRest}>
         {({ phase, isShown, ref }) => (
-          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
+          <div ref={ref} data-phase={phase} data-shown={isShown}>
             content
           </div>
         )}
@@ -235,9 +227,7 @@ describe('DisplayTransition', () => {
     expect(
       container.querySelector('[data-phase="entered"]'),
     ).toBeInTheDocument();
-    expect(
-      container.querySelector('[data-is-shown="false"]'),
-    ).toBeInTheDocument();
+    expect(container.querySelector('[data-shown="false"]')).toBeInTheDocument();
 
     // Advance timers to trigger onRest
     act(() => {
@@ -257,7 +247,7 @@ describe('DisplayTransition', () => {
           onRest={onRest}
         >
           {({ phase, isShown }) => (
-            <div data-phase={phase} data-is-shown={isShown}>
+            <div data-phase={phase} data-shown={isShown}>
               content
             </div>
           )}
@@ -301,7 +291,7 @@ describe('DisplayTransition', () => {
         onRest={onRest}
       >
         {({ phase, isShown, ref }) => (
-          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
+          <div ref={ref} data-phase={phase} data-shown={isShown}>
             content
           </div>
         )}
@@ -316,9 +306,7 @@ describe('DisplayTransition', () => {
     // With reduced motion, internal duration is 0 but the phase is still "enter"
     // (the collapse to "entered" only happens when duration prop is 0, not computed dur)
     expect(container.querySelector('[data-phase="enter"]')).toBeInTheDocument();
-    expect(
-      container.querySelector('[data-is-shown="false"]'),
-    ).toBeInTheDocument();
+    expect(container.querySelector('[data-shown="false"]')).toBeInTheDocument();
 
     // With internal duration of 0, it should transition to entered very quickly
     act(() => {
@@ -328,9 +316,7 @@ describe('DisplayTransition', () => {
     expect(
       container.querySelector('[data-phase="entered"]'),
     ).toBeInTheDocument();
-    expect(
-      container.querySelector('[data-is-shown="true"]'),
-    ).toBeInTheDocument();
+    expect(container.querySelector('[data-shown="true"]')).toBeInTheDocument();
     expect(onRest).toHaveBeenCalledWith('enter');
   });
 
@@ -345,7 +331,7 @@ describe('DisplayTransition', () => {
         onRest={onRest}
       >
         {({ phase, isShown, ref }) => (
-          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
+          <div ref={ref} data-phase={phase} data-shown={isShown}>
             content
           </div>
         )}
@@ -367,7 +353,7 @@ describe('DisplayTransition', () => {
           onRest={onRest}
         >
           {({ phase, isShown }) => (
-            <div data-phase={phase} data-is-shown={isShown}>
+            <div data-phase={phase} data-shown={isShown}>
               content
             </div>
           )}
@@ -387,7 +373,7 @@ describe('DisplayTransition', () => {
           onRest={onRest}
         >
           {({ phase, isShown }) => (
-            <div data-phase={phase} data-is-shown={isShown}>
+            <div data-phase={phase} data-shown={isShown}>
               content
             </div>
           )}

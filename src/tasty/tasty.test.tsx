@@ -235,8 +235,8 @@ describe('tasty() API', () => {
       styles: {
         padding: {
           '': '1x top',
-          '[data-size="medium"]': '2x top',
-          '[data-size="large"]': '3x top',
+          'size=medium': '2x top',
+          'size=large': '3x top',
         },
       },
     });
@@ -248,8 +248,8 @@ describe('tasty() API', () => {
       styles: {
         padding: {
           '': '1x top',
-          '[data-size="medium"] & selected': '2x top',
-          '[data-size="large"]': '3x top',
+          'size=medium & selected': '2x top',
+          'size=large': '3x top',
         },
       },
     });
@@ -261,8 +261,8 @@ describe('tasty() API', () => {
       styles: {
         padding: {
           '': '1x top',
-          '[data-size="medium"] | selected': '2x top',
-          '[data-size="large"] & selected': '3x top',
+          'size=medium | selected': '2x top',
+          'size=large & selected': '3x top',
         },
       },
     });
@@ -310,7 +310,7 @@ describe('tasty() API', () => {
         padding: {
           '': ['4x', '2x', '1x'],
           hovered: ['6x', '3x', '1.5x'],
-          '[data-variant="compact"]': ['2x', '1x', '0.5x'],
+          'variant=compact': ['2x', '1x', '0.5x'],
         },
 
         // Border with responsive arrays in state map
@@ -397,17 +397,13 @@ describe('tasty() API', () => {
           '': ['4x', '3x', '2x'],
           hovered: ['5x', '4x', '3x'],
           'pressed & !disabled': ['3x', '2x', '1x'],
-          '[data-variant="compact"]': ['2x', '1x', '0.5x'],
+          'variant=compact': ['2x', '1x', '0.5x'],
         },
 
         // Responsive width with complex logic
         width: {
           '': ['max 1200px', 'max 800px', 'max 100%'],
-          'expanded | [data-size="large"]': [
-            'max 1400px',
-            'max 1000px',
-            'max 100%',
-          ],
+          'expanded | size=large': ['max 1400px', 'max 1000px', 'max 100%'],
           '(hovered | focused) & !disabled': [
             'max 1300px',
             'max 900px',
@@ -420,9 +416,9 @@ describe('tasty() API', () => {
           '': '#surface',
           hovered: '#surface-hover',
           pressed: '#surface-pressed',
-          '[disabled]': '#surface-disabled',
-          '[data-variant="danger"] & hovered': '#danger-hover',
-          '[data-variant="success"] & !disabled': '#success',
+          disabled: '#surface-disabled',
+          'variant=danger & hovered': '#danger-hover',
+          'variant=success & !disabled': '#success',
         },
 
         // Responsive border with state combinations
@@ -438,7 +434,7 @@ describe('tasty() API', () => {
             '2bw solid #danger',
             '1bw solid #danger',
           ],
-          '![data-variant="borderless"] & hovered': [
+          '!variant=borderless & hovered': [
             '2bw solid #border-hover',
             '1bw solid #border-hover',
             '1bw solid #border-hover',
@@ -453,7 +449,7 @@ describe('tasty() API', () => {
           preset: ['h2', 'h3', 'h4'],
           color: {
             '': '#text-primary',
-            '[data-variant="danger"]': '#danger',
+            'variant=danger': '#danger',
             hovered: '#text-primary-hover',
           },
           margin: ['0 0 2x 0', '0 0 1x 0', '0 0 0.5x 0'],
@@ -463,7 +459,7 @@ describe('tasty() API', () => {
           padding: ['2x', '1x', '0.5x'],
           color: {
             '': '#text',
-            '[disabled]': '#text-disabled',
+            disabled: '#text-disabled',
             'highlighted & !disabled': '#text-highlighted',
           },
         },
@@ -959,12 +955,12 @@ describe('tastyGlobal() API', () => {
         '': '#white',
         ':hover': '#gray.05',
         ':focus': '#blue.05',
-        '[disabled]': '#gray.20',
+        '[id]': '#gray.20',
       },
       color: {
         '': '#text',
         ':hover': '#text-hover',
-        '[disabled]': '#text-disabled',
+        '[id]': '#text-disabled',
       },
       transition: 'fill 0.2s, color 0.2s',
     });
@@ -973,8 +969,8 @@ describe('tastyGlobal() API', () => {
       <div>
         <GlobalInteractive />
         <div className="interactive-element">Interactive Element</div>
-        <div data-disabled className="interactive-element">
-          Disabled Element
+        <div id="test-id" className="interactive-element">
+          Element with ID
         </div>
       </div>,
     );
@@ -987,7 +983,7 @@ describe('tastyGlobal() API', () => {
 
     expect(styleContent).toContain('.interactive-element');
     expect(styleContent).toContain(':hover');
-    expect(styleContent).toContain('[disabled]');
+    expect(styleContent).toContain('[id]');
     expect(styleContent).toContain('background-color: var(--white-color)');
   });
 
@@ -1228,6 +1224,53 @@ describe('tastyGlobal() API', () => {
     expect(styleContent).toMatch(
       />\s*\[data-element="Body"\]\s*>\s*\[data-element="Row"\]\s*>\s*\[data-element="Cell"\]/,
     );
+  });
+
+  it('should warn when combinator lacks spaces in selector affix ($)', () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const Component = tasty({
+      styles: {
+        Item: {
+          $: '>Body>Row',
+          color: '#primary',
+        },
+      },
+    });
+
+    render(<Component />);
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[Tasty] Invalid selector affix ($) syntax'),
+    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('>Body>Row'),
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('should not warn when combinator has proper spaces in selector affix ($)', () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const Component = tasty({
+      styles: {
+        Item: {
+          $: '> Body > Row',
+          color: '#primary',
+        },
+      },
+    });
+
+    render(<Component />);
+
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
   });
 
   it('should support multiple global style components with different selectors', () => {

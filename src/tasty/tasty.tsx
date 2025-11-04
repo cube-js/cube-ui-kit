@@ -41,7 +41,7 @@ const IS_PROPERTIES_ENTRIES = Object.entries(IS_PROPERTIES_MAP);
 
 /**
  * Helper function to handle is* properties consistently
- * Transforms is* props to HTML attributes and adds corresponding data-is-* attributes
+ * Transforms is* props to HTML attributes and adds corresponding data-* attributes
  */
 function handleIsProperties(props: Record<string, unknown>) {
   for (const [isProperty, targetAttribute] of IS_PROPERTIES_ENTRIES) {
@@ -50,8 +50,8 @@ function handleIsProperties(props: Record<string, unknown>) {
       delete props[isProperty];
     }
 
-    // Add data-is-* attribute if target attribute is truthy and doesn't already exist
-    const dataAttribute = `data-is-${targetAttribute}`;
+    // Add data-* attribute if target attribute is truthy and doesn't already exist
+    const dataAttribute = `data-${targetAttribute}`;
     if (!(dataAttribute in props) && props[targetAttribute]) {
       props[dataAttribute] = '';
     }
@@ -353,8 +353,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
 
       for (const prop of propsToCheck) {
         const key = prop as unknown as string;
-        if (Object.prototype.hasOwnProperty.call(otherProps as object, key)) {
-          if (!propStyles) propStyles = {};
+
+        if (!propStyles) propStyles = {};
+
+        if (key in otherProps) {
           (propStyles as any)[key] = (otherProps as any)[key];
           delete (otherProps as any)[key];
         }
@@ -375,6 +377,8 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         () => (breakpoints as number[] | undefined)?.join(',') || '',
         [breakpoints?.join(',')],
       );
+
+      const propStylesKey = stringifyStyles(propStyles);
 
       // Optimize style computation and cache key generation
       const { allStyles, cacheKey, useDefaultStyles } = useMemo(() => {
@@ -399,7 +403,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
           cacheKey: key,
           useDefaultStyles: useDefault,
         };
-      }, [styles, propStyles, breakpointsKey]);
+      }, [styles, propStylesKey, breakpointsKey]);
 
       // Compute rules synchronously; inject via insertion effect
       const directResult: RenderResult = useMemo(() => {
@@ -461,8 +465,8 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         'data-qa': (qa as string | undefined) || defaultQa,
         'data-qaval': (qaVal as string | undefined) || defaultQaVal,
         ...(otherDefaultProps as unknown as Record<string, unknown>),
-        ...(otherProps as unknown as Record<string, unknown>),
         ...(modProps || {}),
+        ...(otherProps as unknown as Record<string, unknown>),
         className: finalClassName,
         ref,
       } as Record<string, unknown>;

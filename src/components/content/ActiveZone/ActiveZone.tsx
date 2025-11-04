@@ -53,9 +53,9 @@ function ActiveZone(
 
   return (
     <Element
-      data-is-hovered={isHovered && !isDisabled ? '' : null}
-      data-is-focused={isFocused && !isDisabled ? '' : null}
-      data-is-disabled={isDisabled || null}
+      data-hovered={isHovered && !isDisabled ? '' : null}
+      data-focused={isFocused && !isDisabled ? '' : null}
+      data-disabled={isDisabled || null}
       aria-label={label}
       {...mergeProps(
         hoverProps,

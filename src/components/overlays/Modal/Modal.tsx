@@ -16,8 +16,8 @@ export const OVERLAY_WRAPPER_STYLES: Styles = {
   top: 0,
   placeItems: {
     '': 'center',
-    '[data-type="fullscreen"]': 'center',
-    '[data-type="fullscreenTakeover"] | [data-type="panel"]': 'stretch',
+    'type=fullscreen': 'center',
+    'type=fullscreenTakeover | type=panel': 'stretch',
   },
   boxSizing: 'border-box',
   width: '100vw',
@@ -46,21 +46,20 @@ const ModalElement = tasty({
     zIndex: 10,
     height: {
       '': 'max 90dvh',
-      '[data-type="fullscreenTakeover"] | [data-type="panel"]': '100dvh 100dvh',
-      '[data-type="fullscreen"]': '90dvh 90dvh',
-      '[data-type="fullscreenTakeover"]': '100dvh 100dvh',
-      '[data-type="panel"]': 'auto',
+      'type=fullscreenTakeover | type=panel': '100dvh 100dvh',
+      'type=fullscreen': '90dvh 90dvh',
+      'type=panel': 'auto',
     },
     width: {
       '': '@min-dialog-size 90vw',
-      '[data-type="panel"]': 'auto',
+      'type=panel': 'auto',
     },
     pointerEvents: 'none',
     transition: 'opacity .25s linear, transform .25s ease-in-out',
     transform: {
       '': 'initial',
-      '[data-type="modal"] & !open': 'translate(0, -3x) scale(1, 1)',
-      '([data-type^="fullscreen"] | [data-type="panel"]) & !open':
+      'type=modal & !open': 'translate(0, -3x) scale(1, 1)',
+      '(type^=fullscreen | type=panel) & !open':
         'translate(0, 0) scale(1.02, 1.02)',
     },
     opacity: {

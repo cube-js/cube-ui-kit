@@ -166,7 +166,7 @@ describe('<SubMenuTrigger />', () => {
       // Verify Share item is focused before trying to open submenu
       await waitFor(() => {
         const shareItem = getByText('Share').closest('li');
-        expect(shareItem).toHaveAttribute('data-is-focused');
+        expect(shareItem).toHaveAttribute('data-focused');
       });
 
       await act(async () => {
@@ -221,7 +221,7 @@ describe('<SubMenuTrigger />', () => {
       // Verify Share item is focused before trying to open submenu
       await waitFor(() => {
         const shareItem = getByText('Share').closest('li');
-        expect(shareItem).toHaveAttribute('data-is-focused');
+        expect(shareItem).toHaveAttribute('data-focused');
       });
 
       await act(async () => {
@@ -279,7 +279,7 @@ describe('<SubMenuTrigger />', () => {
       // Verify Share item is focused before trying to open submenu
       await waitFor(() => {
         const shareItem = getByText('Share').closest('li');
-        expect(shareItem).toHaveAttribute('data-is-focused');
+        expect(shareItem).toHaveAttribute('data-focused');
       });
 
       await act(async () => {
@@ -337,7 +337,7 @@ describe('<SubMenuTrigger />', () => {
       // Verify Share item is focused before trying to open submenu
       await waitFor(() => {
         const shareItem = getByText('Share').closest('li');
-        expect(shareItem).toHaveAttribute('data-is-focused');
+        expect(shareItem).toHaveAttribute('data-focused');
       });
 
       await act(async () => {
@@ -401,7 +401,7 @@ describe('<SubMenuTrigger />', () => {
       // Verify Share item is focused before trying to open submenu
       await waitFor(() => {
         const shareItem = getByText('Share').closest('li');
-        expect(shareItem).toHaveAttribute('data-is-focused');
+        expect(shareItem).toHaveAttribute('data-focused');
       });
 
       await act(async () => {
@@ -713,7 +713,7 @@ describe('<SubMenuTrigger />', () => {
       // Verify Share item is focused before trying to open submenu
       await waitFor(() => {
         const shareItem = getByText('Share').closest('li');
-        expect(shareItem).toHaveAttribute('data-is-focused');
+        expect(shareItem).toHaveAttribute('data-focused');
       });
 
       await act(async () => {
@@ -731,9 +731,9 @@ describe('<SubMenuTrigger />', () => {
       // The actual DOM focus might be on the menu itself with aria-activedescendant
       const firstSubmenuItem = getByText('Copy link').closest('li');
 
-      // Check for focus indication - tasty sets data-is-focused based on mods.focused
+      // Check for focus indication - tasty sets data-focused based on mods.focused
       await waitFor(() => {
-        expect(firstSubmenuItem).toHaveAttribute('data-is-focused');
+        expect(firstSubmenuItem).toHaveAttribute('data-focused');
       });
     });
   });
