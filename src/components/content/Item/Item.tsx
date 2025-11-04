@@ -297,7 +297,7 @@ const ItemElement = tasty({
       '(has-right-icon & has-suffix) | (has-right-icon & has-actions) | (has-suffix & has-actions)':
         'max-content max-content',
       'has-right-icon & has-suffix & has-actions':
-        'max-content max-content max-content max-content',
+        'max-content max-content max-content',
     },
     '$inline-padding': {
       '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
