@@ -213,6 +213,10 @@ const ItemElement = tasty({
     placeItems: 'stretch',
     placeContent: 'stretch',
     gridColumns: '($left-columns, ) ($label-column, ) ($right-columns, )',
+    gridRows: {
+      '': 'auto auto',
+      'has-description-block': 'auto auto auto',
+    },
     // Prevent items from shrinking inside vertical flex layouts (Menu, ListBox, etc)
     flexShrink: {
       '': 'initial',
