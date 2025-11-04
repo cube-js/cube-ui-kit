@@ -272,7 +272,7 @@ export const Button = forwardRef(function Button(
     () => ({
       loading: isLoading,
       selected: isSelected,
-      'with-icons': hasIcons,
+      'has-icons': hasIcons,
       'left-icon': !!icon,
       'right-icon': !!rightIcon,
       'single-icon': singleIcon,

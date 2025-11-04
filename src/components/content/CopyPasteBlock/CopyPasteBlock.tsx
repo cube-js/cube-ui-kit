@@ -104,7 +104,7 @@ const CopyButton = tasty(Button, {
     },
     radius: {
       '': '0 1r 1r 0',
-      'multiline | with-scroll': '0 1r 0 0',
+      'multiline | has-scroll': '0 1r 0 0',
     },
     height: 'auto',
     outline: false,

@@ -80,8 +80,8 @@ const ItemActionElement = tasty({
     cursor: { '': 'pointer', disabled: 'default' },
     padding: {
       '': '0 $inline-padding',
-      'with-icon': 0,
-      'with-icon & with-label': '0 $inline-padding 0 0',
+      'has-icon': 0,
+      'has-icon & has-label': '0 $inline-padding 0 0',
     },
 
     '$inline-padding': {
@@ -162,9 +162,9 @@ export const ItemAction = forwardRef(function ItemAction(
       checkbox: hasCheckbox,
       selected: isSelected,
       loading: isLoading,
-      'with-label': !!children,
+      'has-label': !!children,
       context: !!contextType,
-      'with-icon': !!icon,
+      'has-icon': !!icon,
       ...mods,
     }),
     [hasCheckbox, isSelected, isLoading, children, contextType, mods],

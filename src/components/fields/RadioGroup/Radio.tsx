@@ -37,8 +37,7 @@ const RadioButtonElement = tasty(Item, {
     Label: {
       placeSelf: {
         '': 'center start',
-        '!:has(> Prefix) & !:has(> Suffix) & !:has(> Icon) & !:has(> RightIcon)':
-          'center',
+        '!has-prefix & !has-suffix & !has-icon & !has-right-icon': 'center',
       },
     },
   },

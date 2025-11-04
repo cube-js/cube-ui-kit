@@ -143,7 +143,6 @@ const OverlayElement = tasty({
     padding: '.5x',
     border: true,
     boxSizing: 'border-box',
-
     transition:
       'translate $transition ease-out, scale $transition ease-out, theme $transition ease-out',
     translate: {
