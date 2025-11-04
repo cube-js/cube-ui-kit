@@ -60,7 +60,7 @@ const CopyPasteBlockElement = tasty(Card, {
       ':focus': '2px dashed #purple-text',
       error: 'dashed #danger',
     },
-    cursor: 'pointer',
+    cursor: '$pointer',
     preset: {
       '': 't3',
       '[data-size="large"]': 't2',

@@ -39,7 +39,7 @@ const ActionElement = tasty({
     padding: 0,
     outline: 0,
     transition: 'theme',
-    cursor: 'pointer',
+    cursor: '$pointer',
     textDecoration: 'none',
     fill: '#clear',
   },

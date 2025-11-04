@@ -82,7 +82,7 @@ const SwitchElement = tasty({
     },
     outlineOffset: 1,
     transition: 'theme',
-    cursor: 'pointer',
+    cursor: '$pointer',
 
     Thumb: {
       position: 'absolute',
@@ -116,7 +116,7 @@ const SwitchElement = tasty({
         'checked & [data-size="small"]': '1.25x',
       },
       transition: 'left, theme',
-      cursor: 'pointer',
+      cursor: '$pointer',
     },
   },
 });

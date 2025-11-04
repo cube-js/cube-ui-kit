@@ -102,7 +102,7 @@ const TabElement = tasty(Action, {
       'disabled, hovered, hovered & disabled': '#dark',
     },
     cursor: {
-      '': 'pointer',
+      '': '$pointer',
       disabled: 'default',
     },
     fontWeight: 500,

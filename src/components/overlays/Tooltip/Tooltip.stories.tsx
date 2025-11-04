@@ -109,7 +109,7 @@ const FunctionPatternTemplate: Story<CubeTooltipProviderProps> = (args) => (
             padding: '8px 16px',
             border: '2px solid #007acc',
             borderRadius: '4px',
-            cursor: 'pointer',
+            cursor: '$pointer',
             display: 'inline-block',
             backgroundColor: '#f0f8ff',
             color: '#333',
@@ -154,7 +154,7 @@ const DirectFunctionPatternTemplate: Story<CubeTooltipTriggerProps> = (
             padding: '4px 8px',
             border: '1px solid #ff6b6b',
             borderRadius: '4px',
-            cursor: 'pointer',
+            cursor: '$pointer',
             display: 'inline-block',
             backgroundColor: '#ffe0e0',
           }}
