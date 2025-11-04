@@ -178,7 +178,6 @@ const DEFAULT_ICON_STYLES: Styles = {
     'checkbox & !selected': 0,
     'checkbox & !selected & hovered': 0.4,
   },
-  gridRow: 'span 2',
 };
 
 const ADDITION_STYLES: Styles = {
@@ -187,7 +186,6 @@ const ADDITION_STYLES: Styles = {
   flow: 'column',
   placeItems: 'center',
   placeContent: 'stretch',
-  gridRow: 'span 2',
 };
 
 const ACTIONS_EVENT_HANDLERS = {
@@ -212,10 +210,12 @@ const ItemElement = tasty({
     outline: 0,
     placeItems: 'stretch',
     placeContent: 'stretch',
-    gridColumns: '($left-columns, ) ($label-column, ) ($right-columns, )',
-    gridRows: {
-      '': 'auto auto',
-      'has-description-block': 'auto auto auto',
+    gridTemplate: {
+      '': '"icon prefix label suffix rightIcon actions" auto "icon prefix label suffix rightIcon actions" auto / max-content max-content 1sf max-content max-content max-content',
+      'description=inline':
+        '"icon prefix label suffix rightIcon actions" auto "icon prefix description suffix rightIcon actions" auto / max-content max-content 1sf max-content max-content max-content',
+      'description=block':
+        '"icon prefix label suffix rightIcon actions" auto "description description description description description description" auto / max-content max-content 1sf max-content max-content max-content',
     },
     // Prevent items from shrinking inside vertical flex layouts (Menu, ListBox, etc)
     flexShrink: {
@@ -282,23 +282,6 @@ const ItemElement = tasty({
       'size=xlarge': '$size-xl',
       'size=inline': '1lh',
     },
-    '$label-column': {
-      '': '1sf',
-      '!has-label': '',
-    },
-    '$left-columns': {
-      '': '',
-      'has-icon ^ has-prefix': 'max-content',
-      'has-icon & has-prefix': 'max-content max-content',
-    },
-    '$right-columns': {
-      '': '',
-      'has-right-icon ^ has-suffix ^ has-actions': 'max-content',
-      '(has-right-icon & has-suffix) | (has-right-icon & has-actions) | (has-suffix & has-actions)':
-        'max-content max-content',
-      'has-right-icon & has-suffix & has-actions':
-        'max-content max-content max-content',
-    },
     '$inline-padding': {
       '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
       'size=inline': '.25x',
@@ -321,33 +304,34 @@ const ItemElement = tasty({
     },
     '$label-padding-bottom': {
       '': '$block-padding',
-      'has-description & !has-description-block': '0',
+      'description=inline': '0',
     },
     '$description-padding-left': {
       '': '$inline-padding',
       'has-start-content': 0,
-      'has-description-block': '($inline-padding - $inline-compensation + 1bw)',
-      'has-description-block & !has-start-content': '$inline-padding',
+      'description=block': '($inline-padding - $inline-compensation + 1bw)',
+      'description=block & !has-start-content': '$inline-padding',
     },
     '$description-padding-right': {
       '': '$inline-padding',
       'has-end-content': 0,
-      'has-description-block': '($inline-padding - $inline-compensation + 1bw)',
-      'has-description-block & !has-end-content': '$inline-padding',
+      'description=block': '($inline-padding - $inline-compensation + 1bw)',
+      'description=block & !has-end-content': '$inline-padding',
     },
     '$description-padding-bottom': {
       '': '$block-padding',
-      'has-description-block': '$bottom-padding',
+      'description=block': '$bottom-padding',
     },
     '$bottom-padding':
       'max($block-padding, (($size - 4x) / 2) + $block-padding)',
 
-    Icon: DEFAULT_ICON_STYLES,
+    Icon: { ...DEFAULT_ICON_STYLES, gridArea: 'icon' },
 
-    RightIcon: DEFAULT_ICON_STYLES,
+    RightIcon: { ...DEFAULT_ICON_STYLES, gridArea: 'rightIcon' },
 
     Label: {
       $: '>',
+      gridArea: 'label',
       display: 'block',
       placeSelf: 'center start',
       boxSizing: 'border-box',
@@ -356,17 +340,13 @@ const ItemElement = tasty({
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       maxWidth: '100%',
-      gridRow: {
-        '': 'span 2',
-        'has-description': 'span 1',
-        'has-description-block': 'span 2',
-      },
       padding:
         '$block-padding $label-padding-right $label-padding-bottom $label-padding-left',
     },
 
     Description: {
       $: '>',
+      gridArea: 'description',
       preset: 't4',
       color: 'inherit',
       opacity: 0.75,
@@ -375,20 +355,13 @@ const ItemElement = tasty({
       textOverflow: 'ellipsis',
       maxWidth: '100%',
       textAlign: 'left',
-      gridRow: {
-        '': 'span 1',
-        'has-description-block': '3 / span 1',
-      },
-      gridColumn: {
-        '': 'span 1',
-        'has-description-block': '1 / -1',
-      },
       padding:
         '0 $description-padding-right $description-padding-bottom $description-padding-left',
     },
 
     Prefix: {
       ...ADDITION_STYLES,
+      gridArea: 'prefix',
       padding: {
         '': '$inline-padding left',
         'has-icon': 0,
@@ -397,6 +370,7 @@ const ItemElement = tasty({
 
     Suffix: {
       ...ADDITION_STYLES,
+      gridArea: 'suffix',
       padding: {
         '': '$inline-padding right',
         'has-right-icon': 0,
@@ -405,6 +379,7 @@ const ItemElement = tasty({
 
     Actions: {
       $: '>',
+      gridArea: 'actions',
       display: 'flex',
       gap: '1bw',
       placeItems: 'center',
@@ -413,7 +388,6 @@ const ItemElement = tasty({
       padding: '0 $side-padding',
       boxSizing: 'border-box',
       height: 'min ($size - 2bw)',
-      gridRow: 'span 2',
       width: {
         '': '($actions-width, 0px)',
         'has-actions-content': 'calc-size(max-content, size)',
@@ -729,7 +703,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     return 'icon'; // fallback
   }, [loadingSlot, icon, rightIcon]);
 
-  const showDescriptions = useMemo(() => {
+  const showDescription = useMemo(() => {
     const copyProps = { ...descriptionProps };
     delete copyProps.id;
     return !!(description || Object.keys(copyProps).length > 0);
@@ -793,9 +767,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       'has-label': !!(children || labelProps),
       'has-prefix': !!finalPrefix,
       'has-suffix': !!finalSuffix,
-      'has-description': showDescriptions,
-      'has-description-block':
-        showDescriptions && descriptionPlacement === 'block',
+      'has-description': showDescription,
       'has-actions': !!actions,
       'has-actions-content': !!(actions && actions !== true),
       checkbox: hasCheckbox,
@@ -805,6 +777,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       card: isCard === true,
       button: isButton === true,
       ...(typeof size === 'number' ? {} : { size }),
+      description: showDescription ? descriptionPlacement : 'none',
       type,
       theme,
       shape,
@@ -815,7 +788,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     finalRightIcon,
     finalPrefix,
     finalSuffix,
-    showDescriptions,
+    showDescription,
     descriptionPlacement,
     hasCheckbox,
     isSelected,
@@ -893,7 +866,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
               {children}
             </div>
           ) : null}
-          {showDescriptions ? (
+          {showDescription ? (
             <div data-element="Description" {...descriptionProps}>
               {description}
             </div>
