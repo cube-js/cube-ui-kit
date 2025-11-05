@@ -12,6 +12,8 @@ ListBox, FilterListBox, Select, ComboBox, FilterPicker, Picker, Menu, CommandMen
 
 ## Usage Patterns
 
+There are two ways to provide items to collection components:
+
 ### Static JSX
 
 Define items directly. You **must** provide `key` props:
@@ -25,9 +27,10 @@ Define items directly. You **must** provide `key` props:
 
 ### Data-driven (Recommended)
 
-Use `items` prop with render function. You **must** pass `key` explicitly:
+**🚨 IMPORTANT:** The `items` prop **must be an array of objects**, where each object contains at least an `id` or `key` property.
 
 ```jsx live=false
+// ✅ Correct: Array of objects with id/key
 const items = [
   { id: 'apple', name: 'Apple' },
   { id: 'banana', name: 'Banana' },
@@ -36,6 +39,14 @@ const items = [
 <ListBox items={items}>
   {(item) => <ListBox.Item key={item.id}>{item.name}</ListBox.Item>}
 </ListBox>
+```
+
+```jsx live=false
+// ❌ Wrong: Array of strings won't work
+const items = ['apple', 'banana']; // Don't do this!
+
+// ❌ Wrong: Array of primitives won't work
+const items = [1, 2, 3]; // Don't do this!
 ```
 
 ## Item Requirements
@@ -181,15 +192,21 @@ const items = [
 ## Best Practices
 
 ```jsx live=false
-// ✅ Always provide id/key in data
+// ✅ Items must be an array of objects
 const items = [{ id: 'user-1', name: 'John' }];
 
-// ✅ Always pass key prop
+// ✅ Always provide id/key in each object
+const items = [
+  { id: 'apple', name: 'Apple' },
+  { id: 'banana', name: 'Banana' },
+];
+
+// ✅ Always pass key prop to Item
 <ListBox items={items}>
   {(item) => <ListBox.Item key={item.id}>{item.name}</ListBox.Item>}
 </ListBox>
 
-// ✅ Consistent types
+// ✅ Consistent types for id/key
 const items = [
   { id: '1', name: 'First' },
   { id: '2', name: 'Second' },
@@ -208,10 +225,22 @@ const items = useMemo(
   [data]
 );
 
+// ❌ Don't pass array of strings
+const items = ['apple', 'banana']; // Wrong!
+
+// ❌ Don't pass array of numbers
+const items = [1, 2, 3]; // Wrong!
+
 // ❌ Don't omit key prop
 <ListBox items={items}>
   {(item) => <ListBox.Item>{item.name}</ListBox.Item>}
 </ListBox>
+
+// ❌ Don't omit id/key in objects
+const items = [
+  { name: 'First' }, // Missing id!
+  { name: 'Second' }, // Missing id!
+];
 
 // ❌ Don't mix types
 const items = [
@@ -259,10 +288,11 @@ const items: User[] = [
 
 ## Essential Rules
 
-1. **🚨 Always provide `id` or `key` in data** - Required for selection callbacks to work properly. Without it, React Aria uses order-based keys which are useless in select components.
-2. **🚨 Always pass `key` prop to Item** - Must explicitly pass `key={item.id}` or `key={item.key}` in the render function
-3. **Provide explicit `textValue`** - For icons, complex content, or searchable components
-4. **Use consistent types** - All strings or all numbers, never mixed
+1. **🚨 The `items` prop must be an array of objects** - Never pass arrays of strings, numbers, or other primitives. Each object must have an `id` or `key` property.
+2. **🚨 Always provide `id` or `key` in each object** - Required for selection callbacks to work properly. Without it, React Aria uses order-based keys which are useless in select components.
+3. **🚨 Always pass `key` prop to Item** - Must explicitly pass `key={item.id}` or `key={item.key}` in the render function
+4. **Provide explicit `textValue`** - For icons, complex content, or searchable components
+5. **Use consistent types** - All strings or all numbers, never mixed
 
 ## Related Components
 
