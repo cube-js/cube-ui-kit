@@ -42,14 +42,16 @@ const KeyElement = tasty({
     color: {
       '': '#dark.65',
       'type=primary': '#white',
+      'type=inherit': 'currentColor',
     },
     fill: {
       '': '#dark.04',
-      'type=primary': '#clear',
+      'type=primary | type=inherit': '#clear',
     },
     border: {
       '': true,
       'type=primary': '#white',
+      'type=inherit': 'currentColor',
     },
   },
 });
@@ -58,7 +60,7 @@ export interface CubeHotKeysProps
   extends BasePropsWithoutChildren,
     ContainerStyleProps {
   children: string;
-  type?: 'default' | 'primary';
+  type?: 'default' | 'primary' | 'inherit';
 }
 
 function HotKeys(props: CubeHotKeysProps, ref) {

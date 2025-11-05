@@ -1,8 +1,7 @@
 ---
-globs: *.docs.mdx
+description: When updating the component documentation file *.docs.mdx
 alwaysApply: false
 ---
-
 # Component Documentation Guidelines
 
 This guide outlines the standards and structure for documenting components in the Cube UI Kit. Following these guidelines ensures consistency, clarity, and comprehensive coverage of component features.

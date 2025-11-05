@@ -43,6 +43,18 @@ Customizes the root element of the component (Space component).
 
 These properties allow direct style application without using the `styles` prop: `width`, `height`, `padding`, `margin`, `gap`, `flow`, `placeContent`, `placeItems`.
 
+#### type
+
+Defines the visual appearance of the keyboard shortcuts.
+
+**Type:** `'default' | 'primary' | 'inherit'`
+
+**Default:** `'default'`
+
+- `default` - Standard appearance with subtle background and border
+- `primary` - High contrast appearance with white text and border on transparent background
+- `inherit` - Adapts to parent's text color for both text and border, transparent background
+
 ### Accessibility Properties
 
 #### label
@@ -65,6 +77,50 @@ The `mods` property accepts standard Space component modifiers.
 
 ```jsx
 <HotKeys>mod+k</HotKeys>
+```
+
+### Types
+
+The HotKeys component supports different visual types:
+
+#### Default Type
+
+<Story of={HotKeysStories.Default} />
+
+```jsx
+<HotKeys>mod+k</HotKeys>
+```
+
+#### Primary Type
+
+<Story of={HotKeysStories.Primary} />
+
+```jsx
+<HotKeys type="primary" aria-label="Search">mod+k</HotKeys>
+```
+
+#### Inherit Type
+
+The `inherit` type uses the current text color for the border and text, making it adapt to its parent's color context.
+
+<Story of={HotKeysStories.Inherit} />
+
+```jsx
+<HotKeys type="inherit" aria-label="Search">mod+k</HotKeys>
+```
+
+#### Inherit Type in Context
+
+The inherit type is particularly useful when the HotKeys component needs to match the surrounding text color:
+
+<Story of={HotKeysStories.InheritInContext} />
+
+```jsx
+<div style={{ color: '#2563eb' }}>
+  <span>Press </span>
+  <HotKeys type="inherit" aria-label="Search">mod+k</HotKeys>
+  <span> to search</span>
+</div>
 ```
 
 ### With Accessibility Labels
