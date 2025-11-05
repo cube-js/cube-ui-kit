@@ -47,4 +47,26 @@ describe('<Alert /> component', () => {
 
     expect(result.current.filteredProps.qa).toBe('test');
   });
+
+  it('should default to card shape', () => {
+    const { result } = renderHook(() => useAlert({ theme: 'danger' }));
+
+    expect(result.current.mods.shape).toBe('card');
+  });
+
+  it('should correctly render sharp shape', () => {
+    const { result } = renderHook(() =>
+      useAlert({ theme: 'danger', shape: 'sharp' }),
+    );
+
+    expect(result.current.mods.shape).toBe('sharp');
+  });
+
+  it('should correctly render card shape', () => {
+    const { result } = renderHook(() =>
+      useAlert({ theme: 'success', shape: 'card' }),
+    );
+
+    expect(result.current.mods.shape).toBe('card');
+  });
 });

@@ -11,7 +11,7 @@ import { CubeAlertProps } from './types';
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES] as const;
 
 export function useAlert(props: CubeAlertProps) {
-  const { type, isDisabled = false, theme } = props;
+  const { type, isDisabled = false, theme, shape = 'card', mods } = props;
 
   const styles = extractStyles(props, STYLE_LIST);
 
@@ -26,6 +26,10 @@ export function useAlert(props: CubeAlertProps) {
   return {
     styles,
     theme: _theme,
+    mods: {
+      shape,
+      ...mods,
+    },
     filteredProps: filterBaseProps(props, { eventProps: true }),
   };
 }
