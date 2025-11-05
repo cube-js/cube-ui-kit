@@ -48,3 +48,15 @@ CustomStyling.args = {
   textAlign: 'center',
   fill: '#danger-bg',
 };
+
+export const SharpShape = Template.bind({});
+SharpShape.args = {
+  shape: 'sharp',
+  theme: 'success',
+};
+
+export const CardShape = Template.bind({});
+CardShape.args = {
+  shape: 'card',
+  theme: 'danger',
+};

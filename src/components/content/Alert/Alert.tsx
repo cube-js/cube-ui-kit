@@ -13,7 +13,10 @@ const AlertElement = tasty({
   styles: {
     display: 'block',
     flow: 'column',
-    radius: '1cr',
+    radius: {
+      '': '1cr',
+      'shape=sharp': '0',
+    },
     padding: '1.5x',
     preset: 't3',
     color: {
@@ -31,10 +34,11 @@ const AlertElement = tasty({
     border: {
       '': '#clear',
       ...Object.keys(THEMES).reduce((map, type) => {
-        map[`[data-type="${type}"]`] = THEMES[type].border;
+        map[`type=${type}`] = THEMES[type].border;
 
         return map;
       }, {}),
+      'shape=sharp': '0',
     },
   },
 });
@@ -43,14 +47,9 @@ export const Alert = forwardRef(function Alert(
   props: CubeAlertProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const { styles, theme, filteredProps } = useAlert(props);
+  const { styles, mods, filteredProps } = useAlert(props);
 
   return (
-    <AlertElement
-      {...filteredProps}
-      ref={ref}
-      data-type={theme}
-      styles={styles}
-    />
+    <AlertElement {...filteredProps} ref={ref} mods={mods} styles={styles} />
   );
 });

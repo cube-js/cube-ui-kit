@@ -18,4 +18,11 @@ export interface CubeAlertProps
    * @default note
    */
   theme?: keyof typeof THEMES;
+  /**
+   * Shape of the alert's border radius and border.
+   * - `card` - Card shape with border radius (`1cr`) and border
+   * - `sharp` - Sharp corners with no border radius or border (`0`)
+   * @default "card"
+   */
+  shape?: 'card' | 'sharp';
 }
