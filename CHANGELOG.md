@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.89.1
+
+### Patch Changes
+
+- [#877](https://github.com/cube-js/cube-ui-kit/pull/877) [`cec3339c`](https://github.com/cube-js/cube-ui-kit/commit/cec3339ca78ddf458325b2edae3ed36d4ba0f136) Thanks [@tenphi](https://github.com/tenphi)! - Add `shape` prop to Alert component. The shape prop accepts 'card' (default, 1cr radius with border) or 'sharp' (no border radius or border) values to control border styling.
+
+- [#875](https://github.com/cube-js/cube-ui-kit/pull/875) [`f1bc522d`](https://github.com/cube-js/cube-ui-kit/commit/f1bc522dc9dacc90dccc83a2a415436f566a78ad) Thanks [@tenphi](https://github.com/tenphi)! - Add `inherit` type to HotKeys component. The inherit type uses `currentColor` for both text and border, allowing the component to adapt to its parent's color context with a transparent background.
+
 ## 0.89.0
 
 ### Minor Changes
