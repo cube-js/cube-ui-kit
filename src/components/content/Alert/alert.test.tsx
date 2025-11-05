@@ -4,8 +4,8 @@ import { useAlert } from './use-alert';
 
 describe('<Alert /> component', () => {
   beforeAll(() => {
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
-    jest.spyOn(console, 'group').mockImplementation(() => {});
+    jest.spyOn(console, 'warn').mockImplementation(() => { });
+    jest.spyOn(console, 'group').mockImplementation(() => { });
   });
 
   afterAll(() => {
@@ -17,19 +17,19 @@ describe('<Alert /> component', () => {
       useAlert({ theme: 'danger', isDisabled: true }),
     );
 
-    expect(result.current.theme).toBe('disabled');
+    expect(result.current.mods.type).toBe('disabled');
   });
 
   it('should correctly render theme', () => {
     const { result } = renderHook(() => useAlert({ theme: 'danger' }));
 
-    expect(result.current.theme).toBe('danger');
+    expect(result.current.mods.type).toBe('danger');
   });
 
   it('should correctly render type', () => {
     const { result } = renderHook(() => useAlert({ type: 'danger' }));
 
-    expect(result.current.theme).toBe('danger');
+    expect(result.current.mods.type).toBe('danger');
   });
 
   it('should correctly render theme', () => {
@@ -37,7 +37,7 @@ describe('<Alert /> component', () => {
       useAlert({ theme: 'danger', type: 'note' }),
     );
 
-    expect(result.current.theme).toBe('danger');
+    expect(result.current.mods.type).toBe('danger');
   });
 
   it('should add qa', () => {
