@@ -4,8 +4,8 @@ import { useAlert } from './use-alert';
 
 describe('<Alert /> component', () => {
   beforeAll(() => {
-    jest.spyOn(console, 'warn').mockImplementation(() => { });
-    jest.spyOn(console, 'group').mockImplementation(() => { });
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    jest.spyOn(console, 'group').mockImplementation(() => {});
   });
 
   afterAll(() => {
