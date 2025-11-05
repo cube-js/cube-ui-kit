@@ -34,7 +34,7 @@ const AlertElement = tasty({
     border: {
       '': '#clear',
       ...Object.keys(THEMES).reduce((map, type) => {
-        map[`[data-type="${type}"]`] = THEMES[type].border;
+        map[`type=${type}`] = THEMES[type].border;
 
         return map;
       }, {}),
@@ -47,15 +47,9 @@ export const Alert = forwardRef(function Alert(
   props: CubeAlertProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const { styles, theme, mods, filteredProps } = useAlert(props);
+  const { styles, mods, filteredProps } = useAlert(props);
 
   return (
-    <AlertElement
-      {...filteredProps}
-      ref={ref}
-      data-type={theme}
-      mods={mods}
-      styles={styles}
-    />
+    <AlertElement {...filteredProps} ref={ref} mods={mods} styles={styles} />
   );
 });

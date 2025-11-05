@@ -25,9 +25,9 @@ export function useAlert(props: CubeAlertProps) {
 
   return {
     styles,
-    theme: _theme,
     mods: {
       shape,
+      type: _theme,
       ...mods,
     },
     filteredProps: filterBaseProps(props, { eventProps: true }),
