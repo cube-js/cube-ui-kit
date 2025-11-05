@@ -15,6 +15,18 @@ export default {
         type: { summary: 'string' },
       },
     },
+    type: {
+      control: {
+        type: 'select',
+      },
+      options: ['default', 'primary', 'inherit'],
+      description:
+        'Visual appearance type: default (subtle), primary (high contrast), or inherit (adapts to parent color)',
+      table: {
+        type: { summary: "'default' | 'primary' | 'inherit'" },
+        defaultValue: { summary: 'default' },
+      },
+    },
     'aria-label': {
       control: {
         type: 'text',
@@ -116,5 +128,64 @@ WithCustomStyles.args = {
     padding: '2x',
     fill: '#purple.10',
     radius: '1r',
+  },
+};
+
+export const Primary: StoryFn<CubeHotKeysProps> = (args) => (
+  <div style={{ padding: '16px', background: '#1a1a1a', borderRadius: '8px' }}>
+    <HotKeys {...args} />
+  </div>
+);
+Primary.args = {
+  children: 'mod+k',
+  type: 'primary',
+  'aria-label': 'Search',
+};
+
+export const Inherit = Template.bind({});
+Inherit.args = {
+  children: 'mod+k',
+  type: 'inherit',
+  'aria-label': 'Search',
+};
+
+export const InheritInContext: StoryFn<CubeHotKeysProps> = () => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ color: '#2563eb' }}>
+      <span>Press </span>
+      <HotKeys type="inherit" aria-label="Search">
+        mod+k
+      </HotKeys>
+      <span> to search (blue context)</span>
+    </div>
+    <div style={{ color: '#dc2626' }}>
+      <span>Press </span>
+      <HotKeys type="inherit" aria-label="Delete">
+        delete
+      </HotKeys>
+      <span> to delete (red context)</span>
+    </div>
+    <div style={{ color: '#16a34a' }}>
+      <span>Press </span>
+      <HotKeys type="inherit" aria-label="Save">
+        mod+s
+      </HotKeys>
+      <span> to save (green context)</span>
+    </div>
+    <div style={{ color: '#9333ea' }}>
+      <span>Press </span>
+      <HotKeys type="inherit" aria-label="Command palette">
+        mod+shift+p
+      </HotKeys>
+      <span> for commands (purple context)</span>
+    </div>
+  </div>
+);
+InheritInContext.parameters = {
+  docs: {
+    description: {
+      story:
+        "The inherit type adapts to the parent element's text color, making it perfect for use within colored text contexts.",
+    },
   },
 };

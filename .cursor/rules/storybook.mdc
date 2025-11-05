@@ -1,5 +1,5 @@
 ---
-globs: *.stories.tsx,*.docs.mdx
+description: When updating storybook files and documentatino files *.stories.tsx, *.docs.mdx
 alwaysApply: false
 ---
 ## Imports
