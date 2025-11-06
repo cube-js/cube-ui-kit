@@ -25,9 +25,7 @@ A foundational component that provides a standardized layout and styling for ite
 
 <Controls of={ItemStories.Default} />
 
-### Base Properties
-
-Supports [Base properties](/BaseProperties)
+Supports [Base properties](/docs/tasty-base-properties--docs)
 
 ## Styling
 
@@ -206,7 +204,9 @@ Item supports inline actions that appear on the right side. Use the `Item.Action
 </Item>
 ```
 
-Actions automatically inherit the parent's `type` prop and adjust their styling accordingly. The component reserves space for actions to prevent content overlap.
+Actions automatically inherit the parent's `type` and `theme` props and adjust their styling accordingly. The component reserves space for actions to prevent content overlap.
+
+By default, action buttons are focusable. Use `disableActionsFocus={true}` to prevent them from receiving keyboard focus.
 
 #### Show Actions on Hover
 
@@ -371,14 +371,15 @@ By default, Item shows an auto tooltip when content overflows.
 ## Related Components
 
 - [ItemButton](/docs/actions-itembutton--docs) - Interactive button built on Item
-- [Item.Action](/docs/actions-itemaction--docs) - Action button component for inline actions (also available as `ItemButton.Action`, `Menu.Item.Action`, etc.)
-- [Select](/docs/forms-select--docs) - Dropdown selection component using Item
-- [ComboBox](/docs/forms-combobox--docs) - Searchable dropdown component using Item
-- [ListBox](/docs/forms-listbox--docs) - List selection component using Item
-- [FilterListBox](/docs/forms-filterlistbox--docs) - Filterable list component using Item
-- [FilterPicker](/docs/forms-filterpicker--docs) - Filter selection component using Item
+- [ItemAction](/docs/actions-itemaction--docs) - Action button component for inline actions (also available as `Item.Action`, `ItemButton.Action`, `Menu.Item.Action`, etc.)
+- [ItemBadge](/docs/content-itembadge--docs) - Badge component for displaying labels or counts (also available as `Item.Badge`)
+- [Select](/docs/fields-select--docs) - Dropdown selection component using Item
+- [ComboBox](/docs/fields-combobox--docs) - Searchable dropdown component using Item
+- [ListBox](/docs/fields-listbox--docs) - List selection component using Item
+- [FilterListBox](/docs/fields-filterlistbox--docs) - Filterable list component using Item
+- [FilterPicker](/docs/fields-filterpicker--docs) - Filter selection component using Item
 - [Menu](/docs/actions-menu--docs) - Context menu component using Item
 - [CommandMenu](/docs/actions-commandmenu--docs) - Command palette component using Item
 - [Button](/docs/actions-button--docs) - Traditional button component
 - [Link](/docs/navigation-link--docs) - Text link component
-- [Text](/docs/generic-text--docs) - Typography component for simple text
+- [Text](/docs/content-text--docs) - Typography component for simple text

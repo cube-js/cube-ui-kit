@@ -4,26 +4,14 @@ alwaysApply: false
 ---
 # Component Documentation Guidelines
 
-This guide outlines the standards and structure for documenting components in the Cube UI Kit. Following these guidelines ensures consistency, clarity, and comprehensive coverage of component features.
-
-## Overview
-
-Our component documentation serves multiple purposes:
-- Provides clear usage instructions for developers
-- Ensures accessibility best practices are communicated
-- Documents styling capabilities through the `tasty` style system
-- Maintains consistency across all component documentation
-
 ## Key Principles
 
-1. **Accessibility First**: Components use React Aria Hooks and documentation should emphasize accessibility features
-2. **Style System Integration**: Document `tasty` styling capabilities thoroughly
-3. **Practical Examples**: Include real-world usage examples, not just API references
-4. **Clear Structure**: Follow the prescribed documentation structure for consistency
+1. **Accessibility First**: Document React Aria features and keyboard/screen reader support
+2. **Style System**: Document `tasty` styling capabilities (sub-elements, modifiers, style props)
+3. **Code Examples Required**: **CRITICAL - Stories alone are NOT code examples. Always include actual JSX code snippets showing usage.**
+4. **Clear Structure**: Follow the prescribed structure below
 
 ## Documentation Structure
-
-Every component documentation file should follow this structure:
 
 ```mdx
 import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
@@ -104,6 +92,8 @@ The `mods` property accepts the following modifiers you can override:
 
 ## Examples
 
+**IMPORTANT: Stories are for interactive demos. You MUST also provide JSX code snippets in this section.**
+
 ### Basic Usage
 
 ```jsx
@@ -111,6 +101,8 @@ The `mods` property accepts the following modifiers you can override:
 ```
 
 ### [Additional Examples as needed]
+
+**Each example must show actual code, not just reference a story.**
 
 ## Accessibility
 
@@ -163,84 +155,55 @@ This component supports all [Field properties](/field-properties.md) when used w
 - [RelatedComponent2](/components/RelatedComponent2) - Complementary component
 ```
 
-## Specific Guidelines
+## Guidelines
 
-### 1. Component Description
+### Properties
 
-- Start with a clear, concise description of what the component is
-- Follow with scenarios where the component should be used
-- Avoid technical implementation details in the introduction
+- **Props List**: Use `<Controls of={componentStories.Default} />` - DO NOT manually list props if Controls is used
+- **Base Properties**: Link to `/base-properties.md` instead of listing (unless `qa` has special behavior)
+- **Styling Properties**: Document `styles`/`*Styles` props. List sub-elements that can be overridden (check component's tasty styles)
+- **Style Properties**: List direct styling props (`width`, `height`, etc.) - see `src/tasty/styles/list.ts`
+- **React Aria Properties**: Only document if adding clarifications beyond what Controls shows
 
-### 2. Properties Documentation
+### Examples
 
-#### Base Properties
-- If the component uses `filterBaseProps`, don't list base properties individually
-- Instead, include the link: `Supports [Base properties](/base-properties.md)`
-- Exception: Always document the `qa` property if it has special behavior
+- **CRITICAL**: Must include JSX code snippets, not just story references
+- Provide real-world examples with clear purpose
+- Avoid pure styling examples unless demonstrating essential capabilities
+- More sophisticated components need more examples to cover all cases
 
-#### Styling Properties
-- Document each `styles` or `*Styles` property separately
-- For each styling property, list all available tasty sub-elements with descriptions. Count only those sub-elements that are mentioned in tasty styles in the root element inside component and can be overrided by passing an object with a specific key (sub-element name) to `styles` property
-- Format: `ElementName` - Description of what this element represents
+### Modifiers
 
-#### Style Properties
-- List all properties that can be used for direct styling (e.g., `width`, `height`, `padding`)
-- These are properties that map to `tasty` styles without using the `styles` prop
-- Use `src/tasty/styles/list.ts` file to understand how it works.
+- Document all `mods` property values
+- Explain effects on appearance/behavior
+- Note special modifier combinations
 
-#### React Aria Properties
-- Document all React Aria properties with clear descriptions
-- It's acceptable to rewrite React Aria descriptions for clarity
-- Focus on practical usage rather than technical implementation
+### Accessibility
 
-### 3. Examples
+- Keyboard navigation patterns
+- Screen reader behavior
+- Relevant ARIA properties
+- Accessible implementation guidance
 
-- Provide practical, real-world examples written in `jsx` code
-- Avoid styling examples unless it demonstrates essential capabilities
-- Each example should have a clear purpose and title
-- Do not use Storybook's Canvas and Story components for interactive examples
-- Each story should describe a usage case
-- The more sophisticated component, the more stories we need to cover all cases
+### Form Integration
 
-### 4. Modifiers
+For input components: "This component supports all [Field properties](/field-properties.md) when used within a Form."
 
-- Document all available modifiers that can be passed via the `mods` property
-- Explain how each modifier affects the component's appearance or behavior
-- Include any modifier combinations that have special behavior
+### File Naming
 
-### 5. Accessibility Section
-
-- Include keyboard navigation patterns
-- Document screen reader behavior
-- List relevant ARIA properties and their usage
-- Provide guidance on ensuring accessible implementations
-
-### 6. Form Integration
-
-For input components (TextInput, Select, DatePicker, etc.):
-- Don't duplicate field property documentation
-- Include: "This component supports all [Field properties](/field-properties.md) when used within a Form."
-
-### 7. File Naming and Location
-
-- Documentation files use `.docs.mdx` extension
-- Place in the same directory as the component
-- Naming convention: `ComponentName.tsx` → `ComponentName.docs.mdx`
+`ComponentName.tsx` → `ComponentName.docs.mdx` in same directory
 
 ## Review Checklist
 
-Before submitting component documentation, ensure:
-
-- [ ] Follows the prescribed structure
-- [ ] Includes practical examples with Storybook Stories
-- [ ] Documents all styling properties and sub-elements
-- [ ] Lists all modifiers with descriptions
-- [ ] Includes accessibility information
-- [ ] Contains best practices section
-- [ ] Has "Suggested Improvements" section
-- [ ] Uses correct file naming and location
-- [ ] All links use provided placeholder format
-- [ ] Style properties are documented separately from styling properties
-- [ ] Form integration mentioned for input components
+- [ ] **JSX code snippets provided (not just stories)**
+- [ ] **No manual props list if using `<Controls />`**
+- [ ] Follows prescribed structure
+- [ ] Styling properties and sub-elements documented
+- [ ] Modifiers listed with descriptions
+- [ ] Accessibility section complete
+- [ ] Best practices included
+- [ ] Suggested improvements section
+- [ ] Style props vs styling props separated
+- [ ] Form integration noted (input components)
 - [ ] Base properties linked, not listed (except `qa`)
-- [ ] Tabler (`@tabler/icons-react`) or UI Kit icons are used in examples
+- [ ] Icons from `@tabler/icons-react` or `/src/icons`
