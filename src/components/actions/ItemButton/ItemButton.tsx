@@ -98,7 +98,7 @@ const ItemButton = forwardRef(function ItemButton(
     to,
     htmlType,
     as,
-    type,
+    type = 'neutral',
     theme,
     onPress,
     actions,
@@ -126,20 +126,6 @@ const ItemButton = forwardRef(function ItemButton(
 
   const { hoverProps, isHovered } = useHover({});
 
-  const finalWrapperStyles = useMemo(() => {
-    return wrapperStyles
-      ? {
-          ...wrapperStyles,
-          ...(wrapperStyles?.Actions
-            ? {
-                '& > [data-element="Actions"]': wrapperStyles.Actions,
-                Actions: undefined,
-              }
-            : undefined),
-        }
-      : undefined;
-  }, [wrapperStyles]);
-
   const { actionProps } = useAction(
     { ...(allProps as any), htmlType, to, as, mods },
     ref,
@@ -162,7 +148,7 @@ const ItemButton = forwardRef(function ItemButton(
         {...hoverProps}
         data-size={size}
         mods={{ 'actions-hidden': !areActionsShown && showActionsOnHover }}
-        styles={finalWrapperStyles}
+        styles={wrapperStyles}
         style={
           {
             '--actions-width':
