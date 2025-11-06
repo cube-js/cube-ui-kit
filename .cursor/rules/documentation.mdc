@@ -1,5 +1,5 @@
 ---
-description: When updating the component documentation file *.docs.mdx
+description: When creating or updating the component documentation file *.docs.mdx
 alwaysApply: false
 ---
 # Component Documentation Guidelines

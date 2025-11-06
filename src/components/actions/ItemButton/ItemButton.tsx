@@ -25,7 +25,6 @@ export interface CubeItemButtonProps
   actions?: ReactNode;
   size?: Omit<CubeItemProps['size'], 'inline'>;
   wrapperStyles?: Styles;
-  showActionsOnHover?: boolean;
 }
 
 const StyledItem = tasty(Item, {
@@ -105,6 +104,7 @@ const ItemButton = forwardRef(function ItemButton(
     size = 'medium',
     wrapperStyles,
     showActionsOnHover = false,
+    disableActionsFocus = false,
     ...rest
   } = allProps as CubeItemButtonProps & {
     as?: 'a' | 'button' | 'div' | 'span';
@@ -160,7 +160,11 @@ const ItemButton = forwardRef(function ItemButton(
         }
       >
         {button}
-        <ItemActionProvider type={type} theme={theme}>
+        <ItemActionProvider
+          type={type}
+          theme={theme}
+          disableActionsFocus={disableActionsFocus}
+        >
           {showActionsOnHover ? (
             <DisplayTransition
               exposeUnmounted

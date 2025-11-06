@@ -1,10 +1,10 @@
+import { userEvent, within } from '@storybook/test';
 import {
   IconEdit,
   IconExternalLink,
   IconFile,
   IconTrash,
 } from '@tabler/icons-react';
-import { userEvent, within } from 'storybook/test';
 
 import { timeout } from '../../../utils/promise';
 import { ItemAction } from '../ItemAction';

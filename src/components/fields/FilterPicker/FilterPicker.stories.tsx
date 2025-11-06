@@ -1,5 +1,5 @@
+import { userEvent, within } from '@storybook/test';
 import { useEffect, useMemo, useState } from 'react';
-import { userEvent, within } from 'storybook/test';
 
 import {
   CheckIcon,

@@ -65,6 +65,7 @@ The `mods` property accepts the following modifiers:
 | has-description-block | `boolean` | Applied when description placement is "block" |
 | has-actions | `boolean` | Applied when actions prop is provided |
 | has-actions-content | `boolean` | Applied when actions have actual content (not just placeholder) |
+| show-actions-on-hover | `boolean` | Applied when showActionsOnHover is true |
 | checkbox | `boolean` | Applied when using checkbox icon (icon="checkbox") |
 | selected | `boolean` | Applied when isSelected is true |
 | disabled | `boolean` | Applied when isDisabled is true or when loading |
@@ -206,6 +207,29 @@ Item supports inline actions that appear on the right side. Use the `Item.Action
 ```
 
 Actions automatically inherit the parent's `type` prop and adjust their styling accordingly. The component reserves space for actions to prevent content overlap.
+
+#### Show Actions on Hover
+
+Use `showActionsOnHover` to hide actions by default and reveal them on hover, focus, or focus-within:
+
+```jsx
+<Item 
+  icon={<IconFile />}
+  showActionsOnHover={true}
+  actions={
+    <>
+      <Item.Action icon={<IconEdit />} aria-label="Edit" onPress={handleEdit} />
+      <Item.Action icon={<IconTrash />} aria-label="Delete" onPress={handleDelete} />
+    </>
+  }
+>
+  Hover to show actions
+</Item>
+```
+
+This provides a cleaner interface while keeping actions easily accessible. The actions remain in the layout (using opacity transitions) to prevent content shifting.
+
+<Story of={ItemStories.WithActionsOnHover} />
 
 ### With Tooltip
 

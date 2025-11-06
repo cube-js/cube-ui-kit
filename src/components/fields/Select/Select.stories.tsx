@@ -1,5 +1,5 @@
+import { userEvent, within } from '@storybook/test';
 import { IconCoin, IconUser } from '@tabler/icons-react';
-import { userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Text } from '../../content/Text';

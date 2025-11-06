@@ -1,5 +1,5 @@
 import { StoryFn } from '@storybook/react-vite';
-import { userEvent, within } from 'storybook/test';
+import { userEvent, within } from '@storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 
