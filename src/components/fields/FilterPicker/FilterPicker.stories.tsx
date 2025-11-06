@@ -647,11 +647,6 @@ export const CustomSummary: Story = {
       return `${selectedKeys.length} items selected (${selectedLabels.slice(0, 2).join(', ')}${selectedKeys.length > 2 ? '...' : ''})`;
     },
   },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const trigger = canvas.getByRole('button');
-    await userEvent.click(trigger);
-  },
   render: (args) => (
     <FilterPicker {...args}>
       <FilterPicker.Section title="Fruits">
@@ -674,7 +669,7 @@ export const CustomSummary: Story = {
     docs: {
       description: {
         story:
-          'Use the `renderSummary` prop to customize how the selection is displayed in the trigger button.',
+          'Use the `renderSummary` prop to customize how the selection is displayed in the trigger button. When the custom renderer returns null (e.g., when no selection is made), the placeholder is shown instead.',
       },
     },
   },
@@ -689,11 +684,6 @@ export const NoSummary: Story = {
     icon: <FilterIcon />,
     rightIcon: null,
   },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const trigger = canvas.getByRole('button');
-    await userEvent.click(trigger);
-  },
   render: (args) => (
     <FilterPicker {...args}>
       {fruits.map((fruit) => (
@@ -707,7 +697,7 @@ export const NoSummary: Story = {
     docs: {
       description: {
         story:
-          'When `renderSummary={false}`, no text is shown in the trigger, making it useful for icon-only filter buttons.',
+          'When `renderSummary={false}`, no text is shown in the trigger, making it useful for icon-only filter buttons. The trigger displays only the icon, regardless of selection state.',
       },
     },
   },

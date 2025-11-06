@@ -198,7 +198,7 @@ export const ItemAction = forwardRef(function ItemAction(
   );
 
   // Set tabIndex when in context
-  const finalTabIndex = disableActionsFocus ? -1 : rest.tabIndex || undefined;
+  const finalTabIndex = disableActionsFocus ? -1 : rest.tabIndex ?? undefined;
 
   // Determine if we should show tooltip (icon-only buttons)
   const showTooltip = !children && tooltip;
