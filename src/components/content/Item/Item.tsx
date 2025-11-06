@@ -873,7 +873,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           styles={styles}
           type={htmlType as any}
           {...mergeProps(rest, tooltipTriggerProps || {})}
-          tabIndex={-1}
           style={finalStyle}
         >
           {finalIcon && (
