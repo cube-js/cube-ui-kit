@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.89.2
+
+### Patch Changes
+
+- [#878](https://github.com/cube-js/cube-ui-kit/pull/878) [`8d17104e`](https://github.com/cube-js/cube-ui-kit/commit/8d17104e18f6c6789bf4f2f7a83b810173a77f3b) Thanks [@tenphi](https://github.com/tenphi)! - Set `neutral` as the default type for ItemButton.
+
 ## 0.89.1
 
 ### Patch Changes
