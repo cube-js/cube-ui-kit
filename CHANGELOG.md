@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.90.1
+
+### Patch Changes
+
+- [#882](https://github.com/cube-js/cube-ui-kit/pull/882) [`568f44a2`](https://github.com/cube-js/cube-ui-kit/commit/568f44a23dd2b152702006dae5316ba3950513be) Thanks [@tenphi](https://github.com/tenphi)! - Fix leakage of `description` prop to the trigger in Select. Add `triggerDescription` prop.
+
 ## 0.90.0
 
 ### Minor Changes
