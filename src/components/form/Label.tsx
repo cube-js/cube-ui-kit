@@ -54,7 +54,6 @@ export const INLINE_LABEL_STYLES: Styles = {
     '': '#dark-02',
     invalid: '#danger-text',
   },
-  whiteSpace: 'nowrap',
 } as const;
 
 export const LABEL_STYLES: Styles = {
@@ -67,7 +66,6 @@ export const LABEL_STYLES: Styles = {
     '': '#dark',
     invalid: '#danger-text',
   },
-  whiteSpace: 'nowrap',
   width: {
     '': 'initial',
     side: '($label-width, initial)',

@@ -1,4 +1,9 @@
-import { CSSProperties, forwardRef } from 'react';
+import {
+  CSSProperties,
+  forwardRef,
+  ForwardRefExoticComponent,
+  RefAttributes,
+} from 'react';
 
 import {
   AllBaseProps,
@@ -141,15 +146,10 @@ const PlaceholderText = tasty(Text, {
   },
 });
 
-const _Text = Object.assign(Text, {
-  Minor: MinorText,
-  Danger: DangerText,
-  Success: SuccessText,
-  Strong: StrongText,
-  Emphasis: EmphasisText,
-  Selection: SelectionText,
-  Placeholder: PlaceholderText,
-}) as typeof Text & {
+export interface TextComponent
+  extends ForwardRefExoticComponent<
+    CubeTextProps & RefAttributes<HTMLElement>
+  > {
   Minor: typeof MinorText;
   Danger: typeof DangerText;
   Success: typeof SuccessText;
@@ -157,7 +157,17 @@ const _Text = Object.assign(Text, {
   Emphasis: typeof EmphasisText;
   Selection: typeof SelectionText;
   Placeholder: typeof PlaceholderText;
-};
+}
+
+const _Text: TextComponent = Object.assign(Text, {
+  Minor: MinorText,
+  Danger: DangerText,
+  Success: SuccessText,
+  Strong: StrongText,
+  Emphasis: EmphasisText,
+  Selection: SelectionText,
+  Placeholder: PlaceholderText,
+});
 
 _Text.displayName = 'Text';
 
