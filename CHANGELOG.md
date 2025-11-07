@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.90.0
+
+### Minor Changes
+
+- [#880](https://github.com/cube-js/cube-ui-kit/pull/880) [`e5884d46`](https://github.com/cube-js/cube-ui-kit/commit/e5884d4671e2bbb818d55a47e48a1ba671a9abfa) Thanks [@tenphi](https://github.com/tenphi)! - Add `showActionsOnHover` prop to Item component. When enabled, actions are hidden by default and revealed smoothly on hover, focus, or focus-within states using opacity transitions. This provides a cleaner interface while keeping actions easily accessible without content shifting.
+
+### Patch Changes
+
+- [#880](https://github.com/cube-js/cube-ui-kit/pull/880) [`e5884d46`](https://github.com/cube-js/cube-ui-kit/commit/e5884d4671e2bbb818d55a47e48a1ba671a9abfa) Thanks [@tenphi](https://github.com/tenphi)! - Allow text wrapping in labels.
+
+- [#880](https://github.com/cube-js/cube-ui-kit/pull/880) [`e5884d46`](https://github.com/cube-js/cube-ui-kit/commit/e5884d4671e2bbb818d55a47e48a1ba671a9abfa) Thanks [@tenphi](https://github.com/tenphi)! - Fix FilterPicker `renderSummary` to be evaluated regardless of selection state. The custom summary renderer and `renderSummary={false}` now work correctly even when no items are selected, providing consistent control over trigger content display.
+
+- [#880](https://github.com/cube-js/cube-ui-kit/pull/880) [`e5884d46`](https://github.com/cube-js/cube-ui-kit/commit/e5884d4671e2bbb818d55a47e48a1ba671a9abfa) Thanks [@tenphi](https://github.com/tenphi)! - Add `Text.Placeholder` variant with disabled opacity styling. This new text variant is useful for displaying placeholder content with reduced visual emphasis.
+
 ## 0.89.2
 
 ### Patch Changes
