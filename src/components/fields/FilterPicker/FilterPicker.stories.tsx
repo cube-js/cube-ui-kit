@@ -1567,13 +1567,13 @@ export const InForm = () => {
 export const ComplexExample: Story = {
   args: {
     label: 'Advanced Filter System',
-    placeholder: 'Apply filters...',
     selectionMode: 'multiple',
     isCheckable: true,
     searchPlaceholder: 'Search all filters...',
     width: '30x',
     renderSummary: ({ selectedKeys, selectedLabels }) => {
-      if (selectedKeys.length === 0) return null;
+      if (selectedKeys.length === 0)
+        return <Text.Placeholder>Apply filters...</Text.Placeholder>;
       if (selectedKeys.length === 1) return `1 filter: ${selectedLabels[0]}`;
       if (selectedKeys.length <= 3)
         return `${selectedKeys.length} filters: ${selectedLabels.join(', ')}`;

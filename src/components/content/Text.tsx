@@ -99,26 +99,65 @@ const Text = forwardRef(function CubeText(allProps: CubeTextProps, ref) {
   );
 });
 
-const _Text = Object.assign(Text, {
-  Minor: forwardRef(function MinorText(props: CubeTextProps, ref) {
-    return <Text ref={ref} color="#minor" {...props} />;
-  }),
-  Danger: forwardRef(function DangerText(props: CubeTextProps, ref) {
-    return <Text ref={ref} role="alert" color="#danger-text" {...props} />;
-  }),
-  Success: forwardRef(function SuccessText(props: CubeTextProps, ref) {
-    return <Text ref={ref} color="#success-text" {...props} />;
-  }),
-  Strong: forwardRef(function StrongText(props: CubeTextProps<'strong'>, ref) {
-    return <Text ref={ref} as="strong" preset="strong" {...props} />;
-  }),
-  Emphasis: forwardRef(function StrongText(props: CubeTextProps<'em'>, ref) {
-    return <Text ref={ref} as="em" preset="em" {...props} />;
-  }),
-  Selection: forwardRef(function SelectionText(props: CubeTextProps, ref) {
-    return <Text ref={ref} color="#dark" fill="#note.30" {...props} />;
-  }),
+const MinorText = tasty(Text, {
+  styles: {
+    color: '#minor',
+  },
 });
+
+const DangerText = tasty(Text, {
+  role: 'alert',
+  styles: {
+    color: '#danger-text',
+  },
+});
+
+const SuccessText = tasty(Text, {
+  styles: {
+    color: '#success-text',
+  },
+});
+
+const StrongText = tasty(Text, {
+  as: 'strong',
+  preset: 'strong',
+});
+
+const EmphasisText = tasty(Text, {
+  as: 'em',
+  preset: 'em',
+});
+
+const SelectionText = tasty(Text, {
+  styles: {
+    color: '#dark',
+    fill: '#note.30',
+  },
+});
+
+const PlaceholderText = tasty(Text, {
+  styles: {
+    opacity: '$disabled-opacity',
+  },
+});
+
+const _Text = Object.assign(Text, {
+  Minor: MinorText,
+  Danger: DangerText,
+  Success: SuccessText,
+  Strong: StrongText,
+  Emphasis: EmphasisText,
+  Selection: SelectionText,
+  Placeholder: PlaceholderText,
+}) as typeof Text & {
+  Minor: typeof MinorText;
+  Danger: typeof DangerText;
+  Success: typeof SuccessText;
+  Strong: typeof StrongText;
+  Emphasis: typeof EmphasisText;
+  Selection: typeof SelectionText;
+  Placeholder: typeof PlaceholderText;
+};
 
 _Text.displayName = 'Text';
 
