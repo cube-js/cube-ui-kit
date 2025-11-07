@@ -182,7 +182,7 @@ export interface CubeSelectBaseProps<T>
   prefix?: ReactNode;
   suffix?: ReactNode;
   /** Description text for the trigger. Note: Different from field-level description. */
-  description?: ReactNode;
+  triggerDescription?: ReactNode;
   descriptionPlacement?: 'inline' | 'block';
   /** Keyboard shortcut that triggers the select when pressed */
   hotkeys?: string;
@@ -277,7 +277,7 @@ function Select<T extends object>(
     overlayStyles,
     suffix,
     message,
-    description,
+    triggerDescription,
     descriptionPlacement,
     hotkeys,
     direction = 'bottom',
@@ -462,7 +462,7 @@ function Select<T extends object>(
             <DirectionIcon to={state.isOpen ? 'up' : 'down'} />
           )
         }
-        description={description}
+        description={triggerDescription}
         descriptionPlacement={descriptionPlacement}
         hotkeys={hotkeys}
         tooltip={tooltip}
