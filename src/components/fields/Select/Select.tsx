@@ -116,6 +116,7 @@ export const ListBoxElement = tasty({
 // Use Item for options to unify item visuals and reduce custom styling
 const OptionItem = tasty(Item, {
   as: 'li',
+  disableActionsFocus: true,
   qa: 'Option',
   styles: {
     '$inline-compensation': '0px',

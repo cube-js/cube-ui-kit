@@ -2,6 +2,13 @@
 // NOTE: Type checking is disabled in this Storybook file to prevent
 // noisy errors from complex generic typings that do not affect runtime behaviour.
 import {
+  expect,
+  findByRole,
+  userEvent,
+  waitFor,
+  within,
+} from '@storybook/test';
+import {
   IconBook,
   IconBulb,
   IconCircleCheckFilled,
@@ -10,7 +17,6 @@ import {
   IconReload,
 } from '@tabler/icons-react';
 import { useState } from 'react';
-import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
 import {
   CheckIcon,
@@ -2029,6 +2035,7 @@ export const ItemsWithActions = (props) => {
         <Menu.Item
           key="file3"
           icon={<IconPlus />}
+          showActionsOnHover={true}
           actions={
             <>
               <ItemAction

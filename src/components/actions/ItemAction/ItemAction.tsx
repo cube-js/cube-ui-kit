@@ -50,6 +50,7 @@ export interface CubeItemActionProps
         title?: string;
       });
   styles?: Styles;
+  tabIndex?: number;
 }
 
 type ItemActionVariant =
@@ -129,7 +130,11 @@ export const ItemAction = forwardRef(function ItemAction(
   allProps: CubeItemActionProps,
   ref: FocusableRef<HTMLElement>,
 ) {
-  const { type: contextType, theme: contextTheme } = useItemActionContext();
+  const {
+    type: contextType,
+    theme: contextTheme,
+    disableActionsFocus,
+  } = useItemActionContext();
 
   const {
     type = contextType ?? 'neutral',
@@ -193,7 +198,7 @@ export const ItemAction = forwardRef(function ItemAction(
   );
 
   // Set tabIndex when in context
-  const finalTabIndex = contextType ? -1 : undefined;
+  const finalTabIndex = disableActionsFocus ? -1 : rest.tabIndex;
 
   // Determine if we should show tooltip (icon-only buttons)
   const showTooltip = !children && tooltip;

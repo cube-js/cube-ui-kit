@@ -128,6 +128,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
             submenuContext?.onMouseLeave || menuItemProps.onMouseLeave,
         })}
         ref={elementRef}
+        disableActionsFocus={true}
         icon={icon}
         rightIcon={submenuContext ? <RightIcon /> : rightIcon}
         prefix={prefix}

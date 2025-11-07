@@ -22,11 +22,10 @@ export interface CubeParagraphProps
   extends CubeTextProps,
     ContainerStyleProps {}
 
-export const Paragraph = forwardRef(function Paragraph(
-  props: CubeParagraphProps,
-  ref,
-) {
-  const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
+export const Paragraph = forwardRef<HTMLElement, CubeParagraphProps>(
+  function Paragraph(props, ref) {
+    const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
-  return <Text as="p" qa="Paragraph" {...props} ref={ref} styles={styles} />;
-});
+    return <Text as="p" qa="Paragraph" {...props} ref={ref} styles={styles} />;
+  },
+);

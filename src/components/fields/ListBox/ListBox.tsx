@@ -118,6 +118,7 @@ const ListBoxScrollElement = tasty({
 // Create an extended Item for ListBox options with 'all' modifier support
 const ListBoxItem = tasty(Item, {
   as: 'li',
+  disableActionsFocus: true,
   styles: {
     margin: {
       '': '0 0 1bw 0',

@@ -4,6 +4,13 @@ import THEMES from '../../../data/themes';
 import { tasty } from '../../../tasty';
 import { CubeItemProps, Item } from '../Item';
 
+const FILL_STYLES = Object.keys(THEMES).reduce((map, type) => {
+  map[`theme=${type}`] =
+    type === 'special' ? THEMES[type].fill : THEMES[type].color;
+
+  return map;
+}, {});
+
 const BadgeElement = tasty(Item, {
   qa: 'Badge',
   role: 'status',
@@ -12,12 +19,7 @@ const BadgeElement = tasty(Item, {
     color: '#white',
     fill: {
       '': '#purple',
-      ...Object.keys(THEMES).reduce((map, type) => {
-        map[`theme=${type}`] =
-          type === 'special' ? THEMES[type].fill : THEMES[type].color;
-
-        return map;
-      }, {}),
+      ...FILL_STYLES,
     },
 
     '$inline-padding': {
@@ -50,7 +52,13 @@ function Badge(allProps: CubeBadgeProps, ref) {
   const badgeTheme = theme ?? type;
 
   return (
-    <BadgeElement ref={ref} size={size} data-theme={badgeTheme} {...props}>
+    <BadgeElement
+      ref={ref}
+      size={size}
+      data-type="primary"
+      data-theme={badgeTheme}
+      {...props}
+    >
       {children}
     </BadgeElement>
   );

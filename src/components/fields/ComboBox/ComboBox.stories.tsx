@@ -1,5 +1,5 @@
+import { userEvent, within } from '@storybook/test';
 import { useMemo, useState } from 'react';
-import { userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 
