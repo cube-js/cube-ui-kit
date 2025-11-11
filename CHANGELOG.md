@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.90.2
+
+### Patch Changes
+
+- [#884](https://github.com/cube-js/cube-ui-kit/pull/884) [`24a372e9`](https://github.com/cube-js/cube-ui-kit/commit/24a372e9e880624d2ae3f39cdcad8894fd4d7291) Thanks [@tenphi](https://github.com/tenphi)! - Fix ComboBox with `allowsCustomValue` to allow form submission with single Enter press when typing custom values that don't match any items.
+
 ## 0.90.1
 
 ### Patch Changes
