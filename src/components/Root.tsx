@@ -16,6 +16,7 @@ import {
 import { TOKENS } from '../tokens';
 import { useViewportSize } from '../utils/react';
 import { EventBusProvider } from '../utils/react/useEventBus';
+import { VERSION } from '../version';
 
 import { GlobalStyles } from './GlobalStyles';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
@@ -132,6 +133,7 @@ export function Root(allProps: CubeRootProps) {
         <StyleSheetManager>
           <RootElement
             ref={ref}
+            data-tasty={VERSION}
             data-font-display={fontDisplay}
             {...filterBaseProps(props, { eventProps: true })}
             styles={styles}

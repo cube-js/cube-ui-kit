@@ -1,0 +1,9 @@
+---
+description: When user asked to add a changeset
+alwaysApply: false
+---
+
+Place the changeset to `/.changeset` folder.
+Use `patch` version for small fixed (even with breaking changes if they are minor). Use `minor` version for bigger features and noticeable breaking changes.
+Use diff of the working tree to analyze changes. If it's empty then use the diff with the `main` branch.
+Try to make the changeset concise.

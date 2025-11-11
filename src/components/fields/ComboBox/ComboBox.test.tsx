@@ -463,6 +463,36 @@ describe('<ComboBox />', () => {
     });
   });
 
+  it('should allow form submission with single Enter press when allowsCustomValue and no matches', async () => {
+    const onSubmit = jest.fn();
+    const { getByRole, formInstance } = renderWithForm(
+      <ComboBox allowsCustomValue name="tag" label="Tag">
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+      { formProps: { onSubmit } },
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Type custom value that doesn't match any items (no popover)
+    await userEvent.type(combobox, 'CustomValue');
+
+    // Wait for popover to close (if it opened during typing)
+    await waitFor(() => {
+      expect(combobox).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    // Press Enter once - should commit value AND submit form
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(formInstance.getFieldValue('tag')).toBe('CustomValue');
+      expect(onSubmit).toHaveBeenCalledWith({ tag: 'CustomValue' });
+    });
+  });
+
   it('should clear invalid input on blur when clearOnBlur is true', async () => {
     const onSelectionChange = jest.fn();
 
