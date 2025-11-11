@@ -1,11 +1,15 @@
-interface Window {
-  CubeUIKit: {
-    version: string;
-  };
+declare global {
+  interface Window {
+    CubeUIKit: {
+      version: string;
+    };
+  }
 }
 
+export const VERSION = '__UIKIT_VERSION__';
+
 if (typeof window !== 'undefined') {
-  const version = '__UIKIT_VERSION__';
+  const version = VERSION;
 
   // Ensure CubeUIKit is defined on window in a way bundlers recognize
   window.CubeUIKit = window.CubeUIKit || { version };
