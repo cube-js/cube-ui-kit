@@ -605,15 +605,21 @@ function useComboBoxKeyboard({
 
         // If no results, handle empty input or custom values
         if (!hasResults) {
-          e.preventDefault();
-
           if (allowsCustomValue) {
-            const value = effectiveInputValue;
+            const value = effectiveInputValue.trim();
 
+            // Commit the custom value
             onSelectionChange(
               (value as unknown as Key) ?? (null as unknown as Key),
             );
+
+            // If popover is closed and we have a value, allow Enter to propagate for form submission
+            // If popover is open OR value is empty, prevent default to avoid premature submission
+            if (isPopoverOpen || !value) {
+              e.preventDefault();
+            }
           } else {
+            e.preventDefault();
             onSelectionChange(null);
           }
 
