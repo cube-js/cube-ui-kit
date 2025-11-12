@@ -1682,8 +1682,19 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
 
     if (needsRefocus) {
-      const keyToFocus =
-        effectiveSelectedKey != null ? effectiveSelectedKey : collectFirstKey();
+      let keyToFocus: Key | null = null;
+
+      // First try to focus on the selected key if it exists in the collection
+      if (
+        effectiveSelectedKey != null &&
+        collection.getItem(effectiveSelectedKey) != null
+      ) {
+        keyToFocus = effectiveSelectedKey;
+      } else {
+        // Fall back to the first key in the collection
+        keyToFocus = collectFirstKey();
+      }
+
       if (keyToFocus != null) {
         selectionManager.setFocusedKey(keyToFocus);
       }
