@@ -1665,10 +1665,39 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
     if (lastFocusSourceRef) lastFocusSourceRef.current = 'keyboard';
 
-    if (selectionManager.focusedKey == null) {
-      const keyToFocus =
-        effectiveSelectedKey != null ? effectiveSelectedKey : collectFirstKey();
-      if (keyToFocus != null) selectionManager.setFocusedKey(keyToFocus);
+    // Check if we need to set or update focus
+    const currentFocusedKey = selectionManager.focusedKey;
+    let needsRefocus = false;
+
+    if (currentFocusedKey == null) {
+      // No focus at all - need to set initial focus
+      needsRefocus = true;
+    } else {
+      // Check if currently focused key still exists in the collection
+      const focusedItemExists = collection.getItem(currentFocusedKey) != null;
+      if (!focusedItemExists) {
+        // Focused item was filtered out - need to refocus
+        needsRefocus = true;
+      }
+    }
+
+    if (needsRefocus) {
+      let keyToFocus: Key | null = null;
+
+      // First try to focus on the selected key if it exists in the collection
+      if (
+        effectiveSelectedKey != null &&
+        collection.getItem(effectiveSelectedKey) != null
+      ) {
+        keyToFocus = effectiveSelectedKey;
+      } else {
+        // Fall back to the first key in the collection
+        keyToFocus = collectFirstKey();
+      }
+
+      if (keyToFocus != null) {
+        selectionManager.setFocusedKey(keyToFocus);
+      }
     }
   }, [shouldShowPopover, effectiveSelectedKey]);
 
