@@ -46,7 +46,9 @@ const TYPE_CHECKERS = {
 const TYPE_LIST = Object.keys(TYPE_CHECKERS);
 
 const VALIDATORS = {
-  async required(value) {
+  async required(value, rule) {
+    if (!rule.required) return Promise.resolve();
+
     if (Array.isArray(value)) {
       return value.length ? Promise.resolve() : Promise.reject();
     }
