@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.91.0
+
+### Minor Changes
+
+- [#888](https://github.com/cube-js/cube-ui-kit/pull/888) [`fba935a3`](https://github.com/cube-js/cube-ui-kit/commit/fba935a383dec79876e1b7d5c7e665a161929839) Thanks [@tenphi](https://github.com/tenphi)! - Remove isRequired prop in Form component.
+
+### Patch Changes
+
+- [#888](https://github.com/cube-js/cube-ui-kit/pull/888) [`fba935a3`](https://github.com/cube-js/cube-ui-kit/commit/fba935a383dec79876e1b7d5c7e665a161929839) Thanks [@tenphi](https://github.com/tenphi)! - Fix required validator to check rule.required flag before validating.
+
+- [#888](https://github.com/cube-js/cube-ui-kit/pull/888) [`fba935a3`](https://github.com/cube-js/cube-ui-kit/commit/fba935a383dec79876e1b7d5c7e665a161929839) Thanks [@tenphi](https://github.com/tenphi)! - Improve rule management in form fields.
+
 ## 0.90.3
 
 ### Patch Changes
