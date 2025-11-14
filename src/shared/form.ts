@@ -23,28 +23,22 @@ export type ValidationState = 'invalid' | 'valid';
 /** On which event perform the validation for the field */
 export type ValidateTrigger = 'onBlur' | 'onChange' | 'onSubmit';
 
-export interface FieldBaseProps extends FormBaseProps {
+/** Core field identity and validation props */
+export interface FieldCoreProps {
+  /** The unique ID of the field */
+  id?: string;
+  /** The id prefix for the field to avoid collisions between forms */
+  idPrefix?: string;
   /** The field name */
   name?: string;
-  /** The label of the field */
-  label?: ReactNode;
-  /** Validation rules */
-  rules?: ValidationRule[];
   /** The form instance */
   form?: any;
-  /** An additional content next to the label */
-  extra?: ReactNode;
-  /** The validation state of the field */
-  validationState?: ValidationState;
+  /** Function that checks whether to perform update of the form state. */
+  shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
+  /** Validation rules */
+  rules?: ValidationRule[];
   /** Debounce in milliseconds for validation */
   validationDelay?: number;
-  /** On which event perform the validation for the field */
-  validateTrigger?: ValidateTrigger;
-  necessityIndicator?: NecessityIndicator;
-  necessityLabel?: ReactNode;
-  labelSuffix?: ReactNode;
-  /** Custom label props */
-  labelProps?: Props;
   /**
    * @deprecated Use `errorMessage` for error messages and `description` for field descriptions instead.
    * Message for the field. Some additional information or error notice
@@ -54,16 +48,24 @@ export interface FieldBaseProps extends FormBaseProps {
   description?: ReactNode;
   /** Error message for the field. Always displayed in danger state regardless of validation state */
   errorMessage?: ReactNode;
+  /** Whether the field is required */
+  isRequired?: boolean;
+  /** Custom label props */
+  labelProps?: Props;
+}
+
+export interface FieldBaseProps extends FormBaseProps, FieldCoreProps {
+  /** The label of the field */
+  label?: ReactNode;
+  /** An additional content next to the label */
+  extra?: ReactNode;
+  necessityIndicator?: NecessityIndicator;
+  necessityLabel?: ReactNode;
+  labelSuffix?: ReactNode;
   /** A tooltip that is shown inside the label */
   tooltip?: ReactNode;
   /** Whether the element should receive focus on render */
   autoFocus?: boolean;
-  /** The unique ID of the field */
-  id?: string;
-  /** The id prefix for the field to avoid collisions between forms */
-  idPrefix?: string;
-  /** Function that checks whether to perform update of the form state. */
-  shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
   /** Whether the field is hidden. */
   isHidden?: boolean;
   /** Whether the field is disabled. */
@@ -87,8 +89,6 @@ export interface FormBaseProps {
   labelPosition?: LabelPosition;
   /** Whether the field presents required mark */
   requiredMark?: boolean;
-  /** Whether the field is required */
-  isRequired?: boolean;
   /** The type of necessity indicator */
   necessityIndicator?: NecessityIndicator;
   /** That can replace the necessity label */
