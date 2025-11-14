@@ -61,11 +61,32 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     validationDelay,
     showValid,
     shouldUpdate,
+    isRequired: isRequiredProp,
   } = props;
 
-  if (rules && rules.length && validationDelay) {
-    rules.unshift(delayValidationRule(validationDelay));
-  }
+  const processedRules = useMemo(() => {
+    let finalRules = rules;
+
+    // If isRequired prop is set, ensure there's a required rule
+    if (isRequiredProp) {
+      const hasRequiredRule = finalRules?.some(
+        (rule) => 'required' in rule && rule.required === true,
+      );
+
+      if (!hasRequiredRule) {
+        finalRules = finalRules
+          ? [{ required: true }, ...finalRules]
+          : [{ required: true }];
+      }
+    }
+
+    // Add delay rule if needed
+    if (finalRules && finalRules.length && validationDelay) {
+      return [delayValidationRule(validationDelay), ...finalRules];
+    }
+
+    return finalRules;
+  }, [rules, validationDelay, isRequiredProp]);
 
   const nonInput = !name;
   const fieldName: string = name != null ? name : '';
@@ -98,10 +119,12 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
   let field = form?.getFieldInstance(fieldName);
 
   if (field) {
-    field.rules = rules;
+    field.rules = processedRules;
   }
 
-  let isRequired = rules && !!rules.find((rule) => rule.required);
+  let isRequired = !!processedRules?.find(
+    (rule) => 'required' in rule && rule.required === true,
+  );
 
   useEffect(() => {
     if (!form) return;

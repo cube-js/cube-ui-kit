@@ -78,6 +78,8 @@ export interface FieldBaseProps extends FormBaseProps {
   messageStyles?: Styles;
   /** If true, the input component will be wrapped in a field wrapper even if it doesn't have a label. */
   forceField?: boolean;
+  /** Whether the field is required */
+  isRequired?: boolean;
 }
 
 export interface FormBaseProps {
@@ -87,8 +89,6 @@ export interface FormBaseProps {
   labelPosition?: LabelPosition;
   /** Whether the field presents required mark */
   requiredMark?: boolean;
-  /** Whether the field is required */
-  isRequired?: boolean;
   /** The type of necessity indicator */
   necessityIndicator?: NecessityIndicator;
   /** That can replace the necessity label */

@@ -100,7 +100,6 @@ function Form<T extends FieldTypes>(
     children,
     labelPosition,
     orientation,
-    isRequired,
     necessityIndicator,
     isDisabled,
     isReadOnly,
@@ -248,7 +247,6 @@ function Form<T extends FieldTypes>(
           insideForm={true}
           isDisabled={isDisabled}
           isReadOnly={isReadOnly}
-          isRequired={isRequired}
           validationState={validationState}
         >
           {children}

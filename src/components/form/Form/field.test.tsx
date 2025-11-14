@@ -391,4 +391,45 @@ describe('Legacy <Field />', () => {
       expect(getByText('Must be at least 5 characters')).toBeInTheDocument();
     });
   });
+
+  it('should add required validation rule when isRequired prop is true', async () => {
+    const { getByRole, formInstance } = renderWithForm(
+      <TextInput isRequired name="test" label="Test Input" />,
+    );
+
+    const input = getByRole('textbox');
+
+    // Type something and then clear to trigger required validation
+    await act(async () => {
+      await userEvent.type(input, 'test');
+      await userEvent.clear(input);
+      await userEvent.tab(); // Trigger onBlur validation
+    });
+
+    await waitFor(() => {
+      expect(
+        formInstance.getFieldInstance('test')?.errors?.length,
+      ).toBeGreaterThan(0);
+    });
+  });
+
+  it('should not duplicate required rule when isRequired prop is true and rules already contain required', async () => {
+    const { formInstance } = renderWithForm(
+      <TextInput
+        isRequired
+        name="test"
+        label="Test Input"
+        rules={[{ required: true, message: 'Custom required message' }]}
+      />,
+    );
+
+    const field = formInstance.getFieldInstance('test');
+    const requiredRules = field?.rules?.filter(
+      (rule) => 'required' in rule && rule.required === true,
+    );
+
+    // Should have exactly one required rule (not duplicated)
+    expect(requiredRules?.length).toBe(1);
+    expect(requiredRules?.[0].message).toBe('Custom required message');
+  });
 });

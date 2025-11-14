@@ -41,6 +41,8 @@ export interface CubeFieldProps<T extends FieldTypes> {
   description?: ReactNode;
   /** Error message for the field. Always displayed in danger state regardless of validation state */
   errorMessage?: ReactNode;
+  /** Whether the field is required. Automatically adds a required validation rule if set to true. */
+  isRequired?: boolean;
   labelProps?: Props;
 }
 
