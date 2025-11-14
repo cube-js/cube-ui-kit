@@ -6,7 +6,7 @@ import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
 import { delayValidationRule } from '../validation';
 
-import { CubeFieldProps, FieldReturnValue } from './types';
+import { FieldReturnValue, UseFieldProps } from './types';
 
 const ID_MAP = {};
 
@@ -40,7 +40,7 @@ export type UseFieldParams = {
   defaultValidationTrigger?: ValidateTrigger;
 };
 
-export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
+export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
   props: Props,
   params: UseFieldParams,
 ): FieldReturnValue<T> {

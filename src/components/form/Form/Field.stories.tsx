@@ -3,8 +3,7 @@ import { StoryFn } from '@storybook/react-vite';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Block } from '../../Block';
 
-import { Field } from './Field';
-import { CubeFieldProps } from './use-field/types';
+import { CubeFieldProps, Field } from './Field';
 
 export default {
   title: 'Forms/Field',

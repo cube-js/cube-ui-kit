@@ -9,7 +9,7 @@ import { useField } from './use-field';
 
 import type { ValidateTrigger } from '../../../../shared/index';
 import type { FieldTypes } from '../types';
-import type { CubeFieldProps } from './types';
+import type { UseFieldProps } from './types';
 
 export type UseFieldPropsParams = {
   valuePropsMapper?: ({ value, onChange }) => any;
@@ -26,7 +26,7 @@ export type UseFieldPropsParams = {
 
 export function useFieldProps<
   T extends FieldTypes,
-  Props extends CubeFieldProps<T>,
+  Props extends UseFieldProps<T>,
 >(props: Props, params: UseFieldPropsParams = {}): Props {
   // We use ref here to "memoize" initial value
   const isDisabledRef = useRef(params.unsafe__isDisabled ?? false);
