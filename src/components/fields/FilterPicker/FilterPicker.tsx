@@ -796,6 +796,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         {renderTrigger}
         {(close) => (
           <Dialog
+            qa="FilterPickerOverlay"
             display="grid"
             styles={{
               gridRows: '1sf',

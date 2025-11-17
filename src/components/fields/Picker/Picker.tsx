@@ -649,6 +649,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
         {renderTrigger}
         {(close) => (
           <Dialog
+            qa="PickerOverlay"
             display="grid"
             styles={{
               gridRows: '1sf',
