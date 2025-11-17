@@ -626,14 +626,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       return null;
     }
 
-    return (
-      <Text
-        ellipsis
-        style={{ opacity: hasSelection ? 1 : 'var(--disabled-opacity)' }}
-      >
-        {content}
-      </Text>
-    );
+    return content;
   };
 
   const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
