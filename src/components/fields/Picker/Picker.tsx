@@ -447,7 +447,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
   const renderTriggerContent = () => {
     // When there is a selection and a custom summary renderer is provided – use it.
-    if (hasSelection && typeof renderSummary === 'function') {
+    if (typeof renderSummary === 'function') {
       if (selectionMode === 'single') {
         return renderSummary({
           selectedLabel: selectedLabels[0],
@@ -463,7 +463,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
         selectedKeys: effectiveSelectedKeys,
         selectionMode: 'multiple',
       });
-    } else if (hasSelection && renderSummary === false) {
+    } else if (renderSummary === false) {
       return null;
     }
 
@@ -587,7 +587,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
         isDisabled={isDisabled || isLoading}
         data-input-type="picker"
         mods={{
-          placeholder: !hasSelection,
+          placeholder: !hasSelection && !renderSummary,
           ...externalMods,
         }}
         icon={icon}

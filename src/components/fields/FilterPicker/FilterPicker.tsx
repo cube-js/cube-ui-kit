@@ -733,7 +733,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         isDisabled={isDisabled || isLoading}
         data-input-type="filterpicker"
         mods={{
-          placeholder: !hasSelection,
+          placeholder: !hasSelection && !renderSummary,
           ...externalMods,
         }}
         icon={icon}
