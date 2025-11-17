@@ -800,7 +800,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             display="grid"
             styles={{
               gridRows: '1sf',
-              width: '$overlay-min-width max-content 50vw',
+              width: 'max($overlay-min-width, 30x) max-content 50vw',
               '$overlay-min-width': 'min 30x',
               ...popoverStyles,
             }}
