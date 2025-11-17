@@ -208,6 +208,8 @@ export interface CubeSelectBaseProps<T>
   wrapperStyles?: Styles;
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
+  /** Minimum padding in pixels between the popover and viewport edges */
+  containerPadding?: number;
   inputProps?: Props;
   type?: 'outline' | 'clear' | 'primary' | (string & {});
   suffixPosition?: 'before' | 'after';
@@ -279,6 +281,7 @@ function Select<T extends object>(
     hotkeys,
     direction = 'bottom',
     shouldFlip = true,
+    containerPadding = 8,
     placeholder,
     tooltip,
     size = 'medium',
@@ -341,6 +344,7 @@ function Select<T extends object>(
     isOpen: state.isOpen,
     onClose: state.close,
     offset: overlayOffset,
+    containerPadding: containerPadding,
   });
 
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);

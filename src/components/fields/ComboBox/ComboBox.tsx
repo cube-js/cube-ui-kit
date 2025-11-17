@@ -234,6 +234,8 @@ export interface CubeComboBoxProps<T>
   direction?: 'bottom' | 'top';
   /** Offset for the popover */
   overlayOffset?: number;
+  /** Minimum padding in pixels between the popover and viewport edges */
+  containerPadding?: number;
   /** Whether the combobox is read-only */
   isReadOnly?: boolean;
   /** Suffix position goes before or after the validation and loading statuses */
@@ -792,6 +794,7 @@ interface ComboBoxOverlayProps {
   direction: 'bottom' | 'top';
   shouldFlip: boolean;
   overlayOffset: number;
+  containerPadding: number;
   comboBoxWidth?: number;
   comboBoxId: string;
   overlayStyles?: Styles;
@@ -825,6 +828,7 @@ function ComboBoxOverlay({
   direction,
   shouldFlip,
   overlayOffset,
+  containerPadding,
   comboBoxWidth,
   comboBoxId,
   overlayStyles,
@@ -858,6 +862,7 @@ function ComboBoxOverlay({
     shouldFlip,
     isOpen,
     offset: overlayOffset,
+    containerPadding: containerPadding,
   });
 
   // Overlay behavior (dismiss on outside click, escape)
@@ -1030,6 +1035,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     headingStyles,
     isReadOnly,
     overlayOffset = 8,
+    containerPadding = 8,
     onSelectionChange: externalOnSelectionChange,
     sortSelectedToTop: sortSelectedToTopProp,
     onFocus,
@@ -1819,6 +1825,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         direction={direction}
         shouldFlip={shouldFlip}
         overlayOffset={overlayOffset}
+        containerPadding={containerPadding}
         comboBoxWidth={comboBoxWidth}
         comboBoxId={comboBoxId}
         overlayStyles={overlayStyles}

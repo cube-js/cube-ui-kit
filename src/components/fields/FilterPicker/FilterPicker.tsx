@@ -82,6 +82,8 @@ export interface CubeFilterPickerProps<T>
   isCheckable?: boolean;
   /** Whether to flip the popover placement */
   shouldFlip?: boolean;
+  /** Minimum padding in pixels between the popover and viewport edges */
+  containerPadding?: number;
   /** Tooltip for the trigger button (separate from field tooltip) */
   triggerTooltip?: CubeItemProps['tooltip'];
   /** Description for the trigger button (separate from field description) */
@@ -207,6 +209,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     shouldFocusWrap,
     children,
     shouldFlip = true,
+    containerPadding = 8,
     selectedKey,
     defaultSelectedKey,
     selectedKeys,
@@ -783,6 +786,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         type="popover"
         placement="bottom start"
         styles={triggerStyles}
+        containerPadding={containerPadding}
         shouldUpdatePosition={shouldUpdatePosition}
         shouldFlip={shouldFlip && shouldUpdatePosition}
         isDismissable={true}
