@@ -1,4 +1,3 @@
-import { expect, userEvent, waitFor, within } from '@storybook/test';
 import {
   IconCoin,
   IconEdit,
@@ -7,6 +6,7 @@ import {
   IconUser,
 } from '@tabler/icons-react';
 import { useState } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { DirectionIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
