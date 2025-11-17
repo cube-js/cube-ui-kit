@@ -85,7 +85,7 @@ const ComboBoxOverlayElement = tasty({
     display: 'grid',
     gridRows: '1sf',
     gridColumns: '1sf',
-    width: '$min-width max-content 50vw',
+    width: '$overlay-min-width max-content 50vw',
     height: 'initial max-content (50vh - 5x)',
     overflow: 'auto',
     background: '#white',
@@ -120,7 +120,7 @@ const ComboBoxOverlayElement = tasty({
       '!open': 0.001,
     },
 
-    '$min-width': 'min 30x',
+    '$overlay-min-width': 'min 30x',
   },
 });
 
@@ -913,7 +913,9 @@ function ComboBoxOverlay({
             }}
             styles={overlayStyles}
             style={{
-              '--min-width': comboBoxWidth ? `${comboBoxWidth}px` : undefined,
+              '--overlay-min-width': comboBoxWidth
+                ? `${comboBoxWidth}px`
+                : undefined,
             }}
           >
             <ListBox

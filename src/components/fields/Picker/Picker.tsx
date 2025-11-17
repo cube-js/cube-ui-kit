@@ -495,6 +495,9 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
   const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
 
+  // Capture trigger width for overlay min-width
+  const triggerWidth = triggerRef?.current?.offsetWidth;
+
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
     // Listen for other menus opening and close this one if needed
@@ -653,9 +656,15 @@ export const Picker = forwardRef(function Picker<T extends object>(
             display="grid"
             styles={{
               gridRows: '1sf',
-              width: '30x max-content 50vw',
+              width: '$overlay-min-width max-content 50vw',
+              '$overlay-min-width': 'min 30x',
               ...popoverStyles,
             }}
+            style={
+              triggerWidth
+                ? ({ '--overlay-min-width': `${triggerWidth}px` } as any)
+                : undefined
+            }
           >
             <FocusScope restoreFocus>
               <ListBox
