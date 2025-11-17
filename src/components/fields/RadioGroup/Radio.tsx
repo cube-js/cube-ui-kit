@@ -44,7 +44,6 @@ const RadioButtonElement = tasty(Item, {
 });
 
 const TabRadioButtonSelectedElement = tasty(RadioButtonElement, {
-  qa: 'RadioSelected',
   styles: {
     fill: '#white',
     shadow: '$item-shadow',
@@ -314,7 +313,7 @@ function Radio(props: CubeRadioProps, ref) {
         {...mergeProps(hoverProps, focusProps)}
       >
         <HiddenInput
-          data-qa={qa || 'Radio'}
+          qa={qa || 'Radio'}
           data-input-type="radio"
           aria-label={ariaLabel}
           {...inputProps}
@@ -337,7 +336,7 @@ function Radio(props: CubeRadioProps, ref) {
       data-type={type}
     >
       <HiddenInput
-        data-qa={qa || 'Radio'}
+        qa={qa || 'Radio'}
         data-input-type="radio"
         aria-label={ariaLabel}
         {...mergeProps(inputProps, focusProps)}
