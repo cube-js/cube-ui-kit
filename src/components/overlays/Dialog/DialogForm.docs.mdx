@@ -1,0 +1,300 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { DialogForm } from './DialogForm';
+import * as DialogFormStories from './DialogForm.stories';
+
+<Meta of={DialogFormStories} />
+
+# DialogForm
+
+DialogForm combines [Dialog](/docs/overlays-dialog--docs) and [Form](/docs/forms-form--docs) functionality into a single component for collecting user input in a modal context. It provides automatic form submission handling, dialog closing, and default action buttons.
+
+**Recommended Usage:** Use the [`useDialogContainer`](/docs/overlays-usedialogcontainer--docs) hook for programmatic control over DialogForm. This provides a cleaner API and better state management compared to `DialogTrigger`.
+
+## When to Use
+
+- Collect user input in a focused modal interface
+- Create forms that require user attention and confirmation
+- Build edit dialogs, creation modals, or settings forms
+- Handle form submission with automatic dialog closing
+
+## Component
+
+<Story of={DialogFormStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={DialogFormStories.Default} />
+
+### DialogForm-specific Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `title` | `string` | The title of the dialog |
+| `danger` | `boolean` | Whether the submit button has a danger theme |
+| `submitProps` | `CubeButtonProps` | Properties for submit button (use `label` to change text) |
+| `cancelProps` | `CubeButtonProps` | Properties for cancel button (use `label` to change text) |
+| `preserve` | `boolean` | Preserve form values after submission/dismissal (default: false) |
+| `noActions` | `boolean` | Hide default action buttons to manually specify them |
+
+### Inherited Properties
+
+DialogForm inherits all properties from:
+- **[Dialog](/docs/overlays-dialog--docs)**: `size`, `isDismissable`, `closeIcon`, styling properties, etc.
+- **[Form](/docs/forms-form--docs)**: `name`, `defaultValues`, `onSubmit`, `onSubmitFailed`, `onValuesChange`, `labelPosition`, `requiredMark`, validation properties, etc.
+
+See the respective component documentation for complete property lists.
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+## Examples
+
+### Basic DialogForm (Recommended)
+
+Using `useDialogContainer` for programmatic control:
+
+```jsx
+import { useDialogContainer, DialogForm, Input, Button } from '@cube-dev/ui-kit';
+
+function UserFormDialog({ onSubmit, initialData }) {
+  return (
+    <DialogForm
+      title="User Information"
+      defaultValues={initialData}
+      onSubmit={onSubmit}
+    >
+      <Input.Text
+        name="name"
+        label="Name"
+        rules={[{ required: true, message: 'Name is required' }]}
+        placeholder="Enter your name"
+      />
+      <Input.Text
+        name="email"
+        label="Email"
+        type="email"
+        rules={[
+          { required: true, message: 'Email is required' },
+          { type: 'email', message: 'Please enter a valid email' }
+        ]}
+        placeholder="Enter your email"
+      />
+    </DialogForm>
+  );
+}
+
+function App() {
+  const userDialog = useDialogContainer(UserFormDialog);
+
+  const openDialog = () => {
+    userDialog.open({
+      initialData: { name: '', email: '' },
+      onSubmit: async (data) => {
+        await saveUser(data);
+        userDialog.close();
+      }
+    });
+  };
+
+  return (
+    <>
+      <Button onPress={openDialog}>Add User</Button>
+      {userDialog.rendered}
+    </>
+  );
+}
+```
+
+### With DialogTrigger (Alternative)
+
+For simpler use cases, you can use `DialogTrigger`:
+
+```jsx
+<DialogTrigger>
+  <Button>Open Form</Button>
+  <DialogForm
+    title="User Information"
+    onSubmit={async (data) => {
+      await saveUser(data);
+    }}
+  >
+    <Input.Text
+      name="name"
+      label="Name"
+      rules={[{ required: true }]}
+      placeholder="Enter your name"
+    />
+    <Input.Text
+      name="email"
+      label="Email"
+      type="email"
+      rules={[
+        { required: true },
+        { type: 'email', message: 'Please enter a valid email' }
+      ]}
+      placeholder="Enter your email"
+    />
+  </DialogForm>
+</DialogTrigger>
+```
+
+### Danger DialogForm
+
+```jsx
+<DialogForm
+  title="Delete Account"
+  danger
+  submitProps={{ label: 'Delete' }}
+  cancelProps={{ label: 'Keep Account' }}
+  onSubmit={async (data) => {
+    await deleteAccount(data.confirmation);
+  }}
+>
+  <Input.Text
+    name="confirmation"
+    label="Type DELETE to confirm"
+    rules={[
+      { required: true },
+      { pattern: /^DELETE$/, message: 'Please type DELETE' }
+    ]}
+  />
+</DialogForm>
+```
+
+### Custom Actions with Access to Dismiss
+
+When you need custom action buttons, use `noActions` prop and the render function pattern:
+
+```jsx
+<DialogForm
+  title="Advanced Form"
+  noActions
+  onSubmit={handleSubmit}
+>
+  {(dismiss) => (
+    <>
+      <Input.Text name="field1" label="Field 1" />
+      <Input.Text name="field2" label="Field 2" />
+      
+      <ButtonGroup>
+        <SubmitButton>Save</SubmitButton>
+        <Button onPress={() => {
+          saveAsDraft();
+          dismiss();
+        }}>
+          Save as Draft
+        </Button>
+        <Button onPress={dismiss}>Cancel</Button>
+      </ButtonGroup>
+    </>
+  )}
+</DialogForm>
+```
+
+### Preserving Form Values
+
+Use `preserve` prop to keep form values when reopening the dialog:
+
+```jsx
+<DialogForm
+  title="Edit Draft"
+  preserve
+  defaultValues={draftData}
+  onSubmit={saveDraft}
+>
+  <Input.Text name="title" label="Title" />
+  <TextArea name="content" label="Content" />
+</DialogForm>
+```
+
+## Behavior
+
+### Form Submission
+
+- On successful submission (`onSubmit`), the dialog automatically closes
+- Form fields are automatically reset after closing (unless `preserve` is true)
+- Reset happens after a 250ms delay to allow exit animations to complete
+
+### Dialog Dismissal
+
+- When dismissed via cancel button or Escape key, form fields are reset (unless `preserve` is true)
+- Both `onClose` (from dialog context) and `onDismiss` callbacks are triggered
+
+### Default Buttons
+
+- **Submit Button**: Labeled "Submit" by default, automatically handles form submission and loading states
+- **Cancel Button**: Labeled "Cancel" by default, dismisses the dialog and resets the form
+- Both buttons can be customized via `submitProps` and `cancelProps`
+- Hide default buttons with `noActions={true}` to provide custom actions
+
+## Accessibility
+
+DialogForm combines accessibility features from both Dialog and Form:
+
+### Keyboard Navigation
+
+- `Tab` / `Shift + Tab` - Navigate through form fields and buttons
+- `Enter` - Submit the form (when on submit button)
+- `Escape` - Dismiss the dialog (if `isDismissable` is true)
+
+### Screen Reader Support
+
+- Dialog announces with proper title
+- Form fields have proper label associations
+- Validation errors are announced
+- Submit/cancel actions are clearly communicated
+- Focus management handles transitions between dialog open/close
+
+See [Dialog Accessibility](/docs/overlays-dialog--docs#accessibility) and [Form Accessibility](/docs/forms-form--docs#accessibility) for complete details.
+
+## Best Practices
+
+1. **Use useDialogContainer for programmatic control**: Preferred method for better state management
+   ```jsx
+   const dialog = useDialogContainer(MyFormDialog);
+   dialog.open({ initialData, onSubmit: handleSubmit });
+   ```
+
+2. **Provide clear titles**: Always set a descriptive `title` for context
+   ```jsx
+   <DialogForm title="Edit User Profile" onSubmit={save}>
+   ```
+
+3. **Use danger theme for destructive actions**: Apply `danger` for delete/remove operations
+   ```jsx
+   <DialogForm title="Delete Item" danger submitProps={{ label: 'Delete' }}>
+   ```
+
+4. **Customize button labels**: Make action buttons specific to the task
+   ```jsx
+   <DialogForm
+     title="Create Project"
+     submitProps={{ label: 'Create' }}
+     cancelProps={{ label: 'Discard' }}
+   >
+   ```
+
+5. **Handle submission errors**: Implement `onSubmitFailed` for error handling
+   ```jsx
+   <DialogForm
+     onSubmit={save}
+     onSubmitFailed={(error) => notify.error(error.message)}
+   >
+   ```
+
+6. **Use preserve for drafts**: Enable `preserve` when working with draft content
+   ```jsx
+   <DialogForm preserve title="Edit Draft" defaultValues={draft}>
+   ```
+
+## Related Components
+
+- [useDialogContainer](/docs/overlays-usedialogcontainer--docs) - **Recommended hook for programmatic dialog control**
+- [Dialog](/docs/overlays-dialog--docs) - Base dialog component
+- [Form](/docs/forms-form--docs) - Form component with validation
+- [DialogTrigger](/docs/overlays-dialogtrigger--docs) - Alternative: manages dialog open/close state
+- [AlertDialog](/docs/overlays-alertdialog--docs) - For simple confirmations without forms
+

@@ -92,10 +92,10 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
 
   return (
     <DateInputWrapperElement
-      qa={qa}
+      qa={qa || 'DateTimeInput'}
       styles={styles}
       data-size={size}
-      data-input-type={inputType}
+      data-input-type={inputType ? inputType : 'datetimeinput'}
       mods={{
         disabled: isDisabled,
         focused: isFocused && !disableFocusRing,

@@ -226,6 +226,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     isClearable,
     onClear,
     sortSelectedToTop,
+    isButton = false,
     listStateRef: externalListStateRef,
     ...otherProps
   } = props;
@@ -577,7 +578,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
       <ItemButton
         ref={triggerRef as any}
         data-popover-trigger
-        isButton={false}
+        isButton={isButton}
         id={id}
         qa={qa || 'PickerTrigger'}
         type={type}

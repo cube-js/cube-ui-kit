@@ -180,10 +180,13 @@ function DateRangeSeparatedPicker<T extends DateValue>(
   }
 
   const component = (
-    <DatePickerElement ref={targetRef} styles={props.wrapperStyles}>
+    <DatePickerElement
+      ref={targetRef}
+      styles={props.wrapperStyles}
+      qa={qa || 'DateRangeSeparatedPicker'}
+      data-input-type="daterangeseparatedpicker"
+    >
       <DateInputBase
-        qa={qa || 'DateRangeSeparatedPicker'}
-        inputType="daterangeseparatedpicker"
         disableFocusRing={startFocusProps.isFocused}
         isDisabled={isDisabled}
         validationState={validationState}
