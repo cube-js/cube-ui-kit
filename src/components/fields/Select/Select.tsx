@@ -223,6 +223,10 @@ export interface CubeSelectBaseProps<T>
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
+  /** Whether the trigger should use button styling
+   * @default false
+   */
+  isButton?: boolean;
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -291,6 +295,7 @@ function Select<T extends object>(
     labelSuffix,
     suffixPosition = 'before',
     isClearable,
+    isButton = false,
     form,
     ...otherProps
   } = props;
@@ -467,6 +472,7 @@ function Select<T extends object>(
         descriptionPlacement={descriptionPlacement}
         hotkeys={hotkeys}
         tooltip={tooltip}
+        isButton={isButton}
         labelProps={valueProps}
       >
         {state.selectedItem
