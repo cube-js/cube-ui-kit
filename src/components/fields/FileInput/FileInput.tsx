@@ -226,9 +226,10 @@ function FileInput(props: CubeFileInputProps, ref) {
   const fileInput = (
     <FileInputElement
       ref={domRef}
-      qa="FileInput"
+      qa={qa || 'FileInput'}
       styles={inputStyles}
       isDisabled={isDisabled}
+      data-input-type="fileinput"
       mods={{
         selected: !!value,
         'drag-hover': dragHover,

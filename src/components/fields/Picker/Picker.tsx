@@ -584,6 +584,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
         isDisabled={isDisabled || isLoading}
+        data-input-type="picker"
         mods={{
           placeholder: !hasSelection,
           ...externalMods,

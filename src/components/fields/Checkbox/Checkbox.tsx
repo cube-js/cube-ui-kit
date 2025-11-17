@@ -230,11 +230,12 @@ function Checkbox(
   const checkbox = (
     <>
       <HiddenInput
-        data-qa="HiddenInput"
+        qa={qa || 'Checkbox'}
+        data-input-type="checkbox"
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />
-      <CheckboxElement qa={qa || 'Checkbox'} mods={mods} styles={inputStyles}>
+      <CheckboxElement mods={mods} styles={inputStyles}>
         {markIcon}
       </CheckboxElement>
     </>

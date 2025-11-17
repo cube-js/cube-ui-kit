@@ -315,6 +315,7 @@ function Radio(props: CubeRadioProps, ref) {
       >
         <HiddenInput
           data-qa={qa || 'Radio'}
+          data-input-type="radio"
           aria-label={ariaLabel}
           {...inputProps}
           ref={inputRef}
@@ -337,6 +338,7 @@ function Radio(props: CubeRadioProps, ref) {
     >
       <HiddenInput
         data-qa={qa || 'Radio'}
+        data-input-type="radio"
         aria-label={ariaLabel}
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}

@@ -70,6 +70,7 @@ function TimeInput<T extends TimeValue>(
   let styles = extractStyles(props, CONTAINER_STYLES);
 
   let {
+    qa,
     inputStyles,
     wrapperStyles,
     autoFocus,
@@ -93,6 +94,8 @@ function TimeInput<T extends TimeValue>(
   const timeInput = (
     <DateInputBase
       ref={fieldRef}
+      qa={qa || 'TimeInput'}
+      inputType="timeinput"
       size={size}
       fieldProps={fieldProps}
       isDisabled={isDisabled}

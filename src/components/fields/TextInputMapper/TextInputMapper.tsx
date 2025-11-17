@@ -31,6 +31,7 @@ type Mapping = {
 };
 
 export interface CubeTextInputMapperProps extends FieldBaseProps {
+  qa?: string;
   actionLabel?: string;
   isDisabled?: boolean;
   value?: Record<string, string>;
@@ -89,6 +90,7 @@ function TextInputMapper(
   const counterRef = useRef(0);
 
   let {
+    qa,
     isDisabled,
     actionLabel,
     value,
@@ -268,7 +270,13 @@ function TextInputMapper(
   }, [JSON.stringify(mappings)]);
 
   const element = (
-    <Flow ref={ref} gap="1x" onKeyDown={onKeyDown}>
+    <Flow
+      ref={ref}
+      gap="1x"
+      data-qa={qa || 'TextInputMapper'}
+      data-input-type="textinputmapper"
+      onKeyDown={onKeyDown}
+    >
       {[...renderedMappings]}
       {showNewButton ? (
         <Space gap={0}>

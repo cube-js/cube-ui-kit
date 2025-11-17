@@ -44,6 +44,8 @@ const DateInputElement = tasty({
 });
 
 interface CubeDateAtomInputProps extends ContainerStyleProps {
+  qa?: string;
+  inputType?: string;
   isDisabled?: boolean;
   children?: React.ReactNode;
   fieldProps?: Props;
@@ -61,6 +63,8 @@ interface CubeDateAtomInputProps extends ContainerStyleProps {
 function DateInputBase(props: CubeDateAtomInputProps, ref) {
   let inputRef = useRef(null);
   let {
+    qa,
+    inputType,
     isDisabled,
     inputStyles,
     children,
@@ -88,8 +92,10 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
 
   return (
     <DateInputWrapperElement
+      qa={qa}
       styles={styles}
       data-size={size}
+      data-input-type={inputType}
       mods={{
         disabled: isDisabled,
         focused: isFocused && !disableFocusRing,

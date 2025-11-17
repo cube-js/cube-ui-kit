@@ -423,6 +423,7 @@ function Select<T extends object>(
       data-size={size}
       data-type={type}
       data-theme={theme}
+      data-input-type="select"
     >
       <HiddenSelect
         state={state}

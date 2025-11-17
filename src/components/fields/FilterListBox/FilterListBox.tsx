@@ -824,6 +824,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         data-autofocus={autoFocus ? '' : undefined}
         styles={searchInputStyles}
         data-size={size}
+        data-input-type="filterlistbox"
         role="combobox"
         aria-expanded="true"
         aria-haspopup="listbox"

@@ -760,6 +760,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         styles={inputStyles}
         mods={mods}
         data-size={size}
+        data-input-type="combobox"
         role="combobox"
         aria-expanded={isPopoverOpen && hasResults}
         aria-haspopup="listbox"

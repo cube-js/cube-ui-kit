@@ -61,7 +61,7 @@ function PasswordInput(
     <TextInputBase
       ref={ref}
       labelProps={labelProps}
-      inputProps={inputProps}
+      inputProps={{ ...inputProps, 'data-input-type': 'passwordinput' }}
       inputRef={inputRef}
       inputStyles={{ paddingRight: '4x' }}
       type={type}

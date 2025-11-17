@@ -42,7 +42,7 @@ export const SearchInput = forwardRef(function SearchInput(
   return (
     <TextInputBase
       ref={ref}
-      inputProps={inputProps}
+      inputProps={{ ...inputProps, 'data-input-type': 'searchinput' }}
       inputRef={inputRef}
       type="search"
       icon={<SearchIcon />}

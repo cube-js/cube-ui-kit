@@ -730,6 +730,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
         isDisabled={isDisabled || isLoading}
+        data-input-type="filterpicker"
         mods={{
           placeholder: !hasSelection,
           ...externalMods,
