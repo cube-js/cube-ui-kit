@@ -16,6 +16,7 @@ import {
 import { OverlayProps } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
 
+import { useEvent } from '../../../_internal';
 import {
   DANGER_CLEAR_STYLES,
   DANGER_ITEM_STYLES,
@@ -353,6 +354,10 @@ const ItemElement = tasty({
       maxWidth: '100%',
       padding:
         '$block-padding $label-padding-right $label-padding-bottom $label-padding-left',
+      opacity: {
+        '': 1,
+        placeholder: '$disabled-opacity',
+      },
     },
 
     Description: {
@@ -573,7 +578,7 @@ export function useAutoTooltip({
     return props;
   }, [labelProps]);
 
-  const renderWithTooltip = useCallback(
+  const renderWithTooltip = useEvent(
     (
       renderElement: (
         tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
@@ -654,7 +659,6 @@ export function useAutoTooltip({
 
       return renderElement();
     },
-    [tooltip, children, labelProps, isLabelOverflowed],
   );
 
   return {
@@ -835,7 +839,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   });
 
   // Create a stable render function that doesn't call hooks
-  const renderItemElement = useCallback(
+  const renderItemElement = useEvent(
     (
       tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
       tooltipRef?: RefObject<HTMLElement>,
@@ -911,33 +915,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         </ItemElement>
       );
     },
-    [
-      ref,
-      theme,
-      type,
-      finalIsDisabled,
-      size,
-      isSelected,
-      mods,
-      styles,
-      htmlType,
-      rest,
-      finalIcon,
-      hasCheckbox,
-      finalPrefix,
-      children,
-      labelProps,
-      finalLabelProps,
-      description,
-      descriptionProps,
-      finalSuffix,
-      finalRightIcon,
-      actions,
-      showActionsOnHover,
-      size,
-      style,
-      shape,
-    ],
   );
 
   return renderWithTooltip(renderItemElement, defaultTooltipPlacement);

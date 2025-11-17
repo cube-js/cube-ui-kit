@@ -67,6 +67,7 @@ import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 
 const SelectWrapperElement = tasty({
+  qa: 'SelectWrapper',
   styles: {
     display: 'grid',
     position: 'relative',
@@ -88,19 +89,10 @@ const SelectWrapperElement = tasty({
 const SelectTrigger = tasty(Item, {
   as: 'button',
   qa: 'SelectTrigger',
-  styles: {
-    reset: 'button',
-
-    Label: {
-      opacity: {
-        '': 1,
-        placeholder: '$disabled-opacity',
-      },
-    },
-  },
 });
 
 export const ListBoxElement = tasty({
+  qa: 'ListBox',
   as: 'ul',
   styles: {
     display: 'flex',
@@ -423,7 +415,6 @@ function Select<T extends object>(
 
   let selectField = (
     <SelectWrapperElement
-      qa="SelectWrapper"
       mods={modifiers}
       styles={{ ...wrapperStyles, ...styles }}
       data-size={size}
