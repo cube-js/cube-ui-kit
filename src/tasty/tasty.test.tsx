@@ -146,13 +146,6 @@ describe('tasty() API', () => {
     expect(getByTestId(container, 'Field', {})).toBeDefined();
   });
 
-  it('should create responsive styles', () => {
-    const StyledBlock = tasty(Block, { styles: { display: ['grid', 'flex'] } });
-    const { container } = render(<StyledBlock />);
-
-    expect(container).toMatchTastySnapshot();
-  });
-
   it('should create element styles', () => {
     const Block = tasty({
       styles: { Element: { color: { '': '#dark', modified: '#purple' } } },

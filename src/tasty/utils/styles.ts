@@ -12,6 +12,12 @@ export type StyleValueStateMap<T = string> = {
   [key: string]: StyleValue<T>;
 };
 
+/**
+ * Combined type for style values that can be either a direct value or a state map.
+ * Use this for component props that accept style values.
+ */
+export type StylePropValue<T = string> = StyleValue<T> | StyleValueStateMap<T>;
+
 export type ComputeModel = string | number;
 
 export type CSSMap = { $?: string | string[] } & {
