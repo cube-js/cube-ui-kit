@@ -12,12 +12,6 @@ export type StyleValueStateMap<T = string> = {
   [key: string]: StyleValue<T>;
 };
 
-export type ResponsiveStyleValue<T = string> =
-  | StyleValue<T>
-  | StyleValue<T>[]
-  | StyleValueStateMap<T>
-  | StyleValueStateMap<T>[];
-
 export type ComputeModel = string | number;
 
 export type CSSMap = { $?: string | string[] } & {
@@ -38,7 +32,7 @@ export type StyleHandler = RawStyleHandler & {
 export interface StyleStateData {
   model?: ComputeModel;
   tokens?: string[];
-  value: ResponsiveStyleValue;
+  value: StyleValue | StyleValueStateMap;
   /** The list of mods to apply */
   mods: string[];
   /** The list of **not** mods to apply (e.g. `:not(:hover)`) */
@@ -55,7 +49,7 @@ export type StyleStateDataList = StyleStateData[];
 
 export type StyleStateDataListMap = { [key: string]: StyleStateDataList };
 
-export type StyleMap = { [key: string]: ResponsiveStyleValue };
+export type StyleMap = { [key: string]: StyleValue | StyleValueStateMap };
 
 export type StyleStateMap = { [key: string]: StyleStateData };
 
@@ -512,7 +506,7 @@ export const parseStateNotation = cacheWrapper(parseStateNotationInner);
  * Parse state notation and return tokens, modifiers and compute model.
  */
 export function styleStateMapToStyleStateDataList(
-  styleStateMap: StyleStateMap | ResponsiveStyleValue,
+  styleStateMap: StyleStateMap | StyleValue | StyleValueStateMap,
 ): { states: StyleStateDataList; mods: string[] } {
   if (typeof styleStateMap !== 'object' || !styleStateMap) {
     return {
