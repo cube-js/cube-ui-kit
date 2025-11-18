@@ -627,6 +627,11 @@ export const FilterListBox = forwardRef(function FilterListBox<
       keyToFocus = visibleKeys[0];
     }
 
+    // Mark this focus change as keyboard navigation so ListBox will scroll to it
+    if (listState.lastFocusSourceRef) {
+      listState.lastFocusSourceRef.current = 'keyboard';
+    }
+
     // Set focus to the determined key
     selectionManager.setFocusedKey(keyToFocus);
   }, [searchValue, enhancedChildren, selectionMode, selectedKey, selectedKeys]);
