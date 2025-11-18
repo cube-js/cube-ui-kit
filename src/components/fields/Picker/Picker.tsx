@@ -473,7 +473,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     let content: ReactNode = '';
 
     if (!hasSelection) {
-      content = placeholder;
+      return <Text.Placeholder>{placeholder}</Text.Placeholder>;
     } else if (selectionMode === 'single') {
       content = selectedLabels[0];
     } else if (effectiveSelectedKeys === 'all') {
@@ -586,7 +586,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
         isDisabled={isDisabled || isLoading}
         data-input-type="picker"
         mods={{
-          placeholder: !hasSelection && !renderSummary,
+          placeholder: !hasSelection,
           ...externalMods,
         }}
         icon={icon}

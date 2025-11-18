@@ -353,10 +353,6 @@ const ItemElement = tasty({
       maxWidth: '100%',
       padding:
         '$block-padding $label-padding-right $label-padding-bottom $label-padding-left',
-      opacity: {
-        '': 1,
-        placeholder: '$disabled-opacity',
-      },
     },
 
     Description: {

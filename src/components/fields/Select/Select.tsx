@@ -60,6 +60,7 @@ import {
 } from '../../actions/Menu/styled';
 import { CollectionItem } from '../../CollectionItem';
 import { CubeItemProps, Item } from '../../content/Item';
+import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
@@ -259,7 +260,7 @@ function Select<T extends object>(
     necessityIndicator,
     validationState,
     prefix,
-    isDisabled,
+    isDisabled = props.isLoading || false,
     autoFocus,
     inputProps,
     triggerRef,
@@ -472,9 +473,11 @@ function Select<T extends object>(
         isButton={isButton}
         labelProps={valueProps}
       >
-        {state.selectedItem
-          ? state.selectedItem.rendered
-          : placeholder || <>&nbsp;</>}
+        {state.selectedItem ? (
+          state.selectedItem.rendered
+        ) : placeholder ? (
+          <Text.Placeholder>{placeholder}</Text.Placeholder>
+        ) : null}
       </SelectTrigger>
       <ListBoxPopup
         {...menuProps}

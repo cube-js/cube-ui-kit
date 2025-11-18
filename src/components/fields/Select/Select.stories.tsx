@@ -678,3 +678,19 @@ WithTooltips.parameters = {
     },
   },
 };
+
+export const LoadingState = Template.bind({});
+LoadingState.args = {
+  isLoading: true,
+  placeholder: 'Loading...',
+  label: 'Color',
+};
+
+LoadingState.parameters = {
+  docs: {
+    description: {
+      story:
+        'Select displays a loading indicator when `isLoading` is true, preventing user interaction until data is loaded.',
+    },
+  },
+};
