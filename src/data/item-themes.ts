@@ -81,7 +81,6 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     '': '#white',
     disabled: '#dark-04',
   },
-  '#placeholder': '#white.5',
 } as const;
 
 export const DEFAULT_SECONDARY_STYLES: Styles = {
@@ -101,7 +100,6 @@ export const DEFAULT_SECONDARY_STYLES: Styles = {
     '': '#purple',
     disabled: '#dark-04',
   },
-  '#placeholder': '#purple-text.5',
 } as const;
 
 export const DEFAULT_OUTLINE_STYLES: Styles = {
@@ -165,7 +163,6 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
     '': '#purple-text',
     disabled: '#dark-04',
   },
-  '#placeholder': '#purple-text.5',
 } as const;
 
 export const DEFAULT_LINK_STYLES: Styles = {
@@ -222,7 +219,6 @@ export const DANGER_PRIMARY_STYLES: Styles = {
     '': '#white',
     disabled: '#dark-04',
   },
-  '#placeholder': '#white.5',
 } as const;
 
 export const DANGER_SECONDARY_STYLES: Styles = {
@@ -241,7 +237,6 @@ export const DANGER_SECONDARY_STYLES: Styles = {
     '': '#danger',
     disabled: '#dark-04',
   },
-  '#placeholder': '#danger-text.5',
 } as const;
 
 export const DANGER_OUTLINE_STYLES: Styles = {
@@ -261,7 +256,6 @@ export const DANGER_OUTLINE_STYLES: Styles = {
     '': '#danger-text',
     disabled: '#dark-04',
   },
-  '#placeholder': '#danger-text.5',
 } as const;
 
 export const DANGER_NEUTRAL_STYLES: Styles = {
@@ -301,7 +295,6 @@ export const DANGER_CLEAR_STYLES: Styles = {
     pressed: '#danger-text',
     disabled: '#danger-text.4',
   },
-  '#placeholder': '#danger-text.5',
 } as const;
 
 export const DANGER_LINK_STYLES: Styles = {
@@ -358,7 +351,6 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
     '': '#white',
     disabled: '#dark-04',
   },
-  '#placeholder': '#white.5',
 } as const;
 
 export const SUCCESS_SECONDARY_STYLES: Styles = {
@@ -377,7 +369,6 @@ export const SUCCESS_SECONDARY_STYLES: Styles = {
     '': '#success',
     disabled: '#dark-04',
   },
-  '#placeholder': '#success-text.5',
 } as const;
 
 export const SUCCESS_OUTLINE_STYLES: Styles = {
@@ -397,7 +388,6 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
     '': '#success-text',
     disabled: '#dark-04',
   },
-  '#placeholder': '#success-text.5',
 } as const;
 
 export const SUCCESS_NEUTRAL_STYLES: Styles = {
@@ -437,7 +427,6 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
     pressed: '#success-text',
     disabled: '#success-text.4',
   },
-  '#placeholder': '#success-text.5',
 } as const;
 
 export const SUCCESS_LINK_STYLES: Styles = {
@@ -494,7 +483,6 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
     '': '#white',
     disabled: '#white.4',
   },
-  '#placeholder': '#white.5',
 } as const;
 
 export const SPECIAL_SECONDARY_STYLES: Styles = {
@@ -512,7 +500,6 @@ export const SPECIAL_SECONDARY_STYLES: Styles = {
     '': '#white',
     disabled: '#white.4',
   },
-  '#placeholder': '#white.5',
 } as const;
 
 export const SPECIAL_OUTLINE_STYLES: Styles = {
@@ -532,7 +519,6 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
     '': '#white',
     disabled: '#white.4',
   },
-  '#placeholder': '#white.5',
 } as const;
 
 export const SPECIAL_NEUTRAL_STYLES: Styles = {
@@ -550,7 +536,6 @@ export const SPECIAL_NEUTRAL_STYLES: Styles = {
     '': '#white',
     disabled: '#white.4',
   },
-  '#placeholder': '#white.5',
 } as const;
 
 export const SPECIAL_CLEAR_STYLES: Styles = {
@@ -574,7 +559,6 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
     'pressed & hovered': '#purple-text',
     disabled: '#white.4',
   },
-  '#placeholder': '#purple-text.5',
 } as const;
 
 export const SPECIAL_LINK_STYLES: Styles = {

@@ -28,7 +28,7 @@ export function colorStyle({ color }) {
     color: color,
   };
 
-  if (name) {
+  if (name && name !== 'current') {
     Object.assign(styles, {
       '--current-color': color,
       '--current-color-rgb': convertColorChainToRgbChain(color),
