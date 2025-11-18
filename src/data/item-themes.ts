@@ -101,6 +101,7 @@ export const DEFAULT_SECONDARY_STYLES: Styles = {
     '': '#purple',
     disabled: '#dark-04',
   },
+  '#placeholder': '#purple-text.5',
 } as const;
 
 export const DEFAULT_OUTLINE_STYLES: Styles = {
