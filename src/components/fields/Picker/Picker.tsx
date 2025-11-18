@@ -654,7 +654,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
             styles={{
               gridRows: '1sf',
               width: '$overlay-min-width max-content 50vw',
-              '$overlay-min-width': 'min 30x',
+              '$overlay-min-width': '30x',
               ...popoverStyles,
             }}
             style={
