@@ -142,7 +142,7 @@ const SelectionText = tasty(Text, {
 
 const PlaceholderText = tasty(Text, {
   styles: {
-    color: '#dark-04',
+    color: '(#placeholder, #dark-04)',
   },
 });
 

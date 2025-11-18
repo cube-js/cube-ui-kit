@@ -81,6 +81,7 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     '': '#white',
     disabled: '#dark-04',
   },
+  '#placeholder': '#white.5',
 } as const;
 
 export const DEFAULT_SECONDARY_STYLES: Styles = {
@@ -219,6 +220,7 @@ export const DANGER_PRIMARY_STYLES: Styles = {
     '': '#white',
     disabled: '#dark-04',
   },
+  '#placeholder': '#white.5',
 } as const;
 
 export const DANGER_SECONDARY_STYLES: Styles = {
@@ -351,6 +353,7 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
     '': '#white',
     disabled: '#dark-04',
   },
+  '#placeholder': '#white.5',
 } as const;
 
 export const SUCCESS_SECONDARY_STYLES: Styles = {
@@ -483,6 +486,7 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
     '': '#white',
     disabled: '#white.4',
   },
+  '#placeholder': '#white.5',
 } as const;
 
 export const SPECIAL_SECONDARY_STYLES: Styles = {

@@ -1,11 +1,19 @@
 import { parseColor } from '../utils/styles';
 
+import { convertColorChainToRgbChain } from './createStyle';
+
 export function colorStyle({ color }) {
   if (!color) return '';
 
   if (color === true) color = 'currentColor';
 
-  if (typeof color === 'string' && color.startsWith('#')) {
+  // Handle color values that need parsing:
+  // - Simple color tokens: #placeholder
+  // - Color fallback syntax: (#placeholder, #dark-04)
+  if (
+    typeof color === 'string' &&
+    (color.startsWith('#') || color.startsWith('(#'))
+  ) {
     color = parseColor(color).color || color;
   }
 
@@ -22,8 +30,8 @@ export function colorStyle({ color }) {
 
   if (name) {
     Object.assign(styles, {
-      '--current-color': `var(--${name}-color, ${name})`,
-      '--current-color-rgb': `var(--${name}-color-rgb)`,
+      '--current-color': color,
+      '--current-color-rgb': convertColorChainToRgbChain(color),
     });
   }
 
