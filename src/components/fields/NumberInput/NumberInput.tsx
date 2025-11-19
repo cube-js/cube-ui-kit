@@ -91,7 +91,7 @@ function NumberInput(
       {...otherProps}
       ref={ref}
       labelProps={labelProps}
-      inputProps={inputProps}
+      inputProps={{ ...inputProps, 'data-input-type': 'numberinput' }}
       inputRef={inputRef}
       wrapperProps={groupProps}
       suffixPosition="after"

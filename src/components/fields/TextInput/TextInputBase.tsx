@@ -370,6 +370,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
       <InputElement
         qa={qa || 'Input'}
         as={ElementType}
+        data-input-type="textinput"
         {...mergeProps(inputProps, focusProps, hoverProps)}
         ref={inputRef}
         rows={multiLine ? rows : undefined}

@@ -919,6 +919,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             aria-disabled={isDisabled || undefined}
             mods={{ sections: hasSections }}
             data-shape={shape}
+            data-input-type="listbox"
             style={
               shouldVirtualize
                 ? {

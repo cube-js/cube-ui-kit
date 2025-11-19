@@ -1,4 +1,3 @@
-import { userEvent, within } from '@storybook/test';
 import {
   IconCopy,
   IconEdit,
@@ -8,6 +7,7 @@ import {
   IconStar,
   IconTrash,
 } from '@tabler/icons-react';
+import { userEvent, within } from 'storybook/test';
 
 import { Item } from '../../content/Item';
 import { Space } from '../../layout/Space';

@@ -39,6 +39,14 @@ The Style Parser converts an arbitrary CSS-like value string into:
 
 The parser operates in a single pass and never throws on malformed input.
 
+**Style System Integration:**
+
+When defining custom color tokens (e.g., `#local-placeholder: '(#primary, #fallback)'`), the style system automatically generates both color and RGB variants:
+- `--local-placeholder-color: var(--primary-color, var(--fallback-color))`
+- `--local-placeholder-color-rgb: var(--primary-color-rgb, var(--fallback-color-rgb))`
+
+This applies to all color fallback syntaxes, including nested fallbacks and literal values.
+
 ---
 
 ## 2. Public API
@@ -137,10 +145,12 @@ Each `StyleParser` instance maintains its own LRU cache.
 | 3     | Hash token – `#xxxxxx` if valid hex → `var(--xxxxxx-color, #xxxxxx)`; otherwise `var(--name-color)`. | color    |
 | 4     | Color function – name in list §12.2 followed by `(` (balanced).                            | color    |
 | 5     | User / other function – `ident(` not in color list; parse args recursively, hand off to `funcs[name]` if provided; else rebuild with processed args. | value    |
-| 6     | Auto-calc group – parentheses not preceded by identifier. See §6.                          | value    |
-| 7     | Numeric + custom unit – regex `^[+-]?(\d*.\d+ \d+)([a-z][a-z0-9]*)$` and unit key exists.  |          |
-| 8     | Literal value keyword – exactly `auto`, `max-content`, `min-content`, `fit-content`, `stretch`. | value    |
-| 9     | Fallback                                                                                   | modifier |
+| 6     | Color fallback – `(#name, fallback)` → `var(--name-color, <processed fallback>)`. Supports unlimited nesting. Fallback can be another color token, nested color fallback, hex literal, or CSS color function. | color    |
+| 7     | Custom property fallback – `($ident, fallback)` → `var(--ident, <processed fallback>)`. Classified as color if ident ends with `-color`, otherwise value. | color/value |
+| 8     | Auto-calc group – parentheses not preceded by identifier. See §6.                          | value    |
+| 9     | Numeric + custom unit – regex `^[+-]?(\d*.\d+ \d+)([a-z][a-z0-9]*)$` and unit key exists.  |          |
+| 10    | Literal value keyword – exactly `auto`, `max-content`, `min-content`, `fit-content`, `stretch`. | value    |
+| 11    | Fallback                                                                                   | modifier |
 
 Each processed string is inserted into its bucket and into `all` in source order.
 
@@ -152,7 +162,8 @@ Each processed string is inserted into its bucket and into `all` in source order
 |--------------------------|---------------------------------------------------------------------------------------------|
 | Custom unit (`2x`, `.75r`, `-3cr`) | `units[unit]`: • string → `calc(n * replacement)` • function → `calc(handler(numeric))`<br> `0u` stays `calc(0 * …)` (unit info preserved). |
 | Auto-calc parentheses    | Applies anywhere, nesting allowed.<br>Trigger = `(` whose previous non-space char is not `[a-z0-9_-]` and not `l` in `url(`.<br>Algorithm:<br>1. Strip outer parens.<br>2. Recursively parse inner text (so `2r`, `#fff`, nested auto-calc, etc., all expand).<br>3. Wrap in `calc( … )`. |
-| Custom property          | `$ident` → `var(--ident)` \| `($ident,fallback)` → `var(--ident, <processed fallback>)` |
+| Color fallback           | `(#name, fallback)` → `var(--name-color, <processed fallback>)`<br>Fallback is recursively processed, supporting unlimited nesting: `(#a, (#b, #c))` → `var(--a-color, var(--b-color, var(--c-color)))`. |
+| Custom property          | `$ident` → `var(--ident)` \| `($ident,fallback)` → `var(--ident, <processed fallback>)`<br>If ident ends with `-color`, classified as color bucket. |
 | Hash colors              | As in §5-3.                                                                                 |
 | Color functions          | Arguments are parsed, inner colors re-expanded; function name retained.                     |
 | User functions           | If `funcs[name]` exists → call with parsed arg-`StyleDetails[]`, use return string.<br>Else rebuild `ident(<processed args>)`. |
@@ -227,13 +238,18 @@ rgb rgba hsl hsla hwb lab lch oklab oklch color device-cmyk gray color-mix color
 
 | Case                           | Expected outcome                                                                 |
 |--------------------------------|----------------------------------------------------------------------------------|
-| `url("img,with,comma.png")`    | Single value token; comma doesn’t split.                                         |
+| `url("img,with,comma.png")`    | Single value token; comma doesn't split.                                         |
 | `sum(min(1x,2x),(1px+5%))`     | Inner `(1px+5%)` → `calc(1px + 5%)`.                                            |
 | `.75x`                         | `calc(0.75 * var(--gap))` value.                                                |
 | `1bw top #purple, 1ow right #dark-05` | Two groups; colors processed; positions as modifiers.                  |
 | Comments `/*…*/2x`             | `calc(2 * var(--gap))`.                                                         |
 | `#+not-hash`                   | Modifier (fails hex test).                                                      |
-| `($custom-gap, 1x)`           | `var(--custom-gap, var(--gap))` (new custom property syntax).                  |
+| `($custom-gap, 1x)`           | `var(--custom-gap, var(--gap))` (custom property fallback syntax).             |
+| `($placeholder-color, $dark-04-color)` | `var(--placeholder-color, var(--dark-04-color))` (color bucket).      |
+| `(#placeholder, #dark-04)`    | `var(--placeholder-color, var(--dark-04-color))` (color fallback syntax).      |
+| `(#primary, (#secondary, #tertiary))` | `var(--primary-color, var(--secondary-color, var(--tertiary-color)))` (nested fallbacks). |
+| `(#theme, #fff)`              | `var(--theme-color, var(--fff-color, #fff))` (fallback with hex literal).      |
+| `(#bg, rgb(255 0 0))`         | `var(--bg-color, rgb(255 0 0))` (fallback with CSS function).                  |
 | `($123invalid, fallback)`     | `calc($123invalid, fallback)` (invalid name → auto-calc).                      |
 | Excess spaces/newlines         | Collapsed in output.                                                            |
 | `+2r, 1e3x`                    | Invalid → modifiers.                                                            |

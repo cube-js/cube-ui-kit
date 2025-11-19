@@ -201,6 +201,9 @@ describe('StyleProcessor', () => {
     );
     expect(result.groups[0].values).toEqual([
       'var(--custom-margin, var(--gap))',
+    ]);
+    // $theme-color is now classified as a color since it ends with -color
+    expect(result.groups[0].colors).toEqual([
       'var(--theme-color, var(--purple-color))',
     ]);
   });
@@ -333,7 +336,7 @@ describe('StyleProcessor', () => {
     );
     expect(result6.groups[0].values).toEqual([
       'calc(not-a-prop, value)', // Auto-calc (no $ prefix)
-      'var(--invalid-syntax, bad)', // @ is valid custom property prefix
+      'calc(@invalid-syntax, bad)', // Auto-calc (@ is not valid, only $ is)
     ]);
 
     // Test 7: Edge case with spaces and special characters
@@ -361,6 +364,93 @@ describe('StyleProcessor', () => {
     expect(result9.groups.length).toBe(2); // Should create two groups
     expect(result9.groups[0].values).toEqual(['var(--prop1, fallback)']);
     expect(result9.groups[1].values).toEqual(['var(--prop2, fallback)']);
+  });
+
+  test('parses color fallback syntax', () => {
+    // Single fallback
+    const result1 = parser.process('(#primary, #fallback)');
+    expect(result1.groups[0].colors).toEqual([
+      'var(--primary-color, var(--fallback-color))',
+    ]);
+    expect(result1.output).toBe('var(--primary-color, var(--fallback-color))');
+
+    // Hex literal fallback
+    const result2 = parser.process('(#primary, #fff)');
+    expect(result2.groups[0].colors).toEqual([
+      'var(--primary-color, var(--fff-color, #fff))',
+    ]);
+
+    // CSS function fallback
+    const result3 = parser.process('(#primary, rgb(255 0 0))');
+    expect(result3.groups[0].colors).toEqual([
+      'var(--primary-color, rgb(255 0 0))',
+    ]);
+
+    // Nested fallbacks (2 levels)
+    const result4 = parser.process('(#primary, (#secondary, #tertiary))');
+    expect(result4.groups[0].colors).toEqual([
+      'var(--primary-color, var(--secondary-color, var(--tertiary-color)))',
+    ]);
+
+    // Nested fallbacks (3+ levels)
+    const result5 = parser.process('(#a, (#b, (#c, #d)))');
+    expect(result5.groups[0].colors).toEqual([
+      'var(--a-color, var(--b-color, var(--c-color, var(--d-color))))',
+    ]);
+
+    // Mixed nesting with literals
+    const result6 = parser.process('(#primary, (#secondary, rgb(0 0 0)))');
+    expect(result6.groups[0].colors).toEqual([
+      'var(--primary-color, var(--secondary-color, rgb(0 0 0)))',
+    ]);
+
+    // Verify bucket classification is Color, not Value
+    expect(result1.groups[0].values).toEqual([]);
+    expect(result1.groups[0].mods).toEqual([]);
+  });
+
+  test('color fallback works with existing color tokens', () => {
+    // Color fallback with named tokens
+    const result1 = parser.process('(#placeholder, #dark-04)');
+    expect(result1.groups[0].colors).toEqual([
+      'var(--placeholder-color, var(--dark-04-color))',
+    ]);
+
+    // Multiple color fallbacks in one expression
+    const result2 = parser.process('(#a, #b) (#c, #d)');
+    expect(result2.groups[0].colors).toEqual([
+      'var(--a-color, var(--b-color))',
+      'var(--c-color, var(--d-color))',
+    ]);
+
+    // Color fallback with hex literal
+    const result3 = parser.process('(#theme, #3366ff)');
+    expect(result3.groups[0].colors).toEqual([
+      'var(--theme-color, var(--3366ff-color, #3366ff))',
+    ]);
+  });
+
+  test('distinguishes color fallback from custom property fallback', () => {
+    // Color fallback (starts with #)
+    const result1 = parser.process('(#primary, #fallback)');
+    expect(result1.groups[0].colors).toEqual([
+      'var(--primary-color, var(--fallback-color))',
+    ]);
+    expect(result1.groups[0].values).toEqual([]);
+
+    // Custom property fallback (starts with $)
+    const result2 = parser.process('($primary, $fallback)');
+    expect(result2.groups[0].values).toEqual([
+      'var(--primary, var(--fallback))',
+    ]);
+    expect(result2.groups[0].colors).toEqual([]);
+
+    // Custom property with -color suffix should be classified as color
+    const result3 = parser.process('($primary-color, $fallback-color)');
+    expect(result3.groups[0].colors).toEqual([
+      'var(--primary-color, var(--fallback-color))',
+    ]);
+    expect(result3.groups[0].values).toEqual([]);
   });
 
   test('skips invalid functions while parsing (for example missing closing parenthesis)', () => {

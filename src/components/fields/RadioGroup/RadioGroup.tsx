@@ -87,6 +87,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
   props = useFieldProps(props, { defaultValidationTrigger: 'onChange' });
 
   let {
+    qa,
     isDisabled,
     isRequired,
     labelPosition = 'top',
@@ -122,7 +123,9 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   let radioGroup = (
     <RadioGroupElement
+      qa={qa || 'RadioGroup'}
       styles={styles}
+      data-input-type="radiogroup"
       mods={{
         horizontal: orientation === 'horizontal',
         'inside-form': insideForm,

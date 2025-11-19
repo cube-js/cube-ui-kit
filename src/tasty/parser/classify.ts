@@ -70,8 +70,8 @@ export function classify(
   }
 
   // 2. Custom property
-  if (token[0] === '@' || token[0] === '$') {
-    const identMatch = token.match(/^[$@]([a-z_][a-z0-9-_]*)$/);
+  if (token[0] === '$') {
+    const identMatch = token.match(/^\$([a-z_][a-z0-9-_]*)$/);
     if (identMatch) {
       const name = identMatch[1];
       const processed = `var(--${name})`;
@@ -138,28 +138,43 @@ export function classify(
     return { bucket: Bucket.Value, processed: `${fname}(${argProcessed})` };
   }
 
-  // 6. Custom property with fallback syntax: (${prop}, fallback)
+  // 6. Color fallback syntax: (#name, fallback)
   if (token.startsWith('(') && token.endsWith(')')) {
     const inner = token.slice(1, -1);
-    const match = inner.match(/^[$@]([a-z_][a-z0-9-_]*)\s*,\s*(.*)$/);
+    const colorMatch = inner.match(/^#([a-z0-9-]+)\s*,\s*(.*)$/i);
+    if (colorMatch) {
+      const [, name, fallback] = colorMatch;
+      const processedFallback = recurse(fallback).output;
+      return {
+        bucket: Bucket.Color,
+        processed: `var(--${name}-color, ${processedFallback})`,
+      };
+    }
+  }
+
+  // 7. Custom property with fallback syntax: ($prop, fallback)
+  if (token.startsWith('(') && token.endsWith(')')) {
+    const inner = token.slice(1, -1);
+    const match = inner.match(/^\$([a-z_][a-z0-9-_]*)\s*,\s*(.*)$/);
     if (match) {
       const [, name, fallback] = match;
       const processedFallback = recurse(fallback).output;
+      const bucketType = name.endsWith('-color') ? Bucket.Color : Bucket.Value;
       return {
-        bucket: Bucket.Value,
+        bucket: bucketType,
         processed: `var(--${name}, ${processedFallback})`,
       };
     }
   }
 
-  // 7. Auto-calc group
+  // 8. Auto-calc group
   if (token[0] === '(' && token[token.length - 1] === ')') {
     const inner = token.slice(1, -1);
     const innerProcessed = recurse(inner).output;
     return { bucket: Bucket.Value, processed: `calc(${innerProcessed})` };
   }
 
-  // 8. Unit number
+  // 9. Unit number
   const um = token.match(RE_UNIT_NUM);
   if (um) {
     const unit = um[1];
@@ -187,27 +202,27 @@ export function classify(
     }
   }
 
-  // 8b. Unknown numeric+unit → treat as literal value (e.g., 1fr)
+  // 9b. Unknown numeric+unit → treat as literal value (e.g., 1fr)
   if (/^[+-]?(?:\d*\.\d+|\d+)[a-z%]+$/.test(token)) {
     return { bucket: Bucket.Value, processed: token };
   }
 
-  // 8c. Plain unit-less numbers should be treated as value tokens so that
+  // 9c. Plain unit-less numbers should be treated as value tokens so that
   // code such as `scrollbar={10}` resolves correctly.
   if (RE_NUMBER.test(token)) {
     return { bucket: Bucket.Value, processed: token };
   }
 
-  // 9. Literal value keywords
+  // 10. Literal value keywords
   if (VALUE_KEYWORDS.has(token)) {
     return { bucket: Bucket.Value, processed: token };
   }
 
-  // 9b. Special keyword colors
+  // 10b. Special keyword colors
   if (token === 'transparent' || token === 'currentcolor') {
     return { bucket: Bucket.Color, processed: token };
   }
 
-  // 10. Fallback modifier
+  // 11. Fallback modifier
   return { bucket: Bucket.Mod, processed: token };
 }

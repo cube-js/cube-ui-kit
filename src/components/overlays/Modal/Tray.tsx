@@ -34,7 +34,7 @@ const TrayElement = tasty({
     },
     zIndex: 10,
     height: 'max 90dvh',
-    width: '@min-dialog-size 90vw',
+    width: '$min-dialog-size 90vw',
     pointerEvents: 'auto',
     transition:
       'transform .25s ease-in-out, opacity .25s linear, visibility 0ms linear',

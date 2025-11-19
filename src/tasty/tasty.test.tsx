@@ -13,6 +13,30 @@ import { tasty } from './tasty';
 import { configure } from './index';
 
 describe('tasty() API', () => {
+  it('should handle color fallback syntax', () => {
+    const Element = tasty({
+      styles: {
+        color: '(#placeholder, #dark-04)',
+      },
+    });
+
+    const { container } = render(<Element />);
+
+    expect(container).toMatchTastySnapshot();
+  });
+
+  it('should handle fill fallback syntax', () => {
+    const Element = tasty({
+      styles: {
+        fill: '(#surface, #white)',
+      },
+    });
+
+    const { container } = render(<Element />);
+
+    expect(container).toMatchTastySnapshot();
+  });
+
   it('should provide defaults and give ability to override', () => {
     const SButton = tasty(Button, { type: 'primary' });
 

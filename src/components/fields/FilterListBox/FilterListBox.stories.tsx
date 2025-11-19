@@ -1,7 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
-import { userEvent, within } from '@storybook/test';
 import { IconFile, IconFileDiff } from '@tabler/icons-react';
 import { useState } from 'react';
+import { userEvent, within } from 'storybook/test';
 
 import {
   BellFilledIcon,

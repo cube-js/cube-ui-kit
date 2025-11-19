@@ -60,6 +60,7 @@ import {
 } from '../../actions/Menu/styled';
 import { CollectionItem } from '../../CollectionItem';
 import { CubeItemProps, Item } from '../../content/Item';
+import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
@@ -67,6 +68,7 @@ import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 
 const SelectWrapperElement = tasty({
+  qa: 'SelectWrapper',
   styles: {
     display: 'grid',
     position: 'relative',
@@ -87,20 +89,11 @@ const SelectWrapperElement = tasty({
 
 const SelectTrigger = tasty(Item, {
   as: 'button',
-  qa: 'Trigger',
-  styles: {
-    reset: 'button',
-
-    Label: {
-      opacity: {
-        '': 1,
-        placeholder: '$disabled-opacity',
-      },
-    },
-  },
+  qa: 'SelectTrigger',
 });
 
 export const ListBoxElement = tasty({
+  qa: 'ListBox',
   as: 'ul',
   styles: {
     display: 'flex',
@@ -132,6 +125,7 @@ const SelectOverlayWrapper = tasty({
 });
 
 const OverlayElement = tasty({
+  qa: 'SelectOverlay',
   styles: {
     width: 'min $overlay-min-width',
     display: 'grid',
@@ -215,6 +209,8 @@ export interface CubeSelectBaseProps<T>
   wrapperStyles?: Styles;
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
+  /** Minimum padding in pixels between the popover and viewport edges */
+  containerPadding?: number;
   inputProps?: Props;
   type?: 'outline' | 'clear' | 'primary' | (string & {});
   suffixPosition?: 'before' | 'after';
@@ -223,6 +219,10 @@ export interface CubeSelectBaseProps<T>
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
+  /** Whether the trigger should use button styling
+   * @default false
+   */
+  isButton?: boolean;
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -260,7 +260,7 @@ function Select<T extends object>(
     necessityIndicator,
     validationState,
     prefix,
-    isDisabled,
+    isDisabled = props.isLoading || false,
     autoFocus,
     inputProps,
     triggerRef,
@@ -282,6 +282,7 @@ function Select<T extends object>(
     hotkeys,
     direction = 'bottom',
     shouldFlip = true,
+    containerPadding = 8,
     placeholder,
     tooltip,
     size = 'medium',
@@ -291,6 +292,7 @@ function Select<T extends object>(
     labelSuffix,
     suffixPosition = 'before',
     isClearable,
+    isButton = false,
     form,
     ...otherProps
   } = props;
@@ -343,6 +345,7 @@ function Select<T extends object>(
     isOpen: state.isOpen,
     onClose: state.close,
     offset: overlayOffset,
+    containerPadding: containerPadding,
   });
 
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);
@@ -417,14 +420,15 @@ function Select<T extends object>(
 
   let selectField = (
     <SelectWrapperElement
-      qa={qa || 'Select'}
       mods={modifiers}
       styles={{ ...wrapperStyles, ...styles }}
       data-size={size}
       data-type={type}
       data-theme={theme}
+      data-input-type="select"
     >
       <HiddenSelect
+        qa={qa || 'Select'}
         state={state}
         triggerRef={triggerRef}
         label={props.label}
@@ -466,11 +470,14 @@ function Select<T extends object>(
         descriptionPlacement={descriptionPlacement}
         hotkeys={hotkeys}
         tooltip={tooltip}
+        isButton={isButton}
         labelProps={valueProps}
       >
-        {state.selectedItem
-          ? state.selectedItem.rendered
-          : placeholder || <>&nbsp;</>}
+        {state.selectedItem ? (
+          state.selectedItem.rendered
+        ) : placeholder ? (
+          <Text.Placeholder>{placeholder}</Text.Placeholder>
+        ) : null}
       </SelectTrigger>
       <ListBoxPopup
         {...menuProps}

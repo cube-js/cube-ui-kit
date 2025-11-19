@@ -1,6 +1,6 @@
 import { linkTo } from '@storybook/addon-links';
 import { StoryFn } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, within } from '@storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import {
   Block,

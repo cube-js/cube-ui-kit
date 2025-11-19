@@ -573,89 +573,77 @@ export function useAutoTooltip({
     return props;
   }, [labelProps]);
 
-  const renderWithTooltip = useCallback(
-    (
-      renderElement: (
-        tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
-        tooltipRef?: RefObject<HTMLElement>,
-      ) => ReactNode,
-      defaultTooltipPlacement: OverlayProps['placement'],
-    ) => {
-      // Handle tooltip rendering based on tooltip prop type
-      if (tooltip) {
-        // String tooltip - simple case
-        if (typeof tooltip === 'string') {
+  const renderWithTooltip = (
+    renderElement: (
+      tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
+      tooltipRef?: RefObject<HTMLElement>,
+    ) => ReactNode,
+    defaultTooltipPlacement: OverlayProps['placement'],
+  ) => {
+    // Handle tooltip rendering based on tooltip prop type
+    if (tooltip) {
+      // String tooltip - simple case
+      if (typeof tooltip === 'string') {
+        return (
+          <TooltipProvider placement={defaultTooltipPlacement} title={tooltip}>
+            {(triggerProps, ref) => renderElement(triggerProps, ref)}
+          </TooltipProvider>
+        );
+      }
+
+      // Boolean tooltip - auto tooltip on overflow
+      if (tooltip === true) {
+        if ((children || labelProps) && (isLabelOverflowed || isDynamicLabel)) {
           return (
             <TooltipProvider
               placement={defaultTooltipPlacement}
-              title={tooltip}
+              title={children}
+              isDisabled={!isLabelOverflowed && isDynamicLabel}
+            >
+              {(triggerProps, ref) => renderElement(triggerProps, ref)}
+            </TooltipProvider>
+          );
+        }
+      }
+
+      // Object tooltip - advanced configuration
+      if (typeof tooltip === 'object') {
+        const { auto, ...tooltipProps } = tooltip;
+
+        // If title is provided and auto is not explicitly true, always show the tooltip
+        if (tooltipProps.title && auto !== true) {
+          return (
+            <TooltipProvider
+              placement={defaultTooltipPlacement}
+              {...tooltipProps}
             >
               {(triggerProps, ref) => renderElement(triggerProps, ref)}
             </TooltipProvider>
           );
         }
 
-        // Boolean tooltip - auto tooltip on overflow
-        if (tooltip === true) {
-          if (
-            (children || labelProps) &&
-            (isLabelOverflowed || isDynamicLabel)
-          ) {
-            return (
-              <TooltipProvider
-                placement={defaultTooltipPlacement}
-                title={children}
-                isDisabled={!isLabelOverflowed && isDynamicLabel}
-              >
-                {(triggerProps, ref) => renderElement(triggerProps, ref)}
-              </TooltipProvider>
-            );
-          }
-        }
-
-        // Object tooltip - advanced configuration
-        if (typeof tooltip === 'object') {
-          const { auto, ...tooltipProps } = tooltip;
-
-          // If title is provided and auto is not explicitly true, always show the tooltip
-          if (tooltipProps.title && auto !== true) {
-            return (
-              <TooltipProvider
-                placement={defaultTooltipPlacement}
-                {...tooltipProps}
-              >
-                {(triggerProps, ref) => renderElement(triggerProps, ref)}
-              </TooltipProvider>
-            );
-          }
-
-          // If title is provided with auto=true, OR no title but auto behavior enabled
-          if (
-            (children || labelProps) &&
-            (isLabelOverflowed || isDynamicLabel)
-          ) {
-            return (
-              <TooltipProvider
-                placement={defaultTooltipPlacement}
-                title={tooltipProps.title ?? children}
-                isDisabled={
-                  !isLabelOverflowed &&
-                  isDynamicLabel &&
-                  tooltipProps.isDisabled !== true
-                }
-                {...tooltipProps}
-              >
-                {(triggerProps, ref) => renderElement(triggerProps, ref)}
-              </TooltipProvider>
-            );
-          }
+        // If title is provided with auto=true, OR no title but auto behavior enabled
+        if ((children || labelProps) && (isLabelOverflowed || isDynamicLabel)) {
+          return (
+            <TooltipProvider
+              placement={defaultTooltipPlacement}
+              title={tooltipProps.title ?? children}
+              isDisabled={
+                !isLabelOverflowed &&
+                isDynamicLabel &&
+                tooltipProps.isDisabled !== true
+              }
+              {...tooltipProps}
+            >
+              {(triggerProps, ref) => renderElement(triggerProps, ref)}
+            </TooltipProvider>
+          );
         }
       }
+    }
 
-      return renderElement();
-    },
-    [tooltip, children, labelProps, isLabelOverflowed],
-  );
+    return renderElement();
+  };
 
   return {
     labelRef: handleLabelElementRef,
@@ -834,111 +822,80 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isDynamicLabel: !!actions,
   });
 
-  // Create a stable render function that doesn't call hooks
-  const renderItemElement = useCallback(
-    (
-      tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
-      tooltipRef?: RefObject<HTMLElement>,
-    ) => {
-      // Use callback ref to merge multiple refs without calling hooks
-      const handleRef = (element: HTMLElement | null) => {
-        // Set the component's forwarded ref
-        if (typeof ref === 'function') {
-          ref(element as T | null);
-        } else if (ref) {
-          (ref as any).current = element;
-        }
-        // Set the tooltip ref if provided
-        if (tooltipRef) {
-          (tooltipRef as any).current = element;
-        }
-      };
+  // Render function that creates the item element
+  const renderItemElement = (
+    tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
+    tooltipRef?: RefObject<HTMLElement>,
+  ) => {
+    // Use callback ref to merge multiple refs without calling hooks
+    const handleRef = (element: HTMLElement | null) => {
+      // Set the component's forwarded ref
+      if (typeof ref === 'function') {
+        ref(element as T | null);
+      } else if (ref) {
+        (ref as any).current = element;
+      }
+      // Set the tooltip ref if provided
+      if (tooltipRef) {
+        (tooltipRef as any).current = element;
+      }
+    };
 
-      // Merge custom size style with provided style
-      const finalStyle =
-        typeof size === 'number'
-          ? ({ ...style, '--size': `${size}px` } as any)
-          : style;
+    // Merge custom size style with provided style
+    const finalStyle =
+      typeof size === 'number'
+        ? ({ ...style, '--size': `${size}px` } as any)
+        : style;
 
-      return (
-        <ItemElement
-          ref={handleRef}
-          variant={
-            theme && type ? (`${theme}.${type}` as ItemVariant) : undefined
-          }
-          disabled={finalIsDisabled}
-          aria-disabled={finalIsDisabled}
-          aria-selected={isSelected}
-          mods={mods}
-          styles={styles}
-          type={htmlType as any}
-          {...mergeProps(rest, tooltipTriggerProps || {})}
-          style={finalStyle}
-        >
-          {finalIcon && (
-            <div data-element="Icon">
-              {hasCheckbox ? <CheckIcon /> : finalIcon}
-            </div>
-          )}
-          {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
-          {children || labelProps ? (
-            <div data-element="Label" {...finalLabelProps} ref={labelRef}>
-              {children}
-            </div>
-          ) : null}
-          {showDescription ? (
-            <div data-element="Description" {...descriptionProps}>
-              {description}
-            </div>
-          ) : null}
-          {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
-          {finalRightIcon && (
-            <div data-element="RightIcon">{finalRightIcon}</div>
-          )}
-          {actions && (
-            <div data-element="Actions" {...ACTIONS_EVENT_HANDLERS}>
-              {actions !== true ? (
-                <ItemActionProvider
-                  type={type}
-                  theme={theme}
-                  disableActionsFocus={disableActionsFocus}
-                >
-                  {actions}
-                </ItemActionProvider>
-              ) : null}
-            </div>
-          )}
-        </ItemElement>
-      );
-    },
-    [
-      ref,
-      theme,
-      type,
-      finalIsDisabled,
-      size,
-      isSelected,
-      mods,
-      styles,
-      htmlType,
-      rest,
-      finalIcon,
-      hasCheckbox,
-      finalPrefix,
-      children,
-      labelProps,
-      finalLabelProps,
-      description,
-      descriptionProps,
-      finalSuffix,
-      finalRightIcon,
-      actions,
-      showActionsOnHover,
-      size,
-      style,
-      shape,
-    ],
-  );
+    return (
+      <ItemElement
+        ref={handleRef}
+        variant={
+          theme && type ? (`${theme}.${type}` as ItemVariant) : undefined
+        }
+        disabled={finalIsDisabled}
+        aria-disabled={finalIsDisabled}
+        aria-selected={isSelected}
+        mods={mods}
+        styles={styles}
+        type={htmlType as any}
+        {...mergeProps(rest, tooltipTriggerProps || {})}
+        style={finalStyle}
+      >
+        {finalIcon && (
+          <div data-element="Icon">
+            {hasCheckbox ? <CheckIcon /> : finalIcon}
+          </div>
+        )}
+        {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
+        {children || labelProps ? (
+          <div data-element="Label" {...finalLabelProps} ref={labelRef}>
+            {children}
+          </div>
+        ) : null}
+        {showDescription ? (
+          <div data-element="Description" {...descriptionProps}>
+            {description}
+          </div>
+        ) : null}
+        {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
+        {finalRightIcon && <div data-element="RightIcon">{finalRightIcon}</div>}
+        {actions && (
+          <div data-element="Actions" {...ACTIONS_EVENT_HANDLERS}>
+            {actions !== true ? (
+              <ItemActionProvider
+                type={type}
+                theme={theme}
+                disableActionsFocus={disableActionsFocus}
+              >
+                {actions}
+              </ItemActionProvider>
+            ) : null}
+          </div>
+        )}
+      </ItemElement>
+    );
+  };
 
   return renderWithTooltip(renderItemElement, defaultTooltipPlacement);
 };

@@ -1,5 +1,5 @@
-import { userEvent, within } from '@storybook/test';
 import { IconCoin, IconUser } from '@tabler/icons-react';
+import { userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Text } from '../../content/Text';
@@ -675,6 +675,22 @@ WithTooltips.parameters = {
     description: {
       story:
         'Select options support tooltips to provide additional context. Use either a simple string or a full tooltip configuration object with title, description, and placement options.',
+    },
+  },
+};
+
+export const LoadingState = Template.bind({});
+LoadingState.args = {
+  isLoading: true,
+  placeholder: 'Loading...',
+  label: 'Color',
+};
+
+LoadingState.parameters = {
+  docs: {
+    description: {
+      story:
+        'Select displays a loading indicator when `isLoading` is true, preventing user interaction until data is loaded.',
     },
   },
 };

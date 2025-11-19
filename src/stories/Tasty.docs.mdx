@@ -255,6 +255,11 @@ color: '#purple',      // Full opacity
 color: '#purple.5',    // 50% opacity
 color: '#purple.05',   // 5% opacity
 
+// Color token fallback syntax (supports nesting)
+color: '(#primary, #secondary)',                    // Single fallback
+fill: '(#surface, (#fallback, #default))',          // Nested fallbacks
+'#theme-color': '(#brand, #purple)',                // In definitions
+
 // Color token definition syntax
 '#primary': 'rgb(255 120 45)',       // Define custom color variables
 '#brand': '#purple',                 // Reference existing color tokens
@@ -386,6 +391,8 @@ color: '#text',                   // Text color token
 color: true,                      // Default: 'currentColor'
 fill: '#purple.10',               // Background with opacity
 fill: '#surface',                 // Background color token
+color: '(#primary, #dark)',       // Color with fallback
+fill: '(#surface, (#white, #default))', // Nested fallbacks
 color: {
   '': '#dark',
   hovered: '#purple',
@@ -824,6 +831,7 @@ const ThemedComponent = tasty({
     '#accent': '#purple.5',              // Creates --accent-color with 50% opacity
     '#success': '#aaffbb',               // Creates --success-color from hex
     '#brand': 'var(--purple-color)',     // Creates --brand-color from CSS variable
+    '#theme': '(#brand, #purple)',       // Creates --theme-color with fallback chain
     
     // Use the defined colors
     fill: '#primary',                    // Uses var(--primary-color)
@@ -841,6 +849,7 @@ const ThemedComponent = tasty({
 
 // Color variables are automatically scoped and provide RGB variants
 // Generates: --primary-color, --primary-color-rgb, etc.
+// Fallback chains maintain RGB variants: var(--brand-color-rgb, var(--purple-color-rgb))
 ```
 
 ## ✅ Best Practices & Anti-patterns

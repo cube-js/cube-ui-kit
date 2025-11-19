@@ -139,7 +139,7 @@ function TextArea(
       multiLine
       inputRef={inputRef}
       labelProps={labelProps}
-      inputProps={inputProps}
+      inputProps={{ ...inputProps, 'data-input-type': 'textarea' }}
       isDisabled={isDisabled}
       isReadOnly={isReadOnly}
       isRequired={isRequired}

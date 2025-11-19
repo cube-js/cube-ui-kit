@@ -202,7 +202,13 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
   styles = extractStyles(otherProps, OUTER_STYLES, styles);
 
   const sliderField = (
-    <SliderElement ref={domRef} {...groupProps} mods={mods} styles={styles}>
+    <SliderElement
+      ref={domRef}
+      {...groupProps}
+      mods={mods}
+      styles={styles}
+      data-input-type="slider"
+    >
       <SliderControlsElement {...trackProps} ref={trackRef} mods={mods}>
         {children({
           trackRef,

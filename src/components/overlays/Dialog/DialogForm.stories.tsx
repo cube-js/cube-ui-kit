@@ -1,11 +1,11 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
+import { useState } from 'react';
 import {
   expect,
   userEvent,
   waitForElementToBeRemoved,
   within,
-} from '@storybook/test';
-import { useState } from 'react';
+} from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions';
@@ -45,6 +45,39 @@ const TemplateContainer: StoryFn<CubeDialogFormProps> = (args) => {
         <DialogForm {...args} />
       </DialogContainer>
     </>
+  );
+};
+
+export const Default: StoryFn<CubeDialogFormProps> = (args) => {
+  return (
+    <DialogTrigger>
+      <Button>Open</Button>
+
+      <DialogForm
+        title="User Information"
+        onSubmit={async (data) => {
+          console.log('Form submitted:', data);
+        }}
+        {...args}
+      >
+        <Input.Text
+          name="name"
+          label="Name"
+          rules={[{ required: true, message: 'Name is required' }]}
+          placeholder="Enter your name"
+        />
+        <Input.Text
+          name="email"
+          label="Email"
+          type="email"
+          rules={[
+            { required: true, message: 'Email is required' },
+            { type: 'email', message: 'Please enter a valid email' },
+          ]}
+          placeholder="Enter your email"
+        />
+      </DialogForm>
+    </DialogTrigger>
   );
 };
 

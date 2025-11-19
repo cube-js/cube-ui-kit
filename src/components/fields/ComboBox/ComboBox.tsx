@@ -85,7 +85,7 @@ const ComboBoxOverlayElement = tasty({
     display: 'grid',
     gridRows: '1sf',
     gridColumns: '1sf',
-    width: '$min-width max-content 50vw',
+    width: '$overlay-min-width max-content 50vw',
     height: 'initial max-content (50vh - 5x)',
     overflow: 'auto',
     background: '#white',
@@ -120,7 +120,7 @@ const ComboBoxOverlayElement = tasty({
       '!open': 0.001,
     },
 
-    '$min-width': 'min 30x',
+    '$overlay-min-width': 'min 30x',
   },
 });
 
@@ -234,6 +234,8 @@ export interface CubeComboBoxProps<T>
   direction?: 'bottom' | 'top';
   /** Offset for the popover */
   overlayOffset?: number;
+  /** Minimum padding in pixels between the popover and viewport edges */
+  containerPadding?: number;
   /** Whether the combobox is read-only */
   isReadOnly?: boolean;
   /** Suffix position goes before or after the validation and loading statuses */
@@ -760,6 +762,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         styles={inputStyles}
         mods={mods}
         data-size={size}
+        data-input-type="combobox"
         role="combobox"
         aria-expanded={isPopoverOpen && hasResults}
         aria-haspopup="listbox"
@@ -791,6 +794,7 @@ interface ComboBoxOverlayProps {
   direction: 'bottom' | 'top';
   shouldFlip: boolean;
   overlayOffset: number;
+  containerPadding: number;
   comboBoxWidth?: number;
   comboBoxId: string;
   overlayStyles?: Styles;
@@ -824,6 +828,7 @@ function ComboBoxOverlay({
   direction,
   shouldFlip,
   overlayOffset,
+  containerPadding,
   comboBoxWidth,
   comboBoxId,
   overlayStyles,
@@ -857,6 +862,7 @@ function ComboBoxOverlay({
     shouldFlip,
     isOpen,
     offset: overlayOffset,
+    containerPadding: containerPadding,
   });
 
   // Overlay behavior (dismiss on outside click, escape)
@@ -912,7 +918,9 @@ function ComboBoxOverlay({
             }}
             styles={overlayStyles}
             style={{
-              '--min-width': comboBoxWidth ? `${comboBoxWidth}px` : undefined,
+              '--overlay-min-width': comboBoxWidth
+                ? `${comboBoxWidth}px`
+                : undefined,
             }}
           >
             <ListBox
@@ -1027,6 +1035,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     headingStyles,
     isReadOnly,
     overlayOffset = 8,
+    containerPadding = 8,
     onSelectionChange: externalOnSelectionChange,
     sortSelectedToTop: sortSelectedToTopProp,
     onFocus,
@@ -1816,6 +1825,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         direction={direction}
         shouldFlip={shouldFlip}
         overlayOffset={overlayOffset}
+        containerPadding={containerPadding}
         comboBoxWidth={comboBoxWidth}
         comboBoxId={comboBoxId}
         overlayStyles={overlayStyles}
