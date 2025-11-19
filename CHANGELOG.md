@@ -1,5 +1,23 @@
 # @cube-dev/ui-kit
 
+## 0.92.0
+
+### Minor Changes
+
+- [#890](https://github.com/cube-js/cube-ui-kit/pull/890) [`b79f55c6`](https://github.com/cube-js/cube-ui-kit/commit/b79f55c67159ecbbd9a04e69fcafe166c649e5d0) Thanks [@tenphi](https://github.com/tenphi)! - Added color token fallback syntax `(#color, #fallback)` for robust color hierarchies. Supports nested fallbacks like `(#primary, (#secondary, #default))`. Automatically generates RGB variants for the entire fallback chain, ensuring proper color variable resolution at runtime.
+
+- [#890](https://github.com/cube-js/cube-ui-kit/pull/890) [`b79f55c6`](https://github.com/cube-js/cube-ui-kit/commit/b79f55c67159ecbbd9a04e69fcafe166c649e5d0) Thanks [@tenphi](https://github.com/tenphi)! - Add `isButton` prop support to `Picker`, `FilterPicker`, and `Select` components. The prop is now properly passed to their trigger components (`ItemButton` for Picker/FilterPicker, `Item` for Select), allowing control over button styling. Defaults to `false` to maintain existing behavior.
+
+- [#890](https://github.com/cube-js/cube-ui-kit/pull/890) [`b79f55c6`](https://github.com/cube-js/cube-ui-kit/commit/b79f55c67159ecbbd9a04e69fcafe166c649e5d0) Thanks [@tenphi](https://github.com/tenphi)! - Removed legacy `@` prefix support for custom properties. Use `# @cube-dev/ui-kit prefix instead (e.g., `$custom-color`instead of`@custom-color`).
+
+- [#890](https://github.com/cube-js/cube-ui-kit/pull/890) [`b79f55c6`](https://github.com/cube-js/cube-ui-kit/commit/b79f55c67159ecbbd9a04e69fcafe166c649e5d0) Thanks [@tenphi](https://github.com/tenphi)! - Specify `data-input-type` attribute for each field component and improve `qa` prop handling in various field components for consistency.
+
+### Patch Changes
+
+- [#890](https://github.com/cube-js/cube-ui-kit/pull/890) [`b79f55c6`](https://github.com/cube-js/cube-ui-kit/commit/b79f55c67159ecbbd9a04e69fcafe166c649e5d0) Thanks [@tenphi](https://github.com/tenphi)! - Improved overlay width behavior for Picker and FilterPicker components to match their trigger button width, ensuring better visual consistency.
+
+- [#890](https://github.com/cube-js/cube-ui-kit/pull/890) [`b79f55c6`](https://github.com/cube-js/cube-ui-kit/commit/b79f55c67159ecbbd9a04e69fcafe166c649e5d0) Thanks [@tenphi](https://github.com/tenphi)! - Decrease containerPadding of all overlays 12px -> 8px.
+
 ## 0.91.0
 
 ### Minor Changes
