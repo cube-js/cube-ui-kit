@@ -62,6 +62,7 @@ export const SearchInput = forwardRef(function SearchInput(
       type="search"
       icon={<SearchIcon />}
       suffixPosition="after"
+      validationState={validationState}
       {...restProps}
       suffix={
         restProps.suffix || showClearButton ? (
