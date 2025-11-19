@@ -3,6 +3,7 @@ import { useTextField } from 'react-aria';
 
 import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
+import { mergeProps } from '../../../utils/react';
 import {
   castNullableStringValue,
   WithNullableValue,
@@ -29,17 +30,25 @@ function PasswordInput(
   });
 
   let [type, setType] = useState('password');
+  let {
+    labelProps: userLabelProps,
+    suffix,
+    multiLine,
+    inputRef: propsInputRef,
+    ...rest
+  } = props;
   let localInputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-  let inputRef = props.inputRef ?? localInputRef;
+  let inputRef = propsInputRef ?? localInputRef;
   let { labelProps, inputProps } = useTextField(
     {
-      ...props,
+      ...rest,
       type,
     },
     inputRef,
   );
 
-  const { suffix, multiLine, ...rest } = props;
+  // Merge user-provided labelProps with aria labelProps
+  const mergedLabelProps = mergeProps(labelProps, userLabelProps);
 
   const toggleType = useCallback(() => {
     setType((type) => (type === 'password' ? 'text' : 'password'));
@@ -60,7 +69,7 @@ function PasswordInput(
   return (
     <TextInputBase
       ref={ref}
-      labelProps={labelProps}
+      labelProps={mergedLabelProps}
       inputProps={{ ...inputProps, 'data-input-type': 'passwordinput' }}
       inputRef={inputRef}
       inputStyles={{ paddingRight: '4x' }}

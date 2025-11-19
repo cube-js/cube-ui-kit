@@ -17,6 +17,7 @@ import {
   extractStyles,
   Styles,
 } from '../../../tasty';
+import { mergeProps } from '../../../utils/react';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
 import { DateInputBase } from './DateInputBase';
@@ -79,6 +80,7 @@ function TimeInput<T extends TimeValue>(
     isRequired,
     validationState,
     size = 'medium',
+    labelProps: userLabelProps,
   } = props;
 
   let domRef = useFocusManagerRef(ref);
@@ -120,7 +122,7 @@ function TimeInput<T extends TimeValue>(
   return wrapWithField(timeInput, domRef, {
     ...props,
     styles,
-    labelProps,
+    labelProps: mergeProps(labelProps, userLabelProps),
   });
 }
 

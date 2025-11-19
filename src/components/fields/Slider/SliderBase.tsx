@@ -12,7 +12,7 @@ import { useNumberFormatter, useSlider } from 'react-aria';
 import { useSliderState } from 'react-stately';
 
 import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';
-import { forwardRefWithGenerics } from '../../../utils/react/forwardRefWithGenerics';
+import { forwardRefWithGenerics, mergeProps } from '../../../utils/react';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
@@ -75,6 +75,7 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
     showValueLabel = true,
     orientation: formOrientation,
     form,
+    labelProps: userLabelProps,
     ...otherProps
   } = props;
 
@@ -224,7 +225,7 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
     children: undefined,
     // styles,
     extra,
-    labelProps,
+    labelProps: mergeProps(labelProps, userLabelProps),
   });
 }
 
