@@ -225,7 +225,7 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
     children: undefined,
     // styles,
     extra,
-    labelProps: mergeProps(userLabelProps, labelProps),
+    labelProps: mergeProps(labelProps, userLabelProps),
   });
 }
 

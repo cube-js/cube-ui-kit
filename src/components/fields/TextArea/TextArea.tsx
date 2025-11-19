@@ -69,6 +69,9 @@ function TextArea(
   let { labelProps, inputProps } = useTextField(
     {
       ...otherProps,
+      isDisabled,
+      isReadOnly,
+      isRequired,
       onChange: chain(onChange, setInputValue),
       inputElementType: 'textarea',
     },
