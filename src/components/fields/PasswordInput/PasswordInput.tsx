@@ -3,6 +3,7 @@ import { useTextField } from 'react-aria';
 
 import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
+import { mergeProps } from '../../../utils/react';
 import {
   castNullableStringValue,
   WithNullableValue,
@@ -47,7 +48,7 @@ function PasswordInput(
   );
 
   // Merge user-provided labelProps with aria labelProps
-  const mergedLabelProps = { ...labelProps, ...userLabelProps };
+  const mergedLabelProps = mergeProps(labelProps, userLabelProps);
 
   const toggleType = useCallback(() => {
     setType((type) => (type === 'password' ? 'text' : 'password'));

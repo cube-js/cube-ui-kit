@@ -10,7 +10,7 @@ import { useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal/index';
 import { useProviderProps } from '../../../provider';
-import { chain } from '../../../utils/react';
+import { chain, mergeProps } from '../../../utils/react';
 import {
   castNullableStringValue,
   WithNullableValue,
@@ -79,7 +79,7 @@ function TextArea(
   );
 
   // Merge user-provided labelProps with aria labelProps
-  const mergedLabelProps = { ...labelProps, ...userLabelProps };
+  const mergedLabelProps = mergeProps(labelProps, userLabelProps);
 
   const adjustHeight = useEvent(() => {
     const textarea = inputRef.current;

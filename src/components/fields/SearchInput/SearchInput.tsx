@@ -4,6 +4,7 @@ import { SearchFieldProps, useSearchFieldState } from 'react-stately';
 
 import { CloseIcon, SearchIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
+import { mergeProps } from '../../../utils/react';
 import { ariaToCubeButtonProps } from '../../../utils/react/mapProps';
 import {
   castNullableStringValue,
@@ -51,7 +52,7 @@ export const SearchInput = forwardRef(function SearchInput(
     isClearable && state.value !== '' && !restProps.isReadOnly;
 
   // Merge user-provided labelProps with aria labelProps
-  const mergedLabelProps = { ...labelProps, ...userLabelProps };
+  const mergedLabelProps = mergeProps(labelProps, userLabelProps);
 
   return (
     <TextInputBase
