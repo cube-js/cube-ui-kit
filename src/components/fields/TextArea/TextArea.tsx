@@ -50,6 +50,8 @@ function TextArea(
     maxRows = 10,
     rows = 3,
     mods,
+    labelProps: userLabelProps,
+    inputRef: propsInputRef,
     ...otherProps
   } = props;
 
@@ -62,16 +64,19 @@ function TextArea(
     () => {},
   );
   let localInputRef = useRef<HTMLTextAreaElement>(null);
-  let inputRef = props.inputRef ?? localInputRef;
+  let inputRef = propsInputRef ?? localInputRef;
 
   let { labelProps, inputProps } = useTextField(
     {
-      ...props,
+      ...otherProps,
       onChange: chain(onChange, setInputValue),
       inputElementType: 'textarea',
     },
     inputRef,
   );
+
+  // Merge user-provided labelProps with aria labelProps
+  const mergedLabelProps = { ...labelProps, ...userLabelProps };
 
   const adjustHeight = useEvent(() => {
     const textarea = inputRef.current;
@@ -138,7 +143,7 @@ function TextArea(
       {...otherProps}
       multiLine
       inputRef={inputRef}
-      labelProps={labelProps}
+      labelProps={mergedLabelProps}
       inputProps={{ ...inputProps, 'data-input-type': 'textarea' }}
       isDisabled={isDisabled}
       isReadOnly={isReadOnly}

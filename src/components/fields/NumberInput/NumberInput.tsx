@@ -52,6 +52,7 @@ function NumberInput(
     defaultValue,
     onChange,
     inputRef,
+    labelProps: userLabelProps,
     ...otherProps
   } = props;
   let showStepper = !hideStepper;
@@ -68,6 +69,9 @@ function NumberInput(
     incrementButtonProps,
     decrementButtonProps,
   } = useNumberField(props, state, inputRef as RefObject<HTMLInputElement>);
+
+  // Merge user-provided labelProps with aria labelProps
+  const mergedLabelProps = { ...labelProps, ...userLabelProps };
 
   const steppers = showStepper ? (
     <StepperContainer>
@@ -90,7 +94,7 @@ function NumberInput(
     <StyledTextInputBase
       {...otherProps}
       ref={ref}
-      labelProps={labelProps}
+      labelProps={mergedLabelProps}
       inputProps={{ ...inputProps, 'data-input-type': 'numberinput' }}
       inputRef={inputRef}
       wrapperProps={groupProps}
