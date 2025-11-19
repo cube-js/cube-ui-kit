@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.92.2
+
+### Patch Changes
+
+- [#895](https://github.com/cube-js/cube-ui-kit/pull/895) [`d48e94a5`](https://github.com/cube-js/cube-ui-kit/commit/d48e94a534f963af3f49926bae53e1f2c183bd49) Thanks [@tenphi](https://github.com/tenphi)! - Fix `labelProps` being overridden in input and field components. User-provided `labelProps` are now properly merged with aria-generated label properties in TextInput, NumberInput, PasswordInput, TextArea, SearchInput, Slider, RangeSlider, and TimeInput components, allowing customization like `labelProps={{ size: 'small' }}`.
+
 ## 0.92.1
 
 ### Patch Changes
