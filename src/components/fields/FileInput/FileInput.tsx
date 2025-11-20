@@ -42,7 +42,10 @@ const FileInputElement = tasty(Action, {
       '': '#white',
       'drag-hover': '#purple.16',
     },
-    border: true,
+    border: {
+      '': true,
+      ':focus-within': '#purple-text',
+    },
     radius: true,
     cursor: '$pointer',
     overflow: 'hidden',
