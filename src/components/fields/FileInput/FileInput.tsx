@@ -41,10 +41,12 @@ const FileInputElement = tasty(Action, {
     fill: {
       '': '#white',
       'drag-hover': '#purple.16',
+      ':hover': '#purple.08',
+      disabled: '#dark.04',
     },
     border: {
       '': true,
-      ':focus-within': '#purple-text',
+      ':focus-within & :focus-visible': '#purple-text',
     },
     radius: true,
     cursor: '$pointer',
@@ -57,12 +59,7 @@ const FileInputElement = tasty(Action, {
         '': '#clear',
         pressed: '#purple.30',
       },
-      fill: {
-        '': '#purple.10',
-        hovered: '#purple.16',
-        pressed: '#purple.10',
-        disabled: '#dark.04',
-      },
+      fill: '#purple.12',
       color: {
         '': '#purple',
         disabled: '#dark.30',
@@ -250,6 +247,7 @@ function FileInput(props: CubeFileInputProps, ref) {
         data-qa={qa || 'FileInput'}
         data-input-type="fileinput"
         data-element="Input"
+        disabled={isDisabled}
         type="file"
         multiple={false}
         tabIndex={-1}
