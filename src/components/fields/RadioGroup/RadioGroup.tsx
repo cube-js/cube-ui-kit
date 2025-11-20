@@ -88,6 +88,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   let {
     qa,
+    id,
     isDisabled,
     isRequired,
     labelPosition = 'top',
@@ -123,6 +124,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   let radioGroup = (
     <RadioGroupElement
+      id={id}
       qa={qa || 'RadioGroup'}
       styles={styles}
       data-input-type="radiogroup"
