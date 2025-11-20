@@ -420,7 +420,6 @@ function Select<T extends object>(
       data-size={size}
       data-type={type}
       data-theme={theme}
-      data-input-type="select"
     >
       <HiddenSelect
         state={state}
@@ -431,6 +430,7 @@ function Select<T extends object>(
       <Item
         as="button"
         qa={qa || 'Select'}
+        data-input-type="select"
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
         data-popover-trigger

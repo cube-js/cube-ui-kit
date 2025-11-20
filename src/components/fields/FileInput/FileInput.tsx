@@ -29,6 +29,7 @@ import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import type { AriaTextFieldProps } from 'react-aria';
 
 const FileInputElement = tasty(Action, {
+  qa: 'FileInputWrapper',
   styles: {
     display: 'inline-flex',
     position: 'relative',
@@ -226,10 +227,8 @@ function FileInput(props: CubeFileInputProps, ref) {
   const fileInput = (
     <FileInputElement
       ref={domRef}
-      qa={qa || 'FileInput'}
       styles={inputStyles}
       isDisabled={isDisabled}
-      data-input-type="fileinput"
       mods={{
         selected: !!value,
         'drag-hover': dragHover,
@@ -245,6 +244,8 @@ function FileInput(props: CubeFileInputProps, ref) {
         id={id}
         name={name}
         accept={accept}
+        data-qa={qa || 'FileInput'}
+        data-input-type="fileinput"
         data-element="Input"
         type="file"
         multiple={false}
