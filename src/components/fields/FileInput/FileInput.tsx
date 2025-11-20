@@ -86,7 +86,7 @@ const FileInputElement = tasty(Action, {
 
     Input: {
       position: 'absolute',
-      top: '-50px',
+      top: 0,
       right: 0,
       bottom: 0,
       left: 0,
