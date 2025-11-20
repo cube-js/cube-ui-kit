@@ -1860,7 +1860,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   return wrapWithField<Omit<CubeComboBoxProps<T>, 'children'>>(
     comboBoxField,
     ref,
-    mergeProps(finalProps, {}),
+    finalProps,
   );
 }) as unknown as (<T>(
   props: CubeComboBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },

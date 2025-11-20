@@ -958,7 +958,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   return wrapWithField<Omit<CubeFilterListBoxProps<T>, 'children'>>(
     filterListBoxField,
     ref,
-    mergeProps(finalProps, {}),
+    finalProps,
   );
 }) as unknown as (<T>(
   props: CubeFilterListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },

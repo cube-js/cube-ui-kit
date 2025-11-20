@@ -139,6 +139,7 @@ function DateRangePicker<T extends DateValue>(
       isDisabled={isDisabled}
       validationState={validationState}
       size={size}
+      fieldProps={groupProps}
       {...focusProps}
       suffix={
         <DialogTrigger
@@ -200,7 +201,6 @@ function DateRangePicker<T extends DateValue>(
     ...props,
     styles,
     labelProps: mergeProps(props.labelProps, labelProps),
-    fieldProps: groupProps,
   });
 }
 

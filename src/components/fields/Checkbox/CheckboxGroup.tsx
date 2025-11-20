@@ -66,6 +66,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
   });
 
   let {
+    id,
     isDisabled,
     isRequired,
     necessityIndicator,
@@ -94,6 +95,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
 
   let radioGroup = (
     <CheckGroupElement
+      id={id}
       styles={inputStyles}
       mods={{
         horizontal: orientation === 'horizontal',

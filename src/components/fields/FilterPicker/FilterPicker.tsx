@@ -953,14 +953,13 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   const finalProps = {
     ...props,
-    children: undefined,
     styles: undefined,
   };
 
   return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children' | 'tooltip'>>(
     filterPickerField,
     ref as any,
-    mergeProps(finalProps, {}),
+    finalProps,
   );
 }) as unknown as (<T>(
   props: CubeFilterPickerProps<T> & { ref?: ForwardedRef<HTMLElement> },

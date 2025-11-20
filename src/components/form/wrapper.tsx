@@ -43,6 +43,9 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     return component;
   }
 
+  // Remove id from fieldProps to avoid duplication (id should be on the input element, not the field wrapper)
+  const { id: _, ...fieldPropsWithoutId } = fieldProps || {};
+
   return (
     <FieldWrapper
       {...{
@@ -54,7 +57,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         isDisabled,
         necessityIndicator,
         labelProps,
-        fieldProps,
+        fieldProps: fieldPropsWithoutId,
         message,
         messageStyles,
         description,
