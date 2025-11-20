@@ -29,6 +29,7 @@ import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import type { AriaTextFieldProps } from 'react-aria';
 
 const FileInputElement = tasty(Action, {
+  qa: 'FileInputWrapper',
   styles: {
     display: 'inline-flex',
     position: 'relative',
@@ -40,8 +41,13 @@ const FileInputElement = tasty(Action, {
     fill: {
       '': '#white',
       'drag-hover': '#purple.16',
+      ':hover': '#purple.08',
+      disabled: '#dark.04',
     },
-    border: true,
+    border: {
+      '': true,
+      ':focus-within & :focus-visible': '#purple-text',
+    },
     radius: true,
     cursor: '$pointer',
     overflow: 'hidden',
@@ -53,12 +59,7 @@ const FileInputElement = tasty(Action, {
         '': '#clear',
         pressed: '#purple.30',
       },
-      fill: {
-        '': '#purple.10',
-        hovered: '#purple.16',
-        pressed: '#purple.10',
-        disabled: '#dark.04',
-      },
+      fill: '#purple.12',
       color: {
         '': '#purple',
         disabled: '#dark.30',
@@ -85,7 +86,7 @@ const FileInputElement = tasty(Action, {
 
     Input: {
       position: 'absolute',
-      top: '-50px',
+      top: 0,
       right: 0,
       bottom: 0,
       left: 0,
@@ -226,10 +227,8 @@ function FileInput(props: CubeFileInputProps, ref) {
   const fileInput = (
     <FileInputElement
       ref={domRef}
-      qa={qa || 'FileInput'}
       styles={inputStyles}
       isDisabled={isDisabled}
-      data-input-type="fileinput"
       mods={{
         selected: !!value,
         'drag-hover': dragHover,
@@ -245,7 +244,10 @@ function FileInput(props: CubeFileInputProps, ref) {
         id={id}
         name={name}
         accept={accept}
+        data-qa={qa || 'FileInput'}
+        data-input-type="fileinput"
         data-element="Input"
+        disabled={isDisabled}
         type="file"
         multiple={false}
         tabIndex={-1}

@@ -87,11 +87,6 @@ const SelectWrapperElement = tasty({
   },
 });
 
-const SelectTrigger = tasty(Item, {
-  as: 'button',
-  qa: 'SelectTrigger',
-});
-
 export const ListBoxElement = tasty({
   qa: 'ListBox',
   as: 'ul',
@@ -425,16 +420,17 @@ function Select<T extends object>(
       data-size={size}
       data-type={type}
       data-theme={theme}
-      data-input-type="select"
     >
       <HiddenSelect
-        qa={qa || 'Select'}
         state={state}
         triggerRef={triggerRef}
         label={props.label}
         name={props.name}
       />
-      <SelectTrigger
+      <Item
+        as="button"
+        qa={qa || 'Select'}
+        data-input-type="select"
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
         data-popover-trigger
@@ -478,7 +474,7 @@ function Select<T extends object>(
         ) : placeholder ? (
           <Text.Placeholder>{placeholder}</Text.Placeholder>
         ) : null}
-      </SelectTrigger>
+      </Item>
       <ListBoxPopup
         {...menuProps}
         popoverRef={popoverRef}
