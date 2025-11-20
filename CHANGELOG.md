@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.92.3
+
+### Patch Changes
+
+- [#897](https://github.com/cube-js/cube-ui-kit/pull/897) [`01567fce`](https://github.com/cube-js/cube-ui-kit/commit/01567fceeabd38e619b4bbbe221bbc285a133928) Thanks [@tenphi](https://github.com/tenphi)! - Add isDisabled state to FileInput and fix qa props.
+
+- [#897](https://github.com/cube-js/cube-ui-kit/pull/897) [`01567fce`](https://github.com/cube-js/cube-ui-kit/commit/01567fceeabd38e619b4bbbe221bbc285a133928) Thanks [@tenphi](https://github.com/tenphi)! - Fix qa prop in Select component.
+
 ## 0.92.2
 
 ### Patch Changes
