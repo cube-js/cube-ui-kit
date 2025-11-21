@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.92.4
+
+### Patch Changes
+
+- [#899](https://github.com/cube-js/cube-ui-kit/pull/899) [`122bc1b1`](https://github.com/cube-js/cube-ui-kit/commit/122bc1b18a7ca70405734d84f8539a70af65c1ea) Thanks [@tenphi](https://github.com/tenphi)! - Fixed `id` and ARIA attributes duplication where they were incorrectly applied to both the field wrapper and the input element. The `id` prop is now correctly applied only to the element with `qa` and `data-input-type` attributes. The fix was implemented in the `wrapWithField` helper to automatically filter out `id` from `fieldProps` passed to the Field wrapper.
+
 ## 0.92.3
 
 ### Patch Changes
