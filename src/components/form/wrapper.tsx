@@ -35,7 +35,6 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     tooltip,
     isHidden,
     labelSuffix,
-    children,
   } = props;
 
   if (!label && !forceField) {
@@ -75,7 +74,6 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         tooltip,
         isHidden,
         labelSuffix,
-        children,
         Component: component,
         ref,
       }}
