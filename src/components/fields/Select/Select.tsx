@@ -198,10 +198,6 @@ export interface CubeSelectBaseProps<T>
   triggerStyles?: Styles;
   listBoxStyles?: Styles;
   overlayStyles?: Styles;
-  /**
-   *  @deprecated Use `styles` instead
-   */
-  wrapperStyles?: Styles;
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
   /** Minimum padding in pixels between the popover and viewport edges */
@@ -218,6 +214,8 @@ export interface CubeSelectBaseProps<T>
    * @default false
    */
   isButton?: boolean;
+  /** Callback called when the popover open state changes */
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -267,7 +265,6 @@ function Select<T extends object>(
     inputStyles,
     triggerStyles,
     optionStyles,
-    wrapperStyles,
     listBoxStyles,
     overlayStyles,
     suffix,
@@ -287,6 +284,7 @@ function Select<T extends object>(
     labelSuffix,
     suffixPosition = 'before',
     isClearable,
+    onOpenChange,
     isButton = false,
     form,
     ...otherProps
@@ -317,6 +315,11 @@ function Select<T extends object>(
       emit('popover:open', { menuId: selectId });
     }
   }, [state.isOpen, emit, selectId]);
+
+  // Call onOpenChange when open state changes
+  useEffect(() => {
+    onOpenChange?.(state.isOpen);
+  }, [state.isOpen]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -416,7 +419,7 @@ function Select<T extends object>(
   let selectField = (
     <SelectWrapperElement
       mods={modifiers}
-      styles={{ ...wrapperStyles, ...styles }}
+      styles={styles}
       data-size={size}
       data-type={type}
       data-theme={theme}
@@ -499,7 +502,6 @@ function Select<T extends object>(
     mergeProps(
       {
         ...props,
-        styles: labelStyles,
       },
       { labelProps },
     ),

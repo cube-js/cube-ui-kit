@@ -272,7 +272,6 @@ function FileInput(props: CubeFileInputProps, ref) {
 
   return wrapWithField(fileInput, domRef, {
     ...props,
-    styles,
   });
 }
 

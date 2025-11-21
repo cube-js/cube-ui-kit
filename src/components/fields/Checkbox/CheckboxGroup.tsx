@@ -119,7 +119,6 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
     children: null,
     fieldProps: groupProps,
     labelProps: mergeProps(baseLabelProps, labelProps),
-    styles,
   });
 }
 

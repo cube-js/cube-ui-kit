@@ -32,7 +32,6 @@ import {
   tasty,
 } from '../../../tasty';
 import { generateRandomId } from '../../../utils/random';
-import { mergeProps } from '../../../utils/react';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
@@ -115,6 +114,8 @@ export interface CubePickerProps<T>
    * @default true when items are provided, false when using JSX children
    */
   sortSelectedToTop?: boolean;
+  /** Callback called when the popover open state changes */
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -229,6 +230,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     isClearable,
     onClear,
     sortSelectedToTop,
+    onOpenChange,
     isButton = false,
     listStateRef: externalListStateRef,
     ...otherProps
@@ -332,6 +334,11 @@ export const Picker = forwardRef(function Picker<T extends object>(
     effectiveSelectedKeys,
     selectionMode,
   ]);
+
+  // Call onOpenChange when popover state changes
+  useEffect(() => {
+    onOpenChange?.(isPopoverOpen);
+  }, [isPopoverOpen]);
 
   // Sort items with selected on top if enabled
   const getSortedItems = useCallback((): typeof items => {
@@ -764,10 +771,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
   return wrapWithField<Omit<CubePickerProps<T>, 'children' | 'tooltip'>>(
     pickerField,
     ref as any,
-    {
-      ...props,
-      styles: undefined,
-    },
+    props,
   );
 }) as unknown as (<T>(
   props: CubePickerProps<T> & { ref?: ForwardedRef<HTMLElement> },
