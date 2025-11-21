@@ -245,6 +245,8 @@ export interface CubeComboBoxProps<T>
    * @default true when items are provided, false when using JSX children
    */
   sortSelectedToTop?: boolean;
+  /** Callback called when the popover open state changes */
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -1035,6 +1037,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     containerPadding = 8,
     onSelectionChange: externalOnSelectionChange,
     sortSelectedToTop: sortSelectedToTopProp,
+    onOpenChange,
     onFocus,
     onBlur,
     onKeyDown,
@@ -1178,6 +1181,12 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       cachedItemsOrder.current = null;
     }
   }, [isPopoverOpen, effectiveSelectedKey]);
+
+  // Call onOpenChange when popover state changes
+  useEffect(() => {
+    onOpenChange?.(isPopoverOpen);
+     
+  }, [isPopoverOpen]);
 
   // Filtering hook
   const { filterFn, isFilterActive, setIsFilterActive } = useComboBoxFiltering({

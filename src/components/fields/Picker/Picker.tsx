@@ -114,6 +114,8 @@ export interface CubePickerProps<T>
    * @default true when items are provided, false when using JSX children
    */
   sortSelectedToTop?: boolean;
+  /** Callback called when the popover open state changes */
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -228,6 +230,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     isClearable,
     onClear,
     sortSelectedToTop,
+    onOpenChange,
     isButton = false,
     listStateRef: externalListStateRef,
     ...otherProps
@@ -331,6 +334,12 @@ export const Picker = forwardRef(function Picker<T extends object>(
     effectiveSelectedKeys,
     selectionMode,
   ]);
+
+  // Call onOpenChange when popover state changes
+  useEffect(() => {
+    onOpenChange?.(isPopoverOpen);
+     
+  }, [isPopoverOpen]);
 
   // Sort items with selected on top if enabled
   const getSortedItems = useCallback((): typeof items => {

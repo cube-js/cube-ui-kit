@@ -214,6 +214,8 @@ export interface CubeSelectBaseProps<T>
    * @default false
    */
   isButton?: boolean;
+  /** Callback called when the popover open state changes */
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -282,6 +284,7 @@ function Select<T extends object>(
     labelSuffix,
     suffixPosition = 'before',
     isClearable,
+    onOpenChange,
     isButton = false,
     form,
     ...otherProps
@@ -312,6 +315,12 @@ function Select<T extends object>(
       emit('popover:open', { menuId: selectId });
     }
   }, [state.isOpen, emit, selectId]);
+
+  // Call onOpenChange when open state changes
+  useEffect(() => {
+    onOpenChange?.(state.isOpen);
+     
+  }, [state.isOpen]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
