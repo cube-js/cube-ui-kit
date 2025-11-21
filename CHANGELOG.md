@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.93.0
+
+### Minor Changes
+
+- [#901](https://github.com/cube-js/cube-ui-kit/pull/901) [`1d980997`](https://github.com/cube-js/cube-ui-kit/commit/1d980997b663287f976d6070cbc63b1623b5a76d) Thanks [@tenphi](https://github.com/tenphi)! - Added unified support for `fieldProps`, `fieldStyles`, `labelProps`, and `labelStyles` across all field components. The `fieldStyles` and `labelStyles` props serve as shorthands for `fieldProps.styles` and `labelProps.styles` respectively, with shorthand props taking priority. All merging logic is centralized in the `wrapWithField` helper.
+
+  **Breaking changes:**
+
+  - Removed `wrapperStyles` prop from TextInputBase and Select components (use `styles` prop instead for the root element).
+
+### Patch Changes
+
+- [#901](https://github.com/cube-js/cube-ui-kit/pull/901) [`1d980997`](https://github.com/cube-js/cube-ui-kit/commit/1d980997b663287f976d6070cbc63b1623b5a76d) Thanks [@tenphi](https://github.com/tenphi)! - Added `onOpenChange` callback prop to Picker, FilterPicker, ComboBox, and Select components. This callback is invoked when the popover/overlay open state changes, receiving a boolean parameter indicating the new open state.
+
 ## 0.92.4
 
 ### Patch Changes
