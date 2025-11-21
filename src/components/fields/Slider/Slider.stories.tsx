@@ -179,7 +179,9 @@ export default {
     minValue: 0,
     maxValue: 20,
     step: 2,
-    width: '200px',
+    fieldStyles: {
+      width: '200px',
+    },
   },
 } as Meta<CubeSliderProps>;
 
