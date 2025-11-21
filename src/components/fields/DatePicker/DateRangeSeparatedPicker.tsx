@@ -182,6 +182,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
   const component = (
     <DatePickerElement
       ref={targetRef}
+      {...groupProps}
       styles={props.wrapperStyles}
       qa={qa || 'DateRangeSeparatedPicker'}
       data-input-type="daterangeseparatedpicker"
@@ -310,7 +311,6 @@ function DateRangeSeparatedPicker<T extends DateValue>(
     ...props,
     styles,
     labelProps: mergeProps(props.labelProps, labelProps),
-    fieldProps: groupProps,
   });
 }
 

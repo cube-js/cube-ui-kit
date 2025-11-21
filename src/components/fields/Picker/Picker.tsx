@@ -764,14 +764,10 @@ export const Picker = forwardRef(function Picker<T extends object>(
   return wrapWithField<Omit<CubePickerProps<T>, 'children' | 'tooltip'>>(
     pickerField,
     ref as any,
-    mergeProps(
-      {
-        ...props,
-        children: undefined,
-        styles: undefined,
-      },
-      {},
-    ),
+    {
+      ...props,
+      styles: undefined,
+    },
   );
 }) as unknown as (<T>(
   props: CubePickerProps<T> & { ref?: ForwardedRef<HTMLElement> },

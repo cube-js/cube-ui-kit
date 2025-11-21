@@ -205,6 +205,7 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
   const sliderField = (
     <SliderElement
       ref={domRef}
+      id={props.id}
       {...groupProps}
       mods={mods}
       styles={styles}
@@ -222,7 +223,6 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
 
   return wrapWithField(sliderField, ref, {
     ...props,
-    children: undefined,
     // styles,
     extra,
     labelProps: mergeProps(labelProps, userLabelProps),
