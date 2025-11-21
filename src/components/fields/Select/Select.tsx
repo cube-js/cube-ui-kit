@@ -198,10 +198,6 @@ export interface CubeSelectBaseProps<T>
   triggerStyles?: Styles;
   listBoxStyles?: Styles;
   overlayStyles?: Styles;
-  /**
-   *  @deprecated Use `styles` instead
-   */
-  wrapperStyles?: Styles;
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
   /** Minimum padding in pixels between the popover and viewport edges */
@@ -267,7 +263,6 @@ function Select<T extends object>(
     inputStyles,
     triggerStyles,
     optionStyles,
-    wrapperStyles,
     listBoxStyles,
     overlayStyles,
     suffix,
@@ -416,7 +411,7 @@ function Select<T extends object>(
   let selectField = (
     <SelectWrapperElement
       mods={modifiers}
-      styles={{ ...wrapperStyles, ...styles }}
+      styles={styles}
       data-size={size}
       data-type={type}
       data-theme={theme}
@@ -499,7 +494,6 @@ function Select<T extends object>(
     mergeProps(
       {
         ...props,
-        styles: labelStyles,
       },
       { labelProps },
     ),

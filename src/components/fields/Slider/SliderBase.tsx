@@ -223,7 +223,6 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
 
   return wrapWithField(sliderField, ref, {
     ...props,
-    // styles,
     extra,
     labelProps: mergeProps(labelProps, userLabelProps),
   });

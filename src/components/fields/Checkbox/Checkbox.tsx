@@ -252,9 +252,7 @@ function Checkbox(
     return wrapWithField(checkboxField, domRef, {
       ...props,
       children: null,
-      labelStyles,
       inputStyles,
-      styles,
     });
   }
 

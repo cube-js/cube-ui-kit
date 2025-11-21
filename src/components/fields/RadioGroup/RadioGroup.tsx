@@ -163,7 +163,6 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     children: null,
     fieldProps,
     labelProps: mergeProps(baseLabelProps, labelProps),
-    styles: props.fieldStyles,
   });
 }
 

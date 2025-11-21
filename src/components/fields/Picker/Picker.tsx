@@ -32,7 +32,6 @@ import {
   tasty,
 } from '../../../tasty';
 import { generateRandomId } from '../../../utils/random';
-import { mergeProps } from '../../../utils/react';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
@@ -764,10 +763,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
   return wrapWithField<Omit<CubePickerProps<T>, 'children' | 'tooltip'>>(
     pickerField,
     ref as any,
-    {
-      ...props,
-      styles: undefined,
-    },
+    props,
   );
 }) as unknown as (<T>(
   props: CubePickerProps<T> & { ref?: ForwardedRef<HTMLElement> },

@@ -112,7 +112,6 @@ function DateInput<T extends DateValue>(
 
   return wrapWithField(component, domRef, {
     ...props,
-    styles,
     labelProps: mergeProps(props.labelProps, labelProps),
   });
 }

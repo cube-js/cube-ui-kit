@@ -121,7 +121,6 @@ function TimeInput<T extends TimeValue>(
 
   return wrapWithField(timeInput, domRef, {
     ...props,
-    styles,
     labelProps: mergeProps(labelProps, userLabelProps),
   });
 }

@@ -207,8 +207,6 @@ export interface CubeComboBoxProps<T>
   inputStyles?: Styles;
   /** Custom styles for the trigger button */
   triggerStyles?: Styles;
-  /** Custom styles for the field wrapper */
-  fieldStyles?: Styles;
   /** Custom styles for the listbox */
   listBoxStyles?: Styles;
   /** Custom styles for the popover overlay */
@@ -1005,7 +1003,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     triggerStyles,
     listBoxStyles,
     overlayStyles,
-    fieldStyles,
     suffix,
     hideTrigger,
     message,
@@ -1852,15 +1849,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   );
 
   const { children: _, ...propsWithoutChildren } = props;
-  const finalProps = {
-    ...propsWithoutChildren,
-    styles: fieldStyles,
-  };
 
   return wrapWithField<Omit<CubeComboBoxProps<T>, 'children'>>(
     comboBoxField,
     ref,
-    finalProps,
+    propsWithoutChildren,
   );
 }) as unknown as (<T>(
   props: CubeComboBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
