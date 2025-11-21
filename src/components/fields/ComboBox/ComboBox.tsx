@@ -1185,7 +1185,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // Call onOpenChange when popover state changes
   useEffect(() => {
     onOpenChange?.(isPopoverOpen);
-     
   }, [isPopoverOpen]);
 
   // Filtering hook

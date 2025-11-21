@@ -338,7 +338,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
   // Call onOpenChange when popover state changes
   useEffect(() => {
     onOpenChange?.(isPopoverOpen);
-     
   }, [isPopoverOpen]);
 
   // Sort items with selected on top if enabled

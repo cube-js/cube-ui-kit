@@ -319,7 +319,6 @@ function Select<T extends object>(
   // Call onOpenChange when open state changes
   useEffect(() => {
     onOpenChange?.(state.isOpen);
-     
   }, [state.isOpen]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
