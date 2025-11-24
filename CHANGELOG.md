@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.93.1
+
+### Patch Changes
+
+- [#903](https://github.com/cube-js/cube-ui-kit/pull/903) [`e0214842`](https://github.com/cube-js/cube-ui-kit/commit/e0214842a343911fe36c57d0aae73e5f90b36b1c) Thanks [@tenphi](https://github.com/tenphi)! - Add `fixed` modifier to `height` and `width` styles. Use `fixed 10x` to set min, base, and max dimensions to the same value, creating a truly fixed size that cannot flex.
+
 ## 0.93.0
 
 ### Minor Changes
