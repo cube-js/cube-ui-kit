@@ -3,7 +3,7 @@ description: When user asked to add a changeset
 alwaysApply: false
 ---
 
-Place the changeset in the `/.changeset` folder.
+Add changeset manually. Place the changeset in the `/.changeset` folder.
 
 ## Version Selection
 - Use `patch` for bug fixes and small changes (even with minor breaking changes)

@@ -32,6 +32,7 @@ export const TextInput = forwardRef(function TextInput(
   let {
     labelProps: userLabelProps,
     inputRef: propsInputRef,
+    form,
     ...restProps
   } = props;
   let localInputRef = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
