@@ -63,6 +63,15 @@ export { Suffix } from './components/layout/Suffix';
 export type { CubeSuffixProps } from './components/layout/Suffix';
 export { Divider } from './components/content/Divider';
 export type { CubeDividerProps } from './components/content/Divider';
+export { Disclosure } from './components/content/Disclosure';
+export type {
+  CubeDisclosureProps,
+  CubeDisclosureTriggerProps,
+  CubeDisclosureContentProps,
+  CubeDisclosureGroupProps,
+  CubeDisclosureItemProps,
+  DisclosureStateContext,
+} from './components/content/Disclosure';
 export { GridProvider } from './components/GridProvider';
 export type { CubeGridProviderProps } from './components/GridProvider';
 export { Content } from './components/content/Content';

@@ -10,7 +10,8 @@ import {
 
 const AUTO_FALLBACK_DURATION = 500;
 
-type Phase = 'enter' | 'entered' | 'exit' | 'unmounted';
+type Phase = 'enter' | 'entered' | 'exit-pending' | 'exit' | 'unmounted';
+type ReportedPhase = 'enter' | 'entered' | 'exit' | 'unmounted';
 
 export type DisplayTransitionProps = {
   /** Desired visibility (driver). */
@@ -20,7 +21,7 @@ export type DisplayTransitionProps = {
   /** Fires after enter settles or after exit completes (unmount). */
   onRest?: (transition: 'enter' | 'exit') => void;
   /** Fires when phase changes. */
-  onPhaseChange?: (phase: Phase) => void;
+  onPhaseChange?: (phase: ReportedPhase) => void;
   /** Fires when isShown (derived from phase) changes. */
   onToggle?: (isShown: boolean) => void;
   /** Keep calling children during "unmounted" (you decide what to render). */
@@ -31,7 +32,7 @@ export type DisplayTransitionProps = {
   respectReducedMotion?: boolean;
   /** Render-prop gets { phase, isShown, ref }. Bind ref to the transitioned element for native event detection. */
   children: (props: {
-    phase: Phase;
+    phase: ReportedPhase;
     isShown: boolean;
     ref: RefCallback<HTMLElement>;
   }) => ReactNode;
@@ -251,6 +252,11 @@ export function DisplayTransition({
         ensureEnterFlow();
       } else if (current === 'enter') {
         ensureEnterFlow();
+      } else if (current === 'exit-pending') {
+        // User toggled back before exit started, cancel and stay entered
+        cancelRAF();
+        clearTimer();
+        setPhase('entered');
       } else {
         // already "entered"
         cancelRAF();
@@ -260,12 +266,13 @@ export function DisplayTransition({
       if (current === 'unmounted') {
         cancelRAF();
         clearTimer();
-      } else if (current !== 'exit') {
-        setPhase('exit');
-        ensureExitFlow();
-      } else {
+      } else if (current !== 'exit' && current !== 'exit-pending') {
+        // Set intermediate phase to trigger re-render, RAF will be scheduled from layout effect
+        setPhase('exit-pending');
+      } else if (current === 'exit') {
         ensureExitFlow();
       }
+      // 'exit-pending' is handled in useLayoutEffect below
     }
 
     return () => {
@@ -275,22 +282,37 @@ export function DisplayTransition({
     };
   }, [targetShown, dur, onRestEvent]);
 
-  // OPTIONAL belt-and-suspenders: if we render while still "enter", re-arm enter flow.
-  // You can remove this if you want fewer moving parts; double-rAF usually suffices.
+  // Schedule RAF from layout effect for both enter and exit-pending to ensure symmetric timing
   useLayoutEffect(() => {
     if (phaseRef.current === 'enter') {
       ensureEnterFlow();
+    } else if (phaseRef.current === 'exit-pending') {
+      // Schedule RAF for exit, mirroring the enter flow timing
+      nextPaint(() => {
+        if (phaseRef.current === 'exit-pending') {
+          setPhase('exit');
+          ensureExitFlow();
+        }
+      });
     }
     return cancelRAF;
   }, [phase]);
 
-  // Call onPhaseChange when phase changes
+  // Map internal phase to reported phase (exit-pending is reported as 'entered')
+  const reportedPhase: ReportedPhase =
+    phase === 'exit-pending' ? 'entered' : phase;
+
+  // Call onPhaseChange when reported phase changes
+  const prevReportedPhaseRef = useRef(reportedPhase);
   useLayoutEffect(() => {
-    onPhaseChangeEvent?.(phase);
-  }, [phase, onPhaseChangeEvent]);
+    if (prevReportedPhaseRef.current !== reportedPhase) {
+      prevReportedPhaseRef.current = reportedPhase;
+      onPhaseChangeEvent?.(reportedPhase);
+    }
+  }, [reportedPhase, onPhaseChangeEvent]);
 
   // Render-time boolean (true only when visually shown)
-  const isShownNow = phase === 'entered';
+  const isShownNow = phase === 'entered' || phase === 'exit-pending';
   const prevIsShownRef = useRef(isShownNow);
 
   // Call onToggle when isShown changes
@@ -318,9 +340,9 @@ export function DisplayTransition({
   if (phase === 'unmounted' && !exposeUnmounted) return null;
   return children({
     phase:
-      phase === 'enter' && duration !== undefined && !duration
+      reportedPhase === 'enter' && duration !== undefined && !duration
         ? 'entered'
-        : phase,
+        : reportedPhase,
     isShown: isShownNow,
     ref: refCallback,
   });

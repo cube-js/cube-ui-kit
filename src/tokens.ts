@@ -76,6 +76,7 @@ const TOKENS = {
   'leaf-sharp-radius': '0px',
   'fade-width': '32px',
   transition: '80ms',
+  'disclosure-transition': '120ms',
   'min-dialog-size': 'min(288px, calc(100vw - (2 * var(--gap))))',
   'clear-color': 'transparent',
   'border-opaque-color': 'rgb(227 227 233)',
