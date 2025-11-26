@@ -240,7 +240,6 @@ const DisclosureComponent = forwardRef<HTMLDivElement, CubeDisclosureProps>(
       transitionDuration,
       qa,
       mods,
-      styles,
       ...otherProps
     } = props;
 
@@ -306,14 +305,6 @@ const DisclosureComponent = forwardRef<HTMLDivElement, CubeDisclosureProps>(
 
     const outerStyles = extractStyles(otherProps, OUTER_STYLES);
 
-    const finalStyles = useMemo<Styles>(
-      () => ({
-        ...outerStyles,
-        ...styles,
-      }),
-      [outerStyles, styles],
-    );
-
     const finalMods = useMemo(
       () => ({
         expanded: isExpanded,
@@ -329,7 +320,7 @@ const DisclosureComponent = forwardRef<HTMLDivElement, CubeDisclosureProps>(
 
     return (
       <DisclosureContext.Provider value={contextValue}>
-        <DisclosureRoot ref={ref} qa={qa} mods={finalMods} styles={finalStyles}>
+        <DisclosureRoot ref={ref} qa={qa} mods={finalMods} styles={outerStyles}>
           {content}
         </DisclosureRoot>
       </DisclosureContext.Provider>
@@ -345,7 +336,7 @@ const DisclosureTrigger = forwardRef<
   HTMLButtonElement,
   CubeDisclosureTriggerProps
 >(function DisclosureTrigger(props, ref) {
-  const { children, icon, styles, mods, ...otherProps } = props;
+  const { children, icon, mods, ...otherProps } = props;
   const context = useDisclosureContext();
   const { buttonProps, isDisabled, isExpanded, shape, triggerProps } = context;
 
@@ -367,9 +358,9 @@ const DisclosureTrigger = forwardRef<
       ref={ref}
       icon={icon ?? defaultIcon}
       isDisabled={isDisabled}
+      isSelected={isExpanded}
       {...triggerProps}
       {...(mergeProps(otherProps, buttonProps as any) as any)}
-      styles={styles}
       mods={finalMods}
     >
       {children}
@@ -414,7 +405,6 @@ const DisclosureContent = forwardRef<
       isShown={isExpanded}
       duration={transitionDuration}
       animateOnMount={false}
-      // exposeUnmounted
     >
       {({ phase, isShown, ref: transitionRef }) => (
         <ContentWrapperElement
@@ -597,7 +587,7 @@ const DisclosureItem = forwardRef<HTMLDivElement, CubeDisclosureItemProps>(
       () => ({
         expanded: isExpanded,
         disabled: isDisabled,
-        [`shape=${shape}`]: true,
+        shape,
         ...mods,
       }),
       [isExpanded, isDisabled, shape, mods],
