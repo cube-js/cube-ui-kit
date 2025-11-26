@@ -25,7 +25,6 @@ export interface CubeItemButtonProps
   actions?: ReactNode;
   size?: Omit<CubeItemProps['size'], 'inline'>;
   wrapperStyles?: Styles;
-  showActionsOnHover?: boolean;
 }
 
 const StyledItem = tasty(Item, {
@@ -98,13 +97,14 @@ const ItemButton = forwardRef(function ItemButton(
     to,
     htmlType,
     as,
-    type,
+    type = 'neutral',
     theme,
     onPress,
     actions,
     size = 'medium',
     wrapperStyles,
     showActionsOnHover = false,
+    disableActionsFocus = false,
     ...rest
   } = allProps as CubeItemButtonProps & {
     as?: 'a' | 'button' | 'div' | 'span';
@@ -125,20 +125,6 @@ const ItemButton = forwardRef(function ItemButton(
   }, [actions, areActionsVisible]);
 
   const { hoverProps, isHovered } = useHover({});
-
-  const finalWrapperStyles = useMemo(() => {
-    return wrapperStyles
-      ? {
-          ...wrapperStyles,
-          ...(wrapperStyles?.Actions
-            ? {
-                '& > [data-element="Actions"]': wrapperStyles.Actions,
-                Actions: undefined,
-              }
-            : undefined),
-        }
-      : undefined;
-  }, [wrapperStyles]);
 
   const { actionProps } = useAction(
     { ...(allProps as any), htmlType, to, as, mods },
@@ -162,7 +148,7 @@ const ItemButton = forwardRef(function ItemButton(
         {...hoverProps}
         data-size={size}
         mods={{ 'actions-hidden': !areActionsShown && showActionsOnHover }}
-        styles={finalWrapperStyles}
+        styles={wrapperStyles}
         style={
           {
             '--actions-width':
@@ -174,7 +160,11 @@ const ItemButton = forwardRef(function ItemButton(
         }
       >
         {button}
-        <ItemActionProvider type={type} theme={theme}>
+        <ItemActionProvider
+          type={type}
+          theme={theme}
+          disableActionsFocus={disableActionsFocus}
+        >
           {showActionsOnHover ? (
             <DisplayTransition
               exposeUnmounted

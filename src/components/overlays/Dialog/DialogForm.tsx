@@ -57,7 +57,6 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
     labelStyles,
     labelPosition,
     requiredMark,
-    isRequired,
     necessityIndicator,
     necessityLabel,
     isReadOnly,
@@ -110,7 +109,6 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
           labelStyles={labelStyles}
           labelPosition={labelPosition}
           requiredMark={requiredMark}
-          isRequired={isRequired}
           necessityIndicator={necessityIndicator}
           necessityLabel={necessityLabel}
           isReadOnly={isReadOnly}

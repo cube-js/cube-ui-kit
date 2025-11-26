@@ -4,6 +4,7 @@ import { useNumberFieldState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
 import { tasty } from '../../../tasty';
+import { mergeProps } from '../../../utils/react';
 import {
   castNullableNumberValue,
   WithNullableValue,
@@ -52,6 +53,7 @@ function NumberInput(
     defaultValue,
     onChange,
     inputRef,
+    labelProps: userLabelProps,
     ...otherProps
   } = props;
   let showStepper = !hideStepper;
@@ -68,6 +70,9 @@ function NumberInput(
     incrementButtonProps,
     decrementButtonProps,
   } = useNumberField(props, state, inputRef as RefObject<HTMLInputElement>);
+
+  // Merge user-provided labelProps with aria labelProps
+  const mergedLabelProps = mergeProps(labelProps, userLabelProps);
 
   const steppers = showStepper ? (
     <StepperContainer>
@@ -90,8 +95,8 @@ function NumberInput(
     <StyledTextInputBase
       {...otherProps}
       ref={ref}
-      labelProps={labelProps}
-      inputProps={inputProps}
+      labelProps={mergedLabelProps}
+      inputProps={{ ...inputProps, 'data-input-type': 'numberinput' }}
       inputRef={inputRef}
       wrapperProps={groupProps}
       suffixPosition="after"

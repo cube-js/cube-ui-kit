@@ -81,6 +81,14 @@ export default {
         defaultValue: { summary: 'button' },
       },
     },
+    showActionsOnHover: {
+      control: { type: 'boolean' },
+      description:
+        'When true, actions are hidden by default and shown only on hover, focus, or focus-within',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
   },
 };
 
@@ -1861,6 +1869,182 @@ WithActions.parameters = {
     description: {
       story:
         'Demonstrates the `actions` prop which allows rendering action buttons inline as part of the grid layout. Unlike ItemButton which positions actions absolutely, Item renders actions as a native grid column that automatically sizes to fit the content. Actions are rendered using the ItemAction component for consistent styling.',
+    },
+  },
+};
+
+export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Actions Shown on Hover</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        qa="hover-actions-item"
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        showActionsOnHover={true}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Hover to show actions
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconCoin />}
+        showActionsOnHover={true}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Another item with hover actions
+      </Item>
+    </Space>
+
+    <Title level={5}>Comparison: Always Visible vs On Hover</Title>
+    <Space gap="2x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        showActionsOnHover={false}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Actions always visible
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        showActionsOnHover={true}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Actions shown on hover
+      </Item>
+    </Space>
+
+    <Title level={5}>Different Sizes with Hover Actions</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="small"
+        icon={<IconUser />}
+        showActionsOnHover={true}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Small with hover actions
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="medium"
+        icon={<IconUser />}
+        showActionsOnHover={true}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Medium with hover actions
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        size="large"
+        icon={<IconUser />}
+        showActionsOnHover={true}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Large with hover actions
+      </Item>
+    </Space>
+
+    <Title level={5}>With Description and Hover Actions</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Inline description"
+        descriptionPlacement="inline"
+        showActionsOnHover={true}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Item with inline description
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        description="Block description below the item"
+        descriptionPlacement="block"
+        showActionsOnHover={true}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Item with block description
+      </Item>
+    </Space>
+  </Space>
+);
+
+WithActionsOnHover.args = {
+  width: '450px',
+};
+
+WithActionsOnHover.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the `showActionsOnHover` prop which hides actions by default and reveals them smoothly on hover, focus, or focus-within states using opacity transitions. This provides a cleaner interface while keeping actions easily accessible. The actions remain in the layout to prevent content shifting.',
     },
   },
 };

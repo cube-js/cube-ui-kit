@@ -56,6 +56,7 @@ function DateInput<T extends DateValue>(
   props = Object.assign({}, DEFAULT_DATE_PROPS, props);
 
   let {
+    qa,
     autoFocus,
     isDisabled,
     inputStyles,
@@ -86,6 +87,8 @@ function DateInput<T extends DateValue>(
   const component = (
     <DateInputBase
       ref={fieldRef}
+      qa={qa || 'DateInput'}
+      inputType="dateinput"
       size={size}
       fieldProps={fieldProps}
       isDisabled={isDisabled}
@@ -109,7 +112,6 @@ function DateInput<T extends DateValue>(
 
   return wrapWithField(component, domRef, {
     ...props,
-    styles,
     labelProps: mergeProps(props.labelProps, labelProps),
   });
 }

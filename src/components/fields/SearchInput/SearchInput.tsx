@@ -4,6 +4,7 @@ import { SearchFieldProps, useSearchFieldState } from 'react-stately';
 
 import { CloseIcon, SearchIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
+import { mergeProps } from '../../../utils/react';
 import { ariaToCubeButtonProps } from '../../../utils/react/mapProps';
 import {
   castNullableStringValue,
@@ -31,31 +32,47 @@ export const SearchInput = forwardRef(function SearchInput(
   props = castNullableStringValue(props);
   props = useProviderProps(props);
 
-  let { isClearable, validationState, onClear } = props;
+  let {
+    isClearable,
+    validationState,
+    onClear,
+    labelProps: userLabelProps,
+    ...restProps
+  } = props;
 
   let inputRef = useRef(null);
 
-  let state = useSearchFieldState(props);
-  let { inputProps, clearButtonProps } = useSearchField(props, state, inputRef);
-  let showClearButton = isClearable && state.value !== '' && !props.isReadOnly;
+  let state = useSearchFieldState(restProps);
+  let { labelProps, inputProps, clearButtonProps } = useSearchField(
+    restProps,
+    state,
+    inputRef,
+  );
+  let showClearButton =
+    isClearable && state.value !== '' && !restProps.isReadOnly;
+
+  // Merge user-provided labelProps with aria labelProps
+  const mergedLabelProps = mergeProps(labelProps, userLabelProps);
 
   return (
     <TextInputBase
       ref={ref}
-      inputProps={inputProps}
+      labelProps={mergedLabelProps}
+      inputProps={{ ...inputProps, 'data-input-type': 'searchinput' }}
       inputRef={inputRef}
       type="search"
       icon={<SearchIcon />}
       suffixPosition="after"
-      {...props}
+      validationState={validationState}
+      {...restProps}
       suffix={
-        props.suffix || showClearButton ? (
+        restProps.suffix || showClearButton ? (
           <>
-            {props.suffix}
+            {restProps.suffix}
             {showClearButton && (
               <ItemAction
                 icon={<CloseIcon />}
-                size={props.size}
+                size={restProps.size}
                 type={validationState === 'invalid' ? 'clear' : 'neutral'}
                 theme={validationState === 'invalid' ? 'danger' : undefined}
                 {...ariaToCubeButtonProps(clearButtonProps)}

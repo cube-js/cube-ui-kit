@@ -82,6 +82,8 @@ export interface CubeFilterPickerProps<T>
   isCheckable?: boolean;
   /** Whether to flip the popover placement */
   shouldFlip?: boolean;
+  /** Minimum padding in pixels between the popover and viewport edges */
+  containerPadding?: number;
   /** Tooltip for the trigger button (separate from field tooltip) */
   triggerTooltip?: CubeItemProps['tooltip'];
   /** Description for the trigger button (separate from field description) */
@@ -126,6 +128,8 @@ export interface CubeFilterPickerProps<T>
    * @default true when items are provided, false when using JSX children
    */
   sortSelectedToTop?: boolean;
+  /** Callback called when the popover open state changes */
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -207,6 +211,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     shouldFocusWrap,
     children,
     shouldFlip = true,
+    containerPadding = 8,
     selectedKey,
     defaultSelectedKey,
     selectedKeys,
@@ -249,6 +254,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     searchValue,
     onSearchChange,
     sortSelectedToTop: sortSelectedToTopProp,
+    onOpenChange,
+    isButton = false,
     form,
     ...otherProps
   } = props;
@@ -586,7 +593,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   const renderTriggerContent = () => {
     // When there is a selection and a custom summary renderer is provided – use it.
-    if (hasSelection && typeof renderSummary === 'function') {
+    if (typeof renderSummary === 'function') {
       if (selectionMode === 'single') {
         return renderSummary({
           selectedLabel: selectedLabels[0],
@@ -602,14 +609,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         selectedKeys: effectiveSelectedKeys,
         selectionMode: 'multiple',
       });
-    } else if (hasSelection && renderSummary === false) {
+    } else if (renderSummary === false) {
       return null;
     }
 
     let content: ReactNode = '';
 
     if (!hasSelection) {
-      content = placeholder;
+      return <Text.Placeholder>{placeholder}</Text.Placeholder>;
     } else if (selectionMode === 'single') {
       content = selectedLabels[0];
     } else if (effectiveSelectedKeys === 'all') {
@@ -622,17 +629,13 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       return null;
     }
 
-    return (
-      <Text
-        ellipsis
-        style={{ opacity: hasSelection ? 1 : 'var(--disabled-opacity)' }}
-      >
-        {content}
-      </Text>
-    );
+    return content;
   };
 
   const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
+
+  // Capture trigger width for overlay min-width
+  const triggerWidth = triggerRef?.current?.offsetWidth;
 
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
@@ -665,8 +668,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           selectionsWhenClosed.current = { ...latestSelectionRef.current };
           cachedItemsOrder.current = null;
         }
+        onOpenChange?.(state.isOpen);
       }
-    }, [state.isOpen, isPopoverOpen]);
+    }, [state.isOpen, isPopoverOpen, onOpenChange]);
 
     // Add keyboard support for arrow keys to open the popover
     const { keyboardProps } = useKeyboard({
@@ -723,13 +727,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <ItemButton
         ref={triggerRef as any}
         data-popover-trigger
-        isButton={false}
+        isButton={isButton}
         qa={qa || 'FilterPicker'}
         id={id}
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
         isDisabled={isDisabled || isLoading}
+        data-input-type="filterpicker"
         mods={{
           placeholder: !hasSelection,
           ...externalMods,
@@ -778,6 +783,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         type="popover"
         placement="bottom start"
         styles={triggerStyles}
+        containerPadding={containerPadding}
         shouldUpdatePosition={shouldUpdatePosition}
         shouldFlip={shouldFlip && shouldUpdatePosition}
         isDismissable={true}
@@ -794,12 +800,19 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         {renderTrigger}
         {(close) => (
           <Dialog
+            qa="FilterPickerOverlay"
             display="grid"
             styles={{
               gridRows: '1sf',
-              width: '30x max-content 50vw',
+              width: 'max($overlay-min-width, 30x) max-content 50vw',
+              '$overlay-min-width': '30x',
               ...popoverStyles,
             }}
+            style={
+              triggerWidth
+                ? ({ '--overlay-min-width': `${triggerWidth}px` } as any)
+                : undefined
+            }
           >
             <FocusScope restoreFocus>
               <FilterListBox
@@ -942,16 +955,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     </FilterPickerWrapper>
   );
 
-  const finalProps = {
-    ...props,
-    children: undefined,
-    styles: undefined,
-  };
-
   return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children' | 'tooltip'>>(
     filterPickerField,
     ref as any,
-    mergeProps(finalProps, {}),
+    props,
   );
 }) as unknown as (<T>(
   props: CubeFilterPickerProps<T> & { ref?: ForwardedRef<HTMLElement> },

@@ -85,7 +85,7 @@ const ComboBoxOverlayElement = tasty({
     display: 'grid',
     gridRows: '1sf',
     gridColumns: '1sf',
-    width: '$min-width max-content 50vw',
+    width: '$overlay-min-width max-content 50vw',
     height: 'initial max-content (50vh - 5x)',
     overflow: 'auto',
     background: '#white',
@@ -120,7 +120,7 @@ const ComboBoxOverlayElement = tasty({
       '!open': 0.001,
     },
 
-    '$min-width': 'min 30x',
+    '$overlay-min-width': 'min 30x',
   },
 });
 
@@ -207,8 +207,6 @@ export interface CubeComboBoxProps<T>
   inputStyles?: Styles;
   /** Custom styles for the trigger button */
   triggerStyles?: Styles;
-  /** Custom styles for the field wrapper */
-  fieldStyles?: Styles;
   /** Custom styles for the listbox */
   listBoxStyles?: Styles;
   /** Custom styles for the popover overlay */
@@ -234,6 +232,8 @@ export interface CubeComboBoxProps<T>
   direction?: 'bottom' | 'top';
   /** Offset for the popover */
   overlayOffset?: number;
+  /** Minimum padding in pixels between the popover and viewport edges */
+  containerPadding?: number;
   /** Whether the combobox is read-only */
   isReadOnly?: boolean;
   /** Suffix position goes before or after the validation and loading statuses */
@@ -245,6 +245,8 @@ export interface CubeComboBoxProps<T>
    * @default true when items are provided, false when using JSX children
    */
   sortSelectedToTop?: boolean;
+  /** Callback called when the popover open state changes */
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -605,15 +607,21 @@ function useComboBoxKeyboard({
 
         // If no results, handle empty input or custom values
         if (!hasResults) {
-          e.preventDefault();
-
           if (allowsCustomValue) {
-            const value = effectiveInputValue;
+            const value = effectiveInputValue.trim();
 
+            // Commit the custom value
             onSelectionChange(
               (value as unknown as Key) ?? (null as unknown as Key),
             );
+
+            // If popover is closed and we have a value, allow Enter to propagate for form submission
+            // If popover is open OR value is empty, prevent default to avoid premature submission
+            if (isPopoverOpen || !value) {
+              e.preventDefault();
+            }
           } else {
+            e.preventDefault();
             onSelectionChange(null);
           }
 
@@ -754,6 +762,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         styles={inputStyles}
         mods={mods}
         data-size={size}
+        data-input-type="combobox"
         role="combobox"
         aria-expanded={isPopoverOpen && hasResults}
         aria-haspopup="listbox"
@@ -785,6 +794,7 @@ interface ComboBoxOverlayProps {
   direction: 'bottom' | 'top';
   shouldFlip: boolean;
   overlayOffset: number;
+  containerPadding: number;
   comboBoxWidth?: number;
   comboBoxId: string;
   overlayStyles?: Styles;
@@ -818,6 +828,7 @@ function ComboBoxOverlay({
   direction,
   shouldFlip,
   overlayOffset,
+  containerPadding,
   comboBoxWidth,
   comboBoxId,
   overlayStyles,
@@ -851,6 +862,7 @@ function ComboBoxOverlay({
     shouldFlip,
     isOpen,
     offset: overlayOffset,
+    containerPadding: containerPadding,
   });
 
   // Overlay behavior (dismiss on outside click, escape)
@@ -906,7 +918,9 @@ function ComboBoxOverlay({
             }}
             styles={overlayStyles}
             style={{
-              '--min-width': comboBoxWidth ? `${comboBoxWidth}px` : undefined,
+              '--overlay-min-width': comboBoxWidth
+                ? `${comboBoxWidth}px`
+                : undefined,
             }}
           >
             <ListBox
@@ -991,7 +1005,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     triggerStyles,
     listBoxStyles,
     overlayStyles,
-    fieldStyles,
     suffix,
     hideTrigger,
     message,
@@ -1021,8 +1034,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     headingStyles,
     isReadOnly,
     overlayOffset = 8,
+    containerPadding = 8,
     onSelectionChange: externalOnSelectionChange,
     sortSelectedToTop: sortSelectedToTopProp,
+    onOpenChange,
     onFocus,
     onBlur,
     onKeyDown,
@@ -1166,6 +1181,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       cachedItemsOrder.current = null;
     }
   }, [isPopoverOpen, effectiveSelectedKey]);
+
+  // Call onOpenChange when popover state changes
+  useEffect(() => {
+    onOpenChange?.(isPopoverOpen);
+  }, [isPopoverOpen]);
 
   // Filtering hook
   const { filterFn, isFilterActive, setIsFilterActive } = useComboBoxFiltering({
@@ -1659,10 +1679,39 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
     if (lastFocusSourceRef) lastFocusSourceRef.current = 'keyboard';
 
-    if (selectionManager.focusedKey == null) {
-      const keyToFocus =
-        effectiveSelectedKey != null ? effectiveSelectedKey : collectFirstKey();
-      if (keyToFocus != null) selectionManager.setFocusedKey(keyToFocus);
+    // Check if we need to set or update focus
+    const currentFocusedKey = selectionManager.focusedKey;
+    let needsRefocus = false;
+
+    if (currentFocusedKey == null) {
+      // No focus at all - need to set initial focus
+      needsRefocus = true;
+    } else {
+      // Check if currently focused key still exists in the collection
+      const focusedItemExists = collection.getItem(currentFocusedKey) != null;
+      if (!focusedItemExists) {
+        // Focused item was filtered out - need to refocus
+        needsRefocus = true;
+      }
+    }
+
+    if (needsRefocus) {
+      let keyToFocus: Key | null = null;
+
+      // First try to focus on the selected key if it exists in the collection
+      if (
+        effectiveSelectedKey != null &&
+        collection.getItem(effectiveSelectedKey) != null
+      ) {
+        keyToFocus = effectiveSelectedKey;
+      } else {
+        // Fall back to the first key in the collection
+        keyToFocus = collectFirstKey();
+      }
+
+      if (keyToFocus != null) {
+        selectionManager.setFocusedKey(keyToFocus);
+      }
     }
   }, [shouldShowPopover, effectiveSelectedKey]);
 
@@ -1781,6 +1830,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         direction={direction}
         shouldFlip={shouldFlip}
         overlayOffset={overlayOffset}
+        containerPadding={containerPadding}
         comboBoxWidth={comboBoxWidth}
         comboBoxId={comboBoxId}
         overlayStyles={overlayStyles}
@@ -1807,15 +1857,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   );
 
   const { children: _, ...propsWithoutChildren } = props;
-  const finalProps = {
-    ...propsWithoutChildren,
-    styles: fieldStyles,
-  };
 
   return wrapWithField<Omit<CubeComboBoxProps<T>, 'children'>>(
     comboBoxField,
     ref,
-    mergeProps(finalProps, {}),
+    propsWithoutChildren,
   );
 }) as unknown as (<T>(
   props: CubeComboBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },

@@ -2,6 +2,7 @@ import { ForwardedRef, forwardRef, useRef } from 'react';
 import { useTextField } from 'react-aria';
 
 import { useProviderProps } from '../../../provider';
+import { mergeProps } from '../../../utils/react';
 import {
   castNullableStringValue,
   WithNullableValue,
@@ -28,16 +29,24 @@ export const TextInput = forwardRef(function TextInput(
     }),
   });
 
+  let {
+    labelProps: userLabelProps,
+    inputRef: propsInputRef,
+    ...restProps
+  } = props;
   let localInputRef = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
-  let inputRef = props.inputRef ?? localInputRef;
+  let inputRef = propsInputRef ?? localInputRef;
 
-  let { labelProps, inputProps } = useTextField(props, inputRef);
+  let { labelProps, inputProps } = useTextField(restProps, inputRef);
+
+  // Merge user-provided labelProps with aria labelProps
+  const mergedLabelProps = mergeProps(labelProps, userLabelProps);
 
   return (
     <TextInputBase
-      {...props}
+      {...restProps}
       ref={ref}
-      labelProps={labelProps}
+      labelProps={mergedLabelProps}
       inputProps={inputProps}
       inputRef={inputRef}
     />

@@ -647,11 +647,6 @@ export const CustomSummary: Story = {
       return `${selectedKeys.length} items selected (${selectedLabels.slice(0, 2).join(', ')}${selectedKeys.length > 2 ? '...' : ''})`;
     },
   },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const trigger = canvas.getByRole('button');
-    await userEvent.click(trigger);
-  },
   render: (args) => (
     <FilterPicker {...args}>
       <FilterPicker.Section title="Fruits">
@@ -674,7 +669,242 @@ export const CustomSummary: Story = {
     docs: {
       description: {
         story:
-          'Use the `renderSummary` prop to customize how the selection is displayed in the trigger button.',
+          'Use the `renderSummary` prop to customize how the selection is displayed in the trigger button. When the custom renderer returns null (e.g., when no selection is made), the placeholder is shown instead.',
+      },
+    },
+  },
+};
+
+export const RenderSummaryBehavior: Story = {
+  render: () => (
+    <Space gap="4x" flow="column" placeItems="start">
+      <Flow gap="2x">
+        <Title preset="h5">
+          RenderSummary Behavior (No Selection vs Selection)
+        </Title>
+        <Paragraph>
+          The `renderSummary` prop is evaluated consistently regardless of
+          selection state. This allows full control over the trigger content
+          display.
+        </Paragraph>
+      </Flow>
+
+      <Space gap="2x" flow="column" placeItems="start">
+        <Title preset="h6">
+          1. renderSummary={'{false}'} (Icon-only triggers)
+        </Title>
+        <Space gap="2x" flow="row" placeItems="start">
+          <Flow gap="1x">
+            <Text preset="t4" weight="600">
+              No Selection
+            </Text>
+            <FilterPicker
+              selectionMode="multiple"
+              renderSummary={false}
+              icon={<FilterIcon />}
+              rightIcon={null}
+              aria-label="Filter without selection"
+              width="min 12x"
+            >
+              {fruits.slice(0, 3).map((fruit) => (
+                <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+                  {fruit.label}
+                </FilterPicker.Item>
+              ))}
+            </FilterPicker>
+          </Flow>
+
+          <Flow gap="1x">
+            <Text preset="t4" weight="600">
+              With Selection
+            </Text>
+            <FilterPicker
+              selectionMode="multiple"
+              renderSummary={false}
+              icon={<FilterIcon />}
+              rightIcon={null}
+              defaultSelectedKeys={['apple', 'banana']}
+              aria-label="Filter with selection"
+              width="min 12x"
+            >
+              {fruits.slice(0, 3).map((fruit) => (
+                <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+                  {fruit.label}
+                </FilterPicker.Item>
+              ))}
+            </FilterPicker>
+          </Flow>
+        </Space>
+        <Text preset="t4" color="#dark.60">
+          ✓ Both triggers show only the icon, no text regardless of selection
+        </Text>
+      </Space>
+
+      <Space gap="2x" flow="column" placeItems="start">
+        <Title preset="h6">2. Custom renderSummary returning null</Title>
+        <Space gap="2x" flow="row" placeItems="start">
+          <Flow gap="1x">
+            <Text preset="t4" weight="600">
+              No Selection
+            </Text>
+            <FilterPicker
+              placeholder="Custom placeholder"
+              selectionMode="multiple"
+              renderSummary={() => null}
+              width="20x"
+            >
+              {fruits.slice(0, 3).map((fruit) => (
+                <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+                  {fruit.label}
+                </FilterPicker.Item>
+              ))}
+            </FilterPicker>
+          </Flow>
+
+          <Flow gap="1x">
+            <Text preset="t4" weight="600">
+              With Selection
+            </Text>
+            <FilterPicker
+              placeholder="Custom placeholder"
+              selectionMode="multiple"
+              renderSummary={() => null}
+              defaultSelectedKeys={['apple']}
+              width="20x"
+            >
+              {fruits.slice(0, 3).map((fruit) => (
+                <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+                  {fruit.label}
+                </FilterPicker.Item>
+              ))}
+            </FilterPicker>
+          </Flow>
+        </Space>
+        <Text preset="t4" color="#dark.60">
+          ✓ Both triggers show the placeholder when custom renderer returns null
+        </Text>
+      </Space>
+
+      <Space gap="2x" flow="column" placeItems="start">
+        <Title preset="h6">3. Custom renderSummary with custom text</Title>
+        <Space gap="2x" flow="row" placeItems="start">
+          <Flow gap="1x">
+            <Text preset="t4" weight="600">
+              No Selection
+            </Text>
+            <FilterPicker
+              selectionMode="multiple"
+              renderSummary={({ selectedKeys }) =>
+                (selectedKeys?.length ?? 0) === 0
+                  ? '🔍 No filters'
+                  : `${selectedKeys?.length ?? 0} active`
+              }
+              width="20x"
+            >
+              {fruits.slice(0, 3).map((fruit) => (
+                <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+                  {fruit.label}
+                </FilterPicker.Item>
+              ))}
+            </FilterPicker>
+          </Flow>
+
+          <Flow gap="1x">
+            <Text preset="t4" weight="600">
+              With Selection
+            </Text>
+            <FilterPicker
+              selectionMode="multiple"
+              renderSummary={({ selectedKeys }) =>
+                (selectedKeys?.length ?? 0) === 0
+                  ? '🔍 No filters'
+                  : `${selectedKeys?.length ?? 0} active`
+              }
+              defaultSelectedKeys={['apple', 'banana']}
+              width="20x"
+            >
+              {fruits.slice(0, 3).map((fruit) => (
+                <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+                  {fruit.label}
+                </FilterPicker.Item>
+              ))}
+            </FilterPicker>
+          </Flow>
+        </Space>
+        <Text preset="t4" color="#dark.60">
+          ✓ Custom text is shown in both cases based on selection state
+        </Text>
+      </Space>
+
+      <Space gap="2x" flow="column" placeItems="start">
+        <Title preset="h6">4. Custom renderSummary with JSX</Title>
+        <Space gap="2x" flow="row" placeItems="start">
+          <Flow gap="1x">
+            <Text preset="t4" weight="600">
+              No Selection
+            </Text>
+            <FilterPicker
+              selectionMode="multiple"
+              renderSummary={({ selectedKeys }) => {
+                const count = selectedKeys?.length ?? 0;
+                return (
+                  <Space gap="0.5x" flow="row" placeItems="center">
+                    <Badge type={count > 0 ? 'success' : 'neutral'}>
+                      {count}
+                    </Badge>
+                    <Text>filters</Text>
+                  </Space>
+                );
+              }}
+              width="20x"
+            >
+              {fruits.slice(0, 3).map((fruit) => (
+                <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+                  {fruit.label}
+                </FilterPicker.Item>
+              ))}
+            </FilterPicker>
+          </Flow>
+
+          <Flow gap="1x">
+            <Text preset="t4" weight="600">
+              With Selection
+            </Text>
+            <FilterPicker
+              selectionMode="multiple"
+              renderSummary={({ selectedKeys }) => {
+                const count = selectedKeys?.length ?? 0;
+                return (
+                  <Space gap="0.5x" flow="row" placeItems="center">
+                    <Badge type={count > 0 ? 'success' : 'neutral'}>
+                      {count}
+                    </Badge>
+                    <Text>filters</Text>
+                  </Space>
+                );
+              }}
+              defaultSelectedKeys={['apple', 'cherry']}
+              width="20x"
+            >
+              {fruits.slice(0, 3).map((fruit) => (
+                <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+                  {fruit.label}
+                </FilterPicker.Item>
+              ))}
+            </FilterPicker>
+          </Flow>
+        </Space>
+        <Text preset="t4" color="#dark.60">
+          ✓ Complex JSX renders correctly in both cases
+        </Text>
+      </Space>
+    </Space>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates that `renderSummary` is evaluated consistently regardless of selection state. Whether `false`, returning `null`, or returning custom content (string or JSX), the behavior is predictable with and without selection. This ensures full control over trigger content display in all states.',
       },
     },
   },
@@ -689,11 +919,6 @@ export const NoSummary: Story = {
     icon: <FilterIcon />,
     rightIcon: null,
   },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const trigger = canvas.getByRole('button');
-    await userEvent.click(trigger);
-  },
   render: (args) => (
     <FilterPicker {...args}>
       {fruits.map((fruit) => (
@@ -707,7 +932,7 @@ export const NoSummary: Story = {
     docs: {
       description: {
         story:
-          'When `renderSummary={false}`, no text is shown in the trigger, making it useful for icon-only filter buttons.',
+          'When `renderSummary={false}`, no text is shown in the trigger, making it useful for icon-only filter buttons. The trigger displays only the icon, regardless of selection state.',
       },
     },
   },
@@ -1342,13 +1567,13 @@ export const InForm = () => {
 export const ComplexExample: Story = {
   args: {
     label: 'Advanced Filter System',
-    placeholder: 'Apply filters...',
     selectionMode: 'multiple',
     isCheckable: true,
     searchPlaceholder: 'Search all filters...',
     width: '30x',
     renderSummary: ({ selectedKeys, selectedLabels }) => {
-      if (selectedKeys.length === 0) return null;
+      if (selectedKeys.length === 0)
+        return <Text.Placeholder>Apply filters...</Text.Placeholder>;
       if (selectedKeys.length === 1) return `1 filter: ${selectedLabels[0]}`;
       if (selectedKeys.length <= 3)
         return `${selectedKeys.length} filters: ${selectedLabels.join(', ')}`;
