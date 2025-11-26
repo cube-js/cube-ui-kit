@@ -173,7 +173,19 @@ describe('DisplayTransition', () => {
       </DisplayTransition>,
     );
 
-    // Should be in exit phase, isShown=false
+    // Immediately after rerender, still in 'entered' (exit-pending internally), isShown=true
+    expect(
+      container.querySelector('[data-phase="entered"]'),
+    ).toBeInTheDocument();
+    expect(container.querySelector('[data-shown="true"]')).toBeInTheDocument();
+    expect(onRest).not.toHaveBeenCalled();
+
+    // Advance through double-rAF to reach "exit" phase
+    act(() => {
+      jest.advanceTimersByTime(50);
+    });
+
+    // Now should be in exit phase, isShown=false
     expect(container.querySelector('[data-phase="exit"]')).toBeInTheDocument();
     expect(container.querySelector('[data-shown="false"]')).toBeInTheDocument();
     expect(onRest).not.toHaveBeenCalled();
@@ -238,26 +250,27 @@ describe('DisplayTransition', () => {
     onRest.mockClear();
 
     // Test exit flow with duration=0
+    rerender(
+      <DisplayTransition
+        exposeUnmounted
+        isShown={false}
+        duration={0}
+        onRest={onRest}
+      >
+        {({ phase, isShown }) => (
+          <div data-phase={phase} data-shown={isShown}>
+            content
+          </div>
+        )}
+      </DisplayTransition>,
+    );
+
+    // Advance through double-rAF for exit-pending → exit transition
     act(() => {
-      rerender(
-        <DisplayTransition
-          exposeUnmounted
-          isShown={false}
-          duration={0}
-          onRest={onRest}
-        >
-          {({ phase, isShown }) => (
-            <div data-phase={phase} data-shown={isShown}>
-              content
-            </div>
-          )}
-        </DisplayTransition>,
-      );
-      // With duration=0, exit completes immediately
-      jest.advanceTimersByTime(1);
+      jest.advanceTimersByTime(50);
     });
 
-    // With duration=0, it should go directly to unmounted (exit completes instantly)
+    // With duration=0, it should go directly to unmounted (exit completes instantly after rAF)
     expect(
       container.querySelector('[data-phase="unmounted"]'),
     ).toBeInTheDocument();
@@ -381,11 +394,11 @@ describe('DisplayTransition', () => {
       );
     });
 
-    // Should be in exit or unmounted (depending on timing)
+    // Should be in 'entered' (exit-pending internally), 'exit', or 'unmounted' (depending on timing)
     const phaseAfterToggle = container
       .querySelector('[data-phase]')
       ?.getAttribute('data-phase');
-    expect(['exit', 'unmounted']).toContain(phaseAfterToggle);
+    expect(['entered', 'exit', 'unmounted']).toContain(phaseAfterToggle);
 
     // Complete all transitions
     act(() => {
