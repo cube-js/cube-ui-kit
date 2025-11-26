@@ -26,6 +26,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import { mergeRefs } from '../../../utils/react';
 import { CubeItemButtonProps, ItemButton } from '../../actions/ItemButton';
 import { DisplayTransition } from '../../helpers';
 
@@ -412,6 +413,7 @@ const DisclosureContent = forwardRef<
           mods={{ shown: isShown, phase }}
         >
           <ContentElement
+            ref={mergeRefs(ref, panelRef)}
             mods={mods}
             styles={mergedStyles}
             {...filteredPanelProps}
