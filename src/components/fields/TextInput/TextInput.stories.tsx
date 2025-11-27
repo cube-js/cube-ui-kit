@@ -145,8 +145,38 @@ WithIcon.args = { icon: <IconCoin /> };
 export const Password = Template.bind({});
 Password.args = { icon: <IconCoin />, type: 'password' };
 
+export const Valid = Template.bind({});
+Valid.args = { validationState: 'valid', defaultValue: 'Valid input' };
+
 export const Invalid = Template.bind({});
-Invalid.args = { validationState: 'invalid' };
+Invalid.args = { validationState: 'invalid', defaultValue: 'Invalid input' };
+
+export const ValidationStates: StoryFn<CubeTextInputProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Valid State</Title>
+    <TextInput {...args} validationState="valid" defaultValue="Valid input" />
+
+    <Title level={5}>Invalid State</Title>
+    <TextInput
+      {...args}
+      validationState="invalid"
+      defaultValue="Invalid input"
+    />
+  </Space>
+);
+
+ValidationStates.args = {
+  width: '300px',
+};
+
+ValidationStates.parameters = {
+  docs: {
+    description: {
+      story:
+        'Use `validationState` prop to indicate validation status. Set to `valid` for success styling or `invalid` for error styling.',
+    },
+  },
+};
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true };
