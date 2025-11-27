@@ -373,7 +373,7 @@ export function extractStyles(
 ): Styles {
   const styles: Styles = {
     ...defaultStyles,
-    ...props.styles,
+    ...(ignoreList.includes('styles') ? undefined : props.styles),
   };
 
   Object.keys(props).forEach((prop) => {
