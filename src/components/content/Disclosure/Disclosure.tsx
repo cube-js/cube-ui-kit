@@ -80,7 +80,7 @@ export interface CubeDisclosureProps
 }
 
 export interface CubeDisclosureTriggerProps
-  extends Omit<CubeItemButtonProps, 'onPress'> {
+  extends Omit<CubeItemButtonProps, 'onPress' | 'isDisabled'> {
   /** Children content for the trigger */
   children?: ReactNode;
 }
@@ -184,13 +184,14 @@ const ContentWrapperElement = tasty({
       '': '0',
       shown: 'max-content',
     },
-    transition: 'height $disclosure-transition linear',
+    transition: 'height $disclosure-transition',
   },
 });
 
 const ContentElement = tasty({
   qa: 'DisclosureContent',
   styles: {
+    contentVisibility: 'auto',
     padding: '1x',
   },
 });
