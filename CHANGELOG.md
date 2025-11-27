@@ -1,5 +1,23 @@
 # @cube-dev/ui-kit
 
+## 0.94.0
+
+### Minor Changes
+
+- [#906](https://github.com/cube-js/cube-ui-kit/pull/906) [`9fd69a24`](https://github.com/cube-js/cube-ui-kit/commit/9fd69a2475da8dc16e47d8561033ff687c2ac9dc) Thanks [@tenphi](https://github.com/tenphi)! - Add new `Disclosure` component for expandable/collapsible content sections. Features include:
+
+  - `Disclosure` - Single expandable panel with trigger and content
+  - `Disclosure.Trigger` - Built on ItemButton with full support for icons, descriptions, and actions
+  - `Disclosure.Content` - Collapsible content area with smooth height animations
+  - `Disclosure.Group` - Accordion container for multiple disclosures with single or multiple expanded support
+  - `Disclosure.Item` - Individual item within a group
+
+  Supports controlled/uncontrolled state, `shape` variants (`default`, `card`, `sharp`), disabled state, custom transition duration, and render prop API for custom triggers.
+
+### Patch Changes
+
+- [#908](https://github.com/cube-js/cube-ui-kit/pull/908) [`21d8a310`](https://github.com/cube-js/cube-ui-kit/commit/21d8a310765f121fb9257a55a71e15c87a7b0ae0) Thanks [@tenphi](https://github.com/tenphi)! - Fix content visibility in Disclosure.
+
 ## 0.93.1
 
 ### Patch Changes
