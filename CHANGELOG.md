@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.94.1
+
+### Patch Changes
+
+- [#909](https://github.com/cube-js/cube-ui-kit/pull/909) [`b72ca0dd`](https://github.com/cube-js/cube-ui-kit/commit/b72ca0ddb761295279db67ce88d194a4c0535c80) Thanks [@tenphi](https://github.com/tenphi)! - Fix the focused state styles of text inputs.
+
 ## 0.94.0
 
 ### Minor Changes
