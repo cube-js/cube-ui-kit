@@ -327,10 +327,8 @@ export function DisplayTransition({
   const refCallback: RefCallback<HTMLElement> = (node) => {
     if (node) {
       elementRef.current = node;
-
-      if (phaseRef.current === 'enter') {
-        ensureEnterFlow();
-      }
+      // Don't call ensureEnterFlow() here - useLayoutEffect handles RAF scheduling
+      // to ensure symmetric timing with exit flow
     } else {
       cleanupEventListeners();
       elementRef.current = null;
