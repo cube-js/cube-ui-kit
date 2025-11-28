@@ -263,7 +263,13 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   let styles = extractStyles(otherProps, OUTER_STYLES);
   let type = otherProps.type;
 
-  inputStyles = extractStyles(otherProps, INPUT_STYLE_PROPS_LIST, inputStyles);
+  inputStyles = extractStyles(
+    otherProps,
+    INPUT_STYLE_PROPS_LIST,
+    inputStyles,
+    undefined,
+    ['styles'],
+  );
 
   let ElementType: 'textarea' | 'input' = multiLine ? 'textarea' : 'input';
   let { isFocused, focusProps } = useFocus({ isDisabled });

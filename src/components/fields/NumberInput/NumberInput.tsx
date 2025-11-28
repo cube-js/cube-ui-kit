@@ -22,7 +22,7 @@ export interface CubeNumberInputProps
 }
 
 const StyledTextInputBase = tasty(TextInputBase, {
-  styles: {
+  inputStyles: {
     textAlign: 'right',
   },
 });

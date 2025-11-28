@@ -164,7 +164,9 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
 
   let styles = extractStyles(props, OUTER_STYLES);
 
-  inputStyles = extractStyles(props, BLOCK_STYLES, inputStyles);
+  inputStyles = extractStyles(props, BLOCK_STYLES, inputStyles, undefined, [
+    'styles',
+  ]);
 
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
