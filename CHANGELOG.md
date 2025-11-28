@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.94.2
+
+### Patch Changes
+
+- [#905](https://github.com/cube-js/cube-ui-kit/pull/905) [`bb390e25`](https://github.com/cube-js/cube-ui-kit/commit/bb390e25d9f6f0a301d6cac3cd76687d0d4eb408) Thanks [@tenphi](https://github.com/tenphi)! - Fix form fields to prevent internal `form` prop from being spread to DOM elements
+
+- [#912](https://github.com/cube-js/cube-ui-kit/pull/912) [`6ef9986e`](https://github.com/cube-js/cube-ui-kit/commit/6ef9986efe69fb3d74c0ff179f605574dd5d64bd) Thanks [@tenphi](https://github.com/tenphi)! - Fixed `styles` prop leaking to inner elements in `TextInput` and `Switch` components
+
 ## 0.94.1
 
 ### Patch Changes
