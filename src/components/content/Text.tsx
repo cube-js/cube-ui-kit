@@ -146,6 +146,14 @@ const PlaceholderText = tasty(Text, {
   },
 });
 
+const HighlightText = tasty(Text, {
+  as: 'mark',
+  styles: {
+    fill: '#dark.15',
+    color: '#dark',
+  },
+});
+
 export interface TextComponent
   extends ForwardRefExoticComponent<
     CubeTextProps & RefAttributes<HTMLElement>
@@ -157,6 +165,7 @@ export interface TextComponent
   Emphasis: typeof EmphasisText;
   Selection: typeof SelectionText;
   Placeholder: typeof PlaceholderText;
+  Highlight: typeof HighlightText;
 }
 
 const _Text: TextComponent = Object.assign(Text, {
@@ -167,6 +176,7 @@ const _Text: TextComponent = Object.assign(Text, {
   Emphasis: EmphasisText,
   Selection: SelectionText,
   Placeholder: PlaceholderText,
+  Highlight: HighlightText,
 });
 
 _Text.displayName = 'Text';
