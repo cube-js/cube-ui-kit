@@ -108,7 +108,7 @@ export const Text = {
       <UIKitText.Danger>Danger label</UIKitText.Danger>
       <UIKitText.Strong>Strong label</UIKitText.Strong>
       <UIKitText.Emphasis>Emphasis label</UIKitText.Emphasis>
-      <UIKitText.Selection>Selection label</UIKitText.Selection>
+      <UIKitText.Highlight>Highlight label</UIKitText.Highlight>
     </Space>
   ),
 };

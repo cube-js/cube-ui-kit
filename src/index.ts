@@ -1,5 +1,6 @@
 import { CubeParagraphProps, Paragraph } from './components/content/Paragraph';
 import { CubeTextProps, Text } from './components/content/Text';
+import { CubeTextItemProps, TextItem } from './components/content/TextItem';
 import { CubeTitleProps, Title } from './components/content/Title';
 
 import './version';
@@ -172,8 +173,13 @@ export const Typography = {
   Paragraph,
 };
 
-export { Text, Title, Paragraph };
-export type { CubeTextProps, CubeTitleProps, CubeParagraphProps };
+export { Text, TextItem, Title, Paragraph };
+export type {
+  CubeTextProps,
+  CubeTextItemProps,
+  CubeTitleProps,
+  CubeParagraphProps,
+};
 
 export { Provider, useProviderProps } from './provider';
 export type { ProviderProps } from './provider';

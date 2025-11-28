@@ -103,9 +103,9 @@ export const CustomTitle = {
       </Title>
     ),
     subtitle: (
-      <Text.Selection>
+      <Text.Highlight>
         Complete your profile to increase search relevancy.
-      </Text.Selection>
+      </Text.Highlight>
     ),
 
     icon: <IconBulb />,
