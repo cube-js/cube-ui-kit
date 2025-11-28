@@ -133,13 +133,6 @@ const EmphasisText = tasty(Text, {
   preset: 'em',
 });
 
-const SelectionText = tasty(Text, {
-  styles: {
-    color: '#dark',
-    fill: '#note.30',
-  },
-});
-
 const PlaceholderText = tasty(Text, {
   styles: {
     color: '#current.5',
@@ -163,7 +156,6 @@ export interface TextComponent
   Success: typeof SuccessText;
   Strong: typeof StrongText;
   Emphasis: typeof EmphasisText;
-  Selection: typeof SelectionText;
   Placeholder: typeof PlaceholderText;
   Highlight: typeof HighlightText;
 }
@@ -174,7 +166,6 @@ const _Text: TextComponent = Object.assign(Text, {
   Success: SuccessText,
   Strong: StrongText,
   Emphasis: EmphasisText,
-  Selection: SelectionText,
   Placeholder: PlaceholderText,
   Highlight: HighlightText,
 });
