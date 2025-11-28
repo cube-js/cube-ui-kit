@@ -133,9 +133,12 @@ export function useFieldProps<
         ? field.field.errors[0]
         : undefined;
 
+  // Exclude 'form' from field to prevent it from being spread to DOM elements
+  const { form: _form, ...fieldWithoutForm } = field ?? {};
+
   const result: Props = isOutsideOfForm
     ? props
-    : mergeProps(props, field, valueProps, {
+    : mergeProps(props, fieldWithoutForm, valueProps, {
         validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
         onBlur: onBlurChained,
         errorMessage: compiledErrorMessage,
