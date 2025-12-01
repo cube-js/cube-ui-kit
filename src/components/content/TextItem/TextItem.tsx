@@ -54,7 +54,8 @@ export interface CubeTextItemProps extends CubeTextProps {
 const TextItemElement = tasty(Text, {
   qa: 'TextItem',
   styles: {
-    display: 'block',
+    display: 'inline-block',
+    verticalAlign: 'baseline',
     width: 'max 100%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
