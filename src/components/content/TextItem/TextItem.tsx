@@ -55,7 +55,7 @@ const TextItemElement = tasty(Text, {
   qa: 'TextItem',
   styles: {
     display: 'inline-block',
-    verticalAlign: 'baseline',
+    verticalAlign: 'bottom',
     width: 'max 100%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
