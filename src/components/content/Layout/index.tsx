@@ -1,0 +1,45 @@
+import { ForwardRefExoticComponent, RefAttributes } from 'react';
+
+import { CubeLayoutProps, Layout as LayoutBase } from './Layout';
+import { LayoutContent } from './LayoutContent';
+import { LayoutFooter } from './LayoutFooter';
+import { LayoutHeader } from './LayoutHeader';
+import { LayoutPanel } from './LayoutPanel';
+import { LayoutPanelHeader } from './LayoutPanelHeader';
+import { LayoutToolbar } from './LayoutToolbar';
+
+export { GridLayout } from './GridLayout';
+export type { CubeGridLayoutProps } from './GridLayout';
+export type { CubeLayoutProps } from './Layout';
+export type { CubeLayoutContentProps, ScrollbarType } from './LayoutContent';
+export type { CubeLayoutFooterProps } from './LayoutFooter';
+export type { CubeLayoutHeaderProps } from './LayoutHeader';
+export type { CubeLayoutPanelProps } from './LayoutPanel';
+export type { CubeLayoutPanelHeaderProps } from './LayoutPanelHeader';
+export type { CubeLayoutToolbarProps } from './LayoutToolbar';
+export { LayoutContext, useLayoutContext } from './LayoutContext';
+export type { LayoutContextValue, Side } from './LayoutContext';
+
+// Create Layout compound component
+interface LayoutComponent
+  extends ForwardRefExoticComponent<
+    CubeLayoutProps & RefAttributes<HTMLDivElement>
+  > {
+  Toolbar: typeof LayoutToolbar;
+  Header: typeof LayoutHeader;
+  Footer: typeof LayoutFooter;
+  Content: typeof LayoutContent;
+  Panel: typeof LayoutPanel;
+  PanelHeader: typeof LayoutPanelHeader;
+}
+
+const Layout = Object.assign(LayoutBase, {
+  Toolbar: LayoutToolbar,
+  Header: LayoutHeader,
+  Footer: LayoutFooter,
+  Content: LayoutContent,
+  Panel: LayoutPanel,
+  PanelHeader: LayoutPanelHeader,
+}) as LayoutComponent;
+
+export { Layout };
