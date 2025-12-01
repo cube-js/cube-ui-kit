@@ -18,8 +18,8 @@ import {
   tasty,
 } from '../../../tasty';
 import { Link } from '../../actions/Link/Link';
-import { useAutoTooltip } from '../Item/Item';
 import { Text } from '../Text';
+import { useAutoTooltip } from '../use-auto-tooltip';
 
 import { LayoutContextReset } from './LayoutContext';
 
