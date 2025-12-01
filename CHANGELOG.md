@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.95.0
+
+### Minor Changes
+
+- [#911](https://github.com/cube-js/cube-ui-kit/pull/911) [`33990457`](https://github.com/cube-js/cube-ui-kit/commit/339904570f42e600dc70873793402a8afd914019) Thanks [@tenphi](https://github.com/tenphi)! - Added `TextItem` component for displaying text with automatic overflow handling and tooltips. Features include:
+
+  - Auto-tooltip on text overflow (enabled by default)
+  - Text highlighting with `highlight` prop for search results
+  - Customizable highlight styles via `highlightStyles` prop
+  - Case-sensitive/insensitive highlight matching
+  - Inherits all `Text` component props
+
+  Added `Text.Highlight` sub-component for semantic text highlighting (uses `<mark>` element).
+
+  **Breaking:** Removed `Text.Selection` in favor of `Text.Highlight`.
+
 ## 0.94.2
 
 ### Patch Changes

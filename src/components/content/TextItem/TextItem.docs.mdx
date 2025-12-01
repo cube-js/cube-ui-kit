@@ -1,0 +1,239 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { TextItem } from './TextItem';
+import * as TextItemStories from './TextItem.stories';
+
+<Meta of={TextItemStories} />
+
+# TextItem
+
+A text component with built-in overflow handling and auto-tooltips. When text is truncated, a tooltip automatically appears on hover showing the full content. Also supports text highlighting for search results.
+
+## When to Use
+
+- Display text that may overflow its container with automatic tooltip fallback
+- Show search results with highlighted matching terms
+- Labels or descriptions in constrained layouts (sidebars, tables, lists)
+- Any text that needs ellipsis truncation with accessible full-text disclosure
+
+## Component
+
+<Story of={TextItemStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={TextItemStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties--docs) and all [Text](/docs/content-text--docs) properties including `preset`, `color`, `weight`, `transform`, `ellipsis`, `nowrap`.
+
+### Styling Properties
+
+#### styles
+
+Customizes the root text element. Inherits all styling capabilities from the Text component.
+
+#### highlightStyles
+
+Customizes the appearance of highlighted text portions.
+
+### Style Properties
+
+These properties allow direct style application: `preset`, `color`, `weight`, `transform`, and all standard text/color style props.
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<TextItem>Simple text content</TextItem>
+```
+
+### Overflow with Auto-Tooltip
+
+When text overflows its container, hovering reveals a tooltip with the full content:
+
+```jsx
+<Block width="200px">
+  <TextItem>
+    This is a very long text that will be truncated with ellipsis
+    and show a tooltip on hover
+  </TextItem>
+</Block>
+```
+
+<Story of={TextItemStories.OverflowWithTooltip} />
+
+### Text Highlighting
+
+Highlight matching text within the content - useful for search results:
+
+```jsx
+<TextItem highlight="search">
+  Search results with highlighted text matching your query
+</TextItem>
+```
+
+<Story of={TextItemStories.WithHighlight} />
+
+### Custom Highlight Styles
+
+Customize the appearance of highlighted text with `highlightStyles`:
+
+```jsx
+<TextItem 
+  highlight="important" 
+  highlightStyles={{ fill: '#purple.20', color: '#purple' }}
+>
+  This important text has custom highlight styling
+</TextItem>
+```
+
+### Case-Sensitive Highlighting
+
+By default, highlighting is case-insensitive. Enable case-sensitive matching with `highlightCaseSensitive`:
+
+```jsx
+{/* Case-insensitive (default) - matches TEXT, text, Text */}
+<TextItem highlight="text">
+  TEXT and text and Text are all highlighted
+</TextItem>
+
+{/* Case-sensitive - only matches exact case */}
+<TextItem highlight="text" highlightCaseSensitive>
+  TEXT and text and Text - only lowercase is highlighted
+</TextItem>
+```
+
+<Story of={TextItemStories.HighlightCaseSensitive} />
+
+### Multiple Highlights
+
+All occurrences of the highlight string are highlighted:
+
+```jsx
+<TextItem highlight="fox">
+  The quick brown fox jumps over the lazy fox
+</TextItem>
+```
+
+<Story of={TextItemStories.MultipleHighlights} />
+
+### Custom Tooltip
+
+Override the auto-tooltip with custom content:
+
+```jsx
+<TextItem tooltip="Custom tooltip text that differs from the content">
+  Short text
+</TextItem>
+```
+
+<Story of={TextItemStories.CustomTooltip} />
+
+### Disabled Tooltip
+
+Disable the tooltip entirely:
+
+```jsx
+<TextItem tooltip={false}>
+  This text will truncate but won't show a tooltip
+</TextItem>
+```
+
+<Story of={TextItemStories.DisabledTooltip} />
+
+### Tooltip Placement
+
+Control where the tooltip appears:
+
+```jsx
+<TextItem tooltipPlacement="bottom">
+  Tooltip appears below on hover
+</TextItem>
+```
+
+<Story of={TextItemStories.TooltipPlacements} />
+
+### With Text Styles
+
+Apply typography and color styles:
+
+```jsx
+<TextItem preset="h3">Heading style</TextItem>
+<TextItem preset="t2" color="#purple">Colored text</TextItem>
+<TextItem weight="bold">Bold text</TextItem>
+```
+
+<Story of={TextItemStories.WithTextStyles} />
+
+### Search Results List
+
+Common pattern for filterable lists with highlighted search terms:
+
+```jsx
+const items = ['Apple', 'Application', 'Banana', 'Apply', 'Grape'];
+const searchTerm = 'app';
+
+<Space flow="column" gap="0.5x">
+  {items.map((item) => (
+    <TextItem key={item} highlight={searchTerm}>
+      {item}
+    </TextItem>
+  ))}
+</Space>
+```
+
+<Story of={TextItemStories.HighlightInList} />
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the component (when tooltip is enabled)
+- Tooltip content is accessible via focus, not just hover
+
+### Screen Reader Support
+
+- Truncated text is fully accessible via tooltip
+- Highlighted text uses semantic `<mark>` element for screen reader announcement
+- Tooltip content is announced when triggered
+
+### ARIA Properties
+
+- Tooltip trigger automatically manages `aria-describedby` for tooltip association
+
+## Best Practices
+
+1. **Do**: Use for text that may exceed container width
+   ```jsx
+   <Block width="200px">
+     <TextItem>Long filename-that-might-overflow.tsx</TextItem>
+   </Block>
+   ```
+
+2. **Do**: Provide meaningful highlight terms for search
+   ```jsx
+   <TextItem highlight={userSearchQuery}>{result.title}</TextItem>
+   ```
+
+3. **Don't**: Use for multi-line text (this component enforces single-line with ellipsis)
+   ```jsx
+   {/* Use Text component instead for multi-line content */}
+   <Text>Multi-line paragraph content...</Text>
+   ```
+
+4. **Don't**: Disable tooltips for important truncated content
+   ```jsx
+   {/* Users won't be able to see the full text */}
+   <TextItem tooltip={false}>Important information that gets cut off...</TextItem>
+   ```
+
+## Related Components
+
+- [Text](/docs/content-text--docs) - Base text component without overflow handling
+- [Item](/docs/content-item--docs) - Interactive list item with similar overflow behavior
+- [TooltipProvider](/docs/overlays-tooltip--docs) - Standalone tooltip wrapper
+
