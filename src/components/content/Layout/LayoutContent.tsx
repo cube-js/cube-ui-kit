@@ -29,6 +29,7 @@ const ContentElement = tasty({
       position: 'absolute',
       inset: 0,
       display: 'block',
+      padding: '($content-padding, 1x)',
       overflow: 'auto',
       scrollbar: {
         '': 'thin',

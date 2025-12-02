@@ -85,7 +85,10 @@ export type ButtonVariant =
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 export const DEFAULT_BUTTON_STYLES = {
-  display: 'inline-grid',
+  display: {
+    '': 'inline-grid',
+    'text-only': 'inline-block',
+  },
   flow: 'column',
   placeItems: 'center start',
   placeContent: {
@@ -128,27 +131,30 @@ export const DEFAULT_BUTTON_STYLES = {
     'single-icon | type=link': 0,
   },
   width: {
-    '': 'initial',
-    'size=xsmall & single-icon': '$size-xs $size-xs',
-    'size=small & single-icon': '$size-sm $size-sm',
-    'size=medium & single-icon': '$size-md $size-md',
-    'size=large & single-icon': '$size-lg $size-lg',
-    'size=xlarge & single-icon': '$size-xl $size-xl',
+    '': 'min $size',
+    'left-icon & right-icon': 'min ($size * 2)',
+    'single-icon': 'fixed $size',
     'type=link': 'initial',
   },
   height: {
-    '': 'initial',
-    'size=xsmall': '$size-xs $size-xs',
-    'size=small': '$size-sm $size-sm',
-    'size=medium': '$size-md $size-md',
-    'size=large': '$size-lg $size-lg',
-    'size=xlarge': '$size-xl $size-xl',
+    '': 'fixed $size',
     'type=link': 'initial',
   },
   whiteSpace: 'nowrap',
+  textOverflow: 'ellipsis',
   radius: {
     '': true,
     'type=link & !focused': 0,
+  },
+  overflow: 'hidden',
+
+  $size: {
+    '': '$size-md',
+    'size=xsmall': '$size-xs',
+    'size=small': '$size-sm',
+    'size=medium': '$size-md',
+    'size=large': '$size-lg',
+    'size=xlarge': '$size-xl',
   },
 
   ButtonIcon: {
@@ -278,6 +284,7 @@ export const Button = forwardRef(function Button(
       'left-icon': !!icon,
       'right-icon': !!rightIcon,
       'single-icon': singleIcon,
+      'text-only': !!(children && typeof children === 'string' && !hasIcons),
       ...mods,
     }),
     [mods, isDisabled, isLoading, isSelected, singleIcon],

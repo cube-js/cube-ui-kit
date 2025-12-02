@@ -1,4 +1,4 @@
-import React, {
+import {
   ForwardedRef,
   forwardRef,
   ReactNode,
@@ -32,10 +32,12 @@ import {
 
 import { LayoutContextReset, Side, useLayoutContext } from './LayoutContext';
 
-// Handler width that extends beyond panel for easier grabbing
+// Resize handler dimensions
 const HANDLER_WIDTH = 9;
-// How much of the handler extends outside the panel
-const HANDLER_OVERFLOW = 3;
+// How far from panel edge to position handler's inner edge (centers the 3px track on the edge)
+const HANDLER_OFFSET = 4;
+// Extra inset added for resizable panels (to accommodate handler grab area)
+const RESIZABLE_INSET_OFFSET = 2;
 
 const PanelElement = tasty({
   as: 'div',
@@ -46,6 +48,7 @@ const PanelElement = tasty({
     display: 'flex',
     flow: 'column',
     overflow: 'hidden',
+    boxSizing: 'border-box',
 
     // Position based on side prop
     top: {
@@ -118,39 +121,34 @@ const ResizeHandlerElement = tasty({
       'disabled & !horizontal': '1bw',
     },
 
-    // Position at the panel's resize edge (relative to Layout)
+    // Position handler with direct offset (no centering needed)
     top: {
       '': 0,
-      'side=top': '$panel-size',
+      'side=top': `calc($panel-size - ${HANDLER_OFFSET}px)`,
       'side=bottom': 'initial',
     },
     bottom: {
       '': 0,
-      'side=bottom': '$panel-size',
+      'side=bottom': `calc($panel-size - ${HANDLER_OFFSET}px)`,
       'side=top': 'initial',
     },
     left: {
       '': 0,
-      'side=left': '$panel-size',
+      'side=left': `calc($panel-size - ${HANDLER_OFFSET}px)`,
       'side=right': 'initial',
     },
     right: {
       '': 0,
-      'side=right': '$panel-size',
+      'side=right': `calc($panel-size - ${HANDLER_OFFSET}px)`,
       'side=left': 'initial',
     },
 
-    // Center the handler on the edge
+    // Offscreen transforms only (no centering needed with direct offset positioning)
     transform: {
-      'side=top': `translateY(-50%) translateY(-${HANDLER_OVERFLOW}px)`,
-      'side=bottom': `translateY(50%) translateY(${HANDLER_OVERFLOW}px)`,
-      'side=left': `translateX(-50%) translateX(-${HANDLER_OVERFLOW}px) translateX(4px)`,
-      'side=right': `translateX(50%) translateX(${HANDLER_OVERFLOW}px) translateX(-4px)`,
-      // Offscreen transforms - must match panel movement
-      'offscreen & side=left': `translateX(-50%) translateX(-${HANDLER_OVERFLOW}px) translateX(-$panel-size)`,
-      'offscreen & side=right': `translateX(50%) translateX(${HANDLER_OVERFLOW}px) translateX($panel-size)`,
-      'offscreen & side=top': `translateY(-50%) translateY(-${HANDLER_OVERFLOW}px) translateY(-$panel-size)`,
-      'offscreen & side=bottom': `translateY(50%) translateY(${HANDLER_OVERFLOW}px) translateY($panel-size)`,
+      'offscreen & side=left': `translateX(calc(-1 * $panel-size - ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
+      'offscreen & side=right': `translateX(calc($panel-size + ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
+      'offscreen & side=top': `translateY(calc(-1 * $panel-size - ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
+      'offscreen & side=bottom': `translateY(calc($panel-size + ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
     },
 
     cursor: {
@@ -437,11 +435,11 @@ function LayoutPanel(
   }, [providedSize, isDragging, clampSize]);
 
   // Register panel with layout context
-  // Include handler overflow in the effective size for proper content inset
+  // Include handler outside portion (minus border overlap) for proper content inset
   const effectivePanelSize = isOpen && !isDialog ? size : 0;
   const effectiveInsetSize = Math.round(
     effectivePanelSize +
-      (isResizable && effectivePanelSize > 0 ? HANDLER_OVERFLOW : 0),
+      (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
   );
 
   const { registerPanel, unregisterPanel, updatePanelSize, isReady } =

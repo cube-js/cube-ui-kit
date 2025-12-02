@@ -11,6 +11,8 @@ const PanelHeaderElement = tasty(Item, {
   styles: {
     border: 'bottom',
     radius: 0,
+
+    '$inline-padding': '($content-padding, 1x)',
   },
 });
 

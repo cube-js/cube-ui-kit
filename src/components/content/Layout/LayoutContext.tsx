@@ -49,6 +49,23 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
           `A panel is already registered on the "${side}" side.`,
       );
     }
+
+    // Check for axis conflict
+    const isHorizontal = side === 'left' || side === 'right';
+    const conflictingSides: Side[] = isHorizontal
+      ? ['top', 'bottom']
+      : ['left', 'right'];
+
+    for (const conflictSide of conflictingSides) {
+      if (registeredPanels.current.has(conflictSide)) {
+        throw new Error(
+          `Layout: Panels from different axes cannot be combined. ` +
+            `Cannot register "${side}" panel when "${conflictSide}" panel exists. ` +
+            `Use either horizontal (left/right) or vertical (top/bottom) panels.`,
+        );
+      }
+    }
+
     registeredPanels.current.add(side);
     setPanelSizes((prev) => {
       if (prev[side] === size) return prev;

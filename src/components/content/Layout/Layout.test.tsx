@@ -170,3 +170,89 @@ describe('Layout.Header breadcrumbs', () => {
     expect(screen.getAllByText('Current Page')).toHaveLength(2);
   });
 });
+
+describe('Layout.Panel validation', () => {
+  beforeEach(() => {
+    // Suppress console.error for expected errors
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('throws error when two panels are on the same side', () => {
+    expect(() =>
+      renderWithRoot(
+        <Layout>
+          <Layout.Panel side="left" size={200}>
+            Panel 1
+          </Layout.Panel>
+          <Layout.Panel side="left" size={200}>
+            Panel 2
+          </Layout.Panel>
+        </Layout>,
+      ),
+    ).toThrow('Layout: Only one panel per side is allowed');
+  });
+
+  it('throws error when mixing horizontal and vertical panels (left + top)', () => {
+    expect(() =>
+      renderWithRoot(
+        <Layout>
+          <Layout.Panel side="left" size={200}>
+            Left Panel
+          </Layout.Panel>
+          <Layout.Panel side="top" size={100}>
+            Top Panel
+          </Layout.Panel>
+        </Layout>,
+      ),
+    ).toThrow('Layout: Panels from different axes cannot be combined');
+  });
+
+  it('throws error when mixing horizontal and vertical panels (right + bottom)', () => {
+    expect(() =>
+      renderWithRoot(
+        <Layout>
+          <Layout.Panel side="right" size={200}>
+            Right Panel
+          </Layout.Panel>
+          <Layout.Panel side="bottom" size={100}>
+            Bottom Panel
+          </Layout.Panel>
+        </Layout>,
+      ),
+    ).toThrow('Layout: Panels from different axes cannot be combined');
+  });
+
+  it('allows left and right panels together', () => {
+    expect(() =>
+      renderWithRoot(
+        <Layout>
+          <Layout.Panel side="left" size={200}>
+            Left Panel
+          </Layout.Panel>
+          <Layout.Panel side="right" size={200}>
+            Right Panel
+          </Layout.Panel>
+        </Layout>,
+      ),
+    ).not.toThrow();
+  });
+
+  it('allows top and bottom panels together', () => {
+    expect(() =>
+      renderWithRoot(
+        <Layout>
+          <Layout.Panel side="top" size={100}>
+            Top Panel
+          </Layout.Panel>
+          <Layout.Panel side="bottom" size={100}>
+            Bottom Panel
+          </Layout.Panel>
+        </Layout>,
+      ),
+    ).not.toThrow();
+  });
+});

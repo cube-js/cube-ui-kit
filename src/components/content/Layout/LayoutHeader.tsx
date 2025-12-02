@@ -30,15 +30,18 @@ const HeaderElement = tasty({
     display: 'grid',
     gridTemplate: `
       "breadcrumbs breadcrumbs breadcrumbs" auto
-      "title suffix extra" auto
-      "subtitle subtitle subtitle" auto
-      / 1fr max-content max-content
+      "title suffix extra" 1fr
+      "subtitle subtitle extra" auto
+      / max-content 1fr minmax(0, auto)
     `,
-    gap: '0.5x 1x',
-    padding: '2x',
+    gap: 0,
+    padding: '($content-padding, 1x)',
     border: 'bottom',
     width: '100%',
+    overflow: 'hidden',
     boxSizing: 'border-box',
+    placeContent: 'stretch',
+    placeItems: 'center stretch',
 
     Breadcrumbs: {
       gridArea: 'breadcrumbs',
@@ -78,7 +81,9 @@ const HeaderElement = tasty({
       gridArea: 'extra',
       display: 'flex',
       placeItems: 'center',
+      placeSelf: 'end',
       gap: '1x',
+      width: 'max 100%',
     },
 
     Subtitle: {

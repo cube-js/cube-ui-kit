@@ -160,7 +160,7 @@ export const PanelWithTransition: Story = {
       <Layout height="100dvh">
         <Layout.Panel
           hasTransition
-          side="right"
+          side="left"
           size={250}
           isOpen={isPanelOpen}
           onOpenChange={setIsPanelOpen}
@@ -283,6 +283,91 @@ export const GridLayoutExample: Story = {
   ),
 };
 
+export const AllPanelSides: Story = {
+  render: () => (
+    <GridLayout
+      height="100dvh"
+      columns="1fr 1fr"
+      rows="1fr 1fr"
+      gap="1x"
+      padding="1x"
+      fill="#border"
+    >
+      <Layout fill="#white" contentPadding="2x">
+        <Layout.Panel
+          isResizable
+          side="left"
+          defaultSize={100}
+          minSize={60}
+          maxSize={160}
+        >
+          <Layout.PanelHeader title="Left" />
+          <Layout.Content>
+            <Text>Panel content</Text>
+          </Layout.Content>
+        </Layout.Panel>
+        <Layout.Content>
+          <Text>side=&quot;left&quot;</Text>
+        </Layout.Content>
+      </Layout>
+
+      <Layout fill="#white">
+        <Layout.Panel
+          isResizable
+          side="right"
+          defaultSize={100}
+          minSize={60}
+          maxSize={160}
+        >
+          <Layout.PanelHeader title="Right" />
+          <Layout.Content>
+            <Text>Panel content</Text>
+          </Layout.Content>
+        </Layout.Panel>
+        <Layout.Content>
+          <Text>side=&quot;right&quot;</Text>
+        </Layout.Content>
+      </Layout>
+
+      <Layout fill="#white">
+        <Layout.Panel
+          isResizable
+          side="top"
+          defaultSize={80}
+          minSize={50}
+          maxSize={120}
+        >
+          <Layout.PanelHeader title="Top" />
+          <Layout.Content>
+            <Text>Panel content</Text>
+          </Layout.Content>
+        </Layout.Panel>
+        <Layout.Content>
+          <Text>side=&quot;top&quot;</Text>
+        </Layout.Content>
+      </Layout>
+
+      <Layout fill="#white">
+        <Layout.Panel
+          isResizable
+          side="bottom"
+          defaultSize={80}
+          minSize={50}
+          maxSize={120}
+        >
+          <Layout.PanelHeader title="Bottom" />
+          <Layout.Content>
+            <Text>Panel content</Text>
+          </Layout.Content>
+        </Layout.Panel>
+        <Layout.Content>
+          <Text>side=&quot;bottom&quot;</Text>
+        </Layout.Content>
+      </Layout>
+    </GridLayout>
+  ),
+};
+
 export const NestedLayouts: Story = {
   render: () => (
     <Layout height="100dvh">
@@ -397,10 +482,14 @@ export const CompleteApplicationShell: Story = {
             </Button>
           }
           extra={
-            <Button.Group>
-              <Button>Export</Button>
-              <Button type="primary">Create Report</Button>
-            </Button.Group>
+            <>
+              <Button flexShrink={1} width="min 0">
+                Export
+              </Button>
+              <Button type="primary" flexShrink={1} width="min 0">
+                Create Report
+              </Button>
+            </>
           }
         />
 

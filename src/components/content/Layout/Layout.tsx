@@ -42,7 +42,8 @@ const LayoutElement = tasty({
     overflow: 'hidden',
     flexGrow: 1,
     placeSelf: 'stretch',
-    gridArea: 'layout',
+
+    '$content-padding': '1x',
 
     Inner: {
       // Direct child selector required for nested layouts
@@ -76,6 +77,8 @@ export interface CubeLayoutProps
   rows?: Styles['gridRows'];
   /** Grid template shorthand */
   template?: Styles['gridTemplate'];
+  /** Padding for content areas (Layout.Content components). Default: '1x' */
+  contentPadding?: Styles['padding'];
   /** Styles for wrapper and Inner sub-element */
   styles?: Styles;
   children?: ReactNode;
@@ -100,6 +103,7 @@ function LayoutInner(
     columns,
     rows,
     template,
+    contentPadding,
     styles,
     children,
     style,
@@ -149,6 +153,7 @@ function LayoutInner(
   // Merge styles
   const finalStyles: Styles = {
     ...wrapperStyles,
+    ...(contentPadding != null && { '$content-padding': contentPadding }),
     ...styles,
     Inner: { ...contentStyles, ...(styles?.Inner as Styles) },
   };
@@ -180,10 +185,10 @@ function LayoutInner(
 
   const insetStyle = useMemo(() => {
     const baseStyle: Record<string, string> = {
-      '--inset-top': `${panelSizes.top - 1}px`,
-      '--inset-right': `${panelSizes.right - 1}px`,
-      '--inset-bottom': `${panelSizes.bottom - 1}px`,
-      '--inset-left': `${panelSizes.left - 1}px`,
+      '--inset-top': `${panelSizes.top}px`,
+      '--inset-right': `${panelSizes.right}px`,
+      '--inset-bottom': `${panelSizes.bottom}px`,
+      '--inset-left': `${panelSizes.left}px`,
     };
 
     if (style) {
