@@ -85,10 +85,7 @@ export type ButtonVariant =
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 export const DEFAULT_BUTTON_STYLES = {
-  display: {
-    '': 'inline-grid',
-    'text-only': 'inline-block',
-  },
+  display: 'inline-grid',
   flow: 'column',
   placeItems: 'center start',
   placeContent: {
@@ -141,12 +138,10 @@ export const DEFAULT_BUTTON_STYLES = {
     'type=link': 'initial',
   },
   whiteSpace: 'nowrap',
-  textOverflow: 'ellipsis',
   radius: {
     '': true,
     'type=link & !focused': 0,
   },
-  overflow: 'hidden',
 
   $size: {
     '': '$size-md',
@@ -318,8 +313,10 @@ export const Button = forwardRef(function Button(
           <LoadingIcon data-element="ButtonIcon" />
         )
       ) : null}
-      {hasIcons && typeof children === 'string' ? (
-        <Text ellipsis>{children}</Text>
+      {typeof children === 'string' ? (
+        <Text ellipsis nowrap>
+          {children}
+        </Text>
       ) : (
         children
       )}
