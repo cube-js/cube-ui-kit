@@ -287,7 +287,7 @@ export const Button = forwardRef(function Button(
       'text-only': !!(children && typeof children === 'string' && !hasIcons),
       ...mods,
     }),
-    [mods, isDisabled, isLoading, isSelected, singleIcon],
+    [mods, children, isDisabled, isLoading, isSelected, singleIcon],
   );
 
   const { actionProps } = useAction(
