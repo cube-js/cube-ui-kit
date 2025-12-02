@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Button, ItemButton } from '../../actions';
+import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
 import { Text } from '../Text';
 import { Title } from '../Title';
@@ -374,17 +375,13 @@ export const NestedLayouts: Story = {
       <Layout.Header title="Nested Layouts" />
       <Layout flow="row">
         <Layout width="200px" border="right">
-          <Layout.Content padding="1x">
+          <Layout.Content>
             <Text>Left sidebar</Text>
           </Layout.Content>
         </Layout>
         <Layout>
-          <Layout.Toolbar>
-            <Text>Inner toolbar</Text>
-          </Layout.Toolbar>
-          <Layout.Content padding="2x">
-            <Text>Main content</Text>
-          </Layout.Content>
+          <Layout.Toolbar>Inner toolbar</Layout.Toolbar>
+          <Layout.Content>Main content</Layout.Content>
         </Layout>
       </Layout>
     </Layout>
@@ -419,10 +416,8 @@ export const MultiplePanels: Story = {
           </Layout.Content>
         </Layout.Panel>
         <Layout.Toolbar>
-          <Space>
-            <Button onPress={() => setLeftOpen(!leftOpen)}>Left</Button>
-            <Button onPress={() => setRightOpen(!rightOpen)}>Right</Button>
-          </Space>
+          <Button onPress={() => setLeftOpen(!leftOpen)}>Left</Button>
+          <Button onPress={() => setRightOpen(!rightOpen)}>Right</Button>
         </Layout.Toolbar>
         <Layout.Content padding="2x">
           <Text>Main content between two panels</Text>
@@ -430,6 +425,27 @@ export const MultiplePanels: Story = {
       </Layout>
     );
   },
+};
+
+export const HorizontalScrollableContent: Story = {
+  render: () => (
+    <Space width="500px" height="(5x - 2bw)">
+      <Layout.Block fill="#light" placeSelf="center">
+        Fixed Left
+      </Layout.Block>
+      <Layout.Content scrollbar="tiny" placeContent="center">
+        <Text nowrap>
+          This is a very long line of text that should not wrap and will cause
+          horizontal scrolling when it exceeds the container width →→→→→→→→→→→
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua →→→→→→→→
+        </Text>
+      </Layout.Content>
+      <Layout.Block fill="#light" placeSelf="center">
+        Fixed Right
+      </Layout.Block>
+    </Space>
+  ),
 };
 
 export const CompleteApplicationShell: Story = {

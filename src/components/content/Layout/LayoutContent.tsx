@@ -24,11 +24,13 @@ const ContentElement = tasty({
     minHeight: 0,
     overflow: 'hidden',
     boxSizing: 'border-box',
+    placeSelf: 'stretch',
 
     Inner: {
       position: 'absolute',
       inset: 0,
-      display: 'block',
+      display: 'flex',
+      flow: 'column',
       padding: '($content-padding, 1x)',
       overflow: 'auto',
       scrollbar: {

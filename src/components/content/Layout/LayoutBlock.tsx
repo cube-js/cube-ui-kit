@@ -11,48 +11,39 @@ import {
 
 import { LayoutContextReset } from './LayoutContext';
 
-const ToolbarElement = tasty({
+const BlockElement = tasty({
   as: 'div',
-  qa: 'Toolbar',
-  role: 'toolbar',
+  qa: 'LayoutBlock',
   styles: {
-    display: 'flex',
-    flow: 'row nowrap',
-    placeContent: 'center space-between',
-    placeItems: 'center stretch',
-    gap: '1x',
+    display: 'block',
     padding: '($content-padding, 1x)',
-    width: '100%',
-    height: 'min 5x',
-    overflow: 'hidden',
-    boxSizing: 'border-box',
   },
 });
 
-export interface CubeLayoutToolbarProps extends BaseProps, ContainerStyleProps {
+export interface CubeLayoutBlockProps extends BaseProps, ContainerStyleProps {
   children?: ReactNode;
 }
 
-function LayoutToolbar(
-  props: CubeLayoutToolbarProps,
+function LayoutBlock(
+  props: CubeLayoutBlockProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
   const { children, ...otherProps } = props;
   const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   return (
-    <ToolbarElement
-      ref={ref}
+    <BlockElement
       {...filterBaseProps(otherProps, { eventProps: true })}
+      ref={ref}
       styles={styles}
     >
       <LayoutContextReset>{children}</LayoutContextReset>
-    </ToolbarElement>
+    </BlockElement>
   );
 }
 
-const _LayoutToolbar = forwardRef(LayoutToolbar);
+const _LayoutBlock = forwardRef(LayoutBlock);
 
-_LayoutToolbar.displayName = 'Layout.Toolbar';
+_LayoutBlock.displayName = 'Layout.Block';
 
-export { _LayoutToolbar as LayoutToolbar };
+export { _LayoutBlock as LayoutBlock };

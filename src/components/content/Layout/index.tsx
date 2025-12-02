@@ -1,6 +1,7 @@
 import { ForwardRefExoticComponent, RefAttributes } from 'react';
 
 import { CubeLayoutProps, Layout as LayoutBase } from './Layout';
+import { LayoutBlock } from './LayoutBlock';
 import { LayoutContent } from './LayoutContent';
 import { LayoutFooter } from './LayoutFooter';
 import { LayoutHeader } from './LayoutHeader';
@@ -11,6 +12,7 @@ import { LayoutToolbar } from './LayoutToolbar';
 export { GridLayout } from './GridLayout';
 export type { CubeGridLayoutProps } from './GridLayout';
 export type { CubeLayoutProps } from './Layout';
+export type { CubeLayoutBlockProps } from './LayoutBlock';
 export type { CubeLayoutContentProps, ScrollbarType } from './LayoutContent';
 export type { CubeLayoutFooterProps } from './LayoutFooter';
 export type { CubeLayoutHeaderProps } from './LayoutHeader';
@@ -29,6 +31,7 @@ interface LayoutComponent
   Header: typeof LayoutHeader;
   Footer: typeof LayoutFooter;
   Content: typeof LayoutContent;
+  Block: typeof LayoutBlock;
   Panel: typeof LayoutPanel;
   PanelHeader: typeof LayoutPanelHeader;
 }
@@ -38,6 +41,7 @@ const Layout = Object.assign(LayoutBase, {
   Header: LayoutHeader,
   Footer: LayoutFooter,
   Content: LayoutContent,
+  Block: LayoutBlock,
   Panel: LayoutPanel,
   PanelHeader: LayoutPanelHeader,
 }) as LayoutComponent;
