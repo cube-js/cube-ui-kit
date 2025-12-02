@@ -132,7 +132,7 @@ export const DEFAULT_BUTTON_STYLES = {
   },
   width: {
     '': 'min $size',
-    'left-icon & right-icon': 'min ($size * 2)',
+    'left-icon & right-icon': 'min ($size * 2 - 2bw)',
     'single-icon': 'fixed $size',
     'type=link': 'initial',
   },
