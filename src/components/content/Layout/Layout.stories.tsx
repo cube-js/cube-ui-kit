@@ -545,3 +545,54 @@ export const CompleteApplicationShell: Story = {
     );
   },
 };
+
+/**
+ * Layout automatically applies height: 100% when it detects it has collapsed
+ * to 0 height. This happens when the Layout is placed in a container without
+ * a defined height and no explicit height prop is provided.
+ *
+ * This story demonstrates the auto-height behavior where the Layout is inside
+ * a container that has height defined, so it stretches to fill it.
+ */
+export const AutoHeight: Story = {
+  render: () => (
+    <Block height="300px" border="1bw dashed #dark-04" padding="1x">
+      <Text preset="t4" color="#dark-03">
+        Parent container with height: 300px
+      </Text>
+      <Layout fill="#light">
+        <Layout.Header title="Auto-Height Layout" />
+        <Layout.Content padding="2x">
+          <Text>
+            This Layout has no explicit height prop but stretches to fill the
+            parent container because the parent has a defined height.
+          </Text>
+        </Layout.Content>
+      </Layout>
+    </Block>
+  ),
+};
+
+/**
+ * When a Layout collapses to 0 height (no parent height, no height prop),
+ * and the auto-height fallback (100%) still results in 0 height,
+ * the Layout shows a development warning and sets a minimum height.
+ *
+ * This warning is only visible in development mode or when `_forceShowDevWarning`
+ * is enabled (used here for storybook which runs in production mode).
+ */
+export const CollapsedWithWarning: Story = {
+  render: () => (
+    <Block border="1bw dashed #dark-04" padding="1x">
+      <Text preset="t4" color="#dark-03">
+        Parent container with no height defined
+      </Text>
+      <Layout _forceShowDevWarning fill="#light">
+        <Layout.Header title="Collapsed Layout" />
+        <Layout.Content padding="2x">
+          <Text>This content is hidden when collapsed</Text>
+        </Layout.Content>
+      </Layout>
+    </Block>
+  ),
+};

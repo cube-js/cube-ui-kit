@@ -7,6 +7,8 @@ import {
   ReactNode,
   useEffect,
   useMemo,
+  useRef,
+  useState,
 } from 'react';
 
 import {
@@ -24,6 +26,8 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import { isDevEnv } from '../../../tasty/utils/isDevEnv';
+import { Alert } from '../Alert';
 
 import { LayoutProvider, useLayoutContext } from './LayoutContext';
 
@@ -42,6 +46,11 @@ const LayoutElement = tasty({
     overflow: 'hidden',
     flexGrow: 1,
     placeSelf: 'stretch',
+    height: {
+      '': 'auto',
+      'auto-height': 'fixed 100%',
+      collapsed: '6x',
+    },
 
     '$content-padding': '1x',
 
@@ -82,6 +91,10 @@ export interface CubeLayoutProps
   /** Styles for wrapper and Inner sub-element */
   styles?: Styles;
   children?: ReactNode;
+  /**
+   * @internal Force show dev warning even in production (for storybook testing)
+   */
+  _forceShowDevWarning?: boolean;
 }
 
 // Check if a child is a Layout.Panel
@@ -97,6 +110,9 @@ function LayoutInner(
   props: CubeLayoutProps & { forwardedRef?: ForwardedRef<HTMLDivElement> },
 ) {
   const layoutContext = useLayoutContext();
+  const localRef = useRef<HTMLDivElement>(null);
+  const [isAutoHeight, setIsAutoHeight] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const {
     isGrid,
@@ -108,6 +124,7 @@ function LayoutInner(
     children,
     style,
     forwardedRef,
+    _forceShowDevWarning,
     ...otherProps
   } = props;
 
@@ -183,6 +200,29 @@ function LayoutInner(
     return () => cancelAnimationFrame(frameId);
   }, [markReady]);
 
+  // Auto-height detection: if layout collapses to 0 height after initialization,
+  // automatically set height to 100% to prevent invisible layout
+  useEffect(() => {
+    if (isReady && localRef.current && localRef.current.offsetHeight === 0) {
+      setIsAutoHeight(true);
+    }
+  }, [isReady]);
+
+  // Second check: if still 0 height after auto-height was applied,
+  // show collapsed state with warning
+  useEffect(() => {
+    if (isAutoHeight && localRef.current) {
+      // Use requestAnimationFrame to check after styles have been applied
+      const frameId = requestAnimationFrame(() => {
+        if (localRef.current && localRef.current.offsetHeight === 0) {
+          setIsCollapsed(true);
+        }
+      });
+
+      return () => cancelAnimationFrame(frameId);
+    }
+  }, [isAutoHeight]);
+
   const insetStyle = useMemo(() => {
     const baseStyle: Record<string, string> = {
       '--inset-top': `${panelSizes.top}px`,
@@ -199,22 +239,51 @@ function LayoutInner(
   }, [panelSizes, style]);
 
   const mods = useMemo(
-    () => ({ dragging: isDragging, 'not-ready': !isReady }),
-    [isDragging, isReady],
+    () => ({
+      dragging: isDragging,
+      'not-ready': !isReady,
+      'auto-height': isAutoHeight && !isCollapsed,
+      collapsed: isCollapsed,
+    }),
+    [isDragging, isReady, isAutoHeight, isCollapsed],
   );
+
+  // Combine local ref with forwarded ref
+  const setRefs = (element: HTMLDivElement | null) => {
+    localRef.current = element;
+
+    if (typeof forwardedRef === 'function') {
+      forwardedRef(element);
+    } else if (forwardedRef) {
+      forwardedRef.current = element;
+    }
+  };
+
+  // Show dev warning when collapsed and in dev mode (or forced for stories)
+  const showDevWarning = isCollapsed && (_forceShowDevWarning || isDevEnv());
 
   return (
     <LayoutElement
-      ref={forwardedRef}
+      ref={setRefs}
       {...filterBaseProps(otherProps, { eventProps: true })}
       mods={mods}
       styles={finalStyles}
       style={insetStyle}
     >
-      {/* Panels are rendered outside the Inner element */}
-      {panels}
-      {/* Other content goes inside the Inner element */}
-      <div data-element="Inner">{content}</div>
+      {showDevWarning ? (
+        <Alert theme="danger">
+          <b>UIKit:</b> <b>&lt;Layout/&gt;</b> has collapsed to <b>0</b> height.
+          Ensure the parent container has a defined height or use the{' '}
+          <b>height</b> prop on <b>&lt;Layout/&gt;</b>.
+        </Alert>
+      ) : (
+        <>
+          {/* Panels are rendered outside the Inner element */}
+          {panels}
+          {/* Other content goes inside the Inner element */}
+          <div data-element="Inner">{content}</div>
+        </>
+      )}
     </LayoutElement>
   );
 }
