@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useHover, useMove } from 'react-aria';
+import { useFocusRing, useHover, useMove } from 'react-aria';
 
 import { useDebouncedValue } from '../../../_internal/hooks';
 import {
@@ -162,6 +162,7 @@ const ResizeHandlerElement = tasty({
       disabled: 'not-allowed',
     },
     padding: 0,
+    outline: 0,
     boxSizing: 'border-box',
 
     // Transition must match panel for synchronized animation
@@ -189,12 +190,13 @@ const ResizeHandlerElement = tasty({
       },
       fill: {
         '': '#border-opaque',
-        '(hovered | drag) & !disabled': '#purple-03',
+        '(hovered | drag | focused) & !disabled': '#purple-03',
       },
+      border: 0,
       transition: 'theme',
       outline: {
         '': '1bw #purple-text.0',
-        drag: '1bw #purple-text',
+        'drag | focused': '1bw #purple-text',
       },
       outlineOffset: 1,
     },
@@ -202,6 +204,7 @@ const ResizeHandlerElement = tasty({
     Drag: {
       display: 'grid',
       gap: '2bw',
+      border: 0,
       flow: {
         '': 'row',
         horizontal: 'column',
@@ -238,7 +241,7 @@ const ResizeHandlerElement = tasty({
       radius: true,
       fill: {
         '': '#dark-03',
-        'hovered | drag': '#dark-02',
+        'hovered | drag | focused': '#purple-text',
         disabled: '#dark-04',
       },
     },
@@ -251,25 +254,33 @@ interface ResizeHandlerProps {
   mods?: Record<string, boolean>;
   moveProps: ReturnType<typeof useMove>['moveProps'];
   style?: Record<string, string | number | undefined>;
+  onDoubleClick?: () => void;
 }
 
 function ResizeHandler(props: ResizeHandlerProps) {
-  const { side, isDisabled, mods, moveProps, style } = props;
+  const { side, isDisabled, mods, moveProps, style, onDoubleClick } = props;
   const { hoverProps, isHovered } = useHover({});
+  const { focusProps, isFocusVisible } = useFocusRing();
   const isHorizontal = side === 'left' || side === 'right';
   const localIsHovered = useDebouncedValue(isHovered, 150);
 
   return (
     <ResizeHandlerElement
-      {...mergeProps(hoverProps, moveProps, {
+      {...mergeProps(hoverProps, focusProps, moveProps, {
         mods: {
           hovered: localIsHovered,
           horizontal: isHorizontal,
           disabled: isDisabled,
+          focused: isFocusVisible,
           side,
           ...mods,
         },
         style,
+        tabIndex: isDisabled ? undefined : 0,
+        role: 'separator',
+        'aria-orientation': isHorizontal ? 'vertical' : 'horizontal',
+        'aria-label': `Resize ${side} panel`,
+        onDoubleClick: isDisabled ? undefined : onDoubleClick,
       })}
     >
       <div data-element="Track" />
@@ -361,7 +372,6 @@ function LayoutPanel(
   } = props;
 
   const combinedRef = useCombinedRefs(ref);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const isHorizontal = side === 'left' || side === 'right';
 
   // Panel open state
@@ -411,11 +421,22 @@ function LayoutPanel(
     },
     onMove(e) {
       if (!isResizable) return;
-      if (e.pointerType === 'keyboard') return;
 
-      const delta = isHorizontal
-        ? e.deltaX * (side === 'right' ? -1 : 1)
-        : e.deltaY * (side === 'bottom' ? -1 : 1);
+      let delta: number;
+
+      if (e.pointerType === 'keyboard') {
+        // Keyboard resize: 10px per step, 50px with Shift
+        const step = e.shiftKey ? 50 : 10;
+        // For keyboard, deltaX/deltaY are direction indicators (-1, 0, 1)
+        const rawDelta = isHorizontal ? e.deltaX : e.deltaY;
+        const direction = side === 'right' || side === 'bottom' ? -1 : 1;
+        delta = rawDelta * step * direction;
+      } else {
+        // Pointer resize: use exact delta values
+        delta = isHorizontal
+          ? e.deltaX * (side === 'right' ? -1 : 1)
+          : e.deltaY * (side === 'bottom' ? -1 : 1);
+      }
 
       setSize((currentSize) => clampSize(currentSize + delta));
     },
@@ -529,6 +550,15 @@ function LayoutPanel(
     [combinedRef],
   );
 
+  // Reset to default size on double-click
+  const handleResetSize = useCallback(() => {
+    const resetSize =
+      typeof defaultSize === 'number' ? defaultSize : parseInt(defaultSize, 10);
+    const clampedSize = clampSize(resetSize || 280);
+    setSize(clampedSize);
+    onSizeChange?.(clampedSize);
+  }, [defaultSize, clampSize, onSizeChange]);
+
   const renderPanelContent = (
     offscreen = false,
     transitionRef?: RefCallback<HTMLElement>,
@@ -559,6 +589,7 @@ function LayoutPanel(
           }}
           moveProps={moveProps}
           style={panelStyle}
+          onDoubleClick={handleResetSize}
         />
       )}
     </>

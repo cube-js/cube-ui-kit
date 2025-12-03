@@ -24,7 +24,7 @@ const FooterElement = tasty({
     placeContent: 'center space-between',
     placeItems: 'center stretch',
     gap: '1x',
-    padding: '1x 2x',
+    padding: '($content-padding, 1x)',
     border: 'top',
     width: '100%',
     height: 'min 5x',

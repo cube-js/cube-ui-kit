@@ -533,7 +533,10 @@ function ApplicationShell() {
 
 - `Tab` - Navigate between interactive elements
 - Focus management is handled automatically when panels open/close
-- Resize handlers can be focused but require pointer interaction
+- Resize handlers can be focused and resized using arrow keys:
+  - `Arrow keys` - Resize panel by 10px
+  - `Shift + Arrow keys` - Resize panel by 50px
+  - `Double-click` on resize handler - Reset to default size
 
 ### Screen Reader Support
 
@@ -548,6 +551,7 @@ function ApplicationShell() {
 - `aria-label` - Available on all components for custom labels
 - Landmarks are automatically set for header, footer, and toolbar
 - Panel close buttons include `aria-label="Close panel"`
+- Resize handlers have `role="separator"` with proper `aria-orientation` and `aria-label`
 
 ---
 
@@ -620,7 +624,6 @@ Panel transitions are disabled during drag operations and initial mount to preve
 
 ## Suggested Improvements
 
-- **Keyboard resize support**: Allow panel resizing via keyboard arrows when handler is focused
 - **Collapsible mode**: Add a mode where panels collapse to icons/mini state instead of fully hiding
 - **Responsive breakpoints**: Automatically switch panels to dialog mode on smaller screens
 - **Panel persistence**: Built-in localStorage support for remembering panel sizes and open states

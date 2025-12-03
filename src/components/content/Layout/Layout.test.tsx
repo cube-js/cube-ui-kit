@@ -202,6 +202,7 @@ describe('GridLayout', () => {
     expect(GridLayout.Header).toBeDefined();
     expect(GridLayout.Footer).toBeDefined();
     expect(GridLayout.Content).toBeDefined();
+    expect(GridLayout.Block).toBeDefined();
     expect(GridLayout.Panel).toBeDefined();
     expect(GridLayout.PanelHeader).toBeDefined();
   });
@@ -228,10 +229,105 @@ describe('Layout.Header breadcrumbs', () => {
   });
 });
 
+describe('Layout.Panel resize handler', () => {
+  it('renders resize handler when isResizable is true', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel isResizable side="left" size={200}>
+          <div>Panel content</div>
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    const resizeHandler = screen.getByRole('separator');
+    expect(resizeHandler).toBeInTheDocument();
+    expect(resizeHandler).toHaveAttribute('aria-label', 'Resize left panel');
+    expect(resizeHandler).toHaveAttribute('aria-orientation', 'vertical');
+  });
+
+  it('has proper aria attributes for horizontal panels', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel isResizable side="top" size={100}>
+          <div>Panel content</div>
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    const resizeHandler = screen.getByRole('separator');
+    expect(resizeHandler).toHaveAttribute('aria-orientation', 'horizontal');
+    expect(resizeHandler).toHaveAttribute('aria-label', 'Resize top panel');
+  });
+
+  it('resize handler is focusable', async () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel isResizable side="left" size={200}>
+          <div>Panel content</div>
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    const resizeHandler = screen.getByRole('separator');
+    expect(resizeHandler).toHaveAttribute('tabindex', '0');
+
+    await userEvent.tab();
+    expect(resizeHandler).toHaveFocus();
+  });
+
+  it('calls onSizeChange when double-clicking resize handler', async () => {
+    const onSizeChange = jest.fn();
+
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel
+          isResizable
+          side="left"
+          size={300}
+          defaultSize={200}
+          onSizeChange={onSizeChange}
+        >
+          <div>Panel content</div>
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    const resizeHandler = screen.getByRole('separator');
+    await userEvent.dblClick(resizeHandler);
+
+    expect(onSizeChange).toHaveBeenCalledWith(200);
+  });
+
+  it('resets to defaultSize clamped by minSize on double-click', async () => {
+    const onSizeChange = jest.fn();
+
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel
+          isResizable
+          side="left"
+          size={300}
+          defaultSize={100}
+          minSize={150}
+          onSizeChange={onSizeChange}
+        >
+          <div>Panel content</div>
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    const resizeHandler = screen.getByRole('separator');
+    await userEvent.dblClick(resizeHandler);
+
+    // Should be clamped to minSize
+    expect(onSizeChange).toHaveBeenCalledWith(150);
+  });
+});
+
 describe('Layout.Panel validation', () => {
   beforeEach(() => {
     // Suppress console.error for expected errors
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   afterEach(() => {

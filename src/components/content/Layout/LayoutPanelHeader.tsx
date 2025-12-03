@@ -1,7 +1,13 @@
 import { ForwardedRef, forwardRef, ReactNode, useCallback } from 'react';
 
 import { CloseIcon } from '../../../icons/CloseIcon';
-import { BaseProps, ContainerStyleProps, tasty } from '../../../tasty';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  tasty,
+} from '../../../tasty';
 import { ItemAction } from '../../actions/ItemAction';
 import { useDialogContext } from '../../overlays/Dialog/context';
 import { Item } from '../Item/Item';
@@ -20,7 +26,7 @@ const PanelHeaderElement = tasty(Item, {
 
 export interface CubeLayoutPanelHeaderProps
   extends BaseProps,
-    ContainerStyleProps {
+  ContainerStyleProps {
   /** Panel title */
   title?: ReactNode;
   /** Title heading level (affects semantics, not visual) */
@@ -47,6 +53,9 @@ function LayoutPanelHeader(
     children,
     ...otherProps
   } = props;
+
+  // Extract container styles
+  const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   // Access dialog context if in dialog mode
   const dialogContext = useDialogContext();
@@ -82,6 +91,7 @@ function LayoutPanelHeader(
       as={Tag}
       size="large"
       actions={finalActions}
+      styles={styles}
       {...otherProps}
     >
       {title ?? children}
