@@ -134,3 +134,19 @@ export function LayoutContextReset({ children }: { children: ReactNode }) {
     <LayoutContext.Provider value={null}>{children}</LayoutContext.Provider>
   );
 }
+
+// Panel context - provides panel-level callbacks to child components
+export interface LayoutPanelContextValue {
+  /** Callback to change the panel's open state */
+  onOpenChange: (isOpen: boolean) => void;
+  /** Current open state of the panel */
+  isOpen: boolean;
+}
+
+export const LayoutPanelContext = createContext<LayoutPanelContextValue | null>(
+  null,
+);
+
+export function useLayoutPanelContext(): LayoutPanelContextValue | null {
+  return useContext(LayoutPanelContext);
+}

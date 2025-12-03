@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { Root } from '../../Root';
 
@@ -114,6 +115,62 @@ describe('Layout', () => {
 
     const closeButton = screen.getByLabelText('Close panel');
     expect(closeButton).toBeInTheDocument();
+  });
+
+  it('calls onOpenChange when close button is clicked', async () => {
+    const onOpenChange = jest.fn();
+
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel side="left" size={200} onOpenChange={onOpenChange}>
+          <Layout.PanelHeader isClosable title="Panel" />
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    const closeButton = screen.getByLabelText('Close panel');
+    await userEvent.click(closeButton);
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('calls both onClose and onOpenChange when close button is clicked', async () => {
+    const onClose = jest.fn();
+    const onOpenChange = jest.fn();
+
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel side="left" size={200} onOpenChange={onOpenChange}>
+          <Layout.PanelHeader isClosable title="Panel" onClose={onClose} />
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    const closeButton = screen.getByLabelText('Close panel');
+    await userEvent.click(closeButton);
+
+    expect(onClose).toHaveBeenCalled();
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('closes uncontrolled panel when close button is clicked', async () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel side="left" size={200} defaultIsOpen={true}>
+          <Layout.PanelHeader isClosable title="Panel" />
+          <div>Panel content</div>
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    expect(screen.getByText('Panel content')).toBeInTheDocument();
+
+    const closeButton = screen.getByLabelText('Close panel');
+    await userEvent.click(closeButton);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Panel content')).not.toBeInTheDocument();
+    });
   });
 
   it('does not render closed panel without transition', () => {

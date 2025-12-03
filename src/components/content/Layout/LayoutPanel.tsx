@@ -30,7 +30,12 @@ import {
   DialogContainer,
 } from '../../overlays/Dialog/DialogContainer';
 
-import { LayoutContextReset, Side, useLayoutContext } from './LayoutContext';
+import {
+  LayoutContextReset,
+  LayoutPanelContext,
+  Side,
+  useLayoutContext,
+} from './LayoutContext';
 
 // Resize handler dimensions
 const HANDLER_WIDTH = 9;
@@ -483,6 +488,15 @@ function LayoutPanel(
     [onDialogOpenChange],
   );
 
+  // Panel context value for child components (like LayoutPanelHeader)
+  const panelContextValue = useMemo(
+    () => ({
+      onOpenChange: handleOpenChange,
+      isOpen,
+    }),
+    [handleOpenChange, isOpen],
+  );
+
   const panelMods = useMemo(
     () => ({
       side,
@@ -530,7 +544,9 @@ function LayoutPanel(
         style={panelStyle}
         data-side={side}
       >
-        <LayoutContextReset>{children}</LayoutContextReset>
+        <LayoutPanelContext.Provider value={panelContextValue}>
+          <LayoutContextReset>{children}</LayoutContextReset>
+        </LayoutPanelContext.Provider>
       </PanelElement>
       {isResizable && (
         <ResizeHandler

@@ -19,8 +19,17 @@ export type { CubeLayoutHeaderProps } from './LayoutHeader';
 export type { CubeLayoutPanelProps } from './LayoutPanel';
 export type { CubeLayoutPanelHeaderProps } from './LayoutPanelHeader';
 export type { CubeLayoutToolbarProps } from './LayoutToolbar';
-export { LayoutContext, useLayoutContext } from './LayoutContext';
-export type { LayoutContextValue, Side } from './LayoutContext';
+export {
+  LayoutContext,
+  LayoutPanelContext,
+  useLayoutContext,
+  useLayoutPanelContext,
+} from './LayoutContext';
+export type {
+  LayoutContextValue,
+  LayoutPanelContextValue,
+  Side,
+} from './LayoutContext';
 
 // Create Layout compound component
 interface LayoutComponent

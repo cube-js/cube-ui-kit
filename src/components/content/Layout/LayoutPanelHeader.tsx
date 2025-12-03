@@ -6,6 +6,8 @@ import { ItemAction } from '../../actions/ItemAction';
 import { useDialogContext } from '../../overlays/Dialog/context';
 import { Item } from '../Item/Item';
 
+import { useLayoutPanelContext } from './LayoutContext';
+
 const PanelHeaderElement = tasty(Item, {
   qa: 'PanelHeader',
   styles: {
@@ -48,13 +50,18 @@ function LayoutPanelHeader(
 
   // Access dialog context if in dialog mode
   const dialogContext = useDialogContext();
+  // Access panel context to update panel open state
+  const panelContext = useLayoutPanelContext();
 
   // Close handler that works for both panel and dialog modes
   const handleClose = useCallback(() => {
+    // Call user-provided onClose callback
     onClose?.();
+    // Update panel's internal open state
+    panelContext?.onOpenChange(false);
     // If in dialog mode, also close the dialog
     dialogContext?.onClose?.();
-  }, [onClose, dialogContext]);
+  }, [onClose, panelContext, dialogContext]);
 
   const closeAction = isClosable ? (
     <ItemAction
