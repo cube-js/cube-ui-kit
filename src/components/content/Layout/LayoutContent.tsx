@@ -19,20 +19,23 @@ const ContentElement = tasty({
   qa: 'LayoutContent',
   styles: {
     position: 'relative',
-    display: 'block',
+    display: 'grid',
+    gridColumns: '1sf',
+    gridRows: '1sf',
+    placeContent: 'stretch',
+    placeItems: 'stretch',
+    placeSelf: 'stretch',
     flexGrow: 1,
-    minHeight: 0,
+    height: 'min 0',
     overflow: 'hidden',
     boxSizing: 'border-box',
-    placeSelf: 'stretch',
 
     Inner: {
-      position: 'absolute',
-      inset: 0,
       display: 'flex',
       flow: 'column',
       padding: '($content-padding, 1x)',
       overflow: 'auto',
+      placeSelf: 'stretch',
       scrollbar: {
         '': 'thin',
         'scrollbar=tiny | scrollbar=none': 'none',

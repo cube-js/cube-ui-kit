@@ -327,7 +327,7 @@ describe('Layout.Panel resize handler', () => {
 describe('Layout.Panel validation', () => {
   beforeEach(() => {
     // Suppress console.error for expected errors
-    jest.spyOn(console, 'error').mockImplementation(() => { });
+    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {

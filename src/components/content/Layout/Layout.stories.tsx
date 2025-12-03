@@ -429,7 +429,7 @@ export const MultiplePanels: Story = {
 
 export const HorizontalScrollableContent: Story = {
   render: () => (
-    <Space width="500px" height="(5x - 2bw)">
+    <Space width="500px" gap="0">
       <Layout.Block fill="#light" placeSelf="center">
         Fixed Left
       </Layout.Block>
