@@ -20,7 +20,7 @@ import { LayoutToolbar } from './LayoutToolbar';
 const GridLayoutElement = tasty(Layout, {
   qa: 'GridLayout',
   styles: {
-    Content: {
+    Inner: {
       display: 'grid',
     },
   },
