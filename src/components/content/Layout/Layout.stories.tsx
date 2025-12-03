@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Button, ItemButton } from '../../actions';
 import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
+import { Card } from '../Card/Card';
 import { Text } from '../Text';
 import { Title } from '../Title';
 
@@ -247,39 +248,14 @@ export const GridLayoutExample: Story = {
     <GridLayout
       height="100dvh"
       columns="repeat(2, 1fr)"
-      rows="auto 1fr"
+      rows="auto auto 1fr"
       gap="2x"
       padding="2x"
     >
-      <Layout.Header title="Grid Dashboard" />
-      <div
-        style={{
-          gridColumn: '1 / 3',
-          background: '#f5f5f5',
-          padding: '16px',
-          borderRadius: '8px',
-        }}
-      >
-        <Text>Full-width card</Text>
-      </div>
-      <div
-        style={{
-          background: '#f5f5f5',
-          padding: '16px',
-          borderRadius: '8px',
-        }}
-      >
-        <Text>Left card</Text>
-      </div>
-      <div
-        style={{
-          background: '#f5f5f5',
-          padding: '16px',
-          borderRadius: '8px',
-        }}
-      >
-        <Text>Right card</Text>
-      </div>
+      <Layout.Header gridColumn="1 / 3" title="Grid Dashboard" />
+      <Card gridColumn="1 / 3">Full-width card</Card>
+      <Card>Left card</Card>
+      <Card>Right card</Card>
     </GridLayout>
   ),
 };
