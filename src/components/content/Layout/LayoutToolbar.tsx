@@ -26,6 +26,7 @@ const ToolbarElement = tasty({
     height: 'min 5x',
     overflow: 'hidden',
     boxSizing: 'border-box',
+    flexShrink: 0,
   },
 });
 

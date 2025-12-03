@@ -42,6 +42,7 @@ const HeaderElement = tasty({
     boxSizing: 'border-box',
     placeContent: 'stretch',
     placeItems: 'center stretch',
+    flexShrink: 0,
 
     Breadcrumbs: {
       gridArea: 'breadcrumbs',

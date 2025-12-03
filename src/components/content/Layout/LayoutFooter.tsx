@@ -29,6 +29,7 @@ const FooterElement = tasty({
     width: '100%',
     height: 'min 5x',
     boxSizing: 'border-box',
+    flexShrink: 0,
   },
 });
 

@@ -17,6 +17,7 @@ const BlockElement = tasty({
   styles: {
     display: 'block',
     padding: '($content-padding, 1x)',
+    flexShrink: 0,
   },
 });
 
