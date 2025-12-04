@@ -89,13 +89,21 @@ export interface CubeLayoutContentProps extends BaseProps, ContainerStyleProps {
   /** Scrollbar style: 'default' | 'thin' | 'tiny' | 'none' */
   scrollbar?: ScrollbarType;
   children?: ReactNode;
+  /** Additional modifiers to apply */
+  mods?: Record<string, boolean | undefined>;
 }
 
 function LayoutContent(
   props: CubeLayoutContentProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const { children, scrollbar = 'thin', styles, ...otherProps } = props;
+  const {
+    children,
+    scrollbar = 'thin',
+    styles,
+    mods: externalMods,
+    ...otherProps
+  } = props;
   const outerStyles = extractStyles(otherProps, OUTER_STYLES);
   const innerStyles = extractStyles(otherProps, INNER_STYLES);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -117,10 +125,11 @@ function LayoutContent(
 
   const mods = useMemo(
     () => ({
+      ...externalMods,
       scrollbar,
       hovered: isHovered,
     }),
-    [scrollbar, isHovered],
+    [externalMods, scrollbar, isHovered],
   );
 
   // Merge styles: outer styles to root, inner styles to Inner element
