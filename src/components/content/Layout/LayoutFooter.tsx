@@ -12,6 +12,7 @@ const FooterElement = tasty(LayoutContent, {
     border: 'top',
     height: 'min 5x',
     flexShrink: 0,
+    flexGrow: 0,
     whiteSpace: 'nowrap',
 
     Inner: {

@@ -22,6 +22,7 @@ const HeaderElement = tasty(LayoutContent, {
   styles: {
     border: 'bottom',
     flexShrink: 0,
+    flexGrow: 0,
 
     Inner: {
       display: 'grid',

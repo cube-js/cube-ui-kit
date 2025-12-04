@@ -8,6 +8,7 @@ const BlockElement = tasty(LayoutContent, {
   qa: 'LayoutBlock',
   styles: {
     flexShrink: 0,
+    flexGrow: 0,
 
     Inner: {
       display: 'block',

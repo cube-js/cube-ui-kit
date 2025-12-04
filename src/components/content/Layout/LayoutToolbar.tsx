@@ -10,6 +10,7 @@ const ToolbarElement = tasty(LayoutContent, {
   styles: {
     height: 'min 5x',
     flexShrink: 0,
+    flexGrow: 0,
 
     Inner: {
       display: 'flex',
