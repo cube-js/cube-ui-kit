@@ -16,9 +16,14 @@ import { useLayoutPanelContext } from './LayoutContext';
 
 const PanelHeaderElement = tasty(Item, {
   qa: 'PanelHeader',
+  shape: 'sharp',
   styles: {
     border: 'bottom',
-    radius: 0,
+    preset: {
+      '': 't3m',
+      'size=xsmall': 't4',
+      'size=xlarge': 't2m',
+    },
 
     '$inline-padding': '($content-padding, 1x)',
   },

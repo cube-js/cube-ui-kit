@@ -620,7 +620,6 @@ function LayoutPanel(
     return (
       <DialogContainer
         isOpen={dialogOpen}
-        type="panel"
         onDismiss={() => handleDialogOpenChange(false)}
         {...dialogProps}
       >

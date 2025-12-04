@@ -1,4 +1,6 @@
+import { IconFilter, IconFilterFilled } from '@tabler/icons-react';
 import { useState } from 'react';
+import { FilterIcon } from 'src/icons';
 
 import { Button, ItemButton } from '../../actions';
 import { Block } from '../../Block';
@@ -763,6 +765,187 @@ export const VerticalResizablePanes: Story = {
             <Text>This area fills the remaining vertical space.</Text>
           </Layout.Content>
         </Layout.Flex>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * Layout.Panel can render as a Dialog instead of an inline panel.
+ * This is useful for responsive designs where you want the panel
+ * to appear as a modal dialog on mobile devices.
+ *
+ * When `isDialog={true}`, the panel content renders inside a DialogContainer
+ * with standard Dialog styling (backdrop, centered positioning, animations).
+ */
+export const PanelAsDialog: Story = {
+  render: function PanelAsDialogStory() {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Panel
+          isDialog
+          side="left"
+          size={300}
+          isDialogOpen={isDialogOpen}
+          onDialogOpenChange={setIsDialogOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Panel as Dialog"
+            onClose={() => setIsDialogOpen(false)}
+          />
+          <Layout.Content>
+            <Space direction="vertical" gap="1x">
+              <Text>
+                This panel renders as a Dialog overlay instead of an inline side
+                panel.
+              </Text>
+              <Text preset="t3" color="#dark-02">
+                Useful for mobile-responsive layouts where side panels should
+                become modal dialogs on smaller screens.
+              </Text>
+              <Space direction="vertical" gap="1bw">
+                <ItemButton type="neutral">Menu Item 1</ItemButton>
+                <ItemButton type="neutral">Menu Item 2</ItemButton>
+                <ItemButton type="neutral">Menu Item 3</ItemButton>
+              </Space>
+            </Space>
+          </Layout.Content>
+          <Layout.Footer invertOrder>
+            <Button type="primary" onPress={() => setIsDialogOpen(false)}>
+              Done
+            </Button>
+          </Layout.Footer>
+        </Layout.Panel>
+
+        <Layout.Toolbar>
+          <Space>
+            <Button type="primary" onPress={() => setIsDialogOpen(true)}>
+              Open Panel Dialog
+            </Button>
+            <Title level={4}>Dialog Mode Demo</Title>
+          </Space>
+        </Layout.Toolbar>
+
+        <Layout.Content padding="2x">
+          <Space direction="vertical" gap="2x">
+            <Text>
+              Click the button above to open the panel as a dialog overlay.
+            </Text>
+            <Text preset="t3" color="#dark-02">
+              The panel uses <code>isDialog=true</code> to render inside a
+              DialogContainer instead of being positioned absolutely within the
+              Layout.
+            </Text>
+          </Space>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * This example demonstrates a responsive pattern where the panel switches
+ * between inline panel mode (desktop) and dialog mode (mobile).
+ *
+ * Use a toggle to simulate the responsive behavior - in a real app,
+ * you would use a media query hook like `useMediaQuery('(max-width: 768px)')`.
+ */
+export const ResponsivePanelToDialog: Story = {
+  render: function ResponsivePanelToDialogStory() {
+    const [isMobileMode, setIsMobileMode] = useState(false);
+    const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+    return (
+      <Layout height="100dvh">
+        {/* Panel switches between inline and dialog mode based on isMobileMode */}
+        <Layout.Panel
+          hasTransition
+          side="left"
+          size={260}
+          isOpen={isPanelOpen}
+          isDialog={isMobileMode}
+          isDialogOpen={isPanelOpen}
+          onOpenChange={setIsPanelOpen}
+          onDialogOpenChange={setIsPanelOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Filters"
+            onClose={() => setIsPanelOpen(false)}
+          />
+          <Layout.Content padding=".5x">
+            <Space direction="vertical" gap="1bw">
+              <Title level={5} preset="c2" color="#dark-04" padding=".5x">
+                Categories
+              </Title>
+              <ItemButton type="neutral" width="100%">
+                Electronics
+              </ItemButton>
+              <ItemButton type="neutral" width="100%">
+                Clothing
+              </ItemButton>
+              <ItemButton type="neutral" width="100%">
+                Home & Garden
+              </ItemButton>
+              <Title level={5} preset="c2" color="#dark-04" padding=".5x">
+                Price Range
+              </Title>
+              <ItemButton type="neutral" width="100%">
+                Under $50
+              </ItemButton>
+              <ItemButton type="neutral" width="100%">
+                $50 - $100
+              </ItemButton>
+              <ItemButton type="neutral" width="100%">
+                Over $100
+              </ItemButton>
+            </Space>
+          </Layout.Content>
+        </Layout.Panel>
+
+        <Layout.Toolbar>
+          <Space>
+            <Button
+              type={isMobileMode ? 'primary' : 'neutral'}
+              icon={!isPanelOpen ? <IconFilter /> : <IconFilterFilled />}
+              onPress={() => setIsPanelOpen(!isPanelOpen)}
+            />
+            <Title level={4}>Product Catalog</Title>
+          </Space>
+          <Button
+            type={isMobileMode ? 'primary' : 'neutral'}
+            onPress={() => setIsMobileMode(!isMobileMode)}
+          >
+            {isMobileMode ? '📱 Mobile' : '🖥️ Desktop'}
+          </Button>
+        </Layout.Toolbar>
+
+        <Layout.Content padding="1x" gap="2x">
+          <Card>
+            <Title level={5}>
+              Current Mode:{' '}
+              {isMobileMode ? 'Mobile (Dialog)' : 'Desktop (Inline Panel)'}
+            </Title>
+            <Text preset="t3" color="#dark-02">
+              Toggle the mode button in the toolbar to switch between inline
+              panel and dialog mode. In a real app, this would be controlled by
+              a media query.
+            </Text>
+          </Card>
+          <Layout.Grid columns="repeat(auto-fill, minmax(200px, 1fr))" gap="1x">
+            {Array.from({ length: 6 }, (_, i) => (
+              <Card key={i}>
+                <Title level={6}>Product {i + 1}</Title>
+                <Text preset="t3" color="#dark-02">
+                  $99.99
+                </Text>
+              </Card>
+            ))}
+          </Layout.Grid>
+        </Layout.Content>
       </Layout>
     );
   },
