@@ -523,6 +523,7 @@ export const FlexSubComponent: Story = {
         gap="1x"
         placeItems="center"
         placeContent="center"
+        padding="1x"
       >
         <Card width="100px" height="80px">
           Item 1
@@ -542,7 +543,7 @@ export const FlexWithScrolling: Story = {
   render: () => (
     <Layout height="200px">
       <Layout.Header title="Scrollable Flex Container" />
-      <Layout.Flex flow="row" gap="1x" placeItems="start">
+      <Layout.Flex flow="row" gap="1x" placeItems="start" padding="1x">
         {Array.from({ length: 20 }, (_, i) => (
           <Card key={i} width="100px" height="100px" flexShrink={0}>
             Item {i + 1}
