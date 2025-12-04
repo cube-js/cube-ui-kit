@@ -685,7 +685,7 @@ export const ResizablePanes: Story = {
             size={leftSize}
             minSize={150}
             maxSize={400}
-            fill={{ '': '#white', 'drag | focused': '#light' }}
+            fill={{ '': '#white', 'drag | focused': '#purple.08' }}
             onSizeChange={setLeftSize}
           >
             <Title level={5}>Left Pane</Title>
@@ -700,7 +700,7 @@ export const ResizablePanes: Story = {
             resizeEdge="right"
             size={middleSize}
             minSize={200}
-            fill={{ '': '#white', 'drag | focused': '#light' }}
+            fill={{ '': '#white', 'drag | focused': '#purple.08' }}
             onSizeChange={setMiddleSize}
           >
             <Title level={5}>Middle Pane</Title>
