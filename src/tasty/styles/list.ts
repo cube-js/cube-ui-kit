@@ -83,3 +83,10 @@ export const CONTAINER_STYLES = [
 ] as const;
 
 export const OUTER_STYLES = [...POSITION_STYLES, ...DIMENSION_STYLES] as const;
+
+export const INNER_STYLES = [
+  ...BASE_STYLES,
+  ...COLOR_STYLES,
+  ...BLOCK_STYLES,
+  ...FLOW_STYLES,
+] as const;

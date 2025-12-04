@@ -11,7 +11,9 @@ import { Styles, tasty } from '../../../tasty';
 import { CubeLayoutProps, Layout } from './Layout';
 import { LayoutBlock } from './LayoutBlock';
 import { LayoutContent } from './LayoutContent';
+import { LayoutFlex } from './LayoutFlex';
 import { LayoutFooter } from './LayoutFooter';
+import { LayoutGrid } from './LayoutGrid';
 import { LayoutHeader } from './LayoutHeader';
 import { LayoutPanel } from './LayoutPanel';
 import { LayoutPanelHeader } from './LayoutPanelHeader';
@@ -68,6 +70,8 @@ interface GridLayoutComponent
   Footer: typeof LayoutFooter;
   Content: typeof LayoutContent;
   Block: typeof LayoutBlock;
+  Flex: typeof LayoutFlex;
+  Grid: typeof LayoutGrid;
   Panel: typeof LayoutPanel;
   PanelHeader: typeof LayoutPanelHeader;
 }
@@ -78,6 +82,8 @@ const GridLayout = Object.assign(_GridLayout, {
   Footer: LayoutFooter,
   Content: LayoutContent,
   Block: LayoutBlock,
+  Flex: LayoutFlex,
+  Grid: LayoutGrid,
   Panel: LayoutPanel,
   PanelHeader: LayoutPanelHeader,
 }) as GridLayoutComponent;

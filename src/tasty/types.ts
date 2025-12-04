@@ -8,6 +8,7 @@ import {
   CONTAINER_STYLES,
   DIMENSION_STYLES,
   FLOW_STYLES,
+  INNER_STYLES,
   OUTER_STYLES,
   POSITION_STYLES,
   TEXT_STYLES,
@@ -122,6 +123,7 @@ export type ContainerStyleProps = Pick<
   (typeof CONTAINER_STYLES)[number]
 >;
 export type OuterStyleProps = Pick<Styles, (typeof OUTER_STYLES)[number]>;
+export type InnerStyleProps = Pick<Styles, (typeof INNER_STYLES)[number]>;
 
 export type ShortGridStyles = {
   template?: Styles['gridTemplate'];

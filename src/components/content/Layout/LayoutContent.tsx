@@ -3,10 +3,12 @@ import { useHover } from 'react-aria';
 
 import {
   BaseProps,
-  CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
   filterBaseProps,
+  INNER_STYLES,
+  mergeStyles,
+  OUTER_STYLES,
   tasty,
 } from '../../../tasty';
 import { useCombinedRefs } from '../../../utils/react';
@@ -28,7 +30,7 @@ const ContentElement = tasty({
     flexGrow: 1,
     height: 'min 0',
     overflow: 'hidden',
-    boxSizing: 'border-box',
+    boxSizing: 'content-box',
 
     Inner: {
       display: 'flex',
@@ -93,7 +95,8 @@ function LayoutContent(
   ref: ForwardedRef<HTMLDivElement>,
 ) {
   const { children, scrollbar = 'thin', styles, ...otherProps } = props;
-  const extractedStyles = extractStyles(otherProps, CONTAINER_STYLES);
+  const outerStyles = extractStyles(otherProps, OUTER_STYLES);
+  const innerStyles = extractStyles(otherProps, INNER_STYLES);
   const innerRef = useRef<HTMLDivElement>(null);
   const combinedRef = useCombinedRefs(ref);
   const isTinyScrollbar = scrollbar === 'tiny';
@@ -119,13 +122,14 @@ function LayoutContent(
     [scrollbar, isHovered],
   );
 
-  // Merge incoming styles with extracted container styles for Inner element
+  // Merge styles: outer styles to root, inner styles to Inner element
   const finalStyles = useMemo(() => {
-    return {
-      ...styles,
-      Inner: { ...(styles?.Inner as object), ...extractedStyles },
-    };
-  }, [styles, extractedStyles]);
+    return mergeStyles(
+      styles,
+      outerStyles,
+      innerStyles ? { Inner: innerStyles } : null,
+    );
+  }, [styles, outerStyles, innerStyles]);
 
   return (
     <ContentElement

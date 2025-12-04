@@ -514,6 +514,103 @@ export const CompleteApplicationShell: Story = {
   },
 };
 
+export const FlexSubComponent: Story = {
+  render: () => (
+    <Layout height="300px">
+      <Layout.Header title="Layout.Flex Example" />
+      <Layout.Flex
+        flow="row"
+        gap="1x"
+        placeItems="center"
+        placeContent="center"
+      >
+        <Card width="100px" height="80px">
+          Item 1
+        </Card>
+        <Card width="100px" height="80px">
+          Item 2
+        </Card>
+        <Card width="100px" height="80px">
+          Item 3
+        </Card>
+      </Layout.Flex>
+    </Layout>
+  ),
+};
+
+export const FlexWithScrolling: Story = {
+  render: () => (
+    <Layout height="200px">
+      <Layout.Header title="Scrollable Flex Container" />
+      <Layout.Flex flow="row" gap="1x" placeItems="start">
+        {Array.from({ length: 20 }, (_, i) => (
+          <Card key={i} width="100px" height="100px" flexShrink={0}>
+            Item {i + 1}
+          </Card>
+        ))}
+      </Layout.Flex>
+    </Layout>
+  ),
+};
+
+export const GridSubComponent: Story = {
+  render: () => (
+    <Layout height="400px">
+      <Layout.Header title="Layout.Grid Example" />
+      <Layout.Grid
+        columns="repeat(3, 1fr)"
+        rows="repeat(2, 1fr)"
+        gap="1x"
+        flexGrow={1}
+      >
+        <Card>Cell 1</Card>
+        <Card>Cell 2</Card>
+        <Card>Cell 3</Card>
+        <Card>Cell 4</Card>
+        <Card>Cell 5</Card>
+        <Card>Cell 6</Card>
+      </Layout.Grid>
+    </Layout>
+  ),
+};
+
+export const GridWithTemplate: Story = {
+  render: () => (
+    <Layout height="400px">
+      <Layout.Header title="Grid with Template" />
+      <Layout.Grid
+        template={`
+          "header header header" auto
+          "sidebar main main" 1fr
+          "footer footer footer" auto
+          / 200px 1fr 1fr
+        `}
+        gap="1x"
+      >
+        <Card gridArea="header">Header</Card>
+        <Card gridArea="sidebar">Sidebar</Card>
+        <Card gridArea="main">Main Content</Card>
+        <Card gridArea="footer">Footer</Card>
+      </Layout.Grid>
+    </Layout>
+  ),
+};
+
+export const GridWithScrolling: Story = {
+  render: () => (
+    <Layout height="300px">
+      <Layout.Header title="Scrollable Grid" />
+      <Layout.Grid gap="1x">
+        {Array.from({ length: 16 }, (_, i) => (
+          <Card key={i} width="100px" height="80px" whiteSpace="nowrap">
+            Card {i + 1}
+          </Card>
+        ))}
+      </Layout.Grid>
+    </Layout>
+  ),
+};
+
 /**
  * Layout automatically applies height: 100% when it detects it has collapsed
  * to 0 height. This happens when the Layout is placed in a container without
