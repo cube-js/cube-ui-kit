@@ -131,6 +131,7 @@ export const DEFAULT_BUTTON_STYLES = {
     '': 'min $size',
     'left-icon & right-icon': 'min ($size * 2 - 2bw)',
     'single-icon': 'fixed $size',
+    'type=link': 'min 1ch',
   },
   height: {
     '': 'fixed $size',
