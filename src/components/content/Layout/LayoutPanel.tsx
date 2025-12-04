@@ -394,6 +394,7 @@ function LayoutPanel(
   } = props;
 
   const combinedRef = useCombinedRefs(ref);
+  const prevProvidedSizeRef = useRef(providedSize);
   const isHorizontal = side === 'left' || side === 'right';
 
   // Panel open state
@@ -468,10 +469,14 @@ function LayoutPanel(
     },
   });
 
-  // Sync provided size with internal state (only when not dragging)
+  // Sync provided size with internal state (only when providedSize actually changes)
+  // This prevents resetting size when only isDragging changes (which would cause a flash)
   useEffect(() => {
-    if (typeof providedSize === 'number' && !isDragging) {
-      setSize(clampSize(providedSize));
+    if (prevProvidedSizeRef.current !== providedSize) {
+      prevProvidedSizeRef.current = providedSize;
+      if (typeof providedSize === 'number' && !isDragging) {
+        setSize(clampSize(providedSize));
+      }
     }
   }, [providedSize, isDragging, clampSize]);
 

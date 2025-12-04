@@ -600,7 +600,7 @@ export const GridWithScrolling: Story = {
   render: () => (
     <Layout height="300px">
       <Layout.Header title="Scrollable Grid" />
-      <Layout.Grid gap="1x">
+      <Layout.Grid gap="1x" flow="column" padding="1x">
         {Array.from({ length: 16 }, (_, i) => (
           <Card key={i} width="100px" height="80px" whiteSpace="nowrap">
             Card {i + 1}
@@ -660,4 +660,99 @@ export const CollapsedWithWarning: Story = {
       </Layout>
     </Block>
   ),
+};
+
+/**
+ * Layout.Pane allows creating resizable inline sections within a layout.
+ * Unlike Layout.Panel (which is absolutely positioned), Pane participates
+ * in the normal flex/grid flow and can be resized via drag handles.
+ */
+export const ResizablePanes: Story = {
+  render: function ResizablePanesRender() {
+    const [leftSize, setLeftSize] = useState(250);
+    const [middleSize, setMiddleSize] = useState(400);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Header
+          title="Resizable Panes"
+          subtitle="Drag the handles between panes to resize"
+        />
+        <Layout.Flex>
+          <Layout.Pane
+            isResizable
+            resizeEdge="right"
+            size={leftSize}
+            minSize={150}
+            maxSize={400}
+            fill={{ '': '#white', 'drag | focused': '#light' }}
+            onSizeChange={setLeftSize}
+          >
+            <Title level={5}>Left Pane</Title>
+            <Text>Width: {leftSize}px</Text>
+            <Text preset="t3" color="#dark-02">
+              Drag the right edge to resize. Double-click to reset.
+            </Text>
+          </Layout.Pane>
+
+          <Layout.Pane
+            isResizable
+            resizeEdge="right"
+            size={middleSize}
+            minSize={200}
+            fill={{ '': '#white', 'drag | focused': '#light' }}
+            onSizeChange={setMiddleSize}
+          >
+            <Title level={5}>Middle Pane</Title>
+            <Text>Width: {middleSize}px</Text>
+            <Text preset="t3" color="#dark-02">
+              This pane has no maximum size constraint.
+            </Text>
+          </Layout.Pane>
+
+          <Layout.Content fill="#light" width="min 150px">
+            <Title level={5}>Flexible Content</Title>
+            <Text>This area fills the remaining space.</Text>
+          </Layout.Content>
+        </Layout.Flex>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * Panes can also be resized vertically using the bottom edge.
+ */
+export const VerticalResizablePanes: Story = {
+  render: function VerticalResizablePanesRender() {
+    const [topSize, setTopSize] = useState(200);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Header title="Vertical Panes" />
+        <Layout.Flex flow="column" flexShrink={1}>
+          <Layout.Pane
+            isResizable
+            resizeEdge="bottom"
+            size={topSize}
+            minSize={100}
+            maxSize={400}
+            fill="#light"
+            onSizeChange={setTopSize}
+          >
+            <Title level={5}>Top Pane</Title>
+            <Text>Height: {topSize}px</Text>
+            <Text preset="t3" color="#dark-02">
+              Drag the bottom edge to resize.
+            </Text>
+          </Layout.Pane>
+
+          <Layout.Content fill="#white" flexShrink={0}>
+            <Title level={5}>Bottom Content</Title>
+            <Text>This area fills the remaining vertical space.</Text>
+          </Layout.Content>
+        </Layout.Flex>
+      </Layout>
+    );
+  },
 };

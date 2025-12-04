@@ -12,6 +12,8 @@ const FlexElement = tasty(LayoutContent, {
 
     Inner: {
       display: 'flex',
+      flow: 'row',
+      padding: 0,
     },
   },
 });

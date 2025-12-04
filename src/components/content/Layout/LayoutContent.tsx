@@ -33,6 +33,7 @@ const ContentElement = tasty({
     boxSizing: 'content-box',
 
     Inner: {
+      $: '>',
       display: 'flex',
       flow: 'column',
       padding: '($content-padding, 1x)',

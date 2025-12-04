@@ -13,14 +13,13 @@ import {
 
 import {
   BaseProps,
-  BLOCK_STYLES,
   BlockStyleProps,
-  COLOR_STYLES,
   ColorStyleProps,
   extractStyles,
   filterBaseProps,
-  FLOW_STYLES,
   FlowStyleProps,
+  INNER_STYLES,
+  mergeStyles,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -30,12 +29,6 @@ import { isDevEnv } from '../../../tasty/utils/isDevEnv';
 import { Alert } from '../Alert';
 
 import { LayoutProvider, useLayoutContext } from './LayoutContext';
-
-const INNER_STYLE_KEYS = [
-  ...BLOCK_STYLES,
-  ...COLOR_STYLES,
-  ...FLOW_STYLES,
-] as const;
 
 const LayoutElement = tasty({
   as: 'div',
@@ -144,36 +137,47 @@ function LayoutInner(
     return { panels: panelElements, content: contentElements };
   }, [children]);
 
-  // Extract inner content styles using extractStyles
-  const contentStyles = extractStyles(otherProps, INNER_STYLE_KEYS);
+  // Extract outer wrapper styles and inner content styles
+  const outerStyles = extractStyles(otherProps, OUTER_STYLES);
+  const innerStyles = extractStyles(otherProps, INNER_STYLES);
 
-  // Extract outer wrapper styles
-  const wrapperStyles = extractStyles(otherProps, OUTER_STYLES);
+  // Merge styles using the same pattern as LayoutPane
+  const finalStyles = useMemo(() => {
+    // Handle grid mode and grid properties
+    const gridStyles: Styles = {};
 
-  // Handle grid mode
-  if (isGrid) {
-    contentStyles.display = 'grid';
-  }
+    if (isGrid) {
+      gridStyles.display = 'grid';
+    }
 
-  if (columns) {
-    contentStyles.gridColumns = columns;
-  }
+    if (columns) {
+      gridStyles.gridColumns = columns;
+    }
 
-  if (rows) {
-    contentStyles.gridRows = rows;
-  }
+    if (rows) {
+      gridStyles.gridRows = rows;
+    }
 
-  if (template) {
-    contentStyles.gridTemplate = template;
-  }
+    if (template) {
+      gridStyles.gridTemplate = template;
+    }
 
-  // Merge styles
-  const finalStyles: Styles = {
-    ...wrapperStyles,
-    ...(contentPadding != null && { '$content-padding': contentPadding }),
-    ...styles,
-    Inner: { ...contentStyles, ...(styles?.Inner as Styles) },
-  };
+    return mergeStyles(
+      outerStyles,
+      contentPadding != null ? { '$content-padding': contentPadding } : null,
+      styles,
+      { Inner: mergeStyles(innerStyles, gridStyles, styles?.Inner as Styles) },
+    );
+  }, [
+    outerStyles,
+    innerStyles,
+    contentPadding,
+    styles,
+    isGrid,
+    columns,
+    rows,
+    template,
+  ]);
 
   // Calculate inset values from panel sizes
   const panelSizes = layoutContext?.panelSizes ?? {

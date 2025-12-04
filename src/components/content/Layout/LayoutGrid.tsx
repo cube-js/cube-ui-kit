@@ -12,6 +12,8 @@ const GridElement = tasty(LayoutContent, {
 
     Inner: {
       display: 'grid',
+      flow: 'row',
+      padding: 0,
     },
   },
 });

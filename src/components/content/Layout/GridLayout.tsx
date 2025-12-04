@@ -15,6 +15,7 @@ import { LayoutFlex } from './LayoutFlex';
 import { LayoutFooter } from './LayoutFooter';
 import { LayoutGrid } from './LayoutGrid';
 import { LayoutHeader } from './LayoutHeader';
+import { LayoutPane } from './LayoutPane';
 import { LayoutPanel } from './LayoutPanel';
 import { LayoutPanelHeader } from './LayoutPanelHeader';
 import { LayoutToolbar } from './LayoutToolbar';
@@ -48,9 +49,9 @@ function GridLayoutBase(
     <GridLayoutElement
       ref={ref}
       isGrid
-      columns={columns}
-      rows={rows}
-      template={template}
+      gridColumns={columns}
+      gridRows={rows}
+      gridTemplate={template}
       {...otherProps}
     />
   );
@@ -72,6 +73,7 @@ interface GridLayoutComponent
   Block: typeof LayoutBlock;
   Flex: typeof LayoutFlex;
   Grid: typeof LayoutGrid;
+  Pane: typeof LayoutPane;
   Panel: typeof LayoutPanel;
   PanelHeader: typeof LayoutPanelHeader;
 }
@@ -84,6 +86,7 @@ const GridLayout = Object.assign(_GridLayout, {
   Block: LayoutBlock,
   Flex: LayoutFlex,
   Grid: LayoutGrid,
+  Pane: LayoutPane,
   Panel: LayoutPanel,
   PanelHeader: LayoutPanelHeader,
 }) as GridLayoutComponent;

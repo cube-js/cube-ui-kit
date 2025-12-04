@@ -94,6 +94,7 @@ export type {
   CubeLayoutHeaderProps,
   CubeLayoutFooterProps,
   CubeLayoutContentProps,
+  CubeLayoutPaneProps,
   CubeLayoutPanelProps,
   CubeLayoutPanelHeaderProps,
   ScrollbarType,
