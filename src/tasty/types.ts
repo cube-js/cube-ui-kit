@@ -19,6 +19,11 @@ export interface GlobalStyledProps {
   breakpoints?: number[];
 }
 
+/** Type for element modifiers (mods prop) */
+export type Mods = {
+  [key: string]: boolean | string | number | undefined | null;
+};
+
 type Caps =
   | 'A'
   | 'B'
@@ -65,7 +70,7 @@ export interface BasePropsWithoutChildren<K extends TagName = TagName>
   /** Whether the element has the inline layout outside */
   inline?: boolean;
   /** The list of element modifiers **/
-  mods?: { [key: string]: boolean | string | number | undefined | null };
+  mods?: Mods;
   /** Whether the element is hidden (`hidden` attribute is set) */
   isHidden?: boolean;
   /** Whether the element is disabled (`disabled` attribute is set) */

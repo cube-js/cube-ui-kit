@@ -35,6 +35,7 @@ export type {
   ShortGridStyles,
   GlobalStyledProps,
   TagName,
+  Mods,
 } from './types';
 export type {
   StylesInterface,

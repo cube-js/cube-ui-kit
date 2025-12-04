@@ -8,6 +8,7 @@ import {
   filterBaseProps,
   INNER_STYLES,
   mergeStyles,
+  Mods,
   OUTER_STYLES,
   tasty,
 } from '../../../tasty';
@@ -90,7 +91,7 @@ export interface CubeLayoutContentProps extends BaseProps, ContainerStyleProps {
   scrollbar?: ScrollbarType;
   children?: ReactNode;
   /** Additional modifiers to apply */
-  mods?: Record<string, boolean | undefined>;
+  mods?: Mods;
 }
 
 function LayoutContent(
