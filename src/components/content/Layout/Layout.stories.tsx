@@ -445,7 +445,7 @@ export const CompleteApplicationShell: Story = {
             title="Navigation"
             onClose={() => setSidebarOpen(false)}
           />
-          <Layout.Content padding="1x" scrollbar="tiny" gap=".5x">
+          <Layout.Content padding=".5x" scrollbar="tiny" gap="1bw">
             {['Dashboard', 'Analytics', 'Reports', 'Users', 'Settings'].map(
               (item) => (
                 <ItemButton key={item} type="neutral" width="100%">
@@ -454,6 +454,14 @@ export const CompleteApplicationShell: Story = {
               ),
             )}
           </Layout.Content>
+          <Layout.Footer>
+            <Text preset="t4" color="#dark-03">
+              v2.4.1
+            </Text>
+            <Button type="link" size="small">
+              Help
+            </Button>
+          </Layout.Footer>
         </Layout.Panel>
 
         <Layout.Header

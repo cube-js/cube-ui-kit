@@ -59,7 +59,7 @@ const ContentElement = tasty({
       fill: '#dark.35',
       opacity: {
         '': 0,
-        '(hovered | focused) & scrollbar=tiny': 1,
+        '(hovered | focused | scrolling) & scrollbar=tiny': 1,
       },
       transition: 'opacity 0.15s',
       pointerEvents: 'none',
@@ -75,7 +75,7 @@ const ContentElement = tasty({
       fill: '#dark.35',
       opacity: {
         '': 0,
-        '(hovered | focused) & scrollbar=tiny': 1,
+        '(hovered | focused | scrolling) & scrollbar=tiny': 1,
       },
       transition: 'opacity 0.15s',
       pointerEvents: 'none',
@@ -111,8 +111,13 @@ function LayoutContent(
   const isTinyScrollbar = scrollbar === 'tiny';
   const { hoverProps, isHovered } = useHover({});
 
-  const { handleVStyle, handleHStyle, hasOverflowY, hasOverflowX } =
-    useTinyScrollbar(innerRef, isTinyScrollbar);
+  const {
+    handleVStyle,
+    handleHStyle,
+    hasOverflowY,
+    hasOverflowX,
+    isScrolling,
+  } = useTinyScrollbar(innerRef, isTinyScrollbar);
 
   const scrollbarStyle = useMemo(() => {
     if (!isTinyScrollbar) return {};
@@ -128,8 +133,9 @@ function LayoutContent(
       ...externalMods,
       scrollbar,
       hovered: isHovered,
+      scrolling: isScrolling,
     }),
-    [externalMods, scrollbar, isHovered],
+    [externalMods, scrollbar, isHovered, isScrolling],
   );
 
   // Merge styles: outer styles to root, inner styles to Inner element

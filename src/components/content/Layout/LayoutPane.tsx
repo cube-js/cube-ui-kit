@@ -116,7 +116,7 @@ const PaneElement = tasty({
       fill: '#dark.35',
       opacity: {
         '': 0,
-        '(hovered | focused) & scrollbar=tiny': 1,
+        '(hovered | focused | scrolling) & scrollbar=tiny': 1,
       },
       transition: 'opacity 0.15s',
       pointerEvents: 'none',
@@ -135,7 +135,7 @@ const PaneElement = tasty({
       fill: '#dark.35',
       opacity: {
         '': 0,
-        '(hovered | focused) & scrollbar=tiny': 1,
+        '(hovered | focused | scrolling) & scrollbar=tiny': 1,
       },
       transition: 'opacity 0.15s',
       pointerEvents: 'none',
@@ -354,14 +354,18 @@ function LayoutPane(
     const inner = extractStyles(otherProps, INNER_STYLES);
 
     return { outerStyles: outer, innerStyles: inner };
-     
   }, [styles]); // Only recalculate when styles prop changes
 
   const isTinyScrollbar = scrollbar === 'tiny';
   const { hoverProps, isHovered } = useHover({});
 
-  const { handleVStyle, handleHStyle, hasOverflowY, hasOverflowX } =
-    useTinyScrollbar(innerRef, isTinyScrollbar);
+  const {
+    handleVStyle,
+    handleHStyle,
+    hasOverflowY,
+    hasOverflowX,
+    isScrolling,
+  } = useTinyScrollbar(innerRef, isTinyScrollbar);
 
   // Clamp size to min/max constraints
   const clampSize = useCallback(
@@ -435,6 +439,7 @@ function LayoutPane(
     () => ({
       scrollbar,
       hovered: isHovered,
+      scrolling: isScrolling,
       handlerHovered: debouncedHandlerHovered,
       focused: isHandlerFocused,
       disabled: !isResizable,
@@ -445,6 +450,7 @@ function LayoutPane(
     [
       scrollbar,
       isHovered,
+      isScrolling,
       debouncedHandlerHovered,
       isHandlerFocused,
       isResizable,

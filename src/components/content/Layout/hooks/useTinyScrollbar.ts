@@ -3,6 +3,7 @@ import {
   RefObject,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 
@@ -22,9 +23,11 @@ export interface TinyScrollbarResult {
   handleHStyle: CSSProperties;
   hasOverflowY: boolean;
   hasOverflowX: boolean;
+  isScrolling: boolean;
 }
 
 const MIN_HANDLE_SIZE = 20;
+const SCROLL_VISIBILITY_DURATION = 1000;
 
 export function useTinyScrollbar(
   ref: RefObject<HTMLElement | null>,
@@ -40,6 +43,8 @@ export function useTinyScrollbar(
     clientHeight: 0,
     clientWidth: 0,
   });
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updateScrollState = useCallback(() => {
     const element = ref.current;
@@ -78,7 +83,22 @@ export function useTinyScrollbar(
     updateScrollState();
 
     // Listen for scroll events
-    const handleScroll = () => updateScrollState();
+    const handleScroll = () => {
+      updateScrollState();
+
+      // Show scrollbar on scroll
+      setIsScrolling(true);
+
+      // Clear existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      // Hide scrollbar after delay
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, SCROLL_VISIBILITY_DURATION);
+    };
 
     element.addEventListener('scroll', handleScroll, { passive: true });
 
@@ -97,6 +117,10 @@ export function useTinyScrollbar(
     return () => {
       element.removeEventListener('scroll', handleScroll);
       resizeObserver.disconnect();
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
     };
   }, [enabled, ref, updateScrollState]);
 
@@ -159,5 +183,6 @@ export function useTinyScrollbar(
     } as CSSProperties,
     hasOverflowY: scrollState.hasOverflowY,
     hasOverflowX: scrollState.hasOverflowX,
+    isScrolling,
   };
 }
