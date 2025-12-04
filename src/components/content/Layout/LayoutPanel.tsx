@@ -44,6 +44,28 @@ const HANDLER_OFFSET = 4;
 // Extra inset added for resizable panels (to accommodate handler grab area)
 const RESIZABLE_INSET_OFFSET = 2;
 
+/**
+ * Clamps a size value within min/max constraints.
+ * Handles both number and string constraint values (only numbers are applied).
+ */
+function clampPanelSize(
+  value: number,
+  minSize?: number | string,
+  maxSize?: number | string,
+): number {
+  let result = value;
+
+  if (typeof maxSize === 'number') {
+    result = Math.min(maxSize, result);
+  }
+
+  if (typeof minSize === 'number') {
+    result = Math.max(minSize, result);
+  }
+
+  return Math.max(result, 0);
+}
+
 const PanelElement = tasty({
   as: 'div',
   qa: 'LayoutPanel',
@@ -386,28 +408,21 @@ function LayoutPanel(
   // Resize state
   const [isDragging, setIsDragging] = useState(false);
   const [size, setSize] = useState<number>(() => {
-    if (typeof providedSize === 'number') return providedSize;
-    if (typeof defaultSize === 'number') return defaultSize;
-    return 280;
+    const initialSize =
+      typeof providedSize === 'number'
+        ? providedSize
+        : typeof defaultSize === 'number'
+          ? defaultSize
+          : 280;
+
+    return clampPanelSize(initialSize, minSize, maxSize);
   });
 
   const extractedStyles = extractStyles(otherProps, CONTAINER_STYLES);
 
   // Clamp size to min/max constraints
   const clampSize = useCallback(
-    (value: number) => {
-      let result = value;
-
-      if (typeof maxSize === 'number') {
-        result = Math.min(maxSize, result);
-      }
-
-      if (typeof minSize === 'number') {
-        result = Math.max(minSize, result);
-      }
-
-      return Math.max(result, 0);
-    },
+    (value: number) => clampPanelSize(value, minSize, maxSize),
     [minSize, maxSize],
   );
 
