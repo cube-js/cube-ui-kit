@@ -1,44 +1,31 @@
-import { ForwardedRef, forwardRef, ReactNode } from 'react';
+import { ForwardedRef, forwardRef } from 'react';
 
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  extractStyles,
-  filterBaseProps,
-  tasty,
-} from '../../../tasty';
+import { tasty } from '../../../tasty';
 
-import { LayoutContextReset } from './LayoutContext';
+import { CubeLayoutContentProps, LayoutContent } from './LayoutContent';
 
-const BlockElement = tasty({
-  as: 'div',
+const BlockElement = tasty(LayoutContent, {
   qa: 'LayoutBlock',
   styles: {
-    display: 'block',
-    padding: '($content-padding, 1x)',
     flexShrink: 0,
+
+    Inner: {
+      display: 'block',
+    },
   },
 });
 
-export interface CubeLayoutBlockProps extends BaseProps, ContainerStyleProps {
-  children?: ReactNode;
-}
+export interface CubeLayoutBlockProps extends CubeLayoutContentProps {}
 
 function LayoutBlock(
   props: CubeLayoutBlockProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const { children, ...otherProps } = props;
-  const styles = extractStyles(otherProps, CONTAINER_STYLES);
+  const { children, scrollbar = 'tiny', ...otherProps } = props;
 
   return (
-    <BlockElement
-      {...filterBaseProps(otherProps, { eventProps: true })}
-      ref={ref}
-      styles={styles}
-    >
-      <LayoutContextReset>{children}</LayoutContextReset>
+    <BlockElement {...otherProps} ref={ref} scrollbar={scrollbar}>
+      {children}
     </BlockElement>
   );
 }

@@ -485,22 +485,14 @@ export const CompleteApplicationShell: Story = {
           }
         />
 
-        <Layout.Content padding="2x" scrollbar="tiny">
+        <Layout.Content gap="1x">
           {Array.from({ length: 10 }, (_, i) => (
-            <div
-              key={i}
-              style={{
-                padding: '16px',
-                marginBottom: '16px',
-                background: '#f5f5f5',
-                borderRadius: '8px',
-              }}
-            >
+            <Card key={i}>
               <Title level={5}>Card {i + 1}</Title>
               <Text>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
               </Text>
-            </div>
+            </Card>
           ))}
         </Layout.Content>
 

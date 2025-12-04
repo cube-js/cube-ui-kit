@@ -1,50 +1,48 @@
-import { ForwardedRef, forwardRef, ReactNode, useMemo } from 'react';
+import { ForwardedRef, forwardRef, useMemo } from 'react';
 
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  extractStyles,
-  filterBaseProps,
-  tasty,
-} from '../../../tasty';
+import { tasty } from '../../../tasty';
 
-import { LayoutContextReset } from './LayoutContext';
+import { CubeLayoutContentProps, LayoutContent } from './LayoutContent';
 
-const FooterElement = tasty({
+const FooterElement = tasty(LayoutContent, {
   as: 'footer',
   qa: 'LayoutFooter',
   role: 'contentinfo',
   styles: {
-    display: 'flex',
-    flow: {
-      '': 'row nowrap',
-      inverted: 'row-reverse nowrap',
-    },
-    placeContent: 'center space-between',
-    placeItems: 'center stretch',
-    gap: '1x',
-    padding: '($content-padding, 1x)',
     border: 'top',
-    width: '100%',
     height: 'min 5x',
-    boxSizing: 'border-box',
     flexShrink: 0,
+    whiteSpace: 'nowrap',
+
+    Inner: {
+      display: 'flex',
+      flow: {
+        '': 'row nowrap',
+        inverted: 'row-reverse nowrap',
+      },
+      placeContent: 'center space-between',
+      placeItems: 'center stretch',
+      gap: '1x',
+    },
   },
 });
 
-export interface CubeLayoutFooterProps extends BaseProps, ContainerStyleProps {
+export interface CubeLayoutFooterProps extends CubeLayoutContentProps {
   /** Inverts the order of children (primary action on right) */
   invertOrder?: boolean;
-  children?: ReactNode;
 }
 
 function LayoutFooter(
   props: CubeLayoutFooterProps,
-  ref: ForwardedRef<HTMLElement>,
+  ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const { children, invertOrder, mods, ...otherProps } = props;
-  const styles = extractStyles(otherProps, CONTAINER_STYLES);
+  const {
+    children,
+    invertOrder,
+    scrollbar = 'tiny',
+    mods,
+    ...otherProps
+  } = props;
 
   const finalMods = useMemo(
     () => ({
@@ -56,12 +54,12 @@ function LayoutFooter(
 
   return (
     <FooterElement
+      {...otherProps}
       ref={ref}
-      {...filterBaseProps(otherProps, { eventProps: true })}
       mods={finalMods}
-      styles={styles}
+      scrollbar={scrollbar}
     >
-      <LayoutContextReset>{children}</LayoutContextReset>
+      {children}
     </FooterElement>
   );
 }

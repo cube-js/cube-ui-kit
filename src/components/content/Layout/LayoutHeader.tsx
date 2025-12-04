@@ -9,40 +9,32 @@ import {
 } from 'react';
 
 import { SlashIcon } from '../../../icons/SlashIcon';
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  extractStyles,
-  filterBaseProps,
-  tasty,
-} from '../../../tasty';
+import { tasty } from '../../../tasty';
 import { Link } from '../../actions/Link/Link';
 import { Text } from '../Text';
 import { useAutoTooltip } from '../use-auto-tooltip';
 
-import { LayoutContextReset } from './LayoutContext';
+import { CubeLayoutContentProps, LayoutContent } from './LayoutContent';
 
-const HeaderElement = tasty({
+const HeaderElement = tasty(LayoutContent, {
   as: 'header',
   qa: 'LayoutHeader',
   styles: {
-    display: 'grid',
-    gridTemplate: `
-      "breadcrumbs breadcrumbs breadcrumbs" auto
-      "title suffix extra" 1fr
-      "subtitle subtitle extra" auto
-      / max-content 1fr minmax(0, auto)
-    `,
-    gap: 0,
-    padding: '($content-padding, 1x)',
     border: 'bottom',
-    width: '100%',
-    overflow: 'hidden',
-    boxSizing: 'border-box',
-    placeContent: 'stretch',
-    placeItems: 'center stretch',
     flexShrink: 0,
+
+    Inner: {
+      display: 'grid',
+      gridTemplate: `
+        "breadcrumbs breadcrumbs breadcrumbs" auto
+        "title suffix extra" 1fr
+        "subtitle subtitle extra" auto
+        / max-content 1fr minmax(0, auto)
+      `,
+      gap: 0,
+      placeContent: 'stretch',
+      placeItems: 'center stretch',
+    },
 
     Breadcrumbs: {
       gridArea: 'breadcrumbs',
@@ -95,7 +87,7 @@ const HeaderElement = tasty({
   },
 });
 
-export interface CubeLayoutHeaderProps extends BaseProps, ContainerStyleProps {
+export interface CubeLayoutHeaderProps extends CubeLayoutContentProps {
   /** Page/section title */
   title?: ReactNode;
   /** Title heading level (1-6) */
@@ -111,12 +103,11 @@ export interface CubeLayoutHeaderProps extends BaseProps, ContainerStyleProps {
    * Uses Link component which integrates with the navigation provider.
    */
   breadcrumbs?: Array<[label: string, href: string]>;
-  children?: ReactNode;
 }
 
 function LayoutHeader(
   props: CubeLayoutHeaderProps,
-  ref: ForwardedRef<HTMLElement>,
+  ref: ForwardedRef<HTMLDivElement>,
 ) {
   const {
     title,
@@ -125,12 +116,11 @@ function LayoutHeader(
     extra,
     subtitle,
     breadcrumbs,
+    scrollbar = 'tiny',
     children,
     mods,
     ...otherProps
   } = props;
-
-  const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   // Use auto tooltip for title overflow detection
   const { labelRef, renderWithTooltip } = useAutoTooltip({
@@ -178,19 +168,17 @@ function LayoutHeader(
 
   return (
     <HeaderElement
+      {...otherProps}
       ref={ref}
-      {...filterBaseProps(otherProps, { eventProps: true })}
       mods={{ ...mods, level }}
-      styles={styles}
+      scrollbar={scrollbar}
     >
-      <LayoutContextReset>
-        {renderBreadcrumbs()}
-        {renderWithTooltip(renderTitle, 'bottom')}
-        {suffix && <div data-element="Suffix">{suffix}</div>}
-        {extra && <div data-element="Extra">{extra}</div>}
-        {subtitle && <div data-element="Subtitle">{subtitle}</div>}
-        {children}
-      </LayoutContextReset>
+      {renderBreadcrumbs()}
+      {renderWithTooltip(renderTitle, 'bottom')}
+      {suffix && <div data-element="Suffix">{suffix}</div>}
+      {extra && <div data-element="Extra">{extra}</div>}
+      {subtitle && <div data-element="Subtitle">{subtitle}</div>}
+      {children}
     </HeaderElement>
   );
 }

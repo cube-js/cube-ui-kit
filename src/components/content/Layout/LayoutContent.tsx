@@ -34,7 +34,10 @@ const ContentElement = tasty({
       display: 'flex',
       flow: 'column',
       padding: '($content-padding, 1x)',
-      overflow: 'auto',
+      overflow: {
+        '': 'auto',
+        'scrollbar=none': 'clip',
+      },
       placeSelf: 'stretch',
       scrollbar: {
         '': 'thin',
@@ -89,7 +92,7 @@ function LayoutContent(
   props: CubeLayoutContentProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const { children, scrollbar = 'thin', ...otherProps } = props;
+  const { children, scrollbar = 'thin', styles, ...otherProps } = props;
   const extractedStyles = extractStyles(otherProps, CONTAINER_STYLES);
   const innerRef = useRef<HTMLDivElement>(null);
   const combinedRef = useCombinedRefs(ref);
@@ -116,12 +119,13 @@ function LayoutContent(
     [scrollbar, isHovered],
   );
 
-  // Apply container styles (like padding) to the Inner element
+  // Merge incoming styles with extracted container styles for Inner element
   const finalStyles = useMemo(() => {
     return {
-      Inner: extractedStyles,
+      ...styles,
+      Inner: { ...(styles?.Inner as object), ...extractedStyles },
     };
-  }, [extractedStyles]);
+  }, [styles, extractedStyles]);
 
   return (
     <ContentElement

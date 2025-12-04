@@ -1,53 +1,37 @@
-import { ForwardedRef, forwardRef, ReactNode } from 'react';
+import { ForwardedRef, forwardRef } from 'react';
 
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  extractStyles,
-  filterBaseProps,
-  tasty,
-} from '../../../tasty';
+import { tasty } from '../../../tasty';
 
-import { LayoutContextReset } from './LayoutContext';
+import { CubeLayoutContentProps, LayoutContent } from './LayoutContent';
 
-const ToolbarElement = tasty({
-  as: 'div',
+const ToolbarElement = tasty(LayoutContent, {
   qa: 'Toolbar',
   role: 'toolbar',
   styles: {
-    display: 'flex',
-    flow: 'row nowrap',
-    placeContent: 'center space-between',
-    placeItems: 'center stretch',
-    gap: '1x',
-    padding: '($content-padding, 1x)',
-    width: '100%',
     height: 'min 5x',
-    overflow: 'hidden',
-    boxSizing: 'border-box',
     flexShrink: 0,
+
+    Inner: {
+      display: 'flex',
+      flow: 'row nowrap',
+      placeContent: 'center space-between',
+      placeItems: 'center stretch',
+      gap: '1x',
+    },
   },
 });
 
-export interface CubeLayoutToolbarProps extends BaseProps, ContainerStyleProps {
-  children?: ReactNode;
-}
+export interface CubeLayoutToolbarProps extends CubeLayoutContentProps {}
 
 function LayoutToolbar(
   props: CubeLayoutToolbarProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const { children, ...otherProps } = props;
-  const styles = extractStyles(otherProps, CONTAINER_STYLES);
+  const { children, scrollbar = 'tiny', ...otherProps } = props;
 
   return (
-    <ToolbarElement
-      ref={ref}
-      {...filterBaseProps(otherProps, { eventProps: true })}
-      styles={styles}
-    >
-      <LayoutContextReset>{children}</LayoutContextReset>
+    <ToolbarElement {...otherProps} ref={ref} scrollbar={scrollbar}>
+      {children}
     </ToolbarElement>
   );
 }
