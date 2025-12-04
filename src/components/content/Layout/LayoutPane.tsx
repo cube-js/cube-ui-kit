@@ -27,31 +27,11 @@ import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useTinyScrollbar } from './hooks/useTinyScrollbar';
 import { ScrollbarType } from './LayoutContent';
 import { LayoutContextReset } from './LayoutContext';
+import { clampSize } from './utils';
 
 // Handler dimensions
 const HANDLER_WIDTH = 9; // Interactive area
 const HANDLER_RESERVED = 5; // Space reserved in Inner padding
-
-/**
- * Clamps a size value within min/max constraints.
- */
-function clampPaneSize(
-  value: number,
-  minSize?: number | string,
-  maxSize?: number | string,
-): number {
-  let result = value;
-
-  if (typeof maxSize === 'number') {
-    result = Math.min(maxSize, result);
-  }
-
-  if (typeof minSize === 'number') {
-    result = Math.max(minSize, result);
-  }
-
-  return Math.max(result, 0);
-}
 
 const PaneElement = tasty({
   as: 'div',
@@ -344,17 +324,12 @@ function LayoutPane(
           ? defaultSize
           : 200;
 
-    return clampPaneSize(initialSize, minSize, maxSize);
+    return clampSize(initialSize, minSize, maxSize);
   });
 
-  // Memoize style extraction to avoid creating new objects on every render
-  // Note: extractStyles mutates otherProps, so we need to be careful
-  const { outerStyles, innerStyles } = useMemo(() => {
-    const outer = extractStyles(otherProps, OUTER_STYLES);
-    const inner = extractStyles(otherProps, INNER_STYLES);
-
-    return { outerStyles: outer, innerStyles: inner };
-  }, [styles]); // Only recalculate when styles prop changes
+  // Extract outer wrapper styles and inner content styles
+  const outerStyles = extractStyles(otherProps, OUTER_STYLES);
+  const innerStyles = extractStyles(otherProps, INNER_STYLES);
 
   const isTinyScrollbar = scrollbar === 'tiny';
   const { hoverProps, isHovered } = useHover({});
@@ -368,8 +343,8 @@ function LayoutPane(
   } = useTinyScrollbar(innerRef, isTinyScrollbar);
 
   // Clamp size to min/max constraints
-  const clampSize = useCallback(
-    (value: number) => clampPaneSize(value, minSize, maxSize),
+  const clampValue = useCallback(
+    (value: number) => clampSize(value, minSize, maxSize),
     [minSize, maxSize],
   );
 
@@ -393,13 +368,13 @@ function LayoutPane(
         delta = isHorizontal ? e.deltaX : e.deltaY;
       }
 
-      setSize((currentSize) => clampSize(currentSize + delta));
+      setSize((currentSize) => clampValue(currentSize + delta));
     },
     onMoveEnd() {
       setIsDragging(false);
       // Round to integer on release and notify parent
       setSize((currentSize) => {
-        const finalSize = Math.round(clampSize(currentSize));
+        const finalSize = Math.round(clampValue(currentSize));
         onSizeChange?.(finalSize);
         return finalSize;
       });
@@ -412,19 +387,19 @@ function LayoutPane(
     if (prevProvidedSizeRef.current !== providedSize) {
       prevProvidedSizeRef.current = providedSize;
       if (typeof providedSize === 'number' && !isDragging) {
-        setSize(clampSize(providedSize));
+        setSize(clampValue(providedSize));
       }
     }
-  }, [providedSize, isDragging, clampSize]);
+  }, [providedSize, isDragging, clampValue]);
 
   // Reset to default size on double-click
   const handleResetSize = useCallback(() => {
     const resetSize =
       typeof defaultSize === 'number' ? defaultSize : parseInt(defaultSize, 10);
-    const clampedSize = clampSize(resetSize || 200);
+    const clampedSize = clampValue(resetSize || 200);
     setSize(clampedSize);
     onSizeChange?.(clampedSize);
-  }, [defaultSize, clampSize, onSizeChange]);
+  }, [defaultSize, clampValue, onSizeChange]);
 
   const scrollbarStyle = useMemo(() => {
     if (!isTinyScrollbar) return {};

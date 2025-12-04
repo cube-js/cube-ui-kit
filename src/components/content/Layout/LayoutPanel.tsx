@@ -36,6 +36,7 @@ import {
   Side,
   useLayoutContext,
 } from './LayoutContext';
+import { clampSize } from './utils';
 
 // Resize handler dimensions
 const HANDLER_WIDTH = 9;
@@ -43,28 +44,6 @@ const HANDLER_WIDTH = 9;
 const HANDLER_OFFSET = 4;
 // Extra inset added for resizable panels (to accommodate handler grab area)
 const RESIZABLE_INSET_OFFSET = 2;
-
-/**
- * Clamps a size value within min/max constraints.
- * Handles both number and string constraint values (only numbers are applied).
- */
-function clampPanelSize(
-  value: number,
-  minSize?: number | string,
-  maxSize?: number | string,
-): number {
-  let result = value;
-
-  if (typeof maxSize === 'number') {
-    result = Math.min(maxSize, result);
-  }
-
-  if (typeof minSize === 'number') {
-    result = Math.max(minSize, result);
-  }
-
-  return Math.max(result, 0);
-}
 
 const PanelElement = tasty({
   as: 'div',
@@ -416,14 +395,14 @@ function LayoutPanel(
           ? defaultSize
           : 280;
 
-    return clampPanelSize(initialSize, minSize, maxSize);
+    return clampSize(initialSize, minSize, maxSize);
   });
 
   const extractedStyles = extractStyles(otherProps, CONTAINER_STYLES);
 
   // Clamp size to min/max constraints
-  const clampSize = useCallback(
-    (value: number) => clampPanelSize(value, minSize, maxSize),
+  const clampValue = useCallback(
+    (value: number) => clampSize(value, minSize, maxSize),
     [minSize, maxSize],
   );
 
@@ -454,14 +433,14 @@ function LayoutPanel(
           : e.deltaY * (side === 'bottom' ? -1 : 1);
       }
 
-      setSize((currentSize) => clampSize(currentSize + delta));
+      setSize((currentSize) => clampValue(currentSize + delta));
     },
     onMoveEnd() {
       setIsDragging(false);
       setContextDragging(false);
       // Round to integer on release and notify parent
       setSize((currentSize) => {
-        const finalSize = Math.round(clampSize(currentSize));
+        const finalSize = Math.round(clampValue(currentSize));
         // Call onSizeChange synchronously to ensure parent state is updated
         onSizeChange?.(finalSize);
         return finalSize;
@@ -475,10 +454,10 @@ function LayoutPanel(
     if (prevProvidedSizeRef.current !== providedSize) {
       prevProvidedSizeRef.current = providedSize;
       if (typeof providedSize === 'number' && !isDragging) {
-        setSize(clampSize(providedSize));
+        setSize(clampValue(providedSize));
       }
     }
-  }, [providedSize, isDragging, clampSize]);
+  }, [providedSize, isDragging, clampValue]);
 
   // Register panel with layout context
   // Include handler outside portion (minus border overlap) for proper content inset
@@ -574,10 +553,10 @@ function LayoutPanel(
   const handleResetSize = useCallback(() => {
     const resetSize =
       typeof defaultSize === 'number' ? defaultSize : parseInt(defaultSize, 10);
-    const clampedSize = clampSize(resetSize || 280);
+    const clampedSize = clampValue(resetSize || 280);
     setSize(clampedSize);
     onSizeChange?.(clampedSize);
-  }, [defaultSize, clampSize, onSizeChange]);
+  }, [defaultSize, clampValue, onSizeChange]);
 
   const renderPanelContent = (
     offscreen = false,
