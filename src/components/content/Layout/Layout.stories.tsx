@@ -563,6 +563,7 @@ export const GridSubComponent: Story = {
         rows="repeat(2, 1fr)"
         gap="1x"
         flexGrow={1}
+        padding="1x"
       >
         <Card>Cell 1</Card>
         <Card>Cell 2</Card>
@@ -587,6 +588,7 @@ export const GridWithTemplate: Story = {
           / 200px 1fr 1fr
         `}
         gap="1x"
+        padding="1x"
       >
         <Card gridArea="header">Header</Card>
         <Card gridArea="sidebar">Sidebar</Card>
