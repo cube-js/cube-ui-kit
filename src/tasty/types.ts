@@ -3,6 +3,8 @@ import { AllHTMLAttributes, CSSProperties } from 'react';
 
 import {
   BASE_STYLES,
+  BLOCK_INNER_STYLES,
+  BLOCK_OUTER_STYLES,
   BLOCK_STYLES,
   COLOR_STYLES,
   CONTAINER_STYLES,
@@ -116,6 +118,14 @@ export interface AllBaseProps<K extends TagName = TagName>
 export type BaseStyleProps = Pick<Styles, (typeof BASE_STYLES)[number]>;
 export type PositionStyleProps = Pick<Styles, (typeof POSITION_STYLES)[number]>;
 export type BlockStyleProps = Pick<Styles, (typeof BLOCK_STYLES)[number]>;
+export type BlockInnerStyleProps = Pick<
+  Styles,
+  (typeof BLOCK_INNER_STYLES)[number]
+>;
+export type BlockOuterStyleProps = Pick<
+  Styles,
+  (typeof BLOCK_OUTER_STYLES)[number]
+>;
 export type ColorStyleProps = Pick<Styles, (typeof COLOR_STYLES)[number]>;
 export type TextStyleProps = Pick<Styles, (typeof TEXT_STYLES)[number]>;
 export type DimensionStyleProps = Pick<

@@ -28,6 +28,8 @@ export type {
   PositionStyleProps,
   TextStyleProps,
   BlockStyleProps,
+  BlockInnerStyleProps,
+  BlockOuterStyleProps,
   ContainerStyleProps,
   BasePropsWithoutChildren,
   Props,
