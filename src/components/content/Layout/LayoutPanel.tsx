@@ -300,7 +300,7 @@ function ResizeHandler(props: ResizeHandlerProps) {
 
 export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
   /** Side of the layout where panel is positioned */
-  side?: Side;
+  side: Side;
   /** Panel size (width for left/right, height for top/bottom) - controlled */
   size?: number | string;
   /** Default panel size for uncontrolled state */
@@ -517,6 +517,15 @@ function LayoutPanel(
     [handleOpenChange, isOpen],
   );
 
+  // Dialog mode context value - uses dialog state instead of panel state
+  const dialogPanelContextValue = useMemo(
+    () => ({
+      onOpenChange: handleDialogOpenChange,
+      isOpen: dialogOpen,
+    }),
+    [handleDialogOpenChange, dialogOpen],
+  );
+
   const panelMods = useMemo(
     () => ({
       side,
@@ -602,7 +611,11 @@ function LayoutPanel(
         onDismiss={() => handleDialogOpenChange(false)}
         {...dialogProps}
       >
-        <Dialog isDismissable={false}>{children}</Dialog>
+        <Dialog isDismissable={false}>
+          <LayoutPanelContext.Provider value={dialogPanelContextValue}>
+            <LayoutContextReset>{children}</LayoutContextReset>
+          </LayoutPanelContext.Provider>
+        </Dialog>
       </DialogContainer>
     );
   }
