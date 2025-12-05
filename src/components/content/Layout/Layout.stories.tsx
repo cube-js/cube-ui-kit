@@ -161,9 +161,8 @@ export const PanelWithTransition: Story = {
     const [isPanelOpen, setIsPanelOpen] = useState(true);
 
     return (
-      <Layout height="100dvh">
+      <Layout hasTransition height="100dvh">
         <Layout.Panel
-          hasTransition
           side="left"
           size={250}
           isOpen={isPanelOpen}
