@@ -86,6 +86,19 @@ export type {
   CubeResultProps,
   CubeResultStatus,
 } from './components/content/Result/Result';
+export { Layout, GridLayout } from './components/content/Layout';
+export type {
+  CubeLayoutProps,
+  CubeGridLayoutProps,
+  CubeLayoutToolbarProps,
+  CubeLayoutHeaderProps,
+  CubeLayoutFooterProps,
+  CubeLayoutContentProps,
+  CubeLayoutPaneProps,
+  CubeLayoutPanelProps,
+  CubeLayoutPanelHeaderProps,
+  ScrollbarType,
+} from './components/content/Layout';
 
 // atoms
 export * from './components/status';

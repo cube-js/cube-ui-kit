@@ -19,6 +19,7 @@ import {
   DIMENSION_STYLES,
   DimensionStyleProps,
   extractStyles,
+  FLOW_STYLES,
   Styles,
   tasty,
 } from '../../../tasty';
@@ -28,7 +29,12 @@ import { useOpenTransitionContext } from '../Modal/OpenTransition';
 
 import { useDialogContext } from './context';
 
-const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];
+const STYLES_LIST = [
+  ...BASE_STYLES,
+  ...DIMENSION_STYLES,
+  ...BLOCK_STYLES,
+  ...FLOW_STYLES,
+];
 
 const DialogElement = tasty({
   as: 'section',

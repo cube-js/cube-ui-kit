@@ -1,0 +1,666 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Layout, GridLayout } from './index';
+import * as LayoutStories from './Layout.stories';
+
+<Meta of={LayoutStories} />
+
+# Layout
+
+A compound component system for building application shells with headers, footers, sidebars, and scrollable content areas. The Layout system handles overflow management, panel resizing, and smooth transitions automatically.
+
+## When to Use
+
+- Building application shells with sidebars and navigation panels
+- Creating pages with headers, footers, and scrollable content
+- Implementing resizable side panels for tools or details views
+- Managing complex layouts with nested content areas
+
+## Component
+
+<Story of={LayoutStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={LayoutStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties--docs).
+
+### Styling Properties
+
+#### styles
+
+Customizes the root Layout element.
+
+**Sub-elements:**
+- `Inner` - The inner content wrapper that adjusts based on panel sizes
+
+### Style Properties
+
+These properties allow direct style application: `width`, `height`, `padding`, `gap`, `fill`, `border`, `flow`.
+
+### Grid Mode
+
+When `isGrid` is enabled, the inner content becomes a CSS grid:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| isGrid | `boolean` | Enable grid display mode |
+| columns | `string` | Grid template columns |
+| rows | `string` | Grid template rows |
+| template | `string` | Grid template shorthand |
+
+---
+
+## Sub-Components
+
+### Layout.Toolbar
+
+A horizontal bar typically placed at the top for navigation and actions.
+
+```jsx
+<Layout.Toolbar>
+  <Title level={4}>App Name</Title>
+  <Space>
+    <Button>Settings</Button>
+    <Button type="primary">Profile</Button>
+  </Space>
+</Layout.Toolbar>
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| children | `ReactNode` | - | Content split between left and right |
+
+**Sub-elements:**
+- No sub-elements, styles apply to container
+
+---
+
+### Layout.Header
+
+A semantic page header with title, breadcrumbs, subtitle, and action areas.
+
+```jsx
+<Layout.Header
+  title="Dashboard"
+  level={2}
+  breadcrumbs={[
+    ['Home', '/'],
+    ['Reports', '/reports'],
+  ]}
+  subtitle="Overview of your metrics"
+  extra={<Button type="primary">Create</Button>}
+/>
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| title | `ReactNode` | - | Page/section title |
+| level | `1-6` | `3` | Heading level for accessibility |
+| breadcrumbs | `[label, href][]` | - | Navigation breadcrumbs |
+| subtitle | `ReactNode` | - | Text below the title |
+| suffix | `ReactNode` | - | Content next to the title |
+| extra | `ReactNode` | - | Content on the right side |
+
+**Sub-elements:**
+- `Breadcrumbs` - Navigation path container
+- `Title` - Main heading element
+- `Suffix` - Content adjacent to title
+- `Extra` - Right-aligned actions
+- `Subtitle` - Secondary text below title
+
+---
+
+### Layout.Content
+
+Scrollable content area with automatic overflow handling and custom scrollbar styles.
+
+```jsx
+<Layout.Content padding="2x" scrollbar="tiny">
+  {/* Scrollable content */}
+</Layout.Content>
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| scrollbar | `'default' \| 'thin' \| 'tiny' \| 'none'` | `'thin'` | Scrollbar style |
+| children | `ReactNode` | - | Content to display |
+
+**Scrollbar types:**
+- `default` - Browser default scrollbar
+- `thin` - Thin scrollbar (CSS native)
+- `tiny` - Custom hover-visible indicator (3px)
+- `none` - Hidden scrollbar (still scrollable)
+
+**Sub-elements:**
+- `Inner` - Scrollable inner container
+- `ScrollbarV` - Vertical scroll indicator (tiny mode)
+- `ScrollbarH` - Horizontal scroll indicator (tiny mode)
+
+---
+
+### Layout.Footer
+
+Footer area with support for inverted content order (primary actions on right).
+
+```jsx
+<Layout.Footer invertOrder>
+  <Button.Group>
+    <Button type="primary">Save</Button>
+    <Button>Cancel</Button>
+  </Button.Group>
+  <Text color="#dark-03">Draft saved</Text>
+</Layout.Footer>
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| invertOrder | `boolean` | `false` | Reverse child order (primary on right) |
+| children | `ReactNode` | - | Footer content |
+
+---
+
+### Layout.Panel
+
+Collapsible side panel with resizing, transitions, and dialog mode support.
+
+```jsx
+<Layout.Panel
+  side="left"
+  size={250}
+  isResizable
+  minSize={150}
+  maxSize={400}
+  hasTransition
+  isOpen={isPanelOpen}
+  onOpenChange={setIsPanelOpen}
+  onSizeChange={setSize}
+>
+  <Layout.PanelHeader isClosable title="Navigation" onClose={() => setIsPanelOpen(false)} />
+  <Layout.Content padding="1x">
+    {/* Panel content */}
+  </Layout.Content>
+</Layout.Panel>
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| side | `'left' \| 'right' \| 'top' \| 'bottom'` | `'left'` | Panel position |
+| size | `number` | - | Controlled panel size (px) |
+| defaultSize | `number` | `280` | Initial uncontrolled size |
+| minSize | `number` | `200` | Minimum size constraint |
+| maxSize | `number` | - | Maximum size constraint |
+| isResizable | `boolean` | `false` | Enable drag-to-resize |
+| isOpen | `boolean` | - | Controlled open state |
+| defaultIsOpen | `boolean` | `true` | Initial open state |
+| onOpenChange | `(isOpen: boolean) => void` | - | Open state callback |
+| onSizeChange | `(size: number) => void` | - | Size change callback |
+| sizeStorageKey | `string` | - | localStorage key for persisting size |
+| hasTransition | `boolean` | `false` | Enable slide animation |
+| isDialog | `boolean` | `false` | Render as modal dialog |
+| isDialogOpen | `boolean` | - | Controlled dialog state |
+| defaultIsDialogOpen | `boolean` | `false` | Initial dialog state |
+| onDialogOpenChange | `(isOpen: boolean) => void` | - | Dialog state callback |
+| dialogProps | `CubeDialogContainerProps` | - | Props for Dialog mode |
+
+**Modifiers:**
+| Modifier | Type | Description |
+|----------|------|-------------|
+| side | `'left' \| 'right' \| 'top' \| 'bottom'` | Panel position |
+| drag | `boolean` | Currently being resized |
+| horizontal | `boolean` | Left or right panel |
+| has-transition | `boolean` | Transition enabled |
+| offscreen | `boolean` | Panel is collapsed |
+
+---
+
+### Layout.PanelHeader
+
+Header for panels with optional close button.
+
+```jsx
+<Layout.PanelHeader
+  title="Details"
+  isClosable
+  onClose={() => setOpen(false)}
+/>
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| title | `ReactNode` | - | Panel title |
+| level | `1-6` | `2` | Heading level |
+| isClosable | `boolean` | `false` | Show close button |
+| onClose | `() => void` | - | Close button handler |
+| actions | `ReactNode` | - | Custom actions (replaces close) |
+
+---
+
+## GridLayout
+
+A variant of Layout that enables CSS Grid for the content area.
+
+```jsx
+<GridLayout
+  height="100dvh"
+  columns="repeat(2, 1fr)"
+  rows="auto 1fr"
+  gap="2x"
+  padding="2x"
+>
+  <Layout.Header title="Grid Dashboard" />
+  <div style={{ gridColumn: '1 / -1' }}>Full-width card</div>
+  <div>Left card</div>
+  <div>Right card</div>
+</GridLayout>
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| columns | `string` | Grid template columns |
+| rows | `string` | Grid template rows |
+| template | `string` | Grid template shorthand |
+| gap | `string` | Grid gap |
+
+---
+
+## Examples
+
+### Basic Layout with Header and Content
+
+```jsx
+<Layout height="100dvh">
+  <Layout.Header title="Dashboard" subtitle="Overview of your data" />
+  <Layout.Content padding="2x">
+    <Text>Main content area</Text>
+  </Layout.Content>
+  <Layout.Footer>
+    <Text preset="t4" color="#dark-03">© 2024 Company</Text>
+  </Layout.Footer>
+</Layout>
+```
+
+### With Breadcrumb Navigation
+
+<Story of={LayoutStories.WithBreadcrumbs} />
+
+```jsx
+<Layout height="100dvh">
+  <Layout.Header
+    title="Analytics"
+    breadcrumbs={[
+      ['Home', '/'],
+      ['Reports', '/reports'],
+    ]}
+    extra={
+      <Button.Group>
+        <Button>Export</Button>
+        <Button type="primary">New Report</Button>
+      </Button.Group>
+    }
+  />
+  <Layout.Content padding="2x">
+    <Text>Analytics content</Text>
+  </Layout.Content>
+</Layout>
+```
+
+### Resizable Side Panel
+
+<Story of={LayoutStories.ResizablePanel} />
+
+```jsx
+function ResizablePanelExample() {
+  const [size, setSize] = useState(250);
+
+  return (
+    <Layout height="100dvh">
+      <Layout.Panel
+        isResizable
+        side="left"
+        size={size}
+        minSize={150}
+        maxSize={400}
+        onSizeChange={setSize}
+      >
+        <Layout.PanelHeader title="Resizable" />
+        <Layout.Content padding="1x">
+          <Text>Drag the edge to resize (current: {size}px)</Text>
+        </Layout.Content>
+      </Layout.Panel>
+      <Layout.Content padding="2x">
+        <Text>Main content area</Text>
+      </Layout.Content>
+    </Layout>
+  );
+}
+```
+
+### Persistent Panel Size
+
+Use `sizeStorageKey` to persist panel size to localStorage. The size is automatically restored on mount.
+
+```jsx
+<Layout height="100dvh">
+  <Layout.Panel
+    isResizable
+    side="left"
+    sizeStorageKey="app-sidebar-size"
+    defaultSize={250}
+    minSize={150}
+    maxSize={400}
+  >
+    <Layout.PanelHeader title="Persistent" />
+    <Layout.Content padding="1x">
+      <Text>This panel remembers its size</Text>
+    </Layout.Content>
+  </Layout.Panel>
+  <Layout.Content padding="2x">
+    <Text>Main content area</Text>
+  </Layout.Content>
+</Layout>
+```
+
+### Panel with Slide Transition
+
+<Story of={LayoutStories.PanelWithTransition} />
+
+```jsx
+function PanelWithTransitionExample() {
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+  return (
+    <Layout height="100dvh">
+      <Layout.Panel
+        hasTransition
+        side="right"
+        size={250}
+        isOpen={isPanelOpen}
+        onOpenChange={setIsPanelOpen}
+      >
+        <Layout.PanelHeader
+          isClosable
+          title="Details"
+          onClose={() => setIsPanelOpen(false)}
+        />
+        <Layout.Content padding="1x">
+          <Text>Panel content with slide transition</Text>
+        </Layout.Content>
+      </Layout.Panel>
+      <Layout.Toolbar>
+        <Button onPress={() => setIsPanelOpen(!isPanelOpen)}>
+          {isPanelOpen ? 'Close' : 'Open'} Panel
+        </Button>
+      </Layout.Toolbar>
+      <Layout.Content padding="2x">
+        <Text>Main content area</Text>
+      </Layout.Content>
+    </Layout>
+  );
+}
+```
+
+### Multiple Panels
+
+<Story of={LayoutStories.MultiplePanels} />
+
+```jsx
+function MultiplePanelsExample() {
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(true);
+
+  return (
+    <Layout height="100dvh">
+      <Layout.Panel hasTransition side="left" size={180} isOpen={leftOpen}>
+        <Layout.PanelHeader isClosable title="Left" onClose={() => setLeftOpen(false)} />
+        <Layout.Content padding="1x">
+          <Text>Left panel</Text>
+        </Layout.Content>
+      </Layout.Panel>
+      <Layout.Panel hasTransition side="right" size={180} isOpen={rightOpen}>
+        <Layout.PanelHeader isClosable title="Right" onClose={() => setRightOpen(false)} />
+        <Layout.Content padding="1x">
+          <Text>Right panel</Text>
+        </Layout.Content>
+      </Layout.Panel>
+      <Layout.Toolbar>
+        <Space>
+          <Button onPress={() => setLeftOpen(!leftOpen)}>Left</Button>
+          <Button onPress={() => setRightOpen(!rightOpen)}>Right</Button>
+        </Space>
+      </Layout.Toolbar>
+      <Layout.Content padding="2x">
+        <Text>Main content between two panels</Text>
+      </Layout.Content>
+    </Layout>
+  );
+}
+```
+
+### Tiny Scrollbar
+
+<Story of={LayoutStories.TinyScrollbar} />
+
+```jsx
+<Layout height="100dvh">
+  <Layout.Header title="Tiny Scrollbar" />
+  <Layout.Content padding="2x" scrollbar="tiny">
+    {Array.from({ length: 20 }, (_, i) => (
+      <div key={i} style={{ padding: '8px' }}>
+        <Text>Line {i + 1}: Hover to reveal scrollbar indicator.</Text>
+      </div>
+    ))}
+  </Layout.Content>
+</Layout>
+```
+
+### Nested Layouts
+
+<Story of={LayoutStories.NestedLayouts} />
+
+```jsx
+<Layout height="100dvh">
+  <Layout.Header title="Nested Layouts" />
+  <Layout flow="row">
+    <Layout width="200px" border="right">
+      <Layout.Content padding="1x">
+        <Text>Left sidebar</Text>
+      </Layout.Content>
+    </Layout>
+    <Layout>
+      <Layout.Toolbar>
+        <Text>Inner toolbar</Text>
+      </Layout.Toolbar>
+      <Layout.Content padding="2x">
+        <Text>Main content</Text>
+      </Layout.Content>
+    </Layout>
+  </Layout>
+</Layout>
+```
+
+### Complete Application Shell
+
+<Story of={LayoutStories.CompleteApplicationShell} />
+
+```jsx
+function ApplicationShell() {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  return (
+    <Layout height="100dvh">
+      <Layout.Panel
+        hasTransition
+        isResizable
+        side="right"
+        defaultSize={240}
+        isOpen={sidebarOpen}
+        minSize={180}
+        maxSize={350}
+        onOpenChange={setSidebarOpen}
+      >
+        <Layout.PanelHeader
+          isClosable
+          title="Navigation"
+          onClose={() => setSidebarOpen(false)}
+        />
+        <Layout.Content padding="1x" scrollbar="tiny" gap=".5x">
+          {['Dashboard', 'Analytics', 'Reports'].map((item) => (
+            <ItemButton key={item} type="neutral" width="100%">
+              {item}
+            </ItemButton>
+          ))}
+        </Layout.Content>
+      </Layout.Panel>
+
+      <Layout.Header
+        title="Dashboard"
+        level={2}
+        breadcrumbs={[['Home', '/'], ['Analytics', '/analytics']]}
+        subtitle="Real-time overview of your metrics"
+        suffix={
+          <Button type="neutral" onPress={() => setSidebarOpen(!sidebarOpen)}>
+            ☰
+          </Button>
+        }
+        extra={
+          <Button.Group>
+            <Button>Export</Button>
+            <Button type="primary">Create Report</Button>
+          </Button.Group>
+        }
+      />
+
+      <Layout.Content padding="2x" scrollbar="tiny">
+        {/* Main content */}
+      </Layout.Content>
+
+      <Layout.Footer>
+        <Text preset="t4" color="#dark-03">© 2024 Your Company</Text>
+        <Space>
+          <Button type="link" size="small">Privacy</Button>
+          <Button type="link" size="small">Terms</Button>
+        </Space>
+      </Layout.Footer>
+    </Layout>
+  );
+}
+```
+
+---
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Navigate between interactive elements
+- Focus management is handled automatically when panels open/close
+- Resize handlers can be focused and resized using arrow keys:
+  - `Arrow keys` - Resize panel by 10px
+  - `Shift + Arrow keys` - Resize panel by 50px
+  - `Double-click` on resize handler - Reset to default size
+
+### Screen Reader Support
+
+- `Layout.Header` uses semantic heading elements (`h1`-`h6`) based on `level` prop
+- `Layout.Toolbar` has `role="toolbar"` for proper announcement
+- `Layout.Footer` has `role="contentinfo"` for landmark navigation
+- Breadcrumbs use Link components with proper navigation semantics
+- Panel close buttons have accessible labels
+
+### ARIA Properties
+
+- `aria-label` - Available on all components for custom labels
+- Landmarks are automatically set for header, footer, and toolbar
+- Panel close buttons include `aria-label="Close panel"`
+- Resize handlers have `role="separator"` with proper `aria-orientation` and `aria-label`
+
+---
+
+## Best Practices
+
+1. **Do**: Set an explicit height on the root Layout
+
+```jsx
+<Layout height="100dvh">
+  {/* Content won't overflow */}
+</Layout>
+```
+
+2. **Don't**: Nest multiple Layout.Content without explicit heights
+
+```jsx
+{/* This may cause layout issues */}
+<Layout.Content>
+  <Layout.Content>...</Layout.Content>
+</Layout.Content>
+```
+
+3. **Do**: Use appropriate heading levels for accessibility
+
+```jsx
+<Layout.Header title="Page Title" level={1} />
+```
+
+4. **Do**: Provide close handlers when panels are closable
+
+```jsx
+<Layout.Panel isOpen={isOpen} onOpenChange={setIsOpen}>
+  <Layout.PanelHeader
+    isClosable
+    title="Panel"
+    onClose={() => setIsOpen(false)}
+  />
+</Layout.Panel>
+```
+
+5. **Do**: Use `hasTransition` for better UX when toggling panels
+
+```jsx
+<Layout.Panel hasTransition side="left" isOpen={isOpen}>
+  {/* Smooth slide animation */}
+</Layout.Panel>
+```
+
+---
+
+## Architecture Notes
+
+### Overflow-Safe Design
+
+Layout uses a two-element architecture (wrapper + content) to ensure content never overflows its container. The wrapper has `overflow: hidden` while the inner element has absolute positioning with insets that adjust based on panel sizes.
+
+### Panel Registration
+
+Panels automatically register with the Layout context and report their sizes. This allows the main content area to adjust its insets accordingly, preventing content from being hidden behind panels.
+
+### Nested Layouts
+
+Each Layout.Content and panel header uses `LayoutContextReset` internally, which resets the layout context. This prevents nested Layouts from accidentally affecting parent layouts.
+
+### Transitions
+
+Panel transitions are disabled during drag operations and initial mount to prevent visual glitches. The `isReady` state ensures transitions only activate after the first paint.
+
+---
+
+## Suggested Improvements
+
+- **Collapsible mode**: Add a mode where panels collapse to icons/mini state instead of fully hiding
+- **Responsive breakpoints**: Automatically switch panels to dialog mode on smaller screens
+- **Open state persistence**: Add `openStorageKey` for persisting panel open/closed state (size persistence is available via `sizeStorageKey`)
+- **Split view**: Support for multiple resizable content areas (not just side panels)
+
+---
+
+## Related
+
+- [Layout Guide](/docs/guides-layout-guide--docs) - Patterns and examples for building layouts
+- [Space](/docs/components-layout-space--docs) - For simpler flex layouts
+- [Dialog](/docs/components-overlays-dialog--docs) - For modal panels
+- [Item](/docs/components-content-item--docs) - Used by PanelHeader
+

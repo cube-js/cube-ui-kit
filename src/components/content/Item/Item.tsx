@@ -241,6 +241,7 @@ const ItemElement = tasty({
     },
     width: {
       '': 'min $size',
+      'has-icon & has-right-icon': 'min ($size * 2)',
       'size=inline': 'min (1lh + 2bw)',
     },
     border: '#clear',

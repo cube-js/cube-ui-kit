@@ -28,6 +28,8 @@ export type {
   PositionStyleProps,
   TextStyleProps,
   BlockStyleProps,
+  BlockInnerStyleProps,
+  BlockOuterStyleProps,
   ContainerStyleProps,
   BasePropsWithoutChildren,
   Props,
@@ -35,6 +37,7 @@ export type {
   ShortGridStyles,
   GlobalStyledProps,
   TagName,
+  Mods,
 } from './types';
 export type {
   StylesInterface,

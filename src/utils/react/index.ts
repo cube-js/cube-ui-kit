@@ -15,3 +15,4 @@ export { useControlledFocusVisible } from './useControlledFocusVisible';
 export type { UseControlledFocusVisibleResult } from './useControlledFocusVisible';
 export { RenderCache } from './RenderCache';
 export type { RenderCacheProps } from './RenderCache';
+export { useLocalStorage } from './useLocalStorage';
