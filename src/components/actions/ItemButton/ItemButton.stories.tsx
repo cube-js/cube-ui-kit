@@ -2,7 +2,6 @@ import {
   IconEdit,
   IconExternalLink,
   IconFile,
-  IconMenu,
   IconTrash,
 } from '@tabler/icons-react';
 import { userEvent, within } from 'storybook/test';

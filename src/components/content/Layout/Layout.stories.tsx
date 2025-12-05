@@ -1,6 +1,5 @@
 import { IconFilter, IconFilterFilled } from '@tabler/icons-react';
 import { useState } from 'react';
-import { FilterIcon } from 'src/icons';
 
 import { Button, ItemButton } from '../../actions';
 import { Block } from '../../Block';
