@@ -32,12 +32,12 @@ A typical layout with header, scrollable content area, and footer.
 <Story of={ComplexLayoutStories.HeaderContentFooter} />
 
 ```jsx live=false
-<Layout height="300px">
+<Layout height="300px">              {/* block, Inner: flex column ↓ */}
   <Layout.Header title="Dashboard" />
-  <Layout.Content>
+  <Layout.Content>                   {/* flex column ↓, scrollable, fills remaining space */}
     <Text>Content between header and footer</Text>
   </Layout.Content>
-  <Layout.Footer>
+  <Layout.Footer>                    {/* flex row →, space-between */}
     <Text>Status: Ready</Text>
     <Button type="primary">Save</Button>
   </Layout.Footer>
@@ -53,20 +53,18 @@ Use `Layout.Panel` for side navigation. Panels are absolutely positioned and aut
 <Story of={ComplexLayoutStories.SidebarLayout} />
 
 ```jsx live=false
-<Layout height="400px">
-  <Layout.Panel side="left" size={200} isOpen={isOpen}>
+<Layout height="400px">              {/* block, Inner: flex column ↓ */}
+  <Layout.Panel side="left" size={200} isOpen={isOpen}> {/* absolute left, pushes content via insets */}
     <Layout.PanelHeader isClosable title="Menu" onClose={() => setIsOpen(false)} />
-    <Layout.Content padding=".5x">
-      <Space direction="vertical" gap="1bw">
-        <ItemButton type="neutral">Dashboard</ItemButton>
-        <ItemButton type="neutral">Settings</ItemButton>
-      </Space>
+    <Layout.Content padding=".5x" gap="1bw"> {/* flex column ↓, scrollable */}
+      <ItemButton type="neutral">Dashboard</ItemButton>
+      <ItemButton type="neutral">Settings</ItemButton>
     </Layout.Content>
   </Layout.Panel>
-  <Layout.Toolbar>
+  <Layout.Toolbar>                   {/* flex row →, single item aligns left */}
     <Button onPress={() => setIsOpen(!isOpen)}>Toggle Menu</Button>
   </Layout.Toolbar>
-  <Layout.Content>
+  <Layout.Content>                   {/* flex column ↓, scrollable, fills remaining space */}
     <Text>Main content area</Text>
   </Layout.Content>
 </Layout>
@@ -86,7 +84,7 @@ Add `isResizable` to allow users to resize the panel.
 ```jsx live=false
 <Layout.Panel
   isResizable
-  side="left"
+  side="left"                        {/* absolute left, pushes content via insets */}
   size={size}
   minSize={150}
   maxSize={400}
@@ -108,7 +106,7 @@ Use `sizeStorageKey` to persist the panel size in localStorage. The size will be
 ```jsx live=false
 <Layout.Panel
   isResizable
-  side="left"
+  side="left"                        {/* absolute left, pushes content via insets */}
   sizeStorageKey="my-app-sidebar-size"
   defaultSize={250}
   minSize={150}
@@ -133,9 +131,9 @@ Use `sizeStorageKey` to persist the panel size in localStorage. The size will be
 <Story of={ComplexLayoutStories.ToolbarLeftRight} />
 
 ```jsx live=false
-<Layout.Toolbar>
-  <Title level={4}>App Name</Title>      {/* Left */}
-  <Button type="primary">Action</Button> {/* Right */}
+<Layout.Toolbar>                     {/* flex row →, space-between */}
+  <Title level={4}>App Name</Title>  {/* left (first item) */}
+  <Button type="primary">Action</Button> {/* right (last item) */}
 </Layout.Toolbar>
 ```
 
@@ -146,12 +144,12 @@ Use `Space` components to create three sections.
 <Story of={ComplexLayoutStories.ToolbarLeftCenterRight} />
 
 ```jsx live=false
-<Layout.Toolbar>
-  <Space>
+<Layout.Toolbar>                     {/* flex row →, space-between */}
+  <Space>                            {/* flex row → */}
     <Button>Back</Button>
   </Space>
-  <Title level={4}>Page Title</Title>   {/* Center */}
-  <Space>
+  <Title level={4}>Page Title</Title>{/* center (middle item) */}
+  <Space>                            {/* flex row → */}
     <Button>Help</Button>
     <Button type="primary">Save</Button>
   </Space>
@@ -167,14 +165,14 @@ Use `Space` components to create three sections.
 <Story of={ComplexLayoutStories.HeaderWithBreadcrumbs} />
 
 ```jsx live=false
-<Layout.Header
+<Layout.Header                       {/* grid with named areas: breadcrumbs/title/suffix/extra/subtitle */}
   title="User Details"
   breadcrumbs={[
     ['Home', '/'],
     ['Users', '/users'],
   ]}
-  extra={
-    <Space>
+  extra={                            {/* right side (extra area) */}
+    <Space>                          {/* flex row → */}
       <Button>Edit</Button>
       <Button type="primary">Save</Button>
     </Space>
@@ -199,12 +197,12 @@ Use `invertOrder` to place primary actions on the right.
 <Story of={ComplexLayoutStories.FooterWithActions} />
 
 ```jsx live=false
-<Layout.Footer invertOrder>
-  <Button.Group flow="row-reverse">
+<Layout.Footer invertOrder>          {/* flex row-reverse ←, space-between */}
+  <Button.Group flow="row-reverse">  {/* flex row-reverse ← */}
     <Button type="primary">Submit</Button>
     <Button>Cancel</Button>
   </Button.Group>
-  <Text preset="t4" color="#dark-03">Draft saved</Text>
+  <Text preset="t4" color="#dark-03">Draft saved</Text> {/* left side due to row-reverse */}
 </Layout.Footer>
 ```
 
@@ -218,14 +216,14 @@ Set `isDialog` to render the panel as a modal dialog instead of inline.
 
 ```jsx live=false
 <Layout.Panel
-  isDialog
+  isDialog                           {/* renders as modal overlay instead of inline */}
   side="left"
   size={300}
   isDialogOpen={isOpen}
   onDialogOpenChange={setIsOpen}
 >
   <Layout.PanelHeader isClosable title="Settings" onClose={() => setIsOpen(false)} />
-  <Layout.Content>
+  <Layout.Content>                   {/* flex column ↓, scrollable */}
     <Text>Panel content as dialog overlay</Text>
   </Layout.Content>
 </Layout.Panel>
@@ -245,10 +243,10 @@ Set `isDialog` to render the panel as a modal dialog instead of inline.
 <Story of={ComplexLayoutStories.ResizablePane} />
 
 ```jsx live=false
-<Layout.Flex>
+<Layout.Flex>                        {/* flex row →, scrollable */}
   <Layout.Pane
     isResizable
-    resizeEdge="right"
+    resizeEdge="right"               {/* inline in flex flow, not absolute */}
     size={leftSize}
     minSize={120}
     maxSize={350}
@@ -256,7 +254,7 @@ Set `isDialog` to render the panel as a modal dialog instead of inline.
   >
     <Title level={5}>Left Pane</Title>
   </Layout.Pane>
-  <Layout.Content width="min 150px">
+  <Layout.Content width="min 150px"> {/* flex column ↓, scrollable, fills remaining space */}
     <Title level={5}>Content</Title>
   </Layout.Content>
 </Layout.Flex>
@@ -280,15 +278,15 @@ Layouts can be nested for complex structures.
 <Story of={ComplexLayoutStories.NestedLayout} />
 
 ```jsx live=false
-<Layout height="400px">
+<Layout height="400px">              {/* block, Inner: flex column ↓ */}
   <Layout.Header title="Outer Layout" />
-  <Layout flow="row">                    {/* Horizontal flex */}
-    <Layout width="180px" border="right">
-      <Layout.Content>Sidebar</Layout.Content>
+  <Layout flow="row">                {/* block, Inner: flex row → */}
+    <Layout width="180px" border="right"> {/* block, Inner: flex column ↓ */}
+      <Layout.Content>Sidebar</Layout.Content> {/* flex column ↓, scrollable */}
     </Layout>
-    <Layout>                             {/* Nested layout */}
-      <Layout.Toolbar>Inner Toolbar</Layout.Toolbar>
-      <Layout.Content>Inner content</Layout.Content>
+    <Layout>                         {/* block, Inner: flex column ↓ */}
+      <Layout.Toolbar>Inner Toolbar</Layout.Toolbar> {/* flex row →, single item aligns left */}
+      <Layout.Content>Inner content</Layout.Content> {/* flex column ↓, scrollable */}
     </Layout>
   </Layout>
 </Layout>
@@ -301,16 +299,16 @@ Use `Layout.Grid` for grid-based layouts.
 <Story of={ComplexLayoutStories.GridDashboard} />
 
 ```jsx live=false
-<Layout.Grid
+<Layout.Grid                         {/* grid 2×2, scrollable */}
   columns="repeat(2, 1fr)"
   rows="repeat(2, 1fr)"
   gap="1x"
   padding="1x"
 >
-  <Card>Metrics</Card>
-  <Card>Charts</Card>
-  <Card>Activity</Card>
-  <Card>Stats</Card>
+  <Card>Metrics</Card>               {/* grid cell 1,1 */}
+  <Card>Charts</Card>                {/* grid cell 1,2 */}
+  <Card>Activity</Card>              {/* grid cell 2,1 */}
+  <Card>Stats</Card>                 {/* grid cell 2,2 */}
 </Layout.Grid>
 ```
 
@@ -320,13 +318,13 @@ Use `Layout.Grid` for grid-based layouts.
 
 ```jsx live=false
 // Horizontal (default)
-<Space gap="1x">
+<Space gap="1x">                     {/* flex row → */}
   <Button>One</Button>
   <Button>Two</Button>
 </Space>
 
 // Vertical
-<Space direction="vertical" gap="1x">
+<Space direction="vertical" gap="1x">{/* flex column ↓ */}
   <Button>One</Button>
   <Button>Two</Button>
 </Space>
