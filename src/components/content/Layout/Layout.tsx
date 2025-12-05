@@ -57,8 +57,10 @@ const LayoutElement = tasty({
       overflow: 'hidden',
       // Disable transition during panel resize for snappy feedback
       // Also disable transition when not ready to prevent initial animation
+      // Only animate when has-transition is enabled (and not dragging/not-ready)
       transition: {
-        '': 'inset $transition ease-out',
+        '': 'none',
+        'has-transition': 'inset $transition ease-out',
         'dragging | not-ready': 'none',
       },
     },
@@ -81,6 +83,8 @@ export interface CubeLayoutProps
   template?: Styles['gridTemplate'];
   /** Padding for content areas (Layout.Content components). Default: '1x' */
   contentPadding?: Styles['padding'];
+  /** Enable transition animation for Inner content when panels open/close */
+  hasTransition?: boolean;
   /** Styles for wrapper and Inner sub-element */
   styles?: Styles;
   children?: ReactNode;
@@ -113,6 +117,7 @@ function LayoutInner(
     rows,
     template,
     contentPadding,
+    hasTransition = false,
     styles,
     children,
     style,
@@ -246,10 +251,11 @@ function LayoutInner(
     () => ({
       dragging: isDragging,
       'not-ready': !isReady,
+      'has-transition': hasTransition,
       'auto-height': isAutoHeight && !isCollapsed,
       collapsed: isCollapsed,
     }),
-    [isDragging, isReady, isAutoHeight, isCollapsed],
+    [isDragging, isReady, hasTransition, isAutoHeight, isCollapsed],
   );
 
   // Combine local ref with forwarded ref
@@ -297,8 +303,10 @@ function LayoutInner(
  * Uses a two-element architecture (wrapper + content) to ensure content never overflows.
  */
 function Layout(props: CubeLayoutProps, ref: ForwardedRef<HTMLDivElement>) {
+  const { hasTransition } = props;
+
   return (
-    <LayoutProvider>
+    <LayoutProvider hasTransition={hasTransition}>
       <LayoutInner {...props} forwardedRef={ref} />
     </LayoutProvider>
   );

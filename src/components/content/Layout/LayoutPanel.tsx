@@ -365,7 +365,7 @@ function LayoutPanel(
     isOpen: providedIsOpen,
     defaultIsOpen = true,
     onOpenChange,
-    hasTransition = false,
+    hasTransition: hasTransitionProp,
     isDialog = false,
     isDialogOpen: providedIsDialogOpen,
     defaultIsDialogOpen = false,
@@ -377,6 +377,9 @@ function LayoutPanel(
     mods,
     ...otherProps
   } = props;
+
+  // Use prop value if provided, otherwise fall back to context value
+  const hasTransition = hasTransitionProp ?? layoutContext.hasTransition;
 
   const combinedRef = useCombinedRefs(ref);
   const prevProvidedSizeRef = useRef(providedSize);
@@ -481,7 +484,7 @@ function LayoutPanel(
   const effectivePanelSize = isOpen && !isDialog ? size : 0;
   const effectiveInsetSize = Math.round(
     effectivePanelSize +
-    (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
+      (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
   );
 
   const { registerPanel, unregisterPanel, updatePanelSize, isReady } =

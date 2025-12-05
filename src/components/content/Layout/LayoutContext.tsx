@@ -19,6 +19,8 @@ export interface LayoutContextValue {
   panelSizes: Record<Side, number>;
   isDragging: boolean;
   isReady: boolean;
+  /** Whether transitions are enabled for panels */
+  hasTransition: boolean;
 }
 
 export const LayoutContext = createContext<LayoutContextValue | null>(null);
@@ -29,9 +31,14 @@ export function useLayoutContext(): LayoutContextValue | null {
 
 export interface LayoutProviderProps {
   children: ReactNode;
+  /** Whether transitions are enabled for panels */
+  hasTransition?: boolean;
 }
 
-export function LayoutProvider({ children }: LayoutProviderProps) {
+export function LayoutProvider({
+  children,
+  hasTransition = false,
+}: LayoutProviderProps) {
   const registeredPanels = useRef<Set<Side>>(new Set());
   const [panelSizes, setPanelSizes] = useState<Record<Side, number>>({
     left: 0,
@@ -107,6 +114,7 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
       panelSizes,
       isDragging,
       isReady,
+      hasTransition,
     }),
     [
       registerPanel,
@@ -117,6 +125,7 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
       panelSizes,
       isDragging,
       isReady,
+      hasTransition,
     ],
   );
 
