@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.96.0
+
+### Minor Changes
+
+- [`fe46a7f2`](https://github.com/cube-js/cube-ui-kit/commit/fe46a7f233b599d94ffd124ec14d2a576c000e93) Thanks [@tenphi](https://github.com/tenphi)! - Add new `Layout` component with compound sub-components for building complex application layouts. Includes `Layout.Header`, `Layout.Footer`, `Layout.Content`, `Layout.Toolbar`, `Layout.Pane`, `Layout.Panel`, `Layout.PanelHeader`, `Layout.Block`, `Layout.Flex`, `Layout.Grid`, and standalone `GridLayout`.
+
 ## 0.95.0
 
 ### Minor Changes
