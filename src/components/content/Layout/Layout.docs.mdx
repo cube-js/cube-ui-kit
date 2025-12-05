@@ -199,6 +199,7 @@ Collapsible side panel with resizing, transitions, and dialog mode support.
 | defaultIsOpen | `boolean` | `true` | Initial open state |
 | onOpenChange | `(isOpen: boolean) => void` | - | Open state callback |
 | onSizeChange | `(size: number) => void` | - | Size change callback |
+| sizeStorageKey | `string` | - | localStorage key for persisting size |
 | hasTransition | `boolean` | `false` | Enable slide animation |
 | isDialog | `boolean` | `false` | Render as modal dialog |
 | isDialogOpen | `boolean` | - | Controlled dialog state |
@@ -337,6 +338,31 @@ function ResizablePanelExample() {
     </Layout>
   );
 }
+```
+
+### Persistent Panel Size
+
+Use `sizeStorageKey` to persist panel size to localStorage. The size is automatically restored on mount.
+
+```jsx
+<Layout height="100dvh">
+  <Layout.Panel
+    isResizable
+    side="left"
+    sizeStorageKey="app-sidebar-size"
+    defaultSize={250}
+    minSize={150}
+    maxSize={400}
+  >
+    <Layout.PanelHeader title="Persistent" />
+    <Layout.Content padding="1x">
+      <Text>This panel remembers its size</Text>
+    </Layout.Content>
+  </Layout.Panel>
+  <Layout.Content padding="2x">
+    <Text>Main content area</Text>
+  </Layout.Content>
+</Layout>
 ```
 
 ### Panel with Slide Transition
@@ -626,7 +652,7 @@ Panel transitions are disabled during drag operations and initial mount to preve
 
 - **Collapsible mode**: Add a mode where panels collapse to icons/mini state instead of fully hiding
 - **Responsive breakpoints**: Automatically switch panels to dialog mode on smaller screens
-- **Panel persistence**: Built-in localStorage support for remembering panel sizes and open states
+- **Open state persistence**: Add `openStorageKey` for persisting panel open/closed state (size persistence is available via `sizeStorageKey`)
 - **Split view**: Support for multiple resizable content areas (not just side panels)
 
 ---

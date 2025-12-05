@@ -23,7 +23,11 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { mergeProps, useCombinedRefs } from '../../../utils/react';
+import {
+  mergeProps,
+  useCombinedRefs,
+  useLocalStorage,
+} from '../../../utils/react';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { Dialog } from '../../overlays/Dialog';
 import {
@@ -339,6 +343,8 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
   >;
   /** Padding for content areas inside the panel. Default: '1x' */
   contentPadding?: Styles['padding'];
+  /** localStorage key for persisting panel size. When provided, size is stored and restored across instances. */
+  sizeStorageKey?: string;
   /** Styles for the panel */
   styles?: Styles;
   children?: ReactNode;
@@ -372,6 +378,7 @@ function LayoutPanel(
     onDialogOpenChange,
     dialogProps,
     contentPadding,
+    sizeStorageKey,
     children,
     styles,
     mods,
@@ -394,15 +401,23 @@ function LayoutPanel(
     useState(defaultIsDialogOpen);
   const dialogOpen = providedIsDialogOpen ?? internalIsDialogOpen;
 
+  // Persistent size storage
+  const [storedSize, setStoredSize] = useLocalStorage<number | null>(
+    sizeStorageKey ?? null,
+    null,
+  );
+
   // Resize state
   const [isDragging, setIsDragging] = useState(false);
   const [size, setSize] = useState<number>(() => {
     const initialSize =
       typeof providedSize === 'number'
         ? providedSize
-        : typeof defaultSize === 'number'
-          ? defaultSize
-          : 280;
+        : storedSize != null
+          ? storedSize
+          : typeof defaultSize === 'number'
+            ? defaultSize
+            : 280;
 
     return clampSize(initialSize, minSize, maxSize);
   });
@@ -463,6 +478,8 @@ function LayoutPanel(
         const finalSize = Math.round(clampValue(currentSize));
         // Call onSizeChange synchronously to ensure parent state is updated
         onSizeChange?.(finalSize);
+        // Persist to localStorage if key is provided
+        setStoredSize(finalSize);
         return finalSize;
       });
     },
@@ -585,7 +602,8 @@ function LayoutPanel(
     const clampedSize = clampValue(resetSize || 280);
     setSize(clampedSize);
     onSizeChange?.(clampedSize);
-  }, [defaultSize, clampValue, onSizeChange]);
+    setStoredSize(clampedSize);
+  }, [defaultSize, clampValue, onSizeChange, setStoredSize]);
 
   const renderPanelContent = (
     offscreen = false,
