@@ -19,6 +19,7 @@ import {
   ContainerStyleProps,
   extractStyles,
   filterBaseProps,
+  mergeStyles,
   Styles,
   tasty,
 } from '../../../tasty';
@@ -55,6 +56,8 @@ const PanelElement = tasty({
     flow: 'column',
     overflow: 'hidden',
     boxSizing: 'border-box',
+
+    '$content-padding': '1x',
 
     // Position based on side prop
     top: {
@@ -334,6 +337,8 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
     CubeDialogContainerProps,
     'isDismissable' | 'onDismiss' | 'isOpen'
   >;
+  /** Padding for content areas inside the panel. Default: '1x' */
+  contentPadding?: Styles['padding'];
   /** Styles for the panel */
   styles?: Styles;
   children?: ReactNode;
@@ -366,6 +371,7 @@ function LayoutPanel(
     defaultIsDialogOpen = false,
     onDialogOpenChange,
     dialogProps,
+    contentPadding,
     children,
     styles,
     mods,
@@ -399,6 +405,17 @@ function LayoutPanel(
   });
 
   const extractedStyles = extractStyles(otherProps, CONTAINER_STYLES);
+
+  // Merge styles with contentPadding support
+  const finalStyles = useMemo(
+    () =>
+      mergeStyles(
+        styles,
+        contentPadding != null ? { '$content-padding': contentPadding } : null,
+        extractedStyles,
+      ),
+    [extractedStyles, contentPadding, styles],
+  );
 
   // Clamp size to min/max constraints
   const clampValue = useCallback(
@@ -464,7 +481,7 @@ function LayoutPanel(
   const effectivePanelSize = isOpen && !isDialog ? size : 0;
   const effectiveInsetSize = Math.round(
     effectivePanelSize +
-      (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
+    (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
   );
 
   const { registerPanel, unregisterPanel, updatePanelSize, isReady } =
@@ -578,7 +595,7 @@ function LayoutPanel(
         }
         {...filterBaseProps(otherProps, { eventProps: true })}
         mods={{ ...panelMods, offscreen }}
-        styles={{ ...extractedStyles, ...styles }}
+        styles={finalStyles}
         style={panelStyle}
         data-side={side}
       >

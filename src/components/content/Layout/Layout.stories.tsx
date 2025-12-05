@@ -26,9 +26,9 @@ type Story = StoryObj<typeof Layout>;
 
 export const Default: Story = {
   render: () => (
-    <Layout height="100dvh">
+    <Layout height="100dvh" contentPadding="2x">
       <Layout.Header title="Dashboard" subtitle="Overview of your data" />
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Main content area</Text>
       </Layout.Content>
       <Layout.Footer>
@@ -69,10 +69,10 @@ export const WithBreadcrumbs: Story = {
           ['Reports', '/reports'],
         ]}
         extra={
-          <Button.Group>
+          <Space>
             <Button>Export</Button>
             <Button type="primary">New Report</Button>
-          </Button.Group>
+          </Space>
         }
       />
       <Layout.Content padding="2x">

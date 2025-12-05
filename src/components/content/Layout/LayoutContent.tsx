@@ -29,6 +29,7 @@ const ContentElement = tasty({
     placeItems: 'stretch',
     placeSelf: 'stretch',
     flexGrow: 1,
+    flexShrink: 1,
     height: 'min 0',
     overflow: 'hidden',
     boxSizing: 'content-box',
