@@ -2,12 +2,11 @@ import { ForwardedRef, forwardRef, ReactNode, useMemo } from 'react';
 
 import {
   BaseProps,
+  CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
   filterBaseProps,
-  INNER_STYLES,
   mergeStyles,
-  OUTER_STYLES,
   Styles,
   tasty,
 } from '../../../tasty';
@@ -61,18 +60,20 @@ function LayoutContainer(
     innerStyles: innerStylesProp,
     ...otherProps
   } = props;
-  const outerStyles = extractStyles(otherProps, OUTER_STYLES);
-  const innerStyles = extractStyles(otherProps, INNER_STYLES);
+  const innerStyles = extractStyles(
+    otherProps,
+    CONTAINER_STYLES,
+    innerStylesProp,
+  );
 
   const finalStyles = useMemo(() => {
     return mergeStyles(
       styles,
-      outerStyles,
       innerStyles || innerStylesProp
         ? { Inner: mergeStyles(innerStyles, innerStylesProp) }
         : null,
     );
-  }, [styles, outerStyles, innerStyles, innerStylesProp]);
+  }, [styles, innerStyles, innerStylesProp]);
 
   return (
     <ContainerElement

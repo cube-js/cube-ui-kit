@@ -420,7 +420,7 @@ export const ContainerLayout: Story = {
   render: () => (
     <Layout border height="400px">
       <Layout.Header title="Article Page" />
-      <Layout.Container innerStyles={{ width: '80%', gap: '1x' }}>
+      <Layout.Container width="80%" gap="1x">
         <Title level={4}>Understanding Layout Components</Title>
         <Text>
           The Container component centers content horizontally while
@@ -448,7 +448,7 @@ export const ContainerLayout: Story = {
 export const CenterLayout: Story = {
   render: () => (
     <Layout border height="400px">
-      <Layout.Center innerStyles={{ width: '60%', gap: '1x' }}>
+      <Layout.Center width="60%" gap="1x">
         <Title level={2}>No Results Found</Title>
         <Text>
           We couldn&apos;t find any items matching your search criteria.

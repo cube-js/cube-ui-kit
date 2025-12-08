@@ -1219,7 +1219,7 @@ export const Container: Story = {
   render: () => (
     <Layout height="400px" fill="#dark.04">
       <Layout.Header title="Form Page" />
-      <Layout.Container innerStyles={{ width: '80%' }}>
+      <Layout.Container width="80%">
         <Card gap="1x">
           <Title level={4}>Sign Up Form</Title>
           <Text>
@@ -1245,7 +1245,7 @@ export const Container: Story = {
 export const Center: Story = {
   render: () => (
     <Layout height="400px" fill="#dark.04">
-      <Layout.Center gap="1x" innerStyles={{ width: '60%' }}>
+      <Layout.Center width="60%" gap="1x">
         <Title level={3}>Welcome!</Title>
         <Text>
           This content is centered both horizontally and vertically.&#8203; Text
