@@ -47,7 +47,11 @@ import {
   StyledHeader,
   StyledSectionHeading,
 } from '../../actions/Menu/styled';
-import { CollectionItem, CubeCollectionItemProps } from '../../CollectionItem';
+import {
+  CollectionItem,
+  CubeCollectionItemProps,
+  filterCollectionItemProps,
+} from '../../CollectionItem';
 import { Item } from '../../content/Item/Item';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
@@ -1096,6 +1100,9 @@ function Option({
     combinedRef,
   );
 
+  // Filter out service props - all remaining props can be passed to Item
+  const filteredItemProps = filterCollectionItemProps(item.props);
+
   // Create checkbox icon for multiple selection mode
   const effectiveIcon = useMemo(() => {
     if (
@@ -1104,7 +1111,7 @@ function Option({
       item.icon
     ) {
       return (
-        (item as any)?.props?.icon ??
+        filteredItemProps.icon ??
         (state.selectionManager.selectionMode !== 'multiple' ? null : undefined)
       );
     }
@@ -1215,10 +1222,9 @@ function Option({
   return (
     <ListBoxItem
       ref={combinedRef}
-      qa={item.props?.qa}
       id={`ListBoxItem-${String(item.key)}`}
       data-key={String(item.key)}
-      {...mergeProps(filteredOptionProps, hoverProps, {
+      {...mergeProps(filteredOptionProps, hoverProps, filteredItemProps, {
         onClick: handleOptionClick,
         onKeyDown,
         onKeyUp,
@@ -1235,15 +1241,9 @@ function Option({
       isSelected={isSelected}
       isDisabled={isDisabled}
       icon={effectiveIcon}
-      rightIcon={item.props?.rightIcon}
-      hotkeys={item.props?.hotkeys}
-      suffix={item.props?.suffix}
-      description={item.props?.description}
-      descriptionPlacement={item.props?.descriptionPlacement}
       labelProps={labelProps}
       descriptionProps={descriptionProps}
       styles={styles}
-      tooltip={item.props?.tooltip}
       defaultTooltipPlacement="right"
       mods={{
         listboxitem: true,
