@@ -22,7 +22,7 @@ export type { CubeLayoutGridProps } from './LayoutGrid';
 export type { CubeLayoutFooterProps } from './LayoutFooter';
 export type { CubeLayoutHeaderProps } from './LayoutHeader';
 export type { CubeLayoutPaneProps, ResizeEdge } from './LayoutPane';
-export type { CubeLayoutPanelProps } from './LayoutPanel';
+export type { CubeLayoutPanelProps, LayoutPanelMode } from './LayoutPanel';
 export type { CubeLayoutPanelHeaderProps } from './LayoutPanelHeader';
 export type { CubeLayoutToolbarProps } from './LayoutToolbar';
 export {

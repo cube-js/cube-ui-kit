@@ -10,6 +10,9 @@ import {
 
 export type Side = 'left' | 'top' | 'right' | 'bottom';
 
+/** Callback to dismiss an overlay panel */
+export type OverlayDismissCallback = () => void;
+
 export interface LayoutContextValue {
   registerPanel: (side: Side, size: number) => void;
   unregisterPanel: (side: Side) => void;
@@ -21,6 +24,12 @@ export interface LayoutContextValue {
   isReady: boolean;
   /** Whether transitions are enabled for panels */
   hasTransition: boolean;
+  /** Register an overlay panel's dismiss callback. Returns unregister function. */
+  registerOverlayPanel: (dismiss: OverlayDismissCallback) => () => void;
+  /** Dismiss all overlay panels */
+  dismissOverlayPanels: () => void;
+  /** Whether there are any overlay panels currently open */
+  hasOverlayPanels: boolean;
 }
 
 export const LayoutContext = createContext<LayoutContextValue | null>(null);
@@ -40,6 +49,7 @@ export function LayoutProvider({
   hasTransition = false,
 }: LayoutProviderProps) {
   const registeredPanels = useRef<Set<Side>>(new Set());
+  const overlayPanelCallbacks = useRef<Set<OverlayDismissCallback>>(new Set());
   const [panelSizes, setPanelSizes] = useState<Record<Side, number>>({
     left: 0,
     top: 0,
@@ -48,6 +58,7 @@ export function LayoutProvider({
   });
   const [isDragging, setIsDragging] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [hasOverlayPanels, setHasOverlayPanels] = useState(false);
 
   const registerPanel = useCallback((side: Side, size: number) => {
     if (registeredPanels.current.has(side)) {
@@ -104,6 +115,26 @@ export function LayoutProvider({
     setIsReady(true);
   }, []);
 
+  // Register an overlay panel's dismiss callback
+  const registerOverlayPanel = useCallback(
+    (dismiss: OverlayDismissCallback) => {
+      overlayPanelCallbacks.current.add(dismiss);
+      setHasOverlayPanels(true);
+
+      // Return unregister function
+      return () => {
+        overlayPanelCallbacks.current.delete(dismiss);
+        setHasOverlayPanels(overlayPanelCallbacks.current.size > 0);
+      };
+    },
+    [],
+  );
+
+  // Dismiss all overlay panels
+  const dismissOverlayPanels = useCallback(() => {
+    overlayPanelCallbacks.current.forEach((dismiss) => dismiss());
+  }, []);
+
   const value = useMemo(
     () => ({
       registerPanel,
@@ -115,6 +146,9 @@ export function LayoutProvider({
       isDragging,
       isReady,
       hasTransition,
+      registerOverlayPanel,
+      dismissOverlayPanels,
+      hasOverlayPanels,
     }),
     [
       registerPanel,
@@ -126,6 +160,9 @@ export function LayoutProvider({
       isDragging,
       isReady,
       hasTransition,
+      registerOverlayPanel,
+      dismissOverlayPanels,
+      hasOverlayPanels,
     ],
   );
 

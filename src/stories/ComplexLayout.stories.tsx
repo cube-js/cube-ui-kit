@@ -202,6 +202,85 @@ export const ResizablePanel: Story = {
 };
 
 /**
+ * Sticky panel that floats over content without pushing it.
+ */
+export const StickyPanel: Story = {
+  render: function StickyPanelStory() {
+    const [isOpen, setIsOpen] = useState(true);
+
+    return (
+      <Layout border height="400px">
+        <Layout.Panel
+          mode="sticky"
+          side="right"
+          size={220}
+          isOpen={isOpen}
+          onOpenChange={setIsOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Quick Actions"
+            onClose={() => setIsOpen(false)}
+          />
+          <Layout.Content>
+            <Text>Floating panel - content stays in place</Text>
+          </Layout.Content>
+        </Layout.Panel>
+        <Layout.Toolbar>
+          <Button onPress={() => setIsOpen(!isOpen)}>
+            {isOpen ? 'Hide' : 'Show'} Panel
+          </Button>
+        </Layout.Toolbar>
+        <Layout.Content>
+          <Text>
+            Main content is NOT pushed by the sticky panel. Main content is NOT
+            pushed by the sticky panel.
+          </Text>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * Overlay panel with backdrop that dismisses on click, Escape, or focus change.
+ */
+export const OverlayPanel: Story = {
+  render: function OverlayPanelStory() {
+    const [isOpen, setIsOpen] = useState(true);
+
+    return (
+      <Layout border height="400px">
+        <Layout.Panel
+          mode="overlay"
+          side="right"
+          size={280}
+          isOpen={isOpen}
+          onOpenChange={setIsOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Details"
+            onClose={() => setIsOpen(false)}
+          />
+          <Layout.Content>
+            <Text>Click backdrop, press Escape, or focus content to close</Text>
+          </Layout.Content>
+        </Layout.Panel>
+        <Layout.Toolbar>
+          <Button type="primary" onPress={() => setIsOpen(true)}>
+            Open Overlay Panel
+          </Button>
+        </Layout.Toolbar>
+        <Layout.Content>
+          <Text>Background content is dimmed when panel is open</Text>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
  * Panel rendered as a dialog overlay instead of inline.
  */
 export const DialogModePanel: Story = {
@@ -211,7 +290,7 @@ export const DialogModePanel: Story = {
     return (
       <Layout border height="400px">
         <Layout.Panel
-          isDialog
+          mode="dialog"
           side="left"
           size={300}
           isDialogOpen={isOpen}

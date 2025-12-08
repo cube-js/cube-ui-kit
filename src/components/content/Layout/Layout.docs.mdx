@@ -166,7 +166,7 @@ Footer area with support for inverted content order (primary actions on right).
 
 ### Layout.Panel
 
-Collapsible side panel with resizing, transitions, and dialog mode support.
+Collapsible side panel with resizing, transitions, and multiple rendering modes.
 
 ```jsx
 <Layout.Panel
@@ -190,6 +190,7 @@ Collapsible side panel with resizing, transitions, and dialog mode support.
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | side | `'left' \| 'right' \| 'top' \| 'bottom'` | `'left'` | Panel position |
+| mode | `'default' \| 'sticky' \| 'overlay' \| 'dialog'` | `'default'` | Panel rendering mode |
 | size | `number` | - | Controlled panel size (px) |
 | defaultSize | `number` | `280` | Initial uncontrolled size |
 | minSize | `number` | `200` | Minimum size constraint |
@@ -201,11 +202,21 @@ Collapsible side panel with resizing, transitions, and dialog mode support.
 | onSizeChange | `(size: number) => void` | - | Size change callback |
 | sizeStorageKey | `string` | - | localStorage key for persisting size |
 | hasTransition | `boolean` | `false` | Enable slide animation |
-| isDialog | `boolean` | `false` | Render as modal dialog |
-| isDialogOpen | `boolean` | - | Controlled dialog state |
+| isDismissable | `boolean` | `true` | Allow dismissing overlay/dialog by click or Escape |
+| overlayStyles | `Styles` | - | Styles for the overlay backdrop in overlay mode |
+| isDialogOpen | `boolean` | - | Controlled dialog state (mode="dialog") |
 | defaultIsDialogOpen | `boolean` | `false` | Initial dialog state |
 | onDialogOpenChange | `(isOpen: boolean) => void` | - | Dialog state callback |
-| dialogProps | `CubeDialogContainerProps` | - | Props for Dialog mode |
+| dialogProps | `CubeDialogContainerProps` | - | Props for dialog mode |
+
+**Panel Modes:**
+
+| Mode | Size Propagation | Overlay | Description |
+|------|-----------------|---------|-------------|
+| `default` | Yes | No | Standard panel that pushes content aside |
+| `sticky` | No | No | Panel floats over content without affecting layout |
+| `overlay` | Yes | Yes | Panel with dismissable backdrop overlay |
+| `dialog` | No | Via Dialog | Panel renders as a modal dialog |
 
 **Modifiers:**
 | Modifier | Type | Description |
@@ -439,6 +450,91 @@ function MultiplePanelsExample() {
     </Layout>
   );
 }
+```
+
+### Sticky Panel
+
+In `sticky` mode, the panel floats over the content without pushing it aside. The main content area remains unaffected by the panel's size.
+
+<Story of={LayoutStories.StickyPanel} />
+
+```jsx
+function StickyPanelExample() {
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+  return (
+    <Layout height="100dvh">
+      <Layout.Panel
+        hasTransition
+        mode="sticky"
+        side="left"
+        size={260}
+        isOpen={isPanelOpen}
+        onOpenChange={setIsPanelOpen}
+      >
+        <Layout.PanelHeader isClosable title="Sticky Panel" onClose={() => setIsPanelOpen(false)} />
+        <Layout.Content padding="1x">
+          <Text>This panel floats over the content.</Text>
+        </Layout.Content>
+      </Layout.Panel>
+      <Layout.Content padding="2x">
+        <Text>Main content stays in place.</Text>
+      </Layout.Content>
+    </Layout>
+  );
+}
+```
+
+### Overlay Panel
+
+In `overlay` mode, a semi-transparent backdrop appears behind the panel. The panel is dismissed (when `isDismissable` is true, which is the default) when:
+- Clicking the backdrop overlay
+- Pressing Escape anywhere in the Layout
+- Moving focus to the main content area
+
+<Story of={LayoutStories.OverlayPanel} />
+
+```jsx
+function OverlayPanelExample() {
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+  return (
+    <Layout height="100dvh">
+      <Layout.Panel
+        hasTransition
+        mode="overlay"
+        side="right"
+        size={300}
+        isOpen={isPanelOpen}
+        onOpenChange={setIsPanelOpen}
+      >
+        <Layout.PanelHeader isClosable title="Overlay Panel" onClose={() => setIsPanelOpen(false)} />
+        <Layout.Content padding="1x">
+          <Text>Click the overlay, press Escape, or focus the main content to close.</Text>
+        </Layout.Content>
+      </Layout.Panel>
+      <Layout.Content padding="2x">
+        <Text>Background content is dimmed.</Text>
+      </Layout.Content>
+    </Layout>
+  );
+}
+```
+
+You can customize the overlay styles using the `overlayStyles` prop:
+
+```jsx
+<Layout.Panel mode="overlay" overlayStyles={{ fill: '#dark.5' }}>
+  {/* Panel with darker overlay */}
+</Layout.Panel>
+```
+
+To prevent dismissing the overlay by clicking or pressing Escape, set `isDismissable={false}`:
+
+```jsx
+<Layout.Panel mode="overlay" isDismissable={false}>
+  {/* User must use explicit controls to close */}
+</Layout.Panel>
 ```
 
 ### Tiny Scrollbar

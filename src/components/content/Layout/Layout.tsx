@@ -1,10 +1,13 @@
 import {
   Children,
   CSSProperties,
+  FocusEvent,
   ForwardedRef,
   forwardRef,
   isValidElement,
+  KeyboardEvent,
   ReactNode,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -195,6 +198,8 @@ function LayoutInner(
   const isDragging = layoutContext?.isDragging ?? false;
   const isReady = layoutContext?.isReady ?? true;
   const markReady = layoutContext?.markReady;
+  const dismissOverlayPanels = layoutContext?.dismissOverlayPanels;
+  const hasOverlayPanels = layoutContext?.hasOverlayPanels ?? false;
 
   // Mark layout as ready after first paint
   // Using useEffect + requestAnimationFrame ensures:
@@ -272,6 +277,30 @@ function LayoutInner(
   // Show dev warning when collapsed and in dev mode (or forced for stories)
   const showDevWarning = isCollapsed && (_forceShowDevWarning || isDevEnv());
 
+  // Handle focus entering the Inner element - dismiss overlay panels
+  const handleInnerFocus = useCallback(
+    (e: FocusEvent) => {
+      // Only dismiss if focus is moving INTO the Inner element (not within it)
+      // and there are overlay panels to dismiss
+      if (hasOverlayPanels && e.target === e.currentTarget) {
+        dismissOverlayPanels?.();
+      }
+    },
+    [hasOverlayPanels, dismissOverlayPanels],
+  );
+
+  // Handle Escape key anywhere in the Layout - dismiss overlay panels
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (hasOverlayPanels && e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        dismissOverlayPanels?.();
+      }
+    },
+    [hasOverlayPanels, dismissOverlayPanels],
+  );
+
   return (
     <LayoutElement
       ref={setRefs}
@@ -279,6 +308,7 @@ function LayoutInner(
       mods={mods}
       styles={finalStyles}
       style={insetStyle}
+      onKeyDown={hasOverlayPanels ? handleKeyDown : undefined}
     >
       {showDevWarning ? (
         <Alert theme="danger">
@@ -291,7 +321,9 @@ function LayoutInner(
           {/* Panels are rendered outside the Inner element */}
           {panels}
           {/* Other content goes inside the Inner element */}
-          <div data-element="Inner">{content}</div>
+          <div data-element="Inner" onFocus={handleInnerFocus}>
+            {content}
+          </div>
         </>
       )}
     </LayoutElement>

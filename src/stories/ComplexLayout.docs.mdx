@@ -210,15 +210,72 @@ Use `invertOrder` to place primary actions on the right.
 
 ## Panel Patterns
 
-### Dialog Mode Panel
+### Panel Modes
 
-Set `isDialog` to render the panel as a modal dialog instead of inline.
+Panels support four rendering modes via the `mode` prop:
 
-<Story of={ComplexLayoutStories.DialogModePanel} />
+| Mode | Content Push | Overlay | Description |
+|------|--------------|---------|-------------|
+| `default` | Yes | No | Standard panel, pushes content |
+| `sticky` | No | No | Floats over content |
+| `overlay` | Yes | Yes | With dismissable backdrop |
+| `dialog` | No | Dialog | Renders as modal dialog |
+
+### Sticky Panel
+
+Panels with `mode="sticky"` float over content without pushing it aside.
+
+<Story of={ComplexLayoutStories.StickyPanel} />
 
 ```jsx live=false
 <Layout.Panel
-  isDialog                           {/* renders as modal overlay instead of inline */}
+  mode="sticky"                      {/* absolute, does NOT push content */}
+  side="right"
+  size={260}
+  isOpen={isOpen}
+  onOpenChange={setIsOpen}
+>
+  <Layout.PanelHeader isClosable title="Quick Actions" onClose={() => setIsOpen(false)} />
+  <Layout.Content>
+    <Text>Floating panel content</Text>
+  </Layout.Content>
+</Layout.Panel>
+```
+
+### Overlay Panel
+
+Panels with `mode="overlay"` show a backdrop and dismiss on:
+- Clicking the backdrop
+- Pressing Escape anywhere in the Layout
+- Moving focus to the main content area
+
+<Story of={ComplexLayoutStories.OverlayPanel} />
+
+```jsx live=false
+<Layout.Panel
+  mode="overlay"                     {/* absolute, backdrop behind panel */}
+  side="right"
+  size={300}
+  isOpen={isOpen}
+  onOpenChange={setIsOpen}
+  overlayStyles={{ fill: '#dark.5' }} {/* optional custom backdrop */}
+>
+  <Layout.PanelHeader isClosable title="Details" onClose={() => setIsOpen(false)} />
+  <Layout.Content>
+    <Text>Panel with backdrop overlay</Text>
+  </Layout.Content>
+</Layout.Panel>
+```
+
+Set `isDismissable={false}` to prevent automatic dismissal.
+
+### Dialog Mode Panel
+
+Panels with `mode="dialog"` render as a modal dialog instead of inline.
+
+```jsx live=false
+<Layout.Panel
+  mode="dialog"                      {/* renders as modal overlay instead of inline */}
   side="left"
   size={300}
   isDialogOpen={isOpen}
@@ -351,7 +408,7 @@ Use `Layout.Grid` for grid-based layouts.
 | `Layout.Header` | Page header with title, breadcrumbs, actions |
 | `Layout.Footer` | Footer bar, typically for actions |
 | `Layout.Toolbar` | Horizontal bar with space-between layout |
-| `Layout.Panel` | Absolutely positioned side panel |
+| `Layout.Panel` | Side panel with modes: default, sticky, overlay, dialog |
 | `Layout.PanelHeader` | Header for panels with close button |
 | `Layout.Pane` | Inline resizable section |
 | `Layout.Flex` | Scrollable flex container |

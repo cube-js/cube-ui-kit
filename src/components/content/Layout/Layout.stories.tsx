@@ -948,3 +948,265 @@ export const ResponsivePanelToDialog: Story = {
     );
   },
 };
+
+/**
+ * In `sticky` mode, the panel floats over the content without pushing it aside.
+ * The main content area is not affected by the panel's size.
+ *
+ * This is useful for temporary overlays, quick actions, or panels that should
+ * not disturb the layout of the main content.
+ */
+export const StickyPanel: Story = {
+  render: function StickyPanelStory() {
+    const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Panel
+          hasTransition
+          mode="sticky"
+          side="right"
+          size={260}
+          isOpen={isPanelOpen}
+          onOpenChange={setIsPanelOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Sticky Panel"
+            onClose={() => setIsPanelOpen(false)}
+          />
+          <Layout.Content padding="1x">
+            <Space direction="vertical" gap="1x">
+              <Text>
+                This panel floats over the content without pushing it aside.
+              </Text>
+              <Text preset="t3" color="#dark-02">
+                Notice how the main content behind remains at its original
+                position.
+              </Text>
+            </Space>
+          </Layout.Content>
+        </Layout.Panel>
+
+        <Layout.Toolbar>
+          <Space>
+            <Button onPress={() => setIsPanelOpen(!isPanelOpen)}>
+              {isPanelOpen ? 'Close' : 'Open'} Sticky Panel
+            </Button>
+            <Title level={4}>Sticky Mode Demo</Title>
+          </Space>
+        </Layout.Toolbar>
+
+        <Layout.Content padding="2x">
+          <Space direction="vertical" gap="2x">
+            <Card>
+              <Title level={5}>Main Content</Title>
+              <Text>
+                This content stays in place when the sticky panel opens. Compare
+                this with the default panel mode where content is pushed aside.
+              </Text>
+            </Card>
+            <Card>
+              <Text preset="t3" color="#dark-02">
+                Use <code>mode=&quot;sticky&quot;</code> for panels that should
+                overlay content temporarily without affecting layout.
+              </Text>
+            </Card>
+          </Space>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * In `overlay` mode, a semi-transparent backdrop appears behind the panel.
+ * The panel closes (when `isDismissable` is true) when:
+ * - Clicking the backdrop overlay
+ * - Pressing Escape anywhere in the Layout
+ * - Moving focus to the main content area
+ *
+ * This mode is ideal for panels that require user attention and should
+ * dim the background content.
+ */
+export const OverlayPanel: Story = {
+  render: function OverlayPanelStory() {
+    const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Panel
+          hasTransition
+          mode="overlay"
+          side="right"
+          size={300}
+          isOpen={isPanelOpen}
+          onOpenChange={setIsPanelOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Overlay Panel"
+            onClose={() => setIsPanelOpen(false)}
+          />
+          <Layout.Content>
+            <Space direction="vertical" gap="1x">
+              <Text>
+                This panel has a backdrop overlay behind it. Click the overlay,
+                press Escape, or focus the main content to close.
+              </Text>
+              <Text preset="t3" color="#dark-02">
+                The overlay dims the main content to draw attention to the
+                panel.
+              </Text>
+              <Button type="primary" onPress={() => setIsPanelOpen(false)}>
+                Done
+              </Button>
+            </Space>
+          </Layout.Content>
+        </Layout.Panel>
+
+        <Layout.Toolbar>
+          <Space>
+            <Button type="primary" onPress={() => setIsPanelOpen(true)}>
+              Open Overlay Panel
+            </Button>
+            <Title level={4}>Overlay Mode Demo</Title>
+          </Space>
+        </Layout.Toolbar>
+
+        <Layout.Content>
+          <Space direction="vertical" gap="2x">
+            <Card>
+              <Title level={5}>Background Content</Title>
+              <Text>
+                When the overlay panel is open, this content is dimmed. Click
+                the backdrop, press Escape, or Tab to focus this content to
+                dismiss the panel.
+              </Text>
+            </Card>
+            <Card>
+              <Text preset="t3" color="#dark-02">
+                Use <code>mode=&quot;overlay&quot;</code> for panels that need
+                user attention and should visually separate from background
+                content.
+              </Text>
+            </Card>
+          </Space>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * The overlay backdrop can be customized using the `overlayStyles` prop.
+ * This example shows a darker overlay with custom fill color.
+ */
+export const OverlayPanelCustomStyles: Story = {
+  render: function OverlayPanelCustomStylesStory() {
+    const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Panel
+          hasTransition
+          mode="overlay"
+          side="left"
+          size={280}
+          overlayStyles={{ fill: '#dark.5' }}
+          isOpen={isPanelOpen}
+          onOpenChange={setIsPanelOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Dark Overlay"
+            onClose={() => setIsPanelOpen(false)}
+          />
+          <Layout.Content>
+            <Text>
+              This overlay uses a darker backdrop with{' '}
+              <code>
+                overlayStyles=&#123;&#123; fill: &apos;#dark.5&apos;
+                &#125;&#125;
+              </code>
+            </Text>
+          </Layout.Content>
+        </Layout.Panel>
+
+        <Layout.Toolbar>
+          <Button onPress={() => setIsPanelOpen(!isPanelOpen)}>
+            Toggle Dark Overlay Panel
+          </Button>
+        </Layout.Toolbar>
+
+        <Layout.Content>
+          <Card>
+            <Text>
+              The <code>overlayStyles</code> prop accepts any valid tasty
+              styles.
+            </Text>
+          </Card>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * When `isDismissable` is set to `false`, clicking the overlay or pressing
+ * Escape will not close the panel. The user must use explicit controls to close it.
+ */
+export const OverlayPanelNotDismissable: Story = {
+  render: function OverlayPanelNotDismissableStory() {
+    const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Panel
+          hasTransition
+          mode="overlay"
+          side="right"
+          size={300}
+          isDismissable={false}
+          isOpen={isPanelOpen}
+          onOpenChange={setIsPanelOpen}
+        >
+          <Layout.PanelHeader title="Required Action" />
+          <Layout.Content padding="1x">
+            <Space direction="vertical" gap="1x">
+              <Text>
+                This panel cannot be dismissed by clicking the overlay or
+                pressing Escape.
+              </Text>
+              <Text preset="t3" color="#dark-02">
+                Use this pattern when user must complete an action before
+                continuing.
+              </Text>
+              <Button type="primary" onPress={() => setIsPanelOpen(false)}>
+                Complete Action
+              </Button>
+            </Space>
+          </Layout.Content>
+        </Layout.Panel>
+
+        <Layout.Toolbar>
+          <Space>
+            <Button type="primary" onPress={() => setIsPanelOpen(true)}>
+              Open Non-Dismissable Panel
+            </Button>
+            <Title level={4}>Non-Dismissable Overlay</Title>
+          </Space>
+        </Layout.Toolbar>
+
+        <Layout.Content padding="2x">
+          <Card>
+            <Text>
+              Set <code>isDismissable=&#123;false&#125;</code> when the panel
+              requires explicit user action to close.
+            </Text>
+          </Card>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};

@@ -256,6 +256,28 @@ const ResizeHandlerElement = tasty({
   },
 });
 
+// Overlay backdrop for overlay mode - covers the content area behind the panel
+const OverlayBackdrop = tasty({
+  qa: 'PanelOverlay',
+  styles: {
+    position: 'absolute',
+    inset: 0,
+    zIndex: 9, // Below panel (10) but above content
+    // fill: '#white.2',
+    backdropFilter: 'invert(.15)',
+    cursor: 'pointer',
+    opacity: {
+      '': 0,
+      visible: 1,
+    },
+    pointerEvents: {
+      '': 'none',
+      visible: 'auto',
+    },
+    transition: 'opacity .15s ease-out',
+  },
+});
+
 interface ResizeHandlerProps {
   side: Side;
   isDisabled?: boolean;
@@ -305,9 +327,20 @@ function ResizeHandler(props: ResizeHandlerProps) {
   );
 }
 
+/** Panel rendering mode */
+export type LayoutPanelMode = 'default' | 'sticky' | 'overlay' | 'dialog';
+
 export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
   /** Side of the layout where panel is positioned */
   side: Side;
+  /**
+   * Panel rendering mode:
+   * - `default`: Standard panel that pushes content aside
+   * - `sticky`: Panel floats over content without pushing it
+   * - `overlay`: Panel with dismissable backdrop overlay
+   * - `dialog`: Panel renders as a modal dialog
+   */
+  mode?: LayoutPanelMode;
   /** Panel size (width for left/right, height for top/bottom) - controlled */
   size?: number | string;
   /** Default panel size for uncontrolled state */
@@ -328,9 +361,18 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
   onOpenChange?: (isOpen: boolean) => void;
   /** Enable slide transition on open/close */
   hasTransition?: boolean;
-  /** Switch to dialog mode (renders panel inside Dialog) */
+  /**
+   * Whether the panel can be dismissed by clicking the overlay (overlay mode) or pressing Escape.
+   * Only applies to `overlay` and `dialog` modes. Default: true
+   */
+  isDismissable?: boolean;
+  /** Styles for the overlay backdrop in overlay mode */
+  overlayStyles?: Styles;
+  /**
+   * @deprecated Use `mode="dialog"` instead. Switch to dialog mode (renders panel inside Dialog)
+   */
   isDialog?: boolean;
-  /** Controlled dialog open state */
+  /** Controlled dialog open state (used with mode="dialog") */
   isDialogOpen?: boolean;
   /** Default dialog open state */
   defaultIsDialogOpen?: boolean;
@@ -362,6 +404,7 @@ function LayoutPanel(
 
   const {
     side = 'left',
+    mode: modeProp,
     size: providedSize,
     defaultSize = 280,
     minSize = 200,
@@ -372,6 +415,9 @@ function LayoutPanel(
     defaultIsOpen = true,
     onOpenChange,
     hasTransition: hasTransitionProp,
+    isDismissable = true,
+    overlayStyles,
+    // Deprecated prop - use mode="dialog" instead
     isDialog = false,
     isDialogOpen: providedIsDialogOpen,
     defaultIsDialogOpen = false,
@@ -384,6 +430,12 @@ function LayoutPanel(
     mods,
     ...otherProps
   } = props;
+
+  // Resolve mode from prop or deprecated isDialog
+  const mode: LayoutPanelMode = modeProp ?? (isDialog ? 'dialog' : 'default');
+  const isDialogMode = mode === 'dialog';
+  const isOverlayMode = mode === 'overlay';
+  const isStickyMode = mode === 'sticky';
 
   // Use prop value if provided, otherwise fall back to context value
   const hasTransition = hasTransitionProp ?? layoutContext.hasTransition;
@@ -498,7 +550,9 @@ function LayoutPanel(
 
   // Register panel with layout context
   // Include handler outside portion (minus border overlap) for proper content inset
-  const effectivePanelSize = isOpen && !isDialog ? size : 0;
+  // In sticky and dialog modes, panel doesn't push content, so size is 0
+  const effectivePanelSize =
+    isOpen && mode === 'default' ? size : isOpen && isOverlayMode ? size : 0;
   const effectiveInsetSize = Math.round(
     effectivePanelSize +
       (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
@@ -536,6 +590,30 @@ function LayoutPanel(
     },
     [onOpenChange],
   );
+
+  // Dismiss handler for overlay mode (click on overlay)
+  const handleDismiss = useCallback(() => {
+    if (isDismissable) {
+      handleOpenChange(false);
+    }
+  }, [isDismissable, handleOpenChange]);
+
+  // Register overlay panel with Layout context for coordinated dismissal
+  const { registerOverlayPanel } = layoutContext;
+
+  useEffect(() => {
+    // Only register if in overlay mode, open, and dismissable
+    if (isOverlayMode && isOpen && isDismissable) {
+      const unregister = registerOverlayPanel(() => handleOpenChange(false));
+      return unregister;
+    }
+  }, [
+    isOverlayMode,
+    isOpen,
+    isDismissable,
+    registerOverlayPanel,
+    handleOpenChange,
+  ]);
 
   const handleDialogOpenChange = useCallback(
     (newIsOpen: boolean) => {
@@ -608,44 +686,58 @@ function LayoutPanel(
   const renderPanelContent = (
     offscreen = false,
     transitionRef?: RefCallback<HTMLElement>,
-  ) => (
-    <>
-      <PanelElement
-        ref={(node: HTMLDivElement | null) =>
-          panelRefCallback(node, transitionRef)
-        }
-        {...filterBaseProps(otherProps, { eventProps: true })}
-        mods={{ ...panelMods, offscreen }}
-        styles={finalStyles}
-        style={panelStyle}
-        data-side={side}
-      >
-        <LayoutPanelContext.Provider value={panelContextValue}>
-          <LayoutContextReset>{children}</LayoutContextReset>
-        </LayoutPanelContext.Provider>
-      </PanelElement>
-      {isResizable && (
-        <ResizeHandler
-          side={side}
-          isDisabled={!isResizable}
-          mods={{
-            drag: isDragging,
-            offscreen,
-            'has-transition': hasTransition && isReady,
-          }}
-          moveProps={moveProps}
+  ) => {
+    const showOverlay = isOverlayMode && !offscreen;
+
+    return (
+      <>
+        {/* Overlay backdrop for overlay mode */}
+        {isOverlayMode && (
+          <OverlayBackdrop
+            mods={{ visible: showOverlay }}
+            styles={overlayStyles}
+            aria-hidden="true"
+            onClick={handleDismiss}
+          />
+        )}
+        <PanelElement
+          ref={(node: HTMLDivElement | null) =>
+            panelRefCallback(node, transitionRef)
+          }
+          {...filterBaseProps(otherProps, { eventProps: true })}
+          mods={{ ...panelMods, offscreen }}
+          styles={finalStyles}
           style={panelStyle}
-          onDoubleClick={handleResetSize}
-        />
-      )}
-    </>
-  );
+          data-side={side}
+        >
+          <LayoutPanelContext.Provider value={panelContextValue}>
+            <LayoutContextReset>{children}</LayoutContextReset>
+          </LayoutPanelContext.Provider>
+        </PanelElement>
+        {isResizable && (
+          <ResizeHandler
+            side={side}
+            isDisabled={!isResizable}
+            mods={{
+              drag: isDragging,
+              offscreen,
+              'has-transition': hasTransition && isReady,
+            }}
+            moveProps={moveProps}
+            style={panelStyle}
+            onDoubleClick={handleResetSize}
+          />
+        )}
+      </>
+    );
+  };
 
   // Dialog mode
-  if (isDialog) {
+  if (isDialogMode) {
     return (
       <DialogContainer
         isOpen={dialogOpen}
+        isDismissable={isDismissable}
         onDismiss={() => handleDialogOpenChange(false)}
         {...dialogProps}
       >
