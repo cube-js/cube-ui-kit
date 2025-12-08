@@ -66,14 +66,11 @@ function LayoutContainer(
     innerStylesProp,
   );
 
+  const hasInnerStyles = Object.keys(innerStyles).length > 0;
+
   const finalStyles = useMemo(() => {
-    return mergeStyles(
-      styles,
-      innerStyles || innerStylesProp
-        ? { Inner: mergeStyles(innerStyles, innerStylesProp) }
-        : null,
-    );
-  }, [styles, innerStyles, innerStylesProp]);
+    return mergeStyles(styles, hasInnerStyles ? { Inner: innerStyles } : null);
+  }, [styles, hasInnerStyles, innerStyles]);
 
   return (
     <ContainerElement
