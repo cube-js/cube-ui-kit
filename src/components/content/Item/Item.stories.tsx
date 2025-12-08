@@ -2229,3 +2229,119 @@ DifferentShapes.parameters = {
     },
   },
 };
+
+export const WithHighlight: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Basic Highlight</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        highlight="user"
+      >
+        User account settings
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconSettings />}
+        highlight="settings"
+      >
+        Application settings panel
+      </Item>
+    </Space>
+
+    <Title level={5}>Case Sensitivity</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        highlight="USER"
+      >
+        Case-insensitive: USER and user match
+      </Item>
+      <Item
+        {...args}
+        highlightCaseSensitive
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        highlight="USER"
+      >
+        Case-sensitive: USER matches, user does not
+      </Item>
+    </Space>
+
+    <Title level={5}>Multiple Matches</Title>
+    <Item
+      {...args}
+      styles={DEFAULT_STYLES}
+      type="outline"
+      icon={<IconCoin />}
+      highlight="the"
+    >
+      The quick brown fox jumps over the lazy dog
+    </Item>
+
+    <Title level={5}>With Custom Highlight Styles</Title>
+    <Item
+      {...args}
+      styles={DEFAULT_STYLES}
+      type="outline"
+      icon={<IconUser />}
+      highlight="custom"
+      highlightStyles={{ fill: '#success', color: '#success-text' }}
+    >
+      Item with custom highlight style
+    </Item>
+
+    <Title level={5}>Combined with Other Features</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconCoin />}
+        rightIcon={<DirectionIcon to="bottom" />}
+        description="Product details"
+        descriptionPlacement="inline"
+        highlight="product"
+      >
+        Product name with highlight
+      </Item>
+      <Item
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        highlight="actions"
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Item with actions and highlight
+      </Item>
+    </Space>
+  </Space>
+);
+
+WithHighlight.args = {
+  width: '400px',
+};
+
+WithHighlight.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the `highlight`, `highlightCaseSensitive`, and `highlightStyles` props for highlighting text within the Item label. Only works when children is a plain string. By default, matching is case-insensitive.',
+    },
+  },
+};

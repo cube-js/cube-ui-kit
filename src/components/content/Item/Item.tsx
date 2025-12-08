@@ -53,7 +53,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { mergeProps } from '../../../utils/react';
+import { highlightText, mergeProps } from '../../../utils/react';
 import { ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
@@ -167,6 +167,20 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * Ref to access the label element directly
    */
   labelRef?: RefObject<HTMLElement>;
+  /**
+   * String to highlight within children.
+   * Only works when children is a plain string.
+   */
+  highlight?: string;
+  /**
+   * Whether highlight matching is case-sensitive.
+   * @default false
+   */
+  highlightCaseSensitive?: boolean;
+  /**
+   * Custom styles for highlighted text.
+   */
+  highlightStyles?: Styles;
 }
 
 const DEFAULT_ICON_STYLES: Styles = {
@@ -484,6 +498,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isButton = false,
     shape = 'button',
     defaultTooltipPlacement = 'top',
+    highlight,
+    highlightCaseSensitive = false,
+    highlightStyles,
     ...rest
   } = props;
 
@@ -616,6 +633,19 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isDynamicLabel: !!actions,
   });
 
+  // Process children with highlight if applicable
+  const processedChildren = useMemo(() => {
+    if (typeof children === 'string' && highlight) {
+      return highlightText(
+        children,
+        highlight,
+        highlightCaseSensitive,
+        highlightStyles,
+      );
+    }
+    return children;
+  }, [children, highlight, highlightCaseSensitive, highlightStyles]);
+
   // Render function that creates the item element
   const renderItemElement = (
     tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
@@ -664,7 +694,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
         {children || labelProps ? (
           <div data-element="Label" {...finalLabelProps} ref={labelRef}>
-            {children}
+            {processedChildren}
           </div>
         ) : null}
         {showDescription ? (
