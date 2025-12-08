@@ -708,7 +708,10 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         pressed: isPressed,
       }}
       data-size={size}
-      styles={styles}
+      styles={{
+        ...(styles as Styles),
+        ...(filteredItemProps.styles as Styles),
+      }}
       labelProps={labelProps}
       descriptionProps={descriptionProps}
       defaultTooltipPlacement="right"
