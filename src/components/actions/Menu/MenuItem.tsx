@@ -6,6 +6,7 @@ import { TreeState } from 'react-stately';
 import { RightIcon } from '../../../icons';
 import { Styles } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
+import { filterCollectionItemProps } from '../../CollectionItem';
 import { Item } from '../../content/Item/Item';
 
 import { useMenuContext } from './context';
@@ -32,9 +33,12 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   // Check if this item is wrapped in a SubmenuTriggerContext
   const submenuContext = useContext(SubmenuTriggerContext);
 
-  // Extract optional keyboard shortcut and CommandMenu-specific props from item props so they are not passed down to DOM elements.
-  const { hotkeys, wrapper, keywords, forceMount, ...cleanItemProps } =
-    (itemProps || {}) as any;
+  // Filter out service props (react-stately and parent-handled props)
+  // All remaining props are safe to pass to Item component
+  const filteredItemProps = filterCollectionItemProps(itemProps);
+
+  // Extract specific props that need special handling
+  const { hotkeys, mods: itemMods, qa: itemQa } = filteredItemProps;
 
   const isSelectable = state.selectionManager.selectionMode !== 'none';
   const isDisabledKey =
@@ -69,21 +73,6 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     elementRef,
   );
 
-  // Destructure presentation-related props from cleanItemProps so they are not spread onto DOM element
-  const {
-    suffix,
-    description,
-    icon,
-    rightIcon,
-    prefix,
-    tooltip,
-    actions,
-    mods: itemMods,
-    qa: itemQa,
-    textValue,
-    ...restCleanProps
-  } = cleanItemProps as any;
-
   // Selection indicator will be handled by Item component
   const isVirtualFocused = state.selectionManager.focusedKey === key;
 
@@ -100,7 +89,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   return (
     <FocusRing>
       <Item
-        {...mergeProps(menuItemProps, restCleanProps, {
+        {...mergeProps(menuItemProps, filteredItemProps, {
           'data-popover-trigger': true,
           qa: itemQa ? itemQa : `MenuItem-${key}`,
           mods,
@@ -129,14 +118,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
         })}
         ref={elementRef}
         disableActionsFocus={true}
-        icon={icon}
-        rightIcon={submenuContext ? <RightIcon /> : rightIcon}
-        prefix={prefix}
-        suffix={suffix}
-        description={description}
-        hotkeys={hotkeys}
-        tooltip={tooltip}
-        actions={actions}
+        rightIcon={submenuContext ? <RightIcon /> : filteredItemProps.rightIcon}
         defaultTooltipPlacement="right"
         isSelected={isSelectable ? isSelected : undefined}
         isDisabled={isDisabled}

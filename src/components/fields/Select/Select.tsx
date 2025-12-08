@@ -58,7 +58,10 @@ import {
   StyledSectionHeading as ListSectionHeading,
   StyledSection as ListSectionWrapper,
 } from '../../actions/Menu/styled';
-import { CollectionItem } from '../../CollectionItem';
+import {
+  CollectionItem,
+  filterCollectionItemProps,
+} from '../../CollectionItem';
 import { CubeItemProps, Item } from '../../content/Item';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
@@ -690,23 +693,13 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   // style to the focused option
   let { isFocused, focusProps } = useFocus({ isDisabled });
 
-  const {
-    qa,
-    description,
-    icon,
-    prefix,
-    suffix,
-    rightIcon,
-    descriptionPlacement,
-    tooltip,
-    styles: itemStyles,
-  } = ((item as any)?.props || {}) as CubeItemProps;
+  // Filter out service props - all remaining props can be passed to Item
+  const filteredItemProps = filterCollectionItemProps(item.props);
 
   return (
     <OptionItem
-      {...mergeProps(optionProps, focusProps)}
+      {...mergeProps(optionProps, focusProps, filteredItemProps)}
       ref={ref}
-      qa={qa}
       mods={{
         listboxitem: true,
         selected: isSelected,
@@ -715,16 +708,12 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         pressed: isPressed,
       }}
       data-size={size}
-      styles={{ ...(styles as Styles), ...(itemStyles as Styles) }}
-      icon={icon}
-      prefix={prefix}
-      suffix={suffix}
-      rightIcon={rightIcon}
-      description={description}
-      descriptionPlacement={descriptionPlacement}
+      styles={{
+        ...(styles as Styles),
+        ...(filteredItemProps.styles as Styles),
+      }}
       labelProps={labelProps}
       descriptionProps={descriptionProps}
-      tooltip={tooltip}
       defaultTooltipPlacement="right"
     >
       {item.rendered}
