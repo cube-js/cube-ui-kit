@@ -51,7 +51,7 @@ export const WithToolbar: Story = {
           <Button type="primary">Profile</Button>
         </Space>
       </Layout.Toolbar>
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Main content with toolbar above</Text>
       </Layout.Content>
     </Layout>
@@ -74,7 +74,7 @@ export const WithBreadcrumbs: Story = {
           </Space>
         }
       />
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Analytics content</Text>
       </Layout.Content>
     </Layout>
@@ -98,18 +98,16 @@ export const WithSidePanel: Story = {
             title="Navigation"
             onClose={() => setIsPanelOpen(false)}
           />
-          <Layout.Content padding="1x">
-            <Space direction="vertical" gap="0.5x">
-              <Button type="neutral" width="100%">
-                Dashboard
-              </Button>
-              <Button type="neutral" width="100%">
-                Reports
-              </Button>
-              <Button type="neutral" width="100%">
-                Settings
-              </Button>
-            </Space>
+          <Layout.Content gap="0.5x">
+            <Button type="neutral" width="100%">
+              Dashboard
+            </Button>
+            <Button type="neutral" width="100%">
+              Reports
+            </Button>
+            <Button type="neutral" width="100%">
+              Settings
+            </Button>
           </Layout.Content>
         </Layout.Panel>
         <Layout.Toolbar>
@@ -120,7 +118,7 @@ export const WithSidePanel: Story = {
             <Title level={4}>App</Title>
           </Space>
         </Layout.Toolbar>
-        <Layout.Content padding="2x">
+        <Layout.Content>
           <Text>Main content area</Text>
         </Layout.Content>
       </Layout>
@@ -143,11 +141,11 @@ export const ResizablePanel: Story = {
           onSizeChange={setSize}
         >
           <Layout.PanelHeader title="Resizable" />
-          <Layout.Content padding="1x">
+          <Layout.Content>
             <Text>Drag the edge to resize (current: {size}px)</Text>
           </Layout.Content>
         </Layout.Panel>
-        <Layout.Content padding="2x">
+        <Layout.Content>
           <Text>Main content area</Text>
         </Layout.Content>
       </Layout>
@@ -172,7 +170,7 @@ export const PanelWithTransition: Story = {
             title="Details"
             onClose={() => setIsPanelOpen(false)}
           />
-          <Layout.Content padding="1x">
+          <Layout.Content>
             <Text>Panel content with slide transition</Text>
           </Layout.Content>
         </Layout.Panel>
@@ -181,7 +179,7 @@ export const PanelWithTransition: Story = {
             {isPanelOpen ? 'Close' : 'Open'} Panel
           </Button>
         </Layout.Toolbar>
-        <Layout.Content padding="2x">
+        <Layout.Content>
           <Text>Main content area</Text>
         </Layout.Content>
       </Layout>
@@ -193,7 +191,7 @@ export const ScrollableContent: Story = {
   render: () => (
     <Layout height="100dvh">
       <Layout.Header title="Scrollable Content" />
-      <Layout.Content padding="2x" scrollbar="thin">
+      <Layout.Content scrollbar="thin">
         {Array.from({ length: 20 }, (_, i) => (
           <div key={i} style={{ padding: '8px' }}>
             <Text>
@@ -211,7 +209,7 @@ export const TinyScrollbar: Story = {
   render: () => (
     <Layout height="100dvh">
       <Layout.Header title="Tiny Scrollbar" />
-      <Layout.Content padding="2x" scrollbar="tiny">
+      <Layout.Content scrollbar="tiny">
         {Array.from({ length: 20 }, (_, i) => (
           <div key={i} style={{ padding: '8px' }}>
             <Text>
@@ -229,7 +227,7 @@ export const FooterWithInvertedOrder: Story = {
   render: () => (
     <Layout height="100dvh">
       <Layout.Header title="Footer Actions" />
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Content area</Text>
       </Layout.Content>
       <Layout.Footer invertOrder>
@@ -377,7 +375,7 @@ export const MultiplePanels: Story = {
             title="Left"
             onClose={() => setLeftOpen(false)}
           />
-          <Layout.Content padding="1x">
+          <Layout.Content>
             <Text>Left panel</Text>
           </Layout.Content>
         </Layout.Panel>
@@ -387,7 +385,7 @@ export const MultiplePanels: Story = {
             title="Right"
             onClose={() => setRightOpen(false)}
           />
-          <Layout.Content padding="1x">
+          <Layout.Content>
             <Text>Right panel</Text>
           </Layout.Content>
         </Layout.Panel>
@@ -395,7 +393,7 @@ export const MultiplePanels: Story = {
           <Button onPress={() => setLeftOpen(!leftOpen)}>Left</Button>
           <Button onPress={() => setRightOpen(!rightOpen)}>Right</Button>
         </Layout.Toolbar>
-        <Layout.Content padding="2x">
+        <Layout.Content>
           <Text>Main content between two panels</Text>
         </Layout.Content>
       </Layout>
@@ -638,7 +636,7 @@ export const AutoHeight: Story = {
       </Text>
       <Layout fill="#light">
         <Layout.Header title="Auto-Height Layout" />
-        <Layout.Content padding="2x">
+        <Layout.Content>
           <Text>
             This Layout has no explicit height prop but stretches to fill the
             parent container because the parent has a defined height.
@@ -665,7 +663,7 @@ export const CollapsedWithWarning: Story = {
       </Text>
       <Layout _forceShowDevWarning fill="#light">
         <Layout.Header title="Collapsed Layout" />
-        <Layout.Content padding="2x">
+        <Layout.Content>
           <Text>This content is hidden when collapsed</Text>
         </Layout.Content>
       </Layout>
@@ -794,21 +792,19 @@ export const PanelAsDialog: Story = {
             title="Panel as Dialog"
             onClose={() => setIsDialogOpen(false)}
           />
-          <Layout.Content>
-            <Space direction="vertical" gap="1x">
-              <Text>
-                This panel renders as a Dialog overlay instead of an inline side
-                panel.
-              </Text>
-              <Text preset="t3" color="#dark-02">
-                Useful for mobile-responsive layouts where side panels should
-                become modal dialogs on smaller screens.
-              </Text>
-              <Space direction="vertical" gap="1bw">
-                <ItemButton type="neutral">Menu Item 1</ItemButton>
-                <ItemButton type="neutral">Menu Item 2</ItemButton>
-                <ItemButton type="neutral">Menu Item 3</ItemButton>
-              </Space>
+          <Layout.Content gap="1x">
+            <Text>
+              This panel renders as a Dialog overlay instead of an inline side
+              panel.
+            </Text>
+            <Text preset="t3" color="#dark-02">
+              Useful for mobile-responsive layouts where side panels should
+              become modal dialogs on smaller screens.
+            </Text>
+            <Space direction="vertical" gap="1bw">
+              <ItemButton type="neutral">Menu Item 1</ItemButton>
+              <ItemButton type="neutral">Menu Item 2</ItemButton>
+              <ItemButton type="neutral">Menu Item 3</ItemButton>
             </Space>
           </Layout.Content>
           <Layout.Footer invertOrder>
@@ -827,17 +823,15 @@ export const PanelAsDialog: Story = {
           </Space>
         </Layout.Toolbar>
 
-        <Layout.Content padding="2x">
-          <Space direction="vertical" gap="2x">
-            <Text>
-              Click the button above to open the panel as a dialog overlay.
-            </Text>
-            <Text preset="t3" color="#dark-02">
-              The panel uses <code>isDialog=true</code> to render inside a
-              DialogContainer instead of being positioned absolutely within the
-              Layout.
-            </Text>
-          </Space>
+        <Layout.Content gap="2x">
+          <Text>
+            Click the button above to open the panel as a dialog overlay.
+          </Text>
+          <Text preset="t3" color="#dark-02">
+            The panel uses <code>isDialog=true</code> to render inside a
+            DialogContainer instead of being positioned absolutely within the
+            Layout.
+          </Text>
         </Layout.Content>
       </Layout>
     );
@@ -874,33 +868,31 @@ export const ResponsivePanelToDialog: Story = {
             title="Filters"
             onClose={() => setIsPanelOpen(false)}
           />
-          <Layout.Content padding=".5x">
-            <Space direction="vertical" gap="1bw">
-              <Title level={5} preset="c2" color="#dark-04" padding=".5x">
-                Categories
-              </Title>
-              <ItemButton type="neutral" width="100%">
-                Electronics
-              </ItemButton>
-              <ItemButton type="neutral" width="100%">
-                Clothing
-              </ItemButton>
-              <ItemButton type="neutral" width="100%">
-                Home & Garden
-              </ItemButton>
-              <Title level={5} preset="c2" color="#dark-04" padding=".5x">
-                Price Range
-              </Title>
-              <ItemButton type="neutral" width="100%">
-                Under $50
-              </ItemButton>
-              <ItemButton type="neutral" width="100%">
-                $50 - $100
-              </ItemButton>
-              <ItemButton type="neutral" width="100%">
-                Over $100
-              </ItemButton>
-            </Space>
+          <Layout.Content padding=".5x" gap="1bw">
+            <Title level={5} preset="c2" color="#dark-04" padding=".5x">
+              Categories
+            </Title>
+            <ItemButton type="neutral" width="100%">
+              Electronics
+            </ItemButton>
+            <ItemButton type="neutral" width="100%">
+              Clothing
+            </ItemButton>
+            <ItemButton type="neutral" width="100%">
+              Home & Garden
+            </ItemButton>
+            <Title level={5} preset="c2" color="#dark-04" padding=".5x">
+              Price Range
+            </Title>
+            <ItemButton type="neutral" width="100%">
+              Under $50
+            </ItemButton>
+            <ItemButton type="neutral" width="100%">
+              $50 - $100
+            </ItemButton>
+            <ItemButton type="neutral" width="100%">
+              Over $100
+            </ItemButton>
           </Layout.Content>
         </Layout.Panel>
 
@@ -921,7 +913,7 @@ export const ResponsivePanelToDialog: Story = {
           </Button>
         </Layout.Toolbar>
 
-        <Layout.Content padding="1x" gap="2x">
+        <Layout.Content gap="2x">
           <Card>
             <Title level={5}>
               Current Mode:{' '}
@@ -947,4 +939,304 @@ export const ResponsivePanelToDialog: Story = {
       </Layout>
     );
   },
+};
+
+/**
+ * In `sticky` mode, the panel floats over the content without pushing it aside.
+ * The main content area is not affected by the panel's size.
+ *
+ * This is useful for temporary overlays, quick actions, or panels that should
+ * not disturb the layout of the main content.
+ */
+export const StickyPanel: Story = {
+  render: function StickyPanelStory() {
+    const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Panel
+          hasTransition
+          mode="sticky"
+          side="right"
+          size={260}
+          isOpen={isPanelOpen}
+          onOpenChange={setIsPanelOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Sticky Panel"
+            onClose={() => setIsPanelOpen(false)}
+          />
+          <Layout.Content gap="1x">
+            <Text>
+              This panel floats over the content without pushing it aside.
+            </Text>
+            <Text preset="t3" color="#dark-02">
+              Notice how the main content behind remains at its original
+              position.
+            </Text>
+          </Layout.Content>
+        </Layout.Panel>
+
+        <Layout.Toolbar>
+          <Space>
+            <Button onPress={() => setIsPanelOpen(!isPanelOpen)}>
+              {isPanelOpen ? 'Close' : 'Open'} Sticky Panel
+            </Button>
+            <Title level={4}>Sticky Mode Demo</Title>
+          </Space>
+        </Layout.Toolbar>
+
+        <Layout.Content gap="2x">
+          <Card>
+            <Title level={5}>Main Content</Title>
+            <Text>
+              This content stays in place when the sticky panel opens. Compare
+              this with the default panel mode where content is pushed aside.
+            </Text>
+          </Card>
+          <Card>
+            <Text preset="t3" color="#dark-02">
+              Use <code>mode=&quot;sticky&quot;</code> for panels that should
+              overlay content temporarily without affecting layout.
+            </Text>
+          </Card>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * In `overlay` mode, a semi-transparent backdrop appears behind the panel.
+ * The panel closes (when `isDismissable` is true) when:
+ * - Clicking the backdrop overlay
+ * - Pressing Escape anywhere in the Layout
+ * - Moving focus to the main content area
+ *
+ * This mode is ideal for panels that require user attention and should
+ * dim the background content.
+ */
+export const OverlayPanel: Story = {
+  render: function OverlayPanelStory() {
+    const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Panel
+          hasTransition
+          mode="overlay"
+          side="right"
+          size={300}
+          isOpen={isPanelOpen}
+          onOpenChange={setIsPanelOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Overlay Panel"
+            onClose={() => setIsPanelOpen(false)}
+          />
+          <Layout.Content gap="1x">
+            <Text>
+              This panel has a backdrop overlay behind it. Click the overlay,
+              press Escape, or focus the main content to close.
+            </Text>
+            <Text preset="t3" color="#dark-02">
+              The overlay dims the main content to draw attention to the panel.
+            </Text>
+            <Button type="primary" onPress={() => setIsPanelOpen(false)}>
+              Done
+            </Button>
+          </Layout.Content>
+        </Layout.Panel>
+
+        <Layout.Toolbar>
+          <Space>
+            <Button type="primary" onPress={() => setIsPanelOpen(true)}>
+              Open Overlay Panel
+            </Button>
+            <Title level={4}>Overlay Mode Demo</Title>
+          </Space>
+        </Layout.Toolbar>
+
+        <Layout.Content gap="2x">
+          <Card>
+            <Title level={5}>Background Content</Title>
+            <Text>
+              When the overlay panel is open, this content is dimmed. Click the
+              backdrop, press Escape, or Tab to focus this content to dismiss
+              the panel.
+            </Text>
+          </Card>
+          <Card>
+            <Text preset="t3" color="#dark-02">
+              Use <code>mode=&quot;overlay&quot;</code> for panels that need
+              user attention and should visually separate from background
+              content.
+            </Text>
+          </Card>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * The overlay backdrop can be customized using the `overlayStyles` prop.
+ * This example shows a darker overlay with custom fill color.
+ */
+export const OverlayPanelCustomStyles: Story = {
+  render: function OverlayPanelCustomStylesStory() {
+    const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Panel
+          hasTransition
+          mode="overlay"
+          side="left"
+          size={280}
+          overlayStyles={{ fill: '#dark.5' }}
+          isOpen={isPanelOpen}
+          onOpenChange={setIsPanelOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Dark Overlay"
+            onClose={() => setIsPanelOpen(false)}
+          />
+          <Layout.Content>
+            <Text>
+              This overlay uses a darker backdrop with{' '}
+              <code>
+                overlayStyles=&#123;&#123; fill: &apos;#dark.5&apos;
+                &#125;&#125;
+              </code>
+            </Text>
+          </Layout.Content>
+        </Layout.Panel>
+
+        <Layout.Toolbar>
+          <Button onPress={() => setIsPanelOpen(!isPanelOpen)}>
+            Toggle Dark Overlay Panel
+          </Button>
+        </Layout.Toolbar>
+
+        <Layout.Content>
+          <Card>
+            <Text>
+              The <code>overlayStyles</code> prop accepts any valid tasty
+              styles.
+            </Text>
+          </Card>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * When `isDismissable` is set to `false`, clicking the overlay or pressing
+ * Escape will not close the panel. The user must use explicit controls to close it.
+ */
+export const OverlayPanelNotDismissable: Story = {
+  render: function OverlayPanelNotDismissableStory() {
+    const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Panel
+          hasTransition
+          mode="overlay"
+          side="right"
+          size={300}
+          isDismissable={false}
+          isOpen={isPanelOpen}
+          onOpenChange={setIsPanelOpen}
+        >
+          <Layout.PanelHeader title="Required Action" />
+          <Layout.Content gap="1x">
+            <Text>
+              This panel cannot be dismissed by clicking the overlay or pressing
+              Escape.
+            </Text>
+            <Text preset="t3" color="#dark-02">
+              Use this pattern when user must complete an action before
+              continuing.
+            </Text>
+            <Button type="primary" onPress={() => setIsPanelOpen(false)}>
+              Complete Action
+            </Button>
+          </Layout.Content>
+        </Layout.Panel>
+
+        <Layout.Toolbar>
+          <Space>
+            <Button type="primary" onPress={() => setIsPanelOpen(true)}>
+              Open Non-Dismissable Panel
+            </Button>
+            <Title level={4}>Non-Dismissable Overlay</Title>
+          </Space>
+        </Layout.Toolbar>
+
+        <Layout.Content>
+          <Card>
+            <Text>
+              Set <code>isDismissable=&#123;false&#125;</code> when the panel
+              requires explicit user action to close.
+            </Text>
+          </Card>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * Container centers content horizontally with constrained width (min: 40x, max: 120x).
+ * Useful for forms, articles, and content that shouldn't span the full width.
+ */
+export const Container: Story = {
+  render: () => (
+    <Layout height="400px" fill="#dark.04">
+      <Layout.Header title="Form Page" />
+      <Layout.Container width="80%">
+        <Card gap="1x">
+          <Title level={4}>Sign Up Form</Title>
+          <Text>
+            This content is horizontally centered with a constrained max-width.
+            It works well for forms, articles, and focused content.
+          </Text>
+          <Space flow="column" gap="1x">
+            <Text preset="t3">• Min width: 40x (320px at default gap)</Text>
+            <Text preset="t3">• Max width: 120x (960px at default gap)</Text>
+            <Text preset="t3">• Content scrolls vertically when needed</Text>
+          </Space>
+          <Button type="primary">Submit</Button>
+        </Card>
+      </Layout.Container>
+    </Layout>
+  ),
+};
+
+/**
+ * Center places content in the middle both horizontally and vertically.
+ * Ideal for empty states, loading screens, and hero sections.
+ */
+export const Center: Story = {
+  render: () => (
+    <Layout height="400px" fill="#dark.04">
+      <Layout.Center width="60%" gap="1x">
+        <Title level={3}>Welcome!</Title>
+        <Text>
+          This content is centered both horizontally and vertically.&#8203; Text
+          is also center-aligned by default.
+        </Text>
+        <Space>
+          <Button>Learn More</Button>
+          <Button type="primary">Get Started</Button>
+        </Space>
+      </Layout.Center>
+    </Layout>
+  ),
 };

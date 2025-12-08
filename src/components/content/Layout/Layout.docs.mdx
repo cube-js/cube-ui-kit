@@ -120,7 +120,7 @@ A semantic page header with title, breadcrumbs, subtitle, and action areas.
 Scrollable content area with automatic overflow handling and custom scrollbar styles.
 
 ```jsx
-<Layout.Content padding="2x" scrollbar="tiny">
+<Layout.Content scrollbar="tiny">
   {/* Scrollable content */}
 </Layout.Content>
 ```
@@ -140,6 +140,56 @@ Scrollable content area with automatic overflow handling and custom scrollbar st
 - `Inner` - Scrollable inner container
 - `ScrollbarV` - Vertical scroll indicator (tiny mode)
 - `ScrollbarH` - Horizontal scroll indicator (tiny mode)
+
+---
+
+### Layout.Container
+
+Horizontally centered content area with constrained width. Ideal for forms, articles, and focused content that shouldn't span the full width.
+
+```jsx
+<Layout.Container>
+  <Title>Article Title</Title>
+  <Text>Content is centered horizontally with a max-width constraint.</Text>
+</Layout.Container>
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| children | `ReactNode` | - | Content to display |
+
+**Width constraints:**
+- Minimum: `40x` (320px at default gap)
+- Default: `100%`
+- Maximum: `120x` (960px at default gap)
+
+**Sub-elements:**
+- `Inner` - Constrained width inner container
+
+---
+
+### Layout.Center
+
+Centered content area for both horizontal and vertical alignment. Extends `Layout.Container` with vertical centering and text alignment. Ideal for empty states, loading screens, and hero sections.
+
+```jsx
+<Layout.Center>
+  <Title>No Results</Title>
+  <Text>Try adjusting your search criteria.</Text>
+  <Button type="primary">Clear Filters</Button>
+</Layout.Center>
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| children | `ReactNode` | - | Content to display |
+
+**Styling differences from Container:**
+- Content is centered both horizontally and vertically
+- Text is center-aligned by default
+
+**Sub-elements:**
+- `Inner` - Constrained width inner container with `text-align: center`
 
 ---
 
@@ -166,7 +216,7 @@ Footer area with support for inverted content order (primary actions on right).
 
 ### Layout.Panel
 
-Collapsible side panel with resizing, transitions, and dialog mode support.
+Collapsible side panel with resizing, transitions, and multiple rendering modes.
 
 ```jsx
 <Layout.Panel
@@ -181,7 +231,7 @@ Collapsible side panel with resizing, transitions, and dialog mode support.
   onSizeChange={setSize}
 >
   <Layout.PanelHeader isClosable title="Navigation" onClose={() => setIsPanelOpen(false)} />
-  <Layout.Content padding="1x">
+  <Layout.Content>
     {/* Panel content */}
   </Layout.Content>
 </Layout.Panel>
@@ -190,6 +240,7 @@ Collapsible side panel with resizing, transitions, and dialog mode support.
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | side | `'left' \| 'right' \| 'top' \| 'bottom'` | `'left'` | Panel position |
+| mode | `'default' \| 'sticky' \| 'overlay' \| 'dialog'` | `'default'` | Panel rendering mode |
 | size | `number` | - | Controlled panel size (px) |
 | defaultSize | `number` | `280` | Initial uncontrolled size |
 | minSize | `number` | `200` | Minimum size constraint |
@@ -201,11 +252,21 @@ Collapsible side panel with resizing, transitions, and dialog mode support.
 | onSizeChange | `(size: number) => void` | - | Size change callback |
 | sizeStorageKey | `string` | - | localStorage key for persisting size |
 | hasTransition | `boolean` | `false` | Enable slide animation |
-| isDialog | `boolean` | `false` | Render as modal dialog |
-| isDialogOpen | `boolean` | - | Controlled dialog state |
+| isDismissable | `boolean` | `true` | Allow dismissing overlay/dialog by click or Escape |
+| overlayStyles | `Styles` | - | Styles for the overlay backdrop in overlay mode |
+| isDialogOpen | `boolean` | - | Controlled dialog state (mode="dialog") |
 | defaultIsDialogOpen | `boolean` | `false` | Initial dialog state |
 | onDialogOpenChange | `(isOpen: boolean) => void` | - | Dialog state callback |
-| dialogProps | `CubeDialogContainerProps` | - | Props for Dialog mode |
+| dialogProps | `CubeDialogContainerProps` | - | Props for dialog mode |
+
+**Panel Modes:**
+
+| Mode | Size Propagation | Overlay | Description |
+|------|-----------------|---------|-------------|
+| `default` | Yes | No | Standard panel that pushes content aside |
+| `sticky` | No | No | Panel floats over content without affecting layout |
+| `overlay` | Yes | Yes | Panel with dismissable backdrop overlay |
+| `dialog` | No | Via Dialog | Panel renders as a modal dialog |
 
 **Modifiers:**
 | Modifier | Type | Description |
@@ -275,7 +336,7 @@ A variant of Layout that enables CSS Grid for the content area.
 ```jsx
 <Layout height="100dvh">
   <Layout.Header title="Dashboard" subtitle="Overview of your data" />
-  <Layout.Content padding="2x">
+  <Layout.Content>
     <Text>Main content area</Text>
   </Layout.Content>
   <Layout.Footer>
@@ -303,7 +364,7 @@ A variant of Layout that enables CSS Grid for the content area.
       </Button.Group>
     }
   />
-  <Layout.Content padding="2x">
+  <Layout.Content>
     <Text>Analytics content</Text>
   </Layout.Content>
 </Layout>
@@ -328,11 +389,11 @@ function ResizablePanelExample() {
         onSizeChange={setSize}
       >
         <Layout.PanelHeader title="Resizable" />
-        <Layout.Content padding="1x">
+        <Layout.Content>
           <Text>Drag the edge to resize (current: {size}px)</Text>
         </Layout.Content>
       </Layout.Panel>
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Main content area</Text>
       </Layout.Content>
     </Layout>
@@ -355,11 +416,11 @@ Use `sizeStorageKey` to persist panel size to localStorage. The size is automati
     maxSize={400}
   >
     <Layout.PanelHeader title="Persistent" />
-    <Layout.Content padding="1x">
+    <Layout.Content>
       <Text>This panel remembers its size</Text>
     </Layout.Content>
   </Layout.Panel>
-  <Layout.Content padding="2x">
+  <Layout.Content>
     <Text>Main content area</Text>
   </Layout.Content>
 </Layout>
@@ -387,7 +448,7 @@ function PanelWithTransitionExample() {
           title="Details"
           onClose={() => setIsPanelOpen(false)}
         />
-        <Layout.Content padding="1x">
+        <Layout.Content>
           <Text>Panel content with slide transition</Text>
         </Layout.Content>
       </Layout.Panel>
@@ -396,7 +457,7 @@ function PanelWithTransitionExample() {
           {isPanelOpen ? 'Close' : 'Open'} Panel
         </Button>
       </Layout.Toolbar>
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Main content area</Text>
       </Layout.Content>
     </Layout>
@@ -417,13 +478,13 @@ function MultiplePanelsExample() {
     <Layout height="100dvh">
       <Layout.Panel hasTransition side="left" size={180} isOpen={leftOpen}>
         <Layout.PanelHeader isClosable title="Left" onClose={() => setLeftOpen(false)} />
-        <Layout.Content padding="1x">
+        <Layout.Content>
           <Text>Left panel</Text>
         </Layout.Content>
       </Layout.Panel>
       <Layout.Panel hasTransition side="right" size={180} isOpen={rightOpen}>
         <Layout.PanelHeader isClosable title="Right" onClose={() => setRightOpen(false)} />
-        <Layout.Content padding="1x">
+        <Layout.Content>
           <Text>Right panel</Text>
         </Layout.Content>
       </Layout.Panel>
@@ -433,12 +494,97 @@ function MultiplePanelsExample() {
           <Button onPress={() => setRightOpen(!rightOpen)}>Right</Button>
         </Space>
       </Layout.Toolbar>
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Main content between two panels</Text>
       </Layout.Content>
     </Layout>
   );
 }
+```
+
+### Sticky Panel
+
+In `sticky` mode, the panel floats over the content without pushing it aside. The main content area remains unaffected by the panel's size.
+
+<Story of={LayoutStories.StickyPanel} />
+
+```jsx
+function StickyPanelExample() {
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+  return (
+    <Layout height="100dvh">
+      <Layout.Panel
+        hasTransition
+        mode="sticky"
+        side="left"
+        size={260}
+        isOpen={isPanelOpen}
+        onOpenChange={setIsPanelOpen}
+      >
+        <Layout.PanelHeader isClosable title="Sticky Panel" onClose={() => setIsPanelOpen(false)} />
+        <Layout.Content>
+          <Text>This panel floats over the content.</Text>
+        </Layout.Content>
+      </Layout.Panel>
+      <Layout.Content>
+        <Text>Main content stays in place.</Text>
+      </Layout.Content>
+    </Layout>
+  );
+}
+```
+
+### Overlay Panel
+
+In `overlay` mode, a semi-transparent backdrop appears behind the panel. The panel is dismissed (when `isDismissable` is true, which is the default) when:
+- Clicking the backdrop overlay
+- Pressing Escape anywhere in the Layout
+- Moving focus to the main content area
+
+<Story of={LayoutStories.OverlayPanel} />
+
+```jsx
+function OverlayPanelExample() {
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
+
+  return (
+    <Layout height="100dvh">
+      <Layout.Panel
+        hasTransition
+        mode="overlay"
+        side="right"
+        size={300}
+        isOpen={isPanelOpen}
+        onOpenChange={setIsPanelOpen}
+      >
+        <Layout.PanelHeader isClosable title="Overlay Panel" onClose={() => setIsPanelOpen(false)} />
+        <Layout.Content>
+          <Text>Click the overlay, press Escape, or focus the main content to close.</Text>
+        </Layout.Content>
+      </Layout.Panel>
+      <Layout.Content>
+        <Text>Background content is dimmed.</Text>
+      </Layout.Content>
+    </Layout>
+  );
+}
+```
+
+You can customize the overlay styles using the `overlayStyles` prop:
+
+```jsx
+<Layout.Panel mode="overlay" overlayStyles={{ fill: '#dark.5' }}>
+  {/* Panel with darker overlay */}
+</Layout.Panel>
+```
+
+To prevent dismissing the overlay by clicking or pressing Escape, set `isDismissable={false}`:
+
+```jsx
+<Layout.Panel mode="overlay" isDismissable={false}>
+  {/* User must use explicit controls to close */}
+</Layout.Panel>
 ```
 
 ### Tiny Scrollbar
@@ -448,7 +594,7 @@ function MultiplePanelsExample() {
 ```jsx
 <Layout height="100dvh">
   <Layout.Header title="Tiny Scrollbar" />
-  <Layout.Content padding="2x" scrollbar="tiny">
+  <Layout.Content scrollbar="tiny">
     {Array.from({ length: 20 }, (_, i) => (
       <div key={i} style={{ padding: '8px' }}>
         <Text>Line {i + 1}: Hover to reveal scrollbar indicator.</Text>
@@ -467,7 +613,7 @@ function MultiplePanelsExample() {
   <Layout.Header title="Nested Layouts" />
   <Layout flow="row">
     <Layout width="200px" border="right">
-      <Layout.Content padding="1x">
+      <Layout.Content>
         <Text>Left sidebar</Text>
       </Layout.Content>
     </Layout>
@@ -475,7 +621,7 @@ function MultiplePanelsExample() {
       <Layout.Toolbar>
         <Text>Inner toolbar</Text>
       </Layout.Toolbar>
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Main content</Text>
       </Layout.Content>
     </Layout>
@@ -508,7 +654,7 @@ function ApplicationShell() {
           title="Navigation"
           onClose={() => setSidebarOpen(false)}
         />
-        <Layout.Content padding="1x" scrollbar="tiny" gap=".5x">
+        <Layout.Content padding=".5x" scrollbar="tiny" gap="1bw">
           {['Dashboard', 'Analytics', 'Reports'].map((item) => (
             <ItemButton key={item} type="neutral" width="100%">
               {item}
@@ -535,7 +681,7 @@ function ApplicationShell() {
         }
       />
 
-      <Layout.Content padding="2x" scrollbar="tiny">
+      <Layout.Content scrollbar="tiny">
         {/* Main content */}
       </Layout.Content>
 

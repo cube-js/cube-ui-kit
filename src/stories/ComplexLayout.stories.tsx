@@ -60,12 +60,10 @@ export const SidebarLayout: Story = {
             title="Menu"
             onClose={() => setIsOpen(false)}
           />
-          <Layout.Content padding=".5x">
-            <Space direction="vertical" gap="1bw">
-              <ItemButton type="neutral">Dashboard</ItemButton>
-              <ItemButton type="neutral">Settings</ItemButton>
-              <ItemButton type="neutral">Profile</ItemButton>
-            </Space>
+          <Layout.Content padding=".5x" gap="1bw">
+            <ItemButton type="neutral">Dashboard</ItemButton>
+            <ItemButton type="neutral">Settings</ItemButton>
+            <ItemButton type="neutral">Profile</ItemButton>
           </Layout.Content>
         </Layout.Panel>
         <Layout.Toolbar>
@@ -186,7 +184,7 @@ export const ResizablePanel: Story = {
           onSizeChange={setSize}
         >
           <Layout.PanelHeader title="Explorer" />
-          <Layout.Content padding="1x">
+          <Layout.Content>
             <Text>Panel width: {size}px</Text>
             <Text preset="t3" color="#dark-02">
               Drag the edge to resize
@@ -195,6 +193,85 @@ export const ResizablePanel: Story = {
         </Layout.Panel>
         <Layout.Content>
           <Text>Main content area</Text>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * Sticky panel that floats over content without pushing it.
+ */
+export const StickyPanel: Story = {
+  render: function StickyPanelStory() {
+    const [isOpen, setIsOpen] = useState(true);
+
+    return (
+      <Layout border height="400px">
+        <Layout.Panel
+          mode="sticky"
+          side="right"
+          size={220}
+          isOpen={isOpen}
+          onOpenChange={setIsOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Quick Actions"
+            onClose={() => setIsOpen(false)}
+          />
+          <Layout.Content>
+            <Text>Floating panel - content stays in place</Text>
+          </Layout.Content>
+        </Layout.Panel>
+        <Layout.Toolbar>
+          <Button onPress={() => setIsOpen(!isOpen)}>
+            {isOpen ? 'Hide' : 'Show'} Panel
+          </Button>
+        </Layout.Toolbar>
+        <Layout.Content>
+          <Text>
+            Main content is NOT pushed by the sticky panel. Main content is NOT
+            pushed by the sticky panel.
+          </Text>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * Overlay panel with backdrop that dismisses on click, Escape, or focus change.
+ */
+export const OverlayPanel: Story = {
+  render: function OverlayPanelStory() {
+    const [isOpen, setIsOpen] = useState(true);
+
+    return (
+      <Layout border height="400px">
+        <Layout.Panel
+          mode="overlay"
+          side="right"
+          size={280}
+          isOpen={isOpen}
+          onOpenChange={setIsOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Details"
+            onClose={() => setIsOpen(false)}
+          />
+          <Layout.Content>
+            <Text>Click backdrop, press Escape, or focus content to close</Text>
+          </Layout.Content>
+        </Layout.Panel>
+        <Layout.Toolbar>
+          <Button type="primary" onPress={() => setIsOpen(true)}>
+            Open Overlay Panel
+          </Button>
+        </Layout.Toolbar>
+        <Layout.Content>
+          <Text>Background content is dimmed when panel is open</Text>
         </Layout.Content>
       </Layout>
     );
@@ -211,7 +288,7 @@ export const DialogModePanel: Story = {
     return (
       <Layout border height="400px">
         <Layout.Panel
-          isDialog
+          mode="dialog"
           side="left"
           size={300}
           isDialogOpen={isOpen}
@@ -330,6 +407,52 @@ export const GridDashboard: Story = {
           <Text>Card 4</Text>
         </Card>
       </Layout.Grid>
+    </Layout>
+  ),
+};
+
+/**
+ * Container for horizontally centered content with constrained width.
+ */
+export const ContainerLayout: Story = {
+  render: () => (
+    <Layout border height="400px">
+      <Layout.Header title="Article Page" />
+      <Layout.Container width="80%" gap="1x">
+        <Title level={4}>Understanding Layout Components</Title>
+        <Text>
+          The Container component centers content horizontally while
+          constraining its maximum width. This creates a comfortable reading
+          experience for text-heavy pages like articles, documentation, or
+          forms.
+        </Text>
+        <Text>
+          The content has a minimum width of 40x (320px) and maximum width of
+          120x (960px), ensuring it never gets too narrow on small screens or
+          too wide on large displays.
+        </Text>
+        <Space>
+          <Button>Previous</Button>
+          <Button type="primary">Next</Button>
+        </Space>
+      </Layout.Container>
+    </Layout>
+  ),
+};
+
+/**
+ * Center for content centered both horizontally and vertically.
+ */
+export const CenterLayout: Story = {
+  render: () => (
+    <Layout border height="400px">
+      <Layout.Center width="60%" gap="1x">
+        <Title level={2}>No Results Found</Title>
+        <Text>
+          We couldn&apos;t find any items matching your search criteria.
+        </Text>
+        <Button type="primary">Clear Filters</Button>
+      </Layout.Center>
     </Layout>
   ),
 };

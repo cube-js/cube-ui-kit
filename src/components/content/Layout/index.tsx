@@ -2,6 +2,8 @@ import { ForwardRefExoticComponent, RefAttributes } from 'react';
 
 import { CubeLayoutProps, Layout as LayoutBase } from './Layout';
 import { LayoutBlock } from './LayoutBlock';
+import { LayoutCenter } from './LayoutCenter';
+import { LayoutContainer } from './LayoutContainer';
 import { LayoutContent } from './LayoutContent';
 import { LayoutFlex } from './LayoutFlex';
 import { LayoutFooter } from './LayoutFooter';
@@ -16,13 +18,15 @@ export { GridLayout } from './GridLayout';
 export type { CubeGridLayoutProps } from './GridLayout';
 export type { CubeLayoutProps } from './Layout';
 export type { CubeLayoutBlockProps } from './LayoutBlock';
+export type { CubeLayoutCenterProps } from './LayoutCenter';
+export type { CubeLayoutContainerProps } from './LayoutContainer';
 export type { CubeLayoutContentProps, ScrollbarType } from './LayoutContent';
 export type { CubeLayoutFlexProps } from './LayoutFlex';
 export type { CubeLayoutGridProps } from './LayoutGrid';
 export type { CubeLayoutFooterProps } from './LayoutFooter';
 export type { CubeLayoutHeaderProps } from './LayoutHeader';
 export type { CubeLayoutPaneProps, ResizeEdge } from './LayoutPane';
-export type { CubeLayoutPanelProps } from './LayoutPanel';
+export type { CubeLayoutPanelProps, LayoutPanelMode } from './LayoutPanel';
 export type { CubeLayoutPanelHeaderProps } from './LayoutPanelHeader';
 export type { CubeLayoutToolbarProps } from './LayoutToolbar';
 export {
@@ -46,6 +50,8 @@ interface LayoutComponent
   Header: typeof LayoutHeader;
   Footer: typeof LayoutFooter;
   Content: typeof LayoutContent;
+  Container: typeof LayoutContainer;
+  Center: typeof LayoutCenter;
   Block: typeof LayoutBlock;
   Flex: typeof LayoutFlex;
   Grid: typeof LayoutGrid;
@@ -59,6 +65,8 @@ const Layout = Object.assign(LayoutBase, {
   Header: LayoutHeader,
   Footer: LayoutFooter,
   Content: LayoutContent,
+  Container: LayoutContainer,
+  Center: LayoutCenter,
   Block: LayoutBlock,
   Flex: LayoutFlex,
   Grid: LayoutGrid,
