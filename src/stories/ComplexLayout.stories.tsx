@@ -412,3 +412,49 @@ export const GridDashboard: Story = {
     </Layout>
   ),
 };
+
+/**
+ * Container for horizontally centered content with constrained width.
+ */
+export const ContainerLayout: Story = {
+  render: () => (
+    <Layout border height="400px">
+      <Layout.Header title="Article Page" />
+      <Layout.Container innerStyles={{ width: '80%', gap: '1x' }}>
+        <Title level={4}>Understanding Layout Components</Title>
+        <Text>
+          The Container component centers content horizontally while
+          constraining its maximum width. This creates a comfortable reading
+          experience for text-heavy pages like articles, documentation, or
+          forms.
+        </Text>
+        <Text>
+          The content has a minimum width of 40x (320px) and maximum width of
+          120x (960px), ensuring it never gets too narrow on small screens or
+          too wide on large displays.
+        </Text>
+        <Space>
+          <Button>Previous</Button>
+          <Button type="primary">Next</Button>
+        </Space>
+      </Layout.Container>
+    </Layout>
+  ),
+};
+
+/**
+ * Center for content centered both horizontally and vertically.
+ */
+export const CenterLayout: Story = {
+  render: () => (
+    <Layout border height="400px">
+      <Layout.Center innerStyles={{ width: '60%', gap: '1x' }}>
+        <Title level={2}>No Results Found</Title>
+        <Text>
+          We couldn&apos;t find any items matching your search criteria.
+        </Text>
+        <Button type="primary">Clear Filters</Button>
+      </Layout.Center>
+    </Layout>
+  ),
+};

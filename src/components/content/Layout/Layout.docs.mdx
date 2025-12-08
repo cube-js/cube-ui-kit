@@ -143,6 +143,56 @@ Scrollable content area with automatic overflow handling and custom scrollbar st
 
 ---
 
+### Layout.Container
+
+Horizontally centered content area with constrained width. Ideal for forms, articles, and focused content that shouldn't span the full width.
+
+```jsx
+<Layout.Container padding="2x">
+  <Title>Article Title</Title>
+  <Text>Content is centered horizontally with a max-width constraint.</Text>
+</Layout.Container>
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| children | `ReactNode` | - | Content to display |
+
+**Width constraints:**
+- Minimum: `40x` (320px at default gap)
+- Default: `100%`
+- Maximum: `120x` (960px at default gap)
+
+**Sub-elements:**
+- `Inner` - Constrained width inner container
+
+---
+
+### Layout.Center
+
+Centered content area for both horizontal and vertical alignment. Extends `Layout.Container` with vertical centering and text alignment. Ideal for empty states, loading screens, and hero sections.
+
+```jsx
+<Layout.Center padding="2x">
+  <Title>No Results</Title>
+  <Text>Try adjusting your search criteria.</Text>
+  <Button type="primary">Clear Filters</Button>
+</Layout.Center>
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| children | `ReactNode` | - | Content to display |
+
+**Styling differences from Container:**
+- Content is centered both horizontally and vertically
+- Text is center-aligned by default
+
+**Sub-elements:**
+- `Inner` - Constrained width inner container with `text-align: center`
+
+---
+
 ### Layout.Footer
 
 Footer area with support for inverted content order (primary actions on right).

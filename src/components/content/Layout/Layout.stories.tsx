@@ -1210,3 +1210,52 @@ export const OverlayPanelNotDismissable: Story = {
     );
   },
 };
+
+/**
+ * Container centers content horizontally with constrained width (min: 40x, max: 120x).
+ * Useful for forms, articles, and content that shouldn't span the full width.
+ */
+export const Container: Story = {
+  render: () => (
+    <Layout height="400px" fill="#dark.04">
+      <Layout.Header title="Form Page" />
+      <Layout.Container innerStyles={{ width: '80%' }}>
+        <Card gap="1x">
+          <Title level={4}>Sign Up Form</Title>
+          <Text>
+            This content is horizontally centered with a constrained max-width.
+            It works well for forms, articles, and focused content.
+          </Text>
+          <Space flow="column" gap="1x">
+            <Text preset="t3">• Min width: 40x (320px at default gap)</Text>
+            <Text preset="t3">• Max width: 120x (960px at default gap)</Text>
+            <Text preset="t3">• Content scrolls vertically when needed</Text>
+          </Space>
+          <Button type="primary">Submit</Button>
+        </Card>
+      </Layout.Container>
+    </Layout>
+  ),
+};
+
+/**
+ * Center places content in the middle both horizontally and vertically.
+ * Ideal for empty states, loading screens, and hero sections.
+ */
+export const Center: Story = {
+  render: () => (
+    <Layout height="400px" fill="#dark.04">
+      <Layout.Center gap="1x" innerStyles={{ width: '60%' }}>
+        <Title level={3}>Welcome!</Title>
+        <Text>
+          This content is centered both horizontally and vertically.&#8203; Text
+          is also center-aligned by default.
+        </Text>
+        <Space>
+          <Button>Learn More</Button>
+          <Button type="primary">Get Started</Button>
+        </Space>
+      </Layout.Center>
+    </Layout>
+  ),
+};

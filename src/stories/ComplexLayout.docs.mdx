@@ -371,6 +371,58 @@ Use `Layout.Grid` for grid-based layouts.
 </Layout.Grid>
 ```
 
+### Container Layout
+
+Use `Layout.Container` for content that should be horizontally centered with a constrained max-width. Ideal for articles, forms, and focused content.
+
+<Story of={ComplexLayoutStories.ContainerLayout} />
+
+```jsx live=false
+<Layout.Container>      {/* flex column ↓, scrollable, horizontally centered */}
+  <Title>Article Title</Title>       {/* constrained width: min 40x, max 120x */}
+  <Text>Content is centered with a comfortable reading width.</Text>
+  <Space>
+    <Button>Previous</Button>
+    <Button type="primary">Next</Button>
+  </Space>
+</Layout.Container>
+```
+
+**Use cases:**
+- Article or documentation pages
+- Forms and settings pages
+- Any content that benefits from constrained width
+
+### Center Layout
+
+Use `Layout.Center` for content that should be centered both horizontally and vertically. Ideal for empty states, loading screens, and hero sections.
+
+<Story of={ComplexLayoutStories.CenterLayout} />
+
+```jsx live=false
+<Layout.Center>         {/* flex column ↓, scrollable, centered both axes */}
+  <Title>No Results Found</Title>    {/* text-align: center by default */}
+  <Text>Try adjusting your search criteria.</Text>
+  <Button type="primary">Clear Filters</Button>
+</Layout.Center>
+```
+
+**Use cases:**
+- Empty states ("No items found")
+- Loading screens
+- Welcome/onboarding screens
+- Error pages (404, 500)
+
+### When to Use Container vs Center
+
+| Use Case | Component |
+|----------|-----------|
+| Article/documentation content | `Layout.Container` |
+| Forms with top-aligned content | `Layout.Container` |
+| Empty states | `Layout.Center` |
+| Loading/splash screens | `Layout.Center` |
+| Error pages | `Layout.Center` |
+
 ## Using Space Component
 
 `Space` is a simple flex wrapper for arranging elements inline.
@@ -405,6 +457,8 @@ Use `Layout.Grid` for grid-based layouts.
 |-----------|---------|
 | `Layout` | Root wrapper, provides context |
 | `Layout.Content` | Scrollable content area, fills available space |
+| `Layout.Container` | Horizontally centered content with constrained width |
+| `Layout.Center` | Centered content (both axes) with text-align center |
 | `Layout.Header` | Page header with title, breadcrumbs, actions |
 | `Layout.Footer` | Footer bar, typically for actions |
 | `Layout.Toolbar` | Horizontal bar with space-between layout |
