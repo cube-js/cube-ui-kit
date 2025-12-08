@@ -1,5 +1,27 @@
 # @cube-dev/ui-kit
 
+## 0.97.0
+
+### Minor Changes
+
+- [#917](https://github.com/cube-js/cube-ui-kit/pull/917) [`c64cd31b`](https://github.com/cube-js/cube-ui-kit/commit/c64cd31b30e1aa0fd3ef57c41a0e189a49575473) Thanks [@tenphi](https://github.com/tenphi)! - Added `Layout.Container` and `Layout.Center` sub-components for centered content layouts:
+
+  - `Layout.Container` - Horizontally centered content with constrained width (min 40x, max 120x). Ideal for forms, articles, and focused content.
+  - `Layout.Center` - Extends Container with vertical centering and text-align center. Ideal for empty states, loading screens, and hero sections.
+
+  Both components support `innerStyles` prop for customizing the inner container.
+
+- [#917](https://github.com/cube-js/cube-ui-kit/pull/917) [`c64cd31b`](https://github.com/cube-js/cube-ui-kit/commit/c64cd31b30e1aa0fd3ef57c41a0e189a49575473) Thanks [@tenphi](https://github.com/tenphi)! - Add new `mode` prop to `Layout.Panel` with support for `sticky` and `overlay` modes:
+
+  - `sticky` - Panel floats over content without pushing it aside
+  - `overlay` - Panel with dismissable backdrop (closes on backdrop click, Escape key, or focus change to main content)
+
+  New props: `mode`, `isDismissable`, `overlayStyles`
+
+### Patch Changes
+
+- [#918](https://github.com/cube-js/cube-ui-kit/pull/918) [`ecdc6ff3`](https://github.com/cube-js/cube-ui-kit/commit/ecdc6ff38620e163629dbe8da00f109e05e96ad6) Thanks [@tenphi](https://github.com/tenphi)! - Add text highlighting support to Item component with `highlight`, `highlightCaseSensitive`, and `highlightStyles` props.
+
 ## 0.96.0
 
 ### Minor Changes
