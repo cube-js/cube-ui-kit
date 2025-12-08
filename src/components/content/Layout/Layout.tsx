@@ -342,10 +342,20 @@ function LayoutInner(
  * Uses a two-element architecture (wrapper + content) to ensure content never overflows.
  */
 function Layout(props: CubeLayoutProps, ref: ForwardedRef<HTMLDivElement>) {
-  const { hasTransition } = props;
+  const { hasTransition, styles } = props;
+
+  // Calculate if the layout flow is vertical
+  // Default flow is 'column' (vertical), check if user overrides it
+  const isVertical = useMemo(() => {
+    const providedFlow = (styles?.Inner as Record<string, unknown>)?.flow;
+    const flowValue =
+      typeof providedFlow === 'string' ? providedFlow : 'column';
+
+    return flowValue.startsWith('column');
+  }, [styles?.Inner]);
 
   return (
-    <LayoutProvider hasTransition={hasTransition}>
+    <LayoutProvider hasTransition={hasTransition} isVertical={isVertical}>
       <LayoutInner {...props} forwardedRef={ref} />
     </LayoutProvider>
   );

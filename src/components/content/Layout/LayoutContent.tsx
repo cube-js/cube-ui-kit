@@ -15,7 +15,7 @@ import {
 import { useCombinedRefs } from '../../../utils/react';
 
 import { useTinyScrollbar } from './hooks/useTinyScrollbar';
-import { LayoutContextReset } from './LayoutContext';
+import { LayoutContextReset, useLayoutContext } from './LayoutContext';
 
 const ContentElement = tasty({
   as: 'div',
@@ -33,6 +33,10 @@ const ContentElement = tasty({
     height: 'min 0',
     overflow: 'hidden',
     boxSizing: 'content-box',
+    border: {
+      '': 0,
+      'bordered & !:last-child': 'bottom',
+    },
 
     Inner: {
       $: '>',
@@ -106,6 +110,7 @@ function LayoutContent(
     mods: externalMods,
     ...otherProps
   } = props;
+  const layoutContext = useLayoutContext();
   const outerStyles = extractStyles(otherProps, OUTER_STYLES);
   const innerStyles = extractStyles(otherProps, INNER_STYLES);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -136,8 +141,15 @@ function LayoutContent(
       scrollbar,
       hovered: isHovered,
       scrolling: isScrolling,
+      bordered: layoutContext?.isVertical,
     }),
-    [externalMods, scrollbar, isHovered, isScrolling],
+    [
+      externalMods,
+      scrollbar,
+      isHovered,
+      isScrolling,
+      layoutContext?.isVertical,
+    ],
   );
 
   // Merge styles: outer styles to root, inner styles to Inner element

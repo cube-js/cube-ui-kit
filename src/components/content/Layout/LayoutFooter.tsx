@@ -9,7 +9,10 @@ const FooterElement = tasty(LayoutContent, {
   qa: 'LayoutFooter',
   role: 'contentinfo',
   styles: {
-    border: 'top',
+    border: {
+      '': 0,
+      'bordered & !:last-child': 'bottom',
+    },
     height: 'min 5x',
     flexShrink: 0,
     flexGrow: 0,
