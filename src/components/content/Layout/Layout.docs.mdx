@@ -120,7 +120,7 @@ A semantic page header with title, breadcrumbs, subtitle, and action areas.
 Scrollable content area with automatic overflow handling and custom scrollbar styles.
 
 ```jsx
-<Layout.Content padding="2x" scrollbar="tiny">
+<Layout.Content scrollbar="tiny">
   {/* Scrollable content */}
 </Layout.Content>
 ```
@@ -148,7 +148,7 @@ Scrollable content area with automatic overflow handling and custom scrollbar st
 Horizontally centered content area with constrained width. Ideal for forms, articles, and focused content that shouldn't span the full width.
 
 ```jsx
-<Layout.Container padding="2x">
+<Layout.Container>
   <Title>Article Title</Title>
   <Text>Content is centered horizontally with a max-width constraint.</Text>
 </Layout.Container>
@@ -173,7 +173,7 @@ Horizontally centered content area with constrained width. Ideal for forms, arti
 Centered content area for both horizontal and vertical alignment. Extends `Layout.Container` with vertical centering and text alignment. Ideal for empty states, loading screens, and hero sections.
 
 ```jsx
-<Layout.Center padding="2x">
+<Layout.Center>
   <Title>No Results</Title>
   <Text>Try adjusting your search criteria.</Text>
   <Button type="primary">Clear Filters</Button>
@@ -231,7 +231,7 @@ Collapsible side panel with resizing, transitions, and multiple rendering modes.
   onSizeChange={setSize}
 >
   <Layout.PanelHeader isClosable title="Navigation" onClose={() => setIsPanelOpen(false)} />
-  <Layout.Content padding="1x">
+  <Layout.Content>
     {/* Panel content */}
   </Layout.Content>
 </Layout.Panel>
@@ -336,7 +336,7 @@ A variant of Layout that enables CSS Grid for the content area.
 ```jsx
 <Layout height="100dvh">
   <Layout.Header title="Dashboard" subtitle="Overview of your data" />
-  <Layout.Content padding="2x">
+  <Layout.Content>
     <Text>Main content area</Text>
   </Layout.Content>
   <Layout.Footer>
@@ -364,7 +364,7 @@ A variant of Layout that enables CSS Grid for the content area.
       </Button.Group>
     }
   />
-  <Layout.Content padding="2x">
+  <Layout.Content>
     <Text>Analytics content</Text>
   </Layout.Content>
 </Layout>
@@ -389,11 +389,11 @@ function ResizablePanelExample() {
         onSizeChange={setSize}
       >
         <Layout.PanelHeader title="Resizable" />
-        <Layout.Content padding="1x">
+        <Layout.Content>
           <Text>Drag the edge to resize (current: {size}px)</Text>
         </Layout.Content>
       </Layout.Panel>
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Main content area</Text>
       </Layout.Content>
     </Layout>
@@ -416,11 +416,11 @@ Use `sizeStorageKey` to persist panel size to localStorage. The size is automati
     maxSize={400}
   >
     <Layout.PanelHeader title="Persistent" />
-    <Layout.Content padding="1x">
+    <Layout.Content>
       <Text>This panel remembers its size</Text>
     </Layout.Content>
   </Layout.Panel>
-  <Layout.Content padding="2x">
+  <Layout.Content>
     <Text>Main content area</Text>
   </Layout.Content>
 </Layout>
@@ -448,7 +448,7 @@ function PanelWithTransitionExample() {
           title="Details"
           onClose={() => setIsPanelOpen(false)}
         />
-        <Layout.Content padding="1x">
+        <Layout.Content>
           <Text>Panel content with slide transition</Text>
         </Layout.Content>
       </Layout.Panel>
@@ -457,7 +457,7 @@ function PanelWithTransitionExample() {
           {isPanelOpen ? 'Close' : 'Open'} Panel
         </Button>
       </Layout.Toolbar>
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Main content area</Text>
       </Layout.Content>
     </Layout>
@@ -478,13 +478,13 @@ function MultiplePanelsExample() {
     <Layout height="100dvh">
       <Layout.Panel hasTransition side="left" size={180} isOpen={leftOpen}>
         <Layout.PanelHeader isClosable title="Left" onClose={() => setLeftOpen(false)} />
-        <Layout.Content padding="1x">
+        <Layout.Content>
           <Text>Left panel</Text>
         </Layout.Content>
       </Layout.Panel>
       <Layout.Panel hasTransition side="right" size={180} isOpen={rightOpen}>
         <Layout.PanelHeader isClosable title="Right" onClose={() => setRightOpen(false)} />
-        <Layout.Content padding="1x">
+        <Layout.Content>
           <Text>Right panel</Text>
         </Layout.Content>
       </Layout.Panel>
@@ -494,7 +494,7 @@ function MultiplePanelsExample() {
           <Button onPress={() => setRightOpen(!rightOpen)}>Right</Button>
         </Space>
       </Layout.Toolbar>
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Main content between two panels</Text>
       </Layout.Content>
     </Layout>
@@ -523,11 +523,11 @@ function StickyPanelExample() {
         onOpenChange={setIsPanelOpen}
       >
         <Layout.PanelHeader isClosable title="Sticky Panel" onClose={() => setIsPanelOpen(false)} />
-        <Layout.Content padding="1x">
+        <Layout.Content>
           <Text>This panel floats over the content.</Text>
         </Layout.Content>
       </Layout.Panel>
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Main content stays in place.</Text>
       </Layout.Content>
     </Layout>
@@ -559,11 +559,11 @@ function OverlayPanelExample() {
         onOpenChange={setIsPanelOpen}
       >
         <Layout.PanelHeader isClosable title="Overlay Panel" onClose={() => setIsPanelOpen(false)} />
-        <Layout.Content padding="1x">
+        <Layout.Content>
           <Text>Click the overlay, press Escape, or focus the main content to close.</Text>
         </Layout.Content>
       </Layout.Panel>
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Background content is dimmed.</Text>
       </Layout.Content>
     </Layout>
@@ -594,7 +594,7 @@ To prevent dismissing the overlay by clicking or pressing Escape, set `isDismiss
 ```jsx
 <Layout height="100dvh">
   <Layout.Header title="Tiny Scrollbar" />
-  <Layout.Content padding="2x" scrollbar="tiny">
+  <Layout.Content scrollbar="tiny">
     {Array.from({ length: 20 }, (_, i) => (
       <div key={i} style={{ padding: '8px' }}>
         <Text>Line {i + 1}: Hover to reveal scrollbar indicator.</Text>
@@ -613,7 +613,7 @@ To prevent dismissing the overlay by clicking or pressing Escape, set `isDismiss
   <Layout.Header title="Nested Layouts" />
   <Layout flow="row">
     <Layout width="200px" border="right">
-      <Layout.Content padding="1x">
+      <Layout.Content>
         <Text>Left sidebar</Text>
       </Layout.Content>
     </Layout>
@@ -621,7 +621,7 @@ To prevent dismissing the overlay by clicking or pressing Escape, set `isDismiss
       <Layout.Toolbar>
         <Text>Inner toolbar</Text>
       </Layout.Toolbar>
-      <Layout.Content padding="2x">
+      <Layout.Content>
         <Text>Main content</Text>
       </Layout.Content>
     </Layout>
@@ -654,7 +654,7 @@ function ApplicationShell() {
           title="Navigation"
           onClose={() => setSidebarOpen(false)}
         />
-        <Layout.Content padding="1x" scrollbar="tiny" gap=".5x">
+        <Layout.Content padding=".5x" scrollbar="tiny" gap="1bw">
           {['Dashboard', 'Analytics', 'Reports'].map((item) => (
             <ItemButton key={item} type="neutral" width="100%">
               {item}
@@ -681,7 +681,7 @@ function ApplicationShell() {
         }
       />
 
-      <Layout.Content padding="2x" scrollbar="tiny">
+      <Layout.Content scrollbar="tiny">
         {/* Main content */}
       </Layout.Content>
 

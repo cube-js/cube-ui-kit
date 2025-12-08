@@ -60,12 +60,10 @@ export const SidebarLayout: Story = {
             title="Menu"
             onClose={() => setIsOpen(false)}
           />
-          <Layout.Content padding=".5x">
-            <Space direction="vertical" gap="1bw">
-              <ItemButton type="neutral">Dashboard</ItemButton>
-              <ItemButton type="neutral">Settings</ItemButton>
-              <ItemButton type="neutral">Profile</ItemButton>
-            </Space>
+          <Layout.Content padding=".5x" gap="1bw">
+            <ItemButton type="neutral">Dashboard</ItemButton>
+            <ItemButton type="neutral">Settings</ItemButton>
+            <ItemButton type="neutral">Profile</ItemButton>
           </Layout.Content>
         </Layout.Panel>
         <Layout.Toolbar>
@@ -186,7 +184,7 @@ export const ResizablePanel: Story = {
           onSizeChange={setSize}
         >
           <Layout.PanelHeader title="Explorer" />
-          <Layout.Content padding="1x">
+          <Layout.Content>
             <Text>Panel width: {size}px</Text>
             <Text preset="t3" color="#dark-02">
               Drag the edge to resize
