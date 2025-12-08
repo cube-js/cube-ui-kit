@@ -279,10 +279,17 @@ function LayoutInner(
 
   // Handle focus entering the Inner element - dismiss overlay panels
   const handleInnerFocus = useCallback(
-    (e: FocusEvent) => {
-      // Only dismiss if focus is moving INTO the Inner element (not within it)
-      // and there are overlay panels to dismiss
-      if (hasOverlayPanels && e.target === e.currentTarget) {
+    (e: FocusEvent<HTMLDivElement>) => {
+      // Only dismiss if there are overlay panels
+      if (!hasOverlayPanels) return;
+
+      // Check if focus is coming from outside the Inner element
+      const inner = e.currentTarget;
+      const relatedTarget = e.relatedTarget as Node | null;
+
+      // If relatedTarget is null or not inside the Inner element,
+      // focus is entering from outside - dismiss overlay panels
+      if (!relatedTarget || !inner.contains(relatedTarget)) {
         dismissOverlayPanels?.();
       }
     },
