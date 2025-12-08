@@ -10,7 +10,7 @@ import {
   tasty,
   TEXT_STYLES,
 } from '../../../tasty';
-import { highlightText } from '../../../utils/react';
+import { highlightText } from '../highlightText';
 import { CubeTextProps, Text, TEXT_PROP_MAP } from '../Text';
 import { AutoTooltipValue, useAutoTooltip } from '../use-auto-tooltip';
 

@@ -53,10 +53,11 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { highlightText, mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react';
 import { ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
+import { highlightText } from '../highlightText';
 import { HotKeys } from '../HotKeys';
 import { ItemBadge } from '../ItemBadge';
 import { useAutoTooltip } from '../use-auto-tooltip';

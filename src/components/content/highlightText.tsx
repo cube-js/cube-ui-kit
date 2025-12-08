@@ -1,7 +1,8 @@
 import { ReactNode } from 'react';
 
-import { Text } from '../../components/content/Text';
 import { Styles } from '../../tasty';
+
+import { Text } from './Text';
 
 /**
  * Highlights occurrences of a search string within text.
