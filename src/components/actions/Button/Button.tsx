@@ -1,5 +1,12 @@
 import { FocusableRef } from '@react-types/shared';
-import { cloneElement, forwardRef, ReactElement, useMemo } from 'react';
+import {
+  cloneElement,
+  forwardRef,
+  isValidElement,
+  ReactElement,
+  ReactNode,
+  useMemo,
+} from 'react';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
@@ -32,16 +39,29 @@ import { LoadingIcon } from '../../../icons';
 import {
   CONTAINER_STYLES,
   extractStyles,
+  Mods,
   tasty,
   TEXT_STYLES,
 } from '../../../tasty';
+import { DynamicIcon, resolveIcon } from '../../../utils/react';
 import { Text } from '../../content/Text';
 import { CubeActionProps } from '../Action/Action';
 import { useAction } from '../use-action';
 
+/** Known modifiers for Button component */
+export type ButtonMods = Mods<{
+  loading?: boolean;
+  selected?: boolean;
+  'has-icons'?: boolean;
+  'left-icon'?: boolean;
+  'right-icon'?: boolean;
+  'single-icon'?: boolean;
+  'text-only'?: boolean;
+}>;
+
 export interface CubeButtonProps extends CubeActionProps {
-  icon?: ReactElement;
-  rightIcon?: ReactElement;
+  icon?: DynamicIcon<ButtonMods>;
+  rightIcon?: DynamicIcon<ButtonMods>;
   isLoading?: boolean;
   isSelected?: boolean;
   type?:
@@ -215,8 +235,8 @@ export const Button = forwardRef(function Button(
     label,
     children,
     theme = 'default',
-    icon,
-    rightIcon,
+    icon: iconProp,
+    rightIcon: rightIconProp,
     mods,
     download,
     ...props
@@ -226,22 +246,67 @@ export const Button = forwardRef(function Button(
   const isLoading = props.isLoading;
   const isSelected = props.isSelected;
 
-  children = children || icon || rightIcon ? children : label;
+  // Base mods for icon resolution (without icon-dependent mods)
+  const baseMods = useMemo<ButtonMods>(
+    () => ({
+      loading: isLoading,
+      selected: isSelected,
+      ...mods,
+    }),
+    [isLoading, isSelected, mods],
+  );
+
+  // Resolve dynamic icon props
+  const resolvedIcon = useMemo(
+    () => resolveIcon(iconProp, baseMods),
+    [iconProp, baseMods],
+  );
+  const resolvedRightIcon = useMemo(
+    () => resolveIcon(rightIconProp, baseMods),
+    [rightIconProp, baseMods],
+  );
+
+  const hasLeftSlot = resolvedIcon.hasSlot;
+  const hasRightSlot = resolvedRightIcon.hasSlot;
+
+  // Clone elements to add data-element attribute if they're valid ReactElements
+  let icon: ReactNode = resolvedIcon.content;
+  let rightIcon: ReactNode = resolvedRightIcon.content;
+
+  if (isValidElement(icon)) {
+    icon = cloneElement(
+      icon as ReactElement,
+      {
+        'data-element': 'ButtonIcon',
+      } as any,
+    );
+  }
+
+  if (isValidElement(rightIcon)) {
+    rightIcon = cloneElement(
+      rightIcon as ReactElement,
+      {
+        'data-element': 'ButtonIcon',
+      } as any,
+    );
+  }
+
+  children = children || hasLeftSlot || hasRightSlot ? children : label;
 
   const specifiedLabel =
     label ?? props['aria-label'] ?? props['aria-labelledby'];
 
   // Warn about accessibility issues when button has no accessible label
-  useWarn(!children && icon && !specifiedLabel, {
-    key: ['button-icon-no-label', !!icon],
+  useWarn(!children && hasLeftSlot && !specifiedLabel, {
+    key: ['button-icon-no-label', hasLeftSlot],
     args: [
       'accessibility issue:',
       'If you provide `icon` property for a Button and do not provide any children then you should specify the `aria-label` property to make sure the Button element stays accessible.',
     ],
   });
 
-  useWarn(!children && !icon && !specifiedLabel, {
-    key: ['button-no-content-no-label', !!icon],
+  useWarn(!children && !hasLeftSlot && !specifiedLabel, {
+    key: ['button-no-content-no-label', hasLeftSlot],
     args: [
       'accessibility issue:',
       'If you provide no children for a Button then you should specify the `aria-label` property to make sure the Button element stays accessible.',
@@ -252,46 +317,23 @@ export const Button = forwardRef(function Button(
     label = 'Unnamed'; // fix to avoid warning in production
   }
 
-  if (icon) {
-    icon = cloneElement(icon, {
-      'data-element': 'ButtonIcon',
-    } as any);
-  }
-
-  if (rightIcon) {
-    rightIcon = cloneElement(rightIcon, {
-      'data-element': 'ButtonIcon',
-    } as any);
-  }
-
   const singleIcon = !!(
-    ((icon && !rightIcon) || (rightIcon && !icon)) &&
+    ((hasLeftSlot && !hasRightSlot) || (hasRightSlot && !hasLeftSlot)) &&
     !children
   );
 
-  const hasIcons = !!icon || !!rightIcon;
+  const hasIcons = hasLeftSlot || hasRightSlot;
 
-  const modifiers = useMemo(
+  const modifiers = useMemo<ButtonMods>(
     () => ({
-      loading: isLoading,
-      selected: isSelected,
+      ...baseMods,
       'has-icons': hasIcons,
-      'left-icon': !!icon,
-      'right-icon': !!rightIcon,
+      'left-icon': hasLeftSlot,
+      'right-icon': hasRightSlot,
       'single-icon': singleIcon,
       'text-only': !!(children && typeof children === 'string' && !hasIcons),
-      ...mods,
     }),
-    [
-      mods,
-      children,
-      icon,
-      rightIcon,
-      isLoading,
-      isSelected,
-      singleIcon,
-      hasIcons,
-    ],
+    [baseMods, children, hasLeftSlot, hasRightSlot, singleIcon, hasIcons],
   );
 
   const { actionProps } = useAction(
@@ -315,7 +357,7 @@ export const Button = forwardRef(function Button(
       data-size={size ?? 'medium'}
       styles={styles}
     >
-      {icon || isLoading ? (
+      {hasLeftSlot || isLoading ? (
         !isLoading ? (
           icon
         ) : (
@@ -329,7 +371,7 @@ export const Button = forwardRef(function Button(
       ) : (
         children
       )}
-      {rightIcon}
+      {hasRightSlot ? rightIcon : null}
     </ButtonElement>
   );
 });

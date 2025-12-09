@@ -96,7 +96,27 @@ The `mods` prop accepts the following modifiers you can override:
 ```jsx
 import { IconPlus } from '@tabler/icons-react';
 
+{/* Standard icon */}
 <Button icon={<IconPlus />} aria-label="Add item" />
+
+{/* Empty slot (reserves space but shows nothing) */}
+<Button icon={true} aria-label="Empty slot" />
+
+{/* Dynamic icon based on mods */}
+<Button 
+  icon={({ loading }) => loading ? <SpinnerIcon /> : <IconPlus />}
+  aria-label="Dynamic icon"
+>
+  Save
+</Button>
+
+{/* Return true from function for empty slot */}
+<Button 
+  icon={({ selected }) => selected ? <CheckIcon /> : true}
+  aria-label="Conditional icon"
+>
+  Option
+</Button>
 ```
 
 ### Link Button

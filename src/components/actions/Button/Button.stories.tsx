@@ -40,11 +40,13 @@ export default {
     /* Content */
     icon: {
       control: { type: null },
-      description: 'Icon element rendered before the content',
+      description:
+        'Icon rendered before the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`',
     },
     rightIcon: {
       control: { type: null },
-      description: 'Icon element rendered after the content',
+      description:
+        'Icon rendered after the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`',
     },
     children: {
       control: { type: 'text' },

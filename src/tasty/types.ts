@@ -21,9 +21,20 @@ export interface GlobalStyledProps {
   breakpoints?: number[];
 }
 
-/** Type for element modifiers (mods prop) */
-export type Mods = {
-  [key: string]: boolean | string | number | undefined | null;
+/** Allowed mod value types */
+export type ModValue = boolean | string | number | undefined | null;
+
+/**
+ * Type for element modifiers (mods prop).
+ * Can be used as a generic to define known modifiers with autocomplete:
+ * @example
+ * type ButtonMods = Mods<{
+ *   loading?: boolean;
+ *   selected?: boolean;
+ * }>;
+ */
+export type Mods<T extends Record<string, ModValue> = {}> = T & {
+  [key: string]: ModValue;
 };
 
 type Caps =

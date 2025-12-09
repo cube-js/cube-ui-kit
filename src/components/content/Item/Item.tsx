@@ -49,11 +49,12 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
+  Mods,
   Props,
   Styles,
   tasty,
 } from '../../../tasty';
-import { mergeProps } from '../../../utils/react';
+import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
 import { ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
@@ -62,9 +63,35 @@ import { HotKeys } from '../HotKeys';
 import { ItemBadge } from '../ItemBadge';
 import { useAutoTooltip } from '../use-auto-tooltip';
 
+/** Known modifiers for Item component */
+export type ItemMods = Mods<{
+  'has-icon'?: boolean;
+  'has-start-content'?: boolean;
+  'has-end-content'?: boolean;
+  'has-right-icon'?: boolean;
+  'has-label'?: boolean;
+  'has-prefix'?: boolean;
+  'has-suffix'?: boolean;
+  'has-description'?: boolean;
+  'has-actions'?: boolean;
+  'has-actions-content'?: boolean;
+  'show-actions-on-hover'?: boolean;
+  checkbox?: boolean;
+  disabled?: boolean;
+  selected?: boolean;
+  loading?: boolean;
+  card?: boolean;
+  button?: boolean;
+  size?: string;
+  description?: string;
+  type?: string;
+  theme?: string;
+  shape?: string;
+}>;
+
 export interface CubeItemProps extends BaseProps, ContainerStyleProps {
-  icon?: ReactNode | 'checkbox';
-  rightIcon?: ReactNode;
+  icon?: DynamicIcon<ItemMods> | 'checkbox';
+  rightIcon?: DynamicIcon<ItemMods>;
   prefix?: ReactNode;
   suffix?: ReactNode;
   description?: ReactNode;
@@ -474,8 +501,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     type = 'item',
     theme = 'default',
     mods,
-    icon,
-    rightIcon,
+    icon: iconProp,
+    rightIcon: rightIconProp,
     prefix,
     suffix,
     description,
@@ -510,16 +537,60 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isDisabled === true || (isLoading && isDisabled !== false);
 
   // Determine if we should show checkbox instead of icon
-  const hasCheckbox = icon === 'checkbox';
+  const hasCheckbox = iconProp === 'checkbox';
+
+  // Base mods for icon resolution (without icon-dependent mods)
+  const baseMods = useMemo<ItemMods>(
+    () => ({
+      disabled: finalIsDisabled,
+      selected: isSelected === true,
+      loading: isLoading,
+      card: isCard === true,
+      button: isButton === true,
+      ...(typeof size === 'number' ? {} : { size: size as string }),
+      type,
+      theme,
+      shape,
+      ...mods,
+    }),
+    [
+      finalIsDisabled,
+      isSelected,
+      isLoading,
+      isCard,
+      isButton,
+      size,
+      type,
+      theme,
+      shape,
+      mods,
+    ],
+  );
+
+  // Resolve dynamic icon props (skip resolution for 'checkbox' special value)
+  const resolvedIcon = useMemo(() => {
+    if (hasCheckbox) {
+      return { content: null, hasSlot: true };
+    }
+    return resolveIcon(iconProp as DynamicIcon<ItemMods>, baseMods);
+  }, [iconProp, baseMods, hasCheckbox]);
+
+  const resolvedRightIcon = useMemo(
+    () => resolveIcon(rightIconProp, baseMods),
+    [rightIconProp, baseMods],
+  );
+
+  const hasIconSlot = resolvedIcon.hasSlot;
+  const hasRightIconSlot = resolvedRightIcon.hasSlot;
 
   // Determine which slot to use for loading when "auto" is selected
   const resolvedLoadingSlot = useMemo(() => {
     if (loadingSlot !== 'auto') return loadingSlot;
 
     // Auto logic: prefer icon if present, then rightIcon, fallback to icon
-    if (rightIcon && !icon) return 'rightIcon';
+    if (hasRightIconSlot && !hasIconSlot) return 'rightIcon';
     return 'icon'; // fallback
-  }, [loadingSlot, icon, rightIcon]);
+  }, [loadingSlot, hasIconSlot, hasRightIconSlot]);
 
   const showDescription = useMemo(() => {
     const copyProps = { ...descriptionProps };
@@ -529,12 +600,16 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
 
   // Apply loading state to appropriate slots
   const finalIcon =
-    isLoading && resolvedLoadingSlot === 'icon' ? <LoadingIcon /> : icon;
+    isLoading && resolvedLoadingSlot === 'icon' ? (
+      <LoadingIcon />
+    ) : (
+      resolvedIcon.content
+    );
   const finalRightIcon =
     isLoading && resolvedLoadingSlot === 'rightIcon' ? (
       <LoadingIcon />
     ) : (
-      rightIcon
+      resolvedRightIcon.content
     );
   const finalPrefix =
     isLoading && resolvedLoadingSlot === 'prefix' ? <LoadingIcon /> : prefix;
@@ -576,12 +651,13 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     [hotkeys, finalIsDisabled],
   );
 
-  mods = useMemo(() => {
+  const finalMods = useMemo<ItemMods>(() => {
     return {
-      'has-icon': !!finalIcon,
-      'has-start-content': !!(finalIcon || finalPrefix),
-      'has-end-content': !!(finalRightIcon || finalSuffix || actions),
-      'has-right-icon': !!finalRightIcon,
+      ...baseMods,
+      'has-icon': hasIconSlot,
+      'has-start-content': !!(hasIconSlot || finalPrefix),
+      'has-end-content': !!(hasRightIconSlot || finalSuffix || actions),
+      'has-right-icon': hasRightIconSlot,
       'has-label': !!(children || labelProps),
       'has-prefix': !!finalPrefix,
       'has-suffix': !!finalSuffix,
@@ -590,37 +666,21 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       'has-actions-content': !!(actions && actions !== true),
       'show-actions-on-hover': showActionsOnHover === true,
       checkbox: hasCheckbox,
-      disabled: finalIsDisabled,
-      selected: isSelected === true,
-      loading: isLoading,
-      card: isCard === true,
-      button: isButton === true,
-      ...(typeof size === 'number' ? {} : { size }),
       description: showDescription ? descriptionPlacement : 'none',
-      type,
-      theme,
-      shape,
-      ...mods,
     };
   }, [
-    finalIcon,
-    finalRightIcon,
+    baseMods,
+    hasIconSlot,
+    hasRightIconSlot,
     finalPrefix,
     finalSuffix,
     showDescription,
     descriptionPlacement,
     hasCheckbox,
-    isSelected,
-    isLoading,
-    isCard,
-    isButton,
-    shape,
     actions,
     showActionsOnHover,
-    size,
-    type,
-    theme,
-    mods,
+    children,
+    labelProps,
   ]);
 
   const {
@@ -681,13 +741,13 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         disabled={finalIsDisabled}
         aria-disabled={finalIsDisabled}
         aria-selected={isSelected}
-        mods={mods}
+        mods={finalMods}
         styles={styles}
         type={htmlType as any}
         {...mergeProps(rest, tooltipTriggerProps || {})}
         style={finalStyle}
       >
-        {finalIcon && (
+        {hasIconSlot && (
           <div data-element="Icon">
             {hasCheckbox ? <CheckIcon /> : finalIcon}
           </div>
@@ -704,7 +764,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           </div>
         ) : null}
         {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
-        {finalRightIcon && <div data-element="RightIcon">{finalRightIcon}</div>}
+        {hasRightIconSlot && (
+          <div data-element="RightIcon">{finalRightIcon}</div>
+        )}
         {actions && (
           <div data-element="Actions" {...ACTIONS_EVENT_HANDLERS}>
             {actions !== true ? (

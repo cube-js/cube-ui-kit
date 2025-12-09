@@ -120,8 +120,29 @@ The `mods` property accepts the following modifiers:
 ### With Icons
 
 ```jsx
+{/* Standard icons */}
 <Item icon={<IconUser />} rightIcon={<IconSettings />}>
   Item with icons
+</Item>
+
+{/* Empty slot (reserves space but shows nothing) */}
+<Item icon={true} rightIcon={true}>
+  Item with empty slots
+</Item>
+
+{/* Dynamic icon based on mods */}
+<Item 
+  icon={({ loading }) => loading ? <LoadingIcon /> : <IconUser />}
+  rightIcon={({ selected }) => selected ? <CheckIcon /> : <IconSettings />}
+>
+  Dynamic icons
+</Item>
+
+{/* Return true from function for empty slot */}
+<Item 
+  icon={({ selected }) => selected ? <CheckIcon /> : true}
+>
+  Conditional icon
 </Item>
 ```
 

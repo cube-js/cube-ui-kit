@@ -38,6 +38,7 @@ export type {
   GlobalStyledProps,
   TagName,
   Mods,
+  ModValue,
 } from './types';
 export type {
   StylesInterface,
