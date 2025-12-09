@@ -13,7 +13,7 @@ const CloseButton = tasty(Button, {
   label: 'Close the notification',
   qa: 'NotificationCloseButton',
   type: 'neutral',
-  styles: { gridArea: 'close', display: 'flex', padding: '1x' },
+  styles: { gridArea: 'close', display: 'flex' },
 });
 
 export const NotificationCloseButton = memo(function NotificationCloseButton(
