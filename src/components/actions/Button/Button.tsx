@@ -468,9 +468,11 @@ export const Button = forwardRef(function Button(
         styles={styles}
       >
         {hasLeftIcon ? (
-          <IconSwitch data-element="Icon" contentKey={iconKey}>
-            {isLoading ? <LoadingIcon /> : icon}
-          </IconSwitch>
+          <div data-element="Icon">
+            <IconSwitch noWrapper contentKey={iconKey}>
+              {isLoading ? <LoadingIcon /> : icon}
+            </IconSwitch>
+          </div>
         ) : null}
         {hasChildren &&
           (rawChildren ? (
@@ -481,9 +483,11 @@ export const Button = forwardRef(function Button(
             </div>
           ))}
         {hasRightSlot ? (
-          <IconSwitch data-element="RightIcon" contentKey={rightIconKey}>
-            {rightIcon}
-          </IconSwitch>
+          <div data-element="RightIcon">
+            <IconSwitch noWrapper contentKey={rightIconKey}>
+              {rightIcon}
+            </IconSwitch>
+          </div>
         ) : null}
       </ButtonElement>
     );

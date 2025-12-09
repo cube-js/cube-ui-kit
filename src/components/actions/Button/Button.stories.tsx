@@ -1,5 +1,11 @@
 import { StoryFn } from '@storybook/react-vite';
-import { IconCaretDown, IconCoin } from '@tabler/icons-react';
+import {
+  IconCaretDown,
+  IconCoin,
+  IconHeart,
+  IconHeartFilled,
+} from '@tabler/icons-react';
+import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
@@ -510,4 +516,19 @@ Loading.args = {
   icon: <IconCoin />,
   isLoading: true,
   children: 'Button',
+};
+
+export const DynamicIcon = () => {
+  const [isSelected, setIsSelected] = useState(false);
+
+  return (
+    <Button
+      type="clear"
+      isSelected={isSelected}
+      icon={({ selected }) => (selected ? <IconHeartFilled /> : <IconHeart />)}
+      onPress={() => setIsSelected((prev) => !prev)}
+    >
+      {isSelected ? 'Liked' : 'Like'}
+    </Button>
+  );
 };

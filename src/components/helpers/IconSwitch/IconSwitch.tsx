@@ -8,6 +8,8 @@ export interface CubeIconSwitchProps extends BaseProps {
   children: ReactNode;
   /** Override the default key derivation for detecting icon changes */
   contentKey?: string | number;
+  /** When true, renders without wrapper element, expecting parent to provide grid context */
+  noWrapper?: boolean;
 }
 
 interface IconEntry {
@@ -40,7 +42,7 @@ const IconSlotElement = tasty({
  * Useful for animated icon transitions in buttons, items, etc.
  */
 export function IconSwitch(props: CubeIconSwitchProps) {
-  const { children, contentKey, ...rest } = props;
+  const { children, contentKey, noWrapper, ...rest } = props;
 
   const keyCounterRef = useRef(0);
   const prevContentKeyRef = useRef<string | number | undefined>(contentKey);
@@ -76,37 +78,39 @@ export function IconSwitch(props: CubeIconSwitchProps) {
 
   const latestKey = icons[icons.length - 1]?.key;
 
-  return (
-    <IconSwitchElement {...rest}>
-      {icons.map((icon) => {
-        const isActive = icon.key === latestKey;
+  const content = icons.map((icon) => {
+    const isActive = icon.key === latestKey;
 
-        return (
-          <DisplayTransition
-            key={icon.key}
-            isShown={isActive}
-            animateOnMount={icon.key !== 0}
-            onRest={(transition) => {
-              if (transition === 'exit') {
-                handleExitComplete(icon.key);
-              }
+    return (
+      <DisplayTransition
+        key={icon.key}
+        isShown={isActive}
+        animateOnMount={icon.key !== 0}
+        onRest={(transition) => {
+          if (transition === 'exit') {
+            handleExitComplete(icon.key);
+          }
+        }}
+      >
+        {({ phase, ref }) => (
+          <IconSlotElement
+            ref={ref}
+            mods={{
+              entered: phase === 'entered',
             }}
           >
-            {({ phase, ref }) => (
-              <IconSlotElement
-                ref={ref}
-                mods={{
-                  entered: phase === 'entered',
-                }}
-              >
-                {icon.content}
-              </IconSlotElement>
-            )}
-          </DisplayTransition>
-        );
-      })}
-    </IconSwitchElement>
-  );
+            {icon.content}
+          </IconSlotElement>
+        )}
+      </DisplayTransition>
+    );
+  });
+
+  if (noWrapper) {
+    return <>{content}</>;
+  }
+
+  return <IconSwitchElement {...rest}>{content}</IconSwitchElement>;
 }
 
 export type { CubeIconSwitchProps as IconSwitchProps };

@@ -775,7 +775,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       >
         {hasIconSlot && (
           <div data-element="Icon">
-            <IconSwitch contentKey={iconKey}>
+            <IconSwitch noWrapper contentKey={iconKey}>
               {hasCheckbox ? <CheckIcon /> : finalIcon}
             </IconSwitch>
           </div>
@@ -794,7 +794,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
         {hasRightIconSlot && (
           <div data-element="RightIcon">
-            <IconSwitch contentKey={rightIconKey}>{finalRightIcon}</IconSwitch>
+            <IconSwitch noWrapper contentKey={rightIconKey}>
+              {finalRightIcon}
+            </IconSwitch>
           </div>
         )}
         {actions && (
