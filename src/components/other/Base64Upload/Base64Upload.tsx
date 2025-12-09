@@ -13,6 +13,7 @@ import {
 import { Button } from '../../actions';
 import { Block } from '../../Block';
 import { Text } from '../../content/Text';
+import { Flex } from '../../layout/Flex';
 
 const DEFAULT_STYLES: Styles = {
   display: 'inline-flex',
@@ -100,14 +101,16 @@ export const Base64Upload = styled(
           ref={ref}
           styles={styles}
         >
-          <Block
+          <Flex
             radius="round"
             fill="#purple.10"
             color="#dark-02"
-            padding=".5x 1x"
+            padding="0 1x"
+            height="($size - 1x + 2bw)"
+            placeItems="center"
           >
             Choose file
-          </Block>
+          </Flex>
           <Block color="#dark-04">{file || 'No file selected'}</Block>
           <input
             type="file"

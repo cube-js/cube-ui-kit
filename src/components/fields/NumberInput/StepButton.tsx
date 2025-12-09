@@ -14,14 +14,13 @@ const StepButtonElement = tasty(Button, {
     },
     fontSize: '12px',
     lineHeight: '12px',
-    fill: {
-      '': '#dark.0',
-      hovered: '#dark.04',
-      pressed: '#purple.10',
-      disabled: '#dark.0',
-    },
 
     '$icon-size': '1fs',
+
+    Icon: {
+      width: 'auto',
+      height: 'auto',
+    },
   },
 });
 
