@@ -2,6 +2,7 @@ import {
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
+  isValidElement,
   KeyboardEvent,
   MouseEvent,
   PointerEvent,
@@ -57,6 +58,7 @@ import {
 import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
 import { ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
+import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { highlightText } from '../highlightText';
 import { HotKeys } from '../HotKeys';
@@ -611,6 +613,30 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     ) : (
       resolvedRightIcon.content
     );
+
+  // Generate stable keys for icon transitions based on icon type
+  const iconKey = hasCheckbox
+    ? 'checkbox'
+    : isLoading && resolvedLoadingSlot === 'icon'
+      ? 'loading'
+      : isValidElement(finalIcon)
+        ? (finalIcon.type as any)?.displayName ||
+          (finalIcon.type as any)?.name ||
+          'icon'
+        : finalIcon
+          ? 'icon'
+          : 'empty';
+
+  const rightIconKey =
+    isLoading && resolvedLoadingSlot === 'rightIcon'
+      ? 'loading'
+      : isValidElement(finalRightIcon)
+        ? (finalRightIcon.type as any)?.displayName ||
+          (finalRightIcon.type as any)?.name ||
+          'icon'
+        : finalRightIcon
+          ? 'icon'
+          : 'empty';
   const finalPrefix =
     isLoading && resolvedLoadingSlot === 'prefix' ? <LoadingIcon /> : prefix;
 
@@ -749,7 +775,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       >
         {hasIconSlot && (
           <div data-element="Icon">
-            {hasCheckbox ? <CheckIcon /> : finalIcon}
+            <IconSwitch contentKey={iconKey}>
+              {hasCheckbox ? <CheckIcon /> : finalIcon}
+            </IconSwitch>
           </div>
         )}
         {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
@@ -765,7 +793,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         ) : null}
         {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
         {hasRightIconSlot && (
-          <div data-element="RightIcon">{finalRightIcon}</div>
+          <div data-element="RightIcon">
+            <IconSwitch contentKey={rightIconKey}>{finalRightIcon}</IconSwitch>
+          </div>
         )}
         {actions && (
           <div data-element="Actions" {...ACTIONS_EVENT_HANDLERS}>

@@ -1,12 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
-import {
-  cloneElement,
-  forwardRef,
-  isValidElement,
-  ReactElement,
-  ReactNode,
-  useMemo,
-} from 'react';
+import { forwardRef, isValidElement, ReactNode, useMemo } from 'react';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
@@ -45,6 +38,7 @@ import {
 } from '../../../tasty';
 import { DynamicIcon, resolveIcon } from '../../../utils/react';
 import { Text } from '../../content/Text';
+import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
 import { CubeActionProps } from '../Action/Action';
 import { useAction } from '../use-action';
 
@@ -269,27 +263,25 @@ export const Button = forwardRef(function Button(
   const hasLeftSlot = resolvedIcon.hasSlot;
   const hasRightSlot = resolvedRightIcon.hasSlot;
 
-  // Clone elements to add data-element attribute if they're valid ReactElements
-  let icon: ReactNode = resolvedIcon.content;
-  let rightIcon: ReactNode = resolvedRightIcon.content;
+  const icon: ReactNode = resolvedIcon.content;
+  const rightIcon: ReactNode = resolvedRightIcon.content;
 
-  if (isValidElement(icon)) {
-    icon = cloneElement(
-      icon as ReactElement,
-      {
-        'data-element': 'ButtonIcon',
-      } as any,
-    );
-  }
+  // Generate stable keys for icon transitions based on icon type
+  const iconKey = isLoading
+    ? 'loading'
+    : isValidElement(icon)
+      ? (icon.type as any)?.displayName || (icon.type as any)?.name || 'icon'
+      : icon
+        ? 'icon'
+        : 'empty';
 
-  if (isValidElement(rightIcon)) {
-    rightIcon = cloneElement(
-      rightIcon as ReactElement,
-      {
-        'data-element': 'ButtonIcon',
-      } as any,
-    );
-  }
+  const rightIconKey = isValidElement(rightIcon)
+    ? (rightIcon.type as any)?.displayName ||
+      (rightIcon.type as any)?.name ||
+      'icon'
+    : rightIcon
+      ? 'icon'
+      : 'empty';
 
   children = children || hasLeftSlot || hasRightSlot ? children : label;
 
@@ -358,11 +350,9 @@ export const Button = forwardRef(function Button(
       styles={styles}
     >
       {hasLeftSlot || isLoading ? (
-        !isLoading ? (
-          icon
-        ) : (
-          <LoadingIcon data-element="ButtonIcon" />
-        )
+        <IconSwitch data-element="ButtonIcon" contentKey={iconKey}>
+          {isLoading ? <LoadingIcon /> : icon}
+        </IconSwitch>
       ) : null}
       {typeof children === 'string' ? (
         <Text ellipsis nowrap>
@@ -371,7 +361,11 @@ export const Button = forwardRef(function Button(
       ) : (
         children
       )}
-      {hasRightSlot ? rightIcon : null}
+      {hasRightSlot ? (
+        <IconSwitch data-element="ButtonIcon" contentKey={rightIconKey}>
+          {rightIcon}
+        </IconSwitch>
+      ) : null}
     </ButtonElement>
   );
 });
