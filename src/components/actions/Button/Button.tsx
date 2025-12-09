@@ -1,5 +1,13 @@
 import { FocusableRef } from '@react-types/shared';
-import { cloneElement, forwardRef, ReactElement, useMemo } from 'react';
+import {
+  forwardRef,
+  HTMLAttributes,
+  ReactElement,
+  ReactNode,
+  RefObject,
+  useMemo,
+} from 'react';
+import { OverlayProps } from 'react-aria';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
@@ -32,10 +40,13 @@ import { LoadingIcon } from '../../../icons';
 import {
   CONTAINER_STYLES,
   extractStyles,
+  Styles,
   tasty,
   TEXT_STYLES,
 } from '../../../tasty';
-import { Text } from '../../content/Text';
+import { mergeProps } from '../../../utils/react';
+import { useAutoTooltip } from '../../content/use-auto-tooltip';
+import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { CubeActionProps } from '../Action/Action';
 import { useAction } from '../use-action';
 
@@ -54,6 +65,22 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'neutral'
     | (string & {});
   size?: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | (string & {});
+  /**
+   * Tooltip content and configuration:
+   * - string: simple tooltip text
+   * - true: auto tooltip on overflow (shows children as tooltip when truncated)
+   * - object: advanced configuration with optional auto property
+   */
+  tooltip?:
+    | string
+    | boolean
+    | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
+  /**
+   * @private
+   * Default tooltip placement for the button.
+   * @default "top"
+   */
+  defaultTooltipPlacement?: OverlayProps['placement'];
 }
 
 export type ButtonVariant =
@@ -84,18 +111,22 @@ export type ButtonVariant =
 
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
+const DEFAULT_ICON_STYLES: Styles = {
+  $: '>',
+  display: 'grid',
+  placeItems: 'center',
+  placeContent: 'stretch',
+  aspectRatio: '1 / 1',
+  width: '($size - 2bw)',
+};
+
 export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
-  flow: 'column',
-  placeItems: 'center start',
-  placeContent: {
-    '': 'center',
-    'right-icon | suffix': 'center stretch',
-  },
-  gridColumns: {
-    '': 'initial',
-    'left-icon | loading | prefix': 'max-content',
-  },
+  flow: 'column dense',
+  gap: 0,
+  gridTemplate: '"icon label rightIcon" auto / max-content 1sf max-content',
+  placeItems: 'stretch',
+  placeContent: 'stretch',
   position: 'relative',
   margin: 0,
   boxSizing: 'border-box',
@@ -104,10 +135,6 @@ export const DEFAULT_BUTTON_STYLES = {
     ':is(a)': 'pointer',
     ':is(button)': '$pointer',
     disabled: 'not-allowed',
-  },
-  gap: {
-    '': '.75x',
-    'size=small': '.5x',
   },
   preset: {
     '': 't3m',
@@ -120,16 +147,12 @@ export const DEFAULT_BUTTON_STYLES = {
   outline: 0,
   outlineOffset: 1,
   padding: {
-    '': '.5x (1.5x - 1bw)',
-    'size=small | size=xsmall': '.5x (1.25x - 1bw)',
-    'size=medium': '.5x (1.5x - 1bw)',
-    'size=large': '.5x (1.75x - 1bw)',
-    'size=xlarge': '.5x (2x - 1bw)',
-    'single-icon | type=link': 0,
+    '': 0,
+    'type=link': 0,
   },
   width: {
     '': 'min $size',
-    'left-icon & right-icon': 'min ($size * 2 - 2bw)',
+    'has-icon & has-right-icon': 'min ($size * 2 - 2bw)',
     'single-icon': 'fixed $size',
     'type=link': 'min 1ch',
   },
@@ -151,19 +174,54 @@ export const DEFAULT_BUTTON_STYLES = {
     'size=large': '$size-lg',
     'size=xlarge': '$size-xl',
   },
+  '$inline-padding': {
+    '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
+  },
+  '$block-padding': {
+    '': '.5x',
+    'size=xsmall | size=small': '.25x',
+  },
+  '$inline-compensation': '.5x',
+  '$min-inline-padding': '(1x - 1bw)',
+  '$label-padding-left': {
+    '': '$inline-padding',
+    'has-icon': 0,
+  },
+  '$label-padding-right': {
+    '': '$inline-padding',
+    'has-right-icon': 0,
+  },
 
+  // Icon sub-element (recommended format)
+  Icon: {
+    ...DEFAULT_ICON_STYLES,
+    gridArea: 'icon',
+  },
+
+  // RightIcon sub-element (recommended format)
+  RightIcon: {
+    ...DEFAULT_ICON_STYLES,
+    gridArea: 'rightIcon',
+  },
+
+  // Label sub-element (recommended format)
+  Label: {
+    $: '>',
+    gridArea: 'label',
+    display: 'block',
+    placeSelf: 'center start',
+    boxSizing: 'border-box',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '100%',
+    padding:
+      '$block-padding $label-padding-right $block-padding $label-padding-left',
+  },
+
+  // ButtonIcon sub-element (backward compatibility)
   ButtonIcon: {
     width: 'min 1fs',
-  },
-
-  '& [data-element="ButtonIcon"]:first-child:not(:last-child)': {
-    marginLeft: '-.5x',
-    placeSelf: 'center start',
-  },
-
-  '& [data-element="ButtonIcon"]:last-child:not(:first-child)': {
-    marginRight: '-.5x',
-    placeSelf: 'center end',
   },
 } as const;
 
@@ -219,6 +277,8 @@ export const Button = forwardRef(function Button(
     rightIcon,
     mods,
     download,
+    tooltip,
+    defaultTooltipPlacement = 'top',
     ...props
   } = allProps;
 
@@ -252,18 +312,6 @@ export const Button = forwardRef(function Button(
     label = 'Unnamed'; // fix to avoid warning in production
   }
 
-  if (icon) {
-    icon = cloneElement(icon, {
-      'data-element': 'ButtonIcon',
-    } as any);
-  }
-
-  if (rightIcon) {
-    rightIcon = cloneElement(rightIcon, {
-      'data-element': 'ButtonIcon',
-    } as any);
-  }
-
   const singleIcon = !!(
     ((icon && !rightIcon) || (rightIcon && !icon)) &&
     !children
@@ -276,8 +324,8 @@ export const Button = forwardRef(function Button(
       loading: isLoading,
       selected: isSelected,
       'has-icons': hasIcons,
-      'left-icon': !!icon,
-      'right-icon': !!rightIcon,
+      'has-icon': !!icon || isLoading,
+      'has-right-icon': !!rightIcon,
       'single-icon': singleIcon,
       'text-only': !!(children && typeof children === 'string' && !hasIcons),
       ...mods,
@@ -304,32 +352,60 @@ export const Button = forwardRef(function Button(
 
   delete actionProps.isDisabled;
 
-  return (
-    <ButtonElement
-      download={download}
-      {...actionProps}
-      disabled={isDisabledElement}
-      variant={`${theme}.${type ?? 'outline'}` as ButtonVariant}
-      data-theme={theme}
-      data-type={type ?? 'outline'}
-      data-size={size ?? 'medium'}
-      styles={styles}
-    >
-      {icon || isLoading ? (
-        !isLoading ? (
-          icon
-        ) : (
-          <LoadingIcon data-element="ButtonIcon" />
-        )
-      ) : null}
-      {typeof children === 'string' ? (
-        <Text ellipsis nowrap>
-          {children}
-        </Text>
-      ) : (
-        children
-      )}
-      {rightIcon}
-    </ButtonElement>
-  );
+  const {
+    labelProps: finalLabelProps,
+    labelRef,
+    renderWithTooltip,
+  } = useAutoTooltip({
+    tooltip,
+    children,
+    labelProps: undefined,
+  });
+
+  // Render function that creates the button element
+  const renderButtonElement = (
+    tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
+    tooltipRef?: RefObject<HTMLElement>,
+  ): ReactNode => {
+    // Use callback ref to merge multiple refs without calling hooks
+    const handleRef = (element: HTMLElement | null) => {
+      // Set the component's forwarded ref from useAction
+      const domRef = actionProps.ref as any;
+      if (typeof domRef === 'function') {
+        domRef(element);
+      } else if (domRef) {
+        domRef.current = element;
+      }
+      // Set the tooltip ref if provided
+      if (tooltipRef) {
+        (tooltipRef as any).current = element;
+      }
+    };
+
+    return (
+      <ButtonElement
+        download={download}
+        {...mergeProps(actionProps, tooltipTriggerProps || {})}
+        ref={handleRef}
+        disabled={isDisabledElement}
+        variant={`${theme}.${type ?? 'outline'}` as ButtonVariant}
+        data-theme={theme}
+        data-type={type ?? 'outline'}
+        data-size={size ?? 'medium'}
+        styles={styles}
+      >
+        {(icon || isLoading) && (
+          <div data-element="Icon">{isLoading ? <LoadingIcon /> : icon}</div>
+        )}
+        {children && (
+          <div data-element="Label" {...finalLabelProps} ref={labelRef}>
+            {children}
+          </div>
+        )}
+        {rightIcon && <div data-element="RightIcon">{rightIcon}</div>}
+      </ButtonElement>
+    );
+  };
+
+  return renderWithTooltip(renderButtonElement, defaultTooltipPlacement);
 });
