@@ -214,7 +214,7 @@ export const DEFAULT_BUTTON_STYLES = {
     $: '>',
     gridArea: 'label',
     display: 'block',
-    placeSelf: 'stretch',
+    placeSelf: 'center stretch',
     boxSizing: 'border-box',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
