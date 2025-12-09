@@ -62,6 +62,8 @@ const PanelElement = tasty({
     boxSizing: 'border-box',
 
     '$content-padding': '1x',
+    // Auto-border size for sub-components (panels are always vertical)
+    '$layout-border-size': '1bw',
 
     // Position based on side prop
     top: {

@@ -49,6 +49,11 @@ const LayoutElement = tasty({
     },
 
     '$content-padding': '1x',
+    // Auto-border size for sub-components (set when layout is vertical)
+    '$layout-border-size': {
+      '': '0',
+      vertical: '1bw',
+    },
 
     Inner: {
       // Direct child selector required for nested layouts
@@ -148,6 +153,16 @@ function LayoutInner(
   // Extract outer wrapper styles and inner content styles
   const outerStyles = extractStyles(otherProps, OUTER_STYLES);
   const innerStyles = extractStyles(otherProps, INNER_STYLES);
+
+  // Calculate if the layout flow is vertical (for auto-border feature)
+  // Default flow is 'column' (vertical), check if user overrides it
+  const isVertical = useMemo(() => {
+    const providedFlow = (styles?.Inner as Record<string, unknown>)?.flow;
+    const flowValue =
+      typeof providedFlow === 'string' ? providedFlow : 'column';
+
+    return flowValue.startsWith('column');
+  }, [styles?.Inner]);
 
   // Merge styles using the same pattern as LayoutPane
   const finalStyles = useMemo(() => {
@@ -259,8 +274,9 @@ function LayoutInner(
       'has-transition': hasTransition,
       'auto-height': isAutoHeight && !isCollapsed,
       collapsed: isCollapsed,
+      vertical: isVertical,
     }),
-    [isDragging, isReady, hasTransition, isAutoHeight, isCollapsed],
+    [isDragging, isReady, hasTransition, isAutoHeight, isCollapsed, isVertical],
   );
 
   // Combine local ref with forwarded ref
@@ -342,20 +358,10 @@ function LayoutInner(
  * Uses a two-element architecture (wrapper + content) to ensure content never overflows.
  */
 function Layout(props: CubeLayoutProps, ref: ForwardedRef<HTMLDivElement>) {
-  const { hasTransition, styles } = props;
-
-  // Calculate if the layout flow is vertical
-  // Default flow is 'column' (vertical), check if user overrides it
-  const isVertical = useMemo(() => {
-    const providedFlow = (styles?.Inner as Record<string, unknown>)?.flow;
-    const flowValue =
-      typeof providedFlow === 'string' ? providedFlow : 'column';
-
-    return flowValue.startsWith('column');
-  }, [styles?.Inner]);
+  const { hasTransition } = props;
 
   return (
-    <LayoutProvider hasTransition={hasTransition} isVertical={isVertical}>
+    <LayoutProvider hasTransition={hasTransition}>
       <LayoutInner {...props} forwardedRef={ref} />
     </LayoutProvider>
   );

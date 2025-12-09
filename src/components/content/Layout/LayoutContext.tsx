@@ -24,8 +24,6 @@ export interface LayoutContextValue {
   isReady: boolean;
   /** Whether transitions are enabled for panels */
   hasTransition: boolean;
-  /** Whether the layout flow is vertical (column direction) */
-  isVertical: boolean;
   /** Register an overlay panel's dismiss callback. Returns unregister function. */
   registerOverlayPanel: (dismiss: OverlayDismissCallback) => () => void;
   /** Dismiss all overlay panels */
@@ -44,14 +42,11 @@ export interface LayoutProviderProps {
   children: ReactNode;
   /** Whether transitions are enabled for panels */
   hasTransition?: boolean;
-  /** Whether the layout flow is vertical (column direction) */
-  isVertical?: boolean;
 }
 
 export function LayoutProvider({
   children,
   hasTransition = false,
-  isVertical = true,
 }: LayoutProviderProps) {
   const registeredPanels = useRef<Set<Side>>(new Set());
   const overlayPanelCallbacks = useRef<Set<OverlayDismissCallback>>(new Set());
@@ -151,7 +146,6 @@ export function LayoutProvider({
       isDragging,
       isReady,
       hasTransition,
-      isVertical,
       registerOverlayPanel,
       dismissOverlayPanels,
       hasOverlayPanels,
@@ -166,7 +160,6 @@ export function LayoutProvider({
       isDragging,
       isReady,
       hasTransition,
-      isVertical,
       registerOverlayPanel,
       dismissOverlayPanels,
       hasOverlayPanels,

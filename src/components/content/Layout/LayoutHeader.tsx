@@ -20,10 +20,8 @@ const HeaderElement = tasty(LayoutContent, {
   as: 'header',
   qa: 'LayoutHeader',
   styles: {
-    border: {
-      '': 'bottom',
-      'bordered & !:last-child': 'bottom',
-    },
+    // Header always has bottom border (inherent style)
+    border: 'bottom',
     flexShrink: 0,
     flexGrow: 0,
 

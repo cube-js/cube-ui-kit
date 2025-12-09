@@ -7,12 +7,11 @@ import {
   extractStyles,
   filterBaseProps,
   mergeStyles,
-  Mods,
   Styles,
   tasty,
 } from '../../../tasty';
 
-import { LayoutContextReset, useLayoutContext } from './LayoutContext';
+import { LayoutContextReset } from './LayoutContext';
 
 const ContainerElement = tasty({
   as: 'div',
@@ -31,7 +30,7 @@ const ContainerElement = tasty({
     width: '100%',
     border: {
       '': 0,
-      'bordered & !:last-child': 'bottom',
+      '!:last-child': '$layout-border-size solid #border bottom',
     },
 
     Inner: {
@@ -53,8 +52,6 @@ export interface CubeLayoutContainerProps
   styles?: Styles;
   /** Custom styles for the inner element */
   innerStyles?: Styles;
-  /** Additional modifiers to apply */
-  mods?: Mods;
 }
 
 function LayoutContainer(
@@ -65,10 +62,8 @@ function LayoutContainer(
     children,
     styles,
     innerStyles: innerStylesProp,
-    mods: externalMods,
     ...otherProps
   } = props;
-  const layoutContext = useLayoutContext();
   const innerStyles = extractStyles(
     otherProps,
     CONTAINER_STYLES,
@@ -81,19 +76,10 @@ function LayoutContainer(
     return mergeStyles(styles, hasInnerStyles ? { Inner: innerStyles } : null);
   }, [styles, hasInnerStyles, innerStyles]);
 
-  const mods = useMemo(
-    () => ({
-      ...externalMods,
-      bordered: layoutContext?.isVertical,
-    }),
-    [externalMods, layoutContext?.isVertical],
-  );
-
   return (
     <ContainerElement
       ref={ref}
       {...filterBaseProps(otherProps, { eventProps: true })}
-      mods={mods}
       styles={finalStyles}
     >
       <div data-element="Inner">
