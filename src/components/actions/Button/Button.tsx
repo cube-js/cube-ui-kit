@@ -324,13 +324,18 @@ export const Button = forwardRef(function Button(
   }
 
   const hasLeftIcon = !!icon || isLoading;
+  const hasChildren = children != null;
   const singleIcon = !!(
     ((hasLeftIcon && !rightIcon) || (rightIcon && !hasLeftIcon)) &&
-    !children
+    !hasChildren
   );
 
   const hasIcons = hasLeftIcon || !!rightIcon;
-  const rawChildren = !!(children && typeof children !== 'string' && !hasIcons);
+  const rawChildren = !!(
+    hasChildren &&
+    typeof children !== 'string' &&
+    !hasIcons
+  );
 
   const modifiers = useMemo(
     () => ({
@@ -340,7 +345,7 @@ export const Button = forwardRef(function Button(
       'has-icon': hasLeftIcon,
       'has-right-icon': !!rightIcon,
       'single-icon': singleIcon,
-      'text-only': !!(children && typeof children === 'string' && !hasIcons),
+      'text-only': !!(hasChildren && typeof children === 'string' && !hasIcons),
       'raw-children': rawChildren,
       ...mods,
     }),
@@ -412,7 +417,7 @@ export const Button = forwardRef(function Button(
         {(icon || isLoading) && (
           <div data-element="Icon">{isLoading ? <LoadingIcon /> : icon}</div>
         )}
-        {children &&
+        {hasChildren &&
           (rawChildren ? (
             children
           ) : (
