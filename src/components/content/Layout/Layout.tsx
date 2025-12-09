@@ -155,14 +155,14 @@ function LayoutInner(
   const innerStyles = extractStyles(otherProps, INNER_STYLES);
 
   // Calculate if the layout flow is vertical (for auto-border feature)
-  // Default flow is 'column' (vertical), check if user overrides it
+  // Default flow is 'column' (vertical), only horizontal when explicitly set to 'row'
   const isVertical = useMemo(() => {
-    const providedFlow = (styles?.Inner as Record<string, unknown>)?.flow;
-    const flowValue =
-      typeof providedFlow === 'string' ? providedFlow : 'column';
+    const flowFromProp = innerStyles?.flow;
+    const flowFromStyles = (styles?.Inner as Record<string, unknown>)?.flow;
+    const flowValue = flowFromProp ?? flowFromStyles;
 
-    return flowValue.startsWith('column');
-  }, [styles?.Inner]);
+    return typeof flowValue !== 'string' || !flowValue.startsWith('row');
+  }, [innerStyles?.flow, styles?.Inner]);
 
   // Merge styles using the same pattern as LayoutPane
   const finalStyles = useMemo(() => {

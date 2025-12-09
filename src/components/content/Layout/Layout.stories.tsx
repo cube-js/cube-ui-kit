@@ -403,10 +403,10 @@ export const MultiplePanels: Story = {
 
 export const HorizontalScrollableContent: Story = {
   render: () => (
-    <Space width="500px" gap="0">
-      <Layout.Block fill="#light" placeSelf="center">
+    <Layout width="500px" flow="row" height="100px">
+      <Layout.Flex fill="#light" placeItems="center">
         Fixed Left
-      </Layout.Block>
+      </Layout.Flex>
       <Layout.Content scrollbar="tiny" placeContent="center">
         <Text nowrap>
           This is a very long line of text that should not wrap and will cause
@@ -415,10 +415,10 @@ export const HorizontalScrollableContent: Story = {
           eiusmod tempor incididunt ut labore et dolore magna aliqua →→→→→→→→
         </Text>
       </Layout.Content>
-      <Layout.Block fill="#light" placeSelf="center">
+      <Layout.Flex fill="#light" placeItems="center">
         Fixed Right
-      </Layout.Block>
-    </Space>
+      </Layout.Flex>
+    </Layout>
   ),
 };
 
