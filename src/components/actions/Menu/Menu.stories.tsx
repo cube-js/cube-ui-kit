@@ -1308,7 +1308,6 @@ export const TabWithMultipleTriggers = () => {
           size="small"
           icon={<IconDotsVertical />}
           aria-label="Tab actions"
-          padding="1x"
           radius="right"
           margin="-1bw left"
           onPress={openActionsMenu}

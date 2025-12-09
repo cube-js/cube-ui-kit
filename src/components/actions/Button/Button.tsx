@@ -146,10 +146,7 @@ export const DEFAULT_BUTTON_STYLES = {
   reset: 'button',
   outline: 0,
   outlineOffset: 1,
-  padding: {
-    '': 0,
-    'type=link': 0,
-  },
+  padding: 0,
   width: {
     '': 'min $size',
     'has-icon & has-right-icon': 'min ($size * 2 - 2bw)',
