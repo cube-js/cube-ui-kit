@@ -30,6 +30,8 @@ export type DisplayTransitionProps = {
   animateOnMount?: boolean;
   /** Respect prefers-reduced-motion by collapsing duration to 0. */
   respectReducedMotion?: boolean;
+  /** Preserve children content during exit transition. When true, uses stored children from when content was visible. @default true */
+  preserveContent?: boolean;
   /** Render-prop gets { phase, isShown, ref }. Bind ref to the transitioned element for native event detection. */
   children: (props: {
     phase: ReportedPhase;
@@ -58,6 +60,7 @@ export function DisplayTransition({
   exposeUnmounted = false,
   animateOnMount = true,
   respectReducedMotion = true,
+  preserveContent = true,
   children,
 }: DisplayTransitionProps) {
   // Reduced motion → collapse timing
@@ -66,6 +69,9 @@ export function DisplayTransition({
     typeof window !== 'undefined' &&
     window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   const dur = prefersReduced ? 0 : duration;
+
+  // Store children to preserve content during exit transitions
+  const storedChildrenRef = useRef<typeof children>(children);
 
   // For native transition event detection
   const elementRef = useRef<HTMLElement | null>(null);
@@ -335,8 +341,19 @@ export function DisplayTransition({
     }
   };
 
+  // Update stored children only when shown or entering (not during exit)
+  if (phase === 'enter' || phase === 'entered' || phase === 'exit-pending') {
+    storedChildrenRef.current = children;
+  }
+
+  // Use stored children during exit phases to preserve content (if enabled)
+  const effectiveChildren =
+    preserveContent && (phase === 'exit' || phase === 'unmounted')
+      ? storedChildrenRef.current
+      : children;
+
   if (phase === 'unmounted' && !exposeUnmounted) return null;
-  return children({
+  return effectiveChildren({
     phase:
       reportedPhase === 'enter' && duration !== undefined && !duration
         ? 'entered'

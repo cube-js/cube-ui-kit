@@ -25,6 +25,12 @@ const meta = {
       control: 'boolean',
       description: 'Respect prefers-reduced-motion setting',
     },
+    preserveContent: {
+      control: 'boolean',
+      description:
+        'Preserve children content during exit transition. When true, uses stored children from when content was visible.',
+      table: { defaultValue: { summary: 'true' } },
+    },
   },
 } satisfies Meta<typeof DisplayTransition>;
 
@@ -239,5 +245,62 @@ export const NativeEventDetection: Story = {
   args: {
     animateOnMount: true,
     respectReducedMotion: true,
+  },
+};
+
+export const PreserveContent: Story = {
+  render: (args) => {
+    const [isShown, setIsShown] = useState(true);
+    const [content, setContent] = useState('Original Content');
+
+    return (
+      <Container>
+        <Button type="primary" onPress={() => setIsShown(!isShown)}>
+          {isShown ? 'Hide Card' : 'Show Card'}
+        </Button>
+        <Button
+          type="secondary"
+          onPress={() =>
+            setContent(`Updated at ${new Date().toLocaleTimeString()}`)
+          }
+        >
+          Update Content
+        </Button>
+
+        <DisplayTransition
+          isShown={isShown}
+          duration={args.duration}
+          preserveContent={args.preserveContent}
+        >
+          {({ phase, ref: transitionRef }) => (
+            <AnimatedCard
+              ref={transitionRef}
+              mods={{
+                entered: phase === 'entered',
+                enter: phase === 'enter',
+                exit: phase === 'exit',
+              }}
+              width="300px"
+            >
+              <strong>Preserve Content Demo</strong>
+              <br />
+              Content: {content}
+              <br />
+              Phase: {phase}
+              <br />
+              <em>
+                {args.preserveContent
+                  ? 'Content preserved during exit'
+                  : 'Content updates during exit'}
+              </em>
+            </AnimatedCard>
+          )}
+        </DisplayTransition>
+      </Container>
+    );
+  },
+  args: {
+    duration: 500,
+    preserveContent: true,
   },
 };
