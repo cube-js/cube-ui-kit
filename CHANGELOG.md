@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.97.1
+
+### Patch Changes
+
+- [#921](https://github.com/cube-js/cube-ui-kit/pull/921) [`974b8af4`](https://github.com/cube-js/cube-ui-kit/commit/974b8af4a296111719194bd12fce5556fbe1fe5f) Thanks [@tenphi](https://github.com/tenphi)! - Layout sub-components now automatically add bottom borders between elements when the layout has vertical flow. This eliminates the need to manually set borders on individual components to create visual separation.
+
 ## 0.97.0
 
 ### Minor Changes
