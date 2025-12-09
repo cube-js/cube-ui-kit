@@ -120,23 +120,23 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    */
   disableActionsFocus?: boolean;
   size?:
-    | 'xsmall'
-    | 'small'
-    | 'medium'
-    | 'large'
-    | 'xlarge'
-    | 'inline'
-    | number
-    | (string & {});
+  | 'xsmall'
+  | 'small'
+  | 'medium'
+  | 'large'
+  | 'xlarge'
+  | 'inline'
+  | number
+  | (string & {});
   type?:
-    | 'item'
-    | 'primary'
-    | 'secondary'
-    | 'outline'
-    | 'neutral'
-    | 'clear'
-    | 'link'
-    | (string & {});
+  | 'item'
+  | 'primary'
+  | 'secondary'
+  | 'outline'
+  | 'neutral'
+  | 'clear'
+  | 'link'
+  | (string & {});
   theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
   variant?: ItemVariant;
   /** Keyboard shortcut that triggers the element when pressed */
@@ -148,9 +148,9 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * - object: advanced configuration with optional auto property
    */
   tooltip?:
-    | string
-    | boolean
-    | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
+  | string
+  | boolean
+  | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
   /**
    * HTML button type to avoid implicit form submission when used as `as="button"`.
    * Kept separate from visual `type` prop.
@@ -582,17 +582,22 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     [rightIconProp, baseMods],
   );
 
-  const hasIconSlot = resolvedIcon.hasSlot;
-  const hasRightIconSlot = resolvedRightIcon.hasSlot;
-
   // Determine which slot to use for loading when "auto" is selected
+  // Must be computed before hasIconSlot/hasRightIconSlot since they depend on it
   const resolvedLoadingSlot = useMemo(() => {
     if (loadingSlot !== 'auto') return loadingSlot;
 
     // Auto logic: prefer icon if present, then rightIcon, fallback to icon
-    if (hasRightIconSlot && !hasIconSlot) return 'rightIcon';
+    if (resolvedRightIcon.hasSlot && !resolvedIcon.hasSlot) return 'rightIcon';
     return 'icon'; // fallback
-  }, [loadingSlot, hasIconSlot, hasRightIconSlot]);
+  }, [loadingSlot, resolvedIcon.hasSlot, resolvedRightIcon.hasSlot]);
+
+  // Determine if icon slots should render (original slot OR loading state targets this slot)
+  const hasIconSlot =
+    resolvedIcon.hasSlot || (isLoading && resolvedLoadingSlot === 'icon');
+  const hasRightIconSlot =
+    resolvedRightIcon.hasSlot ||
+    (isLoading && resolvedLoadingSlot === 'rightIcon');
 
   const showDescription = useMemo(() => {
     const copyProps = { ...descriptionProps };
@@ -621,8 +626,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       ? 'loading'
       : isValidElement(finalIcon)
         ? (finalIcon.type as any)?.displayName ||
-          (finalIcon.type as any)?.name ||
-          'icon'
+        (finalIcon.type as any)?.name ||
+        'icon'
         : finalIcon
           ? 'icon'
           : 'empty';
@@ -632,8 +637,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       ? 'loading'
       : isValidElement(finalRightIcon)
         ? (finalRightIcon.type as any)?.displayName ||
-          (finalRightIcon.type as any)?.name ||
-          'icon'
+        (finalRightIcon.type as any)?.name ||
+        'icon'
         : finalRightIcon
           ? 'icon'
           : 'empty';
