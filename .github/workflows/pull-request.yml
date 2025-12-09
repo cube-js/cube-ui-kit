@@ -175,7 +175,7 @@ jobs:
 
       - name: Publish to Chromatic
         id: publish_chromatic
-        uses: chromaui/action@v1
+        uses: chromaui/action@v11
         with:
           exitZeroOnChanges: true
           exitOnceUploaded: true

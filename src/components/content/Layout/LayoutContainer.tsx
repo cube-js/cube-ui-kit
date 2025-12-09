@@ -28,6 +28,10 @@ const ContainerElement = tasty({
     padding: '$content-padding',
     placeSelf: 'stretch',
     width: '100%',
+    border: {
+      '': 0,
+      '!:last-child': '$layout-border-size solid #border bottom',
+    },
 
     Inner: {
       $: '>',

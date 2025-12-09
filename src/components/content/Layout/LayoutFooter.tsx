@@ -9,7 +9,8 @@ const FooterElement = tasty(LayoutContent, {
   qa: 'LayoutFooter',
   role: 'contentinfo',
   styles: {
-    border: 'top',
+    // Footer inherits auto-border from LayoutContent
+    // (no border when last-child, which is typical for footers)
     height: 'min 5x',
     flexShrink: 0,
     flexGrow: 0,

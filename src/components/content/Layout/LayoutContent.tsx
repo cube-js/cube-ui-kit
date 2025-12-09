@@ -33,6 +33,10 @@ const ContentElement = tasty({
     height: 'min 0',
     overflow: 'hidden',
     boxSizing: 'content-box',
+    border: {
+      '': 0,
+      '!:last-child': '$layout-border-size solid #border bottom',
+    },
 
     Inner: {
       $: '>',
