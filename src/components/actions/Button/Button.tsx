@@ -128,7 +128,10 @@ export const DEFAULT_BUTTON_STYLES = {
     '': '"icon label rightIcon" auto / max-content 1sf max-content',
     'raw-children': 'initial',
   },
-  placeItems: 'stretch',
+  placeItems: {
+    '': 'stretch',
+    'raw-children': 'center stretch',
+  },
   placeContent: 'center stretch',
   position: 'relative',
   margin: 0,
