@@ -30,7 +30,7 @@ const ContainerElement = tasty({
     width: '100%',
     border: {
       '': 0,
-      '!:last-child': '$layout-border-size solid #border bottom',
+      '!:last-child': '($layout-border-size, 1bw) solid #border bottom',
     },
 
     Inner: {
