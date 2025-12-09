@@ -243,11 +243,6 @@ export const DEFAULT_BUTTON_STYLES = {
       'type=link': 0,
     },
   },
-
-  // ButtonIcon sub-element (backward compatibility)
-  ButtonIcon: {
-    width: 'min 1fs',
-  },
 } as const;
 
 const ButtonElement = tasty({
