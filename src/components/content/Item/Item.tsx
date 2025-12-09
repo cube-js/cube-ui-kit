@@ -120,23 +120,23 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    */
   disableActionsFocus?: boolean;
   size?:
-  | 'xsmall'
-  | 'small'
-  | 'medium'
-  | 'large'
-  | 'xlarge'
-  | 'inline'
-  | number
-  | (string & {});
+    | 'xsmall'
+    | 'small'
+    | 'medium'
+    | 'large'
+    | 'xlarge'
+    | 'inline'
+    | number
+    | (string & {});
   type?:
-  | 'item'
-  | 'primary'
-  | 'secondary'
-  | 'outline'
-  | 'neutral'
-  | 'clear'
-  | 'link'
-  | (string & {});
+    | 'item'
+    | 'primary'
+    | 'secondary'
+    | 'outline'
+    | 'neutral'
+    | 'clear'
+    | 'link'
+    | (string & {});
   theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
   variant?: ItemVariant;
   /** Keyboard shortcut that triggers the element when pressed */
@@ -148,9 +148,9 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * - object: advanced configuration with optional auto property
    */
   tooltip?:
-  | string
-  | boolean
-  | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
+    | string
+    | boolean
+    | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
   /**
    * HTML button type to avoid implicit form submission when used as `as="button"`.
    * Kept separate from visual `type` prop.
@@ -626,8 +626,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       ? 'loading'
       : isValidElement(finalIcon)
         ? (finalIcon.type as any)?.displayName ||
-        (finalIcon.type as any)?.name ||
-        'icon'
+          (finalIcon.type as any)?.name ||
+          'icon'
         : finalIcon
           ? 'icon'
           : 'empty';
@@ -637,8 +637,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       ? 'loading'
       : isValidElement(finalRightIcon)
         ? (finalRightIcon.type as any)?.displayName ||
-        (finalRightIcon.type as any)?.name ||
-        'icon'
+          (finalRightIcon.type as any)?.name ||
+          'icon'
         : finalRightIcon
           ? 'icon'
           : 'empty';
