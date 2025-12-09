@@ -323,12 +323,13 @@ export const Button = forwardRef(function Button(
     label = 'Unnamed'; // fix to avoid warning in production
   }
 
+  const hasLeftIcon = !!icon || isLoading;
   const singleIcon = !!(
-    ((icon && !rightIcon) || (rightIcon && !icon)) &&
+    ((hasLeftIcon && !rightIcon) || (rightIcon && !hasLeftIcon)) &&
     !children
   );
 
-  const hasIcons = !!icon || !!rightIcon || isLoading;
+  const hasIcons = hasLeftIcon || !!rightIcon;
   const rawChildren = !!(children && typeof children !== 'string' && !hasIcons);
 
   const modifiers = useMemo(
@@ -336,7 +337,7 @@ export const Button = forwardRef(function Button(
       loading: isLoading,
       selected: isSelected,
       'has-icons': hasIcons,
-      'has-icon': !!icon || isLoading,
+      'has-icon': hasLeftIcon,
       'has-right-icon': !!rightIcon,
       'single-icon': singleIcon,
       'text-only': !!(children && typeof children === 'string' && !hasIcons),
