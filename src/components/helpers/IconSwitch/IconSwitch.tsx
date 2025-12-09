@@ -40,6 +40,10 @@ const IconSlotElement = tasty({
 /**
  * A component that cross-fades between icons when children change.
  * Useful for animated icon transitions in buttons, items, etc.
+ *
+ * When `contentKey` changes, a transition is triggered.
+ * When only `children` changes (same `contentKey`), content is updated in-place
+ * without transition, allowing self-animating icons (like DirectionIcon) to work.
  */
 export function IconSwitch(props: CubeIconSwitchProps) {
   const { children, contentKey, noWrapper, ...rest } = props;
@@ -52,13 +56,12 @@ export function IconSwitch(props: CubeIconSwitchProps) {
     { key: keyCounterRef.current, content: children },
   ]);
 
-  // Detect if content has changed
-  const hasContentChanged =
-    contentKey !== undefined
-      ? contentKey !== prevContentKeyRef.current
-      : children !== prevChildrenRef.current;
+  // Detect what has changed
+  const hasKeyChanged = contentKey !== prevContentKeyRef.current;
+  const hasChildrenChanged = children !== prevChildrenRef.current;
 
-  if (hasContentChanged) {
+  if (hasKeyChanged) {
+    // Key changed -> add new entry -> trigger transition
     prevContentKeyRef.current = contentKey;
     prevChildrenRef.current = children;
     keyCounterRef.current += 1;
@@ -68,8 +71,17 @@ export function IconSwitch(props: CubeIconSwitchProps) {
       content: children,
     };
 
-    // Add new icon to the stack (will be rendered on top)
     setIcons((prev) => [...prev, newEntry]);
+  } else if (hasChildrenChanged) {
+    // Same key, different children -> update in-place -> no transition
+    // This allows self-animating icons to receive updated props
+    prevChildrenRef.current = children;
+
+    setIcons((prev) =>
+      prev.map((icon, i) =>
+        i === prev.length - 1 ? { ...icon, content: children } : icon,
+      ),
+    );
   }
 
   const handleExitComplete = useCallback((exitedKey: number) => {
