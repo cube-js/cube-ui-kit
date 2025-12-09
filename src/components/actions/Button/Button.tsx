@@ -124,7 +124,10 @@ export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
   flow: 'column dense',
   gap: 0,
-  gridTemplate: '"icon label rightIcon" auto / max-content 1sf max-content',
+  gridTemplate: {
+    '': '"icon label rightIcon" auto / max-content 1sf max-content',
+    'raw-children': 'initial',
+  },
   placeItems: 'stretch',
   placeContent: 'center stretch',
   position: 'relative',
@@ -146,7 +149,12 @@ export const DEFAULT_BUTTON_STYLES = {
   reset: 'button',
   outline: 0,
   outlineOffset: 1,
-  padding: 0,
+  padding: {
+    '': 0,
+    'raw-children':
+      '$block-padding $label-padding-right $block-padding $label-padding-left',
+    'raw-children & type=link': 0,
+  },
   width: {
     '': 'min $size',
     'has-icon & has-right-icon': 'min ($size * 2 - 2bw)',
@@ -317,7 +325,8 @@ export const Button = forwardRef(function Button(
     !children
   );
 
-  const hasIcons = !!icon || !!rightIcon;
+  const hasIcons = !!icon || !!rightIcon || isLoading;
+  const rawChildren = !!(children && typeof children !== 'string' && !hasIcons);
 
   const modifiers = useMemo(
     () => ({
@@ -328,6 +337,7 @@ export const Button = forwardRef(function Button(
       'has-right-icon': !!rightIcon,
       'single-icon': singleIcon,
       'text-only': !!(children && typeof children === 'string' && !hasIcons),
+      'raw-children': rawChildren,
       ...mods,
     }),
     [
@@ -339,6 +349,7 @@ export const Button = forwardRef(function Button(
       isSelected,
       singleIcon,
       hasIcons,
+      rawChildren,
     ],
   );
 
@@ -397,11 +408,14 @@ export const Button = forwardRef(function Button(
         {(icon || isLoading) && (
           <div data-element="Icon">{isLoading ? <LoadingIcon /> : icon}</div>
         )}
-        {children && (
-          <div data-element="Label" {...finalLabelProps} ref={labelRef}>
-            {children}
-          </div>
-        )}
+        {children &&
+          (rawChildren ? (
+            children
+          ) : (
+            <div data-element="Label" {...finalLabelProps} ref={labelRef}>
+              {children}
+            </div>
+          ))}
         {rightIcon && <div data-element="RightIcon">{rightIcon}</div>}
       </ButtonElement>
     );

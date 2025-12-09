@@ -104,7 +104,8 @@ export const Base64Upload = styled(
             radius="round"
             fill="#purple.10"
             color="#dark-02"
-            padding=".5x 1x"
+            padding="0 1x"
+            height="($size - 1x + 2bw)"
           >
             Choose file
           </Block>
