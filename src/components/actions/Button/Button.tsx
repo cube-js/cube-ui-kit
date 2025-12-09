@@ -57,10 +57,11 @@ export type ButtonMods = Mods<{
   loading?: boolean;
   selected?: boolean;
   'has-icons'?: boolean;
-  'left-icon'?: boolean;
-  'right-icon'?: boolean;
+  'has-icon'?: boolean;
+  'has-right-icon'?: boolean;
   'single-icon'?: boolean;
   'text-only'?: boolean;
+  'raw-children'?: boolean;
 }>;
 
 export interface CubeButtonProps extends CubeActionProps {
