@@ -213,8 +213,10 @@ export const DEFAULT_BUTTON_STYLES = {
     textOverflow: 'ellipsis',
     maxWidth: '100%',
     textAlign: 'center',
-    padding:
-      '$block-padding $label-padding-right $block-padding $label-padding-left',
+    padding: {
+      '': '$block-padding $label-padding-right $block-padding $label-padding-left',
+      'type=link': 0,
+    },
   },
 
   // ButtonIcon sub-element (backward compatibility)
@@ -275,7 +277,7 @@ export const Button = forwardRef(function Button(
     rightIcon,
     mods,
     download,
-    tooltip,
+    tooltip = true,
     defaultTooltipPlacement = 'top',
     ...props
   } = allProps;
