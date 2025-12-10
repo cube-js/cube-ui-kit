@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useHover } from 'react-aria';
+import { useFocusWithin, useHover } from 'react-aria';
 
 import { Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
@@ -129,7 +129,13 @@ const ItemButton = forwardRef(function ItemButton(
     }
   }, [actions, areActionsVisible]);
 
+  const [isFocusWithin, setIsFocusWithin] = useState(false);
   const { hoverProps, isHovered } = useHover({});
+  const { focusWithinProps } = useFocusWithin({
+    onFocusWithinChange: setIsFocusWithin,
+  });
+
+  const shouldShowActions = isHovered || isFocusWithin;
 
   const { actionProps } = useAction(
     { ...(allProps as any), htmlType, to, as, mods },
@@ -173,7 +179,7 @@ const ItemButton = forwardRef(function ItemButton(
           {showActionsOnHover ? (
             <DisplayTransition
               exposeUnmounted
-              isShown={isHovered}
+              isShown={shouldShowActions}
               onPhaseChange={(phase) => {
                 setAreActionsVisible(phase !== 'unmounted');
               }}
@@ -184,6 +190,7 @@ const ItemButton = forwardRef(function ItemButton(
               {({ ref: transitionRef }) => {
                 return (
                   <div
+                    {...focusWithinProps}
                     ref={(node: any) => {
                       actionsRef.current = node;
                       transitionRef(node);
