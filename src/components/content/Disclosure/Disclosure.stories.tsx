@@ -419,3 +419,82 @@ export const TriggerWithActions: Story = {
     );
   },
 };
+
+/**
+ * Demonstrates content preservation during exit phase.
+ * Content rendering is bound to `isExpanded` prop - when you collapse it,
+ * you can see the content remains visible during the exit transition.
+ */
+export const ContentPreservation: Story = {
+  render: function ContentPreservationStory(args) {
+    const [isExpanded, setIsExpanded] = useState(true);
+    const [isExpandedCustom, setIsExpandedCustom] = useState(true);
+
+    return (
+      <Space flow="column" gap="4x">
+        <Space flow="column" gap="2x">
+          <Paragraph>
+            <strong>Case 1: Standard Trigger</strong>
+          </Paragraph>
+          <Disclosure
+            {...args}
+            isExpanded={isExpanded}
+            transitionDuration={500}
+            onExpandedChange={setIsExpanded}
+          >
+            <Disclosure.Trigger>Content Preservation Demo</Disclosure.Trigger>
+            <Disclosure.Content>
+              {/* Content rendering bound to isExpanded - will be null when false */}
+              {isExpanded ? (
+                <Paragraph>
+                  This content is conditionally rendered based on `isExpanded`.
+                  When you collapse the disclosure, `isExpanded` becomes false
+                  and this content would normally disappear. However, the
+                  Disclosure component preserves it during the exit transition,
+                  so you can see it remains visible until the animation
+                  completes.
+                </Paragraph>
+              ) : null}
+            </Disclosure.Content>
+          </Disclosure>
+        </Space>
+
+        <Divider />
+
+        <Space flow="column" gap="2x">
+          <Paragraph>
+            <strong>Case 2: Custom Trigger (Function Syntax)</strong>
+          </Paragraph>
+          <Disclosure
+            {...args}
+            isExpanded={isExpandedCustom}
+            transitionDuration={500}
+            onExpandedChange={setIsExpandedCustom}
+          >
+            {({ isExpanded: isExpandedNow, toggle }) => (
+              <>
+                <Button type="secondary" onPress={toggle}>
+                  {isExpandedNow ? 'Hide Content' : 'Show Content'}
+                </Button>
+                <Disclosure.Content>
+                  {/* Content rendering bound to isExpanded - will be null when false */}
+                  {isExpandedCustom ? (
+                    <Paragraph>
+                      This disclosure uses a custom trigger via function syntax
+                      (render prop). The content is still conditionally rendered
+                      based on `isExpanded`, and it's preserved during the exit
+                      transition just like the standard trigger case.
+                    </Paragraph>
+                  ) : null}
+                </Disclosure.Content>
+              </>
+            )}
+          </Disclosure>
+        </Space>
+      </Space>
+    );
+  },
+  args: {
+    transitionDuration: 500,
+  },
+};

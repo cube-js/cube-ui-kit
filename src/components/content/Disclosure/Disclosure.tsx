@@ -176,22 +176,26 @@ const DisclosureRoot = tasty({
 });
 
 const ContentWrapperElement = tasty({
+  qa: 'DisclosureContentWrapper',
   styles: {
     display: 'block',
     overflow: 'hidden',
     interpolateSize: 'allow-keywords',
-    height: {
-      '': '0',
+    height: 'initial initial $max-height',
+    transition: 'height $disclosure-transition',
+
+    '$max-height': {
+      '': 0,
       shown: 'max-content',
     },
-    transition: 'height $disclosure-transition',
   },
 });
 
 const ContentElement = tasty({
   qa: 'DisclosureContent',
   styles: {
-    contentVisibility: 'auto',
+    display: 'flex',
+    flow: 'column',
     padding: '1x',
   },
 });
