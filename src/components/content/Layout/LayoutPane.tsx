@@ -99,7 +99,7 @@ const PaneElement = tasty({
       fill: '#dark.35',
       opacity: {
         '': 0,
-        '(hovered | focused | scrolling) & scrollbar=tiny': 1,
+        '(focused | scrolling) & scrollbar=tiny': 1,
       },
       transition: 'opacity 0.15s',
       pointerEvents: 'none',
@@ -118,7 +118,7 @@ const PaneElement = tasty({
       fill: '#dark.35',
       opacity: {
         '': 0,
-        '(hovered | focused | scrolling) & scrollbar=tiny': 1,
+        '(focused | scrolling) & scrollbar=tiny': 1,
       },
       transition: 'opacity 0.15s',
       pointerEvents: 'none',
