@@ -197,6 +197,7 @@ const ContentElement = tasty({
     display: 'flex',
     flow: 'column',
     padding: '1x',
+    contentVisibility: 'auto',
   },
 });
 
