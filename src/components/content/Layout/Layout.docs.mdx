@@ -42,6 +42,13 @@ Customizes the root Layout element.
 
 These properties allow direct style application: `width`, `height`, `padding`, `gap`, `fill`, `border`, `flow`.
 
+### Inner Element Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| innerRef | `ForwardedRef<HTMLDivElement>` | Ref for the inner content element |
+| innerProps | `HTMLAttributes<HTMLDivElement>` | Props to spread on the Inner sub-element |
+
 ### Grid Mode
 
 When `isGrid` is enabled, the inner content becomes a CSS grid:
@@ -129,6 +136,8 @@ Scrollable content area with automatic overflow handling and custom scrollbar st
 |----------|------|---------|-------------|
 | scrollbar | `'default' \| 'thin' \| 'tiny' \| 'none'` | `'thin'` | Scrollbar style |
 | children | `ReactNode` | - | Content to display |
+| innerRef | `ForwardedRef<HTMLDivElement>` | - | Ref for the inner content element |
+| innerProps | `HTMLAttributes<HTMLDivElement>` | - | Props to spread on the Inner sub-element |
 
 **Scrollbar types:**
 - `default` - Browser default scrollbar
@@ -157,6 +166,8 @@ Horizontally centered content area with constrained width. Ideal for forms, arti
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | children | `ReactNode` | - | Content to display |
+| innerRef | `ForwardedRef<HTMLDivElement>` | - | Ref for the inner content element |
+| innerProps | `HTMLAttributes<HTMLDivElement>` | - | Props to spread on the Inner sub-element |
 
 **Width constraints:**
 - Minimum: `40x` (320px at default gap)
@@ -258,6 +269,8 @@ Collapsible side panel with resizing, transitions, and multiple rendering modes.
 | defaultIsDialogOpen | `boolean` | `false` | Initial dialog state |
 | onDialogOpenChange | `(isOpen: boolean) => void` | - | Dialog state callback |
 | dialogProps | `CubeDialogContainerProps` | - | Props for dialog mode |
+| innerRef | `ForwardedRef<HTMLDivElement>` | - | Ref for the inner content element |
+| innerProps | `HTMLAttributes<HTMLDivElement>` | - | Props to spread on the Inner sub-element |
 
 **Panel Modes:**
 
@@ -276,6 +289,48 @@ Collapsible side panel with resizing, transitions, and multiple rendering modes.
 | horizontal | `boolean` | Left or right panel |
 | has-transition | `boolean` | Transition enabled |
 | offscreen | `boolean` | Panel is collapsed |
+
+---
+
+### Layout.Pane
+
+Resizable inline section within a layout. Unlike Layout.Panel (which is absolutely positioned), Pane participates in the normal flex/grid flow and can be resized via drag handles.
+
+```jsx
+<Layout.Pane
+  isResizable
+  resizeEdge="right"
+  size={250}
+  minSize={150}
+  maxSize={400}
+  onSizeChange={setSize}
+>
+  <Title level={5}>Pane Content</Title>
+  <Text>This pane can be resized by dragging the edge.</Text>
+</Layout.Pane>
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| resizeEdge | `'right' \| 'bottom'` | `'right'` | Edge where resize handler appears |
+| isResizable | `boolean` | `false` | Enable resize functionality |
+| size | `number \| string` | - | Controlled size (width for right edge, height for bottom edge) |
+| defaultSize | `number \| string` | `200` | Default size for uncontrolled state |
+| minSize | `number \| string` | - | Minimum size constraint |
+| maxSize | `number \| string` | - | Maximum size constraint |
+| onSizeChange | `(size: number) => void` | - | Size change callback |
+| scrollbar | `ScrollbarType` | `'thin'` | Scrollbar style |
+| children | `ReactNode` | - | Content to display |
+| innerRef | `ForwardedRef<HTMLDivElement>` | - | Ref for the inner content element |
+| innerProps | `HTMLAttributes<HTMLDivElement>` | - | Props to spread on the Inner sub-element |
+
+**Sub-elements:**
+- `Inner` - Scrollable inner container
+- `ScrollbarV` - Vertical scroll indicator (tiny mode)
+- `ScrollbarH` - Horizontal scroll indicator (tiny mode)
+- `ResizeHandler` - Drag handle for resizing
+- `Drag` - Visual drag indicator
+- `DragPart` - Individual dots in the drag indicator
 
 ---
 

@@ -1,4 +1,11 @@
-import { ForwardedRef, forwardRef, ReactNode, useMemo, useRef } from 'react';
+import {
+  ForwardedRef,
+  forwardRef,
+  HTMLAttributes,
+  ReactNode,
+  useMemo,
+  useRef,
+} from 'react';
 import { useHover } from 'react-aria';
 
 import {
@@ -52,6 +59,8 @@ const ContentElement = tasty({
         '': 'thin',
         'scrollbar=tiny | scrollbar=none': 'none',
       },
+
+      '$layout-border-size': '0',
     },
 
     // Custom scrollbar handles (when scrollbar="tiny")
@@ -97,6 +106,10 @@ export interface CubeLayoutContentProps extends BaseProps, ContainerStyleProps {
   children?: ReactNode;
   /** Additional modifiers to apply */
   mods?: Mods;
+  /** Ref for the inner content element */
+  innerRef?: ForwardedRef<HTMLDivElement>;
+  /** Props to spread on the Inner sub-element */
+  innerProps?: HTMLAttributes<HTMLDivElement>;
 }
 
 function LayoutContent(
@@ -108,11 +121,14 @@ function LayoutContent(
     scrollbar = 'thin',
     styles,
     mods: externalMods,
+    innerRef: innerRefProp,
+    innerProps,
     ...otherProps
   } = props;
   const outerStyles = extractStyles(otherProps, OUTER_STYLES);
   const innerStyles = extractStyles(otherProps, INNER_STYLES);
-  const innerRef = useRef<HTMLDivElement>(null);
+  const internalInnerRef = useRef<HTMLDivElement>(null);
+  const combinedInnerRef = useCombinedRefs(innerRefProp, internalInnerRef);
   const combinedRef = useCombinedRefs(ref);
   const isTinyScrollbar = scrollbar === 'tiny';
   const { hoverProps, isHovered } = useHover({});
@@ -123,7 +139,7 @@ function LayoutContent(
     hasOverflowY,
     hasOverflowX,
     isScrolling,
-  } = useTinyScrollbar(innerRef, isTinyScrollbar);
+  } = useTinyScrollbar(internalInnerRef, isTinyScrollbar);
 
   const scrollbarStyle = useMemo(() => {
     if (!isTinyScrollbar) return {};
@@ -162,7 +178,7 @@ function LayoutContent(
       styles={finalStyles}
       style={scrollbarStyle}
     >
-      <div ref={innerRef} data-element="Inner">
+      <div ref={combinedInnerRef} data-element="Inner" {...innerProps}>
         <LayoutContextReset>{children}</LayoutContextReset>
       </div>
       {isTinyScrollbar && hasOverflowY && <div data-element="ScrollbarV" />}

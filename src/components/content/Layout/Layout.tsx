@@ -4,6 +4,7 @@ import {
   FocusEvent,
   ForwardedRef,
   forwardRef,
+  HTMLAttributes,
   isValidElement,
   KeyboardEvent,
   ReactNode,
@@ -29,6 +30,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { isDevEnv } from '../../../tasty/utils/isDevEnv';
+import { useCombinedRefs } from '../../../utils/react';
 import { Alert } from '../Alert';
 
 import { LayoutProvider, useLayoutContext } from './LayoutContext';
@@ -96,6 +98,10 @@ export interface CubeLayoutProps
   /** Styles for wrapper and Inner sub-element */
   styles?: Styles;
   children?: ReactNode;
+  /** Ref for the inner content element */
+  innerRef?: ForwardedRef<HTMLDivElement>;
+  /** Props to spread on the Inner sub-element */
+  innerProps?: HTMLAttributes<HTMLDivElement>;
   /**
    * @internal Force show dev warning even in production (for storybook testing)
    */
@@ -118,6 +124,7 @@ function LayoutInner(
   const localRef = useRef<HTMLDivElement>(null);
   const [isAutoHeight, setIsAutoHeight] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const combinedInnerRef = useCombinedRefs(innerRefProp);
 
   const {
     isGrid,
@@ -130,6 +137,8 @@ function LayoutInner(
     children,
     style,
     forwardedRef,
+    innerRef: innerRefProp,
+    innerProps,
     _forceShowDevWarning,
     ...otherProps
   } = props;
@@ -344,7 +353,12 @@ function LayoutInner(
           {/* Panels are rendered outside the Inner element */}
           {panels}
           {/* Other content goes inside the Inner element */}
-          <div data-element="Inner" onFocus={handleInnerFocus}>
+          <div
+            ref={combinedInnerRef}
+            data-element="Inner"
+            onFocus={handleInnerFocus}
+            {...innerProps}
+          >
             {content}
           </div>
         </>
