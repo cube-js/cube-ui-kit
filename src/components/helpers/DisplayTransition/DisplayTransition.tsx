@@ -342,7 +342,7 @@ export function DisplayTransition({
   };
 
   // Update stored children only when shown or entering (not during exit)
-  if (phase === 'enter' || phase === 'entered' || phase === 'exit-pending') {
+  if (phase === 'enter' || phase === 'entered') {
     storedChildrenRef.current = children;
   }
 
