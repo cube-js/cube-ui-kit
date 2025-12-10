@@ -341,16 +341,21 @@ export function DisplayTransition({
     }
   };
 
-  // Update stored children only when shown or entering (not during exit)
-  if (phase === 'enter' || phase === 'entered') {
+  // Update stored children only when showing (enter/entered phase and targetShown is true)
+  // This prevents overwriting during exit transitions, preserving content for the animation
+  const isShowingContent =
+    (phase === 'enter' || phase === 'entered') && targetShown;
+
+  if (isShowingContent) {
     storedChildrenRef.current = children;
   }
 
-  // Use stored children during exit phases to preserve content (if enabled)
-  const effectiveChildren =
-    preserveContent && (phase === 'exit' || phase === 'unmounted')
-      ? storedChildrenRef.current
-      : children;
+  // When preserveContent is enabled, always use stored children:
+  // - During show: stored is updated above, so it equals current children
+  // - During hide: stored keeps the last shown content for the exit animation
+  const effectiveChildren = preserveContent
+    ? storedChildrenRef.current
+    : children;
 
   if (phase === 'unmounted' && !exposeUnmounted) return null;
   return effectiveChildren({
