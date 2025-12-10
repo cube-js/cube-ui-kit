@@ -19,6 +19,9 @@ jobs:
   build:
     name: 'Build & canary release'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # Required for OIDC trusted publishing
     env:
       NODE_OPTIONS: --max-old-space-size=4096
     environment:
@@ -40,6 +43,10 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Upgrade npm for OIDC support
+        run: npm install -g npm@11.7.0
 
       - name: Enable Corepack
         run: corepack enable
@@ -61,13 +68,10 @@ jobs:
 
       - name: Publish canary
         id: publish
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          tag: pr_${{ github.event.number }}
-          access: public
-          check-version: true
-          package: ./dist/package.json
+        working-directory: ./dist
+        run: |
+          npm publish --tag pr_${{ github.event.number }} --access public --provenance
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Comment PR
         uses: actions/github-script@v6
