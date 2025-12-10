@@ -199,13 +199,11 @@ export const WithSidePanel: Story = {
             </Button>
           </Layout.Content>
         </Layout.Panel>
-        <Layout.Toolbar>
-          <Space>
-            <Button onPress={() => setIsPanelOpen(!isPanelOpen)}>
-              Toggle Panel
-            </Button>
-            <Title level={4}>App</Title>
-          </Space>
+        <Layout.Toolbar padding=".5x 1x">
+          <Button onPress={() => setIsPanelOpen(!isPanelOpen)}>
+            Toggle Panel
+          </Button>
+          <Title level={4}>App</Title>
         </Layout.Toolbar>
         <Layout.Content>
           <Text>Main content area</Text>

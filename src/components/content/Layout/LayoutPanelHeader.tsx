@@ -24,6 +24,7 @@ const PanelHeaderElement = tasty(Item, {
       'size=xsmall': 't4',
       'size=xlarge': 't2m',
     },
+    boxSizing: 'content-box',
 
     '$inline-padding': '($content-padding, 1x)',
   },

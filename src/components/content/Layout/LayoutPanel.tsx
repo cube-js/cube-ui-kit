@@ -393,10 +393,6 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
   /** Styles for the panel */
   styles?: Styles;
   children?: ReactNode;
-  /** Ref for the inner content element */
-  innerRef?: ForwardedRef<HTMLDivElement>;
-  /** Props to spread on the Inner sub-element */
-  innerProps?: HTMLAttributes<HTMLDivElement>;
 }
 
 function LayoutPanel(
@@ -435,8 +431,6 @@ function LayoutPanel(
     children,
     styles,
     mods,
-    innerRef: innerRefProp,
-    innerProps,
     ...otherProps
   } = props;
 
@@ -450,7 +444,6 @@ function LayoutPanel(
   const hasTransition = hasTransitionProp ?? layoutContext.hasTransition;
 
   const combinedRef = useCombinedRefs(ref);
-  const combinedInnerRef = useCombinedRefs(innerRefProp);
   const prevProvidedSizeRef = useRef(providedSize);
   const isHorizontal = side === 'left' || side === 'right';
 
@@ -720,11 +713,9 @@ function LayoutPanel(
           style={panelStyle}
           data-side={side}
         >
-          <div ref={combinedInnerRef} data-element="Inner" {...innerProps}>
-            <LayoutPanelContext.Provider value={panelContextValue}>
-              <LayoutContextReset>{children}</LayoutContextReset>
-            </LayoutPanelContext.Provider>
-          </div>
+          <LayoutPanelContext.Provider value={panelContextValue}>
+            <LayoutContextReset>{children}</LayoutContextReset>
+          </LayoutPanelContext.Provider>
         </PanelElement>
         {isResizable && (
           <ResizeHandler
@@ -754,11 +745,9 @@ function LayoutPanel(
         {...dialogProps}
       >
         <Dialog isDismissable={false}>
-          <div ref={combinedInnerRef} data-element="Inner" {...innerProps}>
-            <LayoutPanelContext.Provider value={dialogPanelContextValue}>
-              <LayoutContextReset>{children}</LayoutContextReset>
-            </LayoutPanelContext.Provider>
-          </div>
+          <LayoutPanelContext.Provider value={dialogPanelContextValue}>
+            <LayoutContextReset>{children}</LayoutContextReset>
+          </LayoutPanelContext.Provider>
         </Dialog>
       </DialogContainer>
     );

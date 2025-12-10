@@ -65,6 +65,8 @@ const LayoutElement = tasty({
       display: 'flex',
       flow: 'column',
       overflow: 'hidden',
+      placeContent: 'stretch',
+      placeItems: 'stretch',
       // Disable transition during panel resize for snappy feedback
       // Also disable transition when not ready to prevent initial animation
       // Only animate when has-transition is enabled (and not dragging/not-ready)
@@ -124,7 +126,6 @@ function LayoutInner(
   const localRef = useRef<HTMLDivElement>(null);
   const [isAutoHeight, setIsAutoHeight] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const combinedInnerRef = useCombinedRefs(innerRefProp);
 
   const {
     isGrid,
@@ -142,6 +143,8 @@ function LayoutInner(
     _forceShowDevWarning,
     ...otherProps
   } = props;
+
+  const combinedInnerRef = useCombinedRefs(innerRefProp);
 
   // Separate panels from other children
   const { panels, content } = useMemo(() => {
