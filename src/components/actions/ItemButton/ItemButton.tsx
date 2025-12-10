@@ -130,12 +130,36 @@ const ItemButton = forwardRef(function ItemButton(
   }, [actions, areActionsVisible]);
 
   const [isFocusWithin, setIsFocusWithin] = useState(false);
+  const [hasPressed, setHasPressed] = useState(false);
   const { hoverProps, isHovered } = useHover({});
   const { focusWithinProps } = useFocusWithin({
     onFocusWithinChange: setIsFocusWithin,
   });
 
-  const shouldShowActions = isHovered || isFocusWithin;
+  // Watch for data-pressed attribute on any descendant element
+  useLayoutEffect(() => {
+    const actionsEl = actionsRef.current;
+
+    if (!actionsEl || !showActionsOnHover) return;
+
+    const checkPressed = () => {
+      setHasPressed(actionsEl.querySelector('[data-pressed]') !== null);
+    };
+
+    const observer = new MutationObserver(checkPressed);
+
+    observer.observe(actionsEl, {
+      attributes: true,
+      attributeFilter: ['data-pressed'],
+      subtree: true,
+    });
+
+    checkPressed();
+
+    return () => observer.disconnect();
+  }, [areActionsVisible, showActionsOnHover]);
+
+  const shouldShowActions = isHovered || isFocusWithin || hasPressed;
 
   const { actionProps } = useAction(
     { ...(allProps as any), htmlType, to, as, mods },
