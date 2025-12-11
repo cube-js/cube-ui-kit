@@ -18,9 +18,11 @@ on:
         description: 'Run ID to download artifact from (required for canary)'
         required: false
         type: string
+  repository_dispatch:
+    types: [publish-canary, publish-release]
 
 concurrency:
-  group: publish-${{ github.event.inputs.type }}-${{ github.event.inputs.pr_number || github.run_id }}
+  group: publish-${{ github.event.inputs.type || github.event.action }}-${{ github.event.inputs.pr_number || github.event.client_payload.pr_number || github.run_id }}
   cancel-in-progress: false
 
 permissions:
@@ -36,11 +38,14 @@ env:
 jobs:
   canary:
     name: 'Publish canary'
-    if: github.event.inputs.type == 'canary'
+    if: github.event.inputs.type == 'canary' || github.event.action == 'publish-canary'
     runs-on: ubuntu-latest
     environment:
       name: Canary package in NPM
       url: https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.publish.outputs.version }}
+    env:
+      PR_NUMBER: ${{ github.event.inputs.pr_number || github.event.client_payload.pr_number }}
+      RUN_ID: ${{ github.event.inputs.run_id || github.event.client_payload.run_id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -49,7 +54,7 @@ jobs:
         with:
           name: dist
           path: ./dist
-          run-id: ${{ github.event.inputs.run_id }}
+          run-id: ${{ env.RUN_ID }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Corepack
@@ -75,7 +80,7 @@ jobs:
         id: publish
         working-directory: ./dist
         run: |
-          npm publish --tag pr_${{ github.event.inputs.pr_number }} --access public --provenance
+          npm publish --tag pr_${{ env.PR_NUMBER }} --access public --provenance
           echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Comment PR
@@ -90,12 +95,12 @@ jobs:
               body: 'Deployed canary version [${{ steps.publish.outputs.version }}](https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.publish.outputs.version }}).',
               github,
               repo: context.repo,
-              prNumber: parseInt('${{ github.event.inputs.pr_number }}', 10)
+              prNumber: parseInt('${{ env.PR_NUMBER }}', 10)
             })
 
   release:
     name: 'Publish release'
-    if: github.event.inputs.type == 'release'
+    if: github.event.inputs.type == 'release' || github.event.action == 'publish-release'
     runs-on: ubuntu-latest
     outputs:
       published: ${{ steps.changesets.outputs.published }}

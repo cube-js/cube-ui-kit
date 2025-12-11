@@ -181,13 +181,11 @@ const ContentWrapperElement = tasty({
     display: 'block',
     overflow: 'hidden',
     interpolateSize: 'allow-keywords',
-    height: 'initial initial $max-height',
-    transition: 'height $disclosure-transition',
-
-    '$max-height': {
+    height: {
       '': 0,
       shown: 'max-content',
     },
+    transition: 'height $disclosure-transition',
   },
 });
 

@@ -68,14 +68,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            await github.rest.actions.createWorkflowDispatch({
+            await github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'publish.yml',
-              ref: 'main',
-              inputs: {
-                type: 'release'
-              }
+              event_type: 'publish-release'
             })
             
             console.log('Triggered publish workflow for release')
