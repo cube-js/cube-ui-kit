@@ -47,7 +47,7 @@
     "prepare": "husky install",
     "clear": "pnpm clear:dist && rimraf ./storybook-docs ./storybook-static ./node_modules/.cache",
     "clear:dist": "rimraf ./dist",
-    "release": "pnpm build && changeset publish",
+    "release": "pnpm build && changeset publish --provenance",
     "postinstall": "git config blame.ignoreRevsFile .git-blame-ignore-revs",
     "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix"
   },

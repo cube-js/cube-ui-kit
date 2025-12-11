@@ -8,19 +8,20 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
-  contents: write  # Read-only access to repository contents
+  contents: write  # Write access to repository contents
   issues: write   # Write access to issues
   pull-requests: write  # Write access to pull requests
   statuses: write  # Write access to commit statuses
-  id-token: write  # Required for OIDC trusted publishing
+  actions: write  # Required to trigger workflows
 
 jobs:
-  publish:
+  changesets:
+    name: 'Create Release PR'
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: --max-old-space-size=4096
     outputs:
-      published: ${{ steps.changesets.outputs.published }}
+      hasChangesets: ${{ steps.changesets.outputs.hasChangesets }}
     steps:
       - uses: actions/checkout@v4
 
@@ -38,10 +39,6 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org/'
-
-      - name: Upgrade npm for OIDC support
-        run: npm install -g npm@11.7.0
 
       - name: Enable Corepack
         run: corepack enable
@@ -52,19 +49,41 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Create Release Pull Request or Publish to npm
+      - name: Create Release Pull Request
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: pnpm release
           commit: 'chore: release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  trigger-publish:
+    name: 'Trigger release publish'
+    needs: changesets
+    if: needs.changesets.outputs.hasChangesets == 'false' && github.actor == 'tenphi'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger publish workflow
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'publish.yml',
+              ref: 'main',
+              inputs: {
+                type: 'release'
+              }
+            })
+            
+            console.log('Triggered publish workflow for release')
+
   deploy-chromatic:
     name: 'Deploy storybook to Chromatic'
-    needs: publish
-    if: needs.publish.outputs.published == 'false'
+    needs: changesets
+    if: needs.changesets.outputs.hasChangesets == 'true'
     runs-on: ubuntu-latest
     environment:
       name: Chromatic Production

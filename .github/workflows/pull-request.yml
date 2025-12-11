@@ -14,19 +14,16 @@ permissions:
   issues: write   # Write access to issues
   pull-requests: write  # Write access to pull requests
   statuses: write  # Write access to commit statuses
+  actions: write  # Required to trigger workflows
 
 jobs:
   build:
-    name: 'Build & canary release'
+    name: 'Build'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write  # Required for OIDC trusted publishing
     env:
       NODE_OPTIONS: --max-old-space-size=4096
-    environment:
-      name: Canary package in NPM
-      url: https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.publish.outputs.version }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -43,10 +40,6 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org/'
-
-      - name: Upgrade npm for OIDC support
-        run: npm install -g npm@11.7.0
 
       - name: Enable Corepack
         run: corepack enable
@@ -66,28 +59,42 @@ jobs:
       - name: Build project
         run: pnpm build
 
-      - name: Publish canary
-        id: publish
+      - name: Get version
+        id: version
         working-directory: ./dist
-        run: |
-          npm publish --tag pr_${{ github.event.number }} --access public --provenance
-          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
-      - name: Comment PR
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: ./dist
+          retention-days: 7
+
+  trigger-publish:
+    name: 'Trigger canary publish'
+    needs: build
+    if: github.actor == 'tenphi'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger publish workflow
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message.cjs')
-
-            await setMessage({
-              header: "## :package: NPM canary release",
-              body: 'Deployed canary version [${{ steps.publish.outputs.version }}](https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.publish.outputs.version }}).',
-              github,
-              repo: context.repo,
-              prNumber: context.payload.pull_request.number
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'publish.yml',
+              ref: 'main',
+              inputs: {
+                type: 'canary',
+                pr_number: String(context.payload.pull_request.number),
+                run_id: String(context.runId)
+              }
             })
-
+            
+            console.log('Triggered publish workflow for canary release')
 
   tests:
     name: 'Tests & lint'
