@@ -97,7 +97,7 @@ const ItemButton = forwardRef(function ItemButton(
     htmlType,
     as,
     type = 'neutral',
-    theme,
+    theme = 'default',
     onPress,
     // Extract react-aria press callbacks to prevent them from leaking to DOM via rest.
     // These are handled by useButton inside useAction.
