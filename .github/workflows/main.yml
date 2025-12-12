@@ -8,20 +8,18 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
-  contents: write  # Write access to repository contents
+  contents: write  # Read-only access to repository contents
   issues: write   # Write access to issues
   pull-requests: write  # Write access to pull requests
   statuses: write  # Write access to commit statuses
-  actions: write  # Required to trigger workflows
 
 jobs:
-  changesets:
-    name: 'Create Release PR'
+  publish:
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: --max-old-space-size=4096
     outputs:
-      hasChangesets: ${{ steps.changesets.outputs.hasChangesets }}
+      published: ${{ steps.changesets.outputs.published }}
     steps:
       - uses: actions/checkout@v4
 
@@ -49,42 +47,20 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Create Release Pull Request
+      - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
+          publish: pnpm release
           commit: 'chore: release'
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-  trigger-publish:
-    name: 'Trigger release publish'
-    needs: changesets
-    # Automatically trigger release when there are no pending changesets
-    # (i.e., the Version Packages PR was merged)
-    if: needs.changesets.outputs.hasChangesets == 'false'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      actions: write
-    steps:
-      - name: Trigger publish workflow
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets['WORKFLOW_TRIGGER_TOKEN'] || github.token }}
-          script: |
-            await github.rest.repos.createDispatchEvent({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              event_type: 'publish-release'
-            })
-            
-            console.log('Triggered publish workflow for release')
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   deploy-chromatic:
     name: 'Deploy storybook to Chromatic'
-    needs: changesets
-    if: needs.changesets.outputs.hasChangesets == 'true'
+    needs: publish
+    if: needs.publish.outputs.published == 'false'
     runs-on: ubuntu-latest
     environment:
       name: Chromatic Production
