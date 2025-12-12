@@ -1,6 +1,7 @@
 import {
   ForwardedRef,
   forwardRef,
+  HTMLAttributes,
   ReactNode,
   RefCallback,
   useCallback,

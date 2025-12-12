@@ -487,3 +487,67 @@ describe('Nested Disclosures', () => {
     expect(innerTrigger).toHaveAttribute('aria-expanded', 'true');
   });
 });
+
+describe('Content Preservation', () => {
+  beforeEach(() => {
+    jest.useFakeTimers({ legacyFakeTimers: false });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('should preserve content during exit phase', () => {
+    // This test verifies that content is stored during the exiting phase
+    // Similar to DisplayTransition's preserveContent behavior
+
+    interface TestWrapperProps {
+      isExpanded: boolean;
+      content: string;
+    }
+
+    function TestWrapper({ isExpanded, content }: TestWrapperProps) {
+      return (
+        <Disclosure isExpanded={isExpanded} transitionDuration={150}>
+          <Disclosure.Trigger>Toggle</Disclosure.Trigger>
+          <Disclosure.Content>
+            {/* Simulate parent conditionally rendering content based on its own state */}
+            {isExpanded ? content : null}
+          </Disclosure.Content>
+        </Disclosure>
+      );
+    }
+
+    const { container, rerender } = renderWithRoot(
+      <TestWrapper isExpanded={true} content="original content" />,
+    );
+
+    // Initial: expanded with content
+    expect(container.textContent).toContain('original content');
+
+    // Trigger collapse - parent passes isExpanded=false and content becomes null
+    rerender(<TestWrapper isExpanded={false} content="original content" />);
+
+    // Immediately after rerender, content should still be preserved
+    // (stored children from when isExpanded was true)
+    expect(container.textContent).toContain('original content');
+
+    // Advance timers to move into exit phase
+    act(() => {
+      jest.advanceTimersByTime(50);
+    });
+
+    // During exit phase, content should still be preserved
+    expect(container.textContent).toContain('original content');
+
+    // Advance through the rest of the exit flow
+    act(() => {
+      jest.advanceTimersByTime(150);
+    });
+
+    // After completing the exit transition, content should have been preserved
+    // throughout the exit animation
+    // The content may no longer be visible after transition completes, but it
+    // should have been preserved during the exit phase
+  });
+});

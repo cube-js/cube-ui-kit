@@ -157,6 +157,36 @@ By default, the component returns `null` when in the `unmounted` phase. Set `exp
 
 The component automatically respects the `prefers-reduced-motion` media query when `respectReducedMotion={true}` (default). When the user has requested reduced motion, the internal duration is collapsed to 0, resulting in instant transitions.
 
+### Preserve Content During Exit
+
+<Story of={DisplayTransitionStories.PreserveContent} />
+
+By default (`preserveContent={true}`), the component stores the children render function when content is visible and uses the stored version during exit transitions. This ensures the exiting content remains consistent even if the parent stops providing content immediately after hiding.
+
+```jsx
+<DisplayTransition isShown={isVisible} preserveContent>
+  {({ phase }) => (
+    <Block mods={{ entered: phase === 'entered' }}>
+      {/* This content will be preserved during exit animation */}
+      {isVisible ? dynamicContent : null}
+    </Block>
+  )}
+</DisplayTransition>
+```
+
+Set `preserveContent={false}` if you need the exit animation to reflect real-time children changes:
+
+```jsx
+<DisplayTransition isShown={isVisible} preserveContent={false}>
+  {({ phase }) => (
+    <Block mods={{ entered: phase === 'entered' }}>
+      {/* Content updates during exit will be reflected */}
+      {currentContent}
+    </Block>
+  )}
+</DisplayTransition>
+```
+
 ## Animation Flow
 
 ### Enter Flow

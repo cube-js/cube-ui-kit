@@ -1,5 +1,11 @@
 import { StoryFn } from '@storybook/react-vite';
-import { IconCaretDown, IconCoin } from '@tabler/icons-react';
+import {
+  IconCaretDown,
+  IconCoin,
+  IconHeart,
+  IconHeartFilled,
+} from '@tabler/icons-react';
+import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
@@ -40,11 +46,13 @@ export default {
     /* Content */
     icon: {
       control: { type: null },
-      description: 'Icon element rendered before the content',
+      description:
+        'Icon rendered before the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`',
     },
     rightIcon: {
       control: { type: null },
-      description: 'Icon element rendered after the content',
+      description:
+        'Icon rendered after the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`',
     },
     children: {
       control: { type: 'text' },
@@ -508,4 +516,19 @@ Loading.args = {
   icon: <IconCoin />,
   isLoading: true,
   children: 'Button',
+};
+
+export const DynamicIcon = () => {
+  const [isSelected, setIsSelected] = useState(false);
+
+  return (
+    <Button
+      type="clear"
+      isSelected={isSelected}
+      icon={({ selected }) => (selected ? <IconHeartFilled /> : <IconHeart />)}
+      onPress={() => setIsSelected((prev) => !prev)}
+    >
+      {isSelected ? 'Liked' : 'Like'}
+    </Button>
+  );
 };

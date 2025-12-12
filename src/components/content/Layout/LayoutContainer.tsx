@@ -1,4 +1,10 @@
-import { ForwardedRef, forwardRef, ReactNode, useMemo } from 'react';
+import {
+  ForwardedRef,
+  forwardRef,
+  HTMLAttributes,
+  ReactNode,
+  useMemo,
+} from 'react';
 
 import {
   BaseProps,
@@ -10,6 +16,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import { useCombinedRefs } from '../../../utils/react';
 
 import { LayoutContextReset } from './LayoutContext';
 
@@ -30,7 +37,7 @@ const ContainerElement = tasty({
     width: '100%',
     border: {
       '': 0,
-      '!:last-child': '$layout-border-size solid #border bottom',
+      '!:last-child': '($layout-border-size, 1bw) solid #border bottom',
     },
 
     Inner: {
@@ -40,6 +47,8 @@ const ContainerElement = tasty({
       flow: 'column',
       width: '40x 100% 120x',
       boxSizing: 'border-box',
+
+      '$layout-border-size': '0',
     },
   },
 });
@@ -52,6 +61,10 @@ export interface CubeLayoutContainerProps
   styles?: Styles;
   /** Custom styles for the inner element */
   innerStyles?: Styles;
+  /** Ref for the inner content element */
+  innerRef?: ForwardedRef<HTMLDivElement>;
+  /** Props to spread on the Inner sub-element */
+  innerProps?: HTMLAttributes<HTMLDivElement>;
 }
 
 function LayoutContainer(
@@ -62,6 +75,8 @@ function LayoutContainer(
     children,
     styles,
     innerStyles: innerStylesProp,
+    innerRef: innerRefProp,
+    innerProps,
     ...otherProps
   } = props;
   const innerStyles = extractStyles(
@@ -76,13 +91,15 @@ function LayoutContainer(
     return mergeStyles(styles, hasInnerStyles ? { Inner: innerStyles } : null);
   }, [styles, hasInnerStyles, innerStyles]);
 
+  const combinedInnerRef = useCombinedRefs(innerRefProp);
+
   return (
     <ContainerElement
       ref={ref}
       {...filterBaseProps(otherProps, { eventProps: true })}
       styles={finalStyles}
     >
-      <div data-element="Inner">
+      <div ref={combinedInnerRef} data-element="Inner" {...innerProps}>
         <LayoutContextReset>{children}</LayoutContextReset>
       </div>
     </ContainerElement>

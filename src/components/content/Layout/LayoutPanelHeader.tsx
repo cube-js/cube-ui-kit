@@ -10,7 +10,7 @@ import {
 } from '../../../tasty';
 import { ItemAction } from '../../actions/ItemAction';
 import { useDialogContext } from '../../overlays/Dialog/context';
-import { Item } from '../Item/Item';
+import { CubeItemProps, Item } from '../Item/Item';
 
 import { useLayoutPanelContext } from './LayoutContext';
 
@@ -24,6 +24,7 @@ const PanelHeaderElement = tasty(Item, {
       'size=xsmall': 't4',
       'size=xlarge': 't2m',
     },
+    boxSizing: 'content-box',
 
     '$inline-padding': '($content-padding, 1x)',
   },
@@ -31,7 +32,8 @@ const PanelHeaderElement = tasty(Item, {
 
 export interface CubeLayoutPanelHeaderProps
   extends BaseProps,
-    ContainerStyleProps {
+    ContainerStyleProps,
+    CubeItemProps {
   /** Panel title */
   title?: ReactNode;
   /** Title heading level (affects semantics, not visual) */

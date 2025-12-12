@@ -15,6 +15,10 @@ const FooterElement = tasty(LayoutContent, {
     flexShrink: 0,
     flexGrow: 0,
     whiteSpace: 'nowrap',
+    border: {
+      '': 0,
+      '!:last-child': '($layout-border-size, 1bw) solid #border bottom',
+    },
 
     Inner: {
       display: 'flex',

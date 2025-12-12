@@ -1,0 +1,167 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import * as IconSwitchStories from './IconSwitch.stories';
+
+<Meta of={IconSwitchStories} />
+
+# IconSwitch
+
+A helper component that cross-fades between icons when children change. It provides smooth animated transitions between different icon states, making UI interactions feel more polished.
+
+## When to Use
+
+- When you need animated transitions between different icons based on state
+- For toggle buttons that switch between two icons (e.g., play/pause, expand/collapse)
+- When building interactive UI elements where icon changes should be visually smooth
+- In components like `Item` or `ItemButton` where icons change based on modifiers
+
+## Component
+
+<Story of={IconSwitchStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={IconSwitchStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/BaseProperties)
+
+## Examples
+
+### Basic Toggle
+
+Use `contentKey` to explicitly identify when the icon should transition:
+
+```jsx
+import { IconSwitch } from '@cube-dev/ui-kit';
+import { DownIcon, UpIcon } from '@cube-dev/ui-kit/icons';
+
+function ExpandToggle({ isExpanded }) {
+  return (
+    <IconSwitch contentKey={isExpanded ? 'up' : 'down'}>
+      {isExpanded ? <UpIcon /> : <DownIcon />}
+    </IconSwitch>
+  );
+}
+```
+
+### Play/Pause Button
+
+<Story of={IconSwitchStories.PlayPause} />
+
+```jsx
+import { IconSwitch } from '@cube-dev/ui-kit';
+import { PlayIcon, PauseIcon } from '@cube-dev/ui-kit/icons';
+
+function MediaControl({ isPlaying }) {
+  return (
+    <IconSwitch contentKey={isPlaying ? 'pause' : 'play'}>
+      {isPlaying ? <PauseIcon /> : <PlayIcon />}
+    </IconSwitch>
+  );
+}
+```
+
+### Multiple States
+
+<Story of={IconSwitchStories.MultipleStates} />
+
+The component handles multiple state transitions seamlessly:
+
+```jsx
+import { IconSwitch } from '@cube-dev/ui-kit';
+import { DownIcon, CheckIcon, CloseIcon } from '@cube-dev/ui-kit/icons';
+
+function StatusIcon({ status }) {
+  const icons = {
+    idle: <DownIcon />,
+    success: <CheckIcon />,
+    error: <CloseIcon />,
+  };
+
+  return (
+    <IconSwitch contentKey={status}>
+      {icons[status]}
+    </IconSwitch>
+  );
+}
+```
+
+### Rapid Toggling
+
+<Story of={IconSwitchStories.RapidToggle} />
+
+The component handles rapid state changes gracefully, properly managing overlapping transitions.
+
+### With Dynamic Icons in Item Component
+
+```jsx
+import { Item, IconSwitch } from '@cube-dev/ui-kit';
+import { DownIcon, UpIcon } from '@cube-dev/ui-kit/icons';
+
+function ExpandableItem({ isExpanded, onToggle }) {
+  return (
+    <Item
+      icon={
+        <IconSwitch contentKey={isExpanded ? 'up' : 'down'}>
+          {isExpanded ? <UpIcon /> : <DownIcon />}
+        </IconSwitch>
+      }
+      onPress={onToggle}
+    >
+      {isExpanded ? 'Collapse' : 'Expand'}
+    </Item>
+  );
+}
+```
+
+## How It Works
+
+1. **Change Detection**: The component tracks children changes using `contentKey` (if provided) or reference equality
+2. **Stack Management**: When content changes, both old and new icons are rendered simultaneously
+3. **Cross-fade Animation**: The old icon fades out while the new icon fades in using CSS opacity transitions
+4. **Cleanup**: After the exit transition completes, the old icon is removed from the DOM
+
+## Best Practices
+
+1. **Always use `contentKey`**: While the component can detect changes by reference, using explicit keys is more reliable:
+   ```jsx
+   // Good - explicit key
+   <IconSwitch contentKey={isOpen ? 'open' : 'closed'}>
+     {isOpen ? <OpenIcon /> : <CloseIcon />}
+   </IconSwitch>
+
+   // Avoid - relies on reference comparison
+   <IconSwitch>
+     {isOpen ? <OpenIcon /> : <CloseIcon />}
+   </IconSwitch>
+   ```
+
+2. **Use consistent icon sizes**: Ensure all icons within the same IconSwitch have the same dimensions for smooth transitions
+
+3. **Keep transitions subtle**: The default `transition: 'theme'` timing is designed to be quick and non-distracting
+
+## Accessibility
+
+### Screen Reader Support
+
+- Icon transitions are purely visual and don't affect screen reader announcements
+- Ensure the parent component provides appropriate `aria-label` or text content to convey state changes
+
+### Reduced Motion
+
+The component respects the user's `prefers-reduced-motion` preference through the underlying `DisplayTransition` component.
+
+## Suggested Improvements
+
+- Add `duration` prop to customize transition timing
+- Support custom transition styles beyond opacity
+- Add `onTransitionStart` and `onTransitionEnd` callbacks
+
+## Related Components
+
+- [DisplayTransition](/helpers/DisplayTransition) - Lower-level transition management
+- [Item](/content/Item) - Uses dynamic icons that could benefit from IconSwitch
+- [ItemButton](/actions/ItemButton) - Button variant with icon switching capability

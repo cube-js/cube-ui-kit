@@ -62,7 +62,8 @@ const TextElement = tasty({
       '': 'inline',
       'ellipsis | block': 'block',
     },
-    margin: '0',
+    margin: 0,
+    padding: 0,
     whiteSpace: {
       '': 'inherit',
       'nowrap | ellipsis': 'nowrap',

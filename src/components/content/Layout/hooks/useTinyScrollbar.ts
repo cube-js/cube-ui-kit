@@ -82,11 +82,8 @@ export function useTinyScrollbar(
     // Initial update
     updateScrollState();
 
-    // Listen for scroll events
-    const handleScroll = () => {
-      updateScrollState();
-
-      // Show scrollbar on scroll
+    // Show scrollbar briefly and hide after delay
+    const showScrollbarBriefly = () => {
       setIsScrolling(true);
 
       // Clear existing timeout
@@ -100,7 +97,19 @@ export function useTinyScrollbar(
       }, SCROLL_VISIBILITY_DURATION);
     };
 
+    // Listen for scroll events
+    const handleScroll = () => {
+      updateScrollState();
+      showScrollbarBriefly();
+    };
+
+    // Show scrollbar briefly when mouse enters the container
+    const handleMouseEnter = () => {
+      showScrollbarBriefly();
+    };
+
     element.addEventListener('scroll', handleScroll, { passive: true });
+    element.addEventListener('mouseenter', handleMouseEnter);
 
     // ResizeObserver for content size changes
     const resizeObserver = new ResizeObserver(() => {
@@ -116,6 +125,7 @@ export function useTinyScrollbar(
 
     return () => {
       element.removeEventListener('scroll', handleScroll);
+      element.removeEventListener('mouseenter', handleMouseEnter);
       resizeObserver.disconnect();
 
       if (scrollTimeoutRef.current) {

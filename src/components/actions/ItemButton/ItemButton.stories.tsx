@@ -976,6 +976,120 @@ export const WithActionsLayouts: Story = {
   },
 };
 
+export const WithHighlight: Story = {
+  render: (args) => (
+    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
+      <div>
+        <h4>Basic Highlight</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton {...args} icon={<IconFile />} highlight="file">
+            File management options
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconEdit />}
+            highlight="edit"
+          >
+            Edit document settings
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Case Sensitivity</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            highlight="FILE"
+          >
+            Case-insensitive: FILE and file match
+          </ItemButton>
+          <ItemButton
+            {...args}
+            highlightCaseSensitive
+            type="outline"
+            icon={<IconFile />}
+            highlight="FILE"
+          >
+            Case-sensitive: FILE matches, file does not
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Multiple Matches</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            highlight="the"
+          >
+            The quick brown fox jumps over the lazy dog
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>With Custom Highlight Styles</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            highlight="custom"
+            highlightStyles={{ fill: '#success', color: '#success-text' }}
+          >
+            Item with custom highlight style
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Combined with Other Features</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            rightIcon={<IconExternalLink />}
+            description="Product details"
+            descriptionPlacement="inline"
+            highlight="product"
+          >
+            Product name with highlight
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            highlight="actions"
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Item with actions and highlight
+          </ItemButton>
+        </div>
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the `highlight`, `highlightCaseSensitive`, and `highlightStyles` props for highlighting text within the ItemButton label. Only works when children is a plain string. By default, matching is case-insensitive.',
+      },
+    },
+  },
+};
+
 export const WithActionsHoverBehavior: Story = {
   render: (args) => (
     <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>

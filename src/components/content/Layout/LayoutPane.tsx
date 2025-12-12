@@ -1,6 +1,7 @@
 import {
   ForwardedRef,
   forwardRef,
+  HTMLAttributes,
   ReactNode,
   useCallback,
   useEffect,
@@ -80,6 +81,8 @@ const PaneElement = tasty({
         '': 'thin',
         'scrollbar=tiny | scrollbar=none': 'none',
       },
+
+      '$layout-border-size': '0',
     },
 
     // Custom scrollbar handles (when scrollbar="tiny")
@@ -96,7 +99,7 @@ const PaneElement = tasty({
       fill: '#dark.35',
       opacity: {
         '': 0,
-        '(hovered | focused | scrolling) & scrollbar=tiny': 1,
+        '(focused | scrolling) & scrollbar=tiny': 1,
       },
       transition: 'opacity 0.15s',
       pointerEvents: 'none',
@@ -115,7 +118,7 @@ const PaneElement = tasty({
       fill: '#dark.35',
       opacity: {
         '': 0,
-        '(hovered | focused | scrolling) & scrollbar=tiny': 1,
+        '(focused | scrolling) & scrollbar=tiny': 1,
       },
       transition: 'opacity 0.15s',
       pointerEvents: 'none',
@@ -232,6 +235,10 @@ export interface CubeLayoutPaneProps extends BaseProps, ContainerStyleProps {
   /** Custom styles */
   styles?: Styles;
   children?: ReactNode;
+  /** Ref for the inner content element */
+  innerRef?: ForwardedRef<HTMLDivElement>;
+  /** Props to spread on the Inner sub-element */
+  innerProps?: HTMLAttributes<HTMLDivElement>;
 }
 
 interface PaneResizeHandlerProps {
@@ -303,11 +310,14 @@ function LayoutPane(
     styles,
     mods,
     children,
+    innerRef: innerRefProp,
+    innerProps,
     ...otherProps
   } = props;
 
   const combinedRef = useCombinedRefs(ref);
-  const innerRef = useRef<HTMLDivElement>(null);
+  const internalInnerRef = useRef<HTMLDivElement>(null);
+  const combinedInnerRef = useCombinedRefs(innerRefProp, internalInnerRef);
   const prevProvidedSizeRef = useRef(providedSize);
   const isHorizontal = resizeEdge === 'right';
 
@@ -340,7 +350,7 @@ function LayoutPane(
     hasOverflowY,
     hasOverflowX,
     isScrolling,
-  } = useTinyScrollbar(innerRef, isTinyScrollbar);
+  } = useTinyScrollbar(internalInnerRef, isTinyScrollbar);
 
   // Clamp size to min/max constraints
   const clampValue = useCallback(
@@ -466,7 +476,7 @@ function LayoutPane(
       styles={finalStyles}
       style={paneStyle}
     >
-      <div ref={innerRef} data-element="Inner">
+      <div ref={combinedInnerRef} data-element="Inner" {...innerProps}>
         <LayoutContextReset>{children}</LayoutContextReset>
       </div>
       {isTinyScrollbar && hasOverflowY && <div data-element="ScrollbarV" />}

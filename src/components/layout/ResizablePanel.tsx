@@ -379,7 +379,7 @@ function ResizablePanel(
         },
         innerStyles: {
           // The panel inner space compensation for the handler
-          margin: `@indent-compensation ${direction}`,
+          margin: `$indent-compensation ${direction}`,
         },
       })}
     />

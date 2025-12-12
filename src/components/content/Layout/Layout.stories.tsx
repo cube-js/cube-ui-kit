@@ -1,6 +1,7 @@
 import { IconFilter, IconFilterFilled } from '@tabler/icons-react';
 import { useState } from 'react';
 
+import { baseProps } from '../../../stories/lists/baseProps';
 import { Button, ItemButton } from '../../actions';
 import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
@@ -17,6 +18,94 @@ const meta: Meta<typeof Layout> = {
   component: Layout,
   parameters: {
     layout: 'fullscreen',
+    controls: { exclude: baseProps },
+  },
+  argTypes: {
+    /* Content */
+    children: {
+      control: { type: null },
+      description:
+        'Layout sub-components (Layout.Header, Layout.Content, Layout.Panel, etc.)',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+
+    /* Grid Mode */
+    isGrid: {
+      control: 'boolean',
+      description: 'Switch to grid display mode',
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: false },
+      },
+    },
+    columns: {
+      control: 'text',
+      description: 'Grid template columns (when isGrid=true)',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    rows: {
+      control: 'text',
+      description: 'Grid template rows (when isGrid=true)',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    template: {
+      control: 'text',
+      description: 'Grid template shorthand',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+
+    /* Behavior */
+    contentPadding: {
+      control: 'text',
+      description:
+        'Padding for content areas (Layout.Content components). Default: "1x"',
+      table: {
+        type: { summary: 'string' },
+        defaultValue: { summary: '1x' },
+      },
+    },
+    hasTransition: {
+      control: 'boolean',
+      description:
+        'Enable transition animation for Inner content when panels open/close',
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* Inner Element */
+    innerRef: {
+      control: { type: null },
+      description: 'Ref for the inner content element',
+      table: {
+        type: { summary: 'ForwardedRef<HTMLDivElement>' },
+      },
+    },
+    innerProps: {
+      control: { type: null },
+      description: 'Props to spread on the Inner sub-element',
+      table: {
+        type: { summary: 'HTMLAttributes<HTMLDivElement>' },
+      },
+    },
+
+    /* Styles */
+    styles: {
+      control: { type: null },
+      description: 'Styles for wrapper and Inner sub-element',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 
@@ -110,13 +199,11 @@ export const WithSidePanel: Story = {
             </Button>
           </Layout.Content>
         </Layout.Panel>
-        <Layout.Toolbar>
-          <Space>
-            <Button onPress={() => setIsPanelOpen(!isPanelOpen)}>
-              Toggle Panel
-            </Button>
-            <Title level={4}>App</Title>
-          </Space>
+        <Layout.Toolbar padding=".5x 1x">
+          <Button onPress={() => setIsPanelOpen(!isPanelOpen)}>
+            Toggle Panel
+          </Button>
+          <Title level={4}>App</Title>
         </Layout.Toolbar>
         <Layout.Content>
           <Text>Main content area</Text>
@@ -403,10 +490,10 @@ export const MultiplePanels: Story = {
 
 export const HorizontalScrollableContent: Story = {
   render: () => (
-    <Space width="500px" gap="0">
-      <Layout.Block fill="#light" placeSelf="center">
+    <Layout width="500px" flow="row" height="100px">
+      <Layout.Flex fill="#light" placeItems="center">
         Fixed Left
-      </Layout.Block>
+      </Layout.Flex>
       <Layout.Content scrollbar="tiny" placeContent="center">
         <Text nowrap>
           This is a very long line of text that should not wrap and will cause
@@ -415,10 +502,10 @@ export const HorizontalScrollableContent: Story = {
           eiusmod tempor incididunt ut labore et dolore magna aliqua →→→→→→→→
         </Text>
       </Layout.Content>
-      <Layout.Block fill="#light" placeSelf="center">
+      <Layout.Flex fill="#light" placeItems="center">
         Fixed Right
-      </Layout.Block>
-    </Space>
+      </Layout.Flex>
+    </Layout>
   ),
 };
 
