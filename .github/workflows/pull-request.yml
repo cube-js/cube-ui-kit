@@ -10,80 +10,20 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read  # Read-only access to repository contents
-  issues: write   # Write access to issues
-  pull-requests: write  # Write access to pull requests
-  statuses: write  # Write access to commit statuses
+  contents: read
+  issues: write
+  pull-requests: write
+  statuses: write
+  id-token: write  # Required for trusted publishing (OIDC)
 
 jobs:
-  build:
+  publish-canary:
     name: 'Build & canary release'
-    runs-on: ubuntu-latest
-    env:
-      NODE_OPTIONS: --max-old-space-size=4096
-    environment:
-      name: Canary package in NPM
-      url: https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.publish.outputs.version }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Update Corepack
-        run: npm i -g corepack@latest
-
-      - name: Enable Corepack (pre)
-        run: corepack enable
-
-      - name: Prepare pnpm (pre)
-        run: corepack prepare pnpm@10.14.0 --activate
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-
-      - name: Enable Corepack
-        run: corepack enable
-      
-      - name: Prepare pnpm
-        run: corepack prepare pnpm@10.14.0 --activate
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Set env
-        run: echo "SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
-
-      - name: Increment canary
-        run: npm version 0.0.0-canary-$SHORT_SHA --no-git-tag-version
-
-      - name: Build project
-        run: pnpm build
-
-      - name: Publish canary
-        id: publish
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          tag: pr_${{ github.event.number }}
-          access: public
-          check-version: true
-          package: ./dist/package.json
-
-      - name: Comment PR
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message.cjs')
-
-            await setMessage({
-              header: "## :package: NPM canary release",
-              body: 'Deployed canary version [${{ steps.publish.outputs.version }}](https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.publish.outputs.version }}).',
-              github,
-              repo: context.repo,
-              prNumber: context.payload.pull_request.number
-            })
-
+    uses: ./.github/workflows/publish.yml
+    with:
+      publish-type: canary
+      pr-number: ${{ github.event.number }}
+    secrets: inherit
 
   tests:
     name: 'Tests & lint'
