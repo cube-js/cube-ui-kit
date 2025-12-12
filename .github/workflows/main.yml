@@ -55,18 +55,21 @@ jobs:
         with:
           commit: 'chore: release'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
 
   trigger-publish:
     name: 'Trigger release publish'
     needs: changesets
     if: needs.changesets.outputs.hasChangesets == 'false' && github.actor == 'tenphi'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
     steps:
       - name: Trigger publish workflow
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.WORKFLOW_TRIGGER_TOKEN || github.token }}
           script: |
             await github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,

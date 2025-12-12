@@ -81,7 +81,7 @@ jobs:
         uses: actions/github-script@v6
         if: github.event.number
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ github.token }}
           script: |
             const setMessage = require('${{ github.workspace }}/scripts/ci/set-message.cjs')
             

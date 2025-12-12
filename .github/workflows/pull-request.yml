@@ -74,13 +74,20 @@ jobs:
   trigger-publish:
     name: 'Trigger canary publish'
     needs: build
-    if: github.actor == 'tenphi'
+    # On fork PRs the token is read-only and cannot create repository_dispatch.
+    # Also, we intentionally don't expose a high-privilege token to untrusted PR code.
+    if: github.actor == 'tenphi' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
     steps:
       - name: Trigger publish workflow
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Use a dedicated token (PAT or GitHub App token) if provided; otherwise fall back to the workflow token.
+          # The token must have access to create repository dispatch events in this repo.
+          github-token: ${{ secrets.WORKFLOW_TRIGGER_TOKEN || github.token }}
           script: |
             await github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
@@ -190,13 +197,13 @@ jobs:
           exitOnceUploaded: true
           onlyChanged: true
           debug: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ github.token }}
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
       - name: Comment PR
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ github.token }}
           script: |
             const setMessage = require('${{ github.workspace }}/scripts/ci/set-message.cjs')
 
