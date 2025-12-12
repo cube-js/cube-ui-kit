@@ -19,16 +19,15 @@ on:
         description: 'Published version'
         value: ${{ jobs.publish-canary.outputs.version || jobs.publish-release.outputs.version || '' }}
 
-permissions:
-  contents: write
-  pull-requests: write
-  id-token: write  # Required for trusted publishing (OIDC)
-
 jobs:
   publish-canary:
     name: 'Publish canary'
     if: inputs.publish-type == 'canary'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write  # Required for trusted publishing (OIDC)
     environment:
       name: Canary package in NPM
       url: https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.version.outputs.version }}
@@ -105,6 +104,10 @@ jobs:
     name: 'Publish release'
     if: inputs.publish-type == 'release'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write  # Required for trusted publishing (OIDC)
     env:
       NODE_OPTIONS: --max-old-space-size=4096
     outputs:
