@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.98.0
+
+### Minor Changes
+
+- [#923](https://github.com/cube-js/cube-ui-kit/pull/923) [`cb6340ef`](https://github.com/cube-js/cube-ui-kit/commit/cb6340ef6b8faff274b7ebd52038587e60d72ff1) Thanks [@tenphi](https://github.com/tenphi)! - Rework of Button component to align its implementation and layout with Item and ItemButton components.
+
 ## 0.97.1
 
 ### Patch Changes
