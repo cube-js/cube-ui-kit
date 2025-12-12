@@ -28,9 +28,6 @@ jobs:
       contents: read
       pull-requests: write
       id-token: write  # Required for trusted publishing (OIDC)
-    environment:
-      name: Canary package in NPM
-      url: https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.version.outputs.version }}
     env:
       NODE_OPTIONS: --max-old-space-size=4096
     outputs:
