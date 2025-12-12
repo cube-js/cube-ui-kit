@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write  # Required for reusable workflow validation (not used by canary job)
   issues: write
   pull-requests: write
   statuses: write
