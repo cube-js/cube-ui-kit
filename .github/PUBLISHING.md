@@ -76,11 +76,9 @@ Publishing logic has been moved to a dedicated `publish.yml` workflow file to su
 
 ## Manual Setup Steps
 
-Complete these steps **before** merging the trusted publishing changes:
+> ⚠️ **CRITICAL**: Complete Step 1 **BEFORE** any workflow runs. The workflow will fail with `ENEEDAUTH` error if the trusted publisher is not configured first!
 
 ### Step 1: Configure Trusted Publisher on npmjs.com
-
-> ⚠️ **Important**: This must be done BEFORE the first publish attempt with the new workflow.
 
 1. Log in to [npmjs.com](https://www.npmjs.com) with an account that has publish access
 2. Go to: https://www.npmjs.com/package/@cube-dev/ui-kit/settings
@@ -90,10 +88,10 @@ Complete these steps **before** merging the trusted publishing changes:
 
    | Field | Value |
    |-------|-------|
-   | Organization or user | `cube-js` |
+   | Owner | `cube-js` |
    | Repository | `cube-ui-kit` |
    | Workflow filename | `publish.yml` |
-   | Environment name | _(leave empty)_ |
+   | Environment | _(leave empty)_ |
 
 6. Click **Save** (or the equivalent button)
 
@@ -159,6 +157,14 @@ Before merging the trusted publishing PR, verify:
 ---
 
 ## Troubleshooting
+
+### `ENEEDAUTH` / "need auth" / "You need to authorize this machine" error
+
+This is the most common error when first setting up trusted publishing:
+
+1. **Trusted publisher not configured yet** — Go to npmjs.com and configure the trusted publisher (Step 1 above)
+2. **Configuration mismatch** — Double-check that Owner, Repository, and Workflow filename match EXACTLY
+3. **Environment mismatch** — If you specified an environment on npmjs.com, the workflow must use the same environment name (we leave it empty by default)
 
 ### "Unable to authenticate" error
 

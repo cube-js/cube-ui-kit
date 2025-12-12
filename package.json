@@ -5,7 +5,7 @@
   "description": "UIKit for Cube Projects",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cube-js/cube-ui-kit.git"
+    "url": "git+https://github.com/cube-js/cube-ui-kit.git"
   },
   "module": "dist/es/index.js",
   "types": "dist/types/index.d.ts",
