@@ -8,54 +8,19 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
-  contents: write  # Read-only access to repository contents
-  issues: write   # Write access to issues
-  pull-requests: write  # Write access to pull requests
-  statuses: write  # Write access to commit statuses
+  contents: write
+  issues: write
+  pull-requests: write
+  statuses: write
+  id-token: write  # Required for trusted publishing (OIDC)
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
-    env:
-      NODE_OPTIONS: --max-old-space-size=4096
-    outputs:
-      published: ${{ steps.changesets.outputs.published }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Update Corepack
-        run: npm i -g corepack@latest
-
-      - name: Enable Corepack (pre)
-        run: corepack enable
-
-      - name: Prepare pnpm (pre)
-        run: corepack prepare pnpm@10.14.0 --activate
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-
-      - name: Enable Corepack
-        run: corepack enable
-      
-      - name: Prepare pnpm
-        run: corepack prepare pnpm@10.14.0 --activate
-
-      - name: Install Dependencies
-        run: pnpm install
-
-      - name: Create Release Pull Request or Publish to npm
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: pnpm release
-          commit: 'chore: release'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    name: 'Publish release'
+    uses: ./.github/workflows/publish.yml
+    with:
+      publish-type: release
+    secrets: inherit
 
   deploy-chromatic:
     name: 'Deploy storybook to Chromatic'
