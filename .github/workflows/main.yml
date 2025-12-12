@@ -69,7 +69,7 @@ jobs:
       - name: Trigger publish workflow
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.WORKFLOW_TRIGGER_TOKEN || github.token }}
+          github-token: ${{ secrets['WORKFLOW_TRIGGER_TOKEN'] || github.token }}
           script: |
             await github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,

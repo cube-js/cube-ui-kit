@@ -1,6 +1,7 @@
 name: Pull Request
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
     paths-ignore:
       - '.changeset/**'
       - '.husky/**'
@@ -74,32 +75,93 @@ jobs:
   trigger-publish:
     name: 'Trigger canary publish'
     needs: build
-    # On fork PRs the token is read-only and cannot create repository_dispatch.
-    # Also, we intentionally don't expose a high-privilege token to untrusted PR code.
-    if: github.actor == 'tenphi' && github.event.pull_request.head.repo.full_name == github.repository
+    # Manual trigger: add `publish-canary` label to the PR.
+    # Only same-repo PRs are supported (avoid publishing artifacts built from untrusted forks).
+    if: github.event.action == 'labeled' && github.event.label.name == 'publish-canary' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: write
       actions: write
+      issues: write
+      pull-requests: write
     steps:
+      - name: Check actor permission
+        id: actor_permission
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ github.token }}
+          result-encoding: string
+          script: |
+            if (context.actor === 'tenphi') {
+              return 'allowed'
+            }
+
+            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.actor
+            })
+
+            // Values: none, read, triage, write, maintain, admin
+            return data.permission
+
+      - name: Reject unauthorized trigger
+        if: steps.actor_permission.outputs.result != 'allowed' && steps.actor_permission.outputs.result != 'maintain' && steps.actor_permission.outputs.result != 'admin'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const prNumber = context.payload.pull_request.number
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `Canary publish wasn't triggered because @${context.actor} is not allowed to run it. Only **tenphi** or repo **maintainers/admins** can trigger canary publishing.`
+            })
+
+            // Remove the label to avoid re-runs.
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              name: 'publish-canary'
+            })
+
       - name: Trigger publish workflow
+        if: steps.actor_permission.outputs.result == 'allowed' || steps.actor_permission.outputs.result == 'maintain' || steps.actor_permission.outputs.result == 'admin'
         uses: actions/github-script@v6
         with:
           # Use a dedicated token (PAT or GitHub App token) if provided; otherwise fall back to the workflow token.
           # The token must have access to create repository dispatch events in this repo.
-          github-token: ${{ secrets.WORKFLOW_TRIGGER_TOKEN || github.token }}
+          github-token: ${{ secrets['WORKFLOW_TRIGGER_TOKEN'] || github.token }}
           script: |
+            const prNumber = context.payload.pull_request.number
+
             await github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
               repo: context.repo.repo,
               event_type: 'publish-canary',
               client_payload: {
-                pr_number: String(context.payload.pull_request.number),
+                pr_number: String(prNumber),
                 run_id: String(context.runId)
               }
             })
-            
-            console.log('Triggered publish workflow for canary release')
+
+            // Remove the label to make this a one-shot manual trigger.
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              name: 'publish-canary'
+            })
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `Triggered canary publish workflow (run_id: ${context.runId}).`
+            })
 
   tests:
     name: 'Tests & lint'
