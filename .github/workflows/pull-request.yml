@@ -1,10 +1,13 @@
 name: Pull Request
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened]
     paths-ignore:
       - '.changeset/**'
       - '.husky/**'
+  # Slash command trigger: comment `/publish-canary` on a PR
+  issue_comment:
+    types: [created]
 
 concurrency:
   group: ci-pull-request=${{github.ref}}-1
@@ -19,6 +22,8 @@ permissions:
 
 jobs:
   build:
+    # Skip build for slash command triggers - we reuse the artifact from the original PR run
+    if: github.event_name != 'issue_comment'
     name: 'Build'
     runs-on: ubuntu-latest
     env:
@@ -74,10 +79,11 @@ jobs:
 
   trigger-publish:
     name: 'Trigger canary publish'
-    needs: build
-    # Manual trigger: add `publish-canary` label to the PR.
-    # Only same-repo PRs are supported (avoid publishing artifacts built from untrusted forks).
-    if: github.event.action == 'labeled' && github.event.label.name == 'publish-canary' && github.event.pull_request.head.repo.full_name == github.repository
+    # Runs only when someone comments `/publish-canary` on a PR (not an issue).
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/publish-canary')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -85,8 +91,38 @@ jobs:
       issues: write
       pull-requests: write
     steps:
+      - name: Get PR details
+        id: pr
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            })
+            core.setOutput('head_repo', pr.head.repo.full_name)
+            core.setOutput('number', pr.number)
+            return pr
+
+      - name: Check if same-repo PR
+        if: steps.pr.outputs.head_repo != github.repository
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `⚠️ Canary publish is not supported for fork PRs (security reasons).`
+            })
+            core.setFailed('Fork PRs cannot trigger canary publish')
+
       - name: Check actor permission
         id: actor_permission
+        if: steps.pr.outputs.head_repo == github.repository
         uses: actions/github-script@v6
         with:
           github-token: ${{ github.token }}
@@ -106,37 +142,65 @@ jobs:
             return data.permission
 
       - name: Reject unauthorized trigger
-        if: steps.actor_permission.outputs.result != 'allowed' && steps.actor_permission.outputs.result != 'maintain' && steps.actor_permission.outputs.result != 'admin'
+        if: steps.pr.outputs.head_repo == github.repository && steps.actor_permission.outputs.result != 'allowed' && steps.actor_permission.outputs.result != 'maintain' && steps.actor_permission.outputs.result != 'admin'
         uses: actions/github-script@v6
         with:
           github-token: ${{ github.token }}
           script: |
-            const prNumber = context.payload.pull_request.number
-
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: prNumber,
-              body: `Canary publish wasn't triggered because @${context.actor} is not allowed to run it. Only **tenphi** or repo **maintainers/admins** can trigger canary publishing.`
+              issue_number: context.issue.number,
+              body: `⚠️ Canary publish wasn't triggered because @${context.actor} is not allowed to run it. Only **tenphi** or repo **maintainers/admins** can trigger canary publishing.`
             })
+            core.setFailed('Unauthorized user')
 
-            // Remove the label to avoid re-runs.
-            await github.rest.issues.removeLabel({
+      - name: Find latest successful build run
+        id: find_run
+        if: steps.pr.outputs.head_repo == github.repository && (steps.actor_permission.outputs.result == 'allowed' || steps.actor_permission.outputs.result == 'maintain' || steps.actor_permission.outputs.result == 'admin')
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            // Find the latest successful workflow run for this PR that has the 'dist' artifact
+            const runs = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: prNumber,
-              name: 'publish-canary'
+              workflow_id: 'pull-request.yml',
+              event: 'pull_request',
+              status: 'success',
+              per_page: 20
             })
 
+            const prNumber = context.issue.number
+            for (const run of runs.data.workflow_runs) {
+              // Check if this run is associated with our PR
+              if (run.pull_requests.some(pr => pr.number === prNumber)) {
+                // Check if it has the dist artifact
+                const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id
+                })
+                if (artifacts.data.artifacts.some(a => a.name === 'dist')) {
+                  core.setOutput('run_id', run.id)
+                  console.log(`Found run ${run.id} with dist artifact`)
+                  return
+                }
+              }
+            }
+
+            core.setFailed('No successful build run with dist artifact found for this PR. Please wait for the build to complete first.')
+
       - name: Trigger publish workflow
-        if: steps.actor_permission.outputs.result == 'allowed' || steps.actor_permission.outputs.result == 'maintain' || steps.actor_permission.outputs.result == 'admin'
+        if: steps.find_run.outputs.run_id
         uses: actions/github-script@v6
         with:
           # Use a dedicated token (PAT or GitHub App token) if provided; otherwise fall back to the workflow token.
-          # The token must have access to create repository dispatch events in this repo.
           github-token: ${{ secrets['WORKFLOW_TRIGGER_TOKEN'] || github.token }}
           script: |
-            const prNumber = context.payload.pull_request.number
+            const prNumber = context.issue.number
+            const runId = '${{ steps.find_run.outputs.run_id }}'
 
             await github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
@@ -144,27 +208,20 @@ jobs:
               event_type: 'publish-canary',
               client_payload: {
                 pr_number: String(prNumber),
-                run_id: String(context.runId)
+                run_id: runId
               }
-            })
-
-            // Remove the label to make this a one-shot manual trigger.
-            await github.rest.issues.removeLabel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              name: 'publish-canary'
             })
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
-              body: `Triggered canary publish workflow (run_id: ${context.runId}).`
+              body: `🚀 Triggered canary publish workflow using build from run [#${runId}](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId}).`
             })
 
   tests:
     name: 'Tests & lint'
+    if: github.event_name != 'issue_comment'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -207,6 +264,7 @@ jobs:
 
   deploy-chromatic:
     name: 'Prepare Storybook for review & tests'
+    if: github.event_name != 'issue_comment'
     runs-on: ubuntu-latest
     environment:
       name: Chromatic staging
