@@ -37,6 +37,18 @@ export type Mods<T extends Record<string, ModValue> = {}> = T & {
   [key: string]: ModValue;
 };
 
+/** Token value: string or number (processed), undefined/null (skipped) */
+export type TokenValue = string | number | undefined | null;
+
+/**
+ * Tokens definition for inline CSS custom properties.
+ * - `$name` keys become `--name` CSS properties
+ * - `#name` keys become `--name-color` and `--name-color-rgb` CSS properties
+ */
+export type Tokens = {
+  [key: `$${string}` | `#${string}`]: TokenValue;
+};
+
 type Caps =
   | 'A'
   | 'B'
@@ -96,6 +108,8 @@ export interface BasePropsWithoutChildren<K extends TagName = TagName>
     | (CSSProperties & { [key: string]: string | number | null });
   /** User-defined theme for the element. Mapped to data-theme attribute. Use `default`, or `danger`, or any custom string value you need. */
   theme?: 'default' | 'danger' | 'special' | 'success' | (string & {});
+  /** CSS custom property tokens rendered as inline styles */
+  tokens?: Tokens;
 }
 
 export interface BaseProps<K extends TagName = TagName>

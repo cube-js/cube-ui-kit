@@ -17,11 +17,18 @@ import { allocateClassName, inject, injectGlobal } from './injector';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { BASE_STYLES } from './styles/list';
 import { Styles, StylesInterface } from './styles/types';
-import { AllBaseProps, BaseProps, BaseStyleProps, Props } from './types';
+import {
+  AllBaseProps,
+  BaseProps,
+  BaseStyleProps,
+  Props,
+  Tokens,
+} from './types';
 import { cacheWrapper } from './utils/cache-wrapper';
 import { getDisplayName } from './utils/getDisplayName';
 import { mergeStyles } from './utils/mergeStyles';
 import { modAttrs } from './utils/modAttrs';
+import { processTokens, stringifyTokens } from './utils/processTokens';
 import { RenderResult, renderStyles } from './utils/renderStyles';
 import { ResponsiveStyleValue, stringifyStyles } from './utils/styles';
 
@@ -97,7 +104,9 @@ export type TastyProps<
   styleProps?: K;
   element?: BaseProps['element'];
   variants?: V;
-} & Partial<Omit<DefaultProps, 'as' | 'styles' | 'styleProps'>> &
+  /** Default tokens for inline CSS custom properties */
+  tokens?: Tokens;
+} & Partial<Omit<DefaultProps, 'as' | 'styles' | 'styleProps' | 'tokens'>> &
   Pick<BaseProps, 'qa' | 'qaVal'> &
   WithVariant<V>;
 
@@ -254,6 +263,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
     styles: defaultStyles,
     styleProps,
     variants,
+    tokens: defaultTokens,
     ...defaultProps
   } = tastyOptions;
 
@@ -271,6 +281,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
           as: originalAs,
           styles: mergeStyles(defaultStyles, variantStyles),
           styleProps,
+          tokens: defaultTokens,
           ...(defaultProps as Props),
         } as TastyProps<K, never>) as unknown as VariantFC<K>;
         return map;
@@ -283,6 +294,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         as: originalAs,
         styles: defaultStyles,
         styleProps,
+        tokens: defaultTokens,
         ...(defaultProps as Props),
       } as TastyProps<K, never>) as unknown as VariantFC<K>;
     }
@@ -341,9 +353,15 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         qa,
         qaVal,
         className: userClassName,
+        tokens,
+        style,
         ...otherProps
       } = allProps as Record<string, unknown> as AllBasePropsWithMods<K> &
-        WithVariant<V> & { className?: string };
+        WithVariant<V> & {
+          className?: string;
+          tokens?: Tokens;
+          style?: Record<string, unknown>;
+        };
 
       // Optimize propStyles extraction - avoid creating empty objects
       let propStyles: Styles | null = null;
@@ -446,6 +464,28 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
 
       const injectedClassName = allocatedClassName;
 
+      // Merge default tokens with instance tokens (instance overrides defaults)
+      const tokensKey = stringifyTokens(tokens as Tokens | undefined);
+      const mergedTokens = useMemo(() => {
+        if (!defaultTokens && !tokens) return undefined;
+        if (!defaultTokens) return tokens as Tokens;
+        if (!tokens) return defaultTokens;
+        return { ...defaultTokens, ...tokens } as Tokens;
+      }, [tokensKey]);
+
+      // Process merged tokens into inline style properties
+      const processedTokenStyle = useMemo(() => {
+        return processTokens(mergedTokens);
+      }, [mergedTokens]);
+
+      // Merge processed tokens with explicit style prop (style has priority)
+      const mergedStyle = useMemo(() => {
+        if (!processedTokenStyle && !style) return undefined;
+        if (!processedTokenStyle) return style;
+        if (!style) return processedTokenStyle;
+        return { ...processedTokenStyle, ...style };
+      }, [processedTokenStyle, style]);
+
       let modProps: Record<string, unknown> | undefined;
       if (mods) {
         const modsObject = mods as unknown as Record<string, unknown>;
@@ -468,6 +508,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         ...(modProps || {}),
         ...(otherProps as unknown as Record<string, unknown>),
         className: finalClassName,
+        style: mergedStyle,
         ref,
       } as Record<string, unknown>;
 
