@@ -1,37 +1,30 @@
 name: Publish
 
 on:
-  workflow_call:
-    inputs:
-      publish-type:
-        description: 'Type of publish: "canary" or "release"'
-        required: true
-        type: string
-      pr-number:
-        description: 'PR number for canary releases'
-        required: false
-        type: number
-    outputs:
-      published:
-        description: 'Whether a release was published'
-        value: ${{ jobs.publish-release.outputs.published || 'false' }}
-      version:
-        description: 'Published version'
-        value: ${{ jobs.publish-canary.outputs.version || jobs.publish-release.outputs.version || '' }}
+  pull_request:
+    paths-ignore:
+      - '.changeset/**'
+      - '.husky/**'
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write  # Required for trusted publishing (OIDC)
 
 jobs:
   publish-canary:
     name: 'Publish canary'
-    if: inputs.publish-type == 'canary'
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-      id-token: write  # Required for trusted publishing (OIDC)
     env:
       NODE_OPTIONS: --max-old-space-size=4096
-    outputs:
-      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -88,7 +81,7 @@ jobs:
 
       - name: Publish canary to npm
         working-directory: ./dist
-        run: npm publish --access public --tag pr_${{ inputs.pr-number }} --provenance
+        run: npm publish --access public --tag pr_${{ github.event.number }} --provenance
 
       - name: Comment PR
         uses: actions/github-script@v6
@@ -102,22 +95,17 @@ jobs:
               body: 'Deployed canary version [${{ steps.version.outputs.version }}](https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.version.outputs.version }}).',
               github,
               repo: context.repo,
-              prNumber: ${{ inputs.pr-number }}
+              prNumber: ${{ github.event.number }}
             })
 
   publish-release:
     name: 'Publish release'
-    if: inputs.publish-type == 'release'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      id-token: write  # Required for trusted publishing (OIDC)
     env:
       NODE_OPTIONS: --max-old-space-size=4096
     outputs:
       published: ${{ steps.changesets.outputs.published }}
-      version: ${{ steps.get-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -168,9 +156,60 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # NPM_TOKEN not needed - using trusted publishing (OIDC)
 
-      - name: Get published version
-        id: get-version
-        if: steps.changesets.outputs.published == 'true'
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+  deploy-chromatic-release:
+    name: 'Deploy storybook to Chromatic'
+    needs: publish-release
+    if: github.event_name == 'push' && needs.publish-release.outputs.published == 'false'
+    runs-on: ubuntu-latest
+    environment:
+      name: Chromatic Production
+      url: ${{ steps.publish_chromatic.outputs.url }}
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
+      CHROMATIC_RETRIES: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update Corepack
+        run: npm i -g corepack@latest
+
+      - name: Enable Corepack (pre)
+        run: corepack enable
+
+      - name: Prepare pnpm (pre)
+        run: corepack prepare pnpm@10.14.0 --activate
+
+      - uses: actions/cache@v4
+        name: Download storybook cache
+        with:
+          path: |
+            **/node_modules/.cache
+          key: ${{ runner.os }}-storybook-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-storybook
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Enable Corepack
+        run: corepack enable
+      
+      - name: Prepare pnpm
+        run: corepack prepare pnpm@10.14.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Publish to Chromatic
+        id: publish_chromatic
+        uses: chromaui/action@v11
+        with:
+          exitZeroOnChanges: true
+          exitOnceUploaded: true
+          autoAcceptChanges: true
+          onlyChanged: true
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}

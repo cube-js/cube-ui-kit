@@ -10,21 +10,14 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write  # Required for reusable workflow validation (not used by canary job)
+  contents: read
   issues: write
   pull-requests: write
   statuses: write
-  id-token: write  # Required for trusted publishing (OIDC)
+
+# Note: Canary publishing is handled by publish.yml workflow
 
 jobs:
-  publish-canary:
-    name: 'Build & canary release'
-    uses: ./.github/workflows/publish.yml
-    with:
-      publish-type: canary
-      pr-number: ${{ github.event.number }}
-    secrets: inherit
-
   tests:
     name: 'Tests & lint'
     runs-on: ubuntu-latest
