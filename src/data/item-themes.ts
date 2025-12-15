@@ -590,6 +590,33 @@ export const SPECIAL_ITEM_STYLES: Styles = {
   },
 } as const;
 
+// ---------- ALERT TYPE STYLES ----------
+// Alert type only supports: default, success, danger, note themes
+
+export const DEFAULT_ALERT_STYLES: Styles = {
+  border: '#dark.20',
+  fill: '#dark-bg',
+  color: '#dark-02',
+} as const;
+
+export const SUCCESS_ALERT_STYLES: Styles = {
+  border: '#success.20',
+  fill: '#success-bg',
+  color: '#success-text',
+} as const;
+
+export const DANGER_ALERT_STYLES: Styles = {
+  border: '#danger.20',
+  fill: '#danger-bg',
+  color: '#danger-text',
+} as const;
+
+export const NOTE_ALERT_STYLES: Styles = {
+  border: '#note.20',
+  fill: '#note-bg',
+  color: '#note-text',
+} as const;
+
 export type ItemVariant =
   | 'default.primary'
   | 'default.secondary'
@@ -598,6 +625,7 @@ export type ItemVariant =
   | 'default.clear'
   | 'default.link'
   | 'default.item'
+  | 'default.alert'
   | 'danger.primary'
   | 'danger.secondary'
   | 'danger.outline'
@@ -605,6 +633,7 @@ export type ItemVariant =
   | 'danger.clear'
   | 'danger.link'
   | 'danger.item'
+  | 'danger.alert'
   | 'success.primary'
   | 'success.secondary'
   | 'success.outline'
@@ -612,10 +641,12 @@ export type ItemVariant =
   | 'success.clear'
   | 'success.link'
   | 'success.item'
+  | 'success.alert'
   | 'special.primary'
   | 'special.secondary'
   | 'special.outline'
   | 'special.neutral'
   | 'special.clear'
   | 'special.link'
-  | 'special.item';
+  | 'special.item'
+  | 'note.alert';

@@ -13,7 +13,9 @@ import {
 import { OverlayProps } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
 
+import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
+  DANGER_ALERT_STYLES,
   DANGER_CLEAR_STYLES,
   DANGER_ITEM_STYLES,
   DANGER_LINK_STYLES,
@@ -21,6 +23,7 @@ import {
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
   DANGER_SECONDARY_STYLES,
+  DEFAULT_ALERT_STYLES,
   DEFAULT_CLEAR_STYLES,
   DEFAULT_ITEM_STYLES,
   DEFAULT_LINK_STYLES,
@@ -29,6 +32,7 @@ import {
   DEFAULT_PRIMARY_STYLES,
   DEFAULT_SECONDARY_STYLES,
   ItemVariant,
+  NOTE_ALERT_STYLES,
   SPECIAL_CLEAR_STYLES,
   SPECIAL_ITEM_STYLES,
   SPECIAL_LINK_STYLES,
@@ -36,6 +40,7 @@ import {
   SPECIAL_OUTLINE_STYLES,
   SPECIAL_PRIMARY_STYLES,
   SPECIAL_SECONDARY_STYLES,
+  SUCCESS_ALERT_STYLES,
   SUCCESS_CLEAR_STYLES,
   SUCCESS_ITEM_STYLES,
   SUCCESS_LINK_STYLES,
@@ -71,7 +76,6 @@ const ITEM_SIZE_VALUES = [
   'medium',
   'large',
   'xlarge',
-  'inline',
 ] as const;
 
 /** Known modifiers for Item component */
@@ -145,8 +149,9 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'neutral'
     | 'clear'
     | 'link'
+    | 'alert'
     | (string & {});
-  theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
+  theme?: 'default' | 'danger' | 'success' | 'special' | 'note' | (string & {});
   /** Keyboard shortcut that triggers the element when pressed */
   hotkeys?: string;
   /**
@@ -316,9 +321,9 @@ const ItemElement = tasty({
       'size=inline': 'tag',
       'type=title & size=xsmall': 'h6',
       'type=title & size=small': 'h6',
-      'type=title & size=medium': 'h5',
-      'type=title & size=large': 'h4',
-      'type=title & size=xlarge': 'h3',
+      'type=title & size=medium': 'h6',
+      'type=title & size=large': 'h5',
+      'type=title & size=xlarge': 'h4',
     },
     boxSizing: 'border-box',
     textDecoration: 'none',
@@ -339,16 +344,12 @@ const ItemElement = tasty({
       'size=medium': '$size-md',
       'size=large': '$size-lg',
       'size=xlarge': '$size-xl',
-      'size=inline': '1lh',
     },
-    '$inline-padding': {
-      '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
-      'size=inline': '.25x',
-    },
+    '$inline-padding':
+      'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
     '$block-padding': {
       '': '.5x',
       'size=xsmall | size=small': '.25x',
-      'size=inline': 0,
     },
     '$inline-compensation': '.5x',
     '$min-inline-padding': '(1x - 1bw)',
@@ -474,6 +475,7 @@ const ItemElement = tasty({
     'default.clear': DEFAULT_CLEAR_STYLES,
     'default.link': DEFAULT_LINK_STYLES,
     'default.item': DEFAULT_ITEM_STYLES,
+    'default.alert': DEFAULT_ALERT_STYLES,
     // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
     'danger.secondary': DANGER_SECONDARY_STYLES,
@@ -482,6 +484,7 @@ const ItemElement = tasty({
     'danger.clear': DANGER_CLEAR_STYLES,
     'danger.link': DANGER_LINK_STYLES,
     'danger.item': DANGER_ITEM_STYLES,
+    'danger.alert': DANGER_ALERT_STYLES,
     // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
     'success.secondary': SUCCESS_SECONDARY_STYLES,
@@ -490,6 +493,7 @@ const ItemElement = tasty({
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
     'success.item': SUCCESS_ITEM_STYLES,
+    'success.alert': SUCCESS_ALERT_STYLES,
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
     'special.secondary': SPECIAL_SECONDARY_STYLES,
@@ -498,6 +502,8 @@ const ItemElement = tasty({
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,
     'special.item': SPECIAL_ITEM_STYLES,
+    // Note theme (alert type only)
+    'note.alert': NOTE_ALERT_STYLES,
   },
   styleProps: CONTAINER_STYLES,
 });
@@ -545,6 +551,48 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   // Loading state makes the component disabled
   const finalIsDisabled =
     isDisabled === true || (isLoading && isDisabled !== false);
+
+  // Validate type+theme combinations
+  const STANDARD_THEMES = ['default', 'success', 'danger', 'special'];
+  const ALERT_THEMES = ['default', 'success', 'danger', 'note'];
+  const TITLE_THEMES = ['default'];
+
+  const isInvalidCombination =
+    (type === 'title' && !TITLE_THEMES.includes(theme)) ||
+    (type === 'alert' && !ALERT_THEMES.includes(theme)) ||
+    (!['title', 'alert'].includes(type) && !STANDARD_THEMES.includes(theme));
+
+  useWarn(isInvalidCombination, {
+    key: ['Item', 'invalid-type-theme', type, theme],
+    args: [
+      `Item: Invalid type+theme combination. type="${type}" does not support theme="${theme}".` +
+        (type === 'title'
+          ? ' The "title" type only supports theme: default.'
+          : type === 'alert'
+            ? ' The "alert" type only supports themes: default, success, danger, note.'
+            : ' Standard types support themes: default, success, danger, special.'),
+    ],
+  });
+
+  // Warn if link type is used with icons or loading state
+  const hasLinkWithIcons = type === 'link' && (iconProp || rightIconProp);
+  const hasLinkWithLoading = type === 'link' && isLoading;
+  const hasLinkRestrictions = hasLinkWithIcons || hasLinkWithLoading;
+
+  const linkRestrictionMessages: string[] = [];
+  if (hasLinkWithIcons) {
+    linkRestrictionMessages.push('icons (`icon` or `rightIcon` props)');
+  }
+  if (hasLinkWithLoading) {
+    linkRestrictionMessages.push('loading state (`isLoading` prop)');
+  }
+
+  useWarn(hasLinkRestrictions, {
+    key: ['Item', 'link-restrictions'],
+    args: [
+      `Item: The "link" type does not support ${linkRestrictionMessages.join(' or ')}. Remove these props when using type="link".`,
+    ],
+  });
 
   // Determine if we should show checkbox instead of icon
   const hasCheckbox = iconProp === 'checkbox';
