@@ -83,7 +83,6 @@ export type ItemMods = Mods<{
   selected?: boolean;
   loading?: boolean;
   card?: boolean;
-  button?: boolean;
   size?: string;
   description?: string;
   type?: string;
@@ -175,10 +174,6 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * When true, applies card styling with increased border radius.
    */
   isCard?: boolean;
-  /**
-   * When true, adds button modifier to the component styling.
-   */
-  isButton?: boolean;
   /**
    * Shape of the item's border radius.
    * - `card` - Card shape with larger border radius (`1cr`)
@@ -305,10 +300,10 @@ const ItemElement = tasty({
     },
     preset: {
       '': 't3',
-      button: 't3m',
+      '!type=item': 't3m',
       'size=xsmall': 't4',
       'size=xlarge': 't2',
-      'size=xlarge & button': 't2m',
+      'size=xlarge & !type=item': 't2m',
       'size=inline': 'tag',
     },
     boxSizing: 'border-box',
@@ -525,7 +520,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     actions,
     showActionsOnHover = false,
     disableActionsFocus = false,
-    isButton = false,
     shape = 'button',
     defaultTooltipPlacement = 'top',
     highlight,
@@ -548,7 +542,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       selected: isSelected === true,
       loading: isLoading,
       card: isCard === true,
-      button: isButton === true,
       ...(typeof size === 'number' ? {} : { size: size as string }),
       type,
       theme,
@@ -560,7 +553,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       isSelected,
       isLoading,
       isCard,
-      isButton,
       size,
       type,
       theme,

@@ -30,7 +30,6 @@ const StyledItem = tasty(Item, {
   as: 'button',
   type: 'neutral',
   theme: 'default',
-  isButton: true,
   styles: {
     reset: 'button',
     placeContent: 'center stretch',
@@ -43,11 +42,6 @@ const ActionsWrapper = tasty({
     position: 'relative',
     placeContent: 'stretch',
     placeItems: 'stretch',
-    preset: {
-      '': 't3m',
-      'size=xsmall': 't4',
-      'size=xlarge': 't2m',
-    },
 
     $size: {
       '': '$size-md',

@@ -255,7 +255,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onSearchChange,
     sortSelectedToTop: sortSelectedToTopProp,
     onOpenChange,
-    isButton = false,
     form,
     ...otherProps
   } = props;
@@ -727,7 +726,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <ItemButton
         ref={triggerRef as any}
         data-popover-trigger
-        isButton={isButton}
         qa={qa || 'FilterPicker'}
         id={id}
         type={type}
