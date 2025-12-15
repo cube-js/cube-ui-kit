@@ -350,6 +350,7 @@ const DisclosureTrigger = forwardRef<
       expanded: isExpanded,
       disabled: isDisabled,
       shape,
+      selected: false,
       ...mods,
     }),
     [isExpanded, isDisabled, shape, mods],
