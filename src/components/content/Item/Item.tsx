@@ -138,6 +138,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | (string & {});
   type?:
     | 'item'
+    | 'title'
     | 'primary'
     | 'secondary'
     | 'outline'
@@ -146,7 +147,6 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'link'
     | (string & {});
   theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
-  variant?: ItemVariant;
   /** Keyboard shortcut that triggers the element when pressed */
   hotkeys?: string;
   /**
@@ -314,6 +314,11 @@ const ItemElement = tasty({
       'size=xlarge': 't2',
       'size=xlarge & !type=item': 't2m',
       'size=inline': 'tag',
+      'type=title & size=xsmall': 'h6',
+      'type=title & size=small': 'h6',
+      'type=title & size=medium': 'h5',
+      'type=title & size=large': 'h4',
+      'type=title & size=xlarge': 'h3',
     },
     boxSizing: 'border-box',
     textDecoration: 'none',
@@ -770,7 +775,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       <ItemElement
         ref={handleRef}
         variant={
-          theme && type ? (`${theme}.${type}` as ItemVariant) : undefined
+          theme && type
+            ? (`${type === 'title' ? 'default' : theme}.${type === 'title' ? 'item' : type}` as ItemVariant)
+            : undefined
         }
         disabled={finalIsDisabled}
         aria-disabled={finalIsDisabled}

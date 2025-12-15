@@ -152,34 +152,74 @@ FullConfiguration.args = {
 
 export const DifferentSizes: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
-    <Title level={5}>XSmall Item</Title>
-    <Item {...args} size="xsmall" styles={DEFAULT_STYLES}>
+    <Item {...args} size="xsmall" icon={<IconUser />} styles={DEFAULT_STYLES}>
       XSmall size
     </Item>
-
-    <Title level={5}>Small Item</Title>
-    <Item {...args} size="small" styles={DEFAULT_STYLES}>
+    <Item {...args} size="small" icon={<IconUser />} styles={DEFAULT_STYLES}>
       Small size
     </Item>
-
-    <Title level={5}>Medium Item</Title>
-    <Item {...args} size="medium" styles={DEFAULT_STYLES}>
+    <Item {...args} size="medium" icon={<IconUser />} styles={DEFAULT_STYLES}>
       Medium size
     </Item>
-
-    <Title level={5}>Large Item</Title>
-    <Item {...args} size="large" styles={DEFAULT_STYLES}>
+    <Item {...args} size="large" icon={<IconUser />} styles={DEFAULT_STYLES}>
       Large size
     </Item>
-
-    <Title level={5}>XLarge Item</Title>
-    <Item {...args} size="xlarge" styles={DEFAULT_STYLES}>
+    <Item {...args} size="xlarge" icon={<IconUser />} styles={DEFAULT_STYLES}>
       XLarge size
     </Item>
-
-    <Title level={5}>Inline Item</Title>
-    <Item {...args} size="inline" styles={DEFAULT_STYLES}>
+    <Item {...args} size="inline" icon={<IconUser />} styles={DEFAULT_STYLES}>
       Inline size
+    </Item>
+
+    <Item
+      {...args}
+      border
+      size="xsmall"
+      type="title"
+      icon={<IconUser />}
+      styles={DEFAULT_STYLES}
+    >
+      XSmall title
+    </Item>
+    <Item
+      {...args}
+      border
+      size="small"
+      type="title"
+      icon={<IconUser />}
+      styles={DEFAULT_STYLES}
+    >
+      Small title
+    </Item>
+    <Item
+      {...args}
+      border
+      size="medium"
+      type="title"
+      icon={<IconUser />}
+      styles={DEFAULT_STYLES}
+    >
+      Medium title
+    </Item>
+    <Item
+      {...args}
+      border
+      size="large"
+      type="title"
+      icon={<IconUser />}
+      styles={DEFAULT_STYLES}
+    >
+      Large title
+    </Item>
+    <Item
+      {...args}
+      border
+      size="xlarge"
+      type="title"
+      icon={<IconUser />}
+      styles={DEFAULT_STYLES}
+    >
+      XLarge title
     </Item>
   </Space>
 );
