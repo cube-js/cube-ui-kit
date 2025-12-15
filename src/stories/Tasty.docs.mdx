@@ -921,10 +921,12 @@ const Card = tasty({
 // Instance tokens override defaults
 <Card tokens={{ $spacing: '4x' }} />
 
-// style prop overrides everything
+// style prop overrides everything (not recommended - see warning below)
 <Card tokens={{ $spacing: '4x' }} style={{ '--spacing': '100px' }} />
 // --spacing will be '100px'
 ```
+
+> **⚠️ Warning:** Using the `style` prop directly is **not recommended** for general styling. It should only be used in rare cases when you need to spread raw styles from a third-party library to an element. For all other cases, use `tokens` or `styles` props instead.
 
 #### Valid Token Values
 
@@ -1073,7 +1075,10 @@ styles: {
 
 // ❌ Don't change styles prop at runtime (performance)
 const [dynamicStyles, setDynamicStyles] = useState({});
-<Component styles={dynamicStyles} /> // Use style prop for dynamic values
+<Component styles={dynamicStyles} /> // Use tokens prop for dynamic values
+
+// ❌ Don't use style prop for custom styling
+<Component style={{ padding: '20px' }} /> // Only for spreading third-party library styles
 ```
 
 #### Tasty vs Native CSS Properties
@@ -1102,11 +1107,15 @@ styles: {
 ### Performance Tips ⚡
 
 ```jsx
-// ✅ Use native style prop for dynamic values
+// ✅ Use tokens prop for dynamic CSS custom properties
 <Component
-  style={{ '--side-padding': dynamicPadding }}
-  styles={{ padding: '1x $side-padding' }}
+  tokens={{ $sidePadding: dynamicPadding }}
+  styles={{ padding: '1x $sidePadding' }}
 />
+
+// ⚠️ Avoid using style prop (only for spreading third-party library styles)
+// ❌ Don't do this for custom styling:
+<Component style={{ '--side-padding': dynamicPadding }} />
 
 // ✅ Avoid changing styles prop at runtime
 // ❌ Don't do this:
