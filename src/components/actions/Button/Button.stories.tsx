@@ -545,3 +545,23 @@ export const ToggleLoading = () => {
     </Space>
   );
 };
+
+export const CustomSize: StoryFn<CubeButtonProps> = () => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Button size="8x" icon={<IconCoin />}>
+      Custom size with 8x
+    </Button>
+    <Button size={64} icon={<IconCoin />}>
+      Custom size with 64px
+    </Button>
+  </Space>
+);
+
+CustomSize.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates custom size values using the `size` prop. Supports both string values (like `8x`) and number values (converted to pixels, like `64`). Custom sizes override the default size token via the `tokens` prop.',
+    },
+  },
+};

@@ -2347,3 +2347,30 @@ WithHighlight.parameters = {
     },
   },
 };
+
+export const CustomSize: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Custom Size: String Value (8x)</Title>
+    <Item {...args} styles={DEFAULT_STYLES} size="8x" icon={<IconUser />}>
+      Custom size with 8x
+    </Item>
+
+    <Title level={5}>Custom Size: Number Value (64px)</Title>
+    <Item {...args} styles={DEFAULT_STYLES} size={64} icon={<IconUser />}>
+      Custom size with 64px
+    </Item>
+  </Space>
+);
+
+CustomSize.args = {
+  width: '300px',
+};
+
+CustomSize.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates custom size values using the `size` prop. Supports both string values (like `8x`) and number values (converted to pixels, like `64`). Custom sizes override the default size token via the `tokens` prop.',
+    },
+  },
+};

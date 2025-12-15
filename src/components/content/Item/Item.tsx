@@ -65,6 +65,15 @@ import { HotKeys } from '../HotKeys';
 import { ItemBadge } from '../ItemBadge';
 import { useAutoTooltip } from '../use-auto-tooltip';
 
+const ITEM_SIZE_VALUES = [
+  'xsmall',
+  'small',
+  'medium',
+  'large',
+  'xlarge',
+  'inline',
+] as const;
+
 /** Known modifiers for Item component */
 export type ItemMods = Mods<{
   'has-icon'?: boolean;
@@ -535,6 +544,13 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   // Determine if we should show checkbox instead of icon
   const hasCheckbox = iconProp === 'checkbox';
 
+  // Determine if size is custom (number or unrecognized string)
+  const isCustomSize =
+    typeof size === 'number' ||
+    !(ITEM_SIZE_VALUES as readonly string[]).includes(size);
+  const sizeTokenValue =
+    typeof size === 'number' ? `${size}px` : isCustomSize ? size : undefined;
+
   // Base mods for icon resolution (without icon-dependent mods)
   const baseMods = useMemo<ItemMods>(
     () => ({
@@ -542,7 +558,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       selected: isSelected === true,
       loading: isLoading,
       card: isCard === true,
-      ...(typeof size === 'number' ? {} : { size: size as string }),
+      ...(!isCustomSize && { size: size as string }),
       type,
       theme,
       shape,
@@ -554,6 +570,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       isLoading,
       isCard,
       size,
+      isCustomSize,
       type,
       theme,
       shape,
@@ -749,12 +766,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       }
     };
 
-    // Merge custom size style with provided style
-    const finalStyle =
-      typeof size === 'number'
-        ? ({ ...style, '--size': `${size}px` } as any)
-        : style;
-
     return (
       <ItemElement
         ref={handleRef}
@@ -766,9 +777,10 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         aria-selected={isSelected}
         mods={finalMods}
         styles={styles}
+        tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
         type={htmlType as any}
         {...mergeProps(rest, tooltipTriggerProps || {})}
-        style={finalStyle}
+        style={style}
       >
         {hasIconSlot && (
           <div data-element="Icon">

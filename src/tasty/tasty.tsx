@@ -1,4 +1,5 @@
 import {
+  AllHTMLAttributes,
   ComponentType,
   createElement,
   FC,
@@ -118,6 +119,22 @@ export type AllBasePropsWithMods<K extends StyleList> = AllBaseProps & {
   [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
 } & BaseStyleProps;
 
+/**
+ * Props type for tasty elements that combines:
+ * - AllBasePropsWithMods for style props with strict tokens type
+ * - HTML attributes for flexibility
+ * - Variant support
+ */
+export type TastyElementProps<
+  K extends StyleList,
+  V extends VariantMap,
+> = AllBasePropsWithMods<K> &
+  WithVariant<V> &
+  Omit<
+    AllHTMLAttributes<HTMLElement>,
+    keyof AllBasePropsWithMods<K> | 'ref' | 'color'
+  >;
+
 type TastyComponentPropsWithDefaults<
   Props extends PropsWithStyles,
   DefaultProps extends Partial<Props>,
@@ -132,7 +149,9 @@ type TastyComponentPropsWithDefaults<
 export function tasty<K extends StyleList, V extends VariantMap>(
   options: TastyProps<K, V>,
   secondArg?: never,
-): ComponentType<Omit<Props, 'variant'> & WithVariant<V>>;
+): ForwardRefExoticComponent<
+  PropsWithoutRef<TastyElementProps<K, V>> & RefAttributes<unknown>
+>;
 export function tasty(selector: string, styles?: Styles);
 export function tasty<
   Props extends PropsWithStyles,

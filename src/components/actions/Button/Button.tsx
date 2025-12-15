@@ -52,6 +52,14 @@ import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider
 import { CubeActionProps } from '../Action/Action';
 import { useAction } from '../use-action';
 
+const BUTTON_SIZE_VALUES = [
+  'xsmall',
+  'small',
+  'medium',
+  'large',
+  'xlarge',
+] as const;
+
 /** Known modifiers for Button component */
 export type ButtonMods = Mods<{
   loading?: boolean;
@@ -78,7 +86,14 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'outline'
     | 'neutral'
     | (string & {});
-  size?: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | (string & {});
+  size?:
+    | 'xsmall'
+    | 'small'
+    | 'medium'
+    | 'large'
+    | 'xlarge'
+    | number
+    | (string & {});
   /**
    * Tooltip content and configuration:
    * - string: simple tooltip text
@@ -461,6 +476,14 @@ export const Button = forwardRef(function Button(
       }
     };
 
+    // Determine if size is custom (number or unrecognized string)
+    const isCustomSize =
+      typeof size === 'number' ||
+      (size != null &&
+        !(BUTTON_SIZE_VALUES as readonly string[]).includes(size));
+    const sizeTokenValue =
+      typeof size === 'number' ? `${size}px` : isCustomSize ? size : undefined;
+
     return (
       <ButtonElement
         download={download}
@@ -472,6 +495,7 @@ export const Button = forwardRef(function Button(
         data-type={type ?? 'outline'}
         data-size={size ?? 'medium'}
         styles={styles}
+        tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
       >
         {hasLeftIcon ? (
           <div data-element="Icon">
