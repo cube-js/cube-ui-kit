@@ -131,7 +131,8 @@ const DEFAULT_ICON_STYLES: Styles = {
   placeItems: 'center',
   placeContent: 'stretch',
   aspectRatio: '1 / 1',
-  width: '($size - 2bw)',
+  width: 'initial ($size - 2bw) 100%',
+  overflow: 'hidden',
 };
 
 export const DEFAULT_BUTTON_STYLES = {
@@ -139,7 +140,7 @@ export const DEFAULT_BUTTON_STYLES = {
   flow: 'column dense',
   gap: 0,
   gridTemplate: {
-    '': '"icon label rightIcon" auto / max-content 1sf max-content',
+    '': '"icon label rightIcon" auto / $left-icon-size 1sf $right-icon-size',
     'raw-children': 'initial',
   },
   placeItems: {
@@ -162,7 +163,6 @@ export const DEFAULT_BUTTON_STYLES = {
     'size=xlarge': 't2m',
   },
   textDecoration: 'none',
-  transition: 'theme',
   reset: 'button',
   outline: 0,
   outlineOffset: 1,
@@ -187,7 +187,16 @@ export const DEFAULT_BUTTON_STYLES = {
     '': true,
     'type=link & !focused': 0,
   },
+  transition: 'theme, grid-template',
 
+  '$left-icon-size': {
+    '': 0,
+    'has-icon': '($size - 2bw)',
+  },
+  '$right-icon-size': {
+    '': 0,
+    'has-right-icon': '($size - 2bw)',
+  },
   $size: {
     '': '$size-md',
     'size=xsmall': '$size-xs',
@@ -238,6 +247,7 @@ export const DEFAULT_BUTTON_STYLES = {
     textOverflow: 'ellipsis',
     maxWidth: '100%',
     textAlign: 'center',
+    transition: 'theme, padding',
     padding: {
       '': '$block-padding $label-padding-right $block-padding $label-padding-left',
       'type=link': 0,

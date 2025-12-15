@@ -532,3 +532,16 @@ export const DynamicIcon = () => {
     </Button>
   );
 };
+
+export const ToggleLoading = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  return (
+    <Space>
+      <Button isLoading={isLoading}>Target Button</Button>
+      <Button type="outline" onPress={() => setIsLoading((prev) => !prev)}>
+        {isLoading ? 'Stop Loading' : 'Start Loading'}
+      </Button>
+    </Space>
+  );
+};
