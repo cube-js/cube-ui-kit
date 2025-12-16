@@ -77,7 +77,7 @@ export default {
       },
     },
     shape: {
-      options: ['card', 'button', 'sharp'],
+      options: ['card', 'button', 'sharp', 'pill'],
       control: { type: 'radio' },
       description: 'Shape of the item border radius',
       table: {
@@ -1997,6 +1997,11 @@ export const DifferentShapes: StoryFn<CubeItemProps> = (args) => (
       Sharp shape with no border radius
     </Item>
 
+    <Title level={5}>Pill Shape</Title>
+    <Item {...args} type="outline" shape="pill" icon={<IconUser />}>
+      Pill shape with fully rounded ends
+    </Item>
+
     <Title level={5}>All Shapes Comparison</Title>
     <Space gap="1x" flow="column" placeItems="start">
       <Item {...args} type="outline" shape="card" icon={<IconCoin />}>
@@ -2007,6 +2012,9 @@ export const DifferentShapes: StoryFn<CubeItemProps> = (args) => (
       </Item>
       <Item {...args} type="outline" shape="sharp" icon={<IconCoin />}>
         Sharp shape
+      </Item>
+      <Item {...args} type="outline" shape="pill" icon={<IconCoin />}>
+        Pill shape
       </Item>
     </Space>
   </Space>
@@ -2020,7 +2028,7 @@ DifferentShapes.parameters = {
   docs: {
     description: {
       story:
-        'Demonstrates the three shape variants: `card` (larger border radius), `button` (default border radius), and `sharp` (no border radius). Use card for card-like interfaces, button for interactive elements, and sharp for minimal or technical interfaces.',
+        'Demonstrates the four shape variants: `card` (larger border radius), `button` (default border radius), `sharp` (no border radius), and `pill` (fully rounded ends). Use card for card-like interfaces, button for interactive elements, sharp for minimal or technical interfaces, and pill for tag or chip-like appearances.',
     },
   },
 };

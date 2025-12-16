@@ -194,9 +194,10 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * - `card` - Card shape with larger border radius (`1cr`)
    * - `button` - Button shape with default border radius (default)
    * - `sharp` - Sharp corners with no border radius (`0`)
+   * - `pill` - Pill shape with fully rounded ends (`round`)
    * @default "button"
    */
-  shape?: 'card' | 'button' | 'sharp';
+  shape?: 'card' | 'button' | 'sharp' | 'pill';
   /**
    * @private
    * Default tooltip placement for the item.
@@ -221,6 +222,10 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * Custom styles for highlighted text.
    */
   highlightStyles?: Styles;
+  /**
+   * Variant of the item.
+   */
+  variant?: ItemVariant;
 }
 
 const DEFAULT_ICON_STYLES: Styles = {
@@ -291,6 +296,7 @@ const ItemElement = tasty({
       'shape=card': '1cr',
       'shape=button': true,
       'shape=sharp': '0',
+      'shape=pill': 'round',
     },
     height: {
       '': 'min $size',
