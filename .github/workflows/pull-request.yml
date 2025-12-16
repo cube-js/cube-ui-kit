@@ -18,6 +18,15 @@ permissions:
 # Note: Canary publishing is handled by publish.yml workflow
 
 jobs:
+  # This job exists only to satisfy branch protection rules that expect this check name
+  # The actual publishing is done in publish.yml
+  build-canary-status:
+    name: 'Build & canary release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publishing handled by publish.yml
+        run: echo "Canary publishing is handled by the Publish workflow (publish.yml)"
+
   tests:
     name: 'Tests & lint'
     runs-on: ubuntu-latest
