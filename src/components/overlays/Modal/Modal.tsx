@@ -47,11 +47,11 @@ const ModalElement = tasty({
     height: {
       '': 'max 90dvh',
       'type=fullscreenTakeover | type=panel': '100dvh 100dvh',
-      'type=fullscreen': '90dvh 90dvh',
+      'type=fullscreen': '(100dvh - 6x) (100dvh - 6x)',
       'type=panel': 'auto',
     },
     width: {
-      '': '$min-dialog-size 90vw',
+      '': '$min-dialog-size (100dvw - 6x)',
       'type=panel': 'auto',
     },
     pointerEvents: 'none',
