@@ -63,7 +63,7 @@ Pull request workflows are skipped for changes only in:
 
 ### What Changed
 
-Publishing logic has been moved to a dedicated `publish.yml` workflow file to support npm's [Trusted Publishing](https://docs.npmjs.com/trusted-publishers) feature.
+Publishing now uses npm's [Trusted Publishing](https://docs.npmjs.com/trusted-publishers) feature with OIDC authentication. All publishing logic is consolidated in a single `publish.yml` workflow that handles both canary releases (on PRs) and production releases (on push to main). This is required because npm only allows one trusted publisher configuration per package.
 
 ### Benefits
 
@@ -76,11 +76,9 @@ Publishing logic has been moved to a dedicated `publish.yml` workflow file to su
 
 ## Manual Setup Steps
 
-Complete these steps **before** merging the trusted publishing changes:
+> ⚠️ **CRITICAL**: Complete Step 1 **BEFORE** any workflow runs. The workflow will fail with `ENEEDAUTH` error if the trusted publisher is not configured first!
 
 ### Step 1: Configure Trusted Publisher on npmjs.com
-
-> ⚠️ **Important**: This must be done BEFORE the first publish attempt with the new workflow.
 
 1. Log in to [npmjs.com](https://www.npmjs.com) with an account that has publish access
 2. Go to: https://www.npmjs.com/package/@cube-dev/ui-kit/settings
@@ -90,12 +88,14 @@ Complete these steps **before** merging the trusted publishing changes:
 
    | Field | Value |
    |-------|-------|
-   | Organization or user | `cube-js` |
+   | Owner | `cube-js` |
    | Repository | `cube-ui-kit` |
    | Workflow filename | `publish.yml` |
-   | Environment name | _(leave empty)_ |
+   | Environment | _(leave empty)_ |
 
-6. Click **Save** (or the equivalent button)
+6. Click **Save**
+
+> **Note**: The `publish.yml` workflow handles both canary releases (on PRs) and production releases (on push to main). npm only allows one trusted publisher configuration, so all publishing logic is consolidated in this single workflow file.
 
 ### Step 2: Verify the Setup with a Test PR
 
@@ -140,9 +140,8 @@ Once everything is working:
 
 | File | Purpose |
 |------|---------|
-| `publish.yml` | Reusable workflow for npm publishing (canary and release) |
-| `main.yml` | Release workflow triggered on push to main |
-| `pull-request.yml` | PR workflow for tests, canary releases, and Chromatic |
+| `publish.yml` | Handles all npm publishing (canary on PRs, releases on main) and Chromatic deployment |
+| `pull-request.yml` | PR workflow for tests and Chromatic staging |
 | `size-limit.yml` | Bundle size measurement |
 | `codeql-analysis.yml` | Security analysis |
 
@@ -153,12 +152,20 @@ Once everything is working:
 Before merging the trusted publishing PR, verify:
 
 - [ ] You have maintainer access to the package on npmjs.com (to configure trusted publisher)
-- [ ] Trusted publisher configured on npmjs.com for `publish.yml`
-- [ ] Configuration matches exactly: `cube-js/cube-ui-kit/publish.yml`
+- [ ] Trusted publisher configured for `publish.yml`
+- [ ] Configuration matches exactly: `cube-js` / `cube-ui-kit` / `publish.yml`
 
 ---
 
 ## Troubleshooting
+
+### `ENEEDAUTH` / "need auth" / "You need to authorize this machine" error
+
+This is the most common error when first setting up trusted publishing:
+
+1. **Trusted publisher not configured yet** — Go to npmjs.com and configure the trusted publisher (Step 1 above)
+2. **Configuration mismatch** — Double-check that Owner, Repository, and Workflow filename match EXACTLY: `cube-js` / `cube-ui-kit` / `publish.yml`
+3. **Environment mismatch** — If you specified an environment on npmjs.com, the workflow must use the same environment name (we leave it empty by default)
 
 ### "Unable to authenticate" error
 
