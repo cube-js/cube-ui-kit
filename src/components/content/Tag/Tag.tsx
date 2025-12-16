@@ -33,6 +33,7 @@ const TagElement = tasty(Item, {
         return map;
       }, {}),
     },
+    '$min-inline-padding': '.5x',
 
     Label: {
       textAlign: 'center',
