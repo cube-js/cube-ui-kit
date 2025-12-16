@@ -70,8 +70,8 @@ The `mods` property accepts the following modifiers:
 | loading | `boolean` | Applied when isLoading is true |
 | card | `boolean` | Applied when isCard is true |
 | size | `string` | Applied based on size prop value (xsmall, small, medium, large, xlarge, inline) |
-| type | `string` | Applied based on type prop value (item, primary, secondary, outline, neutral, clear, link) |
-| theme | `string` | Applied based on theme prop value (default, danger, success, special) |
+| type | `string` | Applied based on type prop value (item, title, primary, secondary, outline, neutral, clear, link, alert) |
+| theme | `string` | Applied based on theme prop value (default, danger, success, special, note) |
 | shape | `string` | Applied based on shape prop value (card, button, sharp) |
 
 ## Variants
@@ -79,19 +79,22 @@ The `mods` property accepts the following modifiers:
 ### Types
 
 - `item` - Default item appearance (no specific styling)
+- `title` - Title appearance for section headers (only supports `default` theme, defaults to `descriptionPlacement="block"`)
 - `primary` - Primary styled item with prominent appearance
 - `secondary` - Secondary styled item with moderate emphasis
 - `outline` - Item with border outline styling
 - `neutral` - Neutral colored item styling
 - `clear` - Transparent item with minimal styling
-- `link` - Link-styled item appearance
+- `link` - Link-styled item appearance (does not support icons or loading state)
+- `alert` - Alert appearance for notifications (supports `default`, `success`, `danger`, `note` themes; defaults to `shape="card"`, `descriptionPlacement="block"`, and has `.5x` padding)
 
 ### Themes
 
 - `default` - Standard appearance with default colors
 - `danger` - Red theme for destructive or warning actions
 - `success` - Green theme for positive actions
-- `special` - Special theme with unique styling
+- `special` - Special theme with unique styling (not available for `alert` or `title` types)
+- `note` - Note theme for informational alerts (only available for `alert` type)
 
 ### Sizes
 
@@ -104,8 +107,8 @@ The `mods` property accepts the following modifiers:
 
 ### Shapes
 
-- `card` - Card shape with larger border radius (`1cr`)
-- `button` - Button shape with default border radius (default)
+- `card` - Card shape with larger border radius (`1cr`) — default for `type="alert"`
+- `button` - Button shape with default border radius (default for other types)
 - `sharp` - Sharp corners with no border radius (`0`)
 
 ## Examples
@@ -147,11 +150,23 @@ The `mods` property accepts the following modifiers:
 
 ### With Description
 
+The `descriptionPlacement` prop controls where the description appears. It defaults to `"inline"` for most types, but `"block"` for `type="alert"` and `type="title"`:
+
 ```jsx
+{/* Inline description (default for most types) */}
 <Item 
   icon={<IconFile />}
   description="Secondary description text"
   descriptionPlacement="inline"
+>
+  Main item content
+</Item>
+
+{/* Block description */}
+<Item 
+  icon={<IconFile />}
+  description="Description appears below the label"
+  descriptionPlacement="block"
 >
   Main item content
 </Item>
@@ -180,6 +195,42 @@ The `mods` property accepts the following modifiers:
 ### With Different Shapes
 
 <Story of={ItemStories.DifferentShapes} />
+
+### Title Type
+
+Use `type="title"` for section headers. Title items have larger text preset and default to block description placement:
+
+```jsx
+<Item type="title" icon={<IconFolder />}>
+  Section Title
+</Item>
+
+<Item type="title" icon={<IconFolder />} description="Section description">
+  Section Title with Description
+</Item>
+```
+
+### Alert Type
+
+Use `type="alert"` for notification-style items. Alert items automatically use card shape, block description placement, and have `.5x` padding. They support `default`, `success`, `danger`, and `note` themes:
+
+```jsx
+<Item type="alert" theme="default" icon={<IconInfo />} description="This is an informational message">
+  Info Alert
+</Item>
+
+<Item type="alert" theme="success" icon={<IconCheck />} description="Operation completed successfully">
+  Success Alert
+</Item>
+
+<Item type="alert" theme="danger" icon={<IconAlertTriangle />} description="Something went wrong">
+  Error Alert
+</Item>
+
+<Item type="alert" theme="note" icon={<IconNote />} description="Additional context or tips">
+  Note Alert
+</Item>
+```
 
 ### With Loading State
 

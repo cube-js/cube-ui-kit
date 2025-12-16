@@ -280,7 +280,10 @@ const ItemElement = tasty({
       'menuitem | listboxitem': 0,
     },
     position: 'relative',
-    padding: 0,
+    padding: {
+      '': 0,
+      'type=alert': '.5x',
+    },
     margin: 0,
     radius: {
       '': true,
@@ -319,11 +322,10 @@ const ItemElement = tasty({
       'size=xlarge': 't2',
       'size=xlarge & !type=item': 't2m',
       'size=inline': 'tag',
-      'type=title & size=xsmall': 'h6',
-      'type=title & size=small': 'h6',
-      'type=title & size=medium': 'h6',
-      'type=title & size=large': 'h5',
-      'type=title & size=xlarge': 'h4',
+      '(type=title | type=alert) & (size=xsmall | size=small | size=medium)':
+        'h6',
+      '(type=title | type=alert) & size=large': 'h5',
+      '(type=title | type=alert) & size=xlarge': 'h4',
     },
     boxSizing: 'border-box',
     textDecoration: 'none',
@@ -407,7 +409,10 @@ const ItemElement = tasty({
     Description: {
       $: '>',
       gridArea: 'description',
-      preset: 't4',
+      preset: {
+        '': 't4',
+        'type=alert | type=title': 't3',
+      },
       color: 'inherit',
       opacity: 0.75,
       overflow: 'hidden',
@@ -523,7 +528,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     prefix,
     suffix,
     description,
-    descriptionPlacement = 'inline',
+    descriptionPlacement,
     labelProps,
     descriptionProps,
     keyboardShortcutProps,
@@ -540,13 +545,21 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     actions,
     showActionsOnHover = false,
     disableActionsFocus = false,
-    shape = 'button',
+    shape,
     defaultTooltipPlacement = 'top',
     highlight,
     highlightCaseSensitive = false,
     highlightStyles,
     ...rest
   } = props;
+
+  // Set default descriptionPlacement based on type
+  const finalDescriptionPlacement =
+    descriptionPlacement ??
+    (type === 'alert' || type === 'title' ? 'block' : 'inline');
+
+  // Set default shape based on type
+  const finalShape = shape ?? (type === 'alert' ? 'card' : 'button');
 
   // Loading state makes the component disabled
   const finalIsDisabled =
@@ -614,7 +627,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       ...(!isCustomSize && { size: size as string }),
       type,
       theme,
-      shape,
+      shape: finalShape,
       ...mods,
     }),
     [
@@ -626,7 +639,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       isCustomSize,
       type,
       theme,
-      shape,
+      finalShape,
       mods,
     ],
   );
@@ -759,7 +772,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       'has-actions-content': !!(actions && actions !== true),
       'show-actions-on-hover': showActionsOnHover === true,
       checkbox: hasCheckbox,
-      description: showDescription ? descriptionPlacement : 'none',
+      description: showDescription ? finalDescriptionPlacement : 'none',
     };
   }, [
     baseMods,
@@ -768,7 +781,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     finalPrefix,
     finalSuffix,
     showDescription,
-    descriptionPlacement,
+    finalDescriptionPlacement,
     hasCheckbox,
     actions,
     showActionsOnHover,

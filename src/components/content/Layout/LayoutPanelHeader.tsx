@@ -17,13 +17,9 @@ import { useLayoutPanelContext } from './LayoutContext';
 const PanelHeaderElement = tasty(Item, {
   qa: 'PanelHeader',
   shape: 'sharp',
+  type: 'title',
   styles: {
     border: 'bottom',
-    preset: {
-      '': 't3m',
-      'size=xsmall': 't4',
-      'size=xlarge': 't2m',
-    },
     boxSizing: 'content-box',
 
     '$inline-padding': '($content-padding, 1x)',
@@ -31,7 +27,7 @@ const PanelHeaderElement = tasty(Item, {
 });
 
 export interface CubeLayoutPanelHeaderProps
-  extends BaseProps,
+  extends Omit<BaseProps, 'theme'>,
     ContainerStyleProps,
     CubeItemProps {
   /** Panel title */
@@ -42,9 +38,6 @@ export interface CubeLayoutPanelHeaderProps
   isClosable?: boolean;
   /** Close button click handler */
   onClose?: () => void;
-  /** Custom actions to display (overrides default close button) */
-  actions?: ReactNode;
-  children?: ReactNode;
 }
 
 function LayoutPanelHeader(

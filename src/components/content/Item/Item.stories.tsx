@@ -2154,7 +2154,6 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
     'outline',
     'neutral',
     'clear',
-    'link',
   ] as const;
   const standardThemes = ['default', 'danger', 'success', 'special'] as const;
   const alertThemes = ['default', 'danger', 'success', 'note'] as const;
@@ -2216,6 +2215,7 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
               {...args}
               type="alert"
               theme={theme}
+              description="Alert description"
               icon={<IconUser />}
             >
               {theme}
