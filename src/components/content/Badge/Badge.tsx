@@ -27,7 +27,6 @@ const BadgeElement = tasty(Item, {
       'size=xsmall': 't4',
       'size=small | size=medium': 't3',
       'size=large | size=xlarge': 't2',
-      'size=inline': 'inline',
     },
 
     '$inline-padding': {
