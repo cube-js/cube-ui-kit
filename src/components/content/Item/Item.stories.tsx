@@ -69,7 +69,7 @@ export default {
 
     /* Presentation */
     size: {
-      options: ['xsmall', 'small', 'medium', 'large', 'xlarge'],
+      options: ['xsmall', 'small', 'medium', 'large', 'xlarge', 'inline'],
       control: { type: 'radio' },
       description: 'Item size',
       table: {
@@ -146,6 +146,9 @@ FullConfiguration.args = {
 
 export const DifferentSizes: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
+    <Item {...args} size="inline" icon={<IconUser />}>
+      Inline size
+    </Item>
     <Item {...args} size="xsmall" icon={<IconUser />}>
       XSmall size
     </Item>

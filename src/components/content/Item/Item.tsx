@@ -76,6 +76,7 @@ const ITEM_SIZE_VALUES = [
   'medium',
   'large',
   'xlarge',
+  'inline',
 ] as const;
 
 /** Known modifiers for Item component */
@@ -402,8 +403,10 @@ const ItemElement = tasty({
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       maxWidth: '100%',
-      padding:
-        '$block-padding $label-padding-right $label-padding-bottom $label-padding-left',
+      padding: {
+        '': '$block-padding $label-padding-right $label-padding-bottom $label-padding-left',
+        'size=inline': 0,
+      },
     },
 
     Description: {
@@ -414,14 +417,19 @@ const ItemElement = tasty({
         'type=alert | type=title': 't3',
       },
       color: 'inherit',
-      opacity: 0.75,
+      opacity: {
+        '': 0.75,
+        'type=alert | type=title': 1,
+      },
       overflow: 'hidden',
       whiteSpace: 'nowrap',
       textOverflow: 'ellipsis',
       maxWidth: '100%',
       textAlign: 'left',
-      padding:
-        '0 $description-padding-right $description-padding-bottom $description-padding-left',
+      padding: {
+        '': '0 $description-padding-right $description-padding-bottom $description-padding-left',
+        'size=inline': 0,
+      },
     },
 
     Prefix: {
