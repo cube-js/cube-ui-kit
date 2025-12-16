@@ -4,6 +4,8 @@ export const BASE_STYLES = [
   'preset',
   'hide',
   'whiteSpace',
+  'opacity',
+  'transition',
 ] as const;
 
 export const POSITION_STYLES = [
@@ -34,7 +36,6 @@ export const BLOCK_OUTER_STYLES = [
   'border',
   'radius',
   'shadow',
-  'opacity',
   'outline',
 ] as const;
 
