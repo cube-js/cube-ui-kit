@@ -192,9 +192,8 @@ const ContentWrapperElement = tasty({
 const ContentElement = tasty({
   qa: 'DisclosureContent',
   styles: {
-    display: 'flex',
+    display: 'block',
     flow: 'column',
-    padding: '1x',
     contentVisibility: 'auto',
   },
 });
