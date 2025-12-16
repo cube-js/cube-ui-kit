@@ -165,20 +165,20 @@ export const DifferentSizes: StoryFn<CubeItemProps> = (args) => (
       XLarge size
     </Item>
 
-    <Item {...args} border size="xsmall" type="title" icon={<IconUser />}>
-      XSmall title
+    <Item {...args} border size="xsmall" type="header" icon={<IconUser />}>
+      XSmall header
     </Item>
-    <Item {...args} border size="small" type="title" icon={<IconUser />}>
-      Small title
+    <Item {...args} border size="small" type="header" icon={<IconUser />}>
+      Small header
     </Item>
-    <Item {...args} border size="medium" type="title" icon={<IconUser />}>
-      Medium title
+    <Item {...args} border size="medium" type="header" icon={<IconUser />}>
+      Medium header
     </Item>
-    <Item {...args} border size="large" type="title" icon={<IconUser />}>
-      Large title
+    <Item {...args} border size="large" type="header" icon={<IconUser />}>
+      Large header
     </Item>
-    <Item {...args} border size="xlarge" type="title" icon={<IconUser />}>
-      XLarge title
+    <Item {...args} border size="xlarge" type="header" icon={<IconUser />}>
+      XLarge header
     </Item>
   </Space>
 );
@@ -2166,9 +2166,9 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
       <Title level={4}>All Type + Theme Combinations</Title>
 
       <Space gap="2x" flow="column" placeItems="start">
-        <Title level={5}>Type: title (default theme only)</Title>
+        <Title level={5}>Type: header (default theme only)</Title>
         <Space gap="1x" flow="row wrap" placeItems="start">
-          <Item {...args} type="title" theme="default" icon={<IconUser />}>
+          <Item {...args} type="header" theme="default" icon={<IconUser />}>
             default
           </Item>
         </Space>

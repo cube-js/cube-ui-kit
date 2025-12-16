@@ -70,7 +70,7 @@ The `mods` property accepts the following modifiers:
 | loading | `boolean` | Applied when isLoading is true |
 | card | `boolean` | Applied when isCard is true |
 | size | `string` | Applied based on size prop value (xsmall, small, medium, large, xlarge, inline) |
-| type | `string` | Applied based on type prop value (item, title, primary, secondary, outline, neutral, clear, link, alert) |
+| type | `string` | Applied based on type prop value (item, header, primary, secondary, outline, neutral, clear, link, alert) |
 | theme | `string` | Applied based on theme prop value (default, danger, success, special, note) |
 | shape | `string` | Applied based on shape prop value (card, button, sharp) |
 
@@ -79,7 +79,7 @@ The `mods` property accepts the following modifiers:
 ### Types
 
 - `item` - Default item appearance (no specific styling)
-- `title` - Title appearance for section headers (only supports `default` theme, defaults to `descriptionPlacement="block"`)
+- `header` - Header appearance for section headers (only supports `default` theme, defaults to `descriptionPlacement="block"`)
 - `primary` - Primary styled item with prominent appearance
 - `secondary` - Secondary styled item with moderate emphasis
 - `outline` - Item with border outline styling
@@ -93,7 +93,7 @@ The `mods` property accepts the following modifiers:
 - `default` - Standard appearance with default colors
 - `danger` - Red theme for destructive or warning actions
 - `success` - Green theme for positive actions
-- `special` - Special theme with unique styling (not available for `alert` or `title` types)
+- `special` - Special theme with unique styling (not available for `alert` or `header` types)
 - `note` - Note theme for informational alerts (only available for `alert` type)
 
 ### Sizes
@@ -150,7 +150,7 @@ The `mods` property accepts the following modifiers:
 
 ### With Description
 
-The `descriptionPlacement` prop controls where the description appears. It defaults to `"inline"` for most types, but `"block"` for `type="alert"` and `type="title"`:
+The `descriptionPlacement` prop controls where the description appears. It defaults to `"inline"` for most types, but `"block"` for `type="alert"` and `type="header"`:
 
 ```jsx
 {/* Inline description (default for most types) */}
@@ -196,17 +196,17 @@ The `descriptionPlacement` prop controls where the description appears. It defau
 
 <Story of={ItemStories.DifferentShapes} />
 
-### Title Type
+### Header Type
 
-Use `type="title"` for section headers. Title items have larger text preset and default to block description placement:
+Use `type="header"` for section headers. Header items have larger text preset and default to block description placement:
 
 ```jsx
-<Item type="title" icon={<IconFolder />}>
-  Section Title
+<Item type="header" icon={<IconFolder />}>
+  Section Header
 </Item>
 
-<Item type="title" icon={<IconFolder />} description="Section description">
-  Section Title with Description
+<Item type="header" icon={<IconFolder />} description="Section description">
+  Section Header with Description
 </Item>
 ```
 

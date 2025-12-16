@@ -14,12 +14,20 @@ const FILL_STYLES = Object.keys(THEMES).reduce((map, type) => {
 const BadgeElement = tasty(Item, {
   qa: 'Badge',
   role: 'status',
+  size: 'inline',
   styles: {
     radius: 'round',
     color: '#white',
     fill: {
       '': '#purple',
       ...FILL_STYLES,
+    },
+    preset: {
+      '': 'tag',
+      'size=xsmall': 't4',
+      'size=small | size=medium': 't3',
+      'size=large | size=xlarge': 't2',
+      'size=inline': 'inline',
     },
 
     '$inline-padding': {

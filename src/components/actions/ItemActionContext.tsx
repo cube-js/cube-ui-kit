@@ -31,7 +31,7 @@ export function ItemActionProvider({
         type:
           type === 'item' ||
           type === 'outline' ||
-          type === 'title' ||
+          type === 'header' ||
           type === 'alert'
             ? 'neutral'
             : type === 'secondary'

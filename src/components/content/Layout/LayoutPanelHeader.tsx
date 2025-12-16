@@ -17,7 +17,7 @@ import { useLayoutPanelContext } from './LayoutContext';
 const PanelHeaderElement = tasty(Item, {
   qa: 'PanelHeader',
   shape: 'sharp',
-  type: 'title',
+  type: 'header',
   styles: {
     border: 'bottom',
     boxSizing: 'content-box',

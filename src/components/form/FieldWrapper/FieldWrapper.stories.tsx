@@ -116,14 +116,7 @@ WithButtonSuffix.args = {
 export const WithButtonSuffixAndTooltip = Template.bind({});
 WithButtonSuffixAndTooltip.args = {
   labelSuffix: (
-    <Button
-      width="3x"
-      height="3x"
-      type="clear"
-      size="small"
-      icon={<IconCoin />}
-      placeSelf="center"
-    />
+    <Button type="clear" size="inline" icon={<IconCoin />} placeSelf="center" />
   ),
   tooltip: 'Long description',
 };

@@ -219,6 +219,8 @@ const TriggerIcon = tasty(RightIcon, {
 });
 
 const StyledTrigger = tasty(ItemButton, {
+  qa: 'DisclosureTrigger',
+  type: 'header',
   styles: {
     radius: {
       '': '1r',

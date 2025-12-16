@@ -143,7 +143,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | (string & {});
   type?:
     | 'item'
-    | 'title'
+    | 'header'
     | 'primary'
     | 'secondary'
     | 'outline'
@@ -322,11 +322,11 @@ const ItemElement = tasty({
       'size=xsmall': 't4',
       'size=xlarge': 't2',
       'size=xlarge & !type=item': 't2m',
-      'size=inline': 'tag',
-      '(type=title | type=alert) & (size=xsmall | size=small | size=medium)':
+      'size=inline': 'inline',
+      '(type=header | type=alert) & (size=xsmall | size=small | size=medium)':
         'h6',
-      '(type=title | type=alert) & size=large': 'h5',
-      '(type=title | type=alert) & size=xlarge': 'h4',
+      '(type=header | type=alert) & size=large': 'h5',
+      '(type=header | type=alert) & size=xlarge': 'h4',
     },
     boxSizing: 'border-box',
     textDecoration: 'none',
@@ -414,12 +414,12 @@ const ItemElement = tasty({
       gridArea: 'description',
       preset: {
         '': 't4',
-        'type=alert | type=title': 't3',
+        'type=alert | type=header': 't3',
       },
       color: 'inherit',
       opacity: {
         '': 0.75,
-        'type=alert | type=title': 1,
+        'type=alert | type=header': 1,
       },
       overflow: 'hidden',
       whiteSpace: 'nowrap',
@@ -562,7 +562,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   // Set default descriptionPlacement based on type
   const finalDescriptionPlacement =
     descriptionPlacement ??
-    (type === 'alert' || type === 'title' ? 'block' : 'inline');
+    (type === 'alert' || type === 'header' ? 'block' : 'inline');
 
   // Set default shape based on type
   const finalShape = shape ?? (type === 'alert' ? 'card' : 'button');
@@ -574,19 +574,19 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   // Validate type+theme combinations
   const STANDARD_THEMES = ['default', 'success', 'danger', 'special'];
   const ALERT_THEMES = ['default', 'success', 'danger', 'note'];
-  const TITLE_THEMES = ['default'];
+  const HEADER_THEMES = ['default'];
 
   const isInvalidCombination =
-    (type === 'title' && !TITLE_THEMES.includes(theme)) ||
+    (type === 'header' && !HEADER_THEMES.includes(theme)) ||
     (type === 'alert' && !ALERT_THEMES.includes(theme)) ||
-    (!['title', 'alert'].includes(type) && !STANDARD_THEMES.includes(theme));
+    (!['header', 'alert'].includes(type) && !STANDARD_THEMES.includes(theme));
 
   useWarn(isInvalidCombination, {
     key: ['Item', 'invalid-type-theme', type, theme],
     args: [
       `Item: Invalid type+theme combination. type="${type}" does not support theme="${theme}".` +
-        (type === 'title'
-          ? ' The "title" type only supports theme: default.'
+        (type === 'header'
+          ? ' The "header" type only supports theme: default.'
           : type === 'alert'
             ? ' The "alert" type only supports themes: default, success, danger, note.'
             : ' Standard types support themes: default, success, danger, special.'),
@@ -843,7 +843,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         ref={handleRef}
         variant={
           theme && type
-            ? (`${type === 'title' ? 'default' : theme}.${type === 'title' ? 'item' : type}` as ItemVariant)
+            ? (`${type === 'header' ? 'default' : theme}.${type === 'header' ? 'item' : type}` as ItemVariant)
             : undefined
         }
         disabled={finalIsDisabled}
