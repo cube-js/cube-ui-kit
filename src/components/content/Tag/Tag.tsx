@@ -33,6 +33,13 @@ const TagElement = tasty(Item, {
         return map;
       }, {}),
     },
+    preset: {
+      '': 'tag',
+      'size=xsmall': 't4',
+      'size=small | size=medium': 't3',
+      'size=large | size=xlarge': 't2',
+    },
+
     '$min-inline-padding': '.5x',
 
     Label: {
