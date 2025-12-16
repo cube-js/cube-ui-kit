@@ -1,11 +1,14 @@
 import { Key } from '@react-types/shared';
-import React, {
+import {
+  cloneElement,
   ForwardedRef,
   forwardRef,
+  isValidElement,
   ReactElement,
   ReactNode,
   RefObject,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -288,10 +291,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
         // the index. This mirrors React Aria examples where the render function
         // is expected to set keys, but we add a fallback for robustness.
         if (
-          React.isValidElement(rendered) &&
+          isValidElement(rendered) &&
           (rendered as ReactElement).key == null
         ) {
-          return React.cloneElement(rendered as ReactElement, {
+          return cloneElement(rendered as ReactElement, {
             key: (rendered as any)?.key ?? item?.key ?? idx,
           });
         }
@@ -329,7 +332,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   const [customKeys, setCustomKeys] = useState<Set<string>>(new Set());
 
   // Initialize custom keys from current selection
-  React.useEffect(() => {
+  useEffect(() => {
     if (!allowsCustomValue) return;
 
     const currentSelectedKeys = selectedKeys
@@ -880,8 +883,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
             : undefined
         }
         onChange={(e) => {
-          const value = e.target.value;
-          handleSearchChange(value);
+          handleSearchChange(e.target.value);
         }}
         {...keyboardProps}
         {...modAttrs(mods)}

@@ -333,7 +333,7 @@ const ItemElement = tasty({
     reset: 'button',
     outlineOffset: 1,
     cursor: {
-      '': 'default',
+      '': 'inherit',
       ':is(a)': 'pointer',
       ':is(button) | listboxitem | menuitem': '$pointer',
       disabled: 'not-allowed',

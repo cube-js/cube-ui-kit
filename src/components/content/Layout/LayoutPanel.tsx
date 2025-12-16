@@ -286,7 +286,7 @@ interface ResizeHandlerProps {
   isDisabled?: boolean;
   mods?: Record<string, boolean>;
   moveProps: ReturnType<typeof useMove>['moveProps'];
-  style?: Record<string, string | number | undefined>;
+  style?: Record<string, string | number | null | undefined>;
   onDoubleClick?: () => void;
 }
 
@@ -660,7 +660,12 @@ function LayoutPanel(
     () => ({
       '--panel-size': `${size}px`,
       '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
-      '--max-size': typeof maxSize === 'number' ? `${maxSize}px` : maxSize,
+      '--max-size':
+        maxSize != null
+          ? typeof maxSize === 'number'
+            ? `${maxSize}px`
+            : maxSize
+          : undefined,
     }),
     [size, minSize, maxSize],
   );

@@ -16,6 +16,8 @@ export * from './injector';
 export * from './debug';
 export type {
   TastyProps,
+  TastyElementOptions,
+  TastyElementProps,
   GlobalTastyProps,
   AllBasePropsWithMods,
 } from './tasty';

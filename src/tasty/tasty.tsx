@@ -5,6 +5,7 @@ import {
   FC,
   forwardRef,
   ForwardRefExoticComponent,
+  JSX,
   PropsWithoutRef,
   RefAttributes,
   useContext,
@@ -111,6 +112,20 @@ export type TastyProps<
   Pick<BaseProps, 'qa' | 'qaVal'> &
   WithVariant<V>;
 
+/**
+ * TastyElementOptions is used for the element-creation overload of tasty().
+ * It includes a Tag generic that allows TypeScript to infer the correct
+ * HTML element type from the `as` prop.
+ */
+export type TastyElementOptions<
+  K extends StyleList,
+  V extends VariantMap,
+  Tag extends keyof JSX.IntrinsicElements = 'div',
+> = Omit<TastyProps<K, V>, 'as'> & {
+  /** The tag name of the element. */
+  as?: Tag;
+};
+
 export interface GlobalTastyProps {
   breakpoints?: number[];
 }
@@ -120,19 +135,47 @@ export type AllBasePropsWithMods<K extends StyleList> = AllBaseProps & {
 } & BaseStyleProps;
 
 /**
+ * Keys from BasePropsWithoutChildren that should be omitted from HTML attributes.
+ * This excludes event handlers so they can be properly typed from JSX.IntrinsicElements.
+ */
+type TastySpecificKeys =
+  | 'as'
+  | 'qa'
+  | 'qaVal'
+  | 'element'
+  | 'styles'
+  | 'breakpoints'
+  | 'block'
+  | 'inline'
+  | 'mods'
+  | 'isHidden'
+  | 'isDisabled'
+  | 'css'
+  | 'style'
+  | 'theme'
+  | 'tokens'
+  | 'ref'
+  | 'color';
+
+/**
  * Props type for tasty elements that combines:
  * - AllBasePropsWithMods for style props with strict tokens type
- * - HTML attributes for flexibility
+ * - HTML attributes for flexibility (properly typed based on tag)
  * - Variant support
+ *
+ * Uses AllHTMLAttributes as base for common attributes (like disabled),
+ * but overrides event handlers with tag-specific types from JSX.IntrinsicElements.
  */
 export type TastyElementProps<
   K extends StyleList,
   V extends VariantMap,
+  Tag extends keyof JSX.IntrinsicElements = 'div',
 > = AllBasePropsWithMods<K> &
   WithVariant<V> &
   Omit<
-    AllHTMLAttributes<HTMLElement>,
-    keyof AllBasePropsWithMods<K> | 'ref' | 'color'
+    Omit<AllHTMLAttributes<HTMLElement>, keyof JSX.IntrinsicElements[Tag]> &
+      JSX.IntrinsicElements[Tag],
+    TastySpecificKeys | K[number]
   >;
 
 type TastyComponentPropsWithDefaults<
@@ -146,11 +189,15 @@ type TastyComponentPropsWithDefaults<
       [key in keyof Omit<Props, keyof DefaultProps>]: Props[key];
     };
 
-export function tasty<K extends StyleList, V extends VariantMap>(
-  options: TastyProps<K, V>,
+export function tasty<
+  K extends StyleList,
+  V extends VariantMap,
+  Tag extends keyof JSX.IntrinsicElements = 'div',
+>(
+  options: TastyElementOptions<K, V, Tag>,
   secondArg?: never,
 ): ForwardRefExoticComponent<
-  PropsWithoutRef<TastyElementProps<K, V>> & RefAttributes<unknown>
+  PropsWithoutRef<TastyElementProps<K, V, Tag>> & RefAttributes<unknown>
 >;
 export function tasty(selector: string, styles?: Styles);
 export function tasty<
