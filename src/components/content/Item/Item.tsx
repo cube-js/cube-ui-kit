@@ -354,6 +354,7 @@ const ItemElement = tasty({
     '$block-padding': {
       '': '.5x',
       'size=xsmall | size=small': '.25x',
+      'size=inline': 0,
     },
     '$inline-compensation': '.5x',
     '$min-inline-padding': '(1x - 1bw)',
