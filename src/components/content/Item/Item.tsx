@@ -347,6 +347,7 @@ const ItemElement = tasty({
       'size=medium': '$size-md',
       'size=large': '$size-lg',
       'size=xlarge': '$size-xl',
+      'size=inline': '(1lh + 2bw)',
     },
     '$inline-padding':
       'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
@@ -403,10 +404,8 @@ const ItemElement = tasty({
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       maxWidth: '100%',
-      padding: {
-        '': '$block-padding $label-padding-right $label-padding-bottom $label-padding-left',
-        'size=inline': 0,
-      },
+      padding:
+        '$block-padding $label-padding-right $label-padding-bottom $label-padding-left',
     },
 
     Description: {
@@ -426,10 +425,8 @@ const ItemElement = tasty({
       textOverflow: 'ellipsis',
       maxWidth: '100%',
       textAlign: 'left',
-      padding: {
-        '': '0 $description-padding-right $description-padding-bottom $description-padding-left',
-        'size=inline': 0,
-      },
+      padding:
+        '0 $description-padding-right $description-padding-bottom $description-padding-left',
     },
 
     Prefix: {
