@@ -48,14 +48,14 @@ const DialogElement = tasty({
       'type=panel': 'absolute',
     },
     width: {
-      '': '$min-dialog-size $dialog-size (100dvw - 6x)',
-      'type=fullscreen': '(100dvw - 6x) (100dvw - 6x)',
+      '': '$min-dialog-size $dialog-size (100dvw - 8x)',
+      'type=fullscreen': '(100dvw - 8x) (100dvw - 8x)',
       'type=fullscreenTakeover': '100dvw 100dvw',
       'type=panel': 'auto',
     },
     height: {
-      '': 'auto (100dvh - 6x)',
-      'type=fullscreen': '(100dvh - 6x) (100dvh - 6x)',
+      '': 'auto (100dvh - 8x)',
+      'type=fullscreen': '(100dvh - 8x) (100dvh - 8x)',
       'type=fullscreenTakeover | type=panel': '100dvh 100dvh',
       'type=popover': 'initial initial (50dvh - 5x)',
     },
