@@ -1,5 +1,5 @@
 import { AriaLabelingProps } from '@react-types/shared';
-import { AllHTMLAttributes, CSSProperties } from 'react';
+import { AllHTMLAttributes, ComponentType, CSSProperties } from 'react';
 
 import {
   BASE_STYLES,
@@ -79,7 +79,8 @@ type Caps =
 
 export interface BasePropsWithoutChildren<K extends TagName = TagName>
   extends Pick<AllHTMLAttributes<HTMLElement>, 'className' | 'role' | 'id'> {
-  as?: K;
+  /** The HTML tag or React component to render as */
+  as?: K | ComponentType<any>;
   /** QA ID for e2e testing. An alias for `data-qa` attribute. */
   qa?: string;
   /** QA value for e2e testing. An alias for `data-qaval` attribute. */

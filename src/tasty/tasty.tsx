@@ -98,8 +98,8 @@ export type TastyProps<
   V extends VariantMap,
   DefaultProps = Props,
 > = {
-  /** The tag name of the element. */
-  as?: string;
+  /** The tag name of the element or a React component. */
+  as?: string | ComponentType<any>;
   /** Default styles of the element. */
   styles?: Styles;
   /** The list of styles that can be provided by props */
@@ -122,8 +122,8 @@ export type TastyElementOptions<
   V extends VariantMap,
   Tag extends keyof JSX.IntrinsicElements = 'div',
 > = Omit<TastyProps<K, V>, 'as'> & {
-  /** The tag name of the element. */
-  as?: Tag;
+  /** The tag name of the element or a React component. */
+  as?: Tag | ComponentType<any>;
 };
 
 export interface GlobalTastyProps {
