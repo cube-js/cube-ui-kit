@@ -1744,7 +1744,6 @@ export const CustomInputComponent: Story = {
                   <Tag
                     key={option.key}
                     isClosable
-                    theme={option.theme}
                     onClose={() => handleTagRemove(option.key)}
                   >
                     {option.label}
