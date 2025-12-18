@@ -114,6 +114,7 @@ export function useTinyScrollbar(
     // ResizeObserver for content size changes
     const resizeObserver = new ResizeObserver(() => {
       updateScrollState();
+      showScrollbarBriefly();
     });
 
     resizeObserver.observe(element);
