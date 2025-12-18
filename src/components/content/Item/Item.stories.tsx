@@ -2156,7 +2156,7 @@ CustomSize.parameters = {
 export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
   // Valid type+theme combinations:
   // - title: only 'default'
-  // - alert: 'default', 'success', 'danger', 'note'
+  // - card: 'default', 'success', 'danger', 'note'
   // - all other types: 'default', 'success', 'danger', 'special'
   const standardTypes = [
     'item',
@@ -2167,7 +2167,7 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
     'clear',
   ] as const;
   const standardThemes = ['default', 'danger', 'success', 'special'] as const;
-  const alertThemes = ['default', 'danger', 'success', 'note'] as const;
+  const cardThemes = ['default', 'danger', 'success', 'note'] as const;
 
   return (
     <Space gap="4x" flow="column" placeItems="start">
@@ -2218,15 +2218,15 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
       ))}
 
       <Space gap="2x" flow="column" placeItems="start">
-        <Title level={5}>Type: alert</Title>
+        <Title level={5}>Type: card</Title>
         <Space gap="1x" flow="row wrap" placeItems="start">
-          {alertThemes.map((theme) => (
+          {cardThemes.map((theme) => (
             <Item
-              key={`alert-${theme}`}
+              key={`card-${theme}`}
               {...args}
-              type="alert"
+              type="card"
               theme={theme}
-              description="Alert description"
+              description="Card description"
               icon={<IconUser />}
             >
               {theme}
@@ -2242,7 +2242,7 @@ TypesAndThemes.parameters = {
   docs: {
     description: {
       story:
-        'Showcases all valid type and theme combinations. Valid combinations: `title` type only supports `default` theme; `alert` type supports `default`, `success`, `danger`, and `note` themes; all other types (`item`, `primary`, `secondary`, `outline`, `neutral`, `clear`, `link`) support `default`, `success`, `danger`, and `special` themes. The `link` type does not support icons or loading state (`isLoading`). Using an invalid type+theme combination, icons with `link` type, or `isLoading` with `link` type will trigger a console warning.',
+        'Showcases all valid type and theme combinations. Valid combinations: `title` type only supports `default` theme; `card` type supports `default`, `success`, `danger`, and `note` themes; all other types (`item`, `primary`, `secondary`, `outline`, `neutral`, `clear`, `link`) support `default`, `success`, `danger`, and `special` themes. The `link` type does not support icons or loading state (`isLoading`). Using an invalid type+theme combination, icons with `link` type, or `isLoading` with `link` type will trigger a console warning.',
     },
   },
 };

@@ -58,6 +58,7 @@ const LayoutElement = tasty({
     },
 
     Inner: {
+      // .base-class[data-hover] > [data-element="Inner"] { ...}
       // Direct child selector required for nested layouts
       $: '>',
       position: 'absolute',

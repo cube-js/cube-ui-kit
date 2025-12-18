@@ -15,7 +15,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
-  DANGER_ALERT_STYLES,
+  DANGER_CARD_STYLES,
   DANGER_CLEAR_STYLES,
   DANGER_ITEM_STYLES,
   DANGER_LINK_STYLES,
@@ -23,7 +23,7 @@ import {
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
   DANGER_SECONDARY_STYLES,
-  DEFAULT_ALERT_STYLES,
+  DEFAULT_CARD_STYLES,
   DEFAULT_CLEAR_STYLES,
   DEFAULT_ITEM_STYLES,
   DEFAULT_LINK_STYLES,
@@ -32,7 +32,7 @@ import {
   DEFAULT_PRIMARY_STYLES,
   DEFAULT_SECONDARY_STYLES,
   ItemVariant,
-  NOTE_ALERT_STYLES,
+  NOTE_CARD_STYLES,
   SPECIAL_CLEAR_STYLES,
   SPECIAL_ITEM_STYLES,
   SPECIAL_LINK_STYLES,
@@ -40,7 +40,7 @@ import {
   SPECIAL_OUTLINE_STYLES,
   SPECIAL_PRIMARY_STYLES,
   SPECIAL_SECONDARY_STYLES,
-  SUCCESS_ALERT_STYLES,
+  SUCCESS_CARD_STYLES,
   SUCCESS_CLEAR_STYLES,
   SUCCESS_ITEM_STYLES,
   SUCCESS_LINK_STYLES,
@@ -150,7 +150,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'neutral'
     | 'clear'
     | 'link'
-    | 'alert'
+    | 'card'
     | (string & {});
   theme?: 'default' | 'danger' | 'success' | 'special' | 'note' | (string & {});
   /** Keyboard shortcut that triggers the element when pressed */
@@ -276,6 +276,8 @@ const ItemElement = tasty({
     gridTemplate: {
       '': '"icon prefix label suffix rightIcon actions" auto "icon prefix label suffix rightIcon actions" auto / max-content max-content 1sf max-content max-content max-content',
       'description=inline':
+        '"icon prefix description suffix rightIcon actions" auto / max-content max-content 1sf max-content max-content max-content',
+      'description=inline & has-label':
         '"icon prefix label suffix rightIcon actions" auto "icon prefix description suffix rightIcon actions" auto / max-content max-content 1sf max-content max-content max-content',
       'description=block':
         '"icon prefix label suffix rightIcon actions" auto "description description description description description description" auto / max-content max-content 1sf max-content max-content max-content',
@@ -288,7 +290,7 @@ const ItemElement = tasty({
     position: 'relative',
     padding: {
       '': 0,
-      'type=alert': '.5x',
+      'type=card': '.5x',
     },
     margin: 0,
     radius: {
@@ -329,10 +331,10 @@ const ItemElement = tasty({
       'size=xlarge': 't2',
       'size=xlarge & !type=item': 't2m',
       'size=inline': 'inline',
-      '(type=header | type=alert) & (size=xsmall | size=small | size=medium)':
+      '(type=header | type=card) & (size=xsmall | size=small | size=medium)':
         'h6',
-      '(type=header | type=alert) & size=large': 'h5',
-      '(type=header | type=alert) & size=xlarge': 'h4',
+      '(type=header | type=card) & size=large': 'h5',
+      '(type=header | type=card) & size=xlarge': 'h4',
     },
     boxSizing: 'border-box',
     textDecoration: 'none',
@@ -390,8 +392,8 @@ const ItemElement = tasty({
       'description=block & !has-end-content': '$inline-padding',
     },
     '$description-padding-bottom': {
-      '': '$block-padding',
-      'description=block': '$bottom-padding',
+      '': 0,
+      'has-label': '$bottom-padding',
     },
     '$bottom-padding':
       'max($block-padding, (($size - 4x) / 2) + $block-padding)',
@@ -420,12 +422,13 @@ const ItemElement = tasty({
       gridArea: 'description',
       preset: {
         '': 't4',
-        'type=alert | type=header': 't3',
+        'type=card | type=header': 't3',
       },
+      placeSelf: 'center start',
       color: 'inherit',
       opacity: {
         '': 0.75,
-        'type=alert | type=header': 1,
+        'type=card | type=header': 1,
       },
       overflow: 'hidden',
       whiteSpace: 'nowrap',
@@ -492,7 +495,7 @@ const ItemElement = tasty({
     'default.clear': DEFAULT_CLEAR_STYLES,
     'default.link': DEFAULT_LINK_STYLES,
     'default.item': DEFAULT_ITEM_STYLES,
-    'default.alert': DEFAULT_ALERT_STYLES,
+    'default.card': DEFAULT_CARD_STYLES,
     // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
     'danger.secondary': DANGER_SECONDARY_STYLES,
@@ -501,7 +504,7 @@ const ItemElement = tasty({
     'danger.clear': DANGER_CLEAR_STYLES,
     'danger.link': DANGER_LINK_STYLES,
     'danger.item': DANGER_ITEM_STYLES,
-    'danger.alert': DANGER_ALERT_STYLES,
+    'danger.card': DANGER_CARD_STYLES,
     // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
     'success.secondary': SUCCESS_SECONDARY_STYLES,
@@ -510,7 +513,7 @@ const ItemElement = tasty({
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
     'success.item': SUCCESS_ITEM_STYLES,
-    'success.alert': SUCCESS_ALERT_STYLES,
+    'success.card': SUCCESS_CARD_STYLES,
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
     'special.secondary': SPECIAL_SECONDARY_STYLES,
@@ -519,8 +522,8 @@ const ItemElement = tasty({
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,
     'special.item': SPECIAL_ITEM_STYLES,
-    // Note theme (alert type only)
-    'note.alert': NOTE_ALERT_STYLES,
+    // Note theme (card type only)
+    'note.card': NOTE_CARD_STYLES,
   },
   styleProps: CONTAINER_STYLES,
 });
@@ -565,13 +568,17 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     ...rest
   } = props;
 
+  // Determine if Label will be rendered
+  const hasLabel = !!(children || labelProps);
+
   // Set default descriptionPlacement based on type
+  // For card/header types, use 'block' only when Label is rendered
   const finalDescriptionPlacement =
     descriptionPlacement ??
-    (type === 'alert' || type === 'header' ? 'block' : 'inline');
+    ((type === 'card' || type === 'header') && hasLabel ? 'block' : 'inline');
 
   // Set default shape based on type
-  const finalShape = shape ?? (type === 'alert' ? 'card' : 'button');
+  const finalShape = shape ?? (type === 'card' ? 'card' : 'button');
 
   // Loading state makes the component disabled
   const finalIsDisabled =
@@ -579,13 +586,13 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
 
   // Validate type+theme combinations
   const STANDARD_THEMES = ['default', 'success', 'danger', 'special'];
-  const ALERT_THEMES = ['default', 'success', 'danger', 'note'];
+  const CARD_THEMES = ['default', 'success', 'danger', 'note'];
   const HEADER_THEMES = ['default'];
 
   const isInvalidCombination =
     (type === 'header' && !HEADER_THEMES.includes(theme)) ||
-    (type === 'alert' && !ALERT_THEMES.includes(theme)) ||
-    (!['header', 'alert'].includes(type) && !STANDARD_THEMES.includes(theme));
+    (type === 'card' && !CARD_THEMES.includes(theme)) ||
+    (!['header', 'card'].includes(type) && !STANDARD_THEMES.includes(theme));
 
   useWarn(isInvalidCombination, {
     key: ['Item', 'invalid-type-theme', type, theme],
@@ -593,8 +600,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       `Item: Invalid type+theme combination. type="${type}" does not support theme="${theme}".` +
         (type === 'header'
           ? ' The "header" type only supports theme: default.'
-          : type === 'alert'
-            ? ' The "alert" type only supports themes: default, success, danger, note.'
+          : type === 'card'
+            ? ' The "card" type only supports themes: default, success, danger, note.'
             : ' Standard types support themes: default, success, danger, special.'),
     ],
   });
@@ -776,7 +783,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       'has-start-content': !!(hasIconSlot || finalPrefix),
       'has-end-content': !!(hasRightIconSlot || finalSuffix || actions),
       'has-right-icon': hasRightIconSlot,
-      'has-label': !!(children || labelProps),
+      'has-label': hasLabel,
       'has-prefix': !!finalPrefix,
       'has-suffix': !!finalSuffix,
       'has-description': showDescription,
@@ -797,8 +804,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     hasCheckbox,
     actions,
     showActionsOnHover,
-    children,
-    labelProps,
+    hasLabel,
   ]);
 
   const {
