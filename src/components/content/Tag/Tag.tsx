@@ -45,7 +45,7 @@ function Tag(allProps: CubeTagProps, ref) {
     ...props
   } = allProps;
 
-  let type = 'alert';
+  let type = 'card';
 
   if (theme === 'special') {
     theme = 'default';
