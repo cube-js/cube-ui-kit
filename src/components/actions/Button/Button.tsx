@@ -183,10 +183,8 @@ export const DEFAULT_BUTTON_STYLES = {
   outline: 0,
   outlineOffset: 1,
   padding: {
-    '': '0 $right-icon-offset 0 $left-icon-offset',
-    'raw-children':
-      '$block-padding ($label-padding-right + $right-icon-offset) $block-padding ($label-padding-left + $left-icon-offset)',
-    'raw-children & type=link': 0,
+    '': '$block-padding ($padding-right + $right-icon-offset) $block-padding ($padding-left + $left-icon-offset)',
+    'type=link': 0,
   },
   width: {
     '': 'min $size',
@@ -205,8 +203,6 @@ export const DEFAULT_BUTTON_STYLES = {
   },
   transition: 'theme, grid-template, padding',
 
-  $transition: '1s',
-
   '$left-icon-size': {
     '': 0,
     'has-icon': '($size - 2bw)',
@@ -216,11 +212,11 @@ export const DEFAULT_BUTTON_STYLES = {
     'has-right-icon': '($size - 2bw)',
   },
   '$left-icon-offset': {
-    '': 0,
+    '': '0px',
     'has-icon': '($size - 2bw)',
   },
   '$right-icon-offset': {
-    '': 0,
+    '': '0px',
     'has-right-icon': '($size - 2bw)',
   },
   $size: {
@@ -240,13 +236,13 @@ export const DEFAULT_BUTTON_STYLES = {
   },
   '$inline-compensation': '.5x',
   '$min-inline-padding': '(1x - 1bw)',
-  '$label-padding-left': {
+  '$padding-left': {
     '': '$inline-padding',
-    'has-icon': 0,
+    'has-icon': '0px',
   },
-  '$label-padding-right': {
+  '$padding-right': {
     '': '$inline-padding',
-    'has-right-icon': 0,
+    'has-right-icon': '0px',
   },
 
   // Icon sub-element (recommended format)
@@ -273,10 +269,6 @@ export const DEFAULT_BUTTON_STYLES = {
     maxWidth: '100%',
     textAlign: 'center',
     transition: 'theme, padding',
-    padding: {
-      '': '$block-padding $label-padding-right $block-padding $label-padding-left',
-      'type=link': 0,
-    },
   },
 } as const;
 

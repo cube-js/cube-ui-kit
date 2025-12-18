@@ -553,9 +553,8 @@ function LayoutPanel(
 
   // Register panel with layout context
   // Include handler outside portion (minus border overlap) for proper content inset
-  // In sticky and dialog modes, panel doesn't push content, so size is 0
-  const effectivePanelSize =
-    isOpen && mode === 'default' ? size : isOpen && isOverlayMode ? size : 0;
+  // In sticky, overlay, and dialog modes, panel doesn't push content, so size is 0
+  const effectivePanelSize = isOpen && mode === 'default' ? size : 0;
   const effectiveInsetSize = Math.round(
     effectivePanelSize +
       (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
