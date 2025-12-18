@@ -433,6 +433,7 @@ const ItemElement = tasty({
         'type=card | type=header': 't3',
       },
       placeSelf: 'center start',
+      boxSizing: 'border-box',
       color: 'inherit',
       opacity: {
         '': 0.75,

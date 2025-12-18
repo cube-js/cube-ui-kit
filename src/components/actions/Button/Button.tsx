@@ -186,7 +186,7 @@ export const DEFAULT_BUTTON_STYLES = {
     '': 0,
     'has-content':
       '$block-padding ($padding-right + $right-icon-offset) $block-padding ($padding-left + $left-icon-offset)',
-    'type=link': 0,
+    'type=link': '0 $right-icon-offset 0 $left-icon-offset',
   },
   width: {
     '': 'min $size',
@@ -498,11 +498,13 @@ export const Button = forwardRef(function Button(
         styles={styles}
         tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
       >
-        <div data-element="Icon">
-          <IconSwitch noWrapper contentKey={iconKey}>
-            {isLoading ? <LoadingIcon /> : icon}
-          </IconSwitch>
-        </div>
+        {type !== 'link' && (
+          <div data-element="Icon" aria-hidden="true">
+            <IconSwitch noWrapper contentKey={iconKey}>
+              {isLoading ? <LoadingIcon /> : icon}
+            </IconSwitch>
+          </div>
+        )}
         {hasChildren &&
           (rawChildren ? (
             children
@@ -511,11 +513,13 @@ export const Button = forwardRef(function Button(
               {children}
             </div>
           ))}
-        <div data-element="RightIcon">
-          <IconSwitch noWrapper contentKey={rightIconKey}>
-            {rightIcon}
-          </IconSwitch>
-        </div>
+        {type !== 'link' && (
+          <div data-element="RightIcon" aria-hidden="true">
+            <IconSwitch noWrapper contentKey={rightIconKey}>
+              {rightIcon}
+            </IconSwitch>
+          </div>
+        )}
       </ButtonElement>
     );
   };
