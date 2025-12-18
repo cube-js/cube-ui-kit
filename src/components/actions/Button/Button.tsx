@@ -184,7 +184,7 @@ export const DEFAULT_BUTTON_STYLES = {
   outlineOffset: 1,
   padding: {
     '': 0,
-    'has-label':
+    '!has-icons':
       '$block-padding ($padding-right + $right-icon-offset) $block-padding ($padding-left + $left-icon-offset)',
     'type=link': 0,
   },
