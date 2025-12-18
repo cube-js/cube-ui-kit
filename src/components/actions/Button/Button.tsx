@@ -413,6 +413,7 @@ export const Button = forwardRef(function Button(
     ((hasLeftIcon && !hasRightSlot) || (hasRightSlot && !hasLeftIcon)) &&
     !hasChildren
   );
+  const hasRightIcon = hasRightSlot || isLoading;
 
   const hasIcons = hasLeftIcon || hasRightSlot;
   const rawChildren = !!(hasChildren && typeof children !== 'string');
@@ -501,13 +502,14 @@ export const Button = forwardRef(function Button(
         styles={styles}
         tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
       >
-        {type !== 'link' && (
-          <div data-element="Icon" aria-hidden="true">
-            <IconSwitch noWrapper contentKey={iconKey}>
-              {isLoading ? <LoadingIcon /> : icon}
-            </IconSwitch>
-          </div>
-        )}
+        {type !== 'link' ||
+          (hasLeftIcon && (
+            <div data-element="Icon" aria-hidden="true">
+              <IconSwitch noWrapper contentKey={iconKey}>
+                {isLoading ? <LoadingIcon /> : icon}
+              </IconSwitch>
+            </div>
+          ))}
         {hasChildren &&
           (rawChildren ? (
             children
@@ -516,13 +518,14 @@ export const Button = forwardRef(function Button(
               {children}
             </div>
           ))}
-        {type !== 'link' && (
-          <div data-element="RightIcon" aria-hidden="true">
-            <IconSwitch noWrapper contentKey={rightIconKey}>
-              {rightIcon}
-            </IconSwitch>
-          </div>
-        )}
+        {type !== 'link' ||
+          (hasRightIcon && (
+            <div data-element="RightIcon" aria-hidden="true">
+              <IconSwitch noWrapper contentKey={rightIconKey}>
+                {rightIcon}
+              </IconSwitch>
+            </div>
+          ))}
       </ButtonElement>
     );
   };
