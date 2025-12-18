@@ -205,7 +205,7 @@ export const DEFAULT_BUTTON_STYLES = {
     'type=link & !focused': 0,
   },
   transition: 'theme, grid-template, padding',
-  verticalAlign: 'middle',
+  verticalAlign: 'bottom',
 
   '$left-icon-size': {
     '': 0,
