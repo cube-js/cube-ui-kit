@@ -399,10 +399,8 @@ const ItemElement = tasty({
     },
     '$description-padding-bottom': {
       '': 0,
-      'has-label': '$bottom-padding',
+      'has-label': '$block-padding',
     },
-    '$bottom-padding':
-      'max($block-padding, (($size - 4x) / 2) + $block-padding)',
 
     Icon: { ...DEFAULT_ICON_STYLES, gridArea: 'icon' },
 
