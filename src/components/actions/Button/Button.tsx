@@ -58,6 +58,7 @@ const BUTTON_SIZE_VALUES = [
   'medium',
   'large',
   'xlarge',
+  'inline',
 ] as const;
 
 /** Known modifiers for Button component */
@@ -204,6 +205,7 @@ export const DEFAULT_BUTTON_STYLES = {
     'type=link & !focused': 0,
   },
   transition: 'theme, grid-template, padding',
+  verticalAlign: 'middle',
 
   '$left-icon-size': {
     '': 0,
@@ -228,6 +230,7 @@ export const DEFAULT_BUTTON_STYLES = {
     'size=medium': '$size-md',
     'size=large': '$size-lg',
     'size=xlarge': '$size-xl',
+    'size=inline': '(1lh + 2bw)',
   },
   '$inline-padding': {
     '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
