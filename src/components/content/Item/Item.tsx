@@ -209,6 +209,12 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    */
   labelRef?: RefObject<HTMLElement>;
   /**
+   * Heading level for the Label element when type="header".
+   * Changes the Label's HTML tag to the corresponding heading (h1-h6).
+   * @default 3
+   */
+  level?: 1 | 2 | 3 | 4 | 5 | 6;
+  /**
    * String to highlight within children.
    * Only works when children is a plain string.
    */
@@ -404,6 +410,7 @@ const ItemElement = tasty({
 
     Label: {
       $: '>',
+      margin: 0,
       gridArea: 'label',
       display: 'block',
       placeSelf: 'center start',
@@ -413,6 +420,7 @@ const ItemElement = tasty({
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       maxWidth: '100%',
+      preset: 'inherit',
       padding:
         '$block-padding $label-padding-right $label-padding-bottom $label-padding-left',
     },
@@ -562,6 +570,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     disableActionsFocus = false,
     shape,
     defaultTooltipPlacement = 'top',
+    level = 3,
     highlight,
     highlightCaseSensitive = false,
     highlightStyles,
@@ -876,11 +885,21 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           </div>
         )}
         {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
-        {children || labelProps ? (
-          <div data-element="Label" {...finalLabelProps} ref={labelRef}>
-            {processedChildren}
-          </div>
-        ) : null}
+        {children || labelProps
+          ? (() => {
+              const LabelTag =
+                type === 'header' ? (`h${level}` as const) : 'div';
+              return (
+                <LabelTag
+                  data-element="Label"
+                  {...finalLabelProps}
+                  ref={labelRef}
+                >
+                  {processedChildren}
+                </LabelTag>
+              );
+            })()
+          : null}
         {showDescription ? (
           <div data-element="Description" {...descriptionProps}>
             {description}
