@@ -30,6 +30,12 @@ Supports [Base properties](/BaseProperties)
 
 ## Examples
 
+### Nullish transitions (show / hide)
+
+`IconSwitch` preserves the last visible icon during the fade-out when switching to `null`/`undefined`/`false`, so you get a smooth “icon → empty” transition.
+
+<Story of={IconSwitchStories.Nullish} />
+
 ### Basic Toggle
 
 Use `contentKey` to explicitly identify when the icon should transition:
@@ -119,21 +125,21 @@ function ExpandableItem({ isExpanded, onToggle }) {
 
 ## How It Works
 
-1. **Change Detection**: The component tracks children changes using `contentKey` (if provided) or reference equality
+1. **Change Detection**: The component tracks icon changes using `contentKey` (if provided) or a best-effort derived key from the child element type (so prop-only updates don’t trigger transitions)
 2. **Stack Management**: When content changes, both old and new icons are rendered simultaneously
 3. **Cross-fade Animation**: The old icon fades out while the new icon fades in using CSS opacity transitions
 4. **Cleanup**: After the exit transition completes, the old icon is removed from the DOM
 
 ## Best Practices
 
-1. **Always use `contentKey`**: While the component can detect changes by reference, using explicit keys is more reliable:
+1. **Prefer `contentKey`**: The component can derive a key from the child element type, but explicit keys are more reliable (especially for custom “same type, different meaning” icons):
    ```jsx
    // Good - explicit key
    <IconSwitch contentKey={isOpen ? 'open' : 'closed'}>
      {isOpen ? <OpenIcon /> : <CloseIcon />}
    </IconSwitch>
 
-   // Avoid - relies on reference comparison
+   // Avoid - relies on implicit key derivation
    <IconSwitch>
      {isOpen ? <OpenIcon /> : <CloseIcon />}
    </IconSwitch>

@@ -167,3 +167,69 @@ export const RapidToggle: Story = {
     );
   },
 };
+
+export const Nullish: Story = {
+  render: () => {
+    const [shown, setShown] = useState(true);
+
+    return (
+      <Container>
+        <Button type="primary" onPress={() => setShown((v) => !v)}>
+          Toggle icon (nullish ↔ icon)
+        </Button>
+
+        <IconContainer>
+          <span>Icon is {shown ? 'shown' : 'hidden'}</span>
+          <IconBox>
+            {/* Intentionally constant key: IconSwitch should still animate icon ↔ nullish */}
+            <IconSwitch contentKey="constant">
+              {shown ? <PlayIcon /> : null}
+            </IconSwitch>
+          </IconBox>
+        </IconContainer>
+      </Container>
+    );
+  },
+};
+
+// Mimics Button's exact usage pattern with noWrapper and changing contentKey
+const IconSlotContainer = tasty({
+  styles: {
+    display: 'grid',
+    placeItems: 'center',
+    width: '6x',
+    height: '6x',
+    fill: '#dark.04',
+    radius: true,
+  },
+});
+
+export const NoWrapperWithKeyChange: Story = {
+  render: () => {
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Mimics Button's iconKey derivation
+    const iconKey = isLoading ? 'loading' : 'empty';
+    const icon = undefined; // No icon prop, like in Button story
+
+    return (
+      <Container>
+        <Button type="primary" onPress={() => setIsLoading((v) => !v)}>
+          {isLoading ? 'Stop Loading' : 'Start Loading'}
+        </Button>
+
+        <IconContainer>
+          <span>
+            isLoading: {String(isLoading)}, iconKey: {iconKey}
+          </span>
+          <IconSlotContainer>
+            {/* Exact same usage as Button: noWrapper + contentKey changes */}
+            <IconSwitch noWrapper contentKey={iconKey}>
+              {isLoading ? <PlayIcon /> : icon}
+            </IconSwitch>
+          </IconSlotContainer>
+        </IconContainer>
+      </Container>
+    );
+  },
+};

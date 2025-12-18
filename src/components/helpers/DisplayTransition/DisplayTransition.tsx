@@ -173,18 +173,24 @@ export function DisplayTransition({
         return;
       }
 
-      const onTransitionStart = () => {
+      const onTransitionStart = (e: TransitionEvent) => {
+        // Ignore bubbled events from children - only react to our own element's transitions
+        if (e.target !== element) return;
         if (flowRef.current !== flow) return;
         transitionStartedRef.current = true;
         clearTimer(); // Cancel fallback timer once transition starts
       };
 
-      const onTransitionEnd = () => {
+      const onTransitionEnd = (e: TransitionEvent) => {
+        // Ignore bubbled events from children - only react to our own element's transitions
+        if (e.target !== element) return;
         if (flowRef.current !== flow) return;
         complete();
       };
 
-      const onTransitionCancel = () => {
+      const onTransitionCancel = (e: TransitionEvent) => {
+        // Ignore bubbled events from children - only react to our own element's transitions
+        if (e.target !== element) return;
         if (flowRef.current !== flow) return;
         complete();
       };
@@ -330,7 +336,9 @@ export function DisplayTransition({
   }, [isShownNow, onToggleEvent]);
 
   // Ref callback to attach to transitioned element
-  const refCallback: RefCallback<HTMLElement> = (node) => {
+  // MUST be memoized so React doesn't re-call it on re-renders,
+  // which would cleanup event listeners mid-transition
+  const refCallback: RefCallback<HTMLElement> = useCallback((node) => {
     if (node) {
       elementRef.current = node;
       // Don't call ensureEnterFlow() here - useLayoutEffect handles RAF scheduling
@@ -339,7 +347,7 @@ export function DisplayTransition({
       cleanupEventListeners();
       elementRef.current = null;
     }
-  };
+  }, []);
 
   // Update stored children only when showing (enter/entered phase and targetShown is true)
   // This prevents overwriting during exit transitions, preserving content for the animation

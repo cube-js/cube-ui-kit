@@ -142,22 +142,23 @@ const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 const DEFAULT_ICON_STYLES: Styles = {
   $: '>',
+  position: 'absolute',
   display: 'grid',
   placeItems: 'center',
   placeContent: 'stretch',
+  placeSelf: 'stretch',
   aspectRatio: '1 / 1',
-  width: 'initial ($size - 2bw) 100%',
   overflow: 'hidden',
+  width: 'fixed ($size - 2bw)',
+  pointerEvents: 'none',
+  top: 0,
+  bottom: 0,
 };
 
 export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
   flow: 'column dense',
   gap: 0,
-  gridTemplate: {
-    '': '"icon label rightIcon" auto / $left-icon-size 1sf $right-icon-size',
-    'raw-children': 'initial',
-  },
   placeItems: {
     '': 'stretch',
     'raw-children': 'center stretch',
@@ -182,9 +183,9 @@ export const DEFAULT_BUTTON_STYLES = {
   outline: 0,
   outlineOffset: 1,
   padding: {
-    '': 0,
+    '': '0 $right-icon-offset 0 $left-icon-offset',
     'raw-children':
-      '$block-padding $label-padding-right $block-padding $label-padding-left',
+      '$block-padding ($label-padding-right + $right-icon-offset) $block-padding ($label-padding-left + $left-icon-offset)',
     'raw-children & type=link': 0,
   },
   width: {
@@ -202,13 +203,23 @@ export const DEFAULT_BUTTON_STYLES = {
     '': true,
     'type=link & !focused': 0,
   },
-  transition: 'theme, grid-template',
+  transition: 'theme, grid-template, padding',
+
+  $transition: '1s',
 
   '$left-icon-size': {
     '': 0,
     'has-icon': '($size - 2bw)',
   },
   '$right-icon-size': {
+    '': 0,
+    'has-right-icon': '($size - 2bw)',
+  },
+  '$left-icon-offset': {
+    '': 0,
+    'has-icon': '($size - 2bw)',
+  },
+  '$right-icon-offset': {
     '': 0,
     'has-right-icon': '($size - 2bw)',
   },
@@ -241,19 +252,18 @@ export const DEFAULT_BUTTON_STYLES = {
   // Icon sub-element (recommended format)
   Icon: {
     ...DEFAULT_ICON_STYLES,
-    gridArea: 'icon',
+    left: 0,
   },
 
   // RightIcon sub-element (recommended format)
   RightIcon: {
     ...DEFAULT_ICON_STYLES,
-    gridArea: 'rightIcon',
+    right: 0,
   },
 
   // Label sub-element (recommended format)
   Label: {
     $: '>',
-    gridArea: 'label',
     display: 'block',
     placeSelf: 'center stretch',
     boxSizing: 'border-box',
@@ -408,11 +418,7 @@ export const Button = forwardRef(function Button(
   );
 
   const hasIcons = hasLeftIcon || hasRightSlot;
-  const rawChildren = !!(
-    hasChildren &&
-    typeof children !== 'string' &&
-    !hasIcons
-  );
+  const rawChildren = !!(hasChildren && typeof children !== 'string');
 
   const modifiers = useMemo<ButtonMods>(
     () => ({
@@ -497,13 +503,11 @@ export const Button = forwardRef(function Button(
         styles={styles}
         tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
       >
-        {hasLeftIcon ? (
-          <div data-element="Icon">
-            <IconSwitch noWrapper contentKey={iconKey}>
-              {isLoading ? <LoadingIcon /> : icon}
-            </IconSwitch>
-          </div>
-        ) : null}
+        <div data-element="Icon">
+          <IconSwitch noWrapper contentKey={iconKey}>
+            {isLoading ? <LoadingIcon /> : icon}
+          </IconSwitch>
+        </div>
         {hasChildren &&
           (rawChildren ? (
             children
@@ -512,13 +516,11 @@ export const Button = forwardRef(function Button(
               {children}
             </div>
           ))}
-        {hasRightSlot ? (
-          <div data-element="RightIcon">
-            <IconSwitch noWrapper contentKey={rightIconKey}>
-              {rightIcon}
-            </IconSwitch>
-          </div>
-        ) : null}
+        <div data-element="RightIcon">
+          <IconSwitch noWrapper contentKey={rightIconKey}>
+            {rightIcon}
+          </IconSwitch>
+        </div>
       </ButtonElement>
     );
   };

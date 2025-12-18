@@ -1,4 +1,11 @@
-import { ReactNode, useCallback, useRef, useState } from 'react';
+import {
+  isValidElement,
+  ReactNode,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import { BaseProps, tasty } from '../../../tasty';
 import { DisplayTransition } from '../DisplayTransition/DisplayTransition';
@@ -17,6 +24,45 @@ interface IconEntry {
   content: ReactNode;
 }
 
+function isNullishContent(node: ReactNode) {
+  // React treats `null`, `undefined`, and `false` as "render nothing"
+  return node == null || node === false;
+}
+
+const typeIds = new WeakMap<object, number>();
+let lastTypeId = 0;
+
+function getTypeId(type: object) {
+  const existing = typeIds.get(type);
+  if (existing != null) return existing;
+  const next = (lastTypeId += 1);
+  typeIds.set(type, next);
+  return next;
+}
+
+/**
+ * Best-effort key derivation for icon switching when `contentKey` is not provided.
+ * The goal is to:
+ * - Transition when icon component type changes
+ * - Not transition when only props change for the same icon type (self-animating icons)
+ * - Transition when toggling to/from nullish content
+ */
+function deriveContentKey(children: ReactNode): string {
+  if (isNullishContent(children)) return 'nullish';
+  if (!isValidElement(children)) return `non-element:${typeof children}`;
+
+  const { type, key } = children;
+  const keyPart = key == null ? '' : `:${String(key)}`;
+
+  if (typeof type === 'string') return `host:${type}${keyPart}`;
+  if (typeof type === 'function') return `fn:${getTypeId(type)}${keyPart}`;
+  if (typeof type === 'object' && type != null)
+    return `obj:${getTypeId(type)}${keyPart}`;
+  if (typeof type === 'symbol') return `sym:${String(type)}${keyPart}`;
+
+  return `unknown${keyPart}`;
+}
+
 const IconSwitchElement = tasty({
   styles: {
     display: 'grid',
@@ -33,7 +79,10 @@ const IconSlotElement = tasty({
       '': 0,
       entered: 1,
     },
-    transition: 'theme',
+    transition: {
+      '': 'theme $transition ease-out',
+      'exit | entered': 'theme $transition ease-in',
+    },
   },
 });
 
@@ -49,40 +98,51 @@ export function IconSwitch(props: CubeIconSwitchProps) {
   const { children, contentKey, noWrapper, ...rest } = props;
 
   const keyCounterRef = useRef(0);
-  const prevContentKeyRef = useRef<string | number | undefined>(contentKey);
+  const effectiveKey = contentKey ?? deriveContentKey(children);
+  const prevEffectiveKeyRef = useRef<string | number>(effectiveKey);
   const prevChildrenRef = useRef<ReactNode>(children);
 
   const [icons, setIcons] = useState<IconEntry[]>(() => [
     { key: keyCounterRef.current, content: children },
   ]);
 
-  // Detect what has changed
-  const hasKeyChanged = contentKey !== prevContentKeyRef.current;
-  const hasChildrenChanged = children !== prevChildrenRef.current;
+  useLayoutEffect(() => {
+    const prevKey = prevEffectiveKeyRef.current;
+    const prevChildren = prevChildrenRef.current;
 
-  if (hasKeyChanged) {
-    // Key changed -> add new entry -> trigger transition
-    prevContentKeyRef.current = contentKey;
+    const hasKeyChanged = effectiveKey !== prevKey;
+    const hasChildrenChanged = children !== prevChildren;
+    const hasNullishToggled =
+      isNullishContent(children) !== isNullishContent(prevChildren);
+
+    // Transition rules:
+    // - If key changed -> transition
+    // - If we toggled nullish <-> non-nullish -> transition (even if key did not change)
+    // - Otherwise, if only children changed -> update in place (no transition)
+    if (hasKeyChanged || hasNullishToggled) {
+      keyCounterRef.current += 1;
+      const newEntry: IconEntry = {
+        key: keyCounterRef.current,
+        content: children,
+      };
+      setIcons((prev) => [...prev, newEntry]);
+    } else if (hasChildrenChanged) {
+      // Same key, different children -> update in-place -> no transition
+      // This allows self-animating icons to receive updated props
+      setIcons((prev) => {
+        if (!prev.length) {
+          return [{ key: 0, content: children }];
+        }
+        const lastIndex = prev.length - 1;
+        const next = [...prev];
+        next[lastIndex] = { ...next[lastIndex], content: children };
+        return next;
+      });
+    }
+
+    prevEffectiveKeyRef.current = effectiveKey;
     prevChildrenRef.current = children;
-    keyCounterRef.current += 1;
-
-    const newEntry: IconEntry = {
-      key: keyCounterRef.current,
-      content: children,
-    };
-
-    setIcons((prev) => [...prev, newEntry]);
-  } else if (hasChildrenChanged) {
-    // Same key, different children -> update in-place -> no transition
-    // This allows self-animating icons to receive updated props
-    prevChildrenRef.current = children;
-
-    setIcons((prev) =>
-      prev.map((icon, i) =>
-        i === prev.length - 1 ? { ...icon, content: children } : icon,
-      ),
-    );
-  }
+  }, [children, effectiveKey]);
 
   const handleExitComplete = useCallback((exitedKey: number) => {
     setIcons((prev) => prev.filter((icon) => icon.key !== exitedKey));
@@ -104,11 +164,12 @@ export function IconSwitch(props: CubeIconSwitchProps) {
           }
         }}
       >
-        {({ phase, ref }) => (
+        {({ isShown, phase, ref }) => (
           <IconSlotElement
             ref={ref}
             mods={{
-              entered: phase === 'entered',
+              entered: isShown,
+              phase,
             }}
           >
             {icon.content}
