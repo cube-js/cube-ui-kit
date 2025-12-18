@@ -58,16 +58,23 @@ interface ItemWithKey {
 
 export interface CubeFilterPickerProps<T>
   extends Omit<CubeFilterListBoxProps<T>, 'size' | 'tooltip' | 'shape'>,
-    Omit<CubeItemProps, 'children' | 'size'>,
-    BasePropsWithoutChildren,
-    BaseStyleProps,
-    OuterStyleProps,
-    ColorStyleProps,
-    Omit<FieldBaseProps, 'tooltip'>,
-    Pick<
-      CubeItemButtonProps,
-      'type' | 'theme' | 'icon' | 'rightIcon' | 'prefix' | 'suffix' | 'hotkeys'
-    > {
+  Omit<CubeItemProps, 'children' | 'size'>,
+  BasePropsWithoutChildren,
+  BaseStyleProps,
+  OuterStyleProps,
+  ColorStyleProps,
+  Omit<FieldBaseProps, 'tooltip'>,
+  Pick<
+    CubeItemButtonProps,
+    | 'type'
+    | 'theme'
+    | 'icon'
+    | 'rightIcon'
+    | 'prefix'
+    | 'suffix'
+    | 'hotkeys'
+    | 'shape'
+  > {
   /** Placeholder text when no selection is made */
   placeholder?: string;
   /** Size of the picker component */
@@ -104,14 +111,14 @@ export interface CubeFilterPickerProps<T>
    * Set to `false` to hide the summary text completely.
    */
   renderSummary?:
-    | ((args: {
-        selectedLabels?: string[];
-        selectedKeys?: 'all' | (string | number)[];
-        selectedLabel?: string;
-        selectedKey?: string | number | null;
-        selectionMode?: 'single' | 'multiple';
-      }) => ReactNode)
-    | false;
+  | ((args: {
+    selectedLabels?: string[];
+    selectedKeys?: 'all' | (string | number)[];
+    selectedLabel?: string;
+    selectedKey?: string | number | null;
+    selectionMode?: 'single' | 'multiple';
+  }) => ReactNode)
+  | false;
 
   /** Ref to access internal ListBox state (from FilterListBox) */
   listStateRef?: RefObject<ListState<T>>;
@@ -207,6 +214,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     popoverStyles,
     type = 'outline',
     theme = 'default',
+    shape,
     labelSuffix,
     shouldFocusWrap,
     children,
@@ -487,7 +495,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     if (sortSelectedToTopExplicit && sortSelectedToTop && !items) {
       console.warn(
         'FilterPicker: sortSelectedToTop only works with the items prop. ' +
-          'Sorting will be skipped when using JSX children.',
+        'Sorting will be skipped when using JSX children.',
       );
     }
 
@@ -731,6 +739,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
+        shape={shape}
         isDisabled={isDisabled || isLoading}
         data-input-type="filterpicker"
         mods={{
