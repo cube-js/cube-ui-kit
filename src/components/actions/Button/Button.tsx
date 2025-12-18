@@ -184,7 +184,7 @@ export const DEFAULT_BUTTON_STYLES = {
   outlineOffset: 1,
   padding: {
     '': 0,
-    '!has-icons':
+    'has-content':
       '$block-padding ($padding-right + $right-icon-offset) $block-padding ($padding-left + $left-icon-offset)',
     'type=link': 0,
   },
@@ -423,6 +423,7 @@ export const Button = forwardRef(function Button(
       'single-icon': singleIcon,
       'text-only': !!(hasChildren && typeof children === 'string' && !hasIcons),
       'raw-children': rawChildren,
+      'has-content': children != null,
     }),
     [
       baseMods,
