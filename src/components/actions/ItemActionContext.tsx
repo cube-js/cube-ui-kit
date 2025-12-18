@@ -32,7 +32,7 @@ export function ItemActionProvider({
           type === 'item' ||
           type === 'outline' ||
           type === 'header' ||
-          type === 'alert'
+          type === 'card'
             ? 'neutral'
             : type === 'secondary'
               ? 'clear'
