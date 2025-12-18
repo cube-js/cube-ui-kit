@@ -207,6 +207,15 @@ export interface CubeSelectBaseProps<T>
   containerPadding?: number;
   inputProps?: Props;
   type?: 'outline' | 'clear' | 'primary' | (string & {});
+  /**
+   * Shape of the trigger's border radius.
+   * - `card` - Card shape with larger border radius (`1cr`)
+   * - `button` - Button shape with default border radius (default)
+   * - `sharp` - Sharp corners with no border radius (`0`)
+   * - `pill` - Pill shape with fully rounded ends (`round`)
+   * @default "button"
+   */
+  shape?: 'card' | 'button' | 'sharp' | 'pill';
   suffixPosition?: 'before' | 'after';
   theme?: 'default' | 'special';
   /** Whether the select is clearable using a clear button in the rightIcon slot */
@@ -277,6 +286,7 @@ function Select<T extends object>(
     placeholder,
     tooltip,
     size = 'medium',
+    shape,
     styles,
     type = 'outline',
     theme = 'default',
@@ -438,6 +448,7 @@ function Select<T extends object>(
         styles={{ ...inputStyles, ...triggerStyles }}
         theme={theme}
         size={size}
+        shape={shape}
         // Ensure this button never submits a surrounding form in tests or runtime
         htmlType="button"
         // Preserve visual variant via data attribute instead of conflicting with HTML attribute

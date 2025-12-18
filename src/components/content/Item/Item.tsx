@@ -96,7 +96,6 @@ export type ItemMods = Mods<{
   disabled?: boolean;
   selected?: boolean;
   loading?: boolean;
-  card?: boolean;
   size?: string;
   description?: string;
   type?: string;
@@ -185,10 +184,6 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * and makes the component disabled.
    */
   isLoading?: boolean;
-  /**
-   * When true, applies card styling with increased border radius.
-   */
-  isCard?: boolean;
   /**
    * Shape of the item's border radius.
    * - `card` - Card shape with larger border radius (`1cr`)
@@ -565,7 +560,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     style,
     loadingSlot = 'auto',
     isLoading = false,
-    isCard = false,
     actions,
     showActionsOnHover = false,
     disableActionsFocus = false,
@@ -652,7 +646,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       disabled: finalIsDisabled,
       selected: isSelected === true,
       loading: isLoading,
-      card: isCard === true,
       ...(!isCustomSize && { size: size as string }),
       type,
       theme,
@@ -663,7 +656,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       finalIsDisabled,
       isSelected,
       isLoading,
-      isCard,
       size,
       isCustomSize,
       type,
