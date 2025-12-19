@@ -1,5 +1,6 @@
 import { FocusableRef } from '@react-types/shared';
 import {
+  Children,
   forwardRef,
   HTMLAttributes,
   isValidElement,
@@ -430,7 +431,11 @@ export const Button = forwardRef(function Button(
   );
 
   const hasIcons = hasLeftIcon || hasRightSlot;
-  const rawChildren = !!(hasChildren && typeof children !== 'string');
+  const rawChildren = !!(
+    hasChildren &&
+    typeof children !== 'string' &&
+    !Children.toArray(children).some((child) => typeof child === 'string')
+  );
 
   const [isIconShown, setIsIconShown] = useState(hasLeftIcon);
   const [isRightIconShown, setIsRightIconShown] = useState(hasRightSlot);
