@@ -282,7 +282,10 @@ export const DEFAULT_BUTTON_STYLES = {
     maxWidth: '100%',
     textAlign: 'center',
     transition: 'theme, padding',
-    padding: '$block-padding $right-padding $block-padding $left-padding',
+    padding: {
+      '': '$block-padding $right-padding $block-padding $left-padding',
+      'type=link': '0',
+    },
   },
 } as const;
 
@@ -343,7 +346,7 @@ export const Button = forwardRef(function Button(
     ...props
   } = allProps;
 
-  const isDisabled = props.isDisabled || props.isLoading;
+  const isDisabled = props.isDisabled ?? props.isLoading;
   const isLoading = props.isLoading;
   const isSelected = props.isSelected;
 
