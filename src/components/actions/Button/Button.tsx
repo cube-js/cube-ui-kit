@@ -6,9 +6,11 @@ import {
   ReactNode,
   RefObject,
   useMemo,
+  useState,
 } from 'react';
 import { OverlayProps } from 'react-aria';
 
+import { useIsFirstRender } from '../../../_internal/hooks/use-is-first-render';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
   DANGER_CLEAR_STYLES,
@@ -47,6 +49,7 @@ import {
 } from '../../../tasty';
 import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
+import { DisplayTransition } from '../../helpers/DisplayTransition';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { CubeActionProps } from '../Action/Action';
@@ -143,17 +146,16 @@ const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 const DEFAULT_ICON_STYLES: Styles = {
   $: '>',
-  position: 'absolute',
+  position: 'relative',
   display: 'grid',
   placeItems: 'center',
-  placeContent: 'stretch',
+  placeContent: 'center',
   placeSelf: 'stretch',
-  aspectRatio: '1 / 1',
-  overflow: 'hidden',
+  // overflow: 'hidden',
   width: 'fixed ($size - 2bw)',
+  height: 'fixed ($size - 2bw)',
   pointerEvents: 'none',
-  top: 0,
-  bottom: 0,
+  transition: 'theme, width, height, translate',
 };
 
 export const DEFAULT_BUTTON_STYLES = {
@@ -185,9 +187,9 @@ export const DEFAULT_BUTTON_STYLES = {
   outlineOffset: 1,
   padding: {
     '': 0,
-    'has-content':
-      '$block-padding ($padding-right + $right-icon-offset) $block-padding ($padding-left + $left-icon-offset)',
-    'type=link': '0 $right-icon-offset 0 $left-icon-offset',
+    'raw-children & !has-icons':
+      '$block-padding $inline-padding $block-padding $inline-padding',
+    'type=link': '0',
   },
   width: {
     '': 'min $size',
@@ -207,22 +209,6 @@ export const DEFAULT_BUTTON_STYLES = {
   transition: 'theme, grid-template, padding',
   verticalAlign: 'bottom',
 
-  '$left-icon-size': {
-    '': 0,
-    'has-icon': '($size - 2bw)',
-  },
-  '$right-icon-size': {
-    '': 0,
-    'has-right-icon': '($size - 2bw)',
-  },
-  '$left-icon-offset': {
-    '': '0px',
-    'has-icon': '($size - 2bw)',
-  },
-  '$right-icon-offset': {
-    '': '0px',
-    'has-right-icon': '($size - 2bw)',
-  },
   $size: {
     '': '$size-md',
     'size=xsmall': '$size-xs',
@@ -241,25 +227,47 @@ export const DEFAULT_BUTTON_STYLES = {
   },
   '$inline-compensation': '.5x',
   '$min-inline-padding': '(1x - 1bw)',
-  '$padding-left': {
+  '$left-padding': {
     '': '$inline-padding',
-    'has-icon': '0px',
+    'is-icon-shown': '0px',
   },
-  '$padding-right': {
+  '$right-padding': {
     '': '$inline-padding',
-    'has-right-icon': '0px',
+    'is-right-icon-shown': '0px',
   },
 
   // Icon sub-element (recommended format)
   Icon: {
     ...DEFAULT_ICON_STYLES,
-    left: 0,
+    width: {
+      '': 'fixed 0px',
+      'is-icon-shown': 'fixed ($size - 2bw)',
+    },
+    opacity: {
+      '': 0,
+      'is-icon-shown': 1,
+    },
+    translate: {
+      '': '($size * 1 / 4) 0',
+      'is-icon-shown': '0 0',
+    },
   },
 
   // RightIcon sub-element (recommended format)
   RightIcon: {
     ...DEFAULT_ICON_STYLES,
-    right: 0,
+    width: {
+      '': 'fixed 0px',
+      'is-right-icon-shown': 'fixed ($size - 2bw)',
+    },
+    opacity: {
+      '': 0,
+      'is-right-icon-shown': 1,
+    },
+    translate: {
+      '': '($size * -1 / 4) 0',
+      'is-right-icon-shown': '0 0',
+    },
   },
 
   // Label sub-element (recommended format)
@@ -274,6 +282,7 @@ export const DEFAULT_BUTTON_STYLES = {
     maxWidth: '100%',
     textAlign: 'center',
     transition: 'theme, padding',
+    padding: '$block-padding $right-padding $block-padding $left-padding',
   },
 } as const;
 
@@ -407,7 +416,7 @@ export const Button = forwardRef(function Button(
     label = 'Unnamed'; // fix to avoid warning in production
   }
 
-  const hasLeftIcon = hasLeftSlot || isLoading;
+  const hasLeftIcon = !!(hasLeftSlot || isLoading);
   const hasChildren = children != null;
   const singleIcon = !!(
     ((hasLeftIcon && !hasRightSlot) || (hasRightSlot && !hasLeftIcon)) &&
@@ -417,12 +426,18 @@ export const Button = forwardRef(function Button(
   const hasIcons = hasLeftIcon || hasRightSlot;
   const rawChildren = !!(hasChildren && typeof children !== 'string');
 
+  const [isIconShown, setIsIconShown] = useState(hasLeftIcon);
+  const [isRightIconShown, setIsRightIconShown] = useState(hasRightSlot);
+  const isFirstRender = useIsFirstRender();
+
   const modifiers = useMemo<ButtonMods>(
     () => ({
       ...baseMods,
       'has-icons': hasIcons,
       'has-icon': hasLeftIcon,
+      'is-icon-shown': isIconShown,
       'has-right-icon': hasRightSlot,
+      'is-right-icon-shown': isRightIconShown,
       'single-icon': singleIcon,
       'text-only': !!(hasChildren && typeof children === 'string' && !hasIcons),
       'raw-children': rawChildren,
@@ -437,6 +452,8 @@ export const Button = forwardRef(function Button(
       hasIcons,
       hasChildren,
       rawChildren,
+      isIconShown,
+      isRightIconShown,
     ],
   );
 
@@ -501,13 +518,19 @@ export const Button = forwardRef(function Button(
         styles={styles}
         tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
       >
-        {(type !== 'link' || hasLeftIcon) && (
-          <div data-element="Icon" aria-hidden="true">
-            <IconSwitch noWrapper contentKey={iconKey}>
-              {isLoading ? <LoadingIcon /> : icon}
-            </IconSwitch>
-          </div>
-        )}
+        <DisplayTransition
+          isShown={hasLeftIcon}
+          animateOnMount={!isFirstRender}
+          onToggle={setIsIconShown}
+        >
+          {({ ref }) => (
+            <div ref={ref} data-element="Icon" aria-hidden="true">
+              <IconSwitch noWrapper contentKey={iconKey}>
+                {isLoading ? <LoadingIcon /> : icon}
+              </IconSwitch>
+            </div>
+          )}
+        </DisplayTransition>
         {hasChildren &&
           (rawChildren ? (
             children
@@ -516,13 +539,19 @@ export const Button = forwardRef(function Button(
               {children}
             </div>
           ))}
-        {(type !== 'link' || hasRightSlot) && (
-          <div data-element="RightIcon" aria-hidden="true">
-            <IconSwitch noWrapper contentKey={rightIconKey}>
-              {rightIcon}
-            </IconSwitch>
-          </div>
-        )}
+        <DisplayTransition
+          isShown={hasRightSlot}
+          animateOnMount={!isFirstRender}
+          onToggle={setIsRightIconShown}
+        >
+          {({ ref }) => (
+            <div ref={ref} data-element="RightIcon" aria-hidden="true">
+              <IconSwitch noWrapper contentKey={rightIconKey}>
+                {rightIcon}
+              </IconSwitch>
+            </div>
+          )}
+        </DisplayTransition>
       </ButtonElement>
     );
   };
