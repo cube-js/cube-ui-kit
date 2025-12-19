@@ -526,7 +526,7 @@ export const WithHeaderAndFooter: StoryFn<CubeFilterListBoxProps<any>> = (
         <Text color="#dark.50" preset="t4">
           Popular languages shown
         </Text>
-        <Button type="link" size="small" rightIcon={<RightIcon />}>
+        <Button type="link" rightIcon={<RightIcon />}>
           View all
         </Button>
       </>

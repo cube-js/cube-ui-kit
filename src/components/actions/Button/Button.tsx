@@ -96,6 +96,7 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'medium'
     | 'large'
     | 'xlarge'
+    | 'inline'
     | number
     | (string & {});
   /**
@@ -333,7 +334,7 @@ export const Button = forwardRef(function Button(
 ) {
   let {
     type,
-    size,
+    size: sizeProp,
     label,
     children,
     theme = 'default',
@@ -345,6 +346,8 @@ export const Button = forwardRef(function Button(
     defaultTooltipPlacement = 'top',
     ...props
   } = allProps;
+
+  const size = sizeProp ?? (type === 'link' ? 'inline' : 'medium');
 
   const isDisabled = props.isDisabled ?? props.isLoading;
   const isLoading = props.isLoading;
@@ -517,7 +520,7 @@ export const Button = forwardRef(function Button(
         variant={`${theme}.${type ?? 'outline'}` as ButtonVariant}
         data-theme={theme}
         data-type={type ?? 'outline'}
-        data-size={size ?? 'medium'}
+        data-size={size}
         styles={styles}
         tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
       >
