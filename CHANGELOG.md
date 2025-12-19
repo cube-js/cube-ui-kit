@@ -1,5 +1,40 @@
 # @cube-dev/ui-kit
 
+## 0.98.0
+
+### Minor Changes
+
+- [#923](https://github.com/cube-js/cube-ui-kit/pull/923) [`cb6340ef`](https://github.com/cube-js/cube-ui-kit/commit/cb6340ef6b8faff274b7ebd52038587e60d72ff1) Thanks [@tenphi](https://github.com/tenphi)! - Rework of Button component to align its implementation and layout with Item and ItemButton components.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add `tokens` prop to tasty components for defining CSS custom properties as inline styles. Tokens support design system values (`$name` for regular properties, `#name` for colors with RGB variants) and are merged from component defaults to instance usage. Use `tokens` instead of `style` prop for dynamic CSS custom properties.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add dynamic icon support to Button and Item components. The `icon` and `rightIcon` props now support:
+
+  - `true` - renders an empty slot (reserves space but shows nothing)
+  - Function `({ loading, selected, ...mods }) => ReactNode | true` - dynamically renders icon based on component modifiers
+
+  Also made `Mods` type generic for better type definitions: `Mods<{ loading?: boolean }>` instead of extending interface.
+
+### Patch Changes
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Enlarge the size of the fullscreen dialog.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add IconSwitch component for icon transitions.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Remove redundant `isButton` prop from Item component.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add `tight` modifier to `preset` style for setting line-height to the same value as font-size.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add `card` type to Item component.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add `preserveContent` prop to DisplayTransition component. When enabled (default: true), the component preserves children content during exit transitions, ensuring smooth animations even when parent components remove content immediately after hiding.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add `title` type support to Item component.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Remove the selected mod in DisclosureTrigger.'
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Fix Layout.PanelHeader props type.
+
 ## 0.97.1
 
 ### Patch Changes
