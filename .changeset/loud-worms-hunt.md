@@ -2,4 +2,4 @@
 "@cube-dev/ui-kit": patch
 ---
 
-Add alert type to Item component.
+Add `card` type to Item component.
