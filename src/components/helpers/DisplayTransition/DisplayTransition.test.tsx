@@ -415,4 +415,105 @@ describe('DisplayTransition', () => {
     expect(onRest).toHaveBeenCalledWith('exit');
     expect(onRest).not.toHaveBeenCalledWith('enter');
   });
+
+  it('should preserve children content during exit when preserveContent=true (default)', () => {
+    // This test verifies the fix for a bug where children would disappear instantly
+    // during exit when the parent conditionally rendered children based on isShown
+
+    interface TestWrapperProps {
+      isShown: boolean;
+      content: string;
+    }
+
+    function TestWrapper({ isShown, content }: TestWrapperProps) {
+      return (
+        <DisplayTransition
+          exposeUnmounted
+          isShown={isShown}
+          animateOnMount={false}
+          duration={150}
+        >
+          {({ phase, isShown: isShownNow, ref }) => (
+            <div ref={ref} data-phase={phase} data-shown={isShownNow}>
+              {/* Simulate parent conditionally rendering content based on its own state */}
+              {isShown ? content : null}
+            </div>
+          )}
+        </DisplayTransition>
+      );
+    }
+
+    const { container, rerender } = render(
+      <TestWrapper isShown={true} content="original content" />,
+    );
+
+    // Initial: entered with content
+    expect(
+      container.querySelector('[data-phase="entered"]'),
+    ).toBeInTheDocument();
+    expect(container.textContent).toContain('original content');
+
+    // Trigger exit - parent passes isShown=false and content becomes null
+    rerender(<TestWrapper isShown={false} content="original content" />);
+
+    // Immediately after rerender, content should still be preserved
+    // (stored children from when isShown was true)
+    // Phase is still 'entered' (exit-pending internally, but reported as 'entered')
+    expect(
+      container.querySelector('[data-phase="entered"]'),
+    ).toBeInTheDocument();
+    expect(container.textContent).toContain('original content');
+
+    // Advance through the entire exit flow
+    act(() => {
+      jest.advanceTimersByTime(200);
+    });
+
+    // After completing the exit transition, should reach unmounted
+    // Content should have been preserved throughout the exit animation
+    expect(
+      container.querySelector('[data-phase="unmounted"]'),
+    ).toBeInTheDocument();
+  });
+
+  it('should not preserve children content during exit when preserveContent=false', () => {
+    interface TestWrapperProps {
+      isShown: boolean;
+      content: string;
+    }
+
+    function TestWrapper({ isShown, content }: TestWrapperProps) {
+      return (
+        <DisplayTransition
+          exposeUnmounted
+          isShown={isShown}
+          animateOnMount={false}
+          duration={150}
+          preserveContent={false}
+        >
+          {({ phase, isShown: isShownNow, ref }) => (
+            <div ref={ref} data-phase={phase} data-shown={isShownNow}>
+              {isShown ? content : null}
+            </div>
+          )}
+        </DisplayTransition>
+      );
+    }
+
+    const { container, rerender } = render(
+      <TestWrapper isShown={true} content="original content" />,
+    );
+
+    // Initial: entered with content
+    expect(
+      container.querySelector('[data-phase="entered"]'),
+    ).toBeInTheDocument();
+    expect(container.textContent).toContain('original content');
+
+    // Trigger exit - content immediately becomes null because preserveContent=false
+    rerender(<TestWrapper isShown={false} content="original content" />);
+
+    // Content should be gone immediately since preserveContent=false
+    expect(container.textContent).not.toContain('original content');
+  });
 });

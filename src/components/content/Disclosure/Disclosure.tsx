@@ -176,12 +176,13 @@ const DisclosureRoot = tasty({
 });
 
 const ContentWrapperElement = tasty({
+  qa: 'DisclosureContentWrapper',
   styles: {
     display: 'block',
     overflow: 'hidden',
     interpolateSize: 'allow-keywords',
     height: {
-      '': '0',
+      '': 0,
       shown: 'max-content',
     },
     transition: 'height $disclosure-transition',
@@ -191,8 +192,9 @@ const ContentWrapperElement = tasty({
 const ContentElement = tasty({
   qa: 'DisclosureContent',
   styles: {
+    display: 'block',
+    flow: 'column',
     contentVisibility: 'auto',
-    padding: '1x',
   },
 });
 
@@ -216,6 +218,8 @@ const TriggerIcon = tasty(RightIcon, {
 });
 
 const StyledTrigger = tasty(ItemButton, {
+  qa: 'DisclosureTrigger',
+  type: 'header',
   styles: {
     radius: {
       '': '1r',
@@ -347,6 +351,7 @@ const DisclosureTrigger = forwardRef<
       expanded: isExpanded,
       disabled: isDisabled,
       shape,
+      selected: false,
       ...mods,
     }),
     [isExpanded, isDisabled, shape, mods],

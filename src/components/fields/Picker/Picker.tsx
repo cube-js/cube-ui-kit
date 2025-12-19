@@ -52,7 +52,14 @@ export interface CubePickerProps<T>
     Omit<FieldBaseProps, 'tooltip'>,
     Pick<
       CubeItemButtonProps,
-      'type' | 'theme' | 'icon' | 'rightIcon' | 'prefix' | 'suffix' | 'hotkeys'
+      | 'type'
+      | 'theme'
+      | 'icon'
+      | 'rightIcon'
+      | 'prefix'
+      | 'suffix'
+      | 'hotkeys'
+      | 'shape'
     > {
   /** Placeholder text when no selection is made */
   placeholder?: string;
@@ -193,6 +200,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     popoverStyles,
     type = 'outline',
     theme = 'default',
+    shape,
     labelSuffix,
     shouldFocusWrap,
     children,
@@ -231,7 +239,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
     onClear,
     sortSelectedToTop,
     onOpenChange,
-    isButton = false,
     listStateRef: externalListStateRef,
     ...otherProps
   } = props;
@@ -584,12 +591,12 @@ export const Picker = forwardRef(function Picker<T extends object>(
       <ItemButton
         ref={triggerRef as any}
         data-popover-trigger
-        isButton={isButton}
         id={id}
         qa={qa || 'PickerTrigger'}
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
+        shape={shape}
         isDisabled={isDisabled || isLoading}
         data-input-type="picker"
         mods={{

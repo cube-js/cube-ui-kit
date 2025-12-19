@@ -1,5 +1,5 @@
 import { AriaLabelingProps } from '@react-types/shared';
-import { AllHTMLAttributes, CSSProperties } from 'react';
+import { AllHTMLAttributes, ComponentType, CSSProperties } from 'react';
 
 import {
   BASE_STYLES,
@@ -21,9 +21,32 @@ export interface GlobalStyledProps {
   breakpoints?: number[];
 }
 
-/** Type for element modifiers (mods prop) */
-export type Mods = {
-  [key: string]: boolean | string | number | undefined | null;
+/** Allowed mod value types */
+export type ModValue = boolean | string | number | undefined | null;
+
+/**
+ * Type for element modifiers (mods prop).
+ * Can be used as a generic to define known modifiers with autocomplete:
+ * @example
+ * type ButtonMods = Mods<{
+ *   loading?: boolean;
+ *   selected?: boolean;
+ * }>;
+ */
+export type Mods<T extends Record<string, ModValue> = {}> = T & {
+  [key: string]: ModValue;
+};
+
+/** Token value: string or number (processed), undefined/null (skipped) */
+export type TokenValue = string | number | undefined | null;
+
+/**
+ * Tokens definition for inline CSS custom properties.
+ * - `$name` keys become `--name` CSS properties
+ * - `#name` keys become `--name-color` and `--name-color-rgb` CSS properties
+ */
+export type Tokens = {
+  [key: `$${string}` | `#${string}`]: TokenValue;
 };
 
 type Caps =
@@ -56,7 +79,8 @@ type Caps =
 
 export interface BasePropsWithoutChildren<K extends TagName = TagName>
   extends Pick<AllHTMLAttributes<HTMLElement>, 'className' | 'role' | 'id'> {
-  as?: K;
+  /** The HTML tag or React component to render as */
+  as?: K | ComponentType<any>;
   /** QA ID for e2e testing. An alias for `data-qa` attribute. */
   qa?: string;
   /** QA value for e2e testing. An alias for `data-qaval` attribute. */
@@ -82,9 +106,11 @@ export interface BasePropsWithoutChildren<K extends TagName = TagName>
   /** The CSS style map */
   style?:
     | CSSProperties
-    | (CSSProperties & { [key: string]: string | number | null });
+    | (CSSProperties & { [key: string]: string | number | null | undefined });
   /** User-defined theme for the element. Mapped to data-theme attribute. Use `default`, or `danger`, or any custom string value you need. */
-  theme?: 'default' | 'danger' | 'special' | 'success' | (string & {});
+  theme?: 'default' | 'danger' | 'special' | 'success' | 'note' | (string & {});
+  /** CSS custom property tokens rendered as inline styles */
+  tokens?: Tokens;
 }
 
 export interface BaseProps<K extends TagName = TagName>

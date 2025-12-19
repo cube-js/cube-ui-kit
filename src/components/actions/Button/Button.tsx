@@ -1,14 +1,17 @@
 import { FocusableRef } from '@react-types/shared';
 import {
+  Children,
   forwardRef,
   HTMLAttributes,
-  ReactElement,
+  isValidElement,
   ReactNode,
   RefObject,
   useMemo,
+  useState,
 } from 'react';
 import { OverlayProps } from 'react-aria';
 
+import { useIsFirstRender } from '../../../_internal/hooks/use-is-first-render';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
   DANGER_CLEAR_STYLES,
@@ -40,19 +43,43 @@ import { LoadingIcon } from '../../../icons';
 import {
   CONTAINER_STYLES,
   extractStyles,
+  Mods,
   Styles,
   tasty,
   TEXT_STYLES,
 } from '../../../tasty';
-import { mergeProps } from '../../../utils/react';
+import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
+import { DisplayTransition } from '../../helpers/DisplayTransition';
+import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { CubeActionProps } from '../Action/Action';
 import { useAction } from '../use-action';
 
+const BUTTON_SIZE_VALUES = [
+  'xsmall',
+  'small',
+  'medium',
+  'large',
+  'xlarge',
+  'inline',
+] as const;
+
+/** Known modifiers for Button component */
+export type ButtonMods = Mods<{
+  loading?: boolean;
+  selected?: boolean;
+  'has-icons'?: boolean;
+  'has-icon'?: boolean;
+  'has-right-icon'?: boolean;
+  'single-icon'?: boolean;
+  'text-only'?: boolean;
+  'raw-children'?: boolean;
+}>;
+
 export interface CubeButtonProps extends CubeActionProps {
-  icon?: ReactElement;
-  rightIcon?: ReactElement;
+  icon?: DynamicIcon<ButtonMods>;
+  rightIcon?: DynamicIcon<ButtonMods>;
   isLoading?: boolean;
   isSelected?: boolean;
   type?:
@@ -64,7 +91,15 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'outline'
     | 'neutral'
     | (string & {});
-  size?: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | (string & {});
+  size?:
+    | 'xsmall'
+    | 'small'
+    | 'medium'
+    | 'large'
+    | 'xlarge'
+    | 'inline'
+    | number
+    | (string & {});
   /**
    * Tooltip content and configuration:
    * - string: simple tooltip text
@@ -113,21 +148,22 @@ const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 const DEFAULT_ICON_STYLES: Styles = {
   $: '>',
+  position: 'relative',
   display: 'grid',
   placeItems: 'center',
-  placeContent: 'stretch',
-  aspectRatio: '1 / 1',
-  width: '($size - 2bw)',
+  placeContent: 'center',
+  placeSelf: 'stretch',
+  // overflow: 'hidden',
+  width: 'fixed ($size - 2bw)',
+  height: 'fixed ($size - 2bw)',
+  pointerEvents: 'none',
+  transition: 'theme, width, height, translate',
 };
 
 export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
   flow: 'column dense',
   gap: 0,
-  gridTemplate: {
-    '': '"icon label rightIcon" auto / max-content 1sf max-content',
-    'raw-children': 'initial',
-  },
   placeItems: {
     '': 'stretch',
     'raw-children': 'center stretch',
@@ -148,15 +184,14 @@ export const DEFAULT_BUTTON_STYLES = {
     'size=xlarge': 't2m',
   },
   textDecoration: 'none',
-  transition: 'theme',
   reset: 'button',
   outline: 0,
   outlineOffset: 1,
   padding: {
     '': 0,
-    'raw-children':
-      '$block-padding $label-padding-right $block-padding $label-padding-left',
-    'raw-children & type=link': 0,
+    'raw-children & !has-icons':
+      '$block-padding $inline-padding $block-padding $inline-padding',
+    'type=link': '0',
   },
   width: {
     '': 'min $size',
@@ -173,6 +208,8 @@ export const DEFAULT_BUTTON_STYLES = {
     '': true,
     'type=link & !focused': 0,
   },
+  transition: 'theme, grid-template, padding',
+  verticalAlign: 'bottom',
 
   $size: {
     '': '$size-md',
@@ -181,6 +218,7 @@ export const DEFAULT_BUTTON_STYLES = {
     'size=medium': '$size-md',
     'size=large': '$size-lg',
     'size=xlarge': '$size-xl',
+    'size=inline': '(1lh + 2bw)',
   },
   '$inline-padding': {
     '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
@@ -191,31 +229,52 @@ export const DEFAULT_BUTTON_STYLES = {
   },
   '$inline-compensation': '.5x',
   '$min-inline-padding': '(1x - 1bw)',
-  '$label-padding-left': {
+  '$left-padding': {
     '': '$inline-padding',
-    'has-icon': 0,
+    'is-icon-shown': '0px',
   },
-  '$label-padding-right': {
+  '$right-padding': {
     '': '$inline-padding',
-    'has-right-icon': 0,
+    'is-right-icon-shown': '0px',
   },
 
   // Icon sub-element (recommended format)
   Icon: {
     ...DEFAULT_ICON_STYLES,
-    gridArea: 'icon',
+    width: {
+      '': 'fixed 0px',
+      'is-icon-shown': 'fixed ($size - 2bw)',
+    },
+    opacity: {
+      '': 0,
+      'is-icon-shown': 1,
+    },
+    translate: {
+      '': '($size * 1 / 4) 0',
+      'is-icon-shown': '0 0',
+    },
   },
 
   // RightIcon sub-element (recommended format)
   RightIcon: {
     ...DEFAULT_ICON_STYLES,
-    gridArea: 'rightIcon',
+    width: {
+      '': 'fixed 0px',
+      'is-right-icon-shown': 'fixed ($size - 2bw)',
+    },
+    opacity: {
+      '': 0,
+      'is-right-icon-shown': 1,
+    },
+    translate: {
+      '': '($size * -1 / 4) 0',
+      'is-right-icon-shown': '0 0',
+    },
   },
 
   // Label sub-element (recommended format)
   Label: {
     $: '>',
-    gridArea: 'label',
     display: 'block',
     placeSelf: 'center stretch',
     boxSizing: 'border-box',
@@ -224,15 +283,11 @@ export const DEFAULT_BUTTON_STYLES = {
     textOverflow: 'ellipsis',
     maxWidth: '100%',
     textAlign: 'center',
+    transition: 'theme, padding',
     padding: {
-      '': '$block-padding $label-padding-right $block-padding $label-padding-left',
-      'type=link': 0,
+      '': '$block-padding $right-padding $block-padding $left-padding',
+      'type=link': '0',
     },
-  },
-
-  // ButtonIcon sub-element (backward compatibility)
-  ButtonIcon: {
-    width: 'min 1fs',
   },
 } as const;
 
@@ -280,12 +335,12 @@ export const Button = forwardRef(function Button(
 ) {
   let {
     type,
-    size,
+    size: sizeProp,
     label,
     children,
     theme = 'default',
-    icon,
-    rightIcon,
+    icon: iconProp,
+    rightIcon: rightIconProp,
     mods,
     download,
     tooltip = true,
@@ -293,26 +348,71 @@ export const Button = forwardRef(function Button(
     ...props
   } = allProps;
 
-  const isDisabled = props.isDisabled || props.isLoading;
+  const size = sizeProp ?? (type === 'link' ? 'inline' : 'medium');
+
+  const isDisabled = props.isDisabled ?? props.isLoading;
   const isLoading = props.isLoading;
   const isSelected = props.isSelected;
 
-  children = children || icon || rightIcon ? children : label;
+  // Base mods for icon resolution (without icon-dependent mods)
+  const baseMods = useMemo<ButtonMods>(
+    () => ({
+      loading: isLoading,
+      selected: isSelected,
+      ...mods,
+    }),
+    [isLoading, isSelected, mods],
+  );
+
+  // Resolve dynamic icon props
+  const resolvedIcon = useMemo(
+    () => resolveIcon(iconProp, baseMods),
+    [iconProp, baseMods],
+  );
+  const resolvedRightIcon = useMemo(
+    () => resolveIcon(rightIconProp, baseMods),
+    [rightIconProp, baseMods],
+  );
+
+  const hasLeftSlot = resolvedIcon.hasSlot;
+  const hasRightSlot = resolvedRightIcon.hasSlot;
+
+  const icon: ReactNode = resolvedIcon.content;
+  const rightIcon: ReactNode = resolvedRightIcon.content;
+
+  // Generate stable keys for icon transitions based on icon type
+  const iconKey = isLoading
+    ? 'loading'
+    : isValidElement(icon)
+      ? (icon.type as any)?.displayName || (icon.type as any)?.name || 'icon'
+      : icon
+        ? 'icon'
+        : 'empty';
+
+  const rightIconKey = isValidElement(rightIcon)
+    ? (rightIcon.type as any)?.displayName ||
+      (rightIcon.type as any)?.name ||
+      'icon'
+    : rightIcon
+      ? 'icon'
+      : 'empty';
+
+  children = children || hasLeftSlot || hasRightSlot ? children : label;
 
   const specifiedLabel =
     label ?? props['aria-label'] ?? props['aria-labelledby'];
 
   // Warn about accessibility issues when button has no accessible label
-  useWarn(!children && icon && !specifiedLabel, {
-    key: ['button-icon-no-label', !!icon],
+  useWarn(!children && hasLeftSlot && !specifiedLabel, {
+    key: ['button-icon-no-label', hasLeftSlot],
     args: [
       'accessibility issue:',
       'If you provide `icon` property for a Button and do not provide any children then you should specify the `aria-label` property to make sure the Button element stays accessible.',
     ],
   });
 
-  useWarn(!children && !icon && !specifiedLabel, {
-    key: ['button-no-content-no-label', !!icon],
+  useWarn(!children && !hasLeftSlot && !specifiedLabel, {
+    key: ['button-no-content-no-label', hasLeftSlot],
     args: [
       'accessibility issue:',
       'If you provide no children for a Button then you should specify the `aria-label` property to make sure the Button element stays accessible.',
@@ -323,42 +423,48 @@ export const Button = forwardRef(function Button(
     label = 'Unnamed'; // fix to avoid warning in production
   }
 
-  const hasLeftIcon = !!icon || isLoading;
+  const hasLeftIcon = !!(hasLeftSlot || isLoading);
   const hasChildren = children != null;
   const singleIcon = !!(
-    ((hasLeftIcon && !rightIcon) || (rightIcon && !hasLeftIcon)) &&
+    ((hasLeftIcon && !hasRightSlot) || (hasRightSlot && !hasLeftIcon)) &&
     !hasChildren
   );
 
-  const hasIcons = hasLeftIcon || !!rightIcon;
+  const hasIcons = hasLeftIcon || hasRightSlot;
   const rawChildren = !!(
     hasChildren &&
     typeof children !== 'string' &&
-    !hasIcons
+    !Children.toArray(children).some((child) => typeof child === 'string')
   );
 
-  const modifiers = useMemo(
+  const [isIconShown, setIsIconShown] = useState(hasLeftIcon);
+  const [isRightIconShown, setIsRightIconShown] = useState(hasRightSlot);
+  const isFirstRender = useIsFirstRender();
+
+  const modifiers = useMemo<ButtonMods>(
     () => ({
-      loading: isLoading,
-      selected: isSelected,
+      ...baseMods,
       'has-icons': hasIcons,
       'has-icon': hasLeftIcon,
-      'has-right-icon': !!rightIcon,
+      'is-icon-shown': isIconShown,
+      'has-right-icon': hasRightSlot,
+      'is-right-icon-shown': isRightIconShown,
       'single-icon': singleIcon,
       'text-only': !!(hasChildren && typeof children === 'string' && !hasIcons),
       'raw-children': rawChildren,
-      ...mods,
+      'has-content': children != null,
     }),
     [
-      mods,
+      baseMods,
       children,
-      icon,
-      rightIcon,
-      isLoading,
-      isSelected,
+      hasLeftIcon,
+      hasRightSlot,
       singleIcon,
       hasIcons,
+      hasChildren,
       rawChildren,
+      isIconShown,
+      isRightIconShown,
     ],
   );
 
@@ -402,6 +508,14 @@ export const Button = forwardRef(function Button(
       }
     };
 
+    // Determine if size is custom (number or unrecognized string)
+    const isCustomSize =
+      typeof size === 'number' ||
+      (size != null &&
+        !(BUTTON_SIZE_VALUES as readonly string[]).includes(size));
+    const sizeTokenValue =
+      typeof size === 'number' ? `${size}px` : isCustomSize ? size : undefined;
+
     return (
       <ButtonElement
         download={download}
@@ -411,12 +525,23 @@ export const Button = forwardRef(function Button(
         variant={`${theme}.${type ?? 'outline'}` as ButtonVariant}
         data-theme={theme}
         data-type={type ?? 'outline'}
-        data-size={size ?? 'medium'}
+        data-size={size}
         styles={styles}
+        tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
       >
-        {(icon || isLoading) && (
-          <div data-element="Icon">{isLoading ? <LoadingIcon /> : icon}</div>
-        )}
+        <DisplayTransition
+          isShown={hasLeftIcon}
+          animateOnMount={!isFirstRender}
+          onToggle={setIsIconShown}
+        >
+          {({ ref }) => (
+            <div ref={ref} data-element="Icon" aria-hidden="true">
+              <IconSwitch noWrapper contentKey={iconKey}>
+                {isLoading ? <LoadingIcon /> : icon}
+              </IconSwitch>
+            </div>
+          )}
+        </DisplayTransition>
         {hasChildren &&
           (rawChildren ? (
             children
@@ -425,7 +550,19 @@ export const Button = forwardRef(function Button(
               {children}
             </div>
           ))}
-        {rightIcon && <div data-element="RightIcon">{rightIcon}</div>}
+        <DisplayTransition
+          isShown={hasRightSlot}
+          animateOnMount={!isFirstRender}
+          onToggle={setIsRightIconShown}
+        >
+          {({ ref }) => (
+            <div ref={ref} data-element="RightIcon" aria-hidden="true">
+              <IconSwitch noWrapper contentKey={rightIconKey}>
+                {rightIcon}
+              </IconSwitch>
+            </div>
+          )}
+        </DisplayTransition>
       </ButtonElement>
     );
   };

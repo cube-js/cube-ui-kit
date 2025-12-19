@@ -1,5 +1,11 @@
 import { StoryFn } from '@storybook/react-vite';
-import { IconCaretDown, IconCoin } from '@tabler/icons-react';
+import {
+  IconCaretDown,
+  IconCoin,
+  IconHeart,
+  IconHeartFilled,
+} from '@tabler/icons-react';
+import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
@@ -40,11 +46,13 @@ export default {
     /* Content */
     icon: {
       control: { type: null },
-      description: 'Icon element rendered before the content',
+      description:
+        'Icon rendered before the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`',
     },
     rightIcon: {
       control: { type: null },
-      description: 'Icon element rendered after the content',
+      description:
+        'Icon rendered after the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`',
     },
     children: {
       control: { type: 'text' },
@@ -508,4 +516,52 @@ Loading.args = {
   icon: <IconCoin />,
   isLoading: true,
   children: 'Button',
+};
+
+export const DynamicIcon = () => {
+  const [isSelected, setIsSelected] = useState(false);
+
+  return (
+    <Button
+      type="clear"
+      isSelected={isSelected}
+      icon={({ selected }) => (selected ? <IconHeartFilled /> : <IconHeart />)}
+      onPress={() => setIsSelected((prev) => !prev)}
+    >
+      {isSelected ? 'Liked' : 'Like'}
+    </Button>
+  );
+};
+
+export const ToggleLoading = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  return (
+    <Space>
+      <Button isLoading={isLoading}>Target Button</Button>
+      <Button type="outline" onPress={() => setIsLoading((prev) => !prev)}>
+        {isLoading ? 'Stop Loading' : 'Start Loading'}
+      </Button>
+    </Space>
+  );
+};
+
+export const CustomSize: StoryFn<CubeButtonProps> = () => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Button size="8x" icon={<IconCoin />}>
+      Custom size with 8x
+    </Button>
+    <Button size={64} icon={<IconCoin />}>
+      Custom size with 64px
+    </Button>
+  </Space>
+);
+
+CustomSize.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates custom size values using the `size` prop. Supports both string values (like `8x`) and number values (converted to pixels, like `64`). Custom sizes override the default size token via the `tokens` prop.',
+    },
+  },
 };

@@ -11,10 +11,13 @@ export * from './providers/BreakpointsProvider';
 export * from './utils/mergeStyles';
 export * from './utils/warnings';
 export * from './utils/getDisplayName';
+export * from './utils/processTokens';
 export * from './injector';
 export * from './debug';
 export type {
   TastyProps,
+  TastyElementOptions,
+  TastyElementProps,
   GlobalTastyProps,
   AllBasePropsWithMods,
 } from './tasty';
@@ -38,6 +41,9 @@ export type {
   GlobalStyledProps,
   TagName,
   Mods,
+  ModValue,
+  Tokens,
+  TokenValue,
 } from './types';
 export type {
   StylesInterface,

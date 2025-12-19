@@ -10,28 +10,26 @@ import {
 } from '../../../tasty';
 import { ItemAction } from '../../actions/ItemAction';
 import { useDialogContext } from '../../overlays/Dialog/context';
-import { Item } from '../Item/Item';
+import { CubeItemProps, Item } from '../Item/Item';
 
 import { useLayoutPanelContext } from './LayoutContext';
 
 const PanelHeaderElement = tasty(Item, {
   qa: 'PanelHeader',
   shape: 'sharp',
+  type: 'header',
   styles: {
     border: 'bottom',
-    preset: {
-      '': 't3m',
-      'size=xsmall': 't4',
-      'size=xlarge': 't2m',
-    },
+    boxSizing: 'content-box',
 
     '$inline-padding': '($content-padding, 1x)',
   },
 });
 
 export interface CubeLayoutPanelHeaderProps
-  extends BaseProps,
-    ContainerStyleProps {
+  extends Omit<BaseProps, 'theme'>,
+    ContainerStyleProps,
+    CubeItemProps {
   /** Panel title */
   title?: ReactNode;
   /** Title heading level (affects semantics, not visual) */
@@ -40,9 +38,6 @@ export interface CubeLayoutPanelHeaderProps
   isClosable?: boolean;
   /** Close button click handler */
   onClose?: () => void;
-  /** Custom actions to display (overrides default close button) */
-  actions?: ReactNode;
-  children?: ReactNode;
 }
 
 function LayoutPanelHeader(

@@ -66,7 +66,14 @@ export interface CubeFilterPickerProps<T>
     Omit<FieldBaseProps, 'tooltip'>,
     Pick<
       CubeItemButtonProps,
-      'type' | 'theme' | 'icon' | 'rightIcon' | 'prefix' | 'suffix' | 'hotkeys'
+      | 'type'
+      | 'theme'
+      | 'icon'
+      | 'rightIcon'
+      | 'prefix'
+      | 'suffix'
+      | 'hotkeys'
+      | 'shape'
     > {
   /** Placeholder text when no selection is made */
   placeholder?: string;
@@ -207,6 +214,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     popoverStyles,
     type = 'outline',
     theme = 'default',
+    shape,
     labelSuffix,
     shouldFocusWrap,
     children,
@@ -255,7 +263,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onSearchChange,
     sortSelectedToTop: sortSelectedToTopProp,
     onOpenChange,
-    isButton = false,
     form,
     ...otherProps
   } = props;
@@ -727,12 +734,12 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <ItemButton
         ref={triggerRef as any}
         data-popover-trigger
-        isButton={isButton}
         qa={qa || 'FilterPicker'}
         id={id}
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
+        shape={shape}
         isDisabled={isDisabled || isLoading}
         data-input-type="filterpicker"
         mods={{

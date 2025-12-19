@@ -138,4 +138,25 @@ describe('dimensionStyle – width & height helpers', () => {
     expect(res['min-height']).toBe('100%');
     expect(res['max-height']).toBe('100%');
   });
+
+  test('numeric zero height', () => {
+    const res = heightStyle({ height: 0 }) as any;
+    expect(res.height).toBe('0px');
+    expect(res['min-height']).toBe('initial');
+    expect(res['max-height']).toBe('initial');
+  });
+
+  test('string zero height', () => {
+    const res = heightStyle({ height: '0' }) as any;
+    expect(res.height).toBe('0');
+    expect(res['min-height']).toBe('initial');
+    expect(res['max-height']).toBe('initial');
+  });
+
+  test('numeric zero width', () => {
+    const res = widthStyle({ width: 0 }) as any;
+    expect(res.width).toBe('0px');
+    expect(res['min-width']).toBe('initial');
+    expect(res['max-width']).toBe('initial');
+  });
 });

@@ -7,5 +7,5 @@ export const Link = forwardRef(function Link(
   props: CubeButtonProps,
   ref: FocusableRef<HTMLElement>,
 ) {
-  return <Button type="link" {...props} ref={ref} />;
+  return <Button type="link" size="inline" {...props} ref={ref} />;
 });

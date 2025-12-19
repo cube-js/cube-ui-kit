@@ -68,31 +68,32 @@ The `mods` property accepts the following modifiers:
 | selected | `boolean` | Applied when isSelected is true |
 | disabled | `boolean` | Applied when isDisabled is true or when loading |
 | loading | `boolean` | Applied when isLoading is true |
-| card | `boolean` | Applied when isCard is true |
-| button | `boolean` | Applied when isButton is true |
 | size | `string` | Applied based on size prop value (xsmall, small, medium, large, xlarge, inline) |
-| type | `string` | Applied based on type prop value (item, primary, secondary, outline, neutral, clear, link) |
-| theme | `string` | Applied based on theme prop value (default, danger, success, special) |
-| shape | `string` | Applied based on shape prop value (card, button, sharp) |
+| type | `string` | Applied based on type prop value (item, header, primary, secondary, outline, neutral, clear, link, card) |
+| theme | `string` | Applied based on theme prop value (default, danger, success, special, note) |
+| shape | `string` | Applied based on shape prop value (card, button, sharp, pill) |
 
 ## Variants
 
 ### Types
 
 - `item` - Default item appearance (no specific styling)
+- `header` - Header appearance for section headers (only supports `default` theme, defaults to `descriptionPlacement="block"`)
 - `primary` - Primary styled item with prominent appearance
 - `secondary` - Secondary styled item with moderate emphasis
 - `outline` - Item with border outline styling
 - `neutral` - Neutral colored item styling
 - `clear` - Transparent item with minimal styling
-- `link` - Link-styled item appearance
+- `link` - Link-styled item appearance (does not support icons or loading state)
+- `card` - Card appearance for notifications (supports `default`, `success`, `danger`, `note` themes; defaults to `shape="card"`, `descriptionPlacement="block"`, and has `.5x` padding)
 
 ### Themes
 
 - `default` - Standard appearance with default colors
 - `danger` - Red theme for destructive or warning actions
 - `success` - Green theme for positive actions
-- `special` - Special theme with unique styling
+- `special` - Special theme with unique styling (not available for `card` or `header` types)
+- `note` - Note theme for informational cards (only available for `card` type)
 
 ### Sizes
 
@@ -105,9 +106,10 @@ The `mods` property accepts the following modifiers:
 
 ### Shapes
 
-- `card` - Card shape with larger border radius (`1cr`)
-- `button` - Button shape with default border radius (default)
+- `card` - Card shape with larger border radius (`1cr`) — default for `type="card"`
+- `button` - Button shape with default border radius (default for other types)
 - `sharp` - Sharp corners with no border radius (`0`)
+- `pill` - Pill shape with fully rounded ends (`round`)
 
 ## Examples
 
@@ -120,18 +122,51 @@ The `mods` property accepts the following modifiers:
 ### With Icons
 
 ```jsx
+{/* Standard icons */}
 <Item icon={<IconUser />} rightIcon={<IconSettings />}>
   Item with icons
+</Item>
+
+{/* Empty slot (reserves space but shows nothing) */}
+<Item icon={true} rightIcon={true}>
+  Item with empty slots
+</Item>
+
+{/* Dynamic icon based on mods */}
+<Item 
+  icon={({ loading }) => loading ? <LoadingIcon /> : <IconUser />}
+  rightIcon={({ selected }) => selected ? <CheckIcon /> : <IconSettings />}
+>
+  Dynamic icons
+</Item>
+
+{/* Return true from function for empty slot */}
+<Item 
+  icon={({ selected }) => selected ? <CheckIcon /> : true}
+>
+  Conditional icon
 </Item>
 ```
 
 ### With Description
 
+The `descriptionPlacement` prop controls where the description appears. It defaults to `"inline"` for most types, but `"block"` for `type="card"` and `type="header"`:
+
 ```jsx
+{/* Inline description (default for most types) */}
 <Item 
   icon={<IconFile />}
   description="Secondary description text"
   descriptionPlacement="inline"
+>
+  Main item content
+</Item>
+
+{/* Block description */}
+<Item 
+  icon={<IconFile />}
+  description="Description appears below the label"
+  descriptionPlacement="block"
 >
   Main item content
 </Item>
@@ -160,6 +195,42 @@ The `mods` property accepts the following modifiers:
 ### With Different Shapes
 
 <Story of={ItemStories.DifferentShapes} />
+
+### Header Type
+
+Use `type="header"` for section headers. Header items have larger text preset and default to block description placement:
+
+```jsx
+<Item type="header" icon={<IconFolder />}>
+  Section Header
+</Item>
+
+<Item type="header" icon={<IconFolder />} description="Section description">
+  Section Header with Description
+</Item>
+```
+
+### Card Type
+
+Use `type="card"` for notification-style items. Card items automatically use card shape, block description placement, and have `.5x` padding. They support `default`, `success`, `danger`, and `note` themes:
+
+```jsx
+<Item type="card" theme="default" icon={<IconInfo />} description="This is an informational message">
+  Info Card
+</Item>
+
+<Item type="card" theme="success" icon={<IconCheck />} description="Operation completed successfully">
+  Success Card
+</Item>
+
+<Item type="card" theme="danger" icon={<IconAlertTriangle />} description="Something went wrong">
+  Error Card
+</Item>
+
+<Item type="card" theme="note" icon={<IconNote />} description="Additional context or tips">
+  Note Card
+</Item>
+```
 
 ### With Loading State
 

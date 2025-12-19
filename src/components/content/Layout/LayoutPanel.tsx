@@ -1,6 +1,7 @@
 import {
   ForwardedRef,
   forwardRef,
+  HTMLAttributes,
   ReactNode,
   RefCallback,
   useCallback,
@@ -285,7 +286,7 @@ interface ResizeHandlerProps {
   isDisabled?: boolean;
   mods?: Record<string, boolean>;
   moveProps: ReturnType<typeof useMove>['moveProps'];
-  style?: Record<string, string | number | undefined>;
+  style?: Record<string, string | number | null | undefined>;
   onDoubleClick?: () => void;
 }
 
@@ -552,9 +553,8 @@ function LayoutPanel(
 
   // Register panel with layout context
   // Include handler outside portion (minus border overlap) for proper content inset
-  // In sticky and dialog modes, panel doesn't push content, so size is 0
-  const effectivePanelSize =
-    isOpen && mode === 'default' ? size : isOpen && isOverlayMode ? size : 0;
+  // In sticky, overlay, and dialog modes, panel doesn't push content, so size is 0
+  const effectivePanelSize = isOpen && mode === 'default' ? size : 0;
   const effectiveInsetSize = Math.round(
     effectivePanelSize +
       (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
@@ -659,7 +659,12 @@ function LayoutPanel(
     () => ({
       '--panel-size': `${size}px`,
       '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
-      '--max-size': typeof maxSize === 'number' ? `${maxSize}px` : maxSize,
+      '--max-size':
+        maxSize != null
+          ? typeof maxSize === 'number'
+            ? `${maxSize}px`
+            : maxSize
+          : undefined,
     }),
     [size, minSize, maxSize],
   );

@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useHover } from 'react-aria';
+import { useFocusWithin, useHover } from 'react-aria';
 
 import { Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
@@ -30,7 +30,6 @@ const StyledItem = tasty(Item, {
   as: 'button',
   type: 'neutral',
   theme: 'default',
-  isButton: true,
   styles: {
     reset: 'button',
     placeContent: 'center stretch',
@@ -43,11 +42,6 @@ const ActionsWrapper = tasty({
     position: 'relative',
     placeContent: 'stretch',
     placeItems: 'stretch',
-    preset: {
-      '': 't3m',
-      'size=xsmall': 't4',
-      'size=xlarge': 't2m',
-    },
 
     $size: {
       '': '$size-md',
@@ -97,7 +91,7 @@ const ItemButton = forwardRef(function ItemButton(
     htmlType,
     as,
     type = 'neutral',
-    theme,
+    theme = 'default',
     onPress,
     // Extract react-aria press callbacks to prevent them from leaking to DOM via rest.
     // These are handled by useButton inside useAction.
@@ -129,7 +123,37 @@ const ItemButton = forwardRef(function ItemButton(
     }
   }, [actions, areActionsVisible]);
 
+  const [isFocusWithin, setIsFocusWithin] = useState(false);
+  const [hasPressed, setHasPressed] = useState(false);
   const { hoverProps, isHovered } = useHover({});
+  const { focusWithinProps } = useFocusWithin({
+    onFocusWithinChange: setIsFocusWithin,
+  });
+
+  // Watch for data-pressed attribute on any descendant element
+  useLayoutEffect(() => {
+    const actionsEl = actionsRef.current;
+
+    if (!actionsEl || !showActionsOnHover) return;
+
+    const checkPressed = () => {
+      setHasPressed(actionsEl.querySelector('[data-pressed]') !== null);
+    };
+
+    const observer = new MutationObserver(checkPressed);
+
+    observer.observe(actionsEl, {
+      attributes: true,
+      attributeFilter: ['data-pressed'],
+      subtree: true,
+    });
+
+    checkPressed();
+
+    return () => observer.disconnect();
+  }, [areActionsVisible, showActionsOnHover]);
+
+  const shouldShowActions = isHovered || isFocusWithin || hasPressed;
 
   const { actionProps } = useAction(
     { ...(allProps as any), htmlType, to, as, mods },
@@ -173,7 +197,7 @@ const ItemButton = forwardRef(function ItemButton(
           {showActionsOnHover ? (
             <DisplayTransition
               exposeUnmounted
-              isShown={isHovered}
+              isShown={shouldShowActions}
               onPhaseChange={(phase) => {
                 setAreActionsVisible(phase !== 'unmounted');
               }}
@@ -184,6 +208,7 @@ const ItemButton = forwardRef(function ItemButton(
               {({ ref: transitionRef }) => {
                 return (
                   <div
+                    {...focusWithinProps}
                     ref={(node: any) => {
                       actionsRef.current = node;
                       transitionRef(node);

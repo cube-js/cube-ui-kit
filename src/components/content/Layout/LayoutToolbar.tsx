@@ -18,6 +18,7 @@ const ToolbarElement = tasty(LayoutContent, {
       placeContent: 'center space-between',
       placeItems: 'center stretch',
       gap: '1x',
+      padding: '0 ($content-padding, 1x)',
     },
   },
 });

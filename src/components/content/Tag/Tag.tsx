@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
+import { ItemVariant } from 'src/data/item-themes';
 
-import THEMES from '../../../data/themes';
 import { CloseIcon } from '../../../icons';
 import { Styles, tasty } from '../../../tasty';
 import { CubeItemProps, Item } from '../Item';
@@ -9,30 +9,15 @@ const TagElement = tasty(Item, {
   qa: 'Tag',
   role: 'status',
   styles: {
-    fill: {
-      '': '#dark.04',
-      ...Object.keys(THEMES).reduce((map, type) => {
-        map[`type=${type}`] = THEMES[type].fill;
-
-        return map;
-      }, {}),
+    padding: 0,
+    preset: {
+      '': 'tag',
+      'size=xsmall': 't4',
+      'size=small | size=medium': 't3',
+      'size=large | size=xlarge': 't2',
     },
-    color: {
-      '': '#dark.65',
-      ...Object.keys(THEMES).reduce((map, type) => {
-        map[`type=${type}`] = THEMES[type].color;
 
-        return map;
-      }, {}),
-    },
-    border: {
-      '': true,
-      ...Object.keys(THEMES).reduce((map, type) => {
-        map[`type=${type}`] = THEMES[type].border;
-
-        return map;
-      }, {}),
-    },
+    '$min-inline-padding': '.5x',
 
     Label: {
       textAlign: 'center',
@@ -42,9 +27,7 @@ const TagElement = tasty(Item, {
 });
 
 export interface CubeTagProps extends CubeItemProps {
-  /* @deprecated Use theme instead */
-  type?: keyof typeof THEMES | string;
-  theme?: keyof typeof THEMES | string;
+  theme?: 'default' | 'danger' | 'success' | 'note' | 'special';
   isClosable?: boolean;
   onClose?: () => void;
   closeButtonStyles?: Styles;
@@ -52,8 +35,7 @@ export interface CubeTagProps extends CubeItemProps {
 
 function Tag(allProps: CubeTagProps, ref) {
   let {
-    type,
-    theme,
+    theme = 'default',
     isClosable,
     onClose,
     closeButtonStyles,
@@ -63,14 +45,19 @@ function Tag(allProps: CubeTagProps, ref) {
     ...props
   } = allProps;
 
-  const tagTheme = theme ?? type;
+  let type = 'card';
+
+  if (theme === 'special') {
+    theme = 'default';
+    type = 'primary';
+  }
 
   return (
     <TagElement
       ref={ref}
       size={size}
-      data-type={tagTheme}
-      type={tagTheme === 'special' ? 'primary' : 'neutral'}
+      data-type={type}
+      variant={`${theme}.${type}` as ItemVariant}
       mods={mods}
       actions={
         isClosable ? (

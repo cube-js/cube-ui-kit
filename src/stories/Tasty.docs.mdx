@@ -153,6 +153,15 @@ Property controlling combinator for sub-element selectors. Default: descendant (
 Row: { $: '>', padding: '1x' }  // Direct child selector
 ```
 
+### Tokens
+
+CSS custom properties defined via `tokens` prop, rendered as inline styles. Supports `$name` (regular properties) and `#name` (color properties with RGB variant).
+
+```jsx
+tokens={{ $spacing: '2x', '#primary': '#purple' }}
+// → style="--spacing: calc(2 * var(--gap)); --accent-color: var(--purple-color); --accent-color-rgb: var(--purple-color-rgb)"
+```
+
 ---
 
 ## 🎯 Core Concepts
@@ -853,6 +862,120 @@ const ThemedComponent = tasty({
 // Fallback chains maintain RGB variants: var(--brand-color-rgb, var(--purple-color-rgb))
 ```
 
+### Tokens Prop - Dynamic CSS Custom Properties
+
+The `tokens` prop allows you to set CSS custom properties as inline styles with design token processing. Unlike `styles` which generates CSS classes, `tokens` are rendered directly as inline styles.
+
+```jsx
+// Define component with default tokens
+const Card = tasty({
+  tokens: { $spacing: '2x', $size: '10x' },
+  styles: {
+    padding: '$spacing',
+    width: '$size',
+  },
+});
+
+// Usage - tokens become inline CSS custom properties
+<Card />
+// Renders: <div style="--spacing: calc(2 * var(--gap)); --size: calc(10 * var(--gap))">
+
+// Override tokens at usage
+<Card tokens={{ $spacing: '4x' }} />
+// Renders: <div style="--spacing: calc(4 * var(--gap)); --size: calc(10 * var(--gap))">
+
+// Add new tokens
+<Card tokens={{ $spacing: '4x', '#accent': '#purple' }} />
+// Renders: <div style="--spacing: ...; --size: ...; --accent-color: var(--purple-color); --accent-color-rgb: var(--purple-color-rgb)">
+```
+
+#### Token Types
+
+| Prefix | Output | Example |
+|--------|--------|---------|
+| `$name` | `--name` | `$spacing: '2x'` → `--spacing: calc(2 * var(--gap))` |
+| `#name` | `--name-color` + `--name-color-rgb` | `#accent: '#purple'` → `--accent-color: var(--purple-color)` |
+
+#### Key Differences from `styles`
+
+| Feature | `styles` | `tokens` |
+|---------|----------|----------|
+| Output | CSS classes | Inline styles |
+| State mapping | ✅ Supported | ❌ Not supported |
+| Responsive arrays | ✅ Supported | ❌ Not supported |
+| Performance | Cached & deduplicated | Per-instance |
+| Use case | Static styling | Dynamic values |
+
+#### Merging Priority
+
+Tokens are merged in order (later overrides earlier):
+1. Default tokens (from `tasty({ tokens: {...} })`)
+2. Instance tokens (from `<Component tokens={{...}} />`)
+3. Instance `style` prop (from `<Component style={{...}} />`)
+
+```jsx
+const Card = tasty({
+  tokens: { $spacing: '1x' },
+});
+
+// Instance tokens override defaults
+<Card tokens={{ $spacing: '4x' }} />
+
+// style prop overrides everything (not recommended - see warning below)
+<Card tokens={{ $spacing: '4x' }} style={{ '--spacing': '100px' }} />
+// --spacing will be '100px'
+```
+
+> **⚠️ Warning:** Using the `style` prop directly is **not recommended** for general styling. It should only be used in rare cases when you need to spread raw styles from a third-party library to an element. For all other cases, use `tokens` or `styles` props instead.
+
+#### Valid Token Values
+
+- **String** - Processed through tasty parser (`'2x'` → `calc(2 * var(--gap))`)
+- **Number** - Converted to string (`42` → `'42'`); `0` stays as `'0'`
+- **undefined/null** - Silently skipped (no CSS property output)
+
+```jsx
+// ✅ Valid
+tokens={{ $spacing: '2x', $size: 100, $zero: 0 }}
+
+// ❌ Invalid - object values not allowed (no state mapping)
+tokens={{ $spacing: { '': '1x', hovered: '2x' } }}
+// Will log warning and skip this token
+```
+
+#### Use Cases
+
+```jsx
+// Dynamic theming
+const ThemedCard = tasty({
+  tokens: { '#card-bg': '#surface', '#card-border': '#border' },
+  styles: {
+    fill: '#card-bg',
+    border: '1bw solid #card-border',
+  },
+});
+
+// Override theme per-instance
+<ThemedCard tokens={{ '#card-bg': '#purple.05', '#card-border': '#purple' }} />
+
+// Dynamic sizing based on props
+function DynamicComponent({ columns }) {
+  return <Grid tokens={{ $columns: columns }} />;
+}
+
+// Responsive values via parent CSS
+const Parent = tasty({
+  styles: {
+    '--child-spacing': ['4x', '2x', '1x'], // Responsive in styles
+  },
+});
+const Child = tasty({
+  styles: {
+    padding: '$child-spacing', // References parent's responsive property
+  },
+});
+```
+
 ## ✅ Best Practices & Anti-patterns
 
 ### Do's ✅
@@ -952,7 +1075,10 @@ styles: {
 
 // ❌ Don't change styles prop at runtime (performance)
 const [dynamicStyles, setDynamicStyles] = useState({});
-<Component styles={dynamicStyles} /> // Use style prop for dynamic values
+<Component styles={dynamicStyles} /> // Use tokens prop for dynamic values
+
+// ❌ Don't use style prop for custom styling
+<Component style={{ padding: '20px' }} /> // Only for spreading third-party library styles
 ```
 
 #### Tasty vs Native CSS Properties
@@ -981,11 +1107,15 @@ styles: {
 ### Performance Tips ⚡
 
 ```jsx
-// ✅ Use native style prop for dynamic values
+// ✅ Use tokens prop for dynamic CSS custom properties
 <Component
-  style={{ '--side-padding': dynamicPadding }}
-  styles={{ padding: '1x $side-padding' }}
+  tokens={{ $sidePadding: dynamicPadding }}
+  styles={{ padding: '1x $sidePadding' }}
 />
+
+// ⚠️ Avoid using style prop (only for spreading third-party library styles)
+// ❌ Don't do this for custom styling:
+<Component style={{ '--side-padding': dynamicPadding }} />
 
 // ✅ Avoid changing styles prop at runtime
 // ❌ Don't do this:

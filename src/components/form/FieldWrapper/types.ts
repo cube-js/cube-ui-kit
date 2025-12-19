@@ -11,7 +11,7 @@ import { CubeLabelProps } from '../Label';
 // ADDING NEW PROPS TO THIS INTERFACE REQUIRES ADDING THEM TO createFieldWrapperPropsKeys FUNCTION
 
 export type CubeFieldWrapperProps = {
-  as?: string;
+  as?: keyof HTMLElementTagNameMap;
   validationState?: ValidationState;
   styles?: Styles;
   /** Whether the input is required */

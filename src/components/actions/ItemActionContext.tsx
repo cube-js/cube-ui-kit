@@ -29,7 +29,10 @@ export function ItemActionProvider({
     <ItemActionContext.Provider
       value={{
         type:
-          type === 'item' || type === 'outline'
+          type === 'item' ||
+          type === 'outline' ||
+          type === 'header' ||
+          type === 'card'
             ? 'neutral'
             : type === 'secondary'
               ? 'clear'

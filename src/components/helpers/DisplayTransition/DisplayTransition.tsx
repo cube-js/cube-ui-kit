@@ -30,6 +30,8 @@ export type DisplayTransitionProps = {
   animateOnMount?: boolean;
   /** Respect prefers-reduced-motion by collapsing duration to 0. */
   respectReducedMotion?: boolean;
+  /** Preserve children content during exit transition. When true, uses stored children from when content was visible. @default true */
+  preserveContent?: boolean;
   /** Render-prop gets { phase, isShown, ref }. Bind ref to the transitioned element for native event detection. */
   children: (props: {
     phase: ReportedPhase;
@@ -58,6 +60,7 @@ export function DisplayTransition({
   exposeUnmounted = false,
   animateOnMount = true,
   respectReducedMotion = true,
+  preserveContent = true,
   children,
 }: DisplayTransitionProps) {
   // Reduced motion → collapse timing
@@ -66,6 +69,9 @@ export function DisplayTransition({
     typeof window !== 'undefined' &&
     window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   const dur = prefersReduced ? 0 : duration;
+
+  // Store children to preserve content during exit transitions
+  const storedChildrenRef = useRef<typeof children>(children);
 
   // For native transition event detection
   const elementRef = useRef<HTMLElement | null>(null);
@@ -167,18 +173,24 @@ export function DisplayTransition({
         return;
       }
 
-      const onTransitionStart = () => {
+      const onTransitionStart = (e: TransitionEvent) => {
+        // Ignore bubbled events from children - only react to our own element's transitions
+        if (e.target !== element) return;
         if (flowRef.current !== flow) return;
         transitionStartedRef.current = true;
         clearTimer(); // Cancel fallback timer once transition starts
       };
 
-      const onTransitionEnd = () => {
+      const onTransitionEnd = (e: TransitionEvent) => {
+        // Ignore bubbled events from children - only react to our own element's transitions
+        if (e.target !== element) return;
         if (flowRef.current !== flow) return;
         complete();
       };
 
-      const onTransitionCancel = () => {
+      const onTransitionCancel = (e: TransitionEvent) => {
+        // Ignore bubbled events from children - only react to our own element's transitions
+        if (e.target !== element) return;
         if (flowRef.current !== flow) return;
         complete();
       };
@@ -324,7 +336,9 @@ export function DisplayTransition({
   }, [isShownNow, onToggleEvent]);
 
   // Ref callback to attach to transitioned element
-  const refCallback: RefCallback<HTMLElement> = (node) => {
+  // MUST be memoized so React doesn't re-call it on re-renders,
+  // which would cleanup event listeners mid-transition
+  const refCallback: RefCallback<HTMLElement> = useCallback((node) => {
     if (node) {
       elementRef.current = node;
       // Don't call ensureEnterFlow() here - useLayoutEffect handles RAF scheduling
@@ -333,10 +347,26 @@ export function DisplayTransition({
       cleanupEventListeners();
       elementRef.current = null;
     }
-  };
+  }, []);
+
+  // Update stored children only when showing (enter/entered phase and targetShown is true)
+  // This prevents overwriting during exit transitions, preserving content for the animation
+  const isShowingContent =
+    (phase === 'enter' || phase === 'entered') && targetShown;
+
+  if (isShowingContent) {
+    storedChildrenRef.current = children;
+  }
+
+  // When preserveContent is enabled, always use stored children:
+  // - During show: stored is updated above, so it equals current children
+  // - During hide: stored keeps the last shown content for the exit animation
+  const effectiveChildren = preserveContent
+    ? storedChildrenRef.current
+    : children;
 
   if (phase === 'unmounted' && !exposeUnmounted) return null;
-  return children({
+  return effectiveChildren({
     phase:
       reportedPhase === 'enter' && duration !== undefined && !duration
         ? 'entered'

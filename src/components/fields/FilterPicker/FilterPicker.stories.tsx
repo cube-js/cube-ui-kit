@@ -973,7 +973,7 @@ export const WithHeaderAndFooter: Story = {
           <Text color="#dark.50" preset="t4">
             Popular languages shown
           </Text>
-          <Button type="link" size="small" rightIcon={<RightIcon />}>
+          <Button type="link" rightIcon={<RightIcon />}>
             View all
           </Button>
         </>
@@ -1744,7 +1744,6 @@ export const CustomInputComponent: Story = {
                   <Tag
                     key={option.key}
                     isClosable
-                    theme={option.theme}
                     onClose={() => handleTagRemove(option.key)}
                   >
                     {option.label}

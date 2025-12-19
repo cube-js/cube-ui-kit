@@ -4,6 +4,7 @@ import {
   FocusEvent,
   ForwardedRef,
   forwardRef,
+  HTMLAttributes,
   isValidElement,
   KeyboardEvent,
   ReactNode,
@@ -29,6 +30,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { isDevEnv } from '../../../tasty/utils/isDevEnv';
+import { useCombinedRefs } from '../../../utils/react';
 import { Alert } from '../Alert';
 
 import { LayoutProvider, useLayoutContext } from './LayoutContext';
@@ -56,6 +58,7 @@ const LayoutElement = tasty({
     },
 
     Inner: {
+      // .base-class[data-hover] > [data-element="Inner"] { ...}
       // Direct child selector required for nested layouts
       $: '>',
       position: 'absolute',
@@ -63,6 +66,8 @@ const LayoutElement = tasty({
       display: 'flex',
       flow: 'column',
       overflow: 'hidden',
+      placeContent: 'stretch',
+      placeItems: 'stretch',
       // Disable transition during panel resize for snappy feedback
       // Also disable transition when not ready to prevent initial animation
       // Only animate when has-transition is enabled (and not dragging/not-ready)
@@ -96,6 +101,10 @@ export interface CubeLayoutProps
   /** Styles for wrapper and Inner sub-element */
   styles?: Styles;
   children?: ReactNode;
+  /** Ref for the inner content element */
+  innerRef?: ForwardedRef<HTMLDivElement>;
+  /** Props to spread on the Inner sub-element */
+  innerProps?: HTMLAttributes<HTMLDivElement>;
   /**
    * @internal Force show dev warning even in production (for storybook testing)
    */
@@ -130,9 +139,13 @@ function LayoutInner(
     children,
     style,
     forwardedRef,
+    innerRef: innerRefProp,
+    innerProps,
     _forceShowDevWarning,
     ...otherProps
   } = props;
+
+  const combinedInnerRef = useCombinedRefs(innerRefProp);
 
   // Separate panels from other children
   const { panels, content } = useMemo(() => {
@@ -155,14 +168,14 @@ function LayoutInner(
   const innerStyles = extractStyles(otherProps, INNER_STYLES);
 
   // Calculate if the layout flow is vertical (for auto-border feature)
-  // Default flow is 'column' (vertical), check if user overrides it
+  // Default flow is 'column' (vertical), only horizontal when explicitly set to 'row'
   const isVertical = useMemo(() => {
-    const providedFlow = (styles?.Inner as Record<string, unknown>)?.flow;
-    const flowValue =
-      typeof providedFlow === 'string' ? providedFlow : 'column';
+    const flowFromProp = innerStyles?.flow;
+    const flowFromStyles = (styles?.Inner as Record<string, unknown>)?.flow;
+    const flowValue = flowFromProp ?? flowFromStyles;
 
-    return flowValue.startsWith('column');
-  }, [styles?.Inner]);
+    return typeof flowValue !== 'string' || !flowValue.startsWith('row');
+  }, [innerStyles?.flow, styles?.Inner]);
 
   // Merge styles using the same pattern as LayoutPane
   const finalStyles = useMemo(() => {
@@ -344,7 +357,12 @@ function LayoutInner(
           {/* Panels are rendered outside the Inner element */}
           {panels}
           {/* Other content goes inside the Inner element */}
-          <div data-element="Inner" onFocus={handleInnerFocus}>
+          <div
+            ref={combinedInnerRef}
+            data-element="Inner"
+            onFocus={handleInnerFocus}
+            {...innerProps}
+          >
             {content}
           </div>
         </>
