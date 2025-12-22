@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.98.1
+
+### Patch Changes
+
+- [#928](https://github.com/cube-js/cube-ui-kit/pull/928) [`45ff2f40`](https://github.com/cube-js/cube-ui-kit/commit/45ff2f40f7e33e2596d8e8b1de606e0b3800a6c3) Thanks [@tenphi](https://github.com/tenphi)! - Add icons: ColumnTotalIcon, RowTotalsIcon, SubtotalsIcon.
+
 ## 0.98.0
 
 ### Minor Changes
