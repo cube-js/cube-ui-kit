@@ -2,7 +2,7 @@ import isChromatic from 'chromatic/isChromatic';
 import { config } from 'react-transition-group';
 import { configure } from 'storybook/test';
 
-import { Root } from '../src';
+import { Root } from '../src/components/Root';
 
 configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });
 
