@@ -168,7 +168,7 @@ export const DEFAULT_BUTTON_STYLES = {
     '': 'stretch',
     'raw-children': 'center stretch',
   },
-  placeContent: 'center stretch',
+  placeContent: 'center',
   position: 'relative',
   margin: 0,
   boxSizing: 'border-box',
