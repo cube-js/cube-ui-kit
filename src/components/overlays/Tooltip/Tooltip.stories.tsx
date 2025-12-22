@@ -2,7 +2,7 @@ import { ComponentMeta, Story } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Button } from '../../actions';
+import { Button } from '../../actions/Button/Button';
 
 import { Tooltip } from './Tooltip';
 import { CubeTooltipProviderProps, TooltipProvider } from './TooltipProvider';

@@ -46,7 +46,7 @@ function LayoutPanelHeader(
 ) {
   const {
     title,
-    level = 2,
+    level = 3,
     isClosable,
     onClose,
     actions,
@@ -82,13 +82,10 @@ function LayoutPanelHeader(
 
   const finalActions = actions ?? closeAction;
 
-  // Use heading tag based on level for semantics
-  const Tag = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-
   return (
     <PanelHeaderElement
       ref={ref}
-      as={Tag}
+      level={level}
       size="large"
       actions={finalActions}
       styles={styles}
