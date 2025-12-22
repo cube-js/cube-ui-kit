@@ -111,14 +111,13 @@ export function IconSwitch(props: CubeIconSwitchProps) {
     const prevChildren = prevChildrenRef.current;
 
     const hasKeyChanged = effectiveKey !== prevKey;
-    const hasChildrenChanged = children !== prevChildren;
     const hasNullishToggled =
       isNullishContent(children) !== isNullishContent(prevChildren);
 
     // Transition rules:
-    // - If key changed -> transition
+    // - If key changed -> transition (add new icon entry)
     // - If we toggled nullish <-> non-nullish -> transition (even if key did not change)
-    // - Otherwise, if only children changed -> update in place (no transition)
+    // - Otherwise -> no state update (children reference changes are handled at render time)
     if (hasKeyChanged || hasNullishToggled) {
       keyCounterRef.current += 1;
       const newEntry: IconEntry = {
@@ -126,18 +125,6 @@ export function IconSwitch(props: CubeIconSwitchProps) {
         content: children,
       };
       setIcons((prev) => [...prev, newEntry]);
-    } else if (hasChildrenChanged) {
-      // Same key, different children -> update in-place -> no transition
-      // This allows self-animating icons to receive updated props
-      setIcons((prev) => {
-        if (!prev.length) {
-          return [{ key: 0, content: children }];
-        }
-        const lastIndex = prev.length - 1;
-        const next = [...prev];
-        next[lastIndex] = { ...next[lastIndex], content: children };
-        return next;
-      });
     }
 
     prevEffectiveKeyRef.current = effectiveKey;
@@ -152,6 +139,9 @@ export function IconSwitch(props: CubeIconSwitchProps) {
 
   const content = icons.map((icon) => {
     const isActive = icon.key === latestKey;
+    // Use current children for active icon (avoids state updates on children reference changes),
+    // use stored content for exiting icons (preserves appearance during fade-out)
+    const displayContent = isActive ? children : icon.content;
 
     return (
       <DisplayTransition
@@ -172,7 +162,7 @@ export function IconSwitch(props: CubeIconSwitchProps) {
               phase,
             }}
           >
-            {icon.content}
+            {displayContent}
           </IconSlotElement>
         )}
       </DisplayTransition>
