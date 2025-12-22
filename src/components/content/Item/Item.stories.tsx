@@ -10,7 +10,8 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { DirectionIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Button, ItemAction } from '../../actions';
+import { Button } from '../../actions/Button/Button';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Block } from '../../Block';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';

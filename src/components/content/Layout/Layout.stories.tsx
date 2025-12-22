@@ -2,7 +2,8 @@ import { IconFilter, IconFilterFilled } from '@tabler/icons-react';
 import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Button, ItemButton } from '../../actions';
+import { Button } from '../../actions/Button/Button';
+import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
 import { Card } from '../Card/Card';

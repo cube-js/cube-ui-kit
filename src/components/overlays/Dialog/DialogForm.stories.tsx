@@ -8,7 +8,7 @@ import {
 } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Button } from '../../actions';
+import { Button } from '../../actions/Button/Button';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
 import { Input } from '../../fields';

@@ -4,7 +4,7 @@ import { Key, useRef, useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
 import { wait } from '../../../test/utils/wait';
-import { Button } from '../../actions';
+import { Button } from '../../actions/Button/Button';
 import { Content } from '../../content/Content';
 import { Footer } from '../../content/Footer';
 import { Header } from '../../content/Header';
