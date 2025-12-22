@@ -68,6 +68,8 @@ export interface CubeDialogTriggerProps
   defaultOpen?: boolean;
   shouldFlip?: boolean;
   shouldUpdatePosition?: boolean;
+  /** Minimum padding in pixels between the popover and viewport edges */
+  containerPadding?: number;
 }
 
 /**

@@ -1,0 +1,502 @@
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import * as ComplexLayoutStories from './ComplexLayout.stories';
+
+<Meta of={ComplexLayoutStories} />
+
+# Layout Guide
+
+This guide covers how to create layouts using the `Layout` component and its sub-components.
+
+> **See also:** [Layout API Reference](/docs/components-content-layout--docs) for detailed props documentation.
+
+## Introduction
+
+The `Layout` component provides a structured way to build application layouts with headers, footers, sidebars, and content areas. It handles:
+
+- **Overflow management** - Content scrolls properly without breaking the layout
+- **Panel coordination** - Side panels automatically adjust the main content area
+- **Flexible composition** - Mix and match sub-components for any layout pattern
+
+### Two-Element Architecture
+
+Internally, Layout uses a wrapper + inner content model. The outer wrapper has `overflow: hidden` while an inner element uses absolute positioning with insets that adjust based on panel sizes. This ensures:
+
+- Content never overflows the layout bounds
+- Panels automatically push the content area without overlapping
+- Scrolling is contained within each content area
+
+## Basic Layouts
+
+### Header + Content + Footer
+
+A typical layout with header, scrollable content area, and footer.
+
+<Story of={ComplexLayoutStories.HeaderContentFooter} />
+
+```jsx live=false
+<Layout height="300px">              {/* block, Inner: flex column ↓ */}
+  <Layout.Header title="Dashboard" />
+  <Layout.Content>                   {/* flex column ↓, scrollable, fills remaining space */}
+    <Text>Content between header and footer</Text>
+  </Layout.Content>
+  <Layout.Footer>                    {/* flex row →, space-between */}
+    <Text>Status: Ready</Text>
+    <Button type="primary">Save</Button>
+  </Layout.Footer>
+</Layout>
+```
+
+## Navigation Patterns
+
+### Sidebar Layout
+
+Use `Layout.Panel` for side navigation. Panels are absolutely positioned and automatically adjust the content area insets.
+
+<Story of={ComplexLayoutStories.SidebarLayout} />
+
+```jsx live=false
+<Layout height="400px">              {/* block, Inner: flex column ↓ */}
+  <Layout.Panel side="left" size={200} isOpen={isOpen}> {/* absolute left, pushes content via insets */}
+    <Layout.PanelHeader isClosable title="Menu" onClose={() => setIsOpen(false)} />
+    <Layout.Content padding=".5x" gap="1bw"> {/* flex column ↓, scrollable */}
+      <ItemButton type="neutral">Dashboard</ItemButton>
+      <ItemButton type="neutral">Settings</ItemButton>
+    </Layout.Content>
+  </Layout.Panel>
+  <Layout.Toolbar>                   {/* flex row →, single item aligns left */}
+    <Button onPress={() => setIsOpen(!isOpen)}>Toggle Menu</Button>
+  </Layout.Toolbar>
+  <Layout.Content>                   {/* flex column ↓, scrollable, fills remaining space */}
+    <Text>Main content area</Text>
+  </Layout.Content>
+</Layout>
+```
+
+**Key props:**
+- `side` - Panel position: `"left"`, `"right"`, `"top"`, `"bottom"`
+- `size` - Panel width (for left/right) or height (for top/bottom)
+- `isOpen` / `onOpenChange` - Control panel visibility
+
+### Resizable Panel
+
+Add `isResizable` to allow users to resize the panel.
+
+<Story of={ComplexLayoutStories.ResizablePanel} />
+
+```jsx live=false
+<Layout.Panel
+  isResizable
+  side="left"                        {/* absolute left, pushes content via insets */}
+  size={size}
+  minSize={150}
+  maxSize={400}
+  onSizeChange={setSize}
+>
+  {/* Panel content */}
+</Layout.Panel>
+```
+
+**Resize behavior:**
+- Drag the edge handle to resize
+- Double-click the handle to reset to default size
+- Use `minSize` and `maxSize` to constrain resize range
+
+### Persistent Panel Size
+
+Use `sizeStorageKey` to persist the panel size in localStorage. The size will be restored automatically when the component mounts.
+
+```jsx live=false
+<Layout.Panel
+  isResizable
+  side="left"                        {/* absolute left, pushes content via insets */}
+  sizeStorageKey="my-app-sidebar-size"
+  defaultSize={250}
+  minSize={150}
+  maxSize={400}
+>
+  {/* Panel content */}
+</Layout.Panel>
+```
+
+**Notes:**
+- The `sizeStorageKey` must be unique across your application
+- Size is persisted after drag operations complete
+- Double-clicking to reset also updates the stored value
+- If no stored value exists, `defaultSize` is used
+
+## Toolbar Patterns
+
+### Left/Right Toolbar
+
+`Layout.Toolbar` uses `space-between` alignment, placing first and last children at opposite ends.
+
+<Story of={ComplexLayoutStories.ToolbarLeftRight} />
+
+```jsx live=false
+<Layout.Toolbar>                     {/* flex row →, space-between */}
+  <Title level={4}>App Name</Title>  {/* left (first item) */}
+  <Button type="primary">Action</Button> {/* right (last item) */}
+</Layout.Toolbar>
+```
+
+### Left/Center/Right Toolbar
+
+Use `Space` components to create three sections.
+
+<Story of={ComplexLayoutStories.ToolbarLeftCenterRight} />
+
+```jsx live=false
+<Layout.Toolbar>                     {/* flex row →, space-between */}
+  <Space>                            {/* flex row → */}
+    <Button>Back</Button>
+  </Space>
+  <Title level={4}>Page Title</Title>{/* center (middle item) */}
+  <Space>                            {/* flex row → */}
+    <Button>Help</Button>
+    <Button type="primary">Save</Button>
+  </Space>
+</Layout.Toolbar>
+```
+
+## Header Patterns
+
+### Header with Breadcrumbs
+
+`Layout.Header` supports breadcrumbs, subtitle, and extra content.
+
+<Story of={ComplexLayoutStories.HeaderWithBreadcrumbs} />
+
+```jsx live=false
+<Layout.Header                       {/* grid with named areas: breadcrumbs/title/suffix/extra/subtitle */}
+  title="User Details"
+  breadcrumbs={[
+    ['Home', '/'],
+    ['Users', '/users'],
+  ]}
+  extra={                            {/* right side (extra area) */}
+    <Space>                          {/* flex row → */}
+      <Button>Edit</Button>
+      <Button type="primary">Save</Button>
+    </Space>
+  }
+/>
+```
+
+**Header props:**
+- `title` - Page title
+- `subtitle` - Text below the title
+- `breadcrumbs` - Array of `[label, href]` tuples
+- `extra` - Content on the right side
+- `suffix` - Content next to the title
+- `level` - Heading level (1-6)
+
+## Footer Patterns
+
+### Footer with Actions
+
+Use `invertOrder` to place primary actions on the right.
+
+<Story of={ComplexLayoutStories.FooterWithActions} />
+
+```jsx live=false
+<Layout.Footer invertOrder>          {/* flex row-reverse ←, space-between */}
+  <Button.Group flow="row-reverse">  {/* flex row-reverse ← */}
+    <Button type="primary">Submit</Button>
+    <Button>Cancel</Button>
+  </Button.Group>
+  <Text preset="t4" color="#dark-03">Draft saved</Text> {/* left side due to row-reverse */}
+</Layout.Footer>
+```
+
+## Panel Patterns
+
+### Panel Modes
+
+Panels support four rendering modes via the `mode` prop:
+
+| Mode | Content Push | Overlay | Description |
+|------|--------------|---------|-------------|
+| `default` | Yes | No | Standard panel, pushes content |
+| `sticky` | No | No | Floats over content |
+| `overlay` | Yes | Yes | With dismissable backdrop |
+| `dialog` | No | Dialog | Renders as modal dialog |
+
+### Sticky Panel
+
+Panels with `mode="sticky"` float over content without pushing it aside.
+
+<Story of={ComplexLayoutStories.StickyPanel} />
+
+```jsx live=false
+<Layout.Panel
+  mode="sticky"                      {/* absolute, does NOT push content */}
+  side="right"
+  size={260}
+  isOpen={isOpen}
+  onOpenChange={setIsOpen}
+>
+  <Layout.PanelHeader isClosable title="Quick Actions" onClose={() => setIsOpen(false)} />
+  <Layout.Content>
+    <Text>Floating panel content</Text>
+  </Layout.Content>
+</Layout.Panel>
+```
+
+### Overlay Panel
+
+Panels with `mode="overlay"` show a backdrop and dismiss on:
+- Clicking the backdrop
+- Pressing Escape anywhere in the Layout
+- Moving focus to the main content area
+
+<Story of={ComplexLayoutStories.OverlayPanel} />
+
+```jsx live=false
+<Layout.Panel
+  mode="overlay"                     {/* absolute, backdrop behind panel */}
+  side="right"
+  size={300}
+  isOpen={isOpen}
+  onOpenChange={setIsOpen}
+  overlayStyles={{ fill: '#dark.5' }} {/* optional custom backdrop */}
+>
+  <Layout.PanelHeader isClosable title="Details" onClose={() => setIsOpen(false)} />
+  <Layout.Content>
+    <Text>Panel with backdrop overlay</Text>
+  </Layout.Content>
+</Layout.Panel>
+```
+
+Set `isDismissable={false}` to prevent automatic dismissal.
+
+### Dialog Mode Panel
+
+Panels with `mode="dialog"` render as a modal dialog instead of inline.
+
+```jsx live=false
+<Layout.Panel
+  mode="dialog"                      {/* renders as modal overlay instead of inline */}
+  side="left"
+  size={300}
+  isDialogOpen={isOpen}
+  onDialogOpenChange={setIsOpen}
+>
+  <Layout.PanelHeader isClosable title="Settings" onClose={() => setIsOpen(false)} />
+  <Layout.Content>                   {/* flex column ↓, scrollable */}
+    <Text>Panel content as dialog overlay</Text>
+  </Layout.Content>
+</Layout.Panel>
+```
+
+**Use cases:**
+- Mobile-responsive layouts where sidebars become modal dialogs
+- Settings panels that need full focus
+- Any panel that should overlay rather than push content
+
+## Pane Patterns
+
+### Resizable Panes
+
+`Layout.Pane` creates inline resizable sections that participate in the flex flow (unlike `Panel` which is absolutely positioned).
+
+<Story of={ComplexLayoutStories.ResizablePane} />
+
+```jsx live=false
+<Layout.Flex>                        {/* flex row →, scrollable */}
+  <Layout.Pane
+    isResizable
+    resizeEdge="right"               {/* inline in flex flow, not absolute */}
+    size={leftSize}
+    minSize={120}
+    maxSize={350}
+    onSizeChange={setLeftSize}
+  >
+    <Title level={5}>Left Pane</Title>
+  </Layout.Pane>
+  <Layout.Content width="min 150px"> {/* flex column ↓, scrollable, fills remaining space */}
+    <Title level={5}>Content</Title>
+  </Layout.Content>
+</Layout.Flex>
+```
+
+**Panel vs Pane:**
+
+| Feature | Panel | Pane |
+|---------|-------|------|
+| Position | Absolute (overlays layout) | Inline (participates in flex) |
+| Use case | Sidebars, drawers | Split views, code editors |
+| Content adjustment | Pushes content via insets | Takes space in flex container |
+| `resizeEdge` | Based on `side` prop | `"right"` or `"bottom"` |
+
+## Advanced Patterns
+
+### Nested Layouts
+
+Layouts can be nested for complex structures.
+
+<Story of={ComplexLayoutStories.NestedLayout} />
+
+```jsx live=false
+<Layout height="400px">              {/* block, Inner: flex column ↓ */}
+  <Layout.Header title="Outer Layout" />
+  <Layout flow="row">                {/* block, Inner: flex row → */}
+    <Layout width="180px" border="right"> {/* block, Inner: flex column ↓ */}
+      <Layout.Content>Sidebar</Layout.Content> {/* flex column ↓, scrollable */}
+    </Layout>
+    <Layout>                         {/* block, Inner: flex column ↓ */}
+      <Layout.Toolbar>Inner Toolbar</Layout.Toolbar> {/* flex row →, single item aligns left */}
+      <Layout.Content>Inner content</Layout.Content> {/* flex column ↓, scrollable */}
+    </Layout>
+  </Layout>
+</Layout>
+```
+
+### Grid Dashboard
+
+Use `Layout.Grid` for grid-based layouts.
+
+<Story of={ComplexLayoutStories.GridDashboard} />
+
+```jsx live=false
+<Layout.Grid                         {/* grid 2×2, scrollable */}
+  columns="repeat(2, 1fr)"
+  rows="repeat(2, 1fr)"
+  gap="1x"
+  padding="1x"
+>
+  <Card>Metrics</Card>               {/* grid cell 1,1 */}
+  <Card>Charts</Card>                {/* grid cell 1,2 */}
+  <Card>Activity</Card>              {/* grid cell 2,1 */}
+  <Card>Stats</Card>                 {/* grid cell 2,2 */}
+</Layout.Grid>
+```
+
+### Container Layout
+
+Use `Layout.Container` for content that should be horizontally centered with a constrained max-width. Ideal for articles, forms, and focused content.
+
+<Story of={ComplexLayoutStories.ContainerLayout} />
+
+```jsx live=false
+<Layout.Container>      {/* flex column ↓, scrollable, horizontally centered */}
+  <Title>Article Title</Title>       {/* constrained width: min 40x, max 120x */}
+  <Text>Content is centered with a comfortable reading width.</Text>
+  <Space>
+    <Button>Previous</Button>
+    <Button type="primary">Next</Button>
+  </Space>
+</Layout.Container>
+```
+
+**Use cases:**
+- Article or documentation pages
+- Forms and settings pages
+- Any content that benefits from constrained width
+
+### Center Layout
+
+Use `Layout.Center` for content that should be centered both horizontally and vertically. Ideal for empty states, loading screens, and hero sections.
+
+<Story of={ComplexLayoutStories.CenterLayout} />
+
+```jsx live=false
+<Layout.Center>         {/* flex column ↓, scrollable, centered both axes */}
+  <Title>No Results Found</Title>    {/* text-align: center by default */}
+  <Text>Try adjusting your search criteria.</Text>
+  <Button type="primary">Clear Filters</Button>
+</Layout.Center>
+```
+
+**Use cases:**
+- Empty states ("No items found")
+- Loading screens
+- Welcome/onboarding screens
+- Error pages (404, 500)
+
+### When to Use Container vs Center
+
+| Use Case | Component |
+|----------|-----------|
+| Article/documentation content | `Layout.Container` |
+| Forms with top-aligned content | `Layout.Container` |
+| Empty states | `Layout.Center` |
+| Loading/splash screens | `Layout.Center` |
+| Error pages | `Layout.Center` |
+
+## Using Space Component
+
+`Space` is a simple flex wrapper for arranging elements inline.
+
+```jsx live=false
+// Horizontal (default)
+<Space gap="1x">                     {/* flex row → */}
+  <Button>One</Button>
+  <Button>Two</Button>
+</Space>
+
+// Vertical
+<Space direction="vertical" gap="1x">{/* flex column ↓ */}
+  <Button>One</Button>
+  <Button>Two</Button>
+</Space>
+```
+
+### When to Use Space vs Layout.Flex
+
+| Use Case | Component |
+|----------|-----------|
+| Inline button groups | `Space` |
+| Quick horizontal/vertical arrangement | `Space` |
+| Scrollable flex container | `Layout.Flex` |
+| Part of Layout structure | `Layout.Flex` |
+| Standalone flex wrapper | `Space` |
+
+## Sub-Components Reference
+
+| Component | Purpose |
+|-----------|---------|
+| `Layout` | Root wrapper, provides context |
+| `Layout.Content` | Scrollable content area, fills available space |
+| `Layout.Container` | Horizontally centered content with constrained width |
+| `Layout.Center` | Centered content (both axes) with text-align center |
+| `Layout.Header` | Page header with title, breadcrumbs, actions |
+| `Layout.Footer` | Footer bar, typically for actions |
+| `Layout.Toolbar` | Horizontal bar with space-between layout |
+| `Layout.Panel` | Side panel with modes: default, sticky, overlay, dialog |
+| `Layout.PanelHeader` | Header for panels with close button |
+| `Layout.Pane` | Inline resizable section |
+| `Layout.Flex` | Scrollable flex container |
+| `Layout.Grid` | Scrollable grid container |
+| `Layout.Block` | Simple block container |
+
+## Common Props
+
+### Layout
+
+- `height` - Layout height (required for proper containment)
+- `contentPadding` - Default padding for content areas
+- `hasTransition` - Enable slide animations for panels
+- `flow` - Flex direction for inner content
+
+### Content Components
+
+All content components (`Content`, `Header`, `Footer`, `Toolbar`, `Flex`, `Grid`) support:
+
+- `padding` - Inner padding
+- `scrollbar` - Scrollbar style: `"default"`, `"thin"`, `"tiny"`, `"none"`
+- `gap` - Gap between children
+
+## Recommended Topics
+
+The following topics would be valuable additions to this documentation:
+
+1. **Responsive Layouts** - Media query patterns for adapting layouts to different screen sizes
+2. **Animation Patterns** - Using `hasTransition` effectively, custom transition timing
+3. **Keyboard Navigation** - Focus management within layouts, panel accessibility
+4. **State Persistence** - Panel sizes can be persisted using `sizeStorageKey` (see Persistent Panel Size). Open states could be added similarly.
+5. **Performance Optimization** - Best practices for large content areas, virtualization
+6. **Testing Layouts** - Strategies for testing layout components
+7. **Integration with Router** - Layouts with route-based content switching
+8. **Dark Mode Support** - Theme-aware layout styling
+9. **Print Layouts** - Adapting layouts for print media
+10. **Mobile Patterns** - Touch interactions, swipe gestures for panels

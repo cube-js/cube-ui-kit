@@ -32,7 +32,6 @@ import {
   tasty,
 } from '../../../tasty';
 import { generateRandomId } from '../../../utils/random';
-import { mergeProps } from '../../../utils/react';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
@@ -53,7 +52,14 @@ export interface CubePickerProps<T>
     Omit<FieldBaseProps, 'tooltip'>,
     Pick<
       CubeItemButtonProps,
-      'type' | 'theme' | 'icon' | 'rightIcon' | 'prefix' | 'suffix' | 'hotkeys'
+      | 'type'
+      | 'theme'
+      | 'icon'
+      | 'rightIcon'
+      | 'prefix'
+      | 'suffix'
+      | 'hotkeys'
+      | 'shape'
     > {
   /** Placeholder text when no selection is made */
   placeholder?: string;
@@ -69,6 +75,8 @@ export interface CubePickerProps<T>
   isCheckable?: boolean;
   /** Whether to flip the popover placement */
   shouldFlip?: boolean;
+  /** Minimum padding in pixels between the popover and viewport edges */
+  containerPadding?: number;
   /** Tooltip for the trigger button (separate from field tooltip) */
   triggerTooltip?: CubeItemProps['tooltip'];
   /** Description for the trigger button (separate from field description) */
@@ -113,6 +121,8 @@ export interface CubePickerProps<T>
    * @default true when items are provided, false when using JSX children
    */
   sortSelectedToTop?: boolean;
+  /** Callback called when the popover open state changes */
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -190,10 +200,12 @@ export const Picker = forwardRef(function Picker<T extends object>(
     popoverStyles,
     type = 'outline',
     theme = 'default',
+    shape,
     labelSuffix,
     shouldFocusWrap,
     children,
     shouldFlip = true,
+    containerPadding = 8,
     selectedKey,
     defaultSelectedKey,
     selectedKeys,
@@ -226,6 +238,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     isClearable,
     onClear,
     sortSelectedToTop,
+    onOpenChange,
     listStateRef: externalListStateRef,
     ...otherProps
   } = props;
@@ -328,6 +341,11 @@ export const Picker = forwardRef(function Picker<T extends object>(
     effectiveSelectedKeys,
     selectionMode,
   ]);
+
+  // Call onOpenChange when popover state changes
+  useEffect(() => {
+    onOpenChange?.(isPopoverOpen);
+  }, [isPopoverOpen]);
 
   // Sort items with selected on top if enabled
   const getSortedItems = useCallback((): typeof items => {
@@ -446,7 +464,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
   const renderTriggerContent = () => {
     // When there is a selection and a custom summary renderer is provided – use it.
-    if (hasSelection && typeof renderSummary === 'function') {
+    if (typeof renderSummary === 'function') {
       if (selectionMode === 'single') {
         return renderSummary({
           selectedLabel: selectedLabels[0],
@@ -462,14 +480,14 @@ export const Picker = forwardRef(function Picker<T extends object>(
         selectedKeys: effectiveSelectedKeys,
         selectionMode: 'multiple',
       });
-    } else if (hasSelection && renderSummary === false) {
+    } else if (renderSummary === false) {
       return null;
     }
 
     let content: ReactNode = '';
 
     if (!hasSelection) {
-      content = placeholder;
+      return <Text.Placeholder>{placeholder}</Text.Placeholder>;
     } else if (selectionMode === 'single') {
       content = selectedLabels[0];
     } else if (effectiveSelectedKeys === 'all') {
@@ -482,17 +500,13 @@ export const Picker = forwardRef(function Picker<T extends object>(
       return null;
     }
 
-    return (
-      <Text
-        ellipsis
-        style={{ opacity: hasSelection ? 1 : 'var(--disabled-opacity)' }}
-      >
-        {content}
-      </Text>
-    );
+    return content;
   };
 
   const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
+
+  // Capture trigger width for overlay min-width
+  const triggerWidth = triggerRef?.current?.offsetWidth;
 
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
@@ -577,13 +591,14 @@ export const Picker = forwardRef(function Picker<T extends object>(
       <ItemButton
         ref={triggerRef as any}
         data-popover-trigger
-        isButton={false}
         id={id}
         qa={qa || 'PickerTrigger'}
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
+        shape={shape}
         isDisabled={isDisabled || isLoading}
+        data-input-type="picker"
         mods={{
           placeholder: !hasSelection,
           ...externalMods,
@@ -631,6 +646,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
         type="popover"
         placement="bottom start"
         styles={triggerStyles}
+        containerPadding={containerPadding}
         shouldUpdatePosition={shouldUpdatePosition}
         shouldFlip={shouldFlip && shouldUpdatePosition}
         isDismissable={true}
@@ -647,12 +663,19 @@ export const Picker = forwardRef(function Picker<T extends object>(
         {renderTrigger}
         {(close) => (
           <Dialog
+            qa="PickerOverlay"
             display="grid"
             styles={{
               gridRows: '1sf',
-              width: '30x max-content 50vw',
+              width: '$overlay-min-width max-content 50vw',
+              '$overlay-min-width': '30x',
               ...popoverStyles,
             }}
+            style={
+              triggerWidth
+                ? ({ '--overlay-min-width': `${triggerWidth}px` } as any)
+                : undefined
+            }
           >
             <FocusScope restoreFocus>
               <ListBox
@@ -755,14 +778,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
   return wrapWithField<Omit<CubePickerProps<T>, 'children' | 'tooltip'>>(
     pickerField,
     ref as any,
-    mergeProps(
-      {
-        ...props,
-        children: undefined,
-        styles: undefined,
-      },
-      {},
-    ),
+    props,
   );
 }) as unknown as (<T>(
   props: CubePickerProps<T> & { ref?: ForwardedRef<HTMLElement> },

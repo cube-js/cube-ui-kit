@@ -18,11 +18,9 @@ import {
   BaseProps,
   BLOCK_STYLES,
   BlockStyleProps,
-  DIMENSION_STYLES,
-  DimensionStyleProps,
   extractStyles,
-  POSITION_STYLES,
-  PositionStyleProps,
+  OUTER_STYLES,
+  OuterStyleProps,
   Props,
   Styles,
   tasty,
@@ -65,14 +63,12 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   },
   border: {
     '': true,
-    focused: '#purple-text',
     valid: '#success-text.50',
     invalid: '#danger-text.50',
+    focused: '#purple-text',
+    'valid & focused': '#success-text',
+    'invalid & focused': '#danger-text',
     disabled: true,
-  },
-  outline: {
-    '': '#purple-03.0',
-    'invalid & focused': '#danger.50',
   },
   preset: 't3',
   radius: true,
@@ -134,8 +130,6 @@ const InputWrapperElement = tasty({
   styles: INPUT_WRAPPER_STYLES,
 });
 
-const STYLE_LIST = [...POSITION_STYLES, ...DIMENSION_STYLES];
-
 const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
@@ -183,8 +177,7 @@ const InputElement = tasty({ qa: 'Input', styles: DEFAULT_INPUT_STYLES });
 
 export interface CubeTextInputBaseProps
   extends BaseProps,
-    PositionStyleProps,
-    DimensionStyleProps,
+    OuterStyleProps,
     BlockStyleProps,
     Omit<AriaTextFieldProps, 'validate'>,
     FieldBaseProps {
@@ -215,8 +208,6 @@ export interface CubeTextInputBaseProps
   loadingIndicator?: ReactNode;
   /** Style map for the input */
   inputStyles?: Styles;
-  /** Style map for the input wrapper */
-  wrapperStyles?: Styles;
   /** The number of rows for the input. Only applies to textarea. */
   rows?: number;
   /** The resize CSS property sets whether an element is resizable, and if so, in which directions. */
@@ -255,7 +246,6 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     loadingIndicator,
     value,
     inputStyles = {},
-    wrapperStyles = {},
     suffix,
     suffixPosition = 'before',
     wrapperRef,
@@ -270,10 +260,16 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     ...otherProps
   } = props;
 
-  let styles = extractStyles(otherProps, STYLE_LIST);
+  let styles = extractStyles(otherProps, OUTER_STYLES);
   let type = otherProps.type;
 
-  inputStyles = extractStyles(otherProps, INPUT_STYLE_PROPS_LIST, inputStyles);
+  inputStyles = extractStyles(
+    otherProps,
+    INPUT_STYLE_PROPS_LIST,
+    inputStyles,
+    undefined,
+    ['styles'],
+  );
 
   let ElementType: 'textarea' | 'input' = multiLine ? 'textarea' : 'input';
   let { isFocused, focusProps } = useFocus({ isDisabled });
@@ -363,13 +359,14 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
       ref={wrapperRef}
       mods={modifiers}
       data-size={size}
-      styles={wrapperStyles}
+      styles={styles}
       {...wrapperProps}
     >
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <InputElement
         qa={qa || 'Input'}
         as={ElementType}
+        data-input-type="textinput"
         {...mergeProps(inputProps, focusProps, hoverProps)}
         ref={inputRef}
         rows={multiLine ? rows : undefined}
@@ -402,7 +399,6 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   return wrapWithField(textField, domRef, {
     ...props,
     form: undefined,
-    styles,
   });
 }
 

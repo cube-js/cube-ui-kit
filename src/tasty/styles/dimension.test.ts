@@ -110,4 +110,53 @@ describe('dimensionStyle – width & height helpers', () => {
     expect(parsed.output).toBe('calc-size(fit-content)');
     expect(parsed.groups[0].values).toEqual(['calc-size(fit-content)']);
   });
+
+  test('fixed modifier with pixels', () => {
+    const res = widthStyle({ width: 'fixed 10px' }) as any;
+    expect(res.width).toBe('10px');
+    expect(res['min-width']).toBe('10px');
+    expect(res['max-width']).toBe('10px');
+  });
+
+  test('fixed modifier with gap units', () => {
+    const res = heightStyle({ height: 'fixed 5x' }) as any;
+    expect(res.height).toBe('calc(5 * var(--gap))');
+    expect(res['min-height']).toBe('calc(5 * var(--gap))');
+    expect(res['max-height']).toBe('calc(5 * var(--gap))');
+  });
+
+  test('fixed modifier with rem units', () => {
+    const res = widthStyle({ width: 'fixed 2rem' }) as any;
+    expect(res.width).toBe('2rem');
+    expect(res['min-width']).toBe('2rem');
+    expect(res['max-width']).toBe('2rem');
+  });
+
+  test('fixed modifier with percentage', () => {
+    const res = heightStyle({ height: 'fixed 100%' }) as any;
+    expect(res.height).toBe('100%');
+    expect(res['min-height']).toBe('100%');
+    expect(res['max-height']).toBe('100%');
+  });
+
+  test('numeric zero height', () => {
+    const res = heightStyle({ height: 0 }) as any;
+    expect(res.height).toBe('0px');
+    expect(res['min-height']).toBe('initial');
+    expect(res['max-height']).toBe('initial');
+  });
+
+  test('string zero height', () => {
+    const res = heightStyle({ height: '0' }) as any;
+    expect(res.height).toBe('0');
+    expect(res['min-height']).toBe('initial');
+    expect(res['max-height']).toBe('initial');
+  });
+
+  test('numeric zero width', () => {
+    const res = widthStyle({ width: 0 }) as any;
+    expect(res.width).toBe('0px');
+    expect(res['min-width']).toBe('initial');
+    expect(res['max-width']).toBe('initial');
+  });
 });

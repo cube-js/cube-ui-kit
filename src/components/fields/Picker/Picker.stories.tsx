@@ -267,3 +267,15 @@ export const WithDescription: Story = {
     )),
   },
 };
+
+export const LoadingState: Story = {
+  args: {
+    placeholder: 'Loading...',
+    label: 'Favorite Fruit',
+    selectionMode: 'single',
+    isLoading: true,
+    children: fruits.map((fruit) => (
+      <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
+    )),
+  },
+};

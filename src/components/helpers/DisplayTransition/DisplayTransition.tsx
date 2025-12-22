@@ -10,7 +10,8 @@ import {
 
 const AUTO_FALLBACK_DURATION = 500;
 
-type Phase = 'enter' | 'entered' | 'exit' | 'unmounted';
+type Phase = 'enter' | 'entered' | 'exit-pending' | 'exit' | 'unmounted';
+type ReportedPhase = 'enter' | 'entered' | 'exit' | 'unmounted';
 
 export type DisplayTransitionProps = {
   /** Desired visibility (driver). */
@@ -20,7 +21,7 @@ export type DisplayTransitionProps = {
   /** Fires after enter settles or after exit completes (unmount). */
   onRest?: (transition: 'enter' | 'exit') => void;
   /** Fires when phase changes. */
-  onPhaseChange?: (phase: Phase) => void;
+  onPhaseChange?: (phase: ReportedPhase) => void;
   /** Fires when isShown (derived from phase) changes. */
   onToggle?: (isShown: boolean) => void;
   /** Keep calling children during "unmounted" (you decide what to render). */
@@ -29,9 +30,11 @@ export type DisplayTransitionProps = {
   animateOnMount?: boolean;
   /** Respect prefers-reduced-motion by collapsing duration to 0. */
   respectReducedMotion?: boolean;
+  /** Preserve children content during exit transition. When true, uses stored children from when content was visible. @default true */
+  preserveContent?: boolean;
   /** Render-prop gets { phase, isShown, ref }. Bind ref to the transitioned element for native event detection. */
   children: (props: {
-    phase: Phase;
+    phase: ReportedPhase;
     isShown: boolean;
     ref: RefCallback<HTMLElement>;
   }) => ReactNode;
@@ -57,6 +60,7 @@ export function DisplayTransition({
   exposeUnmounted = false,
   animateOnMount = true,
   respectReducedMotion = true,
+  preserveContent = true,
   children,
 }: DisplayTransitionProps) {
   // Reduced motion → collapse timing
@@ -65,6 +69,9 @@ export function DisplayTransition({
     typeof window !== 'undefined' &&
     window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   const dur = prefersReduced ? 0 : duration;
+
+  // Store children to preserve content during exit transitions
+  const storedChildrenRef = useRef<typeof children>(children);
 
   // For native transition event detection
   const elementRef = useRef<HTMLElement | null>(null);
@@ -166,18 +173,24 @@ export function DisplayTransition({
         return;
       }
 
-      const onTransitionStart = () => {
+      const onTransitionStart = (e: TransitionEvent) => {
+        // Ignore bubbled events from children - only react to our own element's transitions
+        if (e.target !== element) return;
         if (flowRef.current !== flow) return;
         transitionStartedRef.current = true;
         clearTimer(); // Cancel fallback timer once transition starts
       };
 
-      const onTransitionEnd = () => {
+      const onTransitionEnd = (e: TransitionEvent) => {
+        // Ignore bubbled events from children - only react to our own element's transitions
+        if (e.target !== element) return;
         if (flowRef.current !== flow) return;
         complete();
       };
 
-      const onTransitionCancel = () => {
+      const onTransitionCancel = (e: TransitionEvent) => {
+        // Ignore bubbled events from children - only react to our own element's transitions
+        if (e.target !== element) return;
         if (flowRef.current !== flow) return;
         complete();
       };
@@ -251,6 +264,11 @@ export function DisplayTransition({
         ensureEnterFlow();
       } else if (current === 'enter') {
         ensureEnterFlow();
+      } else if (current === 'exit-pending') {
+        // User toggled back before exit started, cancel and stay entered
+        cancelRAF();
+        clearTimer();
+        setPhase('entered');
       } else {
         // already "entered"
         cancelRAF();
@@ -260,12 +278,13 @@ export function DisplayTransition({
       if (current === 'unmounted') {
         cancelRAF();
         clearTimer();
-      } else if (current !== 'exit') {
-        setPhase('exit');
-        ensureExitFlow();
-      } else {
+      } else if (current !== 'exit' && current !== 'exit-pending') {
+        // Set intermediate phase to trigger re-render, RAF will be scheduled from layout effect
+        setPhase('exit-pending');
+      } else if (current === 'exit') {
         ensureExitFlow();
       }
+      // 'exit-pending' is handled in useLayoutEffect below
     }
 
     return () => {
@@ -275,22 +294,37 @@ export function DisplayTransition({
     };
   }, [targetShown, dur, onRestEvent]);
 
-  // OPTIONAL belt-and-suspenders: if we render while still "enter", re-arm enter flow.
-  // You can remove this if you want fewer moving parts; double-rAF usually suffices.
+  // Schedule RAF from layout effect for both enter and exit-pending to ensure symmetric timing
   useLayoutEffect(() => {
     if (phaseRef.current === 'enter') {
       ensureEnterFlow();
+    } else if (phaseRef.current === 'exit-pending') {
+      // Schedule RAF for exit, mirroring the enter flow timing
+      nextPaint(() => {
+        if (phaseRef.current === 'exit-pending') {
+          setPhase('exit');
+          ensureExitFlow();
+        }
+      });
     }
     return cancelRAF;
   }, [phase]);
 
-  // Call onPhaseChange when phase changes
+  // Map internal phase to reported phase (exit-pending is reported as 'entered')
+  const reportedPhase: ReportedPhase =
+    phase === 'exit-pending' ? 'entered' : phase;
+
+  // Call onPhaseChange when reported phase changes
+  const prevReportedPhaseRef = useRef(reportedPhase);
   useLayoutEffect(() => {
-    onPhaseChangeEvent?.(phase);
-  }, [phase, onPhaseChangeEvent]);
+    if (prevReportedPhaseRef.current !== reportedPhase) {
+      prevReportedPhaseRef.current = reportedPhase;
+      onPhaseChangeEvent?.(reportedPhase);
+    }
+  }, [reportedPhase, onPhaseChangeEvent]);
 
   // Render-time boolean (true only when visually shown)
-  const isShownNow = phase === 'entered';
+  const isShownNow = phase === 'entered' || phase === 'exit-pending';
   const prevIsShownRef = useRef(isShownNow);
 
   // Call onToggle when isShown changes
@@ -302,25 +336,41 @@ export function DisplayTransition({
   }, [isShownNow, onToggleEvent]);
 
   // Ref callback to attach to transitioned element
-  const refCallback: RefCallback<HTMLElement> = (node) => {
+  // MUST be memoized so React doesn't re-call it on re-renders,
+  // which would cleanup event listeners mid-transition
+  const refCallback: RefCallback<HTMLElement> = useCallback((node) => {
     if (node) {
       elementRef.current = node;
-
-      if (phaseRef.current === 'enter') {
-        ensureEnterFlow();
-      }
+      // Don't call ensureEnterFlow() here - useLayoutEffect handles RAF scheduling
+      // to ensure symmetric timing with exit flow
     } else {
       cleanupEventListeners();
       elementRef.current = null;
     }
-  };
+  }, []);
+
+  // Update stored children only when showing (enter/entered phase and targetShown is true)
+  // This prevents overwriting during exit transitions, preserving content for the animation
+  const isShowingContent =
+    (phase === 'enter' || phase === 'entered') && targetShown;
+
+  if (isShowingContent) {
+    storedChildrenRef.current = children;
+  }
+
+  // When preserveContent is enabled, always use stored children:
+  // - During show: stored is updated above, so it equals current children
+  // - During hide: stored keeps the last shown content for the exit animation
+  const effectiveChildren = preserveContent
+    ? storedChildrenRef.current
+    : children;
 
   if (phase === 'unmounted' && !exposeUnmounted) return null;
-  return children({
+  return effectiveChildren({
     phase:
-      phase === 'enter' && duration !== undefined && !duration
+      reportedPhase === 'enter' && duration !== undefined && !duration
         ? 'entered'
-        : phase,
+        : reportedPhase,
     isShown: isShownNow,
     ref: refCallback,
   });

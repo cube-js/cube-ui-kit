@@ -62,7 +62,8 @@ const TextElement = tasty({
       '': 'inline',
       'ellipsis | block': 'block',
     },
-    margin: '0',
+    margin: 0,
+    padding: 0,
     whiteSpace: {
       '': 'inherit',
       'nowrap | ellipsis': 'nowrap',
@@ -133,16 +134,17 @@ const EmphasisText = tasty(Text, {
   preset: 'em',
 });
 
-const SelectionText = tasty(Text, {
+const PlaceholderText = tasty(Text, {
   styles: {
-    color: '#dark',
-    fill: '#note.30',
+    color: '#current.5',
   },
 });
 
-const PlaceholderText = tasty(Text, {
+const HighlightText = tasty(Text, {
+  as: 'mark',
   styles: {
-    opacity: '$disabled-opacity',
+    fill: '#dark.15',
+    color: '#dark',
   },
 });
 
@@ -155,8 +157,8 @@ export interface TextComponent
   Success: typeof SuccessText;
   Strong: typeof StrongText;
   Emphasis: typeof EmphasisText;
-  Selection: typeof SelectionText;
   Placeholder: typeof PlaceholderText;
+  Highlight: typeof HighlightText;
 }
 
 const _Text: TextComponent = Object.assign(Text, {
@@ -165,8 +167,8 @@ const _Text: TextComponent = Object.assign(Text, {
   Success: SuccessText,
   Strong: StrongText,
   Emphasis: EmphasisText,
-  Selection: SelectionText,
   Placeholder: PlaceholderText,
+  Highlight: HighlightText,
 });
 
 _Text.displayName = 'Text';

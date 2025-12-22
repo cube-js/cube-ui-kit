@@ -1,6 +1,17 @@
 import { FocusableRef } from '@react-types/shared';
-import { cloneElement, forwardRef, ReactElement, useMemo } from 'react';
+import {
+  Children,
+  forwardRef,
+  HTMLAttributes,
+  isValidElement,
+  ReactNode,
+  RefObject,
+  useMemo,
+  useState,
+} from 'react';
+import { OverlayProps } from 'react-aria';
 
+import { useIsFirstRender } from '../../../_internal/hooks/use-is-first-render';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
   DANGER_CLEAR_STYLES,
@@ -32,16 +43,43 @@ import { LoadingIcon } from '../../../icons';
 import {
   CONTAINER_STYLES,
   extractStyles,
+  Mods,
+  Styles,
   tasty,
   TEXT_STYLES,
 } from '../../../tasty';
-import { Text } from '../../content/Text';
+import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
+import { useAutoTooltip } from '../../content/use-auto-tooltip';
+import { DisplayTransition } from '../../helpers/DisplayTransition';
+import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
+import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { CubeActionProps } from '../Action/Action';
 import { useAction } from '../use-action';
 
+const BUTTON_SIZE_VALUES = [
+  'xsmall',
+  'small',
+  'medium',
+  'large',
+  'xlarge',
+  'inline',
+] as const;
+
+/** Known modifiers for Button component */
+export type ButtonMods = Mods<{
+  loading?: boolean;
+  selected?: boolean;
+  'has-icons'?: boolean;
+  'has-icon'?: boolean;
+  'has-right-icon'?: boolean;
+  'single-icon'?: boolean;
+  'text-only'?: boolean;
+  'raw-children'?: boolean;
+}>;
+
 export interface CubeButtonProps extends CubeActionProps {
-  icon?: ReactElement;
-  rightIcon?: ReactElement;
+  icon?: DynamicIcon<ButtonMods>;
+  rightIcon?: DynamicIcon<ButtonMods>;
   isLoading?: boolean;
   isSelected?: boolean;
   type?:
@@ -53,7 +91,31 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'outline'
     | 'neutral'
     | (string & {});
-  size?: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | (string & {});
+  size?:
+    | 'xsmall'
+    | 'small'
+    | 'medium'
+    | 'large'
+    | 'xlarge'
+    | 'inline'
+    | number
+    | (string & {});
+  /**
+   * Tooltip content and configuration:
+   * - string: simple tooltip text
+   * - true: auto tooltip on overflow (shows children as tooltip when truncated)
+   * - object: advanced configuration with optional auto property
+   */
+  tooltip?:
+    | string
+    | boolean
+    | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
+  /**
+   * @private
+   * Default tooltip placement for the button.
+   * @default "top"
+   */
+  defaultTooltipPlacement?: OverlayProps['placement'];
 }
 
 export type ButtonVariant =
@@ -84,18 +146,29 @@ export type ButtonVariant =
 
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
+const DEFAULT_ICON_STYLES: Styles = {
+  $: '>',
+  position: 'relative',
+  display: 'grid',
+  placeItems: 'center',
+  placeContent: 'center',
+  placeSelf: 'stretch',
+  // overflow: 'hidden',
+  width: 'fixed ($size - 2bw)',
+  height: 'fixed ($size - 2bw)',
+  pointerEvents: 'none',
+  transition: 'theme, width, height, translate',
+};
+
 export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
-  flow: 'column',
-  placeItems: 'center start',
-  placeContent: {
-    '': 'center',
-    'right-icon | suffix': 'center stretch',
+  flow: 'column dense',
+  gap: 0,
+  placeItems: {
+    '': 'stretch',
+    'raw-children': 'center stretch',
   },
-  gridColumns: {
-    '': 'initial',
-    'left-icon | loading | prefix': 'max-content',
-  },
+  placeContent: 'center',
   position: 'relative',
   margin: 0,
   boxSizing: 'border-box',
@@ -105,44 +178,29 @@ export const DEFAULT_BUTTON_STYLES = {
     ':is(button)': '$pointer',
     disabled: 'not-allowed',
   },
-  gap: {
-    '': '.75x',
-    'size=small': '.5x',
-  },
   preset: {
     '': 't3m',
     'size=xsmall': 't4',
     'size=xlarge': 't2m',
   },
   textDecoration: 'none',
-  transition: 'theme',
   reset: 'button',
   outline: 0,
   outlineOffset: 1,
   padding: {
-    '': '.5x (1.5x - 1bw)',
-    'size=small | size=xsmall': '.5x (1.25x - 1bw)',
-    'size=medium': '.5x (1.5x - 1bw)',
-    'size=large': '.5x (1.75x - 1bw)',
-    'size=xlarge': '.5x (2x - 1bw)',
-    'single-icon | type=link': 0,
+    '': 0,
+    'raw-children & !has-icons':
+      '$block-padding $inline-padding $block-padding $inline-padding',
+    'type=link': '0',
   },
   width: {
-    '': 'initial',
-    'size=xsmall & single-icon': '$size-xs $size-xs',
-    'size=small & single-icon': '$size-sm $size-sm',
-    'size=medium & single-icon': '$size-md $size-md',
-    'size=large & single-icon': '$size-lg $size-lg',
-    'size=xlarge & single-icon': '$size-xl $size-xl',
-    'type=link': 'initial',
+    '': 'min $size',
+    'has-icon & has-right-icon': 'min ($size * 2 - 2bw)',
+    'single-icon': 'fixed $size',
+    'type=link': 'min 1ch',
   },
   height: {
-    '': 'initial',
-    'size=xsmall': '$size-xs $size-xs',
-    'size=small': '$size-sm $size-sm',
-    'size=medium': '$size-md $size-md',
-    'size=large': '$size-lg $size-lg',
-    'size=xlarge': '$size-xl $size-xl',
+    '': 'fixed $size',
     'type=link': 'initial',
   },
   whiteSpace: 'nowrap',
@@ -150,19 +208,86 @@ export const DEFAULT_BUTTON_STYLES = {
     '': true,
     'type=link & !focused': 0,
   },
+  transition: 'theme, grid-template, padding',
+  verticalAlign: 'bottom',
 
-  ButtonIcon: {
-    width: 'min 1fs',
+  $size: {
+    '': '$size-md',
+    'size=xsmall': '$size-xs',
+    'size=small': '$size-sm',
+    'size=medium': '$size-md',
+    'size=large': '$size-lg',
+    'size=xlarge': '$size-xl',
+    'size=inline': '(1lh + 2bw)',
+  },
+  '$inline-padding': {
+    '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
+  },
+  '$block-padding': {
+    '': '.5x',
+    'size=xsmall | size=small': '.25x',
+  },
+  '$inline-compensation': '.5x',
+  '$min-inline-padding': '(1x - 1bw)',
+  '$left-padding': {
+    '': '$inline-padding',
+    'is-icon-shown': '0px',
+  },
+  '$right-padding': {
+    '': '$inline-padding',
+    'is-right-icon-shown': '0px',
   },
 
-  '& [data-element="ButtonIcon"]:first-child:not(:last-child)': {
-    marginLeft: '-.5x',
-    placeSelf: 'center start',
+  // Icon sub-element (recommended format)
+  Icon: {
+    ...DEFAULT_ICON_STYLES,
+    width: {
+      '': 'fixed 0px',
+      'is-icon-shown': 'fixed ($size - 2bw)',
+    },
+    opacity: {
+      '': 0,
+      'is-icon-shown': 1,
+    },
+    translate: {
+      '': '($size * 1 / 4) 0',
+      'is-icon-shown': '0 0',
+    },
   },
 
-  '& [data-element="ButtonIcon"]:last-child:not(:first-child)': {
-    marginRight: '-.5x',
-    placeSelf: 'center end',
+  // RightIcon sub-element (recommended format)
+  RightIcon: {
+    ...DEFAULT_ICON_STYLES,
+    width: {
+      '': 'fixed 0px',
+      'is-right-icon-shown': 'fixed ($size - 2bw)',
+    },
+    opacity: {
+      '': 0,
+      'is-right-icon-shown': 1,
+    },
+    translate: {
+      '': '($size * -1 / 4) 0',
+      'is-right-icon-shown': '0 0',
+    },
+  },
+
+  // Label sub-element (recommended format)
+  Label: {
+    $: '>',
+    display: 'block',
+    placeSelf: 'center stretch',
+    boxSizing: 'border-box',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '100%',
+    textAlign: 'center',
+    transition: 'theme, padding',
+    padding: {
+      '': '$block-padding $right-padding $block-padding $left-padding',
+      'type=link': '0',
+    },
   },
 } as const;
 
@@ -210,37 +335,84 @@ export const Button = forwardRef(function Button(
 ) {
   let {
     type,
-    size,
+    size: sizeProp,
     label,
     children,
     theme = 'default',
-    icon,
-    rightIcon,
+    icon: iconProp,
+    rightIcon: rightIconProp,
     mods,
     download,
+    tooltip = true,
+    defaultTooltipPlacement = 'top',
     ...props
   } = allProps;
 
-  const isDisabled = props.isDisabled || props.isLoading;
+  const size = sizeProp ?? (type === 'link' ? 'inline' : 'medium');
+
+  const isDisabled = props.isDisabled ?? props.isLoading;
   const isLoading = props.isLoading;
   const isSelected = props.isSelected;
 
-  children = children || icon || rightIcon ? children : label;
+  // Base mods for icon resolution (without icon-dependent mods)
+  const baseMods = useMemo<ButtonMods>(
+    () => ({
+      loading: isLoading,
+      selected: isSelected,
+      ...mods,
+    }),
+    [isLoading, isSelected, mods],
+  );
+
+  // Resolve dynamic icon props
+  const resolvedIcon = useMemo(
+    () => resolveIcon(iconProp, baseMods),
+    [iconProp, baseMods],
+  );
+  const resolvedRightIcon = useMemo(
+    () => resolveIcon(rightIconProp, baseMods),
+    [rightIconProp, baseMods],
+  );
+
+  const hasLeftSlot = resolvedIcon.hasSlot;
+  const hasRightSlot = resolvedRightIcon.hasSlot;
+
+  const icon: ReactNode = resolvedIcon.content;
+  const rightIcon: ReactNode = resolvedRightIcon.content;
+
+  // Generate stable keys for icon transitions based on icon type
+  const iconKey = isLoading
+    ? 'loading'
+    : isValidElement(icon)
+      ? (icon.type as any)?.displayName || (icon.type as any)?.name || 'icon'
+      : icon
+        ? 'icon'
+        : 'empty';
+
+  const rightIconKey = isValidElement(rightIcon)
+    ? (rightIcon.type as any)?.displayName ||
+      (rightIcon.type as any)?.name ||
+      'icon'
+    : rightIcon
+      ? 'icon'
+      : 'empty';
+
+  children = children || hasLeftSlot || hasRightSlot ? children : label;
 
   const specifiedLabel =
     label ?? props['aria-label'] ?? props['aria-labelledby'];
 
   // Warn about accessibility issues when button has no accessible label
-  useWarn(!children && icon && !specifiedLabel, {
-    key: ['button-icon-no-label', !!icon],
+  useWarn(!children && hasLeftSlot && !specifiedLabel, {
+    key: ['button-icon-no-label', hasLeftSlot],
     args: [
       'accessibility issue:',
       'If you provide `icon` property for a Button and do not provide any children then you should specify the `aria-label` property to make sure the Button element stays accessible.',
     ],
   });
 
-  useWarn(!children && !icon && !specifiedLabel, {
-    key: ['button-no-content-no-label', !!icon],
+  useWarn(!children && !hasLeftSlot && !specifiedLabel, {
+    key: ['button-no-content-no-label', hasLeftSlot],
     args: [
       'accessibility issue:',
       'If you provide no children for a Button then you should specify the `aria-label` property to make sure the Button element stays accessible.',
@@ -251,36 +423,49 @@ export const Button = forwardRef(function Button(
     label = 'Unnamed'; // fix to avoid warning in production
   }
 
-  if (icon) {
-    icon = cloneElement(icon, {
-      'data-element': 'ButtonIcon',
-    } as any);
-  }
-
-  if (rightIcon) {
-    rightIcon = cloneElement(rightIcon, {
-      'data-element': 'ButtonIcon',
-    } as any);
-  }
-
+  const hasLeftIcon = !!(hasLeftSlot || isLoading);
+  const hasChildren = children != null;
   const singleIcon = !!(
-    ((icon && !rightIcon) || (rightIcon && !icon)) &&
-    !children
+    ((hasLeftIcon && !hasRightSlot) || (hasRightSlot && !hasLeftIcon)) &&
+    !hasChildren
   );
 
-  const hasIcons = !!icon || !!rightIcon;
+  const hasIcons = hasLeftIcon || hasRightSlot;
+  const rawChildren = !!(
+    hasChildren &&
+    typeof children !== 'string' &&
+    !Children.toArray(children).some((child) => typeof child === 'string')
+  );
 
-  const modifiers = useMemo(
+  const [isIconShown, setIsIconShown] = useState(hasLeftIcon);
+  const [isRightIconShown, setIsRightIconShown] = useState(hasRightSlot);
+  const isFirstRender = useIsFirstRender();
+
+  const modifiers = useMemo<ButtonMods>(
     () => ({
-      loading: isLoading,
-      selected: isSelected,
+      ...baseMods,
       'has-icons': hasIcons,
-      'left-icon': !!icon,
-      'right-icon': !!rightIcon,
+      'has-icon': hasLeftIcon,
+      'is-icon-shown': isIconShown,
+      'has-right-icon': hasRightSlot,
+      'is-right-icon-shown': isRightIconShown,
       'single-icon': singleIcon,
-      ...mods,
+      'text-only': !!(hasChildren && typeof children === 'string' && !hasIcons),
+      'raw-children': rawChildren,
+      'has-content': children != null,
     }),
-    [mods, isDisabled, isLoading, isSelected, singleIcon],
+    [
+      baseMods,
+      children,
+      hasLeftIcon,
+      hasRightSlot,
+      singleIcon,
+      hasIcons,
+      hasChildren,
+      rawChildren,
+      isIconShown,
+      isRightIconShown,
+    ],
   );
 
   const { actionProps } = useAction(
@@ -293,30 +478,94 @@ export const Button = forwardRef(function Button(
 
   delete actionProps.isDisabled;
 
-  return (
-    <ButtonElement
-      download={download}
-      {...actionProps}
-      disabled={isDisabledElement}
-      variant={`${theme}.${type ?? 'outline'}` as ButtonVariant}
-      data-theme={theme}
-      data-type={type ?? 'outline'}
-      data-size={size ?? 'medium'}
-      styles={styles}
-    >
-      {icon || isLoading ? (
-        !isLoading ? (
-          icon
-        ) : (
-          <LoadingIcon data-element="ButtonIcon" />
-        )
-      ) : null}
-      {hasIcons && typeof children === 'string' ? (
-        <Text ellipsis>{children}</Text>
-      ) : (
-        children
-      )}
-      {rightIcon}
-    </ButtonElement>
-  );
+  const {
+    labelProps: finalLabelProps,
+    labelRef,
+    renderWithTooltip,
+  } = useAutoTooltip({
+    tooltip,
+    children,
+    labelProps: undefined,
+  });
+
+  // Render function that creates the button element
+  const renderButtonElement = (
+    tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
+    tooltipRef?: RefObject<HTMLElement>,
+  ): ReactNode => {
+    // Use callback ref to merge multiple refs without calling hooks
+    const handleRef = (element: HTMLElement | null) => {
+      // Set the component's forwarded ref from useAction
+      const domRef = actionProps.ref as any;
+      if (typeof domRef === 'function') {
+        domRef(element);
+      } else if (domRef) {
+        domRef.current = element;
+      }
+      // Set the tooltip ref if provided
+      if (tooltipRef) {
+        (tooltipRef as any).current = element;
+      }
+    };
+
+    // Determine if size is custom (number or unrecognized string)
+    const isCustomSize =
+      typeof size === 'number' ||
+      (size != null &&
+        !(BUTTON_SIZE_VALUES as readonly string[]).includes(size));
+    const sizeTokenValue =
+      typeof size === 'number' ? `${size}px` : isCustomSize ? size : undefined;
+
+    return (
+      <ButtonElement
+        download={download}
+        {...mergeProps(actionProps, tooltipTriggerProps || {})}
+        ref={handleRef}
+        disabled={isDisabledElement}
+        variant={`${theme}.${type ?? 'outline'}` as ButtonVariant}
+        data-theme={theme}
+        data-type={type ?? 'outline'}
+        data-size={size}
+        styles={styles}
+        tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
+      >
+        <DisplayTransition
+          isShown={hasLeftIcon}
+          animateOnMount={!isFirstRender}
+          onToggle={setIsIconShown}
+        >
+          {({ ref }) => (
+            <div ref={ref} data-element="Icon" aria-hidden="true">
+              <IconSwitch noWrapper contentKey={iconKey}>
+                {isLoading ? <LoadingIcon /> : icon}
+              </IconSwitch>
+            </div>
+          )}
+        </DisplayTransition>
+        {hasChildren &&
+          (rawChildren ? (
+            children
+          ) : (
+            <div data-element="Label" {...finalLabelProps} ref={labelRef}>
+              {children}
+            </div>
+          ))}
+        <DisplayTransition
+          isShown={hasRightSlot}
+          animateOnMount={!isFirstRender}
+          onToggle={setIsRightIconShown}
+        >
+          {({ ref }) => (
+            <div ref={ref} data-element="RightIcon" aria-hidden="true">
+              <IconSwitch noWrapper contentKey={rightIconKey}>
+                {rightIcon}
+              </IconSwitch>
+            </div>
+          )}
+        </DisplayTransition>
+      </ButtonElement>
+    );
+  };
+
+  return renderWithTooltip(renderButtonElement, defaultTooltipPlacement);
 });

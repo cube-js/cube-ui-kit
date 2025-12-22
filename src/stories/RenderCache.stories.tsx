@@ -1,5 +1,5 @@
-import { userEvent, within } from '@storybook/test';
 import { useRef, useState } from 'react';
+import { userEvent, within } from 'storybook/test';
 
 import { Block } from '../components/Block';
 import { Radio } from '../components/fields/RadioGroup/Radio';

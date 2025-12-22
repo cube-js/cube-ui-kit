@@ -2,7 +2,8 @@ import { forwardRef } from 'react';
 
 import { InfoCircleIcon } from '../../../icons/index';
 import { tasty } from '../../../tasty/index';
-import { wrapNodeIfPlain } from '../../../utils/react/index';
+import { mergeProps, wrapNodeIfPlain } from '../../../utils/react/index';
+import { Item } from '../../content/Item';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
@@ -138,13 +139,11 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
           <div>{label}</div>
 
           {tooltip ? (
-            <TooltipProvider
-              activeWrap
-              title={tooltip}
-              width="initial max-content 40x"
-            >
-              <InfoCircleIcon color="#purple-text" />
-            </TooltipProvider>
+            <Item
+              icon={<InfoCircleIcon color="#purple-text" />}
+              size="inline"
+              tooltip={tooltip as string}
+            />
           ) : null}
 
           {labelSuffix ? <div>{labelSuffix}</div> : null}
@@ -188,6 +187,11 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
   const displayMessage = errorMessage || message;
   const isErrorMessage = !!errorMessage;
 
+  // Merge fieldProps with styles to ensure both are applied
+  const mergedFieldProps = styles
+    ? mergeProps(fieldProps, { styles })
+    : fieldProps;
+
   return (
     <>
       <FieldElement
@@ -195,8 +199,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
         as={as ?? 'div'}
         mods={mods}
         isHidden={isHidden}
-        styles={styles}
-        {...fieldProps}
+        {...mergedFieldProps}
       >
         {labelComponent || descriptionForLabel ? (
           <div data-element="LabelArea">

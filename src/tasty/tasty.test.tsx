@@ -12,6 +12,30 @@ import { tasty } from './tasty';
 import { configure } from './index';
 
 describe('tasty() API', () => {
+  it('should handle color fallback syntax', () => {
+    const Element = tasty({
+      styles: {
+        color: '(#placeholder, #dark-04)',
+      },
+    });
+
+    const { container } = render(<Element />);
+
+    expect(container).toMatchTastySnapshot();
+  });
+
+  it('should handle fill fallback syntax', () => {
+    const Element = tasty({
+      styles: {
+        fill: '(#surface, #white)',
+      },
+    });
+
+    const { container } = render(<Element />);
+
+    expect(container).toMatchTastySnapshot();
+  });
+
   it('should provide defaults and give ability to override', () => {
     const SButton = tasty(Button, { type: 'primary' });
 
@@ -523,6 +547,147 @@ describe('style order consistency', () => {
     expect(tastyClass).toBe(extendedClass);
     expect(extendedClass).toBe(spaceClass);
     expect(tastyClass).toBeTruthy();
+  });
+});
+
+describe('tokens prop', () => {
+  it('should process $name tokens into CSS custom properties', () => {
+    const Element = tasty({});
+
+    const { container } = render(<Element tokens={{ $spacing: '2x' }} />);
+    const element = container.firstElementChild as HTMLElement;
+
+    expect(element.style.getPropertyValue('--spacing')).toBe(
+      'calc(2 * var(--gap))',
+    );
+  });
+
+  it('should process #name color tokens into CSS custom properties', () => {
+    const Element = tasty({});
+
+    const { container } = render(<Element tokens={{ '#accent': '#purple' }} />);
+    const element = container.firstElementChild as HTMLElement;
+
+    expect(element.style.getPropertyValue('--accent-color')).toBe(
+      'var(--purple-color)',
+    );
+    expect(element.style.getPropertyValue('--accent-color-rgb')).toBe(
+      'var(--purple-color-rgb)',
+    );
+  });
+
+  it('should merge default tokens with instance tokens', () => {
+    const Card = tasty({
+      tokens: { $spacing: '1x', $size: '10x' },
+    });
+
+    const { container } = render(<Card tokens={{ $spacing: '4x' }} />);
+    const element = container.firstElementChild as HTMLElement;
+
+    // Instance token overrides default
+    expect(element.style.getPropertyValue('--spacing')).toBe(
+      'calc(4 * var(--gap))',
+    );
+    // Default token preserved
+    expect(element.style.getPropertyValue('--size')).toBe(
+      'calc(10 * var(--gap))',
+    );
+  });
+
+  it('should merge tokens with style prop (style has priority)', () => {
+    const Element = tasty({});
+
+    const { container } = render(
+      <Element
+        tokens={{ $spacing: '2x' }}
+        style={{ '--spacing': '100px' } as any}
+      />,
+    );
+    const element = container.firstElementChild as HTMLElement;
+
+    // style prop overrides tokens
+    expect(element.style.getPropertyValue('--spacing')).toBe('100px');
+  });
+
+  it('should handle number values correctly', () => {
+    const Element = tasty({});
+
+    const { container } = render(
+      <Element tokens={{ $zero: 0, $number: 42 }} />,
+    );
+    const element = container.firstElementChild as HTMLElement;
+
+    // 0 should stay as "0"
+    expect(element.style.getPropertyValue('--zero')).toBe('0');
+    // Other numbers are converted to string
+    expect(element.style.getPropertyValue('--number')).toBe('42');
+  });
+
+  it('should skip undefined and null token values', () => {
+    const Element = tasty({});
+
+    const { container } = render(
+      <Element
+        tokens={{ $defined: '2x', $undefined: undefined, $null: null } as any}
+      />,
+    );
+    const element = container.firstElementChild as HTMLElement;
+
+    expect(element.style.getPropertyValue('--defined')).toBe(
+      'calc(2 * var(--gap))',
+    );
+    expect(element.style.getPropertyValue('--undefined')).toBe('');
+    expect(element.style.getPropertyValue('--null')).toBe('');
+  });
+
+  it('should warn on object token values', () => {
+    const consoleWarnSpy = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => {});
+
+    const Element = tasty({});
+
+    render(
+      <Element tokens={{ $invalid: { '': '1x', hovered: '2x' } } as any} />,
+    );
+
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Object values are not allowed in tokens prop'),
+    );
+
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('should work with variants', () => {
+    const Card = tasty({
+      tokens: { $spacing: '2x' },
+      styles: { padding: '$spacing' },
+      variants: {
+        compact: { padding: '1x' },
+        spacious: { padding: '4x' },
+      },
+    });
+
+    const { container } = render(
+      <Card variant="compact" tokens={{ $spacing: '3x' }} />,
+    );
+    const element = container.firstElementChild as HTMLElement;
+
+    expect(element.style.getPropertyValue('--spacing')).toBe(
+      'calc(3 * var(--gap))',
+    );
+  });
+
+  it('should handle hex color values for RGB extraction', () => {
+    const Element = tasty({});
+
+    const { container } = render(<Element tokens={{ '#custom': '#ff8800' }} />);
+    const element = container.firstElementChild as HTMLElement;
+
+    // Should have color property
+    expect(element.style.getPropertyValue('--custom-color')).toBeTruthy();
+    // Should have RGB property
+    expect(element.style.getPropertyValue('--custom-color-rgb')).toBeTruthy();
   });
 });
 

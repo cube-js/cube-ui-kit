@@ -58,8 +58,12 @@ import {
   StyledSectionHeading as ListSectionHeading,
   StyledSection as ListSectionWrapper,
 } from '../../actions/Menu/styled';
-import { CollectionItem } from '../../CollectionItem';
+import {
+  CollectionItem,
+  filterCollectionItemProps,
+} from '../../CollectionItem';
 import { CubeItemProps, Item } from '../../content/Item';
+import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
@@ -67,6 +71,7 @@ import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 
 const SelectWrapperElement = tasty({
+  qa: 'SelectWrapper',
   styles: {
     display: 'grid',
     position: 'relative',
@@ -85,22 +90,8 @@ const SelectWrapperElement = tasty({
   },
 });
 
-const SelectTrigger = tasty(Item, {
-  as: 'button',
-  qa: 'Trigger',
-  styles: {
-    reset: 'button',
-
-    Label: {
-      opacity: {
-        '': 1,
-        placeholder: '$disabled-opacity',
-      },
-    },
-  },
-});
-
 export const ListBoxElement = tasty({
+  qa: 'ListBox',
   as: 'ul',
   styles: {
     display: 'flex',
@@ -132,6 +123,7 @@ const SelectOverlayWrapper = tasty({
 });
 
 const OverlayElement = tasty({
+  qa: 'SelectOverlay',
   styles: {
     width: 'min $overlay-min-width',
     display: 'grid',
@@ -209,20 +201,29 @@ export interface CubeSelectBaseProps<T>
   triggerStyles?: Styles;
   listBoxStyles?: Styles;
   overlayStyles?: Styles;
-  /**
-   *  @deprecated Use `styles` instead
-   */
-  wrapperStyles?: Styles;
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
+  /** Minimum padding in pixels between the popover and viewport edges */
+  containerPadding?: number;
   inputProps?: Props;
   type?: 'outline' | 'clear' | 'primary' | (string & {});
+  /**
+   * Shape of the trigger's border radius.
+   * - `card` - Card shape with larger border radius (`1cr`)
+   * - `button` - Button shape with default border radius (default)
+   * - `sharp` - Sharp corners with no border radius (`0`)
+   * - `pill` - Pill shape with fully rounded ends (`round`)
+   * @default "button"
+   */
+  shape?: 'card' | 'button' | 'sharp' | 'pill';
   suffixPosition?: 'before' | 'after';
   theme?: 'default' | 'special';
   /** Whether the select is clearable using a clear button in the rightIcon slot */
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
+  /** Callback called when the popover open state changes */
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -260,7 +261,7 @@ function Select<T extends object>(
     necessityIndicator,
     validationState,
     prefix,
-    isDisabled,
+    isDisabled = props.isLoading || false,
     autoFocus,
     inputProps,
     triggerRef,
@@ -272,7 +273,6 @@ function Select<T extends object>(
     inputStyles,
     triggerStyles,
     optionStyles,
-    wrapperStyles,
     listBoxStyles,
     overlayStyles,
     suffix,
@@ -282,15 +282,18 @@ function Select<T extends object>(
     hotkeys,
     direction = 'bottom',
     shouldFlip = true,
+    containerPadding = 8,
     placeholder,
     tooltip,
     size = 'medium',
+    shape,
     styles,
     type = 'outline',
     theme = 'default',
     labelSuffix,
     suffixPosition = 'before',
     isClearable,
+    onOpenChange,
     form,
     ...otherProps
   } = props;
@@ -321,6 +324,11 @@ function Select<T extends object>(
     }
   }, [state.isOpen, emit, selectId]);
 
+  // Call onOpenChange when open state changes
+  useEffect(() => {
+    onOpenChange?.(state.isOpen);
+  }, [state.isOpen]);
+
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   ref = useCombinedRefs(ref);
@@ -343,6 +351,7 @@ function Select<T extends object>(
     isOpen: state.isOpen,
     onClose: state.close,
     offset: overlayOffset,
+    containerPadding: containerPadding,
   });
 
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);
@@ -417,9 +426,8 @@ function Select<T extends object>(
 
   let selectField = (
     <SelectWrapperElement
-      qa={qa || 'Select'}
       mods={modifiers}
-      styles={{ ...wrapperStyles, ...styles }}
+      styles={styles}
       data-size={size}
       data-type={type}
       data-theme={theme}
@@ -430,13 +438,17 @@ function Select<T extends object>(
         label={props.label}
         name={props.name}
       />
-      <SelectTrigger
+      <Item
+        as="button"
+        qa={qa || 'Select'}
+        data-input-type="select"
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
         data-popover-trigger
         styles={{ ...inputStyles, ...triggerStyles }}
         theme={theme}
         size={size}
+        shape={shape}
         // Ensure this button never submits a surrounding form in tests or runtime
         htmlType="button"
         // Preserve visual variant via data attribute instead of conflicting with HTML attribute
@@ -468,10 +480,12 @@ function Select<T extends object>(
         tooltip={tooltip}
         labelProps={valueProps}
       >
-        {state.selectedItem
-          ? state.selectedItem.rendered
-          : placeholder || <>&nbsp;</>}
-      </SelectTrigger>
+        {state.selectedItem ? (
+          state.selectedItem.rendered
+        ) : placeholder ? (
+          <Text.Placeholder>{placeholder}</Text.Placeholder>
+        ) : null}
+      </Item>
       <ListBoxPopup
         {...menuProps}
         popoverRef={popoverRef}
@@ -496,7 +510,6 @@ function Select<T extends object>(
     mergeProps(
       {
         ...props,
-        styles: labelStyles,
       },
       { labelProps },
     ),
@@ -685,23 +698,13 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   // style to the focused option
   let { isFocused, focusProps } = useFocus({ isDisabled });
 
-  const {
-    qa,
-    description,
-    icon,
-    prefix,
-    suffix,
-    rightIcon,
-    descriptionPlacement,
-    tooltip,
-    styles: itemStyles,
-  } = ((item as any)?.props || {}) as CubeItemProps;
+  // Filter out service props - all remaining props can be passed to Item
+  const filteredItemProps = filterCollectionItemProps(item.props);
 
   return (
     <OptionItem
-      {...mergeProps(optionProps, focusProps)}
+      {...mergeProps(optionProps, focusProps, filteredItemProps)}
       ref={ref}
-      qa={qa}
       mods={{
         listboxitem: true,
         selected: isSelected,
@@ -710,16 +713,12 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         pressed: isPressed,
       }}
       data-size={size}
-      styles={{ ...(styles as Styles), ...(itemStyles as Styles) }}
-      icon={icon}
-      prefix={prefix}
-      suffix={suffix}
-      rightIcon={rightIcon}
-      description={description}
-      descriptionPlacement={descriptionPlacement}
+      styles={{
+        ...(styles as Styles),
+        ...(filteredItemProps.styles as Styles),
+      }}
       labelProps={labelProps}
       descriptionProps={descriptionProps}
-      tooltip={tooltip}
       defaultTooltipPlacement="right"
     >
       {item.rendered}

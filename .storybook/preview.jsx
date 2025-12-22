@@ -1,6 +1,6 @@
-import { configure } from '@storybook/test';
 import isChromatic from 'chromatic/isChromatic';
 import { config } from 'react-transition-group';
+import { configure } from 'storybook/test';
 
 import { Root } from '../src';
 
@@ -31,9 +31,9 @@ export const parameters = {
 
       // Check if either story is in the 'tasty' section
       const aIsTasty =
-        aTitle.toLowerCase().includes('tasty') || aTitle.startsWith('Tasty');
+        aTitle.toLowerCase().includes('tasty') || aTitle.includes('guides');
       const bIsTasty =
-        bTitle.toLowerCase().includes('tasty') || bTitle.startsWith('Tasty');
+        bTitle.toLowerCase().includes('tasty') || bTitle.includes('guides');
 
       // Always put 'tasty' section at the top
       if (aIsTasty && !bIsTasty) {

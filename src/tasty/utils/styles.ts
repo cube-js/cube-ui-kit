@@ -62,8 +62,9 @@ export type StyleStateMap = { [key: string]: StyleStateData };
 const devMode = process.env.NODE_ENV !== 'production';
 
 // Precompiled regex patterns for parseColor optimization
-const COLOR_VAR_PATTERN = /var\(--([a-z0-9-]+)-color(?:-rgb)?\)/;
-const COLOR_VAR_RGB_PATTERN = /var\(--([a-z0-9-]+)-color-rgb\)/;
+// Match var(--name-color...) and extract the name, regardless of fallbacks
+const COLOR_VAR_PATTERN = /var\(--([a-z0-9-]+)-color/;
+const COLOR_VAR_RGB_PATTERN = /var\(--([a-z0-9-]+)-color-rgb/;
 const RGB_ALPHA_PATTERN = /\/\s*([0-9.]+)\)/;
 const SIMPLE_COLOR_PATTERNS = [
   /^#[0-9a-fA-F]{3,8}$/, // Hex colors: #fff, #ffffff, #ffff, #ffffffff
@@ -372,7 +373,7 @@ export function extractStyles(
 ): Styles {
   const styles: Styles = {
     ...defaultStyles,
-    ...props.styles,
+    ...(ignoreList.includes('styles') ? undefined : props.styles),
   };
 
   Object.keys(props).forEach((prop) => {

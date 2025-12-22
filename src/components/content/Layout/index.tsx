@@ -1,0 +1,78 @@
+import { ForwardRefExoticComponent, RefAttributes } from 'react';
+
+import { CubeLayoutProps, Layout as LayoutBase } from './Layout';
+import { LayoutBlock } from './LayoutBlock';
+import { LayoutCenter } from './LayoutCenter';
+import { LayoutContainer } from './LayoutContainer';
+import { LayoutContent } from './LayoutContent';
+import { LayoutFlex } from './LayoutFlex';
+import { LayoutFooter } from './LayoutFooter';
+import { LayoutGrid } from './LayoutGrid';
+import { LayoutHeader } from './LayoutHeader';
+import { LayoutPane } from './LayoutPane';
+import { LayoutPanel } from './LayoutPanel';
+import { LayoutPanelHeader } from './LayoutPanelHeader';
+import { LayoutToolbar } from './LayoutToolbar';
+
+export { GridLayout } from './GridLayout';
+export type { CubeGridLayoutProps } from './GridLayout';
+export type { CubeLayoutProps } from './Layout';
+export type { CubeLayoutBlockProps } from './LayoutBlock';
+export type { CubeLayoutCenterProps } from './LayoutCenter';
+export type { CubeLayoutContainerProps } from './LayoutContainer';
+export type { CubeLayoutContentProps, ScrollbarType } from './LayoutContent';
+export type { CubeLayoutFlexProps } from './LayoutFlex';
+export type { CubeLayoutGridProps } from './LayoutGrid';
+export type { CubeLayoutFooterProps } from './LayoutFooter';
+export type { CubeLayoutHeaderProps } from './LayoutHeader';
+export type { CubeLayoutPaneProps, ResizeEdge } from './LayoutPane';
+export type { CubeLayoutPanelProps, LayoutPanelMode } from './LayoutPanel';
+export type { CubeLayoutPanelHeaderProps } from './LayoutPanelHeader';
+export type { CubeLayoutToolbarProps } from './LayoutToolbar';
+export {
+  LayoutContext,
+  LayoutPanelContext,
+  useLayoutContext,
+  useLayoutPanelContext,
+} from './LayoutContext';
+export type {
+  LayoutContextValue,
+  LayoutPanelContextValue,
+  Side,
+} from './LayoutContext';
+
+// Create Layout compound component
+interface LayoutComponent
+  extends ForwardRefExoticComponent<
+    CubeLayoutProps & RefAttributes<HTMLDivElement>
+  > {
+  Toolbar: typeof LayoutToolbar;
+  Header: typeof LayoutHeader;
+  Footer: typeof LayoutFooter;
+  Content: typeof LayoutContent;
+  Container: typeof LayoutContainer;
+  Center: typeof LayoutCenter;
+  Block: typeof LayoutBlock;
+  Flex: typeof LayoutFlex;
+  Grid: typeof LayoutGrid;
+  Pane: typeof LayoutPane;
+  Panel: typeof LayoutPanel;
+  PanelHeader: typeof LayoutPanelHeader;
+}
+
+const Layout = Object.assign(LayoutBase, {
+  Toolbar: LayoutToolbar,
+  Header: LayoutHeader,
+  Footer: LayoutFooter,
+  Content: LayoutContent,
+  Container: LayoutContainer,
+  Center: LayoutCenter,
+  Block: LayoutBlock,
+  Flex: LayoutFlex,
+  Grid: LayoutGrid,
+  Pane: LayoutPane,
+  Panel: LayoutPanel,
+  PanelHeader: LayoutPanelHeader,
+}) as LayoutComponent;
+
+export { Layout };

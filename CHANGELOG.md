@@ -1,5 +1,202 @@
 # @cube-dev/ui-kit
 
+## 0.98.2
+
+### Patch Changes
+
+- [#930](https://github.com/cube-js/cube-ui-kit/pull/930) [`51ebcf44`](https://github.com/cube-js/cube-ui-kit/commit/51ebcf445f04c1bcc3e4380c3c5dfbba594cf586) Thanks [@tenphi](https://github.com/tenphi)! - Allow description wrapping in items.
+
+- [#930](https://github.com/cube-js/cube-ui-kit/pull/930) [`51ebcf44`](https://github.com/cube-js/cube-ui-kit/commit/51ebcf445f04c1bcc3e4380c3c5dfbba594cf586) Thanks [@tenphi](https://github.com/tenphi)! - Fix paddings for Layout.PanelHeader
+
+- [#930](https://github.com/cube-js/cube-ui-kit/pull/930) [`51ebcf44`](https://github.com/cube-js/cube-ui-kit/commit/51ebcf445f04c1bcc3e4380c3c5dfbba594cf586) Thanks [@tenphi](https://github.com/tenphi)! - Apply header tag to Item title in card type.
+
+## 0.98.1
+
+### Patch Changes
+
+- [#928](https://github.com/cube-js/cube-ui-kit/pull/928) [`45ff2f40`](https://github.com/cube-js/cube-ui-kit/commit/45ff2f40f7e33e2596d8e8b1de606e0b3800a6c3) Thanks [@tenphi](https://github.com/tenphi)! - Add icons: ColumnTotalIcon, RowTotalsIcon, SubtotalsIcon.
+
+## 0.98.0
+
+### Minor Changes
+
+- [#923](https://github.com/cube-js/cube-ui-kit/pull/923) [`cb6340ef`](https://github.com/cube-js/cube-ui-kit/commit/cb6340ef6b8faff274b7ebd52038587e60d72ff1) Thanks [@tenphi](https://github.com/tenphi)! - Rework of Button component to align its implementation and layout with Item and ItemButton components.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add `tokens` prop to tasty components for defining CSS custom properties as inline styles. Tokens support design system values (`$name` for regular properties, `#name` for colors with RGB variants) and are merged from component defaults to instance usage. Use `tokens` instead of `style` prop for dynamic CSS custom properties.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add dynamic icon support to Button and Item components. The `icon` and `rightIcon` props now support:
+
+  - `true` - renders an empty slot (reserves space but shows nothing)
+  - Function `({ loading, selected, ...mods }) => ReactNode | true` - dynamically renders icon based on component modifiers
+
+  Also made `Mods` type generic for better type definitions: `Mods<{ loading?: boolean }>` instead of extending interface.
+
+### Patch Changes
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Enlarge the size of the fullscreen dialog.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add IconSwitch component for icon transitions.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Remove redundant `isButton` prop from Item component.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add `tight` modifier to `preset` style for setting line-height to the same value as font-size.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add `card` type to Item component.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add `preserveContent` prop to DisplayTransition component. When enabled (default: true), the component preserves children content during exit transitions, ensuring smooth animations even when parent components remove content immediately after hiding.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Add `title` type support to Item component.
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Remove the selected mod in DisclosureTrigger.'
+
+- [#924](https://github.com/cube-js/cube-ui-kit/pull/924) [`fd497403`](https://github.com/cube-js/cube-ui-kit/commit/fd4974035a916cc7f6a17b9a3678571c806f04ea) Thanks [@tenphi](https://github.com/tenphi)! - Fix Layout.PanelHeader props type.
+
+## 0.97.1
+
+### Patch Changes
+
+- [#921](https://github.com/cube-js/cube-ui-kit/pull/921) [`974b8af4`](https://github.com/cube-js/cube-ui-kit/commit/974b8af4a296111719194bd12fce5556fbe1fe5f) Thanks [@tenphi](https://github.com/tenphi)! - Layout sub-components now automatically add bottom borders between elements when the layout has vertical flow. This eliminates the need to manually set borders on individual components to create visual separation.
+
+## 0.97.0
+
+### Minor Changes
+
+- [#917](https://github.com/cube-js/cube-ui-kit/pull/917) [`c64cd31b`](https://github.com/cube-js/cube-ui-kit/commit/c64cd31b30e1aa0fd3ef57c41a0e189a49575473) Thanks [@tenphi](https://github.com/tenphi)! - Added `Layout.Container` and `Layout.Center` sub-components for centered content layouts:
+
+  - `Layout.Container` - Horizontally centered content with constrained width (min 40x, max 120x). Ideal for forms, articles, and focused content.
+  - `Layout.Center` - Extends Container with vertical centering and text-align center. Ideal for empty states, loading screens, and hero sections.
+
+  Both components support `innerStyles` prop for customizing the inner container.
+
+- [#917](https://github.com/cube-js/cube-ui-kit/pull/917) [`c64cd31b`](https://github.com/cube-js/cube-ui-kit/commit/c64cd31b30e1aa0fd3ef57c41a0e189a49575473) Thanks [@tenphi](https://github.com/tenphi)! - Add new `mode` prop to `Layout.Panel` with support for `sticky` and `overlay` modes:
+
+  - `sticky` - Panel floats over content without pushing it aside
+  - `overlay` - Panel with dismissable backdrop (closes on backdrop click, Escape key, or focus change to main content)
+
+  New props: `mode`, `isDismissable`, `overlayStyles`
+
+### Patch Changes
+
+- [#918](https://github.com/cube-js/cube-ui-kit/pull/918) [`ecdc6ff3`](https://github.com/cube-js/cube-ui-kit/commit/ecdc6ff38620e163629dbe8da00f109e05e96ad6) Thanks [@tenphi](https://github.com/tenphi)! - Add text highlighting support to Item component with `highlight`, `highlightCaseSensitive`, and `highlightStyles` props.
+
+## 0.96.0
+
+### Minor Changes
+
+- [`fe46a7f2`](https://github.com/cube-js/cube-ui-kit/commit/fe46a7f233b599d94ffd124ec14d2a576c000e93) Thanks [@tenphi](https://github.com/tenphi)! - Add new `Layout` component with compound sub-components for building complex application layouts. Includes `Layout.Header`, `Layout.Footer`, `Layout.Content`, `Layout.Toolbar`, `Layout.Pane`, `Layout.Panel`, `Layout.PanelHeader`, `Layout.Block`, `Layout.Flex`, `Layout.Grid`, and standalone `GridLayout`.
+
+## 0.95.0
+
+### Minor Changes
+
+- [#911](https://github.com/cube-js/cube-ui-kit/pull/911) [`33990457`](https://github.com/cube-js/cube-ui-kit/commit/339904570f42e600dc70873793402a8afd914019) Thanks [@tenphi](https://github.com/tenphi)! - Added `TextItem` component for displaying text with automatic overflow handling and tooltips. Features include:
+
+  - Auto-tooltip on text overflow (enabled by default)
+  - Text highlighting with `highlight` prop for search results
+  - Customizable highlight styles via `highlightStyles` prop
+  - Case-sensitive/insensitive highlight matching
+  - Inherits all `Text` component props
+
+  Added `Text.Highlight` sub-component for semantic text highlighting (uses `<mark>` element).
+
+  **Breaking:** Removed `Text.Selection` in favor of `Text.Highlight`.
+
+## 0.94.2
+
+### Patch Changes
+
+- [#905](https://github.com/cube-js/cube-ui-kit/pull/905) [`bb390e25`](https://github.com/cube-js/cube-ui-kit/commit/bb390e25d9f6f0a301d6cac3cd76687d0d4eb408) Thanks [@tenphi](https://github.com/tenphi)! - Fix form fields to prevent internal `form` prop from being spread to DOM elements
+
+- [#912](https://github.com/cube-js/cube-ui-kit/pull/912) [`6ef9986e`](https://github.com/cube-js/cube-ui-kit/commit/6ef9986efe69fb3d74c0ff179f605574dd5d64bd) Thanks [@tenphi](https://github.com/tenphi)! - Fixed `styles` prop leaking to inner elements in `TextInput` and `Switch` components
+
+## 0.94.1
+
+### Patch Changes
+
+- [#909](https://github.com/cube-js/cube-ui-kit/pull/909) [`b72ca0dd`](https://github.com/cube-js/cube-ui-kit/commit/b72ca0ddb761295279db67ce88d194a4c0535c80) Thanks [@tenphi](https://github.com/tenphi)! - Fix the focused state styles of text inputs.
+
+## 0.94.0
+
+### Minor Changes
+
+- [#906](https://github.com/cube-js/cube-ui-kit/pull/906) [`9fd69a24`](https://github.com/cube-js/cube-ui-kit/commit/9fd69a2475da8dc16e47d8561033ff687c2ac9dc) Thanks [@tenphi](https://github.com/tenphi)! - Add new `Disclosure` component for expandable/collapsible content sections. Features include:
+
+  - `Disclosure` - Single expandable panel with trigger and content
+  - `Disclosure.Trigger` - Built on ItemButton with full support for icons, descriptions, and actions
+  - `Disclosure.Content` - Collapsible content area with smooth height animations
+  - `Disclosure.Group` - Accordion container for multiple disclosures with single or multiple expanded support
+  - `Disclosure.Item` - Individual item within a group
+
+  Supports controlled/uncontrolled state, `shape` variants (`default`, `card`, `sharp`), disabled state, custom transition duration, and render prop API for custom triggers.
+
+### Patch Changes
+
+- [#908](https://github.com/cube-js/cube-ui-kit/pull/908) [`21d8a310`](https://github.com/cube-js/cube-ui-kit/commit/21d8a310765f121fb9257a55a71e15c87a7b0ae0) Thanks [@tenphi](https://github.com/tenphi)! - Fix content visibility in Disclosure.
+
+## 0.93.1
+
+### Patch Changes
+
+- [#903](https://github.com/cube-js/cube-ui-kit/pull/903) [`e0214842`](https://github.com/cube-js/cube-ui-kit/commit/e0214842a343911fe36c57d0aae73e5f90b36b1c) Thanks [@tenphi](https://github.com/tenphi)! - Add `fixed` modifier to `height` and `width` styles. Use `fixed 10x` to set min, base, and max dimensions to the same value, creating a truly fixed size that cannot flex.
+
+## 0.93.0
+
+### Minor Changes
+
+- [#901](https://github.com/cube-js/cube-ui-kit/pull/901) [`1d980997`](https://github.com/cube-js/cube-ui-kit/commit/1d980997b663287f976d6070cbc63b1623b5a76d) Thanks [@tenphi](https://github.com/tenphi)! - Added unified support for `fieldProps`, `fieldStyles`, `labelProps`, and `labelStyles` across all field components. The `fieldStyles` and `labelStyles` props serve as shorthands for `fieldProps.styles` and `labelProps.styles` respectively, with shorthand props taking priority. All merging logic is centralized in the `wrapWithField` helper.
+
+  **Breaking changes:**
+
+  - Removed `wrapperStyles` prop from TextInputBase and Select components (use `styles` prop instead for the root element).
+
+### Patch Changes
+
+- [#901](https://github.com/cube-js/cube-ui-kit/pull/901) [`1d980997`](https://github.com/cube-js/cube-ui-kit/commit/1d980997b663287f976d6070cbc63b1623b5a76d) Thanks [@tenphi](https://github.com/tenphi)! - Added `onOpenChange` callback prop to Picker, FilterPicker, ComboBox, and Select components. This callback is invoked when the popover/overlay open state changes, receiving a boolean parameter indicating the new open state.
+
+## 0.92.4
+
+### Patch Changes
+
+- [#899](https://github.com/cube-js/cube-ui-kit/pull/899) [`122bc1b1`](https://github.com/cube-js/cube-ui-kit/commit/122bc1b18a7ca70405734d84f8539a70af65c1ea) Thanks [@tenphi](https://github.com/tenphi)! - Fixed `id` and ARIA attributes duplication where they were incorrectly applied to both the field wrapper and the input element. The `id` prop is now correctly applied only to the element with `qa` and `data-input-type` attributes. The fix was implemented in the `wrapWithField` helper to automatically filter out `id` from `fieldProps` passed to the Field wrapper.
+
+## 0.92.3
+
+### Patch Changes
+
+- [#897](https://github.com/cube-js/cube-ui-kit/pull/897) [`01567fce`](https://github.com/cube-js/cube-ui-kit/commit/01567fceeabd38e619b4bbbe221bbc285a133928) Thanks [@tenphi](https://github.com/tenphi)! - Add isDisabled state to FileInput and fix qa props.
+
+- [#897](https://github.com/cube-js/cube-ui-kit/pull/897) [`01567fce`](https://github.com/cube-js/cube-ui-kit/commit/01567fceeabd38e619b4bbbe221bbc285a133928) Thanks [@tenphi](https://github.com/tenphi)! - Fix qa prop in Select component.
+
+## 0.92.2
+
+### Patch Changes
+
+- [#895](https://github.com/cube-js/cube-ui-kit/pull/895) [`d48e94a5`](https://github.com/cube-js/cube-ui-kit/commit/d48e94a534f963af3f49926bae53e1f2c183bd49) Thanks [@tenphi](https://github.com/tenphi)! - Fix `labelProps` being overridden in input and field components. User-provided `labelProps` are now properly merged with aria-generated label properties in TextInput, NumberInput, PasswordInput, TextArea, SearchInput, Slider, RangeSlider, and TimeInput components, allowing customization like `labelProps={{ size: 'small' }}`.
+
+## 0.92.1
+
+### Patch Changes
+
+- [#893](https://github.com/cube-js/cube-ui-kit/pull/893) [`1ec20458`](https://github.com/cube-js/cube-ui-kit/commit/1ec20458cf0b1448a3bfae3d9541d7c507f4bba3) Thanks [@tenphi](https://github.com/tenphi)! - Fix `labelProps` being overridden in input and field components. User-provided `labelProps` are now properly merged with aria-generated label properties in TextInput, NumberInput, PasswordInput, TextArea, SearchInput, Slider, RangeSlider, and TimeInput components, allowing customization like `labelProps={{ size: 'small' }}`.
+
+## 0.92.0
+
+### Minor Changes
+
+- [#890](https://github.com/cube-js/cube-ui-kit/pull/890) [`b79f55c6`](https://github.com/cube-js/cube-ui-kit/commit/b79f55c67159ecbbd9a04e69fcafe166c649e5d0) Thanks [@tenphi](https://github.com/tenphi)! - Added color token fallback syntax `(#color, #fallback)` for robust color hierarchies. Supports nested fallbacks like `(#primary, (#secondary, #default))`. Automatically generates RGB variants for the entire fallback chain, ensuring proper color variable resolution at runtime.
+
+- [#890](https://github.com/cube-js/cube-ui-kit/pull/890) [`b79f55c6`](https://github.com/cube-js/cube-ui-kit/commit/b79f55c67159ecbbd9a04e69fcafe166c649e5d0) Thanks [@tenphi](https://github.com/tenphi)! - Add `isButton` prop support to `Picker`, `FilterPicker`, and `Select` components. The prop is now properly passed to their trigger components (`ItemButton` for Picker/FilterPicker, `Item` for Select), allowing control over button styling. Defaults to `false` to maintain existing behavior.
+
+- [#890](https://github.com/cube-js/cube-ui-kit/pull/890) [`b79f55c6`](https://github.com/cube-js/cube-ui-kit/commit/b79f55c67159ecbbd9a04e69fcafe166c649e5d0) Thanks [@tenphi](https://github.com/tenphi)! - Removed legacy `@` prefix support for custom properties. Use `# @cube-dev/ui-kit prefix instead (e.g., `$custom-color`instead of`@custom-color`).
+
+- [#890](https://github.com/cube-js/cube-ui-kit/pull/890) [`b79f55c6`](https://github.com/cube-js/cube-ui-kit/commit/b79f55c67159ecbbd9a04e69fcafe166c649e5d0) Thanks [@tenphi](https://github.com/tenphi)! - Specify `data-input-type` attribute for each field component and improve `qa` prop handling in various field components for consistency.
+
+### Patch Changes
+
+- [#890](https://github.com/cube-js/cube-ui-kit/pull/890) [`b79f55c6`](https://github.com/cube-js/cube-ui-kit/commit/b79f55c67159ecbbd9a04e69fcafe166c649e5d0) Thanks [@tenphi](https://github.com/tenphi)! - Improved overlay width behavior for Picker and FilterPicker components to match their trigger button width, ensuring better visual consistency.
+
+- [#890](https://github.com/cube-js/cube-ui-kit/pull/890) [`b79f55c6`](https://github.com/cube-js/cube-ui-kit/commit/b79f55c67159ecbbd9a04e69fcafe166c649e5d0) Thanks [@tenphi](https://github.com/tenphi)! - Decrease containerPadding of all overlays 12px -> 8px.
+
 ## 0.91.0
 
 ### Minor Changes

@@ -128,7 +128,6 @@ export interface CubeSwitchProps
     FieldBaseProps,
     AriaSwitchProps {
   inputStyles?: Styles;
-  fieldStyles?: Styles;
   isLoading?: boolean;
   size?: 'large' | 'medium' | 'small';
 }
@@ -156,7 +155,6 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     isLoading,
     labelPosition,
     inputStyles,
-    fieldStyles,
     validationState,
     size = 'medium',
     form,
@@ -166,7 +164,9 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
 
   let styles = extractStyles(props, OUTER_STYLES);
 
-  inputStyles = extractStyles(props, BLOCK_STYLES, inputStyles);
+  inputStyles = extractStyles(props, BLOCK_STYLES, inputStyles, undefined, [
+    'styles',
+  ]);
 
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
@@ -189,24 +189,20 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
 
   const switchField = (
     <SwitchWrapperElement
-      qa={qa || 'SwitchWrapper'}
+      qa="SwitchWrapper"
       mods={mods}
       data-size={size}
       styles={styles}
       {...hoverProps}
     >
       <HiddenInput
-        data-qa="HiddenInput"
+        qa={qa || 'Switch'}
+        data-input-type="switch"
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
         id={id}
       />
-      <SwitchElement
-        qa="Switch"
-        mods={mods}
-        data-size={size}
-        styles={inputStyles}
-      >
+      <SwitchElement mods={mods} data-size={size} styles={inputStyles}>
         <div data-element="Thumb" aria-hidden="true" />
       </SwitchElement>
       {children ? <Text nowrap>{children}</Text> : null}
@@ -227,9 +223,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
       for: id,
     },
     children: null,
-    labelStyles,
     inputStyles,
-    styles: fieldStyles,
   });
 }
 

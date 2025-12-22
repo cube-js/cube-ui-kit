@@ -3,7 +3,17 @@ description: When user asked to add a changeset
 alwaysApply: false
 ---
 
-Place the changeset to `/.changeset` folder.
-Use `patch` version for small fixed (even with breaking changes if they are minor). Use `minor` version for bigger features and noticeable breaking changes.
-Use diff of the working tree to analyze changes. If it's empty then use the diff with the `main` branch.
-Try to make the changeset concise.
+Add changeset manually. Place the changeset in the `/.changeset` folder.
+
+## Version Selection
+- Use `patch` for bug fixes and small changes (even with minor breaking changes)
+- Use `minor` for new features and noticeable breaking changes
+
+## Content Guidelines
+- To analyze changes, use the following priority (unless user explicitly specifies what the changeset is for):
+  1. Diff introduced in the current chat session
+  2. Diff of the working tree (if chat diff is empty)
+  3. Diff with the `main` branch (if working tree is empty)
+- Keep the changeset concise and user-focused
+- Only document changes that affect end users or the public API
+- Exclude fixes for issues that were introduced and resolved within the same PR (internal corrections during development)

@@ -8,6 +8,41 @@ import {
 
 const CACHE = {};
 
+/**
+ * Convert color fallback chain to RGB fallback chain.
+ * Example: var(--primary-color, var(--secondary-color)) → var(--primary-color-rgb, var(--secondary-color-rgb))
+ */
+export function convertColorChainToRgbChain(colorValue: string): string {
+  // Match var(--name-color, ...) pattern
+  const varPattern = /var\(--([a-z0-9-]+)-color\s*(?:,\s*(.+))?\)/;
+  const match = colorValue.match(varPattern);
+
+  if (!match) {
+    // Not a color variable, check if it's a color function or literal
+    if (colorValue.startsWith('rgb(') || colorValue.startsWith('rgba(')) {
+      return colorValue;
+    }
+    // Try to convert to RGB if possible
+    const rgba = strToRgb(colorValue);
+    if (rgba) {
+      const rgbValues = getRgbValuesFromRgbaString(rgba);
+      return rgbValues.join(' ');
+    }
+    return colorValue;
+  }
+
+  const [, name, fallback] = match;
+
+  if (!fallback) {
+    // Simple var without fallback
+    return `var(--${name}-color-rgb)`;
+  }
+
+  // Recursively process the fallback
+  const processedFallback = convertColorChainToRgbChain(fallback.trim());
+  return `var(--${name}-color-rgb, ${processedFallback})`;
+}
+
 export function createStyle(
   styleName: string,
   cssStyle?: string,
@@ -35,8 +70,7 @@ export function createStyle(
         const name = toSnakeCase(raw).replace(/^-+/, '');
         finalCssStyle = `--${name}-color`;
       } else {
-        finalCssStyle =
-          cssStyle || toSnakeCase(styleName).replace(/^[@$]/, '--');
+        finalCssStyle = cssStyle || toSnakeCase(styleName).replace(/^\$/, '--');
       }
 
       // convert non-string values
@@ -68,7 +102,7 @@ export function createStyle(
           if (color) {
             return {
               [finalCssStyle]: color,
-              [`${finalCssStyle}-rgb`]: `var(--${name}-color-rgb)`,
+              [`${finalCssStyle}-rgb`]: convertColorChainToRgbChain(color),
             };
           }
 

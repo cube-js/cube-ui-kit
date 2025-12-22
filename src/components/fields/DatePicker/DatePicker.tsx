@@ -62,6 +62,7 @@ function DatePicker<T extends DateValue>(
   let styles = extractStyles(props, CONTAINER_STYLES);
 
   let {
+    qa,
     size,
     placeholderValue,
     isDisabled,
@@ -119,11 +120,14 @@ function DatePicker<T extends DateValue>(
   const component = (
     <DateInputBase
       ref={targetRef}
+      qa={qa || 'DatePicker'}
+      inputType="datepicker"
       styles={props.wrapperStyles}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}
       validationState={validationState}
       size={size}
+      fieldProps={groupProps}
       {...focusProps}
       suffix={
         <DialogTrigger
@@ -167,9 +171,7 @@ function DatePicker<T extends DateValue>(
 
   return wrapWithField(component, domRef, {
     ...props,
-    styles,
     labelProps: mergeProps(props.labelProps, labelProps),
-    fieldProps: groupProps,
   });
 }
 

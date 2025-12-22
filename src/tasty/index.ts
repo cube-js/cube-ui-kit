@@ -9,9 +9,15 @@ export * from './styles/list';
 export * from './utils/mergeStyles';
 export * from './utils/warnings';
 export * from './utils/getDisplayName';
+export * from './utils/processTokens';
 export * from './injector';
 export * from './debug';
-export type { TastyProps, AllBasePropsWithMods } from './tasty';
+export type {
+  TastyProps,
+  TastyElementOptions,
+  TastyElementProps,
+  AllBasePropsWithMods,
+} from './tasty';
 export type {
   AllBaseProps,
   BaseProps,
@@ -22,6 +28,8 @@ export type {
   PositionStyleProps,
   TextStyleProps,
   BlockStyleProps,
+  BlockInnerStyleProps,
+  BlockOuterStyleProps,
   ContainerStyleProps,
   BasePropsWithoutChildren,
   Props,
@@ -29,6 +37,10 @@ export type {
   ShortGridStyles,
   GlobalStyledProps,
   TagName,
+  Mods,
+  ModValue,
+  Tokens,
+  TokenValue,
 } from './types';
 export type {
   StylesInterface,

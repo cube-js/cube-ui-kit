@@ -9,7 +9,7 @@ import {
 } from '../index';
 
 export default {
-  title: 'Content/Layout',
+  title: 'Content/SimpleLayout',
 };
 
 export const Flow = {

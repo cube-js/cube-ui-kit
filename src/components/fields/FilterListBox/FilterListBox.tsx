@@ -1,11 +1,14 @@
 import { Key } from '@react-types/shared';
-import React, {
+import {
+  cloneElement,
   ForwardedRef,
   forwardRef,
+  isValidElement,
   ReactElement,
   ReactNode,
   RefObject,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -288,10 +291,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
         // the index. This mirrors React Aria examples where the render function
         // is expected to set keys, but we add a fallback for robustness.
         if (
-          React.isValidElement(rendered) &&
+          isValidElement(rendered) &&
           (rendered as ReactElement).key == null
         ) {
-          return React.cloneElement(rendered as ReactElement, {
+          return cloneElement(rendered as ReactElement, {
             key: (rendered as any)?.key ?? item?.key ?? idx,
           });
         }
@@ -329,7 +332,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   const [customKeys, setCustomKeys] = useState<Set<string>>(new Set());
 
   // Initialize custom keys from current selection
-  React.useEffect(() => {
+  useEffect(() => {
     if (!allowsCustomValue) return;
 
     const currentSelectedKeys = selectedKeys
@@ -552,6 +555,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   // If the currently focused item is no longer visible, move virtual focus to the first
   // available item so that arrow navigation and Enter behaviour continue to work.
   // If there are no available items, reset the selection so Enter won't select anything.
+  // Priority: focus on selected items first, then fall back to first visible item.
   useLayoutEffect(() => {
     const listState = listStateRef.current;
 
@@ -586,9 +590,54 @@ export const FilterListBox = forwardRef(function FilterListBox<
       return;
     }
 
-    // Set focus to the first visible item
-    selectionManager.setFocusedKey(visibleKeys[0]);
-  }, [searchValue, enhancedChildren]);
+    // Helper to find the first selected item that's visible
+    const findFirstVisibleSelectedKey = (): Key | null => {
+      if (selectionMode === 'single') {
+        // Single selection: check if selectedKey is visible
+        if (selectedKey != null) {
+          const selectedKeyStr = String(selectedKey);
+          if (visibleKeys.some((k) => String(k) === selectedKeyStr)) {
+            return selectedKey;
+          }
+        }
+      } else if (selectionMode === 'multiple') {
+        // Multiple selection: find first selected key that's visible
+        if (selectedKeys && selectedKeys !== 'all') {
+          for (const key of selectedKeys) {
+            const keyStr = String(key);
+            if (visibleKeys.some((k) => String(k) === keyStr)) {
+              return key;
+            }
+          }
+        }
+      }
+      return null;
+    };
+
+    // Determine which key to focus
+    let keyToFocus: Key | null = null;
+
+    // If there's no focus yet (initial state), prioritize selected items
+    if (currentFocused == null) {
+      keyToFocus = findFirstVisibleSelectedKey();
+    } else {
+      // If current focused item was filtered out, try to focus another selected item
+      keyToFocus = findFirstVisibleSelectedKey();
+    }
+
+    // Fallback to first visible item if no selected item found
+    if (keyToFocus == null) {
+      keyToFocus = visibleKeys[0];
+    }
+
+    // Mark this focus change as keyboard navigation so ListBox will scroll to it
+    if (listState.lastFocusSourceRef) {
+      listState.lastFocusSourceRef.current = 'keyboard';
+    }
+
+    // Set focus to the determined key
+    selectionManager.setFocusedKey(keyToFocus);
+  }, [searchValue, enhancedChildren, selectionMode, selectedKey, selectedKeys]);
 
   // Keyboard navigation handler for search input
   const { keyboardProps } = useKeyboard({
@@ -824,6 +873,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         data-autofocus={autoFocus ? '' : undefined}
         styles={searchInputStyles}
         data-size={size}
+        data-input-type="filterlistbox"
         role="combobox"
         aria-expanded="true"
         aria-haspopup="listbox"
@@ -833,8 +883,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
             : undefined
         }
         onChange={(e) => {
-          const value = e.target.value;
-          handleSearchChange(value);
+          handleSearchChange(e.target.value);
         }}
         {...keyboardProps}
         {...modAttrs(mods)}
@@ -906,12 +955,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
     </FilterListBoxWrapperElement>
   );
 
-  const finalProps = { ...props, styles: undefined };
-
   return wrapWithField<Omit<CubeFilterListBoxProps<T>, 'children'>>(
     filterListBoxField,
     ref,
-    mergeProps(finalProps, {}),
+    props,
   );
 }) as unknown as (<T>(
   props: CubeFilterListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },

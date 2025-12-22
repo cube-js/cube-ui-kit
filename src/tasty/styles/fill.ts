@@ -1,5 +1,7 @@
 import { parseStyle } from '../utils/styles';
 
+import { convertColorChainToRgbChain } from './createStyle';
+
 export function fillStyle({ fill }) {
   if (!fill) return '';
 
@@ -23,7 +25,7 @@ export function fillStyle({ fill }) {
     styles.push({
       $: '>*',
       '--context-fill-color': fill,
-      '--context-fill-color-rgb': `var(--${name}-color-rgb)`,
+      '--context-fill-color-rgb': convertColorChainToRgbChain(fill),
     });
   }
 

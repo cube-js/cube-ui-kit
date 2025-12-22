@@ -16,7 +16,7 @@ export function dimensionStyle(name) {
       };
     }
 
-    if (!val) return '';
+    if (val == null) return '';
 
     if (typeof val === 'number') {
       val = `${val}px`;
@@ -46,6 +46,15 @@ export function dimensionStyle(name) {
           styles[maxStyle] = values[0] || DEFAULT_MAX_SIZE;
           flag = true;
           break;
+        case 'fixed': {
+          // Fixed modifier: set all three dimensions to the same value
+          const fixedValue = values[0] || 'max-content';
+          styles[minStyle] = fixedValue;
+          styles[name] = fixedValue;
+          styles[maxStyle] = fixedValue;
+          flag = true;
+          break;
+        }
         default:
           break;
       }

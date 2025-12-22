@@ -77,6 +77,7 @@ export interface FieldBaseProps extends FormBaseProps, FieldCoreProps {
   /** Whether the field is inside the form. Private field. */
   insideForm?: boolean;
   fieldProps?: Props;
+  fieldStyles?: Styles;
   messageStyles?: Styles;
   /** If true, the input component will be wrapped in a field wrapper even if it doesn't have a label. */
   forceField?: boolean;

@@ -1,9 +1,11 @@
 import {
+  AllHTMLAttributes,
   ComponentType,
   createElement,
   FC,
   forwardRef,
   ForwardRefExoticComponent,
+  JSX,
   PropsWithoutRef,
   RefAttributes,
   useContext,
@@ -16,11 +18,18 @@ import { isValidElementType } from 'react-is';
 import { allocateClassName, inject, injectGlobal } from './injector';
 import { BASE_STYLES } from './styles/list';
 import { Styles, StylesInterface } from './styles/types';
-import { AllBaseProps, BaseProps, BaseStyleProps, Props } from './types';
+import {
+  AllBaseProps,
+  BaseProps,
+  BaseStyleProps,
+  Props,
+  Tokens,
+} from './types';
 import { cacheWrapper } from './utils/cache-wrapper';
 import { getDisplayName } from './utils/getDisplayName';
 import { mergeStyles } from './utils/mergeStyles';
 import { modAttrs } from './utils/modAttrs';
+import { processTokens, stringifyTokens } from './utils/processTokens';
 import { RenderResult, renderStyles } from './utils/renderStyles';
 import {
   stringifyStyles,
@@ -92,23 +101,83 @@ export type TastyProps<
   V extends VariantMap,
   DefaultProps = Props,
 > = {
-  /** The tag name of the element. */
-  as?: string;
+  /** The tag name of the element or a React component. */
+  as?: string | ComponentType<any>;
   /** Default styles of the element. */
   styles?: Styles;
   /** The list of styles that can be provided by props */
   styleProps?: K;
   element?: BaseProps['element'];
   variants?: V;
-} & Partial<Omit<DefaultProps, 'as' | 'styles' | 'styleProps'>> &
+  /** Default tokens for inline CSS custom properties */
+  tokens?: Tokens;
+} & Partial<Omit<DefaultProps, 'as' | 'styles' | 'styleProps' | 'tokens'>> &
   Pick<BaseProps, 'qa' | 'qaVal'> &
   WithVariant<V>;
+
+/**
+ * TastyElementOptions is used for the element-creation overload of tasty().
+ * It includes a Tag generic that allows TypeScript to infer the correct
+ * HTML element type from the `as` prop.
+ */
+export type TastyElementOptions<
+  K extends StyleList,
+  V extends VariantMap,
+  Tag extends keyof JSX.IntrinsicElements = 'div',
+> = Omit<TastyProps<K, V>, 'as'> & {
+  /** The tag name of the element or a React component. */
+  as?: Tag | ComponentType<any>;
+};
 
 export type AllBasePropsWithMods<K extends StyleList> = AllBaseProps & {
   [key in K[number]]?:
     | StyleValue<StylesInterface[key]>
     | StyleValueStateMap<StylesInterface[key]>;
 } & BaseStyleProps;
+
+/**
+ * Keys from BasePropsWithoutChildren that should be omitted from HTML attributes.
+ * This excludes event handlers so they can be properly typed from JSX.IntrinsicElements.
+ */
+type TastySpecificKeys =
+  | 'as'
+  | 'qa'
+  | 'qaVal'
+  | 'element'
+  | 'styles'
+  | 'breakpoints'
+  | 'block'
+  | 'inline'
+  | 'mods'
+  | 'isHidden'
+  | 'isDisabled'
+  | 'css'
+  | 'style'
+  | 'theme'
+  | 'tokens'
+  | 'ref'
+  | 'color';
+
+/**
+ * Props type for tasty elements that combines:
+ * - AllBasePropsWithMods for style props with strict tokens type
+ * - HTML attributes for flexibility (properly typed based on tag)
+ * - Variant support
+ *
+ * Uses AllHTMLAttributes as base for common attributes (like disabled),
+ * but overrides event handlers with tag-specific types from JSX.IntrinsicElements.
+ */
+export type TastyElementProps<
+  K extends StyleList,
+  V extends VariantMap,
+  Tag extends keyof JSX.IntrinsicElements = 'div',
+> = AllBasePropsWithMods<K> &
+  WithVariant<V> &
+  Omit<
+    Omit<AllHTMLAttributes<HTMLElement>, keyof JSX.IntrinsicElements[Tag]> &
+      JSX.IntrinsicElements[Tag],
+    TastySpecificKeys | K[number]
+  >;
 
 type TastyComponentPropsWithDefaults<
   Props extends PropsWithStyles,
@@ -121,10 +190,16 @@ type TastyComponentPropsWithDefaults<
       [key in keyof Omit<Props, keyof DefaultProps>]: Props[key];
     };
 
-export function tasty<K extends StyleList, V extends VariantMap>(
-  options: TastyProps<K, V>,
+export function tasty<
+  K extends StyleList,
+  V extends VariantMap,
+  Tag extends keyof JSX.IntrinsicElements = 'div',
+>(
+  options: TastyElementOptions<K, V, Tag>,
   secondArg?: never,
-): ComponentType<Omit<Props, 'variant'> & WithVariant<V>>;
+): ForwardRefExoticComponent<
+  PropsWithoutRef<TastyElementProps<K, V, Tag>> & RefAttributes<unknown>
+>;
 export function tasty(selector: string, styles?: Styles);
 export function tasty<
   Props extends PropsWithStyles,
@@ -250,6 +325,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
     styles: defaultStyles,
     styleProps,
     variants,
+    tokens: defaultTokens,
     ...defaultProps
   } = tastyOptions;
 
@@ -267,6 +343,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
           as: originalAs,
           styles: mergeStyles(defaultStyles, variantStyles),
           styleProps,
+          tokens: defaultTokens,
           ...(defaultProps as Props),
         } as TastyProps<K, never>) as unknown as VariantFC<K>;
         return map;
@@ -279,6 +356,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         as: originalAs,
         styles: defaultStyles,
         styleProps,
+        tokens: defaultTokens,
         ...(defaultProps as Props),
       } as TastyProps<K, never>) as unknown as VariantFC<K>;
     }
@@ -336,9 +414,15 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         qa,
         qaVal,
         className: userClassName,
+        tokens,
+        style,
         ...otherProps
       } = allProps as Record<string, unknown> as AllBasePropsWithMods<K> &
-        WithVariant<V> & { className?: string };
+        WithVariant<V> & {
+          className?: string;
+          tokens?: Tokens;
+          style?: Record<string, unknown>;
+        };
 
       // Optimize propStyles extraction - avoid creating empty objects
       let propStyles: Styles | null = null;
@@ -429,6 +513,28 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
 
       const injectedClassName = allocatedClassName;
 
+      // Merge default tokens with instance tokens (instance overrides defaults)
+      const tokensKey = stringifyTokens(tokens as Tokens | undefined);
+      const mergedTokens = useMemo(() => {
+        if (!defaultTokens && !tokens) return undefined;
+        if (!defaultTokens) return tokens as Tokens;
+        if (!tokens) return defaultTokens;
+        return { ...defaultTokens, ...tokens } as Tokens;
+      }, [tokensKey]);
+
+      // Process merged tokens into inline style properties
+      const processedTokenStyle = useMemo(() => {
+        return processTokens(mergedTokens);
+      }, [mergedTokens]);
+
+      // Merge processed tokens with explicit style prop (style has priority)
+      const mergedStyle = useMemo(() => {
+        if (!processedTokenStyle && !style) return undefined;
+        if (!processedTokenStyle) return style;
+        if (!style) return processedTokenStyle;
+        return { ...processedTokenStyle, ...style };
+      }, [processedTokenStyle, style]);
+
       let modProps: Record<string, unknown> | undefined;
       if (mods) {
         const modsObject = mods as unknown as Record<string, unknown>;
@@ -451,6 +557,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         ...(modProps || {}),
         ...(otherProps as unknown as Record<string, unknown>),
         className: finalClassName,
+        style: mergedStyle,
         ref,
       } as Record<string, unknown>;
 

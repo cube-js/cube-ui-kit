@@ -2,21 +2,20 @@ import {
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
+  isValidElement,
   KeyboardEvent,
   MouseEvent,
   PointerEvent,
   ReactNode,
   RefObject,
-  useCallback,
-  useEffect,
   useMemo,
-  useRef,
-  useState,
 } from 'react';
 import { OverlayProps } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
 
+import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
+  DANGER_CARD_STYLES,
   DANGER_CLEAR_STYLES,
   DANGER_ITEM_STYLES,
   DANGER_LINK_STYLES,
@@ -24,6 +23,7 @@ import {
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
   DANGER_SECONDARY_STYLES,
+  DEFAULT_CARD_STYLES,
   DEFAULT_CLEAR_STYLES,
   DEFAULT_ITEM_STYLES,
   DEFAULT_LINK_STYLES,
@@ -32,6 +32,7 @@ import {
   DEFAULT_PRIMARY_STYLES,
   DEFAULT_SECONDARY_STYLES,
   ItemVariant,
+  NOTE_CARD_STYLES,
   SPECIAL_CLEAR_STYLES,
   SPECIAL_ITEM_STYLES,
   SPECIAL_LINK_STYLES,
@@ -39,6 +40,7 @@ import {
   SPECIAL_OUTLINE_STYLES,
   SPECIAL_PRIMARY_STYLES,
   SPECIAL_SECONDARY_STYLES,
+  SUCCESS_CARD_STYLES,
   SUCCESS_CLEAR_STYLES,
   SUCCESS_ITEM_STYLES,
   SUCCESS_LINK_STYLES,
@@ -53,23 +55,57 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
+  Mods,
   Props,
   Styles,
   tasty,
 } from '../../../tasty';
-import { mergeProps } from '../../../utils/react';
+import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
 import { ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
-import {
-  CubeTooltipProviderProps,
-  TooltipProvider,
-} from '../../overlays/Tooltip/TooltipProvider';
+import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
+import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
+import { highlightText } from '../highlightText';
 import { HotKeys } from '../HotKeys';
 import { ItemBadge } from '../ItemBadge';
+import { useAutoTooltip } from '../use-auto-tooltip';
+
+const ITEM_SIZE_VALUES = [
+  'xsmall',
+  'small',
+  'medium',
+  'large',
+  'xlarge',
+  'inline',
+] as const;
+
+/** Known modifiers for Item component */
+export type ItemMods = Mods<{
+  'has-icon'?: boolean;
+  'has-start-content'?: boolean;
+  'has-end-content'?: boolean;
+  'has-right-icon'?: boolean;
+  'has-label'?: boolean;
+  'has-prefix'?: boolean;
+  'has-suffix'?: boolean;
+  'has-description'?: boolean;
+  'has-actions'?: boolean;
+  'has-actions-content'?: boolean;
+  'show-actions-on-hover'?: boolean;
+  checkbox?: boolean;
+  disabled?: boolean;
+  selected?: boolean;
+  loading?: boolean;
+  size?: string;
+  description?: string;
+  type?: string;
+  theme?: string;
+  shape?: string;
+}>;
 
 export interface CubeItemProps extends BaseProps, ContainerStyleProps {
-  icon?: ReactNode | 'checkbox';
-  rightIcon?: ReactNode;
+  icon?: DynamicIcon<ItemMods> | 'checkbox';
+  rightIcon?: DynamicIcon<ItemMods>;
   prefix?: ReactNode;
   suffix?: ReactNode;
   description?: ReactNode;
@@ -106,15 +142,16 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | (string & {});
   type?:
     | 'item'
+    | 'header'
     | 'primary'
     | 'secondary'
     | 'outline'
     | 'neutral'
     | 'clear'
     | 'link'
+    | 'card'
     | (string & {});
-  theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
-  variant?: ItemVariant;
+  theme?: 'default' | 'danger' | 'success' | 'special' | 'note' | (string & {});
   /** Keyboard shortcut that triggers the element when pressed */
   hotkeys?: string;
   /**
@@ -148,21 +185,14 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    */
   isLoading?: boolean;
   /**
-   * When true, applies card styling with increased border radius.
-   */
-  isCard?: boolean;
-  /**
-   * When true, adds button modifier to the component styling.
-   */
-  isButton?: boolean;
-  /**
    * Shape of the item's border radius.
    * - `card` - Card shape with larger border radius (`1cr`)
    * - `button` - Button shape with default border radius (default)
    * - `sharp` - Sharp corners with no border radius (`0`)
+   * - `pill` - Pill shape with fully rounded ends (`round`)
    * @default "button"
    */
-  shape?: 'card' | 'button' | 'sharp';
+  shape?: 'card' | 'button' | 'sharp' | 'pill';
   /**
    * @private
    * Default tooltip placement for the item.
@@ -173,6 +203,30 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * Ref to access the label element directly
    */
   labelRef?: RefObject<HTMLElement>;
+  /**
+   * Heading level for the Label element when type="header" or type="card".
+   * Changes the Label's HTML tag to the corresponding heading (h1-h6).
+   * @default 3
+   */
+  level?: 1 | 2 | 3 | 4 | 5 | 6;
+  /**
+   * String to highlight within children.
+   * Only works when children is a plain string.
+   */
+  highlight?: string;
+  /**
+   * Whether highlight matching is case-sensitive.
+   * @default false
+   */
+  highlightCaseSensitive?: boolean;
+  /**
+   * Custom styles for highlighted text.
+   */
+  highlightStyles?: Styles;
+  /**
+   * Variant of the item.
+   */
+  variant?: ItemVariant;
 }
 
 const DEFAULT_ICON_STYLES: Styles = {
@@ -223,6 +277,8 @@ const ItemElement = tasty({
     gridTemplate: {
       '': '"icon prefix label suffix rightIcon actions" auto "icon prefix label suffix rightIcon actions" auto / max-content max-content 1sf max-content max-content max-content',
       'description=inline':
+        '"icon prefix description suffix rightIcon actions" auto / max-content max-content 1sf max-content max-content max-content',
+      'description=inline & has-label':
         '"icon prefix label suffix rightIcon actions" auto "icon prefix description suffix rightIcon actions" auto / max-content max-content 1sf max-content max-content max-content',
       'description=block':
         '"icon prefix label suffix rightIcon actions" auto "description description description description description description" auto / max-content max-content 1sf max-content max-content max-content',
@@ -233,13 +289,17 @@ const ItemElement = tasty({
       'menuitem | listboxitem': 0,
     },
     position: 'relative',
-    padding: 0,
+    padding: {
+      '': 0,
+      'type=card': '.5x',
+    },
     margin: 0,
     radius: {
       '': true,
       'shape=card': '1cr',
       'shape=button': true,
       'shape=sharp': '0',
+      'shape=pill': 'round',
     },
     height: {
       '': 'min $size',
@@ -247,6 +307,7 @@ const ItemElement = tasty({
     },
     width: {
       '': 'min $size',
+      'has-icon & has-right-icon': 'min ($size * 2)',
       'size=inline': 'min (1lh + 2bw)',
     },
     border: '#clear',
@@ -266,11 +327,15 @@ const ItemElement = tasty({
     },
     preset: {
       '': 't3',
-      button: 't3m',
+      '!type=item': 't3m',
       'size=xsmall': 't4',
       'size=xlarge': 't2',
-      'size=xlarge & button': 't2m',
-      'size=inline': 'tag',
+      'size=xlarge & !type=item': 't2m',
+      'size=inline': 'inline',
+      '(type=header | type=card) & (size=xsmall | size=small | size=medium)':
+        'h6',
+      '(type=header | type=card) & size=large': 'h5',
+      '(type=header | type=card) & size=xlarge': 'h4',
     },
     boxSizing: 'border-box',
     textDecoration: 'none',
@@ -278,7 +343,7 @@ const ItemElement = tasty({
     reset: 'button',
     outlineOffset: 1,
     cursor: {
-      '': 'default',
+      '': 'inherit',
       ':is(a)': 'pointer',
       ':is(button) | listboxitem | menuitem': '$pointer',
       disabled: 'not-allowed',
@@ -291,12 +356,10 @@ const ItemElement = tasty({
       'size=medium': '$size-md',
       'size=large': '$size-lg',
       'size=xlarge': '$size-xl',
-      'size=inline': '1lh',
+      'size=inline': '(1lh + 2bw)',
     },
-    '$inline-padding': {
-      '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
-      'size=inline': '.25x',
-    },
+    '$inline-padding':
+      'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
     '$block-padding': {
       '': '.5x',
       'size=xsmall | size=small': '.25x',
@@ -330,11 +393,11 @@ const ItemElement = tasty({
       'description=block & !has-end-content': '$inline-padding',
     },
     '$description-padding-bottom': {
-      '': '$block-padding',
-      'description=block': '$bottom-padding',
+      '': 0,
+      'has-label & description=inline': '$block-padding',
+      'has-label & description=block':
+        'max($block-padding, (($size - 4x) / 2) + $block-padding)',
     },
-    '$bottom-padding':
-      'max($block-padding, (($size - 4x) / 2) + $block-padding)',
 
     Icon: { ...DEFAULT_ICON_STYLES, gridArea: 'icon' },
 
@@ -342,6 +405,7 @@ const ItemElement = tasty({
 
     Label: {
       $: '>',
+      margin: 0,
       gridArea: 'label',
       display: 'block',
       placeSelf: 'center start',
@@ -351,6 +415,7 @@ const ItemElement = tasty({
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       maxWidth: '100%',
+      preset: 'inherit',
       padding:
         '$block-padding $label-padding-right $label-padding-bottom $label-padding-left',
     },
@@ -358,11 +423,22 @@ const ItemElement = tasty({
     Description: {
       $: '>',
       gridArea: 'description',
-      preset: 't4',
+      preset: {
+        '': 't4',
+        'type=card | type=header': 't3',
+      },
+      placeSelf: 'center start',
+      boxSizing: 'border-box',
       color: 'inherit',
-      opacity: 0.75,
+      opacity: {
+        '': 0.75,
+        'type=card | type=header': 1,
+      },
       overflow: 'hidden',
-      whiteSpace: 'nowrap',
+      whiteSpace: {
+        '': 'nowrap',
+        'type=card | type=header': 'normal',
+      },
       textOverflow: 'ellipsis',
       maxWidth: '100%',
       textAlign: 'left',
@@ -426,6 +502,7 @@ const ItemElement = tasty({
     'default.clear': DEFAULT_CLEAR_STYLES,
     'default.link': DEFAULT_LINK_STYLES,
     'default.item': DEFAULT_ITEM_STYLES,
+    'default.card': DEFAULT_CARD_STYLES,
     // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
     'danger.secondary': DANGER_SECONDARY_STYLES,
@@ -434,6 +511,7 @@ const ItemElement = tasty({
     'danger.clear': DANGER_CLEAR_STYLES,
     'danger.link': DANGER_LINK_STYLES,
     'danger.item': DANGER_ITEM_STYLES,
+    'danger.card': DANGER_CARD_STYLES,
     // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
     'success.secondary': SUCCESS_SECONDARY_STYLES,
@@ -442,6 +520,7 @@ const ItemElement = tasty({
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
     'success.item': SUCCESS_ITEM_STYLES,
+    'success.card': SUCCESS_CARD_STYLES,
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
     'special.secondary': SPECIAL_SECONDARY_STYLES,
@@ -450,222 +529,11 @@ const ItemElement = tasty({
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,
     'special.item': SPECIAL_ITEM_STYLES,
+    // Note theme (card type only)
+    'note.card': NOTE_CARD_STYLES,
   },
   styleProps: CONTAINER_STYLES,
 });
-
-export function useAutoTooltip({
-  tooltip,
-  children,
-  labelProps,
-  isDynamicLabel = false, // if actions are set
-}: {
-  tooltip: CubeItemProps['tooltip'];
-  children: ReactNode;
-  labelProps?: Props;
-  isDynamicLabel?: boolean;
-}) {
-  // Determine if auto tooltip is enabled
-  // Auto tooltip only works when children is a string (overflow detection needs text)
-  const isAutoTooltipEnabled = useMemo(() => {
-    if (typeof children !== 'string') return false;
-
-    // Boolean true enables auto overflow detection
-    if (tooltip === true) return true;
-    if (typeof tooltip === 'object') {
-      // If title is provided and auto is explicitly true, enable auto overflow detection
-      if (tooltip.title) {
-        return tooltip.auto === true;
-      }
-
-      // If no title is provided, default to auto=true unless explicitly disabled
-      const autoValue = tooltip.auto !== undefined ? tooltip.auto : true;
-      return !!autoValue;
-    }
-    return false;
-  }, [tooltip, children]);
-
-  // Track label overflow for auto tooltip (only when enabled)
-  const externalLabelRef = (labelProps as any)?.ref;
-  const [isLabelOverflowed, setIsLabelOverflowed] = useState(false);
-  const elementRef = useRef<HTMLElement | null>(null);
-  const resizeObserverRef = useRef<ResizeObserver | null>(null);
-
-  const checkLabelOverflow = useCallback(() => {
-    const label = elementRef.current;
-    if (!label) {
-      setIsLabelOverflowed(false);
-      return;
-    }
-
-    const hasOverflow = label.scrollWidth > label.clientWidth;
-    setIsLabelOverflowed(hasOverflow);
-  }, []);
-
-  useEffect(() => {
-    if (isAutoTooltipEnabled) {
-      checkLabelOverflow();
-    }
-  }, [isAutoTooltipEnabled, checkLabelOverflow]);
-
-  // Attach ResizeObserver via callback ref to handle DOM node changes
-  const handleLabelElementRef = useCallback(
-    (element: HTMLElement | null) => {
-      // Call external callback ref to notify external refs
-      if (externalLabelRef) {
-        if (typeof externalLabelRef === 'function') {
-          externalLabelRef(element);
-        } else {
-          (externalLabelRef as any).current = element;
-        }
-      }
-
-      // Disconnect previous observer
-      if (resizeObserverRef.current) {
-        try {
-          resizeObserverRef.current.disconnect();
-        } catch {
-          // do nothing
-        }
-        resizeObserverRef.current = null;
-      }
-
-      elementRef.current = element;
-
-      if (element && isAutoTooltipEnabled) {
-        // Create a fresh observer to capture the latest callback
-        const obs = new ResizeObserver(() => {
-          checkLabelOverflow();
-        });
-        resizeObserverRef.current = obs;
-        obs.observe(element);
-        // Initial check
-        checkLabelOverflow();
-      } else {
-        setIsLabelOverflowed(false);
-      }
-    },
-    [externalLabelRef, isAutoTooltipEnabled, checkLabelOverflow],
-  );
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (resizeObserverRef.current) {
-        try {
-          resizeObserverRef.current.disconnect();
-        } catch {
-          // do nothing
-        }
-        resizeObserverRef.current = null;
-      }
-      elementRef.current = null;
-    };
-  }, []);
-
-  const finalLabelProps = useMemo(() => {
-    const props = {
-      ...(labelProps || {}),
-    };
-
-    delete props.ref;
-
-    return props;
-  }, [labelProps]);
-
-  const renderWithTooltip = useCallback(
-    (
-      renderElement: (
-        tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
-        tooltipRef?: RefObject<HTMLElement>,
-      ) => ReactNode,
-      defaultTooltipPlacement: OverlayProps['placement'],
-    ) => {
-      // Handle tooltip rendering based on tooltip prop type
-      if (tooltip) {
-        // String tooltip - simple case
-        if (typeof tooltip === 'string') {
-          return (
-            <TooltipProvider
-              placement={defaultTooltipPlacement}
-              title={tooltip}
-            >
-              {(triggerProps, ref) => renderElement(triggerProps, ref)}
-            </TooltipProvider>
-          );
-        }
-
-        // Boolean tooltip - auto tooltip on overflow
-        if (tooltip === true) {
-          if (
-            (children || labelProps) &&
-            (isLabelOverflowed || isDynamicLabel)
-          ) {
-            return (
-              <TooltipProvider
-                placement={defaultTooltipPlacement}
-                title={children}
-                isDisabled={!isLabelOverflowed && isDynamicLabel}
-              >
-                {(triggerProps, ref) => renderElement(triggerProps, ref)}
-              </TooltipProvider>
-            );
-          }
-        }
-
-        // Object tooltip - advanced configuration
-        if (typeof tooltip === 'object') {
-          const { auto, ...tooltipProps } = tooltip;
-
-          // If title is provided and auto is not explicitly true, always show the tooltip
-          if (tooltipProps.title && auto !== true) {
-            return (
-              <TooltipProvider
-                placement={defaultTooltipPlacement}
-                {...tooltipProps}
-              >
-                {(triggerProps, ref) => renderElement(triggerProps, ref)}
-              </TooltipProvider>
-            );
-          }
-
-          // If title is provided with auto=true, OR no title but auto behavior enabled
-          if (
-            (children || labelProps) &&
-            (isLabelOverflowed || isDynamicLabel)
-          ) {
-            return (
-              <TooltipProvider
-                placement={defaultTooltipPlacement}
-                title={tooltipProps.title ?? children}
-                isDisabled={
-                  !isLabelOverflowed &&
-                  isDynamicLabel &&
-                  tooltipProps.isDisabled !== true
-                }
-                {...tooltipProps}
-              >
-                {(triggerProps, ref) => renderElement(triggerProps, ref)}
-              </TooltipProvider>
-            );
-          }
-        }
-      }
-
-      return renderElement();
-    },
-    [tooltip, children, labelProps, isLabelOverflowed],
-  );
-
-  return {
-    labelRef: handleLabelElementRef,
-    labelProps: finalLabelProps,
-    isLabelOverflowed,
-    isAutoTooltipEnabled,
-    hasTooltip: !!tooltip,
-    renderWithTooltip,
-  };
-}
 
 const Item = <T extends HTMLElement = HTMLDivElement>(
   props: CubeItemProps,
@@ -677,12 +545,12 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     type = 'item',
     theme = 'default',
     mods,
-    icon,
-    rightIcon,
+    icon: iconProp,
+    rightIcon: rightIconProp,
     prefix,
     suffix,
     description,
-    descriptionPlacement = 'inline',
+    descriptionPlacement,
     labelProps,
     descriptionProps,
     keyboardShortcutProps,
@@ -695,31 +563,140 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     style,
     loadingSlot = 'auto',
     isLoading = false,
-    isCard = false,
     actions,
     showActionsOnHover = false,
     disableActionsFocus = false,
-    isButton = false,
-    shape = 'button',
+    shape,
     defaultTooltipPlacement = 'top',
+    level = 3,
+    highlight,
+    highlightCaseSensitive = false,
+    highlightStyles,
     ...rest
   } = props;
+
+  // Determine if Label will be rendered
+  const hasLabel = !!(children || labelProps);
+
+  // Set default descriptionPlacement based on type
+  // For card/header types, use 'block' only when Label is rendered
+  const finalDescriptionPlacement =
+    descriptionPlacement ??
+    ((type === 'card' || type === 'header') && hasLabel ? 'block' : 'inline');
+
+  // Set default shape based on type
+  const finalShape = shape ?? (type === 'card' ? 'card' : 'button');
 
   // Loading state makes the component disabled
   const finalIsDisabled =
     isDisabled === true || (isLoading && isDisabled !== false);
 
+  // Validate type+theme combinations
+  const STANDARD_THEMES = ['default', 'success', 'danger', 'special'];
+  const CARD_THEMES = ['default', 'success', 'danger', 'note'];
+  const HEADER_THEMES = ['default'];
+
+  const isInvalidCombination =
+    (type === 'header' && !HEADER_THEMES.includes(theme)) ||
+    (type === 'card' && !CARD_THEMES.includes(theme)) ||
+    (!['header', 'card'].includes(type) && !STANDARD_THEMES.includes(theme));
+
+  useWarn(isInvalidCombination, {
+    key: ['Item', 'invalid-type-theme', type, theme],
+    args: [
+      `Item: Invalid type+theme combination. type="${type}" does not support theme="${theme}".` +
+        (type === 'header'
+          ? ' The "header" type only supports theme: default.'
+          : type === 'card'
+            ? ' The "card" type only supports themes: default, success, danger, note.'
+            : ' Standard types support themes: default, success, danger, special.'),
+    ],
+  });
+
+  // Warn if link type is used with icons or loading state
+  const hasLinkWithIcons = type === 'link' && (iconProp || rightIconProp);
+  const hasLinkWithLoading = type === 'link' && isLoading;
+  const hasLinkRestrictions = hasLinkWithIcons || hasLinkWithLoading;
+
+  const linkRestrictionMessages: string[] = [];
+  if (hasLinkWithIcons) {
+    linkRestrictionMessages.push('icons (`icon` or `rightIcon` props)');
+  }
+  if (hasLinkWithLoading) {
+    linkRestrictionMessages.push('loading state (`isLoading` prop)');
+  }
+
+  useWarn(hasLinkRestrictions, {
+    key: ['Item', 'link-restrictions'],
+    args: [
+      `Item: The "link" type does not support ${linkRestrictionMessages.join(' or ')}. Remove these props when using type="link".`,
+    ],
+  });
+
   // Determine if we should show checkbox instead of icon
-  const hasCheckbox = icon === 'checkbox';
+  const hasCheckbox = iconProp === 'checkbox';
+
+  // Determine if size is custom (number or unrecognized string)
+  const isCustomSize =
+    typeof size === 'number' ||
+    !(ITEM_SIZE_VALUES as readonly string[]).includes(size);
+  const sizeTokenValue =
+    typeof size === 'number' ? `${size}px` : isCustomSize ? size : undefined;
+
+  // Base mods for icon resolution (without icon-dependent mods)
+  const baseMods = useMemo<ItemMods>(
+    () => ({
+      disabled: finalIsDisabled,
+      selected: isSelected === true,
+      loading: isLoading,
+      ...(!isCustomSize && { size: size as string }),
+      type,
+      theme,
+      shape: finalShape,
+      ...mods,
+    }),
+    [
+      finalIsDisabled,
+      isSelected,
+      isLoading,
+      size,
+      isCustomSize,
+      type,
+      theme,
+      finalShape,
+      mods,
+    ],
+  );
+
+  // Resolve dynamic icon props (skip resolution for 'checkbox' special value)
+  const resolvedIcon = useMemo(() => {
+    if (hasCheckbox) {
+      return { content: null, hasSlot: true };
+    }
+    return resolveIcon(iconProp as DynamicIcon<ItemMods>, baseMods);
+  }, [iconProp, baseMods, hasCheckbox]);
+
+  const resolvedRightIcon = useMemo(
+    () => resolveIcon(rightIconProp, baseMods),
+    [rightIconProp, baseMods],
+  );
 
   // Determine which slot to use for loading when "auto" is selected
+  // Must be computed before hasIconSlot/hasRightIconSlot since they depend on it
   const resolvedLoadingSlot = useMemo(() => {
     if (loadingSlot !== 'auto') return loadingSlot;
 
     // Auto logic: prefer icon if present, then rightIcon, fallback to icon
-    if (rightIcon && !icon) return 'rightIcon';
+    if (resolvedRightIcon.hasSlot && !resolvedIcon.hasSlot) return 'rightIcon';
     return 'icon'; // fallback
-  }, [loadingSlot, icon, rightIcon]);
+  }, [loadingSlot, resolvedIcon.hasSlot, resolvedRightIcon.hasSlot]);
+
+  // Determine if icon slots should render (original slot OR loading state targets this slot)
+  const hasIconSlot =
+    resolvedIcon.hasSlot || (isLoading && resolvedLoadingSlot === 'icon');
+  const hasRightIconSlot =
+    resolvedRightIcon.hasSlot ||
+    (isLoading && resolvedLoadingSlot === 'rightIcon');
 
   const showDescription = useMemo(() => {
     const copyProps = { ...descriptionProps };
@@ -729,13 +706,41 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
 
   // Apply loading state to appropriate slots
   const finalIcon =
-    isLoading && resolvedLoadingSlot === 'icon' ? <LoadingIcon /> : icon;
+    isLoading && resolvedLoadingSlot === 'icon' ? (
+      <LoadingIcon />
+    ) : (
+      resolvedIcon.content
+    );
   const finalRightIcon =
     isLoading && resolvedLoadingSlot === 'rightIcon' ? (
       <LoadingIcon />
     ) : (
-      rightIcon
+      resolvedRightIcon.content
     );
+
+  // Generate stable keys for icon transitions based on icon type
+  const iconKey = hasCheckbox
+    ? 'checkbox'
+    : isLoading && resolvedLoadingSlot === 'icon'
+      ? 'loading'
+      : isValidElement(finalIcon)
+        ? (finalIcon.type as any)?.displayName ||
+          (finalIcon.type as any)?.name ||
+          'icon'
+        : finalIcon
+          ? 'icon'
+          : 'empty';
+
+  const rightIconKey =
+    isLoading && resolvedLoadingSlot === 'rightIcon'
+      ? 'loading'
+      : isValidElement(finalRightIcon)
+        ? (finalRightIcon.type as any)?.displayName ||
+          (finalRightIcon.type as any)?.name ||
+          'icon'
+        : finalRightIcon
+          ? 'icon'
+          : 'empty';
   const finalPrefix =
     isLoading && resolvedLoadingSlot === 'prefix' ? <LoadingIcon /> : prefix;
 
@@ -776,13 +781,14 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     [hotkeys, finalIsDisabled],
   );
 
-  mods = useMemo(() => {
+  const finalMods = useMemo<ItemMods>(() => {
     return {
-      'has-icon': !!finalIcon,
-      'has-start-content': !!(finalIcon || finalPrefix),
-      'has-end-content': !!(finalRightIcon || finalSuffix || actions),
-      'has-right-icon': !!finalRightIcon,
-      'has-label': !!(children || labelProps),
+      ...baseMods,
+      'has-icon': hasIconSlot,
+      'has-start-content': !!(hasIconSlot || finalPrefix),
+      'has-end-content': !!(hasRightIconSlot || finalSuffix || actions),
+      'has-right-icon': hasRightIconSlot,
+      'has-label': hasLabel,
       'has-prefix': !!finalPrefix,
       'has-suffix': !!finalSuffix,
       'has-description': showDescription,
@@ -790,37 +796,20 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       'has-actions-content': !!(actions && actions !== true),
       'show-actions-on-hover': showActionsOnHover === true,
       checkbox: hasCheckbox,
-      disabled: finalIsDisabled,
-      selected: isSelected === true,
-      loading: isLoading,
-      card: isCard === true,
-      button: isButton === true,
-      ...(typeof size === 'number' ? {} : { size }),
-      description: showDescription ? descriptionPlacement : 'none',
-      type,
-      theme,
-      shape,
-      ...mods,
+      description: showDescription ? finalDescriptionPlacement : 'none',
     };
   }, [
-    finalIcon,
-    finalRightIcon,
+    baseMods,
+    hasIconSlot,
+    hasRightIconSlot,
     finalPrefix,
     finalSuffix,
     showDescription,
-    descriptionPlacement,
+    finalDescriptionPlacement,
     hasCheckbox,
-    isSelected,
-    isLoading,
-    isCard,
-    isButton,
-    shape,
     actions,
     showActionsOnHover,
-    size,
-    type,
-    theme,
-    mods,
+    hasLabel,
   ]);
 
   const {
@@ -834,111 +823,110 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isDynamicLabel: !!actions,
   });
 
-  // Create a stable render function that doesn't call hooks
-  const renderItemElement = useCallback(
-    (
-      tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
-      tooltipRef?: RefObject<HTMLElement>,
-    ) => {
-      // Use callback ref to merge multiple refs without calling hooks
-      const handleRef = (element: HTMLElement | null) => {
-        // Set the component's forwarded ref
-        if (typeof ref === 'function') {
-          ref(element as T | null);
-        } else if (ref) {
-          (ref as any).current = element;
-        }
-        // Set the tooltip ref if provided
-        if (tooltipRef) {
-          (tooltipRef as any).current = element;
-        }
-      };
-
-      // Merge custom size style with provided style
-      const finalStyle =
-        typeof size === 'number'
-          ? ({ ...style, '--size': `${size}px` } as any)
-          : style;
-
-      return (
-        <ItemElement
-          ref={handleRef}
-          variant={
-            theme && type ? (`${theme}.${type}` as ItemVariant) : undefined
-          }
-          disabled={finalIsDisabled}
-          aria-disabled={finalIsDisabled}
-          aria-selected={isSelected}
-          mods={mods}
-          styles={styles}
-          type={htmlType as any}
-          {...mergeProps(rest, tooltipTriggerProps || {})}
-          style={finalStyle}
-        >
-          {finalIcon && (
-            <div data-element="Icon">
-              {hasCheckbox ? <CheckIcon /> : finalIcon}
-            </div>
-          )}
-          {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
-          {children || labelProps ? (
-            <div data-element="Label" {...finalLabelProps} ref={labelRef}>
-              {children}
-            </div>
-          ) : null}
-          {showDescription ? (
-            <div data-element="Description" {...descriptionProps}>
-              {description}
-            </div>
-          ) : null}
-          {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
-          {finalRightIcon && (
-            <div data-element="RightIcon">{finalRightIcon}</div>
-          )}
-          {actions && (
-            <div data-element="Actions" {...ACTIONS_EVENT_HANDLERS}>
-              {actions !== true ? (
-                <ItemActionProvider
-                  type={type}
-                  theme={theme}
-                  disableActionsFocus={disableActionsFocus}
-                >
-                  {actions}
-                </ItemActionProvider>
-              ) : null}
-            </div>
-          )}
-        </ItemElement>
+  // Process children with highlight if applicable
+  const processedChildren = useMemo(() => {
+    if (typeof children === 'string' && highlight) {
+      return highlightText(
+        children,
+        highlight,
+        highlightCaseSensitive,
+        highlightStyles,
       );
-    },
-    [
-      ref,
-      theme,
-      type,
-      finalIsDisabled,
-      size,
-      isSelected,
-      mods,
-      styles,
-      htmlType,
-      rest,
-      finalIcon,
-      hasCheckbox,
-      finalPrefix,
-      children,
-      labelProps,
-      finalLabelProps,
-      description,
-      descriptionProps,
-      finalSuffix,
-      finalRightIcon,
-      actions,
-      showActionsOnHover,
-      size,
-      style,
-      shape,
-    ],
-  );
+    }
+    return children;
+  }, [children, highlight, highlightCaseSensitive, highlightStyles]);
+
+  // Render function that creates the item element
+  const renderItemElement = (
+    tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
+    tooltipRef?: RefObject<HTMLElement>,
+  ) => {
+    // Use callback ref to merge multiple refs without calling hooks
+    const handleRef = (element: HTMLElement | null) => {
+      // Set the component's forwarded ref
+      if (typeof ref === 'function') {
+        ref(element as T | null);
+      } else if (ref) {
+        (ref as any).current = element;
+      }
+      // Set the tooltip ref if provided
+      if (tooltipRef) {
+        (tooltipRef as any).current = element;
+      }
+    };
+
+    return (
+      <ItemElement
+        ref={handleRef}
+        variant={
+          theme && type
+            ? (`${type === 'header' ? 'default' : theme}.${type === 'header' ? 'item' : type}` as ItemVariant)
+            : undefined
+        }
+        disabled={finalIsDisabled}
+        aria-disabled={finalIsDisabled}
+        aria-selected={isSelected}
+        mods={finalMods}
+        styles={styles}
+        tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
+        type={htmlType as any}
+        {...mergeProps(rest, tooltipTriggerProps || {})}
+        style={style}
+      >
+        {hasIconSlot && (
+          <div data-element="Icon">
+            <IconSwitch noWrapper contentKey={iconKey}>
+              {hasCheckbox ? <CheckIcon /> : finalIcon}
+            </IconSwitch>
+          </div>
+        )}
+        {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
+        {children || labelProps
+          ? (() => {
+              const LabelTag =
+                type === 'header' || type === 'card'
+                  ? (`h${level}` as const)
+                  : 'div';
+              return (
+                <LabelTag
+                  data-element="Label"
+                  {...finalLabelProps}
+                  ref={labelRef}
+                >
+                  {processedChildren}
+                </LabelTag>
+              );
+            })()
+          : null}
+        {showDescription ? (
+          <div data-element="Description" {...descriptionProps}>
+            {description}
+          </div>
+        ) : null}
+        {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
+        {hasRightIconSlot && (
+          <div data-element="RightIcon">
+            <IconSwitch noWrapper contentKey={rightIconKey}>
+              {finalRightIcon}
+            </IconSwitch>
+          </div>
+        )}
+        {actions && (
+          <div data-element="Actions" {...ACTIONS_EVENT_HANDLERS}>
+            {actions !== true ? (
+              <ItemActionProvider
+                type={type}
+                theme={theme}
+                disableActionsFocus={disableActionsFocus}
+              >
+                {actions}
+              </ItemActionProvider>
+            ) : null}
+          </div>
+        )}
+      </ItemElement>
+    );
+  };
 
   return renderWithTooltip(renderItemElement, defaultTooltipPlacement);
 };

@@ -1,90 +1,97 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`tasty() API should allow multiple wrapping 1`] = `".t13.t13 {position: static; padding-top: calc(2 * var(--gap)); border: var(--border-width) solid var(--black-color); color: var(--white-color); --current-color: var(--white-color, white); --current-color-rgb: var(--white-color-rgb); display: flex;}"`;
+exports[`tasty() API should allow multiple wrapping 1`] = `".t15.t15 {position: static; padding-top: calc(2 * var(--gap)); border: var(--border-width) solid var(--black-color); color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb); display: flex;}"`;
 
 exports[`tasty() API should allow nested modifiers 1`] = `
-".t14.t14 {display: block;}
-.t14.t14:first-child {color: var(--clear-color); --current-color: var(--clear-color, clear); --current-color-rgb: var(--clear-color-rgb);}
-.t14.t14:not(:first-child) {color: var(--black-color); --current-color: var(--black-color, black); --current-color-rgb: var(--black-color-rgb);}"
+".t16.t16 {display: block;}
+.t16.t16:first-child {color: var(--clear-color); --current-color: var(--clear-color); --current-color-rgb: var(--clear-color-rgb);}
+.t16.t16:not(:first-child) {color: var(--black-color); --current-color: var(--black-color); --current-color-rgb: var(--black-color-rgb);}"
 `;
 
-exports[`tasty() API should be able to override styles 1`] = `".t7.t7 {display: block; color: rgb(var(--black-color-rgb) / .1); --current-color: var(--black-color, black); --current-color-rgb: var(--black-color-rgb);}"`;
+exports[`tasty() API should be able to override styles 1`] = `".t9.t9 {display: block; color: rgb(var(--black-color-rgb) / .1); --current-color: rgb(var(--black-color-rgb) / .1); --current-color-rgb: rgb(var(--black-color-rgb) / .1);}"`;
 
 exports[`tasty() API should create element styles 1`] = `
-".t10.t10:not([data-modified]) [data-element="Element"] {color: var(--dark-color); --current-color: var(--dark-color, dark); --current-color-rgb: var(--dark-color-rgb);}
-.t10.t10[data-modified] [data-element="Element"] {color: var(--purple-color); --current-color: var(--purple-color, purple); --current-color-rgb: var(--purple-color-rgb);}"
+".t12.t12:not([data-modified]) [data-element="Element"] {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}
+.t12.t12[data-modified] [data-element="Element"] {color: var(--purple-color); --current-color: var(--purple-color); --current-color-rgb: var(--purple-color-rgb);}"
 `;
 
-exports[`tasty() API should define style props 1`] = `".t12.t12 {border: var(--border-width) solid var(--border-color);}"`;
+exports[`tasty() API should define style props 1`] = `".t14.t14 {border: var(--border-width) solid var(--border-color);}"`;
 
-exports[`tasty() API should fallback to default variant 1`] = `".t9.t9 {color: var(--white-color); --current-color: var(--white-color, white); --current-color-rgb: var(--white-color-rgb);}"`;
+exports[`tasty() API should fallback to default variant 1`] = `".t11.t11 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}"`;
+
+exports[`tasty() API should handle color fallback syntax 1`] = `".t0.t0 {color: var(--placeholder-color, var(--dark-04-color)); --current-color: var(--placeholder-color, var(--dark-04-color)); --current-color-rgb: var(--placeholder-color-rgb, var(--dark-04-color-rgb));}"`;
+
+exports[`tasty() API should handle fill fallback syntax 1`] = `
+".t1.t1 {background-color: var(--surface-color, var(--white-color));}
+.t1.t1>* {--context-fill-color: var(--surface-color, var(--white-color)); --context-fill-color-rgb: var(--surface-color-rgb, var(--white-color-rgb));}"
+`;
 
 exports[`tasty() API should merge element styles 1`] = `
-".t11.t11:not([data-modified]) [data-element="Element"] {color: var(--dark-color); --current-color: var(--dark-color, dark); --current-color-rgb: var(--dark-color-rgb);}
-.t11.t11[data-modified] [data-element="Element"] {color: var(--purple-color); --current-color: var(--purple-color, purple); --current-color-rgb: var(--purple-color-rgb);}
-.t11.t11 [data-element="Element"] {background-color: var(--black-color);}
-.t11.t11 [data-element="Element"]>* {--context-fill-color: var(--black-color); --context-fill-color-rgb: var(--black-color-rgb);}"
+".t13.t13:not([data-modified]) [data-element="Element"] {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}
+.t13.t13[data-modified] [data-element="Element"] {color: var(--purple-color); --current-color: var(--purple-color); --current-color-rgb: var(--purple-color-rgb);}
+.t13.t13 [data-element="Element"] {background-color: var(--black-color);}
+.t13.t13 [data-element="Element"]>* {--context-fill-color: var(--black-color); --context-fill-color-rgb: var(--black-color-rgb);}"
 `;
 
 exports[`tasty() API should merge styles 1`] = `
-".t6.t6:not([data-modified]) {color: var(--dark-color); --current-color: var(--dark-color, dark); --current-color-rgb: var(--dark-color-rgb);}
-.t6.t6[data-modified] {color: var(--purple-color); --current-color: var(--purple-color, purple); --current-color-rgb: var(--purple-color-rgb);}
-.t6.t6 {background-color: var(--black-color);}
-.t6.t6>* {--context-fill-color: var(--black-color); --context-fill-color-rgb: var(--black-color-rgb);}"
+".t8.t8:not([data-modified]) {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}
+.t8.t8[data-modified] {color: var(--purple-color); --current-color: var(--purple-color); --current-color-rgb: var(--purple-color-rgb);}
+.t8.t8 {background-color: var(--black-color);}
+.t8.t8>* {--context-fill-color: var(--black-color); --context-fill-color-rgb: var(--black-color-rgb);}"
 `;
 
 exports[`tasty() API should merge styles in custom prop 1`] = `
-".t6.t6:not([data-modified]) {color: var(--dark-color); --current-color: var(--dark-color, dark); --current-color-rgb: var(--dark-color-rgb);}
-.t6.t6[data-modified] {color: var(--purple-color); --current-color: var(--purple-color, purple); --current-color-rgb: var(--purple-color-rgb);}
-.t6.t6 {background-color: var(--black-color);}
-.t6.t6>* {--context-fill-color: var(--black-color); --context-fill-color-rgb: var(--black-color-rgb);}"
+".t8.t8:not([data-modified]) {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}
+.t8.t8[data-modified] {color: var(--purple-color); --current-color: var(--purple-color); --current-color-rgb: var(--purple-color-rgb);}
+.t8.t8 {background-color: var(--black-color);}
+.t8.t8>* {--context-fill-color: var(--black-color); --context-fill-color-rgb: var(--black-color-rgb);}"
 `;
 
 exports[`tasty() API should optimize attribute selectors 1`] = `
-".t15.t15 {display: block;}
-.t15.t15:not([data-size="large"]):not([data-size="medium"]) {padding-top: var(--gap);}
-.t15.t15[data-size="large"] {padding-top: calc(3 * var(--gap));}
-.t15.t15[data-size="medium"] {padding-top: calc(2 * var(--gap));}"
+".t17.t17 {display: block;}
+.t17.t17:not([data-size="large"]):not([data-size="medium"]) {padding-top: var(--gap);}
+.t17.t17[data-size="large"] {padding-top: calc(3 * var(--gap));}
+.t17.t17[data-size="medium"] {padding-top: calc(2 * var(--gap));}"
 `;
 
 exports[`tasty() API should optimize attribute selectors 2`] = `
-".t16.t16 {display: block;}
-.t16.t16:not([data-size="large"]):not([data-size="medium"]):not([data-selected]) {padding-top: var(--gap);}
-.t16.t16[data-size="large"]:not([data-selected]) {padding-top: calc(3 * var(--gap));}
-.t16.t16[data-size="medium"]:not([data-selected]) {padding-top: var(--gap);}
-.t16.t16[data-selected]:not([data-size="large"]):not([data-size="medium"]) {padding-top: var(--gap);}
-.t16.t16[data-size="large"][data-selected] {padding-top: calc(3 * var(--gap));}
-.t16.t16[data-size="medium"][data-selected] {padding-top: calc(2 * var(--gap));}"
+".t18.t18 {display: block;}
+.t18.t18:not([data-size="large"]):not([data-size="medium"]):not([data-selected]) {padding-top: var(--gap);}
+.t18.t18[data-size="large"]:not([data-selected]) {padding-top: calc(3 * var(--gap));}
+.t18.t18[data-size="medium"]:not([data-selected]) {padding-top: var(--gap);}
+.t18.t18[data-selected]:not([data-size="large"]):not([data-size="medium"]) {padding-top: var(--gap);}
+.t18.t18[data-size="large"][data-selected] {padding-top: calc(3 * var(--gap));}
+.t18.t18[data-size="medium"][data-selected] {padding-top: calc(2 * var(--gap));}"
 `;
 
 exports[`tasty() API should optimize attribute selectors 3`] = `
-".t17.t17 {display: block;}
-.t17.t17:not([data-size="large"]):not([data-selected]):not([data-size="medium"]) {padding-top: var(--gap);}
-.t17.t17[data-size="large"]:not([data-selected]) {padding-top: var(--gap);}
-.t17.t17[data-selected]:not([data-size="large"]):not([data-size="medium"]) {padding-top: calc(2 * var(--gap));}
-.t17.t17[data-size="large"][data-selected] {padding-top: calc(3 * var(--gap));}
-.t17.t17[data-size="medium"]:not([data-selected]) {padding-top: calc(2 * var(--gap));}
-.t17.t17[data-selected][data-size="medium"] {padding-top: calc(2 * var(--gap));}"
+".t19.t19 {display: block;}
+.t19.t19:not([data-size="large"]):not([data-selected]):not([data-size="medium"]) {padding-top: var(--gap);}
+.t19.t19[data-size="large"]:not([data-selected]) {padding-top: var(--gap);}
+.t19.t19[data-selected]:not([data-size="large"]):not([data-size="medium"]) {padding-top: calc(2 * var(--gap));}
+.t19.t19[data-size="large"][data-selected] {padding-top: calc(3 * var(--gap));}
+.t19.t19[data-size="medium"]:not([data-selected]) {padding-top: calc(2 * var(--gap));}
+.t19.t19[data-selected][data-size="medium"] {padding-top: calc(2 * var(--gap));}"
 `;
 
-exports[`tasty() API should pass styles from tasty 1`] = `".t2.t2 {display: block; color: rgb(var(--clear-color-rgb) / .1); --current-color: var(--clear-color, clear); --current-color-rgb: var(--clear-color-rgb);}"`;
+exports[`tasty() API should pass styles from tasty 1`] = `".t4.t4 {display: block; color: rgb(var(--clear-color-rgb) / .1); --current-color: rgb(var(--clear-color-rgb) / .1); --current-color-rgb: rgb(var(--clear-color-rgb) / .1);}"`;
 
 exports[`tasty() API should support camelCase modifiers 1`] = `
-".t5.t5 {display: block;}
-.t5.t5:not([data-somehow-modified]) {color: var(--dark-color); --current-color: var(--dark-color, dark); --current-color-rgb: var(--dark-color-rgb);}
-.t5.t5[data-somehow-modified] {color: var(--purple-color); --current-color: var(--purple-color, purple); --current-color-rgb: var(--purple-color-rgb);}"
+".t7.t7 {display: block;}
+.t7.t7:not([data-somehow-modified]) {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}
+.t7.t7[data-somehow-modified] {color: var(--purple-color); --current-color: var(--purple-color); --current-color-rgb: var(--purple-color-rgb);}"
 `;
 
 exports[`tasty() API should support kebab-case modifiers 1`] = `
-".t4.t4 {display: block;}
-.t4.t4:not([data-somehow-modified]) {color: var(--dark-color); --current-color: var(--dark-color, dark); --current-color-rgb: var(--dark-color-rgb);}
-.t4.t4[data-somehow-modified] {color: var(--purple-color); --current-color: var(--purple-color, purple); --current-color-rgb: var(--purple-color-rgb);}"
+".t6.t6 {display: block;}
+.t6.t6:not([data-somehow-modified]) {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}
+.t6.t6[data-somehow-modified] {color: var(--purple-color); --current-color: var(--purple-color); --current-color-rgb: var(--purple-color-rgb);}"
 `;
 
 exports[`tasty() API should support modifiers 1`] = `
-".t3.t3 {display: block;}
-.t3.t3:not([data-modified]) {color: var(--dark-color); --current-color: var(--dark-color, dark); --current-color-rgb: var(--dark-color-rgb);}
-.t3.t3[data-modified] {color: var(--purple-color); --current-color: var(--purple-color, purple); --current-color-rgb: var(--purple-color-rgb);}"
+".t5.t5 {display: block;}
+.t5.t5:not([data-modified]) {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}
+.t5.t5[data-modified] {color: var(--purple-color); --current-color: var(--purple-color); --current-color-rgb: var(--purple-color-rgb);}"
 `;
 
-exports[`tasty() API should support variants 1`] = `".t8.t8 {color: var(--black-color); --current-color: var(--black-color, black); --current-color-rgb: var(--black-color-rgb);}"`;
+exports[`tasty() API should support variants 1`] = `".t10.t10 {color: var(--black-color); --current-color: var(--black-color); --current-color-rgb: var(--black-color-rgb);}"`;

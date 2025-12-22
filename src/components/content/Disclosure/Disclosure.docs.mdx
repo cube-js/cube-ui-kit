@@ -1,0 +1,209 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Disclosure } from './Disclosure';
+import * as DisclosureStories from './Disclosure.stories';
+
+<Meta of={DisclosureStories} />
+
+# Disclosure
+
+An accessible collapsible container that reveals or hides additional content. Built on React Aria's `useDisclosure` hook, it provides keyboard navigation, screen reader support, and smooth height animations. Supports both standalone usage and grouped accordion behavior.
+
+## When to Use
+
+- For FAQ sections where users can expand answers to questions
+- To hide supplementary information that shouldn't overwhelm the main content
+- For accordion-style navigation or settings panels
+- When you need collapsible sections with consistent accessibility patterns
+- To progressively disclose complex information
+
+## Component
+
+<Story of={DisclosureStories.SingleDisclosure} />
+
+---
+
+### Properties
+
+<Controls of={DisclosureStories.SingleDisclosure} />
+
+### Base Properties
+
+Supports [Base properties](/BaseProperties)
+
+## Compound Components
+
+### Disclosure.Trigger
+
+The clickable button that toggles the disclosure. Built on `ItemButton` and accepts all ItemButton props including `icon`, `type`, `theme`, `size`, and more.
+
+### Disclosure.Content
+
+The collapsible panel containing the hidden content. Animates smoothly using CSS `interpolate-size: allow-keywords` for height transitions.
+
+### Disclosure.Group
+
+Container for multiple disclosure items that coordinates their expanded states. By default, only one item can be expanded at a time (accordion behavior).
+
+<Story of={DisclosureStories.GroupDisclosure} />
+
+### Disclosure.Item
+
+Individual disclosure within a group. Must have a unique `id` prop when used inside `Disclosure.Group`.
+
+## Styling
+
+### styles
+
+Customizes the root element of the Disclosure component.
+
+### triggerStyles
+
+When using `Disclosure.Trigger`, you can pass `styles` prop to customize the trigger button.
+
+### contentStyles
+
+When using `Disclosure.Content`, you can pass `styles` prop to customize the content panel.
+
+### Group-level Styling
+
+`Disclosure.Group` accepts `triggerProps` to apply consistent props to all triggers, and `contentStyles` to style all content panels uniformly.
+
+### Style Properties
+
+Direct style application without using the `styles` prop: `width`, `height`, `padding`, `margin`, `gap`.
+
+### Modifiers
+
+The `mods` property accepts the following modifiers:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| `expanded` | `boolean` | True when the disclosure content is visible |
+| `disabled` | `boolean` | True when interactions are disabled |
+| `shape` | `string` | The current shape variant (`default`, `card`, `sharp`) |
+
+For `Disclosure.Content`, additional modifiers are available:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| `shown` | `boolean` | True when content is visible (controls height animation) |
+| `phase` | `string` | Transition phase (`enter`, `entered`, `exit`, `unmounted`) |
+
+## Variants
+
+### Shapes
+
+#### Card
+
+Bordered container with rounded corners.
+
+<Story of={DisclosureStories.CardShape} />
+
+#### Sharp
+
+Sharp edges with no border radius.
+
+<Story of={DisclosureStories.SharpShape} />
+
+## Examples
+
+### Default Expanded
+
+Disclosure that starts in expanded state using `defaultExpanded` prop.
+
+<Story of={DisclosureStories.DefaultExpanded} />
+
+### Disabled
+
+Disabled disclosure that cannot be toggled.
+
+<Story of={DisclosureStories.Disabled} />
+
+### Controlled State
+
+Control the disclosure state externally with `isExpanded` and `onExpandedChange`.
+
+<Story of={DisclosureStories.Controlled} />
+
+### Multiple Expanded Items
+
+Group with `allowsMultipleExpanded` where multiple items can be open simultaneously.
+
+<Story of={DisclosureStories.MultipleExpanded} />
+
+### Default Expanded Keys
+
+Group with specific items pre-expanded via `defaultExpandedKeys`.
+
+<Story of={DisclosureStories.DefaultExpandedKeys} />
+
+### Custom Trigger with Render Prop
+
+Use render prop pattern to create custom triggers with access to `isExpanded` and `toggle`.
+
+<Story of={DisclosureStories.RenderProp} />
+
+### Disabled Group
+
+Group-level `isDisabled` that disables all items at once.
+
+<Story of={DisclosureStories.DisabledGroup} />
+
+### Nested Disclosures
+
+Disclosures can be nested, each maintaining independent state.
+
+<Story of={DisclosureStories.Nested} />
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the disclosure trigger
+- `Space` / `Enter` - Toggles the disclosure open/closed
+- `Tab` (when expanded) - Moves focus into the content panel
+
+### Screen Reader Support
+
+- Trigger announces as a button with expanded/collapsed state
+- `aria-expanded` is automatically managed by React Aria
+- `aria-controls` links trigger to content panel automatically
+- State changes are announced when toggling
+
+### ARIA Properties
+
+- `aria-expanded` - Indicates whether content is visible (managed automatically)
+- `aria-controls` - Links trigger to panel (managed automatically)
+- `aria-disabled` - Applied when `isDisabled` is true
+
+## Best Practices
+
+1. **Do**: Provide clear, descriptive trigger labels
+
+   ```jsx
+   <Disclosure.Trigger>View shipping details</Disclosure.Trigger>
+   ```
+
+2. **Don't**: Use vague or icon-only triggers without labels
+
+   ```jsx
+   <Disclosure.Trigger>+</Disclosure.Trigger>
+   ```
+
+3. **Do**: Use groups for related collapsible sections
+
+   ```jsx
+   <Disclosure.Group>
+     <Disclosure.Item id="billing">...</Disclosure.Item>
+     <Disclosure.Item id="shipping">...</Disclosure.Item>
+   </Disclosure.Group>
+   ```
+
+4. **Accessibility**: Always ensure trigger text clearly indicates what will be revealed
+
+5. **Performance**: Content remains mounted during transitions for smooth animations and accessibility
+
+## Related Components
+
+- [ItemButton](/docs/actions-itembutton--docs) - The base component used for triggers
+- [DisplayTransition](/docs/helpers-displaytransition--docs) - Manages animation phases
