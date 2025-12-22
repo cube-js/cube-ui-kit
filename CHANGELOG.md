@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.98.2
+
+### Patch Changes
+
+- [#930](https://github.com/cube-js/cube-ui-kit/pull/930) [`51ebcf44`](https://github.com/cube-js/cube-ui-kit/commit/51ebcf445f04c1bcc3e4380c3c5dfbba594cf586) Thanks [@tenphi](https://github.com/tenphi)! - Allow description wrapping in items.
+
+- [#930](https://github.com/cube-js/cube-ui-kit/pull/930) [`51ebcf44`](https://github.com/cube-js/cube-ui-kit/commit/51ebcf445f04c1bcc3e4380c3c5dfbba594cf586) Thanks [@tenphi](https://github.com/tenphi)! - Fix paddings for Layout.PanelHeader
+
+- [#930](https://github.com/cube-js/cube-ui-kit/pull/930) [`51ebcf44`](https://github.com/cube-js/cube-ui-kit/commit/51ebcf445f04c1bcc3e4380c3c5dfbba594cf586) Thanks [@tenphi](https://github.com/tenphi)! - Apply header tag to Item title in card type.
+
 ## 0.98.1
 
 ### Patch Changes
