@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.98.3
+
+### Patch Changes
+
+- [#932](https://github.com/cube-js/cube-ui-kit/pull/932) [`ec68eae0`](https://github.com/cube-js/cube-ui-kit/commit/ec68eae0c8ac417572d8d013a20e97c2955127fe) Thanks [@tenphi](https://github.com/tenphi)! - Remove root header tag in LayoutPanelHeader.
+
 ## 0.98.2
 
 ### Patch Changes
