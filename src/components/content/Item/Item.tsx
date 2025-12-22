@@ -435,7 +435,7 @@ const ItemElement = tasty({
         'type=card | type=header': 1,
       },
       overflow: 'hidden',
-      whiteSpace: 'nowrap',
+      whiteSpace: 'normal',
       textOverflow: 'ellipsis',
       maxWidth: '100%',
       textAlign: 'left',
