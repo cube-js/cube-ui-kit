@@ -92,6 +92,15 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    level: {
+      options: [1, 2, 3, 4, 5, 6],
+      control: { type: 'select' },
+      description:
+        'Heading level for the Label element when type="header" or type="card". Changes the HTML tag to the corresponding heading (h1-h6).',
+      table: {
+        defaultValue: { summary: 3 },
+      },
+    },
   },
 };
 
@@ -2243,6 +2252,39 @@ TypesAndThemes.parameters = {
     description: {
       story:
         'Showcases all valid type and theme combinations. Valid combinations: `title` type only supports `default` theme; `card` type supports `default`, `success`, `danger`, and `note` themes; all other types (`item`, `primary`, `secondary`, `outline`, `neutral`, `clear`, `link`) support `default`, `success`, `danger`, and `special` themes. The `link` type does not support icons or loading state (`isLoading`). Using an invalid type+theme combination, icons with `link` type, or `isLoading` with `link` type will trigger a console warning.',
+    },
+  },
+};
+
+export const SemanticHeadingLevel: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Header and Card with Semantic Heading Level</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item {...args} type="header" level={2} icon={<IconUser />}>
+        Header (renders as h2)
+      </Item>
+      <Item
+        {...args}
+        type="card"
+        level={2}
+        icon={<IconUser />}
+        description="Card description text"
+      >
+        Card (renders as h2)
+      </Item>
+    </Space>
+  </Space>
+);
+
+SemanticHeadingLevel.args = {
+  width: '400px',
+};
+
+SemanticHeadingLevel.parameters = {
+  docs: {
+    description: {
+      story:
+        'The `level` prop controls the semantic HTML heading tag (h1-h6) for `type="header"` and `type="card"`. This affects document structure and accessibility, not visual appearance. Visual styling is controlled by the `size` prop. Default is `level={3}` (h3). Inspect the DOM to see the heading tags.',
     },
   },
 };

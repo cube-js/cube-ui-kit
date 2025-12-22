@@ -78,14 +78,14 @@ The `mods` property accepts the following modifiers:
 ### Types
 
 - `item` - Default item appearance (no specific styling)
-- `header` - Header appearance for section headers (only supports `default` theme, defaults to `descriptionPlacement="block"`)
+- `header` - Header appearance for section headers (only supports `default` theme, defaults to `descriptionPlacement="block"`, uses semantic heading tags via `level` prop)
 - `primary` - Primary styled item with prominent appearance
 - `secondary` - Secondary styled item with moderate emphasis
 - `outline` - Item with border outline styling
 - `neutral` - Neutral colored item styling
 - `clear` - Transparent item with minimal styling
 - `link` - Link-styled item appearance (does not support icons or loading state)
-- `card` - Card appearance for notifications (supports `default`, `success`, `danger`, `note` themes; defaults to `shape="card"`, `descriptionPlacement="block"`, and has `.5x` padding)
+- `card` - Card appearance for notifications (supports `default`, `success`, `danger`, `note` themes; defaults to `shape="card"`, `descriptionPlacement="block"`, uses semantic heading tags via `level` prop, and has `.5x` padding)
 
 ### Themes
 
@@ -212,7 +212,9 @@ Use `type="header"` for section headers. Header items have larger text preset an
 
 ### Card Type
 
-Use `type="card"` for notification-style items. Card items automatically use card shape, block description placement, and have `.5x` padding. They support `default`, `success`, `danger`, and `note` themes:
+Use `type="card"` for notification-style items. Card items automatically use card shape, block description placement, and have `.5x` padding. They support `default`, `success`, `danger`, and `note` themes.
+
+Like headers, card labels use semantic heading tags (h1-h6) controlled by the `level` prop (default: 3):
 
 ```jsx
 <Item type="card" theme="default" icon={<IconInfo />} description="This is an informational message">
@@ -229,6 +231,11 @@ Use `type="card"` for notification-style items. Card items automatically use car
 
 <Item type="card" theme="note" icon={<IconNote />} description="Additional context or tips">
   Note Card
+</Item>
+
+{/* Card with custom heading level */}
+<Item type="card" theme="default" level={2} icon={<IconInfo />} description="Important section">
+  Section Card (h2)
 </Item>
 ```
 

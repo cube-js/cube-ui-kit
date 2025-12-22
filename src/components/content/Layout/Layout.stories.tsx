@@ -227,7 +227,7 @@ export const ResizablePanel: Story = {
           maxSize={400}
           onSizeChange={setSize}
         >
-          <Layout.PanelHeader title="Resizable" />
+          <Layout.PanelHeader title="Resizable" icon={<IconFilter />} />
           <Layout.Content>
             <Text>Drag the edge to resize (current: {size}px)</Text>
           </Layout.Content>
