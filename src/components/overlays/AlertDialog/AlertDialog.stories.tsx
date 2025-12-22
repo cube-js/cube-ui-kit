@@ -3,7 +3,7 @@ import { action } from 'storybook/actions';
 import { expect, userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Button } from '../../actions';
+import { Button } from '../../actions/Button/Button';
 import { Paragraph } from '../../content/Paragraph';
 import { DialogTrigger } from '../Dialog/DialogTrigger';
 

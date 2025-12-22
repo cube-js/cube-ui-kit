@@ -2,7 +2,7 @@ import { Meta, StoryFn } from '@storybook/react-vite';
 import { IconBell } from '@tabler/icons-react';
 import { expect, userEvent, within } from 'storybook/test';
 
-import { Button } from '../../actions';
+import { Button } from '../../actions/Button/Button';
 
 import { Toast } from './Toast';
 import { CubeToastsApiProps } from './types';
