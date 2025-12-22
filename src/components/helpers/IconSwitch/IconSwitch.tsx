@@ -137,11 +137,20 @@ export function IconSwitch(props: CubeIconSwitchProps) {
 
   const latestKey = icons[icons.length - 1]?.key;
 
+  // Detect if we're in an intermediate render (transition pending but effect hasn't added new entry yet).
+  // In this state, we must use stored content to avoid flashing the new icon before the transition.
+  const isKeyChangePending = effectiveKey !== prevEffectiveKeyRef.current;
+  const isNullishChangePending =
+    isNullishContent(children) !== isNullishContent(prevChildrenRef.current);
+  const isTransitionPending = isKeyChangePending || isNullishChangePending;
+
   const content = icons.map((icon) => {
     const isActive = icon.key === latestKey;
-    // Use current children for active icon (avoids state updates on children reference changes),
-    // use stored content for exiting icons (preserves appearance during fade-out)
-    const displayContent = isActive ? children : icon.content;
+    // Use current children for active icon ONLY when no transition is pending.
+    // During intermediate renders (before effect adds new entry), use stored content.
+    // For exiting icons, always use stored content to preserve appearance during fade-out.
+    const displayContent =
+      isActive && !isTransitionPending ? children : icon.content;
 
     return (
       <DisplayTransition
