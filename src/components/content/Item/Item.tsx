@@ -204,7 +204,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    */
   labelRef?: RefObject<HTMLElement>;
   /**
-   * Heading level for the Label element when type="header".
+   * Heading level for the Label element when type="header" or type="card".
    * Changes the Label's HTML tag to the corresponding heading (h1-h6).
    * @default 3
    */
@@ -435,7 +435,10 @@ const ItemElement = tasty({
         'type=card | type=header': 1,
       },
       overflow: 'hidden',
-      whiteSpace: 'normal',
+      whiteSpace: {
+        '': 'nowrap',
+        'type=card | type=header': 'normal',
+      },
       textOverflow: 'ellipsis',
       maxWidth: '100%',
       textAlign: 'left',
@@ -881,7 +884,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         {children || labelProps
           ? (() => {
               const LabelTag =
-                type === 'header' ? (`h${level}` as const) : 'div';
+                type === 'header' || type === 'card'
+                  ? (`h${level}` as const)
+                  : 'div';
               return (
                 <LabelTag
                   data-element="Label"
