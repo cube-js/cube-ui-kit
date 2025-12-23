@@ -11,9 +11,6 @@ export {
 } from './definitions';
 export type { ChunkName, ChunkInfo } from './definitions';
 
-export {
-  generateChunkCacheKey,
-  generateSubcomponentsCacheKey,
-} from './cacheKey';
+export { generateChunkCacheKey } from './cacheKey';
 
 export { renderStylesForChunk } from './renderChunk';

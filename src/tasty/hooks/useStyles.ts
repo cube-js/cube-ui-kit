@@ -2,7 +2,6 @@ import { useInsertionEffect, useMemo, useRef } from 'react';
 
 import {
   categorizeStyleKeys,
-  CHUNK_NAMES,
   generateChunkCacheKey,
   renderStylesForChunk,
 } from '../chunks';
@@ -64,7 +63,13 @@ export function useStyles({ styles }: UseStylesOptions): UseStylesResult {
   // Array of dispose functions for each chunk
   const disposeRef = useRef<(() => void)[]>([]);
 
-  // Memoize the style key for change detection
+  // Store styles by their stringified key to avoid recomputing when only reference changes
+  const stylesRef = useRef<{ key: string; styles: Styles | undefined }>({
+    key: '',
+    styles: undefined,
+  });
+
+  // Compute style key - this is a primitive string that captures style content
   const styleKey = useMemo(() => {
     if (!styles || Object.keys(styles).length === 0) {
       return '';
@@ -72,27 +77,44 @@ export function useStyles({ styles }: UseStylesOptions): UseStylesResult {
     return stringifyStyles(styles);
   }, [styles]);
 
+  // Update ref when styleKey changes (content actually changed)
+  if (stylesRef.current.key !== styleKey) {
+    stylesRef.current = { key: styleKey, styles };
+  }
+
   // Process chunks: categorize, generate cache keys, render, and allocate classNames
+  // Only depends on styleKey (primitive), not styles object reference
   const processedChunks: ProcessedChunk[] = useMemo(() => {
-    if (!styleKey || !styles) {
+    const currentStyles = stylesRef.current.styles;
+    if (!styleKey || !currentStyles) {
       return [];
     }
 
     // Categorize style keys into chunks
-    const chunkMap = categorizeStyleKeys(styles as Record<string, unknown>);
+    const chunkMap = categorizeStyleKeys(
+      currentStyles as Record<string, unknown>,
+    );
     const chunks: ProcessedChunk[] = [];
 
-    for (const [chunkName, styleKeys] of chunkMap) {
+    for (const [chunkName, chunkStyleKeys] of chunkMap) {
       // Skip empty chunks
-      if (styleKeys.length === 0) {
+      if (chunkStyleKeys.length === 0) {
         continue;
       }
 
       // Generate cache key for this chunk
-      const cacheKey = generateChunkCacheKey(styles, chunkName, styleKeys);
+      const cacheKey = generateChunkCacheKey(
+        currentStyles,
+        chunkName,
+        chunkStyleKeys,
+      );
 
       // Render styles for this chunk
-      const renderResult = renderStylesForChunk(styles, chunkName, styleKeys);
+      const renderResult = renderStylesForChunk(
+        currentStyles,
+        chunkName,
+        chunkStyleKeys,
+      );
 
       // Skip chunks with no rules
       if (renderResult.rules.length === 0) {
@@ -104,7 +126,7 @@ export function useStyles({ styles }: UseStylesOptions): UseStylesResult {
 
       chunks.push({
         name: chunkName,
-        styleKeys,
+        styleKeys: chunkStyleKeys,
         cacheKey,
         renderResult,
         className,
@@ -112,7 +134,8 @@ export function useStyles({ styles }: UseStylesOptions): UseStylesResult {
     }
 
     return chunks;
-  }, [styleKey, styles]);
+     
+  }, [styleKey]);
 
   // Inject styles in insertion effect (avoids render phase side effects)
   useInsertionEffect(() => {

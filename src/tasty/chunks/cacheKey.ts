@@ -69,33 +69,3 @@ export function generateChunkCacheKey(
   // Use null character as separator (safe, not in JSON output)
   return parts.join('\0');
 }
-
-/**
- * Generate a cache key for the subcomponents chunk.
- *
- * For subcomponents, we serialize the entire nested style objects
- * since they contain their own style hierarchies.
- *
- * @param styles - The full styles object
- * @param selectorKeys - Keys of selectors (subcomponents) in this chunk
- * @returns A stable cache key string
- */
-export function generateSubcomponentsCacheKey(
-  styles: Styles,
-  selectorKeys: string[],
-): string {
-  const parts: string[] = ['subcomponents'];
-
-  // Sort keys for stable ordering
-  const sortedKeys = selectorKeys.slice().sort();
-
-  for (const key of sortedKeys) {
-    const value = styles[key];
-    if (value !== undefined) {
-      // Use stable stringify for consistent serialization regardless of key order
-      parts.push(`${key}:${stableStringify(value)}`);
-    }
-  }
-
-  return parts.join('\0');
-}
