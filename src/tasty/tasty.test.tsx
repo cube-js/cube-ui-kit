@@ -289,12 +289,17 @@ describe('tasty() API', () => {
 });
 
 describe('style order consistency', () => {
-  // Helper function to extract class names from rendered components
+  // Helper function to extract all tasty class names from rendered components
+  // With chunking, elements may have multiple class names (one per chunk)
   function getClassName(container: HTMLElement): string {
     const element = container.firstElementChild as HTMLElement;
-    return (
-      element?.className?.split(' ').find((cls) => /^t\d+$/.test(cls)) || ''
-    );
+    // Get all tasty class names and sort them for consistent comparison
+    const classes = element?.className
+      ?.split(' ')
+      .filter((cls) => /^t\d+$/.test(cls))
+      .sort()
+      .join(' ');
+    return classes || '';
   }
 
   it('should generate same class for two components made with tasty having same styles but different order', () => {

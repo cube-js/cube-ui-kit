@@ -2,7 +2,9 @@ import { useInsertionEffect, useMemo, useRef } from 'react';
 
 import { injectGlobal } from '../injector';
 import { Styles } from '../styles/types';
-import { renderStyles, StyleResult } from '../utils/renderStyles';
+import { renderStyles } from '../utils/renderStyles';
+
+import type { StyleResult } from '../utils/renderStyles';
 
 export interface UseGlobalStylesOptions {
   /**
@@ -42,9 +44,12 @@ export function useGlobalStyles({
   const disposeRef = useRef<(() => void) | null>(null);
 
   // Render styles with the provided selector
-  const styleResults: StyleResult[] = useMemo(() => {
+  // Note: renderStyles overload with selector string returns StyleResult[] directly
+  const styleResults = useMemo((): StyleResult[] => {
     if (!styles) return [];
-    return renderStyles(styles, selector);
+    const result = renderStyles(styles, selector);
+    // When a selector is provided, renderStyles returns StyleResult[]
+    return result as unknown as StyleResult[];
   }, [styles, selector]);
 
   // Inject as global styles
