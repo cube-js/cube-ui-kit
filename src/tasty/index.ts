@@ -1,4 +1,10 @@
 export { tasty, Element } from './tasty';
+export { useStyles, useGlobalStyles } from './hooks';
+export type {
+  UseStylesOptions,
+  UseStylesResult,
+  UseGlobalStylesOptions,
+} from './hooks';
 export * from './utils/filterBaseProps';
 export * from './utils/colors';
 export * from './utils/styles';

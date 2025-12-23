@@ -8,14 +8,12 @@ import {
   JSX,
   PropsWithoutRef,
   RefAttributes,
-  useContext,
-  useInsertionEffect,
   useMemo,
-  useRef,
 } from 'react';
 import { isValidElementType } from 'react-is';
 
-import { allocateClassName, inject, injectGlobal } from './injector';
+import { useGlobalStyles } from './hooks/useGlobalStyles';
+import { useStyles } from './hooks/useStyles';
 import { BASE_STYLES } from './styles/list';
 import { Styles, StylesInterface } from './styles/types';
 import {
@@ -29,12 +27,8 @@ import { getDisplayName } from './utils/getDisplayName';
 import { mergeStyles } from './utils/mergeStyles';
 import { modAttrs } from './utils/modAttrs';
 import { processTokens, stringifyTokens } from './utils/processTokens';
-import { RenderResult, renderStyles } from './utils/renderStyles';
-import {
-  stringifyStyles,
-  StyleValue,
-  StyleValueStateMap,
-} from './utils/styles';
+
+import type { StyleValue, StyleValueStateMap } from './utils/styles';
 
 /**
  * Mapping of is* properties to their corresponding HTML attributes
@@ -67,15 +61,6 @@ function handleIsProperties(props: Record<string, unknown>) {
       props[dataAttribute] = '';
     }
   }
-}
-
-/**
- * Simple hash function for internal cache keys
- */
-// Generate unique cache key for style deduplication
-function generateStyleCacheKey(styleKey: string, contextKey?: string): string {
-  // Use null character as separator for better performance and no collision risk
-  return contextKey ? `${styleKey}\0${contextKey}` : styleKey;
 }
 
 // Basic props accepted by our base element
@@ -240,25 +225,7 @@ export function tasty<
 // Internal specialized implementations
 function tastyGlobal(selector: string, styles?: Styles) {
   const _StyleDeclarationComponent: FC = () => {
-    const disposeRef = useRef<(() => void) | null>(null);
-
-    const styleResults = useMemo(() => {
-      if (!styles) return [];
-      return renderStyles(styles, selector);
-    }, [selector, styles]);
-
-    // Inject styles at insertion phase; cleanup on change/unmount
-    useInsertionEffect(() => {
-      disposeRef.current?.();
-      if ((styleResults as any[]).length === 0) return;
-      const { dispose } = injectGlobal(styleResults as any);
-      disposeRef.current = dispose;
-      return () => {
-        disposeRef.current?.();
-        disposeRef.current = null;
-      };
-    }, [styleResults]);
-
+    useGlobalStyles({ selector, styles });
     return null;
   };
 
@@ -396,15 +363,6 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
       return createElement(Component, elementProps);
     });
   } else {
-    /**
-     * An additional optimization that allows to avoid rendering styles across various instances
-     * of the same element if no custom styles are provided via `styles` prop or direct style props.
-     */
-    let cachedDefaultStyles: RenderResult | null = null;
-    const renderDefaultStyles = (): RenderResult => {
-      return (cachedDefaultStyles ??= renderStyles(defaultStyles || {}));
-    };
-
     let {
       qa: defaultQa,
       qaVal: defaultQaVal,
@@ -459,70 +417,25 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         styles = undefined as unknown as Styles;
       }
 
-      const propStylesKey = stringifyStyles(propStyles);
-
-      // Optimize style computation and cache key generation
-      const { allStyles, cacheKey, useDefaultStyles } = useMemo(() => {
+      // Merge default styles with instance styles and prop styles
+      const allStyles = useMemo(() => {
         const hasStyles =
           styles && Object.keys(styles as Record<string, unknown>).length > 0;
         const hasPropStyles = propStyles && Object.keys(propStyles).length > 0;
-        const useDefault = !hasStyles && !hasPropStyles;
 
-        const merged = useDefault
-          ? defaultStyles
-          : mergeStyles(defaultStyles, styles as Styles, propStyles as Styles);
-
-        // Generate cache key for style deduplication
-        const styleKey = stringifyStyles(merged || {});
-        const key = generateStyleCacheKey(styleKey);
-
-        return {
-          allStyles: merged,
-          cacheKey: key,
-          useDefaultStyles: useDefault,
-        };
-      }, [styles, propStylesKey]);
-
-      // Compute rules synchronously; inject via insertion effect
-      const directResult: RenderResult = useMemo(() => {
-        if (useDefaultStyles) {
-          return renderDefaultStyles();
-        } else if (allStyles && Object.keys(allStyles).length > 0) {
-          // Return rules without className - injector will add it
-          return renderStyles(allStyles);
-        } else {
-          return { rules: [], className: '' };
-        }
-      }, [useDefaultStyles, allStyles, cacheKey]);
-
-      const disposeRef = useRef<(() => void) | null>(null);
-
-      // Allocate className in render phase (safe for React Strict Mode)
-      const allocatedClassName = useMemo(() => {
-        if (!directResult.rules.length || !cacheKey) return '';
-        const { className } = allocateClassName(cacheKey);
-        return className;
-      }, [directResult.rules.length, cacheKey]);
-
-      // Inject styles in insertion effect (avoids render phase side effects)
-      useInsertionEffect(() => {
-        // Cleanup previous disposal reference
-        disposeRef.current?.();
-
-        if (directResult.rules.length > 0) {
-          const injectionResult = inject(directResult.rules, { cacheKey });
-          disposeRef.current = injectionResult.dispose;
-        } else {
-          disposeRef.current = null;
+        if (!hasStyles && !hasPropStyles) {
+          return defaultStyles;
         }
 
-        return () => {
-          disposeRef.current?.();
-          disposeRef.current = null;
-        };
-      }, [directResult.rules, cacheKey]);
+        return mergeStyles(
+          defaultStyles,
+          styles as Styles,
+          propStyles as Styles,
+        );
+      }, [styles, propStyles]);
 
-      const injectedClassName = allocatedClassName;
+      // Use the useStyles hook for style generation and injection
+      const { className: stylesClassName } = useStyles({ styles: allStyles });
 
       // Merge default tokens with instance tokens (instance overrides defaults)
       const tokensKey = stringifyTokens(tokens as Tokens | undefined);
@@ -552,11 +465,8 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         modProps = modAttrs(modsObject as any) as Record<string, unknown>;
       }
 
-      // Merge user className with injected className
-      const finalClassName = [
-        (userClassName as string) || '',
-        injectedClassName,
-      ]
+      // Merge user className with generated className
+      const finalClassName = [(userClassName as string) || '', stylesClassName]
         .filter(Boolean)
         .join(' ');
 
@@ -575,13 +485,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
       // Apply the helper to handle is* properties
       handleIsProperties(elementProps);
 
-      // NEW: Use plain createElement instead of styled Element
       const renderedElement = createElement(
         (as as string | 'div') ?? originalAs,
         elementProps,
       );
-
-      // Note: Empty className is normal for elements with no styles
 
       return renderedElement;
     });
