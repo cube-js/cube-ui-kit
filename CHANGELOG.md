@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.98.4
+
+### Patch Changes
+
+- [#934](https://github.com/cube-js/cube-ui-kit/pull/934) [`488bda2d`](https://github.com/cube-js/cube-ui-kit/commit/488bda2d798760654ea28a9cc9de35e2a6e16f45) Thanks [@tenphi](https://github.com/tenphi)! - Fix infinite loop in IconSwitch component caused by unnecessary state updates when children prop reference changes. The component now renders current children directly for the active icon instead of storing it in state, preventing render loops while maintaining proper transition behavior.
+
 ## 0.98.3
 
 ### Patch Changes
