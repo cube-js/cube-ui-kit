@@ -25,7 +25,6 @@ import {
   Props,
   Tokens,
 } from './types';
-import { cacheWrapper } from './utils/cache-wrapper';
 import { getDisplayName } from './utils/getDisplayName';
 import { mergeStyles } from './utils/mergeStyles';
 import { modAttrs } from './utils/modAttrs';
@@ -401,10 +400,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
      * An additional optimization that allows to avoid rendering styles across various instances
      * of the same element if no custom styles are provided via `styles` prop or direct style props.
      */
-    const renderDefaultStyles = cacheWrapper(() => {
-      // Return rules without className - injector will add it
-      return renderStyles(defaultStyles || {});
-    });
+    let cachedDefaultStyles: RenderResult | null = null;
+    const renderDefaultStyles = (): RenderResult => {
+      return (cachedDefaultStyles ??= renderStyles(defaultStyles || {}));
+    };
 
     let {
       qa: defaultQa,
