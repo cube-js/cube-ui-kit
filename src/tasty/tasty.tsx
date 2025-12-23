@@ -96,13 +96,11 @@ export type WithVariant<V extends VariantMap> = {
   variant?: keyof V;
 };
 
-export type TastyProps<
-  K extends StyleList,
-  V extends VariantMap,
-  DefaultProps = Props,
-> = {
-  /** The tag name of the element or a React component. */
-  as?: string | ComponentType<any>;
+/**
+ * Base type containing common properties shared between TastyProps and TastyElementOptions.
+ * Separated to avoid code duplication while allowing different type constraints.
+ */
+type TastyBaseProps<K extends StyleList, V extends VariantMap> = {
   /** Default styles of the element. */
   styles?: Styles;
   /** The list of styles that can be provided by props */
@@ -111,22 +109,36 @@ export type TastyProps<
   variants?: V;
   /** Default tokens for inline CSS custom properties */
   tokens?: Tokens;
-} & Partial<Omit<DefaultProps, 'as' | 'styles' | 'styleProps' | 'tokens'>> &
-  Pick<BaseProps, 'qa' | 'qaVal'> &
+} & Pick<BaseProps, 'qa' | 'qaVal'> &
   WithVariant<V>;
+
+export type TastyProps<
+  K extends StyleList,
+  V extends VariantMap,
+  DefaultProps = Props,
+> = TastyBaseProps<K, V> & {
+  /** The tag name of the element or a React component. */
+  as?: string | ComponentType<any>;
+} & Partial<Omit<DefaultProps, 'as' | 'styles' | 'styleProps' | 'tokens'>>;
 
 /**
  * TastyElementOptions is used for the element-creation overload of tasty().
  * It includes a Tag generic that allows TypeScript to infer the correct
  * HTML element type from the `as` prop.
+ *
+ * Note: Uses a separate index signature with `unknown` instead of inheriting
+ * from Props (which has `any`) to ensure strict type checking for styles.
  */
 export type TastyElementOptions<
   K extends StyleList,
   V extends VariantMap,
   Tag extends keyof JSX.IntrinsicElements = 'div',
-> = Omit<TastyProps<K, V>, 'as'> & {
+> = TastyBaseProps<K, V> & {
   /** The tag name of the element or a React component. */
   as?: Tag | ComponentType<any>;
+} & {
+  /** Allow additional props without polluting style type checking */
+  [key: string]: unknown;
 };
 
 export type AllBasePropsWithMods<K extends StyleList> = AllBaseProps & {
