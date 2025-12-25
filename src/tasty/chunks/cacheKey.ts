@@ -3,8 +3,16 @@
  *
  * Generates cache keys that only include styles relevant to a specific chunk,
  * enabling more granular caching and reuse.
+ *
+ * Enhanced to support predefined states:
+ * - Global predefined states don't affect cache keys (constant across app)
+ * - Local predefined states only affect cache keys if referenced in the chunk
  */
 
+import {
+  extractLocalPredefinedStates,
+  extractPredefinedStateRefs,
+} from '../states';
 import { Styles } from '../styles/types';
 
 /**
@@ -42,6 +50,9 @@ function stableStringify(value: unknown): string {
  * Only includes the styles that belong to this chunk, allowing
  * chunks to be cached independently.
  *
+ * Also includes relevant local predefined states that are referenced
+ * by this chunk's styles.
+ *
  * @param styles - The full styles object
  * @param chunkName - Name of the chunk
  * @param styleKeys - Keys of styles belonging to this chunk
@@ -58,11 +69,37 @@ export function generateChunkCacheKey(
   // Sort keys for stable ordering
   const sortedKeys = styleKeys.slice().sort();
 
+  // Build the chunk-specific styles string for predefined state detection
+  let chunkStylesStr = '';
+
   for (const key of sortedKeys) {
     const value = styles[key];
     if (value !== undefined) {
       // Use stable stringify for consistent serialization regardless of key order
-      parts.push(`${key}:${stableStringify(value)}`);
+      const serialized = stableStringify(value);
+      parts.push(`${key}:${serialized}`);
+      chunkStylesStr += serialized;
+    }
+  }
+
+  // Extract local predefined states from the full styles object
+  const localStates = extractLocalPredefinedStates(styles);
+
+  // Only include local predefined states that are actually referenced in this chunk
+  if (Object.keys(localStates).length > 0) {
+    const referencedStates = extractPredefinedStateRefs(chunkStylesStr);
+    const relevantLocalStates: string[] = [];
+
+    for (const stateName of referencedStates) {
+      if (localStates[stateName]) {
+        relevantLocalStates.push(`${stateName}=${localStates[stateName]}`);
+      }
+    }
+
+    // Add relevant local states to the cache key (sorted for stability)
+    if (relevantLocalStates.length > 0) {
+      relevantLocalStates.sort();
+      parts.unshift(`[states:${relevantLocalStates.join('|')}]`);
     }
   }
 

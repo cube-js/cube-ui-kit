@@ -8,6 +8,13 @@ export type {
 // Chunk utilities for advanced use cases
 export { CHUNK_NAMES, STYLE_TO_CHUNK, categorizeStyleKeys } from './chunks';
 export type { ChunkName, ChunkInfo } from './chunks';
+// Advanced state mapping utilities
+export { getGlobalPredefinedStates } from './states';
+export type {
+  StateParserContext,
+  ParsedAdvancedState,
+  AtRuleContext,
+} from './states';
 export * from './utils/filterBaseProps';
 export * from './utils/colors';
 export * from './utils/styles';

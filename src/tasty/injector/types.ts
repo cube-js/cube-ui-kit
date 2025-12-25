@@ -29,6 +29,12 @@ export interface StyleInjectorConfig {
    * Helps avoid races during rapid mount/unmount cycles. Default: 10000ms.
    */
   unusedStylesMinAgeMs?: number;
+  /**
+   * Global predefined states for advanced state mapping.
+   * These are state aliases that can be used in any component.
+   * Example: { '@mobile': '@media(w < 920px)', '@dark': '@root(theme=dark)' }
+   */
+  states?: Record<string, string>;
 }
 
 export interface RuleInfo {

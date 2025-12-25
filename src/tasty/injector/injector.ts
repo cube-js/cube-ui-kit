@@ -139,13 +139,21 @@ export class StyleInjector {
       // If rule needs className prepended
       if (rule.needsClassName) {
         // Simple concatenation: .className (double specificity) + selectorSuffix
-        newSelector = `.${className}.${className}${newSelector}`;
+        const classSelector = `.${className}.${className}${newSelector}`;
+
+        // If there's a root prefix, add it before the class selector
+        if (rule.rootPrefix) {
+          newSelector = `${rule.rootPrefix} ${classSelector}`;
+        } else {
+          newSelector = classSelector;
+        }
       }
 
       return {
         ...rule,
         selector: newSelector,
         needsClassName: undefined, // Remove the flag after processing
+        rootPrefix: undefined, // Remove rootPrefix after processing
       };
     });
 

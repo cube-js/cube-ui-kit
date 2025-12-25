@@ -1,3 +1,7 @@
+import {
+  markStylesGenerated as markStylesGeneratedInStates,
+  setGlobalPredefinedStates,
+} from '../states';
 import { isDevEnv } from '../utils/isDevEnv';
 import { StyleResult } from '../utils/renderStyles';
 
@@ -74,9 +78,17 @@ function createDefaultConfig(isTest?: boolean): StyleInjectorConfig {
  * Configure the global style injector
  */
 export function configure(config: Partial<StyleInjectorConfig> = {}): void {
+  // Handle predefined states before creating/updating the injector
+  if (config.states) {
+    setGlobalPredefinedStates(config.states);
+  }
+
+  // Create config without states (it's handled separately)
+  const { states: _states, ...injectorConfig } = config;
+
   const fullConfig: StyleInjectorConfig = {
     ...createDefaultConfig(),
-    ...config,
+    ...injectorConfig,
   };
 
   // Store on window to survive React Strict Mode resets
@@ -117,6 +129,9 @@ export function inject(
   rules: StyleResult[],
   options?: { root?: Document | ShadowRoot; cacheKey?: string },
 ): InjectResult {
+  // Mark that styles have been generated (prevents dynamic predefined state updates)
+  markStylesGeneratedInStates();
+
   return getGlobalInjector().inject(rules, options);
 }
 
