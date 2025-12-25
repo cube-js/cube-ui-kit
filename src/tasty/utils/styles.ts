@@ -1,4 +1,5 @@
 import { StyleParser } from '../parser/parser';
+import { createStateParserContext, parseAdvancedState } from '../states';
 import { Styles } from '../styles/types';
 
 import { cacheWrapper } from './cache-wrapper';
@@ -698,9 +699,6 @@ export function styleStateMapToStyleStateDataList(
   const stateDataList: StyleStateDataList = [];
   let hasAdvancedStates = false;
 
-  // Lazy import to avoid circular dependency
-  const statesModule = require('../states');
-
   Object.keys(styleStateMap).forEach((stateNotation) => {
     const state = parseStateNotation(
       stateNotation,
@@ -725,9 +723,8 @@ export function styleStateMapToStyleStateDataList(
 
         if (isAdvancedStateToken(token)) {
           hasAdvancedStates = true;
-          const ctx =
-            parserContext || statesModule.createStateParserContext(undefined);
-          const parsed = statesModule.parseAdvancedState(token, ctx);
+          const ctx = parserContext || createStateParserContext(undefined);
+          const parsed = parseAdvancedState(token, ctx);
           advancedStates.push(parsed);
 
           // Handle @own states specially - extract condition as ownMod
