@@ -5,6 +5,7 @@ import { cacheWrapper } from './cache-wrapper';
 import { camelToKebab } from './case-converter';
 
 import type { ProcessedStyle, StyleDetails } from '../parser/types';
+import type { AtRuleContext, ParsedAdvancedState } from '../states';
 
 export type StyleValue<T = string> = T | boolean | number | null | undefined;
 
@@ -43,6 +44,14 @@ export interface StyleStateData {
   mods: string[];
   /** The list of **not** mods to apply (e.g. `:not(:hover)`) */
   notMods: string[];
+  /** Advanced states (media queries, container queries, etc.) */
+  advancedStates?: ParsedAdvancedState[];
+  /** At-rule context for CSS generation */
+  atRuleContext?: AtRuleContext;
+  /** Own mods for sub-element states (from @own()) - applied to sub-element selector */
+  ownMods?: string[];
+  /** Negated own mods for sub-element states */
+  negatedOwnMods?: string[];
 }
 
 export interface ParsedColor {
@@ -390,8 +399,18 @@ export function extractStyles(
   return styles;
 }
 
+// Enhanced regex that includes advanced state patterns
+// Matches: operators, parentheses, @media(...), @(...), @root(...), @own(...), @starting, @predefined,
+//          value mods, boolean mods, pseudo-classes, classes, attribute selectors
 const STATES_REGEXP =
-  /([&|!^])|([()])|([a-z][a-z0-9-]+=(?:"[^"]*"|'[^']*'|[^\s&|!^()]+))|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9-]+\([^)]+\)|:[a-z][a-z0-9-]+)|(\.[a-z][a-z0-9-]+)|(\[[^\]]+])/gi;
+  /([&|!^])|([()])|(@media:[a-z]+)|(@media\([^)]+\))|(@root\([^)]+\))|(@own\([^)]+\))|(@\([^)]+\))|(@starting)|(@[A-Za-z][A-Za-z0-9-]*)|([a-z][a-z0-9-]+=(?:"[^"]*"|'[^']*'|[^\s&|!^()]+))|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9-]+\([^)]+\)|:[a-z][a-z0-9-]+)|(\.[a-z][a-z0-9-]+)|(\[[^\]]+])/gi;
+
+/**
+ * Check if a token is an advanced state (starts with @)
+ */
+export function isAdvancedStateToken(token: string): boolean {
+  return token.startsWith('@') || token.startsWith('!@');
+}
 export const STATE_OPERATORS = {
   NOT: '!',
   AND: '&',
@@ -440,10 +459,38 @@ function convertTokensToComputeUnits(tokens: any[]) {
 }
 
 /**
+ * Replace commas with | only outside of parentheses.
+ * This preserves commas in advanced states like @(card, w < 600px)
+ */
+function replaceCommasOutsideParens(str: string): string {
+  let result = '';
+  let depth = 0;
+
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+
+    if (char === '(') {
+      depth++;
+      result += char;
+    } else if (char === ')') {
+      depth--;
+      result += char;
+    } else if (char === ',' && depth === 0) {
+      // Only replace commas at the top level (outside parentheses)
+      result += '|';
+    } else {
+      result += char;
+    }
+  }
+
+  return result;
+}
+
+/**
  * Parse state notation and return tokens, modifiers and compute model.
  */
 function parseStateNotationInner(notation: string, value: any): StyleStateData {
-  const tokens = notation.replace(/,/g, '|').match(STATES_REGEXP);
+  const tokens = replaceCommasOutsideParens(notation).match(STATES_REGEXP);
 
   if (!tokens || !tokens.length) {
     return {
@@ -510,11 +557,129 @@ function parseStateNotationInner(notation: string, value: any): StyleStateData {
 export const parseStateNotation = cacheWrapper(parseStateNotationInner);
 
 /**
+ * Build an AtRuleContext from parsed advanced states
+ */
+export function buildAtRuleContext(
+  advancedStates: ParsedAdvancedState[],
+  negatedStates: Set<string>,
+): AtRuleContext | undefined {
+  if (advancedStates.length === 0) return undefined;
+
+  const ctx: AtRuleContext = {};
+
+  for (const state of advancedStates) {
+    const isNegated = negatedStates.has(state.raw);
+
+    switch (state.type) {
+      case 'media': {
+        if (!ctx.media) ctx.media = [];
+        let mediaCondition = '';
+
+        if (state.mediaType) {
+          // @media:print, @media:screen, etc.
+          mediaCondition = state.mediaType;
+        } else if (state.condition) {
+          // @media(width < 920px)
+          mediaCondition = `(${state.condition})`;
+        }
+
+        if (mediaCondition) {
+          if (isNegated) {
+            ctx.media.push(`not ${mediaCondition}`);
+          } else {
+            ctx.media.push(mediaCondition);
+          }
+        }
+        break;
+      }
+
+      case 'container': {
+        if (!ctx.container) ctx.container = [];
+        let condition = state.condition;
+        if (isNegated) {
+          condition = `not (${condition})`;
+        }
+        ctx.container.push({
+          name: state.containerName,
+          condition,
+        });
+        break;
+      }
+
+      case 'root': {
+        if (!ctx.rootStates) ctx.rootStates = [];
+        // Parse the condition to generate the proper selector
+        const rootSelector = buildRootSelector(state.condition, isNegated);
+        ctx.rootStates.push(rootSelector);
+        break;
+      }
+
+      case 'starting': {
+        if (!isNegated) {
+          ctx.startingStyle = true;
+        }
+        break;
+      }
+
+      // 'own' and 'predefined' are handled differently (selector-based, not at-rule)
+      // 'modifier' is a regular state
+    }
+  }
+
+  // Return undefined if no at-rules were added
+  if (
+    !ctx.media?.length &&
+    !ctx.container?.length &&
+    !ctx.rootStates?.length &&
+    !ctx.startingStyle
+  ) {
+    return undefined;
+  }
+
+  return ctx;
+}
+
+/**
+ * Build a root state selector from a condition
+ */
+function buildRootSelector(condition: string, isNegated: boolean): string {
+  // Handle different condition formats:
+  // - theme=dark -> [data-theme="dark"]
+  // - .className -> .className
+  // - [attr] -> [attr]
+  // - booleanMod -> [data-boolean-mod]
+
+  let selector: string;
+
+  if (condition.startsWith('.')) {
+    // Class selector
+    selector = condition;
+  } else if (condition.startsWith('[')) {
+    // Attribute selector
+    selector = condition;
+  } else if (condition.includes('=')) {
+    // Value mod: theme=dark -> [data-theme="dark"]
+    const [key, value] = condition.split('=');
+    selector = `[data-${camelToKebab(key.trim())}="${value.trim()}"]`;
+  } else {
+    // Boolean mod: camelCase -> [data-camel-case]
+    selector = `[data-${camelToKebab(condition)}]`;
+  }
+
+  if (isNegated) {
+    return `:not(${selector})`;
+  }
+  return selector;
+}
+
+/**
  * Parse state notation and return tokens, modifiers and compute model.
+ * Enhanced to detect and extract advanced states.
  */
 export function styleStateMapToStyleStateDataList(
   styleStateMap: StyleStateMap | StyleValue | StyleValueStateMap,
-): { states: StyleStateDataList; mods: string[] } {
+  parserContext?: import('../states').StateParserContext,
+): { states: StyleStateDataList; mods: string[]; hasAdvancedStates: boolean } {
   if (typeof styleStateMap !== 'object' || !styleStateMap) {
     return {
       states: [
@@ -526,16 +691,86 @@ export function styleStateMapToStyleStateDataList(
         },
       ],
       mods: [],
+      hasAdvancedStates: false,
     };
   }
 
   const stateDataList: StyleStateDataList = [];
+  let hasAdvancedStates = false;
+
+  // Lazy import to avoid circular dependency
+  const statesModule = require('../states');
 
   Object.keys(styleStateMap).forEach((stateNotation) => {
     const state = parseStateNotation(
       stateNotation,
       styleStateMap[stateNotation],
     );
+
+    // Check if this state contains any advanced states
+    const advancedStates: ParsedAdvancedState[] = [];
+    const negatedAdvancedStates = new Set<string>();
+    const regularMods: string[] = [];
+    const ownMods: string[] = [];
+    const negatedOwnMods: string[] = [];
+
+    // Scan tokens for advanced states
+    if (state.tokens) {
+      let isNegated = false;
+      for (const token of state.tokens) {
+        if (token === '!') {
+          isNegated = true;
+          continue;
+        }
+
+        if (isAdvancedStateToken(token)) {
+          hasAdvancedStates = true;
+          const ctx =
+            parserContext || statesModule.createStateParserContext(undefined);
+          const parsed = statesModule.parseAdvancedState(token, ctx);
+          advancedStates.push(parsed);
+
+          // Handle @own states specially - extract condition as ownMod
+          if (parsed.type === 'own' && parsed.condition) {
+            if (isNegated) {
+              negatedOwnMods.push(parsed.condition);
+            } else {
+              ownMods.push(parsed.condition);
+            }
+          } else if (isNegated) {
+            negatedAdvancedStates.add(token);
+          }
+          isNegated = false;
+        } else if (
+          token.length > 1 &&
+          !['&', '|', '^', '(', ')'].includes(token)
+        ) {
+          regularMods.push(token);
+          isNegated = false;
+        } else {
+          isNegated = false;
+        }
+      }
+    }
+
+    // If there are advanced states, build the atRuleContext
+    if (advancedStates.length > 0) {
+      state.advancedStates = advancedStates;
+      state.atRuleContext = buildAtRuleContext(
+        advancedStates,
+        negatedAdvancedStates,
+      );
+      // Filter mods to only include regular mods (not advanced states)
+      state.mods = regularMods;
+    }
+
+    // Store own mods for sub-element selector generation
+    if (ownMods.length > 0) {
+      state.ownMods = ownMods;
+    }
+    if (negatedOwnMods.length > 0) {
+      state.negatedOwnMods = negatedOwnMods;
+    }
 
     stateDataList.push(state);
   });
@@ -545,7 +780,7 @@ export function styleStateMapToStyleStateDataList(
   let initialState;
 
   const allMods: string[] = stateDataList.reduce((all: string[], state) => {
-    if (!state.mods.length) {
+    if (!state.mods.length && !state.advancedStates?.length) {
       initialState = state;
     } else {
       state.mods.forEach((mod) => {
@@ -566,7 +801,7 @@ export function styleStateMapToStyleStateDataList(
     });
   }
 
-  return { states: stateDataList, mods: allMods };
+  return { states: stateDataList, mods: allMods, hasAdvancedStates };
 }
 
 export const COMPUTE_FUNC_MAP = {

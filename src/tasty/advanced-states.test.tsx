@@ -26,10 +26,8 @@ describe('Advanced State Mapping - CSS Output', () => {
     document.head.querySelectorAll('[data-tasty]').forEach((el) => el.remove());
   });
 
-  // Note: Most tests are skipped because the advanced state implementation
-  // was reset. Run 'git log' to find the commit with the implementation.
   describe('@media query states', () => {
-    it.skip('should generate CSS with @media wrapper for dimension queries', () => {
+    it('should generate CSS with @media wrapper for dimension queries', () => {
       const Element = tasty({
         styles: {
           padding: {
@@ -43,7 +41,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should expand dimension shorthands in media queries', () => {
+    it('should expand dimension shorthands in media queries', () => {
       const Element = tasty({
         styles: {
           padding: {
@@ -58,7 +56,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should expand tasty units in media queries', () => {
+    it('should expand tasty units in media queries', () => {
       const Element = tasty({
         styles: {
           padding: {
@@ -72,7 +70,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle @media:type syntax', () => {
+    it('should handle @media:type syntax', () => {
       const Element = tasty({
         styles: {
           display: {
@@ -86,7 +84,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle media queries with range syntax', () => {
+    it('should handle media queries with range syntax', () => {
       const Element = tasty({
         styles: {
           columns: {
@@ -101,7 +99,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle cascading media queries with overlapping ranges', () => {
+    it('should handle cascading media queries with overlapping ranges', () => {
       // From ADVANCED_STATE_MAPPING.md spec (lines 1164-1175)
       // Multiple overlapping media queries should generate proper cascading CSS
       const Element = tasty({
@@ -123,25 +121,25 @@ describe('Advanced State Mapping - CSS Output', () => {
   // verify the CSS is generated but cannot validate injection works.
   // The CSS generation is tested via unit tests in states/states.test.ts
   describe('@container query states', () => {
-    it.skip('should generate CSS with @container wrapper for unnamed queries (jsdom limitation)', () => {
+    it('should generate CSS with @container wrapper for unnamed queries (jsdom limitation)', () => {
       // jsdom does not support @container CSS syntax
     });
 
-    it.skip('should generate CSS with named container queries (jsdom limitation)', () => {
+    it('should generate CSS with named container queries (jsdom limitation)', () => {
       // jsdom does not support @container CSS syntax
     });
 
-    it.skip('should handle style queries in container queries (jsdom limitation)', () => {
+    it('should handle style queries in container queries (jsdom limitation)', () => {
       // jsdom does not support @container CSS syntax
     });
 
-    it.skip('should handle style queries with equality (jsdom limitation)', () => {
+    it('should handle style queries with equality (jsdom limitation)', () => {
       // jsdom does not support @container CSS syntax
     });
   });
 
   describe('@root states', () => {
-    it.skip('should generate CSS with :root prefix for root states', () => {
+    it('should generate CSS with :root prefix for root states', () => {
       const Element = tasty({
         styles: {
           fill: {
@@ -155,7 +153,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle class-based root states', () => {
+    it('should handle class-based root states', () => {
       const Element = tasty({
         styles: {
           fill: {
@@ -169,7 +167,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle attribute-based root states', () => {
+    it('should handle attribute-based root states', () => {
       const Element = tasty({
         styles: {
           fill: {
@@ -186,17 +184,17 @@ describe('Advanced State Mapping - CSS Output', () => {
 
   // Note: @starting-style CSS is not supported by jsdom
   describe('@starting style states', () => {
-    it.skip('should generate CSS with @starting-style wrapper (jsdom limitation)', () => {
+    it('should generate CSS with @starting-style wrapper (jsdom limitation)', () => {
       // jsdom does not support @starting-style CSS syntax
     });
 
-    it.skip('should handle multiple properties in starting style (jsdom limitation)', () => {
+    it('should handle multiple properties in starting style (jsdom limitation)', () => {
       // jsdom does not support @starting-style CSS syntax
     });
   });
 
   describe('predefined states (local)', () => {
-    it.skip('should resolve local predefined states to their definitions', () => {
+    it('should resolve local predefined states to their definitions', () => {
       const Element = tasty({
         styles: {
           '@mobile': '@media(w < 600px)',
@@ -211,7 +209,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle multiple local predefined states', () => {
+    it('should handle multiple local predefined states', () => {
       const Element = tasty({
         styles: {
           '@small': '@media(w < 400px)',
@@ -243,7 +241,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       });
     });
 
-    it.skip('should resolve global predefined states', () => {
+    it('should resolve global predefined states', () => {
       const Element = tasty({
         styles: {
           padding: {
@@ -257,7 +255,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle multiple global predefined states', () => {
+    it('should handle multiple global predefined states', () => {
       const Element = tasty({
         styles: {
           padding: {
@@ -273,7 +271,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should prioritize local over global predefined states', () => {
+    it('should prioritize local over global predefined states', () => {
       const Element = tasty({
         styles: {
           // Override global @mobile with local definition
@@ -291,7 +289,7 @@ describe('Advanced State Mapping - CSS Output', () => {
   });
 
   describe('combined advanced states with regular modifiers', () => {
-    it.skip('should combine media queries with regular modifiers', () => {
+    it('should combine media queries with regular modifiers', () => {
       const Element = tasty({
         styles: {
           padding: {
@@ -307,7 +305,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle root states with regular modifiers', () => {
+    it('should handle root states with regular modifiers', () => {
       const Element = tasty({
         styles: {
           fill: {
@@ -325,7 +323,7 @@ describe('Advanced State Mapping - CSS Output', () => {
   });
 
   describe('sub-element advanced states', () => {
-    it.skip('should apply media queries to sub-element styles', () => {
+    it('should apply media queries to sub-element styles', () => {
       const Card = tasty({
         styles: {
           padding: '4x',
@@ -342,7 +340,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should apply root states to sub-element styles', () => {
+    it('should apply root states to sub-element styles', () => {
       const Card = tasty({
         styles: {
           fill: '#white',
@@ -359,7 +357,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should apply @own state to sub-element', () => {
+    it('should apply @own state to sub-element', () => {
       // @own() targets the sub-element's own state, not the parent's
       const Card = tasty({
         styles: {
@@ -377,7 +375,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle negated @own state', () => {
+    it('should handle negated @own state', () => {
       // !@own() negates the sub-element's own state
       const Card = tasty({
         styles: {
@@ -394,7 +392,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should combine @own state with parent modifiers', () => {
+    it('should combine @own state with parent modifiers', () => {
       // Both parent and own states can be used together
       const Button = tasty({
         styles: {
@@ -412,7 +410,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should combine @own state with media query', () => {
+    it('should combine @own state with media query', () => {
       // @own() combined with @media
       const Card = tasty({
         styles: {
@@ -448,7 +446,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle advanced states with fallback color syntax', () => {
+    it('should handle advanced states with fallback color syntax', () => {
       const Element = tasty({
         styles: {
           fill: {
@@ -462,7 +460,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle advanced states with complex style values', () => {
+    it('should handle advanced states with complex style values', () => {
       const Element = tasty({
         styles: {
           border: {
@@ -479,7 +477,7 @@ describe('Advanced State Mapping - CSS Output', () => {
   });
 
   describe('complex combinations', () => {
-    it.skip('should handle combined media and root states on same property', () => {
+    it('should handle combined media and root states on same property', () => {
       // Multiple advanced states targeting the same property
       // Each should generate its own distinct rule
       const Element = tasty({
@@ -497,7 +495,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle multiple root states', () => {
+    it('should handle multiple root states', () => {
       // Both theme and contrast mode as root states
       const Element = tasty({
         styles: {
@@ -513,7 +511,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle media queries on different dimensions', () => {
+    it('should handle media queries on different dimensions', () => {
       // Width and height media queries should not interfere
       const Element = tasty({
         styles: {
@@ -529,7 +527,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle advanced states with multiple modifiers', () => {
+    it('should handle advanced states with multiple modifiers', () => {
       // Combining advanced state with boolean modifiers
       const Element = tasty({
         styles: {
@@ -546,7 +544,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle root states with pseudo-class modifiers', () => {
+    it('should handle root states with pseudo-class modifiers', () => {
       // Root state combined with pseudo-class
       const Element = tasty({
         styles: {
@@ -563,7 +561,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle cascading root states with specificity', () => {
+    it('should handle cascading root states with specificity', () => {
       // More specific root states should override less specific
       const Element = tasty({
         styles: {
@@ -580,7 +578,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle sub-elements with multiple advanced states', () => {
+    it('should handle sub-elements with multiple advanced states', () => {
       // Sub-element with both media and root states
       const Card = tasty({
         styles: {
@@ -599,7 +597,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle three-way media query cascade', () => {
+    it('should handle three-way media query cascade', () => {
       // Three non-overlapping ranges
       const Element = tasty({
         styles: {
@@ -616,7 +614,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    it.skip('should handle predefined states with modifiers', () => {
+    it('should handle predefined states with modifiers', () => {
       const Element = tasty({
         states: {
           '@compact': '@media(w < 600px)',
@@ -635,7 +633,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
-    // Container query tests - skipped due to jsdom limitations
+    // Container query tests - skipped due to jsdom limitations with @container CSS
     it.skip('should handle nested container queries (jsdom limitation)', () => {
       const Element = tasty({
         styles: {
@@ -675,3 +673,123 @@ describe('Advanced State Mapping - CSS Output', () => {
 // implicitly tested through the successful resolution of predefined states.
 // The warning logic itself is a simple console.warn wrapper that doesn't need
 // extensive testing.
+
+// Direct renderStyles tests for features that jsdom doesn't support
+describe('Advanced State Mapping - renderStyles direct tests', () => {
+  // Import renderStyles for direct testing
+  const { renderStyles } = require('./utils/renderStyles');
+
+  describe('@starting-style tests', () => {
+    it('should generate @starting-style at-rule for entry animations', () => {
+      const { rules } = renderStyles({
+        opacity: {
+          '': '1',
+          '@starting': '0',
+        },
+      });
+
+      // Find the starting style rule
+      const startingRule = rules.find((r: any) =>
+        r.atRules?.includes('@starting-style'),
+      );
+      expect(startingRule).toBeDefined();
+      expect(startingRule.declarations).toContain('opacity: 0');
+
+      // Find the default rule
+      const defaultRule = rules.find((r: any) => !r.atRules?.length);
+      expect(defaultRule).toBeDefined();
+      expect(defaultRule.declarations).toContain('opacity: 1');
+    });
+
+    it('should handle @starting with multiple properties', () => {
+      const { rules } = renderStyles({
+        opacity: {
+          '': '1',
+          '@starting': '0',
+        },
+        fill: {
+          '': '#white',
+          '@starting': '#transparent',
+        },
+      });
+
+      // Find starting style rules
+      const startingRules = rules.filter((r: any) =>
+        r.atRules?.includes('@starting-style'),
+      );
+      expect(startingRules.length).toBeGreaterThan(0);
+
+      // Check declarations include opacity
+      const startingDeclarations = startingRules
+        .map((r: any) => r.declarations)
+        .join(' ');
+      expect(startingDeclarations).toContain('opacity: 0');
+    });
+  });
+
+  describe('@container query tests', () => {
+    it('should generate @container at-rule for unnamed queries', () => {
+      const { rules } = renderStyles({
+        padding: {
+          '': '4x',
+          '@(w < 400px)': '2x',
+        },
+      });
+
+      // Find the container query rule
+      const containerRule = rules.find((r: any) =>
+        r.atRules?.some((at: string) => at.startsWith('@container')),
+      );
+      expect(containerRule).toBeDefined();
+      expect(containerRule.atRules[0]).toBe('@container (width < 400px)');
+    });
+
+    it('should generate @container at-rule for named queries', () => {
+      const { rules } = renderStyles({
+        containerName: 'card',
+        containerType: 'inline-size',
+        padding: {
+          '': '4x',
+          '@(card, w >= 600px)': '3x',
+        },
+      });
+
+      // Find the container query rule
+      const containerRule = rules.find((r: any) =>
+        r.atRules?.some((at: string) => at.includes('card')),
+      );
+      expect(containerRule).toBeDefined();
+      // The format is "@container name (condition)"
+      expect(containerRule.atRules[0]).toBe('@container card (width >= 600px)');
+    });
+
+    it('should handle cascading container queries with overlapping ranges', () => {
+      const { rules } = renderStyles({
+        containerType: 'inline-size',
+        gridTemplateColumns: {
+          '': '1fr 1fr 1fr', // for w > 800px (default)
+          '@(w <= 800px)': '1fr 1fr', // for 400px < w <= 800px
+          '@(w <= 400px)': '1fr', // for w <= 400px
+        },
+      });
+
+      // Check that we have non-overlapping container queries
+      const containerRules = rules.filter((r: any) =>
+        r.atRules?.some((at: string) => at.startsWith('@container')),
+      );
+
+      // Should have 3 container query rules (all non-overlapping)
+      expect(containerRules.length).toBe(3);
+
+      // Check for non-overlapping patterns - verify unique conditions
+      const conditions = containerRules.map((r: any) => r.atRules?.[0]);
+      const uniqueConditions = new Set(conditions);
+      expect(uniqueConditions.size).toBe(conditions.length);
+
+      // Verify the expected non-overlapping ranges
+      expect(conditions).toContain('@container (width <= 400px)');
+      expect(conditions).toContain('@container (400px < width <= 800px)');
+      expect(conditions).toContain('@container (width > 800px)');
+    });
+  });
+});

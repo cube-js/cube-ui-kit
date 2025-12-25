@@ -3,12 +3,12 @@
 exports[`Advanced State Mapping - CSS Output @media query states should expand dimension shorthands in media queries 1`] = `
 "@media (height > 800px) {.t0.t0 {padding-top: calc(6 * var(--gap)); padding-right: calc(6 * var(--gap)); padding-bottom: calc(6 * var(--gap)); padding-left: calc(6 * var(--gap));}}
 @media (width < 600px) {.t0.t0 {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}
-@media not (height > 800px) and not (width < 600px) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}"
+@media not ((height > 800px)) and not ((width < 600px)) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output @media query states should expand tasty units in media queries 1`] = `
 "@media (width <= calc(var(--gap) * 40)) {.t0.t0 {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}
-@media not (width <= calc(var(--gap) * 40)) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}"
+@media not ((width <= calc(var(--gap) * 40))) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output @media query states should generate CSS with @media wrapper for dimension queries 1`] = `
@@ -18,7 +18,7 @@ exports[`Advanced State Mapping - CSS Output @media query states should generate
 
 exports[`Advanced State Mapping - CSS Output @media query states should handle @media:type syntax 1`] = `
 "@media print {.t0.t0 {display: none;}}
-@media not print {.t0.t0 {display: block;}}"
+@media not (print) {.t0.t0 {display: block;}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output @media query states should handle cascading media queries with overlapping ranges 1`] = `
@@ -28,9 +28,9 @@ exports[`Advanced State Mapping - CSS Output @media query states should handle c
 `;
 
 exports[`Advanced State Mapping - CSS Output @media query states should handle media queries with range syntax 1`] = `
-"@media (600px <= width < 900px) {.t0.t0 {columns: 2;}}
-@media (width >= 900px) {.t0.t0 {columns: 3;}}
-@media (width < 600px) {.t0.t0 {columns: 1;}}"
+"@media (width >= 900px) {.t0.t0 {columns: 3;}}
+@media (600px <= width < 900px) {.t0.t0 {columns: 2;}}
+@media not ((width >= 900px)) and not ((600px <= width < 900px)) {.t0.t0 {columns: 1;}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output @root states should generate CSS with :root prefix for root states 1`] = `
@@ -83,16 +83,16 @@ exports[`Advanced State Mapping - CSS Output complex combinations should handle 
 `;
 
 exports[`Advanced State Mapping - CSS Output complex combinations should handle combined media and root states on same property 1`] = `
-"@media (width >= 1200px) {.t0.t0 {padding-top: calc(6 * var(--gap)); padding-right: calc(6 * var(--gap)); padding-bottom: calc(6 * var(--gap)); padding-left: calc(6 * var(--gap));}}
+":root[data-theme="dark"] .t0.t0 {padding-top: calc(3 * var(--gap)); padding-right: calc(3 * var(--gap)); padding-bottom: calc(3 * var(--gap)); padding-left: calc(3 * var(--gap));}
+@media (width >= 1200px) {.t0.t0 {padding-top: calc(6 * var(--gap)); padding-right: calc(6 * var(--gap)); padding-bottom: calc(6 * var(--gap)); padding-left: calc(6 * var(--gap));}}
 @media (width < 600px) {.t0.t0 {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}
-@media not (width >= 1200px) and not (width < 600px) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}
-:root[data-theme="dark"] .t0.t0 {padding-top: calc(3 * var(--gap)); padding-right: calc(3 * var(--gap)); padding-bottom: calc(3 * var(--gap)); padding-left: calc(3 * var(--gap));}"
+@media not ((width >= 1200px)) and not ((width < 600px)) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output complex combinations should handle media queries on different dimensions 1`] = `
 "@media (height < 400px) {.t0.t0 {padding-top: var(--gap); padding-right: var(--gap); padding-bottom: var(--gap); padding-left: var(--gap);}}
 @media (width < 600px) {.t0.t0 {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}
-@media not (height < 400px) and not (width < 600px) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}"
+@media not ((height < 400px)) and not ((width < 600px)) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output complex combinations should handle multiple root states 1`] = `
@@ -103,6 +103,8 @@ exports[`Advanced State Mapping - CSS Output complex combinations should handle 
 :root[data-theme="dark"] .t0.t0>* {--context-fill-color: var(--dark-02-color); --context-fill-color-rgb: var(--dark-02-color-rgb);}
 :root:not([data-high-contrast]):not([data-theme="dark"]) .t0.t0>* {--context-fill-color: var(--white-color); --context-fill-color-rgb: var(--white-color-rgb);}"
 `;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should handle nested container queries (jsdom limitation) 1`] = `""`;
 
 exports[`Advanced State Mapping - CSS Output complex combinations should handle predefined states with modifiers 1`] = `
 ".t0.t0:not([data-hovered]) {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}
@@ -118,9 +120,9 @@ exports[`Advanced State Mapping - CSS Output complex combinations should handle 
 
 exports[`Advanced State Mapping - CSS Output complex combinations should handle sub-elements with multiple advanced states 1`] = `
 ".t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}
+:root[data-theme="dark"] .t1.t1 [data-element="Header"] {padding-top: calc(3 * var(--gap)); padding-right: calc(3 * var(--gap)); padding-bottom: calc(3 * var(--gap)); padding-left: calc(3 * var(--gap));}
 @media (width < 600px) {.t1.t1 [data-element="Header"] {padding-top: var(--gap); padding-right: var(--gap); padding-bottom: var(--gap); padding-left: var(--gap);}}
-@media (width >= 600px) {.t1.t1 [data-element="Header"] {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}
-:root[data-theme="dark"] .t1.t1 [data-element="Header"] {padding-top: calc(3 * var(--gap)); padding-right: calc(3 * var(--gap)); padding-bottom: calc(3 * var(--gap)); padding-left: calc(3 * var(--gap));}"
+@media (width >= 600px) {.t1.t1 [data-element="Header"] {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output complex combinations should handle three-way media query cascade 1`] = `
@@ -131,9 +133,9 @@ exports[`Advanced State Mapping - CSS Output complex combinations should handle 
 `;
 
 exports[`Advanced State Mapping - CSS Output edge cases should handle advanced states with complex style values 1`] = `
-"@media (width < 600px) {.t0.t0 {border: var(--border-width) none var(--border-color);}}
-@media (width >= 600px) {.t0.t0 {border: var(--border-width) solid var(--border-color);}}
-:root[data-theme="dark"] .t0.t0 {border: var(--border-width) solid var(--dark-05-color);}"
+":root[data-theme="dark"] .t0.t0 {border: var(--border-width) solid var(--dark-05-color);}
+@media (width < 600px) {.t0.t0 {border: var(--border-width) none var(--border-color);}}
+@media (width >= 600px) {.t0.t0 {border: var(--border-width) solid var(--border-color);}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output edge cases should handle advanced states with fallback color syntax 1`] = `
@@ -144,9 +146,10 @@ exports[`Advanced State Mapping - CSS Output edge cases should handle advanced s
 `;
 
 exports[`Advanced State Mapping - CSS Output predefined states (global) should handle multiple global predefined states 1`] = `
-"@media (768px <= width < 1024px) {.t0.t0 {padding-top: calc(3 * var(--gap)); padding-right: calc(3 * var(--gap)); padding-bottom: calc(3 * var(--gap)); padding-left: calc(3 * var(--gap));}}
-@media (width >= 1024px) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}
-@media (width < 768px) {.t0.t0 {padding-top: var(--gap); padding-right: var(--gap); padding-bottom: var(--gap); padding-left: var(--gap);}}"
+"@media (width >= 1024px) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}
+@media (768px <= width < 1024px) {.t0.t0 {padding-top: calc(3 * var(--gap)); padding-right: calc(3 * var(--gap)); padding-bottom: calc(3 * var(--gap)); padding-left: calc(3 * var(--gap));}}
+@media (width < 768px) {.t0.t0 {padding-top: var(--gap); padding-right: var(--gap); padding-bottom: var(--gap); padding-left: var(--gap);}}
+@media not ((width >= 1024px)) and not ((768px <= width < 1024px)) and not ((width < 768px)) {.t0.t0 {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output predefined states (global) should prioritize local over global predefined states 1`] = `".t0.t0 {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}"`;
@@ -160,7 +163,7 @@ exports[`Advanced State Mapping - CSS Output predefined states (local) should re
 exports[`Advanced State Mapping - CSS Output sub-element advanced states should apply @own state to sub-element 1`] = `
 ".t0.t0 {background-color: var(--white-color);}
 .t0.t0>* {--context-fill-color: var(--white-color); --context-fill-color-rgb: var(--white-color-rgb);}
-.t1.t1 [data-element="Label"] {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}"
+.t1.t1 [data-element="Label"] {color: var(--purple-color); --current-color: var(--purple-color); --current-color-rgb: var(--purple-color-rgb);}"
 `;
 
 exports[`Advanced State Mapping - CSS Output sub-element advanced states should apply media queries to sub-element styles 1`] = `

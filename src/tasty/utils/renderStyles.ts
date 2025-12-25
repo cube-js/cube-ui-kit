@@ -12,10 +12,16 @@
  */
 
 import { Lru } from '../parser/lru';
+import { AtRuleContext } from '../states';
 import { createStyle, STYLE_HANDLER_MAP } from '../styles';
 import { Styles } from '../styles/types';
 
 import { getModCombinationsIterative } from './getModCombinations';
+import {
+  computeNonOverlappingRanges,
+  parseMediaCondition,
+  rangeToMediaCondition,
+} from './mediaRangeOptimizer';
 import {
   computeState,
   getModSelector,
@@ -25,11 +31,14 @@ import {
   styleStateMapToStyleStateDataList,
 } from './styles';
 
+import type { ParsedMediaCondition } from './mediaRangeOptimizer';
+
 export interface StyleResult {
   selector: string;
   declarations: string;
   atRules?: string[];
   needsClassName?: boolean; // Flag to indicate selector needs className prepended
+  rootPrefix?: string; // Root selector prefix for :root states (e.g., ":root[data-theme='dark']")
 }
 
 export interface RenderResult {
@@ -40,6 +49,9 @@ export interface RenderResult {
 interface LogicalRule {
   selectorSuffix: string; // '', ':hover', '>*', …
   declarations: Record<string, string>;
+  atRuleContext?: AtRuleContext; // At-rule wrappers for this rule
+  ownMods?: string[]; // Mods to apply to sub-element (from @own())
+  negatedOwnMods?: string[]; // Negated mods to apply to sub-element
 }
 
 type HandlerQueueItem = {
@@ -516,7 +528,13 @@ function filterModsByPriority(
  * Phase 1: Handler fan-out ($ selectors)
  * Phase 2: Rule materialization
  */
-function explodeHandlerResult(result: any, selectorSuffix = ''): LogicalRule[] {
+function explodeHandlerResult(
+  result: any,
+  selectorSuffix = '',
+  atRuleContext?: AtRuleContext,
+  ownMods?: string[],
+  negatedOwnMods?: string[],
+): LogicalRule[] {
   if (!result) return [];
 
   // Phase 1: Handler fan-out - normalize to array
@@ -558,10 +576,20 @@ function explodeHandlerResult(result: any, selectorSuffix = ''): LogicalRule[] {
 
     // Create logical rules for each suffix
     for (const suffix of suffixes) {
-      logicalRules.push({
+      const rule: LogicalRule = {
         selectorSuffix: suffix,
         declarations: { ...declarations },
-      });
+      };
+      if (atRuleContext) {
+        rule.atRuleContext = atRuleContext;
+      }
+      if (ownMods?.length) {
+        rule.ownMods = ownMods;
+      }
+      if (negatedOwnMods?.length) {
+        rule.negatedOwnMods = negatedOwnMods;
+      }
+      logicalRules.push(rule);
     }
   }
 
@@ -636,6 +664,8 @@ function convertHandlerResultToCSS(result: any, selectorSuffix = ''): string {
  * Process state maps with mod combinations and generate logical rules.
  * This consolidates the common logic for handling mod combinations, priority filtering,
  * contradiction checking, and selector optimization.
+ *
+ * Enhanced to support advanced states (media queries, container queries, etc.)
  */
 function processStateMapsWithModCombinations(
   styleStates: Record<string, any>,
@@ -644,9 +674,13 @@ function processStateMapsWithModCombinations(
   parentSuffix: string,
   allLogicalRules: LogicalRule[],
 ): void {
-  // Collect all mods from style states
+  // Collect all mods and check for advanced states
   const allMods: string[] = [];
   const seenMods = new Set<string>();
+  let hasAdvancedStates = false;
+
+  // Collect all unique at-rule contexts from states
+  const atRuleContextsByKey = new Map<string, AtRuleContext>();
 
   for (const style of lookupStyles) {
     const states = styleStates[style];
@@ -661,23 +695,51 @@ function processStateMapsWithModCombinations(
           }
         }
       }
+      // Check for any advanced state context (atRuleContext or ownMods)
+      if (
+        state.atRuleContext ||
+        state.ownMods?.length ||
+        state.negatedOwnMods?.length
+      ) {
+        hasAdvancedStates = true;
+        if (state.atRuleContext) {
+          // Create a key for this context to deduplicate
+          const ctxKey = JSON.stringify(state.atRuleContext);
+          if (!atRuleContextsByKey.has(ctxKey)) {
+            atRuleContextsByKey.set(ctxKey, state.atRuleContext);
+          }
+        }
+      }
     }
   }
 
+  // Handle case with no mods but possibly advanced states
   if (allMods.length === 0) {
-    // No mods - just call handler with default state values
-    const stateProps: Record<string, any> = {};
-    lookupStyles.forEach((style) => {
-      const states = styleStates[style];
-      if (states && states.length > 0) {
-        stateProps[style] = states[0].value;
-      }
-    });
-    const result = handler(stateProps as any);
-    if (!result) return;
+    if (!hasAdvancedStates) {
+      // No mods, no advanced states - just call handler with default state values
+      const stateProps: Record<string, any> = {};
+      lookupStyles.forEach((style) => {
+        const states = styleStates[style];
+        if (states && states.length > 0) {
+          stateProps[style] = states[0].value;
+        }
+      });
+      const result = handler(stateProps as any);
+      if (!result) return;
 
-    const logicalRules = explodeHandlerResult(result, parentSuffix);
-    allLogicalRules.push(...logicalRules);
+      const logicalRules = explodeHandlerResult(result, parentSuffix);
+      allLogicalRules.push(...logicalRules);
+      return;
+    }
+
+    // Has advanced states but no mods - generate rules for each at-rule context
+    processAdvancedStatesOnly(
+      styleStates,
+      lookupStyles,
+      handler,
+      parentSuffix,
+      allLogicalRules,
+    );
     return;
   }
 
@@ -769,6 +831,89 @@ function processStateMapsWithModCombinations(
 }
 
 /**
+ * Process states that only have advanced states (no regular mods)
+ * Generates rules for each unique at-rule context
+ */
+interface AdvancedStateGroup {
+  context: AtRuleContext | undefined;
+  ownMods?: string[];
+  negatedOwnMods?: string[];
+  states: { style: string; state: any }[];
+}
+
+function processAdvancedStatesOnly(
+  styleStates: Record<string, any>,
+  lookupStyles: string[],
+  handler: StyleHandler,
+  parentSuffix: string,
+  allLogicalRules: LogicalRule[],
+): void {
+  // Group states by their at-rule context AND ownMods
+  const contextGroups = new Map<string, AdvancedStateGroup>();
+
+  for (const style of lookupStyles) {
+    const states = styleStates[style];
+    if (!states) continue;
+
+    for (const state of states) {
+      // Create a key that includes both atRuleContext and ownMods
+      const ctxKey = state.atRuleContext
+        ? JSON.stringify(state.atRuleContext)
+        : '';
+      const ownModsKey = state.ownMods?.join(',') || '';
+      const negatedOwnModsKey = state.negatedOwnMods?.join(',') || '';
+      const groupKey = `${ctxKey}||${ownModsKey}||${negatedOwnModsKey}`;
+
+      if (!contextGroups.has(groupKey)) {
+        contextGroups.set(groupKey, {
+          context: state.atRuleContext,
+          ownMods: state.ownMods,
+          negatedOwnMods: state.negatedOwnMods,
+          states: [],
+        });
+      }
+      contextGroups.get(groupKey)!.states.push({ style, state });
+    }
+  }
+
+  // Generate rules for each context group
+  for (const [, group] of contextGroups) {
+    const stateProps: Record<string, any> = {};
+
+    // For each style, find the value for this context
+    for (const { style, state } of group.states) {
+      stateProps[style] = state.value;
+    }
+
+    // Fill in missing styles with their default values
+    for (const style of lookupStyles) {
+      if (!(style in stateProps)) {
+        const states = styleStates[style];
+        if (states && states.length > 0) {
+          // Use the first state without at-rule context, or the last state
+          const defaultState =
+            states.find((s: any) => !s.atRuleContext) ||
+            states[states.length - 1];
+          stateProps[style] = defaultState.value;
+        }
+      }
+    }
+
+    const result = handler(stateProps as any);
+    if (!result) continue;
+
+    const logical = explodeHandlerResult(
+      result,
+      parentSuffix,
+      group.context,
+      group.ownMods,
+      group.negatedOwnMods,
+    );
+    allLogicalRules.push(...logical);
+  }
+}
+
+/**
  * Convert logical rules to final StyleResult format
  */
 function materializeRules(
@@ -784,15 +929,83 @@ function materializeRules(
       selector = `.${className}${selector}`;
     }
 
+    // Handle @own mods by appending to the selector (after sub-element)
+    if (rule.ownMods?.length || rule.negatedOwnMods?.length) {
+      // Build own mod selectors
+      const ownModSelectors: string[] = [];
+      for (const mod of rule.ownMods || []) {
+        ownModSelectors.push(getModSelector(mod));
+      }
+      for (const mod of rule.negatedOwnMods || []) {
+        ownModSelectors.push(`:not(${getModSelector(mod)})`);
+      }
+      selector = selector + ownModSelectors.join('');
+    }
+
+    // Handle root states by prefixing selector
+    if (rule.atRuleContext?.rootStates?.length) {
+      const rootPrefix = rule.atRuleContext.rootStates
+        .map((rs) => `:root${rs}`)
+        .join('');
+      selector = `${rootPrefix} ${selector}`;
+    } else if (rule.atRuleContext?.negatedRootStates?.length) {
+      // Handle negated root states (for non-overlapping default rules)
+      const negatedPrefix = `:root${rule.atRuleContext.negatedRootStates.join('')}`;
+      selector = `${negatedPrefix} ${selector}`;
+    }
+
     const declarations = Object.entries(rule.declarations)
       .map(([prop, value]) => `${prop}: ${value};`)
       .join(' ');
 
-    return {
+    const result: StyleResult = {
       selector,
       declarations,
     };
+
+    // Convert atRuleContext to atRules array for the injector
+    const atRules = buildAtRulesArray(rule.atRuleContext);
+    if (atRules.length > 0) {
+      result.atRules = atRules;
+    }
+
+    return result;
   });
+}
+
+/**
+ * Build an array of at-rule strings from AtRuleContext
+ */
+function buildAtRulesArray(ctx?: AtRuleContext): string[] {
+  if (!ctx) return [];
+
+  const atRules: string[] = [];
+
+  // Add media queries (combined with 'and')
+  if (ctx.media?.length) {
+    const mediaConditions = ctx.media.join(' and ');
+    atRules.push(`@media ${mediaConditions}`);
+  }
+
+  // Add container queries (nested)
+  if (ctx.container?.length) {
+    for (const c of ctx.container) {
+      const name = c.name ? `${c.name} ` : '';
+      // Don't double-wrap with parentheses if condition already has them
+      const condition =
+        c.condition.startsWith('(') && c.condition.endsWith(')')
+          ? c.condition
+          : `(${c.condition})`;
+      atRules.push(`@container ${name}${condition}`);
+    }
+  }
+
+  // Add starting style
+  if (ctx.startingStyle) {
+    atRules.push('@starting-style');
+  }
+
+  return atRules;
 }
 
 /**
@@ -906,6 +1119,519 @@ function generateLogicalRules(
 }
 
 /**
+ * Optimize media ranges in logical rules to generate non-overlapping CSS rules.
+ * Groups rules by selector suffix and applies range optimization to media-only rules.
+ */
+function optimizeMediaRangesInRules(rules: LogicalRule[]): LogicalRule[] {
+  // Group rules by selector suffix (ignoring atRuleContext)
+  const groups = new Map<string, LogicalRule[]>();
+
+  for (const rule of rules) {
+    const key = rule.selectorSuffix;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(rule);
+  }
+
+  const result: LogicalRule[] = [];
+
+  for (const [, groupRules] of groups) {
+    // Separate media-only rules from others
+    const mediaOnlyRules: LogicalRule[] = [];
+    const otherRules: LogicalRule[] = [];
+
+    for (const rule of groupRules) {
+      const ctx = rule.atRuleContext;
+      // Check if this is a media-only rule (no container, no root states, no starting style)
+      if (
+        ctx?.media?.length &&
+        !ctx.container?.length &&
+        !ctx.rootStates?.length &&
+        !ctx.startingStyle
+      ) {
+        mediaOnlyRules.push(rule);
+      } else if (
+        !ctx?.media?.length &&
+        !ctx?.container?.length &&
+        !ctx?.rootStates?.length &&
+        !ctx?.startingStyle
+      ) {
+        // Default rule (no at-rules) - treat as "remaining" media range
+        otherRules.push(rule);
+      } else {
+        // Other rules with mixed at-rule contexts
+        result.push(rule);
+      }
+    }
+
+    // If we have media rules, try to optimize them
+    if (mediaOnlyRules.length > 0) {
+      const defaultRule = otherRules.length > 0 ? otherRules[0] : undefined;
+      const optimized = tryOptimizeMediaGroup(mediaOnlyRules, defaultRule);
+      result.push(...optimized);
+    } else {
+      // No media rules to optimize, just pass through
+      result.push(...otherRules);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Optimize container ranges in logical rules to generate non-overlapping CSS rules.
+ * Similar to media query optimization but for @container queries.
+ */
+function optimizeContainerRangesInRules(rules: LogicalRule[]): LogicalRule[] {
+  // Group rules by selector suffix (ignoring atRuleContext)
+  const groups = new Map<string, LogicalRule[]>();
+
+  for (const rule of rules) {
+    const key = rule.selectorSuffix;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(rule);
+  }
+
+  const result: LogicalRule[] = [];
+
+  for (const [, groupRules] of groups) {
+    // Separate container-only rules from others
+    const containerOnlyRules: LogicalRule[] = [];
+    const otherRules: LogicalRule[] = [];
+
+    for (const rule of groupRules) {
+      const ctx = rule.atRuleContext;
+      // Check if this is a container-only rule (no media, no root states, no starting style)
+      if (
+        ctx?.container?.length &&
+        !ctx.media?.length &&
+        !ctx.rootStates?.length &&
+        !ctx.startingStyle
+      ) {
+        containerOnlyRules.push(rule);
+      } else if (
+        !ctx?.media?.length &&
+        !ctx?.container?.length &&
+        !ctx?.rootStates?.length &&
+        !ctx?.startingStyle
+      ) {
+        // Default rule (no at-rules) - treat as "remaining" range
+        otherRules.push(rule);
+      } else {
+        // Other rules with mixed at-rule contexts
+        result.push(rule);
+      }
+    }
+
+    // If we have container rules, try to optimize them
+    if (containerOnlyRules.length > 0) {
+      const defaultRule = otherRules.length > 0 ? otherRules[0] : undefined;
+      const optimized = tryOptimizeContainerGroup(
+        containerOnlyRules,
+        defaultRule,
+      );
+      result.push(...optimized);
+    } else {
+      // No container rules to optimize, just pass through
+      result.push(...otherRules);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Try to optimize a group of container-only rules with an optional default rule.
+ * Returns optimized rules with non-overlapping container queries.
+ */
+function tryOptimizeContainerGroup(
+  containerRules: LogicalRule[],
+  defaultRule?: LogicalRule,
+): LogicalRule[] {
+  // Parse container conditions and separate by type
+  const parsedSimple: {
+    rule: LogicalRule;
+    condition: ParsedMediaCondition;
+    containerName?: string;
+  }[] = [];
+  const otherRules: LogicalRule[] = [];
+
+  for (const rule of containerRules) {
+    const container = rule.atRuleContext?.container?.[0];
+    if (!container) {
+      otherRules.push(rule);
+      continue;
+    }
+
+    let conditionStr = container.condition;
+    // Strip surrounding parentheses if present
+    if (conditionStr.startsWith('(') && conditionStr.endsWith(')')) {
+      conditionStr = conditionStr.slice(1, -1);
+    }
+
+    const parsed = parseMediaCondition(conditionStr);
+    if (parsed && parsed.type === 'simple') {
+      parsedSimple.push({
+        rule,
+        condition: parsed.condition,
+        containerName: container.name,
+      });
+    } else {
+      // Range or unparseable - pass through
+      otherRules.push(rule);
+    }
+  }
+
+  // Check if all simple conditions are on the same dimension and same container name
+  // AND there are no other rules (ranges)
+  if (parsedSimple.length > 0 && otherRules.length === 0) {
+    const dimension = parsedSimple[0].condition.dimension;
+    const containerName = parsedSimple[0].containerName;
+    const allSameDimensionAndName = parsedSimple.every(
+      (c) =>
+        c.condition.dimension === dimension &&
+        c.containerName === containerName,
+    );
+
+    if (allSameDimensionAndName) {
+      // All conditions are simple conditions on the same dimension
+      // Build a map for computeNonOverlappingRanges
+      const mediaConditionsMap = new Map<string, ParsedMediaCondition>();
+      const rulesByKey = new Map<string, LogicalRule>();
+
+      for (let i = 0; i < parsedSimple.length; i++) {
+        const key = `rule_${i}`;
+        mediaConditionsMap.set(key, parsedSimple[i].condition);
+        rulesByKey.set(key, parsedSimple[i].rule);
+      }
+
+      // Compute non-overlapping ranges
+      const defaultKey = defaultRule ? 'default' : null;
+      const optimizedRanges = computeNonOverlappingRanges(
+        mediaConditionsMap,
+        defaultKey,
+      );
+
+      // If optimization succeeded
+      if (optimizedRanges.length > 0) {
+        const result: LogicalRule[] = [];
+
+        for (const range of optimizedRanges) {
+          const rangeCondition = rangeToMediaCondition(range, dimension);
+          const sourceRule =
+            range.stateKey === 'default'
+              ? defaultRule
+              : rulesByKey.get(range.stateKey);
+
+          if (sourceRule) {
+            result.push({
+              selectorSuffix: sourceRule.selectorSuffix,
+              declarations: { ...sourceRule.declarations },
+              ownMods: sourceRule.ownMods,
+              negatedOwnMods: sourceRule.negatedOwnMods,
+              atRuleContext: {
+                container: [{ name: containerName, condition: rangeCondition }],
+              },
+            });
+          }
+        }
+
+        return result;
+      }
+    }
+  }
+
+  // For non-optimizable conditions, use NOT negation for the default
+  if (containerRules.length > 0 && defaultRule) {
+    const result = [...containerRules];
+
+    // Create negated conditions for the default rule
+    const negations: string[] = [];
+    for (const rule of containerRules) {
+      const container = rule.atRuleContext?.container?.[0];
+      if (!container) continue;
+      // Use 'not (...)' for all conditions
+      const cond = container.condition;
+      negations.push(`not (${cond})`);
+    }
+
+    const combinedNegation = negations.filter(Boolean).join(' and ');
+    if (combinedNegation) {
+      // Get the container name from the first rule (they should all be the same)
+      const containerName =
+        containerRules[0].atRuleContext?.container?.[0]?.name;
+      result.push({
+        ...defaultRule,
+        atRuleContext: {
+          container: [{ name: containerName, condition: combinedNegation }],
+        },
+      });
+    }
+
+    return result;
+  }
+
+  // No optimization possible, return as-is
+  return [
+    ...containerRules,
+    ...otherRules,
+    ...(defaultRule ? [defaultRule] : []),
+  ];
+}
+
+/**
+ * Try to optimize a group of media-only rules with an optional default rule.
+ * Returns optimized rules with non-overlapping media queries.
+ */
+function tryOptimizeMediaGroup(
+  mediaRules: LogicalRule[],
+  defaultRule?: LogicalRule,
+): LogicalRule[] {
+  // Parse media conditions and separate by type
+  const parsedSimple: {
+    rule: LogicalRule;
+    condition: ParsedMediaCondition;
+  }[] = [];
+  const otherRules: LogicalRule[] = [];
+
+  for (const rule of mediaRules) {
+    let mediaStr = rule.atRuleContext?.media?.[0];
+    if (!mediaStr) {
+      otherRules.push(rule);
+      continue;
+    }
+
+    // Strip surrounding parentheses if present (buildAtRuleContext adds them)
+    if (mediaStr.startsWith('(') && mediaStr.endsWith(')')) {
+      mediaStr = mediaStr.slice(1, -1);
+    }
+
+    const parsed = parseMediaCondition(mediaStr);
+    if (parsed && parsed.type === 'simple') {
+      parsedSimple.push({ rule, condition: parsed.condition });
+    } else {
+      // Range or unparseable - pass through
+      otherRules.push(rule);
+    }
+  }
+
+  // Check if all simple conditions are on the same dimension AND there are no other rules (ranges)
+  // We can only use the range optimizer when ALL conditions are simple (no pre-existing ranges)
+  if (parsedSimple.length > 0 && otherRules.length === 0) {
+    const dimension = parsedSimple[0].condition.dimension;
+    const allSameDimension = parsedSimple.every(
+      (c) => c.condition.dimension === dimension,
+    );
+
+    if (allSameDimension) {
+      // All conditions are simple conditions on the same dimension
+      // Build a map for computeNonOverlappingRanges
+      const mediaConditionsMap = new Map<string, ParsedMediaCondition>();
+      const rulesByKey = new Map<string, LogicalRule>();
+
+      for (let i = 0; i < parsedSimple.length; i++) {
+        const key = `rule_${i}`;
+        mediaConditionsMap.set(key, parsedSimple[i].condition);
+        rulesByKey.set(key, parsedSimple[i].rule);
+      }
+
+      // Compute non-overlapping ranges
+      const defaultKey = defaultRule ? 'default' : null;
+      const optimizedRanges = computeNonOverlappingRanges(
+        mediaConditionsMap,
+        defaultKey,
+      );
+
+      // If optimization succeeded
+      if (optimizedRanges.length > 0) {
+        const result: LogicalRule[] = [];
+
+        for (const range of optimizedRanges) {
+          const mediaCondition = rangeToMediaCondition(range, dimension);
+          const sourceRule =
+            range.stateKey === 'default'
+              ? defaultRule
+              : rulesByKey.get(range.stateKey);
+
+          if (sourceRule) {
+            result.push({
+              selectorSuffix: sourceRule.selectorSuffix,
+              declarations: { ...sourceRule.declarations },
+              ownMods: sourceRule.ownMods,
+              negatedOwnMods: sourceRule.negatedOwnMods,
+              atRuleContext: { media: [mediaCondition] },
+            });
+          }
+        }
+
+        return result;
+      }
+    }
+  }
+
+  // For non-optimizable conditions, use NOT negation for the default
+  if (mediaRules.length > 0 && defaultRule) {
+    const result = [...mediaRules];
+
+    // Create negated conditions for the default rule
+    const negations: string[] = [];
+    for (const rule of mediaRules) {
+      const cond = rule.atRuleContext?.media?.[0];
+      if (!cond) continue;
+      // Use 'not (...)' for all conditions
+      negations.push(`not (${cond})`);
+    }
+
+    const combinedNegation = negations.filter(Boolean).join(' and ');
+    if (combinedNegation) {
+      result.push({
+        ...defaultRule,
+        atRuleContext: { media: [combinedNegation] },
+      });
+    }
+
+    return result;
+  }
+
+  // No optimization possible, return as-is
+  return [...mediaRules, ...otherRules, ...(defaultRule ? [defaultRule] : [])];
+}
+
+/**
+ * Optimize root states in logical rules to generate non-overlapping CSS rules.
+ * For default rules, adds negated root states to make them non-overlapping with explicit root rules.
+ */
+function optimizeRootStatesInRules(rules: LogicalRule[]): LogicalRule[] {
+  // Group rules by selector suffix and media context
+  const groups = new Map<string, LogicalRule[]>();
+
+  for (const rule of rules) {
+    const mediaKey = rule.atRuleContext?.media?.join(',') || '';
+    const key = `${rule.selectorSuffix}||${mediaKey}`;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(rule);
+  }
+
+  const result: LogicalRule[] = [];
+
+  for (const [, groupRules] of groups) {
+    // Separate root state rules from default rules
+    const rootStateRules: LogicalRule[] = [];
+    const defaultRules: LogicalRule[] = [];
+
+    for (const rule of groupRules) {
+      if (rule.atRuleContext?.rootStates?.length) {
+        rootStateRules.push(rule);
+      } else if (
+        !rule.atRuleContext?.container?.length &&
+        !rule.atRuleContext?.startingStyle
+      ) {
+        // Default rule (may have media but no root/container/starting)
+        defaultRules.push(rule);
+      } else {
+        result.push(rule);
+      }
+    }
+
+    // Collect all unique root state selectors
+    const allRootSelectors = new Set<string>();
+    for (const rule of rootStateRules) {
+      for (const rs of rule.atRuleContext?.rootStates || []) {
+        allRootSelectors.add(rs);
+      }
+    }
+
+    // Add root state rules as-is
+    result.push(...rootStateRules);
+
+    // For default rules, add negated root states
+    for (const defaultRule of defaultRules) {
+      if (allRootSelectors.size > 0) {
+        const negatedRootStates = Array.from(allRootSelectors).map(
+          (rs) => `:not(${rs})`,
+        );
+        result.push({
+          ...defaultRule,
+          atRuleContext: {
+            ...defaultRule.atRuleContext,
+            negatedRootStates,
+          },
+        });
+      } else {
+        result.push(defaultRule);
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Optimize @own mods in logical rules.
+ * For default rules with no ownMods, adds negated ownMods to make them non-overlapping.
+ */
+function optimizeOwnModsInRules(rules: LogicalRule[]): LogicalRule[] {
+  // Group rules by selector suffix (for sub-element context)
+  const groups = new Map<string, LogicalRule[]>();
+
+  for (const rule of rules) {
+    const key = `${rule.selectorSuffix}||${JSON.stringify(rule.atRuleContext || {})}`;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(rule);
+  }
+
+  const result: LogicalRule[] = [];
+
+  for (const [, groupRules] of groups) {
+    // Separate rules with ownMods from default rules
+    const ownModRules: LogicalRule[] = [];
+    const defaultRules: LogicalRule[] = [];
+
+    for (const rule of groupRules) {
+      if (rule.ownMods?.length) {
+        ownModRules.push(rule);
+      } else if (!rule.negatedOwnMods?.length) {
+        defaultRules.push(rule);
+      } else {
+        result.push(rule);
+      }
+    }
+
+    // Collect all unique ownMods
+    const allOwnMods = new Set<string>();
+    for (const rule of ownModRules) {
+      for (const mod of rule.ownMods || []) {
+        allOwnMods.add(mod);
+      }
+    }
+
+    // Add ownMod rules as-is
+    result.push(...ownModRules);
+
+    // For default rules, add negated ownMods
+    for (const defaultRule of defaultRules) {
+      if (allOwnMods.size > 0) {
+        result.push({
+          ...defaultRule,
+          negatedOwnMods: Array.from(allOwnMods),
+        });
+      } else {
+        result.push(defaultRule);
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Render styles to StyleResult[] format (recommended)
  * Supports both component and global styling with advanced optimizations
  */
@@ -939,7 +1665,15 @@ export function renderStyles(
   const stylesKey = stringifyStyles(styles);
   let allLogicalRules = logicalRulesCache.get(stylesKey);
   if (!allLogicalRules) {
-    allLogicalRules = generateLogicalRules(styles);
+    let rules = generateLogicalRules(styles);
+
+    // Apply optimizations in order: media ranges -> container ranges -> root states -> own mods
+    rules = optimizeMediaRangesInRules(rules);
+    rules = optimizeContainerRangesInRules(rules);
+    rules = optimizeRootStatesInRules(rules);
+    rules = optimizeOwnModsInRules(rules);
+
+    allLogicalRules = rules;
     logicalRulesCache.set(stylesKey, allLogicalRules);
   }
 
@@ -979,18 +1713,26 @@ export function renderStyles(
   const accumulatedRules = new Map<string, LogicalRule>();
 
   for (const rule of allLogicalRules) {
-    // Create a key based on selectorSuffix
-    const ruleKey = rule.selectorSuffix;
+    // Create a key based on selectorSuffix AND atRuleContext (to avoid merging rules with different at-rules)
+    const atRuleKey = rule.atRuleContext
+      ? JSON.stringify(rule.atRuleContext)
+      : '';
+    const ownModsKey = rule.ownMods?.join(',') || '';
+    const negatedOwnModsKey = rule.negatedOwnMods?.join(',') || '';
+    const ruleKey = `${rule.selectorSuffix}||${atRuleKey}||${ownModsKey}||${negatedOwnModsKey}`;
 
     const existing = accumulatedRules.get(ruleKey);
     if (existing) {
       // Merge declarations from this rule into the existing one
       Object.assign(existing.declarations, rule.declarations);
     } else {
-      // Create a new accumulated rule
+      // Create a new accumulated rule - preserve atRuleContext, ownMods, negatedOwnMods
       accumulatedRules.set(ruleKey, {
         selectorSuffix: rule.selectorSuffix,
         declarations: { ...rule.declarations },
+        atRuleContext: rule.atRuleContext,
+        ownMods: rule.ownMods,
+        negatedOwnMods: rule.negatedOwnMods,
       });
     }
   }
@@ -1003,11 +1745,47 @@ export function renderStyles(
           .map(([prop, value]) => `${prop}: ${value};`)
           .join(' ');
 
-        return {
-          selector: rule.selectorSuffix || '',
+        // Build selector with @own mods if present
+        let selector = rule.selectorSuffix || '';
+        if (rule.ownMods?.length || rule.negatedOwnMods?.length) {
+          const ownModSelectors: string[] = [];
+          for (const mod of rule.ownMods || []) {
+            ownModSelectors.push(getModSelector(mod));
+          }
+          for (const mod of rule.negatedOwnMods || []) {
+            ownModSelectors.push(`:not(${getModSelector(mod)})`);
+          }
+          selector = selector + ownModSelectors.join('');
+        }
+
+        // Compute rootPrefix for root states
+        let rootPrefix: string | undefined;
+        if (rule.atRuleContext?.rootStates?.length) {
+          rootPrefix = rule.atRuleContext.rootStates
+            .map((rs) => `:root${rs}`)
+            .join('');
+        } else if (rule.atRuleContext?.negatedRootStates?.length) {
+          rootPrefix = `:root${rule.atRuleContext.negatedRootStates.join('')}`;
+        }
+
+        // Build at-rules array
+        const atRules = buildAtRulesArray(rule.atRuleContext);
+
+        const result: StyleResult = {
+          selector,
           declarations,
           needsClassName: true, // Flag for injector to prepend className
         };
+
+        if (rootPrefix) {
+          result.rootPrefix = rootPrefix;
+        }
+
+        if (atRules.length > 0) {
+          result.atRules = atRules;
+        }
+
+        return result;
       },
     );
 
