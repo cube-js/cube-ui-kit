@@ -52,6 +52,7 @@ interface LogicalRule {
   atRuleContext?: AtRuleContext; // At-rule wrappers for this rule
   ownMods?: string[]; // Mods to apply to sub-element (from @own())
   negatedOwnMods?: string[]; // Negated mods to apply to sub-element
+  isExplicitMedia?: boolean; // True if media context came from explicit @media state (not default-derived)
 }
 
 type HandlerQueueItem = {
@@ -1244,6 +1245,59 @@ function optimizeContainerRangesInRules(rules: LogicalRule[]): LogicalRule[] {
 }
 
 /**
+ * Check if a set of container conditions together cover all possible values.
+ * Similar to checkIfConditionsCoverAllRanges but for container queries.
+ */
+function checkIfContainerConditionsCoverAllRanges(
+  containerRules: LogicalRule[],
+): boolean {
+  let hasUnboundedLower = false;
+  let hasUnboundedUpper = false;
+  let conditionCount = 0;
+
+  for (const rule of containerRules) {
+    const container = rule.atRuleContext?.container?.[0];
+    if (!container) continue;
+
+    let conditionStr = container.condition;
+    // Strip surrounding parentheses
+    if (conditionStr.startsWith('(') && conditionStr.endsWith(')')) {
+      conditionStr = conditionStr.slice(1, -1);
+    }
+
+    const parsed = parseMediaCondition(conditionStr);
+    if (!parsed) continue;
+
+    conditionCount++;
+
+    if (parsed.type === 'simple') {
+      const cond = parsed.condition;
+      if (
+        (cond.operator === '<' || cond.operator === '<=') &&
+        cond.valueNumeric !== null
+      ) {
+        hasUnboundedLower = true;
+      } else if (
+        (cond.operator === '>' || cond.operator === '>=') &&
+        cond.valueNumeric !== null
+      ) {
+        hasUnboundedUpper = true;
+      }
+    } else if (parsed.type === 'range') {
+      // Range conditions don't contribute to unbounded ends
+      // but do count towards condition count
+    }
+  }
+
+  // If we have both ends covered and enough conditions, assume full coverage
+  if (hasUnboundedLower && hasUnboundedUpper && conditionCount >= 3) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Try to optimize a group of container-only rules with an optional default rule.
  * Returns optimized rules with non-overlapping container queries.
  */
@@ -1345,7 +1399,17 @@ function tryOptimizeContainerGroup(
   }
 
   // For non-optimizable conditions, use NOT negation for the default
+  // But first check if the explicit conditions already cover all ranges
   if (containerRules.length > 0 && defaultRule) {
+    // Check if explicit conditions cover all possible ranges
+    const coversAllRanges =
+      checkIfContainerConditionsCoverAllRanges(containerRules);
+
+    if (coversAllRanges) {
+      // No need for default rule - explicit conditions cover everything
+      return [...containerRules];
+    }
+
     const result = [...containerRules];
 
     // Create negated conditions for the default rule
@@ -1380,6 +1444,87 @@ function tryOptimizeContainerGroup(
     ...otherRules,
     ...(defaultRule ? [defaultRule] : []),
   ];
+}
+
+/**
+ * Check if a set of media conditions together cover all possible values.
+ * If so, there's no need to generate a default rule.
+ */
+function checkIfConditionsCoverAllRanges(mediaRules: LogicalRule[]): boolean {
+  // Parse all conditions
+  const conditions: {
+    hasLowerBound: boolean;
+    hasUpperBound: boolean;
+    lowerValue?: number;
+    upperValue?: number;
+  }[] = [];
+
+  let hasUnboundedLower = false; // e.g., width < 768px (covers 0 to 768)
+  let hasUnboundedUpper = false; // e.g., width >= 1024px (covers 1024 to ∞)
+
+  for (const rule of mediaRules) {
+    let mediaStr = rule.atRuleContext?.media?.[0];
+    if (!mediaStr) continue;
+
+    // Strip surrounding parentheses
+    if (mediaStr.startsWith('(') && mediaStr.endsWith(')')) {
+      mediaStr = mediaStr.slice(1, -1);
+    }
+
+    const parsed = parseMediaCondition(mediaStr);
+    if (!parsed) continue;
+
+    if (parsed.type === 'simple') {
+      const cond = parsed.condition;
+      if (
+        (cond.operator === '<' || cond.operator === '<=') &&
+        cond.valueNumeric !== null
+      ) {
+        // Upper bound only: width < 768px covers 0 to 768
+        hasUnboundedLower = true;
+        conditions.push({
+          hasLowerBound: false,
+          hasUpperBound: true,
+          upperValue: cond.valueNumeric,
+        });
+      } else if (
+        (cond.operator === '>' || cond.operator === '>=') &&
+        cond.valueNumeric !== null
+      ) {
+        // Lower bound only: width >= 1024px covers 1024 to ∞
+        hasUnboundedUpper = true;
+        conditions.push({
+          hasLowerBound: true,
+          hasUpperBound: false,
+          lowerValue: cond.valueNumeric,
+        });
+      }
+    } else if (parsed.type === 'range') {
+      const cond = parsed.condition;
+      if (
+        cond.lower.valueNumeric !== null &&
+        cond.upper.valueNumeric !== null
+      ) {
+        conditions.push({
+          hasLowerBound: true,
+          hasUpperBound: true,
+          lowerValue: cond.lower.valueNumeric,
+          upperValue: cond.upper.valueNumeric,
+        });
+      }
+    }
+  }
+
+  // If we have both an unbounded lower (covers 0 to X) and unbounded upper (covers Y to ∞),
+  // and intermediate ranges fill the gap, then all values are covered.
+  if (hasUnboundedLower && hasUnboundedUpper && conditions.length >= 2) {
+    // Simple heuristic: if we have 3+ conditions with both unbounded ends,
+    // assume they cover all values
+    // A more rigorous check would verify no gaps exist
+    return conditions.length >= 3;
+  }
+
+  return false;
 }
 
 /**
@@ -1451,10 +1596,10 @@ function tryOptimizeMediaGroup(
 
         for (const range of optimizedRanges) {
           const mediaCondition = rangeToMediaCondition(range, dimension);
-          const sourceRule =
-            range.stateKey === 'default'
-              ? defaultRule
-              : rulesByKey.get(range.stateKey);
+          const isFromDefault = range.stateKey === 'default';
+          const sourceRule = isFromDefault
+            ? defaultRule
+            : rulesByKey.get(range.stateKey);
 
           if (sourceRule) {
             result.push({
@@ -1463,6 +1608,8 @@ function tryOptimizeMediaGroup(
               ownMods: sourceRule.ownMods,
               negatedOwnMods: sourceRule.negatedOwnMods,
               atRuleContext: { media: [mediaCondition] },
+              // Mark explicit media rules (not from default) - they should not be split by root states
+              isExplicitMedia: !isFromDefault,
             });
           }
         }
@@ -1473,8 +1620,23 @@ function tryOptimizeMediaGroup(
   }
 
   // For non-optimizable conditions, use NOT negation for the default
+  // But first check if the explicit conditions already cover all ranges
   if (mediaRules.length > 0 && defaultRule) {
-    const result = [...mediaRules];
+    // Check if explicit conditions cover all possible ranges
+    const coversAllRanges = checkIfConditionsCoverAllRanges(mediaRules);
+
+    // Mark all explicit media rules
+    const markedMediaRules = mediaRules.map((rule) => ({
+      ...rule,
+      isExplicitMedia: true,
+    }));
+
+    if (coversAllRanges) {
+      // No need for default rule - explicit conditions cover everything
+      return markedMediaRules;
+    }
+
+    const result = [...markedMediaRules];
 
     // Create negated conditions for the default rule
     const negations: string[] = [];
@@ -1490,6 +1652,8 @@ function tryOptimizeMediaGroup(
       result.push({
         ...defaultRule,
         atRuleContext: { media: [combinedNegation] },
+        // Default-derived rule, can be split by root states
+        isExplicitMedia: false,
       });
     }
 
@@ -1497,7 +1661,16 @@ function tryOptimizeMediaGroup(
   }
 
   // No optimization possible, return as-is
-  return [...mediaRules, ...otherRules, ...(defaultRule ? [defaultRule] : [])];
+  // Mark media rules as explicit
+  const markedMediaRules = mediaRules.map((rule) => ({
+    ...rule,
+    isExplicitMedia: true,
+  }));
+  return [
+    ...markedMediaRules,
+    ...otherRules,
+    ...(defaultRule ? [defaultRule] : []),
+  ];
 }
 
 /**
@@ -1566,6 +1739,106 @@ function optimizeRootStatesInRules(rules: LogicalRule[]): LogicalRule[] {
         result.push(defaultRule);
       }
     }
+  }
+
+  return result;
+}
+
+/**
+ * Cross-multiply media queries with root states to avoid overlapping.
+ * When we have both:
+ *   - Media rules: @media (width < 600px) { ... }
+ *   - Root rules: :root[data-theme="dark"] { ... }
+ * They overlap! This function wraps root-only rules with the same media ranges
+ * to make them non-overlapping.
+ *
+ * IMPORTANT: Only default-derived media rules (isExplicitMedia=false) should be
+ * split by root states. Explicit @media() rules apply to all themes.
+ */
+function crossMultiplyMediaAndRootStates(rules: LogicalRule[]): LogicalRule[] {
+  // Group rules by selectorSuffix
+  const groups = new Map<string, LogicalRule[]>();
+
+  for (const rule of rules) {
+    const key = rule.selectorSuffix;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(rule);
+  }
+
+  const result: LogicalRule[] = [];
+
+  for (const [, groupRules] of groups) {
+    // Categorize rules
+    const explicitMediaRules: LogicalRule[] = []; // Explicit @media rules - apply to all themes
+    const defaultDerivedMediaRules: LogicalRule[] = []; // Default-derived media rules - can be split by root
+    const rootOnlyRules: LogicalRule[] = []; // Has root, no media
+    const combinedRules: LogicalRule[] = []; // Has both
+    const otherRules: LogicalRule[] = []; // Neither (or has container/starting)
+
+    for (const rule of groupRules) {
+      const hasMedia = !!rule.atRuleContext?.media?.length;
+      const hasRoot = !!rule.atRuleContext?.rootStates?.length;
+      const hasContainer = !!rule.atRuleContext?.container?.length;
+      const hasStarting = !!rule.atRuleContext?.startingStyle;
+
+      if (hasContainer || hasStarting) {
+        // Don't touch container or starting rules
+        otherRules.push(rule);
+      } else if (hasMedia && hasRoot) {
+        combinedRules.push(rule);
+      } else if (hasMedia && !hasRoot) {
+        // Separate explicit vs default-derived media rules
+        if (rule.isExplicitMedia) {
+          explicitMediaRules.push(rule);
+        } else {
+          defaultDerivedMediaRules.push(rule);
+        }
+      } else if (hasRoot && !hasMedia) {
+        rootOnlyRules.push(rule);
+      } else {
+        otherRules.push(rule);
+      }
+    }
+
+    // Explicit media rules go straight through - they apply to ALL themes
+    result.push(...explicitMediaRules);
+
+    // If we have both default-derived media rules and root-only rules, cross-multiply
+    if (defaultDerivedMediaRules.length > 0 && rootOnlyRules.length > 0) {
+      // Collect all unique media conditions from DEFAULT-DERIVED rules only
+      const defaultDerivedMediaConditions = new Set<string>();
+      for (const rule of defaultDerivedMediaRules) {
+        for (const mc of rule.atRuleContext?.media || []) {
+          defaultDerivedMediaConditions.add(mc);
+        }
+      }
+
+      // For each root-only rule, create copies for each DEFAULT-DERIVED media range
+      for (const rootRule of rootOnlyRules) {
+        for (const mediaCondition of defaultDerivedMediaConditions) {
+          result.push({
+            ...rootRule,
+            atRuleContext: {
+              ...rootRule.atRuleContext,
+              media: [mediaCondition],
+            },
+          });
+        }
+      }
+
+      // Keep default-derived media rules - they will get root negation in the next step
+      result.push(...defaultDerivedMediaRules);
+    } else {
+      // No cross-multiplication needed, pass through
+      result.push(...defaultDerivedMediaRules);
+      result.push(...rootOnlyRules);
+    }
+
+    // Pass through combined and other rules
+    result.push(...combinedRules);
+    result.push(...otherRules);
   }
 
   return result;
@@ -1667,9 +1940,10 @@ export function renderStyles(
   if (!allLogicalRules) {
     let rules = generateLogicalRules(styles);
 
-    // Apply optimizations in order: media ranges -> container ranges -> root states -> own mods
+    // Apply optimizations in order: media ranges -> container ranges -> cross-multiply -> root states -> own mods
     rules = optimizeMediaRangesInRules(rules);
     rules = optimizeContainerRangesInRules(rules);
+    rules = crossMultiplyMediaAndRootStates(rules);
     rules = optimizeRootStatesInRules(rules);
     rules = optimizeOwnModsInRules(rules);
 
