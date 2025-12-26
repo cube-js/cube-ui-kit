@@ -449,7 +449,6 @@ describe('renderStyles integration', () => {
     };
 
     const result = renderStyles(styles, '.test');
-    console.log('Radius result:', JSON.stringify(result, null, 2));
 
     // Should have border-radius rules
     expect(result.length).toBeGreaterThan(0);
@@ -465,7 +464,6 @@ describe('renderStyles integration', () => {
     };
 
     const result = renderStyles(styles, '.test');
-    console.log('Simple radius result:', JSON.stringify(result, null, 2));
 
     expect(result.length).toBeGreaterThan(0);
     const hasRadius = result.some((r) =>
@@ -483,7 +481,6 @@ describe('renderStyles integration', () => {
     };
 
     const result = renderStyles(styles, '.test');
-    console.log('Priority result:', JSON.stringify(result, null, 2));
 
     // With exclusive conditions: theme=danger gets exclusive condition:
     // theme=danger & NOT(theme) which simplifies to FALSE (impossible)
@@ -502,7 +499,6 @@ describe('renderStyles integration', () => {
     };
 
     const result = renderStyles(styles, '.test');
-    console.log('OR result:', JSON.stringify(result, null, 2));
 
     // Should have rules for:
     // 1. hovered | focused → red
