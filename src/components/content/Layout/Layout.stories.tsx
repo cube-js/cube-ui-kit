@@ -215,16 +215,6 @@ export const WithSidePanel: Story = {
   },
 };
 
-const ResponsiveElement = tasty({
-  styles: {
-    color: {
-      '': '#purple',
-      '@mobile': '#danger-text',
-    },
-    '@mobile': '@media(w <= 1000px)',
-  },
-});
-
 export const ResizablePanel: Story = {
   render: function ResizablePanelStory() {
     const [size, setSize] = useState(250);
@@ -244,9 +234,7 @@ export const ResizablePanel: Story = {
             <Text>Drag the edge to resize (current: {size}px)</Text>
           </Layout.Content>
         </Layout.Panel>
-        <Layout.Content>
-          <ResponsiveElement>Main content area</ResponsiveElement>
-        </Layout.Content>
+        <Layout.Content>Main content area</Layout.Content>
       </Layout>
     );
   },
