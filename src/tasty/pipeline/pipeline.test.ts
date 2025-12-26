@@ -1,0 +1,429 @@
+/**
+ * Pipeline Tests
+ *
+ * Tests for the new style rendering pipeline.
+ */
+
+import { createStateParserContext } from '../states';
+
+import {
+  and,
+  createMediaDimensionCondition,
+  createModifierCondition,
+  falseCondition,
+  not,
+  or,
+  trueCondition,
+} from './conditions';
+import { buildExclusiveConditions, parseStyleEntries } from './exclusive';
+import { conditionToCSS } from './materialize';
+import { parseStateKey } from './parseStateKey';
+import { simplifyCondition } from './simplify';
+
+describe('ConditionNode operations', () => {
+  describe('and()', () => {
+    it('should return TRUE for empty args', () => {
+      expect(and().kind).toBe('true');
+    });
+
+    it('should return child for single arg', () => {
+      const mod = createModifierCondition('data-hovered');
+      expect(and(mod)).toBe(mod);
+    });
+
+    it('should return FALSE when any child is FALSE', () => {
+      const mod = createModifierCondition('data-hovered');
+      expect(and(mod, falseCondition()).kind).toBe('false');
+    });
+
+    it('should skip TRUE children', () => {
+      const mod = createModifierCondition('data-hovered');
+      const result = and(mod, trueCondition());
+      expect(result).toBe(mod);
+    });
+
+    it('should flatten nested ANDs', () => {
+      const a = createModifierCondition('data-a');
+      const b = createModifierCondition('data-b');
+      const c = createModifierCondition('data-c');
+      const nested = and(a, and(b, c));
+      expect(nested.kind).toBe('compound');
+      if (nested.kind === 'compound') {
+        expect(nested.children.length).toBe(3);
+      }
+    });
+  });
+
+  describe('or()', () => {
+    it('should return FALSE for empty args', () => {
+      expect(or().kind).toBe('false');
+    });
+
+    it('should return child for single arg', () => {
+      const mod = createModifierCondition('data-hovered');
+      expect(or(mod)).toBe(mod);
+    });
+
+    it('should return TRUE when any child is TRUE', () => {
+      const mod = createModifierCondition('data-hovered');
+      expect(or(mod, trueCondition()).kind).toBe('true');
+    });
+
+    it('should skip FALSE children', () => {
+      const mod = createModifierCondition('data-hovered');
+      const result = or(mod, falseCondition());
+      expect(result).toBe(mod);
+    });
+  });
+
+  describe('not()', () => {
+    it('should negate TRUE to FALSE', () => {
+      expect(not(trueCondition()).kind).toBe('false');
+    });
+
+    it('should negate FALSE to TRUE', () => {
+      expect(not(falseCondition()).kind).toBe('true');
+    });
+
+    it('should toggle negated flag on state', () => {
+      const mod = createModifierCondition(
+        'data-hovered',
+        undefined,
+        '=',
+        false,
+      );
+      const negated = not(mod);
+      expect(negated.kind).toBe('state');
+      if (negated.kind === 'state') {
+        expect(negated.negated).toBe(true);
+      }
+    });
+
+    it("should apply De Morgan's law to AND", () => {
+      const a = createModifierCondition('data-a');
+      const b = createModifierCondition('data-b');
+      const notAnd = not(and(a, b));
+      // NOT(AND(a, b)) = OR(NOT(a), NOT(b))
+      expect(notAnd.kind).toBe('compound');
+      if (notAnd.kind === 'compound') {
+        expect(notAnd.operator).toBe('OR');
+        expect(notAnd.children.length).toBe(2);
+      }
+    });
+  });
+});
+
+describe('parseStateKey()', () => {
+  it('should parse empty string as TRUE', () => {
+    expect(parseStateKey('').kind).toBe('true');
+  });
+
+  it('should parse boolean modifier', () => {
+    const result = parseStateKey('hovered');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('modifier');
+      expect((result as any).attribute).toBe('data-hovered');
+    }
+  });
+
+  it('should parse value modifier', () => {
+    const result = parseStateKey('theme=danger');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('modifier');
+      expect((result as any).attribute).toBe('data-theme');
+      expect((result as any).value).toBe('danger');
+    }
+  });
+
+  it('should parse AND operator', () => {
+    const result = parseStateKey('hovered & disabled');
+    expect(result.kind).toBe('compound');
+    if (result.kind === 'compound') {
+      expect(result.operator).toBe('AND');
+      expect(result.children.length).toBe(2);
+    }
+  });
+
+  it('should parse OR operator', () => {
+    const result = parseStateKey('hovered | focused');
+    expect(result.kind).toBe('compound');
+    if (result.kind === 'compound') {
+      expect(result.operator).toBe('OR');
+      expect(result.children.length).toBe(2);
+    }
+  });
+
+  it('should parse NOT operator', () => {
+    const result = parseStateKey('!disabled');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.negated).toBe(true);
+    }
+  });
+
+  it('should parse @starting', () => {
+    const result = parseStateKey('@starting');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('starting');
+    }
+  });
+
+  it('should parse @media:print', () => {
+    const result = parseStateKey('@media:print');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('media');
+      expect((result as any).subtype).toBe('type');
+      expect((result as any).mediaType).toBe('print');
+    }
+  });
+
+  it('should parse @media dimension query', () => {
+    const result = parseStateKey('@media(w < 768px)');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('media');
+      expect((result as any).subtype).toBe('dimension');
+      expect((result as any).dimension).toBe('width');
+      expect((result as any).upperBound).toBeDefined();
+    }
+  });
+
+  it('should parse @media range query', () => {
+    const result = parseStateKey('@media(600px <= w < 1200px)');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('media');
+      expect((result as any).lowerBound).toBeDefined();
+      expect((result as any).upperBound).toBeDefined();
+    }
+  });
+
+  it('should parse @root state', () => {
+    const result = parseStateKey('@root(theme=dark)');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('root');
+      expect((result as any).selector).toBe('[data-theme="dark"]');
+    }
+  });
+
+  it('should parse @own state', () => {
+    const result = parseStateKey('@own(hovered)', { isSubElement: true });
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('own');
+    }
+  });
+
+  it('should parse container query', () => {
+    const result = parseStateKey('@(layout, w < 600px)');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('container');
+      expect((result as any).containerName).toBe('layout');
+    }
+  });
+
+  it('should parse container style query', () => {
+    const result = parseStateKey('@(layout, $variant=danger)');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('container');
+      expect((result as any).subtype).toBe('style');
+      expect((result as any).property).toBe('variant');
+      expect((result as any).propertyValue).toBe('danger');
+    }
+  });
+
+  it('should parse pseudo-class', () => {
+    const result = parseStateKey(':hover');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('pseudo');
+    }
+  });
+
+  it('should parse combined states', () => {
+    const result = parseStateKey('@media(w < 768px) & hovered');
+    expect(result.kind).toBe('compound');
+    if (result.kind === 'compound') {
+      expect(result.operator).toBe('AND');
+      expect(result.children.length).toBe(2);
+    }
+  });
+});
+
+describe('simplifyCondition()', () => {
+  it('should detect A & !A contradiction', () => {
+    const a = createModifierCondition('data-hovered');
+    const result = simplifyCondition(and(a, not(a)));
+    expect(result.kind).toBe('false');
+  });
+
+  it('should detect A | !A tautology', () => {
+    const a = createModifierCondition('data-hovered');
+    const result = simplifyCondition(or(a, not(a)));
+    expect(result.kind).toBe('true');
+  });
+
+  it('should detect impossible media range', () => {
+    const low = createMediaDimensionCondition('width', undefined, {
+      value: '400px',
+      valueNumeric: 400,
+      inclusive: true,
+    });
+    const high = createMediaDimensionCondition(
+      'width',
+      { value: '800px', valueNumeric: 800, inclusive: true },
+      undefined,
+    );
+    const result = simplifyCondition(and(low, high));
+    expect(result.kind).toBe('false');
+  });
+
+  it('should deduplicate terms', () => {
+    const a = createModifierCondition('data-hovered');
+    const result = simplifyCondition(and(a, a));
+    expect(result.kind).toBe('state');
+  });
+
+  it('should apply absorption: A & (A | B) → A', () => {
+    const a = createModifierCondition('data-a');
+    const b = createModifierCondition('data-b');
+    const result = simplifyCondition(and(a, or(a, b)));
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect((result as any).attribute).toBe('data-a');
+    }
+  });
+});
+
+describe('buildExclusiveConditions()', () => {
+  it('should make first entry non-exclusive', () => {
+    const entries = parseStyleEntries(
+      'padding',
+      {
+        '': '4x',
+        hovered: '2x',
+      },
+      parseStateKey,
+    );
+
+    const exclusive = buildExclusiveConditions(entries);
+
+    // First entry (highest priority after reverse) should have original condition
+    expect(exclusive[0].stateKey).toBe('hovered');
+    expect(exclusive[0].exclusiveCondition.kind).toBe('state');
+  });
+
+  it('should add negation to lower priority entries', () => {
+    const entries = parseStyleEntries(
+      'padding',
+      {
+        '': '4x',
+        hovered: '2x',
+      },
+      parseStateKey,
+    );
+
+    const exclusive = buildExclusiveConditions(entries);
+
+    // Default entry should have !hovered
+    const defaultEntry = exclusive.find((e) => e.stateKey === '');
+    expect(defaultEntry).toBeDefined();
+    expect(defaultEntry!.exclusiveCondition.kind).toBe('state');
+    if (defaultEntry!.exclusiveCondition.kind === 'state') {
+      expect(defaultEntry!.exclusiveCondition.negated).toBe(true);
+    }
+  });
+
+  it('should filter out impossible combinations', () => {
+    const entries = parseStyleEntries(
+      'padding',
+      {
+        '': '4x',
+        hovered: '2x',
+        'hovered & !hovered': '1x', // Impossible
+      },
+      parseStateKey,
+    );
+
+    const exclusive = buildExclusiveConditions(entries);
+
+    // Should not include the impossible entry
+    expect(
+      exclusive.find((e) => e.stateKey === 'hovered & !hovered'),
+    ).toBeUndefined();
+  });
+});
+
+describe('conditionToCSS()', () => {
+  it('should convert modifier to attribute selector', () => {
+    const mod = createModifierCondition('data-hovered');
+    const css = conditionToCSS(mod);
+    expect(css.modifierSelectors).toContain('[data-hovered]');
+  });
+
+  it('should convert negated modifier to :not()', () => {
+    const mod = createModifierCondition('data-disabled', undefined, '=', true);
+    const css = conditionToCSS(mod);
+    expect(css.modifierSelectors).toContain(':not([data-disabled])');
+  });
+
+  it('should convert media query to at-rule', () => {
+    const media = createMediaDimensionCondition('width', undefined, {
+      value: '768px',
+      valueNumeric: 768,
+      inclusive: true,
+    });
+    const css = conditionToCSS(media);
+    expect(css.mediaRules.length).toBe(1);
+    expect(css.mediaRules[0]).toContain('@media');
+    expect(css.mediaRules[0]).toContain('width');
+  });
+
+  it('should set startingStyle flag for @starting', () => {
+    const result = parseStateKey('@starting');
+    const css = conditionToCSS(result);
+    expect(css.startingStyle).toBe(true);
+  });
+
+  it('should set rootPrefix for @root', () => {
+    const result = parseStateKey('@root(theme=dark)');
+    const css = conditionToCSS(result);
+    expect(css.rootPrefix).toBe(':root[data-theme="dark"]');
+  });
+});
+
+describe('Integration: Exclusive conditions for media queries', () => {
+  it('should generate non-overlapping media ranges', () => {
+    const entries = parseStyleEntries(
+      'gridTemplateColumns',
+      {
+        '': '1fr 1fr 1fr', // Default: w > 1400px
+        '@media(w <= 1400px)': '1fr 1fr', // 920px < w <= 1400px
+        '@media(w <= 920px)': '1fr', // w <= 920px
+      },
+      parseStateKey,
+    );
+
+    const exclusive = buildExclusiveConditions(entries);
+
+    // Should have 3 non-overlapping entries
+    expect(exclusive.length).toBe(3);
+
+    // First (highest priority): w <= 920px
+    expect(exclusive[0].stateKey).toBe('@media(w <= 920px)');
+
+    // Second: w <= 1400px & !(w <= 920px) → 920px < w <= 1400px
+    expect(exclusive[1].stateKey).toBe('@media(w <= 1400px)');
+    expect(exclusive[1].exclusiveCondition.kind).toBe('compound');
+
+    // Third (default): !(w <= 920px) & !(w <= 1400px) → w > 1400px
+    expect(exclusive[2].stateKey).toBe('');
+  });
+});
