@@ -45,9 +45,21 @@ export function useGlobalStyles({
   // Note: renderStyles overload with selector string returns StyleResult[] directly
   const styleResults = useMemo((): StyleResult[] => {
     if (!styles) return [];
+
+    // Validate selector - empty string would cause renderStyles to return RenderResult instead of StyleResult[]
+    if (!selector) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(
+          '[Tasty] useGlobalStyles: selector is required and cannot be empty. ' +
+            'Styles will not be injected.',
+        );
+      }
+      return [];
+    }
+
     const result = renderStyles(styles, selector);
-    // When a selector is provided, renderStyles returns StyleResult[]
-    return result as unknown as StyleResult[];
+    // When a non-empty selector is provided, renderStyles returns StyleResult[]
+    return result as StyleResult[];
   }, [styles, selector]);
 
   // Inject as global styles
