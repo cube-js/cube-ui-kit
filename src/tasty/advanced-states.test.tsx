@@ -677,7 +677,7 @@ describe('Advanced State Mapping - CSS Output', () => {
 // Direct renderStyles tests for features that jsdom doesn't support
 describe('Advanced State Mapping - renderStyles direct tests', () => {
   // Import renderStyles for direct testing
-  const { renderStyles } = require('./utils/renderStyles');
+  const { renderStyles } = require('./pipeline');
 
   describe('@starting-style tests', () => {
     it('should generate @starting-style at-rule for entry animations', () => {
@@ -779,6 +779,7 @@ describe('Advanced State Mapping - renderStyles direct tests', () => {
       );
 
       // Should have 3 container query rules (all non-overlapping)
+      // The new pipeline uses exclusive conditions with :not() for non-overlapping
       expect(containerRules.length).toBe(3);
 
       // Check for non-overlapping patterns - verify unique conditions
@@ -787,9 +788,10 @@ describe('Advanced State Mapping - renderStyles direct tests', () => {
       expect(uniqueConditions.size).toBe(conditions.length);
 
       // Verify the expected non-overlapping ranges
+      // The new pipeline uses exclusive conditions format
       expect(conditions).toContain('@container (width <= 400px)');
-      expect(conditions).toContain('@container (400px < width <= 800px)');
-      expect(conditions).toContain('@container (width > 800px)');
+      expect(conditions).toContain('@container (width <= 800px)');
+      expect(conditions).toContain('@container not (width <= 400px)');
     });
   });
 });
