@@ -1,12 +1,17 @@
 /**
  * @jest-environment jsdom
  */
+import { clearPipelineCache } from '../pipeline';
 import { Styles } from '../styles/types';
 
 import { categorizeStyleKeys } from './definitions';
 import { renderStylesForChunk } from './renderChunk';
 
 describe('Chunking with local predefined states', () => {
+  // Clear cache between tests to avoid state pollution
+  beforeEach(() => {
+    clearPipelineCache();
+  });
   it('should resolve local predefined states across chunks', () => {
     const styles: Styles = {
       '@mobile': '@media(w < 600px)',
@@ -117,5 +122,42 @@ describe('Chunking with local predefined states', () => {
       rule.atRules?.some((ar) => ar.includes('600px')),
     );
     expect(hasMediaRule).toBe(true);
+  });
+
+  it('should resolve local predefined states for color property', () => {
+    // This is the exact pattern from Layout.stories.tsx that was reported as not working
+    const styles: Styles = {
+      color: {
+        '': '#purple',
+        '@mobile': '#danger-text',
+      },
+      '@mobile': '@media(w <= 1000px)',
+    };
+
+    const chunks = categorizeStyleKeys(styles as Record<string, unknown>);
+
+    // color goes to appearance chunk (not typography!)
+    expect(chunks.get('appearance')).toContain('color');
+    // @mobile goes to misc chunk
+    expect(chunks.get('misc')).toContain('@mobile');
+
+    // Render the appearance chunk (contains color which references @mobile)
+    const appearanceKeys = chunks.get('appearance')!;
+    const result = renderStylesForChunk(styles, 'appearance', appearanceKeys);
+
+    // Should have rules
+    expect(result.rules.length).toBeGreaterThan(0);
+
+    // Check that @mobile was resolved to a media query (not a data attribute)
+    const hasMediaRule = result.rules.some((rule) =>
+      rule.atRules?.some((ar) => ar.includes('1000px')),
+    );
+    expect(hasMediaRule).toBe(true);
+
+    // Should NOT have data-mobile attribute selector (that would indicate failed resolution)
+    const hasDataMobileSelector = result.rules.some((rule) =>
+      rule.selector.includes('data-mobile'),
+    );
+    expect(hasDataMobileSelector).toBe(false);
   });
 });

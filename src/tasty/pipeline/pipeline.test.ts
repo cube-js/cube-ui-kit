@@ -505,4 +505,22 @@ describe('renderStyles integration', () => {
     // 2. !hovered & !focused → black (exclusive)
     expect(result.length).toBeGreaterThanOrEqual(1);
   });
+
+  it('should resolve local predefined states', () => {
+    const styles = {
+      '@mobile': '@media(w <= 1000px)',
+      color: {
+        '': 'purple',
+        '@mobile': 'red',
+      },
+    };
+
+    const result = renderStyles(styles, '.test');
+
+    // Should generate a media query rule for the @mobile condition
+    const mediaRule = result.find((r) => r.atRules?.length);
+    expect(mediaRule).toBeDefined();
+    expect(mediaRule!.atRules![0]).toContain('width');
+    expect(mediaRule!.atRules![0]).toContain('1000px');
+  });
 });

@@ -163,18 +163,18 @@ exports[`Advanced State Mapping - CSS Output edge cases should handle advanced s
 exports[`Advanced State Mapping - CSS Output predefined states (global) should handle multiple global predefined states 1`] = `
 "@media (width >= 1024px) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}
 @media not (width >= 1024px) and (768px <= width < 1024px) {.t0.t0 {padding-top: calc(3 * var(--gap)); padding-right: calc(3 * var(--gap)); padding-bottom: calc(3 * var(--gap)); padding-left: calc(3 * var(--gap));}}
-@media not (width >= 1024px) and not (768px <= width < 1024px) and (width < 600px) {.t0.t0 {padding-top: var(--gap); padding-right: var(--gap); padding-bottom: var(--gap); padding-left: var(--gap);}}
-@media not (width < 600px) and not (width >= 1024px) and not (768px <= width < 1024px) {.t0.t0 {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}"
+@media not (width >= 1024px) and not (768px <= width < 1024px) and (width < 768px) {.t0.t0 {padding-top: var(--gap); padding-right: var(--gap); padding-bottom: var(--gap); padding-left: var(--gap);}}
+@media not (width < 768px) and not (width >= 1024px) and not (768px <= width < 1024px) {.t0.t0 {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output predefined states (global) should prioritize local over global predefined states 1`] = `
-"@media (width < 600px) {.t0.t0 {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}
-@media not (width < 600px) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}"
+"@media (width < 480px) {.t0.t0 {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}
+@media not (width < 480px) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output predefined states (global) should resolve global predefined states 1`] = `
-"@media (width < 600px) {.t0.t0 {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}
-@media not (width < 600px) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}"
+"@media (width < 768px) {.t0.t0 {padding-top: calc(2 * var(--gap)); padding-right: calc(2 * var(--gap)); padding-bottom: calc(2 * var(--gap)); padding-left: calc(2 * var(--gap));}}
+@media not (width < 768px) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output predefined states (local) should handle multiple local predefined states 1`] = `

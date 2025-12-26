@@ -731,8 +731,20 @@ export function parseStateKey(
 
   const trimmed = stateKey.trim();
 
+  // Build cache key including local predefined states (they affect parsing)
+  // Global predefined states are set once at initialization and don't change
+  const ctx = options.context;
+  const localStatesKey =
+    ctx && Object.keys(ctx.localPredefinedStates).length > 0
+      ? JSON.stringify(ctx.localPredefinedStates)
+      : '';
+  const cacheKey = JSON.stringify([
+    trimmed,
+    options.isSubElement,
+    localStatesKey,
+  ]);
+
   // Check cache
-  const cacheKey = JSON.stringify([trimmed, options.isSubElement]);
   const cached = parseCache.get(cacheKey);
   if (cached) {
     return cached;
