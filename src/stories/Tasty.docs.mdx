@@ -147,6 +147,18 @@ tokens={{ $spacing: '2x', '#primary': '#purple' }}
 // → style="--spacing: calc(2 * var(--gap)); --accent-color: var(--purple-color); --accent-color-rgb: var(--purple-color-rgb)"
 ```
 
+### Advanced States (`@` prefix)
+
+State keys with `@` prefix for CSS at-rules and contextual conditions:
+
+| Prefix | Purpose | Example |
+|--------|---------|---------|
+| `@media` | Media queries | `@media(w < 768px)` |
+| `@(...)` | Container queries | `@(panel, w >= 300px)` |
+| `@root` | Root element states | `@root(theme=dark)` |
+| `@own` | Sub-element's own state | `@own(hovered)` |
+| `@starting` | Entry animation | `@starting` (for `@starting-style`) |
+
 ---
 
 ## 🎯 Core Concepts
@@ -610,50 +622,116 @@ color: {
   '': '#default',
   '!disabled & hovered': '#blue',     // NOT disabled AND hovered
   'success | complete': '#green',     // success OR complete
-  'warning ^ error': '#yellow',       // warning XOR error (exclusive)
   ':hover': '#purple',                // CSS pseudo-class
   '[data-theme="dark"]': '#light',    // Data attribute
 }
 ```
 
-#### Advanced Selector Examples
+### Advanced States
+
+Tasty supports advanced CSS at-rules and contextual states using `@` prefix:
+
+#### Media Queries (`@media`)
 
 ```jsx
-// Using brackets for grouping complex logic
-color: {
-  '': '#default',
-  '(hovered | focused) & !disabled': '#blue',    // Grouped: (hovered OR focused) AND NOT disabled
-  '!(error | warning) & success': '#green',      // NOT (error OR warning) AND success
-  '(pressed & !disabled) | selected': '#purple', // (pressed AND NOT disabled) OR selected
+styles: {
+  gridColumns: {
+    '': '1fr 1fr 1fr',              // Default: 3 columns
+    '@media(w <= 1200px)': '1fr 1fr', // ≤1200px: 2 columns
+    '@media(w <= 768px)': '1fr',      // ≤768px: 1 column
+  },
+  padding: {
+    '': '4x',
+    '@media(h > 800px)': '6x',        // Height query
+    '@media:print': '2x',             // Media type
+  },
 }
+// Shorthands: w=width, h=height. Range syntax: <=, <, >=, >, 600px <= w < 900px
+```
 
-// Other supported selectors
-fill: {
-  '': '#surface',
-  '.custom-class': '#highlight',           // CSS class selector
-  '[data-variant="primary"]': '#primary',  // Data attribute with value
-  '[data-loading]': '#gray',               // Data attribute (boolean)
-  disabled: '#disabled',                   // Built-in state
-  '[aria-selected="true"]': '#selected',   // ARIA attribute
-  ':focus-visible': '#focus',              // CSS pseudo-class
-}
+#### Container Queries (`@(...)`)
 
-// Combining different selector types
-border: {
-  '': '1bw solid #border',
-  'hovered & .interactive': '2bw solid #purple',     // Custom mod AND CSS class
-  '[data-size="large"] & focused': '3bw solid #blue', // Data attribute AND custom mod
-  '!disabled & (:hover | :focus)': '1bw solid #active', // NOT disabled AND (hover OR focus)
+```jsx
+styles: {
+  flow: {
+    '': 'column',
+    '@(w >= 400px)': 'row',                    // Unnamed container
+    '@(panel, w >= 300px)': 'row',             // Named container "panel"
+  },
+  fill: {
+    '': '#surface',
+    '@(sidebar, $variant=danger)': '#red.05',  // Style query on named container
+  },
 }
 ```
 
-> **💡 Recommendations:**
-> - **Prefer `mods` prop** for custom states: `<Component mods={{ hovered: true }}>`
-> - **Prefer data attributes** for states with values: `<Component data-variant="primary">`
-> - **Reserve CSS selectors** for built-in states and external styling needs
-> - **Use brackets `()` for grouping** complex logical expressions
+#### Root States (`@root`)
 
-> **⚠️ Important:** Place more specific rules last - they're checked in reverse order.
+Style based on document root attributes (theme, mode, etc.):
+
+```jsx
+styles: {
+  fill: {
+    '': '#white',
+    '@root(theme=dark)': '#dark-02',      // :root[data-theme="dark"]
+    '@root(.high-contrast)': '#black',    // :root.high-contrast
+    '@root([data-density="compact"])': '#gray', // Attribute selector
+  },
+}
+```
+
+#### Own States (`@own`)
+
+Apply sub-element's own state (not parent's):
+
+```jsx
+styles: {
+  Icon: {
+    color: {
+      '': '#gray',
+      '@own(hovered)': '#purple',         // Icon's own hover state
+      'disabled': '#light-gray',          // Parent's disabled state
+    },
+  },
+}
+```
+
+#### Starting Style (`@starting`)
+
+Entry animations with `@starting-style`:
+
+```jsx
+styles: {
+  opacity: {
+    '': 1,
+    '@starting': 0,                       // Start at 0, animate to 1
+  },
+  transform: {
+    '': 'translateY(0)',
+    '@starting': 'translateY(-10px)',
+  },
+  transition: 'opacity 0.3s, transform 0.3s',
+}
+```
+
+#### Combining Advanced States
+
+```jsx
+styles: {
+  padding: {
+    '': '4x',
+    '@media(w < 600px) & hovered': '3x',   // Media + modifier
+    '@root(theme=dark) & disabled': '2x',  // Root + modifier
+  },
+}
+```
+
+> **💡 Tips:**
+> - Use `&` to combine states, `|` for alternatives, `!` for negation
+> - Advanced states generate exclusive CSS (non-overlapping selectors)
+> - Place more specific rules last (higher priority)
+
+> **⚠️ Important:** Place more specific rules last - they take precedence.
 
 ### Sub-element Styling
 

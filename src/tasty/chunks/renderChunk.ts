@@ -5,8 +5,8 @@
  * to only include relevant keys before passing to renderStyles.
  */
 
+import { RenderResult, renderStyles } from '../pipeline';
 import { Styles } from '../styles/types';
-import { RenderResult, renderStyles } from '../utils/renderStyles';
 
 import { CHUNK_NAMES } from './definitions';
 

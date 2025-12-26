@@ -1,4 +1,10 @@
 /**
+ * @deprecated This file is superseded by src/tasty/pipeline/simplify.ts
+ * The new pipeline handles media query range optimization directly in the
+ * simplification stage through exclusive condition building.
+ * This file is kept for reference during the transition period.
+ *
+ * Original description:
  * Media Query Range Optimizer
  *
  * Detects overlapping media query ranges and generates non-overlapping CSS rules.

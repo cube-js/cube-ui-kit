@@ -6,8 +6,8 @@ import {
   renderStylesForChunk,
 } from '../chunks';
 import { allocateClassName, inject } from '../injector';
+import { RenderResult } from '../pipeline';
 import { Styles } from '../styles/types';
-import { RenderResult } from '../utils/renderStyles';
 import { stringifyStyles } from '../utils/styles';
 
 export interface UseStylesOptions {
@@ -134,7 +134,6 @@ export function useStyles({ styles }: UseStylesOptions): UseStylesResult {
     }
 
     return chunks;
-     
   }, [styleKey]);
 
   // Inject styles in insertion effect (avoids render phase side effects)

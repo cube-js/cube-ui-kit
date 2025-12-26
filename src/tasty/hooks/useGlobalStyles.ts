@@ -1,10 +1,8 @@
 import { useInsertionEffect, useMemo, useRef } from 'react';
 
 import { injectGlobal } from '../injector';
+import { renderStyles, StyleResult } from '../pipeline';
 import { Styles } from '../styles/types';
-import { renderStyles } from '../utils/renderStyles';
-
-import type { StyleResult } from '../utils/renderStyles';
 
 export interface UseGlobalStylesOptions {
   /**

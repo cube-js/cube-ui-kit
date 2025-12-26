@@ -130,7 +130,8 @@ export function parseStyleEntries(
     });
   });
 
-  // Reverse so highest priority (last in object) comes first
+  // Reverse so highest priority (last in object) comes first for exclusive building
+  // buildExclusiveConditions expects highest priority first
   entries.reverse();
 
   return entries;

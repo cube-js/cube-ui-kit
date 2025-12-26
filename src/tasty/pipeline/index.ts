@@ -35,17 +35,36 @@ import {
   parseStyleEntries,
 } from './exclusive';
 import {
-  buildAtRules,
-  buildCSSSelector,
+  buildAtRulesFromVariant,
   conditionToCSS,
   CSSRule,
+  SelectorVariant,
 } from './materialize';
 import { parseStateKey, ParseStateKeyOptions } from './parseStateKey';
 import { simplifyCondition } from './simplify';
 
 // ============================================================================
-// Types
+// Types (compatible with old renderStyles API)
 // ============================================================================
+
+/**
+ * Matches the old StyleResult interface for backward compatibility
+ */
+export interface StyleResult {
+  selector: string;
+  declarations: string;
+  atRules?: string[];
+  needsClassName?: boolean;
+  rootPrefix?: string;
+}
+
+/**
+ * Matches the old RenderResult interface for backward compatibility
+ */
+export interface RenderResult {
+  rules: StyleResult[];
+  className?: string;
+}
 
 export interface PipelineResult {
   rules: CSSRule[];
@@ -220,6 +239,8 @@ function processStyles(
     const lookupStyles = handler.__lookupStyles;
 
     // Stage 1 & 2: Parse and build exclusive conditions for each style
+    // Exclusive conditions ensure each CSS rule applies to exactly one state.
+    // OR conditions in exclusives are properly expanded to DNF (multiple CSS selectors).
     const exclusiveByStyle = new Map<string, ExclusiveStyleEntry[]>();
 
     for (const styleName of lookupStyles) {
@@ -302,10 +323,8 @@ function processStyles(
 
     // Stage 7: Materialize to CSS
     for (const rule of mergedRules) {
-      const cssRule = materializeComputedRule(rule);
-      if (cssRule) {
-        allRules.push(cssRule);
-      }
+      const cssRules = materializeComputedRule(rule);
+      allRules.push(...cssRules);
     }
   }
 }
@@ -317,7 +336,7 @@ function processStyles(
 /**
  * Check if a key is a CSS selector
  */
-function isSelector(key: string): boolean {
+export function isSelector(key: string): boolean {
   return key.startsWith('&') || key.startsWith('.') || /^[A-Z]/.test(key);
 }
 
@@ -351,6 +370,18 @@ function getSelector(key: string, styles?: Styles): string | null {
 function transformSelectorAffix(affix: string): string {
   const trimmed = affix.trim();
   if (!trimmed) return ' ';
+
+  // Validate that combinators have spaces around them
+  // Check for capitalized words adjacent to combinators without spaces
+  const invalidPattern = /[A-Z][a-z]*[>+~]|[>+~][A-Z][a-z]*/;
+  if (invalidPattern.test(trimmed)) {
+    console.error(
+      `[Tasty] Invalid selector affix ($) syntax: "${affix}"\n` +
+        `Combinators (>, +, ~) must have spaces around them when used with element names.\n` +
+        `Example: Use "$: '> Body > Row'" instead of "$: '>Body>Row'"\n` +
+        `This is a design choice: the parser uses simple whitespace splitting for performance.`,
+    );
+  }
 
   const tokens = trimmed.split(/\s+/);
   const transformed = tokens.map((token) =>
@@ -505,55 +536,200 @@ function mergeByValue(rules: ComputedRule[]): ComputedRule[] {
 }
 
 /**
- * Materialize a computed rule to final CSS format
+ * Build selector fragment from a variant (without className prefix)
  */
-function materializeComputedRule(rule: ComputedRule): CSSRule | null {
+function buildSelectorFromVariant(
+  variant: SelectorVariant,
+  selectorSuffix: string,
+): string {
+  let selector = variant.modifierSelectors.join('');
+  selector += selectorSuffix;
+  selector += variant.ownSelectors.join('');
+  return selector;
+}
+
+/**
+ * Materialize a computed rule to final CSS format
+ *
+ * Returns an array because OR conditions may generate multiple CSS rules
+ * (when different branches have different at-rules)
+ */
+function materializeComputedRule(rule: ComputedRule): CSSRule[] {
   const components = conditionToCSS(rule.condition);
 
-  if (components.isImpossible) {
-    return null;
+  if (components.isImpossible || components.variants.length === 0) {
+    return [];
   }
-
-  // Build selector (without className - it will be added later)
-  let selector = components.modifierSelectors.join('');
-  selector += rule.selectorSuffix;
-  selector += components.ownSelectors.join('');
-
-  const atRules = buildAtRules(components);
 
   const declarations = Object.entries(rule.declarations)
     .map(([prop, value]) => `${prop}: ${value};`)
     .join(' ');
 
-  const cssRule: CSSRule = {
-    selector,
-    declarations,
+  // Group variants by their at-rules (variants with same at-rules can be combined with commas)
+  const byAtRules = new Map<
+    string,
+    { variants: SelectorVariant[]; atRules: string[]; rootPrefix?: string }
+  >();
+
+  for (const variant of components.variants) {
+    const atRules = buildAtRulesFromVariant(variant);
+    const key = atRules.sort().join('|||') + '###' + (variant.rootPrefix || '');
+    const group = byAtRules.get(key);
+    if (group) {
+      group.variants.push(variant);
+    } else {
+      byAtRules.set(key, {
+        variants: [variant],
+        atRules,
+        rootPrefix: variant.rootPrefix,
+      });
+    }
+  }
+
+  // Generate one CSSRule per at-rules group
+  const rules: CSSRule[] = [];
+  for (const [, group] of byAtRules) {
+    // Build selector fragments for each variant (will be joined with className later)
+    const selectorFragments = group.variants.map((v) =>
+      buildSelectorFromVariant(v, rule.selectorSuffix),
+    );
+
+    // Store as array if multiple, string if single
+    const selector =
+      selectorFragments.length === 1 ? selectorFragments[0] : selectorFragments;
+
+    const cssRule: CSSRule = {
+      selector,
+      declarations,
+    };
+
+    if (group.atRules.length > 0) {
+      cssRule.atRules = group.atRules;
+    }
+
+    if (group.rootPrefix) {
+      cssRule.rootPrefix = group.rootPrefix;
+    }
+
+    rules.push(cssRule);
+  }
+
+  return rules;
+}
+
+// ============================================================================
+// Public API: renderStyles (compatible with old API)
+// ============================================================================
+
+/**
+ * Render styles to CSS rules.
+ *
+ * When called without classNameOrSelector, returns RenderResult with needsClassName=true.
+ * When called with a selector/className string, returns StyleResult[] for direct injection.
+ */
+export function renderStyles(styles?: Styles): RenderResult;
+export function renderStyles(
+  styles: Styles | undefined,
+  classNameOrSelector: string,
+): StyleResult[];
+export function renderStyles(
+  styles?: Styles,
+  classNameOrSelector?: string,
+): RenderResult | StyleResult[] {
+  // Check if we have a direct selector/className
+  const directSelector = !!classNameOrSelector;
+
+  if (!styles) {
+    return directSelector ? [] : { rules: [] };
+  }
+
+  // Check cache
+  const cacheKey = stringifyStyles(styles);
+  let rules = pipelineCache.get(cacheKey);
+
+  if (!rules) {
+    // Create parser context
+    const parserContext = createStateParserContext(styles);
+
+    // Run pipeline
+    rules = runPipeline(styles, parserContext);
+
+    // Cache result
+    pipelineCache.set(cacheKey, rules);
+  }
+
+  // Direct selector/className mode: return StyleResult[] directly
+  if (directSelector) {
+    return rules.map((rule): StyleResult => {
+      // Handle selector as array (OR conditions) or string
+      const selectorParts = Array.isArray(rule.selector)
+        ? rule.selector
+        : rule.selector
+          ? [rule.selector]
+          : [''];
+
+      let finalSelector = selectorParts
+        .map((part) => {
+          let sel = part
+            ? `${classNameOrSelector}${part}`
+            : classNameOrSelector;
+
+          // Increase specificity for tasty class selectors by duplicating the class
+          if (sel.startsWith('.') && /^\.t\d+/.test(sel)) {
+            const classMatch = sel.match(/^\.t\d+/);
+            if (classMatch) {
+              const baseClass = classMatch[0];
+              sel = baseClass + sel;
+            }
+          }
+
+          // Handle root prefix for this selector
+          if (rule.rootPrefix) {
+            sel = `${rule.rootPrefix} ${sel}`;
+          }
+
+          return sel;
+        })
+        .join(', ');
+
+      const result: StyleResult = {
+        selector: finalSelector,
+        declarations: rule.declarations,
+      };
+
+      if (rule.atRules && rule.atRules.length > 0) {
+        result.atRules = rule.atRules;
+      }
+
+      return result;
+    });
+  }
+
+  // No className mode: return RenderResult with needsClassName flag
+  // Normalize selector to string (join array with placeholder that injector will handle)
+  return {
+    rules: rules.map(
+      (r): StyleResult => ({
+        selector: Array.isArray(r.selector)
+          ? r.selector.join('|||')
+          : r.selector,
+        declarations: r.declarations,
+        atRules: r.atRules,
+        needsClassName: true,
+        rootPrefix: r.rootPrefix,
+      }),
+    ),
   };
-
-  if (atRules.length > 0) {
-    cssRule.atRules = atRules;
-  }
-
-  if (components.rootPrefix) {
-    cssRule.rootPrefix = components.rootPrefix;
-  }
-
-  return cssRule;
 }
 
 // ============================================================================
 // Exports
 // ============================================================================
 
-export {
-  ConditionNode,
-  and,
-  or,
-  not,
-  trueCondition,
-  falseCondition,
-} from './conditions';
+export type { ConditionNode } from './conditions';
+export { and, or, not, trueCondition, falseCondition } from './conditions';
 export { parseStateKey } from './parseStateKey';
 export { simplifyCondition } from './simplify';
 export { buildExclusiveConditions } from './exclusive';
-export { conditionToCSS, CSSRule } from './materialize';
+export { conditionToCSS } from './materialize';
+export type { CSSRule } from './materialize';

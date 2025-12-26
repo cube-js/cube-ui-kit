@@ -1,4 +1,9 @@
 /**
+ * @deprecated This file is superseded by src/tasty/pipeline/index.ts
+ * It is kept for reference during the transition period.
+ * All imports should use the new pipeline instead.
+ *
+ * Original description:
  * Style rendering that works with structured style objects.
  * Eliminates CSS string parsing for better performance.
  *

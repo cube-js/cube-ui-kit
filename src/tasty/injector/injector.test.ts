@@ -3,7 +3,7 @@
  */
 import { createElement } from 'react';
 
-import { StyleResult } from '../utils/renderStyles';
+import { StyleResult } from '../pipeline';
 
 import { StyleInjector } from './injector';
 import { StyleInjectorConfig } from './types';

@@ -8,7 +8,7 @@
  * See STYLE_CHUNKING_SPEC.md for detailed rationale.
  */
 
-import { isSelector } from '../utils/renderStyles';
+import { isSelector } from '../pipeline';
 
 // ============================================================================
 // Chunk Style Lists

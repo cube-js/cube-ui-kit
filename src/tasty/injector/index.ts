@@ -1,9 +1,9 @@
+import { StyleResult } from '../pipeline';
 import {
   markStylesGenerated as markStylesGeneratedInStates,
   setGlobalPredefinedStates,
 } from '../states';
 import { isDevEnv } from '../utils/isDevEnv';
-import { StyleResult } from '../utils/renderStyles';
 
 import { StyleInjector } from './injector';
 import {

@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { StyleResult } from '../utils/renderStyles';
+import { StyleResult } from '../pipeline';
 
 import {
   cleanup,

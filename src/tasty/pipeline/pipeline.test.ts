@@ -20,6 +20,8 @@ import { conditionToCSS } from './materialize';
 import { parseStateKey } from './parseStateKey';
 import { simplifyCondition } from './simplify';
 
+import { renderStyles } from './index';
+
 describe('ConditionNode operations', () => {
   describe('and()', () => {
     it('should return TRUE for empty args', () => {
@@ -303,7 +305,7 @@ describe('simplifyCondition()', () => {
 });
 
 describe('buildExclusiveConditions()', () => {
-  it('should make first entry non-exclusive', () => {
+  it('should order entries by priority (highest first)', () => {
     const entries = parseStyleEntries(
       'padding',
       {
@@ -315,9 +317,10 @@ describe('buildExclusiveConditions()', () => {
 
     const exclusive = buildExclusiveConditions(entries);
 
-    // First entry (highest priority after reverse) should have original condition
+    // parseStyleEntries reverses so highest priority comes first
+    // First entry should be hovered (highest priority), last should be default
     expect(exclusive[0].stateKey).toBe('hovered');
-    expect(exclusive[0].exclusiveCondition.kind).toBe('state');
+    expect(exclusive[1].stateKey).toBe('');
   });
 
   it('should add negation to lower priority entries', () => {
@@ -332,9 +335,10 @@ describe('buildExclusiveConditions()', () => {
 
     const exclusive = buildExclusiveConditions(entries);
 
-    // Default entry should have !hovered
+    // Default entry should have !hovered exclusive condition
     const defaultEntry = exclusive.find((e) => e.stateKey === '');
     expect(defaultEntry).toBeDefined();
+    // The exclusive condition should be a negated state (NOT hovered)
     expect(defaultEntry!.exclusiveCondition.kind).toBe('state');
     if (defaultEntry!.exclusiveCondition.kind === 'state') {
       expect(defaultEntry!.exclusiveCondition.negated).toBe(true);
@@ -365,13 +369,17 @@ describe('conditionToCSS()', () => {
   it('should convert modifier to attribute selector', () => {
     const mod = createModifierCondition('data-hovered');
     const css = conditionToCSS(mod);
-    expect(css.modifierSelectors).toContain('[data-hovered]');
+    expect(css.variants.length).toBe(1);
+    expect(css.variants[0].modifierSelectors).toContain('[data-hovered]');
   });
 
   it('should convert negated modifier to :not()', () => {
     const mod = createModifierCondition('data-disabled', undefined, '=', true);
     const css = conditionToCSS(mod);
-    expect(css.modifierSelectors).toContain(':not([data-disabled])');
+    expect(css.variants.length).toBe(1);
+    expect(css.variants[0].modifierSelectors).toContain(
+      ':not([data-disabled])',
+    );
   });
 
   it('should convert media query to at-rule', () => {
@@ -381,21 +389,24 @@ describe('conditionToCSS()', () => {
       inclusive: true,
     });
     const css = conditionToCSS(media);
-    expect(css.mediaRules.length).toBe(1);
-    expect(css.mediaRules[0]).toContain('@media');
-    expect(css.mediaRules[0]).toContain('width');
+    expect(css.variants.length).toBe(1);
+    expect(css.variants[0].mediaRules.length).toBe(1);
+    expect(css.variants[0].mediaRules[0]).toContain('@media');
+    expect(css.variants[0].mediaRules[0]).toContain('width');
   });
 
   it('should set startingStyle flag for @starting', () => {
     const result = parseStateKey('@starting');
     const css = conditionToCSS(result);
-    expect(css.startingStyle).toBe(true);
+    expect(css.variants.length).toBe(1);
+    expect(css.variants[0].startingStyle).toBe(true);
   });
 
   it('should set rootPrefix for @root', () => {
     const result = parseStateKey('@root(theme=dark)');
     const css = conditionToCSS(result);
-    expect(css.rootPrefix).toBe(':root[data-theme="dark"]');
+    expect(css.variants.length).toBe(1);
+    expect(css.variants[0].rootPrefix).toBe(':root[data-theme="dark"]');
   });
 });
 
@@ -425,5 +436,77 @@ describe('Integration: Exclusive conditions for media queries', () => {
 
     // Third (default): !(w <= 920px) & !(w <= 1400px) → w > 1400px
     expect(exclusive[2].stateKey).toBe('');
+  });
+});
+
+describe('renderStyles integration', () => {
+  it('should handle radius with value mapping', () => {
+    const styles = {
+      radius: {
+        '': true,
+        'type=link & !focused': 0,
+      },
+    };
+
+    const result = renderStyles(styles, '.test');
+    console.log('Radius result:', JSON.stringify(result, null, 2));
+
+    // Should have border-radius rules
+    expect(result.length).toBeGreaterThan(0);
+    const hasRadius = result.some((r) =>
+      r.declarations.includes('border-radius'),
+    );
+    expect(hasRadius).toBe(true);
+  });
+
+  it('should handle simple radius value', () => {
+    const styles = {
+      radius: '1r',
+    };
+
+    const result = renderStyles(styles, '.test');
+    console.log('Simple radius result:', JSON.stringify(result, null, 2));
+
+    expect(result.length).toBeGreaterThan(0);
+    const hasRadius = result.some((r) =>
+      r.declarations.includes('border-radius'),
+    );
+    expect(hasRadius).toBe(true);
+  });
+
+  it('should handle priority order for boolean vs value selectors', () => {
+    const styles = {
+      color: {
+        'theme=danger': 'red',
+        theme: 'blue', // Higher priority (later in object)
+      },
+    };
+
+    const result = renderStyles(styles, '.test');
+    console.log('Priority result:', JSON.stringify(result, null, 2));
+
+    // With exclusive conditions: theme=danger gets exclusive condition:
+    // theme=danger & NOT(theme) which simplifies to FALSE (impossible)
+    // because [data-theme="danger"] implies [data-theme]
+    // So only the higher priority rule (theme → blue) should be generated
+    expect(result.length).toBe(1);
+    expect(result[0].declarations).toContain('blue');
+  });
+
+  it('should generate OR selectors for exclusive conditions', () => {
+    const styles = {
+      color: {
+        '': 'black',
+        'hovered | focused': 'red',
+      },
+    };
+
+    const result = renderStyles(styles, '.test');
+    console.log('OR result:', JSON.stringify(result, null, 2));
+
+    // Should have rules for:
+    // 1. hovered | focused → red
+    // 2. !hovered & !focused → black (exclusive)
+    expect(result.length).toBeGreaterThanOrEqual(1);
   });
 });

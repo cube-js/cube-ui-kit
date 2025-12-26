@@ -2,6 +2,7 @@ import { IconFilter, IconFilterFilled } from '@tabler/icons-react';
 import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
+import { tasty } from '../../../tasty';
 import { Button } from '../../actions/Button/Button';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { Block } from '../../Block';
