@@ -204,16 +204,10 @@ export function extractPredefinedStateRefs(value: string): string[] {
 
   for (const match of matches) {
     const stateName = '@' + match[1];
-    // Skip built-in states and partial matches (like @medi from @media)
-    if (
-      !BUILTIN_STATES.has(stateName) &&
-      !refs.includes(stateName) &&
-      // Skip if this looks like a partial match of a built-in
-      !stateName.startsWith('@medi') && // @media
-      !stateName.startsWith('@roo') && // @root
-      !stateName.startsWith('@ow') && // @own
-      !stateName.startsWith('@starti') // @starting
-    ) {
+    // Skip built-in states (@starting) and duplicates
+    // Note: @media, @root, @own are always followed by '(' so the regex
+    // negative lookahead (?![A-Za-z0-9-:(]) already excludes them
+    if (!BUILTIN_STATES.has(stateName) && !refs.includes(stateName)) {
       refs.push(stateName);
     }
   }

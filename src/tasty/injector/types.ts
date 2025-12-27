@@ -105,8 +105,8 @@ export interface RootRegistry {
   globalRules: Map<string, RuleInfo>; // globalKey -> rule info
 }
 
-// StyleRule is now just an alias for StyleResult from renderStyles
-export type StyleRule = import('../utils/renderStyles').StyleResult;
+// StyleRule is now just an alias for StyleResult from the pipeline
+export type StyleRule = import('../pipeline').StyleResult;
 
 export interface KeyframesInfo {
   name: string;

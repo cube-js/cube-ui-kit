@@ -334,6 +334,26 @@ describe('Advanced State Mapping', () => {
         expect(refs).not.toContain('@starting');
         expect(refs).toHaveLength(0);
       });
+
+      it('should extract user-defined states that share prefixes with built-ins', () => {
+        // These should NOT be excluded just because they share prefixes with @media, @root, @own, @starting
+        const refs = extractPredefinedStateRefs(
+          '@medium & @medieval & @room & @owned & @starting-point',
+        );
+        expect(refs).toContain('@medium');
+        expect(refs).toContain('@medieval');
+        expect(refs).toContain('@room');
+        expect(refs).toContain('@owned');
+        expect(refs).toContain('@starting-point');
+        expect(refs).toHaveLength(5);
+      });
+
+      it('should not extract built-in function calls', () => {
+        const refs = extractPredefinedStateRefs(
+          '@media(w < 600px) & @root(theme=dark) & @own(hovered)',
+        );
+        expect(refs).toHaveLength(0);
+      });
     });
   });
 
