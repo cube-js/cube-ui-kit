@@ -414,7 +414,7 @@ const ItemElement = tasty({
       whiteSpace: 'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      maxWidth: '100%',
+      width: '0 100%',
       preset: 'inherit',
       padding:
         '$block-padding $label-padding-right $label-padding-bottom $label-padding-left',
