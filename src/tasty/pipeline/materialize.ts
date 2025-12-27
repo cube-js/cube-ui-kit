@@ -518,11 +518,71 @@ function getVariantKey(v: SelectorVariant): string {
 }
 
 /**
+ * Check if variant A is a superset of variant B (A is more restrictive)
+ *
+ * If A has all of B's conditions plus more, then A is redundant
+ * because B already covers the same cases (and more).
+ *
+ * Example:
+ *   A: :not([size=large]):not([size=medium]):not([size=small])
+ *   B: :not([size=large])
+ *   A is a superset of B, so A is redundant when B exists.
+ */
+function isVariantSuperset(a: SelectorVariant, b: SelectorVariant): boolean {
+  // Must have same context (root prefix, at-rules, etc.)
+  if (a.rootPrefix !== b.rootPrefix) return false;
+  if (a.startingStyle !== b.startingStyle) return false;
+
+  // Check if a.mediaRules is superset of b.mediaRules
+  if (!isArraySuperset(a.mediaRules, b.mediaRules)) return false;
+
+  // Check if a.containerRules is superset of b.containerRules
+  if (!isArraySuperset(a.containerRules, b.containerRules)) return false;
+
+  // Check if a.modifierSelectors is superset of b.modifierSelectors
+  if (!isArraySuperset(a.modifierSelectors, b.modifierSelectors)) return false;
+
+  // Check if a.ownSelectors is superset of b.ownSelectors
+  if (!isArraySuperset(a.ownSelectors, b.ownSelectors)) return false;
+
+  // A is a superset if it has all of B's items (possibly more)
+  // and at least one category has strictly more items
+  const aTotal =
+    a.mediaRules.length +
+    a.containerRules.length +
+    a.modifierSelectors.length +
+    a.ownSelectors.length;
+  const bTotal =
+    b.mediaRules.length +
+    b.containerRules.length +
+    b.modifierSelectors.length +
+    b.ownSelectors.length;
+
+  return aTotal > bTotal;
+}
+
+/**
+ * Check if array A contains all elements of array B (superset)
+ */
+function isArraySuperset(a: string[], b: string[]): boolean {
+  const setA = new Set(a);
+  for (const item of b) {
+    if (!setA.has(item)) return false;
+  }
+  return true;
+}
+
+/**
  * Deduplicate variants
+ *
+ * Removes:
+ * 1. Exact duplicates (same key)
+ * 2. Superset variants (more restrictive selectors that are redundant)
  */
 function dedupeVariants(variants: SelectorVariant[]): SelectorVariant[] {
+  // First pass: exact deduplication
   const seen = new Set<string>();
-  const result: SelectorVariant[] = [];
+  let result: SelectorVariant[] = [];
 
   for (const v of variants) {
     const key = getVariantKey(v);
@@ -532,7 +592,38 @@ function dedupeVariants(variants: SelectorVariant[]): SelectorVariant[] {
     }
   }
 
-  return result;
+  // Second pass: remove supersets (more restrictive variants)
+  // Sort by total selector count (fewer selectors = less restrictive = keep)
+  result.sort((a, b) => {
+    const aCount =
+      a.modifierSelectors.length +
+      a.ownSelectors.length +
+      a.mediaRules.length +
+      a.containerRules.length;
+    const bCount =
+      b.modifierSelectors.length +
+      b.ownSelectors.length +
+      b.mediaRules.length +
+      b.containerRules.length;
+    return aCount - bCount;
+  });
+
+  // Remove variants that are supersets of earlier (less restrictive) variants
+  const filtered: SelectorVariant[] = [];
+  for (const candidate of result) {
+    let isRedundant = false;
+    for (const kept of filtered) {
+      if (isVariantSuperset(candidate, kept)) {
+        isRedundant = true;
+        break;
+      }
+    }
+    if (!isRedundant) {
+      filtered.push(candidate);
+    }
+  }
+
+  return filtered;
 }
 
 /**

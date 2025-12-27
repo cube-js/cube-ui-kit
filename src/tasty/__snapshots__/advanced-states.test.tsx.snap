@@ -85,21 +85,21 @@ exports[`Advanced State Mapping - CSS Output complex combinations should generat
 `;
 
 exports[`Advanced State Mapping - CSS Output complex combinations should generate CSS with styles of different types in OR groups 1`] = `
-"@media not (prefers-color-scheme: light) and not (prefers-color-scheme: no-preference) {:root[data-prefers-schema="light"][data-schema="system"] .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+"@media (prefers-color-scheme: light) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media not (prefers-color-scheme: light) and not (prefers-color-scheme: no-preference) {:root[data-prefers-schema="light"][data-schema="system"] .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
 @media not (prefers-color-scheme: light) and (prefers-color-scheme: no-preference) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
-@media (prefers-color-scheme: light) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
 @media not (prefers-color-scheme: light) and not (prefers-color-scheme: no-preference) {:root:not([data-prefers-schema="light"]) .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
 @media not (prefers-color-scheme: light) and not (prefers-color-scheme: no-preference) {:root:not([data-schema="system"]) .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output complex combinations should generate CSS with styles of different types in OR groups in real world use case 1`] = `
 "@media (prefers-color-scheme: dark) {:root[data-prefers-schema="system"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
-@media (prefers-color-scheme: no-preference) and not (prefers-color-scheme: dark) {:root[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
 @media (prefers-color-scheme: no-preference) {:root:not([data-prefers-schema="system"])[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
-@media not (prefers-color-scheme: dark) and not (prefers-color-scheme: no-preference) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
-@media not (prefers-color-scheme: dark) {:root:not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media (prefers-color-scheme: no-preference) and not (prefers-color-scheme: dark) {:root[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+:root:not([data-prefers-schema="system"]):not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}
 @media not (prefers-color-scheme: no-preference) {:root:not([data-prefers-schema="system"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
-:root:not([data-prefers-schema="system"]):not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}"
+@media not (prefers-color-scheme: dark) {:root:not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media not (prefers-color-scheme: dark) and not (prefers-color-scheme: no-preference) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output complex combinations should handle advanced states with multiple modifiers 1`] = `
@@ -176,12 +176,12 @@ exports[`Advanced State Mapping - CSS Output complex combinations should handle 
 
 exports[`Advanced State Mapping - CSS Output complex combinations should support complex predefined states 1`] = `
 "@media (prefers-color-scheme: dark) {:root[data-prefers-schema="system"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
-@media (prefers-color-scheme: no-preference) and not (prefers-color-scheme: dark) {:root[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
 @media (prefers-color-scheme: no-preference) {:root:not([data-prefers-schema="system"])[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
-@media not (prefers-color-scheme: dark) and not (prefers-color-scheme: no-preference) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
-@media not (prefers-color-scheme: dark) {:root:not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media (prefers-color-scheme: no-preference) and not (prefers-color-scheme: dark) {:root[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+:root:not([data-prefers-schema="system"]):not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}
 @media not (prefers-color-scheme: no-preference) {:root:not([data-prefers-schema="system"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
-:root:not([data-prefers-schema="system"]):not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}"
+@media not (prefers-color-scheme: dark) {:root:not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media not (prefers-color-scheme: dark) and not (prefers-color-scheme: no-preference) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output edge cases should handle advanced states with complex style values 1`] = `
