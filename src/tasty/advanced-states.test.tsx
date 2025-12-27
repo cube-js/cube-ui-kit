@@ -477,6 +477,90 @@ describe('Advanced State Mapping - CSS Output', () => {
   });
 
   describe('complex combinations', () => {
+    it('should generate CSS with styles of different types in OR groups', () => {
+      const Element = tasty({
+        styles: {
+          color: {
+            '': '#white',
+            '(@media(prefers-color-scheme: light) | @media(prefers-color-scheme: no-preference)) | (@root(prefers-schema=light) & @root(schema=system))':
+              '#dark',
+          },
+        },
+      });
+
+      const { container } = render(<Element />);
+      expect(container).toMatchTastySnapshot();
+    });
+
+    it('should generate CSS with styles of different types in OR groups in real world use case', () => {
+      const Element = tasty({
+        styles: {
+          color: {
+            '': '#dark',
+            '(@media(prefers-color-scheme: dark) & @root(prefers-schema=system)) | (@root(prefers-schema=dark) & @media(prefers-color-scheme: no-preference))':
+              '#white',
+          },
+        },
+      });
+
+      const { container } = render(<Element />);
+      expect(container).toMatchTastySnapshot();
+    });
+
+    it('should support complex predefined states', () => {
+      // Define a complex predefined state that combines media queries and root states
+      const Element = tasty({
+        styles: {
+          '@darkMode':
+            '(@media(prefers-color-scheme: dark) & @root(prefers-schema=system)) | (@root(prefers-schema=dark) & @media(prefers-color-scheme: no-preference))',
+
+          color: {
+            '': '#dark',
+            '@darkMode': '#white',
+          },
+        },
+      });
+
+      const { container } = render(<Element />);
+      expect(container).toMatchTastySnapshot();
+    });
+
+    it('should generate CSS with linked styles with the same set of states', () => {
+      const Element = tasty({
+        styles: {
+          display: {
+            '': 'flex',
+            '@media(w < 600px)': 'grid',
+          },
+          hide: {
+            '': false,
+            '@media(w < 600px)': true,
+          },
+        },
+      });
+
+      const { container } = render(<Element />);
+      expect(container).toMatchTastySnapshot();
+    });
+
+    it('should generate CSS with linked styles with a different set of states', () => {
+      const Element = tasty({
+        styles: {
+          display: {
+            '': 'flex',
+            '@media(w < 1200px)': 'grid',
+          },
+          hide: {
+            '': false,
+            '@media(w < 600px)': true,
+          },
+        },
+      });
+
+      const { container } = render(<Element />);
+      expect(container).toMatchTastySnapshot();
+    });
+
     it('should handle combined media and root states on same property', () => {
       // Multiple advanced states targeting the same property
       // Each should generate its own distinct rule

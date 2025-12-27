@@ -66,13 +66,40 @@ exports[`Advanced State Mapping - CSS Output combined advanced states with regul
 ":root[data-theme="dark"] .t0.t0[data-disabled] {background-color: var(--dark-04-color);}
 :root[data-theme="dark"] .t0.t0[data-disabled]>* {--context-fill-color: var(--dark-04-color); --context-fill-color-rgb: var(--dark-04-color-rgb);}
 :root[data-theme="dark"] .t0.t0:not([data-disabled]) {background-color: var(--dark-02-color);}
-:root:not([data-theme="dark"])[data-theme="dark"] .t0.t0 {background-color: var(--dark-02-color);}
 :root[data-theme="dark"] .t0.t0:not([data-disabled])>* {--context-fill-color: var(--dark-02-color); --context-fill-color-rgb: var(--dark-02-color-rgb);}
-:root:not([data-theme="dark"])[data-theme="dark"] .t0.t0>* {--context-fill-color: var(--dark-02-color); --context-fill-color-rgb: var(--dark-02-color-rgb);}
 :root:not([data-theme="dark"]) .t0.t0[data-disabled] {background-color: var(--gray-03-color);}
 :root:not([data-theme="dark"]) .t0.t0[data-disabled]>* {--context-fill-color: var(--gray-03-color); --context-fill-color-rgb: var(--gray-03-color-rgb);}
 :root:not([data-theme="dark"]) .t0.t0:not([data-disabled]) {background-color: var(--white-color);}
 :root:not([data-theme="dark"]) .t0.t0:not([data-disabled])>* {--context-fill-color: var(--white-color); --context-fill-color-rgb: var(--white-color-rgb);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should generate CSS with linked styles with a different set of states 1`] = `
+"@media (width < 600px) {.t0.t0 {display: none;}}
+@media not (width < 600px) and (width < 1200px) {.t0.t0 {display: grid;}}
+@media not (width < 1200px) and not (width < 600px) {.t0.t0 {display: flex;}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should generate CSS with linked styles with the same set of states 1`] = `
+"@media (width < 600px) {.t0.t0 {display: none;}}
+@media not (width < 600px) {.t0.t0 {display: flex;}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should generate CSS with styles of different types in OR groups 1`] = `
+"@media not (prefers-color-scheme: light) and not (prefers-color-scheme: no-preference) {:root[data-prefers-schema="light"][data-schema="system"] .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media not (prefers-color-scheme: light) and (prefers-color-scheme: no-preference) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media (prefers-color-scheme: light) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media not (prefers-color-scheme: light) and not (prefers-color-scheme: no-preference) {:root:not([data-prefers-schema="light"]) .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media not (prefers-color-scheme: light) and not (prefers-color-scheme: no-preference) {:root:not([data-schema="system"]) .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should generate CSS with styles of different types in OR groups in real world use case 1`] = `
+"@media (prefers-color-scheme: dark) {:root[data-prefers-schema="system"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media (prefers-color-scheme: no-preference) and not (prefers-color-scheme: dark) {:root[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media (prefers-color-scheme: no-preference) {:root:not([data-prefers-schema="system"])[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media not (prefers-color-scheme: dark) and not (prefers-color-scheme: no-preference) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media not (prefers-color-scheme: dark) {:root:not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media not (prefers-color-scheme: no-preference) {:root:not([data-prefers-schema="system"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+:root:not([data-prefers-schema="system"]):not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}"
 `;
 
 exports[`Advanced State Mapping - CSS Output complex combinations should handle advanced states with multiple modifiers 1`] = `
@@ -145,6 +172,16 @@ exports[`Advanced State Mapping - CSS Output complex combinations should handle 
 @media not (width <= 400px) and (width <= 800px) {.t0.t0 {columns: 2;}}
 @media not (width <= 400px) and not (width <= 800px) and (width <= 1200px) {.t0.t0 {columns: 3;}}
 @media not (width <= 1200px) and not (width <= 400px) and not (width <= 800px) {.t0.t0 {columns: 4;}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should support complex predefined states 1`] = `
+"@media (prefers-color-scheme: dark) {:root[data-prefers-schema="system"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media (prefers-color-scheme: no-preference) and not (prefers-color-scheme: dark) {:root[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media (prefers-color-scheme: no-preference) {:root:not([data-prefers-schema="system"])[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media not (prefers-color-scheme: dark) and not (prefers-color-scheme: no-preference) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media not (prefers-color-scheme: dark) {:root:not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media not (prefers-color-scheme: no-preference) {:root:not([data-prefers-schema="system"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+:root:not([data-prefers-schema="system"]):not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}"
 `;
 
 exports[`Advanced State Mapping - CSS Output edge cases should handle advanced states with complex style values 1`] = `
@@ -222,7 +259,7 @@ exports[`Advanced State Mapping - CSS Output sub-element advanced states should 
 exports[`Advanced State Mapping - CSS Output sub-element advanced states should combine @own state with parent modifiers 1`] = `
 ".t0.t0:not([data-disabled]) [data-element="Icon"][data-hovered] {color: var(--purple-color); --current-color: var(--purple-color); --current-color-rgb: var(--purple-color-rgb);}
 .t0.t0[data-disabled] [data-element="Icon"] {color: var(--light-gray-color); --current-color: var(--light-gray-color); --current-color-rgb: var(--light-gray-color-rgb);}
-.t0.t0:not([data-disabled]) [data-element="Icon"]:not([data-hovered]), .t0.t0:not([data-disabled])[data-disabled] [data-element="Icon"] {color: var(--gray-color); --current-color: var(--gray-color); --current-color-rgb: var(--gray-color-rgb);}"
+.t0.t0:not([data-disabled]) [data-element="Icon"]:not([data-hovered]) {color: var(--gray-color); --current-color: var(--gray-color); --current-color-rgb: var(--gray-color-rgb);}"
 `;
 
 exports[`Advanced State Mapping - CSS Output sub-element advanced states should handle negated @own state 1`] = `

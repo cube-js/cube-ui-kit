@@ -31,6 +31,7 @@ import {
 import {
   buildExclusiveConditions,
   ExclusiveStyleEntry,
+  expandOrConditions,
   isValueMapping,
   parseStyleEntries,
 } from './exclusive';
@@ -181,7 +182,8 @@ function runPipeline(
   // Deduplicate rules
   const seen = new Set<string>();
   const dedupedRules = allRules.filter((rule) => {
-    const key = `${rule.selector}|${rule.declarations}|${JSON.stringify(rule.atRules || [])}`;
+    // Include rootPrefix in dedup key - rules with different root prefixes are distinct
+    const key = `${rule.selector}|${rule.declarations}|${JSON.stringify(rule.atRules || [])}|${rule.rootPrefix || ''}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -253,8 +255,13 @@ function processStyles(
           parseStateKey(stateKey, { context: parserContext }),
         );
 
-        // Build exclusive conditions
-        const exclusive = buildExclusiveConditions(parsed);
+        // Expand OR conditions into exclusive branches
+        // This ensures OR branches like `A | B | C` become:
+        //   A, B & !A, C & !A & !B
+        const expanded = expandOrConditions(parsed);
+
+        // Build exclusive conditions across all entries
+        const exclusive = buildExclusiveConditions(expanded);
         exclusiveByStyle.set(styleName, exclusive);
       } else {
         // Simple value - single entry with TRUE condition
@@ -574,6 +581,7 @@ function materializeComputedRule(rule: ComputedRule): CSSRule[] {
   for (const variant of components.variants) {
     const atRules = buildAtRulesFromVariant(variant);
     const key = atRules.sort().join('|||') + '###' + (variant.rootPrefix || '');
+
     const group = byAtRules.get(key);
     if (group) {
       group.variants.push(variant);

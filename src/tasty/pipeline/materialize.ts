@@ -375,18 +375,119 @@ function dedupeArray(arr: string[]): string[] {
 function mergeVariants(
   a: SelectorVariant,
   b: SelectorVariant,
-): SelectorVariant {
+): SelectorVariant | null {
+  const mergedMedia = dedupeArray([...a.mediaRules, ...b.mediaRules]);
+
+  // Check for contradictory media rules
+  if (hasMediaContradiction(mergedMedia)) {
+    return null; // Impossible variant
+  }
+
+  // Combine root prefixes and check for contradictions
+  const combinedRoot = combineRootPrefixes(a.rootPrefix, b.rootPrefix);
+  if (combinedRoot && hasRootPrefixContradiction(combinedRoot)) {
+    return null; // Impossible variant
+  }
+
+  // Merge modifier selectors and check for contradictions
+  const mergedModifiers = dedupeArray([
+    ...a.modifierSelectors,
+    ...b.modifierSelectors,
+  ]);
+  if (hasModifierContradiction(mergedModifiers)) {
+    return null; // Impossible variant
+  }
+
   return {
-    modifierSelectors: dedupeArray([
-      ...a.modifierSelectors,
-      ...b.modifierSelectors,
-    ]),
+    modifierSelectors: mergedModifiers,
     ownSelectors: dedupeArray([...a.ownSelectors, ...b.ownSelectors]),
-    mediaRules: dedupeArray([...a.mediaRules, ...b.mediaRules]),
+    mediaRules: mergedMedia,
     containerRules: dedupeArray([...a.containerRules, ...b.containerRules]),
-    rootPrefix: combineRootPrefixes(a.rootPrefix, b.rootPrefix),
+    rootPrefix: combinedRoot,
     startingStyle: a.startingStyle || b.startingStyle,
   };
+}
+
+/**
+ * Check if a set of media rules contains contradictions
+ * e.g., "@media (prefers-color-scheme: light)" and "@media not (prefers-color-scheme: light)"
+ */
+function hasMediaContradiction(mediaRules: string[]): boolean {
+  const features = new Map<string, { positive: boolean; rule: string }>();
+
+  for (const rule of mediaRules) {
+    // Parse the rule to extract the feature condition
+    // Format: "@media (feature: value)" or "@media not (feature: value)"
+    const notMatch = rule.match(/@media\s+not\s+\(([^:]+):\s*([^)]+)\)/i);
+    const posMatch = rule.match(/@media\s+\(([^:]+):\s*([^)]+)\)/i);
+
+    if (notMatch) {
+      const key = `${notMatch[1].trim()}:${notMatch[2].trim()}`;
+      const existing = features.get(key);
+      if (existing && existing.positive) {
+        return true; // Found: (feature: value) AND not (feature: value)
+      }
+      features.set(key, { positive: false, rule });
+    } else if (posMatch) {
+      const key = `${posMatch[1].trim()}:${posMatch[2].trim()}`;
+      const existing = features.get(key);
+      if (existing && !existing.positive) {
+        return true; // Found: not (feature: value) AND (feature: value)
+      }
+      features.set(key, { positive: true, rule });
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Check if a root prefix contains contradictions
+ * e.g., ":root:not([data-x="y"])[data-x="y"]" is a contradiction
+ */
+function hasRootPrefixContradiction(rootPrefix: string): boolean {
+  return hasSelectorStringContradiction(rootPrefix);
+}
+
+/**
+ * Check if modifier selectors contain contradictions
+ * e.g., "[data-selected]" and ":not([data-selected])" together
+ */
+function hasModifierContradiction(modifiers: string[]): boolean {
+  const combined = modifiers.join('');
+  return hasSelectorStringContradiction(combined);
+}
+
+/**
+ * Check if a selector string contains contradictions
+ * e.g., "[data-x]:not([data-x])" or "[data-x="y"]:not([data-x="y"])"
+ */
+function hasSelectorStringContradiction(selector: string): boolean {
+  const positiveAttrs: string[] = [];
+  const negativeAttrs: string[] = [];
+
+  // Match :not([attr]) or :not([attr="value"])
+  const notPattern = /:not\(\[([^\]]+)\]\)/g;
+  let match;
+  while ((match = notPattern.exec(selector)) !== null) {
+    negativeAttrs.push(match[1]);
+  }
+
+  // Match [attr] or [attr="value"] (not inside :not())
+  // The lookbehind (?<!...) ensures we don't match attributes inside :not()
+  const attrPattern = /(?<!:not\()\[([^\]]+)\]/g;
+  while ((match = attrPattern.exec(selector)) !== null) {
+    positiveAttrs.push(match[1]);
+  }
+
+  // Check for contradictions
+  for (const neg of negativeAttrs) {
+    if (positiveAttrs.includes(neg)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -439,6 +540,9 @@ function dedupeVariants(variants: SelectorVariant[]): SelectorVariant[] {
  *
  * AND of conditions means cartesian product of variants:
  * (A1 | A2) & (B1 | B2) = A1&B1 | A1&B2 | A2&B1 | A2&B2
+ *
+ * Variants that result in contradictions (e.g., conflicting media rules)
+ * are filtered out.
  */
 function andToCSS(children: ConditionNode[]): CSSComponents {
   // Start with a single empty variant
@@ -455,9 +559,18 @@ function andToCSS(children: ConditionNode[]): CSSComponents {
     const newVariants: SelectorVariant[] = [];
     for (const current of currentVariants) {
       for (const childVariant of childCSS.variants) {
-        newVariants.push(mergeVariants(current, childVariant));
+        const merged = mergeVariants(current, childVariant);
+        // Skip impossible variants (contradictions detected during merge)
+        if (merged !== null) {
+          newVariants.push(merged);
+        }
       }
     }
+
+    if (newVariants.length === 0) {
+      return { variants: [], isImpossible: true };
+    }
+
     // Deduplicate after each step to prevent exponential blowup
     currentVariants = dedupeVariants(newVariants);
   }
@@ -474,6 +587,10 @@ function andToCSS(children: ConditionNode[]): CSSComponents {
  * OR in CSS means multiple selector variants (DNF).
  * Each variant becomes a separate selector in the comma-separated list,
  * or multiple CSS rules if they have different at-rules.
+ *
+ * Note: OR exclusivity is handled at the pipeline level (expandOrConditions),
+ * so here we just collect all variants. Any remaining ORs in the condition
+ * tree (e.g., from De Morgan expansion) are handled as simple alternatives.
  */
 function orToCSS(children: ConditionNode[]): CSSComponents {
   const allVariants: SelectorVariant[] = [];
@@ -482,7 +599,6 @@ function orToCSS(children: ConditionNode[]): CSSComponents {
     const childCSS = conditionToCSSInner(child);
     if (childCSS.isImpossible) continue;
 
-    // Collect all variants from this OR branch
     allVariants.push(...childCSS.variants);
   }
 

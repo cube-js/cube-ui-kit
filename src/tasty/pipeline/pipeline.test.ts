@@ -20,7 +20,7 @@ import { conditionToCSS } from './materialize';
 import { parseStateKey } from './parseStateKey';
 import { simplifyCondition } from './simplify';
 
-import { renderStyles } from './index';
+import { clearPipelineCache, renderStyles } from './index';
 
 describe('ConditionNode operations', () => {
   describe('and()', () => {
@@ -522,5 +522,78 @@ describe('renderStyles integration', () => {
     expect(mediaRule).toBeDefined();
     expect(mediaRule!.atRules![0]).toContain('width');
     expect(mediaRule!.atRules![0]).toContain('1000px');
+  });
+});
+
+describe('Complex OR conditions with mixed types', () => {
+  it('should detect media feature contradictions', () => {
+    // @media(light) & !@media(light) should simplify to FALSE
+    const light = parseStateKey('@media(prefers-color-scheme: light)', {});
+    const notLight = not(light);
+    const contradiction = and(light, notLight);
+    const simplified = simplifyCondition(contradiction);
+
+    expect(simplified.kind).toBe('false');
+  });
+
+  it('should analyze OR condition with mixed media and root states', () => {
+    // Parse the complex condition
+    const darkCondition = parseStateKey(
+      '(@media(prefers-color-scheme: light) | @media(prefers-color-scheme: no-preference)) | (@root(prefers-schema=light) & @root(prefers-schema=system))',
+      {},
+    );
+
+    // Get CSS components for the dark condition
+    const darkCSS = conditionToCSS(darkCondition);
+
+    // Negate and simplify for the white (default) condition
+    const whiteCondition = not(darkCondition);
+    const simplifiedWhite = simplifyCondition(whiteCondition);
+
+    const whiteCSS = conditionToCSS(simplifiedWhite);
+
+    // The dark condition should have 3 variants (2 media + 1 root)
+    expect(darkCSS.variants.length).toBe(3);
+
+    // The white condition should properly negate the OR
+    // NOT(A | B | C) = NOT(A) & NOT(B) & NOT(C)
+    // where C = (root1 & root2), so NOT(C) = NOT(root1) | NOT(root2)
+    // Final: NOT(media1) & NOT(media2) & (NOT(root1) | NOT(root2))
+    // In DNF: 2 terms
+    expect(whiteCSS.variants.length).toBe(2);
+  });
+
+  it('should render correct CSS for complex OR with mixed types', () => {
+    // Clear cache to ensure fresh computation
+    clearPipelineCache();
+
+    const styles = {
+      color: {
+        '': '#white',
+        '(@media(prefers-color-scheme: light) | @media(prefers-color-scheme: no-preference)) | (@root(prefers-schema=light) & @root(prefers-schema=system))':
+          '#dark',
+      },
+    };
+
+    const result = renderStyles(styles, '.test');
+
+    // Should have 5 rules total:
+    // Dark: 3 rules (2 media, 1 root)
+    // White: 2 rules (same at-rules, different root prefixes)
+    expect(result.length).toBe(5);
+
+    // Check that white (default) condition has both root prefix variants
+    const whiteRules = result.filter((r) => r.declarations.includes('white'));
+    expect(whiteRules.length).toBe(2);
+    expect(
+      whiteRules.some((r) =>
+        r.selector.includes(':root:not([data-prefers-schema="light"])'),
+      ),
+    ).toBe(true);
+    expect(
+      whiteRules.some((r) =>
+        r.selector.includes(':root:not([data-prefers-schema="system"])'),
+      ),
+    ).toBe(true);
   });
 });

@@ -71,8 +71,8 @@ exports[`tasty() API should optimize attribute selectors 2`] = `
 
 exports[`tasty() API should optimize attribute selectors 3`] = `
 ".t29.t29[data-selected][data-size="large"] {padding-top: calc(3 * var(--gap));}
-.t29.t29:not([data-selected])[data-selected], .t29.t29:not([data-selected])[data-size="medium"], .t29.t29:not([data-size="large"])[data-selected], .t29.t29:not([data-size="large"])[data-size="medium"] {padding-top: calc(2 * var(--gap));}
-.t29.t29:not([data-selected]):not([data-size="medium"]) {padding-top: var(--gap);}
+.t29.t29:not([data-size="medium"])[data-selected]:not([data-size="large"]), .t29.t29[data-size="medium"]:not([data-selected]), .t29.t29[data-size="medium"]:not([data-size="large"]) {padding-top: calc(2 * var(--gap));}
+.t29.t29:not([data-size="medium"]):not([data-selected]), .t29.t29:not([data-size="medium"]):not([data-size="large"]):not([data-selected]) {padding-top: var(--gap);}
 .t11.t11 {display: block;}"
 `;
 

@@ -8,7 +8,13 @@
 
 import { StyleValue } from '../utils/styles';
 
-import { and, ConditionNode, not, trueCondition } from './conditions';
+import {
+  and,
+  ConditionNode,
+  isCompoundCondition,
+  not,
+  trueCondition,
+} from './conditions';
 import { simplifyCondition } from './simplify';
 
 // ============================================================================
@@ -149,4 +155,106 @@ export function isValueMapping(
     !Array.isArray(value) &&
     !(value instanceof Date)
   );
+}
+
+// ============================================================================
+// OR Expansion
+// ============================================================================
+
+/**
+ * Expand OR conditions in parsed entries into multiple exclusive entries.
+ *
+ * For an entry with condition `A | B | C`, this creates 3 entries:
+ *   - condition: A
+ *   - condition: B & !A
+ *   - condition: C & !A & !B
+ *
+ * This ensures OR branches are mutually exclusive BEFORE the main
+ * exclusive condition building pass.
+ *
+ * @param entries Parsed entries (may contain OR conditions)
+ * @returns Expanded entries with OR branches made exclusive
+ */
+export function expandOrConditions(
+  entries: ParsedStyleEntry[],
+): ParsedStyleEntry[] {
+  const result: ParsedStyleEntry[] = [];
+
+  for (const entry of entries) {
+    const expanded = expandSingleEntry(entry);
+    result.push(...expanded);
+  }
+
+  return result;
+}
+
+/**
+ * Expand a single entry's OR condition into multiple exclusive entries
+ */
+function expandSingleEntry(entry: ParsedStyleEntry): ParsedStyleEntry[] {
+  const orBranches = collectOrBranches(entry.condition);
+
+  // If no OR (single branch), return as-is
+  if (orBranches.length <= 1) {
+    return [entry];
+  }
+
+  // Make each OR branch exclusive from prior branches
+  const result: ParsedStyleEntry[] = [];
+  const priorBranches: ConditionNode[] = [];
+
+  for (let i = 0; i < orBranches.length; i++) {
+    const branch = orBranches[i];
+
+    // Build: branch & !prior[0] & !prior[1] & ...
+    let exclusiveBranch: ConditionNode = branch;
+    for (const prior of priorBranches) {
+      exclusiveBranch = and(exclusiveBranch, not(prior));
+    }
+
+    // Simplify to detect impossible combinations
+    const simplified = simplifyCondition(exclusiveBranch);
+
+    // Skip impossible branches
+    if (simplified.kind === 'false') {
+      priorBranches.push(branch);
+      continue;
+    }
+
+    result.push({
+      ...entry,
+      stateKey: `${entry.stateKey}[${i}]`, // Mark as expanded branch
+      condition: simplified,
+      // Keep same priority - all branches from same entry have same priority
+    });
+
+    priorBranches.push(branch);
+  }
+
+  return result;
+}
+
+/**
+ * Collect top-level OR branches from a condition.
+ *
+ * For `A | B | C`, returns [A, B, C]
+ * For `A & B`, returns [A & B] (single branch)
+ * For `A | (B & C)`, returns [A, B & C]
+ */
+function collectOrBranches(condition: ConditionNode): ConditionNode[] {
+  if (condition.kind === 'true' || condition.kind === 'false') {
+    return [condition];
+  }
+
+  if (isCompoundCondition(condition) && condition.operator === 'OR') {
+    // Flatten nested ORs
+    const branches: ConditionNode[] = [];
+    for (const child of condition.children) {
+      branches.push(...collectOrBranches(child));
+    }
+    return branches;
+  }
+
+  // Not an OR - return as single branch
+  return [condition];
 }
