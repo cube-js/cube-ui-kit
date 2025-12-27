@@ -29,6 +29,12 @@ export interface StyleInjectorConfig {
    * Helps avoid races during rapid mount/unmount cycles. Default: 10000ms.
    */
   unusedStylesMinAgeMs?: number;
+  /**
+   * Global predefined states for advanced state mapping.
+   * These are state aliases that can be used in any component.
+   * Example: { '@mobile': '@media(w < 920px)', '@dark': '@root(theme=dark)' }
+   */
+  states?: Record<string, string>;
 }
 
 export interface RuleInfo {
@@ -99,8 +105,8 @@ export interface RootRegistry {
   globalRules: Map<string, RuleInfo>; // globalKey -> rule info
 }
 
-// StyleRule is now just an alias for StyleResult from renderStyles
-export type StyleRule = import('../utils/renderStyles').StyleResult;
+// StyleRule is now just an alias for StyleResult from the pipeline
+export type StyleRule = import('../pipeline').StyleResult;
 
 export interface KeyframesInfo {
   name: string;

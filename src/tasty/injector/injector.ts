@@ -5,7 +5,7 @@
 
 import { Component, createElement } from 'react';
 
-import { StyleResult } from '../utils/renderStyles';
+import { StyleResult } from '../pipeline';
 import { parseStyle } from '../utils/styles';
 
 // Simple CSS text to StyleResult converter for injectGlobal backward compatibility
@@ -138,14 +138,29 @@ export class StyleInjector {
 
       // If rule needs className prepended
       if (rule.needsClassName) {
-        // Simple concatenation: .className (double specificity) + selectorSuffix
-        newSelector = `.${className}.${className}${newSelector}`;
+        // Handle multiple selectors (separated by ||| for OR conditions)
+        const selectorParts = newSelector ? newSelector.split('|||') : [''];
+
+        const classPrefix = `.${className}.${className}`;
+
+        newSelector = selectorParts
+          .map((part) => {
+            const classSelector = part ? `${classPrefix}${part}` : classPrefix;
+
+            // If there's a root prefix, add it before the class selector
+            if (rule.rootPrefix) {
+              return `${rule.rootPrefix} ${classSelector}`;
+            }
+            return classSelector;
+          })
+          .join(', ');
       }
 
       return {
         ...rule,
         selector: newSelector,
         needsClassName: undefined, // Remove the flag after processing
+        rootPrefix: undefined, // Remove rootPrefix after processing
       };
     });
 

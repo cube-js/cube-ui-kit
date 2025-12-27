@@ -1,13 +1,28 @@
 export { tasty, Element } from './tasty';
+export { useStyles, useGlobalStyles } from './hooks';
+export type {
+  UseStylesOptions,
+  UseStylesResult,
+  UseGlobalStylesOptions,
+} from './hooks';
+// Chunk utilities for advanced use cases
+export { CHUNK_NAMES, STYLE_TO_CHUNK, categorizeStyleKeys } from './chunks';
+export type { ChunkName, ChunkInfo } from './chunks';
+// Advanced state mapping utilities
+export { getGlobalPredefinedStates } from './states';
+export type {
+  StateParserContext,
+  ParsedAdvancedState,
+  AtRuleContext,
+} from './states';
 export * from './utils/filterBaseProps';
 export * from './utils/colors';
 export * from './utils/styles';
 export * from './utils/modAttrs';
-export * from './utils/responsive';
-export * from './utils/renderStyles';
+export { renderStyles, isSelector } from './pipeline';
+export type { StyleResult, RenderResult } from './pipeline';
 export * from './utils/dotize';
 export * from './styles/list';
-export * from './providers/BreakpointsProvider';
 export * from './utils/mergeStyles';
 export * from './utils/warnings';
 export * from './utils/getDisplayName';
@@ -18,7 +33,6 @@ export type {
   TastyProps,
   TastyElementOptions,
   TastyElementProps,
-  GlobalTastyProps,
   AllBasePropsWithMods,
 } from './tasty';
 export type {
