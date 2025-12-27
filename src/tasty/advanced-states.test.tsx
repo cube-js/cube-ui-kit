@@ -56,6 +56,22 @@ describe('Advanced State Mapping - CSS Output', () => {
       expect(container).toMatchTastySnapshot();
     });
 
+    it('should generate exclusive CSS for multiple overlapping breakpoints', () => {
+      // Exact styles from AdvancedStates.stories.tsx MediaQueries story
+      const Element = tasty({
+        styles: {
+          padding: {
+            '': '4x',
+            '@media(w < 768px)': '2x',
+            '@media(w < 480px)': '1x',
+          },
+        },
+      });
+
+      const { container } = render(<Element />);
+      expect(container).toMatchTastySnapshot();
+    });
+
     it('should expand tasty units in media queries', () => {
       const Element = tasty({
         styles: {

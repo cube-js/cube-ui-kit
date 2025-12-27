@@ -164,42 +164,53 @@ function conditionToCSSInner(node: ConditionNode): CSSComponents {
  * Convert a state condition to CSS
  */
 function stateToCSS(state: StateCondition): CSSComponents {
-  const variant: SelectorVariant = emptyVariant();
-
   switch (state.type) {
-    case 'modifier':
-      variant.modifierSelectors.push(modifierToCSS(state));
-      break;
+    case 'media': {
+      // Media rules can return multiple variants for negated ranges (OR branches)
+      const mediaResults = mediaToCSS(state);
+      const variants = mediaResults.map((mediaRule) => {
+        const v = emptyVariant();
+        v.mediaRules.push(mediaRule);
+        return v;
+      });
+      return { variants, isImpossible: false };
+    }
 
-    case 'pseudo':
-      variant.modifierSelectors.push(pseudoToCSS(state));
-      break;
+    default: {
+      const variant: SelectorVariant = emptyVariant();
 
-    case 'media':
-      variant.mediaRules.push(mediaToCSS(state));
-      break;
+      switch (state.type) {
+        case 'modifier':
+          variant.modifierSelectors.push(modifierToCSS(state));
+          break;
 
-    case 'container':
-      variant.containerRules.push(containerToCSS(state));
-      break;
+        case 'pseudo':
+          variant.modifierSelectors.push(pseudoToCSS(state));
+          break;
 
-    case 'root':
-      variant.rootPrefix = rootToCSS(state);
-      break;
+        case 'container':
+          variant.containerRules.push(containerToCSS(state));
+          break;
 
-    case 'own':
-      variant.ownSelectors.push(...ownToCSS(state));
-      break;
+        case 'root':
+          variant.rootPrefix = rootToCSS(state);
+          break;
 
-    case 'starting':
-      variant.startingStyle = !state.negated;
-      break;
+        case 'own':
+          variant.ownSelectors.push(...ownToCSS(state));
+          break;
+
+        case 'starting':
+          variant.startingStyle = !state.negated;
+          break;
+      }
+
+      return {
+        variants: [variant],
+        isImpossible: false,
+      };
+    }
   }
-
-  return {
-    variants: [variant],
-    isImpossible: false,
-  };
 }
 
 /**
@@ -239,38 +250,47 @@ function pseudoToCSS(state: PseudoCondition): string {
 }
 
 /**
- * Convert media condition to CSS at-rule
+ * Convert media condition to CSS at-rule(s)
+ * Returns an array because negated ranges produce OR branches (two separate rules)
  */
-function mediaToCSS(state: MediaCondition): string {
-  let condition: string;
-
+function mediaToCSS(state: MediaCondition): string[] {
   if (state.subtype === 'type') {
-    // @media:print → @media print
-    condition = state.mediaType || 'all';
+    // @media:print → @media print (or @media not print)
+    const mediaType = state.mediaType || 'all';
+    if (state.negated) {
+      return [`@media not ${mediaType}`];
+    }
+    return [`@media ${mediaType}`];
   } else if (state.subtype === 'feature') {
     // @media(prefers-contrast: high) → @media (prefers-contrast: high)
+    let condition: string;
     if (state.featureValue) {
       condition = `(${state.feature}: ${state.featureValue})`;
     } else {
       condition = `(${state.feature})`;
     }
+    // "not (condition)" is valid for feature queries like prefers-color-scheme
+    if (state.negated) {
+      return [`@media not ${condition}`];
+    }
+    return [`@media ${condition}`];
   } else {
-    // Dimension query
-    condition = dimensionToMediaCondition(
+    // Dimension query - negation is handled by inverting the condition
+    // because "not (width < x)" doesn't work reliably in browsers
+    const conditions = dimensionToMediaCondition(
       state.dimension || 'width',
       state.lowerBound,
       state.upperBound,
+      state.negated,
     );
+    // dimensionToMediaCondition returns array for negated ranges (OR branches)
+    return conditions.map((c) => `@media ${c}`);
   }
-
-  if (state.negated) {
-    return `@media not ${condition}`;
-  }
-  return `@media ${condition}`;
 }
 
 /**
  * Convert container condition to CSS at-rule
+ * Container queries support "not (condition)" syntax, so we can use it directly
  */
 function containerToCSS(state: ContainerCondition): string {
   const name = state.containerName ? `${state.containerName} ` : '';
@@ -284,8 +304,8 @@ function containerToCSS(state: ContainerCondition): string {
       condition = `style(--${state.property})`;
     }
   } else {
-    // Dimension query
-    condition = dimensionToMediaCondition(
+    // Dimension query - container queries support "not (condition)"
+    condition = dimensionToContainerCondition(
       state.dimension || 'width',
       state.lowerBound,
       state.upperBound,
@@ -299,9 +319,10 @@ function containerToCSS(state: ContainerCondition): string {
 }
 
 /**
- * Convert dimension bounds to a media/container condition string
+ * Convert dimension bounds to container query condition (single string)
+ * Container queries support "not (condition)", so no need to invert manually
  */
-function dimensionToMediaCondition(
+function dimensionToContainerCondition(
   dimension: string,
   lowerBound?: { value: string; inclusive: boolean },
   upperBound?: { value: string; inclusive: boolean },
@@ -318,6 +339,61 @@ function dimensionToMediaCondition(
     return `(${dimension} ${op} ${lowerBound.value})`;
   }
   return '(width)'; // Fallback
+}
+/**
+ * Convert dimension bounds to media condition(s)
+ * Returns an array because negated ranges produce OR branches (two separate conditions)
+ */
+function dimensionToMediaCondition(
+  dimension: string,
+  lowerBound?: { value: string; inclusive: boolean },
+  upperBound?: { value: string; inclusive: boolean },
+  negated?: boolean,
+): string[] {
+  if (negated) {
+    // Invert the condition manually since "not (width < x)" doesn't work in browsers
+    // Single bounds: flip the operator → returns single condition
+    // Range: NOT (a <= x < b) = (x < a) OR (x >= b) → returns two conditions (OR branches)
+
+    if (lowerBound && upperBound) {
+      // Range query: (lower <= dim < upper) negated is (dim < lower) OR (dim >= upper)
+      // Return two separate conditions - these become separate variants
+      const lowerOp = lowerBound.inclusive ? '<' : '<=';
+      const upperOp = upperBound.inclusive ? '>' : '>=';
+      return [
+        `(${dimension} ${lowerOp} ${lowerBound.value})`,
+        `(${dimension} ${upperOp} ${upperBound.value})`,
+      ];
+    } else if (upperBound) {
+      // (dim < upper) negated is (dim >= upper)
+      // (dim <= upper) negated is (dim > upper)
+      const op = upperBound.inclusive ? '>' : '>=';
+      return [`(${dimension} ${op} ${upperBound.value})`];
+    } else if (lowerBound) {
+      // (dim >= lower) negated is (dim < lower)
+      // (dim > lower) negated is (dim <= lower)
+      const op = lowerBound.inclusive ? '<' : '<=';
+      return [`(${dimension} ${op} ${lowerBound.value})`];
+    }
+    // Fallback - should not happen
+    return ['(width < 0px)'];
+  }
+
+  // Positive condition - always returns single condition
+  if (lowerBound && upperBound) {
+    const lowerOp = lowerBound.inclusive ? '<=' : '<';
+    const upperOp = upperBound.inclusive ? '<=' : '<';
+    return [
+      `(${lowerBound.value} ${lowerOp} ${dimension} ${upperOp} ${upperBound.value})`,
+    ];
+  } else if (upperBound) {
+    const op = upperBound.inclusive ? '<=' : '<';
+    return [`(${dimension} ${op} ${upperBound.value})`];
+  } else if (lowerBound) {
+    const op = lowerBound.inclusive ? '>=' : '>';
+    return [`(${dimension} ${op} ${lowerBound.value})`];
+  }
+  return ['(width)']; // Fallback
 }
 
 /**
@@ -409,32 +485,189 @@ function mergeVariants(
 }
 
 /**
+ * Parsed dimension condition - can be single-bound or range
+ */
+interface ParsedDimension {
+  dimension: string;
+  lowerBound?: { value: number; unit: string; inclusive: boolean };
+  upperBound?: { value: number; unit: string; inclusive: boolean };
+}
+
+function parseValue(str: string): { value: number; unit: string } | null {
+  const match = str.match(/^(\d+(?:\.\d+)?)(px|em|rem|vh|vw|%)$/i);
+  if (match) {
+    return { value: parseFloat(match[1]), unit: match[2].toLowerCase() };
+  }
+  return null;
+}
+
+function parseDimensionCondition(condition: string): ParsedDimension | null {
+  // Try range syntax first: (600px <= width < 900px)
+  const rangeMatch = condition.match(
+    /\(\s*(\d+(?:\.\d+)?(?:px|em|rem|vh|vw|%))\s*(<=?)\s*(width|height)\s*(<=?)\s*(\d+(?:\.\d+)?(?:px|em|rem|vh|vw|%))\s*\)/i,
+  );
+  if (rangeMatch) {
+    const lowerVal = parseValue(rangeMatch[1]);
+    const upperVal = parseValue(rangeMatch[5]);
+    if (lowerVal && upperVal && lowerVal.unit === upperVal.unit) {
+      return {
+        dimension: rangeMatch[3].toLowerCase(),
+        lowerBound: {
+          value: lowerVal.value,
+          unit: lowerVal.unit,
+          inclusive: rangeMatch[2] === '<=',
+        },
+        upperBound: {
+          value: upperVal.value,
+          unit: upperVal.unit,
+          inclusive: rangeMatch[4] === '<=',
+        },
+      };
+    }
+  }
+
+  // Try single bound: (width < 600px) or (width >= 900px)
+  const singleMatch = condition.match(
+    /\(\s*(width|height)\s*(<=?|>=?)\s*(\d+(?:\.\d+)?(?:px|em|rem|vh|vw|%))\s*\)/i,
+  );
+  if (singleMatch) {
+    const val = parseValue(singleMatch[3]);
+    if (val) {
+      const op = singleMatch[2];
+      if (op === '<' || op === '<=') {
+        return {
+          dimension: singleMatch[1].toLowerCase(),
+          upperBound: {
+            value: val.value,
+            unit: val.unit,
+            inclusive: op === '<=',
+          },
+        };
+      } else {
+        return {
+          dimension: singleMatch[1].toLowerCase(),
+          lowerBound: {
+            value: val.value,
+            unit: val.unit,
+            inclusive: op === '>=',
+          },
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Check if two dimension conditions are contradictory
+ * e.g., "width >= 900px" and "width < 900px" are contradictory
+ * Also handles ranges: "(600px <= width < 900px)" and "(width < 600px)" are contradictory
+ */
+function areDimensionContradictions(
+  a: ParsedDimension,
+  b: ParsedDimension,
+): boolean {
+  if (a.dimension !== b.dimension) return false;
+
+  // Get effective bounds - considering both single-bound and ranges
+  const aLower = a.lowerBound;
+  const aUpper = a.upperBound;
+  const bLower = b.lowerBound;
+  const bUpper = b.upperBound;
+
+  // Check if units are compatible (only compare if same unit)
+  const getUnit = (bound?: { unit: string }) => bound?.unit;
+  const units = [aLower, aUpper, bLower, bUpper]
+    .filter(Boolean)
+    .map((b) => b!.unit);
+  if (units.length > 0 && !units.every((u) => u === units[0])) {
+    return false; // Different units, can't determine
+  }
+
+  // Two conditions contradict if their valid ranges don't overlap
+  // A range is [aLowerVal, aUpperVal) or similar
+  // Default: -Infinity to +Infinity
+  const aLowerVal = aLower?.value ?? -Infinity;
+  const aUpperVal = aUpper?.value ?? Infinity;
+  const bLowerVal = bLower?.value ?? -Infinity;
+  const bUpperVal = bUpper?.value ?? Infinity;
+
+  // For non-inclusive bounds, adjust slightly for comparison
+  // But for simplicity, we'll use strict non-overlap check
+  // Two ranges [aL, aU) and [bL, bU) don't overlap if:
+  // aU <= bL or bU <= aL (considering inclusivity)
+
+  // Check if a's upper bound is at or below b's lower bound
+  if (aUpper && bLower && aUpper.value === bLower.value) {
+    // Same value - check inclusivity
+    // If a.upper is exclusive (<) and b.lower is inclusive (>=), they don't overlap at this point
+    // If a.upper is inclusive (<=) and b.lower is exclusive (>), they don't overlap
+    if (!aUpper.inclusive && bLower.inclusive) {
+      return true; // a < X and X <= b → no overlap at X
+    }
+    if (aUpper.inclusive && !bLower.inclusive) {
+      return true; // a <= X and X > b → no overlap at X
+    }
+  }
+  if (aUpperVal < bLowerVal) return true;
+
+  // Check if b's upper bound is at or below a's lower bound
+  if (bUpper && aLower && bUpper.value === aLower.value) {
+    if (!bUpper.inclusive && aLower.inclusive) {
+      return true;
+    }
+    if (bUpper.inclusive && !aLower.inclusive) {
+      return true;
+    }
+  }
+  if (bUpperVal < aLowerVal) return true;
+
+  return false;
+}
+
+/**
  * Check if a set of media rules contains contradictions
  * e.g., "@media (prefers-color-scheme: light)" and "@media not (prefers-color-scheme: light)"
+ * or "@media (width >= 900px)" and "@media (width < 900px)"
  */
 function hasMediaContradiction(mediaRules: string[]): boolean {
-  const features = new Map<string, { positive: boolean; rule: string }>();
+  const conditions = new Map<string, { positive: boolean; rule: string }>();
+  const dimensionConditions: ParsedDimension[] = [];
 
   for (const rule of mediaRules) {
-    // Parse the rule to extract the feature condition
-    // Format: "@media (feature: value)" or "@media not (feature: value)"
-    const notMatch = rule.match(/@media\s+not\s+\(([^:]+):\s*([^)]+)\)/i);
-    const posMatch = rule.match(/@media\s+\(([^:]+):\s*([^)]+)\)/i);
+    // Check for negated media rule: @media not (...)
+    const notMatch = rule.match(/@media\s+not\s+(\([^)]+\))/i);
+    // Check for positive media rule: @media (...)
+    const posMatch = rule.match(/@media\s+(\([^)]+\))/i);
 
     if (notMatch) {
-      const key = `${notMatch[1].trim()}:${notMatch[2].trim()}`;
-      const existing = features.get(key);
+      // Normalize the condition (remove extra whitespace)
+      const key = notMatch[1].replace(/\s+/g, ' ').trim();
+      const existing = conditions.get(key);
       if (existing && existing.positive) {
-        return true; // Found: (feature: value) AND not (feature: value)
+        return true; // Found: (condition) AND not (condition)
       }
-      features.set(key, { positive: false, rule });
+      conditions.set(key, { positive: false, rule });
     } else if (posMatch) {
-      const key = `${posMatch[1].trim()}:${posMatch[2].trim()}`;
-      const existing = features.get(key);
+      // Normalize the condition (remove extra whitespace)
+      const key = posMatch[1].replace(/\s+/g, ' ').trim();
+      const existing = conditions.get(key);
       if (existing && !existing.positive) {
-        return true; // Found: not (feature: value) AND (feature: value)
+        return true; // Found: not (condition) AND (condition)
       }
-      features.set(key, { positive: true, rule });
+      conditions.set(key, { positive: true, rule });
+
+      // Also check for dimension contradictions
+      const dimCond = parseDimensionCondition(posMatch[1]);
+      if (dimCond) {
+        for (const existing of dimensionConditions) {
+          if (areDimensionContradictions(dimCond, existing)) {
+            return true;
+          }
+        }
+        dimensionConditions.push(dimCond);
+      }
     }
   }
 
@@ -758,11 +991,20 @@ export function buildAtRulesFromVariant(variant: SelectorVariant): string[] {
 
   // Add media rules
   if (variant.mediaRules.length > 0) {
-    // Combine media rules with 'and'
-    const conditions = variant.mediaRules
-      .map((r) => r.replace(/^@media\s*/, ''))
-      .join(' and ');
-    atRules.push(`@media ${conditions}`);
+    // Each rule is either:
+    // - "@media (condition)" for positive conditions
+    // - "@media not (condition)" for negated conditions
+    // - "@media not print" for negated media types
+    // - "@media (inverted-condition)" for negated dimension queries (already inverted)
+    //
+    // We strip "@media " and join with " and "
+    // This produces valid CSS like:
+    // @media not (prefers-color-scheme: dark) and (width > 800px)
+    // which means: NOT(dark) AND (width > 800px)
+    const conditions = variant.mediaRules.map((r) =>
+      r.replace(/^@media\s*/, ''),
+    );
+    atRules.push(`@media ${conditions.join(' and ')}`);
   }
 
   // Add container rules

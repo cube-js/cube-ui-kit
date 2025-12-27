@@ -26,6 +26,8 @@ export const APPEARANCE_CHUNK_STYLES = [
   'outline', // outlineStyle (independent)
   'shadow', // shadowStyle (independent)
   'fade', // fadeStyle (independent)
+  'transform', // independent - grouped for @starting-style animations
+  'transition', // independent - grouped for @starting-style animations
 ] as const;
 
 /**

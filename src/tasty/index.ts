@@ -9,7 +9,7 @@ export type {
 export { CHUNK_NAMES, STYLE_TO_CHUNK, categorizeStyleKeys } from './chunks';
 export type { ChunkName, ChunkInfo } from './chunks';
 // Advanced state mapping utilities
-export { getGlobalPredefinedStates } from './states';
+export { getGlobalPredefinedStates, setGlobalPredefinedStates } from './states';
 export type {
   StateParserContext,
   ParsedAdvancedState,
