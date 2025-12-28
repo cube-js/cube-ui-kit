@@ -886,10 +886,15 @@ describe('Advanced State Mapping - renderStyles direct tests', () => {
       expect(uniqueConditions.size).toBe(conditions.length);
 
       // Verify the expected non-overlapping ranges
-      // The new pipeline uses exclusive conditions format
+      // Container conditions with the same name are combined with "and"
+      // Note: negated conditions are wrapped in parentheses for valid CSS syntax
       expect(conditions).toContain('@container (width <= 400px)');
-      expect(conditions).toContain('@container (width <= 800px)');
-      expect(conditions).toContain('@container not (width <= 400px)');
+      expect(conditions).toContain(
+        '@container (not (width <= 400px)) and (width <= 800px)',
+      );
+      expect(conditions).toContain(
+        '@container (not (width <= 400px)) and (not (width <= 800px))',
+      );
     });
 
     it('should detect contradictions in container style queries', () => {

@@ -283,8 +283,15 @@ export class SheetManager {
                   lastInsertedIndex = idx;
                   currentRuleIndex = idx + 1;
                   anyInserted = true;
-                } catch (_) {
+                } catch (singleErr) {
                   // Skip unsupported selector in this engine (e.g., ::-moz-selection in Blink)
+                  if (process.env.NODE_ENV !== 'production') {
+                    console.warn(
+                      '[tasty] Browser rejected CSS rule:',
+                      singleRule,
+                      singleErr,
+                    );
+                  }
                 }
               }
               // If none inserted, continue without throwing to avoid aborting the whole batch
@@ -293,6 +300,9 @@ export class SheetManager {
               }
             } else {
               // Single selector failed — skip it silently (likely unsupported in this engine)
+              if (process.env.NODE_ENV !== 'production') {
+                console.warn('[tasty] Browser rejected CSS rule:', fullRule, e);
+              }
             }
           }
         } else {

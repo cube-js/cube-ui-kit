@@ -390,9 +390,9 @@ describe('conditionToCSS()', () => {
     });
     const css = conditionToCSS(media);
     expect(css.variants.length).toBe(1);
-    expect(css.variants[0].mediaRules.length).toBe(1);
-    expect(css.variants[0].mediaRules[0]).toContain('@media');
-    expect(css.variants[0].mediaRules[0]).toContain('width');
+    expect(css.variants[0].mediaConditions.length).toBe(1);
+    expect(css.variants[0].mediaConditions[0].condition).toContain('width');
+    expect(css.variants[0].mediaConditions[0].subtype).toBe('dimension');
   });
 
   it('should set startingStyle flag for @starting', () => {
