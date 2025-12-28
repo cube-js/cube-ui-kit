@@ -2,7 +2,7 @@
 
 exports[`tasty() API should allow multiple wrapping 1`] = `
 ".t22.t22 {border: var(--border-width) solid var(--black-color); color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}
-.t23.t23 {padding-top: calc(2 * var(--gap));}
+.t23.t23 {padding-top: calc(2 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
 .t24.t24 {display: flex;}
 .t25.t25 {position: static;}"
 `;
@@ -56,23 +56,23 @@ exports[`tasty() API should merge styles in custom prop 1`] = `
 `;
 
 exports[`tasty() API should optimize attribute selectors 1`] = `
-".t27.t27[data-size="large"] {padding-top: calc(3 * var(--gap));}
-.t27.t27:not([data-size="large"])[data-size="medium"] {padding-top: calc(2 * var(--gap));}
-.t27.t27:not([data-size="large"]):not([data-size="medium"]) {padding-top: var(--gap);}
+".t27.t27[data-size="large"] {padding-top: calc(3 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
+.t27.t27:not([data-size="large"])[data-size="medium"] {padding-top: calc(2 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
+.t27.t27:not([data-size="large"]):not([data-size="medium"]) {padding-top: var(--gap); padding-right: 0; padding-bottom: 0; padding-left: 0;}
 .t11.t11 {display: block;}"
 `;
 
 exports[`tasty() API should optimize attribute selectors 2`] = `
-".t28.t28[data-size="large"] {padding-top: calc(3 * var(--gap));}
-.t28.t28:not([data-size="large"])[data-selected][data-size="medium"] {padding-top: calc(2 * var(--gap));}
-.t28.t28:not([data-size="large"]):not([data-selected]), .t28.t28:not([data-size="large"]):not([data-size="medium"]) {padding-top: var(--gap);}
+".t28.t28[data-size="large"] {padding-top: calc(3 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
+.t28.t28:not([data-size="large"])[data-selected][data-size="medium"] {padding-top: calc(2 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
+.t28.t28:not([data-size="large"]):not([data-selected]), .t28.t28:not([data-size="large"]):not([data-size="medium"]) {padding-top: var(--gap); padding-right: 0; padding-bottom: 0; padding-left: 0;}
 .t11.t11 {display: block;}"
 `;
 
 exports[`tasty() API should optimize attribute selectors 3`] = `
-".t29.t29[data-selected][data-size="large"] {padding-top: calc(3 * var(--gap));}
-.t29.t29[data-size="medium"]:not([data-selected]), .t29.t29[data-size="medium"]:not([data-size="large"]), .t29.t29:not([data-size="medium"])[data-selected]:not([data-size="large"]) {padding-top: calc(2 * var(--gap));}
-.t29.t29:not([data-size="medium"]):not([data-selected]) {padding-top: var(--gap);}
+".t29.t29[data-selected][data-size="large"] {padding-top: calc(3 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
+.t29.t29[data-size="medium"]:not([data-selected]), .t29.t29[data-size="medium"]:not([data-size="large"]), .t29.t29:not([data-size="medium"])[data-selected]:not([data-size="large"]) {padding-top: calc(2 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
+.t29.t29:not([data-size="medium"]):not([data-selected]) {padding-top: var(--gap); padding-right: 0; padding-bottom: 0; padding-left: 0;}
 .t11.t11 {display: block;}"
 `;
 

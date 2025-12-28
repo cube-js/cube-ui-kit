@@ -62,21 +62,29 @@ describe('paddingStyle', () => {
       const result = paddingStyle({ padding: '2x top' });
       expect(result).toEqual({
         'padding-top': 'calc(2 * var(--gap))',
+        'padding-right': '0',
+        'padding-bottom': '0',
+        'padding-left': '0',
       });
     });
 
     it('handles directional padding - left and right', () => {
       const result = paddingStyle({ padding: '3x left right' });
       expect(result).toEqual({
-        'padding-left': 'calc(3 * var(--gap))',
+        'padding-top': '0',
         'padding-right': 'calc(3 * var(--gap))',
+        'padding-bottom': '0',
+        'padding-left': 'calc(3 * var(--gap))',
       });
     });
 
     it('handles directional padding - bottom only', () => {
       const result = paddingStyle({ padding: '1x bottom' });
       expect(result).toEqual({
+        'padding-top': '0',
+        'padding-right': '0',
         'padding-bottom': 'var(--gap)',
+        'padding-left': '0',
       });
     });
   });
@@ -86,7 +94,9 @@ describe('paddingStyle', () => {
       const result = paddingStyle({ paddingBlock: '2x' });
       expect(result).toEqual({
         'padding-top': 'calc(2 * var(--gap))',
+        'padding-right': '0',
         'padding-bottom': 'calc(2 * var(--gap))',
+        'padding-left': '0',
       });
     });
 
@@ -94,23 +104,29 @@ describe('paddingStyle', () => {
       const result = paddingStyle({ paddingBlock: '1x 3x' });
       expect(result).toEqual({
         'padding-top': 'var(--gap)',
+        'padding-right': '0',
         'padding-bottom': 'calc(3 * var(--gap))',
+        'padding-left': '0',
       });
     });
 
     it('handles paddingInline (left and right)', () => {
       const result = paddingStyle({ paddingInline: '4x' });
       expect(result).toEqual({
-        'padding-left': 'calc(4 * var(--gap))',
+        'padding-top': '0',
         'padding-right': 'calc(4 * var(--gap))',
+        'padding-bottom': '0',
+        'padding-left': 'calc(4 * var(--gap))',
       });
     });
 
     it('handles paddingInline with two values', () => {
       const result = paddingStyle({ paddingInline: '2x 5x' });
       expect(result).toEqual({
-        'padding-left': 'calc(2 * var(--gap))',
+        'padding-top': '0',
         'padding-right': 'calc(5 * var(--gap))',
+        'padding-bottom': '0',
+        'padding-left': 'calc(2 * var(--gap))',
       });
     });
 
@@ -155,6 +171,7 @@ describe('paddingStyle', () => {
         'padding-top': 'var(--gap)',
         'padding-right': '12px',
         'padding-bottom': 'calc(2 * var(--gap))',
+        'padding-left': '0',
       });
     });
   });
@@ -250,6 +267,9 @@ describe('paddingStyle', () => {
       });
       expect(result).toEqual({
         'padding-top': 'calc(2 * var(--gap))',
+        'padding-right': '0',
+        'padding-bottom': '0',
+        'padding-left': '0',
       });
     });
 
@@ -289,7 +309,9 @@ describe('paddingStyle', () => {
       });
       expect(result).toEqual({
         'padding-top': 'calc(5 * var(--gap))', // overridden by paddingTop
+        'padding-right': '0',
         'padding-bottom': 'calc(2 * var(--gap))', // from directional padding
+        'padding-left': '0',
       });
     });
 
@@ -300,8 +322,9 @@ describe('paddingStyle', () => {
       });
       expect(result).toEqual({
         'padding-top': 'var(--gap)', // from directional padding
-        'padding-left': 'calc(3 * var(--gap))', // from paddingInline
         'padding-right': 'calc(3 * var(--gap))', // from paddingInline
+        'padding-bottom': '0',
+        'padding-left': 'calc(3 * var(--gap))', // from paddingInline
       });
     });
   });

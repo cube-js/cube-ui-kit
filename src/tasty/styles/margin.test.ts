@@ -62,21 +62,29 @@ describe('marginStyle', () => {
       const result = marginStyle({ margin: '2x top' });
       expect(result).toEqual({
         'margin-top': 'calc(2 * var(--gap))',
+        'margin-right': '0',
+        'margin-bottom': '0',
+        'margin-left': '0',
       });
     });
 
     it('handles directional margin - left and right', () => {
       const result = marginStyle({ margin: '3x left right' });
       expect(result).toEqual({
-        'margin-left': 'calc(3 * var(--gap))',
+        'margin-top': '0',
         'margin-right': 'calc(3 * var(--gap))',
+        'margin-bottom': '0',
+        'margin-left': 'calc(3 * var(--gap))',
       });
     });
 
     it('handles directional margin - bottom only', () => {
       const result = marginStyle({ margin: '1x bottom' });
       expect(result).toEqual({
+        'margin-top': '0',
+        'margin-right': '0',
         'margin-bottom': 'var(--gap)',
+        'margin-left': '0',
       });
     });
   });
@@ -86,7 +94,9 @@ describe('marginStyle', () => {
       const result = marginStyle({ marginBlock: '2x' });
       expect(result).toEqual({
         'margin-top': 'calc(2 * var(--gap))',
+        'margin-right': '0',
         'margin-bottom': 'calc(2 * var(--gap))',
+        'margin-left': '0',
       });
     });
 
@@ -94,23 +104,29 @@ describe('marginStyle', () => {
       const result = marginStyle({ marginBlock: '1x 3x' });
       expect(result).toEqual({
         'margin-top': 'var(--gap)',
+        'margin-right': '0',
         'margin-bottom': 'calc(3 * var(--gap))',
+        'margin-left': '0',
       });
     });
 
     it('handles marginInline (left and right)', () => {
       const result = marginStyle({ marginInline: '4x' });
       expect(result).toEqual({
-        'margin-left': 'calc(4 * var(--gap))',
+        'margin-top': '0',
         'margin-right': 'calc(4 * var(--gap))',
+        'margin-bottom': '0',
+        'margin-left': 'calc(4 * var(--gap))',
       });
     });
 
     it('handles marginInline with two values', () => {
       const result = marginStyle({ marginInline: '2x 5x' });
       expect(result).toEqual({
-        'margin-left': 'calc(2 * var(--gap))',
+        'margin-top': '0',
         'margin-right': 'calc(5 * var(--gap))',
+        'margin-bottom': '0',
+        'margin-left': 'calc(2 * var(--gap))',
       });
     });
 
@@ -155,6 +171,7 @@ describe('marginStyle', () => {
         'margin-top': 'var(--gap)',
         'margin-right': '12px',
         'margin-bottom': 'calc(2 * var(--gap))',
+        'margin-left': '0',
       });
     });
   });
@@ -250,6 +267,9 @@ describe('marginStyle', () => {
       });
       expect(result).toEqual({
         'margin-top': 'calc(2 * var(--gap))',
+        'margin-right': '0',
+        'margin-bottom': '0',
+        'margin-left': '0',
       });
     });
 
@@ -302,7 +322,9 @@ describe('marginStyle', () => {
       });
       expect(result).toEqual({
         'margin-top': 'calc(5 * var(--gap))', // overridden by marginTop
+        'margin-right': '0',
         'margin-bottom': 'calc(2 * var(--gap))', // from directional margin
+        'margin-left': '0',
       });
     });
 
@@ -313,8 +335,9 @@ describe('marginStyle', () => {
       });
       expect(result).toEqual({
         'margin-top': 'var(--gap)', // from directional margin
-        'margin-left': 'calc(3 * var(--gap))', // from marginInline
         'margin-right': 'calc(3 * var(--gap))', // from marginInline
+        'margin-bottom': '0',
+        'margin-left': 'calc(3 * var(--gap))', // from marginInline
       });
     });
   });
@@ -325,8 +348,10 @@ describe('marginStyle', () => {
         marginInline: 'auto',
       });
       expect(result).toEqual({
-        'margin-left': 'auto',
+        'margin-top': '0',
         'margin-right': 'auto',
+        'margin-bottom': '0',
+        'margin-left': 'auto',
       });
     });
 
