@@ -24,6 +24,7 @@ export const APPEARANCE_CHUNK_STYLES = [
   'border', // borderStyle (independent)
   'radius', // radiusStyle (independent)
   'outline', // outlineStyle (independent)
+  'outlineOffset', // independent (used with outline)
   'shadow', // shadowStyle (independent)
   'fade', // fadeStyle (independent)
 ] as const;
@@ -44,6 +45,7 @@ export const FONT_CHUNK_STYLES = [
   'letterSpacing',
   'textTransform',
   // Independent text styles grouped for cohesion
+  'fontFamily', // independent alias (logical grouping with font styles)
   'textAlign',
   'whiteSpace',
   'textDecoration',
