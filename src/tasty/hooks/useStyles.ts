@@ -6,9 +6,20 @@ import {
   renderStylesForChunk,
 } from '../chunks';
 import { allocateClassName, inject } from '../injector';
-import { RenderResult } from '../pipeline';
+import { RenderResult, renderStyles } from '../pipeline';
 import { Styles } from '../styles/types';
 import { stringifyStyles } from '../utils/styles';
+
+/**
+ * Check if styles contain @starting-style rules.
+ *
+ * @starting-style CSS cannot be applied via multiple class names because
+ * of cascade - later rules override earlier ones. When @starting is detected,
+ * we disable chunking and use a single class name for all styles.
+ */
+function containsStartingStyle(styleKey: string): boolean {
+  return styleKey.includes('@starting');
+}
 
 export interface UseStylesOptions {
   /**
@@ -88,6 +99,29 @@ export function useStyles({ styles }: UseStylesOptions): UseStylesResult {
     const currentStyles = stylesRef.current.styles;
     if (!styleKey || !currentStyles) {
       return [];
+    }
+
+    // Disable chunking for styles containing @starting-style rules.
+    // @starting-style CSS cannot work with multiple class names due to cascade -
+    // the rules would override each other instead of combining properly.
+    if (containsStartingStyle(styleKey)) {
+      const renderResult = renderStyles(currentStyles);
+
+      if (renderResult.rules.length === 0) {
+        return [];
+      }
+
+      const { className } = allocateClassName(styleKey);
+
+      return [
+        {
+          name: 'all',
+          styleKeys: Object.keys(currentStyles),
+          cacheKey: styleKey,
+          renderResult,
+          className,
+        },
+      ];
     }
 
     // Categorize style keys into chunks
