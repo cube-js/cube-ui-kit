@@ -57,14 +57,14 @@ exports[`tasty() API should merge styles in custom prop 1`] = `
 
 exports[`tasty() API should optimize attribute selectors 1`] = `
 ".t27.t27[data-size="large"] {padding-top: calc(3 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
-.t27.t27:not([data-size="large"])[data-size="medium"] {padding-top: calc(2 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
+.t27.t27[data-size="medium"] {padding-top: calc(2 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
 .t27.t27:not([data-size="large"]):not([data-size="medium"]) {padding-top: var(--gap); padding-right: 0; padding-bottom: 0; padding-left: 0;}
 .t11.t11 {display: block;}"
 `;
 
 exports[`tasty() API should optimize attribute selectors 2`] = `
 ".t28.t28[data-size="large"] {padding-top: calc(3 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
-.t28.t28:not([data-size="large"])[data-selected][data-size="medium"] {padding-top: calc(2 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
+.t28.t28[data-selected][data-size="medium"] {padding-top: calc(2 * var(--gap)); padding-right: 0; padding-bottom: 0; padding-left: 0;}
 .t28.t28:not([data-size="large"]):not([data-selected]), .t28.t28:not([data-size="large"]):not([data-size="medium"]) {padding-top: var(--gap); padding-right: 0; padding-bottom: 0; padding-left: 0;}
 .t11.t11 {display: block;}"
 `;

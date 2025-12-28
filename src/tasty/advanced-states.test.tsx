@@ -946,6 +946,113 @@ describe('Advanced State Mapping - renderStyles direct tests', () => {
       // Should have at least 1 rule with both style queries
       expect(combinedStyleRules.length).toBeGreaterThan(0);
     });
+
+    it('should handle existence check with value checks for same property', () => {
+      // @($variant) is existence check, @($variant=danger) is value check
+      // Both should work, with value checks having higher priority
+      const { rules } = renderStyles({
+        fill: {
+          '': '#light',
+          '@($variant)': '#purple', // When --variant exists
+          '@($variant=danger)': '#danger', // When --variant equals 'danger'
+          '@($variant=success)': '#success', // When --variant equals 'success'
+        },
+      });
+
+      // Each fill rule produces 2 CSS rules (main element + >* for context propagation)
+      // So 4 conditions × 2 = 8 rules total
+      expect(rules.length).toBe(8);
+
+      // Group rules by their at-rule condition
+      const rulesByCondition = new Map<string, any[]>();
+      for (const rule of rules) {
+        const condition = rule.atRules?.[0] || 'none';
+        if (!rulesByCondition.has(condition)) {
+          rulesByCondition.set(condition, []);
+        }
+        rulesByCondition.get(condition)!.push(rule);
+      }
+
+      // Should have exactly 4 unique conditions
+      const conditions = Array.from(rulesByCondition.keys());
+      expect(rulesByCondition.size).toBe(4);
+
+      // 1. Success case: clean style(--variant: success) without negations
+      const successCondition = conditions.find(
+        (c) => c === '@container style(--variant: success)',
+      );
+      expect(successCondition).toBeDefined();
+      expect(
+        rulesByCondition
+          .get(successCondition!)![0]
+          .declarations.includes('success'),
+      ).toBe(true);
+
+      // 2. Danger case: clean style(--variant: danger) without negations
+      // (The not style(--variant: success) is removed as redundant)
+      const dangerCondition = conditions.find(
+        (c) => c === '@container style(--variant: danger)',
+      );
+      expect(dangerCondition).toBeDefined();
+      expect(
+        rulesByCondition
+          .get(dangerCondition!)![0]
+          .declarations.includes('danger'),
+      ).toBe(true);
+
+      // 3. Existence case: style(--variant) with negations for specific values
+      // (These negations are NOT redundant because style(--variant) doesn't imply a specific value)
+      const existenceCondition = conditions.find((c) =>
+        c.includes('and style(--variant)'),
+      );
+      expect(existenceCondition).toBeDefined();
+      expect(
+        rulesByCondition
+          .get(existenceCondition!)![0]
+          .declarations.includes('purple'),
+      ).toBe(true);
+
+      // 4. Default case: when --variant doesn't exist
+      const defaultCondition = conditions.find((c) =>
+        c.includes('(not style(--variant))'),
+      );
+      expect(defaultCondition).toBeDefined();
+      expect(
+        rulesByCondition
+          .get(defaultCondition!)![0]
+          .declarations.includes('light'),
+      ).toBe(true);
+    });
+
+    it('should simplify redundant negations in container style queries', () => {
+      // style(--variant: danger) implies NOT style(--variant: success)
+      // So we should NOT see both in the same condition
+      const { rules } = renderStyles({
+        fill: {
+          '': '#light',
+          '@($variant=danger)': '#danger',
+          '@($variant=success)': '#success',
+        },
+      });
+
+      const fillRules = rules.filter((r: any) =>
+        r.declarations.includes('background-color'),
+      );
+
+      // Check that the danger rule doesn't have a redundant negation of success
+      const dangerRule = fillRules.find(
+        (r: any) =>
+          r.atRules?.[0]?.includes('style(--variant: danger)') &&
+          r.declarations.includes('danger'),
+      );
+      expect(dangerRule).toBeDefined();
+
+      // The danger condition should NOT include "not style(--variant: success)"
+      // because style(--variant: danger) already implies it
+      const dangerCondition = dangerRule.atRules?.[0];
+      expect(dangerCondition).not.toContain('not style(--variant: success)');
+      expect(dangerCondition).not.toContain('(not style');
+    });
   });
 
   describe('edge cases with undefined values', () => {

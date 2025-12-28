@@ -152,6 +152,16 @@ function simplifyAnd(children: ConditionNode[]): ConditionNode {
     return falseCondition();
   }
 
+  // Check for container style query conflicts
+  if (hasContainerStyleConflict(terms)) {
+    return falseCondition();
+  }
+
+  // Remove redundant negations implied by positive terms
+  // e.g., style(--variant: danger) implies NOT style(--variant: success)
+  // and style(--variant: danger) implies style(--variant) (existence)
+  terms = removeImpliedNegations(terms);
+
   // Deduplicate (by uniqueId)
   terms = deduplicateTerms(terms);
 
@@ -460,6 +470,172 @@ function hasAttributeConflict(terms: ConditionNode[]): boolean {
   }
 
   return false;
+}
+
+// ============================================================================
+// Container Style Query Conflict Detection
+// ============================================================================
+
+/**
+ * Check for container style query conflicts
+ * e.g., style(--variant: danger) & style(--variant: success) → FALSE
+ * e.g., style(--variant: danger) & not style(--variant) → FALSE
+ */
+function hasContainerStyleConflict(terms: ConditionNode[]): boolean {
+  // Group container style queries by property (and container name)
+  const styleByProp = new Map<
+    string,
+    { positive: ContainerCondition[]; negated: ContainerCondition[] }
+  >();
+
+  for (const term of terms) {
+    if (
+      term.kind !== 'state' ||
+      term.type !== 'container' ||
+      term.subtype !== 'style'
+    )
+      continue;
+
+    const key = `${term.containerName || '_'}:${term.property}`;
+    if (!styleByProp.has(key)) {
+      styleByProp.set(key, { positive: [], negated: [] });
+    }
+
+    const group = styleByProp.get(key)!;
+    if (term.negated) {
+      group.negated.push(term);
+    } else {
+      group.positive.push(term);
+    }
+  }
+
+  // Check each property for conflicts
+  for (const [, group] of styleByProp) {
+    // Multiple different values for same property in positive → conflict
+    // e.g., style(--variant: danger) & style(--variant: success)
+    const positiveValues = group.positive
+      .filter((c) => c.propertyValue !== undefined)
+      .map((c) => c.propertyValue);
+    const uniquePositiveValues = new Set(positiveValues);
+    if (uniquePositiveValues.size > 1) {
+      return true;
+    }
+
+    // Positive value + negated existence → conflict
+    // e.g., style(--variant: danger) & not style(--variant)
+    const hasPositiveValue = group.positive.some(
+      (c) => c.propertyValue !== undefined,
+    );
+    const hasNegatedExistence = group.negated.some(
+      (c) => c.propertyValue === undefined,
+    );
+    if (hasPositiveValue && hasNegatedExistence) {
+      return true;
+    }
+
+    // Positive value + negated same value → conflict
+    // e.g., style(--variant: danger) & not style(--variant: danger)
+    for (const pos of group.positive) {
+      if (pos.propertyValue !== undefined) {
+        for (const neg of group.negated) {
+          if (neg.propertyValue === pos.propertyValue) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+// ============================================================================
+// Implied Negation Removal
+// ============================================================================
+
+/**
+ * Remove negations that are implied by positive terms.
+ *
+ * Key optimizations:
+ * 1. style(--variant: danger) implies NOT style(--variant: success)
+ *    → If we have style(--variant: danger) & not style(--variant: success),
+ *      the negation is redundant and can be removed.
+ *
+ * 2. [data-theme="dark"] implies NOT [data-theme="light"]
+ *    → Same logic for attribute selectors.
+ *
+ * This produces cleaner CSS:
+ *   Before: @container style(--variant: danger) and (not style(--variant: success))
+ *   After:  @container style(--variant: danger)
+ */
+function removeImpliedNegations(terms: ConditionNode[]): ConditionNode[] {
+  // Build sets of positive container style properties with specific values
+  const positiveContainerStyles = new Map<string, string | undefined>();
+  // key: "containerName:property", value: propertyValue (or undefined for existence)
+
+  // Build sets of positive modifier attributes with specific values
+  const positiveModifiers = new Map<string, string | undefined>();
+  // key: "attribute", value: value (or undefined for boolean)
+
+  for (const term of terms) {
+    if (term.kind !== 'state' || term.negated) continue;
+
+    if (term.type === 'container' && term.subtype === 'style') {
+      const key = `${term.containerName || '_'}:${term.property}`;
+      // Only track if we have a specific value (not just existence check)
+      if (term.propertyValue !== undefined) {
+        positiveContainerStyles.set(key, term.propertyValue);
+      }
+    }
+
+    if (term.type === 'modifier' && term.value !== undefined) {
+      positiveModifiers.set(term.attribute, term.value);
+    }
+  }
+
+  // Filter out redundant negations
+  return terms.filter((term) => {
+    if (term.kind !== 'state' || !term.negated) return true;
+
+    // Check container style negations
+    if (term.type === 'container' && term.subtype === 'style') {
+      const key = `${term.containerName || '_'}:${term.property}`;
+      const positiveValue = positiveContainerStyles.get(key);
+
+      if (positiveValue !== undefined) {
+        // We have a positive style(--prop: X) for this property
+
+        if (term.propertyValue === undefined) {
+          // Negating existence: not style(--prop)
+          // But we have style(--prop: X), which implies existence → contradiction
+          // This should have been caught by hasContainerStyleConflict
+          return true;
+        }
+
+        if (term.propertyValue !== positiveValue) {
+          // Negating a different value: not style(--prop: Y)
+          // We have style(--prop: X), which implies not style(--prop: Y)
+          // → This negation is redundant!
+          return false;
+        }
+      }
+    }
+
+    // Check modifier negations
+    if (term.type === 'modifier') {
+      const positiveValue = positiveModifiers.get(term.attribute);
+
+      if (positiveValue !== undefined && term.value !== undefined) {
+        // We have [attr="X"] and this is not [attr="Y"]
+        if (term.value !== positiveValue) {
+          // [attr="X"] implies not [attr="Y"] → redundant
+          return false;
+        }
+      }
+    }
+
+    return true;
+  });
 }
 
 // ============================================================================
