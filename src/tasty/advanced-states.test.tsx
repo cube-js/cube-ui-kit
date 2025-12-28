@@ -447,9 +447,7 @@ describe('Advanced State Mapping - CSS Output', () => {
   });
 
   describe('edge cases', () => {
-    // Skipped: This edge case exposes a pre-existing bug in handlers
-    // that don't gracefully handle undefined values when there's no default state
-    it.skip('should handle empty default with only advanced state', () => {
+    it('should handle empty default with only advanced state', () => {
       const Element = tasty({
         styles: {
           display: {
@@ -942,6 +940,51 @@ describe('Advanced State Mapping - renderStyles direct tests', () => {
 
       // Should have at least 1 rule with both style queries
       expect(combinedStyleRules.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('edge cases with undefined values', () => {
+    it('should not generate CSS when handler receives only undefined/null values', () => {
+      // When a handler's lookup styles only have undefined values, skip execution
+      const { rules } = renderStyles({
+        display: {
+          '@media:print': undefined as any,
+        },
+      });
+
+      // No rules should be generated since display value is undefined
+      expect(rules.length).toBe(0);
+    });
+
+    it('should handle handler with mixed defined/undefined lookup styles', () => {
+      // displayStyle looks up ['display', 'hide']
+      // If display has a value and hide is undefined, should still work
+      const { rules } = renderStyles({
+        display: {
+          '': 'flex',
+          '@media:print': 'none',
+        },
+        // hide is not defined
+      });
+
+      // Should have 2 rules: default and print
+      expect(rules.length).toBe(2);
+      expect(rules.some((r: any) => r.atRules?.[0] === '@media print')).toBe(
+        true,
+      );
+    });
+
+    it('should handle style with no default and only conditional state', () => {
+      // When no default ('') is provided, only generate CSS for the conditional state
+      const { rules } = renderStyles({
+        display: {
+          '@media:print': 'none',
+        },
+      });
+
+      // Should only have 1 rule for print media
+      expect(rules.length).toBe(1);
+      expect(rules[0].atRules?.[0]).toBe('@media print');
     });
   });
 });

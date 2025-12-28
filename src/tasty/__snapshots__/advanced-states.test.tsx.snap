@@ -201,6 +201,8 @@ exports[`Advanced State Mapping - CSS Output edge cases should handle advanced s
 :root:not([data-theme="dark"]) .t0.t0>* {--context-fill-color: var(--surface-color, var(--white-color)); --context-fill-color-rgb: var(--surface-color-rgb, var(--white-color-rgb));}"
 `;
 
+exports[`Advanced State Mapping - CSS Output edge cases should handle empty default with only advanced state 1`] = `"@media print {.t0.t0 {display: none;}}"`;
+
 exports[`Advanced State Mapping - CSS Output predefined states (global) should handle multiple global predefined states 1`] = `
 "@media (width >= 1024px) {.t0.t0 {padding-top: calc(4 * var(--gap)); padding-right: calc(4 * var(--gap)); padding-bottom: calc(4 * var(--gap)); padding-left: calc(4 * var(--gap));}}
 @media (width < 1024px) and (768px <= width < 1024px) {.t0.t0 {padding-top: calc(3 * var(--gap)); padding-right: calc(3 * var(--gap)); padding-bottom: calc(3 * var(--gap)); padding-left: calc(3 * var(--gap));}}
