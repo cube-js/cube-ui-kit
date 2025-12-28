@@ -474,11 +474,20 @@ function mergeVariants(
     return null; // Impossible variant
   }
 
+  // Merge container rules and check for contradictions
+  const mergedContainers = dedupeArray([
+    ...a.containerRules,
+    ...b.containerRules,
+  ]);
+  if (hasContainerStyleContradiction(mergedContainers)) {
+    return null; // Impossible variant
+  }
+
   return {
     modifierSelectors: mergedModifiers,
     ownSelectors: dedupeArray([...a.ownSelectors, ...b.ownSelectors]),
     mediaRules: mergedMedia,
-    containerRules: dedupeArray([...a.containerRules, ...b.containerRules]),
+    containerRules: mergedContainers,
     rootPrefix: combinedRoot,
     startingStyle: a.startingStyle || b.startingStyle,
   };
@@ -716,6 +725,81 @@ function hasSelectorStringContradiction(selector: string): boolean {
   // Check for contradictions
   for (const neg of negativeAttrs) {
     if (positiveAttrs.includes(neg)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Check if container rules contain contradictions in style queries
+ * e.g., "style(--variant: danger)" and "style(--variant: success)" together
+ * Same property with different values = always false
+ */
+function hasContainerStyleContradiction(containerRules: string[]): boolean {
+  // Track style queries by property name
+  // key: property name, value: { hasExistence: boolean, values: Set<string> }
+  const styleQueries = new Map<
+    string,
+    { hasExistence: boolean; values: Set<string>; hasNegatedExistence: boolean }
+  >();
+
+  for (const rule of containerRules) {
+    // Match style queries: @container [name] style(--prop) or style(--prop: value)
+    // Also handle negated: @container [name] not style(...)
+    const isNegated = /not\s+style\(/i.test(rule);
+    const styleMatch = rule.match(/style\(--([^:)\s]+)(?::\s*([^)]+))?\)/i);
+
+    if (styleMatch) {
+      const property = styleMatch[1];
+      const value = styleMatch[2]?.trim();
+
+      if (!styleQueries.has(property)) {
+        styleQueries.set(property, {
+          hasExistence: false,
+          values: new Set(),
+          hasNegatedExistence: false,
+        });
+      }
+
+      const entry = styleQueries.get(property)!;
+
+      if (isNegated) {
+        if (value === undefined) {
+          // not style(--prop) - negated existence check
+          entry.hasNegatedExistence = true;
+        }
+        // Negated value checks don't contradict positive value checks directly
+        // They just mean "not this value"
+      } else {
+        if (value === undefined) {
+          // style(--prop) - existence check
+          entry.hasExistence = true;
+        } else {
+          // style(--prop: value) - value check
+          entry.values.add(value);
+        }
+      }
+    }
+  }
+
+  // Check for contradictions
+  for (const [, entry] of styleQueries) {
+    // Contradiction: existence check + negated existence check
+    if (entry.hasExistence && entry.hasNegatedExistence) {
+      return true;
+    }
+
+    // Contradiction: multiple different values for same property
+    // style(--variant: danger) AND style(--variant: success) is impossible
+    if (entry.values.size > 1) {
+      return true;
+    }
+
+    // Contradiction: negated existence + value check
+    // not style(--variant) AND style(--variant: danger) is impossible
+    if (entry.hasNegatedExistence && entry.values.size > 0) {
       return true;
     }
   }

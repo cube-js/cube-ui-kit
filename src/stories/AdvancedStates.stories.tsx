@@ -1,5 +1,6 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { CSSProperties } from 'styled-components';
 
 import {
   Block,
@@ -671,6 +672,124 @@ const Box = tasty({
 \`\`\`
 
 Note: Requires browser support for CSS Container Queries.
+        `,
+      },
+    },
+  },
+};
+
+// =============================================================================
+// Container Style Queries
+// =============================================================================
+
+const StyleQueryBox = tasty({
+  styles: {
+    padding: '3x',
+    radius: '2r',
+    fill: {
+      '': '#light',
+      '@($variant)': '#purple', // When --variant exists
+      '@($variant=danger)': '#danger', // When --variant equals 'danger'
+      '@($variant=success)': '#success', // When --variant equals 'success'
+    },
+    color: {
+      '': '#dark',
+      '@($variant)': '#white',
+    },
+  },
+});
+
+const StyleQueryContainer = tasty({
+  styles: {
+    padding: '2x',
+    radius: '2r',
+    border: '1bw solid #border',
+    containerType: 'inline-size',
+  },
+});
+
+export const ContainerStyleQueries: StoryObj = {
+  render: function ContainerStyleQueriesRender() {
+    const [variant, setVariant] = useState<string | null>(null);
+
+    return (
+      <Flex flow="column" gap="4x">
+        <Text preset="t2">
+          Container style queries based on CSS custom properties
+        </Text>
+
+        <Flex gap="2x">
+          <Button
+            type={variant === null ? 'primary' : 'outline'}
+            onPress={() => setVariant(null)}
+          >
+            No variant
+          </Button>
+          <Button
+            type={variant === 'default' ? 'primary' : 'outline'}
+            onPress={() => setVariant('default')}
+          >
+            --variant (exists)
+          </Button>
+          <Button
+            type={variant === 'danger' ? 'primary' : 'outline'}
+            onPress={() => setVariant('danger')}
+          >
+            --variant: danger
+          </Button>
+          <Button
+            type={variant === 'success' ? 'primary' : 'outline'}
+            onPress={() => setVariant('success')}
+          >
+            --variant: success
+          </Button>
+        </Flex>
+
+        <StyleQueryContainer
+          style={
+            variant ? ({ '--variant': variant } as CSSProperties) : undefined
+          }
+        >
+          <StyleQueryBox>
+            <Text>
+              {variant === null
+                ? 'No --variant set (gray)'
+                : variant === 'danger'
+                  ? '--variant: danger (red)'
+                  : variant === 'success'
+                    ? '--variant: success (green)'
+                    : '--variant exists (purple)'}
+            </Text>
+          </StyleQueryBox>
+        </StyleQueryContainer>
+      </Flex>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+Use \`@($property)\` to check if a CSS custom property exists, or \`@($property=value)\` to match a specific value:
+
+\`\`\`tsx
+const Box = tasty({
+  styles: {
+    fill: {
+      '': '#light',
+      '@($variant)': '#purple',         // --variant exists
+      '@($variant=danger)': '#danger',  // --variant equals 'danger'
+      '@($variant=success)': '#success', // --variant equals 'success'
+    },
+  },
+});
+
+// Usage - set the custom property on container
+<div style={{ '--variant': 'danger' }}>
+  <Box>...</Box>
+</div>
+\`\`\`
+
+Note: Requires browser support for CSS Container Style Queries.
         `,
       },
     },

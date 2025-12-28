@@ -893,5 +893,55 @@ describe('Advanced State Mapping - renderStyles direct tests', () => {
       expect(conditions).toContain('@container (width <= 800px)');
       expect(conditions).toContain('@container not (width <= 400px)');
     });
+
+    it('should detect contradictions in container style queries', () => {
+      // @($variant=danger) & @($variant=success) should be impossible
+      const { rules } = renderStyles({
+        fill: {
+          '': '#white',
+          '@($variant=danger) & @($variant=success)': '#red', // Impossible
+        },
+      });
+
+      // Filter to find rules that have POSITIVE style queries (not negated)
+      // The impossible combination style(--variant: danger) AND style(--variant: success) should be filtered
+      const positiveStyleRules = rules.filter((r: any) =>
+        r.atRules?.some(
+          (at: string) => at.includes('style(') && !at.includes('not style('),
+        ),
+      );
+
+      // The impossible combination should be filtered out
+      // No positive (non-negated) container style rules should exist
+      expect(positiveStyleRules.length).toBe(0);
+    });
+
+    it('should allow multiple different style property queries', () => {
+      // @($variant=danger) & @($size=large) should work - different properties
+      const { rules } = renderStyles({
+        fill: {
+          '': '#white',
+          '@($variant=danger) & @($size=large)': '#red',
+        },
+      });
+
+      // Find rules that have both positive style queries (either combined or separate at-rules)
+      const combinedStyleRules = rules.filter((r: any) => {
+        const atRules = r.atRules || [];
+        const hasVariant = atRules.some(
+          (at: string) =>
+            at.includes('style(--variant: danger)') &&
+            !at.includes('not style'),
+        );
+        const hasSize = atRules.some(
+          (at: string) =>
+            at.includes('style(--size: large)') && !at.includes('not style'),
+        );
+        return hasVariant && hasSize;
+      });
+
+      // Should have at least 1 rule with both style queries
+      expect(combinedStyleRules.length).toBeGreaterThan(0);
+    });
   });
 });
