@@ -67,7 +67,28 @@ export function marginStyle({
   marginBottom?: string | number | boolean;
   marginLeft?: string | number | boolean;
 }) {
-  const styles: { [key: string]: string } = {};
+  // Check if any margin property is defined
+  const hasAnyMargin =
+    margin != null ||
+    marginBlock != null ||
+    marginInline != null ||
+    marginTop != null ||
+    marginRight != null ||
+    marginBottom != null ||
+    marginLeft != null;
+
+  // If no margin is defined, return empty object
+  if (!hasAnyMargin) {
+    return {};
+  }
+
+  // Initialize with all directions set to 0, then override as needed
+  const styles: { [key: string]: string } = {
+    'margin-top': '0',
+    'margin-right': '0',
+    'margin-bottom': '0',
+    'margin-left': '0',
+  };
 
   // Priority 1 (lowest): margin - apply to all directions if no other properties are specified
   if (margin != null) {

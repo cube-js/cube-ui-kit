@@ -67,7 +67,28 @@ export function paddingStyle({
   paddingBottom?: string | number | boolean;
   paddingLeft?: string | number | boolean;
 }) {
-  const styles: { [key: string]: string } = {};
+  // Check if any padding property is defined
+  const hasAnyPadding =
+    padding != null ||
+    paddingBlock != null ||
+    paddingInline != null ||
+    paddingTop != null ||
+    paddingRight != null ||
+    paddingBottom != null ||
+    paddingLeft != null;
+
+  // If no padding is defined, return empty object
+  if (!hasAnyPadding) {
+    return {};
+  }
+
+  // Initialize with all directions set to 0, then override as needed
+  const styles: { [key: string]: string } = {
+    'padding-top': '0',
+    'padding-right': '0',
+    'padding-bottom': '0',
+    'padding-left': '0',
+  };
 
   // Priority 1 (lowest): padding - apply to all directions if no other properties are specified
   if (padding != null) {
