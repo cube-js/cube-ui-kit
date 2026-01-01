@@ -2,6 +2,7 @@ import { useInsertionEffect, useMemo, useRef } from 'react';
 
 import {
   categorizeStyleKeys,
+  CHUNK_NAMES,
   generateChunkCacheKey,
   renderStylesForChunk,
 } from '../chunks';
@@ -115,7 +116,7 @@ export function useStyles({ styles }: UseStylesOptions): UseStylesResult {
 
       return [
         {
-          name: 'all',
+          name: CHUNK_NAMES.COMBINED,
           styleKeys: Object.keys(currentStyles),
           cacheKey: styleKey,
           renderResult,

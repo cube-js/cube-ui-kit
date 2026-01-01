@@ -162,9 +162,11 @@ animatedComponent.dispose(); // CSS rules marked unused (refCount = 0)
 
 ### `configure(config): void`
 
-Configures the global injector instance.
+Configures the Tasty style system. Must be called **before** any styles are generated (before first render).
 
 ```typescript
+import { configure } from '@cube-dev/ui-kit';
+
 configure({
   devMode: true,                     // Enable development features (auto-detected)
   maxRulesPerSheet: 8192,            // Cap rules per stylesheet (default: 8192)
@@ -175,6 +177,10 @@ configure({
   unusedStylesMinAgeMs: 10000,       // Minimum age before cleanup (ms)
   forceTextInjection: false,         // Force textContent insertion (auto-detected for tests)
   nonce: 'csp-nonce',                // CSP nonce for security
+  states: {                          // Global predefined states for advanced state mapping
+    '@mobile': '@media(w < 768px)',
+    '@dark': '@root(theme=dark)',
+  },
 });
 ```
 
@@ -185,6 +191,7 @@ configure({
 **Configuration Notes:**
 - Most options have sensible defaults and auto-detection
 - `configure()` is optional - the injector works with defaults
+- **Configuration is locked after styles are generated** - calling `configure()` after first render will emit a warning and be ignored
 - `unusedStylesMinAgeMs`: Minimum time (ms) a style must remain unused before being eligible for cleanup. Helps prevent removal of styles that might be quickly reactivated.
 
 ---
@@ -250,6 +257,8 @@ comp3.dispose(); // refCount: 1 → 0, eligible for bulk cleanup
 ### Smart Cleanup System
 
 ```typescript
+import { configure } from '@cube-dev/ui-kit';
+
 // CSS rules: Not immediately deleted, marked for bulk cleanup (refCount = 0)
 // Keyframes: Disposed immediately when refCount = 0 (safer for global scope)
 
@@ -309,13 +318,17 @@ const componentCSS = getCssTextForNode(container);
 // - Vitest globals (vitest)
 // - Mocha globals (mocha)
 
-import { getIsTestEnvironment } from '@cube-dev/ui-kit/tasty/injector';
-const isTest = getIsTestEnvironment();
+import { configure, isTestEnvironment, resetConfig } from '@cube-dev/ui-kit';
 
-// Test-specific optimizations:
-configure({
-  forceTextInjection: isTest,  // More reliable in test environments
-  devMode: true,               // Always enable dev features in tests
+const isTest = isTestEnvironment();
+
+// Reset config between tests to allow reconfiguration
+beforeEach(() => {
+  resetConfig();
+  configure({
+    forceTextInjection: isTest,  // More reliable in test environments
+    devMode: true,               // Always enable dev features in tests
+  });
 });
 ```
 
@@ -342,6 +355,8 @@ afterAll(() => {
 When `devMode` is enabled, the injector tracks comprehensive metrics:
 
 ```typescript
+import { configure, injector } from '@cube-dev/ui-kit';
+
 configure({ devMode: true });
 
 // Access metrics through the global injector
@@ -410,7 +425,9 @@ injectGlobal([
   { selector: '.container', declarations: 'max-width: 1200px;' }
 ]);
 
-// ✅ Configure appropriate thresholds for your app
+// ✅ Configure appropriate thresholds for your app (BEFORE first render!)
+import { configure } from '@cube-dev/ui-kit';
+
 configure({
   unusedStylesThreshold: 500,      // Default threshold (adjust based on app size)
   bulkCleanupBatchRatio: 0.5,      // Default: clean oldest 50% per batch

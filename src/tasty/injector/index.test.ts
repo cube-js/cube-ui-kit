@@ -1,11 +1,11 @@
 /**
  * @jest-environment jsdom
  */
+import { configure, resetConfig } from '../config';
 import { StyleResult } from '../pipeline';
 
 import {
   cleanup,
-  configure,
   createGlobalStyle,
   createInjector,
   destroy,
@@ -55,7 +55,10 @@ describe('Global Style Injector API', () => {
     // Clear any existing styles
     document.head.querySelectorAll('[data-tasty]').forEach((el) => el.remove());
 
-    // Reset global injector by configuring fresh with text injection enabled
+    // Reset config to allow reconfiguration (clears stylesGenerated flag)
+    resetConfig();
+
+    // Configure fresh with text injection enabled
     configure({
       forceTextInjection: true, // Explicitly enable for reliable DOM testing
     });
@@ -63,6 +66,7 @@ describe('Global Style Injector API', () => {
 
   afterEach(() => {
     destroy(); // Clean up after each test
+    resetConfig(); // Reset config for next test
   });
 
   describe('configure', () => {

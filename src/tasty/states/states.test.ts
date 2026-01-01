@@ -3,6 +3,8 @@
  * See ADVANCED_STATE_MAPPING.md for full specification
  */
 
+import { resetStylesGenerated } from '../config';
+
 import {
   clearGlobalPredefinedStates,
   createStateParserContext,
@@ -15,7 +17,6 @@ import {
   isPredefinedStateRef,
   normalizeStateKey,
   parseAdvancedState,
-  resetStylesGenerated,
   setGlobalPredefinedStates,
   StateParserContext,
 } from './index';

@@ -1,9 +1,10 @@
-import { StyleResult } from '../pipeline';
 import {
-  markStylesGenerated as markStylesGeneratedInStates,
-  setGlobalPredefinedStates,
-} from '../states';
-import { isDevEnv } from '../utils/isDevEnv';
+  getConfig,
+  getGlobalInjector,
+  isTestEnvironment,
+  markStylesGenerated,
+} from '../config';
+import { StyleResult } from '../pipeline';
 
 import { StyleInjector } from './injector';
 import {
@@ -12,105 +13,6 @@ import {
   InjectResult,
   StyleInjectorConfig,
 } from './types';
-
-// Use a more robust global singleton that survives React Strict Mode
-const GLOBAL_INJECTOR_KEY = '__TASTY_GLOBAL_INJECTOR__';
-
-declare global {
-  interface Window {
-    [GLOBAL_INJECTOR_KEY]?: StyleInjector;
-  }
-}
-
-/**
- * Detect if we're running in a test environment
- */
-function isTestEnvironment(): boolean {
-  // Check Node.js environment
-  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
-    return true;
-  }
-
-  // Check for Jest globals (safely)
-  if (typeof global !== 'undefined') {
-    const g = global as any;
-    if (g.jest || g.expect || g.describe || g.it) {
-      return true;
-    }
-  }
-
-  // Check for jsdom environment (common in tests)
-  if (
-    typeof window !== 'undefined' &&
-    window.navigator?.userAgent?.includes('jsdom')
-  ) {
-    return true;
-  }
-
-  // Check for other test runners
-  if (typeof globalThis !== 'undefined') {
-    const gt = globalThis as any;
-    if (gt.vitest || gt.mocha) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
- * Create default configuration with optional test environment detection
- */
-function createDefaultConfig(isTest?: boolean): StyleInjectorConfig {
-  return {
-    maxRulesPerSheet: 8192, // safer default cap per sheet
-    unusedStylesThreshold: 500, // default threshold for bulk cleanup of unused styles
-    bulkCleanupDelay: 5000, // default delay before bulk cleanup (ignored if idleCleanup is true)
-    idleCleanup: true, // default to using requestIdleCallback instead of setTimeout
-    forceTextInjection: isTest ?? false, // auto-enable for test environments
-    devMode: isDevEnv(), // enable dev features: performance tracking and debug info
-    bulkCleanupBatchRatio: 0.5,
-    unusedStylesMinAgeMs: 10000,
-  };
-}
-
-/**
- * Configure the global style injector
- */
-export function configure(config: Partial<StyleInjectorConfig> = {}): void {
-  // Handle predefined states before creating/updating the injector
-  if (config.states) {
-    setGlobalPredefinedStates(config.states);
-  }
-
-  // Create config without states (it's handled separately)
-  const { states: _states, ...injectorConfig } = config;
-
-  const fullConfig: StyleInjectorConfig = {
-    ...createDefaultConfig(),
-    ...injectorConfig,
-  };
-
-  // Store on window to survive React Strict Mode resets
-  if (typeof window !== 'undefined') {
-    window[GLOBAL_INJECTOR_KEY] = new StyleInjector(fullConfig);
-  } else {
-    // Fallback for SSR
-    (globalThis as any)[GLOBAL_INJECTOR_KEY] = new StyleInjector(fullConfig);
-  }
-}
-
-/**
- * Get or create the global injector instance
- */
-function getGlobalInjector(): StyleInjector {
-  const storage = typeof window !== 'undefined' ? window : (globalThis as any);
-
-  if (!storage[GLOBAL_INJECTOR_KEY]) {
-    configure();
-  }
-  return storage[GLOBAL_INJECTOR_KEY]!;
-}
 
 /**
  * Allocate a className for a cacheKey without injecting styles yet
@@ -129,8 +31,8 @@ export function inject(
   rules: StyleResult[],
   options?: { root?: Document | ShadowRoot; cacheKey?: string },
 ): InjectResult {
-  // Mark that styles have been generated (prevents dynamic predefined state updates)
-  markStylesGeneratedInStates();
+  // Mark that styles have been generated (prevents configuration changes)
+  markStylesGenerated();
 
   return getGlobalInjector().inject(rules, options);
 }
@@ -240,10 +142,12 @@ export function destroy(root?: Document | ShadowRoot): void {
 export function createInjector(
   config: Partial<StyleInjectorConfig> = {},
 ): StyleInjector {
-  const isTest = isTestEnvironment();
+  const defaultConfig = getConfig();
 
   const fullConfig: StyleInjectorConfig = {
-    ...createDefaultConfig(isTest),
+    ...defaultConfig,
+    // Auto-enable forceTextInjection in test environments
+    forceTextInjection: config.forceTextInjection ?? isTestEnvironment(),
     ...config,
   };
 

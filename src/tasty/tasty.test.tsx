@@ -5,11 +5,10 @@ import { Button } from '../components/actions';
 import { Block } from '../components/Block';
 import { Space } from '../components/layout/Space';
 
-import { tastyDebug } from './debug';
+import { configure, resetConfig } from './config';
+import { useGlobalStyles } from './hooks';
 import { CONTAINER_STYLES } from './styles/list';
 import { tasty } from './tasty';
-
-import { configure } from './index';
 
 describe('tasty() API', () => {
   it('should handle color fallback syntax', () => {
@@ -696,8 +695,11 @@ describe('tokens prop', () => {
   });
 });
 
-describe('tastyGlobal() API', () => {
+describe('useGlobalStyles() hook', () => {
   beforeEach(() => {
+    // Reset config for clean tests
+    resetConfig();
+
     // Configure injector for test environment with text injection
     configure({
       forceTextInjection: true,
@@ -708,18 +710,22 @@ describe('tastyGlobal() API', () => {
     cleanup();
     // Clean up any injected styles
     document.head.querySelectorAll('[data-tasty]').forEach((el) => el.remove());
+    resetConfig();
   });
 
-  it('should create global style component for CSS selector', () => {
-    const GlobalHeading = tasty('.test-heading', {
-      preset: 'h2',
-      color: '#purple',
-      padding: '2x',
-    });
+  it('should inject global styles for CSS selector', () => {
+    function GlobalHeadingStyles() {
+      useGlobalStyles('.test-heading', {
+        preset: 'h2',
+        color: '#purple',
+        padding: '2x',
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalHeading />
+        <GlobalHeadingStyles />
         <h1 className="test-heading">Test Heading</h1>
       </div>,
     );
@@ -743,17 +749,20 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should support complex selectors', () => {
-    const GlobalButton = tasty('button[data-variant="primary"]', {
-      fill: '#blue',
-      color: '#white',
-      border: 'none',
-      radius: '1r',
-      padding: '2x 4x',
-    });
+    function GlobalButtonStyles() {
+      useGlobalStyles('button[data-variant="primary"]', {
+        fill: '#blue',
+        color: '#white',
+        border: 'none',
+        radius: '1r',
+        padding: '2x 4x',
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalButton />
+        <GlobalButtonStyles />
         <button data-variant="primary">Primary Button</button>
         <button data-variant="secondary">Secondary Button</button>
       </div>,
@@ -771,24 +780,27 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should support state-based global styles', () => {
-    const GlobalInteractive = tasty('.interactive-element', {
-      fill: {
-        '': '#white',
-        ':hover': '#gray.05',
-        ':focus': '#blue.05',
-        '[id]': '#gray.20',
-      },
-      color: {
-        '': '#text',
-        ':hover': '#text-hover',
-        '[id]': '#text-disabled',
-      },
-      transition: 'fill 0.2s, color 0.2s',
-    });
+    function GlobalInteractiveStyles() {
+      useGlobalStyles('.interactive-element', {
+        fill: {
+          '': '#white',
+          ':hover': '#gray.05',
+          ':focus': '#blue.05',
+          '[id]': '#gray.20',
+        },
+        color: {
+          '': '#text',
+          ':hover': '#text-hover',
+          '[id]': '#text-disabled',
+        },
+        transition: 'fill 0.2s, color 0.2s',
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalInteractive />
+        <GlobalInteractiveStyles />
         <div className="interactive-element">Interactive Element</div>
         <div id="test-id" className="interactive-element">
           Element with ID
@@ -809,15 +821,18 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should cleanup styles when component unmounts', () => {
-    const GlobalTemporary = tasty('.temporary-element', {
-      fill: '#red',
-      color: '#white',
-      padding: '2x',
-    });
+    function GlobalTemporaryStyles() {
+      useGlobalStyles('.temporary-element', {
+        fill: '#red',
+        color: '#white',
+        padding: '2x',
+      });
+      return null;
+    }
 
     const TestComponent = ({ showGlobal }: { showGlobal: boolean }) => (
       <div>
-        {showGlobal && <GlobalTemporary />}
+        {showGlobal && <GlobalTemporaryStyles />}
         <div className="temporary-element">Temporary Element</div>
       </div>
     );
@@ -851,11 +866,14 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should handle empty styles', () => {
-    const EmptyGlobal = tasty('.empty-styles');
+    function EmptyGlobalStyles() {
+      useGlobalStyles('.empty-styles', undefined);
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <EmptyGlobal />
+        <EmptyGlobalStyles />
         <div className="empty-styles">Element with no styles</div>
       </div>,
     );
@@ -874,33 +892,36 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should support sub-element styling in global styles', () => {
-    const GlobalCard = tasty('.global-card', {
-      padding: '4x',
-      fill: '#surface',
-      border: '1bw solid #border',
-      radius: '1r',
+    function GlobalCardStyles() {
+      useGlobalStyles('.global-card', {
+        padding: '4x',
+        fill: '#surface',
+        border: '1bw solid #border',
+        radius: '1r',
 
-      // Sub-element styles
-      Title: {
-        preset: 'h3',
-        color: '#primary',
-        margin: '0 0 2x 0',
-      },
-      Content: {
-        color: '#text',
-        padding: '2x 0',
-      },
-      Footer: {
-        display: 'flex',
-        justify: 'space-between',
-        padding: '2x 0 0 0',
-        border: '1bw solid #border top',
-      },
-    });
+        // Sub-element styles
+        Title: {
+          preset: 'h3',
+          color: '#primary',
+          margin: '0 0 2x 0',
+        },
+        Content: {
+          color: '#text',
+          padding: '2x 0',
+        },
+        Footer: {
+          display: 'flex',
+          justify: 'space-between',
+          padding: '2x 0 0 0',
+          border: '1bw solid #border top',
+        },
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalCard />
+        <GlobalCardStyles />
         <div className="global-card">
           <div data-element="Title">Card Title</div>
           <div data-element="Content">Card content here</div>
@@ -1070,33 +1091,42 @@ describe('tastyGlobal() API', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('should support multiple global style components with different selectors', () => {
-    const GlobalHeading = tasty('h1.special', {
-      preset: 'h1',
-      color: '#primary',
-      margin: '0 0 2x 0',
-    });
+  it('should support multiple useGlobalStyles calls with different selectors', () => {
+    function GlobalHeadingStyles() {
+      useGlobalStyles('h1.special', {
+        preset: 'h1',
+        color: '#primary',
+        margin: '0 0 2x 0',
+      });
+      return null;
+    }
 
-    const GlobalParagraph = tasty('p.special', {
-      preset: 'p1',
-      color: '#text',
-      margin: '1x 0',
-    });
+    function GlobalParagraphStyles() {
+      useGlobalStyles('p.special', {
+        preset: 'p1',
+        color: '#text',
+        margin: '1x 0',
+      });
+      return null;
+    }
 
-    const GlobalLink = tasty('a.special', {
-      color: '#link',
-      textDecoration: 'underline',
-      transition: 'color 0.2s',
-      ':hover': {
-        color: '#link-hover',
-      },
-    });
+    function GlobalLinkStyles() {
+      useGlobalStyles('a.special', {
+        color: '#link',
+        textDecoration: 'underline',
+        transition: 'color 0.2s',
+        ':hover': {
+          color: '#link-hover',
+        },
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalHeading />
-        <GlobalParagraph />
-        <GlobalLink />
+        <GlobalHeadingStyles />
+        <GlobalParagraphStyles />
+        <GlobalLinkStyles />
         <h1 className="special">Special Heading</h1>
         <p className="special">Special paragraph text.</p>
         <a href="#" className="special">
@@ -1119,44 +1149,28 @@ describe('tastyGlobal() API', () => {
     expect(styleContent).toContain('color: var(--link-color)');
   });
 
-  it('should have correct displayName', () => {
-    const GlobalTest = tasty('.test-selector', {
-      color: '#red',
-    });
-
-    expect(GlobalTest.displayName).toBe(
-      'TastyStyleDeclaration(.test-selector)',
-    );
-
-    // Also verify it injects styles when rendered
-    render(<GlobalTest />);
-
-    const styleElements = document.head.querySelectorAll('[data-tasty]');
-    const styleContent = Array.from(styleElements)
-      .map((el) => el.textContent)
-      .join('');
-    expect(styleContent).toContain('.test-selector');
-  });
-
   it('should support pseudo-classes and pseudo-elements', () => {
-    const GlobalWithPseudo = tasty('.pseudo-test', {
-      color: '#dark',
-      ':hover': {
-        color: '#purple',
-      },
-      ':focus': {
-        color: '#blue',
-        outline: '2px solid #blue',
-      },
-      '::before': {
-        content: '"→ "',
-        color: '#gray',
-      },
-    });
+    function GlobalWithPseudoStyles() {
+      useGlobalStyles('.pseudo-test', {
+        color: '#dark',
+        ':hover': {
+          color: '#purple',
+        },
+        ':focus': {
+          color: '#blue',
+          outline: '2px solid #blue',
+        },
+        '::before': {
+          content: '"→ "',
+          color: '#gray',
+        },
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalWithPseudo />
+        <GlobalWithPseudoStyles />
         <div className="pseudo-test" tabIndex={0}>
           Element with pseudo styles
         </div>
@@ -1177,16 +1191,19 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should support attribute selectors', () => {
-    const GlobalAttributeSelector = tasty('[data-testid="global-attr"]', {
-      fill: '#yellow',
-      color: '#dark',
-      padding: '2x',
-      border: '1bw solid #orange',
-    });
+    function GlobalAttributeSelectorStyles() {
+      useGlobalStyles('[data-testid="global-attr"]', {
+        fill: '#yellow',
+        color: '#dark',
+        padding: '2x',
+        border: '1bw solid #orange',
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalAttributeSelector />
+        <GlobalAttributeSelectorStyles />
         <div data-testid="global-attr">Element with attribute selector</div>
         <div data-testid="other-attr">Other element</div>
       </div>,
@@ -1204,21 +1221,27 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should support complex selectors with combinators', () => {
-    const GlobalComplex = tasty('.parent > .child', {
-      fill: '#green',
-      padding: '1x',
-      margin: '0.5x',
-    });
+    function GlobalComplexStyles() {
+      useGlobalStyles('.parent > .child', {
+        fill: '#green',
+        padding: '1x',
+        margin: '0.5x',
+      });
+      return null;
+    }
 
-    const GlobalDescendant = tasty('.container .nested', {
-      color: '#blue',
-      fontWeight: 'bold',
-    });
+    function GlobalDescendantStyles() {
+      useGlobalStyles('.container .nested', {
+        color: '#blue',
+        fontWeight: 'bold',
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalComplex />
-        <GlobalDescendant />
+        <GlobalComplexStyles />
+        <GlobalDescendantStyles />
         <div className="parent">
           <div className="child">Direct child</div>
           <div>
@@ -1247,22 +1270,28 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should handle style updates when styles change', () => {
-    const DynamicGlobal1 = tasty('.dynamic-selector', {
-      fill: '#blue',
-      color: '#white',
-      padding: '2x',
-    });
+    function DynamicGlobalStyles1() {
+      useGlobalStyles('.dynamic-selector', {
+        fill: '#blue',
+        color: '#white',
+        padding: '2x',
+      });
+      return null;
+    }
 
-    const DynamicGlobal2 = tasty('.dynamic-selector', {
-      fill: '#red',
-      color: '#white',
-      padding: '4x',
-      border: '1bw solid #dark',
-    });
+    function DynamicGlobalStyles2() {
+      useGlobalStyles('.dynamic-selector', {
+        fill: '#red',
+        color: '#white',
+        padding: '4x',
+        border: '1bw solid #dark',
+      });
+      return null;
+    }
 
     const { container, rerender } = render(
       <div>
-        <DynamicGlobal1 />
+        <DynamicGlobalStyles1 />
         <div className="dynamic-selector">Dynamic content</div>
       </div>,
     );
@@ -1279,7 +1308,7 @@ describe('tastyGlobal() API', () => {
     act(() => {
       rerender(
         <div>
-          <DynamicGlobal2 />
+          <DynamicGlobalStyles2 />
           <div className="dynamic-selector">Dynamic content</div>
         </div>,
       );

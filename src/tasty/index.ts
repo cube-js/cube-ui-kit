@@ -1,10 +1,16 @@
 export { tasty, Element } from './tasty';
 export { useStyles, useGlobalStyles } from './hooks';
-export type {
-  UseStylesOptions,
-  UseStylesResult,
-  UseGlobalStylesOptions,
-} from './hooks';
+export type { UseStylesOptions, UseStylesResult } from './hooks';
+// Configuration API
+export {
+  configure,
+  getConfig,
+  isConfigLocked,
+  hasStylesGenerated,
+  resetConfig,
+  isTestEnvironment,
+} from './config';
+export type { TastyConfig } from './config';
 // Chunk utilities for advanced use cases
 export { CHUNK_NAMES, STYLE_TO_CHUNK, categorizeStyleKeys } from './chunks';
 export type { ChunkName, ChunkInfo } from './chunks';

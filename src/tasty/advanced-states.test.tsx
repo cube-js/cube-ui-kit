@@ -1,29 +1,29 @@
 import { cleanup, render } from '@testing-library/react';
 
+import { configure, resetConfig } from './config';
 import {
   clearGlobalPredefinedStates,
-  resetStylesGenerated,
   setGlobalPredefinedStates,
 } from './states';
 import { tasty } from './tasty';
 
-import { configure } from './index';
-
 describe('Advanced State Mapping - CSS Output', () => {
   beforeEach(() => {
+    // Reset config for clean tests (clears stylesGenerated flag)
+    resetConfig();
+    clearGlobalPredefinedStates();
+
     // Configure injector for test environment with text injection
     configure({
       forceTextInjection: true,
     });
-    // Reset state for clean tests
-    resetStylesGenerated();
-    clearGlobalPredefinedStates();
   });
 
   afterEach(() => {
     cleanup();
     // Clean up any injected styles
     document.head.querySelectorAll('[data-tasty]').forEach((el) => el.remove());
+    resetConfig();
   });
 
   describe('@media query states', () => {

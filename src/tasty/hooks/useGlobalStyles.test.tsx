@@ -18,11 +18,8 @@ describe('useGlobalStyles', () => {
 
   it('should warn and not inject when selector is empty string', () => {
     const { result } = renderHook(() =>
-      useGlobalStyles({
-        selector: '',
-        styles: {
-          padding: '2x',
-        },
+      useGlobalStyles('', {
+        padding: '2x',
       }),
     );
 
@@ -37,11 +34,8 @@ describe('useGlobalStyles', () => {
 
   it('should not warn when selector is valid', () => {
     renderHook(() =>
-      useGlobalStyles({
-        selector: '.my-class',
-        styles: {
-          padding: '2x',
-        },
+      useGlobalStyles('.my-class', {
+        padding: '2x',
       }),
     );
 
@@ -50,24 +44,14 @@ describe('useGlobalStyles', () => {
   });
 
   it('should handle undefined styles without warning', () => {
-    renderHook(() =>
-      useGlobalStyles({
-        selector: '.my-class',
-        styles: undefined,
-      }),
-    );
+    renderHook(() => useGlobalStyles('.my-class', undefined));
 
     // Should not have warned (undefined styles is a valid case)
     expect(consoleWarnSpy).not.toHaveBeenCalled();
   });
 
   it('should handle empty styles object', () => {
-    renderHook(() =>
-      useGlobalStyles({
-        selector: '.my-class',
-        styles: {},
-      }),
-    );
+    renderHook(() => useGlobalStyles('.my-class', {}));
 
     // Should not have warned
     expect(consoleWarnSpy).not.toHaveBeenCalled();

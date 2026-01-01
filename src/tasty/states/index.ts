@@ -5,6 +5,7 @@
  * See ADVANCED_STATE_MAPPING.md for full specification.
  */
 
+import { hasStylesGenerated } from '../config';
 import { Styles } from '../styles/types';
 import { isDevEnv } from '../utils/isDevEnv';
 
@@ -52,9 +53,6 @@ const BUILTIN_STATES = new Set(['@starting']);
 // Reserved prefixes that are built-in
 const RESERVED_PREFIXES = ['@media', '@root', '@own', '@(', '@starting'];
 
-// Track whether styles have been generated (for dynamic predefined states prevention)
-let stylesGenerated = false;
-
 // Global predefined states storage
 let globalPredefinedStates: Record<string, string> = {};
 
@@ -74,34 +72,12 @@ function warnOnce(key: string, message: string): void {
 }
 
 /**
- * Mark that styles have been generated (called by injector on first inject)
- */
-export function markStylesGenerated(): void {
-  stylesGenerated = true;
-}
-
-/**
- * Check if styles have been generated
- */
-export function hasStylesGenerated(): boolean {
-  return stylesGenerated;
-}
-
-/**
- * Reset styles generated flag (for testing only)
- */
-export function resetStylesGenerated(): void {
-  stylesGenerated = false;
-  emittedWarnings.clear();
-}
-
-/**
  * Configure global predefined states
  */
 export function setGlobalPredefinedStates(
   states: Record<string, string>,
 ): void {
-  if (stylesGenerated) {
+  if (hasStylesGenerated()) {
     const newStateNames = Object.keys(states).join(', ');
     warnOnce(
       `dynamic-states:${newStateNames}`,
@@ -186,6 +162,7 @@ export function getGlobalPredefinedStates(): Record<string, string> {
  */
 export function clearGlobalPredefinedStates(): void {
   globalPredefinedStates = {};
+  emittedWarnings.clear();
 }
 
 /**

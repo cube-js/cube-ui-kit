@@ -162,6 +162,8 @@ export const POSITION_CHUNK_STYLES = [
 // ============================================================================
 
 export const CHUNK_NAMES = {
+  /** Special chunk for styles that cannot be split (e.g., @starting-style) */
+  COMBINED: 'combined',
   SUBCOMPONENTS: 'subcomponents',
   APPEARANCE: 'appearance',
   FONT: 'font',

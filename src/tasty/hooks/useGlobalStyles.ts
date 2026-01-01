@@ -4,41 +4,27 @@ import { injectGlobal } from '../injector';
 import { renderStyles, StyleResult } from '../pipeline';
 import { Styles } from '../styles/types';
 
-export interface UseGlobalStylesOptions {
-  /**
-   * CSS selector to apply styles to (e.g., '.my-class', ':root', 'body')
-   */
-  selector: string;
-  /**
-   * Tasty styles object
-   */
-  styles?: Styles;
-}
-
 /**
  * Hook to inject global styles for a given selector.
  * Useful for styling elements by selector without generating classNames.
  *
+ * @param selector - CSS selector to apply styles to (e.g., '.my-class', ':root', 'body')
+ * @param styles - Tasty styles object
+ *
  * @example
  * ```tsx
  * function MyComponent() {
- *   useGlobalStyles({
- *     selector: '.card',
- *     styles: {
- *       padding: '2x',
- *       radius: '1r',
- *       fill: '#white',
- *     }
+ *   useGlobalStyles('.card', {
+ *     padding: '2x',
+ *     radius: '1r',
+ *     fill: '#white',
  *   });
  *
  *   return <div className="card">Content</div>;
  * }
  * ```
  */
-export function useGlobalStyles({
-  selector,
-  styles,
-}: UseGlobalStylesOptions): void {
+export function useGlobalStyles(selector: string, styles?: Styles): void {
   const disposeRef = useRef<(() => void) | null>(null);
 
   // Render styles with the provided selector

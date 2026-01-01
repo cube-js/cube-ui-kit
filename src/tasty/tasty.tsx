@@ -2,7 +2,6 @@ import {
   AllHTMLAttributes,
   ComponentType,
   createElement,
-  FC,
   forwardRef,
   ForwardRefExoticComponent,
   JSX,
@@ -12,7 +11,6 @@ import {
 } from 'react';
 import { isValidElementType } from 'react-is';
 
-import { useGlobalStyles } from './hooks/useGlobalStyles';
 import { useStyles } from './hooks/useStyles';
 import { BASE_STYLES } from './styles/list';
 import { Styles, StylesInterface } from './styles/types';
@@ -196,7 +194,6 @@ export function tasty<
 ): ForwardRefExoticComponent<
   PropsWithoutRef<TastyElementProps<K, V, Tag>> & RefAttributes<unknown>
 >;
-export function tasty(selector: string, styles?: Styles);
 export function tasty<
   Props extends PropsWithStyles,
   DefaultProps extends Partial<Props> = Partial<Props>,
@@ -211,27 +208,11 @@ export function tasty<
   V extends VariantMap,
   C = Record<string, unknown>,
 >(Component: any, options?: any) {
-  if (typeof Component === 'string') {
-    return tastyGlobal(Component as string, options as Styles);
-  }
-
   if (isValidElementType(Component)) {
     return tastyWrap(Component as ComponentType<any>, options);
   }
 
   return tastyElement(Component as TastyProps<K, V>);
-}
-
-// Internal specialized implementations
-function tastyGlobal(selector: string, styles?: Styles) {
-  const _StyleDeclarationComponent: FC = () => {
-    useGlobalStyles({ selector, styles });
-    return null;
-  };
-
-  _StyleDeclarationComponent.displayName = `TastyStyleDeclaration(${selector})`;
-
-  return _StyleDeclarationComponent;
 }
 
 function tastyWrap<

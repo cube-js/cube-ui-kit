@@ -15,6 +15,22 @@
     ".": {
       "import": "./dist/es/index.js",
       "types": "./dist/types/index.d.ts"
+    },
+    "./tasty/static": {
+      "import": "./dist/es/tasty/static/index.js",
+      "types": "./dist/types/tasty/static/index.d.ts"
+    },
+    "./tasty/zero": {
+      "import": "./dist/es/tasty/zero/index.js",
+      "types": "./dist/types/tasty/zero/index.d.ts"
+    },
+    "./tasty/zero/babel": {
+      "import": "./dist/es/tasty/zero/babel.js",
+      "types": "./dist/types/tasty/zero/babel.d.ts"
+    },
+    "./tasty/zero/next": {
+      "import": "./dist/es/tasty/zero/next.js",
+      "types": "./dist/types/tasty/zero/next.d.ts"
     }
   },
   "files": [
@@ -64,6 +80,8 @@
     "styled-components": ">= 5.3.0"
   },
   "dependencies": {
+    "@babel/helper-plugin-utils": "^7.24.0",
+    "@babel/types": "^7.24.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@internationalized/date": "^3.7.0",
     "@react-aria/focus": "^3.21.0",
@@ -104,6 +122,9 @@
     "valid-url": "^1.0.9"
   },
   "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@types/babel__core": "^7.20.5",
+    "@types/babel__helper-plugin-utils": "^7.10.3",
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
     "@actions/github": "^6.0.0",
