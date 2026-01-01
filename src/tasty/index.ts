@@ -1,5 +1,5 @@
 export { tasty, Element } from './tasty';
-export { useStyles, useGlobalStyles } from './hooks';
+export { useStyles, useGlobalStyles, useRawCSS } from './hooks';
 export type { UseStylesOptions, UseStylesResult } from './hooks';
 // Configuration API
 export {

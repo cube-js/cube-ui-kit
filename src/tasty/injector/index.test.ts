@@ -6,11 +6,12 @@ import { StyleResult } from '../pipeline';
 
 import {
   cleanup,
-  createGlobalStyle,
   createInjector,
   destroy,
   getCssText,
+  getRawCSSText,
   inject,
+  injectRawCSS,
   keyframes,
 } from './index';
 
@@ -568,30 +569,55 @@ describe('Global Style Injector API', () => {
     });
   });
 
-  describe('createGlobalStyle', () => {
-    test('exports createGlobalStyle function from global injector', () => {
-      expect(typeof createGlobalStyle).toBe('function');
-
-      // Create a global style component
-      const GlobalStyle = createGlobalStyle<{ color: string }>`
-        .test-global {
-          color: ${(props) => props.color};
-        }
+  describe('injectRawCSS', () => {
+    test('injects raw CSS and returns dispose function', () => {
+      const css = `
+        body { margin: 0; padding: 0; }
+        .my-class { color: red; }
       `;
 
-      // Check that it returns a React component type
-      expect(typeof GlobalStyle).toBe('function');
-      expect(GlobalStyle.prototype).toBeDefined();
+      const { dispose } = injectRawCSS(css);
 
-      // Test that the interpolation would work as expected
-      const testColor = 'blue';
-      const expectedTemplate = `
-        .test-global {
-          color: ${testColor};
-        }
-      `;
-      expect(expectedTemplate).toContain('color: blue');
-      expect(expectedTemplate).toContain('.test-global');
+      // Check that CSS was injected
+      const rawCSS = getRawCSSText();
+      expect(rawCSS).toContain('body { margin: 0; padding: 0; }');
+      expect(rawCSS).toContain('.my-class { color: red; }');
+
+      // Dispose and verify CSS is removed
+      dispose();
+      const afterDispose = getRawCSSText();
+      expect(afterDispose).not.toContain('body { margin: 0;');
+    });
+
+    test('handles multiple raw CSS injections', () => {
+      const { dispose: dispose1 } = injectRawCSS('.first { color: blue; }');
+      const { dispose: dispose2 } = injectRawCSS('.second { color: green; }');
+
+      const rawCSS = getRawCSSText();
+      expect(rawCSS).toContain('.first { color: blue; }');
+      expect(rawCSS).toContain('.second { color: green; }');
+
+      // Dispose first, second should remain
+      dispose1();
+      const afterFirst = getRawCSSText();
+      expect(afterFirst).not.toContain('.first');
+      expect(afterFirst).toContain('.second');
+
+      // Dispose second
+      dispose2();
+      const afterSecond = getRawCSSText();
+      expect(afterSecond).not.toContain('.second');
+    });
+
+    test('handles empty CSS gracefully', () => {
+      const { dispose } = injectRawCSS('');
+      expect(getRawCSSText()).toBe('');
+      dispose(); // Should not throw
+    });
+
+    test('handles whitespace-only CSS gracefully', () => {
+      const { dispose } = injectRawCSS('   \n\t  ');
+      dispose(); // Should not throw
     });
   });
 });

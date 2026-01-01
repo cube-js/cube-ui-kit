@@ -3,23 +3,19 @@
  * Eliminates CSS string parsing for better performance
  */
 
-import { Component, createElement } from 'react';
-
 import { StyleResult } from '../pipeline';
 import { parseStyle } from '../utils/styles';
 
-// Simple CSS text to StyleResult converter for injectGlobal backward compatibility
 import { SheetManager } from './sheet-manager';
 import {
   GlobalInjectResult,
   InjectResult,
   KeyframesResult,
   KeyframesSteps,
+  RawCSSResult,
   StyleInjectorConfig,
   StyleRule,
 } from './types';
-
-import type { ComponentType } from 'react';
 
 /**
  * Generate sequential class name with format t{number}
@@ -274,38 +270,24 @@ export class StyleInjector {
   }
 
   /**
-   * Inject styles from createGlobalStyle (separate from injectGlobal for tracking)
+   * Inject raw CSS text directly without parsing
+   * This is a low-overhead alternative to createGlobalStyle for raw CSS
+   * The CSS is inserted into a separate style element to avoid conflicts with tasty's chunking
    */
-  injectCreateGlobalStyle(
-    rules: StyleResult[],
+  injectRawCSS(
+    css: string,
     options?: { root?: Document | ShadowRoot },
-  ): GlobalInjectResult {
+  ): RawCSSResult {
     const root = options?.root || document;
-    const registry = this.sheetManager.getRegistry(root);
+    return this.sheetManager.injectRawCSS(css, root);
+  }
 
-    if (!rules || rules.length === 0) {
-      return { dispose: () => {} };
-    }
-
-    // Use a different prefix to distinguish from injectGlobal
-    const key = `raw:${this.globalRuleCounter++}`;
-
-    const info = this.sheetManager.insertGlobalRule(
-      registry,
-      rules as unknown as StyleRule[],
-      key,
-      root,
-    );
-
-    if (registry.metrics) {
-      registry.metrics.totalInsertions++;
-    }
-
-    return {
-      dispose: () => {
-        if (info) this.sheetManager.deleteGlobalRule(registry, key);
-      },
-    };
+  /**
+   * Get raw CSS text for SSR
+   */
+  getRawCSSText(options?: { root?: Document | ShadowRoot }): string {
+    const root = options?.root || document;
+    return this.sheetManager.getRawCSSText(root);
   }
 
   /**
@@ -442,9 +424,9 @@ export class StyleInjector {
       parts.push(`syntax: ${syntax};`);
     }
 
-    if (options?.inherits != null) {
-      parts.push(`inherits: ${options.inherits ? 'true' : 'false'};`);
-    }
+    // inherits is required by the CSS @property spec - default to true
+    const inherits = options?.inherits ?? true;
+    parts.push(`inherits: ${inherits ? 'true' : 'false'};`);
 
     if (options?.initialValue != null) {
       let initialValueStr: string;
@@ -581,323 +563,5 @@ export class StyleInjector {
   destroy(root?: Document | ShadowRoot): void {
     const targetRoot = root || document;
     this.sheetManager.cleanup(targetRoot);
-  }
-
-  /**
-   * Create a global style component like styled-components createGlobalStyle
-   * Returns a React component that injects global styles when mounted and cleans up when unmounted
-   */
-  createGlobalStyle<Props = {}>(
-    strings: TemplateStringsArray,
-    ...interpolations: Array<
-      string | number | ((props: Props) => string | number)
-    >
-  ): ComponentType<Props & { root?: Document | ShadowRoot }> {
-    const injector = this; // Capture the injector instance
-
-    class GlobalStyleComponent extends Component<
-      Props & { root?: Document | ShadowRoot }
-    > {
-      private disposeFunction: (() => void) | null = null;
-
-      componentDidMount() {
-        this.injectStyles();
-      }
-
-      componentDidUpdate() {
-        this.disposeStyles();
-        this.injectStyles();
-      }
-
-      componentWillUnmount() {
-        this.disposeStyles();
-      }
-
-      private injectStyles = () => {
-        const css = this.interpolateTemplate();
-        if (css.trim()) {
-          const styleResults = this.parseCSSToStyleResults(css);
-          // Use a special method for createGlobalStyle to distinguish from injectGlobal
-          const result = injector.injectCreateGlobalStyle(styleResults as any, {
-            root: this.props.root,
-          });
-          this.disposeFunction = result.dispose;
-        }
-      };
-
-      private disposeStyles = () => {
-        if (this.disposeFunction) {
-          this.disposeFunction();
-          this.disposeFunction = null;
-        }
-      };
-
-      private interpolateTemplate = (): string => {
-        let result = strings[0];
-
-        for (let i = 0; i < interpolations.length; i++) {
-          const interpolation = interpolations[i];
-          const value =
-            typeof interpolation === 'function'
-              ? interpolation(this.props as Props)
-              : interpolation;
-          result += String(value) + strings[i + 1];
-        }
-
-        return result;
-      };
-
-      private parseCSSToStyleResults = (css: string): StyleResult[] => {
-        const rules: StyleResult[] = [];
-
-        // Enhanced CSS parser for global styles that handles nested rules
-        this.parseCSS(css, rules, [], '');
-
-        return rules;
-      };
-
-      private parseCSS = (
-        css: string,
-        rules: StyleResult[],
-        atRuleStack: string[],
-        parentSelector = '',
-      ) => {
-        // Remove both CSS and JavaScript-style comments
-        let cleanCSS = css.replace(/\/\*[\s\S]*?\*\//g, ''); // CSS comments
-        cleanCSS = cleanCSS.replace(/\/\/.*$/gm, ''); // JavaScript-style comments
-
-        let i = 0;
-        while (i < cleanCSS.length) {
-          // Skip whitespace
-          while (i < cleanCSS.length && /\s/.test(cleanCSS[i])) {
-            i++;
-          }
-
-          if (i >= cleanCSS.length) break;
-
-          // Find the next selector or at-rule
-          let selectorStart = i;
-          let braceDepth = 0;
-          let inString = false;
-          let stringChar = '';
-
-          // Find the opening brace
-          while (i < cleanCSS.length) {
-            const char = cleanCSS[i];
-
-            if (inString) {
-              if (char === stringChar && cleanCSS[i - 1] !== '\\') {
-                inString = false;
-              }
-            } else {
-              if (char === '"' || char === "'") {
-                inString = true;
-                stringChar = char;
-              } else if (char === '{') {
-                braceDepth++;
-                if (braceDepth === 1) {
-                  break; // Found the opening brace
-                }
-              } else if (char === '}') {
-                braceDepth--;
-              }
-            }
-            i++;
-          }
-
-          if (i >= cleanCSS.length) break;
-
-          const selectorPart = cleanCSS.substring(selectorStart, i).trim();
-          i++; // Skip the opening brace
-
-          // Find the matching closing brace
-          const contentStart = i;
-          braceDepth = 1;
-          inString = false;
-
-          while (i < cleanCSS.length && braceDepth > 0) {
-            const char = cleanCSS[i];
-
-            if (inString) {
-              if (char === stringChar && cleanCSS[i - 1] !== '\\') {
-                inString = false;
-              }
-            } else {
-              if (char === '"' || char === "'") {
-                inString = true;
-                stringChar = char;
-              } else if (char === '{') {
-                braceDepth++;
-              } else if (char === '}') {
-                braceDepth--;
-              }
-            }
-            i++;
-          }
-
-          const content = cleanCSS.substring(contentStart, i - 1).trim();
-
-          // Check if this is an at-rule
-          if (selectorPart.startsWith('@')) {
-            const atSelector = selectorPart.trim();
-            // Leaf at-rules that contain declarations directly and should be emitted as-is
-            const leafAtRules = [
-              '@font-face',
-              '@property',
-              '@page',
-              '@counter-style',
-              '@font-feature-values',
-              '@font-palette-values',
-              '@color-profile',
-            ];
-
-            const isLeafAtRule = leafAtRules.some((prefix) =>
-              atSelector.startsWith(prefix),
-            );
-
-            if (isLeafAtRule) {
-              // Emit the at-rule with its declarations directly
-              if (content.trim()) {
-                rules.push({
-                  selector: atSelector,
-                  declarations: content,
-                  atRules:
-                    atRuleStack.length > 0 ? [...atRuleStack] : undefined,
-                });
-              }
-            } else {
-              // Wrapper at-rule (e.g., @media, @supports, @keyframes) — parse its content
-              const newAtRuleStack = [...atRuleStack, atSelector];
-              this.parseCSS(content, rules, newAtRuleStack, parentSelector);
-            }
-          } else {
-            // Check if content contains nested rules (has { and })
-            if (content.includes('{') && content.includes('}')) {
-              // This selector has nested rules, parse them
-              const { declarations, nestedCSS } =
-                this.separateDeclarationsAndNested(content);
-
-              // Process the selector (handle & syntax)
-              const processedSelector = this.processSelector(
-                selectorPart,
-                parentSelector,
-              );
-
-              // Add declarations if any
-              if (declarations.trim()) {
-                rules.push({
-                  selector: processedSelector,
-                  declarations: declarations.trim(),
-                  atRules:
-                    atRuleStack.length > 0 ? [...atRuleStack] : undefined,
-                });
-              }
-
-              // Parse nested CSS with current selector as parent
-              if (nestedCSS.trim()) {
-                this.parseCSS(nestedCSS, rules, atRuleStack, processedSelector);
-              }
-            } else {
-              // This is a regular selector with only declarations
-              const processedSelector = this.processSelector(
-                selectorPart,
-                parentSelector,
-              );
-              if (content && processedSelector) {
-                rules.push({
-                  selector: processedSelector,
-                  declarations: content,
-                  atRules:
-                    atRuleStack.length > 0 ? [...atRuleStack] : undefined,
-                });
-              }
-            }
-          }
-        }
-      };
-
-      private separateDeclarationsAndNested = (
-        content: string,
-      ): { declarations: string; nestedCSS: string } => {
-        const declarations: string[] = [];
-        const nestedRules: string[] = [];
-
-        let i = 0;
-        let currentDeclaration = '';
-
-        while (i < content.length) {
-          const char = content[i];
-
-          if (char === '{') {
-            // Found start of nested rule, find the selector before it
-            let selectorStart = currentDeclaration.lastIndexOf(';') + 1;
-            if (selectorStart === 0 && currentDeclaration.trim()) {
-              // No semicolon found, this might be the first rule
-              selectorStart = 0;
-            }
-
-            const beforeBrace = currentDeclaration.substring(0, selectorStart);
-            const selector = currentDeclaration.substring(selectorStart).trim();
-
-            if (beforeBrace.trim()) {
-              declarations.push(beforeBrace.trim());
-            }
-
-            // Find the matching closing brace
-            let braceDepth = 1;
-            let ruleStart = i + 1;
-            i++; // Skip opening brace
-
-            while (i < content.length && braceDepth > 0) {
-              if (content[i] === '{') braceDepth++;
-              else if (content[i] === '}') braceDepth--;
-              i++;
-            }
-
-            const ruleContent = content.substring(ruleStart, i - 1);
-            nestedRules.push(`${selector} { ${ruleContent} }`);
-            currentDeclaration = '';
-          } else {
-            currentDeclaration += char;
-            i++;
-          }
-        }
-
-        // Add remaining declarations
-        if (currentDeclaration.trim()) {
-          declarations.push(currentDeclaration.trim());
-        }
-
-        return {
-          declarations: declarations.join(' '),
-          nestedCSS: nestedRules.join('\n'),
-        };
-      };
-
-      private processSelector = (
-        selector: string,
-        parentSelector: string,
-      ): string => {
-        if (!parentSelector) {
-          return selector;
-        }
-
-        // Handle & syntax - replace & with parent selector
-        if (selector.includes('&')) {
-          return selector.replace(/&/g, parentSelector);
-        }
-
-        // If no &, treat as descendant selector
-        return `${parentSelector} ${selector}`;
-      };
-
-      render() {
-        return null;
-      }
-    }
-
-    return GlobalStyleComponent as ComponentType<
-      Props & { root?: Document | ShadowRoot }
-    >;
   }
 }

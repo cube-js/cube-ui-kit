@@ -8,7 +8,7 @@ import { isDevEnv } from './utils/isDevEnv';
 
 // Type definitions for the new API
 type CSSTarget =
-  | 'all' // tasty CSS + tasty global CSS (createGlobalStyle)
+  | 'all' // tasty CSS + tasty global CSS + raw CSS
   | 'global' // only tasty global CSS
   | 'active' // tasty CSS for classes currently in DOM
   | 'unused' // tasty CSS with refCount = 0 (still in cache but not actively used)
@@ -89,7 +89,7 @@ interface Summary {
   activeCSSSize: number;
   unusedCSSSize: number;
   globalCSSSize: number; // injectGlobal() CSS
-  rawCSSSize: number; // createGlobalStyle() CSS
+  rawCSSSize: number; // injectRawCSS() / useRawCSS() CSS
   keyframesCSSSize: number; // @keyframes CSS
   propertyCSSSize: number; // @property CSS
   totalCSSSize: number; // all tasty CSS (active + unused + global + raw + keyframes + property)
@@ -98,7 +98,7 @@ interface Summary {
   activeCSS: string;
   unusedCSS: string;
   globalCSS: string; // injectGlobal() CSS
-  rawCSS: string; // createGlobalStyle() CSS
+  rawCSS: string; // injectRawCSS() / useRawCSS() CSS
   keyframesCSS: string; // @keyframes CSS
   propertyCSS: string; // @property CSS
   allCSS: string; // all tasty CSS combined
@@ -1097,7 +1097,7 @@ export const tastyDebug = {
         `  • Global CSS (injectGlobal): ${summary.globalCSSSize} characters (${summary.globalRuleCount} rules)`,
       );
       console.log(
-        `  • Raw CSS (createGlobalStyle): ${summary.rawCSSSize} characters (${summary.rawRuleCount} rules)`,
+        `  • Raw CSS (injectRawCSS/useRawCSS): ${summary.rawCSSSize} characters (${summary.rawRuleCount} rules)`,
       );
       console.log(
         `  • Keyframes CSS: ${summary.keyframesCSSSize} characters (${summary.keyframesRuleCount} rules)`,
@@ -1366,7 +1366,7 @@ export const tastyDebug = {
     console.log('  • "all" - all tasty CSS + global CSS');
     console.log('  • "active" - CSS for classes in DOM');
     console.log('  • "unused" - CSS for classes with refCount = 0');
-    console.log('  • "global" - only global CSS (createGlobalStyle)');
+    console.log('  • "global" - only global CSS (injectGlobal)');
     console.log('  • "page" - ALL page CSS (including non-tasty)');
     console.log('  • "t123" - specific tasty class');
     console.log('  • [".my-selector"] - CSS selector');

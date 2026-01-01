@@ -129,3 +129,18 @@ export interface KeyframesCacheEntry {
   refCount: number;
   info: KeyframesInfo;
 }
+
+export interface RawCSSInfo {
+  /** Unique identifier for this raw CSS block */
+  id: string;
+  /** The raw CSS text */
+  css: string;
+  /** Start offset in the style element's textContent */
+  startOffset: number;
+  /** End offset in the style element's textContent */
+  endOffset: number;
+}
+
+export interface RawCSSResult {
+  dispose: () => void;
+}

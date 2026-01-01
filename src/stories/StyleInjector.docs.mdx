@@ -93,27 +93,51 @@ const globalResult = injectGlobal([
 globalResult.dispose();
 ```
 
-### `createGlobalStyle<Props>(strings, ...interpolations): ComponentType`
+### `injectRawCSS(css, options?): { dispose: () => void }`
 
-Creates a React component that injects global styles when mounted (similar to styled-components).
+Injects raw CSS text directly without parsing. This is a low-overhead method for injecting CSS that doesn't need tasty processing.
 
 ```typescript
-import { createGlobalStyle } from '@cube-dev/ui-kit/tasty/injector';
+import { injectRawCSS } from '@cube-dev/ui-kit/tasty/injector';
 
-const GlobalReset = createGlobalStyle<{ theme: 'dark' | 'light' }>`
+// Inject raw CSS
+const { dispose } = injectRawCSS(`
   body {
     margin: 0;
-    background: ${props => props.theme === 'dark' ? '#000' : '#fff'};
-    color: ${props => props.theme === 'dark' ? '#fff' : '#000'};
+    padding: 0;
+    font-family: sans-serif;
   }
   
-  * {
-    box-sizing: border-box;
+  .my-class {
+    color: red;
   }
-`;
+`);
 
-// Usage in React
-<GlobalReset theme="dark" />
+// Later, remove the injected CSS
+dispose();
+```
+
+### `useRawCSS(css, options?): void`
+
+React hook for injecting raw CSS. Uses `useInsertionEffect` for proper timing and cleanup.
+
+```tsx
+import { useRawCSS } from '@cube-dev/ui-kit/tasty';
+import { useMemo } from 'react';
+
+function GlobalStyles({ theme }: { theme: 'dark' | 'light' }) {
+  const css = useMemo(() => `
+    body {
+      margin: 0;
+      background: ${theme === 'dark' ? '#000' : '#fff'};
+      color: ${theme === 'dark' ? '#fff' : '#000'};
+    }
+  `, [theme]);
+
+  useRawCSS(css);
+
+  return null;
+}
 ```
 
 ### `createInjector(config?): StyleInjector`

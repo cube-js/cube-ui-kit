@@ -48,13 +48,36 @@ export function injectGlobal(
 }
 
 /**
- * Internal method for createGlobalStyle - not exported publicly
+ * Inject raw CSS text directly without parsing
+ * This is a low-overhead method for injecting raw CSS that doesn't need tasty processing.
+ * The CSS is inserted into a separate style element to avoid conflicts with tasty's chunking.
+ *
+ * @example
+ * ```tsx
+ * // Inject raw CSS
+ * const { dispose } = injectRawCSS(`
+ *   body { margin: 0; padding: 0; }
+ *   .my-class { color: red; }
+ * `);
+ *
+ * // Later, remove the injected CSS
+ * dispose();
+ * ```
  */
-function injectCreateGlobalStyle(
-  rules: StyleResult[],
+export function injectRawCSS(
+  css: string,
   options?: { root?: Document | ShadowRoot },
-): GlobalInjectResult {
-  return getGlobalInjector().injectCreateGlobalStyle(rules, options);
+): { dispose: () => void } {
+  return getGlobalInjector().injectRawCSS(css, options);
+}
+
+/**
+ * Get raw CSS text for SSR
+ */
+export function getRawCSSText(options?: {
+  root?: Document | ShadowRoot;
+}): string {
+  return getGlobalInjector().getRawCSSText(options);
 }
 
 /**
@@ -154,19 +177,6 @@ export function createInjector(
   return new StyleInjector(fullConfig);
 }
 
-/**
- * Create a global style component like styled-components createGlobalStyle
- * Returns a React component that injects global styles when mounted and cleans up when unmounted
- */
-export function createGlobalStyle<Props = {}>(
-  strings: TemplateStringsArray,
-  ...interpolations: Array<
-    string | number | ((props: Props) => string | number)
-  >
-): import('react').ComponentType<Props & { root?: Document | ShadowRoot }> {
-  return getGlobalInjector().createGlobalStyle(strings, ...interpolations);
-}
-
 // Re-export types
 export type {
   StyleInjectorConfig,
@@ -181,6 +191,7 @@ export type {
   KeyframesSteps,
   KeyframesCacheEntry,
   CacheMetrics,
+  RawCSSResult,
 } from './types';
 
 export { StyleInjector } from './injector';
