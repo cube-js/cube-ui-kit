@@ -117,24 +117,34 @@ const { dispose } = injectRawCSS(`
 dispose();
 ```
 
-### `useRawCSS(css, options?): void`
+### `useRawCSS(css, options?)` or `useRawCSS(factory, deps, options?)`
 
 React hook for injecting raw CSS. Uses `useInsertionEffect` for proper timing and cleanup.
 
+Supports two overloads:
+- **Static CSS**: `useRawCSS(cssString, options?)`
+- **Factory function**: `useRawCSS(() => cssString, deps, options?)` - re-evaluates when deps change (like `useMemo`)
+
 ```tsx
 import { useRawCSS } from '@cube-dev/ui-kit/tasty';
-import { useMemo } from 'react';
 
-function GlobalStyles({ theme }: { theme: 'dark' | 'light' }) {
-  const css = useMemo(() => `
+// Static CSS
+function GlobalReset() {
+  useRawCSS(`
+    body { margin: 0; padding: 0; }
+  `);
+  return null;
+}
+
+// Dynamic CSS with factory function (like useMemo)
+function ThemeStyles({ theme }: { theme: 'dark' | 'light' }) {
+  useRawCSS(() => `
     body {
       margin: 0;
       background: ${theme === 'dark' ? '#000' : '#fff'};
       color: ${theme === 'dark' ? '#fff' : '#000'};
     }
   `, [theme]);
-
-  useRawCSS(css);
 
   return null;
 }

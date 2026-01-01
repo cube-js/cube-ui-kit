@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-
 import { useRawCSS } from '../tasty';
 import { TOKENS } from '../tokens';
 
@@ -318,8 +316,8 @@ const STATIC_CSS = `
 export function GlobalStyles(props: GlobalStylesProps) {
   const { bodyStyles, font, monospaceFont, applyLegacyTokens = false } = props;
 
-  // Build dynamic CSS that depends on props
-  const css = useMemo(() => {
+  // Build dynamic CSS that depends on props using factory function
+  useRawCSS(() => {
     const tokensCSS = buildTokensCSS(applyLegacyTokens);
     const bodyCSS = buildBodyStylesCSS(bodyStyles);
 
@@ -339,8 +337,6 @@ export function GlobalStyles(props: GlobalStylesProps) {
   }
 ${STATIC_CSS}`;
   }, [bodyStyles, font, monospaceFont, applyLegacyTokens]);
-
-  useRawCSS(css);
 
   return null;
 }
