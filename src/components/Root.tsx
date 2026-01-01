@@ -62,6 +62,7 @@ export function Root(allProps: CubeRootProps) {
     tracking,
     cursorStrategy = 'web',
     style,
+    tokens,
     ...props
   } = allProps;
 
@@ -92,6 +93,7 @@ export function Root(allProps: CubeRootProps) {
               '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
               ...style,
             }}
+            tokens={tokens}
           >
             <GlobalStyles
               bodyStyles={bodyStyles}
