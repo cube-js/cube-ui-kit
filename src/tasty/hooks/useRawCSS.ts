@@ -79,7 +79,7 @@ export function useRawCSS(
   const css = useMemo(
     () =>
       isFactory ? (cssOrFactory as () => string)() : (cssOrFactory as string),
-     
+
     isFactory ? deps ?? [] : [cssOrFactory],
   );
 
