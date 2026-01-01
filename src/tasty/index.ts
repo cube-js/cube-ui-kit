@@ -33,6 +33,7 @@ export * from './utils/mergeStyles';
 export * from './utils/warnings';
 export * from './utils/getDisplayName';
 export * from './utils/processTokens';
+export * from './utils/typography';
 export * from './injector';
 export * from './debug';
 export type {

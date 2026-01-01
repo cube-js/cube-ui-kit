@@ -91,11 +91,6 @@ const SIMPLE_COLOR_PATTERNS = [
 let colorWarningCount = 0;
 const MAX_COLOR_WARNINGS = 10;
 
-const IS_DVH_SUPPORTED =
-  typeof CSS !== 'undefined' && typeof CSS?.supports === 'function'
-    ? CSS.supports('height: 100dvh')
-    : false;
-
 export const CUSTOM_UNITS = {
   r: 'var(--radius)',
   cr: 'var(--card-radius)',
@@ -108,12 +103,6 @@ export const CUSTOM_UNITS = {
   gp: 'var(--column-gap)',
   sf: function sf(num) {
     return `minmax(0, ${num}fr)`;
-  },
-  // global setting
-  dvh: function dvh(num) {
-    return IS_DVH_SUPPORTED
-      ? `${num}dvh`
-      : `calc(var(--cube-dynamic-viewport-height, 100dvh) / 100 * ${num})`;
   },
   // span unit for GridProvider
   sp: function spanWidth(num) {
