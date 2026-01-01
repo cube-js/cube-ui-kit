@@ -25,17 +25,18 @@ import { PortalProvider } from './portal';
 
 const RootElement = tasty({
   id: 'cube-ui-kit-root',
+  styles: {
+    display: 'block',
+    color: '#dark-02',
+    preset: 't3',
+    ...Object.keys(TOKENS).reduce((map, key) => {
+      map[`$${key}`] = TOKENS[key];
+
+      return map;
+    }, {}),
+  },
 });
 
-const DEFAULT_STYLES = {
-  display: 'block',
-  preset: 't3',
-  ...Object.keys(TOKENS).reduce((map, key) => {
-    map[`$${key}`] = TOKENS[key];
-
-    return map;
-  }, {}),
-};
 const STYLES = [...BASE_STYLES, ...BLOCK_STYLES];
 
 export interface CubeRootProps extends BaseProps {
@@ -124,7 +125,7 @@ export function Root(allProps: CubeRootProps) {
     }
   }, []);
 
-  const styles = extractStyles(props, STYLES, DEFAULT_STYLES);
+  const styles = extractStyles(props, STYLES);
 
   return (
     <Provider navigation={navigation} root={rootRef}>
