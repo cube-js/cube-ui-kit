@@ -111,6 +111,13 @@ export class StyleParser {
       this.cache = new Lru<string, ProcessedStyle>(patch.cacheSize);
     else this.cache.clear();
   }
+
+  /**
+   * Get the current units configuration.
+   */
+  getUnits(): ParserOptions['units'] {
+    return this.opts.units;
+  }
 }
 
 // Re-export

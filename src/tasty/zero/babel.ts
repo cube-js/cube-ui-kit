@@ -23,11 +23,13 @@ import * as t from '@babel/types';
 import { setGlobalPredefinedStates } from '../states';
 import { Styles } from '../styles/types';
 import { mergeStyles } from '../utils/mergeStyles';
+import { CUSTOM_UNITS, getGlobalFuncs, getGlobalParser } from '../utils/styles';
 
 import { CSSWriter } from './css-writer';
 import { extractStylesForSelector, extractStylesWithChunks } from './extractor';
 
 import type { NodePath, PluginPass } from '@babel/core';
+import type { StyleDetails, UnitHandler } from '../parser/types';
 
 /**
  * Build-time configuration for zero-runtime mode.
@@ -44,6 +46,18 @@ export interface TastyZeroConfig {
    * Default: false
    */
   devMode?: boolean;
+  /**
+   * Custom units for the style parser (merged with built-in units).
+   * Units transform numeric values like `2x` → `calc(2 * var(--gap))`.
+   * @example { em: 'em', vw: 'vw', custom: (n) => `${n * 10}px` }
+   */
+  units?: Record<string, string | UnitHandler>;
+  /**
+   * Custom functions for the style parser (merged with existing).
+   * Functions process parsed style groups and return CSS values.
+   * @example { myFunc: (groups) => groups.map(g => g.output).join(' ') }
+   */
+  funcs?: Record<string, (groups: StyleDetails[]) => string>;
 }
 
 export interface TastyZeroBabelOptions {
@@ -80,6 +94,24 @@ export default declare<TastyZeroBabelOptions>((api, options) => {
   // Apply global predefined states if configured
   if (config.states) {
     setGlobalPredefinedStates(config.states);
+  }
+
+  // Apply parser configuration (merge semantics - extend, not replace)
+  const parser = getGlobalParser();
+
+  if (config.units) {
+    // Merge with existing units
+    const currentUnits = parser.getUnits() ?? CUSTOM_UNITS;
+    parser.setUnits({ ...currentUnits, ...config.units });
+  }
+
+  if (config.funcs) {
+    // Merge with existing funcs
+    const currentFuncs = getGlobalFuncs();
+    const mergedFuncs = { ...currentFuncs, ...config.funcs };
+    parser.setFuncs(mergedFuncs);
+    // Also update the global registry so customFunc() continues to work
+    Object.assign(currentFuncs, config.funcs);
   }
 
   const cssWriter = new CSSWriter(outputPath, { devMode });

@@ -78,6 +78,117 @@ const TokenCard = tasty({
 
 ---
 
+## ⚙️ Configuration
+
+Configure the Tasty style system before your app renders using the `configure()` function. Configuration must be done **before any styles are generated** (before first render).
+
+```jsx
+import { configure } from '@cube-dev/ui-kit';
+
+// Configure before app renders (e.g., in your entry file)
+configure({
+  // CSP nonce for style elements
+  nonce: 'abc123',
+
+  // Global state aliases
+  states: {
+    '@mobile': '@media(w < 768px)',
+    '@tablet': '@media(768px <= w < 1024px)',
+    '@dark': '@root(theme=dark)',
+  },
+
+  // Parser configuration
+  parserCacheSize: 2000, // LRU cache size (default: 1000)
+  
+  // Custom units (merged with built-in units)
+  units: {
+    vh: 'vh',
+    vw: 'vw',
+    custom: (n) => `${n * 10}px`, // Function-based unit
+  },
+  
+  // Custom functions for the parser
+  funcs: {
+    double: (groups) => {
+      const value = parseFloat(groups[0]?.output || '0');
+      return `${value * 2}px`;
+    },
+  },
+});
+```
+
+### Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `nonce` | `string` | - | CSP nonce for style elements |
+| `states` | `Record<string, string>` | - | Global state aliases for advanced state mapping |
+| `parserCacheSize` | `number` | `1000` | Parser LRU cache size |
+| `units` | `Record<string, string \| Function>` | Built-in | Custom units (merged with built-in) |
+| `funcs` | `Record<string, Function>` | - | Custom parser functions (merged with existing) |
+
+### Built-in Units
+
+| Unit | Description | Example | CSS Output |
+|------|-------------|---------|------------|
+| `x` | Gap multiplier | `2x` | `calc(var(--gap) * 2)` |
+| `r` | Border radius | `1r` | `var(--radius)` |
+| `cr` | Card border radius | `1cr` | `var(--card-radius)` |
+| `bw` | Border width | `2bw` | `calc(var(--border-width) * 2)` |
+| `ow` | Outline width | `1ow` | `var(--outline-width)` |
+| `fs` | Font size | `1fs` | `var(--font-size)` |
+| `lh` | Line height | `1lh` | `var(--line-height)` |
+| `sf` | Stable fraction | `1sf` | `minmax(0, 1fr)` |
+
+### Adding Custom Units
+
+Custom units are **merged** with built-in units - you can extend without losing defaults:
+
+```jsx
+configure({
+  units: {
+    // Add viewport units
+    vh: 'vh',
+    vw: 'vw',
+    // Dynamic unit with function
+    cols: (n) => `calc(${n} * var(--column-width))`,
+  },
+});
+
+// Usage in components
+const Box = tasty({
+  styles: {
+    height: '50vh',
+    width: '3cols',
+  },
+});
+```
+
+### Adding Custom Functions
+
+Custom functions process parsed style values:
+
+```jsx
+configure({
+  funcs: {
+    // Custom function: clamp(min, value, max)
+    clamp: (groups) => {
+      const values = groups.map(g => g.output);
+      return `clamp(${values.join(', ')})`;
+    },
+  },
+});
+
+// Usage in components
+const Box = tasty({
+  styles: {
+    width: 'clamp(200px, 50%, 800px)',
+  },
+});
+```
+
+---
+
 ## 📚 Dictionary
 
 Key concepts for working with Tasty:

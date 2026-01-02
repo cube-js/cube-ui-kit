@@ -196,6 +196,25 @@ export function customFunc(
 }
 
 /**
+ * Get the global StyleParser instance.
+ * Used by configure() to apply parser configuration.
+ */
+export function getGlobalParser(): StyleParser {
+  return __tastyParser;
+}
+
+/**
+ * Get the current custom functions registry.
+ * Used by configure() to merge with new functions.
+ */
+export function getGlobalFuncs(): Record<
+  string,
+  (groups: StyleDetails[]) => string
+> {
+  return __tastyFuncs;
+}
+
+/**
  *
  * @param {String} value
  * @param {Number} mode

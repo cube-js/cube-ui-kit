@@ -14,6 +14,9 @@
 import { StyleInjector } from './injector/injector';
 import { setGlobalPredefinedStates } from './states';
 import { isDevEnv } from './utils/isDevEnv';
+import { CUSTOM_UNITS, getGlobalFuncs, getGlobalParser } from './utils/styles';
+
+import type { StyleDetails, UnitHandler } from './parser/types';
 
 /**
  * Configuration options for the Tasty style system
@@ -50,6 +53,23 @@ export interface TastyConfig {
    * Example: { '@mobile': '@media(w < 920px)', '@dark': '@root(theme=dark)' }
    */
   states?: Record<string, string>;
+  /**
+   * Parser LRU cache size (default: 1000).
+   * Larger values improve performance for apps with many unique style values.
+   */
+  parserCacheSize?: number;
+  /**
+   * Custom units for the style parser (merged with built-in units).
+   * Units transform numeric values like `2x` → `calc(2 * var(--gap))`.
+   * @example { em: 'em', vw: 'vw', custom: (n) => `${n * 10}px` }
+   */
+  units?: Record<string, string | UnitHandler>;
+  /**
+   * Custom functions for the style parser (merged with existing).
+   * Functions process parsed style groups and return CSS values.
+   * @example { myFunc: (groups) => groups.map(g => g.output).join(' ') }
+   */
+  funcs?: Record<string, (groups: StyleDetails[]) => string>;
 }
 
 // Warnings tracking to avoid duplicates
@@ -212,11 +232,40 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     setGlobalPredefinedStates(config.states);
   }
 
-  // Create config without states (it's handled separately in states module)
-  const { states: _states, ...injectorConfig } = config;
+  // Handle parser configuration (merge semantics - extend, not replace)
+  const parser = getGlobalParser();
+
+  if (config.parserCacheSize !== undefined) {
+    parser.updateOptions({ cacheSize: config.parserCacheSize });
+  }
+
+  if (config.units) {
+    // Merge with existing units
+    const currentUnits = parser.getUnits() ?? CUSTOM_UNITS;
+    parser.setUnits({ ...currentUnits, ...config.units });
+  }
+
+  if (config.funcs) {
+    // Merge with existing funcs
+    const currentFuncs = getGlobalFuncs();
+    const mergedFuncs = { ...currentFuncs, ...config.funcs };
+    parser.setFuncs(mergedFuncs);
+    // Also update the global registry so customFunc() continues to work
+    Object.assign(currentFuncs, config.funcs);
+  }
+
+  // Create config without states and parser options (handled separately)
+  const {
+    states: _states,
+    parserCacheSize: _parserCacheSize,
+    units: _units,
+    funcs: _funcs,
+    ...injectorConfig
+  } = config;
 
   const fullConfig: TastyConfig = {
     ...createDefaultConfig(),
+    ...currentConfig,
     ...injectorConfig,
   };
 
