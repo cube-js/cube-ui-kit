@@ -2,12 +2,13 @@
  * Debug utilities for inspecting tasty-generated CSS at runtime
  */
 
+import { CHUNK_NAMES } from './chunks/definitions';
 import { getCssTextForNode, injector } from './injector';
 import { isDevEnv } from './utils/isDevEnv';
 
 // Type definitions for the new API
 type CSSTarget =
-  | 'all' // tasty CSS + tasty global CSS (createGlobalStyle)
+  | 'all' // tasty CSS + tasty global CSS + raw CSS
   | 'global' // only tasty global CSS
   | 'active' // tasty CSS for classes currently in DOM
   | 'unused' // tasty CSS with refCount = 0 (still in cache but not actively used)
@@ -22,9 +23,15 @@ interface CssOptions {
   log?: boolean; // default: false
 }
 
+interface ChunkInfo {
+  className: string;
+  chunkName: string | null;
+}
+
 interface InspectResult {
   element?: Element | null;
   classes: string[]; // tasty classes found on the element
+  chunks: ChunkInfo[]; // chunk information per class (with chunking enabled)
   css: string; // full, prettified CSS affecting the element
   size: number; // characters in css
   rules: number; // number of rule blocks
@@ -82,7 +89,7 @@ interface Summary {
   activeCSSSize: number;
   unusedCSSSize: number;
   globalCSSSize: number; // injectGlobal() CSS
-  rawCSSSize: number; // createGlobalStyle() CSS
+  rawCSSSize: number; // injectRawCSS() / useRawCSS() CSS
   keyframesCSSSize: number; // @keyframes CSS
   propertyCSSSize: number; // @property CSS
   totalCSSSize: number; // all tasty CSS (active + unused + global + raw + keyframes + property)
@@ -91,7 +98,7 @@ interface Summary {
   activeCSS: string;
   unusedCSS: string;
   globalCSS: string; // injectGlobal() CSS
-  rawCSS: string; // createGlobalStyle() CSS
+  rawCSS: string; // injectRawCSS() / useRawCSS() CSS
   keyframesCSS: string; // @keyframes CSS
   propertyCSS: string; // @property CSS
   allCSS: string; // all tasty CSS combined
@@ -135,6 +142,15 @@ interface Summary {
       cssSize: number;
       rulesDeleted: number;
     };
+  };
+
+  // Chunk breakdown (style chunking optimization)
+  chunkBreakdown: {
+    byChunk: Record<
+      string,
+      { classes: string[]; cssSize: number; ruleCount: number }
+    >;
+    totalChunkTypes: number;
   };
 }
 
@@ -428,6 +444,124 @@ function getPageStats(options?: {
   return { cssSize, ruleCount, stylesheetCount, skippedStylesheets };
 }
 
+// ============================================================================
+// Chunk-aware helpers (for style chunking optimization)
+// ============================================================================
+
+/**
+ * Extract chunk name from a cache key.
+ *
+ * Cache keys have the format: "chunkName\0key:value\0key:value..."
+ * or "[states:...]\0chunkName\0..." for predefined states.
+ *
+ * @param cacheKey - The cache key to parse
+ * @returns The chunk name, or null if not found
+ */
+function extractChunkNameFromCacheKey(cacheKey: string): string | null {
+  // Cache keys are separated by \0 (null character)
+  const parts = cacheKey.split('\0');
+
+  for (const part of parts) {
+    // Skip predefined states prefix
+    if (part.startsWith('[states:')) continue;
+    // First non-states part that doesn't contain : is the chunk name
+    if (!part.includes(':') && part.length > 0) {
+      return part;
+    }
+  }
+  return null;
+}
+
+/**
+ * Get chunk info for a className by reverse-looking up its cache key.
+ *
+ * @param className - The tasty class name (e.g., "t0", "t123")
+ * @param root - The document or shadow root to search in
+ * @returns Object with chunk name and cache key, or nulls if not found
+ */
+function getChunkForClassName(
+  className: string,
+  root: Document | ShadowRoot = document,
+): { chunkName: string | null; cacheKey: string | null } {
+  const registry = (injector.instance as any)['sheetManager']?.getRegistry(
+    root,
+  );
+  if (!registry) {
+    return { chunkName: null, cacheKey: null };
+  }
+
+  // Reverse lookup: find the cache key for this className
+  for (const [cacheKey, cn] of registry.cacheKeyToClassName) {
+    if (cn === className) {
+      return {
+        chunkName: extractChunkNameFromCacheKey(cacheKey),
+        cacheKey,
+      };
+    }
+  }
+  return { chunkName: null, cacheKey: null };
+}
+
+/**
+ * Get chunk breakdown statistics for all styles.
+ *
+ * @param root - The document or shadow root to search in
+ * @returns Object with breakdown by chunk type and totals
+ */
+function getChunkBreakdown(root: Document | ShadowRoot = document): {
+  byChunk: Record<
+    string,
+    { classes: string[]; cssSize: number; ruleCount: number }
+  >;
+  totalChunkTypes: number;
+} {
+  const registry = (injector.instance as any)['sheetManager']?.getRegistry(
+    root,
+  );
+
+  if (!registry) {
+    return {
+      byChunk: {},
+      totalChunkTypes: 0,
+    };
+  }
+
+  const byChunk: Record<
+    string,
+    { classes: string[]; cssSize: number; ruleCount: number }
+  > = {};
+
+  // Group classes by chunk
+  for (const [cacheKey, className] of registry.cacheKeyToClassName) {
+    const chunkName = extractChunkNameFromCacheKey(cacheKey) || 'unknown';
+
+    if (!byChunk[chunkName]) {
+      byChunk[chunkName] = { classes: [], cssSize: 0, ruleCount: 0 };
+    }
+
+    byChunk[chunkName].classes.push(className);
+
+    // Get CSS for this class
+    const css = injector.instance.getCssTextForClasses([className], { root });
+    byChunk[chunkName].cssSize += css.length;
+    byChunk[chunkName].ruleCount += (css.match(/\{[^}]*\}/g) || []).length;
+  }
+
+  // Sort classes within each chunk for consistency
+  for (const entry of Object.values(byChunk)) {
+    entry.classes.sort((a, b) => {
+      const aNum = parseInt(a.slice(1));
+      const bNum = parseInt(b.slice(1));
+      return aNum - bNum;
+    });
+  }
+
+  return {
+    byChunk,
+    totalChunkTypes: Object.keys(byChunk).length,
+  };
+}
+
 /**
  * Concise tastyDebug API for inspecting styles at runtime
  */
@@ -508,6 +642,7 @@ export const tastyDebug = {
       return {
         element: null,
         classes: [],
+        chunks: [],
         css: '',
         size: 0,
         rules: 0,
@@ -519,6 +654,12 @@ export const tastyDebug = {
       .split(/\s+/)
       .filter((cls) => /^t\d+$/.test(cls));
 
+    // Get chunk info for each tasty class
+    const chunks: ChunkInfo[] = tastyClasses.map((className) => ({
+      className,
+      chunkName: getChunkForClassName(className, root).chunkName,
+    }));
+
     const css = getCssTextForNode(element, { root });
     const prettifiedCSS = prettifyCSS(css);
     const ruleCount = (css.match(/\{[^}]*\}/g) || []).length;
@@ -526,6 +667,7 @@ export const tastyDebug = {
     return {
       element,
       classes: tastyClasses,
+      chunks,
       css: prettifiedCSS,
       size: css.length,
       rules: ruleCount,
@@ -578,7 +720,91 @@ export const tastyDebug = {
     injector.instance.resetMetrics({ root });
   },
 
-  // 5) Get CSS for specific global types
+  // 5) Chunk breakdown (style chunking optimization)
+  /**
+   * Get breakdown of styles by chunk type.
+   *
+   * With style chunking enabled, styles are split into logical chunks
+   * (appearance, font, dimension, container, etc.) for better caching
+   * and CSS reuse.
+   *
+   * @param opts - Options including root document/shadow root
+   * @returns Breakdown by chunk type with class counts and CSS sizes
+   */
+  chunks(opts?: { root?: Document | ShadowRoot; log?: boolean }): {
+    byChunk: Record<
+      string,
+      { classes: string[]; cssSize: number; ruleCount: number }
+    >;
+    totalChunkTypes: number;
+    totalClasses: number;
+  } {
+    const { root = document, log = false } = opts || {};
+    const breakdown = getChunkBreakdown(root);
+
+    const totalClasses = Object.values(breakdown.byChunk).reduce(
+      (sum, entry) => sum + entry.classes.length,
+      0,
+    );
+
+    if (log) {
+      console.group('🧩 Style Chunk Breakdown');
+
+      // Define display order matching CHUNK_NAMES
+      const displayOrder = [
+        CHUNK_NAMES.COMBINED, // non-chunked styles (e.g., @starting-style)
+        CHUNK_NAMES.APPEARANCE,
+        CHUNK_NAMES.FONT,
+        CHUNK_NAMES.DIMENSION,
+        CHUNK_NAMES.CONTAINER,
+        CHUNK_NAMES.SCROLLBAR,
+        CHUNK_NAMES.POSITION,
+        CHUNK_NAMES.MISC,
+        CHUNK_NAMES.SUBCOMPONENTS,
+      ];
+
+      // Show chunks in order
+      for (const chunkName of displayOrder) {
+        const data = breakdown.byChunk[chunkName];
+        if (data) {
+          const sizeStr =
+            data.cssSize > 1024
+              ? `${(data.cssSize / 1024).toFixed(1)}KB`
+              : `${data.cssSize}B`;
+          console.log(
+            `  • ${chunkName}: ${data.classes.length} classes, ${sizeStr}, ${data.ruleCount} rules`,
+          );
+        }
+      }
+
+      // Show any unknown chunks
+      for (const [chunkName, data] of Object.entries(breakdown.byChunk)) {
+        if (
+          !displayOrder.includes(chunkName as (typeof displayOrder)[number])
+        ) {
+          const sizeStr =
+            data.cssSize > 1024
+              ? `${(data.cssSize / 1024).toFixed(1)}KB`
+              : `${data.cssSize}B`;
+          console.log(
+            `  • ${chunkName}: ${data.classes.length} classes, ${sizeStr}, ${data.ruleCount} rules`,
+          );
+        }
+      }
+
+      console.log(
+        `📊 Total: ${totalClasses} classes across ${breakdown.totalChunkTypes} chunk types`,
+      );
+      console.groupEnd();
+    }
+
+    return {
+      ...breakdown,
+      totalClasses,
+    };
+  },
+
+  // 6) Get CSS for specific global types
   getGlobalTypeCSS(
     type: 'global' | 'raw' | 'keyframes' | 'property',
     opts?: { root?: Document | ShadowRoot },
@@ -820,6 +1046,9 @@ export const tastyDebug = {
       };
     }
 
+    // Get chunk breakdown
+    const chunkBreakdown = getChunkBreakdown(root);
+
     const summary: Summary = {
       activeClasses: cacheStatus.classes.active,
       unusedClasses: cacheStatus.classes.unused,
@@ -846,6 +1075,7 @@ export const tastyDebug = {
       propertyCount: definitions.properties.length,
       keyframeCount: definitions.keyframes.length,
       cleanupSummary,
+      chunkBreakdown,
     };
 
     if (log) {
@@ -867,7 +1097,7 @@ export const tastyDebug = {
         `  • Global CSS (injectGlobal): ${summary.globalCSSSize} characters (${summary.globalRuleCount} rules)`,
       );
       console.log(
-        `  • Raw CSS (createGlobalStyle): ${summary.rawCSSSize} characters (${summary.rawRuleCount} rules)`,
+        `  • Raw CSS (injectRawCSS/useRawCSS): ${summary.rawCSSSize} characters (${summary.rawRuleCount} rules)`,
       );
       console.log(
         `  • Keyframes CSS: ${summary.keyframesCSSSize} characters (${summary.keyframesRuleCount} rules)`,
@@ -944,6 +1174,34 @@ export const tastyDebug = {
               ).toFixed(1)
             : '0';
         console.log(`  • Overall cache hit rate: ${hitRate}%`);
+      }
+
+      // Show chunk breakdown
+      if (summary.chunkBreakdown.totalChunkTypes > 0) {
+        console.log('🧩 Style Chunk Breakdown:');
+        const displayOrder = [
+          CHUNK_NAMES.COMBINED, // non-chunked styles (e.g., @starting-style)
+          CHUNK_NAMES.APPEARANCE,
+          CHUNK_NAMES.FONT,
+          CHUNK_NAMES.DIMENSION,
+          CHUNK_NAMES.CONTAINER,
+          CHUNK_NAMES.SCROLLBAR,
+          CHUNK_NAMES.POSITION,
+          CHUNK_NAMES.MISC,
+          CHUNK_NAMES.SUBCOMPONENTS,
+        ];
+        for (const chunkName of displayOrder) {
+          const data = summary.chunkBreakdown.byChunk[chunkName];
+          if (data) {
+            const sizeStr =
+              data.cssSize > 1024
+                ? `${(data.cssSize / 1024).toFixed(1)}KB`
+                : `${data.cssSize}B`;
+            console.log(
+              `  • ${chunkName}: ${data.classes.length} classes, ${sizeStr}, ${data.ruleCount} rules`,
+            );
+          }
+        }
       }
 
       console.log('🔍 Details:');
@@ -1087,19 +1345,19 @@ export const tastyDebug = {
     console.groupEnd();
   },
 
-  // 11) Show help and usage examples
+  // 12) Show help and usage examples
   help(): void {
     console.group('🎨 tastyDebug - Quick Start Guide');
     console.log('💡 Essential commands:');
     console.log(
       '  • tastyDebug.summary({ log: true }) - comprehensive overview',
     );
+    console.log('  • tastyDebug.chunks({ log: true }) - style chunk breakdown');
     console.log('  • tastyDebug.log("active") - beautiful CSS display');
     console.log('  • tastyDebug.css("active") - get active CSS');
     console.log(
-      '  • tastyDebug.inspect(".my-element") - detailed element inspection',
+      '  • tastyDebug.inspect(".my-element") - element inspection with chunk info',
     );
-    console.log('  • tastyDebug.global({ log: true }) - global CSS analysis');
     console.log('  • tastyDebug.cache() - cache status');
     console.log('  • tastyDebug.defs() - defined properties & keyframes');
     console.log('  • tastyDebug.pageCSS({ log: true }) - all page CSS');
@@ -1108,7 +1366,7 @@ export const tastyDebug = {
     console.log('  • "all" - all tasty CSS + global CSS');
     console.log('  • "active" - CSS for classes in DOM');
     console.log('  • "unused" - CSS for classes with refCount = 0');
-    console.log('  • "global" - only global CSS (createGlobalStyle)');
+    console.log('  • "global" - only global CSS (injectGlobal)');
     console.log('  • "page" - ALL page CSS (including non-tasty)');
     console.log('  • "t123" - specific tasty class');
     console.log('  • [".my-selector"] - CSS selector');
@@ -1118,6 +1376,20 @@ export const tastyDebug = {
     console.log('  • { title: "Custom" } - custom title for log()');
     console.log('  • { root: shadowRoot } - target Shadow DOM');
     console.log('  • { prettify: false } - skip CSS formatting');
+    console.log('');
+    console.log('🧩 Style Chunking:');
+    console.log(
+      '  Elements have multiple classes (one per chunk: appearance, font, dimension, etc.)',
+    );
+    console.log(
+      '  • tastyDebug.chunks({ log: true }) - breakdown by chunk type',
+    );
+    console.log(
+      '  • tastyDebug.inspect() - shows which chunk each class belongs to',
+    );
+    console.log(
+      '  Chunk types: combined (non-chunked), appearance, font, dimension, container, scrollbar, position, misc, subcomponents',
+    );
     console.groupEnd();
   },
 };

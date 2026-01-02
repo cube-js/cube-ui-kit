@@ -13,7 +13,7 @@ import {
   ColorStyleProps,
   extractStyles,
   filterBaseProps,
-  ResponsiveStyleValue,
+  StylePropValue,
   TagName,
   tasty,
   TEXT_STYLES,
@@ -49,9 +49,9 @@ export interface CubeTextProps<T extends TagName = TagName>
   /**
    * Whether the text has italic style
    */
-  italic?: ResponsiveStyleValue<CSSProperties['fontStyle']>;
+  italic?: StylePropValue<CSSProperties['fontStyle']>;
   weight?: string | number;
-  transform?: ResponsiveStyleValue<CSSProperties['textTransform']>;
+  transform?: StylePropValue<CSSProperties['textTransform']>;
 }
 
 const TextElement = tasty({

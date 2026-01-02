@@ -1,6 +1,6 @@
 import { CSSProperties } from 'react';
 
-import { ResponsiveStyleValue } from '../utils/styles';
+import { StyleValue, StyleValueStateMap } from '../utils/styles';
 
 type NamedColor =
   | 'purple'
@@ -479,11 +479,14 @@ export type Selector = `${SuffixForSelector}${string}`;
 export type NotSelector = Exclude<string, Selector | keyof StylesInterface>;
 
 export type StylesWithoutSelectors = {
-  [key in keyof StylesInterface]?: ResponsiveStyleValue<StylesInterface[key]>;
+  [key in keyof StylesInterface]?:
+    | StyleValue<StylesInterface[key]>
+    | StyleValueStateMap<StylesInterface[key]>;
 };
 export type Styles = StylesWithoutSelectors & {
   [key: string]:
-    | ResponsiveStyleValue<string | number | boolean | undefined>
+    | StyleValue<string | number | boolean | undefined>
+    | StyleValueStateMap<string | number | boolean | undefined>
     | Styles;
   /**
    * Selector combinator: `undefined` (descendant, default), `'>'` (child), `'+'` (adjacent), `'~'` (sibling).
