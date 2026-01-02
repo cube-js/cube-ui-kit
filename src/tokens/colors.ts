@@ -5,6 +5,7 @@ import type { Styles } from '../tasty/styles/types';
  * The tasty system automatically generates {name}-color-rgb variants.
  */
 export const COLOR_TOKENS: Styles = {
+  // Base colors
   '#pink': 'rgb(255 100 146)',
   '#pink-02': 'rgb(255 131 168)',
 
@@ -51,4 +52,23 @@ export const COLOR_TOKENS: Styles = {
 
   '#border': 'rgb(227 227 233)',
   '#light-border': 'rgb(227 227 233)',
+
+  // Semantic colors
+  '#clear': 'transparent',
+  '#border-opaque': 'rgb(227 227 233)',
+  '#shadow': '#dark.06',
+  '#draft': '#dark.2',
+  '#minor': '#dark.65',
+  '#danger-bg-hover': '#danger.1',
+  '#dark-75': '#dark.75',
+  '#primary': '#purple',
+
+  // Pink opacity variants
+  '#pink-8': '#pink.2',
+  '#pink-9': '#pink.1',
+
+  // Disabled state colors
+  '#disabled': '#dark-01.25',
+  '#disabled-text': '#dark-01.25',
+  '#disabled-bg': '#dark-05.2',
 };

@@ -5,8 +5,6 @@ import type { Styles } from '../tasty/styles/types';
  * These define the fundamental units and values used throughout the system.
  *
  * Keys use $ prefix for CSS custom properties.
- * Color values use tasty syntax (#color.opacity) which will be
- * processed when applied via useGlobalStyles.
  */
 export const BASE_TOKENS: Styles = {
   // Typography base
@@ -54,39 +52,12 @@ export const BASE_TOKENS: Styles = {
   /** Transition for disclosure animations */
   '$disclosure-transition': '120ms',
 
-  // Semantic colors - using tasty color syntax with opacity
-  /** Transparent color */
-  '$clear-color': 'transparent',
-  /** Opaque border color (not using opacity) */
-  '$border-opaque-color': 'rgb(227 227 233)',
-  /** Shadow color */
-  '$shadow-color': '#dark.06',
-  /** Draft/placeholder color */
-  '$draft-color': '#dark.2',
-  /** Minor/secondary text color */
-  '$minor-color': '#dark.65',
-  /** Danger background on hover */
-  '$danger-bg-hover-color': '#danger.1',
-  /** Dark at 75% opacity */
-  '$dark-75-color': '#dark.75',
-  /** Primary brand color */
-  '$primary-color': '#purple',
-
-  // Pink opacity variants
-  '$pink-8-color': '#pink.2',
-  '$pink-9-color': '#pink.1',
-
-  // Disabled state colors
-  '$disabled-color': '#dark-01.25',
-  '$disabled-text-color': '#dark-01.25',
-  '$disabled-bg-color': '#dark-05.2',
-
   // Scrollbar tokens
   '$scrollbar-width': '1.5x',
   '$scrollbar-outline-width': '1ow',
   '$scrollbar-radius': '1.5r',
-  '$scrollbar-thumb-color': '#text.5',
-  '$scrollbar-outline-color': '#clear',
-  '$scrollbar-bg-color': '#dark-bg',
-  '$scrollbar-corner-color': '#clear',
+  '#scrollbar-thumb': '#text.5',
+  '#scrollbar-outline': '#clear',
+  '#scrollbar-bg': '#dark-bg',
+  '#scrollbar-corner': '#clear',
 };
