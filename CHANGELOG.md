@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.98.5
+
+### Patch Changes
+
+- [#936](https://github.com/cube-js/cube-ui-kit/pull/936) [`6c6f0a42`](https://github.com/cube-js/cube-ui-kit/commit/6c6f0a422e48d1068930f2e7e436b79cd66268e5) Thanks [@tenphi](https://github.com/tenphi)! - Fix sub-element definition in Result component.
+
 ## 0.98.4
 
 ### Patch Changes
