@@ -63,7 +63,7 @@ SideLabel.args = {
 export const SideLabelWithTooltip = Template.bind({});
 SideLabelWithTooltip.args = {
   labelPosition: 'side',
-  tooltip: 'Long description',
+  tooltip: <>Long description</>,
 };
 
 export const SideLabelWithMessage = Template.bind({});
