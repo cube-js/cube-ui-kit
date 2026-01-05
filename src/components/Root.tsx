@@ -25,7 +25,7 @@ const RootElement = tasty({
   id: 'cube-ui-kit-root',
   styles: {
     container: 'root / inline-size',
-    display: 'block',
+    display: 'contents',
     color: '#dark-02',
     preset: 't3',
   },

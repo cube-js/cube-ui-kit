@@ -8,6 +8,7 @@ const ToolbarElement = tasty(LayoutContent, {
   qa: 'Toolbar',
   role: 'toolbar',
   styles: {
+    container: 'none',
     height: 'min 5x',
     flexShrink: 0,
     flexGrow: 0,

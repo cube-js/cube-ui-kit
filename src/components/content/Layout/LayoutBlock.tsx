@@ -7,6 +7,7 @@ import { CubeLayoutContentProps, LayoutContent } from './LayoutContent';
 const BlockElement = tasty(LayoutContent, {
   qa: 'LayoutBlock',
   styles: {
+    container: 'none',
     flexShrink: 0,
     flexGrow: 0,
 

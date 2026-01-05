@@ -7,6 +7,7 @@ import { CubeLayoutContentProps, LayoutContent } from './LayoutContent';
 const GridElement = tasty(LayoutContent, {
   qa: 'LayoutGrid',
   styles: {
+    container: 'none',
     flexShrink: 0,
     flexGrow: 0,
 
