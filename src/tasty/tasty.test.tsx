@@ -285,6 +285,131 @@ describe('tasty() API', () => {
 
     expect(container3).toMatchTastySnapshot();
   });
+
+  it('should support elements prop for sub-elements', () => {
+    const ButtonElement = tasty({
+      as: 'button',
+      styles: {
+        display: 'flex',
+        Icon: { color: 'red' },
+        Label: { fontWeight: 'bold' },
+      },
+      elements: {
+        Icon: 'span',
+        Label: { as: 'div', qa: 'ButtonLabel' },
+      },
+    });
+
+    const { container } = render(
+      <ButtonElement qa="button">
+        <ButtonElement.Icon qa="icon">Icon</ButtonElement.Icon>
+        <ButtonElement.Label>Label</ButtonElement.Label>
+      </ButtonElement>,
+    );
+
+    const icon = getByTestId(container, 'icon');
+    const label = getByTestId(container, 'ButtonLabel');
+
+    // Check data-element attributes
+    expect(icon.getAttribute('data-element')).toBe('Icon');
+    expect(label.getAttribute('data-element')).toBe('Label');
+
+    // Check correct tag names
+    expect(icon.tagName).toBe('SPAN');
+    expect(label.tagName).toBe('DIV');
+  });
+
+  it('should support mods in sub-elements', () => {
+    const CardElement = tasty({
+      elements: {
+        Header: 'header',
+      },
+    });
+
+    const { container } = render(
+      <CardElement>
+        <CardElement.Header qa="header" mods={{ active: true, size: 'large' }}>
+          Header
+        </CardElement.Header>
+      </CardElement>,
+    );
+
+    const header = getByTestId(container, 'header');
+
+    expect(header.getAttribute('data-active')).toBe('');
+    expect(header.getAttribute('data-size')).toBe('large');
+  });
+
+  it('should support is* properties in sub-elements', () => {
+    const FormElement = tasty({
+      elements: {
+        Input: 'input',
+      },
+    });
+
+    const { container } = render(
+      <FormElement>
+        <FormElement.Input isDisabled qa="input" />
+      </FormElement>,
+    );
+
+    const input = getByTestId(container, 'input') as HTMLInputElement;
+
+    expect(input.disabled).toBe(true);
+    expect(input.getAttribute('data-disabled')).toBe('');
+  });
+
+  it('should allow qa and qaVal override in sub-elements', () => {
+    const Element = tasty({
+      elements: {
+        Item: { as: 'div', qa: 'default-item' },
+      },
+    });
+
+    const { container } = render(
+      <Element>
+        <Element.Item qa="custom-item" qaVal={42}>
+          Content
+        </Element.Item>
+      </Element>,
+    );
+
+    const item = getByTestId(container, 'custom-item');
+
+    // qa prop should override default
+    expect(item.getAttribute('data-qa')).toBe('custom-item');
+    expect(item.getAttribute('data-qaval')).toBe('42');
+  });
+
+  it('should support tokens prop in sub-elements', () => {
+    const Element = tasty({
+      elements: {
+        Box: 'div',
+      },
+    });
+
+    const { container } = render(
+      <Element>
+        <Element.Box
+          qa="box"
+          tokens={{ $size: 16, '#accent': '#ff0000' }}
+          style={{ padding: '10px' }}
+        >
+          Content
+        </Element.Box>
+      </Element>,
+    );
+
+    const box = getByTestId(container, 'box');
+    const style = box.getAttribute('style');
+
+    // Check token processing
+    expect(style).toContain('--size: 16');
+    expect(style).toContain('--accent-color:');
+    expect(style).toContain('--accent-color-rgb:');
+    // Check that explicit style prop is also applied
+    expect(style).toContain('padding: 10px');
+  });
 });
 
 describe('style order consistency', () => {

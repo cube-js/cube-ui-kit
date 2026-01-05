@@ -53,6 +53,9 @@ export type {
   TastyElementOptions,
   TastyElementProps,
   AllBasePropsWithMods,
+  SubElementDefinition,
+  ElementsDefinition,
+  SubElementProps,
 } from './tasty';
 export type {
   AllBaseProps,

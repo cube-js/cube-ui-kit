@@ -212,6 +212,40 @@ styles: { Title: { preset: 'h3' } }
 // Targets: <div data-element="Title">
 ```
 
+### Compound Sub-elements (`elements` prop)
+
+You can also *declare* sub-elements in the `tasty()` definition via `elements`. This creates compound sub-components (e.g. `ButtonElement.Icon`) that render the correct tag and automatically set `data-element`.
+
+```jsx
+const ButtonElement = tasty({
+  styles: {
+    // Root styles...
+    Icon: { color: '#primary' },
+    Label: { preset: 't3 strong' },
+  },
+  elements: {
+    Icon: 'span',
+    Label: {
+      as: 'div',
+      qa: 'ButtonLabel', // default data-qa for this sub-element
+    },
+  },
+});
+
+// Usage
+<ButtonElement>
+  <ButtonElement.Icon />
+  <ButtonElement.Label mods={{ emphasized: true }} />
+</ButtonElement>
+```
+
+**Sub-element component behavior:**
+- Always sets `data-element="..."` (based on the key name).
+- Supports `qa` / `qaVal` (mapped to `data-qa` / `data-qaval`).
+- Supports `mods` (generates `data-*` attributes).
+- Supports `isDisabled`, `isHidden`, `isChecked` (mapped to native attributes + `data-*`).
+- Supports `tokens` (rendered as inline CSS custom properties; merged with `style`, where `style` has priority).
+
 ### Custom Styles
 
 Tasty properties that enhance native CSS with design system integration: `fill` (background), `radius` (border-radius), `border`, `preset` (typography), `gap`.
@@ -255,7 +289,22 @@ CSS custom properties defined via `tokens` prop, rendered as inline styles. Supp
 
 ```jsx
 tokens={{ $spacing: '2x', '#primary': '#purple' }}
-// → style="--spacing: calc(2 * var(--gap)); --accent-color: var(--purple-color); --accent-color-rgb: var(--purple-color-rgb)"
+// → style="--spacing: calc(2 * var(--gap)); --primary-color: var(--purple-color); --primary-color-rgb: var(--purple-color-rgb)"
+```
+
+#### Tokens on Sub-elements
+
+Sub-elements created via `elements` also support `tokens`:
+
+```jsx
+const Card = tasty({
+  styles: { Title: { color: '#title' } },
+  elements: { Title: 'div' },
+});
+
+<Card>
+  <Card.Title tokens={{ '#title': '#purple' }} />
+</Card>
 ```
 
 ### Advanced States (`@` prefix)

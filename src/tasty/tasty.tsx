@@ -18,6 +18,7 @@ import {
   AllBaseProps,
   BaseProps,
   BaseStyleProps,
+  Mods,
   Props,
   Tokens,
 } from './types';
@@ -64,6 +65,95 @@ function handleIsProperties(props: Record<string, unknown>) {
 // Basic props accepted by our base element
 type BaseElementProps = { as?: string } & Record<string, unknown>;
 
+/**
+ * Creates a sub-element component for compound component patterns.
+ * Sub-elements are lightweight components with data-element attribute for CSS targeting.
+ */
+function createSubElement<Tag extends keyof JSX.IntrinsicElements>(
+  elementName: string,
+  definition: SubElementDefinition<Tag>,
+): ForwardRefExoticComponent<
+  PropsWithoutRef<SubElementProps<Tag>> & RefAttributes<unknown>
+> {
+  // Normalize definition to object form
+  const config =
+    typeof definition === 'string'
+      ? { as: definition as Tag }
+      : (definition as { as?: Tag; qa?: string; qaVal?: string | number });
+
+  const tag = config.as ?? ('div' as Tag);
+  const defaultQa = config.qa;
+  const defaultQaVal = config.qaVal;
+
+  const SubElement = forwardRef<unknown, SubElementProps<Tag>>((props, ref) => {
+    const {
+      qa,
+      qaVal,
+      mods,
+      tokens,
+      isDisabled,
+      isHidden,
+      isChecked,
+      className,
+      style,
+      ...htmlProps
+    } = props as SubElementProps<Tag> & {
+      className?: string;
+      style?: Record<string, unknown>;
+    };
+
+    // Build mod attributes
+    let modProps: Record<string, unknown> | undefined;
+    if (mods) {
+      modProps = modAttrs(mods as Mods) as Record<string, unknown>;
+    }
+
+    // Process tokens into inline style properties
+    const tokenStyle = tokens
+      ? (processTokens(tokens) as Record<string, unknown>)
+      : undefined;
+
+    // Merge token styles with explicit style prop (style has priority)
+    let mergedStyle: Record<string, unknown> | undefined;
+    if (tokenStyle || style) {
+      mergedStyle =
+        tokenStyle && style
+          ? { ...tokenStyle, ...style }
+          : ((tokenStyle ?? style) as Record<string, unknown>);
+    }
+
+    const elementProps = {
+      'data-element': elementName,
+      'data-qa': qa ?? defaultQa,
+      'data-qaval': qaVal ?? defaultQaVal,
+      ...(modProps || {}),
+      ...htmlProps,
+      className,
+      style: mergedStyle,
+      isDisabled,
+      isHidden,
+      isChecked,
+      ref,
+    } as Record<string, unknown>;
+
+    // Handle is* properties (isDisabled -> disabled + data-disabled, etc.)
+    handleIsProperties(elementProps);
+
+    // Clean up undefined data attributes
+    if (elementProps['data-qa'] === undefined) delete elementProps['data-qa'];
+    if (elementProps['data-qaval'] === undefined)
+      delete elementProps['data-qaval'];
+
+    return createElement(tag, elementProps);
+  });
+
+  SubElement.displayName = `SubElement(${elementName})`;
+
+  return SubElement as ForwardRefExoticComponent<
+    PropsWithoutRef<SubElementProps<Tag>> & RefAttributes<unknown>
+  >;
+}
+
 type StyleList = readonly (keyof {
   [key in keyof StylesInterface]: StylesInterface[key];
 })[];
@@ -78,11 +168,86 @@ export type WithVariant<V extends VariantMap> = {
   variant?: keyof V;
 };
 
+// ============================================================================
+// Sub-element types for compound components
+// ============================================================================
+
+/**
+ * Definition for a sub-element. Can be either:
+ * - A tag name string (e.g., 'div', 'span')
+ * - An object with configuration options
+ */
+export type SubElementDefinition<
+  Tag extends keyof JSX.IntrinsicElements = 'div',
+> =
+  | Tag
+  | {
+      as?: Tag;
+      qa?: string;
+      qaVal?: string | number;
+    };
+
+/**
+ * Map of sub-element definitions.
+ * Keys become the sub-component names (e.g., { Icon: 'span' } -> Component.Icon)
+ */
+export type ElementsDefinition = Record<
+  string,
+  SubElementDefinition<keyof JSX.IntrinsicElements>
+>;
+
+/**
+ * Resolves the tag from a SubElementDefinition
+ */
+type ResolveElementTag<T extends SubElementDefinition<any>> = T extends string
+  ? T
+  : T extends { as?: infer Tag }
+    ? Tag extends keyof JSX.IntrinsicElements
+      ? Tag
+      : 'div'
+    : 'div';
+
+/**
+ * Props for sub-element components.
+ * Combines HTML attributes with tasty-specific props (qa, qaVal, mods, tokens, isDisabled, etc.)
+ */
+export type SubElementProps<Tag extends keyof JSX.IntrinsicElements = 'div'> =
+  Omit<
+    JSX.IntrinsicElements[Tag],
+    'ref' | 'color' | 'content' | 'translate'
+  > & {
+    qa?: string;
+    qaVal?: string | number;
+    mods?: Mods;
+    tokens?: Tokens;
+    isDisabled?: boolean;
+    isHidden?: boolean;
+    isChecked?: boolean;
+  };
+
+/**
+ * Generates the sub-element component types from an ElementsDefinition
+ */
+type SubElementComponents<E extends ElementsDefinition> = {
+  [K in keyof E]: ForwardRefExoticComponent<
+    PropsWithoutRef<SubElementProps<ResolveElementTag<E[K]>>> &
+      RefAttributes<
+        ResolveElementTag<E[K]> extends keyof HTMLElementTagNameMap
+          ? HTMLElementTagNameMap[ResolveElementTag<E[K]>]
+          : Element
+      >
+  >;
+};
+
 /**
  * Base type containing common properties shared between TastyProps and TastyElementOptions.
  * Separated to avoid code duplication while allowing different type constraints.
  */
-type TastyBaseProps<K extends StyleList, V extends VariantMap> = {
+type TastyBaseProps<
+  K extends StyleList,
+  V extends VariantMap,
+  E extends ElementsDefinition = {},
+> = {
   /** Default styles of the element. */
   styles?: Styles;
   /** The list of styles that can be provided by props */
@@ -91,14 +256,17 @@ type TastyBaseProps<K extends StyleList, V extends VariantMap> = {
   variants?: V;
   /** Default tokens for inline CSS custom properties */
   tokens?: Tokens;
+  /** Sub-element definitions for compound components */
+  elements?: E;
 } & Pick<BaseProps, 'qa' | 'qaVal'> &
   WithVariant<V>;
 
 export type TastyProps<
   K extends StyleList,
   V extends VariantMap,
+  E extends ElementsDefinition = {},
   DefaultProps = Props,
-> = TastyBaseProps<K, V> & {
+> = TastyBaseProps<K, V, E> & {
   /** The tag name of the element or a React component. */
   as?: string | ComponentType<any>;
 } & Partial<Omit<DefaultProps, 'as' | 'styles' | 'styleProps' | 'tokens'>>;
@@ -114,8 +282,9 @@ export type TastyProps<
 export type TastyElementOptions<
   K extends StyleList,
   V extends VariantMap,
+  E extends ElementsDefinition = {},
   Tag extends keyof JSX.IntrinsicElements = 'div',
-> = TastyBaseProps<K, V> & {
+> = TastyBaseProps<K, V, E> & {
   /** The tag name of the element or a React component. */
   as?: Tag | ComponentType<any>;
 } & {
@@ -187,19 +356,21 @@ type TastyComponentPropsWithDefaults<
 export function tasty<
   K extends StyleList,
   V extends VariantMap,
+  E extends ElementsDefinition = {},
   Tag extends keyof JSX.IntrinsicElements = 'div',
 >(
-  options: TastyElementOptions<K, V, Tag>,
+  options: TastyElementOptions<K, V, E, Tag>,
   secondArg?: never,
 ): ForwardRefExoticComponent<
   PropsWithoutRef<TastyElementProps<K, V, Tag>> & RefAttributes<unknown>
->;
+> &
+  SubElementComponents<E>;
 export function tasty<
   Props extends PropsWithStyles,
   DefaultProps extends Partial<Props> = Partial<Props>,
 >(
   Component: ComponentType<Props>,
-  options?: TastyProps<never, never, Props>,
+  options?: TastyProps<never, never, {}, Props>,
 ): ComponentType<TastyComponentPropsWithDefaults<Props, DefaultProps>>;
 
 // Implementation
@@ -275,9 +446,11 @@ function tastyWrap<
   >;
 }
 
-function tastyElement<K extends StyleList, V extends VariantMap>(
-  tastyOptions: TastyProps<K, V>,
-) {
+function tastyElement<
+  K extends StyleList,
+  V extends VariantMap,
+  E extends ElementsDefinition,
+>(tastyOptions: TastyProps<K, V, E>) {
   let {
     as: originalAs = 'div',
     element: defaultElement,
@@ -285,6 +458,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
     styleProps,
     variants,
     tokens: defaultTokens,
+    elements,
     ...defaultProps
   } = tastyOptions;
 
@@ -478,6 +652,22 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
   _TastyComponent.displayName = `TastyComponent(${
     (defaultProps as any).qa || originalAs
   })`;
+
+  // Attach sub-element components if elements are defined
+  if (elements) {
+    const subElements = Object.entries(elements).reduce(
+      (acc, [name, definition]) => {
+        acc[name] = createSubElement(
+          name,
+          definition as SubElementDefinition<keyof JSX.IntrinsicElements>,
+        );
+        return acc;
+      },
+      {} as Record<string, ForwardRefExoticComponent<any>>,
+    );
+
+    return Object.assign(_TastyComponent, subElements);
+  }
 
   return _TastyComponent;
 }
