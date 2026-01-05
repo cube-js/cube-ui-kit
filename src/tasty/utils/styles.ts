@@ -320,11 +320,39 @@ export function strToRgb(color, ignoreAlpha = false) {
   return null;
 }
 
-export function getRgbValuesFromRgbaString(str) {
-  return str
-    .match(/\d+/g)
-    .map((s) => parseInt(s))
-    .slice(0, 3);
+/**
+ * Extract RGB values from an rgb()/rgba() string.
+ * Supports all modern CSS syntax variations:
+ * - Comma-separated: rgb(255, 128, 0)
+ * - Space-separated: rgb(255 128 0)
+ * - Fractional: rgb(128.5, 64.3, 32.1)
+ * - Percentages: rgb(50%, 25%, 75%)
+ * - Slash alpha notation: rgb(255 128 0 / 0.5)
+ *
+ * Returns array of RGB values (0-255 range), converting percentages as needed.
+ */
+export function getRgbValuesFromRgbaString(str: string): number[] {
+  // Extract content inside rgb()/rgba()
+  const match = str.match(/rgba?\(([^)]+)\)/i);
+  if (!match) return [];
+
+  const inner = match[1].trim();
+  // Split by slash first (for alpha), then handle color components
+  const [colorPart] = inner.split('/');
+  // Split by comma or whitespace
+  const parts = colorPart
+    .trim()
+    .split(/[,\s]+/)
+    .filter(Boolean);
+
+  return parts.slice(0, 3).map((part) => {
+    part = part.trim();
+    if (part.endsWith('%')) {
+      // Convert percentage to 0-255 range
+      return (parseFloat(part) / 100) * 255;
+    }
+    return parseFloat(part);
+  });
 }
 
 export function hexToRgb(hex) {

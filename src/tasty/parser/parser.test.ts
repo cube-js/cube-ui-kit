@@ -547,4 +547,26 @@ describe('StyleProcessor', () => {
     ]);
     expect(result.groups[0].colors).toEqual([]);
   });
+
+  test('parses modern RGB syntax with fractional numbers', () => {
+    // Fractional comma-separated values
+    const result1 = parser.process('rgb(128.5, 64.3, 32.1)');
+    expect(result1.groups[0].colors).toEqual(['rgb(128.5,64.3,32.1)']);
+
+    // Space-separated integers
+    const result2 = parser.process('rgb(255 128 0)');
+    expect(result2.groups[0].colors).toEqual(['rgb(255 128 0)']);
+
+    // Percentage values
+    const result3 = parser.process('rgb(50%, 25%, 75%)');
+    expect(result3.groups[0].colors).toEqual(['rgb(50%,25%,75%)']);
+
+    // Space-separated with slash alpha
+    const result4 = parser.process('rgb(255 128 0 / 0.5)');
+    expect(result4.groups[0].colors).toEqual(['rgb(255 128 0 / 0.5)']);
+
+    // Mixed: fractional with alpha
+    const result5 = parser.process('rgb(128.5 64.3 32.1 / .75)');
+    expect(result5.groups[0].colors).toEqual(['rgb(128.5 64.3 32.1 / .75)']);
+  });
 });
