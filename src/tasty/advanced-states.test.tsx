@@ -959,9 +959,9 @@ describe('Advanced State Mapping - renderStyles direct tests', () => {
         },
       });
 
-      // Each fill rule produces 2 CSS rules (main element + >* for context propagation)
-      // So 4 conditions × 2 = 8 rules total
-      expect(rules.length).toBe(8);
+      // Each fill rule produces 1 CSS rule
+      // So 4 conditions = 4 rules total
+      expect(rules.length).toBe(4);
 
       // Group rules by their at-rule condition
       const rulesByCondition = new Map<string, any[]>();

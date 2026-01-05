@@ -54,50 +54,26 @@ describe('Tasty style tests', () => {
 
   it('should handle fill styles with fallbacks', () => {
     // Simple fill variable
-    expect(fillStyle({ fill: 'var(--primary-color)' })).toEqual([
-      {
-        'background-color': 'var(--primary-color)',
-      },
-      {
-        $: '>*',
-        '--context-fill-color': 'var(--primary-color)',
-        '--context-fill-color-rgb': 'var(--primary-color-rgb)',
-      },
-    ]);
+    expect(fillStyle({ fill: 'var(--primary-color)' })).toEqual({
+      'background-color': 'var(--primary-color)',
+    });
 
     // Fill with fallback chain
     expect(
       fillStyle({ fill: 'var(--surface-color, var(--white-color))' }),
-    ).toEqual([
-      {
-        'background-color': 'var(--surface-color, var(--white-color))',
-      },
-      {
-        $: '>*',
-        '--context-fill-color': 'var(--surface-color, var(--white-color))',
-        '--context-fill-color-rgb':
-          'var(--surface-color-rgb, var(--white-color-rgb))',
-      },
-    ]);
+    ).toEqual({
+      'background-color': 'var(--surface-color, var(--white-color))',
+    });
 
     // Nested fallbacks
     expect(
       fillStyle({
         fill: 'var(--primary-color, var(--secondary-color, var(--tertiary-color)))',
       }),
-    ).toEqual([
-      {
-        'background-color':
-          'var(--primary-color, var(--secondary-color, var(--tertiary-color)))',
-      },
-      {
-        $: '>*',
-        '--context-fill-color':
-          'var(--primary-color, var(--secondary-color, var(--tertiary-color)))',
-        '--context-fill-color-rgb':
-          'var(--primary-color-rgb, var(--secondary-color-rgb, var(--tertiary-color-rgb)))',
-      },
-    ]);
+    ).toEqual({
+      'background-color':
+        'var(--primary-color, var(--secondary-color, var(--tertiary-color)))',
+    });
   });
 
   it('should handle outline styles', () => {
@@ -112,10 +88,7 @@ describe('Tasty style tests', () => {
         padding: '10px',
       }),
     ).toEqual({
-      'padding-top': '10px',
-      'padding-right': '10px',
-      'padding-bottom': '10px',
-      'padding-left': '10px',
+      padding: '10px',
     });
   });
 
@@ -125,10 +98,7 @@ describe('Tasty style tests', () => {
         margin: '5px',
       }),
     ).toEqual({
-      'margin-top': '5px',
-      'margin-right': '5px',
-      'margin-bottom': '5px',
-      'margin-left': '5px',
+      margin: '5px',
     });
   });
 
