@@ -5,6 +5,7 @@ export const StyledButton = tasty(Button, {
   styles: {
     padding: '3x 6x',
     preset: 't1',
+    fill: 'okhsl(245 40% 80%)',
   },
 });
 

@@ -17,6 +17,7 @@ import { isDevEnv } from './utils/isDevEnv';
 import { CUSTOM_UNITS, getGlobalFuncs, getGlobalParser } from './utils/styles';
 
 import type { StyleDetails, UnitHandler } from './parser/types';
+import type { TastyPlugin } from './plugins/types';
 
 /**
  * Configuration options for the Tasty style system
@@ -70,6 +71,19 @@ export interface TastyConfig {
    * @example { myFunc: (groups) => groups.map(g => g.output).join(' ') }
    */
   funcs?: Record<string, (groups: StyleDetails[]) => string>;
+  /**
+   * Plugins that extend tasty with custom functions, units, or states.
+   * Plugins are processed in order, with later plugins overriding earlier ones.
+   * @example
+   * ```ts
+   * import { okhslPlugin } from '@cube-dev/ui-kit/tasty/plugins';
+   *
+   * configure({
+   *   plugins: [okhslPlugin()],
+   * });
+   * ```
+   */
+  plugins?: TastyPlugin[];
 }
 
 // Warnings tracking to avoid duplicates
@@ -227,9 +241,40 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     return;
   }
 
-  // Handle predefined states
+  // Collect merged values from plugins first, then override with direct config
+  let mergedStates: Record<string, string> = {};
+  let mergedUnits: Record<string, string | UnitHandler> = {};
+  let mergedFuncs: Record<string, (groups: StyleDetails[]) => string> = {};
+
+  // Process plugins in order
+  if (config.plugins) {
+    for (const plugin of config.plugins) {
+      if (plugin.states) {
+        mergedStates = { ...mergedStates, ...plugin.states };
+      }
+      if (plugin.units) {
+        mergedUnits = { ...mergedUnits, ...plugin.units };
+      }
+      if (plugin.funcs) {
+        mergedFuncs = { ...mergedFuncs, ...plugin.funcs };
+      }
+    }
+  }
+
+  // Direct config overrides plugins
   if (config.states) {
-    setGlobalPredefinedStates(config.states);
+    mergedStates = { ...mergedStates, ...config.states };
+  }
+  if (config.units) {
+    mergedUnits = { ...mergedUnits, ...config.units };
+  }
+  if (config.funcs) {
+    mergedFuncs = { ...mergedFuncs, ...config.funcs };
+  }
+
+  // Handle predefined states
+  if (Object.keys(mergedStates).length > 0) {
+    setGlobalPredefinedStates(mergedStates);
   }
 
   // Handle parser configuration (merge semantics - extend, not replace)
@@ -239,27 +284,28 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     parser.updateOptions({ cacheSize: config.parserCacheSize });
   }
 
-  if (config.units) {
+  if (Object.keys(mergedUnits).length > 0) {
     // Merge with existing units
     const currentUnits = parser.getUnits() ?? CUSTOM_UNITS;
-    parser.setUnits({ ...currentUnits, ...config.units });
+    parser.setUnits({ ...currentUnits, ...mergedUnits });
   }
 
-  if (config.funcs) {
+  if (Object.keys(mergedFuncs).length > 0) {
     // Merge with existing funcs
     const currentFuncs = getGlobalFuncs();
-    const mergedFuncs = { ...currentFuncs, ...config.funcs };
-    parser.setFuncs(mergedFuncs);
+    const finalFuncs = { ...currentFuncs, ...mergedFuncs };
+    parser.setFuncs(finalFuncs);
     // Also update the global registry so customFunc() continues to work
-    Object.assign(currentFuncs, config.funcs);
+    Object.assign(currentFuncs, mergedFuncs);
   }
 
-  // Create config without states and parser options (handled separately)
+  // Create config without states, parser options, and plugins (handled separately)
   const {
     states: _states,
     parserCacheSize: _parserCacheSize,
     units: _units,
     funcs: _funcs,
+    plugins: _plugins,
     ...injectorConfig
   } = config;
 

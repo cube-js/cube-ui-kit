@@ -1,3 +1,7 @@
+// Register built-in plugins at module load time
+import { configure } from './config';
+import { okhslPlugin } from './plugins';
+
 export { tasty, Element } from './tasty';
 export { useStyles, useGlobalStyles, useRawCSS } from './hooks';
 export type { UseStylesOptions, UseStylesResult } from './hooks';
@@ -11,6 +15,14 @@ export {
   isTestEnvironment,
 } from './config';
 export type { TastyConfig } from './config';
+
+// Plugins
+export { okhslPlugin, okhslFunc } from './plugins';
+export type { TastyPlugin, TastyPluginFactory } from './plugins';
+
+configure({
+  plugins: [okhslPlugin()],
+});
 // Chunk utilities for advanced use cases
 export { CHUNK_NAMES, STYLE_TO_CHUNK, categorizeStyleKeys } from './chunks';
 export type { ChunkName, ChunkInfo } from './chunks';
