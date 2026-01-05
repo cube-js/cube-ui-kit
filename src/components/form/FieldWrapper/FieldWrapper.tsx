@@ -7,7 +7,6 @@ import { Item } from '../../content/Item';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
-import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { Label } from '../Label';
 
 import { CubeFieldWrapperProps } from './types';
@@ -142,7 +141,9 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
             <Item
               icon={<InfoCircleIcon color="#purple-text" />}
               size="inline"
-              tooltip={tooltip as string}
+              tooltip={
+                typeof tooltip === 'string' ? tooltip : { title: tooltip }
+              }
             />
           ) : null}
 
