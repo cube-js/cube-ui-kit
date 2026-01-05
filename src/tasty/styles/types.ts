@@ -97,6 +97,20 @@ export interface StylesInterface
     | boolean
     | (string & {});
   /**
+   * Set the fill color of SVG elements. Outputs the native CSS `fill` property with enhanced support for Tasty color tokens and syntaxes.
+   *
+   * Examples:
+   * - `svgFill="#purple.10"` // purple fill with 10% opacity
+   * - `svgFill="#danger"` // danger theme color
+   * - `svgFill="rgb(255 128 0)"` // custom RGB color
+   * - `svgFill="currentColor"` // inherit from parent color
+   */
+  svgFill?:
+    | `#${NamedColor}${OpaquePercentage}`
+    | `rgb(${string})`
+    | `rgba(${string})`
+    | (string & {});
+  /**
    * Set the text (current) color of the element. Shortcut for `color` with enhanced support for Tasty color tokens and syntaxes.
    *
    * Examples:
