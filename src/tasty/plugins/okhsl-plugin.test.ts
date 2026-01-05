@@ -158,9 +158,20 @@ describe('okhslPlugin', () => {
       });
 
       it('returns fallback for missing values', () => {
+        // Silence expected warning
+        const warnSpy = jest
+          .spyOn(console, 'warn')
+          .mockImplementation(() => {});
+
         // Directly test okhslFunc with empty groups
         const result = okhslFunc([]);
         expect(result).toBe('rgb(0% 0% 0%)');
+        expect(warnSpy).toHaveBeenCalledWith(
+          '[okhsl] Expected 3 values (H S L), got:',
+          [],
+        );
+
+        warnSpy.mockRestore();
       });
     });
 
