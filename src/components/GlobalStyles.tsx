@@ -22,7 +22,7 @@ interface GlobalStylesProps {
  */
 const BODY_STYLES: Styles = {
   overscrollBehaviorY: 'none',
-  fill: '#white !important',
+  fill: '#white',
   fontFamily: 'var(--font)',
   WebkitFontSmoothing: 'antialiased',
   MozOsxFontSmoothing: 'grayscale',
