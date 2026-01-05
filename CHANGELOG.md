@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.98.6
+
+### Patch Changes
+
+- [#938](https://github.com/cube-js/cube-ui-kit/pull/938) [`71140ba3`](https://github.com/cube-js/cube-ui-kit/commit/71140ba3cc78450eb70bf39e21b01bfe5f59f03b) Thanks [@tenphi](https://github.com/tenphi)! - Fix FieldWrapper tooltip prop to properly support ReactNode values, not just strings. Previously, ReactNode tooltips (like JSX fragments) were incorrectly cast to strings, causing them to fail.
+
 ## 0.98.5
 
 ### Patch Changes
