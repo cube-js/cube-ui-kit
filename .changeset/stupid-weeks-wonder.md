@@ -2,4 +2,4 @@
 "@cube-dev/ui-kit": patch
 ---
 
-Improve types the tasty helper.
+Improve types of the tasty helper.
