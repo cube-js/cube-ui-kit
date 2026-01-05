@@ -771,19 +771,59 @@ const Button = tasty({
 
 Use logical operators for complex state combinations:
 
+#### Operators & Precedence
+
+State keys (for both regular modifiers and advanced `@...` states) support boolean logic with a predictable precedence (highest → lowest):
+
+- `!` (NOT)
+- `^` (XOR)
+- `|` (OR)
+- `&` (AND)
+
+Use parentheses to group: `(@mobile | @tablet) & !disabled`.
+
 ```jsx
 color: {
   '': '#default',
   '!disabled & hovered': '#blue',     // NOT disabled AND hovered
   'success | complete': '#green',     // success OR complete
   ':hover': '#purple',                // CSS pseudo-class
-  '[data-theme="dark"]': '#light',    // Data attribute
+  'theme=dark': '#light',             // Value modifier (recommended)
+  'theme="special dark"': '#purple',  // Value modifier with spaces (recommended)
+  '[aria-expanded="true"]': '#green', // Attribute selector (escape hatch)
 }
 ```
 
 ### Advanced States
 
-Tasty supports advanced CSS at-rules and contextual states using `@` prefix:
+Advanced states are state keys that start with `@...`. Unlike regular modifiers (which become `data-*` selectors on the component), advanced states compile into **CSS at-rules** (like `@media`, `@container`), a **root prefix** (`:root...`), or special wrappers (like `@starting-style`).
+
+You can use them anywhere a normal state key is used (including inside sub-elements) and combine them with logical operators.
+
+#### Predefined State Aliases (recommended)
+
+If you repeat the same advanced state in many places, define an alias once and reuse it. You can define aliases globally via `configure({ states })`, or locally per component via `tasty({ states: { ... } })`.
+
+```jsx
+import { configure, tasty } from '@cube-dev/ui-kit';
+
+configure({
+  states: {
+    '@mobile': '@media(w < 768px)',
+    '@dark': '@root(theme=dark)',
+  },
+});
+
+const Card = tasty({
+  styles: {
+    padding: {
+      '': '4x',
+      '@mobile': '3x',
+      '@dark & @mobile': '2x',
+    },
+  },
+});
+```
 
 #### Media Queries (`@media`)
 
@@ -805,6 +845,10 @@ styles: {
 
 #### Container Queries (`@(...)`)
 
+Container queries require a container. In CSS terms, that means setting `container-type` and optionally `container-name` on some ancestor element. Prefer using the native `container` shorthand:
+
+- `container: 'card / inline-size'` (equivalent to `container-name: card; container-type: inline-size;`)
+
 ```jsx
 styles: {
   flow: {
@@ -814,9 +858,33 @@ styles: {
   },
   fill: {
     '': '#surface',
-    '@(sidebar, $variant=danger)': '#red.05',  // Style query on named container
+    '@(sidebar, $variant=danger)': '#red.05',  // Style query (CSS: style(--variant: "danger"))
   },
 }
+```
+
+**Style queries inside `@(...)`:**
+
+- `$name` → checks for existence of `--name` (`style(--name)`)
+- `$name=value` → checks equality (`style(--name: "value")`)
+
+```jsx
+const Container = tasty({
+  styles: {
+    container: 'card / inline-size',
+  },
+});
+
+const Child = tasty({
+  styles: {
+    padding: {
+      '': '4x',
+      '@(card, w < 400px)': '2x',
+      '@(card, $variant)': '3x',           // when --variant exists
+      '@(card, $variant=danger)': '1x',    // when --variant equals "danger"
+    },
+  },
+});
 ```
 
 #### Root States (`@root`)
@@ -834,9 +902,16 @@ styles: {
 }
 ```
 
+`@root(...)` accepts:
+
+- `key=value` → `:root[data-key="value"]` (kebab-cased)
+- `camelCaseFlag` → `:root[data-camel-case-flag]`
+- `.className` → `:root.className`
+- `[attr]` / `[attr="value"]` → `:root[...]`
+
 #### Own States (`@own`)
 
-Apply sub-element's own state (not parent's):
+Apply a sub-element’s **own** state (not the parent’s). This only makes sense inside a sub-element style block (Tasty will warn if you use `@own(...)` at the root level, where it’s equivalent to the inner condition).
 
 ```jsx
 styles: {
@@ -881,9 +956,9 @@ styles: {
 ```
 
 > **💡 Tips:**
-> - Use `&` to combine states, `|` for alternatives, `!` for negation
-> - Advanced states generate exclusive CSS (non-overlapping selectors)
-> - Place more specific rules last (higher priority)
+> - Use `&` to combine states, `|` for alternatives, `!` for negation, `^` for XOR.
+> - OR (`|`) is **ordered**: the first matching branch wins (Tasty makes branches exclusive to avoid overlap).
+> - In state maps, place **more specific keys later** so they win over earlier ones.
 
 > **⚠️ Important:** Place more specific rules last - they take precedence.
 
