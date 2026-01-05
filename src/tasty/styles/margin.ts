@@ -1,29 +1,20 @@
 import { DIRECTIONS, filterMods, parseStyle } from '../utils/styles';
 
 /**
- * Parse a margin value and return processed values
+ * Parse a margin value and return the first processed value
  */
-function parseMarginValue(value: string | number | boolean): string[] {
-  if (typeof value === 'number') {
-    return [`${value}px`];
-  }
-
-  if (!value) return [];
-
+function parseMarginValue(value: string | number | boolean): string | null {
+  if (typeof value === 'number') return `${value}px`;
+  if (!value) return null;
   if (value === true) value = '1x';
 
-  const processed = parseStyle(value);
-  let { values } = processed.groups[0] ?? ({ values: [] } as any);
+  const { values } = parseStyle(value).groups[0] ?? { values: [] };
 
-  if (!values.length) {
-    values = ['var(--gap)'];
-  }
-
-  return values;
+  return values[0] || 'var(--gap)';
 }
 
 /**
- * Parse directional margin value (like "1x top" or "2x left right")
+ * Parse margin value with optional directions (like "1x top" or "2x left right")
  */
 function parseDirectionalMargin(value: string | number | boolean): {
   values: string[];
@@ -32,22 +23,15 @@ function parseDirectionalMargin(value: string | number | boolean): {
   if (typeof value === 'number') {
     return { values: [`${value}px`], directions: [] };
   }
-
   if (!value) return { values: [], directions: [] };
-
   if (value === true) value = '1x';
 
-  const processed = parseStyle(value);
-  let { values, mods } =
-    processed.groups[0] ?? ({ values: [], mods: [] } as any);
+  const { values = [], mods = [] } = parseStyle(value).groups[0] ?? {};
 
-  if (!values.length) {
-    values = ['var(--gap)'];
-  }
-
-  const directions = filterMods(mods, DIRECTIONS);
-
-  return { values, directions };
+  return {
+    values: values.length ? values : ['var(--gap)'],
+    directions: filterMods(mods, DIRECTIONS),
+  };
 }
 
 export function marginStyle({
@@ -67,100 +51,82 @@ export function marginStyle({
   marginBottom?: string | number | boolean;
   marginLeft?: string | number | boolean;
 }) {
-  // Check if any margin property is defined
-  const hasAnyMargin =
-    margin != null ||
-    marginBlock != null ||
-    marginInline != null ||
-    marginTop != null ||
-    marginRight != null ||
-    marginBottom != null ||
-    marginLeft != null;
-
   // If no margin is defined, return empty object
-  if (!hasAnyMargin) {
+  if (
+    margin == null &&
+    marginBlock == null &&
+    marginInline == null &&
+    marginTop == null &&
+    marginRight == null &&
+    marginBottom == null &&
+    marginLeft == null
+  ) {
     return {};
   }
 
-  // Initialize with all directions set to 0, then override as needed
-  const styles: { [key: string]: string } = {
-    'margin-top': '0',
-    'margin-right': '0',
-    'margin-bottom': '0',
-    'margin-left': '0',
-  };
+  // Initialize all directions to 0
+  let [top, right, bottom, left] = ['0', '0', '0', '0'];
 
-  // Priority 1 (lowest): margin - apply to all directions if no other properties are specified
+  // Priority 1 (lowest): margin
   if (margin != null) {
-    // Parse directional margin (e.g., "1x top" or "2x left right")
     const { values, directions } = parseDirectionalMargin(margin);
 
-    if (values.length > 0) {
+    if (values.length) {
       if (directions.length === 0) {
-        // No directions specified, apply to all sides
-        styles['margin-top'] = values[0];
-        styles['margin-right'] = values[1] || values[0];
-        styles['margin-bottom'] = values[2] || values[0];
-        styles['margin-left'] = values[3] || values[1] || values[0];
+        top = values[0];
+        right = values[1] || values[0];
+        bottom = values[2] || values[0];
+        left = values[3] || values[1] || values[0];
       } else {
-        // Apply only to specified directions
-        directions.forEach((dir) => {
-          const index = DIRECTIONS.indexOf(dir);
-          styles[`margin-${dir}`] =
-            values[index] || values[index % 2] || values[0];
-        });
+        for (const dir of directions) {
+          const idx = DIRECTIONS.indexOf(dir);
+          const val = values[idx] || values[idx % 2] || values[0];
+          if (dir === 'top') top = val;
+          else if (dir === 'right') right = val;
+          else if (dir === 'bottom') bottom = val;
+          else if (dir === 'left') left = val;
+        }
       }
     }
   }
 
-  // Priority 2 (medium): marginBlock - override top and bottom
+  // Priority 2 (medium): marginBlock/marginInline
   if (marginBlock != null) {
-    const values = parseMarginValue(marginBlock);
-    if (values.length > 0) {
-      styles['margin-top'] = values[0];
-      styles['margin-bottom'] = values[1] || values[0];
-    }
+    const val = parseMarginValue(marginBlock);
+    if (val) top = bottom = val;
   }
-
-  // Priority 2 (medium): marginInline - override left and right
   if (marginInline != null) {
-    const values = parseMarginValue(marginInline);
-    if (values.length > 0) {
-      styles['margin-left'] = values[0];
-      styles['margin-right'] = values[1] || values[0];
-    }
+    const val = parseMarginValue(marginInline);
+    if (val) left = right = val;
   }
 
-  // Priority 3 (highest): individual directions - override specific sides
+  // Priority 3 (highest): individual directions
   if (marginTop != null) {
-    const values = parseMarginValue(marginTop);
-    if (values.length > 0) {
-      styles['margin-top'] = values[0];
-    }
+    const val = parseMarginValue(marginTop);
+    if (val) top = val;
   }
-
   if (marginRight != null) {
-    const values = parseMarginValue(marginRight);
-    if (values.length > 0) {
-      styles['margin-right'] = values[0];
-    }
+    const val = parseMarginValue(marginRight);
+    if (val) right = val;
   }
-
   if (marginBottom != null) {
-    const values = parseMarginValue(marginBottom);
-    if (values.length > 0) {
-      styles['margin-bottom'] = values[0];
-    }
+    const val = parseMarginValue(marginBottom);
+    if (val) bottom = val;
   }
-
   if (marginLeft != null) {
-    const values = parseMarginValue(marginLeft);
-    if (values.length > 0) {
-      styles['margin-left'] = values[0];
-    }
+    const val = parseMarginValue(marginLeft);
+    if (val) left = val;
   }
 
-  return styles;
+  // Optimize output: 1 value if all same, 2 values if top==bottom && left==right
+  if (top === right && right === bottom && bottom === left) {
+    return { margin: top };
+  }
+  if (top === bottom && left === right) {
+    return { margin: `${top} ${left}` };
+  }
+
+  return { margin: `${top} ${right} ${bottom} ${left}` };
 }
 
 marginStyle.__lookupStyles = [

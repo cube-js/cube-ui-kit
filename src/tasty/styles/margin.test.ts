@@ -9,50 +9,36 @@ describe('marginStyle', () => {
     it('handles boolean true value', () => {
       const result = marginStyle({ margin: true });
       expect(result).toEqual({
-        'margin-top': 'var(--gap)',
-        'margin-right': 'var(--gap)',
-        'margin-bottom': 'var(--gap)',
-        'margin-left': 'var(--gap)',
+        margin: 'var(--gap)',
       });
     });
 
     it('handles number value', () => {
       const result = marginStyle({ margin: 16 });
       expect(result).toEqual({
-        'margin-top': '16px',
-        'margin-right': '16px',
-        'margin-bottom': '16px',
-        'margin-left': '16px',
+        margin: '16px',
       });
     });
 
     it('handles single string value', () => {
       const result = marginStyle({ margin: '2x' });
       expect(result).toEqual({
-        'margin-top': 'calc(2 * var(--gap))',
-        'margin-right': 'calc(2 * var(--gap))',
-        'margin-bottom': 'calc(2 * var(--gap))',
-        'margin-left': 'calc(2 * var(--gap))',
+        margin: 'calc(2 * var(--gap))',
       });
     });
 
     it('handles two-value string (vertical horizontal)', () => {
       const result = marginStyle({ margin: '2x 3x' });
       expect(result).toEqual({
-        'margin-top': 'calc(2 * var(--gap))',
-        'margin-right': 'calc(3 * var(--gap))',
-        'margin-bottom': 'calc(2 * var(--gap))',
-        'margin-left': 'calc(3 * var(--gap))',
+        margin: 'calc(2 * var(--gap)) calc(3 * var(--gap))',
       });
     });
 
     it('handles four-value string (top right bottom left)', () => {
       const result = marginStyle({ margin: '1x 2x 3x 4x' });
       expect(result).toEqual({
-        'margin-top': 'var(--gap)',
-        'margin-right': 'calc(2 * var(--gap))',
-        'margin-bottom': 'calc(3 * var(--gap))',
-        'margin-left': 'calc(4 * var(--gap))',
+        margin:
+          'var(--gap) calc(2 * var(--gap)) calc(3 * var(--gap)) calc(4 * var(--gap))',
       });
     });
   });
@@ -61,30 +47,21 @@ describe('marginStyle', () => {
     it('handles directional margin - top only', () => {
       const result = marginStyle({ margin: '2x top' });
       expect(result).toEqual({
-        'margin-top': 'calc(2 * var(--gap))',
-        'margin-right': '0',
-        'margin-bottom': '0',
-        'margin-left': '0',
+        margin: 'calc(2 * var(--gap)) 0 0 0',
       });
     });
 
     it('handles directional margin - left and right', () => {
       const result = marginStyle({ margin: '3x left right' });
       expect(result).toEqual({
-        'margin-top': '0',
-        'margin-right': 'calc(3 * var(--gap))',
-        'margin-bottom': '0',
-        'margin-left': 'calc(3 * var(--gap))',
+        margin: '0 calc(3 * var(--gap))',
       });
     });
 
     it('handles directional margin - bottom only', () => {
       const result = marginStyle({ margin: '1x bottom' });
       expect(result).toEqual({
-        'margin-top': '0',
-        'margin-right': '0',
-        'margin-bottom': 'var(--gap)',
-        'margin-left': '0',
+        margin: '0 0 var(--gap) 0',
       });
     });
   });
@@ -93,40 +70,14 @@ describe('marginStyle', () => {
     it('handles marginBlock (top and bottom)', () => {
       const result = marginStyle({ marginBlock: '2x' });
       expect(result).toEqual({
-        'margin-top': 'calc(2 * var(--gap))',
-        'margin-right': '0',
-        'margin-bottom': 'calc(2 * var(--gap))',
-        'margin-left': '0',
-      });
-    });
-
-    it('handles marginBlock with two values', () => {
-      const result = marginStyle({ marginBlock: '1x 3x' });
-      expect(result).toEqual({
-        'margin-top': 'var(--gap)',
-        'margin-right': '0',
-        'margin-bottom': 'calc(3 * var(--gap))',
-        'margin-left': '0',
+        margin: 'calc(2 * var(--gap)) 0',
       });
     });
 
     it('handles marginInline (left and right)', () => {
       const result = marginStyle({ marginInline: '4x' });
       expect(result).toEqual({
-        'margin-top': '0',
-        'margin-right': 'calc(4 * var(--gap))',
-        'margin-bottom': '0',
-        'margin-left': 'calc(4 * var(--gap))',
-      });
-    });
-
-    it('handles marginInline with two values', () => {
-      const result = marginStyle({ marginInline: '2x 5x' });
-      expect(result).toEqual({
-        'margin-top': '0',
-        'margin-right': 'calc(5 * var(--gap))',
-        'margin-bottom': '0',
-        'margin-left': 'calc(2 * var(--gap))',
+        margin: '0 calc(4 * var(--gap))',
       });
     });
 
@@ -136,10 +87,7 @@ describe('marginStyle', () => {
         marginInline: 8,
       });
       expect(result).toEqual({
-        'margin-top': 'var(--gap)',
-        'margin-bottom': 'var(--gap)',
-        'margin-left': '8px',
-        'margin-right': '8px',
+        margin: 'var(--gap) 8px',
       });
     });
   });
@@ -153,10 +101,8 @@ describe('marginStyle', () => {
         marginLeft: '4x',
       });
       expect(result).toEqual({
-        'margin-top': 'var(--gap)',
-        'margin-right': 'calc(2 * var(--gap))',
-        'margin-bottom': 'calc(3 * var(--gap))',
-        'margin-left': 'calc(4 * var(--gap))',
+        margin:
+          'var(--gap) calc(2 * var(--gap)) calc(3 * var(--gap)) calc(4 * var(--gap))',
       });
     });
 
@@ -168,10 +114,7 @@ describe('marginStyle', () => {
         marginLeft: false,
       });
       expect(result).toEqual({
-        'margin-top': 'var(--gap)',
-        'margin-right': '12px',
-        'margin-bottom': 'calc(2 * var(--gap))',
-        'margin-left': '0',
+        margin: 'var(--gap) 12px calc(2 * var(--gap)) 0',
       });
     });
   });
@@ -184,10 +127,7 @@ describe('marginStyle', () => {
         marginInline: '3x',
       });
       expect(result).toEqual({
-        'margin-top': 'calc(2 * var(--gap))', // overridden by marginBlock
-        'margin-right': 'calc(3 * var(--gap))', // overridden by marginInline
-        'margin-bottom': 'calc(2 * var(--gap))', // overridden by marginBlock
-        'margin-left': 'calc(3 * var(--gap))', // overridden by marginInline
+        margin: 'calc(2 * var(--gap)) calc(3 * var(--gap))',
       });
     });
 
@@ -199,10 +139,8 @@ describe('marginStyle', () => {
         marginRight: '5x',
       });
       expect(result).toEqual({
-        'margin-top': 'calc(4 * var(--gap))', // overridden by marginTop
-        'margin-right': 'calc(5 * var(--gap))', // overridden by marginRight
-        'margin-bottom': 'calc(2 * var(--gap))', // from marginBlock
-        'margin-left': 'calc(3 * var(--gap))', // from marginInline
+        margin:
+          'calc(4 * var(--gap)) calc(5 * var(--gap)) calc(2 * var(--gap)) calc(3 * var(--gap))',
       });
     });
 
@@ -215,10 +153,8 @@ describe('marginStyle', () => {
         marginRight: '5x',
       });
       expect(result).toEqual({
-        'margin-top': 'calc(4 * var(--gap))', // highest: individual direction
-        'margin-right': 'calc(5 * var(--gap))', // highest: individual direction
-        'margin-bottom': 'calc(2 * var(--gap))', // medium: marginBlock
-        'margin-left': 'calc(3 * var(--gap))', // medium: marginInline
+        margin:
+          'calc(4 * var(--gap)) calc(5 * var(--gap)) calc(2 * var(--gap)) calc(3 * var(--gap))',
       });
     });
 
@@ -228,10 +164,7 @@ describe('marginStyle', () => {
         marginRight: '2x',
       });
       expect(result).toEqual({
-        'margin-top': 'var(--gap)',
-        'margin-right': 'calc(2 * var(--gap))', // overridden by marginRight
-        'margin-bottom': 'var(--gap)',
-        'margin-left': 'var(--gap)',
+        margin: 'var(--gap) calc(2 * var(--gap)) var(--gap) var(--gap)',
       });
     });
 
@@ -241,10 +174,7 @@ describe('marginStyle', () => {
         marginBlock: '2x',
       });
       expect(result).toEqual({
-        'margin-top': 'calc(2 * var(--gap))', // overridden by marginBlock
-        'margin-right': 'var(--gap)',
-        'margin-bottom': 'calc(2 * var(--gap))', // overridden by marginBlock
-        'margin-left': 'var(--gap)',
+        margin: 'calc(2 * var(--gap)) var(--gap)',
       });
     });
   });
@@ -266,10 +196,7 @@ describe('marginStyle', () => {
         marginTop: '2x',
       });
       expect(result).toEqual({
-        'margin-top': 'calc(2 * var(--gap))',
-        'margin-right': '0',
-        'margin-bottom': '0',
-        'margin-left': '0',
+        margin: 'calc(2 * var(--gap)) 0 0 0',
       });
     });
 
@@ -279,10 +206,7 @@ describe('marginStyle', () => {
         marginTop: '1x',
       });
       expect(result).toEqual({
-        'margin-top': 'var(--gap)', // overridden by marginTop
-        'margin-right': '0px',
-        'margin-bottom': '0px',
-        'margin-left': '0px',
+        margin: 'var(--gap) 0px 0px 0px',
       });
     });
 
@@ -293,10 +217,7 @@ describe('marginStyle', () => {
         marginLeft: '3x',
       });
       expect(result).toEqual({
-        'margin-top': '16px', // overridden by marginBlock
-        'margin-right': 'var(--gap)', // from margin
-        'margin-bottom': '16px', // overridden by marginBlock
-        'margin-left': 'calc(3 * var(--gap))', // overridden by marginLeft
+        margin: '16px var(--gap) 16px calc(3 * var(--gap))',
       });
     });
 
@@ -306,10 +227,8 @@ describe('marginStyle', () => {
         marginTop: -8,
       });
       expect(result).toEqual({
-        'margin-top': '-8px', // overridden by marginTop
-        'margin-right': 'calc(-1 * var(--gap))',
-        'margin-bottom': 'calc(-1 * var(--gap))',
-        'margin-left': 'calc(-1 * var(--gap))',
+        margin:
+          '-8px calc(-1 * var(--gap)) calc(-1 * var(--gap)) calc(-1 * var(--gap))',
       });
     });
   });
@@ -321,10 +240,7 @@ describe('marginStyle', () => {
         marginTop: '5x',
       });
       expect(result).toEqual({
-        'margin-top': 'calc(5 * var(--gap))', // overridden by marginTop
-        'margin-right': '0',
-        'margin-bottom': 'calc(2 * var(--gap))', // from directional margin
-        'margin-left': '0',
+        margin: 'calc(5 * var(--gap)) 0 calc(2 * var(--gap)) 0',
       });
     });
 
@@ -334,10 +250,7 @@ describe('marginStyle', () => {
         marginInline: '3x',
       });
       expect(result).toEqual({
-        'margin-top': 'var(--gap)', // from directional margin
-        'margin-right': 'calc(3 * var(--gap))', // from marginInline
-        'margin-bottom': '0',
-        'margin-left': 'calc(3 * var(--gap))', // from marginInline
+        margin: 'var(--gap) calc(3 * var(--gap)) 0 calc(3 * var(--gap))',
       });
     });
   });
@@ -348,10 +261,7 @@ describe('marginStyle', () => {
         marginInline: 'auto',
       });
       expect(result).toEqual({
-        'margin-top': '0',
-        'margin-right': 'auto',
-        'margin-bottom': '0',
-        'margin-left': 'auto',
+        margin: '0 auto',
       });
     });
 
@@ -360,10 +270,34 @@ describe('marginStyle', () => {
         margin: '1x auto',
       });
       expect(result).toEqual({
-        'margin-top': 'var(--gap)',
-        'margin-right': 'auto',
-        'margin-bottom': 'var(--gap)',
-        'margin-left': 'auto',
+        margin: 'var(--gap) auto',
+      });
+    });
+  });
+
+  describe('output optimization', () => {
+    it('outputs single value when all sides are equal', () => {
+      expect(marginStyle({ margin: '2x' })).toEqual({
+        margin: 'calc(2 * var(--gap))',
+      });
+      expect(marginStyle({ margin: 16 })).toEqual({
+        margin: '16px',
+      });
+    });
+
+    it('outputs two values when vertical and horizontal are equal', () => {
+      expect(marginStyle({ margin: '1x 2x' })).toEqual({
+        margin: 'var(--gap) calc(2 * var(--gap))',
+      });
+      expect(marginStyle({ marginBlock: '1x', marginInline: '2x' })).toEqual({
+        margin: 'var(--gap) calc(2 * var(--gap))',
+      });
+    });
+
+    it('outputs four values when three values differ', () => {
+      expect(marginStyle({ margin: '1x 2x 3x' })).toEqual({
+        margin:
+          'var(--gap) calc(2 * var(--gap)) calc(3 * var(--gap)) calc(2 * var(--gap))',
       });
     });
   });
