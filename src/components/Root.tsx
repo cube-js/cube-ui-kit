@@ -24,7 +24,6 @@ import { PortalProvider } from './portal';
 const RootElement = tasty({
   id: 'cube-ui-kit-root',
   styles: {
-    container: 'root / inline-size',
     display: 'contents',
     color: '#dark-02',
     preset: 't3',
