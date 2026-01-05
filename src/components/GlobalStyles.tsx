@@ -311,12 +311,9 @@ export function GlobalStyles(props: GlobalStylesProps) {
     Object.assign(styles, BODY_STYLES);
 
     // Override with custom body styles if provided
+    // Keys are passed through as-is (tasty handles both camelCase and kebab-case)
     if (bodyStyles) {
-      for (const [key, value] of Object.entries(bodyStyles)) {
-        // Convert kebab-case to camelCase for tasty
-        const camelKey = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-        (styles as Record<string, unknown>)[camelKey] = value;
-      }
+      Object.assign(styles, bodyStyles);
     }
 
     return styles;
