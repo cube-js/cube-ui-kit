@@ -129,8 +129,10 @@ export function classify(
     if (opts.funcs && fname in opts.funcs) {
       // split by top-level commas within inner
       const tmp = new StyleParser(opts).process(inner); // fresh parser w/ same opts but no cache share issues
-      const argProcessed = opts.funcs[fname](tmp.groups);
-      return { bucket: Bucket.Value, processed: argProcessed };
+      const funcResult = opts.funcs[fname](tmp.groups);
+      // Re-classify the result to determine proper bucket (e.g., if it returns a color)
+      // Pass funcs: undefined to prevent infinite recursion if result matches a function pattern
+      return classify(funcResult, { ...opts, funcs: undefined }, recurse);
     }
 
     // generic: process inner and rebuild

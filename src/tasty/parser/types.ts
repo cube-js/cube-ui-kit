@@ -5,6 +5,7 @@ export enum Bucket {
 }
 
 export interface StyleDetails {
+  input: string;
   output: string;
   mods: string[];
   values: string[];
@@ -26,6 +27,7 @@ export interface ParserOptions {
 }
 
 export const makeEmptyDetails = (): StyleDetails => ({
+  input: '',
   output: '',
   mods: [],
   values: [],

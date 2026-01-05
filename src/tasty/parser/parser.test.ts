@@ -9,6 +9,10 @@ const parser = new StyleParser({
         .filter(Boolean)
         .join(' + ')})`;
     },
+    colorize(parsed: StyleDetails[]) {
+      // Returns a color value - should be classified as color
+      return `rgb(${parsed.map((s) => s.input).join(', ')})`;
+    },
   },
   units: {
     x: '8px',
@@ -494,5 +498,53 @@ describe('StyleProcessor', () => {
       'calc(2 * var(--my-gap))', // string unit gets calc() wrapping
       '3 * 10px', // function unit returns expression as-is
     ]);
+  });
+
+  test('provides input property with original unparsed string for each group', () => {
+    // Single group
+    const result1 = parser.process('1x 2x #purple');
+    expect(result1.groups[0].input).toBe('1x 2x #purple');
+
+    // Multiple groups (comma-separated)
+    const result2 = parser.process('1bw top #purple, 1ow right #dark-05');
+    expect(result2.groups[0].input).toBe('1bw top #purple');
+    expect(result2.groups[1].input).toBe('1ow right #dark-05');
+
+    // With whitespace (normalized in lower-case)
+    const result3 = parser.process('  2x   max-content  ');
+    expect(result3.groups[0].input).toBe('2x max-content');
+  });
+
+  test('custom function receives groups with input property', () => {
+    // Create a parser with a custom function that uses input
+    const inputCapture: string[] = [];
+    const testParser = new StyleParser({
+      funcs: {
+        capture(parsed: StyleDetails[]) {
+          inputCapture.push(...parsed.map((g) => g.input));
+          return 'captured';
+        },
+      },
+    });
+
+    testParser.process('capture(foo bar, baz qux)');
+    expect(inputCapture).toEqual(['foo bar', 'baz qux']);
+  });
+
+  test('custom function returning color is classified as color', () => {
+    // colorize function returns rgb(...) which should be classified as color
+    // Note: rgb() is a color function, so it processes inner and removes spaces after commas
+    const result = parser.process('colorize(100, 200, 50)');
+    expect(result.groups[0].colors).toEqual(['rgb(100,200,50)']);
+    expect(result.groups[0].values).toEqual([]);
+  });
+
+  test('custom function returning value is classified as value', () => {
+    // sum function returns calc(...) which should be classified as value
+    const result = parser.process('sum(1x, 2x)');
+    expect(result.groups[0].values).toEqual([
+      'calc(var(--gap) + calc(2 * var(--gap)))',
+    ]);
+    expect(result.groups[0].colors).toEqual([]);
   });
 });
