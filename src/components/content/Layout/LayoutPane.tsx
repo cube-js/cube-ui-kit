@@ -38,6 +38,7 @@ const PaneElement = tasty({
   as: 'div',
   qa: 'LayoutPane',
   styles: {
+    container: 'pane / inline-size',
     position: 'relative',
     display: 'grid',
     gridColumns: '1sf',

@@ -28,6 +28,7 @@ const ContentElement = tasty({
   as: 'div',
   qa: 'LayoutContent',
   styles: {
+    container: 'content / inline-size',
     position: 'relative',
     display: 'grid',
     gridColumns: '1sf',
