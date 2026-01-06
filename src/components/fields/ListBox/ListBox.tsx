@@ -1108,7 +1108,7 @@ function Option({
     if (
       !isCheckable ||
       state.selectionManager.selectionMode !== 'multiple' ||
-      item.icon
+      filteredItemProps.icon
     ) {
       return (
         filteredItemProps.icon ??
@@ -1149,7 +1149,7 @@ function Option({
     isFocused,
     isHovered,
     validationState,
-    item.icon,
+    filteredItemProps.icon,
   ]);
 
   // Custom click handler for the entire option
