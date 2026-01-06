@@ -29,9 +29,6 @@ export const SIZE_NAME_TO_KEY: Record<SizeName, SizeKey> = {
   xlarge: 'XL',
 };
 
-/** @deprecated Use SIZE_NAME_TO_KEY instead */
-export const SIZES_MAP = SIZE_NAME_TO_KEY;
-
 /**
  * Size tokens with $ prefix for CSS custom properties.
  * Creates tokens like `$size-xs`, `$size-sm`, etc.

@@ -20,7 +20,7 @@ import { BASE_TOKENS } from './base';
 import { COLOR_TOKENS } from './colors';
 import { LAYOUT_TOKENS } from './layout';
 import { SHADOW_TOKENS } from './shadows';
-import { SIZE_NAME_TO_KEY, SIZE_TOKENS, SIZES, SIZES_MAP } from './sizes';
+import { SIZE_NAME_TO_KEY, SIZE_TOKENS, SIZES } from './sizes';
 import { SPACE_TOKENS } from './spacing';
 
 import type { Styles } from '../tasty/styles/types';
@@ -53,7 +53,7 @@ export const TOKENS: Styles = {
 
 // Re-export category modules for direct access
 export { COLOR_TOKENS } from './colors';
-export { SIZES, SIZE_NAME_TO_KEY, SIZES_MAP, SIZE_TOKENS } from './sizes';
+export { SIZES, SIZE_NAME_TO_KEY, SIZE_TOKENS } from './sizes';
 export type { SizeKey, SizeName } from './sizes';
 export { SPACE_TOKENS } from './spacing';
 export { SHADOW_TOKENS } from './shadows';
