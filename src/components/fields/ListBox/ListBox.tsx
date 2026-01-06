@@ -586,7 +586,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     externalSelectionHandler,
     isDisabled,
     props.selectionMode,
-    showSelectAll,
+    disableSelectionToggle,
   ]);
 
   // Prepare props for useListState with correct selection props
