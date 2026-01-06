@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.98.7
+
+### Patch Changes
+
+- [#940](https://github.com/cube-js/cube-ui-kit/pull/940) [`126a66fe`](https://github.com/cube-js/cube-ui-kit/commit/126a66feb43cb1aebfbeaeeaa27c747665e5b2c4) Thanks [@tenphi](https://github.com/tenphi)! - Fix ListBox icon detection and selection change handler dependencies. Custom icons on ListBox items are now properly detected, and the selection change handler correctly responds to `disableSelectionToggle` prop changes.
+
 ## 0.98.6
 
 ### Patch Changes
