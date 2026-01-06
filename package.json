@@ -40,7 +40,7 @@
   ],
   "scripts": {
     "start": "pnpm storybook",
-    "build": "npm-run-all clear:dist -p build:* && node scripts/copy-files.cjs && node scripts/add-banner.cjs && node scripts/replace-version.cjs",
+    "build": "npm-run-all clear:dist -p build:* && node scripts/fix-esm-imports.cjs && node scripts/copy-files.cjs && node scripts/add-banner.cjs && node scripts/replace-version.cjs",
     "build:esm": "tsc -p tsconfig.es.json",
     "watch": "pnpm build:esm --watch",
     "test": "jest",
