@@ -74,16 +74,71 @@ export function extractStylesForSelector(
   selector: string,
   styles: Styles,
 ): ExtractedSelector {
+  // renderStyles with selector returns StyleResult[] with selectors already applied
   const rules = renderStyles(styles, selector);
-  const css = formatRulesToCSS(rules, selector);
+  // Format without re-prefixing - rules already have the full selector
+  const css = formatRulesDirectly(rules);
 
   return { selector, css };
 }
 
 /**
- * Format StyleResult[] to CSS string
+ * Format StyleResult[] to CSS string.
+ * Prefixes each rule's selector with the base selector.
+ * Used for chunked styles where rules have relative selectors.
  */
-function formatRulesToCSS(rules: StyleResult[], _baseSelector: string): string {
+function formatRulesToCSS(rules: StyleResult[], baseSelector: string): string {
+  return rules
+    .map((rule) => {
+      // Handle selector as array (OR conditions) or string
+      // Note: renderStyles without className joins array selectors with '|||' placeholder
+      const selectorParts = Array.isArray(rule.selector)
+        ? rule.selector
+        : rule.selector
+          ? rule.selector.split('|||')
+          : [''];
+
+      // Prefix each selector part with the base selector
+      const fullSelector = selectorParts
+        .map((part) => {
+          // If part is empty, just use base selector
+          if (!part) return baseSelector;
+          // If part starts with a pseudo-class or pseudo-element, append to base
+          if (part.startsWith(':') || part.startsWith('[')) {
+            return `${baseSelector}${part}`;
+          }
+          // If part starts with >, +, ~ combinator, append with space
+          if (
+            part.startsWith('>') ||
+            part.startsWith('+') ||
+            part.startsWith('~')
+          ) {
+            return `${baseSelector}${part}`;
+          }
+          // Otherwise, combine base with part
+          return `${baseSelector}${part}`;
+        })
+        .join(', ');
+
+      let css = `${fullSelector} { ${rule.declarations} }`;
+
+      // Wrap in at-rules (in reverse order for proper nesting)
+      if (rule.atRules && rule.atRules.length > 0) {
+        for (const atRule of [...rule.atRules].reverse()) {
+          css = `${atRule} {\n  ${css}\n}`;
+        }
+      }
+
+      return css;
+    })
+    .join('\n\n');
+}
+
+/**
+ * Format StyleResult[] to CSS string directly without prefixing.
+ * Used for global styles where rules already have the full selector.
+ */
+function formatRulesDirectly(rules: StyleResult[]): string {
   return rules
     .map((rule) => {
       let css = `${rule.selector} { ${rule.declarations} }`;
