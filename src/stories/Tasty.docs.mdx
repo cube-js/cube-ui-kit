@@ -315,6 +315,7 @@ State keys with `@` prefix for CSS at-rules and contextual conditions:
 |--------|---------|---------|
 | `@media` | Media queries | `@media(w < 768px)` |
 | `@(...)` | Container queries | `@(panel, w >= 300px)` |
+| `@supports` | Feature/selector support queries | `@supports(display: grid)` |
 | `@root` | Root element states | `@root(theme=dark)` |
 | `@own` | Sub-element's own state | `@own(hovered)` |
 | `@starting` | Entry animation | `@starting` (for `@starting-style`) |
@@ -884,6 +885,32 @@ const Child = tasty({
     },
   },
 });
+```
+
+#### Supports Queries (`@supports`)
+
+Use `@supports(...)` to **check support and then use the feature**. For example, masonry is landing as `display: grid-lanes` (with `display: grid` as a safe fallback). See: [Masonry Layout is Now `grid-lanes`](https://css-tricks.com/masonry-layout-is-now-grid-lanes/).
+
+```jsx
+styles: {
+  display: {
+    '': 'grid',
+    '@supports(display: grid-lanes)': 'grid-lanes',
+  },
+}
+```
+
+**Selector support**
+
+To check selector support (e.g. `:has()`), use `@supports($, <selector>)`. It compiles to `@supports selector(<selector>)`:
+
+```jsx
+styles: {
+  border: {
+    '': '1bw solid #border',
+    '@supports($, :has(*)) & :has(> Icon)': '2bw solid #purple',
+  },
+}
 ```
 
 #### Root States (`@root`)

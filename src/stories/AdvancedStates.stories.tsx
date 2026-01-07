@@ -1,4 +1,3 @@
-import { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { CSSProperties } from 'styled-components';
 
@@ -11,6 +10,8 @@ import {
   tasty,
   Text,
 } from '../index';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 // Set up global predefined states for the stories
 setGlobalPredefinedStates({
@@ -32,6 +33,7 @@ Advanced state mappings allow you to define styles based on complex conditions:
 
 - **@media queries**: Responsive styles based on viewport dimensions
 - **@container queries**: Styles based on container element dimensions
+- **@supports queries**: Styles based on browser feature/selector support
 - **@root states**: Styles based on root element attributes (themes, modes)
 - **@own states**: Styles based on the element's own state (for sub-elements)
 - **@starting-style**: Initial styles for CSS transitions
@@ -672,6 +674,105 @@ const Box = tasty({
 \`\`\`
 
 Note: Requires browser support for CSS Container Queries.
+        `,
+      },
+    },
+  },
+};
+
+// =============================================================================
+// Supports Queries
+// =============================================================================
+
+const SupportsQueryBox = tasty({
+  styles: {
+    // The point of @supports is to check and then use.
+    // Default to grid; if masonry lands, opt into it.
+    display: {
+      '': 'grid',
+      '@supports(display: grid-lanes)': 'grid-lanes',
+    },
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '2x',
+    padding: '3x',
+    fill: {
+      '': '#note',
+      '@supports(display: grid-lanes)': '#success',
+    },
+    color: '#white',
+    radius: '2r',
+    transition: 'fill 0.2s',
+  },
+});
+
+export const SupportsQueries: StoryObj = {
+  render: () => (
+    <Flex flow="column" gap="2x">
+      <Text preset="t2">@supports queries</Text>
+      <SupportsQueryBox>
+        <Block
+          fill="#dark.10"
+          radius="1r"
+          padding="2x"
+          styles={{ gridColumn: '1 / -1' }}
+        >
+          <Text>
+            Uses <code>@supports(display: grid-lanes)</code> and sets{' '}
+            <code>display: grid-lanes</code> when supported.
+          </Text>
+          <Text preset="c1" color="#white.80">
+            See:{' '}
+            <a href="https://css-tricks.com/masonry-layout-is-now-grid-lanes/">
+              CSS-Tricks article
+            </a>
+          </Text>
+        </Block>
+
+        {Array.from({ length: 9 }).map((_, i) => (
+          <Block
+            // varying heights to make the layout difference visible
+            key={i}
+            fill="#dark.12"
+            radius="1r"
+            padding="2x"
+            height={i % 3 === 0 ? '14x' : i % 3 === 1 ? '10x' : '18x'}
+          >
+            <Text preset="t3 strong">Item {i + 1}</Text>
+          </Block>
+        ))}
+      </SupportsQueryBox>
+      <Text preset="c1" color="#note">
+        Tip: selector support checks use <code>@supports($, :has(*))</code>.
+      </Text>
+    </Flex>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: `
+Use \`@supports(...)\` to apply styles only if the browser supports a given feature:
+
+\`\`\`tsx
+const Box = tasty({
+  styles: {
+    display: {
+      '': 'grid',
+      '@supports(display: grid-lanes)': 'grid-lanes',
+    },
+  },
+});
+\`\`\`
+
+To check selector support (e.g. \`:has()\`), use:
+
+\`\`\`tsx
+styles: {
+  border: {
+    '': '1bw solid #border',
+    '@supports($, :has(*))': '2bw solid #purple',
+  },
+}
+\`\`\`
         `,
       },
     },
