@@ -346,7 +346,7 @@ function mediaToParsed(state: MediaCondition): ParsedMediaCondition[] {
 
 /**
  * Convert dimension bounds to parsed media condition(s)
- * Returns an array because negated ranges produce OR branches (two separate conditions)
+ * Uses CSS Media Queries Level 4 `not (condition)` syntax for negation.
  */
 function dimensionToMediaParsed(
   dimension: 'width' | 'height' | 'inline-size' | 'block-size',
@@ -362,78 +362,7 @@ function dimensionToMediaParsed(
   },
   negated?: boolean,
 ): ParsedMediaCondition[] {
-  if (negated) {
-    // Invert the condition manually since "not (width < x)" doesn't work in browsers
-    // Single bounds: flip the operator → returns single condition
-    // Range: NOT (a <= x < b) = (x < a) OR (x >= b) → returns two conditions (OR branches)
-
-    if (lowerBound && upperBound) {
-      // Range query: (lower <= dim < upper) negated is (dim < lower) OR (dim >= upper)
-      // Return two separate conditions - these become separate variants
-      const lowerOp = lowerBound.inclusive ? '<' : '<=';
-      const upperOp = upperBound.inclusive ? '>' : '>=';
-      return [
-        {
-          subtype: 'dimension',
-          negated: false,
-          condition: `(${dimension} ${lowerOp} ${lowerBound.value})`,
-          dimension,
-          upperBound: {
-            value: lowerBound.value,
-            valueNumeric: lowerBound.valueNumeric,
-            inclusive: !lowerBound.inclusive,
-          },
-        },
-        {
-          subtype: 'dimension',
-          negated: false,
-          condition: `(${dimension} ${upperOp} ${upperBound.value})`,
-          dimension,
-          lowerBound: {
-            value: upperBound.value,
-            valueNumeric: upperBound.valueNumeric,
-            inclusive: !upperBound.inclusive,
-          },
-        },
-      ];
-    } else if (upperBound) {
-      // (dim < upper) negated is (dim >= upper)
-      // (dim <= upper) negated is (dim > upper)
-      const op = upperBound.inclusive ? '>' : '>=';
-      return [
-        {
-          subtype: 'dimension',
-          negated: false,
-          condition: `(${dimension} ${op} ${upperBound.value})`,
-          dimension,
-          lowerBound: {
-            value: upperBound.value,
-            valueNumeric: upperBound.valueNumeric,
-            inclusive: !upperBound.inclusive,
-          },
-        },
-      ];
-    } else if (lowerBound) {
-      // (dim >= lower) negated is (dim < lower)
-      // (dim > lower) negated is (dim <= lower)
-      const op = lowerBound.inclusive ? '<' : '<=';
-      return [
-        {
-          subtype: 'dimension',
-          negated: false,
-          condition: `(${dimension} ${op} ${lowerBound.value})`,
-          dimension,
-          upperBound: {
-            value: lowerBound.value,
-            valueNumeric: lowerBound.valueNumeric,
-            inclusive: !lowerBound.inclusive,
-          },
-        },
-      ];
-    }
-  }
-
-  // Non-negated conditions
+  // Build the condition string
   let condition: string;
   if (lowerBound && upperBound) {
     const lowerOp = lowerBound.inclusive ? '<=' : '<';
@@ -449,10 +378,11 @@ function dimensionToMediaParsed(
     condition = `(${dimension})`;
   }
 
+  // For negation, we use CSS `not (condition)` syntax in buildAtRulesFromVariant
   return [
     {
       subtype: 'dimension',
-      negated: false,
+      negated: negated ?? false,
       condition,
       dimension,
       lowerBound,
@@ -664,8 +594,9 @@ function hasMediaContradiction(conditions: ParsedMediaCondition[]): boolean {
   // Track conditions by their key (condition string) to detect A and NOT A
   const featureConditions = new Map<string, boolean>(); // key -> isPositive
   const typeConditions = new Map<string, boolean>(); // mediaType -> isPositive
+  const dimensionConditions = new Map<string, boolean>(); // condition -> isPositive
 
-  // Track dimension conditions for range contradiction detection
+  // Track dimension conditions for range contradiction detection (non-negated only)
   const dimensionsByDim = new Map<
     string,
     { lowerBound: number | null; upperBound: number | null }
@@ -689,36 +620,46 @@ function hasMediaContradiction(conditions: ParsedMediaCondition[]): boolean {
       }
       featureConditions.set(key, !cond.negated);
     } else if (cond.subtype === 'dimension') {
-      // Dimension query: check for range contradictions
-      // Note: negated conditions are already inverted in dimensionToMediaParsed
-      const dim = cond.dimension || 'width';
-      let bounds = dimensionsByDim.get(dim);
-      if (!bounds) {
-        bounds = { lowerBound: null, upperBound: null };
-        dimensionsByDim.set(dim, bounds);
+      // First, check for direct contradiction: (width < 600px) AND NOT (width < 600px)
+      const condKey = cond.condition;
+      const existing = dimensionConditions.get(condKey);
+      if (existing !== undefined && existing !== !cond.negated) {
+        return true; // Contradiction: positive AND negated
       }
+      dimensionConditions.set(condKey, !cond.negated);
 
-      // Track the effective bounds
-      if (cond.lowerBound?.valueNumeric != null) {
-        const value = cond.lowerBound.valueNumeric;
-        if (bounds.lowerBound === null || value > bounds.lowerBound) {
-          bounds.lowerBound = value;
+      // For range analysis, only consider non-negated conditions
+      // Negated conditions are handled via the direct contradiction check above
+      if (!cond.negated) {
+        const dim = cond.dimension || 'width';
+        let bounds = dimensionsByDim.get(dim);
+        if (!bounds) {
+          bounds = { lowerBound: null, upperBound: null };
+          dimensionsByDim.set(dim, bounds);
         }
-      }
-      if (cond.upperBound?.valueNumeric != null) {
-        const value = cond.upperBound.valueNumeric;
-        if (bounds.upperBound === null || value < bounds.upperBound) {
-          bounds.upperBound = value;
-        }
-      }
 
-      // Check for impossible range
-      if (
-        bounds.lowerBound !== null &&
-        bounds.upperBound !== null &&
-        bounds.lowerBound >= bounds.upperBound
-      ) {
-        return true;
+        // Track the effective bounds
+        if (cond.lowerBound?.valueNumeric != null) {
+          const value = cond.lowerBound.valueNumeric;
+          if (bounds.lowerBound === null || value > bounds.lowerBound) {
+            bounds.lowerBound = value;
+          }
+        }
+        if (cond.upperBound?.valueNumeric != null) {
+          const value = cond.upperBound.valueNumeric;
+          if (bounds.upperBound === null || value < bounds.upperBound) {
+            bounds.upperBound = value;
+          }
+        }
+
+        // Check for impossible range
+        if (
+          bounds.lowerBound !== null &&
+          bounds.upperBound !== null &&
+          bounds.lowerBound >= bounds.upperBound
+        ) {
+          return true;
+        }
       }
     }
   }
@@ -1171,8 +1112,9 @@ export function buildAtRulesFromVariant(variant: SelectorVariant): string[] {
         // Media type: print, screen, etc.
         return c.negated ? `not ${c.condition}` : c.condition;
       } else {
-        // Feature or dimension: (condition) or not (condition)
-        return c.negated ? `not ${c.condition}` : c.condition;
+        // Feature or dimension: use not (condition) syntax for negation
+        // MQ Level 4 requires parentheses around the condition for negation
+        return c.negated ? `(not ${c.condition})` : c.condition;
       }
     });
     atRules.push(`@media ${conditionParts.join(' and ')}`);
