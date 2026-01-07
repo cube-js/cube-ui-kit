@@ -241,6 +241,26 @@ describe('parseStateKey()', () => {
     }
   });
 
+  it('should parse @supports feature query', () => {
+    const result = parseStateKey('@supports(display: grid)');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('supports');
+      expect((result as any).subtype).toBe('feature');
+      expect((result as any).condition).toBe('display: grid');
+    }
+  });
+
+  it('should parse @supports selector query', () => {
+    const result = parseStateKey('@supports($, :has(*))');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('supports');
+      expect((result as any).subtype).toBe('selector');
+      expect((result as any).condition).toBe(':has(*)');
+    }
+  });
+
   it('should parse pseudo-class', () => {
     const result = parseStateKey(':hover');
     expect(result.kind).toBe('state');
@@ -408,6 +428,27 @@ describe('conditionToCSS()', () => {
     expect(css.variants.length).toBe(1);
     expect(css.variants[0].rootPrefix).toBe(':root[data-theme="dark"]');
   });
+
+  it('should convert @supports feature query', () => {
+    const result = parseStateKey('@supports(display: grid)');
+    const css = conditionToCSS(result);
+    expect(css.variants.length).toBe(1);
+    expect(css.variants[0].supportsConditions.length).toBe(1);
+    expect(css.variants[0].supportsConditions[0].subtype).toBe('feature');
+    expect(css.variants[0].supportsConditions[0].condition).toBe(
+      'display: grid',
+    );
+    expect(css.variants[0].supportsConditions[0].negated).toBe(false);
+  });
+
+  it('should convert @supports selector query', () => {
+    const result = parseStateKey('@supports($, :has(*))');
+    const css = conditionToCSS(result);
+    expect(css.variants.length).toBe(1);
+    expect(css.variants[0].supportsConditions.length).toBe(1);
+    expect(css.variants[0].supportsConditions[0].subtype).toBe('selector');
+    expect(css.variants[0].supportsConditions[0].condition).toBe(':has(*)');
+  });
 });
 
 describe('Integration: Exclusive conditions for media queries', () => {
@@ -523,6 +564,130 @@ describe('renderStyles integration', () => {
     expect(mediaRule!.atRules![0]).toContain('width');
     expect(mediaRule!.atRules![0]).toContain('1000px');
   });
+
+  it('should generate @supports at-rule for feature query', () => {
+    const styles = {
+      display: {
+        '': 'block',
+        '@supports(display: grid)': 'grid',
+      },
+    };
+
+    const result = renderStyles(styles, '.test');
+
+    // Should generate a supports rule
+    const supportsRule = result.find((r) =>
+      r.atRules?.some((a) => a.startsWith('@supports')),
+    );
+    expect(supportsRule).toBeDefined();
+    expect(supportsRule!.atRules![0]).toBe('@supports (display: grid)');
+    expect(supportsRule!.declarations).toContain('display: grid');
+  });
+
+  it('should generate @supports at-rule for selector query', () => {
+    const styles = {
+      display: {
+        '': 'block',
+        '@supports($, :has(*))': 'flex',
+      },
+    };
+
+    const result = renderStyles(styles, '.test');
+
+    // Should generate a supports selector rule
+    const supportsRule = result.find((r) =>
+      r.atRules?.some((a) => a.startsWith('@supports')),
+    );
+    expect(supportsRule).toBeDefined();
+    expect(supportsRule!.atRules![0]).toBe('@supports selector(:has(*))');
+    expect(supportsRule!.declarations).toContain('display: flex');
+  });
+
+  it('should handle negated @supports condition', () => {
+    const styles = {
+      display: {
+        '': 'grid',
+        '!@supports(display: grid)': 'block',
+      },
+    };
+
+    const result = renderStyles(styles, '.test');
+
+    // Should generate a negated supports rule
+    const supportsRule = result.find((r) =>
+      r.atRules?.some((a) => a.includes('not')),
+    );
+    expect(supportsRule).toBeDefined();
+    expect(supportsRule!.atRules![0]).toBe('@supports (not (display: grid))');
+  });
+
+  it('should apply exclusive logic to @supports queries', () => {
+    const styles = {
+      display: {
+        '': 'block',
+        '@supports(display: grid)': 'grid',
+        '@supports($, :has(*))': 'flex',
+      },
+    };
+
+    const result = renderStyles(styles, '.test');
+
+    // Should have 3 rules with exclusive conditions
+    expect(result.length).toBe(3);
+
+    // Find each rule
+    const hasRule = result.find(
+      (r) =>
+        r.atRules?.[0]?.includes('selector(:has(*))') &&
+        !r.atRules?.[0]?.includes('not'),
+    );
+    const gridRule = result.find(
+      (r) =>
+        r.atRules?.[0]?.includes('(display: grid)') &&
+        r.atRules?.[0]?.includes('not selector(:has(*))'),
+    );
+    const defaultRule = result.find(
+      (r) =>
+        r.atRules?.[0]?.includes('not (display: grid)') &&
+        r.atRules?.[0]?.includes('not selector(:has(*))'),
+    );
+
+    expect(hasRule).toBeDefined();
+    expect(hasRule!.declarations).toContain('display: flex');
+
+    expect(gridRule).toBeDefined();
+    expect(gridRule!.declarations).toContain('display: grid');
+
+    expect(defaultRule).toBeDefined();
+    expect(defaultRule!.declarations).toContain('display: block');
+  });
+
+  it('should eliminate impossible @supports combinations', () => {
+    const styles = {
+      display: {
+        '': 'block',
+        '@supports(display: grid)': 'grid',
+        '@supports($, :has(*))': 'flex',
+        '!@supports(display: grid)': 'inline-block',
+      },
+    };
+
+    const result = renderStyles(styles, '.test');
+
+    // The default 'block' should be eliminated because:
+    // - !@supports(grid) covers no-grid cases
+    // - @supports(grid) & @supports(:has(*)) covers grid+has
+    // - @supports(grid) & !@supports(:has(*)) covers grid-only
+    // These cover all 4 combinations, making default unreachable
+    expect(result.length).toBe(3);
+
+    // Verify the three rules
+    const noGridRule = result.find(
+      (r) => r.atRules?.[0] === '@supports (not (display: grid))',
+    );
+    expect(noGridRule).toBeDefined();
+    expect(noGridRule!.declarations).toContain('display: inline-block');
+  });
 });
 
 describe('Complex OR conditions with mixed types', () => {
@@ -594,5 +759,123 @@ describe('Complex OR conditions with mixed types', () => {
         r.selector.includes(':root:not([data-prefers-schema="system"])'),
       ),
     ).toBe(true);
+  });
+});
+
+describe('@supports queries snapshot tests', () => {
+  beforeEach(() => {
+    clearPipelineCache();
+  });
+
+  it('should render @supports feature query', () => {
+    const styles = {
+      display: {
+        '': 'block',
+        '@supports(display: grid)': 'grid',
+      },
+    };
+
+    const result = renderStyles(styles, '.component');
+    expect(result).toMatchSnapshot();
+  });
+
+  it('should render @supports selector query', () => {
+    const styles = {
+      display: {
+        '': 'block',
+        '@supports($, :has(*))': 'flex',
+      },
+    };
+
+    const result = renderStyles(styles, '.component');
+    expect(result).toMatchSnapshot();
+  });
+
+  it('should render multiple @supports with exclusive logic', () => {
+    const styles = {
+      display: {
+        '': 'block',
+        '@supports(display: flex)': 'flex',
+        '@supports(display: grid)': 'grid',
+      },
+    };
+
+    const result = renderStyles(styles, '.component');
+    expect(result).toMatchSnapshot();
+  });
+
+  it('should render @supports combined with AND', () => {
+    const styles = {
+      display: {
+        '': 'block',
+        '@supports(display: grid) & @supports($, :has(*))': 'grid',
+      },
+    };
+
+    const result = renderStyles(styles, '.component');
+    expect(result).toMatchSnapshot();
+  });
+
+  it('should render @supports combined with OR', () => {
+    const styles = {
+      display: {
+        '': 'block',
+        '@supports(display: grid) | @supports(display: flex)': 'flex',
+      },
+    };
+
+    const result = renderStyles(styles, '.component');
+    expect(result).toMatchSnapshot();
+  });
+
+  it('should render @supports with modifiers', () => {
+    const styles = {
+      color: {
+        '': 'black',
+        '@supports(display: grid) & hovered': 'blue',
+      },
+    };
+
+    const result = renderStyles(styles, '.component');
+    expect(result).toMatchSnapshot();
+  });
+
+  it('should render @supports combined with @media', () => {
+    const styles = {
+      display: {
+        '': 'block',
+        '@media(w <= 768px) & @supports(display: grid)': 'grid',
+      },
+    };
+
+    const result = renderStyles(styles, '.component');
+    expect(result).toMatchSnapshot();
+  });
+
+  it('should render @supports combined with @container', () => {
+    const styles = {
+      display: {
+        '': 'block',
+        '@(w <= 400px) & @supports(display: grid)': 'grid',
+      },
+    };
+
+    const result = renderStyles(styles, '.component');
+    expect(result).toMatchSnapshot();
+  });
+
+  it('should eliminate impossible @supports combinations', () => {
+    const styles = {
+      display: {
+        '': 'block',
+        '@supports(display: grid)': 'grid',
+        '@supports($, :has(*))': 'flex',
+        '!@supports(display: grid)': 'inline-block',
+      },
+    };
+
+    const result = renderStyles(styles, '.component');
+    // Default 'block' should be eliminated as other rules cover all cases
+    expect(result).toMatchSnapshot();
   });
 });

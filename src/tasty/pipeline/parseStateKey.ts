@@ -27,6 +27,7 @@ import {
   createPseudoCondition,
   createRootCondition,
   createStartingCondition,
+  createSupportsCondition,
   not,
   NumericBound,
   or,
@@ -57,9 +58,12 @@ const parseCache = new Lru<string, ConditionNode>(5000);
  * Pattern for tokenizing state notation.
  * Matches: operators, parentheses, @-prefixed states, value mods, boolean mods,
  * pseudo-classes, class selectors, and attribute selectors.
+ *
+ * Note: For @supports we need to handle nested parentheses like @supports($, :has(*))
+ * We use a pattern that allows one level of nesting: [^()]*(?:\([^)]*\))?[^)]*
  */
 const STATE_TOKEN_PATTERN =
-  /([&|!^])|([()])|(@media:[a-z]+)|(@media\([^)]+\))|(@root\([^)]+\))|(@own\([^)]+\))|(@\([^)]+\))|(@starting)|(@[A-Za-z][A-Za-z0-9-]*)|([a-z][a-z0-9-]*(?:\^=|\$=|\*=|=)(?:"[^"]*"|'[^']*'|[^\s&|!^()]+))|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9-]*(?:\([^)]+\))?)|(\.[a-z][a-z0-9-]+)|(\[[^\]]+\])/gi;
+  /([&|!^])|([()])|(@media:[a-z]+)|(@media\([^)]+\))|(@supports\([^()]*(?:\([^)]*\))?[^)]*\))|(@root\([^)]+\))|(@own\([^)]+\))|(@\([^)]+\))|(@starting)|(@[A-Za-z][A-Za-z0-9-]*)|([a-z][a-z0-9-]*(?:\^=|\$=|\*=|=)(?:"[^"]*"|'[^']*'|[^\s&|!^()]+))|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9-]*(?:\([^)]+\))?)|(\.[a-z][a-z0-9-]+)|(\[[^\]]+\])/gi;
 
 // ============================================================================
 // Token Types
@@ -279,6 +283,11 @@ class Parser {
     // @media(...) - media query
     if (value.startsWith('@media(')) {
       return this.parseMediaQuery(value);
+    }
+
+    // @supports(...) - feature/selector support query
+    if (value.startsWith('@supports(')) {
+      return this.parseSupportsQuery(value);
     }
 
     // @root(...) - root state
@@ -503,6 +512,29 @@ class Parser {
     // Build selector from condition
     const selector = buildRootSelector(content);
     return createRootCondition(selector, false, raw);
+  }
+
+  /**
+   * Parse @supports(...) query
+   *
+   * Syntax:
+   *   @supports(display: grid)     → @supports (display: grid)
+   *   @supports($, :has(*))        → @supports selector(:has(*))
+   */
+  private parseSupportsQuery(raw: string): ConditionNode {
+    const content = raw.slice(10, -1); // Remove '@supports(' and ')'
+    if (!content.trim()) {
+      return trueCondition();
+    }
+
+    // Check for selector syntax: @supports($, :has(*))
+    if (content.startsWith('$,')) {
+      const selector = content.slice(2).trim(); // Remove '$,' prefix
+      return createSupportsCondition('selector', selector, false, raw);
+    }
+
+    // Feature syntax: @supports(display: grid)
+    return createSupportsCondition('feature', content, false, raw);
   }
 
   /**

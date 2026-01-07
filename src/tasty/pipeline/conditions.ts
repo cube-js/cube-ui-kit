@@ -108,6 +108,16 @@ export interface StartingCondition extends BaseStateCondition {
 }
 
 /**
+ * Supports query condition: @supports(display: grid), @supports($, :has(*))
+ */
+export interface SupportsCondition extends BaseStateCondition {
+  type: 'supports';
+  subtype: 'feature' | 'selector';
+  // The raw condition string (e.g., "display: grid" or ":has(*)")
+  condition: string;
+}
+
+/**
  * Union of all state condition types
  */
 export type StateCondition =
@@ -117,7 +127,8 @@ export type StateCondition =
   | ContainerCondition
   | RootCondition
   | OwnCondition
-  | StartingCondition;
+  | StartingCondition
+  | SupportsCondition;
 
 /**
  * Compound node: combines conditions with AND/OR
@@ -452,6 +463,18 @@ export function startingUniqueId(negated: boolean = false): string {
   return negated ? '!starting' : 'starting';
 }
 
+/**
+ * Generate a normalized unique ID for a supports condition
+ */
+export function supportsUniqueId(
+  subtype: 'feature' | 'selector',
+  condition: string,
+  negated: boolean = false,
+): string {
+  const base = `supports:${subtype}:${condition}`;
+  return negated ? `!${base}` : base;
+}
+
 // ============================================================================
 // Condition Creation Helpers
 // ============================================================================
@@ -671,6 +694,29 @@ export function createStartingCondition(
     negated,
     raw: raw || '@starting',
     uniqueId: startingUniqueId(negated),
+  };
+}
+
+/**
+ * Create a supports condition
+ *
+ * @param subtype 'feature' for @supports(display: grid), 'selector' for @supports($, :has(*))
+ * @param condition The condition string (e.g., "display: grid" or ":has(*)")
+ */
+export function createSupportsCondition(
+  subtype: 'feature' | 'selector',
+  condition: string,
+  negated: boolean = false,
+  raw?: string,
+): SupportsCondition {
+  return {
+    kind: 'state',
+    type: 'supports',
+    subtype,
+    negated,
+    raw: raw || `@supports(${condition})`,
+    uniqueId: supportsUniqueId(subtype, condition, negated),
+    condition,
   };
 }
 

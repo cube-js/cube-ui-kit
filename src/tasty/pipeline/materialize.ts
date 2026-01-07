@@ -17,6 +17,7 @@ import {
   RootCondition,
   StartingCondition,
   StateCondition,
+  SupportsCondition,
 } from './conditions';
 
 // ============================================================================
@@ -74,6 +75,18 @@ export interface ParsedContainerCondition {
 }
 
 /**
+ * Parsed supports condition for structured analysis and combination
+ */
+export interface ParsedSupportsCondition {
+  /** Subtype: 'feature' for property support, 'selector' for selector() support */
+  subtype: 'feature' | 'selector';
+  /** The condition string (e.g., "display: grid" or ":has(*)") */
+  condition: string;
+  /** Whether this is a negated condition */
+  negated: boolean;
+}
+
+/**
  * A single selector variant (one term in a DNF expression)
  */
 export interface SelectorVariant {
@@ -88,6 +101,9 @@ export interface SelectorVariant {
 
   /** Parsed container conditions for structured combination */
   containerConditions: ParsedContainerCondition[];
+
+  /** Parsed supports conditions for @supports at-rules */
+  supportsConditions: ParsedSupportsCondition[];
 
   /** Root state prefix (e.g., ':root[data-theme="dark"]') */
   rootPrefix?: string;
@@ -168,6 +184,7 @@ function emptyVariant(): SelectorVariant {
     ownSelectors: [],
     mediaConditions: [],
     containerConditions: [],
+    supportsConditions: [],
     startingStyle: false,
   };
 }
@@ -240,6 +257,10 @@ function stateToCSS(state: StateCondition): CSSComponents {
 
         case 'container':
           variant.containerConditions.push(containerToParsed(state));
+          break;
+
+        case 'supports':
+          variant.supportsConditions.push(supportsToParsed(state));
           break;
 
         case 'root':
@@ -448,6 +469,18 @@ function dimensionToContainerCondition(
   }
   return '(width)'; // Fallback
 }
+
+/**
+ * Convert supports condition to parsed structure
+ */
+function supportsToParsed(state: SupportsCondition): ParsedSupportsCondition {
+  return {
+    subtype: state.subtype,
+    condition: state.condition,
+    negated: state.negated ?? false,
+  };
+}
+
 /**
  * Convert root condition to CSS selector prefix
  */
@@ -537,11 +570,21 @@ function mergeVariants(
     return null; // Impossible variant
   }
 
+  // Merge supports conditions and check for contradictions
+  const mergedSupports = dedupeSupportsConditions([
+    ...a.supportsConditions,
+    ...b.supportsConditions,
+  ]);
+  if (hasSupportsContradiction(mergedSupports)) {
+    return null; // Impossible variant
+  }
+
   return {
     modifierSelectors: mergedModifiers,
     ownSelectors: dedupeArray([...a.ownSelectors, ...b.ownSelectors]),
     mediaConditions: mergedMedia,
     containerConditions: mergedContainers,
+    supportsConditions: mergedSupports,
     rootPrefix: combinedRoot,
     startingStyle: a.startingStyle || b.startingStyle,
   };
@@ -581,6 +624,45 @@ function dedupeContainerConditions(
     }
   }
   return result;
+}
+
+/**
+ * Deduplicate supports conditions by their key (subtype + condition + negated)
+ */
+function dedupeSupportsConditions(
+  conditions: ParsedSupportsCondition[],
+): ParsedSupportsCondition[] {
+  const seen = new Set<string>();
+  const result: ParsedSupportsCondition[] = [];
+  for (const c of conditions) {
+    const key = `${c.subtype}|${c.condition}|${c.negated}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(c);
+    }
+  }
+  return result;
+}
+
+/**
+ * Check if supports conditions contain contradictions
+ * e.g., @supports(display: grid) AND NOT @supports(display: grid)
+ */
+function hasSupportsContradiction(
+  conditions: ParsedSupportsCondition[],
+): boolean {
+  const conditionMap = new Map<string, boolean>(); // key -> isPositive
+
+  for (const cond of conditions) {
+    const key = `${cond.subtype}|${cond.condition}`;
+    const existing = conditionMap.get(key);
+    if (existing !== undefined && existing !== !cond.negated) {
+      return true; // Contradiction: positive AND negated
+    }
+    conditionMap.set(key, !cond.negated);
+  }
+
+  return false;
 }
 
 /**
@@ -818,11 +900,16 @@ function getVariantKey(v: SelectorVariant): string {
     .map((c) => `${c.subtype}:${c.negated ? '!' : ''}${c.condition}`)
     .sort()
     .join('|');
+  const supportsKey = v.supportsConditions
+    .map((c) => `${c.subtype}:${c.negated ? '!' : ''}${c.condition}`)
+    .sort()
+    .join('|');
   return [
     v.modifierSelectors.slice().sort().join('|'),
     v.ownSelectors.slice().sort().join('|'),
     mediaKey,
     containerKey,
+    supportsKey,
     v.rootPrefix || '',
     v.startingStyle ? '1' : '0',
   ].join('###');
@@ -854,6 +941,10 @@ function isVariantSuperset(a: SelectorVariant, b: SelectorVariant): boolean {
   )
     return false;
 
+  // Check if a.supportsConditions is superset of b.supportsConditions
+  if (!isSupportsConditionsSuperset(a.supportsConditions, b.supportsConditions))
+    return false;
+
   // Check if a.modifierSelectors is superset of b.modifierSelectors
   if (!isArraySuperset(a.modifierSelectors, b.modifierSelectors)) return false;
 
@@ -865,11 +956,13 @@ function isVariantSuperset(a: SelectorVariant, b: SelectorVariant): boolean {
   const aTotal =
     a.mediaConditions.length +
     a.containerConditions.length +
+    a.supportsConditions.length +
     a.modifierSelectors.length +
     a.ownSelectors.length;
   const bTotal =
     b.mediaConditions.length +
     b.containerConditions.length +
+    b.supportsConditions.length +
     b.modifierSelectors.length +
     b.ownSelectors.length;
 
@@ -905,6 +998,23 @@ function isContainerConditionsSuperset(
   );
   for (const c of b) {
     const key = `${c.name ?? ''}|${c.condition}|${c.negated}`;
+    if (!aKeys.has(key)) return false;
+  }
+  return true;
+}
+
+/**
+ * Check if supports conditions A is a superset of B
+ */
+function isSupportsConditionsSuperset(
+  a: ParsedSupportsCondition[],
+  b: ParsedSupportsCondition[],
+): boolean {
+  const aKeys = new Set(
+    a.map((c) => `${c.subtype}|${c.condition}|${c.negated}`),
+  );
+  for (const c of b) {
+    const key = `${c.subtype}|${c.condition}|${c.negated}`;
     if (!aKeys.has(key)) return false;
   }
   return true;
@@ -948,12 +1058,14 @@ function dedupeVariants(variants: SelectorVariant[]): SelectorVariant[] {
       a.modifierSelectors.length +
       a.ownSelectors.length +
       a.mediaConditions.length +
-      a.containerConditions.length;
+      a.containerConditions.length +
+      a.supportsConditions.length;
     const bCount =
       b.modifierSelectors.length +
       b.ownSelectors.length +
       b.mediaConditions.length +
-      b.containerConditions.length;
+      b.containerConditions.length +
+      b.supportsConditions.length;
     return aCount - bCount;
   });
 
@@ -1140,6 +1252,23 @@ export function buildAtRulesFromVariant(variant: SelectorVariant): string[] {
       const namePrefix = name ? `${name} ` : '';
       atRules.push(`@container ${namePrefix}${conditionParts.join(' and ')}`);
     }
+  }
+
+  // Add supports rules - combine all conditions with "and"
+  if (variant.supportsConditions.length > 0) {
+    const conditionParts = variant.supportsConditions.map((c) => {
+      // Build the condition based on subtype
+      // feature: (display: grid) or (not (display: grid))
+      // selector: selector(:has(*)) or (not selector(:has(*)))
+      if (c.subtype === 'selector') {
+        const selectorCond = `selector(${c.condition})`;
+        return c.negated ? `(not ${selectorCond})` : selectorCond;
+      } else {
+        const featureCond = `(${c.condition})`;
+        return c.negated ? `(not ${featureCond})` : featureCond;
+      }
+    });
+    atRules.push(`@supports ${conditionParts.join(' and ')}`);
   }
 
   // Add starting-style

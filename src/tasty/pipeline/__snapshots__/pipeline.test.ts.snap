@@ -1,0 +1,220 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@supports queries snapshot tests should eliminate impossible @supports combinations 1`] = `
+[
+  {
+    "atRules": [
+      "@supports (not (display: grid))",
+    ],
+    "declarations": "display: inline-block;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (display: grid) and selector(:has(*))",
+    ],
+    "declarations": "display: flex;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (not selector(:has(*))) and (display: grid)",
+    ],
+    "declarations": "display: grid;",
+    "selector": ".component",
+  },
+]
+`;
+
+exports[`@supports queries snapshot tests should render @supports combined with @container 1`] = `
+[
+  {
+    "atRules": [
+      "@container (width <= 400px)",
+      "@supports (display: grid)",
+    ],
+    "declarations": "display: grid;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@container (not (width <= 400px))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (not (display: grid))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".component",
+  },
+]
+`;
+
+exports[`@supports queries snapshot tests should render @supports combined with @media 1`] = `
+[
+  {
+    "atRules": [
+      "@media (width <= 768px)",
+      "@supports (display: grid)",
+    ],
+    "declarations": "display: grid;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@media (not (width <= 768px))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (not (display: grid))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".component",
+  },
+]
+`;
+
+exports[`@supports queries snapshot tests should render @supports combined with AND 1`] = `
+[
+  {
+    "atRules": [
+      "@supports (display: grid) and selector(:has(*))",
+    ],
+    "declarations": "display: grid;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (not (display: grid))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (not selector(:has(*)))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".component",
+  },
+]
+`;
+
+exports[`@supports queries snapshot tests should render @supports combined with OR 1`] = `
+[
+  {
+    "atRules": [
+      "@supports (display: grid)",
+    ],
+    "declarations": "display: flex;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (not (display: grid)) and (display: flex)",
+    ],
+    "declarations": "display: flex;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (not (display: grid)) and (not (display: flex))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".component",
+  },
+]
+`;
+
+exports[`@supports queries snapshot tests should render @supports feature query 1`] = `
+[
+  {
+    "atRules": [
+      "@supports (display: grid)",
+    ],
+    "declarations": "display: grid;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (not (display: grid))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".component",
+  },
+]
+`;
+
+exports[`@supports queries snapshot tests should render @supports selector query 1`] = `
+[
+  {
+    "atRules": [
+      "@supports selector(:has(*))",
+    ],
+    "declarations": "display: flex;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (not selector(:has(*)))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".component",
+  },
+]
+`;
+
+exports[`@supports queries snapshot tests should render @supports with modifiers 1`] = `
+[
+  {
+    "atRules": [
+      "@supports (display: grid)",
+    ],
+    "declarations": "color: blue;",
+    "selector": ".component[data-hovered]",
+  },
+  {
+    "declarations": "color: black;",
+    "selector": ".component:not([data-hovered])",
+  },
+  {
+    "atRules": [
+      "@supports (not (display: grid))",
+    ],
+    "declarations": "color: black;",
+    "selector": ".component",
+  },
+]
+`;
+
+exports[`@supports queries snapshot tests should render multiple @supports with exclusive logic 1`] = `
+[
+  {
+    "atRules": [
+      "@supports (display: grid)",
+    ],
+    "declarations": "display: grid;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (not (display: grid)) and (display: flex)",
+    ],
+    "declarations": "display: flex;",
+    "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (not (display: flex)) and (not (display: grid))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".component",
+  },
+]
+`;
