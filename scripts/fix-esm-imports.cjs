@@ -13,6 +13,11 @@ const ESM_DIR = path.resolve(__dirname, '../dist/es');
 const IMPORT_REGEX = /from\s+['"](\.[^'"]+)['"]/g;
 const EXPORT_REGEX = /export\s+\*\s+from\s+['"](\.[^'"]+)['"]/g;
 const DYNAMIC_IMPORT_REGEX = /import\s*\(\s*['"](\.[^'"]+)['"]\s*\)/g;
+// Side-effect imports: import './foo' or import 'prismjs/components/prism-javascript'
+const SIDE_EFFECT_IMPORT_REGEX = /import\s+['"](\.[^'"]+)['"];/g;
+
+// Package imports that need .js extension (they don't include extensions in their exports)
+const PACKAGES_NEEDING_JS_EXTENSION = ['prismjs/components/'];
 
 function processFile(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');
@@ -42,9 +47,33 @@ function processFile(filePath) {
     return match;
   };
 
+  // Fix package imports that need .js extension
+  const fixPackageImport = (match, importPath) => {
+    // Skip if already has extension
+    if (importPath.endsWith('.js') || importPath.endsWith('.json')) {
+      return match;
+    }
+
+    // Check if this package needs .js extension
+    for (const pkg of PACKAGES_NEEDING_JS_EXTENSION) {
+      if (importPath.startsWith(pkg)) {
+        modified = true;
+        return match.replace(importPath, `${importPath}.js`);
+      }
+    }
+
+    return match;
+  };
+
   content = content.replace(IMPORT_REGEX, fixImport);
   content = content.replace(EXPORT_REGEX, fixImport);
   content = content.replace(DYNAMIC_IMPORT_REGEX, fixImport);
+  content = content.replace(SIDE_EFFECT_IMPORT_REGEX, fixImport);
+
+  // Fix bare package imports (non-relative)
+  // Match: import 'package/path' or from 'package/path'
+  const BARE_IMPORT_REGEX = /(?:from|import)\s+['"]([^./][^'"]+)['"]/g;
+  content = content.replace(BARE_IMPORT_REGEX, fixPackageImport);
 
   if (modified) {
     fs.writeFileSync(filePath, content, 'utf8');
