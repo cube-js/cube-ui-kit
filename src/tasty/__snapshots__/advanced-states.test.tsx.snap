@@ -184,8 +184,7 @@ exports[`Advanced State Mapping - CSS Output edge cases should handle empty defa
 exports[`Advanced State Mapping - CSS Output predefined states (global) should handle multiple global predefined states 1`] = `
 "@media (width >= 1024px) {.t0.t0 {padding: calc(4 * var(--gap));}}
 @media (not (width >= 1024px)) and (768px <= width < 1024px) {.t0.t0 {padding: calc(3 * var(--gap));}}
-@media (not (width >= 1024px)) and (not (768px <= width < 1024px)) and (width < 768px) {.t0.t0 {padding: var(--gap);}}
-@media (not (width < 768px)) and (not (width >= 1024px)) and (not (768px <= width < 1024px)) {.t0.t0 {padding: calc(2 * var(--gap));}}"
+@media (not (width >= 1024px)) and (not (768px <= width < 1024px)) and (width < 768px) {.t0.t0 {padding: var(--gap);}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output predefined states (global) should prioritize local over global predefined states 1`] = `
@@ -201,8 +200,7 @@ exports[`Advanced State Mapping - CSS Output predefined states (global) should r
 exports[`Advanced State Mapping - CSS Output predefined states (local) should handle multiple local predefined states 1`] = `
 "@media (width >= 800px) {.t0.t0 {padding: calc(4 * var(--gap));}}
 @media (not (width >= 800px)) and (400px <= width < 800px) {.t0.t0 {padding: calc(3 * var(--gap));}}
-@media (not (400px <= width < 800px)) and (not (width >= 800px)) and (width < 400px) {.t0.t0 {padding: var(--gap);}}
-@media (not (width < 400px)) and (not (400px <= width < 800px)) and (not (width >= 800px)) {.t0.t0 {padding: calc(2 * var(--gap));}}"
+@media (not (400px <= width < 800px)) and (not (width >= 800px)) and (width < 400px) {.t0.t0 {padding: var(--gap);}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output predefined states (local) should resolve local predefined states to their definitions 1`] = `

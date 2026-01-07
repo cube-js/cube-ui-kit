@@ -303,51 +303,83 @@ function hasTautology(terms: ConditionNode[]): boolean {
 // ============================================================================
 
 /**
+ * Effective bounds computed from conditions (including negated single-bound conditions)
+ */
+interface EffectiveBounds {
+  lowerBound: number | null;
+  lowerInclusive: boolean;
+  upperBound: number | null;
+  upperInclusive: boolean;
+}
+
+/**
+ * Excluded range from a negated range condition
+ */
+interface ExcludedRange {
+  lower: number;
+  lowerInclusive: boolean;
+  upper: number;
+  upperInclusive: boolean;
+}
+
+/**
  * Check for range contradictions in media/container queries
  * e.g., @media(w < 400px) & @media(w > 800px) → FALSE
+ *
+ * Also handles negated conditions:
+ * - Single-bound negations are inverted (not (w < 600px) → w >= 600px)
+ * - Range negations create excluded ranges that are checked against positive bounds
  */
 function hasRangeContradiction(terms: ConditionNode[]): boolean {
-  // Group by dimension
-  const mediaByDim = new Map<string, MediaCondition[]>();
-  const containerByDim = new Map<string, ContainerCondition[]>();
+  // Group by dimension, separating positive and negated conditions
+  const mediaByDim = new Map<
+    string,
+    { positive: MediaCondition[]; negated: MediaCondition[] }
+  >();
+  const containerByDim = new Map<
+    string,
+    { positive: ContainerCondition[]; negated: ContainerCondition[] }
+  >();
 
   for (const term of terms) {
     if (term.kind !== 'state') continue;
 
-    if (
-      term.type === 'media' &&
-      term.subtype === 'dimension' &&
-      !term.negated
-    ) {
+    if (term.type === 'media' && term.subtype === 'dimension') {
       const key = term.dimension || 'width';
       if (!mediaByDim.has(key)) {
-        mediaByDim.set(key, []);
+        mediaByDim.set(key, { positive: [], negated: [] });
       }
-      mediaByDim.get(key)!.push(term);
+      const group = mediaByDim.get(key)!;
+      if (term.negated) {
+        group.negated.push(term);
+      } else {
+        group.positive.push(term);
+      }
     }
 
-    if (
-      term.type === 'container' &&
-      term.subtype === 'dimension' &&
-      !term.negated
-    ) {
+    if (term.type === 'container' && term.subtype === 'dimension') {
       const key = `${term.containerName || '_'}:${term.dimension || 'width'}`;
       if (!containerByDim.has(key)) {
-        containerByDim.set(key, []);
+        containerByDim.set(key, { positive: [], negated: [] });
       }
-      containerByDim.get(key)!.push(term);
+      const group = containerByDim.get(key)!;
+      if (term.negated) {
+        group.negated.push(term);
+      } else {
+        group.positive.push(term);
+      }
     }
   }
 
   // Check each dimension group for impossible ranges
-  for (const conditions of mediaByDim.values()) {
-    if (rangesAreImpossible(conditions)) {
+  for (const group of mediaByDim.values()) {
+    if (rangesAreImpossibleWithNegations(group.positive, group.negated)) {
       return true;
     }
   }
 
-  for (const conditions of containerByDim.values()) {
-    if (rangesAreImpossible(conditions)) {
+  for (const group of containerByDim.values()) {
+    if (rangesAreImpossibleWithNegations(group.positive, group.negated)) {
       return true;
     }
   }
@@ -356,11 +388,101 @@ function hasRangeContradiction(terms: ConditionNode[]): boolean {
 }
 
 /**
- * Check if a set of range conditions are impossible to satisfy together
+ * Check if conditions are impossible, including negated conditions.
+ *
+ * For negated single-bound conditions:
+ *   not (w < 600px) → w >= 600px (inverted to lower bound)
+ *   not (w >= 800px) → w < 800px (inverted to upper bound)
+ *
+ * For negated range conditions:
+ *   not (400px <= w < 800px) → excludes [400, 800)
+ *   If the effective bounds fall entirely within an excluded range, it's impossible.
  */
-function rangesAreImpossible(
-  conditions: (MediaCondition | ContainerCondition)[],
+function rangesAreImpossibleWithNegations(
+  positive: (MediaCondition | ContainerCondition)[],
+  negated: (MediaCondition | ContainerCondition)[],
 ): boolean {
+  // Start with bounds from positive conditions
+  const bounds = computeEffectiveBounds(positive);
+
+  // Apply inverted bounds from single-bound negated conditions
+  // and collect excluded ranges from range negated conditions
+  const excludedRanges: ExcludedRange[] = [];
+
+  for (const cond of negated) {
+    const hasLower = cond.lowerBound?.valueNumeric != null;
+    const hasUpper = cond.upperBound?.valueNumeric != null;
+
+    if (hasLower && hasUpper) {
+      // Range negation: not (lower <= w < upper) excludes [lower, upper)
+      excludedRanges.push({
+        lower: cond.lowerBound!.valueNumeric!,
+        lowerInclusive: cond.lowerBound!.inclusive,
+        upper: cond.upperBound!.valueNumeric!,
+        upperInclusive: cond.upperBound!.inclusive,
+      });
+    } else if (hasUpper) {
+      // not (w < upper) → w >= upper (becomes lower bound)
+      // not (w <= upper) → w > upper (becomes lower bound, exclusive)
+      const value = cond.upperBound!.valueNumeric!;
+      const inclusive = !cond.upperBound!.inclusive; // flip inclusivity
+
+      if (bounds.lowerBound === null || value > bounds.lowerBound) {
+        bounds.lowerBound = value;
+        bounds.lowerInclusive = inclusive;
+      } else if (value === bounds.lowerBound && !inclusive) {
+        bounds.lowerInclusive = false;
+      }
+    } else if (hasLower) {
+      // not (w >= lower) → w < lower (becomes upper bound)
+      // not (w > lower) → w <= lower (becomes upper bound, inclusive)
+      const value = cond.lowerBound!.valueNumeric!;
+      const inclusive = !cond.lowerBound!.inclusive; // flip inclusivity
+
+      if (bounds.upperBound === null || value < bounds.upperBound) {
+        bounds.upperBound = value;
+        bounds.upperInclusive = inclusive;
+      } else if (value === bounds.upperBound && !inclusive) {
+        bounds.upperInclusive = false;
+      }
+    }
+  }
+
+  // Check if effective bounds are impossible on their own
+  if (bounds.lowerBound !== null && bounds.upperBound !== null) {
+    if (bounds.lowerBound > bounds.upperBound) {
+      return true;
+    }
+    if (
+      bounds.lowerBound === bounds.upperBound &&
+      (!bounds.lowerInclusive || !bounds.upperInclusive)
+    ) {
+      return true;
+    }
+  }
+
+  // Check if effective bounds fall entirely within any excluded range
+  if (
+    bounds.lowerBound !== null &&
+    bounds.upperBound !== null &&
+    excludedRanges.length > 0
+  ) {
+    for (const excluded of excludedRanges) {
+      if (boundsWithinExcludedRange(bounds, excluded)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Compute effective bounds from positive (non-negated) conditions
+ */
+function computeEffectiveBounds(
+  conditions: (MediaCondition | ContainerCondition)[],
+): EffectiveBounds {
   let lowerBound: number | null = null;
   let lowerInclusive = false;
   let upperBound: number | null = null;
@@ -392,17 +514,46 @@ function rangesAreImpossible(
     }
   }
 
-  // Check if ranges are impossible
-  if (lowerBound !== null && upperBound !== null) {
-    if (lowerBound > upperBound) {
-      return true;
-    }
-    if (lowerBound === upperBound && (!lowerInclusive || !upperInclusive)) {
-      return true;
-    }
+  return { lowerBound, lowerInclusive, upperBound, upperInclusive };
+}
+
+/**
+ * Check if effective bounds fall entirely within an excluded range.
+ *
+ * For example:
+ *   Effective: [400, 800)
+ *   Excluded:  [400, 800)
+ *   → bounds fall entirely within excluded range → impossible
+ */
+function boundsWithinExcludedRange(
+  bounds: EffectiveBounds,
+  excluded: ExcludedRange,
+): boolean {
+  if (bounds.lowerBound === null || bounds.upperBound === null) {
+    return false;
   }
 
-  return false;
+  // Check if bounds.lower >= excluded.lower
+  let lowerOk = false;
+  if (bounds.lowerBound > excluded.lower) {
+    lowerOk = true;
+  } else if (bounds.lowerBound === excluded.lower) {
+    // If excluded includes lower, and bounds includes or excludes lower, it's within
+    // If excluded excludes lower, bounds must also exclude it to be within
+    lowerOk = excluded.lowerInclusive || !bounds.lowerInclusive;
+  }
+
+  // Check if bounds.upper <= excluded.upper
+  let upperOk = false;
+  if (bounds.upperBound < excluded.upper) {
+    upperOk = true;
+  } else if (bounds.upperBound === excluded.upper) {
+    // If excluded includes upper, and bounds includes or excludes upper, it's within
+    // If excluded excludes upper, bounds must also exclude it to be within
+    upperOk = excluded.upperInclusive || !bounds.upperInclusive;
+  }
+
+  return lowerOk && upperOk;
 }
 
 // ============================================================================
