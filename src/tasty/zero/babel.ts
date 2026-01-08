@@ -20,13 +20,19 @@
 import { declare } from '@babel/helper-plugin-utils';
 import * as t from '@babel/types';
 
+import { replaceAnimationNames } from '../keyframes';
 import { setGlobalPredefinedStates } from '../states';
 import { Styles } from '../styles/types';
 import { mergeStyles } from '../utils/mergeStyles';
 import { CUSTOM_UNITS, getGlobalFuncs, getGlobalParser } from '../utils/styles';
 
 import { CSSWriter } from './css-writer';
-import { extractStylesForSelector, extractStylesWithChunks } from './extractor';
+import {
+  extractKeyframesFromStyles,
+  extractStylesForSelector,
+  extractStylesWithChunks,
+  KeyframesExtractionResult,
+} from './extractor';
 
 import type { NodePath, PluginPass } from '@babel/core';
 import type { KeyframesSteps } from '../injector/types';
@@ -173,13 +179,33 @@ export default declare<TastyZeroBabelOptions>((api, options) => {
 
         if (t.isStringLiteral(firstArg)) {
           // Selector mode: tastyStatic(selector, styles)
-          handleSelectorMode(path, args, cssWriter, state.sourceFile);
+          handleSelectorMode(
+            path,
+            args,
+            cssWriter,
+            state.sourceFile,
+            config.keyframes,
+          );
         } else if (t.isObjectExpression(firstArg)) {
           // Styles mode: tastyStatic(styles)
-          handleStylesMode(path, args, cssWriter, state, globalRegistry);
+          handleStylesMode(
+            path,
+            args,
+            cssWriter,
+            state,
+            globalRegistry,
+            config.keyframes,
+          );
         } else if (t.isIdentifier(firstArg)) {
           // Extension mode: tastyStatic(base, styles)
-          handleExtensionMode(path, args, cssWriter, state, globalRegistry);
+          handleExtensionMode(
+            path,
+            args,
+            cssWriter,
+            state,
+            globalRegistry,
+            config.keyframes,
+          );
         } else {
           throw path.buildCodeFrameError(
             'tastyStatic() first argument must be an object (styles), ' +
@@ -283,6 +309,7 @@ function handleStylesMode(
   cssWriter: CSSWriter,
   state: PluginState,
   globalRegistry: StaticStyleRegistry,
+  globalKeyframes?: Record<string, KeyframesSteps>,
 ): void {
   const stylesArg = args[0];
 
@@ -295,12 +322,27 @@ function handleStylesMode(
   // Evaluate styles object at build time
   const styles = evaluateObjectExpression(stylesArg, path) as Styles;
 
+  // Extract keyframes (deduplicated by content)
+  const { keyframes, nameMap } = extractKeyframesFromStyles(
+    styles,
+    globalKeyframes,
+  );
+
+  // Add keyframes CSS
+  for (const kf of keyframes) {
+    cssWriter.add(kf.css, kf.css, state.sourceFile);
+  }
+
   // Extract styles with chunking
   const chunks = extractStylesWithChunks(styles);
 
-  // Add CSS to writer (with source for devMode)
+  // Add CSS to writer, replacing animation names if needed
   for (const chunk of chunks) {
-    cssWriter.add(chunk.className, chunk.css, state.sourceFile);
+    const css =
+      nameMap.size > 0
+        ? replaceAnimationNamesInCSS(chunk.css, nameMap)
+        : chunk.css;
+    cssWriter.add(chunk.className, css, state.sourceFile);
   }
 
   // Generate className
@@ -324,6 +366,7 @@ function handleExtensionMode(
   cssWriter: CSSWriter,
   state: PluginState,
   globalRegistry: StaticStyleRegistry,
+  globalKeyframes?: Record<string, KeyframesSteps>,
 ): void {
   if (args.length < 2) {
     throw path.buildCodeFrameError(
@@ -365,12 +408,27 @@ function handleExtensionMode(
   // Merge styles using mergeStyles
   const mergedStyles = mergeStyles(baseEntry.styles, overrideStyles);
 
+  // Extract keyframes (deduplicated by content)
+  const { keyframes, nameMap } = extractKeyframesFromStyles(
+    mergedStyles,
+    globalKeyframes,
+  );
+
+  // Add keyframes CSS
+  for (const kf of keyframes) {
+    cssWriter.add(kf.css, kf.css, state.sourceFile);
+  }
+
   // Extract styles with chunking
   const chunks = extractStylesWithChunks(mergedStyles);
 
-  // Add CSS to writer (with source for devMode)
+  // Add CSS to writer, replacing animation names if needed
   for (const chunk of chunks) {
-    cssWriter.add(chunk.className, chunk.css, state.sourceFile);
+    const css =
+      nameMap.size > 0
+        ? replaceAnimationNamesInCSS(chunk.css, nameMap)
+        : chunk.css;
+    cssWriter.add(chunk.className, css, state.sourceFile);
   }
 
   // Generate className
@@ -399,6 +457,7 @@ function handleSelectorMode(
   args: t.CallExpression['arguments'],
   cssWriter: CSSWriter,
   sourceFile?: string,
+  globalKeyframes?: Record<string, KeyframesSteps>,
 ): void {
   if (args.length < 2) {
     throw path.buildCodeFrameError(
@@ -424,11 +483,26 @@ function handleSelectorMode(
   const selector = selectorArg.value;
   const styles = evaluateObjectExpression(stylesArg, path) as Styles;
 
+  // Extract keyframes (deduplicated by content)
+  const { keyframes, nameMap } = extractKeyframesFromStyles(
+    styles,
+    globalKeyframes,
+  );
+
+  // Add keyframes CSS
+  for (const kf of keyframes) {
+    cssWriter.add(kf.css, kf.css, sourceFile);
+  }
+
   // Extract styles for selector
   const result = extractStylesForSelector(selector, styles);
 
-  // Add CSS to writer (use selector as key for deduplication, with source for devMode)
-  cssWriter.add(selector, result.css, sourceFile);
+  // Replace animation names if needed and add CSS
+  const css =
+    nameMap.size > 0
+      ? replaceAnimationNamesInCSS(result.css, nameMap)
+      : result.css;
+  cssWriter.add(selector, css, sourceFile);
 
   // Remove the entire statement
   const parent = path.parentPath;
@@ -626,4 +700,37 @@ function evaluateExpression(node: t.Node, path: NodePath): unknown {
     `Dynamic expressions are not supported in tastyStatic() - got ${node.type}. ` +
       'All values must be static literals.',
   );
+}
+
+/**
+ * Replace animation names in CSS string.
+ * Wraps the keyframes replaceAnimationNames to work on full CSS blocks.
+ */
+function replaceAnimationNamesInCSS(
+  css: string,
+  nameMap: Map<string, string>,
+): string {
+  if (nameMap.size === 0) return css;
+
+  // The CSS contains full rules like ".class { animation: name 1s; }"
+  // We need to replace animation names within declaration blocks
+  return css.replace(
+    /(animation(?:-name)?)\s*:\s*([^;}]+)/gi,
+    (match, prop, value) => {
+      let newValue = value;
+      for (const [original, replacement] of nameMap) {
+        // Word boundary replacement
+        const pattern = new RegExp(`\\b${escapeRegex(original)}\\b`, 'g');
+        newValue = newValue.replace(pattern, replacement);
+      }
+      return `${prop}: ${newValue}`;
+    },
+  );
+}
+
+/**
+ * Escape special regex characters.
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

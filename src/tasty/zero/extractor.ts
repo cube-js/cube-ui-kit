@@ -5,6 +5,14 @@ import {
   generateChunkCacheKey,
   renderStylesForChunk,
 } from '../chunks';
+import { KeyframesSteps } from '../injector/types';
+import {
+  extractAnimationNamesFromStyles,
+  extractLocalKeyframes,
+  filterUsedKeyframes,
+  hasLocalKeyframes,
+  mergeKeyframes,
+} from '../keyframes';
 import { renderStyles, StyleResult } from '../pipeline';
 import { Styles } from '../styles/types';
 
@@ -16,6 +24,18 @@ export interface ExtractedChunk {
 export interface ExtractedSelector {
   selector: string;
   css: string;
+}
+
+export interface ExtractedKeyframes {
+  name: string;
+  css: string;
+}
+
+export interface KeyframesExtractionResult {
+  /** Keyframes to inject (deduplicated by content) */
+  keyframes: ExtractedKeyframes[];
+  /** Map from original animation name to canonical name (for replacement) */
+  nameMap: Map<string, string>;
 }
 
 /**
@@ -173,3 +193,100 @@ function formatRulesDirectly(rules: StyleResult[]): string {
 
 // Note: With hash-based className generation, counter management functions
 // are no longer needed. ClassNames are deterministic based on content.
+
+/**
+ * Generate a deterministic keyframes name from content hash.
+ * This ensures the same keyframes content always produces the same name,
+ * enabling automatic deduplication across elements and files.
+ */
+function generateKeyframesName(steps: KeyframesSteps): string {
+  const content = JSON.stringify(steps);
+  const hash = createHash('md5').update(content).digest('hex').slice(0, 6);
+  return `kf${hash}`; // 'kf' prefix for "keyframes"
+}
+
+/**
+ * Extract keyframes that are used in styles.
+ * Merges local @keyframes with global keyframes, filters to only used ones.
+ * Generates hash-based names from content for automatic deduplication.
+ *
+ * @param styles - The styles object (may contain @keyframes and animation properties)
+ * @param globalKeyframes - Optional global keyframes from config
+ * @returns Keyframes to inject and name mapping for replacement
+ */
+export function extractKeyframesFromStyles(
+  styles: Styles,
+  globalKeyframes?: Record<string, KeyframesSteps> | null,
+): KeyframesExtractionResult {
+  const emptyResult: KeyframesExtractionResult = {
+    keyframes: [],
+    nameMap: new Map(),
+  };
+
+  // Extract animation names from styles
+  const usedNames = extractAnimationNamesFromStyles(styles);
+  if (usedNames.size === 0) return emptyResult;
+
+  // Merge local and global keyframes
+  const local = hasLocalKeyframes(styles)
+    ? extractLocalKeyframes(styles)
+    : null;
+  const allKeyframes = mergeKeyframes(local, globalKeyframes ?? null);
+
+  // Filter to only used keyframes
+  const usedKeyframes = filterUsedKeyframes(allKeyframes, usedNames);
+  if (!usedKeyframes) return emptyResult;
+
+  // Generate hash-based names and collect unique keyframes
+  const seenHashes = new Set<string>();
+  const nameMap = new Map<string, string>();
+  const keyframesToEmit: ExtractedKeyframes[] = [];
+
+  for (const [originalName, steps] of Object.entries(usedKeyframes)) {
+    const hashedName = generateKeyframesName(steps);
+
+    // Always map original name to hashed name (for CSS replacement)
+    nameMap.set(originalName, hashedName);
+
+    // Only emit each unique keyframe once
+    if (!seenHashes.has(hashedName)) {
+      seenHashes.add(hashedName);
+      const css = keyframesToCSS(hashedName, steps);
+      keyframesToEmit.push({ name: hashedName, css });
+    }
+  }
+
+  return { keyframes: keyframesToEmit, nameMap };
+}
+
+/**
+ * Convert keyframes steps to CSS string.
+ */
+function keyframesToCSS(name: string, steps: KeyframesSteps): string {
+  const stepRules: string[] = [];
+
+  for (const [key, value] of Object.entries(steps)) {
+    if (typeof value === 'string') {
+      // Raw CSS string
+      stepRules.push(`${key} { ${value.trim()} }`);
+    } else if (value && typeof value === 'object') {
+      // Style map - convert to CSS declarations
+      const declarations = Object.entries(value)
+        .map(([prop, val]) => {
+          const cssProperty = camelToKebab(prop);
+          return `${cssProperty}: ${val}`;
+        })
+        .join('; ');
+      stepRules.push(`${key} { ${declarations} }`);
+    }
+  }
+
+  return `@keyframes ${name} { ${stepRules.join(' ')} }`;
+}
+
+/**
+ * Convert camelCase to kebab-case.
+ */
+function camelToKebab(str: string): string {
+  return str.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+}
