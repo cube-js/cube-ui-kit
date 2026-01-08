@@ -1,5 +1,6 @@
 import { CSSProperties } from 'react';
 
+import { KeyframesSteps } from '../injector/types';
 import { StyleValue, StyleValueStateMap } from '../utils/styles';
 
 type NamedColor =
@@ -458,6 +459,16 @@ export interface StylesInterface
    * - `inset={true}` // all sides: 0
    */
   inset?: 'top' | 'right' | 'bottom' | 'left' | string | CSSProperties['inset'];
+  /**
+   * Local keyframes definitions for this component.
+   * Keys are animation names, values are keyframes step definitions.
+   * Local keyframes override global keyframes with the same name.
+   *
+   * Examples:
+   * - `'@keyframes': { fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } } }`
+   * - `'@keyframes': { pulse: { '0%, 100%': 'transform: scale(1)', '50%': 'transform: scale(1.05)' } }`
+   */
+  '@keyframes'?: Record<string, KeyframesSteps>;
 }
 
 export type SuffixForSelector =

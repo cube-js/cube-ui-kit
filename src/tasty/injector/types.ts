@@ -95,8 +95,10 @@ export interface RootRegistry {
   metrics?: CacheMetrics;
   /** Counter for generating sequential class names like t0, t1, t2... */
   classCounter: number;
-  /** Keyframes cache by JSON.stringify(steps) -> entry */
+  /** Keyframes cache by content hash -> entry */
   keyframesCache: Map<string, KeyframesCacheEntry>;
+  /** Keyframes name to content hash mapping for collision detection */
+  keyframesNameToContent: Map<string, string>; // providedName -> contentHash
   /** Counter for generating keyframes names like k0, k1, k2... */
   keyframesCounter: number;
   /** Set of injected @property names for tracking */

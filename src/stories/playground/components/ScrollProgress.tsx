@@ -1,15 +1,5 @@
 import { tasty } from '../../../tasty';
-import { keyframes } from '../../../tasty/injector';
 import { Styles } from '../../../tasty/styles/types';
-
-// Create keyframes at module level (shared across all instances)
-keyframes(
-  {
-    from: 'scale: 0 1',
-    to: 'scale: 1 1',
-  },
-  'grow-progress',
-);
 
 const ScrollProgressElement = tasty({
   qa: 'PlaygroundScrollProgress',

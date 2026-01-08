@@ -48,10 +48,18 @@ export interface AtRuleContext {
 }
 
 // Built-in state names that cannot be overridden
-const BUILTIN_STATES = new Set(['@starting']);
+const BUILTIN_STATES = new Set(['@starting', '@keyframes', '@supports']);
 
 // Reserved prefixes that are built-in
-const RESERVED_PREFIXES = ['@media', '@root', '@own', '@(', '@starting'];
+const RESERVED_PREFIXES = [
+  '@media',
+  '@root',
+  '@own',
+  '@(',
+  '@starting',
+  '@keyframes',
+  '@supports',
+];
 
 // Global predefined states storage
 let globalPredefinedStates: Record<string, string> = {};

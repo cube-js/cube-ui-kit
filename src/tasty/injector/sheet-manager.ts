@@ -68,6 +68,7 @@ export class SheetManager {
         metrics,
         classCounter: 0,
         keyframesCache: new Map(),
+        keyframesNameToContent: new Map(),
         keyframesCounter: 0,
         injectedProperties: new Set<string>(),
         globalRules: new Map(),

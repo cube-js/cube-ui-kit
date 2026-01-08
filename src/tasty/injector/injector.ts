@@ -472,6 +472,12 @@ export class StyleInjector {
 
   /**
    * Inject keyframes and return object with toString() and dispose()
+   *
+   * Keyframes are cached by content (steps). If the same content is injected
+   * multiple times with different provided names, the first injected name is reused.
+   *
+   * If the same name is provided with different content (collision), a unique
+   * name is generated to avoid overwriting the existing keyframes.
    */
   keyframes(
     steps: KeyframesSteps,
@@ -490,26 +496,49 @@ export class StyleInjector {
       };
     }
 
-    // Generate cache key from steps and name
-    const cacheKey = providedName
-      ? `${providedName}:${JSON.stringify(steps)}`
-      : JSON.stringify(steps);
+    // Generate content-based cache key (independent of provided name)
+    const contentHash = JSON.stringify(steps);
 
-    // Check if already cached
-    const existing = registry.keyframesCache.get(cacheKey);
+    // Check if this exact content is already cached
+    const existing = registry.keyframesCache.get(contentHash);
     if (existing) {
       existing.refCount++;
       return {
         toString: () => existing.name,
-        dispose: () => this.disposeKeyframes(cacheKey, registry),
+        dispose: () => this.disposeKeyframes(contentHash, registry),
       };
     }
 
-    // Use provided name or generate new one
-    const name = providedName || `k${registry.keyframesCounter++}`;
+    // Determine the actual name to use
+    let actualName: string;
+
+    if (providedName) {
+      // Check if this name is already used with different content
+      const existingContentForName =
+        registry.keyframesNameToContent.get(providedName);
+
+      if (existingContentForName && existingContentForName !== contentHash) {
+        // Name collision: same name, different content
+        // Generate a unique name to avoid overwriting
+        actualName = `${providedName}-k${registry.keyframesCounter++}`;
+      } else {
+        // Name is available or used with same content
+        actualName = providedName;
+        // Track this name -> content mapping
+        registry.keyframesNameToContent.set(providedName, contentHash);
+      }
+    } else {
+      // No name provided, generate one
+      actualName = `k${registry.keyframesCounter++}`;
+    }
 
     // Insert keyframes
-    const info = this.sheetManager.insertKeyframes(registry, steps, name, root);
+    const info = this.sheetManager.insertKeyframes(
+      registry,
+      steps,
+      actualName,
+      root,
+    );
     if (!info) {
       return {
         toString: () => '',
@@ -517,9 +546,9 @@ export class StyleInjector {
       };
     }
 
-    // Cache the result
-    registry.keyframesCache.set(cacheKey, {
-      name,
+    // Cache the result by content hash
+    registry.keyframesCache.set(contentHash, {
+      name: actualName,
       refCount: 1,
       info,
     });
@@ -531,23 +560,32 @@ export class StyleInjector {
     }
 
     return {
-      toString: () => name,
-      dispose: () => this.disposeKeyframes(cacheKey, registry),
+      toString: () => actualName,
+      dispose: () => this.disposeKeyframes(contentHash, registry),
     };
   }
 
   /**
    * Dispose keyframes
    */
-  private disposeKeyframes(cacheKey: string, registry: any): void {
-    const entry = registry.keyframesCache.get(cacheKey);
+  private disposeKeyframes(contentHash: string, registry: any): void {
+    const entry = registry.keyframesCache.get(contentHash);
     if (!entry) return;
 
     entry.refCount--;
     if (entry.refCount <= 0) {
       // Dispose immediately - keyframes are global and safe to clean up right away
       this.sheetManager.deleteKeyframes(registry, entry.info);
-      registry.keyframesCache.delete(cacheKey);
+      registry.keyframesCache.delete(contentHash);
+
+      // Clean up name-to-content mapping if this name was tracked
+      // Find and remove the mapping for this content hash
+      for (const [name, hash] of registry.keyframesNameToContent.entries()) {
+        if (hash === contentHash) {
+          registry.keyframesNameToContent.delete(name);
+          break;
+        }
+      }
 
       // Update metrics
       if (registry.metrics) {

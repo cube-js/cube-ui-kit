@@ -1074,6 +1074,36 @@ const List = tasty({
 
 > **⚠️ Space Requirements:** Combinators (`>`, `+`, `~`) **must have spaces** around them when used with capitalized element names. Use `:has(Body > Row)` ✅, not `:has(Body>Row)` ❌. This is a performance consideration—the parser uses whitespace splitting to identify element names. A console error will warn if spaces are missing.
 
+### Keyframes
+
+Define CSS `@keyframes` animations directly in styles:
+
+```jsx
+const Pulse = tasty({
+  styles: {
+    '@keyframes': {
+      pulse: {
+        '0%, 100%': 'transform: scale(1);',
+        '50%': 'transform: scale(1.05);',
+      },
+    },
+    animation: 'pulse 2s infinite',
+  },
+});
+```
+
+Global keyframes via `configure()`:
+
+```jsx
+configure({
+  keyframes: {
+    fadeIn: { from: 'opacity: 0;', to: 'opacity: 1;' },
+  },
+});
+```
+
+Local `@keyframes` override global ones with the same name. Only animations referenced in styles are injected.
+
 ### Variants & Theming
 
 Create themed component variations:

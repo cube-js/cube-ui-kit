@@ -16,6 +16,7 @@ import { setGlobalPredefinedStates } from './states';
 import { isDevEnv } from './utils/isDevEnv';
 import { CUSTOM_UNITS, getGlobalFuncs, getGlobalParser } from './utils/styles';
 
+import type { KeyframesSteps } from './injector/types';
 import type { StyleDetails, UnitHandler } from './parser/types';
 import type { TastyPlugin } from './plugins/types';
 
@@ -84,6 +85,21 @@ export interface TastyConfig {
    * ```
    */
   plugins?: TastyPlugin[];
+  /**
+   * Global keyframes definitions that can be referenced by animation names in styles.
+   * Keys are animation names, values are keyframes step definitions.
+   * Keyframes are only injected when actually used in styles.
+   * @example
+   * ```ts
+   * configure({
+   *   keyframes: {
+   *     fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
+   *     pulse: { '0%, 100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.05)' } },
+   *   },
+   * });
+   * ```
+   */
+  keyframes?: Record<string, KeyframesSteps>;
 }
 
 // Warnings tracking to avoid duplicates
@@ -110,6 +126,9 @@ let stylesGenerated = false;
 
 // Current configuration (null until first configure() or auto-configured on first use)
 let currentConfig: TastyConfig | null = null;
+
+// Global keyframes storage (null = no keyframes configured, empty object checked via hasGlobalKeyframes)
+let globalKeyframes: Record<string, KeyframesSteps> | null = null;
 
 // Global injector instance key
 const GLOBAL_INJECTOR_KEY = '__TASTY_GLOBAL_INJECTOR__';
@@ -197,6 +216,42 @@ export function hasStylesGenerated(): boolean {
 export function resetStylesGenerated(): void {
   stylesGenerated = false;
   emittedWarnings.clear();
+}
+
+// ============================================================================
+// Global Keyframes Management
+// ============================================================================
+
+/**
+ * Check if any global keyframes are configured.
+ * Fast path: returns false if no keyframes were ever set.
+ */
+export function hasGlobalKeyframes(): boolean {
+  return globalKeyframes !== null && Object.keys(globalKeyframes).length > 0;
+}
+
+/**
+ * Get global keyframes configuration.
+ * Returns null if no keyframes configured (fast path for zero-overhead).
+ */
+export function getGlobalKeyframes(): Record<string, KeyframesSteps> | null {
+  return globalKeyframes;
+}
+
+/**
+ * Set global keyframes (called from configure).
+ * Internal use only.
+ */
+function setGlobalKeyframes(keyframes: Record<string, KeyframesSteps>): void {
+  if (stylesGenerated) {
+    warnOnce(
+      'keyframes-after-styles',
+      `[Tasty] Cannot update keyframes after styles have been generated.\n` +
+        `The new keyframes will be ignored.`,
+    );
+    return;
+  }
+  globalKeyframes = keyframes;
 }
 
 /**
@@ -299,13 +354,19 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     Object.assign(currentFuncs, mergedFuncs);
   }
 
-  // Create config without states, parser options, and plugins (handled separately)
+  // Handle keyframes
+  if (config.keyframes) {
+    setGlobalKeyframes(config.keyframes);
+  }
+
+  // Create config without states, parser options, plugins, and keyframes (handled separately)
   const {
     states: _states,
     parserCacheSize: _parserCacheSize,
     units: _units,
     funcs: _funcs,
     plugins: _plugins,
+    keyframes: _keyframes,
     ...injectorConfig
   } = config;
 
@@ -355,6 +416,7 @@ export function getGlobalInjector(): import('./injector/injector').StyleInjector
 export function resetConfig(): void {
   stylesGenerated = false;
   currentConfig = null;
+  globalKeyframes = null;
   emittedWarnings.clear();
 
   const storage = typeof window !== 'undefined' ? window : (globalThis as any);

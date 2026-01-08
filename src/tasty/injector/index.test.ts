@@ -474,7 +474,7 @@ describe('Global Style Injector API', () => {
       expect(customFade.toString()).toBe('directName');
     });
 
-    it('should cache by name and steps separately', () => {
+    it('should cache by content (steps) for deduplication', () => {
       const fade1 = keyframes(
         { from: 'opacity: 0;', to: 'opacity: 1;' },
         { name: 'fade' },
@@ -486,8 +486,43 @@ describe('Global Style Injector API', () => {
       const fade3 = keyframes({ from: 'opacity: 0;', to: 'opacity: 1;' });
 
       expect(fade1.toString()).toBe('fade');
-      expect(fade2.toString()).toBe('fade'); // Same name + steps = reused
-      expect(fade3.toString()).toMatch(/^k\d+$/); // Different cache key (no name)
+      expect(fade2.toString()).toBe('fade'); // Same content = reused
+      expect(fade3.toString()).toBe('fade'); // Same content = reused (even without name)
+    });
+
+    it('should generate unique name for same name with different content', () => {
+      const fade1 = keyframes(
+        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        { name: 'fade' },
+      );
+      const fade2 = keyframes(
+        { from: 'opacity: 0.5;', to: 'opacity: 1;' }, // Different content
+        { name: 'fade' },
+      );
+
+      expect(fade1.toString()).toBe('fade');
+      expect(fade2.toString()).toMatch(/^fade-k\d+$/); // Collision: unique name generated
+    });
+
+    it('should allow same name after dispose (for dynamic updates)', () => {
+      // Simulate dynamic update: inject A, dispose A, inject B with same name
+      const fadeA = keyframes(
+        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        { name: 'fade' },
+      );
+      expect(fadeA.toString()).toBe('fade');
+
+      // Dispose A
+      fadeA.dispose();
+
+      // Inject B with same name but different content
+      const fadeB = keyframes(
+        { from: 'opacity: 0.5;', to: 'opacity: 1;' },
+        { name: 'fade' },
+      );
+
+      // Should reuse the name 'fade' since A was disposed
+      expect(fadeB.toString()).toBe('fade');
     });
   });
 

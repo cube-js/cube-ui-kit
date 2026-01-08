@@ -116,6 +116,14 @@ export const PLAYGROUND_EXAMPLES: PlaygroundExample[] = [
       overflow: 'auto',
       fill: '#white',
 
+      // Define keyframes for the progress animation
+      '@keyframes': {
+        'grow-progress': {
+          from: 'scale: 0 1',
+          to: 'scale: 1 1',
+        },
+      },
+
       // Progress bar element
       ProgressBar: {
         position: 'sticky',

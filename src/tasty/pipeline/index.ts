@@ -208,6 +208,7 @@ function processStyles(
   const keys = Object.keys(styles);
 
   // Separate selector keys from style keys
+  // Skip @keyframes (processed separately) and other @ prefixed keys (predefined states)
   const selectorKeys = keys.filter((key) => isSelector(key));
   const styleKeys = keys.filter(
     (key) => !isSelector(key) && !key.startsWith('@'),

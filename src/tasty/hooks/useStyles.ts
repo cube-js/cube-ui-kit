@@ -6,7 +6,17 @@ import {
   generateChunkCacheKey,
   renderStylesForChunk,
 } from '../chunks';
-import { allocateClassName, inject } from '../injector';
+import { getGlobalKeyframes, hasGlobalKeyframes } from '../config';
+import { allocateClassName, inject, keyframes } from '../injector';
+import { KeyframesSteps } from '../injector/types';
+import {
+  extractAnimationNamesFromStyles,
+  extractLocalKeyframes,
+  filterUsedKeyframes,
+  hasLocalKeyframes,
+  mergeKeyframes,
+  replaceAnimationNames,
+} from '../keyframes';
 import { RenderResult, renderStyles } from '../pipeline';
 import { Styles } from '../styles/types';
 import { stringifyStyles } from '../utils/styles';
@@ -47,6 +57,36 @@ interface ProcessedChunk {
   cacheKey: string;
   renderResult: RenderResult;
   className: string;
+}
+
+/**
+ * Get keyframes that are actually used in styles.
+ * Returns null if no keyframes are used (fast path for zero overhead).
+ *
+ * Optimization order:
+ * 1. Check if any keyframes are defined (local or global) - if not, return null
+ * 2. Extract animation names from styles - if none, return null
+ * 3. Merge and filter keyframes to only used ones
+ */
+function getUsedKeyframes(
+  styles: Styles,
+): Record<string, KeyframesSteps> | null {
+  // Fast path: no keyframes defined anywhere
+  const hasLocal = hasLocalKeyframes(styles);
+  const hasGlobal = hasGlobalKeyframes();
+  if (!hasLocal && !hasGlobal) return null;
+
+  // Extract animation names from styles (not from rendered CSS - faster)
+  const usedNames = extractAnimationNamesFromStyles(styles);
+  if (usedNames.size === 0) return null;
+
+  // Merge local and global keyframes
+  const local = hasLocal ? extractLocalKeyframes(styles) : null;
+  const global = hasGlobal ? getGlobalKeyframes() : null;
+  const allKeyframes = mergeKeyframes(local, global);
+
+  // Filter to only used keyframes
+  return filterUsedKeyframes(allKeyframes, usedNames);
 }
 
 /**
@@ -173,14 +213,54 @@ export function useStyles({ styles }: UseStylesOptions): UseStylesResult {
 
   // Inject styles in insertion effect (avoids render phase side effects)
   useInsertionEffect(() => {
-    // Cleanup all previous chunk disposals
+    // Cleanup all previous disposals
     disposeRef.current.forEach((dispose) => dispose?.());
     disposeRef.current = [];
 
-    // Inject each chunk and collect dispose functions
+    // Fast path: no chunks to inject
+    if (processedChunks.length === 0) {
+      return;
+    }
+
+    const currentStyles = stylesRef.current.styles;
+
+    // Get keyframes that are actually used (returns null if none - zero overhead)
+    const usedKeyframes = currentStyles
+      ? getUsedKeyframes(currentStyles)
+      : null;
+
+    // Inject keyframes and build name map (only if we have keyframes)
+    let nameMap: Map<string, string> | null = null;
+
+    if (usedKeyframes) {
+      nameMap = new Map();
+      for (const [name, steps] of Object.entries(usedKeyframes)) {
+        const result = keyframes(steps, { name });
+        const injectedName = result.toString();
+        // Only add to map if name differs (optimization for replacement check)
+        if (injectedName !== name) {
+          nameMap.set(name, injectedName);
+        }
+        disposeRef.current.push(result.dispose);
+      }
+      // Clear map if no replacements needed
+      if (nameMap.size === 0) {
+        nameMap = null;
+      }
+    }
+
+    // Inject each chunk
     for (const chunk of processedChunks) {
       if (chunk.renderResult.rules.length > 0) {
-        const { dispose } = inject(chunk.renderResult.rules, {
+        // Replace animation names only if needed
+        const rulesToInject = nameMap
+          ? chunk.renderResult.rules.map((rule) => ({
+              ...rule,
+              declarations: replaceAnimationNames(rule.declarations, nameMap!),
+            }))
+          : chunk.renderResult.rules;
+
+        const { dispose } = inject(rulesToInject, {
           cacheKey: chunk.cacheKey,
         });
         disposeRef.current.push(dispose);

@@ -13,6 +13,8 @@ export {
   hasStylesGenerated,
   resetConfig,
   isTestEnvironment,
+  hasGlobalKeyframes,
+  getGlobalKeyframes,
 } from './config';
 export type { TastyConfig } from './config';
 

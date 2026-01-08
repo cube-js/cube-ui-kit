@@ -29,6 +29,7 @@ import { CSSWriter } from './css-writer';
 import { extractStylesForSelector, extractStylesWithChunks } from './extractor';
 
 import type { NodePath, PluginPass } from '@babel/core';
+import type { KeyframesSteps } from '../injector/types';
 import type { StyleDetails, UnitHandler } from '../parser/types';
 
 /**
@@ -58,6 +59,12 @@ export interface TastyZeroConfig {
    * @example { myFunc: (groups) => groups.map(g => g.output).join(' ') }
    */
   funcs?: Record<string, (groups: StyleDetails[]) => string>;
+  /**
+   * Global keyframes definitions for static extraction.
+   * Keys are animation names, values are keyframes step definitions.
+   * @example { fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } } }
+   */
+  keyframes?: Record<string, KeyframesSteps>;
 }
 
 export interface TastyZeroBabelOptions {
