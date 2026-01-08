@@ -1,3 +1,4 @@
+import { createFocusManager } from '@react-aria/focus';
 import { useDOMRef } from '@react-spectrum/utils';
 import { DOMRef } from '@react-types/shared';
 import { forwardRef, ReactElement, useEffect, useMemo } from 'react';
@@ -221,11 +222,21 @@ const DialogContent = forwardRef(function DialogContent(
           domRef.current &&
           !domRef.current.contains(document.activeElement)
         ) {
-          (
-            domRef.current.querySelector(
-              'input[data-autofocus], [data-qa="ButtonGroup"] button[data-type="primary"]',
-            ) as HTMLButtonElement
-          )?.focus();
+          // Priority 1: autofocus input or primary button
+          const priorityElement = domRef.current.querySelector(
+            'input[data-autofocus], button[type="submit"], button[data-type="primary"]',
+          ) as HTMLElement | null;
+
+          if (priorityElement) {
+            priorityElement.focus();
+          } else {
+            // Fallback: focus first tabbable element, or dialog itself
+            const focusManager = createFocusManager(domRef);
+
+            if (!focusManager.focusFirst({ tabbable: true })) {
+              domRef.current.focus();
+            }
+          }
         }
       });
     }
@@ -290,7 +301,6 @@ const DialogContent = forwardRef(function DialogContent(
       styles={styles}
       as="section"
       {...dialogProps}
-      tabIndex={undefined}
       mods={{ dismissable: isDismissable }}
       style={{ '--dialog-size': `${sizePxMap[size] || sizePxMap.small}px` }}
       data-type={type}
