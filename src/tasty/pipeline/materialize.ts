@@ -338,7 +338,7 @@ function modifierToParsed(state: ModifierCondition): ParsedModifierCondition {
 /**
  * Convert parsed modifier to CSS selector string (for final output)
  */
-function modifierToCSS(mod: ParsedModifierCondition): string {
+export function modifierToCSS(mod: ParsedModifierCondition): string {
   let selector: string;
 
   if (mod.value !== undefined) {
@@ -369,7 +369,7 @@ function pseudoToParsed(state: PseudoCondition): ParsedPseudoCondition {
 /**
  * Convert parsed pseudo to CSS selector string (for final output)
  */
-function pseudoToCSS(pseudo: ParsedPseudoCondition): string {
+export function pseudoToCSS(pseudo: ParsedPseudoCondition): string {
   if (pseudo.negated) {
     // Wrap in :not() if not already
     if (pseudo.pseudo.startsWith(':not(')) {
@@ -555,7 +555,9 @@ function rootToParsed(state: RootCondition): ParsedRootCondition {
 /**
  * Convert parsed root conditions to CSS selector prefix (for final output)
  */
-function rootConditionsToCSS(roots: ParsedRootCondition[]): string | undefined {
+export function rootConditionsToCSS(
+  roots: ParsedRootCondition[],
+): string | undefined {
   if (roots.length === 0) return undefined;
 
   // Combine all root conditions into a single :root prefix
@@ -1477,7 +1479,7 @@ function getConditionKey(node: ConditionNode): string {
 /**
  * Build a complete CSS selector from a single variant
  */
-export function buildCSSSelectorFromVariant(
+function buildCSSSelectorFromVariant(
   className: string,
   variant: SelectorVariant,
   selectorSuffix: string = '',
@@ -1598,7 +1600,7 @@ function getAtRulesKey(variant: SelectorVariant): string {
  * Returns an array of CSSRules because OR conditions may require multiple rules
  * (when different branches have different at-rules)
  */
-export function materializeRule(
+function materializeRule(
   condition: ConditionNode,
   declarations: Record<string, string>,
   selectorSuffix: string,

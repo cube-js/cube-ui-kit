@@ -298,33 +298,12 @@ export function not(node: ConditionNode): ConditionNode {
 // ============================================================================
 
 /**
- * Check if a condition is a state condition
- */
-export function isStateCondition(node: ConditionNode): node is StateCondition {
-  return node.kind === 'state';
-}
-
-/**
  * Check if a condition is a compound condition
  */
 export function isCompoundCondition(
   node: ConditionNode,
 ): node is CompoundCondition {
   return node.kind === 'compound';
-}
-
-/**
- * Check if a condition is TRUE
- */
-export function isTrueCondition(node: ConditionNode): node is TrueCondition {
-  return node.kind === 'true';
-}
-
-/**
- * Check if a condition is FALSE
- */
-export function isFalseCondition(node: ConditionNode): node is FalseCondition {
-  return node.kind === 'false';
 }
 
 // ============================================================================
@@ -742,56 +721,4 @@ export function getConditionUniqueId(node: ConditionNode): string {
     return `${node.operator}(${childIds.join(',')})`;
   }
   return 'UNKNOWN';
-}
-
-/**
- * Check if two conditions are equal based on their unique IDs
- */
-export function conditionsEqual(a: ConditionNode, b: ConditionNode): boolean {
-  return getConditionUniqueId(a) === getConditionUniqueId(b);
-}
-
-/**
- * Get all state conditions from a condition tree (flattened)
- */
-export function getAllStateConditions(node: ConditionNode): StateCondition[] {
-  if (node.kind === 'true' || node.kind === 'false') {
-    return [];
-  }
-  if (node.kind === 'state') {
-    return [node];
-  }
-  if (node.kind === 'compound') {
-    const result: StateCondition[] = [];
-    for (const child of node.children) {
-      result.push(...getAllStateConditions(child));
-    }
-    return result;
-  }
-  return [];
-}
-
-/**
- * Clone a condition node (deep copy)
- */
-export function cloneCondition(node: ConditionNode): ConditionNode {
-  if (node.kind === 'true' || node.kind === 'false') {
-    return { ...node };
-  }
-  if (node.kind === 'state') {
-    if (node.type === 'own') {
-      return {
-        ...node,
-        innerCondition: cloneCondition(node.innerCondition),
-      };
-    }
-    return { ...node };
-  }
-  if (node.kind === 'compound') {
-    return {
-      ...node,
-      children: node.children.map(cloneCondition),
-    };
-  }
-  return node;
 }

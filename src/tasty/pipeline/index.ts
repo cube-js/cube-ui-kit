@@ -40,6 +40,9 @@ import {
   buildAtRulesFromVariant,
   conditionToCSS,
   CSSRule,
+  modifierToCSS,
+  pseudoToCSS,
+  rootConditionsToCSS,
   SelectorVariant,
 } from './materialize';
 import { parseStateKey, ParseStateKeyOptions } from './parseStateKey';
@@ -549,46 +552,6 @@ function mergeByValue(rules: ComputedRule[]): ComputedRule[] {
 }
 
 /**
- * Convert parsed modifier to CSS selector string
- */
-function modifierConditionToCSS(mod: {
-  attribute: string;
-  value?: string;
-  operator?: '=' | '^=' | '$=' | '*=';
-  negated: boolean;
-}): string {
-  let selector: string;
-
-  if (mod.value !== undefined) {
-    const op = mod.operator || '=';
-    selector = `[${mod.attribute}${op}"${mod.value}"]`;
-  } else {
-    selector = `[${mod.attribute}]`;
-  }
-
-  if (mod.negated) {
-    return `:not(${selector})`;
-  }
-  return selector;
-}
-
-/**
- * Convert parsed pseudo to CSS selector string
- */
-function pseudoConditionToCSS(pseudo: {
-  pseudo: string;
-  negated: boolean;
-}): string {
-  if (pseudo.negated) {
-    if (pseudo.pseudo.startsWith(':not(')) {
-      return pseudo.pseudo.slice(5, -1);
-    }
-    return `:not(${pseudo.pseudo})`;
-  }
-  return pseudo.pseudo;
-}
-
-/**
  * Build selector fragment from a variant (without className prefix)
  */
 function buildSelectorFromVariant(
@@ -599,12 +562,12 @@ function buildSelectorFromVariant(
 
   // Add modifier selectors
   for (const mod of variant.modifierConditions) {
-    selector += modifierConditionToCSS(mod);
+    selector += modifierToCSS(mod);
   }
 
   // Add pseudo selectors
   for (const pseudo of variant.pseudoConditions) {
-    selector += pseudoConditionToCSS(pseudo);
+    selector += pseudoToCSS(pseudo);
   }
 
   selector += selectorSuffix;
@@ -612,9 +575,9 @@ function buildSelectorFromVariant(
   // Add own selectors (after sub-element)
   for (const own of variant.ownConditions) {
     if ('attribute' in own) {
-      selector += modifierConditionToCSS(own);
+      selector += modifierToCSS(own);
     } else {
-      selector += pseudoConditionToCSS(own);
+      selector += pseudoToCSS(own);
     }
   }
 
@@ -637,20 +600,6 @@ function materializeComputedRule(rule: ComputedRule): CSSRule[] {
   const declarations = Object.entries(rule.declarations)
     .map(([prop, value]) => `${prop}: ${value};`)
     .join(' ');
-
-  // Helper to get root prefix from rootConditions
-  const getRootPrefix = (variant: SelectorVariant): string | undefined => {
-    if (variant.rootConditions.length === 0) return undefined;
-    let prefix = ':root';
-    for (const root of variant.rootConditions) {
-      if (root.negated) {
-        prefix += `:not(${root.selector})`;
-      } else {
-        prefix += root.selector;
-      }
-    }
-    return prefix;
-  };
 
   // Helper to get root prefix key for grouping
   const getRootPrefixKey = (variant: SelectorVariant): string => {
@@ -677,7 +626,7 @@ function materializeComputedRule(rule: ComputedRule): CSSRule[] {
       byAtRules.set(key, {
         variants: [variant],
         atRules,
-        rootPrefix: getRootPrefix(variant),
+        rootPrefix: rootConditionsToCSS(variant.rootConditions),
       });
     }
   }

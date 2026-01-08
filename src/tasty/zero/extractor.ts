@@ -101,22 +101,33 @@ function formatRulesToCSS(rules: StyleResult[], baseSelector: string): string {
       // Prefix each selector part with the base selector
       const fullSelector = selectorParts
         .map((part) => {
+          // Build selector: [rootPrefix] baseSelector[part]
+          let selector: string;
+
           // If part is empty, just use base selector
-          if (!part) return baseSelector;
-          // If part starts with a pseudo-class or pseudo-element, append to base
-          if (part.startsWith(':') || part.startsWith('[')) {
-            return `${baseSelector}${part}`;
-          }
-          // If part starts with >, +, ~ combinator, append with space
-          if (
+          if (!part) {
+            selector = baseSelector;
+          } else if (part.startsWith(':') || part.startsWith('[')) {
+            // If part starts with a pseudo-class or pseudo-element, append to base
+            selector = `${baseSelector}${part}`;
+          } else if (
             part.startsWith('>') ||
             part.startsWith('+') ||
             part.startsWith('~')
           ) {
-            return `${baseSelector}${part}`;
+            // If part starts with >, +, ~ combinator, append with space
+            selector = `${baseSelector}${part}`;
+          } else {
+            // Otherwise, combine base with part
+            selector = `${baseSelector}${part}`;
           }
-          // Otherwise, combine base with part
-          return `${baseSelector}${part}`;
+
+          // Prepend rootPrefix if present (for @root() states)
+          if (rule.rootPrefix) {
+            selector = `${rule.rootPrefix} ${selector}`;
+          }
+
+          return selector;
         })
         .join(', ');
 
@@ -141,7 +152,12 @@ function formatRulesToCSS(rules: StyleResult[], baseSelector: string): string {
 function formatRulesDirectly(rules: StyleResult[]): string {
   return rules
     .map((rule) => {
-      let css = `${rule.selector} { ${rule.declarations} }`;
+      // Prepend rootPrefix if present (for @root() states)
+      const selector = rule.rootPrefix
+        ? `${rule.rootPrefix} ${rule.selector}`
+        : rule.selector;
+
+      let css = `${selector} { ${rule.declarations} }`;
 
       // Wrap in at-rules (in reverse order for proper nesting)
       if (rule.atRules && rule.atRules.length > 0) {
