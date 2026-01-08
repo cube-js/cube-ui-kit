@@ -116,6 +116,9 @@ export const PLAYGROUND_EXAMPLES: PlaygroundExample[] = [
       overflow: 'auto',
       fill: '#white',
 
+      // Predefined state for @supports(animation-timeline: scroll())
+      '@supports-timeline': '@supports(animation-timeline: scroll())',
+
       // Define keyframes for the progress animation
       '@keyframes': {
         'grow-progress': {
@@ -139,17 +142,16 @@ export const PLAYGROUND_EXAMPLES: PlaygroundExample[] = [
         scale: {
           '': '1 1',
           // When animation-timeline is supported, use scale: 0 1 as starting point
-          '@supports(animation-timeline: scroll())': '0 1',
+          '@supports-timeline': '0 1',
         },
         // Animation properties only when supported
         animation: {
           '': 'none',
-          '@supports(animation-timeline: scroll())':
-            'grow-progress linear both',
+          '@supports-timeline': 'grow-progress linear both',
         },
         animationTimeline: {
           '': 'auto',
-          '@supports(animation-timeline: scroll())': 'scroll(nearest block)',
+          '@supports-timeline': 'scroll(nearest block)',
         },
       },
 
