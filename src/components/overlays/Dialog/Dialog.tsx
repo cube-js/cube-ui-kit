@@ -44,6 +44,7 @@ const DialogElement = tasty({
     flow: 'column',
     fill: '#white',
     pointerEvents: 'auto',
+    outline: 0,
     position: {
       '': 'relative',
       'type=panel': 'absolute',
