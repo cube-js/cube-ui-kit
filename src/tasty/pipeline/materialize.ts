@@ -87,14 +87,51 @@ export interface ParsedSupportsCondition {
 }
 
 /**
+ * Parsed modifier condition for structured analysis
+ */
+export interface ParsedModifierCondition {
+  /** Attribute name (e.g., 'data-hovered', 'data-size') */
+  attribute: string;
+  /** Value if present (e.g., 'large', 'danger') */
+  value?: string;
+  /** Operator for value matching (default '=') */
+  operator?: '=' | '^=' | '$=' | '*=';
+  /** Whether this is negated (:not(...)) */
+  negated: boolean;
+}
+
+/**
+ * Parsed pseudo-class condition for structured analysis
+ */
+export interface ParsedPseudoCondition {
+  /** The pseudo-class (e.g., ':hover', ':focus-visible', ':has(> Icon)') */
+  pseudo: string;
+  /** Whether this is negated (:not(...)) */
+  negated: boolean;
+}
+
+/**
+ * Parsed root condition for structured analysis
+ */
+export interface ParsedRootCondition {
+  /** The selector part (e.g., '[data-theme="dark"]') */
+  selector: string;
+  /** Whether this is negated (:root:not(...)) */
+  negated: boolean;
+}
+
+/**
  * A single selector variant (one term in a DNF expression)
  */
 export interface SelectorVariant {
-  /** Attribute/pseudo selectors to add to element selector (e.g., '[data-hovered]', ':not([data-disabled])') */
-  modifierSelectors: string[];
+  /** Structured modifier conditions */
+  modifierConditions: ParsedModifierCondition[];
 
-  /** Selector suffixes for @own states (applied to sub-element) */
-  ownSelectors: string[];
+  /** Structured pseudo conditions */
+  pseudoConditions: ParsedPseudoCondition[];
+
+  /** Structured own conditions (for sub-element states) */
+  ownConditions: (ParsedModifierCondition | ParsedPseudoCondition)[];
 
   /** Parsed media conditions for structured combination */
   mediaConditions: ParsedMediaCondition[];
@@ -105,8 +142,8 @@ export interface SelectorVariant {
   /** Parsed supports conditions for @supports at-rules */
   supportsConditions: ParsedSupportsCondition[];
 
-  /** Root state prefix (e.g., ':root[data-theme="dark"]') */
-  rootPrefix?: string;
+  /** Structured root conditions */
+  rootConditions: ParsedRootCondition[];
 
   /** Whether to wrap in @starting-style */
   startingStyle: boolean;
@@ -180,11 +217,13 @@ export function clearConditionCache(): void {
  */
 function emptyVariant(): SelectorVariant {
   return {
-    modifierSelectors: [],
-    ownSelectors: [],
+    modifierConditions: [],
+    pseudoConditions: [],
+    ownConditions: [],
     mediaConditions: [],
     containerConditions: [],
     supportsConditions: [],
+    rootConditions: [],
     startingStyle: false,
   };
 }
@@ -248,11 +287,11 @@ function stateToCSS(state: StateCondition): CSSComponents {
 
       switch (state.type) {
         case 'modifier':
-          variant.modifierSelectors.push(modifierToCSS(state));
+          variant.modifierConditions.push(modifierToParsed(state));
           break;
 
         case 'pseudo':
-          variant.modifierSelectors.push(pseudoToCSS(state));
+          variant.pseudoConditions.push(pseudoToParsed(state));
           break;
 
         case 'container':
@@ -264,11 +303,11 @@ function stateToCSS(state: StateCondition): CSSComponents {
           break;
 
         case 'root':
-          variant.rootPrefix = rootToCSS(state);
+          variant.rootConditions.push(rootToParsed(state));
           break;
 
         case 'own':
-          variant.ownSelectors.push(...ownToCSS(state));
+          variant.ownConditions.push(...ownToParsed(state));
           break;
 
         case 'starting':
@@ -285,39 +324,61 @@ function stateToCSS(state: StateCondition): CSSComponents {
 }
 
 /**
- * Convert modifier condition to CSS selector
+ * Convert modifier condition to parsed structure
  */
-function modifierToCSS(state: ModifierCondition): string {
+function modifierToParsed(state: ModifierCondition): ParsedModifierCondition {
+  return {
+    attribute: state.attribute,
+    value: state.value,
+    operator: state.operator,
+    negated: state.negated ?? false,
+  };
+}
+
+/**
+ * Convert parsed modifier to CSS selector string (for final output)
+ */
+function modifierToCSS(mod: ParsedModifierCondition): string {
   let selector: string;
 
-  if (state.value !== undefined) {
+  if (mod.value !== undefined) {
     // Value attribute: [data-attr="value"]
-    const op = state.operator || '=';
-    selector = `[${state.attribute}${op}"${state.value}"]`;
+    const op = mod.operator || '=';
+    selector = `[${mod.attribute}${op}"${mod.value}"]`;
   } else {
     // Boolean attribute: [data-attr]
-    selector = `[${state.attribute}]`;
+    selector = `[${mod.attribute}]`;
   }
 
-  if (state.negated) {
+  if (mod.negated) {
     return `:not(${selector})`;
   }
   return selector;
 }
 
 /**
- * Convert pseudo condition to CSS selector
+ * Convert pseudo condition to parsed structure
  */
-function pseudoToCSS(state: PseudoCondition): string {
-  if (state.negated) {
+function pseudoToParsed(state: PseudoCondition): ParsedPseudoCondition {
+  return {
+    pseudo: state.pseudo,
+    negated: state.negated ?? false,
+  };
+}
+
+/**
+ * Convert parsed pseudo to CSS selector string (for final output)
+ */
+function pseudoToCSS(pseudo: ParsedPseudoCondition): string {
+  if (pseudo.negated) {
     // Wrap in :not() if not already
-    if (state.pseudo.startsWith(':not(')) {
+    if (pseudo.pseudo.startsWith(':not(')) {
       // Double negation - remove :not()
-      return state.pseudo.slice(5, -1);
+      return pseudo.pseudo.slice(5, -1);
     }
-    return `:not(${state.pseudo})`;
+    return `:not(${pseudo.pseudo})`;
   }
-  return state.pseudo;
+  return pseudo.pseudo;
 }
 
 /**
@@ -482,56 +543,243 @@ function supportsToParsed(state: SupportsCondition): ParsedSupportsCondition {
 }
 
 /**
- * Convert root condition to CSS selector prefix
+ * Convert root condition to parsed structure
  */
-function rootToCSS(state: RootCondition): string {
-  if (state.negated) {
-    return `:root:not(${state.selector})`;
-  }
-  return `:root${state.selector}`;
+function rootToParsed(state: RootCondition): ParsedRootCondition {
+  return {
+    selector: state.selector,
+    negated: state.negated ?? false,
+  };
 }
 
 /**
- * Convert own condition to CSS selectors for sub-element
+ * Convert parsed root conditions to CSS selector prefix (for final output)
  */
-function ownToCSS(state: OwnCondition): string[] {
+function rootConditionsToCSS(roots: ParsedRootCondition[]): string | undefined {
+  if (roots.length === 0) return undefined;
+
+  // Combine all root conditions into a single :root prefix
+  // e.g., :root[data-theme="dark"]:not([data-mode="light"])
+  let prefix = ':root';
+  for (const root of roots) {
+    if (root.negated) {
+      prefix += `:not(${root.selector})`;
+    } else {
+      prefix += root.selector;
+    }
+  }
+  return prefix;
+}
+
+/**
+ * Convert own condition to parsed structures for sub-element
+ */
+function ownToParsed(
+  state: OwnCondition,
+): (ParsedModifierCondition | ParsedPseudoCondition)[] {
   const innerCSS = conditionToCSS(state.innerCondition);
 
   if (innerCSS.isImpossible || innerCSS.variants.length === 0) {
     return [];
   }
 
-  // Collect all modifier selectors from all variants
-  // (For @own, we typically expect simple conditions, so usually just one variant)
-  const allSelectors: string[] = [];
+  // Collect all modifier/pseudo conditions from all variants
+  const allConditions: (ParsedModifierCondition | ParsedPseudoCondition)[] = [];
   for (const variant of innerCSS.variants) {
-    allSelectors.push(...variant.modifierSelectors);
+    for (const mod of variant.modifierConditions) {
+      // Apply outer negation
+      allConditions.push({
+        ...mod,
+        negated: state.negated ? !mod.negated : mod.negated,
+      });
+    }
+    for (const pseudo of variant.pseudoConditions) {
+      // Apply outer negation
+      allConditions.push({
+        ...pseudo,
+        negated: state.negated ? !pseudo.negated : pseudo.negated,
+      });
+    }
   }
 
-  if (state.negated) {
-    // Negate all selectors
-    return allSelectors.map((s) => {
-      if (s.startsWith(':not(')) {
-        // Double negation - remove :not()
-        return s.slice(5, -1);
-      }
-      return `:not(${s})`;
-    });
-  }
-
-  return allSelectors;
+  return allConditions;
 }
 
 /**
- * Deduplicate an array while preserving order
+ * Get unique key for a modifier condition
  */
-function dedupeArray(arr: string[]): string[] {
-  return [...new Set(arr)];
+function getModifierKey(mod: ParsedModifierCondition): string {
+  const base = mod.value
+    ? `${mod.attribute}${mod.operator || '='}${mod.value}`
+    : mod.attribute;
+  return mod.negated ? `!${base}` : base;
+}
+
+/**
+ * Get unique key for a pseudo condition
+ */
+function getPseudoKey(pseudo: ParsedPseudoCondition): string {
+  return pseudo.negated ? `!${pseudo.pseudo}` : pseudo.pseudo;
+}
+
+/**
+ * Get unique key for a root condition
+ */
+function getRootKey(root: ParsedRootCondition): string {
+  return root.negated ? `!${root.selector}` : root.selector;
+}
+
+/**
+ * Deduplicate modifier conditions
+ */
+function dedupeModifierConditions(
+  conditions: ParsedModifierCondition[],
+): ParsedModifierCondition[] {
+  const seen = new Set<string>();
+  const result: ParsedModifierCondition[] = [];
+  for (const c of conditions) {
+    const key = getModifierKey(c);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(c);
+    }
+  }
+  return result;
+}
+
+/**
+ * Deduplicate pseudo conditions
+ */
+function dedupePseudoConditions(
+  conditions: ParsedPseudoCondition[],
+): ParsedPseudoCondition[] {
+  const seen = new Set<string>();
+  const result: ParsedPseudoCondition[] = [];
+  for (const c of conditions) {
+    const key = getPseudoKey(c);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(c);
+    }
+  }
+  return result;
+}
+
+/**
+ * Deduplicate root conditions
+ */
+function dedupeRootConditions(
+  conditions: ParsedRootCondition[],
+): ParsedRootCondition[] {
+  const seen = new Set<string>();
+  const result: ParsedRootCondition[] = [];
+  for (const c of conditions) {
+    const key = getRootKey(c);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(c);
+    }
+  }
+  return result;
+}
+
+/**
+ * Deduplicate own conditions (modifiers or pseudos)
+ */
+function dedupeOwnConditions(
+  conditions: (ParsedModifierCondition | ParsedPseudoCondition)[],
+): (ParsedModifierCondition | ParsedPseudoCondition)[] {
+  const seen = new Set<string>();
+  const result: (ParsedModifierCondition | ParsedPseudoCondition)[] = [];
+  for (const c of conditions) {
+    const key =
+      'attribute' in c
+        ? `mod:${getModifierKey(c)}`
+        : `pseudo:${getPseudoKey(c)}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(c);
+    }
+  }
+  return result;
+}
+
+/**
+ * Check for modifier contradiction: same attribute with opposite negation
+ */
+function hasModifierContradiction(
+  conditions: ParsedModifierCondition[],
+): boolean {
+  const byKey = new Map<string, boolean>(); // base key -> isPositive
+
+  for (const mod of conditions) {
+    const baseKey = mod.value
+      ? `${mod.attribute}${mod.operator || '='}${mod.value}`
+      : mod.attribute;
+    const existing = byKey.get(baseKey);
+    if (existing !== undefined && existing !== !mod.negated) {
+      return true; // Same attribute with opposite negation
+    }
+    byKey.set(baseKey, !mod.negated);
+  }
+  return false;
+}
+
+/**
+ * Check for pseudo contradiction: same pseudo with opposite negation
+ */
+function hasPseudoContradiction(conditions: ParsedPseudoCondition[]): boolean {
+  const byKey = new Map<string, boolean>(); // pseudo -> isPositive
+
+  for (const pseudo of conditions) {
+    const existing = byKey.get(pseudo.pseudo);
+    if (existing !== undefined && existing !== !pseudo.negated) {
+      return true; // Same pseudo with opposite negation
+    }
+    byKey.set(pseudo.pseudo, !pseudo.negated);
+  }
+  return false;
+}
+
+/**
+ * Check for root condition contradiction: same selector with opposite negation
+ */
+function hasRootContradiction(conditions: ParsedRootCondition[]): boolean {
+  const byKey = new Map<string, boolean>(); // selector -> isPositive
+
+  for (const root of conditions) {
+    const existing = byKey.get(root.selector);
+    if (existing !== undefined && existing !== !root.negated) {
+      return true; // Same selector with opposite negation
+    }
+    byKey.set(root.selector, !root.negated);
+  }
+  return false;
+}
+
+/**
+ * Check for own condition contradiction
+ */
+function hasOwnConditionContradiction(
+  conditions: (ParsedModifierCondition | ParsedPseudoCondition)[],
+): boolean {
+  const modifiers: ParsedModifierCondition[] = [];
+  const pseudos: ParsedPseudoCondition[] = [];
+
+  for (const c of conditions) {
+    if ('attribute' in c) {
+      modifiers.push(c);
+    } else {
+      pseudos.push(c);
+    }
+  }
+
+  return hasModifierContradiction(modifiers) || hasPseudoContradiction(pseudos);
 }
 
 /**
  * Merge two selector variants (AND operation)
- * Deduplicates selectors to avoid `.foo:not([x]):not([x])` repetition
+ * Deduplicates conditions and checks for contradictions
  */
 function mergeVariants(
   a: SelectorVariant,
@@ -546,18 +794,39 @@ function mergeVariants(
     return null; // Impossible variant
   }
 
-  // Combine root prefixes and check for contradictions
-  const combinedRoot = combineRootPrefixes(a.rootPrefix, b.rootPrefix);
-  if (combinedRoot && hasRootPrefixContradiction(combinedRoot)) {
+  // Merge root conditions and check for contradictions
+  const mergedRoots = dedupeRootConditions([
+    ...a.rootConditions,
+    ...b.rootConditions,
+  ]);
+  if (hasRootContradiction(mergedRoots)) {
     return null; // Impossible variant
   }
 
-  // Merge modifier selectors and check for contradictions
-  const mergedModifiers = dedupeArray([
-    ...a.modifierSelectors,
-    ...b.modifierSelectors,
+  // Merge modifier conditions and check for contradictions
+  const mergedModifiers = dedupeModifierConditions([
+    ...a.modifierConditions,
+    ...b.modifierConditions,
   ]);
   if (hasModifierContradiction(mergedModifiers)) {
+    return null; // Impossible variant
+  }
+
+  // Merge pseudo conditions and check for contradictions
+  const mergedPseudos = dedupePseudoConditions([
+    ...a.pseudoConditions,
+    ...b.pseudoConditions,
+  ]);
+  if (hasPseudoContradiction(mergedPseudos)) {
+    return null; // Impossible variant
+  }
+
+  // Merge own conditions and check for contradictions
+  const mergedOwn = dedupeOwnConditions([
+    ...a.ownConditions,
+    ...b.ownConditions,
+  ]);
+  if (hasOwnConditionContradiction(mergedOwn)) {
     return null; // Impossible variant
   }
 
@@ -580,12 +849,13 @@ function mergeVariants(
   }
 
   return {
-    modifierSelectors: mergedModifiers,
-    ownSelectors: dedupeArray([...a.ownSelectors, ...b.ownSelectors]),
+    modifierConditions: mergedModifiers,
+    pseudoConditions: mergedPseudos,
+    ownConditions: mergedOwn,
     mediaConditions: mergedMedia,
     containerConditions: mergedContainers,
     supportsConditions: mergedSupports,
-    rootPrefix: combinedRoot,
+    rootConditions: mergedRoots,
     startingStyle: a.startingStyle || b.startingStyle,
   };
 }
@@ -750,203 +1020,6 @@ function hasMediaContradiction(conditions: ParsedMediaCondition[]): boolean {
 }
 
 /**
- * Check if a root prefix contains contradictions
- * e.g., ":root:not([data-x="y"])[data-x="y"]" is a contradiction
- */
-function hasRootPrefixContradiction(rootPrefix: string): boolean {
-  return hasSelectorStringContradiction(rootPrefix);
-}
-
-/**
- * Check if modifier selectors contain contradictions
- * e.g., "[data-selected]" and ":not([data-selected])" together
- */
-function hasModifierContradiction(modifiers: string[]): boolean {
-  const combined = modifiers.join('');
-  return hasSelectorStringContradiction(combined);
-}
-
-/**
- * Check if a selector string contains contradictions
- * e.g., "[data-x]:not([data-x])" or "[data-x="y"]:not([data-x="y"])"
- */
-/**
- * Check if a selector string contains contradictions.
- *
- * A contradiction occurs when both `X` and `:not(X)` appear in the same selector.
- * Examples:
- *   - `[data-x]:not([data-x])` → contradiction
- *   - `:has(> Icon):not(:has(> Icon))` → contradiction
- *   - `.foo:not(.foo)` → contradiction
- *   - `:hover:not(:hover)` → contradiction
- *
- * This is a generic check that works for any selector type.
- */
-function hasSelectorStringContradiction(selector: string): boolean {
-  const positiveSelectors: string[] = [];
-  const negatedSelectors: string[] = [];
-
-  // Extract all :not(...) contents
-  // We need to handle nested parentheses, e.g., :not(:has(> Icon))
-  const notMatches = extractNotContents(selector);
-  for (const content of notMatches) {
-    negatedSelectors.push(normalizeSelector(content));
-  }
-
-  // Remove :not(...) from selector to get positive parts
-  const selectorWithoutNot = removeNotSelectors(selector);
-
-  // Extract positive selector parts (attributes, pseudos, classes)
-  const positiveParts = extractSelectorParts(selectorWithoutNot);
-  for (const part of positiveParts) {
-    positiveSelectors.push(normalizeSelector(part));
-  }
-
-  // Check for contradictions: X and :not(X)
-  for (const neg of negatedSelectors) {
-    if (positiveSelectors.includes(neg)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
- * Extract contents of all :not(...) selectors, handling nested parentheses
- */
-function extractNotContents(selector: string): string[] {
-  const results: string[] = [];
-  let i = 0;
-
-  while (i < selector.length) {
-    const notIndex = selector.indexOf(':not(', i);
-    if (notIndex === -1) break;
-
-    // Find matching closing paren
-    let depth = 1;
-    let j = notIndex + 5; // Start after ':not('
-    while (j < selector.length && depth > 0) {
-      if (selector[j] === '(') depth++;
-      else if (selector[j] === ')') depth--;
-      j++;
-    }
-
-    if (depth === 0) {
-      // Extract content between :not( and )
-      const content = selector.slice(notIndex + 5, j - 1);
-      results.push(content);
-    }
-
-    i = j;
-  }
-
-  return results;
-}
-
-/**
- * Remove all :not(...) from a selector
- */
-function removeNotSelectors(selector: string): string {
-  let result = '';
-  let i = 0;
-
-  while (i < selector.length) {
-    const notIndex = selector.indexOf(':not(', i);
-    if (notIndex === -1) {
-      result += selector.slice(i);
-      break;
-    }
-
-    result += selector.slice(i, notIndex);
-
-    // Find matching closing paren
-    let depth = 1;
-    let j = notIndex + 5;
-    while (j < selector.length && depth > 0) {
-      if (selector[j] === '(') depth++;
-      else if (selector[j] === ')') depth--;
-      j++;
-    }
-
-    i = j;
-  }
-
-  return result;
-}
-
-/**
- * Extract individual selector parts from a combined selector
- * Returns parts like `[data-x]`, `:hover`, `.class`, `:has(> Icon)`
- */
-function extractSelectorParts(selector: string): string[] {
-  const parts: string[] = [];
-  let i = 0;
-
-  while (i < selector.length) {
-    // Skip whitespace
-    while (i < selector.length && /\s/.test(selector[i])) i++;
-    if (i >= selector.length) break;
-
-    const char = selector[i];
-
-    if (char === '[') {
-      // Attribute selector: [...]
-      const end = selector.indexOf(']', i);
-      if (end !== -1) {
-        parts.push(selector.slice(i, end + 1));
-        i = end + 1;
-      } else {
-        i++;
-      }
-    } else if (char === ':') {
-      // Pseudo-class/element - may have parentheses
-      let j = i + 1;
-      // Skip the pseudo name
-      while (j < selector.length && /[a-zA-Z0-9-]/.test(selector[j])) j++;
-
-      // Check for parentheses
-      if (j < selector.length && selector[j] === '(') {
-        // Find matching closing paren
-        let depth = 1;
-        j++;
-        while (j < selector.length && depth > 0) {
-          if (selector[j] === '(') depth++;
-          else if (selector[j] === ')') depth--;
-          j++;
-        }
-      }
-
-      parts.push(selector.slice(i, j));
-      i = j;
-    } else if (char === '.') {
-      // Class selector
-      let j = i + 1;
-      while (j < selector.length && /[a-zA-Z0-9_-]/.test(selector[j])) j++;
-      parts.push(selector.slice(i, j));
-      i = j;
-    } else if (char === '#') {
-      // ID selector
-      let j = i + 1;
-      while (j < selector.length && /[a-zA-Z0-9_-]/.test(selector[j])) j++;
-      parts.push(selector.slice(i, j));
-      i = j;
-    } else {
-      i++;
-    }
-  }
-
-  return parts;
-}
-
-/**
- * Normalize a selector for comparison (lowercase, trim whitespace)
- */
-function normalizeSelector(selector: string): string {
-  return selector.trim().toLowerCase();
-}
-
-/**
  * Check if container conditions contain contradictions in style queries
  * e.g., style(--variant: danger) and style(--variant: success) together
  * Same property with different values = always false
@@ -1024,22 +1097,19 @@ function hasContainerStyleContradiction(
 }
 
 /**
- * Combine two root prefixes
- */
-function combineRootPrefixes(
-  a: string | undefined,
-  b: string | undefined,
-): string | undefined {
-  if (!a) return b;
-  if (!b) return a;
-  // Combine: :root[x] + :root[y] → :root[x][y]
-  return `${a}${b.replace(':root', '')}`;
-}
-
-/**
  * Get a unique key for a variant (for deduplication)
  */
 function getVariantKey(v: SelectorVariant): string {
+  const modifierKey = v.modifierConditions.map(getModifierKey).sort().join('|');
+  const pseudoKey = v.pseudoConditions.map(getPseudoKey).sort().join('|');
+  const ownKey = v.ownConditions
+    .map((c) =>
+      'attribute' in c
+        ? `mod:${getModifierKey(c)}`
+        : `pseudo:${getPseudoKey(c)}`,
+    )
+    .sort()
+    .join('|');
   const containerKey = v.containerConditions
     .map((c) => `${c.name ?? ''}:${c.negated ? '!' : ''}${c.condition}`)
     .sort()
@@ -1052,13 +1122,15 @@ function getVariantKey(v: SelectorVariant): string {
     .map((c) => `${c.subtype}:${c.negated ? '!' : ''}${c.condition}`)
     .sort()
     .join('|');
+  const rootKey = v.rootConditions.map(getRootKey).sort().join('|');
   return [
-    v.modifierSelectors.slice().sort().join('|'),
-    v.ownSelectors.slice().sort().join('|'),
+    modifierKey,
+    pseudoKey,
+    ownKey,
     mediaKey,
     containerKey,
     supportsKey,
-    v.rootPrefix || '',
+    rootKey,
     v.startingStyle ? '1' : '0',
   ].join('###');
 }
@@ -1075,9 +1147,12 @@ function getVariantKey(v: SelectorVariant): string {
  *   A is a superset of B, so A is redundant when B exists.
  */
 function isVariantSuperset(a: SelectorVariant, b: SelectorVariant): boolean {
-  // Must have same context (root prefix, at-rules, etc.)
-  if (a.rootPrefix !== b.rootPrefix) return false;
+  // Must have same context
   if (a.startingStyle !== b.startingStyle) return false;
+
+  // Check if a.rootConditions is superset of b.rootConditions
+  if (!isRootConditionsSuperset(a.rootConditions, b.rootConditions))
+    return false;
 
   // Check if a.mediaConditions is superset of b.mediaConditions
   if (!isMediaConditionsSuperset(a.mediaConditions, b.mediaConditions))
@@ -1093,11 +1168,16 @@ function isVariantSuperset(a: SelectorVariant, b: SelectorVariant): boolean {
   if (!isSupportsConditionsSuperset(a.supportsConditions, b.supportsConditions))
     return false;
 
-  // Check if a.modifierSelectors is superset of b.modifierSelectors
-  if (!isArraySuperset(a.modifierSelectors, b.modifierSelectors)) return false;
+  // Check if a.modifierConditions is superset of b.modifierConditions
+  if (!isModifierConditionsSuperset(a.modifierConditions, b.modifierConditions))
+    return false;
 
-  // Check if a.ownSelectors is superset of b.ownSelectors
-  if (!isArraySuperset(a.ownSelectors, b.ownSelectors)) return false;
+  // Check if a.pseudoConditions is superset of b.pseudoConditions
+  if (!isPseudoConditionsSuperset(a.pseudoConditions, b.pseudoConditions))
+    return false;
+
+  // Check if a.ownConditions is superset of b.ownConditions
+  if (!isOwnConditionsSuperset(a.ownConditions, b.ownConditions)) return false;
 
   // A is a superset if it has all of B's items (possibly more)
   // and at least one category has strictly more items
@@ -1105,14 +1185,18 @@ function isVariantSuperset(a: SelectorVariant, b: SelectorVariant): boolean {
     a.mediaConditions.length +
     a.containerConditions.length +
     a.supportsConditions.length +
-    a.modifierSelectors.length +
-    a.ownSelectors.length;
+    a.modifierConditions.length +
+    a.pseudoConditions.length +
+    a.rootConditions.length +
+    a.ownConditions.length;
   const bTotal =
     b.mediaConditions.length +
     b.containerConditions.length +
     b.supportsConditions.length +
-    b.modifierSelectors.length +
-    b.ownSelectors.length;
+    b.modifierConditions.length +
+    b.pseudoConditions.length +
+    b.rootConditions.length +
+    b.ownConditions.length;
 
   return aTotal > bTotal;
 }
@@ -1169,12 +1253,67 @@ function isSupportsConditionsSuperset(
 }
 
 /**
- * Check if array A contains all elements of array B (superset)
+ * Check if modifier conditions A is a superset of B
  */
-function isArraySuperset(a: string[], b: string[]): boolean {
-  const setA = new Set(a);
-  for (const item of b) {
-    if (!setA.has(item)) return false;
+function isModifierConditionsSuperset(
+  a: ParsedModifierCondition[],
+  b: ParsedModifierCondition[],
+): boolean {
+  const aKeys = new Set(a.map(getModifierKey));
+  for (const c of b) {
+    if (!aKeys.has(getModifierKey(c))) return false;
+  }
+  return true;
+}
+
+/**
+ * Check if pseudo conditions A is a superset of B
+ */
+function isPseudoConditionsSuperset(
+  a: ParsedPseudoCondition[],
+  b: ParsedPseudoCondition[],
+): boolean {
+  const aKeys = new Set(a.map(getPseudoKey));
+  for (const c of b) {
+    if (!aKeys.has(getPseudoKey(c))) return false;
+  }
+  return true;
+}
+
+/**
+ * Check if root conditions A is a superset of B
+ */
+function isRootConditionsSuperset(
+  a: ParsedRootCondition[],
+  b: ParsedRootCondition[],
+): boolean {
+  const aKeys = new Set(a.map(getRootKey));
+  for (const c of b) {
+    if (!aKeys.has(getRootKey(c))) return false;
+  }
+  return true;
+}
+
+/**
+ * Check if own conditions A is a superset of B
+ */
+function isOwnConditionsSuperset(
+  a: (ParsedModifierCondition | ParsedPseudoCondition)[],
+  b: (ParsedModifierCondition | ParsedPseudoCondition)[],
+): boolean {
+  const aKeys = new Set(
+    a.map((c) =>
+      'attribute' in c
+        ? `mod:${getModifierKey(c)}`
+        : `pseudo:${getPseudoKey(c)}`,
+    ),
+  );
+  for (const c of b) {
+    const key =
+      'attribute' in c
+        ? `mod:${getModifierKey(c)}`
+        : `pseudo:${getPseudoKey(c)}`;
+    if (!aKeys.has(key)) return false;
   }
   return true;
 }
@@ -1200,20 +1339,24 @@ function dedupeVariants(variants: SelectorVariant[]): SelectorVariant[] {
   }
 
   // Second pass: remove supersets (more restrictive variants)
-  // Sort by total selector count (fewer selectors = less restrictive = keep)
+  // Sort by total condition count (fewer conditions = less restrictive = keep)
   result.sort((a, b) => {
     const aCount =
-      a.modifierSelectors.length +
-      a.ownSelectors.length +
+      a.modifierConditions.length +
+      a.pseudoConditions.length +
+      a.ownConditions.length +
       a.mediaConditions.length +
       a.containerConditions.length +
-      a.supportsConditions.length;
+      a.supportsConditions.length +
+      a.rootConditions.length;
     const bCount =
-      b.modifierSelectors.length +
-      b.ownSelectors.length +
+      b.modifierConditions.length +
+      b.pseudoConditions.length +
+      b.ownConditions.length +
       b.mediaConditions.length +
       b.containerConditions.length +
-      b.supportsConditions.length;
+      b.supportsConditions.length +
+      b.rootConditions.length;
     return aCount - bCount;
   });
 
@@ -1343,17 +1486,31 @@ export function buildCSSSelectorFromVariant(
   let selector = `.${className}.${className}`;
 
   // Add modifier selectors
-  selector += variant.modifierSelectors.join('');
+  for (const mod of variant.modifierConditions) {
+    selector += modifierToCSS(mod);
+  }
+
+  // Add pseudo selectors
+  for (const pseudo of variant.pseudoConditions) {
+    selector += pseudoToCSS(pseudo);
+  }
 
   // Add selector suffix (e.g., ' [data-element="Label"]')
   selector += selectorSuffix;
 
   // Add own selectors (after sub-element)
-  selector += variant.ownSelectors.join('');
+  for (const own of variant.ownConditions) {
+    if ('attribute' in own) {
+      selector += modifierToCSS(own);
+    } else {
+      selector += pseudoToCSS(own);
+    }
+  }
 
   // Add root prefix if present
-  if (variant.rootPrefix) {
-    selector = `${variant.rootPrefix} ${selector}`;
+  const rootPrefix = rootConditionsToCSS(variant.rootConditions);
+  if (rootPrefix) {
+    selector = `${rootPrefix} ${selector}`;
   }
 
   return selector;
@@ -1485,8 +1642,9 @@ export function materializeRule(
       rule.atRules = atRules;
     }
 
-    if (variants[0].rootPrefix) {
-      rule.rootPrefix = variants[0].rootPrefix;
+    const rootPrefix = rootConditionsToCSS(variants[0].rootConditions);
+    if (rootPrefix) {
+      rule.rootPrefix = rootPrefix;
     }
 
     rules.push(rule);

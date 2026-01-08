@@ -549,15 +549,75 @@ function mergeByValue(rules: ComputedRule[]): ComputedRule[] {
 }
 
 /**
+ * Convert parsed modifier to CSS selector string
+ */
+function modifierConditionToCSS(mod: {
+  attribute: string;
+  value?: string;
+  operator?: '=' | '^=' | '$=' | '*=';
+  negated: boolean;
+}): string {
+  let selector: string;
+
+  if (mod.value !== undefined) {
+    const op = mod.operator || '=';
+    selector = `[${mod.attribute}${op}"${mod.value}"]`;
+  } else {
+    selector = `[${mod.attribute}]`;
+  }
+
+  if (mod.negated) {
+    return `:not(${selector})`;
+  }
+  return selector;
+}
+
+/**
+ * Convert parsed pseudo to CSS selector string
+ */
+function pseudoConditionToCSS(pseudo: {
+  pseudo: string;
+  negated: boolean;
+}): string {
+  if (pseudo.negated) {
+    if (pseudo.pseudo.startsWith(':not(')) {
+      return pseudo.pseudo.slice(5, -1);
+    }
+    return `:not(${pseudo.pseudo})`;
+  }
+  return pseudo.pseudo;
+}
+
+/**
  * Build selector fragment from a variant (without className prefix)
  */
 function buildSelectorFromVariant(
   variant: SelectorVariant,
   selectorSuffix: string,
 ): string {
-  let selector = variant.modifierSelectors.join('');
+  let selector = '';
+
+  // Add modifier selectors
+  for (const mod of variant.modifierConditions) {
+    selector += modifierConditionToCSS(mod);
+  }
+
+  // Add pseudo selectors
+  for (const pseudo of variant.pseudoConditions) {
+    selector += pseudoConditionToCSS(pseudo);
+  }
+
   selector += selectorSuffix;
-  selector += variant.ownSelectors.join('');
+
+  // Add own selectors (after sub-element)
+  for (const own of variant.ownConditions) {
+    if ('attribute' in own) {
+      selector += modifierConditionToCSS(own);
+    } else {
+      selector += pseudoConditionToCSS(own);
+    }
+  }
+
   return selector;
 }
 
@@ -578,6 +638,28 @@ function materializeComputedRule(rule: ComputedRule): CSSRule[] {
     .map(([prop, value]) => `${prop}: ${value};`)
     .join(' ');
 
+  // Helper to get root prefix from rootConditions
+  const getRootPrefix = (variant: SelectorVariant): string | undefined => {
+    if (variant.rootConditions.length === 0) return undefined;
+    let prefix = ':root';
+    for (const root of variant.rootConditions) {
+      if (root.negated) {
+        prefix += `:not(${root.selector})`;
+      } else {
+        prefix += root.selector;
+      }
+    }
+    return prefix;
+  };
+
+  // Helper to get root prefix key for grouping
+  const getRootPrefixKey = (variant: SelectorVariant): string => {
+    return variant.rootConditions
+      .map((r) => (r.negated ? `!${r.selector}` : r.selector))
+      .sort()
+      .join('|');
+  };
+
   // Group variants by their at-rules (variants with same at-rules can be combined with commas)
   const byAtRules = new Map<
     string,
@@ -586,7 +668,7 @@ function materializeComputedRule(rule: ComputedRule): CSSRule[] {
 
   for (const variant of components.variants) {
     const atRules = buildAtRulesFromVariant(variant);
-    const key = atRules.sort().join('|||') + '###' + (variant.rootPrefix || '');
+    const key = atRules.sort().join('|||') + '###' + getRootPrefixKey(variant);
 
     const group = byAtRules.get(key);
     if (group) {
@@ -595,7 +677,7 @@ function materializeComputedRule(rule: ComputedRule): CSSRule[] {
       byAtRules.set(key, {
         variants: [variant],
         atRules,
-        rootPrefix: variant.rootPrefix,
+        rootPrefix: getRootPrefix(variant),
       });
     }
   }

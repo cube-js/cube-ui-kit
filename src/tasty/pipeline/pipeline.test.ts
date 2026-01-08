@@ -390,16 +390,26 @@ describe('conditionToCSS()', () => {
     const mod = createModifierCondition('data-hovered');
     const css = conditionToCSS(mod);
     expect(css.variants.length).toBe(1);
-    expect(css.variants[0].modifierSelectors).toContain('[data-hovered]');
+    expect(css.variants[0].modifierConditions).toHaveLength(1);
+    expect(css.variants[0].modifierConditions[0]).toEqual({
+      attribute: 'data-hovered',
+      value: undefined,
+      operator: undefined,
+      negated: false,
+    });
   });
 
   it('should convert negated modifier to :not()', () => {
     const mod = createModifierCondition('data-disabled', undefined, '=', true);
     const css = conditionToCSS(mod);
     expect(css.variants.length).toBe(1);
-    expect(css.variants[0].modifierSelectors).toContain(
-      ':not([data-disabled])',
-    );
+    expect(css.variants[0].modifierConditions).toHaveLength(1);
+    expect(css.variants[0].modifierConditions[0]).toEqual({
+      attribute: 'data-disabled',
+      value: undefined,
+      operator: undefined,
+      negated: true,
+    });
   });
 
   it('should convert media query to at-rule', () => {
@@ -422,11 +432,15 @@ describe('conditionToCSS()', () => {
     expect(css.variants[0].startingStyle).toBe(true);
   });
 
-  it('should set rootPrefix for @root', () => {
+  it('should set rootConditions for @root', () => {
     const result = parseStateKey('@root(theme=dark)');
     const css = conditionToCSS(result);
     expect(css.variants.length).toBe(1);
-    expect(css.variants[0].rootPrefix).toBe(':root[data-theme="dark"]');
+    expect(css.variants[0].rootConditions).toHaveLength(1);
+    expect(css.variants[0].rootConditions[0]).toEqual({
+      selector: '[data-theme="dark"]',
+      negated: false,
+    });
   });
 
   it('should convert @supports feature query', () => {
