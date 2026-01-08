@@ -1,13 +1,14 @@
+import { createFocusManager } from '@react-aria/focus';
 import { useDOMRef } from '@react-spectrum/utils';
 import { DOMRef } from '@react-types/shared';
-import { forwardRef, ReactElement, useEffect, useMemo } from 'react';
+import { forwardRef, ReactElement, useEffect, useMemo, useRef } from 'react';
 import {
   AriaDialogProps,
   DismissButton,
+  FocusScope,
   useDialog,
   useMessageFormatter,
 } from 'react-aria';
-import FocusLock from 'react-focus-lock';
 
 import { CloseIcon } from '../../../icons';
 import {
@@ -43,6 +44,7 @@ const DialogElement = tasty({
     flow: 'column',
     fill: '#white',
     pointerEvents: 'auto',
+    outline: 0,
     position: {
       '': 'relative',
       'type=panel': 'absolute',
@@ -165,15 +167,37 @@ export const Dialog = forwardRef(function Dialog(
     return <DialogContent key="content" {...props} ref={ref} />;
   }, [props, ref]);
 
+  const shouldContainFocus = isEntered && context.type !== 'panel';
+
+  // Track the element that was focused before the dialog opened
+  // This handles hideOnClose case where FocusScope doesn't unmount
+  const previouslyFocusedRef = useRef<Element | null>(null);
+
+  // Capture the focused element when dialog opens
+  useEffect(() => {
+    if (context.isOpen) {
+      previouslyFocusedRef.current = document.activeElement;
+    }
+  }, [context.isOpen]);
+
+  // Restore focus when dialog closes (for hideOnClose case where component stays mounted)
+  useEffect(() => {
+    if (!context.isOpen && previouslyFocusedRef.current) {
+      const elementToFocus = previouslyFocusedRef.current as HTMLElement;
+
+      // Use setTimeout to ensure this runs after the close transition
+      setTimeout(() => {
+        elementToFocus?.focus?.();
+      });
+      previouslyFocusedRef.current = null;
+    }
+  }, [context.isOpen]);
+
   return (
-    // This component is actually traps the focus inside the dialog.
-    <FocusLock
-      returnFocus
-      autoFocus={false}
-      disabled={!isEntered || context.type === 'panel'}
-    >
+    // This component traps the focus inside the dialog and restores it on close.
+    <FocusScope restoreFocus contain={shouldContainFocus}>
       {content}
-    </FocusLock>
+    </FocusScope>
   );
 });
 
@@ -221,11 +245,21 @@ const DialogContent = forwardRef(function DialogContent(
           domRef.current &&
           !domRef.current.contains(document.activeElement)
         ) {
-          (
-            domRef.current.querySelector(
-              'input[data-autofocus], [data-qa="ButtonGroup"] button[data-type="primary"]',
-            ) as HTMLButtonElement
-          )?.focus();
+          // Priority 1: autofocus input or primary button
+          const priorityElement = domRef.current.querySelector(
+            'input[data-autofocus], button[type="submit"], button[data-type="primary"]',
+          ) as HTMLElement | null;
+
+          if (priorityElement) {
+            priorityElement.focus();
+          } else {
+            // Fallback: focus first tabbable element, or dialog itself
+            const focusManager = createFocusManager(domRef);
+
+            if (!focusManager.focusFirst({ tabbable: true })) {
+              domRef.current.focus();
+            }
+          }
         }
       });
     }
@@ -290,7 +324,6 @@ const DialogContent = forwardRef(function DialogContent(
       styles={styles}
       as="section"
       {...dialogProps}
-      tabIndex={undefined}
       mods={{ dismissable: isDismissable }}
       style={{ '--dialog-size': `${sizePxMap[size] || sizePxMap.small}px` }}
       data-type={type}
