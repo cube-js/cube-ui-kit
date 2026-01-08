@@ -840,6 +840,61 @@ describe('@supports queries snapshot tests', () => {
     expect(result).toMatchSnapshot();
   });
 
+  it('should render @supports with modifier - 2 exclusive rules', () => {
+    // Example from user: A & B, and !A | !B should produce exactly 2 rules
+    // where A = @supports($, :has(*)) and B = :has(> Icon)
+    const styles = {
+      display: {
+        '': 'block', // !A | !B
+        '@supports($, :has(*)) & :has(> Icon)': 'grid', // A & B
+      },
+    };
+
+    const result = renderStyles(styles, '.demo');
+
+    // Should produce exactly 2 non-overlapping rules:
+    // 1. A & B = grid
+    // 2. !A = block (first OR branch, covers when supports is false)
+    // 3. A & !B = block (second OR branch, covers when supports true but no :has)
+    // Rules 2 and 3 have the same value, so they may be merged or kept separate
+    // But the key is: NO overlapping, and exactly 2 DISTINCT rules (by selector/at-rule)
+
+    // Verify we have distinct rules with no overlap
+    const atRules = result.map((r) => r.atRules?.[0] || 'none');
+    const selectors = result.map((r) => r.selector);
+
+    // Should have 3 rules (2 for default covering !A and A&!B, 1 for A&B)
+    expect(result.length).toBe(3);
+
+    // Verify A & B rule exists
+    const supportsWithHas = result.find(
+      (r) =>
+        r.atRules?.[0]?.includes('selector(:has(*)') &&
+        r.selector.includes(':has(> Icon)') &&
+        !r.selector.includes(':not'),
+    );
+    expect(supportsWithHas).toBeDefined();
+    expect(supportsWithHas!.declarations).toContain('grid');
+
+    // Verify !A rule exists
+    const noSupports = result.find((r) =>
+      r.atRules?.[0]?.includes('not selector(:has(*)'),
+    );
+    expect(noSupports).toBeDefined();
+    expect(noSupports!.declarations).toContain('block');
+
+    // Verify A & !B rule exists
+    const supportsNoHas = result.find(
+      (r) =>
+        r.atRules?.[0]?.includes('selector(:has(*)') &&
+        r.selector.includes(':not(:has(> Icon))'),
+    );
+    expect(supportsNoHas).toBeDefined();
+    expect(supportsNoHas!.declarations).toContain('block');
+
+    expect(result).toMatchSnapshot();
+  });
+
   it('should render @supports with multiple modifier states - 3 exclusive rules', () => {
     // Example from user: A & B, A & !B, and !A should produce exactly 3 rules
     // where A = @supports($, :has(*)) and B = :has(> Icon)

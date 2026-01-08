@@ -172,6 +172,32 @@ exports[`@supports queries snapshot tests should render @supports selector query
 ]
 `;
 
+exports[`@supports queries snapshot tests should render @supports with modifier - 2 exclusive rules 1`] = `
+[
+  {
+    "atRules": [
+      "@supports selector(:has(*))",
+    ],
+    "declarations": "display: grid;",
+    "selector": ".demo:has(> Icon)",
+  },
+  {
+    "atRules": [
+      "@supports (not selector(:has(*)))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".demo",
+  },
+  {
+    "atRules": [
+      "@supports selector(:has(*))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".demo:not(:has(> Icon))",
+  },
+]
+`;
+
 exports[`@supports queries snapshot tests should render @supports with modifiers 1`] = `
 [
   {
