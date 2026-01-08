@@ -1,12 +1,10 @@
-import {
-  Block,
-  CubeIcon,
-  Flow,
-  Link,
-  Space,
-  Paragraph as UIKitParagraph,
-  Text as UIKitText,
-} from '../index';
+import { Link } from '../components/actions/Link/Link';
+import { Block } from '../components/Block';
+import { Paragraph as UIKitParagraph } from '../components/content/Paragraph';
+import { Text as UIKitText } from '../components/content/Text';
+import { Flow } from '../components/layout/Flow';
+import { Space } from '../components/layout/Space';
+import { CubeIcon } from '../icons/CubeIcon';
 
 export default {
   title: 'Content/Typography',

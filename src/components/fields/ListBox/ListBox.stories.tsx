@@ -16,7 +16,7 @@ import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
-import { Form } from '../../form';
+import { Form } from '../../form/Form';
 import { Space } from '../../layout/Space';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';

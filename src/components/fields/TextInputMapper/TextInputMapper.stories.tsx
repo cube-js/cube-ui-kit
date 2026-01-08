@@ -2,7 +2,7 @@ import { StoryFn } from '@storybook/react-vite';
 import { userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Form } from '../../form';
+import { Form } from '../../form/Form';
 import { TextInput } from '../TextInput/index';
 
 import { CubeTextInputMapperProps, TextInputMapper } from './TextInputMapper';
