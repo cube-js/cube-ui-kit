@@ -3,28 +3,23 @@ import { StoryFn } from '@storybook/react-vite';
 import { useRef, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
-import {
-  Button,
-  Content,
-  Dialog,
-  DialogTrigger,
-  DirectionIcon,
-  Footer,
-  Header,
-  Menu,
-  MenuTrigger,
-  Paragraph,
-  Select,
-  Space,
-  Text,
-  TextInput,
-  Title,
-} from '../../../index';
+import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { timeout } from '../../../utils/promise';
+import { Button } from '../../actions';
+import { Menu, MenuTrigger } from '../../actions/Menu';
+import { Content } from '../../content/Content';
+import { Footer } from '../../content/Footer';
+import { Header } from '../../content/Header';
+import { Paragraph } from '../../content/Paragraph';
+import { Text } from '../../content/Text';
+import { Title } from '../../content/Title';
+import { Select } from '../../fields/Select/Select';
+import { TextInput } from '../../fields/TextInput';
+import { Space } from '../../layout/Space';
 
-import { CubeDialogProps } from './Dialog';
-import { CubeDialogTriggerProps } from './DialogTrigger';
+import { CubeDialogProps, Dialog } from './Dialog';
+import { CubeDialogTriggerProps, DialogTrigger } from './DialogTrigger';
 
 export default {
   title: 'Overlays/Dialog',

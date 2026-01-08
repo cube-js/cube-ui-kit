@@ -13,7 +13,8 @@ import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
 import { Flex } from '../../layout/Flex';
 import { CloudLogo } from '../../other/CloudLogo/CloudLogo';
-import { Dialog, DialogTrigger } from '../Dialog';
+import { Dialog } from '../Dialog/Dialog';
+import { DialogTrigger } from '../Dialog/DialogTrigger';
 
 import { NotificationsDialog, NotificationsDialogTrigger } from './Dialog';
 import { useNotificationsApi } from './hooks';

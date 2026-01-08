@@ -2,31 +2,25 @@ import { linkTo } from '@storybook/addon-links';
 import { StoryFn } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
-import {
-  Block,
-  Button,
-  Checkbox,
-  CheckboxGroup,
-  ComboBox,
-  DateInput,
-  Field,
-  FileInput,
-  Form,
-  Item,
-  NumberInput,
-  parseAbsoluteDate,
-  PasswordInput,
-  Radio,
-  RangeSlider,
-  Select,
-  Slider,
-  Space,
-  Switch,
-  TextInput,
-} from '../../../index';
 // import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { timeout } from '../../../utils/promise';
+import { Button } from '../../actions';
+import { Block } from '../../Block';
+import { Checkbox, CheckboxGroup } from '../../fields/Checkbox';
+import { ComboBox } from '../../fields/ComboBox';
+import { DateInput, parseAbsoluteDate } from '../../fields/DatePicker';
+import { FileInput } from '../../fields/FileInput/FileInput';
+import { NumberInput } from '../../fields/NumberInput/NumberInput';
+import { PasswordInput } from '../../fields/PasswordInput/PasswordInput';
+import { Radio } from '../../fields/RadioGroup';
+import { Select } from '../../fields/Select';
+import { RangeSlider, Slider } from '../../fields/Slider';
+import { Switch } from '../../fields/Switch/Switch';
+import { TextInput } from '../../fields/TextInput';
+import { Space } from '../../layout/Space';
+
+import { Field, Form } from './index';
 
 export default {
   title: 'Forms/ComplexForm',

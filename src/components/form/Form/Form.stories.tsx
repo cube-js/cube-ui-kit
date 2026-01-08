@@ -1,7 +1,7 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Input } from '../../fields';
+import { Input } from '../../fields/Input';
 import { Space } from '../../layout/Space';
 
 import { Field } from './Field';

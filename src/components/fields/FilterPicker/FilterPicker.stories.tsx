@@ -17,7 +17,7 @@ import { Paragraph } from '../../content/Paragraph';
 import { Tag } from '../../content/Tag/Tag';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
-import { Form } from '../../form';
+import { Form } from '../../form/Form';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 
