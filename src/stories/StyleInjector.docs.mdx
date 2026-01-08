@@ -183,15 +183,22 @@ const slideIn = keyframes({
   '100%': 'transform: translateX(0)',
 }, 'slideInAnimation');
 
-// Use in styles
-const animatedComponent = inject([{
-  selector: '.t-animated',
-  declarations: `animation: ${fadeIn} 300ms ease-in;`
+// Use in tasty styles (recommended)
+const AnimatedBox = tasty({
+  styles: {
+    animation: `${fadeIn} 300ms ease-in`,
+  },
+});
+
+// Or use with injectGlobal for fixed selectors
+injectGlobal([{
+  selector: '.my-animated-class',
+  declarations: `animation: ${slideIn} 500ms ease-out;`
 }]);
 
-// Cleanup (keyframes disposed immediately, CSS rules marked for batch cleanup)
-fadeIn.dispose();           // Immediate keyframes deletion from DOM
-animatedComponent.dispose(); // CSS rules marked unused (refCount = 0)
+// Cleanup keyframes (if needed)
+fadeIn.dispose();    // Immediate keyframes deletion from DOM
+slideIn.dispose();   // Immediate keyframes deletion from DOM
 ```
 
 ### `configure(config): void`

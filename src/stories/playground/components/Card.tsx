@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 
-import { Styles } from '../../styles/types';
-import { tasty } from '../../tasty';
+import { tasty } from '../../../tasty';
+import { Styles } from '../../../tasty/styles/types';
 
 const CardElement = tasty({
   qa: 'PlaygroundCard',

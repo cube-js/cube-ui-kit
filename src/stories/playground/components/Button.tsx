@@ -1,8 +1,8 @@
 import { ReactNode, useRef } from 'react';
 import { useButton, useFocusRing, useHover } from 'react-aria';
 
-import { Styles } from '../../styles/types';
-import { tasty } from '../../tasty';
+import { tasty } from '../../../tasty';
+import { Styles } from '../../../tasty/styles/types';
 
 const ButtonElement = tasty({
   as: 'button',
