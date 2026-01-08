@@ -45,6 +45,7 @@ exports[`@supports queries snapshot tests should render @supports combined with 
   },
   {
     "atRules": [
+      "@container (width <= 400px)",
       "@supports (not (display: grid))",
     ],
     "declarations": "display: block;",
@@ -72,6 +73,7 @@ exports[`@supports queries snapshot tests should render @supports combined with 
   },
   {
     "atRules": [
+      "@media (width <= 768px)",
       "@supports (not (display: grid))",
     ],
     "declarations": "display: block;",
@@ -98,7 +100,7 @@ exports[`@supports queries snapshot tests should render @supports combined with 
   },
   {
     "atRules": [
-      "@supports (not selector(:has(*)))",
+      "@supports (not selector(:has(*))) and (display: grid)",
     ],
     "declarations": "display: block;",
     "selector": ".component",
@@ -180,15 +182,44 @@ exports[`@supports queries snapshot tests should render @supports with modifiers
     "selector": ".component[data-hovered]",
   },
   {
-    "declarations": "color: black;",
-    "selector": ".component:not([data-hovered])",
-  },
-  {
     "atRules": [
       "@supports (not (display: grid))",
     ],
     "declarations": "color: black;",
     "selector": ".component",
+  },
+  {
+    "atRules": [
+      "@supports (display: grid)",
+    ],
+    "declarations": "color: black;",
+    "selector": ".component:not([data-hovered])",
+  },
+]
+`;
+
+exports[`@supports queries snapshot tests should render @supports with multiple modifier states - 3 exclusive rules 1`] = `
+[
+  {
+    "atRules": [
+      "@supports selector(:has(*))",
+    ],
+    "declarations": "display: grid;",
+    "selector": ".demo:has(> Icon)",
+  },
+  {
+    "atRules": [
+      "@supports selector(:has(*))",
+    ],
+    "declarations": "display: flex;",
+    "selector": ".demo:not(:has(> Icon))",
+  },
+  {
+    "atRules": [
+      "@supports (not selector(:has(*)))",
+    ],
+    "declarations": "display: block;",
+    "selector": ".demo",
   },
 ]
 `;

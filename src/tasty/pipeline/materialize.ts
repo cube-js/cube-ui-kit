@@ -770,32 +770,180 @@ function hasModifierContradiction(modifiers: string[]): boolean {
  * Check if a selector string contains contradictions
  * e.g., "[data-x]:not([data-x])" or "[data-x="y"]:not([data-x="y"])"
  */
+/**
+ * Check if a selector string contains contradictions.
+ *
+ * A contradiction occurs when both `X` and `:not(X)` appear in the same selector.
+ * Examples:
+ *   - `[data-x]:not([data-x])` → contradiction
+ *   - `:has(> Icon):not(:has(> Icon))` → contradiction
+ *   - `.foo:not(.foo)` → contradiction
+ *   - `:hover:not(:hover)` → contradiction
+ *
+ * This is a generic check that works for any selector type.
+ */
 function hasSelectorStringContradiction(selector: string): boolean {
-  const positiveAttrs: string[] = [];
-  const negativeAttrs: string[] = [];
+  const positiveSelectors: string[] = [];
+  const negatedSelectors: string[] = [];
 
-  // Match :not([attr]) or :not([attr="value"])
-  const notPattern = /:not\(\[([^\]]+)\]\)/g;
-  let match;
-  while ((match = notPattern.exec(selector)) !== null) {
-    negativeAttrs.push(match[1]);
+  // Extract all :not(...) contents
+  // We need to handle nested parentheses, e.g., :not(:has(> Icon))
+  const notMatches = extractNotContents(selector);
+  for (const content of notMatches) {
+    negatedSelectors.push(normalizeSelector(content));
   }
 
-  // Match [attr] or [attr="value"] (not inside :not())
-  // The lookbehind (?<!...) ensures we don't match attributes inside :not()
-  const attrPattern = /(?<!:not\()\[([^\]]+)\]/g;
-  while ((match = attrPattern.exec(selector)) !== null) {
-    positiveAttrs.push(match[1]);
+  // Remove :not(...) from selector to get positive parts
+  const selectorWithoutNot = removeNotSelectors(selector);
+
+  // Extract positive selector parts (attributes, pseudos, classes)
+  const positiveParts = extractSelectorParts(selectorWithoutNot);
+  for (const part of positiveParts) {
+    positiveSelectors.push(normalizeSelector(part));
   }
 
-  // Check for contradictions
-  for (const neg of negativeAttrs) {
-    if (positiveAttrs.includes(neg)) {
+  // Check for contradictions: X and :not(X)
+  for (const neg of negatedSelectors) {
+    if (positiveSelectors.includes(neg)) {
       return true;
     }
   }
 
   return false;
+}
+
+/**
+ * Extract contents of all :not(...) selectors, handling nested parentheses
+ */
+function extractNotContents(selector: string): string[] {
+  const results: string[] = [];
+  let i = 0;
+
+  while (i < selector.length) {
+    const notIndex = selector.indexOf(':not(', i);
+    if (notIndex === -1) break;
+
+    // Find matching closing paren
+    let depth = 1;
+    let j = notIndex + 5; // Start after ':not('
+    while (j < selector.length && depth > 0) {
+      if (selector[j] === '(') depth++;
+      else if (selector[j] === ')') depth--;
+      j++;
+    }
+
+    if (depth === 0) {
+      // Extract content between :not( and )
+      const content = selector.slice(notIndex + 5, j - 1);
+      results.push(content);
+    }
+
+    i = j;
+  }
+
+  return results;
+}
+
+/**
+ * Remove all :not(...) from a selector
+ */
+function removeNotSelectors(selector: string): string {
+  let result = '';
+  let i = 0;
+
+  while (i < selector.length) {
+    const notIndex = selector.indexOf(':not(', i);
+    if (notIndex === -1) {
+      result += selector.slice(i);
+      break;
+    }
+
+    result += selector.slice(i, notIndex);
+
+    // Find matching closing paren
+    let depth = 1;
+    let j = notIndex + 5;
+    while (j < selector.length && depth > 0) {
+      if (selector[j] === '(') depth++;
+      else if (selector[j] === ')') depth--;
+      j++;
+    }
+
+    i = j;
+  }
+
+  return result;
+}
+
+/**
+ * Extract individual selector parts from a combined selector
+ * Returns parts like `[data-x]`, `:hover`, `.class`, `:has(> Icon)`
+ */
+function extractSelectorParts(selector: string): string[] {
+  const parts: string[] = [];
+  let i = 0;
+
+  while (i < selector.length) {
+    // Skip whitespace
+    while (i < selector.length && /\s/.test(selector[i])) i++;
+    if (i >= selector.length) break;
+
+    const char = selector[i];
+
+    if (char === '[') {
+      // Attribute selector: [...]
+      const end = selector.indexOf(']', i);
+      if (end !== -1) {
+        parts.push(selector.slice(i, end + 1));
+        i = end + 1;
+      } else {
+        i++;
+      }
+    } else if (char === ':') {
+      // Pseudo-class/element - may have parentheses
+      let j = i + 1;
+      // Skip the pseudo name
+      while (j < selector.length && /[a-zA-Z0-9-]/.test(selector[j])) j++;
+
+      // Check for parentheses
+      if (j < selector.length && selector[j] === '(') {
+        // Find matching closing paren
+        let depth = 1;
+        j++;
+        while (j < selector.length && depth > 0) {
+          if (selector[j] === '(') depth++;
+          else if (selector[j] === ')') depth--;
+          j++;
+        }
+      }
+
+      parts.push(selector.slice(i, j));
+      i = j;
+    } else if (char === '.') {
+      // Class selector
+      let j = i + 1;
+      while (j < selector.length && /[a-zA-Z0-9_-]/.test(selector[j])) j++;
+      parts.push(selector.slice(i, j));
+      i = j;
+    } else if (char === '#') {
+      // ID selector
+      let j = i + 1;
+      while (j < selector.length && /[a-zA-Z0-9_-]/.test(selector[j])) j++;
+      parts.push(selector.slice(i, j));
+      i = j;
+    } else {
+      i++;
+    }
+  }
+
+  return parts;
+}
+
+/**
+ * Normalize a selector for comparison (lowercase, trim whitespace)
+ */
+function normalizeSelector(selector: string): string {
+  return selector.trim().toLowerCase();
 }
 
 /**

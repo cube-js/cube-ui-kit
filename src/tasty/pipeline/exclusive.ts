@@ -258,3 +258,149 @@ function collectOrBranches(condition: ConditionNode): ConditionNode[] {
   // Not an OR - return as single branch
   return [condition];
 }
+
+// ============================================================================
+// Post-Build OR Expansion (for De Morgan ORs)
+// ============================================================================
+
+/**
+ * Expand OR conditions in exclusive entries AFTER buildExclusiveConditions.
+ *
+ * This handles ORs that arise from De Morgan expansion during negation:
+ *   !(A & B) = !A | !B
+ *
+ * These ORs need to be made exclusive to avoid overlapping CSS rules:
+ *   !A | !B  →  !A | (A & !B)
+ *
+ * This is logically equivalent but ensures each branch has proper context.
+ *
+ * Example:
+ *   Input: { "": V1, "@supports(...) & :has()": V2 }
+ *   V2's exclusive = @supports & :has
+ *   V1's exclusive = !(@supports & :has) = !@supports | !:has
+ *
+ *   Without this fix: V1 gets two rules:
+ *     - @supports (not ...) → V1  ✓
+ *     - :not(:has()) → V1  ✗ (missing @supports context!)
+ *
+ *   With this fix: V1 gets two exclusive rules:
+ *     - @supports (not ...) → V1  ✓
+ *     - @supports (...) { :not(:has()) } → V1  ✓ (proper context!)
+ */
+export function expandExclusiveOrs(
+  entries: ExclusiveStyleEntry[],
+): ExclusiveStyleEntry[] {
+  const result: ExclusiveStyleEntry[] = [];
+
+  for (const entry of entries) {
+    const expanded = expandExclusiveConditionOrs(entry);
+    result.push(...expanded);
+  }
+
+  return result;
+}
+
+/**
+ * Check if a condition involves at-rules (media, container, supports, starting)
+ */
+function hasAtRuleContext(node: ConditionNode): boolean {
+  if (node.kind === 'true' || node.kind === 'false') {
+    return false;
+  }
+
+  if (node.kind === 'state') {
+    // These condition types generate at-rules
+    return (
+      node.type === 'media' ||
+      node.type === 'container' ||
+      node.type === 'supports' ||
+      node.type === 'starting'
+    );
+  }
+
+  if (node.kind === 'compound') {
+    return node.children.some(hasAtRuleContext);
+  }
+
+  return false;
+}
+
+/**
+ * Sort OR branches to prioritize at-rule conditions first.
+ *
+ * This is critical for correct CSS generation. For `!A | !B` where A is at-rule
+ * and B is modifier, we want:
+ *   - Branch 0: !A (at-rule negation - covers "no @supports/media" case)
+ *   - Branch 1: A & !B (modifier negation with at-rule context)
+ *
+ * If we process in wrong order (!B first), we'd get:
+ *   - Branch 0: !B (modifier negation WITHOUT at-rule context - WRONG!)
+ *   - Branch 1: B & !A (at-rule negation with modifier - incomplete coverage)
+ */
+function sortOrBranchesForExpansion(
+  branches: ConditionNode[],
+): ConditionNode[] {
+  return [...branches].sort((a, b) => {
+    const aHasAtRule = hasAtRuleContext(a);
+    const bHasAtRule = hasAtRuleContext(b);
+
+    // At-rule conditions come first
+    if (aHasAtRule && !bHasAtRule) return -1;
+    if (!aHasAtRule && bHasAtRule) return 1;
+
+    // Same type - keep original order (stable sort)
+    return 0;
+  });
+}
+
+/**
+ * Expand ORs in a single entry's exclusive condition
+ */
+function expandExclusiveConditionOrs(
+  entry: ExclusiveStyleEntry,
+): ExclusiveStyleEntry[] {
+  let orBranches = collectOrBranches(entry.exclusiveCondition);
+
+  // If no OR (single branch), return as-is
+  if (orBranches.length <= 1) {
+    return [entry];
+  }
+
+  // Sort branches so at-rule conditions come first
+  // This ensures proper context inheritance during expansion
+  orBranches = sortOrBranchesForExpansion(orBranches);
+
+  // Make each OR branch exclusive from prior branches
+  const result: ExclusiveStyleEntry[] = [];
+  const priorBranches: ConditionNode[] = [];
+
+  for (let i = 0; i < orBranches.length; i++) {
+    const branch = orBranches[i];
+
+    // Build: branch & !prior[0] & !prior[1] & ...
+    // This transforms: !A | !B  →  !A, !B & !!A  =  !A, (A & !B)
+    let exclusiveBranch: ConditionNode = branch;
+    for (const prior of priorBranches) {
+      exclusiveBranch = and(exclusiveBranch, not(prior));
+    }
+
+    // Simplify to detect impossible combinations and clean up double negations
+    const simplified = simplifyCondition(exclusiveBranch);
+
+    // Skip impossible branches
+    if (simplified.kind === 'false') {
+      priorBranches.push(branch);
+      continue;
+    }
+
+    result.push({
+      ...entry,
+      stateKey: `${entry.stateKey}[or:${i}]`, // Mark as expanded OR branch
+      exclusiveCondition: simplified,
+    });
+
+    priorBranches.push(branch);
+  }
+
+  return result;
+}

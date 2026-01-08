@@ -840,6 +840,53 @@ describe('@supports queries snapshot tests', () => {
     expect(result).toMatchSnapshot();
   });
 
+  it('should render @supports with multiple modifier states - 3 exclusive rules', () => {
+    // Example from user: A & B, A & !B, and !A should produce exactly 3 rules
+    // where A = @supports($, :has(*)) and B = :has(> Icon)
+    // Using display property to avoid color normalization issues
+    const styles = {
+      display: {
+        '': 'block', // V2 - should apply to !A only
+        '@supports($, :has(*)) & !:has(> Icon)': 'flex', // V3 - A & !B
+        '@supports($, :has(*)) & :has(> Icon)': 'grid', // V1 - A & B
+      },
+    };
+
+    const result = renderStyles(styles, '.demo');
+
+    // Should produce exactly 3 non-overlapping rules:
+    // 1. A & B = grid
+    // 2. A & !B = flex
+    // 3. !A = block (covers !A & B and !A & !B)
+    expect(result.length).toBe(3);
+
+    // Verify rules exist
+    const supportsHasWithIcon = result.filter(
+      (r) =>
+        r.atRules?.[0]?.includes('selector(:has(*)') &&
+        r.selector.includes(':has(> Icon)') &&
+        !r.selector.includes(':not(:has'),
+    );
+    expect(supportsHasWithIcon.length).toBe(1);
+    expect(supportsHasWithIcon[0].declarations).toContain('grid');
+
+    const supportsHasNoIcon = result.filter(
+      (r) =>
+        r.atRules?.[0]?.includes('selector(:has(*)') &&
+        r.selector.includes(':not(:has(> Icon))'),
+    );
+    expect(supportsHasNoIcon.length).toBe(1);
+    expect(supportsHasNoIcon[0].declarations).toContain('flex');
+
+    const noSupports = result.filter((r) =>
+      r.atRules?.[0]?.includes('not selector(:has(*)'),
+    );
+    expect(noSupports.length).toBe(1);
+    expect(noSupports[0].declarations).toContain('block');
+
+    expect(result).toMatchSnapshot();
+  });
+
   it('should render @supports combined with @media', () => {
     const styles = {
       display: {

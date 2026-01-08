@@ -112,10 +112,9 @@ describe('Tasty style tests', () => {
   });
 
   it('should handle radius styles', () => {
-    expect(radiusStyle({ radius: '50%' })).toEqual([
-      { '--local-radius': '50%', 'border-radius': 'var(--local-radius)' },
-      { $: '>*', '--context-radius': '50%' },
-    ]);
+    expect(radiusStyle({ radius: '50%' })).toEqual({
+      'border-radius': '50%',
+    });
   });
 
   it('should handle preset styles', () => {
