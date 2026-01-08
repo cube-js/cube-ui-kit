@@ -5,10 +5,10 @@ import { forwardRef, ReactElement, useEffect, useMemo } from 'react';
 import {
   AriaDialogProps,
   DismissButton,
+  FocusScope,
   useDialog,
   useMessageFormatter,
 } from 'react-aria';
-import FocusLock from 'react-focus-lock';
 
 import { CloseIcon } from '../../../icons';
 import {
@@ -166,15 +166,13 @@ export const Dialog = forwardRef(function Dialog(
     return <DialogContent key="content" {...props} ref={ref} />;
   }, [props, ref]);
 
+  const shouldContainFocus = isEntered && context.type !== 'panel';
+
   return (
-    // This component is actually traps the focus inside the dialog.
-    <FocusLock
-      returnFocus
-      autoFocus={false}
-      disabled={!isEntered || context.type === 'panel'}
-    >
+    // This component traps the focus inside the dialog and restores it on close.
+    <FocusScope restoreFocus contain={shouldContainFocus}>
       {content}
-    </FocusLock>
+    </FocusScope>
   );
 });
 
