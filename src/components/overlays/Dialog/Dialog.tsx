@@ -1,7 +1,7 @@
 import { createFocusManager } from '@react-aria/focus';
 import { useDOMRef } from '@react-spectrum/utils';
 import { DOMRef } from '@react-types/shared';
-import { forwardRef, ReactElement, useEffect, useMemo } from 'react';
+import { forwardRef, ReactElement, useEffect, useMemo, useRef } from 'react';
 import {
   AriaDialogProps,
   DismissButton,
@@ -167,6 +167,30 @@ export const Dialog = forwardRef(function Dialog(
   }, [props, ref]);
 
   const shouldContainFocus = isEntered && context.type !== 'panel';
+
+  // Track the element that was focused before the dialog opened
+  // This handles hideOnClose case where FocusScope doesn't unmount
+  const previouslyFocusedRef = useRef<Element | null>(null);
+
+  // Capture the focused element when dialog opens
+  useEffect(() => {
+    if (context.isOpen) {
+      previouslyFocusedRef.current = document.activeElement;
+    }
+  }, [context.isOpen]);
+
+  // Restore focus when dialog closes (for hideOnClose case where component stays mounted)
+  useEffect(() => {
+    if (!context.isOpen && previouslyFocusedRef.current) {
+      const elementToFocus = previouslyFocusedRef.current as HTMLElement;
+
+      // Use setTimeout to ensure this runs after the close transition
+      setTimeout(() => {
+        elementToFocus?.focus?.();
+      });
+      previouslyFocusedRef.current = null;
+    }
+  }, [context.isOpen]);
 
   return (
     // This component traps the focus inside the dialog and restores it on close.
