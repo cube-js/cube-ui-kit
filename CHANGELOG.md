@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.98.8
+
+### Patch Changes
+
+- [#942](https://github.com/cube-js/cube-ui-kit/pull/942) [`f5a5b05c`](https://github.com/cube-js/cube-ui-kit/commit/f5a5b05c669ba3548a68b9b1bcfcd4777f36119d) Thanks [@tenphi](https://github.com/tenphi)! - Fix Dialog focus management to ensure Escape key works reliably when dialog opens and focus properly returns to the trigger when dialog closes. Focus now properly falls back to the first tabbable element or the dialog element itself if no priority focusable element is found. Replaced react-focus-lock with React Aria's FocusScope for better focus restoration behavior.
+
 ## 0.98.7
 
 ### Patch Changes
