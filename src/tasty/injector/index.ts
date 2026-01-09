@@ -1,5 +1,10 @@
-import { isDevEnv } from '../utils/isDevEnv';
-import { StyleResult } from '../utils/renderStyles';
+import {
+  getConfig,
+  getGlobalInjector,
+  isTestEnvironment,
+  markStylesGenerated,
+} from '../config';
+import { StyleResult } from '../pipeline';
 
 import { StyleInjector } from './injector';
 import {
@@ -8,97 +13,6 @@ import {
   InjectResult,
   StyleInjectorConfig,
 } from './types';
-
-// Use a more robust global singleton that survives React Strict Mode
-const GLOBAL_INJECTOR_KEY = '__TASTY_GLOBAL_INJECTOR__';
-
-declare global {
-  interface Window {
-    [GLOBAL_INJECTOR_KEY]?: StyleInjector;
-  }
-}
-
-/**
- * Detect if we're running in a test environment
- */
-function isTestEnvironment(): boolean {
-  // Check Node.js environment
-  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
-    return true;
-  }
-
-  // Check for Jest globals (safely)
-  if (typeof global !== 'undefined') {
-    const g = global as any;
-    if (g.jest || g.expect || g.describe || g.it) {
-      return true;
-    }
-  }
-
-  // Check for jsdom environment (common in tests)
-  if (
-    typeof window !== 'undefined' &&
-    window.navigator?.userAgent?.includes('jsdom')
-  ) {
-    return true;
-  }
-
-  // Check for other test runners
-  if (typeof globalThis !== 'undefined') {
-    const gt = globalThis as any;
-    if (gt.vitest || gt.mocha) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
- * Create default configuration with optional test environment detection
- */
-function createDefaultConfig(isTest?: boolean): StyleInjectorConfig {
-  return {
-    maxRulesPerSheet: 8192, // safer default cap per sheet
-    unusedStylesThreshold: 500, // default threshold for bulk cleanup of unused styles
-    bulkCleanupDelay: 5000, // default delay before bulk cleanup (ignored if idleCleanup is true)
-    idleCleanup: true, // default to using requestIdleCallback instead of setTimeout
-    forceTextInjection: isTest ?? false, // auto-enable for test environments
-    devMode: isDevEnv(), // enable dev features: performance tracking and debug info
-    bulkCleanupBatchRatio: 0.5,
-    unusedStylesMinAgeMs: 10000,
-  };
-}
-
-/**
- * Configure the global style injector
- */
-export function configure(config: Partial<StyleInjectorConfig> = {}): void {
-  const fullConfig: StyleInjectorConfig = {
-    ...createDefaultConfig(),
-    ...config,
-  };
-
-  // Store on window to survive React Strict Mode resets
-  if (typeof window !== 'undefined') {
-    window[GLOBAL_INJECTOR_KEY] = new StyleInjector(fullConfig);
-  } else {
-    // Fallback for SSR
-    (globalThis as any)[GLOBAL_INJECTOR_KEY] = new StyleInjector(fullConfig);
-  }
-}
-
-/**
- * Get or create the global injector instance
- */
-function getGlobalInjector(): StyleInjector {
-  const storage = typeof window !== 'undefined' ? window : (globalThis as any);
-
-  if (!storage[GLOBAL_INJECTOR_KEY]) {
-    configure();
-  }
-  return storage[GLOBAL_INJECTOR_KEY]!;
-}
 
 /**
  * Allocate a className for a cacheKey without injecting styles yet
@@ -117,6 +31,9 @@ export function inject(
   rules: StyleResult[],
   options?: { root?: Document | ShadowRoot; cacheKey?: string },
 ): InjectResult {
+  // Mark that styles have been generated (prevents configuration changes)
+  markStylesGenerated();
+
   return getGlobalInjector().inject(rules, options);
 }
 
@@ -131,13 +48,36 @@ export function injectGlobal(
 }
 
 /**
- * Internal method for createGlobalStyle - not exported publicly
+ * Inject raw CSS text directly without parsing
+ * This is a low-overhead method for injecting raw CSS that doesn't need tasty processing.
+ * The CSS is inserted into a separate style element to avoid conflicts with tasty's chunking.
+ *
+ * @example
+ * ```tsx
+ * // Inject raw CSS
+ * const { dispose } = injectRawCSS(`
+ *   body { margin: 0; padding: 0; }
+ *   .my-class { color: red; }
+ * `);
+ *
+ * // Later, remove the injected CSS
+ * dispose();
+ * ```
  */
-function injectCreateGlobalStyle(
-  rules: StyleResult[],
+export function injectRawCSS(
+  css: string,
   options?: { root?: Document | ShadowRoot },
-): GlobalInjectResult {
-  return getGlobalInjector().injectCreateGlobalStyle(rules, options);
+): { dispose: () => void } {
+  return getGlobalInjector().injectRawCSS(css, options);
+}
+
+/**
+ * Get raw CSS text for SSR
+ */
+export function getRawCSSText(options?: {
+  root?: Document | ShadowRoot;
+}): string {
+  return getGlobalInjector().getRawCSSText(options);
 }
 
 /**
@@ -225,27 +165,16 @@ export function destroy(root?: Document | ShadowRoot): void {
 export function createInjector(
   config: Partial<StyleInjectorConfig> = {},
 ): StyleInjector {
-  const isTest = isTestEnvironment();
+  const defaultConfig = getConfig();
 
   const fullConfig: StyleInjectorConfig = {
-    ...createDefaultConfig(isTest),
+    ...defaultConfig,
+    // Auto-enable forceTextInjection in test environments
+    forceTextInjection: config.forceTextInjection ?? isTestEnvironment(),
     ...config,
   };
 
   return new StyleInjector(fullConfig);
-}
-
-/**
- * Create a global style component like styled-components createGlobalStyle
- * Returns a React component that injects global styles when mounted and cleans up when unmounted
- */
-export function createGlobalStyle<Props = {}>(
-  strings: TemplateStringsArray,
-  ...interpolations: Array<
-    string | number | ((props: Props) => string | number)
-  >
-): import('react').ComponentType<Props & { root?: Document | ShadowRoot }> {
-  return getGlobalInjector().createGlobalStyle(strings, ...interpolations);
 }
 
 // Re-export types
@@ -262,6 +191,7 @@ export type {
   KeyframesSteps,
   KeyframesCacheEntry,
   CacheMetrics,
+  RawCSSResult,
 } from './types';
 
 export { StyleInjector } from './injector';

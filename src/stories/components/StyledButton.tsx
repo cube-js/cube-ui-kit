@@ -1,25 +1,29 @@
 import { Button } from '../../components/actions';
-import { tasty } from '../../tasty';
+import { tasty, useGlobalStyles } from '../../tasty';
 
 export const StyledButton = tasty(Button, {
   styles: {
     padding: '3x 6x',
     preset: 't1',
+    fill: 'okhsl(200 40% 80%)',
   },
 });
 
-export const GlobalStyledHeading = tasty('.myButton', {
-  display: 'inline-block',
-  padding: '1x 2x',
-  preset: 't2',
-  border: true,
-  radius: true,
-  fill: {
-    '': '#white',
-    ':hover': '#purple.20',
-  },
-  color: '#dark',
-});
+export function GlobalStyledHeading() {
+  useGlobalStyles('.myButton', {
+    display: 'inline-block',
+    padding: '1x 2x',
+    preset: 't2',
+    border: true,
+    radius: true,
+    fill: {
+      '': '#white',
+      ':hover': '#purple.20',
+    },
+    color: '#dark',
+  });
+  return null;
+}
 
 export function Block() {
   return (

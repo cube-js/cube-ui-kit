@@ -77,6 +77,13 @@ export class StyleParser {
 
     scan(stripped, (tok, isComma, prevChar) => {
       if (tok) {
+        // Accumulate raw token into current.input
+        if (current.input) {
+          current.input += ` ${tok}`;
+        } else {
+          current.input = tok;
+        }
+
         const { bucket, processed } = classify(tok, this.opts, (sub) =>
           this.process(sub),
         );
@@ -110,6 +117,13 @@ export class StyleParser {
     if (patch.cacheSize)
       this.cache = new Lru<string, ProcessedStyle>(patch.cacheSize);
     else this.cache.clear();
+  }
+
+  /**
+   * Get the current units configuration.
+   */
+  getUnits(): ParserOptions['units'] {
+    return this.opts.units;
   }
 }
 

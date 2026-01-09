@@ -7,6 +7,87 @@ import { getRgbValuesFromRgbaString, hexToRgb, parseStyle } from './styles';
 const devMode = process.env.NODE_ENV !== 'production';
 
 /**
+ * Parse HSL values from an hsl()/hsla() string.
+ * Supports both comma-separated (legacy) and space-separated (modern) syntax:
+ *   hsl(200, 40%, 50%)
+ *   hsl(200 40% 50%)
+ *   hsl(200 40% 50% / 0.5)
+ *
+ * Returns [h, s, l] where h is 0-360, s and l are 0-1, or null if parsing fails.
+ */
+function parseHslValues(str: string): [number, number, number] | null {
+  const match = str.match(/hsla?\(([^)]+)\)/i);
+  if (!match) return null;
+
+  const inner = match[1].trim();
+  // Split by slash first (for alpha), then handle color components
+  const [colorPart] = inner.split('/');
+  // Split by comma or whitespace
+  const parts = colorPart
+    .trim()
+    .split(/[,\s]+/)
+    .filter(Boolean);
+
+  if (parts.length < 3) return null;
+
+  // Parse hue (can be unitless degrees, deg, turn, rad, or grad)
+  let h = parseFloat(parts[0]);
+  const hueStr = parts[0].toLowerCase();
+  if (hueStr.endsWith('turn')) {
+    h = parseFloat(hueStr) * 360;
+  } else if (hueStr.endsWith('rad')) {
+    h = (parseFloat(hueStr) * 180) / Math.PI;
+  } else if (hueStr.endsWith('grad')) {
+    h = parseFloat(hueStr) * 0.9; // 400 grad = 360 deg
+  }
+  // deg or unitless are already in degrees
+
+  // Normalize hue to 0-360 range
+  h = h % 360;
+  if (h < 0) h += 360;
+
+  // Parse saturation and lightness (percentages)
+  const parsePercent = (val: string): number => {
+    const num = parseFloat(val);
+    return val.includes('%') ? num / 100 : num;
+  };
+
+  const s = Math.max(0, Math.min(1, parsePercent(parts[1])));
+  const l = Math.max(0, Math.min(1, parsePercent(parts[2])));
+
+  return [h, s, l];
+}
+
+/**
+ * Convert HSL to RGB (sRGB).
+ * Algorithm from: https://en.wikipedia.org/wiki/HSL_and_HSV#HSL_to_RGB_alternative
+ * Same as used in CSS Color 4 spec.
+ *
+ * @param h - Hue in degrees (0-360)
+ * @param s - Saturation (0-1)
+ * @param l - Lightness (0-1)
+ * @returns RGB values in 0-255 range (may have fractional values)
+ */
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  const a = s * Math.min(l, 1 - l);
+
+  const f = (n: number): number => {
+    const k = (n + h / 30) % 12;
+    return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+  };
+
+  // Convert 0-1 range to 0-255
+  return [f(0) * 255, f(8) * 255, f(4) * 255];
+}
+
+/**
+ * Format a number to a string with up to 1 decimal place, removing trailing zeros.
+ */
+function formatRgbComponent(n: number): string {
+  return parseFloat(n.toFixed(1)).toString();
+}
+
+/**
  * Extract RGB triplet from a color value.
  * Returns the RGB values as a space-separated string (e.g., "255 128 0")
  * or a CSS variable reference for token colors.
@@ -23,6 +104,22 @@ function extractRgbValue(colorValue: string, parsedOutput: string): string {
     const rgbValues = getRgbValuesFromRgbaString(parsedOutput);
     if (rgbValues && rgbValues.length >= 3) {
       return rgbValues.join(' ');
+    }
+  }
+
+  // For hsl(...) values, convert to RGB triplet
+  if (
+    parsedOutput.startsWith('hsl(') ||
+    parsedOutput.startsWith('hsla(') ||
+    colorValue.startsWith('hsl(') ||
+    colorValue.startsWith('hsla(')
+  ) {
+    // Try parsedOutput first, then original colorValue
+    const hslValues =
+      parseHslValues(parsedOutput) || parseHslValues(colorValue);
+    if (hslValues) {
+      const [r, g, b] = hslToRgb(hslValues[0], hslValues[1], hslValues[2]);
+      return `${formatRgbComponent(r)} ${formatRgbComponent(g)} ${formatRgbComponent(b)}`;
     }
   }
 

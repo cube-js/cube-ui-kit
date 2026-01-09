@@ -281,7 +281,7 @@ export const DEFAULT_BUTTON_STYLES = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    maxWidth: '100%',
+    width: '0 100%',
     textAlign: 'center',
     transition: 'theme, padding',
     padding: {

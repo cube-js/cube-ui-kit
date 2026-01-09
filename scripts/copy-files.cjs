@@ -36,14 +36,23 @@ function copyPackageJson() {
     peerDependencies,
     dependencies,
     license,
+    type: 'module',
     module: './es/index.js',
     types: './types/index.d.ts',
-    main: './cjs/index.js',
+    main: './es/index.js',
     exports: {
       '.': {
         import: './es/index.js',
         require: './cjs/index.js',
         types: './types/index.d.ts',
+      },
+      './tasty/static': {
+        import: './es/tasty/static/index.js',
+        types: './types/tasty/static/index.d.ts',
+      },
+      './tasty/zero/babel': {
+        import: './es/tasty/zero/babel.js',
+        types: './types/tasty/zero/babel.d.ts',
       },
     },
     private: false,

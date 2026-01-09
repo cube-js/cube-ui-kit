@@ -1,29 +1,20 @@
 import { DIRECTIONS, filterMods, parseStyle } from '../utils/styles';
 
 /**
- * Parse a padding value and return processed values
+ * Parse a padding value and return the first processed value
  */
-function parsePaddingValue(value: string | number | boolean): string[] {
-  if (typeof value === 'number') {
-    return [`${value}px`];
-  }
-
-  if (!value) return [];
-
+function parsePaddingValue(value: string | number | boolean): string | null {
+  if (typeof value === 'number') return `${value}px`;
+  if (!value) return null;
   if (value === true) value = '1x';
 
-  const processed = parseStyle(value);
-  let { values } = processed.groups[0] ?? ({ values: [] } as any);
+  const { values } = parseStyle(value).groups[0] ?? { values: [] };
 
-  if (!values.length) {
-    values = ['var(--gap)'];
-  }
-
-  return values;
+  return values[0] || 'var(--gap)';
 }
 
 /**
- * Parse directional padding value (like "1x top" or "2x left right")
+ * Parse padding value with optional directions (like "1x top" or "2x left right")
  */
 function parseDirectionalPadding(value: string | number | boolean): {
   values: string[];
@@ -32,22 +23,15 @@ function parseDirectionalPadding(value: string | number | boolean): {
   if (typeof value === 'number') {
     return { values: [`${value}px`], directions: [] };
   }
-
   if (!value) return { values: [], directions: [] };
-
   if (value === true) value = '1x';
 
-  const processed = parseStyle(value);
-  let { values, mods } =
-    processed.groups[0] ?? ({ values: [], mods: [] } as any);
+  const { values = [], mods = [] } = parseStyle(value).groups[0] ?? {};
 
-  if (!values.length) {
-    values = ['var(--gap)'];
-  }
-
-  const directions = filterMods(mods, DIRECTIONS);
-
-  return { values, directions };
+  return {
+    values: values.length ? values : ['var(--gap)'],
+    directions: filterMods(mods, DIRECTIONS),
+  };
 }
 
 export function paddingStyle({
@@ -67,65 +51,82 @@ export function paddingStyle({
   paddingBottom?: string | number | boolean;
   paddingLeft?: string | number | boolean;
 }) {
-  const styles: { [key: string]: string } = {};
+  // If no padding is defined, return empty object
+  if (
+    padding == null &&
+    paddingBlock == null &&
+    paddingInline == null &&
+    paddingTop == null &&
+    paddingRight == null &&
+    paddingBottom == null &&
+    paddingLeft == null
+  ) {
+    return {};
+  }
 
-  // Priority 1 (lowest): padding - apply to all directions if no other properties are specified
+  // Initialize all directions to 0
+  let [top, right, bottom, left] = ['0', '0', '0', '0'];
+
+  // Priority 1 (lowest): padding
   if (padding != null) {
-    // Parse directional padding (e.g., "1x top" or "2x left right")
     const { values, directions } = parseDirectionalPadding(padding);
 
-    if (directions.length === 0) {
-      // No directions specified, apply to all sides
-      styles['padding-top'] = values[0];
-      styles['padding-right'] = values[1] || values[0];
-      styles['padding-bottom'] = values[2] || values[0];
-      styles['padding-left'] = values[3] || values[1] || values[0];
-    } else {
-      // Apply only to specified directions
-      directions.forEach((dir) => {
-        const index = DIRECTIONS.indexOf(dir);
-        styles[`padding-${dir}`] =
-          values[index] || values[index % 2] || values[0];
-      });
+    if (values.length) {
+      if (directions.length === 0) {
+        top = values[0];
+        right = values[1] || values[0];
+        bottom = values[2] || values[0];
+        left = values[3] || values[1] || values[0];
+      } else {
+        for (const dir of directions) {
+          const idx = DIRECTIONS.indexOf(dir);
+          const val = values[idx] || values[idx % 2] || values[0];
+          if (dir === 'top') top = val;
+          else if (dir === 'right') right = val;
+          else if (dir === 'bottom') bottom = val;
+          else if (dir === 'left') left = val;
+        }
+      }
     }
   }
 
-  // Priority 2 (medium): paddingBlock - override top and bottom
+  // Priority 2 (medium): paddingBlock/paddingInline
   if (paddingBlock != null) {
-    const values = parsePaddingValue(paddingBlock);
-    styles['padding-top'] = values[0];
-    styles['padding-bottom'] = values[1] || values[0];
+    const val = parsePaddingValue(paddingBlock);
+    if (val) top = bottom = val;
   }
-
-  // Priority 2 (medium): paddingInline - override left and right
   if (paddingInline != null) {
-    const values = parsePaddingValue(paddingInline);
-    styles['padding-left'] = values[0];
-    styles['padding-right'] = values[1] || values[0];
+    const val = parsePaddingValue(paddingInline);
+    if (val) left = right = val;
   }
 
-  // Priority 3 (highest): individual directions - override specific sides
+  // Priority 3 (highest): individual directions
   if (paddingTop != null) {
-    const values = parsePaddingValue(paddingTop);
-    styles['padding-top'] = values[0];
+    const val = parsePaddingValue(paddingTop);
+    if (val) top = val;
   }
-
   if (paddingRight != null) {
-    const values = parsePaddingValue(paddingRight);
-    styles['padding-right'] = values[0];
+    const val = parsePaddingValue(paddingRight);
+    if (val) right = val;
   }
-
   if (paddingBottom != null) {
-    const values = parsePaddingValue(paddingBottom);
-    styles['padding-bottom'] = values[0];
+    const val = parsePaddingValue(paddingBottom);
+    if (val) bottom = val;
   }
-
   if (paddingLeft != null) {
-    const values = parsePaddingValue(paddingLeft);
-    styles['padding-left'] = values[0];
+    const val = parsePaddingValue(paddingLeft);
+    if (val) left = val;
   }
 
-  return styles;
+  // Optimize output: 1 value if all same, 2 values if top==bottom && left==right
+  if (top === right && right === bottom && bottom === left) {
+    return { padding: top };
+  }
+  if (top === bottom && left === right) {
+    return { padding: `${top} ${left}` };
+  }
+
+  return { padding: `${top} ${right} ${bottom} ${left}` };
 }
 
 paddingStyle.__lookupStyles = [

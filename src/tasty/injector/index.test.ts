@@ -1,16 +1,17 @@
 /**
  * @jest-environment jsdom
  */
-import { StyleResult } from '../utils/renderStyles';
+import { configure, resetConfig } from '../config';
+import { StyleResult } from '../pipeline';
 
 import {
   cleanup,
-  configure,
-  createGlobalStyle,
   createInjector,
   destroy,
   getCssText,
+  getRawCSSText,
   inject,
+  injectRawCSS,
   keyframes,
 } from './index';
 
@@ -55,7 +56,10 @@ describe('Global Style Injector API', () => {
     // Clear any existing styles
     document.head.querySelectorAll('[data-tasty]').forEach((el) => el.remove());
 
-    // Reset global injector by configuring fresh with text injection enabled
+    // Reset config to allow reconfiguration (clears stylesGenerated flag)
+    resetConfig();
+
+    // Configure fresh with text injection enabled
     configure({
       forceTextInjection: true, // Explicitly enable for reliable DOM testing
     });
@@ -63,6 +67,7 @@ describe('Global Style Injector API', () => {
 
   afterEach(() => {
     destroy(); // Clean up after each test
+    resetConfig(); // Reset config for next test
   });
 
   describe('configure', () => {
@@ -469,7 +474,7 @@ describe('Global Style Injector API', () => {
       expect(customFade.toString()).toBe('directName');
     });
 
-    it('should cache by name and steps separately', () => {
+    it('should cache by content (steps) for deduplication', () => {
       const fade1 = keyframes(
         { from: 'opacity: 0;', to: 'opacity: 1;' },
         { name: 'fade' },
@@ -481,8 +486,43 @@ describe('Global Style Injector API', () => {
       const fade3 = keyframes({ from: 'opacity: 0;', to: 'opacity: 1;' });
 
       expect(fade1.toString()).toBe('fade');
-      expect(fade2.toString()).toBe('fade'); // Same name + steps = reused
-      expect(fade3.toString()).toMatch(/^k\d+$/); // Different cache key (no name)
+      expect(fade2.toString()).toBe('fade'); // Same content = reused
+      expect(fade3.toString()).toBe('fade'); // Same content = reused (even without name)
+    });
+
+    it('should generate unique name for same name with different content', () => {
+      const fade1 = keyframes(
+        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        { name: 'fade' },
+      );
+      const fade2 = keyframes(
+        { from: 'opacity: 0.5;', to: 'opacity: 1;' }, // Different content
+        { name: 'fade' },
+      );
+
+      expect(fade1.toString()).toBe('fade');
+      expect(fade2.toString()).toMatch(/^fade-k\d+$/); // Collision: unique name generated
+    });
+
+    it('should allow same name after dispose (for dynamic updates)', () => {
+      // Simulate dynamic update: inject A, dispose A, inject B with same name
+      const fadeA = keyframes(
+        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        { name: 'fade' },
+      );
+      expect(fadeA.toString()).toBe('fade');
+
+      // Dispose A
+      fadeA.dispose();
+
+      // Inject B with same name but different content
+      const fadeB = keyframes(
+        { from: 'opacity: 0.5;', to: 'opacity: 1;' },
+        { name: 'fade' },
+      );
+
+      // Should reuse the name 'fade' since A was disposed
+      expect(fadeB.toString()).toBe('fade');
     });
   });
 
@@ -564,30 +604,55 @@ describe('Global Style Injector API', () => {
     });
   });
 
-  describe('createGlobalStyle', () => {
-    test('exports createGlobalStyle function from global injector', () => {
-      expect(typeof createGlobalStyle).toBe('function');
-
-      // Create a global style component
-      const GlobalStyle = createGlobalStyle<{ color: string }>`
-        .test-global {
-          color: ${(props) => props.color};
-        }
+  describe('injectRawCSS', () => {
+    test('injects raw CSS and returns dispose function', () => {
+      const css = `
+        body { margin: 0; padding: 0; }
+        .my-class { color: red; }
       `;
 
-      // Check that it returns a React component type
-      expect(typeof GlobalStyle).toBe('function');
-      expect(GlobalStyle.prototype).toBeDefined();
+      const { dispose } = injectRawCSS(css);
 
-      // Test that the interpolation would work as expected
-      const testColor = 'blue';
-      const expectedTemplate = `
-        .test-global {
-          color: ${testColor};
-        }
-      `;
-      expect(expectedTemplate).toContain('color: blue');
-      expect(expectedTemplate).toContain('.test-global');
+      // Check that CSS was injected
+      const rawCSS = getRawCSSText();
+      expect(rawCSS).toContain('body { margin: 0; padding: 0; }');
+      expect(rawCSS).toContain('.my-class { color: red; }');
+
+      // Dispose and verify CSS is removed
+      dispose();
+      const afterDispose = getRawCSSText();
+      expect(afterDispose).not.toContain('body { margin: 0;');
+    });
+
+    test('handles multiple raw CSS injections', () => {
+      const { dispose: dispose1 } = injectRawCSS('.first { color: blue; }');
+      const { dispose: dispose2 } = injectRawCSS('.second { color: green; }');
+
+      const rawCSS = getRawCSSText();
+      expect(rawCSS).toContain('.first { color: blue; }');
+      expect(rawCSS).toContain('.second { color: green; }');
+
+      // Dispose first, second should remain
+      dispose1();
+      const afterFirst = getRawCSSText();
+      expect(afterFirst).not.toContain('.first');
+      expect(afterFirst).toContain('.second');
+
+      // Dispose second
+      dispose2();
+      const afterSecond = getRawCSSText();
+      expect(afterSecond).not.toContain('.second');
+    });
+
+    test('handles empty CSS gracefully', () => {
+      const { dispose } = injectRawCSS('');
+      expect(getRawCSSText()).toBe('');
+      dispose(); // Should not throw
+    });
+
+    test('handles whitespace-only CSS gracefully', () => {
+      const { dispose } = injectRawCSS('   \n\t  ');
+      dispose(); // Should not throw
     });
   });
 });

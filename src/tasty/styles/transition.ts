@@ -96,9 +96,14 @@ export function transitionStyle({ transition }) {
 
   const result = Object.entries(map)
     .map(([style, [name, easing, timing, delay]]) => {
-      return `${style}  ${timing || getTiming(name)} ${
-        easing || DEFAULT_EASING
-      } ${delay || '0s'}`;
+      let value = `${style} ${timing || getTiming(name)}`;
+      if (easing || delay) {
+        value += ` ${easing || DEFAULT_EASING}`;
+      }
+      if (delay) {
+        value += ` ${delay}`;
+      }
+      return value;
     })
     .join(', ');
 

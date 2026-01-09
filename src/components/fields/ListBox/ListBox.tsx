@@ -37,7 +37,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { SIZES, SIZES_MAP } from '../../../tokens';
+import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 // Import Menu styled components for header and footer
@@ -793,7 +793,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       if (currentItem?.props?.description) {
         return SIZES.XL + 1;
       }
-      return SIZES[SIZES_MAP[size] as keyof typeof SIZES] + 1;
+      return SIZES[SIZE_NAME_TO_KEY[size] as keyof typeof SIZES] + 1;
     },
     measureElement: (el) => {
       return el.offsetHeight + 1;

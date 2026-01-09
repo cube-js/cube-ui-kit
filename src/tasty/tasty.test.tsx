@@ -5,12 +5,10 @@ import { Button } from '../components/actions';
 import { Block } from '../components/Block';
 import { Space } from '../components/layout/Space';
 
-import { tastyDebug } from './debug';
-import { BreakpointsProvider } from './providers/BreakpointsProvider';
+import { configure, resetConfig } from './config';
+import { useGlobalStyles } from './hooks';
 import { CONTAINER_STYLES } from './styles/list';
 import { tasty } from './tasty';
-
-import { configure } from './index';
 
 describe('tasty() API', () => {
   it('should handle color fallback syntax', () => {
@@ -171,13 +169,6 @@ describe('tasty() API', () => {
     expect(getByTestId(container, 'Field', {})).toBeDefined();
   });
 
-  it('should create responsive styles', () => {
-    const StyledBlock = tasty(Block, { styles: { display: ['grid', 'flex'] } });
-    const { container } = render(<StyledBlock />);
-
-    expect(container).toMatchTastySnapshot();
-  });
-
   it('should create element styles', () => {
     const Block = tasty({
       styles: { Element: { color: { '': '#dark', modified: '#purple' } } },
@@ -295,328 +286,144 @@ describe('tasty() API', () => {
     expect(container3).toMatchTastySnapshot();
   });
 
-  it('should handle arrays containing state maps', () => {
-    // Test the new syntax: padding: ['1x', { '': '1x', large: '2x' }]
-    const StyledBlock = tasty(Block, {
+  it('should support elements prop for sub-elements', () => {
+    const ButtonElement = tasty({
+      as: 'button',
       styles: {
-        // Simple array with state map at specific breakpoint
-        padding: ['2x', { '': '1x', hovered: '3x' }],
-
-        // Array with multiple state maps
-        margin: [
-          '1x',
-          { '': '2x', pressed: '1x', disabled: '0' },
-          { '': '0.5x', focused: '1x' },
-        ],
-
-        // Mixed responsive and state syntax
-        fill: {
-          '': ['#white', '#gray.05'],
-          hovered: ['#blue.05', '#blue.10'],
-        },
+        display: 'flex',
+        Icon: { color: 'red' },
+        Label: { fontWeight: 'bold' },
+      },
+      elements: {
+        Icon: 'span',
+        Label: { as: 'div', qa: 'ButtonLabel' },
       },
     });
 
     const { container } = render(
-      <BreakpointsProvider value={[1200, 768]}>
-        <StyledBlock mods={{ hovered: true, pressed: false }} />
-      </BreakpointsProvider>,
+      <ButtonElement qa="button">
+        <ButtonElement.Icon qa="icon">Icon</ButtonElement.Icon>
+        <ButtonElement.Label>Label</ButtonElement.Label>
+      </ButtonElement>,
     );
 
-    expect(container).toMatchTastySnapshot();
+    const icon = getByTestId(container, 'icon');
+    const label = getByTestId(container, 'ButtonLabel');
+
+    // Check data-element attributes
+    expect(icon.getAttribute('data-element')).toBe('Icon');
+    expect(label.getAttribute('data-element')).toBe('Label');
+
+    // Check correct tag names
+    expect(icon.tagName).toBe('SPAN');
+    expect(label.tagName).toBe('DIV');
   });
 
-  it('should handle state-map-of-arrays pattern', () => {
-    // Test conversion from state-map-of-arrays to arrays-of-state-maps
-    const StyledBlock = tasty(Block, {
-      styles: {
-        // State map where values are responsive arrays
-        padding: {
-          '': ['4x', '2x', '1x'],
-          hovered: ['6x', '3x', '1.5x'],
-          'variant=compact': ['2x', '1x', '0.5x'],
-        },
-
-        // Border with responsive arrays in state map
-        border: {
-          '': ['2bw solid #border', '1bw solid #border', 'none'],
-          focused: [
-            '3bw solid #primary',
-            '2bw solid #primary',
-            '1bw solid #primary',
-          ],
-          'error & focused': [
-            '3bw solid #danger',
-            '2bw solid #danger',
-            '1bw solid #danger',
-          ],
-        },
+  it('should support mods in sub-elements', () => {
+    const CardElement = tasty({
+      elements: {
+        Header: 'header',
       },
     });
 
     const { container } = render(
-      <BreakpointsProvider value={[1200, 768]}>
-        <StyledBlock
-          mods={{ hovered: false, focused: true, error: false }}
-          data-variant="normal"
-        />
-      </BreakpointsProvider>,
+      <CardElement>
+        <CardElement.Header qa="header" mods={{ active: true, size: 'large' }}>
+          Header
+        </CardElement.Header>
+      </CardElement>,
     );
 
-    expect(container).toMatchTastySnapshot();
+    const header = getByTestId(container, 'header');
+
+    expect(header.getAttribute('data-active')).toBe('');
+    expect(header.getAttribute('data-size')).toBe('large');
   });
 
-  it('should preserve null values in state-map-of-arrays conversion', () => {
-    // Test that null values in arrays are preserved across all breakpoints
-    // This is important for state logic - missing state !== falsy state
-    const StyledBlock = tasty(Block, {
-      styles: {
-        // Test case: { '': ['1x', '2x'], large: [null, '3x'] }
-        // Should convert to: [ { '': '1x', large: null }, { '': '2x', large: '3x' } ]
-        padding: {
-          '': ['4x', '2x'], // All breakpoints get values
-          hovered: [null, '3x'], // First breakpoint gets null, second gets '3x'
-          disabled: ['1x', null], // First breakpoint gets '1x', second gets null
-        },
-
-        // Color to visualize the states are working
-        fill: {
-          '': '#white',
-          hovered: '#blue',
-          disabled: '#gray',
-        },
+  it('should support is* properties in sub-elements', () => {
+    const FormElement = tasty({
+      elements: {
+        Input: 'input',
       },
     });
 
-    // Test with hovered=true (should use null for first breakpoint, '3x' for second)
-    const { container: hoveredContainer } = render(
-      <BreakpointsProvider value={[768]}>
-        <StyledBlock mods={{ hovered: true, disabled: false }} />
-      </BreakpointsProvider>,
-    );
-
-    expect(hoveredContainer).toMatchTastySnapshot();
-
-    // Test with disabled=true (should use '1x' for first breakpoint, null for second)
-    const { container: disabledContainer } = render(
-      <BreakpointsProvider value={[768]}>
-        <StyledBlock mods={{ hovered: false, disabled: true }} />
-      </BreakpointsProvider>,
-    );
-
-    expect(disabledContainer).toMatchTastySnapshot();
-  });
-
-  it('should handle complex responsive styles with state binding', () => {
-    const ComplexCard = tasty(Block, {
-      styles: {
-        // Responsive layout that changes between flex and grid
-        display: ['grid', 'flex', 'block'],
-
-        // Responsive gap with different values per breakpoint
-        gap: ['3x', '2x', '1x'],
-
-        // Complex responsive padding with state modifiers
-        padding: {
-          '': ['4x', '3x', '2x'],
-          hovered: ['5x', '4x', '3x'],
-          'pressed & !disabled': ['3x', '2x', '1x'],
-          'variant=compact': ['2x', '1x', '0.5x'],
-        },
-
-        // Responsive width with complex logic
-        width: {
-          '': ['max 1200px', 'max 800px', 'max 100%'],
-          'expanded | size=large': ['max 1400px', 'max 1000px', 'max 100%'],
-          '(hovered | focused) & !disabled': [
-            'max 1300px',
-            'max 900px',
-            'max 100%',
-          ],
-        },
-
-        // Color changes based on state with fallback
-        fill: {
-          '': '#surface',
-          hovered: '#surface-hover',
-          pressed: '#surface-pressed',
-          disabled: '#surface-disabled',
-          'variant=danger & hovered': '#danger-hover',
-          'variant=success & !disabled': '#success',
-        },
-
-        // Responsive border with state combinations
-        border: {
-          '': ['2bw solid #border', '1bw solid #border', 'none'],
-          focused: [
-            '3bw solid #primary',
-            '2bw solid #primary',
-            '1bw solid #primary',
-          ],
-          'error & focused': [
-            '3bw solid #danger',
-            '2bw solid #danger',
-            '1bw solid #danger',
-          ],
-          '!variant=borderless & hovered': [
-            '2bw solid #border-hover',
-            '1bw solid #border-hover',
-            '1bw solid #border-hover',
-          ],
-        },
-
-        // Responsive radius
-        radius: ['2r', '1r', '0.5r'],
-
-        // Sub-element styling with responsive behavior
-        Header: {
-          preset: ['h2', 'h3', 'h4'],
-          color: {
-            '': '#text-primary',
-            'variant=danger': '#danger',
-            hovered: '#text-primary-hover',
-          },
-          margin: ['0 0 2x 0', '0 0 1x 0', '0 0 0.5x 0'],
-        },
-
-        Content: {
-          padding: ['2x', '1x', '0.5x'],
-          color: {
-            '': '#text',
-            disabled: '#text-disabled',
-            'highlighted & !disabled': '#text-highlighted',
-          },
-        },
-
-        Footer: {
-          display: {
-            '': ['flex', 'flex', 'none'],
-            expanded: ['flex', 'flex', 'flex'],
-          },
-          gap: ['2x', '1x', '0.5x'],
-          padding: {
-            '': ['2x top', '1x top', '0.5x top'],
-            compact: ['1x top', '0.5x top', '0'],
-          },
-        },
-      },
-    });
-
-    // Test with various state combinations - wrap with custom breakpoints for 3-value arrays
     const { container } = render(
-      <BreakpointsProvider value={[1200, 768]}>
-        <ComplexCard
-          mods={{
-            hovered: true,
-            expanded: false,
-            highlighted: true,
-          }}
-          data-variant="success"
-          data-size="large"
+      <FormElement>
+        <FormElement.Input isDisabled qa="input" />
+      </FormElement>,
+    );
+
+    const input = getByTestId(container, 'input') as HTMLInputElement;
+
+    expect(input.disabled).toBe(true);
+    expect(input.getAttribute('data-disabled')).toBe('');
+  });
+
+  it('should allow qa and qaVal override in sub-elements', () => {
+    const Element = tasty({
+      elements: {
+        Item: { as: 'div', qa: 'default-item' },
+      },
+    });
+
+    const { container } = render(
+      <Element>
+        <Element.Item qa="custom-item" qaVal={42}>
+          Content
+        </Element.Item>
+      </Element>,
+    );
+
+    const item = getByTestId(container, 'custom-item');
+
+    // qa prop should override default
+    expect(item.getAttribute('data-qa')).toBe('custom-item');
+    expect(item.getAttribute('data-qaval')).toBe('42');
+  });
+
+  it('should support tokens prop in sub-elements', () => {
+    const Element = tasty({
+      elements: {
+        Box: 'div',
+      },
+    });
+
+    const { container } = render(
+      <Element>
+        <Element.Box
+          qa="box"
+          tokens={{ $size: 16, '#accent': '#ff0000' }}
+          style={{ padding: '10px' }}
         >
-          <div data-element="Header">Complex Header</div>
-          <div data-element="Content">Dynamic content</div>
-          <div data-element="Footer">Footer content</div>
-        </ComplexCard>
-      </BreakpointsProvider>,
+          Content
+        </Element.Box>
+      </Element>,
     );
 
-    expect(container).toMatchTastySnapshot();
-  });
+    const box = getByTestId(container, 'box');
+    const style = box.getAttribute('style');
 
-  it('should handle complex gridAreas with responsive arrays and state modifiers', () => {
-    const Header = tasty({
-      as: 'header',
-      styles: {
-        position: { '': 'static', sticky: 'sticky' },
-        top: { sticky: '0' },
-        fill: { '': 'transparent', sticky: '#white' },
-        zIndex: { '': 'auto', sticky: 10 },
-        shadow: { '': 'none', sticky: '0 0.5x 0.5x #white' },
-        display: 'grid',
-        padding: '1x 2x',
-        height: 'min 6x',
-        gridAreas: [
-          {
-            '': `
-              "breadcrumbs breadcrumbs breadcrumbs breadcrumbs breadcrumbs breadcrumbs"
-              "back        title       .           subtitle    spacer      extra"
-              "back        title       .           subtitle    spacer      extra"
-              "content     content     content     content     content     content"
-              "footer      footer      footer      footer      footer      footer"`,
-
-            'back-button-top': `
-                "back        back        back        back        back        back"
-                "breadcrumbs breadcrumbs breadcrumbs breadcrumbs breadcrumbs breadcrumbs"
-                ".           title       .           subtitle    spacer      extra"
-                ".           title       .           subtitle    spacer      extra"
-                "content     content     content     content     content     content"
-                "footer      footer      footer      footer      footer      footer"`,
-          },
-          {
-            '': `
-                "breadcrumbs breadcrumbs breadcrumbs breadcrumbs"
-                "back        title       spacer      extra"
-                "back        subtitle    subtitle    extra"
-                "back        .           .           extra"
-                "content     content     content     content"
-                "footer      footer      footer      footer"`,
-
-            'back-button-top': `
-                "back        back        back        back"
-                "breadcrumbs breadcrumbs breadcrumbs breadcrumbs"
-                ".           title       spacer      extra"
-                ".           subtitle    subtitle    extra"
-                ".           .           .           extra"
-                "content     content     content     content"
-                "footer      footer      footer      footer"`,
-          },
-        ],
-        gridColumns: [
-          'max-content minmax(2x, auto) 2x minmax(0, auto) minmax(2x, 1fr) minmax(min-content, max-content)',
-          'max-content minmax(2x, auto) minmax(2x, 1fr) minmax(min-content, max-content)',
-        ],
-        placeItems: 'center stretch',
-        placeContent: 'stretch',
-      },
-    });
-
-    // Test with default state
-    const { container: defaultContainer } = render(
-      <BreakpointsProvider value={[1200]}>
-        <Header qa="default-grid" />
-      </BreakpointsProvider>,
-    );
-
-    // Demonstrate debug utilities usage
-    const headerElement = defaultContainer.querySelector(
-      '[data-qa="default-grid"]',
-    ) as Element;
-
-    // Example: Get CSS for specific element
-    const cssForElement = tastyDebug.css(headerElement);
-    expect(cssForElement).toContain('grid-template-areas');
-
-    // Example: Get CSS for specific class
-    const className = headerElement.className
-      .split(' ')
-      .find((cls) => /^t\d+$/.test(cls));
-    if (className) {
-      const cssForClass = tastyDebug.css(className);
-      expect(cssForClass).toContain('display: grid');
-    }
-
-    expect(defaultContainer).toMatchTastySnapshot();
+    // Check token processing
+    expect(style).toContain('--size: 16');
+    expect(style).toContain('--accent-color:');
+    expect(style).toContain('--accent-color-rgb:');
+    // Check that explicit style prop is also applied
+    expect(style).toContain('padding: 10px');
   });
 });
 
 describe('style order consistency', () => {
-  // Helper function to extract class names from rendered components
+  // Helper function to extract all tasty class names from rendered components
+  // With chunking, elements may have multiple class names (one per chunk)
   function getClassName(container: HTMLElement): string {
     const element = container.firstElementChild as HTMLElement;
-    return (
-      element?.className?.split(' ').find((cls) => /^t\d+$/.test(cls)) || ''
-    );
+    // Get all tasty class names and sort them for consistent comparison
+    const classes = element?.className
+      ?.split(' ')
+      .filter((cls) => /^t\d+$/.test(cls))
+      .sort()
+      .join(' ');
+    return classes || '';
   }
 
   it('should generate same class for two components made with tasty having same styles but different order', () => {
@@ -1013,8 +820,11 @@ describe('tokens prop', () => {
   });
 });
 
-describe('tastyGlobal() API', () => {
+describe('useGlobalStyles() hook', () => {
   beforeEach(() => {
+    // Reset config for clean tests
+    resetConfig();
+
     // Configure injector for test environment with text injection
     configure({
       forceTextInjection: true,
@@ -1025,18 +835,22 @@ describe('tastyGlobal() API', () => {
     cleanup();
     // Clean up any injected styles
     document.head.querySelectorAll('[data-tasty]').forEach((el) => el.remove());
+    resetConfig();
   });
 
-  it('should create global style component for CSS selector', () => {
-    const GlobalHeading = tasty('.test-heading', {
-      preset: 'h2',
-      color: '#purple',
-      padding: '2x',
-    });
+  it('should inject global styles for CSS selector', () => {
+    function GlobalHeadingStyles() {
+      useGlobalStyles('.test-heading', {
+        preset: 'h2',
+        color: '#purple',
+        padding: '2x',
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalHeading />
+        <GlobalHeadingStyles />
         <h1 className="test-heading">Test Heading</h1>
       </div>,
     );
@@ -1060,17 +874,20 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should support complex selectors', () => {
-    const GlobalButton = tasty('button[data-variant="primary"]', {
-      fill: '#blue',
-      color: '#white',
-      border: 'none',
-      radius: '1r',
-      padding: '2x 4x',
-    });
+    function GlobalButtonStyles() {
+      useGlobalStyles('button[data-variant="primary"]', {
+        fill: '#blue',
+        color: '#white',
+        border: 'none',
+        radius: '1r',
+        padding: '2x 4x',
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalButton />
+        <GlobalButtonStyles />
         <button data-variant="primary">Primary Button</button>
         <button data-variant="secondary">Secondary Button</button>
       </div>,
@@ -1087,52 +904,28 @@ describe('tastyGlobal() API', () => {
     expect(styleContent).toContain('color: var(--white-color)');
   });
 
-  it('should support responsive global styles', () => {
-    const GlobalCard = tasty('.responsive-card', {
-      padding: ['4x', '2x', '1x'],
-      width: ['max 800px', 'max 600px', 'max 100%'],
-      margin: ['2x auto', '1x auto', '0 auto'],
-    });
-
-    const { container } = render(
-      <BreakpointsProvider value={[1200, 768]}>
-        <div>
-          <GlobalCard />
-          <div className="responsive-card">Responsive Card Content</div>
-        </div>
-      </BreakpointsProvider>,
-    );
-
-    // Verify responsive global styles are injected
-    const styleElements = document.head.querySelectorAll('[data-tasty]');
-    const styleContent = Array.from(styleElements)
-      .map((el) => el.textContent)
-      .join('');
-
-    expect(styleContent).toContain('.responsive-card');
-    expect(styleContent).toContain('@media');
-    expect(styleContent).toContain('max-width: 800px');
-  });
-
   it('should support state-based global styles', () => {
-    const GlobalInteractive = tasty('.interactive-element', {
-      fill: {
-        '': '#white',
-        ':hover': '#gray.05',
-        ':focus': '#blue.05',
-        '[id]': '#gray.20',
-      },
-      color: {
-        '': '#text',
-        ':hover': '#text-hover',
-        '[id]': '#text-disabled',
-      },
-      transition: 'fill 0.2s, color 0.2s',
-    });
+    function GlobalInteractiveStyles() {
+      useGlobalStyles('.interactive-element', {
+        fill: {
+          '': '#white',
+          ':hover': '#gray.05',
+          ':focus': '#blue.05',
+          '[id]': '#gray.20',
+        },
+        color: {
+          '': '#text',
+          ':hover': '#text-hover',
+          '[id]': '#text-disabled',
+        },
+        transition: 'fill 0.2s, color 0.2s',
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalInteractive />
+        <GlobalInteractiveStyles />
         <div className="interactive-element">Interactive Element</div>
         <div id="test-id" className="interactive-element">
           Element with ID
@@ -1152,40 +945,19 @@ describe('tastyGlobal() API', () => {
     expect(styleContent).toContain('background-color: var(--white-color)');
   });
 
-  it('should handle custom breakpoints prop', () => {
-    const GlobalResponsive = tasty('.custom-breakpoints', {
-      padding: ['3x', '2x', '1x'],
-      display: ['grid', 'flex', 'block'],
-    });
-
-    const { container } = render(
-      <div>
-        <GlobalResponsive breakpoints={[1440, 900]} />
-        <div className="custom-breakpoints">Custom Breakpoint Element</div>
-      </div>,
-    );
-
-    // Verify custom breakpoints are used in global styles
-    const styleElements = document.head.querySelectorAll('[data-tasty]');
-    const styleContent = Array.from(styleElements)
-      .map((el) => el.textContent)
-      .join('');
-
-    expect(styleContent).toContain('.custom-breakpoints');
-    expect(styleContent).toContain('@media (min-width: 1440px)');
-    expect(styleContent).toContain('@media (min-width: 900px)');
-  });
-
   it('should cleanup styles when component unmounts', () => {
-    const GlobalTemporary = tasty('.temporary-element', {
-      fill: '#red',
-      color: '#white',
-      padding: '2x',
-    });
+    function GlobalTemporaryStyles() {
+      useGlobalStyles('.temporary-element', {
+        fill: '#red',
+        color: '#white',
+        padding: '2x',
+      });
+      return null;
+    }
 
     const TestComponent = ({ showGlobal }: { showGlobal: boolean }) => (
       <div>
-        {showGlobal && <GlobalTemporary />}
+        {showGlobal && <GlobalTemporaryStyles />}
         <div className="temporary-element">Temporary Element</div>
       </div>
     );
@@ -1219,11 +991,14 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should handle empty styles', () => {
-    const EmptyGlobal = tasty('.empty-styles');
+    function EmptyGlobalStyles() {
+      useGlobalStyles('.empty-styles', undefined);
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <EmptyGlobal />
+        <EmptyGlobalStyles />
         <div className="empty-styles">Element with no styles</div>
       </div>,
     );
@@ -1242,33 +1017,36 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should support sub-element styling in global styles', () => {
-    const GlobalCard = tasty('.global-card', {
-      padding: '4x',
-      fill: '#surface',
-      border: '1bw solid #border',
-      radius: '1r',
+    function GlobalCardStyles() {
+      useGlobalStyles('.global-card', {
+        padding: '4x',
+        fill: '#surface',
+        border: '1bw solid #border',
+        radius: '1r',
 
-      // Sub-element styles
-      Title: {
-        preset: 'h3',
-        color: '#primary',
-        margin: '0 0 2x 0',
-      },
-      Content: {
-        color: '#text',
-        padding: '2x 0',
-      },
-      Footer: {
-        display: 'flex',
-        justify: 'space-between',
-        padding: '2x 0 0 0',
-        border: '1bw solid #border top',
-      },
-    });
+        // Sub-element styles
+        Title: {
+          preset: 'h3',
+          color: '#primary',
+          margin: '0 0 2x 0',
+        },
+        Content: {
+          color: '#text',
+          padding: '2x 0',
+        },
+        Footer: {
+          display: 'flex',
+          justify: 'space-between',
+          padding: '2x 0 0 0',
+          border: '1bw solid #border top',
+        },
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalCard />
+        <GlobalCardStyles />
         <div className="global-card">
           <div data-element="Title">Card Title</div>
           <div data-element="Content">Card content here</div>
@@ -1438,33 +1216,42 @@ describe('tastyGlobal() API', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('should support multiple global style components with different selectors', () => {
-    const GlobalHeading = tasty('h1.special', {
-      preset: 'h1',
-      color: '#primary',
-      margin: '0 0 2x 0',
-    });
+  it('should support multiple useGlobalStyles calls with different selectors', () => {
+    function GlobalHeadingStyles() {
+      useGlobalStyles('h1.special', {
+        preset: 'h1',
+        color: '#primary',
+        margin: '0 0 2x 0',
+      });
+      return null;
+    }
 
-    const GlobalParagraph = tasty('p.special', {
-      preset: 'p1',
-      color: '#text',
-      margin: '1x 0',
-    });
+    function GlobalParagraphStyles() {
+      useGlobalStyles('p.special', {
+        preset: 'p1',
+        color: '#text',
+        margin: '1x 0',
+      });
+      return null;
+    }
 
-    const GlobalLink = tasty('a.special', {
-      color: '#link',
-      textDecoration: 'underline',
-      transition: 'color 0.2s',
-      ':hover': {
-        color: '#link-hover',
-      },
-    });
+    function GlobalLinkStyles() {
+      useGlobalStyles('a.special', {
+        color: '#link',
+        textDecoration: 'underline',
+        transition: 'color 0.2s',
+        ':hover': {
+          color: '#link-hover',
+        },
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalHeading />
-        <GlobalParagraph />
-        <GlobalLink />
+        <GlobalHeadingStyles />
+        <GlobalParagraphStyles />
+        <GlobalLinkStyles />
         <h1 className="special">Special Heading</h1>
         <p className="special">Special paragraph text.</p>
         <a href="#" className="special">
@@ -1487,72 +1274,28 @@ describe('tastyGlobal() API', () => {
     expect(styleContent).toContain('color: var(--link-color)');
   });
 
-  it('should handle breakpoints context changes', () => {
-    const GlobalResponsive = tasty('.context-responsive', {
-      padding: ['4x', '2x', '1x'],
-      width: ['max 1000px', 'max 600px', 'max 100%'],
-    });
-
-    // Test with breakpoint context
-    render(
-      <BreakpointsProvider value={[1200, 768]}>
-        <div>
-          <GlobalResponsive />
-          <div className="context-responsive">
-            Context with custom breakpoints
-          </div>
-        </div>
-      </BreakpointsProvider>,
-    );
-
-    // Verify styles with breakpoint context are injected
-    const styleElements = document.head.querySelectorAll('[data-tasty]');
-    const styleContent = Array.from(styleElements)
-      .map((el) => el.textContent)
-      .join('');
-    expect(styleContent).toContain('.context-responsive');
-    expect(styleContent).toContain('@media (min-width: 1200px)');
-    expect(styleContent).toContain('@media (min-width: 768px)');
-  });
-
-  it('should have correct displayName', () => {
-    const GlobalTest = tasty('.test-selector', {
-      color: '#red',
-    });
-
-    expect(GlobalTest.displayName).toBe(
-      'TastyStyleDeclaration(.test-selector)',
-    );
-
-    // Also verify it injects styles when rendered
-    render(<GlobalTest />);
-
-    const styleElements = document.head.querySelectorAll('[data-tasty]');
-    const styleContent = Array.from(styleElements)
-      .map((el) => el.textContent)
-      .join('');
-    expect(styleContent).toContain('.test-selector');
-  });
-
   it('should support pseudo-classes and pseudo-elements', () => {
-    const GlobalWithPseudo = tasty('.pseudo-test', {
-      color: '#dark',
-      ':hover': {
-        color: '#purple',
-      },
-      ':focus': {
-        color: '#blue',
-        outline: '2px solid #blue',
-      },
-      '::before': {
-        content: '"→ "',
-        color: '#gray',
-      },
-    });
+    function GlobalWithPseudoStyles() {
+      useGlobalStyles('.pseudo-test', {
+        color: '#dark',
+        ':hover': {
+          color: '#purple',
+        },
+        ':focus': {
+          color: '#blue',
+          outline: '2px solid #blue',
+        },
+        '::before': {
+          content: '"→ "',
+          color: '#gray',
+        },
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalWithPseudo />
+        <GlobalWithPseudoStyles />
         <div className="pseudo-test" tabIndex={0}>
           Element with pseudo styles
         </div>
@@ -1573,16 +1316,19 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should support attribute selectors', () => {
-    const GlobalAttributeSelector = tasty('[data-testid="global-attr"]', {
-      fill: '#yellow',
-      color: '#dark',
-      padding: '2x',
-      border: '1bw solid #orange',
-    });
+    function GlobalAttributeSelectorStyles() {
+      useGlobalStyles('[data-testid="global-attr"]', {
+        fill: '#yellow',
+        color: '#dark',
+        padding: '2x',
+        border: '1bw solid #orange',
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalAttributeSelector />
+        <GlobalAttributeSelectorStyles />
         <div data-testid="global-attr">Element with attribute selector</div>
         <div data-testid="other-attr">Other element</div>
       </div>,
@@ -1600,21 +1346,27 @@ describe('tastyGlobal() API', () => {
   });
 
   it('should support complex selectors with combinators', () => {
-    const GlobalComplex = tasty('.parent > .child', {
-      fill: '#green',
-      padding: '1x',
-      margin: '0.5x',
-    });
+    function GlobalComplexStyles() {
+      useGlobalStyles('.parent > .child', {
+        fill: '#green',
+        padding: '1x',
+        margin: '0.5x',
+      });
+      return null;
+    }
 
-    const GlobalDescendant = tasty('.container .nested', {
-      color: '#blue',
-      fontWeight: 'bold',
-    });
+    function GlobalDescendantStyles() {
+      useGlobalStyles('.container .nested', {
+        color: '#blue',
+        fontWeight: 'bold',
+      });
+      return null;
+    }
 
     const { container } = render(
       <div>
-        <GlobalComplex />
-        <GlobalDescendant />
+        <GlobalComplexStyles />
+        <GlobalDescendantStyles />
         <div className="parent">
           <div className="child">Direct child</div>
           <div>
@@ -1642,65 +1394,29 @@ describe('tastyGlobal() API', () => {
     expect(styleContent).toContain('color: var(--blue-color)');
   });
 
-  it('should handle style updates when breakpoints change', () => {
-    const GlobalDynamic = tasty('.dynamic-styles', {
-      padding: ['3x', '2x', '1x'],
-      display: ['grid', 'flex', 'block'],
-    });
-
-    const TestWrapper = ({ breakpoints }: { breakpoints: number[] }) => (
-      <BreakpointsProvider value={breakpoints}>
-        <div>
-          <GlobalDynamic />
-          <div className="dynamic-styles">Dynamic element</div>
-        </div>
-      </BreakpointsProvider>
-    );
-
-    const { container, rerender } = render(
-      <TestWrapper breakpoints={[1200, 768]} />,
-    );
-
-    // Verify initial breakpoint styles
-    let styleElements = document.head.querySelectorAll('[data-tasty]');
-    let styleContent = Array.from(styleElements)
-      .map((el) => el.textContent)
-      .join('');
-    expect(styleContent).toContain('.dynamic-styles');
-    expect(styleContent).toContain('@media (min-width: 1200px)');
-    expect(styleContent).toContain('@media (min-width: 768px)');
-
-    // Change breakpoints - should trigger style re-calculation
-    act(() => {
-      rerender(<TestWrapper breakpoints={[1440, 900]} />);
-    });
-
-    // Verify updated breakpoint styles
-    styleElements = document.head.querySelectorAll('[data-tasty]');
-    styleContent = Array.from(styleElements)
-      .map((el) => el.textContent)
-      .join('');
-    expect(styleContent).toContain('@media (min-width: 1440px)');
-    expect(styleContent).toContain('@media (min-width: 900px)');
-  });
-
   it('should handle style updates when styles change', () => {
-    const DynamicGlobal1 = tasty('.dynamic-selector', {
-      fill: '#blue',
-      color: '#white',
-      padding: '2x',
-    });
+    function DynamicGlobalStyles1() {
+      useGlobalStyles('.dynamic-selector', {
+        fill: '#blue',
+        color: '#white',
+        padding: '2x',
+      });
+      return null;
+    }
 
-    const DynamicGlobal2 = tasty('.dynamic-selector', {
-      fill: '#red',
-      color: '#white',
-      padding: '4x',
-      border: '1bw solid #dark',
-    });
+    function DynamicGlobalStyles2() {
+      useGlobalStyles('.dynamic-selector', {
+        fill: '#red',
+        color: '#white',
+        padding: '4x',
+        border: '1bw solid #dark',
+      });
+      return null;
+    }
 
     const { container, rerender } = render(
       <div>
-        <DynamicGlobal1 />
+        <DynamicGlobalStyles1 />
         <div className="dynamic-selector">Dynamic content</div>
       </div>,
     );
@@ -1717,7 +1433,7 @@ describe('tastyGlobal() API', () => {
     act(() => {
       rerender(
         <div>
-          <DynamicGlobal2 />
+          <DynamicGlobalStyles2 />
           <div className="dynamic-selector">Dynamic content</div>
         </div>,
       );
