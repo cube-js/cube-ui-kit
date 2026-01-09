@@ -102,8 +102,6 @@ export type {
 
 // atoms
 export * from './components/status';
-export { Base64Upload } from './components/other/Base64Upload/Base64Upload';
-export type { CubeBase64UploadProps } from './components/other/Base64Upload/Base64Upload';
 export { Card } from './components/content/Card/Card';
 export type { CubeCardProps } from './components/content/Card/Card';
 export * from './components/actions';
@@ -162,8 +160,6 @@ export type { CubeTooltipProviderProps } from './components/overlays/Tooltip/Too
 export * from './components/content/Alert';
 
 // molecules
-export { LegacyTabs } from './components/navigation/LegacyTabs/LegacyTabs';
-export type { CubeTabsProps } from './components/navigation/LegacyTabs/LegacyTabs';
 export { FileTabs } from './components/organisms/FileTabs/FileTabs';
 export type { CubeFileTabProps } from './components/organisms/FileTabs/FileTabs';
 export { StatsCard } from './components/organisms/StatsCard/StatsCard';
