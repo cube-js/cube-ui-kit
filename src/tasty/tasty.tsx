@@ -590,7 +590,7 @@ function tastyElement<
       }, [styles, propStyles]);
 
       // Use the useStyles hook for style generation and injection
-      const { className: stylesClassName } = useStyles({ styles: allStyles });
+      const { className: stylesClassName } = useStyles(allStyles);
 
       // Merge default tokens with instance tokens (instance overrides defaults)
       const tokensKey = stringifyTokens(tokens as Tokens | undefined);

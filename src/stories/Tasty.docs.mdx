@@ -1500,12 +1500,10 @@ import { useStyles } from '@cube-dev/ui-kit';
 
 function MyComponent() {
   const { className } = useStyles({
-    styles: {
-      padding: '2x',
-      fill: '#surface',
-      radius: '1r',
-      border: '1bw solid #border',
-    },
+    padding: '2x',
+    fill: '#surface',
+    radius: '1r',
+    border: '1bw solid #border',
   });
 
   return <div className={className}>Styled content</div>;
@@ -1517,11 +1515,11 @@ function MyComponent() {
 - Integrating with third-party libraries that expect className strings
 - Creating utility hooks that compose styles
 
-**Options:**
+**Arguments:**
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `styles` | `Styles` | Tasty styles object (same format as `tasty()`) |
+| Argument | Type | Description |
+|----------|------|-------------|
+| `styles` | `Styles \| undefined` | Tasty styles object (same format as `tasty()`) |
 
 **Returns:**
 
@@ -1601,6 +1599,48 @@ useGlobalStyles('.data-table', {
 });
 ```
 
+### useRawCSS
+
+The `useRawCSS` hook injects **plain CSS text** (without tasty parsing). It’s useful for global resets, importing third‑party snippets, or when you already have authored CSS and just need lifecycle-managed injection/cleanup.
+
+Supports two overloads:
+- **Static CSS**: `useRawCSS(cssString, options?)`
+- **Factory function**: `useRawCSS(() => cssString, deps, options?)` (re-evaluates when deps change, like `useMemo`)
+
+```tsx
+import { useRawCSS } from '@cube-dev/ui-kit';
+
+// Static CSS
+function GlobalReset() {
+  useRawCSS(`
+    body { margin: 0; padding: 0; }
+  `);
+
+  return null;
+}
+
+// Dynamic CSS (factory + deps)
+function ThemeCSS({ theme }: { theme: 'dark' | 'light' }) {
+  useRawCSS(
+    () => `
+      :root {
+        --app-bg: ${theme === 'dark' ? '#111' : '#fff'};
+        --app-text: ${theme === 'dark' ? '#fff' : '#111'};
+      }
+    `,
+    [theme],
+  );
+
+  return null;
+}
+```
+
+**Options:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `root` | `Document \| ShadowRoot` | Where to inject the `<style>` tag (defaults to `document`) |
+
 ---
 
 ## 🔗 Cross-References
@@ -1612,7 +1652,7 @@ useGlobalStyles('.data-table', {
 - **Interactivity**: See [Modifiers & State Binding](#modifiers--state-binding) for hover, focus, and custom states
 - **Theming**: See [Variants & Theming](#variants--theming) for component variations
 - **Performance**: See [Performance Tips](#performance-tips-) for optimization techniques
-- **Hooks**: See [Hooks](#-hooks) for `useStyles` and `useGlobalStyles`
+- **Hooks**: See [Hooks](#-hooks) for `useStyles`, `useGlobalStyles`, and `useRawCSS`
 - **Create Component Guide**: See [CreateComponent.docs.mdx](/docs/tasty-create-component--docs) for component creation patterns
 
 ---

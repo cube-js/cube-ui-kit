@@ -32,12 +32,11 @@ function containsStartingStyle(styleKey: string): boolean {
   return styleKey.includes('@starting');
 }
 
-export interface UseStylesOptions {
-  /**
-   * Tasty styles object to generate CSS classes for
-   */
-  styles?: Styles;
-}
+/**
+ * Tasty styles object to generate CSS classes for.
+ * Can be undefined or empty object for no styles.
+ */
+export type UseStylesOptions = Styles | undefined;
 
 export interface UseStylesResult {
   /**
@@ -100,18 +99,16 @@ function getUsedKeyframes(
  * ```tsx
  * function MyComponent() {
  *   const { className } = useStyles({
- *     styles: {
- *       padding: '2x',
- *       fill: '#purple',
- *       radius: '1r',
- *     }
+ *     padding: '2x',
+ *     fill: '#purple',
+ *     radius: '1r',
  *   });
  *
  *   return <div className={className}>Styled content</div>;
  * }
  * ```
  */
-export function useStyles({ styles }: UseStylesOptions): UseStylesResult {
+export function useStyles(styles: UseStylesOptions): UseStylesResult {
   // Array of dispose functions for each chunk
   const disposeRef = useRef<(() => void)[]>([]);
 
