@@ -1043,6 +1043,23 @@ export class SheetManager {
         ) {
           styleSheet.deleteRule(info.ruleIndex);
           sheet.ruleCount = Math.max(0, sheet.ruleCount - 1);
+
+          // Adjust indices for all other rules in the same sheet
+          // This is critical - when a keyframe rule is deleted, all rules
+          // with higher indices shift down by 1
+          this.adjustIndicesAfterDeletion(
+            registry,
+            info.sheetIndex,
+            info.ruleIndex,
+            info.ruleIndex,
+            1,
+            // Create a dummy RuleInfo to satisfy the function signature
+            {
+              className: '',
+              ruleIndex: info.ruleIndex,
+              sheetIndex: info.sheetIndex,
+            } as RuleInfo,
+          );
         }
       }
     } catch (error) {

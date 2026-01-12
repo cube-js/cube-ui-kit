@@ -12,10 +12,10 @@ const SpinsContainerElement = tasty({
     height: '$cube-spin-size',
     opacity: 0.8,
     contain: 'size layout style paint',
-    animation: {
-      '': 'cube-spin-reduced-motion 2s infinite ease-in-out',
-      '@media(prefers-reduced-motion)': 'none',
-    },
+    // animation: {
+    //   '': 'cube-spin-reduced-motion 2s infinite ease-in-out',
+    //   '@media(prefers-reduced-motion)': 'none',
+    // },
 
     '@keyframes': {
       'cube-spin-reduced-motion': {
