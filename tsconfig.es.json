@@ -3,7 +3,8 @@
   "compilerOptions": {
     "declarationDir": "dist/types",
     "outDir": "./dist/es",
-    "noEmit": false
+    "noEmit": false,
+    "types": ["jest", "react", "react-dom", "node"]
   },
   "exclude": [
     "src/**/__mocks__/**/*",
@@ -13,6 +14,7 @@
     "src/test/**/*",
     "src/**/*.test.tsx",
     "src/**/*.test.ts",
-    "src/tasty/tasty-legacy.tsx"
+    "src/tasty/tasty-legacy.tsx",
+    "src/icons/add-new-icon.js"
   ]
 }
