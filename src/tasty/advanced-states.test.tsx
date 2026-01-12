@@ -103,7 +103,7 @@ describe('Advanced State Mapping - CSS Output', () => {
     it('should handle media queries with range syntax', () => {
       const Element = tasty({
         styles: {
-          columns: {
+          gridColumns: {
             '': '1',
             '@media(600px <= w < 900px)': '2',
             '@media(w >= 900px)': '3',
@@ -120,7 +120,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       // Multiple overlapping media queries should generate proper cascading CSS
       const Element = tasty({
         styles: {
-          gridTemplateColumns: {
+          gridColumns: {
             '': '1fr 1fr 1fr', // for w > 1400px (default)
             '@media(w <= 1400px)': '1fr 1fr', // for 920px < w <= 1400px
             '@media(w <= 920px)': '1fr', // for w <= 920px
@@ -699,7 +699,7 @@ describe('Advanced State Mapping - CSS Output', () => {
       // Three non-overlapping ranges
       const Element = tasty({
         styles: {
-          columns: {
+          gridColumns: {
             '': '4',
             '@media(w <= 1200px)': '3',
             '@media(w <= 800px)': '2',
@@ -864,7 +864,7 @@ describe('Advanced State Mapping - renderStyles direct tests', () => {
     it('should handle cascading container queries with overlapping ranges', () => {
       const { rules } = renderStyles({
         containerType: 'inline-size',
-        gridTemplateColumns: {
+        gridColumns: {
           '': '1fr 1fr 1fr', // for w > 800px (default)
           '@(w <= 800px)': '1fr 1fr', // for 400px < w <= 800px
           '@(w <= 400px)': '1fr', // for w <= 400px
