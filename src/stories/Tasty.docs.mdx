@@ -1081,13 +1081,13 @@ Define CSS `@keyframes` animations directly in styles:
 ```jsx
 const Pulse = tasty({
   styles: {
+    animation: 'pulse 2s infinite',
     '@keyframes': {
       pulse: {
         '0%, 100%': 'transform: scale(1);',
         '50%': 'transform: scale(1.05);',
       },
     },
-    animation: 'pulse 2s infinite',
   },
 });
 ```
@@ -1103,6 +1103,27 @@ configure({
 ```
 
 Local `@keyframes` override global ones with the same name. Only animations referenced in styles are injected.
+
+#### Keyframes with Media Queries
+
+Combine `@keyframes` with media states for accessibility:
+
+```jsx
+const Spinner = tasty({
+  styles: {
+    animation: {
+      '': 'spin 1s infinite linear',
+      '@media(prefers-reduced-motion)': 'none',
+    },
+    '@keyframes': {
+      spin: {
+        '0%': 'transform: rotate(0deg);',
+        '100%': 'transform: rotate(360deg);',
+      },
+    },
+  },
+});
+```
 
 ### Variants & Theming
 
@@ -1153,6 +1174,26 @@ const Component = tasty({
     margin: '($custom-margin, 1x)', // With fallback
   },
 });
+```
+
+#### Math with Custom Properties
+
+Use parentheses for math expressions with custom properties. Tasty auto-wraps in `calc()`:
+
+```jsx
+const Component = tasty({
+  styles: {
+    // ✅ Correct: tasty syntax with parentheses
+    padding: '(1 / 10 * $size)',
+    width: '($base-width + 2x)',
+    
+    // ❌ Avoid: raw CSS calc() - use tasty syntax instead
+    // padding: 'calc(1 / 10 * var(--size))',
+  },
+});
+
+// Pass dynamic values via tokens prop
+<Component tokens={{ '$size': '100px' }} />
 ```
 
 ### Custom Color Definitions

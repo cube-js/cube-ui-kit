@@ -1,6 +1,6 @@
 import { PropsWithChildren, useCallback, useRef } from 'react';
 import { CSSTransition } from 'react-transition-group';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 
 import type { TransitionProps } from 'react-transition-group/Transition';
 

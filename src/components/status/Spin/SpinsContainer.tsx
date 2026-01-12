@@ -1,34 +1,41 @@
-import { CSSProperties } from 'react';
-import styled from 'styled-components';
+import { ReactNode } from 'react';
 
-export const SpinsContainer = styled.div.attrs<{ $ownSize: number }>(
-  ({ $ownSize }) => ({
-    role: 'presentation',
-    style: { '--cube-spin-size': `${$ownSize}px` } as CSSProperties,
-  }),
-)`
-  box-sizing: border-box;
+import { tasty } from '../../../tasty';
 
-  display: inline-block;
-  padding: calc(10 / 100 * var(--cube-spin-size));
-  width: var(--cube-spin-size);
-  height: var(--cube-spin-size);
-  opacity: 0.8;
-  contain: size layout style paint;
+const SpinsContainerElement = tasty({
+  role: 'presentation',
+  styles: {
+    boxSizing: 'border-box',
+    display: 'inline-block',
+    padding: '(1 / 10 * $cube-spin-size)',
+    width: '$cube-spin-size',
+    height: '$cube-spin-size',
+    opacity: 0.8,
+    contain: 'size layout style paint',
+    animation: {
+      '': 'cube-spin-reduced-motion 2s infinite ease-in-out',
+      '@media(prefers-reduced-motion)': 'none',
+    },
 
-  @media (prefers-reduced-motion) {
-    animation: cube-spin-reduced-motion 2s infinite ease-in-out;
-  }
+    '@keyframes': {
+      'cube-spin-reduced-motion': {
+        '0%': 'opacity: 0.4;',
+        '50%': 'opacity: 0.8;',
+        '100%': 'opacity: 0.4;',
+      },
+    },
+  },
+});
 
-  @keyframes cube-spin-reduced-motion {
-    0% {
-      opacity: 0.4;
-    }
-    50% {
-      opacity: 0.8;
-    }
-    100% {
-      opacity: 0.4;
-    }
-  }
-`;
+export interface SpinsContainerProps {
+  ownSize: number;
+  children?: ReactNode;
+}
+
+export function SpinsContainer({ ownSize, children }: SpinsContainerProps) {
+  return (
+    <SpinsContainerElement tokens={{ '$cube-spin-size': `${ownSize}px` }}>
+      {children}
+    </SpinsContainerElement>
+  );
+}
