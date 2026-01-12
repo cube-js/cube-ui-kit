@@ -1,7 +1,8 @@
 import { forwardRef, ReactNode } from 'react';
 
 import { chain } from '../../../utils/react';
-import { Button, ButtonGroup, CubeButtonProps } from '../../actions';
+import { Button } from '../../actions/Button/Button';
+import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Content } from '../../content/Content';
 import { Footer } from '../../content/Footer';
 import { Header } from '../../content/Header';
@@ -9,6 +10,8 @@ import { Paragraph } from '../../content/Paragraph';
 import { Title } from '../../content/Title';
 import { CubeDialogProps, Dialog } from '../Dialog';
 import { useDialogContext } from '../Dialog/context';
+
+import type { CubeButtonProps } from '../../actions/Button/Button';
 
 export interface CubeAlertDialogActionsProps {
   confirm?: CubeButtonProps | boolean;

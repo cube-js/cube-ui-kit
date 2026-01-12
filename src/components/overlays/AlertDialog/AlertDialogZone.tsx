@@ -1,9 +1,10 @@
-import { CubeButtonProps } from '../../actions';
 import { Portal } from '../../portal';
 import { DialogContainer } from '../Dialog';
 
 import { AlertDialog, CubeAlertDialogActionsProps } from './AlertDialog';
 import { AlertDialogResolveStatus, Dialog } from './types';
+
+import type { CubeButtonProps } from '../../actions/Button/Button';
 
 export interface DialogZoneProps {
   openedDialog: Dialog | null;

@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext } from 'react';
 
-import { CubeItemProps } from '../content/Item';
+import type { CubeItemProps } from '../content/Item/Item';
 
 interface ItemActionContextValue {
   type?: CubeItemProps['type'];
