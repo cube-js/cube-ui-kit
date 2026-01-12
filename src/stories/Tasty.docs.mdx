@@ -201,6 +201,36 @@ Object where keys represent states and values are the styles to apply. Used for 
 fill: { '': '#white', hovered: '#gray.05', 'theme=danger': '#red' }
 ```
 
+#### State Key Types
+
+State keys support various selector syntaxes, all appended **directly to the element selector** (no space):
+
+| Syntax | Example | Generated CSS |
+|--------|---------|---------------|
+| Boolean modifier | `hovered` | `[data-hovered]` |
+| Value modifier | `theme=danger` | `[data-theme="danger"]` |
+| Pseudo-class | `:hover` | `:hover` |
+| Class selector | `.active` | `.active` |
+| Attribute selector | `[aria-expanded="true"]` | `[aria-expanded="true"]` |
+| Combined | `hovered & .active` | `[data-hovered].active` |
+
+**Example:**
+
+```jsx
+const Button = tasty({
+  styles: {
+    fill: {
+      '': '#surface',
+      '.active': '#primary',           // Same element with .active class
+      ':focus-visible': '#purple.10',  // Same element when focused
+      'disabled': '#gray.05',          // Same element with data-disabled
+    },
+  },
+});
+// .active state generates: .t123.active { ... }
+// NOT: .t123 .active { ... } (that would be a descendant)
+```
+
 ### Sub-element
 
 Element styled using a capitalized key. Identified by `data-element` attribute. Capitalized words in selectors (`:has(Item)`, `> Body > Row`) transform to `[data-element="..."]`.
@@ -787,11 +817,14 @@ color: {
   '!disabled & hovered': '#blue',     // NOT disabled AND hovered
   'success | complete': '#green',     // success OR complete
   ':hover': '#purple',                // CSS pseudo-class
+  '.active': '#green',                // CSS class selector (same element)
   'theme=dark': '#light',             // Value modifier (recommended)
   'theme="special dark"': '#purple',  // Value modifier with spaces (recommended)
   '[aria-expanded="true"]': '#green', // Attribute selector (escape hatch)
 }
 ```
+
+> **💡 Class Selector Note:** When using `.class` in state keys, it's appended directly to the element selector without a space, targeting the **same element** (e.g., `.tasty-class.active`). This is different from sub-element keys at the style root, which create descendant selectors.
 
 ### Advanced States
 
