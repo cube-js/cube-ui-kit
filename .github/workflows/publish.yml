@@ -159,7 +159,7 @@ jobs:
   deploy-chromatic-release:
     name: 'Deploy storybook to Chromatic'
     needs: publish-release
-    if: github.event_name == 'push' && needs.publish-release.outputs.published == 'false'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment:
       name: Chromatic Production
