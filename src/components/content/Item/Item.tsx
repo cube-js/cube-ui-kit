@@ -480,8 +480,7 @@ const ItemElement = tasty({
       boxSizing: 'border-box',
       height: 'min ($size - 2bw)',
       width: {
-        '': 'max 0',
-        'has-actions-content': 'max ($actions-width, 0px)',
+        '': 'fixed ($actions-width, 0px)',
         'has-actions-content & show-actions-on-hover': 'max 0px',
         'has-actions-content & show-actions-on-hover & (:hover | :focus | :focus-within)':
           'max calc-size(max-content, size)',
