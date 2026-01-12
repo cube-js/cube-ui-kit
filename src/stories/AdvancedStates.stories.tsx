@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { CSSProperties } from 'styled-components';
 
 import {
   Block,
@@ -847,9 +846,7 @@ export const ContainerStyleQueries: StoryObj = {
         </Flex>
 
         <StyleQueryContainer
-          style={
-            variant ? ({ '--variant': variant } as CSSProperties) : undefined
-          }
+          style={variant ? { '--variant': variant } : undefined}
         >
           <StyleQueryBox>
             <Text>

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { ModalProvider } from 'react-aria';
-import { StyleSheetManager } from 'styled-components';
 
 import { Provider } from '../provider';
 import { NavigationAdapter } from '../providers/navigation.types';
@@ -82,38 +81,36 @@ export function Root(allProps: CubeRootProps) {
   return (
     <Provider navigation={navigation} root={rootRef}>
       <TrackingProvider event={tracking?.event}>
-        <StyleSheetManager>
-          <RootElement
-            ref={ref}
-            data-tasty={VERSION}
-            data-font-display={fontDisplay}
-            {...filterBaseProps(props, { eventProps: true })}
-            styles={styles}
-            style={{
-              '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
-              ...style,
-            }}
-            tokens={tokens}
-          >
-            <GlobalStyles
-              bodyStyles={bodyStyles}
-              publicUrl={publicUrl}
-              fonts={fonts}
-              font={font}
-              monospaceFont={monospaceFont}
-              fontDisplay={fontDisplay}
-            />
-            <ModalProvider>
-              <PortalProvider value={ref}>
-                <EventBusProvider>
-                  <NotificationsProvider rootRef={ref}>
-                    <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
-                  </NotificationsProvider>
-                </EventBusProvider>
-              </PortalProvider>
-            </ModalProvider>
-          </RootElement>
-        </StyleSheetManager>
+        <RootElement
+          ref={ref}
+          data-tasty={VERSION}
+          data-font-display={fontDisplay}
+          {...filterBaseProps(props, { eventProps: true })}
+          styles={styles}
+          style={{
+            '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
+            ...style,
+          }}
+          tokens={tokens}
+        >
+          <GlobalStyles
+            bodyStyles={bodyStyles}
+            publicUrl={publicUrl}
+            fonts={fonts}
+            font={font}
+            monospaceFont={monospaceFont}
+            fontDisplay={fontDisplay}
+          />
+          <ModalProvider>
+            <PortalProvider value={ref}>
+              <EventBusProvider>
+                <NotificationsProvider rootRef={ref}>
+                  <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
+                </NotificationsProvider>
+              </EventBusProvider>
+            </PortalProvider>
+          </ModalProvider>
+        </RootElement>
       </TrackingProvider>
     </Provider>
   );
