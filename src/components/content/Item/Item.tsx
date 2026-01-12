@@ -470,21 +470,28 @@ const ItemElement = tasty({
       display: 'flex',
       gap: '1bw',
       placeItems: 'center',
-      placeContent: 'stretch',
+      placeContent: 'end',
       placeSelf: 'stretch',
-      padding: '0 $side-padding',
+      padding: {
+        '': '0 $side-padding',
+        'has-actions-content & show-actions-on-hover & !:hover & !:focus & !:focus-within':
+          '0',
+      },
       boxSizing: 'border-box',
       height: 'min ($size - 2bw)',
       width: {
-        '': '($actions-width, 0px)',
-        'has-actions-content': 'calc-size(max-content, size)',
+        '': 'max ($actions-width, 0px)',
+        'has-actions-content & show-actions-on-hover': 'max 0px',
+        'has-actions-content & show-actions-on-hover & (:hover | :focus | :focus-within)':
+          'max calc-size(max-content, size)',
       },
       opacity: {
         '': 1,
         'show-actions-on-hover': 0,
         'show-actions-on-hover & (:hover | :focus | :focus-within)': 1,
       },
-      transition: 'width $transition ease-out, opacity $transition ease-out',
+      transition:
+        'width $transition ease-out, opacity $transition ease-out, padding $transition ease-out',
       interpolateSize: 'allow-keywords',
 
       // Size for the action buttons
