@@ -34,9 +34,9 @@ exports[`Advanced State Mapping - CSS Output @media query states should handle c
 `;
 
 exports[`Advanced State Mapping - CSS Output @media query states should handle media queries with range syntax 1`] = `
-"@media (width >= 900px) {.t0.t0 {columns: 3;}}
-@media (not (width >= 900px)) and (600px <= width < 900px) {.t0.t0 {columns: 2;}}
-@media (not (600px <= width < 900px)) and (not (width >= 900px)) {.t0.t0 {columns: 1;}}"
+"@media (width >= 900px) {.t0.t0 {grid-template-columns: 3;}}
+@media (not (width >= 900px)) and (600px <= width < 900px) {.t0.t0 {grid-template-columns: 2;}}
+@media (not (600px <= width < 900px)) and (not (width >= 900px)) {.t0.t0 {grid-template-columns: 1;}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output @root states should generate CSS with :root prefix for root states 1`] = `
@@ -152,10 +152,10 @@ exports[`Advanced State Mapping - CSS Output complex combinations should handle 
 `;
 
 exports[`Advanced State Mapping - CSS Output complex combinations should handle three-way media query cascade 1`] = `
-"@media (width <= 400px) {.t0.t0 {columns: 1;}}
-@media (not (width <= 400px)) and (width <= 800px) {.t0.t0 {columns: 2;}}
-@media (not (width <= 400px)) and (not (width <= 800px)) and (width <= 1200px) {.t0.t0 {columns: 3;}}
-@media (not (width <= 1200px)) and (not (width <= 400px)) and (not (width <= 800px)) {.t0.t0 {columns: 4;}}"
+"@media (width <= 400px) {.t0.t0 {grid-template-columns: 1;}}
+@media (not (width <= 400px)) and (width <= 800px) {.t0.t0 {grid-template-columns: 2;}}
+@media (not (width <= 400px)) and (not (width <= 800px)) and (width <= 1200px) {.t0.t0 {grid-template-columns: 3;}}
+@media (not (width <= 1200px)) and (not (width <= 400px)) and (not (width <= 800px)) {.t0.t0 {grid-template-columns: 4;}}"
 `;
 
 exports[`Advanced State Mapping - CSS Output complex combinations should support complex predefined states 1`] = `
