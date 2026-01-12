@@ -481,6 +481,8 @@ const ItemElement = tasty({
       height: 'min ($size - 2bw)',
       width: {
         '': 'fixed ($actions-width, 0px)',
+        'has-actions-content & !show-actions-on-hover':
+          'max calc-size(max-content, size)',
         'has-actions-content & show-actions-on-hover': 'max 0px',
         'has-actions-content & show-actions-on-hover & (:hover | :focus | :focus-within)':
           'max calc-size(max-content, size)',
