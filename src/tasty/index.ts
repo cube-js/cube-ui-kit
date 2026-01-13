@@ -23,6 +23,13 @@ export { okhslPlugin, okhslFunc } from './plugins';
 export type { TastyPlugin, TastyPluginFactory } from './plugins';
 
 configure({
+  units: {
+    x: 'var(--gap)',
+    r: 'var(--radius)',
+    cr: 'var(--card-radius)',
+    bw: 'var(--border-width)',
+    ow: 'var(--outline-width)',
+  },
   plugins: [okhslPlugin()],
 });
 // Chunk utilities for advanced use cases
