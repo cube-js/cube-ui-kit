@@ -1,16 +1,17 @@
-import React, { isValidElement, memo } from 'react';
+import React, { isValidElement, memo, ReactElement, ReactNode } from 'react';
 import * as flattenModule from 'react-keyed-flatten-children';
 
 import { tasty } from '../../../../tasty';
 import { ButtonGroup } from '../../../actions';
 import { CubeNotificationProps, NotificationActionComponent } from '../types';
 
+type FlattenFn = (children: ReactNode) => (ReactElement | string | number)[];
+
 // Handle CJS/ESM interop - the package exports via `exports.default`
-const flatten =
-  typeof flattenModule === 'function'
-    ? flattenModule
-    : (flattenModule as { default: typeof flattenModule }).default ||
-      flattenModule;
+const flatten: FlattenFn =
+  'default' in flattenModule
+    ? (flattenModule.default as FlattenFn)
+    : (flattenModule as unknown as FlattenFn);
 
 interface NotificationFooterProps {
   hasDescription: boolean;
