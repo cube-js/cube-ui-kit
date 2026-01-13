@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.98.9
+
+### Patch Changes
+
+- [#945](https://github.com/cube-js/cube-ui-kit/pull/945) [`07215bcd`](https://github.com/cube-js/cube-ui-kit/commit/07215bcd71aad735b4dda0d2304a627f4f1b17c0) Thanks [@tenphi](https://github.com/tenphi)! - Improve Item component actions container behavior when using `show-actions-on-hover`. Actions now properly collapse width and padding when not hovered, with smooth transitions for better visual feedback.
+
+- [#947](https://github.com/cube-js/cube-ui-kit/pull/947) [`3361360f`](https://github.com/cube-js/cube-ui-kit/commit/3361360f059996e5e1763913cb16cea7cb47ad89) Thanks [@tenphi](https://github.com/tenphi)! - Add SemanticQueryIcon.
+
 ## 0.98.8
 
 ### Patch Changes
