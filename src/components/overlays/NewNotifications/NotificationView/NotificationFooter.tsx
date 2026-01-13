@@ -1,9 +1,28 @@
-import React, { isValidElement, memo } from 'react';
-import flatten from 'react-keyed-flatten-children';
+import React, { isValidElement, memo, ReactElement, ReactNode } from 'react';
+import * as flattenModule from 'react-keyed-flatten-children';
 
 import { tasty } from '../../../../tasty';
 import { ButtonGroup } from '../../../actions';
 import { CubeNotificationProps, NotificationActionComponent } from '../types';
+
+type FlattenFn = (children: ReactNode) => (ReactElement | string | number)[];
+
+// Handle CJS/ESM interop - the package exports via `exports.default`
+// Vite's __toESM can create nested default: { default: fn } structure
+const flatten: FlattenFn = (() => {
+  const mod = flattenModule as Record<string, unknown>;
+  if (typeof mod === 'function') return mod as unknown as FlattenFn;
+  if (typeof mod.default === 'function') return mod.default as FlattenFn;
+  if (
+    mod.default &&
+    typeof mod.default === 'object' &&
+    'default' in mod.default &&
+    typeof (mod.default as Record<string, unknown>).default === 'function'
+  ) {
+    return (mod.default as Record<string, unknown>).default as FlattenFn;
+  }
+  throw new Error('Failed to resolve react-keyed-flatten-children');
+})();
 
 interface NotificationFooterProps {
   hasDescription: boolean;
