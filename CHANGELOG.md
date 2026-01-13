@@ -1,5 +1,41 @@
 # @cube-dev/ui-kit
 
+## 0.99.0
+
+### Minor Changes
+
+- [#891](https://github.com/cube-js/cube-ui-kit/pull/891) [`c12660be`](https://github.com/cube-js/cube-ui-kit/commit/c12660be28c78b80bc462fbee4847da229063e94) Thanks [@tenphi](https://github.com/tenphi)! - Add `svgFill` style to tasty for setting the native CSS `fill` property on SVG elements. Supports the same color token syntax as `fill` (e.g., `#purple.10`, `#danger`). The existing `fill` style continues to output `background-color` for HTML elements.
+
+- [#891](https://github.com/cube-js/cube-ui-kit/pull/891) [`c12660be`](https://github.com/cube-js/cube-ui-kit/commit/c12660be28c78b80bc462fbee4847da229063e94) Thanks [@tenphi](https://github.com/tenphi)! - Add advanced states support with `@` prefix in tasty styles. State keys starting with `@` compile into CSS at-rules and contextual conditions, enabling media queries (`@media`), container queries (`@(...)`), root states (`@root`), sub-element own states (`@own`), and entry animations (`@starting`). Advanced states can be combined with logical operators (`&`, `|`, `!`, `^`) and used anywhere regular state keys are supported, including sub-elements. Define reusable state aliases globally via `configure({ states })` or locally per component.
+
+- [#891](https://github.com/cube-js/cube-ui-kit/pull/891) [`c12660be`](https://github.com/cube-js/cube-ui-kit/commit/c12660be28c78b80bc462fbee4847da229063e94) Thanks [@tenphi](https://github.com/tenphi)! - Add tastyStatic for zero runtime integration as well as babel plugin for it.
+
+- [#891](https://github.com/cube-js/cube-ui-kit/pull/891) [`c12660be`](https://github.com/cube-js/cube-ui-kit/commit/c12660be28c78b80bc462fbee4847da229063e94) Thanks [@tenphi](https://github.com/tenphi)! - Remove `createGlobalStyle` and replace it with a hook `useRawCSS`.
+
+- [#891](https://github.com/cube-js/cube-ui-kit/pull/891) [`c12660be`](https://github.com/cube-js/cube-ui-kit/commit/c12660be28c78b80bc462fbee4847da229063e94) Thanks [@tenphi](https://github.com/tenphi)! - Add okhsl-plugin to tasty to support OKHSL color space in tasty styles.
+
+- [#891](https://github.com/cube-js/cube-ui-kit/pull/891) [`c12660be`](https://github.com/cube-js/cube-ui-kit/commit/c12660be28c78b80bc462fbee4847da229063e94) Thanks [@tenphi](https://github.com/tenphi)! - Add `@keyframes` support in tasty styles. Define CSS animations directly within component styles using the `@keyframes` property, or configure global keyframes via `configure({ keyframes })`. Only animations referenced in styles are injected, with automatic deduplication and cleanup. Local keyframes override global ones with the same name.
+
+- [#891](https://github.com/cube-js/cube-ui-kit/pull/891) [`c12660be`](https://github.com/cube-js/cube-ui-kit/commit/c12660be28c78b80bc462fbee4847da229063e94) Thanks [@tenphi](https://github.com/tenphi)! - Implement style chunking optimization for improved CSS reuse and performance. Styles are now split into logical chunks (appearance, font, dimension, container, scrollbar, position, misc, and subcomponents), each with its own cache key and CSS class. This enables better CSS reuse across components and reduces CSS output size, especially for components with many variants like Button and Item. The optimization is fully backward compatible - elements still receive className(s) as before, but now with improved caching granularity.
+
+  **New exports:**
+
+  - `useStyles` hook - Generate CSS classes for element-scoped styles with chunking support
+  - `useGlobalStyles` hook - Inject global styles for a given selector
+  - Chunk utilities: `CHUNK_NAMES`, `STYLE_TO_CHUNK`, `categorizeStyleKeys` (for advanced use cases)
+
+- [#891](https://github.com/cube-js/cube-ui-kit/pull/891) [`c12660be`](https://github.com/cube-js/cube-ui-kit/commit/c12660be28c78b80bc462fbee4847da229063e94) Thanks [@tenphi](https://github.com/tenphi)! - Add `elements` to `tasty()` element definitions to declare compound sub-elements (e.g. `Component.Icon`) with `data-element` binding. Sub-elements support `qa`/`qaVal`, `mods`, `isDisabled`/`isHidden`/`isChecked`, and `tokens`.
+
+- [#891](https://github.com/cube-js/cube-ui-kit/pull/891) [`c12660be`](https://github.com/cube-js/cube-ui-kit/commit/c12660be28c78b80bc462fbee4847da229063e94) Thanks [@tenphi](https://github.com/tenphi)! - Remove tastyGlobal syntax. Add `useStyles` and `useGlobalStyles` hooks for handy style generation.
+
+### Patch Changes
+
+- [#891](https://github.com/cube-js/cube-ui-kit/pull/891) [`c12660be`](https://github.com/cube-js/cube-ui-kit/commit/c12660be28c78b80bc462fbee4847da229063e94) Thanks [@tenphi](https://github.com/tenphi)! - Add HSL to RGB conversion support for color token declarations. HSL color tokens (e.g., `'#primary': 'hsl(200 40% 50%)'`) now generate RGB triplets for `--name-color-rgb` variables, enabling opacity syntax support: `#name.3` → `rgb(var(--name-color-rgb) / .3)`.
+
+- [#891](https://github.com/cube-js/cube-ui-kit/pull/891) [`c12660be`](https://github.com/cube-js/cube-ui-kit/commit/c12660be28c78b80bc462fbee4847da229063e94) Thanks [@tenphi](https://github.com/tenphi)! - Optimize padding and margin style functions to return a single CSS property with optimized values (1, 2, or 4 values) instead of four separate properties, reducing CSS output size.
+
+- [#891](https://github.com/cube-js/cube-ui-kit/pull/891) [`c12660be`](https://github.com/cube-js/cube-ui-kit/commit/c12660be28c78b80bc462fbee4847da229063e94) Thanks [@tenphi](https://github.com/tenphi)! - Improve types of the tasty helper.
+
 ## 0.98.9
 
 ### Patch Changes
