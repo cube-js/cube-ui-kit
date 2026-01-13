@@ -53,6 +53,8 @@ export const COLOR_TOKENS: Styles = {
   '#border': 'rgb(227 227 233)',
   '#light-border': 'rgb(227 227 233)',
 
+  '#placeholder': '#dark-04',
+
   // Semantic colors
   '#clear': 'transparent',
   '#border-opaque': 'rgb(227 227 233)',
