@@ -1,9 +1,16 @@
 import React, { isValidElement, memo } from 'react';
-import flatten from 'react-keyed-flatten-children';
+import * as flattenModule from 'react-keyed-flatten-children';
 
 import { tasty } from '../../../../tasty';
 import { ButtonGroup } from '../../../actions';
 import { CubeNotificationProps, NotificationActionComponent } from '../types';
+
+// Handle CJS/ESM interop - the package exports via `exports.default`
+const flatten =
+  typeof flattenModule === 'function'
+    ? flattenModule
+    : (flattenModule as { default: typeof flattenModule }).default ||
+      flattenModule;
 
 interface NotificationFooterProps {
   hasDescription: boolean;
