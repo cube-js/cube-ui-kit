@@ -3,7 +3,7 @@
  */
 import { createElement } from 'react';
 
-import { StyleResult } from '../utils/renderStyles';
+import { StyleResult } from '../pipeline';
 
 import { StyleInjector } from './injector';
 import { StyleInjectorConfig } from './types';
@@ -590,354 +590,120 @@ describe('StyleInjector', () => {
     });
   });
 
-  describe('createGlobalStyle', () => {
-    test('creates a React component that injects global styles', () => {
+  describe('injectRawCSS', () => {
+    test('injects raw CSS and returns dispose function', () => {
+      const injector = new StyleInjector();
+      const css = `
+        body { margin: 0; padding: 0; }
+        .my-class { color: red; }
+      `;
+
+      const { dispose } = injector.injectRawCSS(css);
+
+      // Check that CSS was injected
+      const rawCSS = injector.getRawCSSText();
+      expect(rawCSS).toContain('body { margin: 0; padding: 0; }');
+      expect(rawCSS).toContain('.my-class { color: red; }');
+
+      // Dispose and verify CSS is removed
+      dispose();
+      const afterDispose = injector.getRawCSSText();
+      expect(afterDispose).not.toContain('body { margin: 0;');
+    });
+
+    test('handles multiple raw CSS injections', () => {
+      const injector = new StyleInjector();
+      const { dispose: dispose1 } = injector.injectRawCSS(
+        '.first { color: blue; }',
+      );
+      const { dispose: dispose2 } = injector.injectRawCSS(
+        '.second { color: green; }',
+      );
+
+      const rawCSS = injector.getRawCSSText();
+      expect(rawCSS).toContain('.first { color: blue; }');
+      expect(rawCSS).toContain('.second { color: green; }');
+
+      // Dispose first, second should remain
+      dispose1();
+      const afterFirst = injector.getRawCSSText();
+      expect(afterFirst).not.toContain('.first');
+      expect(afterFirst).toContain('.second');
+
+      // Dispose second
+      dispose2();
+      const afterSecond = injector.getRawCSSText();
+      expect(afterSecond).not.toContain('.second');
+    });
+
+    test('handles empty CSS gracefully', () => {
+      const injector = new StyleInjector();
+      const { dispose } = injector.injectRawCSS('');
+      expect(injector.getRawCSSText()).toBe('');
+      dispose(); // Should not throw
+    });
+
+    test('handles whitespace-only CSS gracefully', () => {
+      const injector = new StyleInjector();
+      const { dispose } = injector.injectRawCSS('   \n\t  ');
+      dispose(); // Should not throw
+    });
+
+    test('raw CSS is separate from tasty CSS', () => {
       const injector = new StyleInjector();
 
-      // Create a global style component
-      const GlobalStyle = injector.createGlobalStyle<{ color: string }>`
-        body {
-          margin: 0;
-          padding: 0;
-          background-color: ${(props) => props.color};
-        }
-        
-        h1 {
-          font-size: 2rem;
+      // Inject some tasty styles
+      const result = injector.inject([
+        { selector: '.t-test', declarations: 'color: purple;' },
+      ]);
+
+      // Inject raw CSS
+      const { dispose: rawDispose } = injector.injectRawCSS(
+        '.raw { color: orange; }',
+      );
+
+      // Check tasty CSS
+      const tastyCSS = injector.getCssText();
+      expect(tastyCSS).toContain('.t-test');
+      expect(tastyCSS).toContain('color: purple');
+      expect(tastyCSS).not.toContain('.raw');
+
+      // Check raw CSS
+      const rawCSS = injector.getRawCSSText();
+      expect(rawCSS).toContain('.raw { color: orange; }');
+      expect(rawCSS).not.toContain('.t-test');
+
+      // Cleanup
+      result.dispose();
+      rawDispose();
+    });
+
+    test('handles complex CSS with at-rules', () => {
+      const injector = new StyleInjector();
+      const css = `
+        @font-face {
+          font-family: 'Test';
+          src: url('/test.woff2') format('woff2');
         }
         
         @media (max-width: 768px) {
-          h1 {
-            font-size: 1.5rem;
-          }
-        }
-      `;
-
-      // Check that it returns a React component type
-      expect(typeof GlobalStyle).toBe('function');
-      expect(GlobalStyle.prototype).toBeDefined();
-
-      // Create a mock instance to test the functionality
-      const mockInstance = {
-        props: { color: '#f0f0f0' },
-        interpolateTemplate() {
-          let result = `
-            body {
-              margin: 0;
-              padding: 0;
-              background-color: ${this.props.color};
-            }
-            
-            h1 {
-              font-size: 2rem;
-            }
-            
-            @media (max-width: 768px) {
-              h1 {
-                font-size: 1.5rem;
-              }
-            }
-          `;
-          return result;
-        },
-        parseCSSToStyleResults(css: string) {
-          // Simulate the parsing logic
-          return [
-            {
-              selector: 'body',
-              declarations: `margin: 0; padding: 0; background-color: ${this.props.color};`,
-            },
-            { selector: 'h1', declarations: 'font-size: 2rem;' },
-            {
-              selector: 'h1',
-              declarations: 'font-size: 1.5rem;',
-              atRules: ['@media (max-width: 768px)'],
-            },
-          ];
-        },
-      };
-
-      // Test the interpolation method
-      const interpolated = mockInstance.interpolateTemplate();
-      expect(interpolated).toContain('background-color: #f0f0f0');
-      expect(interpolated).toContain('margin: 0');
-      expect(interpolated).toContain('font-size: 2rem');
-      expect(interpolated).toContain('@media (max-width: 768px)');
-
-      // Test the CSS parsing
-      const styleResults = mockInstance.parseCSSToStyleResults(interpolated);
-      expect(styleResults).toBeInstanceOf(Array);
-      expect(styleResults.length).toBeGreaterThan(0);
-
-      // Check for body rule
-      const bodyRule = styleResults.find(
-        (rule: any) => rule.selector === 'body',
-      );
-      expect(bodyRule).toBeDefined();
-      expect(bodyRule?.declarations).toContain('margin: 0');
-      expect(bodyRule?.declarations).toContain('background-color: #f0f0f0');
-
-      // Check for h1 rule
-      const h1Rule = styleResults.find(
-        (rule: any) => rule.selector === 'h1' && !rule.atRules,
-      );
-      expect(h1Rule).toBeDefined();
-      expect(h1Rule?.declarations).toContain('font-size: 2rem');
-
-      // Check for media query rule
-      const mediaRule = styleResults.find(
-        (rule: any) =>
-          rule.atRules && rule.atRules[0].includes('max-width: 768px'),
-      );
-      expect(mediaRule).toBeDefined();
-      expect(mediaRule?.selector).toBe('h1');
-      expect(mediaRule?.declarations).toContain('font-size: 1.5rem');
-    });
-
-    test('handles simple CSS without interpolation', () => {
-      const injector = new StyleInjector();
-
-      const GlobalStyle = injector.createGlobalStyle`
-        * {
-          box-sizing: border-box;
-        }
-      `;
-
-      // Test without interpolation - just check the template directly
-      const testTemplate = `
-        * {
-          box-sizing: border-box;
-        }
-      `;
-      expect(testTemplate).toContain('box-sizing: border-box');
-
-      // We can test that the component was created successfully
-      expect(typeof GlobalStyle).toBe('function');
-    });
-
-    test('handles empty template', () => {
-      const injector = new StyleInjector();
-
-      const GlobalStyle = injector.createGlobalStyle``;
-
-      // Test that empty template produces expected result
-      expect(typeof GlobalStyle).toBe('function');
-
-      // Test the empty template string directly
-      const emptyTemplate = '';
-      expect(emptyTemplate.trim()).toBe('');
-    });
-
-    test('handles complex nested CSS with multiple interpolations', () => {
-      const injector = new StyleInjector();
-
-      const GlobalStyle = injector.createGlobalStyle<{
-        primaryColor: string;
-        secondaryColor: string;
-        breakpoint: string;
-      }>`
-        .theme-${(props) => props.primaryColor.replace('#', '')} {
-          --primary: ${(props) => props.primaryColor};
-          --secondary: ${(props) => props.secondaryColor};
+          .mobile { display: block; }
         }
         
-        @media (min-width: ${(props) => props.breakpoint}) {
-          .responsive {
-            display: flex;
-          }
+        @keyframes slide {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(0); }
         }
       `;
 
-      // Test the template interpolation logic by creating a mock
-      const testProps = {
-        primaryColor: '#007bff',
-        secondaryColor: '#6c757d',
-        breakpoint: '1024px',
-      };
+      const { dispose } = injector.injectRawCSS(css);
 
-      // Simulate what the template would interpolate to
-      const expectedInterpolation = `
-        .theme-${testProps.primaryColor.replace('#', '')} {
-          --primary: ${testProps.primaryColor};
-          --secondary: ${testProps.secondaryColor};
-        }
-        
-        @media (min-width: ${testProps.breakpoint}) {
-          .responsive {
-            display: flex;
-          }
-        }
-      `;
+      const rawCSS = injector.getRawCSSText();
+      expect(rawCSS).toContain('@font-face');
+      expect(rawCSS).toContain('@media (max-width: 768px)');
+      expect(rawCSS).toContain('@keyframes slide');
 
-      expect(expectedInterpolation).toContain('.theme-007bff');
-      expect(expectedInterpolation).toContain('--primary: #007bff');
-      expect(expectedInterpolation).toContain('--secondary: #6c757d');
-      expect(expectedInterpolation).toContain('min-width: 1024px');
-
-      // Test that the component was created successfully
-      expect(typeof GlobalStyle).toBe('function');
-    });
-
-    test('demonstrates limited content-based deduplication behavior', () => {
-      const injector = new StyleInjector({ devMode: true });
-
-      // Create two identical global style components
-      const GlobalStyle1 = injector.createGlobalStyle`
-        body { margin: 0; color: red; }
-        h1 { font-size: 2rem; }
-      `;
-
-      const GlobalStyle2 = injector.createGlobalStyle`
-        body { margin: 0; color: red; }
-        h1 { font-size: 2rem; }
-      `;
-
-      // Reset metrics to track from clean state
-      injector.resetMetrics();
-
-      // Inject first instance
-      const result1 = injector.inject([
-        { selector: 'body', declarations: 'margin: 0; color: red;' },
-        { selector: 'h1', declarations: 'font-size: 2rem;' },
-      ]);
-
-      // Inject second instance with identical content
-      const result2 = injector.inject([
-        { selector: 'body', declarations: 'margin: 0; color: red;' },
-        { selector: 'h1', declarations: 'font-size: 2rem;' },
-      ]);
-
-      // Check that different classNames are generated (no content deduplication)
-      expect(result1.className).not.toBe(result2.className);
-      expect(result1.className).toMatch(/^t\d+$/);
-      expect(result2.className).toMatch(/^t\d+$/);
-
-      // Both should be treated as misses (new insertions)
-      const metrics = injector.getMetrics();
-      expect(metrics.totalInsertions).toBe(2);
-      expect(metrics.misses).toBe(2);
-      expect(metrics.hits).toBe(0);
-
-      // Class name reuse is now disabled, so injecting with a specific
-      // className in the selector will still generate a new className
-      const result3 = injector.inject([
-        {
-          selector: `.${result1.className}`,
-          declarations: 'margin: 0; color: red;',
-        },
-      ]);
-
-      // Should generate a new className (no reuse based on selector)
-      expect(result3.className).not.toBe(result1.className);
-      expect(result3.className).toMatch(/^t\d+$/);
-
-      // Cleanup
-      result1.dispose();
-      result2.dispose();
-      result3.dispose();
-    });
-
-    test('handles complex CSS with nested rules and comments', () => {
-      const injector = new StyleInjector();
-
-      const GlobalStyle = injector.createGlobalStyle`
-        .container {
-          padding: 16px;
-          background: white;
-          
-          // JavaScript-style comment
-          & > * {
-            margin-bottom: 8px;
-          }
-          
-          /* CSS-style comment */
-          &:hover {
-            background: #f5f5f5;
-          }
-        }
-        
-        // Another JS comment
-        .button {
-          border: none;
-          
-          &.primary {
-            background: blue;
-            color: white;
-          }
-        }
-      `;
-
-      // Test that the component was created successfully
-      expect(typeof GlobalStyle).toBe('function');
-
-      // Create a mock instance to test CSS parsing
-      const mockInstance = {
-        props: {},
-        interpolateTemplate() {
-          return `
-            .container {
-              padding: 16px;
-              background: white;
-              
-              // JavaScript-style comment
-              & > * {
-                margin-bottom: 8px;
-              }
-              
-              /* CSS-style comment */
-              &:hover {
-                background: #f5f5f5;
-              }
-            }
-            
-            // Another JS comment
-            .button {
-              border: none;
-              
-              &.primary {
-                background: blue;
-                color: white;
-              }
-            }
-          `;
-        },
-        parseCSSToStyleResults(css: string) {
-          // Use the actual parser
-          const instance = new (GlobalStyle as any)({});
-          return instance.parseCSSToStyleResults(css);
-        },
-      };
-
-      const css = mockInstance.interpolateTemplate();
-      const styleResults = mockInstance.parseCSSToStyleResults(css);
-
-      // Should have multiple rules
-      expect(styleResults.length).toBeGreaterThan(0);
-
-      // Should have processed nested selectors correctly
-      const nestedSelector = styleResults.find(
-        (rule: any) =>
-          rule.selector.includes('.container') && rule.selector.includes('>'),
-      );
-      expect(nestedSelector).toBeDefined();
-
-      // Should have processed hover selector
-      const hoverSelector = styleResults.find((rule: any) =>
-        rule.selector.includes('.container:hover'),
-      );
-      expect(hoverSelector).toBeDefined();
-
-      // Should have processed nested class selector
-      const nestedClassSelector = styleResults.find((rule: any) =>
-        rule.selector.includes('.button.primary'),
-      );
-      expect(nestedClassSelector).toBeDefined();
-
-      // Should not contain JavaScript-style comments in selectors
-      const invalidSelector = styleResults.find((rule: any) =>
-        rule.selector.includes('//'),
-      );
-      expect(invalidSelector).toBeUndefined();
+      dispose();
     });
   });
 });

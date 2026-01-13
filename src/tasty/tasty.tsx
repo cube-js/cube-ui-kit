@@ -2,37 +2,32 @@ import {
   AllHTMLAttributes,
   ComponentType,
   createElement,
-  FC,
   forwardRef,
   ForwardRefExoticComponent,
   JSX,
   PropsWithoutRef,
   RefAttributes,
-  useContext,
-  useInsertionEffect,
   useMemo,
-  useRef,
 } from 'react';
 import { isValidElementType } from 'react-is';
 
-import { allocateClassName, inject, injectGlobal } from './injector';
-import { BreakpointsContext } from './providers/BreakpointsProvider';
+import { useStyles } from './hooks/useStyles';
 import { BASE_STYLES } from './styles/list';
 import { Styles, StylesInterface } from './styles/types';
 import {
   AllBaseProps,
   BaseProps,
   BaseStyleProps,
+  Mods,
   Props,
   Tokens,
 } from './types';
-import { cacheWrapper } from './utils/cache-wrapper';
 import { getDisplayName } from './utils/getDisplayName';
 import { mergeStyles } from './utils/mergeStyles';
 import { modAttrs } from './utils/modAttrs';
 import { processTokens, stringifyTokens } from './utils/processTokens';
-import { RenderResult, renderStyles } from './utils/renderStyles';
-import { ResponsiveStyleValue, stringifyStyles } from './utils/styles';
+
+import type { StyleValue, StyleValueStateMap } from './utils/styles';
 
 /**
  * Mapping of is* properties to their corresponding HTML attributes
@@ -67,17 +62,97 @@ function handleIsProperties(props: Record<string, unknown>) {
   }
 }
 
-/**
- * Simple hash function for internal cache keys
- */
-// Generate unique cache key for style deduplication
-function generateStyleCacheKey(styleKey: string, contextKey?: string): string {
-  // Use null character as separator for better performance and no collision risk
-  return contextKey ? `${styleKey}\0${contextKey}` : styleKey;
-}
-
 // Basic props accepted by our base element
 type BaseElementProps = { as?: string } & Record<string, unknown>;
+
+/**
+ * Creates a sub-element component for compound component patterns.
+ * Sub-elements are lightweight components with data-element attribute for CSS targeting.
+ */
+function createSubElement<Tag extends keyof JSX.IntrinsicElements>(
+  elementName: string,
+  definition: SubElementDefinition<Tag>,
+): ForwardRefExoticComponent<
+  PropsWithoutRef<SubElementProps<Tag>> & RefAttributes<unknown>
+> {
+  // Normalize definition to object form
+  const config =
+    typeof definition === 'string'
+      ? { as: definition as Tag }
+      : (definition as { as?: Tag; qa?: string; qaVal?: string | number });
+
+  const tag = config.as ?? ('div' as Tag);
+  const defaultQa = config.qa;
+  const defaultQaVal = config.qaVal;
+
+  const SubElement = forwardRef<unknown, SubElementProps<Tag>>((props, ref) => {
+    const {
+      qa,
+      qaVal,
+      mods,
+      tokens,
+      isDisabled,
+      isHidden,
+      isChecked,
+      className,
+      style,
+      ...htmlProps
+    } = props as SubElementProps<Tag> & {
+      className?: string;
+      style?: Record<string, unknown>;
+    };
+
+    // Build mod attributes
+    let modProps: Record<string, unknown> | undefined;
+    if (mods) {
+      modProps = modAttrs(mods as Mods) as Record<string, unknown>;
+    }
+
+    // Process tokens into inline style properties
+    const tokenStyle = tokens
+      ? (processTokens(tokens) as Record<string, unknown>)
+      : undefined;
+
+    // Merge token styles with explicit style prop (style has priority)
+    let mergedStyle: Record<string, unknown> | undefined;
+    if (tokenStyle || style) {
+      mergedStyle =
+        tokenStyle && style
+          ? { ...tokenStyle, ...style }
+          : ((tokenStyle ?? style) as Record<string, unknown>);
+    }
+
+    const elementProps = {
+      'data-element': elementName,
+      'data-qa': qa ?? defaultQa,
+      'data-qaval': qaVal ?? defaultQaVal,
+      ...(modProps || {}),
+      ...htmlProps,
+      className,
+      style: mergedStyle,
+      isDisabled,
+      isHidden,
+      isChecked,
+      ref,
+    } as Record<string, unknown>;
+
+    // Handle is* properties (isDisabled -> disabled + data-disabled, etc.)
+    handleIsProperties(elementProps);
+
+    // Clean up undefined data attributes
+    if (elementProps['data-qa'] === undefined) delete elementProps['data-qa'];
+    if (elementProps['data-qaval'] === undefined)
+      delete elementProps['data-qaval'];
+
+    return createElement(tag, elementProps);
+  });
+
+  SubElement.displayName = `SubElement(${elementName})`;
+
+  return SubElement as ForwardRefExoticComponent<
+    PropsWithoutRef<SubElementProps<Tag>> & RefAttributes<unknown>
+  >;
+}
 
 type StyleList = readonly (keyof {
   [key in keyof StylesInterface]: StylesInterface[key];
@@ -93,13 +168,86 @@ export type WithVariant<V extends VariantMap> = {
   variant?: keyof V;
 };
 
-export type TastyProps<
+// ============================================================================
+// Sub-element types for compound components
+// ============================================================================
+
+/**
+ * Definition for a sub-element. Can be either:
+ * - A tag name string (e.g., 'div', 'span')
+ * - An object with configuration options
+ */
+export type SubElementDefinition<
+  Tag extends keyof JSX.IntrinsicElements = 'div',
+> =
+  | Tag
+  | {
+      as?: Tag;
+      qa?: string;
+      qaVal?: string | number;
+    };
+
+/**
+ * Map of sub-element definitions.
+ * Keys become the sub-component names (e.g., { Icon: 'span' } -> Component.Icon)
+ */
+export type ElementsDefinition = Record<
+  string,
+  SubElementDefinition<keyof JSX.IntrinsicElements>
+>;
+
+/**
+ * Resolves the tag from a SubElementDefinition
+ */
+type ResolveElementTag<T extends SubElementDefinition<any>> = T extends string
+  ? T
+  : T extends { as?: infer Tag }
+    ? Tag extends keyof JSX.IntrinsicElements
+      ? Tag
+      : 'div'
+    : 'div';
+
+/**
+ * Props for sub-element components.
+ * Combines HTML attributes with tasty-specific props (qa, qaVal, mods, tokens, isDisabled, etc.)
+ */
+export type SubElementProps<Tag extends keyof JSX.IntrinsicElements = 'div'> =
+  Omit<
+    JSX.IntrinsicElements[Tag],
+    'ref' | 'color' | 'content' | 'translate'
+  > & {
+    qa?: string;
+    qaVal?: string | number;
+    mods?: Mods;
+    tokens?: Tokens;
+    isDisabled?: boolean;
+    isHidden?: boolean;
+    isChecked?: boolean;
+  };
+
+/**
+ * Generates the sub-element component types from an ElementsDefinition
+ */
+type SubElementComponents<E extends ElementsDefinition> = {
+  [K in keyof E]: ForwardRefExoticComponent<
+    PropsWithoutRef<SubElementProps<ResolveElementTag<E[K]>>> &
+      RefAttributes<
+        ResolveElementTag<E[K]> extends keyof HTMLElementTagNameMap
+          ? HTMLElementTagNameMap[ResolveElementTag<E[K]>]
+          : Element
+      >
+  >;
+};
+
+/**
+ * Base type containing common properties shared between TastyProps and TastyElementOptions.
+ * Separated to avoid code duplication while allowing different type constraints.
+ */
+type TastyBaseProps<
   K extends StyleList,
   V extends VariantMap,
-  DefaultProps = Props,
+  E extends ElementsDefinition = {},
 > = {
-  /** The tag name of the element or a React component. */
-  as?: string | ComponentType<any>;
   /** Default styles of the element. */
   styles?: Styles;
   /** The list of styles that can be provided by props */
@@ -108,30 +256,46 @@ export type TastyProps<
   variants?: V;
   /** Default tokens for inline CSS custom properties */
   tokens?: Tokens;
-} & Partial<Omit<DefaultProps, 'as' | 'styles' | 'styleProps' | 'tokens'>> &
-  Pick<BaseProps, 'qa' | 'qaVal'> &
+  /** Sub-element definitions for compound components */
+  elements?: E;
+} & Pick<BaseProps, 'qa' | 'qaVal'> &
   WithVariant<V>;
+
+export type TastyProps<
+  K extends StyleList,
+  V extends VariantMap,
+  E extends ElementsDefinition = {},
+  DefaultProps = Props,
+> = TastyBaseProps<K, V, E> & {
+  /** The tag name of the element or a React component. */
+  as?: string | ComponentType<any>;
+} & Partial<Omit<DefaultProps, 'as' | 'styles' | 'styleProps' | 'tokens'>>;
 
 /**
  * TastyElementOptions is used for the element-creation overload of tasty().
  * It includes a Tag generic that allows TypeScript to infer the correct
  * HTML element type from the `as` prop.
+ *
+ * Note: Uses a separate index signature with `unknown` instead of inheriting
+ * from Props (which has `any`) to ensure strict type checking for styles.
  */
 export type TastyElementOptions<
   K extends StyleList,
   V extends VariantMap,
+  E extends ElementsDefinition = {},
   Tag extends keyof JSX.IntrinsicElements = 'div',
-> = Omit<TastyProps<K, V>, 'as'> & {
+> = TastyBaseProps<K, V, E> & {
   /** The tag name of the element or a React component. */
   as?: Tag | ComponentType<any>;
+} & {
+  /** Allow additional props without polluting style type checking */
+  [key: string]: unknown;
 };
 
-export interface GlobalTastyProps {
-  breakpoints?: number[];
-}
-
 export type AllBasePropsWithMods<K extends StyleList> = AllBaseProps & {
-  [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
+  [key in K[number]]?:
+    | StyleValue<StylesInterface[key]>
+    | StyleValueStateMap<StylesInterface[key]>;
 } & BaseStyleProps;
 
 /**
@@ -192,20 +356,21 @@ type TastyComponentPropsWithDefaults<
 export function tasty<
   K extends StyleList,
   V extends VariantMap,
+  E extends ElementsDefinition = {},
   Tag extends keyof JSX.IntrinsicElements = 'div',
 >(
-  options: TastyElementOptions<K, V, Tag>,
+  options: TastyElementOptions<K, V, E, Tag>,
   secondArg?: never,
 ): ForwardRefExoticComponent<
   PropsWithoutRef<TastyElementProps<K, V, Tag>> & RefAttributes<unknown>
->;
-export function tasty(selector: string, styles?: Styles);
+> &
+  SubElementComponents<E>;
 export function tasty<
   Props extends PropsWithStyles,
   DefaultProps extends Partial<Props> = Partial<Props>,
 >(
   Component: ComponentType<Props>,
-  options?: TastyProps<never, never, Props>,
+  options?: TastyProps<never, never, {}, Props>,
 ): ComponentType<TastyComponentPropsWithDefaults<Props, DefaultProps>>;
 
 // Implementation
@@ -214,50 +379,11 @@ export function tasty<
   V extends VariantMap,
   C = Record<string, unknown>,
 >(Component: any, options?: any) {
-  if (typeof Component === 'string') {
-    return tastyGlobal(Component as string, options as Styles);
-  }
-
   if (isValidElementType(Component)) {
     return tastyWrap(Component as ComponentType<any>, options);
   }
 
   return tastyElement(Component as TastyProps<K, V>);
-}
-
-// Internal specialized implementations
-function tastyGlobal(selector: string, styles?: Styles) {
-  const _StyleDeclarationComponent: FC<GlobalTastyProps> = ({
-    breakpoints,
-  }) => {
-    let contextBreakpoints = useContext(BreakpointsContext);
-
-    const breakpointsList = (breakpoints ?? contextBreakpoints) || [980];
-    const disposeRef = useRef<(() => void) | null>(null);
-
-    const styleResults = useMemo(() => {
-      if (!styles) return [];
-      return renderStyles(styles, breakpointsList, selector);
-    }, [selector, styles, breakpointsList]);
-
-    // Inject styles at insertion phase; cleanup on change/unmount
-    useInsertionEffect(() => {
-      disposeRef.current?.();
-      if ((styleResults as any[]).length === 0) return;
-      const { dispose } = injectGlobal(styleResults as any);
-      disposeRef.current = dispose;
-      return () => {
-        disposeRef.current?.();
-        disposeRef.current = null;
-      };
-    }, [styleResults]);
-
-    return null;
-  };
-
-  _StyleDeclarationComponent.displayName = `TastyStyleDeclaration(${selector})`;
-
-  return _StyleDeclarationComponent;
 }
 
 function tastyWrap<
@@ -320,9 +446,11 @@ function tastyWrap<
   >;
 }
 
-function tastyElement<K extends StyleList, V extends VariantMap>(
-  tastyOptions: TastyProps<K, V>,
-) {
+function tastyElement<
+  K extends StyleList,
+  V extends VariantMap,
+  E extends ElementsDefinition,
+>(tastyOptions: TastyProps<K, V, E>) {
   let {
     as: originalAs = 'div',
     element: defaultElement,
@@ -330,6 +458,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
     styleProps,
     variants,
     tokens: defaultTokens,
+    elements,
     ...defaultProps
   } = tastyOptions;
 
@@ -389,15 +518,6 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
       return createElement(Component, elementProps);
     });
   } else {
-    /**
-     * An additional optimization that allows to avoid rendering styles across various instances
-     * of the same element if no custom styles are provided via `styles` prop or direct style props.
-     */
-    const renderDefaultStyles = cacheWrapper((breakpoints: number[]) => {
-      // Return rules without className - injector will add it
-      return renderStyles(defaultStyles || {}, breakpoints);
-    });
-
     let {
       qa: defaultQa,
       qaVal: defaultQaVal,
@@ -413,7 +533,6 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         as,
         styles,
         variant: _omitVariant,
-        breakpoints,
         mods,
         element,
         qa,
@@ -453,82 +572,25 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         styles = undefined as unknown as Styles;
       }
 
-      let contextBreakpoints = useContext(BreakpointsContext);
-      breakpoints = (breakpoints as number[] | undefined) ?? contextBreakpoints;
-
-      // Memoize breakpoints key once
-      const breakpointsKey = useMemo(
-        () => (breakpoints as number[] | undefined)?.join(',') || '',
-        [breakpoints?.join(',')],
-      );
-
-      const propStylesKey = stringifyStyles(propStyles);
-
-      // Optimize style computation and cache key generation
-      const { allStyles, cacheKey, useDefaultStyles } = useMemo(() => {
+      // Merge default styles with instance styles and prop styles
+      const allStyles = useMemo(() => {
         const hasStyles =
           styles && Object.keys(styles as Record<string, unknown>).length > 0;
         const hasPropStyles = propStyles && Object.keys(propStyles).length > 0;
-        const useDefault = !hasStyles && !hasPropStyles;
 
-        const merged = useDefault
-          ? defaultStyles
-          : mergeStyles(defaultStyles, styles as Styles, propStyles as Styles);
+        if (!hasStyles && !hasPropStyles) {
+          return defaultStyles;
+        }
 
-        // Generate cache key for style deduplication
-        const styleKey = stringifyStyles(merged || {});
-        const key = generateStyleCacheKey(
-          styleKey,
-          breakpointsKey ? `bp:${breakpointsKey}` : undefined,
+        return mergeStyles(
+          defaultStyles,
+          styles as Styles,
+          propStyles as Styles,
         );
+      }, [styles, propStyles]);
 
-        return {
-          allStyles: merged,
-          cacheKey: key,
-          useDefaultStyles: useDefault,
-        };
-      }, [styles, propStylesKey, breakpointsKey]);
-
-      // Compute rules synchronously; inject via insertion effect
-      const directResult: RenderResult = useMemo(() => {
-        if (useDefaultStyles) {
-          return renderDefaultStyles(breakpoints as number[]);
-        } else if (allStyles && Object.keys(allStyles).length > 0) {
-          // Return rules without className - injector will add it
-          return renderStyles(allStyles, breakpoints as number[]);
-        } else {
-          return { rules: [], className: '' };
-        }
-      }, [useDefaultStyles, allStyles, breakpointsKey, cacheKey]);
-
-      const disposeRef = useRef<(() => void) | null>(null);
-
-      // Allocate className in render phase (safe for React Strict Mode)
-      const allocatedClassName = useMemo(() => {
-        if (!directResult.rules.length || !cacheKey) return '';
-        const { className } = allocateClassName(cacheKey);
-        return className;
-      }, [directResult.rules.length, cacheKey]);
-
-      // Inject styles in insertion effect (avoids render phase side effects)
-      useInsertionEffect(() => {
-        // Cleanup previous disposal reference
-        disposeRef.current?.();
-
-        if (directResult.rules.length > 0) {
-          const injectionResult = inject(directResult.rules, { cacheKey });
-          disposeRef.current = injectionResult.dispose;
-        } else {
-          disposeRef.current = null;
-        }
-
-        return () => {
-          disposeRef.current?.();
-          disposeRef.current = null;
-        };
-      }, [directResult.rules, cacheKey]);
-
-      const injectedClassName = allocatedClassName;
+      // Use the useStyles hook for style generation and injection
+      const { className: stylesClassName } = useStyles(allStyles);
 
       // Merge default tokens with instance tokens (instance overrides defaults)
       const tokensKey = stringifyTokens(tokens as Tokens | undefined);
@@ -558,11 +620,8 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         modProps = modAttrs(modsObject as any) as Record<string, unknown>;
       }
 
-      // Merge user className with injected className
-      const finalClassName = [
-        (userClassName as string) || '',
-        injectedClassName,
-      ]
+      // Merge user className with generated className
+      const finalClassName = [(userClassName as string) || '', stylesClassName]
         .filter(Boolean)
         .join(' ');
 
@@ -581,13 +640,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
       // Apply the helper to handle is* properties
       handleIsProperties(elementProps);
 
-      // NEW: Use plain createElement instead of styled Element
       const renderedElement = createElement(
         (as as string | 'div') ?? originalAs,
         elementProps,
       );
-
-      // Note: Empty className is normal for elements with no styles
 
       return renderedElement;
     });
@@ -596,6 +652,22 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
   _TastyComponent.displayName = `TastyComponent(${
     (defaultProps as any).qa || originalAs
   })`;
+
+  // Attach sub-element components if elements are defined
+  if (elements) {
+    const subElements = Object.entries(elements).reduce(
+      (acc, [name, definition]) => {
+        acc[name] = createSubElement(
+          name,
+          definition as SubElementDefinition<keyof JSX.IntrinsicElements>,
+        );
+        return acc;
+      },
+      {} as Record<string, ForwardRefExoticComponent<any>>,
+    );
+
+    return Object.assign(_TastyComponent, subElements);
+  }
 
   return _TastyComponent;
 }

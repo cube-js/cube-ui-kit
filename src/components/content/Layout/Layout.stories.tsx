@@ -233,9 +233,7 @@ export const ResizablePanel: Story = {
             <Text>Drag the edge to resize (current: {size}px)</Text>
           </Layout.Content>
         </Layout.Panel>
-        <Layout.Content>
-          <Text>Main content area</Text>
-        </Layout.Content>
+        <Layout.Content>Main content area</Layout.Content>
       </Layout>
     );
   },

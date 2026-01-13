@@ -1,0 +1,245 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Advanced State Mapping - CSS Output @media query states should expand dimension shorthands in media queries 1`] = `
+"@media (height > 800px) {.t0.t0 {padding: calc(6 * var(--gap));}}
+@media (not (height > 800px)) and (width < 600px) {.t0.t0 {padding: calc(2 * var(--gap));}}
+@media (not (height > 800px)) and (not (width < 600px)) {.t0.t0 {padding: calc(4 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output @media query states should expand tasty units in media queries 1`] = `
+"@media (width <= calc(var(--gap) * 40)) {.t0.t0 {padding: calc(2 * var(--gap));}}
+@media (not (width <= calc(var(--gap) * 40))) {.t0.t0 {padding: calc(4 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output @media query states should generate CSS with @media wrapper for dimension queries 1`] = `
+"@media (width <= 920px) {.t0.t0 {padding: calc(2 * var(--gap));}}
+@media (not (width <= 920px)) {.t0.t0 {padding: calc(4 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output @media query states should generate exclusive CSS for multiple overlapping breakpoints 1`] = `
+"@media (width < 480px) {.t0.t0 {padding: var(--gap);}}
+@media (not (width < 480px)) and (width < 768px) {.t0.t0 {padding: calc(2 * var(--gap));}}
+@media (not (width < 480px)) and (not (width < 768px)) {.t0.t0 {padding: calc(4 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output @media query states should handle @media:type syntax 1`] = `
+"@media print {.t0.t0 {display: none;}}
+@media not print {.t0.t0 {display: block;}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output @media query states should handle cascading media queries with overlapping ranges 1`] = `
+"@media (width <= 920px) {.t0.t0 {grid-template-columns: 1fr;}}
+@media (not (width <= 920px)) and (width <= 1400px) {.t0.t0 {grid-template-columns: 1fr 1fr;}}
+@media (not (width <= 1400px)) and (not (width <= 920px)) {.t0.t0 {grid-template-columns: 1fr 1fr 1fr;}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output @media query states should handle media queries with range syntax 1`] = `
+"@media (width >= 900px) {.t0.t0 {grid-template-columns: 3;}}
+@media (not (width >= 900px)) and (600px <= width < 900px) {.t0.t0 {grid-template-columns: 2;}}
+@media (not (600px <= width < 900px)) and (not (width >= 900px)) {.t0.t0 {grid-template-columns: 1;}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output @root states should generate CSS with :root prefix for root states 1`] = `
+":root[data-theme="dark"] .t0.t0 {background-color: var(--dark-02-color);}
+:root:not([data-theme="dark"]) .t0.t0 {background-color: var(--white-color);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output @root states should handle attribute-based root states 1`] = `
+":root[data-high-contrast] .t0.t0 {background-color: var(--black-color);}
+:root:not([data-high-contrast]) .t0.t0 {background-color: var(--white-color);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output @root states should handle class-based root states 1`] = `
+":root.compact-mode .t0.t0 {background-color: var(--gray-05-color);}
+:root:not(.compact-mode) .t0.t0 {background-color: var(--white-color);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output combined advanced states with regular modifiers should combine media queries with regular modifiers 1`] = `
+"@media (width < 600px) {.t0.t0[data-hovered] {padding: calc(3 * var(--gap));}}
+@media (width < 600px) {.t0.t0:not([data-hovered]) {padding: calc(2 * var(--gap));}}
+@media (not (width < 600px)) {.t0.t0[data-hovered] {padding: calc(5 * var(--gap));}}
+@media (not (width < 600px)) {.t0.t0:not([data-hovered]) {padding: calc(4 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output combined advanced states with regular modifiers should handle root states with regular modifiers 1`] = `
+":root[data-theme="dark"] .t0.t0[data-disabled] {background-color: var(--dark-04-color);}
+:root[data-theme="dark"] .t0.t0:not([data-disabled]) {background-color: var(--dark-02-color);}
+:root:not([data-theme="dark"]) .t0.t0[data-disabled] {background-color: var(--gray-03-color);}
+:root:not([data-theme="dark"]) .t0.t0:not([data-disabled]) {background-color: var(--white-color);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should generate CSS with linked styles with a different set of states 1`] = `
+"@media (width < 600px) {.t0.t0 {display: none;}}
+@media (not (width < 600px)) and (width < 1200px) {.t0.t0 {display: grid;}}
+@media (not (width < 1200px)) and (not (width < 600px)) {.t0.t0 {display: flex;}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should generate CSS with linked styles with the same set of states 1`] = `
+"@media (width < 600px) {.t0.t0 {display: none;}}
+@media (not (width < 600px)) {.t0.t0 {display: flex;}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should generate CSS with styles of different types in OR groups 1`] = `
+"@media (prefers-color-scheme: light) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media (not (prefers-color-scheme: light)) and (prefers-color-scheme: no-preference) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media (not (prefers-color-scheme: light)) and (not (prefers-color-scheme: no-preference)) {:root[data-prefers-schema="light"][data-schema="system"] .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media (not (prefers-color-scheme: light)) and (not (prefers-color-scheme: no-preference)) {:root:not([data-prefers-schema="light"]) .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media (not (prefers-color-scheme: light)) and (not (prefers-color-scheme: no-preference)) {:root:not([data-schema="system"]) .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should generate CSS with styles of different types in OR groups in real world use case 1`] = `
+"@media (prefers-color-scheme: dark) {:root[data-prefers-schema="system"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media (prefers-color-scheme: no-preference) and (not (prefers-color-scheme: dark)) {:root[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media (prefers-color-scheme: no-preference) {:root:not([data-prefers-schema="system"])[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media (not (prefers-color-scheme: dark)) and (not (prefers-color-scheme: no-preference)) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media (not (prefers-color-scheme: dark)) {:root:not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media (not (prefers-color-scheme: no-preference)) {:root:not([data-prefers-schema="system"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+:root:not([data-prefers-schema="system"]):not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should handle advanced states with multiple modifiers 1`] = `
+"@media (width < 600px) {.t0.t0[data-hovered] {padding: calc(3 * var(--gap));}}
+@media (width < 600px) {.t0.t0:not([data-hovered]) {padding: calc(2 * var(--gap));}}
+@media (not (width < 600px)) {.t0.t0[data-hovered] {padding: calc(5 * var(--gap));}}
+@media (not (width < 600px)) {.t0.t0:not([data-hovered]) {padding: calc(4 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should handle cascading root states with specificity 1`] = `
+":root[data-mode="compact"] .t0.t0 {background-color: var(--gray-02-color);}
+:root:not([data-mode="compact"])[data-theme="light"] .t0.t0 {background-color: var(--light-01-color);}
+:root:not([data-mode="compact"]):not([data-theme="light"])[data-theme="dark"] .t0.t0 {background-color: var(--dark-02-color);}
+:root:not([data-mode="compact"]):not([data-theme="dark"]):not([data-theme="light"]) .t0.t0 {background-color: var(--white-color);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should handle combined media and root states on same property 1`] = `
+"@media (width >= 1200px) {.t0.t0 {padding: calc(6 * var(--gap));}}
+@media (not (width >= 1200px)) {:root[data-theme="dark"] .t0.t0 {padding: calc(3 * var(--gap));}}
+@media (not (width >= 1200px)) and (width < 600px) {:root:not([data-theme="dark"]) .t0.t0 {padding: calc(2 * var(--gap));}}
+@media (not (width < 600px)) and (not (width >= 1200px)) {:root:not([data-theme="dark"]) .t0.t0 {padding: calc(4 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should handle media queries on different dimensions 1`] = `
+"@media (height < 400px) {.t0.t0 {padding: var(--gap);}}
+@media (not (height < 400px)) and (width < 600px) {.t0.t0 {padding: calc(2 * var(--gap));}}
+@media (not (height < 400px)) and (not (width < 600px)) {.t0.t0 {padding: calc(4 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should handle multiple root states 1`] = `
+":root[data-high-contrast] .t0.t0 {background-color: var(--black-color);}
+:root:not([data-high-contrast])[data-theme="dark"] .t0.t0 {background-color: var(--dark-02-color);}
+:root:not([data-high-contrast]):not([data-theme="dark"]) .t0.t0 {background-color: var(--white-color);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should handle nested container queries (jsdom limitation) 1`] = `""`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should handle predefined states with modifiers 1`] = `
+".t0.t0[data-hovered] {padding: calc(5 * var(--gap));}
+.t0.t0:not([data-hovered])[data-compact] {padding: calc(2 * var(--gap));}
+.t0.t0:not([data-compact]):not([data-hovered]) {padding: calc(4 * var(--gap));}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should handle root states with pseudo-class modifiers 1`] = `
+".t0.t0[data-hovered] {background-color: var(--gray-01-color);}
+:root[data-theme="dark"] .t0.t0:not([data-hovered]) {background-color: var(--dark-02-color);}
+:root:not([data-theme="dark"]) .t0.t0:not([data-hovered]) {background-color: var(--white-color);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should handle sub-elements with multiple advanced states 1`] = `
+".t0.t0 {padding: calc(4 * var(--gap));}
+:root[data-theme="dark"] .t1.t1 [data-element="Header"] {padding: calc(3 * var(--gap));}
+@media (width < 600px) {:root:not([data-theme="dark"]) .t1.t1 [data-element="Header"] {padding: var(--gap);}}
+@media (not (width < 600px)) {:root:not([data-theme="dark"]) .t1.t1 [data-element="Header"] {padding: calc(2 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should handle three-way media query cascade 1`] = `
+"@media (width <= 400px) {.t0.t0 {grid-template-columns: 1;}}
+@media (not (width <= 400px)) and (width <= 800px) {.t0.t0 {grid-template-columns: 2;}}
+@media (not (width <= 400px)) and (not (width <= 800px)) and (width <= 1200px) {.t0.t0 {grid-template-columns: 3;}}
+@media (not (width <= 1200px)) and (not (width <= 400px)) and (not (width <= 800px)) {.t0.t0 {grid-template-columns: 4;}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output complex combinations should support complex predefined states 1`] = `
+"@media (prefers-color-scheme: dark) {:root[data-prefers-schema="system"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media (prefers-color-scheme: no-preference) and (not (prefers-color-scheme: dark)) {:root[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media (prefers-color-scheme: no-preference) {:root:not([data-prefers-schema="system"])[data-prefers-schema="dark"] .t0.t0 {color: var(--white-color); --current-color: var(--white-color); --current-color-rgb: var(--white-color-rgb);}}
+@media (not (prefers-color-scheme: dark)) and (not (prefers-color-scheme: no-preference)) {.t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media (not (prefers-color-scheme: dark)) {:root:not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+@media (not (prefers-color-scheme: no-preference)) {:root:not([data-prefers-schema="system"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}}
+:root:not([data-prefers-schema="system"]):not([data-prefers-schema="dark"]) .t0.t0 {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output edge cases should handle advanced states with complex style values 1`] = `
+"@media (width < 600px) {.t0.t0 {border: var(--border-width) none var(--border-color);}}
+@media (not (width < 600px)) {:root[data-theme="dark"] .t0.t0 {border: var(--border-width) solid var(--dark-05-color);}}
+@media (not (width < 600px)) {:root:not([data-theme="dark"]) .t0.t0 {border: var(--border-width) solid var(--border-color);}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output edge cases should handle advanced states with fallback color syntax 1`] = `
+":root[data-theme="dark"] .t0.t0 {background-color: var(--dark-surface-color, var(--dark-02-color));}
+:root:not([data-theme="dark"]) .t0.t0 {background-color: var(--surface-color, var(--white-color));}"
+`;
+
+exports[`Advanced State Mapping - CSS Output edge cases should handle empty default with only advanced state 1`] = `"@media print {.t0.t0 {display: none;}}"`;
+
+exports[`Advanced State Mapping - CSS Output predefined states (global) should handle multiple global predefined states 1`] = `
+"@media (width >= 1024px) {.t0.t0 {padding: calc(4 * var(--gap));}}
+@media (not (width >= 1024px)) and (768px <= width < 1024px) {.t0.t0 {padding: calc(3 * var(--gap));}}
+@media (not (width >= 1024px)) and (not (768px <= width < 1024px)) and (width < 768px) {.t0.t0 {padding: var(--gap);}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output predefined states (global) should prioritize local over global predefined states 1`] = `
+"@media (width < 480px) {.t0.t0 {padding: calc(2 * var(--gap));}}
+@media (not (width < 480px)) {.t0.t0 {padding: calc(4 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output predefined states (global) should resolve global predefined states 1`] = `
+"@media (width < 768px) {.t0.t0 {padding: calc(2 * var(--gap));}}
+@media (not (width < 768px)) {.t0.t0 {padding: calc(4 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output predefined states (local) should handle multiple local predefined states 1`] = `
+"@media (width >= 800px) {.t0.t0 {padding: calc(4 * var(--gap));}}
+@media (not (width >= 800px)) and (400px <= width < 800px) {.t0.t0 {padding: calc(3 * var(--gap));}}
+@media (not (400px <= width < 800px)) and (not (width >= 800px)) and (width < 400px) {.t0.t0 {padding: var(--gap);}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output predefined states (local) should resolve local predefined states to their definitions 1`] = `
+"@media (width < 600px) {.t0.t0 {padding: calc(2 * var(--gap));}}
+@media (not (width < 600px)) {.t0.t0 {padding: calc(4 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output sub-element advanced states should apply @own state to sub-element 1`] = `
+".t0.t0 {background-color: var(--white-color);}
+.t1.t1 [data-element="Label"][data-hovered] {color: var(--purple-color); --current-color: var(--purple-color); --current-color-rgb: var(--purple-color-rgb);}
+.t1.t1 [data-element="Label"]:not([data-hovered]) {color: var(--dark-color); --current-color: var(--dark-color); --current-color-rgb: var(--dark-color-rgb);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output sub-element advanced states should apply media queries to sub-element styles 1`] = `
+".t0.t0 {padding: calc(4 * var(--gap));}
+@media (width < 600px) {.t1.t1 [data-element="Header"] {padding: var(--gap);}}
+@media (not (width < 600px)) {.t1.t1 [data-element="Header"] {padding: calc(2 * var(--gap));}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output sub-element advanced states should apply root states to sub-element styles 1`] = `
+".t0.t0 {background-color: var(--white-color);}
+:root[data-theme="dark"] .t1.t1 [data-element="Header"] {background-color: var(--dark-03-color);}
+:root:not([data-theme="dark"]) .t1.t1 [data-element="Header"] {background-color: var(--gray-02-color);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output sub-element advanced states should combine @own state with media query 1`] = `
+"@media (not (width < 600px)) {.t0.t0 [data-element="Label"]:not([data-hovered]) {font-size: 16px;}}
+@media (width < 600px) {.t0.t0 [data-element="Label"][data-hovered] {font-size: 16px;}}
+@media (width < 600px) {.t0.t0 [data-element="Label"]:not([data-hovered]) {font-size: 14px;}}
+@media (not (width < 600px)) {.t0.t0 [data-element="Label"][data-hovered] {font-size: 18px;}}"
+`;
+
+exports[`Advanced State Mapping - CSS Output sub-element advanced states should combine @own state with parent modifiers 1`] = `
+".t0.t0:not([data-disabled]) [data-element="Icon"][data-hovered] {color: var(--purple-color); --current-color: var(--purple-color); --current-color-rgb: var(--purple-color-rgb);}
+.t0.t0[data-disabled] [data-element="Icon"] {color: var(--light-gray-color); --current-color: var(--light-gray-color); --current-color-rgb: var(--light-gray-color-rgb);}
+.t0.t0:not([data-disabled]) [data-element="Icon"]:not([data-hovered]) {color: var(--gray-color); --current-color: var(--gray-color); --current-color-rgb: var(--gray-color-rgb);}"
+`;
+
+exports[`Advanced State Mapping - CSS Output sub-element advanced states should handle negated @own state 1`] = `
+".t0.t0 [data-element="Label"]:not([data-focused]) {opacity: 0.7;}
+.t0.t0 [data-element="Label"][data-focused] {opacity: 1;}"
+`;

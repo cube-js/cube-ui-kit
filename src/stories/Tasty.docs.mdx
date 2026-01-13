@@ -53,13 +53,6 @@ const PrimaryButton = tasty(Button, {
 ### Essential Patterns
 
 ```jsx
-// Responsive styling
-const ResponsiveBox = tasty({
-  styles: {
-    padding: ['4x', '2x', '1x'], // Large → Medium → Small screens
-  },
-});
-
 // State-based styling
 const InteractiveCard = tasty({
   styles: {
@@ -85,6 +78,117 @@ const TokenCard = tasty({
 
 ---
 
+## ⚙️ Configuration
+
+Configure the Tasty style system before your app renders using the `configure()` function. Configuration must be done **before any styles are generated** (before first render).
+
+```jsx
+import { configure } from '@cube-dev/ui-kit';
+
+// Configure before app renders (e.g., in your entry file)
+configure({
+  // CSP nonce for style elements
+  nonce: 'abc123',
+
+  // Global state aliases
+  states: {
+    '@mobile': '@media(w < 768px)',
+    '@tablet': '@media(768px <= w < 1024px)',
+    '@dark': '@root(theme=dark)',
+  },
+
+  // Parser configuration
+  parserCacheSize: 2000, // LRU cache size (default: 1000)
+  
+  // Custom units (merged with built-in units)
+  units: {
+    vh: 'vh',
+    vw: 'vw',
+    custom: (n) => `${n * 10}px`, // Function-based unit
+  },
+  
+  // Custom functions for the parser
+  funcs: {
+    double: (groups) => {
+      const value = parseFloat(groups[0]?.output || '0');
+      return `${value * 2}px`;
+    },
+  },
+});
+```
+
+### Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `nonce` | `string` | - | CSP nonce for style elements |
+| `states` | `Record<string, string>` | - | Global state aliases for advanced state mapping |
+| `parserCacheSize` | `number` | `1000` | Parser LRU cache size |
+| `units` | `Record<string, string \| Function>` | Built-in | Custom units (merged with built-in) |
+| `funcs` | `Record<string, Function>` | - | Custom parser functions (merged with existing) |
+
+### Built-in Units
+
+| Unit | Description | Example | CSS Output |
+|------|-------------|---------|------------|
+| `x` | Gap multiplier | `2x` | `calc(var(--gap) * 2)` |
+| `r` | Border radius | `1r` | `var(--radius)` |
+| `cr` | Card border radius | `1cr` | `var(--card-radius)` |
+| `bw` | Border width | `2bw` | `calc(var(--border-width) * 2)` |
+| `ow` | Outline width | `1ow` | `var(--outline-width)` |
+| `fs` | Font size | `1fs` | `var(--font-size)` |
+| `lh` | Line height | `1lh` | `var(--line-height)` |
+| `sf` | Stable fraction | `1sf` | `minmax(0, 1fr)` |
+
+### Adding Custom Units
+
+Custom units are **merged** with built-in units - you can extend without losing defaults:
+
+```jsx
+configure({
+  units: {
+    // Add viewport units
+    vh: 'vh',
+    vw: 'vw',
+    // Dynamic unit with function
+    cols: (n) => `calc(${n} * var(--column-width))`,
+  },
+});
+
+// Usage in components
+const Box = tasty({
+  styles: {
+    height: '50vh',
+    width: '3cols',
+  },
+});
+```
+
+### Adding Custom Functions
+
+Custom functions process parsed style values:
+
+```jsx
+configure({
+  funcs: {
+    // Custom function: clamp(min, value, max)
+    clamp: (groups) => {
+      const values = groups.map(g => g.output);
+      return `clamp(${values.join(', ')})`;
+    },
+  },
+});
+
+// Usage in components
+const Box = tasty({
+  styles: {
+    width: 'clamp(200px, 50%, 800px)',
+  },
+});
+```
+
+---
+
 ## 📚 Dictionary
 
 Key concepts for working with Tasty:
@@ -97,6 +201,36 @@ Object where keys represent states and values are the styles to apply. Used for 
 fill: { '': '#white', hovered: '#gray.05', 'theme=danger': '#red' }
 ```
 
+#### State Key Types
+
+State keys support various selector syntaxes, all appended **directly to the element selector** (no space):
+
+| Syntax | Example | Generated CSS |
+|--------|---------|---------------|
+| Boolean modifier | `hovered` | `[data-hovered]` |
+| Value modifier | `theme=danger` | `[data-theme="danger"]` |
+| Pseudo-class | `:hover` | `:hover` |
+| Class selector | `.active` | `.active` |
+| Attribute selector | `[aria-expanded="true"]` | `[aria-expanded="true"]` |
+| Combined | `hovered & .active` | `[data-hovered].active` |
+
+**Example:**
+
+```jsx
+const Button = tasty({
+  styles: {
+    fill: {
+      '': '#surface',
+      '.active': '#primary',           // Same element with .active class
+      ':focus-visible': '#purple.10',  // Same element when focused
+      'disabled': '#gray.05',          // Same element with data-disabled
+    },
+  },
+});
+// .active state generates: .t123.active { ... }
+// NOT: .t123 .active { ... } (that would be a descendant)
+```
+
 ### Sub-element
 
 Element styled using a capitalized key. Identified by `data-element` attribute. Capitalized words in selectors (`:has(Item)`, `> Body > Row`) transform to `[data-element="..."]`.
@@ -107,6 +241,40 @@ Element styled using a capitalized key. Identified by `data-element` attribute. 
 styles: { Title: { preset: 'h3' } }
 // Targets: <div data-element="Title">
 ```
+
+### Compound Sub-elements (`elements` prop)
+
+You can also *declare* sub-elements in the `tasty()` definition via `elements`. This creates compound sub-components (e.g. `ButtonElement.Icon`) that render the correct tag and automatically set `data-element`.
+
+```jsx
+const ButtonElement = tasty({
+  styles: {
+    // Root styles...
+    Icon: { color: '#primary' },
+    Label: { preset: 't3 strong' },
+  },
+  elements: {
+    Icon: 'span',
+    Label: {
+      as: 'div',
+      qa: 'ButtonLabel', // default data-qa for this sub-element
+    },
+  },
+});
+
+// Usage
+<ButtonElement>
+  <ButtonElement.Icon />
+  <ButtonElement.Label mods={{ emphasized: true }} />
+</ButtonElement>
+```
+
+**Sub-element component behavior:**
+- Always sets `data-element="..."` (based on the key name).
+- Supports `qa` / `qaVal` (mapped to `data-qa` / `data-qaval`).
+- Supports `mods` (generates `data-*` attributes).
+- Supports `isDisabled`, `isHidden`, `isChecked` (mapped to native attributes + `data-*`).
+- Supports `tokens` (rendered as inline CSS custom properties; merged with `style`, where `style` has priority).
 
 ### Custom Styles
 
@@ -133,14 +301,6 @@ fill: '#purple.5'  // → var(--purple-color) with 50% opacity
 
 Shorthand units referencing design system values: `x` (gap), `r` (radius), `bw` (border-width), `fs` (font-size), `sf` (stable grid fractions).
 
-### Responsive Array
-
-Array of values mapping to breakpoints (large to small). Configure with `<BreakpointsProvider>`.
-
-```jsx
-padding: ['4x', '2x', '1x']  // Large → Medium → Small
-```
-
 ### Style Props
 
 Style properties exposed as direct props via `styleProps` config. Provides cleaner API than using `styles` prop.
@@ -159,8 +319,36 @@ CSS custom properties defined via `tokens` prop, rendered as inline styles. Supp
 
 ```jsx
 tokens={{ $spacing: '2x', '#primary': '#purple' }}
-// → style="--spacing: calc(2 * var(--gap)); --accent-color: var(--purple-color); --accent-color-rgb: var(--purple-color-rgb)"
+// → style="--spacing: calc(2 * var(--gap)); --primary-color: var(--purple-color); --primary-color-rgb: var(--purple-color-rgb)"
 ```
+
+#### Tokens on Sub-elements
+
+Sub-elements created via `elements` also support `tokens`:
+
+```jsx
+const Card = tasty({
+  styles: { Title: { color: '#title' } },
+  elements: { Title: 'div' },
+});
+
+<Card>
+  <Card.Title tokens={{ '#title': '#purple' }} />
+</Card>
+```
+
+### Advanced States (`@` prefix)
+
+State keys with `@` prefix for CSS at-rules and contextual conditions:
+
+| Prefix | Purpose | Example |
+|--------|---------|---------|
+| `@media` | Media queries | `@media(w < 768px)` |
+| `@(...)` | Container queries | `@(panel, w >= 300px)` |
+| `@supports` | Feature/selector support queries | `@supports(display: grid)` |
+| `@root` | Root element states | `@root(theme=dark)` |
+| `@own` | Sub-element's own state | `@own(hovered)` |
+| `@starting` | Entry animation | `@starting` (for `@starting-style`) |
 
 ---
 
@@ -168,7 +356,7 @@ tokens={{ $spacing: '2x', '#primary': '#purple' }}
 
 ### Component Creation
 
-Use `tasty()` to create styled components with three main approaches:
+Use `tasty()` to create styled components with two main approaches:
 
 ```jsx
 // 1. Create new element
@@ -180,12 +368,6 @@ const Box = tasty({
 // 2. Extend existing component
 const StyledButton = tasty(Button, {
   styles: { /* additional styles */ },
-});
-
-// 3. Global selector styling
-const GlobalHeading = tasty('.heading', {
-  preset: 'h2',
-  color: '#primary',
 });
 ```
 
@@ -228,7 +410,6 @@ const FlexibleBox = tasty({
 - **Cleaner API** - No need for `styles` prop wrapper
 - **Better TypeScript support** - Props are properly typed
 - **Component-specific styling** - Expose only relevant properties
-- **Responsive support** - Works with arrays: `gap={['2x', '1x']}`
 - **State-based styling** - Works with objects: `fill={{ '': '#white', hovered: '#gray' }}`
 
 **Style Prop Priority:**
@@ -252,7 +433,6 @@ const FlexibleBox = tasty({
 Tasty enhances CSS with:
 - **Design tokens** - `#purple`, `#text`, `#border`
 - **Custom units** - `2x` (gap), `1r` (radius), `1bw` (border-width)
-- **Responsive arrays** - `['4x', '2x', '1x']`
 - **State objects** - `{ '': 'default', hovered: 'hover-state' }`
 - **Smart defaults** - `border: true` uses design system values
 
@@ -297,23 +477,6 @@ fill: '(#surface, (#fallback, #default))',          // Nested fallbacks
 > ```jsx
 > gridColumns="1sf 2sf 1sf"  // equivalent to "minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr)"
 > ```
-
-### Responsive Styling
-
-Configure breakpoints and use responsive arrays:
-
-```jsx
-// Configure breakpoints (optional)
-<BreakpointsProvider value={[1200, 640]}>
-  <App />
-</BreakpointsProvider>
-
-// Use responsive arrays
-<Block padding={["4x", "2x", "1x"]} />
-// Large screens (≥1200px): 4x
-// Medium screens (640px-1199px): 2x
-// Small screens (<640px): 1x
-```
 
 ---
 
@@ -367,7 +530,6 @@ padding: '2x 1x',                 // Vertical, horizontal
 padding: '2x top',                // Top only
 padding: '1x left right',         // Left and right
 padding: true,                    // Default: '1x'
-padding: ['2x', '1x', '0.5x'],    // Responsive array (padding only)
 
 // Available modifiers: top, right, bottom, left
 // Default value (true): '1x' → 'var(--gap)'
@@ -411,7 +573,6 @@ color: {
 
 // color default (true): 'currentColor'
 // Provides context variables: --current-color, --current-color-rgb
-// fill provides: --context-fill-color, --context-fill-color-rgb
 ```
 
 #### `border` - Borders
@@ -445,7 +606,6 @@ radius: '1r top',                 // Top corners only (top-left, top-right)
 // Default value (true): '1r' → 'var(--radius)'
 // Shape modifiers: round, ellipse, leaf, backleaf
 // Directional modifiers: top, right, bottom, left
-// Provides --context-radius CSS variable for child elements
 ```
 
 ### Typography Properties
@@ -640,55 +800,225 @@ const Button = tasty({
 
 Use logical operators for complex state combinations:
 
+#### Operators & Precedence
+
+State keys (for both regular modifiers and advanced `@...` states) support boolean logic with a predictable precedence (highest → lowest):
+
+- `!` (NOT)
+- `^` (XOR)
+- `|` (OR)
+- `&` (AND)
+
+Use parentheses to group: `(@mobile | @tablet) & !disabled`.
+
 ```jsx
 color: {
   '': '#default',
   '!disabled & hovered': '#blue',     // NOT disabled AND hovered
   'success | complete': '#green',     // success OR complete
-  'warning ^ error': '#yellow',       // warning XOR error (exclusive)
   ':hover': '#purple',                // CSS pseudo-class
-  '[data-theme="dark"]': '#light',    // Data attribute
+  '.active': '#green',                // CSS class selector (same element)
+  'theme=dark': '#light',             // Value modifier (recommended)
+  'theme="special dark"': '#purple',  // Value modifier with spaces (recommended)
+  '[aria-expanded="true"]': '#green', // Attribute selector (escape hatch)
 }
 ```
 
-#### Advanced Selector Examples
+> **💡 Class Selector Note:** When using `.class` in state keys, it's appended directly to the element selector without a space, targeting the **same element** (e.g., `.tasty-class.active`). This is different from sub-element keys at the style root, which create descendant selectors.
+
+### Advanced States
+
+Advanced states are state keys that start with `@...`. Unlike regular modifiers (which become `data-*` selectors on the component), advanced states compile into **CSS at-rules** (like `@media`, `@container`), a **root prefix** (`:root...`), or special wrappers (like `@starting-style`).
+
+You can use them anywhere a normal state key is used (including inside sub-elements) and combine them with logical operators.
+
+#### Predefined State Aliases (recommended)
+
+If you repeat the same advanced state in many places, define an alias once and reuse it. You can define aliases globally via `configure({ states })`, or locally per component via `tasty({ states: { ... } })`.
 
 ```jsx
-// Using brackets for grouping complex logic
-color: {
-  '': '#default',
-  '(hovered | focused) & !disabled': '#blue',    // Grouped: (hovered OR focused) AND NOT disabled
-  '!(error | warning) & success': '#green',      // NOT (error OR warning) AND success
-  '(pressed & !disabled) | selected': '#purple', // (pressed AND NOT disabled) OR selected
-}
+import { configure, tasty } from '@cube-dev/ui-kit';
 
-// Other supported selectors
-fill: {
-  '': '#surface',
-  '.custom-class': '#highlight',           // CSS class selector
-  '[data-variant="primary"]': '#primary',  // Data attribute with value
-  '[data-loading]': '#gray',               // Data attribute (boolean)
-  disabled: '#disabled',                   // Built-in state
-  '[aria-selected="true"]': '#selected',   // ARIA attribute
-  ':focus-visible': '#focus',              // CSS pseudo-class
-}
+configure({
+  states: {
+    '@mobile': '@media(w < 768px)',
+    '@dark': '@root(theme=dark)',
+  },
+});
 
-// Combining different selector types
-border: {
-  '': '1bw solid #border',
-  'hovered & .interactive': '2bw solid #purple',     // Custom mod AND CSS class
-  '[data-size="large"] & focused': '3bw solid #blue', // Data attribute AND custom mod
-  '!disabled & (:hover | :focus)': '1bw solid #active', // NOT disabled AND (hover OR focus)
+const Card = tasty({
+  styles: {
+    padding: {
+      '': '4x',
+      '@mobile': '3x',
+      '@dark & @mobile': '2x',
+    },
+  },
+});
+```
+
+#### Media Queries (`@media`)
+
+```jsx
+styles: {
+  gridColumns: {
+    '': '1fr 1fr 1fr',              // Default: 3 columns
+    '@media(w <= 1200px)': '1fr 1fr', // ≤1200px: 2 columns
+    '@media(w <= 768px)': '1fr',      // ≤768px: 1 column
+  },
+  padding: {
+    '': '4x',
+    '@media(h > 800px)': '6x',        // Height query
+    '@media:print': '2x',             // Media type
+  },
+}
+// Shorthands: w=width, h=height. Range syntax: <=, <, >=, >, 600px <= w < 900px
+```
+
+#### Container Queries (`@(...)`)
+
+Container queries require a container. In CSS terms, that means setting `container-type` and optionally `container-name` on some ancestor element. Prefer using the native `container` shorthand:
+
+- `container: 'card / inline-size'` (equivalent to `container-name: card; container-type: inline-size;`)
+
+```jsx
+styles: {
+  flow: {
+    '': 'column',
+    '@(w >= 400px)': 'row',                    // Unnamed container
+    '@(panel, w >= 300px)': 'row',             // Named container "panel"
+  },
+  fill: {
+    '': '#surface',
+    '@(sidebar, $variant=danger)': '#red.05',  // Style query (CSS: style(--variant: "danger"))
+  },
 }
 ```
 
-> **💡 Recommendations:**
-> - **Prefer `mods` prop** for custom states: `<Component mods={{ hovered: true }}>`
-> - **Prefer data attributes** for states with values: `<Component data-variant="primary">`
-> - **Reserve CSS selectors** for built-in states and external styling needs
-> - **Use brackets `()` for grouping** complex logical expressions
+**Style queries inside `@(...)`:**
 
-> **⚠️ Important:** Place more specific rules last - they're checked in reverse order.
+- `$name` → checks for existence of `--name` (`style(--name)`)
+- `$name=value` → checks equality (`style(--name: "value")`)
+
+```jsx
+const Container = tasty({
+  styles: {
+    container: 'card / inline-size',
+  },
+});
+
+const Child = tasty({
+  styles: {
+    padding: {
+      '': '4x',
+      '@(card, w < 400px)': '2x',
+      '@(card, $variant)': '3x',           // when --variant exists
+      '@(card, $variant=danger)': '1x',    // when --variant equals "danger"
+    },
+  },
+});
+```
+
+#### Supports Queries (`@supports`)
+
+Use `@supports(...)` to **check support and then use the feature**. For example, masonry is landing as `display: grid-lanes` (with `display: grid` as a safe fallback). See: [Masonry Layout is Now `grid-lanes`](https://css-tricks.com/masonry-layout-is-now-grid-lanes/).
+
+```jsx
+styles: {
+  display: {
+    '': 'grid',
+    '@supports(display: grid-lanes)': 'grid-lanes',
+  },
+}
+```
+
+**Selector support**
+
+To check selector support (e.g. `:has()`), use `@supports($, <selector>)`. It compiles to `@supports selector(<selector>)`:
+
+```jsx
+styles: {
+  border: {
+    '': '1bw solid #border',
+    '@supports($, :has(*)) & :has(> Icon)': '2bw solid #purple',
+  },
+}
+```
+
+#### Root States (`@root`)
+
+Style based on document root attributes (theme, mode, etc.):
+
+```jsx
+styles: {
+  fill: {
+    '': '#white',
+    '@root(theme=dark)': '#dark-02',      // :root[data-theme="dark"]
+    '@root(.high-contrast)': '#black',    // :root.high-contrast
+    '@root([data-density="compact"])': '#gray', // Attribute selector
+  },
+}
+```
+
+`@root(...)` accepts:
+
+- `key=value` → `:root[data-key="value"]` (kebab-cased)
+- `camelCaseFlag` → `:root[data-camel-case-flag]`
+- `.className` → `:root.className`
+- `[attr]` / `[attr="value"]` → `:root[...]`
+
+#### Own States (`@own`)
+
+Apply a sub-element’s **own** state (not the parent’s). This only makes sense inside a sub-element style block (Tasty will warn if you use `@own(...)` at the root level, where it’s equivalent to the inner condition).
+
+```jsx
+styles: {
+  Icon: {
+    color: {
+      '': '#gray',
+      '@own(hovered)': '#purple',         // Icon's own hover state
+      'disabled': '#light-gray',          // Parent's disabled state
+    },
+  },
+}
+```
+
+#### Starting Style (`@starting`)
+
+Entry animations with `@starting-style`:
+
+```jsx
+styles: {
+  opacity: {
+    '': 1,
+    '@starting': 0,                       // Start at 0, animate to 1
+  },
+  transform: {
+    '': 'translateY(0)',
+    '@starting': 'translateY(-10px)',
+  },
+  transition: 'opacity 0.3s, transform 0.3s',
+}
+```
+
+#### Combining Advanced States
+
+```jsx
+styles: {
+  padding: {
+    '': '4x',
+    '@media(w < 600px) & hovered': '3x',   // Media + modifier
+    '@root(theme=dark) & disabled': '2x',  // Root + modifier
+  },
+}
+```
+
+> **💡 Tips:**
+> - Use `&` to combine states, `|` for alternatives, `!` for negation, `^` for XOR.
+> - OR (`|`) is **ordered**: the first matching branch wins (Tasty makes branches exclusive to avoid overlap).
+> - In state maps, place **more specific keys later** so they win over earlier ones.
+
+> **⚠️ Important:** Place more specific rules last - they take precedence.
 
 ### Sub-element Styling
 
@@ -777,6 +1107,57 @@ const List = tasty({
 
 > **⚠️ Space Requirements:** Combinators (`>`, `+`, `~`) **must have spaces** around them when used with capitalized element names. Use `:has(Body > Row)` ✅, not `:has(Body>Row)` ❌. This is a performance consideration—the parser uses whitespace splitting to identify element names. A console error will warn if spaces are missing.
 
+### Keyframes
+
+Define CSS `@keyframes` animations directly in styles:
+
+```jsx
+const Pulse = tasty({
+  styles: {
+    animation: 'pulse 2s infinite',
+    '@keyframes': {
+      pulse: {
+        '0%, 100%': 'transform: scale(1);',
+        '50%': 'transform: scale(1.05);',
+      },
+    },
+  },
+});
+```
+
+Global keyframes via `configure()`:
+
+```jsx
+configure({
+  keyframes: {
+    fadeIn: { from: 'opacity: 0;', to: 'opacity: 1;' },
+  },
+});
+```
+
+Local `@keyframes` override global ones with the same name. Only animations referenced in styles are injected.
+
+#### Keyframes with Media Queries
+
+Combine `@keyframes` with media states for accessibility:
+
+```jsx
+const Spinner = tasty({
+  styles: {
+    animation: {
+      '': 'spin 1s infinite linear',
+      '@media(prefers-reduced-motion)': 'none',
+    },
+    '@keyframes': {
+      spin: {
+        '0%': 'transform: rotate(0deg);',
+        '100%': 'transform: rotate(360deg);',
+      },
+    },
+  },
+});
+```
+
 ### Variants & Theming
 
 Create themed component variations:
@@ -826,6 +1207,26 @@ const Component = tasty({
     margin: '($custom-margin, 1x)', // With fallback
   },
 });
+```
+
+#### Math with Custom Properties
+
+Use parentheses for math expressions with custom properties. Tasty auto-wraps in `calc()`:
+
+```jsx
+const Component = tasty({
+  styles: {
+    // ✅ Correct: tasty syntax with parentheses
+    padding: '(1 / 10 * $size)',
+    width: '($base-width + 2x)',
+    
+    // ❌ Avoid: raw CSS calc() - use tasty syntax instead
+    // padding: 'calc(1 / 10 * var(--size))',
+  },
+});
+
+// Pass dynamic values via tokens prop
+<Component tokens={{ '$size': '100px' }} />
 ```
 
 ### Custom Color Definitions
@@ -1011,10 +1412,6 @@ styles: {
   Content: { color: '#text' },
 }
 
-// ✅ Use responsive arrays for breakpoints
-padding: ['4x', '2x', '1x']
-width: ['max 1200px', 'max 800px', 'max 100%']
-
 // ✅ Use modifiers for state-based styling
 styles: {
   fill: {
@@ -1145,15 +1542,6 @@ const InteractiveCard = tasty({
   },
 });
 
-// Responsive container
-const Container = tasty({
-  styles: {
-    padding: ['6x', '4x', '2x'],
-    width: ['max 1200px', 'max 800px', 'max 100%'],
-    margin: '0 auto',
-  },
-});
-
 // Button with variants
 const Button = tasty({
   styles: {
@@ -1173,6 +1561,162 @@ const Button = tasty({
 
 ---
 
+## 🪝 Hooks
+
+Tasty provides React hooks for programmatic style handling when you need more control over style injection.
+
+### useStyles
+
+The `useStyles` hook generates and injects styles for a given tasty styles object, returning a className to apply to your element.
+
+```tsx
+import { useStyles } from '@cube-dev/ui-kit';
+
+function MyComponent() {
+  const { className } = useStyles({
+    padding: '2x',
+    fill: '#surface',
+    radius: '1r',
+    border: '1bw solid #border',
+  });
+
+  return <div className={className}>Styled content</div>;
+}
+```
+
+**When to use `useStyles`:**
+- Building custom components that need dynamic className generation
+- Integrating with third-party libraries that expect className strings
+- Creating utility hooks that compose styles
+
+**Arguments:**
+
+| Argument | Type | Description |
+|----------|------|-------------|
+| `styles` | `Styles \| undefined` | Tasty styles object (same format as `tasty()`) |
+
+**Returns:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `className` | `string` | Generated CSS class name to apply to element |
+
+### useGlobalStyles
+
+The `useGlobalStyles` hook injects styles for a CSS selector globally, without generating classNames. Useful for styling elements by selector.
+
+```tsx
+import { useGlobalStyles } from '@cube-dev/ui-kit';
+
+function ThemeStyles() {
+  useGlobalStyles('.card', {
+    padding: '4x',
+    fill: '#surface',
+    radius: '1r',
+    border: '1bw solid #border',
+  });
+
+  return null;
+}
+
+// Usage
+function App() {
+  return (
+    <>
+      <ThemeStyles />
+      <div className="card">This card is styled globally</div>
+    </>
+  );
+}
+```
+
+**When to use `useGlobalStyles`:**
+- Styling third-party components by their CSS classes
+- Creating theme overrides for existing selectors
+- Adding styles to elements you don't control directly
+- Conditional global styling (styles inject/cleanup with component lifecycle)
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `selector` | `string` | CSS selector to apply styles to (e.g., `.card`, `[data-theme="dark"]`) |
+| `styles` | `Styles` | Tasty styles object (same format as `tasty()`) |
+
+**Features:**
+- Supports all tasty style syntax including state-based styles, sub-elements, and advanced states
+- Styles are automatically cleaned up when the component unmounts
+- Works with complex selectors: `.parent > .child`, `button[data-variant="primary"]`, etc.
+
+```tsx
+// State-based global styles
+useGlobalStyles('.interactive-card', {
+  fill: {
+    '': '#surface',
+    ':hover': '#surface-hover',
+    ':focus': '#surface-focus',
+  },
+  transition: 'fill 0.2s',
+});
+
+// Sub-element styles
+useGlobalStyles('.data-table', {
+  border: '1bw solid #border',
+  Header: {
+    fill: '#surface-alt',
+    preset: 't3 strong',
+  },
+  Row: {
+    $: '>',
+    border: '1bw solid #border bottom',
+  },
+});
+```
+
+### useRawCSS
+
+The `useRawCSS` hook injects **plain CSS text** (without tasty parsing). It’s useful for global resets, importing third‑party snippets, or when you already have authored CSS and just need lifecycle-managed injection/cleanup.
+
+Supports two overloads:
+- **Static CSS**: `useRawCSS(cssString, options?)`
+- **Factory function**: `useRawCSS(() => cssString, deps, options?)` (re-evaluates when deps change, like `useMemo`)
+
+```tsx
+import { useRawCSS } from '@cube-dev/ui-kit';
+
+// Static CSS
+function GlobalReset() {
+  useRawCSS(`
+    body { margin: 0; padding: 0; }
+  `);
+
+  return null;
+}
+
+// Dynamic CSS (factory + deps)
+function ThemeCSS({ theme }: { theme: 'dark' | 'light' }) {
+  useRawCSS(
+    () => `
+      :root {
+        --app-bg: ${theme === 'dark' ? '#111' : '#fff'};
+        --app-text: ${theme === 'dark' ? '#fff' : '#111'};
+      }
+    `,
+    [theme],
+  );
+
+  return null;
+}
+```
+
+**Options:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `root` | `Document \| ShadowRoot` | Where to inject the `<style>` tag (defaults to `document`) |
+
+---
+
 ## 🔗 Cross-References
 
 - **Getting Started**: See [Quick Start](#-quick-start) for basic usage patterns
@@ -1182,6 +1726,7 @@ const Button = tasty({
 - **Interactivity**: See [Modifiers & State Binding](#modifiers--state-binding) for hover, focus, and custom states
 - **Theming**: See [Variants & Theming](#variants--theming) for component variations
 - **Performance**: See [Performance Tips](#performance-tips-) for optimization techniques
+- **Hooks**: See [Hooks](#-hooks) for `useStyles`, `useGlobalStyles`, and `useRawCSS`
 - **Create Component Guide**: See [CreateComponent.docs.mdx](/docs/tasty-create-component--docs) for component creation patterns
 
 ---

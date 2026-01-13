@@ -1,6 +1,7 @@
-import { PropsWithChildren, useCallback, useRef } from 'react';
+import { forwardRef, PropsWithChildren, useCallback, useRef } from 'react';
 import { CSSTransition } from 'react-transition-group';
-import styled from 'styled-components';
+
+import { tasty } from '../../../../tasty';
 
 import type { TransitionProps } from 'react-transition-group/Transition';
 
@@ -11,6 +12,42 @@ export type TransitionComponentProps = PropsWithChildren<
   Partial<TransitionProps>
 >;
 
+const TransitionElement = tasty({
+  styles: {
+    transitionProperty: 'height, opacity, margin-top, margin-bottom',
+    transitionDuration: `${TRANSITION_TIMEOUT}ms`,
+    transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+
+    height: {
+      [`.${CSS_TRANSITION_CLASS_NAME}-enter`]: 0,
+      [`.${CSS_TRANSITION_CLASS_NAME}-enter-active`]: '$notification-size',
+      [`.${CSS_TRANSITION_CLASS_NAME}-exit`]: '$notification-size',
+      [`.${CSS_TRANSITION_CLASS_NAME}-exit-active`]: 0,
+    },
+    opacity: {
+      [`.${CSS_TRANSITION_CLASS_NAME}-enter`]: 0,
+      [`.${CSS_TRANSITION_CLASS_NAME}-enter-active`]: 1,
+      [`.${CSS_TRANSITION_CLASS_NAME}-exit`]: 1,
+      [`.${CSS_TRANSITION_CLASS_NAME}-exit-active`]: 0,
+    },
+    willChange: {
+      [`.${CSS_TRANSITION_CLASS_NAME}-enter`]: 'height, opacity',
+      [`.${CSS_TRANSITION_CLASS_NAME}-enter-active`]: 'height, opacity',
+      [`.${CSS_TRANSITION_CLASS_NAME}-exit`]: 'height, opacity, margin-top',
+      [`.${CSS_TRANSITION_CLASS_NAME}-exit-active`]: 'height, opacity',
+    },
+    marginTop: {
+      [`.${CSS_TRANSITION_CLASS_NAME}-exit-active`]: '-1x',
+    },
+  },
+});
+
+const TransitionWrapper = forwardRef<HTMLDivElement, PropsWithChildren>(
+  function TransitionWrapper({ children }, ref) {
+    return <TransitionElement ref={ref}>{children}</TransitionElement>;
+  },
+);
+
 export function TransitionComponent(props: TransitionComponentProps) {
   const { children, ...transitionProps } = props;
   const notificationRef = useRef<HTMLDivElement | null>(null);
@@ -18,7 +55,7 @@ export function TransitionComponent(props: TransitionComponentProps) {
   const calculateNotificationSize = useCallback(() => {
     if (notificationRef.current) {
       notificationRef.current.style.setProperty(
-        '--__notification-size__',
+        '--notification-size',
         `${notificationRef.current.scrollHeight}px`,
       );
     }
@@ -35,37 +72,7 @@ export function TransitionComponent(props: TransitionComponentProps) {
       onExit={calculateNotificationSize}
       {...transitionProps}
     >
-      <Transition ref={notificationRef}>{children}</Transition>
+      <TransitionWrapper ref={notificationRef}>{children}</TransitionWrapper>
     </CSSTransition>
   );
 }
-
-const Transition = styled.div`
-  transition-property: height, opacity, margin-top, margin-bottom;
-  transition-duration: ${TRANSITION_TIMEOUT}ms;
-  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  &.${CSS_TRANSITION_CLASS_NAME} {
-    &-enter {
-      height: 0;
-      opacity: 0;
-      will-change: height, opacity;
-    }
-    &-enter-active {
-      height: var(--__notification-size__);
-      opacity: 1;
-      will-change: height, opacity;
-    }
-    &-exit {
-      height: var(--__notification-size__);
-      opacity: 1;
-      will-change: height, opacity, margin-top;
-    }
-    &-exit-active {
-      margin-top: -8px;
-      height: 0;
-      opacity: 0;
-      will-change: height, opacity;
-    }
-  }
-`;

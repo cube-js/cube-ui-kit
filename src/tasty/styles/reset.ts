@@ -40,18 +40,13 @@ const RESET_MAP = {
     {
       $: '::placeholder',
       '-webkit-text-fill-color': 'var(--local-placeholder-color)',
-      color: 'var(--local-placeholder-color)',
+      color: 'var(--placeholder-color, rgb(var(--dark-color-rgb) / .3))',
       filter: 'saturate(.33)',
     },
     {
       $: '::-webkit-search-cancel-button',
       display: 'none',
       '-webkit-appearance': 'none',
-    },
-    {
-      $: ':not([disabled])::placeholder',
-      '--local-placeholder-color':
-        'var(--placeholder-color, rgb(var(--dark-color-rgb) / .3))',
     },
   ],
   button: [

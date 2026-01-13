@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { CSSProperties } from 'styled-components';
 
 import { tasty } from '../../../tasty';
 import { Button } from '../../actions/Button';
@@ -131,7 +130,7 @@ export const SlowTransition: Story = {
                 exit: phase === 'exit',
               }}
               width="300px"
-              style={{ '--transition': '.5s' } as CSSProperties}
+              style={{ '--transition': '.5s' }}
             >
               <strong>Animated Card (Slow)</strong>
               <br />

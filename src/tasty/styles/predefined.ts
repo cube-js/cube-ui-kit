@@ -6,7 +6,7 @@ import { colorStyle } from './color';
 import { createStyle } from './createStyle';
 import { displayStyle } from './display';
 import { fadeStyle } from './fade';
-import { fillStyle } from './fill';
+import { fillStyle, svgFillStyle } from './fill';
 import { flowStyle } from './flow';
 import { fontStyle } from './font';
 import { fontStyleStyle } from './fontStyle';
@@ -148,6 +148,7 @@ export function predefine() {
     transitionStyle,
     resetStyle,
     fillStyle,
+    svgFillStyle,
     widthStyle,
     marginStyle,
     gapStyle,

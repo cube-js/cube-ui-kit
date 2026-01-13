@@ -57,16 +57,9 @@ export function radiusStyle({ radius }) {
     }
   }
 
-  return [
-    {
-      '--local-radius': values.join(' '),
-      'border-radius': 'var(--local-radius)',
-    },
-    {
-      $: '>*',
-      '--context-radius': values.join(' '),
-    },
-  ];
+  return {
+    'border-radius': values.join(' '),
+  };
 }
 
 radiusStyle.__lookupStyles = ['radius'];

@@ -1,6 +1,7 @@
 import { CSSProperties } from 'react';
 
-import { ResponsiveStyleValue } from '../utils/styles';
+import { KeyframesSteps } from '../injector/types';
+import { StyleValue, StyleValueStateMap } from '../utils/styles';
 
 type NamedColor =
   | 'purple'
@@ -95,6 +96,20 @@ export interface StylesInterface
     | `rgb(${string})`
     | `rgba(${string})`
     | boolean
+    | (string & {});
+  /**
+   * Set the fill color of SVG elements. Outputs the native CSS `fill` property with enhanced support for Tasty color tokens and syntaxes.
+   *
+   * Examples:
+   * - `svgFill="#purple.10"` // purple fill with 10% opacity
+   * - `svgFill="#danger"` // danger theme color
+   * - `svgFill="rgb(255 128 0)"` // custom RGB color
+   * - `svgFill="currentColor"` // inherit from parent color
+   */
+  svgFill?:
+    | `#${NamedColor}${OpaquePercentage}`
+    | `rgb(${string})`
+    | `rgba(${string})`
     | (string & {});
   /**
    * Set the text (current) color of the element. Shortcut for `color` with enhanced support for Tasty color tokens and syntaxes.
@@ -444,6 +459,16 @@ export interface StylesInterface
    * - `inset={true}` // all sides: 0
    */
   inset?: 'top' | 'right' | 'bottom' | 'left' | string | CSSProperties['inset'];
+  /**
+   * Local keyframes definitions for this component.
+   * Keys are animation names, values are keyframes step definitions.
+   * Local keyframes override global keyframes with the same name.
+   *
+   * Examples:
+   * - `'@keyframes': { fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } } }`
+   * - `'@keyframes': { pulse: { '0%, 100%': 'transform: scale(1)', '50%': 'transform: scale(1.05)' } }`
+   */
+  '@keyframes'?: Record<string, KeyframesSteps>;
 }
 
 export type SuffixForSelector =
@@ -479,11 +504,14 @@ export type Selector = `${SuffixForSelector}${string}`;
 export type NotSelector = Exclude<string, Selector | keyof StylesInterface>;
 
 export type StylesWithoutSelectors = {
-  [key in keyof StylesInterface]?: ResponsiveStyleValue<StylesInterface[key]>;
+  [key in keyof StylesInterface]?:
+    | StyleValue<StylesInterface[key]>
+    | StyleValueStateMap<StylesInterface[key]>;
 };
 export type Styles = StylesWithoutSelectors & {
   [key: string]:
-    | ResponsiveStyleValue<string | number | boolean | undefined>
+    | StyleValue<string | number | boolean | undefined>
+    | StyleValueStateMap<string | number | boolean | undefined>
     | Styles;
   /**
    * Selector combinator: `undefined` (descendant, default), `'>'` (child), `'+'` (adjacent), `'~'` (sibling).

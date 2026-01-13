@@ -55,6 +55,7 @@ const PanelElement = tasty({
   as: 'div',
   qa: 'LayoutPanel',
   styles: {
+    container: 'panel / inline-size',
     position: 'absolute',
     zIndex: 10,
     display: 'flex',

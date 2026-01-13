@@ -6,6 +6,8 @@ import {
   CacheMetrics,
   KeyframesInfo,
   KeyframesSteps,
+  RawCSSInfo,
+  RawCSSResult,
   RootRegistry,
   RuleInfo,
   SheetInfo,
@@ -18,6 +20,18 @@ import type { StyleHandler } from '../utils/styles';
 export class SheetManager {
   private rootRegistries = new WeakMap<Document | ShadowRoot, RootRegistry>();
   private config: StyleInjectorConfig;
+  /** Dedicated style elements for raw CSS per root */
+  private rawStyleElements = new WeakMap<
+    Document | ShadowRoot,
+    HTMLStyleElement
+  >();
+  /** Tracking for raw CSS blocks per root */
+  private rawCSSBlocks = new WeakMap<
+    Document | ShadowRoot,
+    Map<string, RawCSSInfo>
+  >();
+  /** Counter for generating unique raw CSS IDs */
+  private rawCSSCounter = 0;
 
   constructor(config: StyleInjectorConfig) {
     this.config = config;
@@ -54,6 +68,7 @@ export class SheetManager {
         metrics,
         classCounter: 0,
         keyframesCache: new Map(),
+        keyframesNameToContent: new Map(),
         keyframesCounter: 0,
         injectedProperties: new Set<string>(),
         globalRules: new Map(),
@@ -283,8 +298,15 @@ export class SheetManager {
                   lastInsertedIndex = idx;
                   currentRuleIndex = idx + 1;
                   anyInserted = true;
-                } catch (_) {
+                } catch (singleErr) {
                   // Skip unsupported selector in this engine (e.g., ::-moz-selection in Blink)
+                  if (process.env.NODE_ENV !== 'production') {
+                    console.warn(
+                      '[tasty] Browser rejected CSS rule:',
+                      singleRule,
+                      singleErr,
+                    );
+                  }
                 }
               }
               // If none inserted, continue without throwing to avoid aborting the whole batch
@@ -293,6 +315,9 @@ export class SheetManager {
               }
             } else {
               // Single selector failed — skip it silently (likely unsupported in this engine)
+              if (process.env.NODE_ENV !== 'production') {
+                console.warn('[tasty] Browser rejected CSS rule:', fullRule, e);
+              }
             }
           }
         } else {
@@ -1018,6 +1043,23 @@ export class SheetManager {
         ) {
           styleSheet.deleteRule(info.ruleIndex);
           sheet.ruleCount = Math.max(0, sheet.ruleCount - 1);
+
+          // Adjust indices for all other rules in the same sheet
+          // This is critical - when a keyframe rule is deleted, all rules
+          // with higher indices shift down by 1
+          this.adjustIndicesAfterDeletion(
+            registry,
+            info.sheetIndex,
+            info.ruleIndex,
+            info.ruleIndex,
+            1,
+            // Create a dummy RuleInfo to satisfy the function signature
+            {
+              className: '',
+              ruleIndex: info.ruleIndex,
+              sheetIndex: info.sheetIndex,
+            } as RuleInfo,
+          );
         }
       }
     } catch (error) {
@@ -1101,5 +1143,139 @@ export class SheetManager {
 
     // Clear registry
     this.rootRegistries.delete(root);
+
+    // Clean up raw CSS style element
+    const rawStyleElement = this.rawStyleElements.get(root);
+    if (rawStyleElement?.parentNode) {
+      rawStyleElement.parentNode.removeChild(rawStyleElement);
+    }
+    this.rawStyleElements.delete(root);
+    this.rawCSSBlocks.delete(root);
+  }
+
+  /**
+   * Get or create a dedicated style element for raw CSS
+   * Raw CSS is kept separate from tasty-managed sheets to avoid index conflicts
+   */
+  private getOrCreateRawStyleElement(
+    root: Document | ShadowRoot,
+  ): HTMLStyleElement {
+    let styleElement = this.rawStyleElements.get(root);
+
+    if (!styleElement) {
+      styleElement =
+        (root as Document).createElement?.('style') ||
+        document.createElement('style');
+
+      if (this.config.nonce) {
+        styleElement.nonce = this.config.nonce;
+      }
+
+      styleElement.setAttribute('data-tasty-raw', '');
+
+      // Append to head or shadow root
+      if ('head' in root && root.head) {
+        root.head.appendChild(styleElement);
+      } else if ('appendChild' in root) {
+        root.appendChild(styleElement);
+      } else {
+        document.head.appendChild(styleElement);
+      }
+
+      this.rawStyleElements.set(root, styleElement);
+      this.rawCSSBlocks.set(root, new Map());
+    }
+
+    return styleElement;
+  }
+
+  /**
+   * Inject raw CSS text directly without parsing
+   * Returns a dispose function to remove the injected CSS
+   */
+  injectRawCSS(css: string, root: Document | ShadowRoot): RawCSSResult {
+    if (!css.trim()) {
+      return { dispose: () => {} };
+    }
+
+    const styleElement = this.getOrCreateRawStyleElement(root);
+    const blocksMap = this.rawCSSBlocks.get(root)!;
+
+    // Generate unique ID for this block
+    const id = `raw_${this.rawCSSCounter++}`;
+
+    // Calculate offsets
+    const currentContent = styleElement.textContent || '';
+    const startOffset = currentContent.length;
+    const cssWithNewline = (currentContent ? '\n' : '') + css;
+    const endOffset = startOffset + cssWithNewline.length;
+
+    // Append CSS
+    styleElement.textContent = currentContent + cssWithNewline;
+
+    // Track the block
+    const info: RawCSSInfo = {
+      id,
+      css,
+      startOffset,
+      endOffset,
+    };
+    blocksMap.set(id, info);
+
+    return {
+      dispose: () => {
+        this.disposeRawCSS(id, root);
+      },
+    };
+  }
+
+  /**
+   * Remove a raw CSS block by ID
+   */
+  private disposeRawCSS(id: string, root: Document | ShadowRoot): void {
+    const styleElement = this.rawStyleElements.get(root);
+    const blocksMap = this.rawCSSBlocks.get(root);
+
+    if (!styleElement || !blocksMap) {
+      return;
+    }
+
+    const info = blocksMap.get(id);
+    if (!info) {
+      return;
+    }
+
+    // Remove from tracking
+    blocksMap.delete(id);
+
+    // Rebuild the CSS content from remaining blocks
+    // This is simpler and more reliable than trying to splice strings
+    const remainingBlocks = Array.from(blocksMap.values());
+
+    if (remainingBlocks.length === 0) {
+      styleElement.textContent = '';
+    } else {
+      // Rebuild with remaining CSS blocks in order of their original insertion
+      // Sort by original startOffset to maintain order
+      remainingBlocks.sort((a, b) => a.startOffset - b.startOffset);
+      const newContent = remainingBlocks.map((block) => block.css).join('\n');
+      styleElement.textContent = newContent;
+
+      // Update offsets for remaining blocks
+      let offset = 0;
+      for (const block of remainingBlocks) {
+        block.startOffset = offset;
+        block.endOffset = offset + block.css.length;
+        offset = block.endOffset + 1; // +1 for newline
+      }
+    }
+  }
+
+  /**
+   * Get the raw CSS content for SSR
+   */
+  getRawCSSText(root: Document | ShadowRoot): string {
+    const styleElement = this.rawStyleElements.get(root);
+    return styleElement?.textContent || '';
   }
 }

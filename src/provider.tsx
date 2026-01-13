@@ -9,11 +9,10 @@ import {
 
 import { NavigationAdapter } from './providers/navigation.types';
 import { defaultNavigationAdapter } from './providers/navigationAdapter.default';
-import { BreakpointsProvider, Props } from './tasty';
+import { Props } from './tasty';
 import { EventBusProvider } from './utils/react/useEventBus';
 
 export interface ProviderProps extends Props {
-  breakpoints?: number[];
   insideForm?: boolean;
   isDisabled?: boolean;
   isReadOnly?: boolean;
@@ -24,7 +23,7 @@ export interface ProviderProps extends Props {
   root?: ForwardedRef<any>;
 }
 
-export type ProviderInsideProps = Omit<ProviderProps, 'styles' | 'breakpoints'>;
+export type ProviderInsideProps = Omit<ProviderProps, 'styles'>;
 
 export const UIKitContext = createContext<ProviderInsideProps>({
   navigation: defaultNavigationAdapter,
@@ -32,7 +31,6 @@ export const UIKitContext = createContext<ProviderInsideProps>({
 
 export function Provider(allProps: PropsWithChildren<ProviderProps>) {
   let {
-    breakpoints,
     children,
     insideForm,
     isDisabled,
@@ -46,19 +44,12 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
 
   const parentContext = useContext(UIKitContext);
 
-  if (breakpoints) {
-    children = (
-      <BreakpointsProvider value={breakpoints}>{children}</BreakpointsProvider>
-    );
-  }
-
   // Wrap with EventBusProvider for menu synchronization
   children = <EventBusProvider>{children}</EventBusProvider>;
 
   const props = useMemo(
     () => ({
       ref,
-      breakpoints,
       insideForm,
       isDisabled,
       isReadOnly,
@@ -69,7 +60,6 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
     }),
     [
       ref,
-      breakpoints,
       insideForm,
       isDisabled,
       isReadOnly,

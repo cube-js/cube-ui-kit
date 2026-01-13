@@ -23,7 +23,7 @@ const StyledBlock = tasty({
     placeItems: 'center stretch',
     gap: '1x',
     position: 'relative',
-    maxWidth: '100%',
+    width: 'max 100%',
     color: 'inherit',
     padding: '0 1.5x',
     // height: {

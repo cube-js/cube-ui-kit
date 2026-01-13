@@ -7,6 +7,7 @@ import { CubeLayoutContentProps, LayoutContent } from './LayoutContent';
 const FlexElement = tasty(LayoutContent, {
   qa: 'LayoutFlex',
   styles: {
+    container: 'none',
     flexShrink: 0,
     flexGrow: 0,
 
