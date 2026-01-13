@@ -2,8 +2,21 @@ import { CubeParagraphProps, Paragraph } from './components/content/Paragraph';
 import { CubeTextProps, Text } from './components/content/Text';
 import { CubeTextItemProps, TextItem } from './components/content/TextItem';
 import { CubeTitleProps, Title } from './components/content/Title';
+import { configure } from './tasty';
 
 import './version';
+
+// Configure tasty with UI-kit defaults
+// This overrides the raw unit defaults with CSS variable-based units
+configure({
+  units: {
+    x: 'var(--gap)',
+    r: 'var(--radius)',
+    cr: 'var(--card-radius)',
+    bw: 'var(--border-width)',
+    ow: 'var(--outline-width)',
+  },
+});
 
 export { Section } from 'react-stately';
 
