@@ -1,6 +1,6 @@
 import { StoryFn } from '@storybook/react-vite';
 
-import { CubeTextProps, Text } from '../index';
+import { CubeTextProps, Text } from '../components/content/Text';
 
 import { baseProps } from './lists/baseProps';
 

@@ -1,5 +1,31 @@
 # @cube-dev/ui-kit
 
+## 0.98.9
+
+### Patch Changes
+
+- [#945](https://github.com/cube-js/cube-ui-kit/pull/945) [`07215bcd`](https://github.com/cube-js/cube-ui-kit/commit/07215bcd71aad735b4dda0d2304a627f4f1b17c0) Thanks [@tenphi](https://github.com/tenphi)! - Improve Item component actions container behavior when using `show-actions-on-hover`. Actions now properly collapse width and padding when not hovered, with smooth transitions for better visual feedback.
+
+- [#947](https://github.com/cube-js/cube-ui-kit/pull/947) [`3361360f`](https://github.com/cube-js/cube-ui-kit/commit/3361360f059996e5e1763913cb16cea7cb47ad89) Thanks [@tenphi](https://github.com/tenphi)! - Add SemanticQueryIcon.
+
+## 0.98.8
+
+### Patch Changes
+
+- [#942](https://github.com/cube-js/cube-ui-kit/pull/942) [`f5a5b05c`](https://github.com/cube-js/cube-ui-kit/commit/f5a5b05c669ba3548a68b9b1bcfcd4777f36119d) Thanks [@tenphi](https://github.com/tenphi)! - Fix Dialog focus management to ensure Escape key works reliably when dialog opens and focus properly returns to the trigger when dialog closes. Focus now properly falls back to the first tabbable element or the dialog element itself if no priority focusable element is found. Replaced react-focus-lock with React Aria's FocusScope for better focus restoration behavior.
+
+## 0.98.7
+
+### Patch Changes
+
+- [#940](https://github.com/cube-js/cube-ui-kit/pull/940) [`126a66fe`](https://github.com/cube-js/cube-ui-kit/commit/126a66feb43cb1aebfbeaeeaa27c747665e5b2c4) Thanks [@tenphi](https://github.com/tenphi)! - Fix ListBox icon detection and selection change handler dependencies. Custom icons on ListBox items are now properly detected, and the selection change handler correctly responds to `disableSelectionToggle` prop changes.
+
+## 0.98.6
+
+### Patch Changes
+
+- [#938](https://github.com/cube-js/cube-ui-kit/pull/938) [`71140ba3`](https://github.com/cube-js/cube-ui-kit/commit/71140ba3cc78450eb70bf39e21b01bfe5f59f03b) Thanks [@tenphi](https://github.com/tenphi)! - Fix FieldWrapper tooltip prop to properly support ReactNode values, not just strings. Previously, ReactNode tooltips (like JSX fragments) were incorrectly cast to strings, causing them to fail.
+
 ## 0.98.5
 
 ### Patch Changes

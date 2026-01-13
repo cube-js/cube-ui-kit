@@ -1,6 +1,6 @@
 import { StoryFn } from '@storybook/react-vite';
 
-import { Block, CubeBlockProps } from '../index';
+import { Block, CubeBlockProps } from '../components/Block';
 
 const FadeTemplate: StoryFn<CubeBlockProps> = ({ children, ...props }) => {
   return (

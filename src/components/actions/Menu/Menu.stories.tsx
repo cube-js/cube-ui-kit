@@ -24,30 +24,27 @@ import {
   PlusIcon,
   TrashIcon,
 } from '../../../icons';
-import {
-  Alert,
-  AlertDialog,
-  Button,
-  Card,
-  DialogContainer,
-  DirectionIcon,
-  Flex,
-  Flow,
-  Menu,
-  MenuTrigger,
-  Paragraph,
-  Space,
-  Text,
-  Title,
-  TooltipProvider,
-  useAnchoredMenu,
-  useContextMenu,
-} from '../../../index';
+import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Alert } from '../../content/Alert';
+import { Card } from '../../content/Card/Card';
+import { Paragraph } from '../../content/Paragraph';
+import { Text } from '../../content/Text';
+import { Title } from '../../content/Title';
 import { ComboBox } from '../../fields/ComboBox';
 import { FilterPicker } from '../../fields/FilterPicker';
 import { Select } from '../../fields/Select';
+import { Flex } from '../../layout/Flex';
+import { Flow } from '../../layout/Flow';
+import { Space } from '../../layout/Space';
+import { AlertDialog } from '../../overlays/AlertDialog';
+import { DialogContainer } from '../../overlays/Dialog';
+import { Button } from '../Button';
 import { ItemAction } from '../ItemAction';
+import { useAnchoredMenu } from '../use-anchored-menu';
+import { useContextMenu } from '../use-context-menu';
+
+import { Menu, MenuTrigger } from './index';
 
 export default {
   title: 'Actions/Menu',

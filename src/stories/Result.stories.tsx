@@ -1,15 +1,12 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconBulb, IconLock } from '@tabler/icons-react';
 
-import {
-  Button,
-  CubeResultProps,
-  Icon,
-  Result,
-  Space,
-  Text,
-  Title,
-} from '../index';
+import { Button } from '../components/actions/Button';
+import { CubeResultProps, Result } from '../components/content/Result/Result';
+import { Text } from '../components/content/Text';
+import { Title } from '../components/content/Title';
+import { Space } from '../components/layout/Space';
+import { Icon } from '../icons/Icon';
 
 const Template: StoryFn<CubeResultProps> = ({ children, ...props }) => {
   return <Result {...props}>{children}</Result>;

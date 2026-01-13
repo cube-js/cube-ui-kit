@@ -96,6 +96,7 @@ export { RightIcon } from './RightIcon';
 export { RowTotalsIcon } from './RowTotalsIcon';
 export { SchemeIcon } from './SchemeIcon';
 export { SearchIcon } from './SearchIcon';
+export { SemanticQueryIcon } from './SemanticQueryIcon';
 export { SettingsIcon } from './SettingsIcon';
 export { ShieldFilledIcon } from './ShieldFilledIcon';
 export { ShieldIcon } from './ShieldIcon';
