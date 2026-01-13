@@ -92,23 +92,15 @@ let colorWarningCount = 0;
 const MAX_COLOR_WARNINGS = 10;
 
 export const CUSTOM_UNITS = {
-  r: 'var(--radius)',
-  cr: 'var(--card-radius)',
-  bw: 'var(--border-width)',
-  ow: 'var(--outline-width)',
-  x: 'var(--gap)',
+  r: '6px',
+  cr: '10px',
+  bw: '1px',
+  ow: '3px',
+  x: '8px',
   fs: 'var(--font-size)',
   lh: 'var(--line-height)',
-  rp: 'var(--rem-pixel)',
-  gp: 'var(--column-gap)',
   sf: function sf(num) {
     return `minmax(0, ${num}fr)`;
-  },
-  // span unit for GridProvider
-  sp: function spanWidth(num) {
-    return `((${num} * var(--column-width)) + (${
-      num - 1
-    } * var(--column-gap)))`;
   },
 };
 

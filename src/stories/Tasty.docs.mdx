@@ -164,6 +164,60 @@ const Box = tasty({
 });
 ```
 
+### Raw Unit Calculation
+
+When a custom unit is defined with a **raw CSS value** (like `8px`, `1rem`), the parser calculates the result directly instead of wrapping it in `calc()`:
+
+```jsx
+configure({
+  units: {
+    sp: '8px', // Raw CSS unit - calculated directly
+  },
+});
+
+// Usage
+padding: '2sp';  // → 16px (calculated: 2 * 8px)
+padding: '1sp';  // → 8px
+padding: '.5sp'; // → 4px
+```
+
+This produces cleaner CSS output and is more efficient than `calc()` wrappers.
+
+**Non-raw units** (CSS variables, functions, etc.) still use `calc()` for multiplication:
+
+```jsx
+configure({
+  units: {
+    gap: 'var(--gap)', // Non-raw - uses calc()
+  },
+});
+
+// Usage
+padding: '2gap'; // → calc(2 * var(--gap))
+```
+
+### Recursive Unit Resolution
+
+Custom units can reference other custom units. The parser resolves them recursively:
+
+```jsx
+configure({
+  units: {
+    x: '8px',  // Base unit
+    y: '2x',   // References x → 2 * 8px = 16px
+    z: '2y',   // References y → 2 * 16px = 32px
+  },
+});
+
+// Usage
+padding: '1x'; // → 8px
+padding: '1y'; // → 16px (resolved from 2x)
+padding: '1z'; // → 32px (resolved from 2y → 4x)
+padding: '3y'; // → 48px (3 * 16px)
+```
+
+This is useful for creating a spacing scale or other design system values that build upon each other.
+
 ### Adding Custom Functions
 
 Custom functions process parsed style values:

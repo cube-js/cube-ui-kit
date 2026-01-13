@@ -9,7 +9,7 @@ describe('marginStyle', () => {
     it('handles boolean true value', () => {
       const result = marginStyle({ margin: true });
       expect(result).toEqual({
-        margin: 'var(--gap)',
+        margin: '8px', // raw unit: 1 * 8px
       });
     });
 
@@ -23,22 +23,21 @@ describe('marginStyle', () => {
     it('handles single string value', () => {
       const result = marginStyle({ margin: '2x' });
       expect(result).toEqual({
-        margin: 'calc(2 * var(--gap))',
+        margin: '16px', // raw unit: 2 * 8px
       });
     });
 
     it('handles two-value string (vertical horizontal)', () => {
       const result = marginStyle({ margin: '2x 3x' });
       expect(result).toEqual({
-        margin: 'calc(2 * var(--gap)) calc(3 * var(--gap))',
+        margin: '16px 24px', // raw units
       });
     });
 
     it('handles four-value string (top right bottom left)', () => {
       const result = marginStyle({ margin: '1x 2x 3x 4x' });
       expect(result).toEqual({
-        margin:
-          'var(--gap) calc(2 * var(--gap)) calc(3 * var(--gap)) calc(4 * var(--gap))',
+        margin: '8px 16px 24px 32px', // raw units
       });
     });
   });
@@ -47,21 +46,21 @@ describe('marginStyle', () => {
     it('handles directional margin - top only', () => {
       const result = marginStyle({ margin: '2x top' });
       expect(result).toEqual({
-        margin: 'calc(2 * var(--gap)) 0 0 0',
+        margin: '16px 0 0 0', // raw unit: 2 * 8px
       });
     });
 
     it('handles directional margin - left and right', () => {
       const result = marginStyle({ margin: '3x left right' });
       expect(result).toEqual({
-        margin: '0 calc(3 * var(--gap))',
+        margin: '0 24px', // raw unit: 3 * 8px
       });
     });
 
     it('handles directional margin - bottom only', () => {
       const result = marginStyle({ margin: '1x bottom' });
       expect(result).toEqual({
-        margin: '0 0 var(--gap) 0',
+        margin: '0 0 8px 0', // raw unit: 1 * 8px
       });
     });
   });
@@ -70,14 +69,14 @@ describe('marginStyle', () => {
     it('handles marginBlock (top and bottom)', () => {
       const result = marginStyle({ marginBlock: '2x' });
       expect(result).toEqual({
-        margin: 'calc(2 * var(--gap)) 0',
+        margin: '16px 0', // raw unit: 2 * 8px
       });
     });
 
     it('handles marginInline (left and right)', () => {
       const result = marginStyle({ marginInline: '4x' });
       expect(result).toEqual({
-        margin: '0 calc(4 * var(--gap))',
+        margin: '0 32px', // raw unit: 4 * 8px
       });
     });
 
@@ -87,7 +86,7 @@ describe('marginStyle', () => {
         marginInline: 8,
       });
       expect(result).toEqual({
-        margin: 'var(--gap) 8px',
+        margin: '8px', // all sides equal, optimized to single value
       });
     });
   });
@@ -101,8 +100,7 @@ describe('marginStyle', () => {
         marginLeft: '4x',
       });
       expect(result).toEqual({
-        margin:
-          'var(--gap) calc(2 * var(--gap)) calc(3 * var(--gap)) calc(4 * var(--gap))',
+        margin: '8px 16px 24px 32px', // raw units
       });
     });
 
@@ -114,7 +112,7 @@ describe('marginStyle', () => {
         marginLeft: false,
       });
       expect(result).toEqual({
-        margin: 'var(--gap) 12px calc(2 * var(--gap)) 0',
+        margin: '8px 12px 16px 0', // raw units
       });
     });
   });
@@ -127,7 +125,7 @@ describe('marginStyle', () => {
         marginInline: '3x',
       });
       expect(result).toEqual({
-        margin: 'calc(2 * var(--gap)) calc(3 * var(--gap))',
+        margin: '16px 24px', // raw units
       });
     });
 
@@ -139,8 +137,7 @@ describe('marginStyle', () => {
         marginRight: '5x',
       });
       expect(result).toEqual({
-        margin:
-          'calc(4 * var(--gap)) calc(5 * var(--gap)) calc(2 * var(--gap)) calc(3 * var(--gap))',
+        margin: '32px 40px 16px 24px', // raw units
       });
     });
 
@@ -153,8 +150,7 @@ describe('marginStyle', () => {
         marginRight: '5x',
       });
       expect(result).toEqual({
-        margin:
-          'calc(4 * var(--gap)) calc(5 * var(--gap)) calc(2 * var(--gap)) calc(3 * var(--gap))',
+        margin: '32px 40px 16px 24px', // raw units
       });
     });
 
@@ -164,7 +160,7 @@ describe('marginStyle', () => {
         marginRight: '2x',
       });
       expect(result).toEqual({
-        margin: 'var(--gap) calc(2 * var(--gap)) var(--gap) var(--gap)',
+        margin: '8px 16px 8px 8px', // raw units
       });
     });
 
@@ -174,7 +170,7 @@ describe('marginStyle', () => {
         marginBlock: '2x',
       });
       expect(result).toEqual({
-        margin: 'calc(2 * var(--gap)) var(--gap)',
+        margin: '16px 8px', // raw units
       });
     });
   });
@@ -196,7 +192,7 @@ describe('marginStyle', () => {
         marginTop: '2x',
       });
       expect(result).toEqual({
-        margin: 'calc(2 * var(--gap)) 0 0 0',
+        margin: '16px 0 0 0', // raw unit: 2 * 8px
       });
     });
 
@@ -206,7 +202,7 @@ describe('marginStyle', () => {
         marginTop: '1x',
       });
       expect(result).toEqual({
-        margin: 'var(--gap) 0px 0px 0px',
+        margin: '8px 0px 0px 0px', // raw unit: 1 * 8px
       });
     });
 
@@ -217,7 +213,7 @@ describe('marginStyle', () => {
         marginLeft: '3x',
       });
       expect(result).toEqual({
-        margin: '16px var(--gap) 16px calc(3 * var(--gap))',
+        margin: '16px 8px 16px 24px', // raw units
       });
     });
 
@@ -227,8 +223,7 @@ describe('marginStyle', () => {
         marginTop: -8,
       });
       expect(result).toEqual({
-        margin:
-          '-8px calc(-1 * var(--gap)) calc(-1 * var(--gap)) calc(-1 * var(--gap))',
+        margin: '-8px', // all sides equal, optimized to single value
       });
     });
   });
@@ -240,7 +235,7 @@ describe('marginStyle', () => {
         marginTop: '5x',
       });
       expect(result).toEqual({
-        margin: 'calc(5 * var(--gap)) 0 calc(2 * var(--gap)) 0',
+        margin: '40px 0 16px 0', // raw units
       });
     });
 
@@ -250,7 +245,7 @@ describe('marginStyle', () => {
         marginInline: '3x',
       });
       expect(result).toEqual({
-        margin: 'var(--gap) calc(3 * var(--gap)) 0 calc(3 * var(--gap))',
+        margin: '8px 24px 0 24px', // raw units
       });
     });
   });
@@ -270,7 +265,7 @@ describe('marginStyle', () => {
         margin: '1x auto',
       });
       expect(result).toEqual({
-        margin: 'var(--gap) auto',
+        margin: '8px auto', // raw unit: 1 * 8px
       });
     });
   });
@@ -278,7 +273,7 @@ describe('marginStyle', () => {
   describe('output optimization', () => {
     it('outputs single value when all sides are equal', () => {
       expect(marginStyle({ margin: '2x' })).toEqual({
-        margin: 'calc(2 * var(--gap))',
+        margin: '16px', // raw unit: 2 * 8px
       });
       expect(marginStyle({ margin: 16 })).toEqual({
         margin: '16px',
@@ -287,17 +282,16 @@ describe('marginStyle', () => {
 
     it('outputs two values when vertical and horizontal are equal', () => {
       expect(marginStyle({ margin: '1x 2x' })).toEqual({
-        margin: 'var(--gap) calc(2 * var(--gap))',
+        margin: '8px 16px', // raw units
       });
       expect(marginStyle({ marginBlock: '1x', marginInline: '2x' })).toEqual({
-        margin: 'var(--gap) calc(2 * var(--gap))',
+        margin: '8px 16px', // raw units
       });
     });
 
     it('outputs four values when three values differ', () => {
       expect(marginStyle({ margin: '1x 2x 3x' })).toEqual({
-        margin:
-          'var(--gap) calc(2 * var(--gap)) calc(3 * var(--gap)) calc(2 * var(--gap))',
+        margin: '8px 16px 24px 16px', // raw units
       });
     });
   });
