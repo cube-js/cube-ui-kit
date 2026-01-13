@@ -39,9 +39,8 @@ const RESET_MAP = {
     },
     {
       $: '::placeholder',
-      '-webkit-text-fill-color':
-        'var(--placeholder-color, rgb(var(--dark-color-rgb) / .3))',
-      color: 'var(--placeholder-color, rgb(var(--dark-color-rgb) / .3))',
+      '-webkit-text-fill-color': 'var(--placeholder-color, initial)',
+      color: 'var(--placeholder-color, initial)',
     },
     {
       $: '::-webkit-search-cancel-button',
