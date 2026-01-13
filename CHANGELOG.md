@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.99.2
+
+### Patch Changes
+
+- [#952](https://github.com/cube-js/cube-ui-kit/pull/952) [`ff9ad4cc`](https://github.com/cube-js/cube-ui-kit/commit/ff9ad4cc7414a97d04aba0f5997c095460b58798) Thanks [@tenphi](https://github.com/tenphi)! - Fix placeholder color styling by removing filter and updating webkit text fill color
+
 ## 0.99.1
 
 ### Patch Changes
