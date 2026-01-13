@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.99.1
+
+### Patch Changes
+
+- [#950](https://github.com/cube-js/cube-ui-kit/pull/950) [`e9f9cd31`](https://github.com/cube-js/cube-ui-kit/commit/e9f9cd31912af88b09a59407a23bc56a2637eef0) Thanks [@tenphi](https://github.com/tenphi)! - Fixed CJS/ESM interop issue with `react-keyed-flatten-children` that caused crashes in Vite development mode when showing toast notifications.
+
 ## 0.99.0
 
 ### Minor Changes
