@@ -126,6 +126,61 @@ configure({
 | `parserCacheSize` | `number` | `1000` | Parser LRU cache size |
 | `units` | `Record<string, string \| Function>` | Built-in | Custom units (merged with built-in) |
 | `funcs` | `Record<string, Function>` | - | Custom parser functions (merged with existing) |
+| `tokens` | `Record<string, string \| number>` | - | Predefined tokens replaced during parsing |
+
+### Predefined Tokens
+
+Define reusable tokens that are replaced during style parsing. Unlike component-level `tokens` prop (which renders as inline CSS custom properties), predefined tokens are baked into the generated CSS.
+
+```jsx
+configure({
+  tokens: {
+    // Custom property tokens ($name)
+    $spacing: '2x',
+    '$card-padding': '4x',
+    '$button-height': '40px',
+    
+    // Color tokens (#name)
+    '#accent': '#purple',
+    '#surface': '#white',
+    '#surface-hover': '#gray.05',
+  },
+});
+
+// Now use in styles - tokens are replaced at parse time
+const Card = tasty({
+  styles: {
+    padding: '$card-padding',      // → calc(4 * var(--gap))
+    fill: '#surface',              // → var(--white-color)
+    border: '1bw solid #accent',   // → 1px solid var(--purple-color)
+  },
+});
+
+const Button = tasty({
+  styles: {
+    height: '$button-height',      // → 40px
+    fill: {
+      '': '#accent',
+      'hovered': '#surface-hover',
+    },
+  },
+});
+```
+
+**Benefits of predefined tokens:**
+- **Consistency** - Define design tokens once, use everywhere
+- **Performance** - Values are baked into CSS, no runtime overhead
+- **Caching** - Generated styles are cached and deduplicated
+- **Type safety** - Use `$` prefix for values, `#` prefix for colors
+
+**Predefined tokens vs component tokens:**
+
+| Feature | Predefined (config) | Component (`tokens` prop) |
+|---------|--------------------|-----------------------------|
+| Scope | Global | Per-component instance |
+| Output | Baked into CSS classes | Inline CSS custom properties |
+| Runtime | Static | Dynamic (can change) |
+| Use case | Design system values | Dynamic/computed values |
 
 ### Built-in Units
 

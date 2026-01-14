@@ -206,6 +206,46 @@ export function getGlobalFuncs(): Record<
   return __tastyFuncs;
 }
 
+// ============================================================================
+// Global Predefined Tokens
+// ============================================================================
+
+/**
+ * Storage for predefined tokens that are replaced during style parsing.
+ * Keys are token names (with $ or # prefix), values are pre-processed CSS values.
+ */
+let __globalPredefinedTokens: Record<string, string> | null = null;
+
+/**
+ * Set global predefined tokens.
+ * Called from configure() after processing token values.
+ * @internal
+ */
+export function setGlobalPredefinedTokens(
+  tokens: Record<string, string>,
+): void {
+  __globalPredefinedTokens = tokens;
+  // Clear parser cache since token values affect parsing
+  __tastyParser.updateOptions({});
+}
+
+/**
+ * Get the current global predefined tokens.
+ * Returns null if no tokens are configured.
+ */
+export function getGlobalPredefinedTokens(): Record<string, string> | null {
+  return __globalPredefinedTokens;
+}
+
+/**
+ * Reset global predefined tokens.
+ * Used for testing.
+ * @internal
+ */
+export function resetGlobalPredefinedTokens(): void {
+  __globalPredefinedTokens = null;
+}
+
 /**
  *
  * @param {String} value

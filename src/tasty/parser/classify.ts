@@ -1,3 +1,5 @@
+import { getGlobalPredefinedTokens } from '../utils/styles';
+
 import {
   COLOR_FUNCS,
   RE_HEX,
@@ -86,6 +88,17 @@ export function classify(
     (token.startsWith("'") && token.endsWith("'"))
   ) {
     return { bucket: Bucket.Value, processed: token };
+  }
+
+  // 0a. Check for predefined tokens (configured via configure({ tokens: {...} }))
+  // Must happen before default $ and # handling to allow overriding
+  if (token[0] === '$' || token[0] === '#') {
+    const predefinedTokens = getGlobalPredefinedTokens();
+    if (predefinedTokens && token in predefinedTokens) {
+      // Token found - recursively process its value
+      const tokenValue = predefinedTokens[token];
+      return classify(tokenValue, opts, recurse);
+    }
   }
 
   // 0. Direct var(--*-color) token

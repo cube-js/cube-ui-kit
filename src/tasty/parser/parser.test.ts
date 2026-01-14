@@ -639,3 +639,111 @@ describe('StyleProcessor', () => {
     ]);
   });
 });
+
+describe('Predefined tokens', () => {
+  // Import inline to avoid circular dependency issues at module load time
+  let setGlobalPredefinedTokens: (tokens: Record<string, string>) => void;
+  let resetGlobalPredefinedTokens: () => void;
+  let getGlobalPredefinedTokens: () => Record<string, string> | null;
+
+  beforeAll(() => {
+    // Dynamic import to get the functions
+    const styles = jest.requireActual('../utils/styles');
+    setGlobalPredefinedTokens = styles.setGlobalPredefinedTokens;
+    resetGlobalPredefinedTokens = styles.resetGlobalPredefinedTokens;
+    getGlobalPredefinedTokens = styles.getGlobalPredefinedTokens;
+  });
+
+  beforeEach(() => {
+    // Reset tokens before each test
+    resetGlobalPredefinedTokens();
+  });
+
+  afterEach(() => {
+    // Cleanup after tests
+    resetGlobalPredefinedTokens();
+  });
+
+  test('predefined $token is replaced with its value', () => {
+    setGlobalPredefinedTokens({
+      $spacing: '2x',
+    });
+
+    const result = parser.process('$spacing');
+    // $spacing = '2x' = 2 * 8px = 16px
+    expect(result.output).toBe('16px');
+  });
+
+  test('predefined #token is replaced with color value', () => {
+    setGlobalPredefinedTokens({
+      '#accent': '#purple',
+    });
+
+    const result = parser.process('#accent');
+    // #accent = '#purple' -> var(--purple-color)
+    expect(result.output).toBe('var(--purple-color)');
+  });
+
+  test('predefined tokens work in complex expressions', () => {
+    setGlobalPredefinedTokens({
+      '$card-padding': '4x',
+      '#surface': '#white',
+    });
+
+    const padding = parser.process('$card-padding');
+    expect(padding.output).toBe('32px'); // 4 * 8px
+
+    const fill = parser.process('#surface');
+    expect(fill.output).toBe('var(--white-color)');
+  });
+
+  test('undefined tokens fall through to default behavior', () => {
+    // No tokens configured
+    const result = parser.process('$unknown');
+    // Should use default $name -> var(--name) behavior
+    expect(result.output).toBe('var(--unknown)');
+  });
+
+  test('predefined tokens can reference other tokens', () => {
+    setGlobalPredefinedTokens({
+      '#primary': '#purple.5',
+    });
+
+    const result = parser.process('#primary');
+    // #primary = '#purple.5' -> rgb(var(--purple-color-rgb) / .5)
+    expect(result.output).toBe('rgb(var(--purple-color-rgb) / .5)');
+  });
+
+  test('multiple predefined tokens in one expression', () => {
+    setGlobalPredefinedTokens({
+      $gap: '1x',
+      $padding: '2x',
+    });
+
+    const result = parser.process('$gap $padding');
+    expect(result.output).toBe('8px 16px');
+  });
+
+  test('predefined tokens with number values', () => {
+    setGlobalPredefinedTokens({
+      $size: '100',
+    });
+
+    const result = parser.process('$size');
+    expect(result.output).toBe('100');
+  });
+
+  test('getGlobalPredefinedTokens returns null when not configured', () => {
+    expect(getGlobalPredefinedTokens()).toBeNull();
+  });
+
+  test('getGlobalPredefinedTokens returns configured tokens', () => {
+    setGlobalPredefinedTokens({
+      $test: '10px',
+    });
+
+    expect(getGlobalPredefinedTokens()).toEqual({
+      $test: '10px',
+    });
+  });
+});

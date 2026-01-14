@@ -100,6 +100,67 @@ describe('Global Style Injector API', () => {
       expect(result1.className).toMatch(/^t\d+$/);
       expect(result2.className).toMatch(/^t\d+$/);
     });
+
+    it('should configure predefined tokens', () => {
+      const {
+        getGlobalPredefinedTokens,
+        resetGlobalPredefinedTokens,
+      } = require('../utils/styles');
+
+      // Clean up first
+      resetGlobalPredefinedTokens();
+
+      configure({
+        tokens: {
+          $spacing: '2x',
+          '#accent': '#purple',
+        },
+      });
+
+      const tokens = getGlobalPredefinedTokens();
+      expect(tokens).toEqual({
+        $spacing: '2x',
+        '#accent': '#purple',
+      });
+
+      // Clean up
+      resetGlobalPredefinedTokens();
+    });
+
+    it('should merge tokens from plugins', () => {
+      const {
+        getGlobalPredefinedTokens,
+        resetGlobalPredefinedTokens,
+      } = require('../utils/styles');
+
+      // Clean up first
+      resetGlobalPredefinedTokens();
+
+      configure({
+        plugins: [
+          {
+            name: 'test-plugin',
+            tokens: {
+              $plugin: '1x',
+              '#plugin-color': '#blue',
+            },
+          },
+        ],
+        tokens: {
+          $config: '2x',
+        },
+      });
+
+      const tokens = getGlobalPredefinedTokens();
+      expect(tokens).toEqual({
+        $plugin: '1x',
+        '#plugin-color': '#blue',
+        $config: '2x',
+      });
+
+      // Clean up
+      resetGlobalPredefinedTokens();
+    });
   });
 
   describe('inject', () => {
