@@ -94,10 +94,57 @@ export function classify(
   // Must happen before default $ and # handling to allow overriding
   if (token[0] === '$' || token[0] === '#') {
     const predefinedTokens = getGlobalPredefinedTokens();
-    if (predefinedTokens && token in predefinedTokens) {
-      // Token found - recursively process its value
-      const tokenValue = predefinedTokens[token];
-      return classify(tokenValue, opts, recurse);
+    if (predefinedTokens) {
+      // Exact match
+      if (token in predefinedTokens) {
+        const tokenValue = predefinedTokens[token];
+        return classify(tokenValue, opts, recurse);
+      }
+      // Check for color token with alpha suffix: #token.alpha
+      if (token[0] === '#') {
+        const alphaMatch = token.match(/^(#[a-z0-9-]+)\.([0-9]+)$/i);
+        if (alphaMatch) {
+          const [, baseToken, rawAlpha] = alphaMatch;
+          if (baseToken in predefinedTokens) {
+            const resolvedValue = predefinedTokens[baseToken];
+
+            // If resolved value starts with # (color token), use standard alpha syntax
+            if (resolvedValue.startsWith('#')) {
+              return classify(`${resolvedValue}.${rawAlpha}`, opts, recurse);
+            }
+
+            // For color functions like rgb(), rgba(), hsl(), etc., inject alpha
+            const funcMatch = resolvedValue.match(
+              /^(rgba?|hsla?|oklab|oklch|lab|lch|color|okhsl)\((.+)\)$/i,
+            );
+            if (funcMatch) {
+              const [, , args] = funcMatch;
+              const alpha = rawAlpha === '0' ? '0' : `.${rawAlpha}`;
+              // Remove existing alpha if present (for rgba/hsla) and add new one
+              // Modern syntax: rgb(R G B / alpha) or legacy: rgba(R, G, B, alpha)
+              const hasAlpha = /[,/]\s*[\d.]+\s*$/.test(args);
+              // Normalize to modern syntax: replace commas with spaces
+              const normalizeArgs = (a: string) => a.replace(/,\s*/g, ' ');
+              if (hasAlpha) {
+                // Replace existing alpha
+                const withoutAlpha = args.replace(/[,/]\s*[\d.]+$/, '').trim();
+                return {
+                  bucket: Bucket.Color,
+                  processed: `rgb(${normalizeArgs(withoutAlpha)} / ${alpha})`,
+                };
+              }
+              // Add alpha using modern syntax
+              return {
+                bucket: Bucket.Color,
+                processed: `rgb(${normalizeArgs(args)} / ${alpha})`,
+              };
+            }
+
+            // Fallback: try appending .alpha (may not work for all cases)
+            return classify(`${resolvedValue}.${rawAlpha}`, opts, recurse);
+          }
+        }
+      }
     }
   }
 

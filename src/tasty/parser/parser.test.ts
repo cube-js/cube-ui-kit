@@ -714,6 +714,57 @@ describe('Predefined tokens', () => {
     expect(result.output).toBe('rgb(var(--purple-color-rgb) / .5)');
   });
 
+  test('opacity suffix works with predefined color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#accent': '#purple',
+    });
+
+    // #accent.5 should resolve #accent to #purple, then apply .5 opacity
+    const result = parser.process('#accent.5');
+    expect(result.output).toBe('rgb(var(--purple-color-rgb) / .5)');
+  });
+
+  test('opacity suffix works with predefined rgb() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#brand': 'rgb(100 150 200)',
+    });
+
+    // #brand.5 should resolve to rgb(100 150 200) with .5 opacity
+    const result = parser.process('#brand.5');
+    expect(result.output).toBe('rgb(100 150 200 / .5)');
+  });
+
+  test('opacity suffix works with predefined rgba() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#overlay': 'rgba(0, 0, 0, 0.8)',
+    });
+
+    // #overlay.5 should apply .5 opacity to rgba color
+    const result = parser.process('#overlay.5');
+    // Opacity is replaced, normalized to modern rgb syntax
+    expect(result.output).toBe('rgb(0 0 0 / .5)');
+  });
+
+  test('opacity suffix works with predefined okhsl() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#okhsl-color': 'okhsl(250 80% 60%)',
+    });
+
+    // #okhsl-color.5 should apply .5 opacity to okhsl color
+    const result = parser.process('#okhsl-color.5');
+    expect(result.output).toBe('rgb(250 80% 60% / .5)');
+  });
+
+  test('opacity suffix works with predefined hsl() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#primary': 'hsl(220 90% 50%)',
+    });
+
+    // #primary.5 should apply .5 opacity
+    const result = parser.process('#primary.5');
+    expect(result.output).toBe('rgb(220 90% 50% / .5)');
+  });
+
   test('multiple predefined tokens in one expression', () => {
     setGlobalPredefinedTokens({
       $gap: '1x',
