@@ -118,25 +118,30 @@ export function classify(
               /^(rgba?|hsla?|oklab|oklch|lab|lch|color|okhsl)\((.+)\)$/i,
             );
             if (funcMatch) {
-              const [, , args] = funcMatch;
+              const [, funcName, args] = funcMatch;
               const alpha = rawAlpha === '0' ? '0' : `.${rawAlpha}`;
-              // Remove existing alpha if present (for rgba/hsla) and add new one
-              // Modern syntax: rgb(R G B / alpha) or legacy: rgba(R, G, B, alpha)
-              const hasAlpha = /[,/]\s*[\d.]+\s*$/.test(args);
+              // Normalize function name: rgba->rgb, hsla->hsl (modern syntax doesn't need 'a' suffix)
+              const normalizedFunc = funcName.replace(/a$/i, '').toLowerCase();
               // Normalize to modern syntax: replace commas with spaces
               const normalizeArgs = (a: string) => a.replace(/,\s*/g, ' ');
-              if (hasAlpha) {
+              // Check if already has alpha:
+              // - Modern syntax: has `/` separator (e.g., `rgb(R G B / alpha)`)
+              // - Legacy syntax: function ends with 'a' (rgba, hsla) and has 4th comma value
+              const hasModernAlpha = /\/\s*[\d.]+\s*$/.test(args);
+              const hasLegacyAlpha =
+                /a$/i.test(funcName) && /,\s*[\d.]+\s*$/.test(args);
+              if (hasModernAlpha || hasLegacyAlpha) {
                 // Replace existing alpha
                 const withoutAlpha = args.replace(/[,/]\s*[\d.]+$/, '').trim();
                 return {
                   bucket: Bucket.Color,
-                  processed: `rgb(${normalizeArgs(withoutAlpha)} / ${alpha})`,
+                  processed: `${normalizedFunc}(${normalizeArgs(withoutAlpha)} / ${alpha})`,
                 };
               }
               // Add alpha using modern syntax
               return {
                 bucket: Bucket.Color,
-                processed: `rgb(${normalizeArgs(args)} / ${alpha})`,
+                processed: `${normalizedFunc}(${normalizeArgs(args)} / ${alpha})`,
               };
             }
 

@@ -750,9 +750,9 @@ describe('Predefined tokens', () => {
       '#okhsl-color': 'okhsl(250 80% 60%)',
     });
 
-    // #okhsl-color.5 should apply .5 opacity to okhsl color
+    // #okhsl-color.5 should apply .5 opacity, preserving okhsl color space
     const result = parser.process('#okhsl-color.5');
-    expect(result.output).toBe('rgb(250 80% 60% / .5)');
+    expect(result.output).toBe('okhsl(250 80% 60% / .5)');
   });
 
   test('opacity suffix works with predefined hsl() color tokens', () => {
@@ -760,9 +760,47 @@ describe('Predefined tokens', () => {
       '#primary': 'hsl(220 90% 50%)',
     });
 
-    // #primary.5 should apply .5 opacity
+    // #primary.5 should apply .5 opacity, preserving hsl color space
     const result = parser.process('#primary.5');
-    expect(result.output).toBe('rgb(220 90% 50% / .5)');
+    expect(result.output).toBe('hsl(220 90% 50% / .5)');
+  });
+
+  test('opacity suffix works with predefined oklch() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#oklch-color': 'oklch(70% 0.15 250)',
+    });
+
+    // #oklch-color.5 should apply .5 opacity, preserving oklch color space
+    const result = parser.process('#oklch-color.5');
+    expect(result.output).toBe('oklch(70% 0.15 250 / .5)');
+  });
+
+  test('opacity suffix normalizes hsla to hsl', () => {
+    setGlobalPredefinedTokens({
+      '#legacy': 'hsla(180, 50%, 50%, 0.8)',
+    });
+
+    // Should normalize to modern hsl syntax with new alpha
+    const result = parser.process('#legacy.5');
+    expect(result.output).toBe('hsl(180 50% 50% / .5)');
+  });
+
+  test('legacy comma syntax rgb() is normalized to modern syntax', () => {
+    setGlobalPredefinedTokens({
+      '#legacy-rgb': 'rgb(100, 150, 200)',
+    });
+
+    const result = parser.process('#legacy-rgb.5');
+    expect(result.output).toBe('rgb(100 150 200 / .5)');
+  });
+
+  test('legacy comma syntax hsl() is normalized to modern syntax', () => {
+    setGlobalPredefinedTokens({
+      '#legacy-hsl': 'hsl(220, 80%, 50%)',
+    });
+
+    const result = parser.process('#legacy-hsl.5');
+    expect(result.output).toBe('hsl(220 80% 50% / .5)');
   });
 
   test('multiple predefined tokens in one expression', () => {
