@@ -8,7 +8,9 @@ import {
   PointerEvent,
   ReactNode,
   RefObject,
+  useCallback,
   useMemo,
+  useRef,
 } from 'react';
 import { OverlayProps } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -845,13 +847,13 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     return children;
   }, [children, highlight, highlightCaseSensitive, highlightStyles]);
 
-  // Render function that creates the item element
-  const renderItemElement = (
-    tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
-    tooltipRef?: RefObject<HTMLElement>,
-  ) => {
-    // Use callback ref to merge multiple refs without calling hooks
-    const handleRef = (element: HTMLElement | null) => {
+  // Store tooltip ref in a mutable ref to avoid recreating the callback
+  const tooltipRefRef = useRef<RefObject<HTMLElement> | undefined>(undefined);
+
+  // Create a stable ref callback that won't change between renders
+  // This prevents infinite loops when React detaches/attaches refs during commit
+  const handleRef = useCallback(
+    (element: HTMLElement | null) => {
       // Set the component's forwarded ref
       if (typeof ref === 'function') {
         ref(element as T | null);
@@ -859,10 +861,20 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         (ref as any).current = element;
       }
       // Set the tooltip ref if provided
-      if (tooltipRef) {
-        (tooltipRef as any).current = element;
+      if (tooltipRefRef.current) {
+        (tooltipRefRef.current as any).current = element;
       }
-    };
+    },
+    [ref],
+  );
+
+  // Render function that creates the item element
+  const renderItemElement = (
+    tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
+    tooltipRef?: RefObject<HTMLElement>,
+  ) => {
+    // Store tooltip ref for the stable callback to use
+    tooltipRefRef.current = tooltipRef;
 
     return (
       <ItemElement

@@ -1,4 +1,11 @@
-import { forwardRef, HTMLAttributes, RefObject, useMemo } from 'react';
+import {
+  forwardRef,
+  HTMLAttributes,
+  RefObject,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import { OverlayProps } from 'react-aria';
 
 import {
@@ -91,12 +98,13 @@ export const TextItem = forwardRef<HTMLElement, CubeTextItemProps>(
       return children;
     }, [children, highlight, highlightCaseSensitive, highlightStyles]);
 
-    const renderElement = (
-      tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
-      tooltipRef?: RefObject<HTMLElement>,
-    ) => {
-      // Merge refs
-      const handleRef = (element: HTMLElement | null) => {
+    // Store tooltip ref in a mutable ref to avoid recreating the callback
+    const tooltipRefRef = useRef<RefObject<HTMLElement> | undefined>(undefined);
+
+    // Create a stable ref callback that won't change between renders
+    // This prevents infinite loops when React detaches/attaches refs during commit
+    const handleRef = useCallback(
+      (element: HTMLElement | null) => {
         // Set component forwarded ref
         if (typeof ref === 'function') {
           ref(element);
@@ -104,12 +112,21 @@ export const TextItem = forwardRef<HTMLElement, CubeTextItemProps>(
           (ref as any).current = element;
         }
         // Set tooltip ref
-        if (tooltipRef) {
-          (tooltipRef as any).current = element;
+        if (tooltipRefRef.current) {
+          (tooltipRefRef.current as any).current = element;
         }
         // Set label ref for overflow detection
         labelRef(element);
-      };
+      },
+      [ref, labelRef],
+    );
+
+    const renderElement = (
+      tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
+      tooltipRef?: RefObject<HTMLElement>,
+    ) => {
+      // Store tooltip ref for the stable callback to use
+      tooltipRefRef.current = tooltipRef;
 
       return (
         <TextItemElement
