@@ -248,6 +248,8 @@ export function getGlobalPredefinedTokens(): Record<string, string> | null {
  */
 export function resetGlobalPredefinedTokens(): void {
   __globalPredefinedTokens = null;
+  // Clear parser cache since token availability affects parsing
+  __tastyParser.updateOptions({});
 }
 
 /**

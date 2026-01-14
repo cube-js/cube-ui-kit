@@ -766,4 +766,26 @@ describe('Predefined tokens', () => {
       $c: '40px', // Added by second call
     });
   });
+
+  test('resetGlobalPredefinedTokens clears global parser cache', () => {
+    // Import the global parser to test cache clearing
+    const { getGlobalParser } = jest.requireActual('../utils/styles');
+    const globalParser = getGlobalParser();
+
+    // Set a token and parse it (caches the result)
+    setGlobalPredefinedTokens({
+      $spacing: '2x',
+    });
+
+    const resultWithToken = globalParser.process('$spacing');
+    expect(resultWithToken.output).toBe('16px'); // 2x = 2 * 8px
+
+    // Reset tokens
+    resetGlobalPredefinedTokens();
+
+    // Parse the same input - should NOT return cached result
+    // Without cache clear, this would incorrectly return '16px'
+    const resultAfterReset = globalParser.process('$spacing');
+    expect(resultAfterReset.output).toBe('var(--spacing)'); // Default $ behavior
+  });
 });
