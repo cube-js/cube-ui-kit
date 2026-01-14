@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.99.3
+
+### Patch Changes
+
+- [#955](https://github.com/cube-js/cube-ui-kit/pull/955) [`edd8bfc6`](https://github.com/cube-js/cube-ui-kit/commit/edd8bfc6e04cffc77c5e5812224e032187659381) Thanks [@tenphi](https://github.com/tenphi)! - Fix Dialog component to merge incoming style props instead of overwriting them. Update FilterPicker and Picker to correctly access trigger width using `UNSAFE_getDOMNode()` and pass it to Dialog overlay via `--overlay-min-width` CSS custom property. Update Picker overlay width calculation to use `max()` function for better min-width handling.
+
 ## 0.99.2
 
 ### Patch Changes
