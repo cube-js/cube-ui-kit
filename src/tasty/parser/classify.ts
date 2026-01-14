@@ -124,19 +124,50 @@ export function classify(
               const normalizedFunc = funcName.replace(/a$/i, '').toLowerCase();
               // Normalize to modern syntax: replace commas with spaces
               const normalizeArgs = (a: string) => a.replace(/,\s*/g, ' ');
+              // Helper: find last top-level occurrence of a character (ignores parentheses)
+              const findLastTopLevel = (str: string, ch: string) => {
+                let depth = 0;
+                for (let i = str.length - 1; i >= 0; i--) {
+                  const c = str[i];
+                  if (c === ')') depth++;
+                  else if (c === '(') depth = Math.max(0, depth - 1);
+                  else if (c === ch && depth === 0) return i;
+                }
+                return -1;
+              };
+
               // Check if already has alpha:
-              // - Modern syntax: has `/` separator (e.g., `rgb(R G B / alpha)` or `rgb(R G B / 50%)`)
-              // - Legacy syntax: function ends with 'a' (rgba, hsla) and has exactly 4 comma-separated values
-              // Alpha can be numeric (0.5, .5) or percentage (50%)
-              const hasModernAlpha = /\/\s*[\d.]+%?\s*$/.test(args);
-              // Count commas to detect 4-value legacy syntax (3 commas = 4 values)
-              const commaCount = (args.match(/,/g) || []).length;
-              const hasLegacyAlpha = /a$/i.test(funcName) && commaCount === 3;
+              // - Modern syntax: has `/` separator at top level (works with dynamic alpha like var()/calc())
+              // - Legacy syntax: function ends with 'a' (rgba, hsla) and has exactly 4 top-level comma-separated values
+              const slashIdx = findLastTopLevel(args, '/');
+              const hasModernAlpha = slashIdx !== -1;
+
+              // Count top-level commas to avoid commas inside nested functions
+              let topLevelCommaCount = 0;
+              let lastTopLevelComma = -1;
+              {
+                let depth = 0;
+                for (let i = 0; i < args.length; i++) {
+                  const c = args[i];
+                  if (c === '(') depth++;
+                  else if (c === ')') depth = Math.max(0, depth - 1);
+                  else if (c === ',' && depth === 0) {
+                    topLevelCommaCount++;
+                    lastTopLevelComma = i;
+                  }
+                }
+              }
+
+              const hasLegacyAlpha =
+                !hasModernAlpha &&
+                /a$/i.test(funcName) &&
+                topLevelCommaCount === 3;
+
               if (hasModernAlpha || hasLegacyAlpha) {
-                // Replace existing alpha (numeric or percentage)
-                const withoutAlpha = args
-                  .replace(/[,/]\s*[\d.]+%?$/, '')
-                  .trim();
+                // Strip existing alpha (numeric or dynamic) before applying suffix
+                const withoutAlpha = hasModernAlpha
+                  ? args.slice(0, slashIdx).trim()
+                  : args.slice(0, lastTopLevelComma).trim();
                 return {
                   bucket: Bucket.Color,
                   processed: `${normalizedFunc}(${normalizeArgs(withoutAlpha)} / ${alpha})`,

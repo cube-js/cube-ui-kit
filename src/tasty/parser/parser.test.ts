@@ -813,6 +813,25 @@ describe('Predefined tokens', () => {
     expect(result.output).toBe('rgb(0 0 0 / .3)');
   });
 
+  test('opacity suffix replaces dynamic alpha expressions', () => {
+    setGlobalPredefinedTokens({
+      '#semi': 'rgb(0 0 0 / var(--opacity))',
+    });
+
+    const result = parser.process('#semi.5');
+    // Suffix should override existing alpha (even if dynamic), not append another
+    expect(result.output).toBe('rgb(0 0 0 / .5)');
+  });
+
+  test('opacity suffix replaces calc() alpha expressions', () => {
+    setGlobalPredefinedTokens({
+      '#semi-calc': 'rgb(0 0 0 / calc(var(--opacity) - 10%))',
+    });
+
+    const result = parser.process('#semi-calc.4');
+    expect(result.output).toBe('rgb(0 0 0 / .4)');
+  });
+
   test('opacity suffix replaces percentage alpha in legacy rgba', () => {
     setGlobalPredefinedTokens({
       '#white-overlay': 'rgba(255, 255, 255, 80%)',
