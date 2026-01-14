@@ -215,6 +215,7 @@ const DialogContent = forwardRef(function DialogContent(
     onDismiss = contextProps.onClose,
     closeIcon,
     closeButtonStyles,
+    style,
     ...otherProps
   } = props;
 
@@ -325,7 +326,10 @@ const DialogContent = forwardRef(function DialogContent(
       as="section"
       {...dialogProps}
       mods={{ dismissable: isDismissable }}
-      style={{ '--dialog-size': `${sizePxMap[size] || sizePxMap.small}px` }}
+      style={{
+        '--dialog-size': `${sizePxMap[size] || sizePxMap.small}px`,
+        ...style,
+      }}
       data-type={type}
       data-size={size}
     >

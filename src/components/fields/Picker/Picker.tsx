@@ -1,4 +1,4 @@
-import { CollectionChildren } from '@react-types/shared';
+import { CollectionChildren, FocusableRefValue } from '@react-types/shared';
 import {
   ForwardedRef,
   forwardRef,
@@ -269,7 +269,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
   // Track popover open/close and capture children order for session
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
 
   const isControlledSingle = selectedKey !== undefined;
   const isControlledMultiple = selectedKeys !== undefined;
@@ -506,7 +506,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
   const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
 
   // Capture trigger width for overlay min-width
-  const triggerWidth = triggerRef?.current?.offsetWidth;
+  const triggerWidth = triggerRef?.current?.UNSAFE_getDOMNode()?.offsetWidth;
 
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
@@ -667,7 +667,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
             display="grid"
             styles={{
               gridRows: '1sf',
-              width: '$overlay-min-width max-content 50vw',
+              width: 'max($overlay-min-width, 30x) max-content 50vw',
               '$overlay-min-width': '30x',
               ...popoverStyles,
             }}
