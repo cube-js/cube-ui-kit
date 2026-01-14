@@ -219,12 +219,16 @@ let __globalPredefinedTokens: Record<string, string> | null = null;
 /**
  * Set global predefined tokens.
  * Called from configure() after processing token values.
+ * Merges with existing tokens (new tokens override existing ones with same key).
  * @internal
  */
 export function setGlobalPredefinedTokens(
   tokens: Record<string, string>,
 ): void {
-  __globalPredefinedTokens = tokens;
+  // Merge with existing tokens (consistent with how states, units, funcs are handled)
+  __globalPredefinedTokens = __globalPredefinedTokens
+    ? { ...__globalPredefinedTokens, ...tokens }
+    : tokens;
   // Clear parser cache since token values affect parsing
   __tastyParser.updateOptions({});
 }

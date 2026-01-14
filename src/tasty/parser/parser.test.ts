@@ -746,4 +746,24 @@ describe('Predefined tokens', () => {
       $test: '10px',
     });
   });
+
+  test('setGlobalPredefinedTokens merges with existing tokens', () => {
+    // First call
+    setGlobalPredefinedTokens({
+      $a: '10px',
+      $b: '20px',
+    });
+
+    // Second call should merge, not replace
+    setGlobalPredefinedTokens({
+      $b: '30px', // Override existing
+      $c: '40px', // New token
+    });
+
+    expect(getGlobalPredefinedTokens()).toEqual({
+      $a: '10px', // Preserved from first call
+      $b: '30px', // Overridden by second call
+      $c: '40px', // Added by second call
+    });
+  });
 });
