@@ -100,11 +100,15 @@ export const TextItem = forwardRef<HTMLElement, CubeTextItemProps>(
 
     // Store tooltip ref in a mutable ref to avoid recreating the callback
     const tooltipRefRef = useRef<RefObject<HTMLElement> | undefined>(undefined);
+    // Track the current DOM element so we can populate new tooltip refs immediately
+    const elementRef = useRef<HTMLElement | null>(null);
 
     // Create a stable ref callback that won't change between renders
     // This prevents infinite loops when React detaches/attaches refs during commit
     const handleRef = useCallback(
       (element: HTMLElement | null) => {
+        // Track the element for immediate tooltip ref population
+        elementRef.current = element;
         // Set component forwarded ref
         if (typeof ref === 'function') {
           ref(element);
@@ -127,6 +131,13 @@ export const TextItem = forwardRef<HTMLElement, CubeTextItemProps>(
     ) => {
       // Store tooltip ref for the stable callback to use
       tooltipRefRef.current = tooltipRef;
+
+      // When a new tooltipRef is provided (e.g., tooltip just activated),
+      // immediately populate it with the existing element since handleRef
+      // won't be called again (its reference is stable and the DOM element hasn't changed)
+      if (tooltipRef && elementRef.current) {
+        (tooltipRef as any).current = elementRef.current;
+      }
 
       return (
         <TextItemElement
