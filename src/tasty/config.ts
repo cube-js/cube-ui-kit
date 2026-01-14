@@ -18,6 +18,7 @@ import {
   CUSTOM_UNITS,
   getGlobalFuncs,
   getGlobalParser,
+  resetGlobalPredefinedTokens,
   setGlobalPredefinedTokens,
 } from './utils/styles';
 
@@ -469,6 +470,7 @@ export function resetConfig(): void {
   stylesGenerated = false;
   currentConfig = null;
   globalKeyframes = null;
+  resetGlobalPredefinedTokens();
   emittedWarnings.clear();
 
   const storage = typeof window !== 'undefined' ? window : (globalThis as any);
