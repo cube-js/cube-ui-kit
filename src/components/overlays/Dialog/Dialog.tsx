@@ -133,10 +133,10 @@ const intlMessages = {
 
 export interface CubeDialogProps
   extends Omit<BaseProps, 'role'>,
-  AriaDialogProps,
-  BaseStyleProps,
-  BlockStyleProps,
-  DimensionStyleProps {
+    AriaDialogProps,
+    BaseStyleProps,
+    BlockStyleProps,
+    DimensionStyleProps {
   /** The size of the dialog */
   size?: 'S' | 'M' | 'L' | 'small' | 'medium' | 'large';
   /** Whether the dialog is dismissable */
@@ -294,8 +294,9 @@ const DialogContent = forwardRef(function DialogContent(
         gap: '1x',
         placeItems: 'center stretch',
         placeContent: 'space-between',
-        padding: `$dialog-title-padding-v ${isDismissable ? '($dialog-padding-h + 4x)' : '$dialog-padding-h'
-          } $dialog-title-padding-v $dialog-padding-h`,
+        padding: `$dialog-title-padding-v ${
+          isDismissable ? '($dialog-padding-h + 4x)' : '$dialog-padding-h'
+        } $dialog-title-padding-v $dialog-padding-h`,
         border: 'bottom',
       },
     },
