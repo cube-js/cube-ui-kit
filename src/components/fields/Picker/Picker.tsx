@@ -506,7 +506,15 @@ export const Picker = forwardRef(function Picker<T extends object>(
   const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
 
   // Capture trigger width for overlay min-width
-  const triggerWidth = triggerRef?.current?.offsetWidth;
+  const [triggerWidth, setTriggerWidth] = useState<number | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
+    if (triggerRef?.current) {
+      setTriggerWidth(triggerRef.current.offsetWidth);
+    }
+  }, [triggerRef]);
 
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
