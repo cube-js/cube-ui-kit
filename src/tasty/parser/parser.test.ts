@@ -28,11 +28,11 @@ describe('StyleProcessor', () => {
   test('parses custom units and values', () => {
     const result = parser.process('1x 2x 3cr 1bw 4ow');
     expect(result.groups[0].values).toEqual([
-      'var(--gap)',
-      'calc(2 * var(--gap))',
-      'calc(3 * var(--card-radius))',
-      'var(--border-width)',
-      'calc(4 * var(--outline-width))',
+      '8px', // raw unit: 1 * 8px = 8px
+      '16px', // raw unit: 2 * 8px = 16px
+      'calc(3 * var(--card-radius))', // non-raw unit: uses calc()
+      'var(--border-width)', // non-raw unit: 1x returns base directly
+      'calc(4 * var(--outline-width))', // non-raw unit: uses calc()
     ]);
   });
 
@@ -54,7 +54,7 @@ describe('StyleProcessor', () => {
     const result = parser.process('$my-gap ($my-gap, 2x)');
     expect(result.groups[0].values).toEqual([
       'var(--my-gap)',
-      'var(--my-gap, calc(2 * var(--gap)))',
+      'var(--my-gap, 16px)', // raw unit: 2 * 8px = 16px
     ]);
   });
 
@@ -80,8 +80,8 @@ describe('StyleProcessor', () => {
   test('parses user functions and nested functions', () => {
     const result = parser.process('sum(1x, 2r, 3cr) min(1x, 2r)');
     expect(result.groups[0].values).toEqual([
-      'calc(var(--gap) + calc(2 * var(--radius)) + calc(3 * var(--card-radius)))',
-      'min(var(--gap), calc(2 * var(--radius)))',
+      'calc(8px + calc(2 * var(--radius)) + calc(3 * var(--card-radius)))',
+      'min(8px, calc(2 * var(--radius)))',
     ]);
   });
 
@@ -101,11 +101,11 @@ describe('StyleProcessor', () => {
 
   test('handles edge cases and whitespace', () => {
     const result = parser.process('  2x   (100% - 2r)   max-content  ');
-    expect(result.groups[0].values[0]).toContain('calc(2 * var(--gap))');
-    expect(result.groups[0].values[1]).toContain(
+    expect(result.groups[0].values[0]).toBe('16px'); // raw unit: 2 * 8px
+    expect(result.groups[0].values[1]).toBe(
       'calc(100% - calc(2 * var(--radius)))',
     );
-    expect(result.groups[0].values[2]).toContain('max-content');
+    expect(result.groups[0].values[2]).toBe('max-content');
   });
 
   test('caches results', () => {
@@ -126,7 +126,7 @@ describe('StyleProcessor', () => {
     const dropShadow = 'drop-shadow(1x 2x 3x #dark.5)';
     const result = parser.process(dropShadow);
     expect(result.groups[0].values[0]).toEqual(
-      'drop-shadow(var(--gap) calc(2 * var(--gap)) calc(3 * var(--gap)) rgb(var(--dark-color-rgb) / .5))',
+      'drop-shadow(8px 16px 24px rgb(var(--dark-color-rgb) / .5))', // raw units calculated
     );
   });
 
@@ -156,14 +156,14 @@ describe('StyleProcessor', () => {
 
   test('parses fractional unit values', () => {
     const result = parser.process('.75x');
-    expect(result.groups[0].values[0]).toBe('calc(0.75 * var(--gap))');
+    expect(result.groups[0].values[0]).toBe('6px'); // raw unit: 0.75 * 8px = 6px
   });
 
   test('parses negative unit values', () => {
     const result = parser.process('-2x -.5r');
     expect(result.groups[0].values).toEqual([
-      'calc(-2 * var(--gap))',
-      'calc(-0.5 * var(--radius))',
+      '-16px', // raw unit: -2 * 8px = -16px
+      'calc(-0.5 * var(--radius))', // non-raw unit: uses calc()
     ]);
   });
 
@@ -178,7 +178,7 @@ describe('StyleProcessor', () => {
   test('recognises transparent keyword as color', () => {
     const r = parser.process('transparent 1x');
     expect(r.groups[0].colors).toEqual(['transparent']);
-    expect(r.groups[0].values).toContain('var(--gap)');
+    expect(r.groups[0].values).toContain('8px'); // raw unit
   });
 
   test('handles hyphenated #color names', () => {
@@ -204,7 +204,7 @@ describe('StyleProcessor', () => {
       '($custom-margin, 1x) ($theme-color, #purple)',
     );
     expect(result.groups[0].values).toEqual([
-      'var(--custom-margin, var(--gap))',
+      'var(--custom-margin, 8px)', // raw unit fallback
     ]);
     // $theme-color is now classified as a color since it ends with -color
     expect(result.groups[0].colors).toEqual([
@@ -215,7 +215,7 @@ describe('StyleProcessor', () => {
   test('parses new custom property syntax in complex expressions', () => {
     const result = parser.process('(100% - (2 * ($custom-gap, 1x)))');
     expect(result.groups[0].values).toEqual([
-      'calc(100% - calc(2 * var(--custom-gap, var(--gap))))',
+      'calc(100% - calc(2 * var(--custom-gap, 8px)))', // raw unit fallback
     ]);
   });
 
@@ -223,26 +223,26 @@ describe('StyleProcessor', () => {
     // Test function with custom property as first argument
     const result1 = parser.process('sum($my-prop, 2x)');
     expect(result1.groups[0].values).toEqual([
-      'calc(var(--my-prop) + calc(2 * var(--gap)))',
+      'calc(var(--my-prop) + 16px)', // raw unit: 2 * 8px = 16px
     ]);
 
     // Test custom property with fallback
     const result2 = parser.process('($my-prop, 2x)');
     expect(result2.groups[0].values).toEqual([
-      'var(--my-prop, calc(2 * var(--gap)))',
+      'var(--my-prop, 16px)', // raw unit fallback
     ]);
 
     // Test multiple scenarios in one expression
     const result3 = parser.process('sum($a, $b) ($fallback-prop, 1x)');
     expect(result3.groups[0].values).toEqual([
       'calc(var(--a) + var(--b))',
-      'var(--fallback-prop, var(--gap))',
+      'var(--fallback-prop, 8px)', // raw unit fallback
     ]);
 
     // Test edge case: function with custom property fallback as argument
     const result4 = parser.process('sum(($prop-a, 1x), ($prop-b, 2x))');
     expect(result4.groups[0].values).toEqual([
-      'calc(var(--prop-a, var(--gap)) + var(--prop-b, calc(2 * var(--gap))))',
+      'calc(var(--prop-a, 8px) + var(--prop-b, 16px))', // raw unit fallbacks
     ]);
 
     // Test color functions with custom properties
@@ -295,8 +295,8 @@ describe('StyleProcessor', () => {
     // Test 1: Auto-calc vs custom property fallback - similar patterns
     const result1 = parser.process('(100% - 2x) ($gap, 1x)');
     expect(result1.groups[0].values).toEqual([
-      'calc(100% - calc(2 * var(--gap)))', // Auto-calc
-      'var(--gap, var(--gap))', // Custom property fallback
+      'calc(100% - 16px)', // Auto-calc with raw unit
+      'var(--gap, 8px)', // Custom property fallback with raw unit
     ]);
 
     // Test 2: URL with comma vs custom property fallback
@@ -543,7 +543,7 @@ describe('StyleProcessor', () => {
     // sum function returns calc(...) which should be classified as value
     const result = parser.process('sum(1x, 2x)');
     expect(result.groups[0].values).toEqual([
-      'calc(var(--gap) + calc(2 * var(--gap)))',
+      'calc(8px + 16px)', // raw units calculated
     ]);
     expect(result.groups[0].colors).toEqual([]);
   });
@@ -568,5 +568,74 @@ describe('StyleProcessor', () => {
     // Mixed: fractional with alpha
     const result5 = parser.process('rgb(128.5 64.3 32.1 / .75)');
     expect(result5.groups[0].colors).toEqual(['rgb(128.5 64.3 32.1 / .75)']);
+  });
+
+  test('raw units are calculated directly instead of using calc()', () => {
+    // Create parser with raw unit
+    const rawParser = new StyleParser({
+      units: {
+        px8: '8px', // raw unit
+        gap: 'var(--gap)', // non-raw unit (CSS variable)
+      },
+    });
+
+    // Raw unit: calculated directly
+    const result1 = rawParser.process('2px8');
+    expect(result1.groups[0].values).toEqual(['16px']); // 2 * 8px = 16px
+
+    // Non-raw unit: uses calc()
+    const result2 = rawParser.process('2gap');
+    expect(result2.groups[0].values).toEqual(['calc(2 * var(--gap))']);
+
+    // Raw unit with 1x multiplier returns base value
+    const result3 = rawParser.process('1px8');
+    expect(result3.groups[0].values).toEqual(['8px']); // 1 * 8px = 8px
+  });
+
+  test('units can reference other units recursively', () => {
+    // Create parser with recursive units
+    const recursiveParser = new StyleParser({
+      units: {
+        x: '8px', // base raw unit
+        y: '2x', // references x unit -> 2 * 8px = 16px
+        z: '2y', // references y unit -> 2 * 16px = 32px
+      },
+    });
+
+    // Base unit
+    const result1 = recursiveParser.process('1x');
+    expect(result1.groups[0].values).toEqual(['8px']);
+
+    // One level of recursion
+    const result2 = recursiveParser.process('1y');
+    expect(result2.groups[0].values).toEqual(['16px']); // 2 * 8px = 16px
+
+    // Two levels of recursion
+    const result3 = recursiveParser.process('1z');
+    expect(result3.groups[0].values).toEqual(['32px']); // 2 * 16px = 32px
+
+    // Multiplied recursive unit
+    const result4 = recursiveParser.process('3y');
+    expect(result4.groups[0].values).toEqual(['48px']); // 3 * 16px = 48px
+  });
+
+  test('mixed raw and non-raw units work correctly', () => {
+    // Create parser with both types
+    // Note: avoid naming custom units after native CSS units (px, rem, etc.)
+    // as this shadows the native unit and causes recursive resolution
+    const mixedParser = new StyleParser({
+      units: {
+        sp: '4px', // raw unit (spacing)
+        lg: '16px', // raw unit (large)
+        gap: 'var(--gap)', // non-raw unit
+      },
+    });
+
+    const result = mixedParser.process('2sp 3lg 2gap');
+    expect(result.groups[0].values).toEqual([
+      '8px', // raw: 2 * 4px
+      '48px', // raw: 3 * 16px
+      'calc(2 * var(--gap))', // non-raw: uses calc()
+    ]);
   });
 });

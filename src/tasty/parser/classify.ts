@@ -2,11 +2,41 @@ import {
   COLOR_FUNCS,
   RE_HEX,
   RE_NUMBER,
+  RE_RAW_UNIT,
   RE_UNIT_NUM,
   VALUE_KEYWORDS,
 } from './const';
 import { StyleParser } from './parser';
 import { Bucket, ParserOptions, ProcessedStyle } from './types';
+
+/**
+ * Re-parses a value through the parser until it stabilizes (no changes)
+ * or max iterations reached. This allows units to reference other units.
+ * Example: { x: '8px', y: '2x' } -> '1y' resolves to '16px'
+ */
+function resolveUntilStable(
+  value: string,
+  opts: ParserOptions,
+  recurse: (str: string) => ProcessedStyle,
+  maxIterations = 10,
+): string {
+  let current = value;
+  for (let i = 0; i < maxIterations; i++) {
+    // Check if the current value contains a custom unit that needs resolution
+    const unitMatch = current.match(RE_UNIT_NUM);
+    if (!unitMatch) break; // Not a unit number, no resolution needed
+
+    const unitName = unitMatch[1];
+    // Only recurse if the unit is a custom unit we know about
+    // Any unit not in opts.units is assumed to be a native CSS unit
+    if (!opts.units || !(unitName in opts.units)) break;
+
+    const result = recurse(current);
+    if (result.output === current) break; // Stable
+    current = result.output;
+  }
+  return current;
+}
 
 export function classify(
   raw: string,
@@ -184,8 +214,20 @@ export function classify(
     const handler = opts.units && opts.units[unit];
     if (handler) {
       if (typeof handler === 'string') {
-        // Special-case the common `x` → gap mapping used by tests.
-        const base = unit === 'x' ? 'var(--gap)' : handler;
+        // Check if this is a raw CSS unit (e.g., "8px", "1rem")
+        const rawMatch = handler.match(RE_RAW_UNIT);
+        if (rawMatch) {
+          // Raw unit: calculate directly instead of using calc()
+          const [, baseNum, cssUnit] = rawMatch;
+          const result = numericPart * parseFloat(baseNum);
+          const processed = `${result}${cssUnit}`;
+          // Re-parse to resolve any nested units (e.g., units referencing other units)
+          const resolved = resolveUntilStable(processed, opts, recurse);
+          return { bucket: Bucket.Value, processed: resolved };
+        }
+
+        // Non-raw handler (e.g., "var(--gap)", "calc(...)"): use calc() wrapping
+        const base = handler;
         if (numericPart === 1) {
           return { bucket: Bucket.Value, processed: base };
         }

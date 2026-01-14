@@ -686,9 +686,7 @@ describe('tokens prop', () => {
     const { container } = render(<Element tokens={{ $spacing: '2x' }} />);
     const element = container.firstElementChild as HTMLElement;
 
-    expect(element.style.getPropertyValue('--spacing')).toBe(
-      'calc(2 * var(--gap))',
-    );
+    expect(element.style.getPropertyValue('--spacing')).toBe('16px'); // raw unit: 2 * 8px
   });
 
   it('should process #name color tokens into CSS custom properties', () => {
@@ -714,13 +712,9 @@ describe('tokens prop', () => {
     const element = container.firstElementChild as HTMLElement;
 
     // Instance token overrides default
-    expect(element.style.getPropertyValue('--spacing')).toBe(
-      'calc(4 * var(--gap))',
-    );
+    expect(element.style.getPropertyValue('--spacing')).toBe('32px'); // raw unit: 4 * 8px
     // Default token preserved
-    expect(element.style.getPropertyValue('--size')).toBe(
-      'calc(10 * var(--gap))',
-    );
+    expect(element.style.getPropertyValue('--size')).toBe('80px'); // raw unit: 10 * 8px
   });
 
   it('should merge tokens with style prop (style has priority)', () => {
@@ -762,9 +756,7 @@ describe('tokens prop', () => {
     );
     const element = container.firstElementChild as HTMLElement;
 
-    expect(element.style.getPropertyValue('--defined')).toBe(
-      'calc(2 * var(--gap))',
-    );
+    expect(element.style.getPropertyValue('--defined')).toBe('16px'); // raw unit: 2 * 8px
     expect(element.style.getPropertyValue('--undefined')).toBe('');
     expect(element.style.getPropertyValue('--null')).toBe('');
   });
@@ -802,9 +794,7 @@ describe('tokens prop', () => {
     );
     const element = container.firstElementChild as HTMLElement;
 
-    expect(element.style.getPropertyValue('--spacing')).toBe(
-      'calc(3 * var(--gap))',
-    );
+    expect(element.style.getPropertyValue('--spacing')).toBe('24px'); // raw unit: 3 * 8px
   });
 
   it('should handle hex color values for RGB extraction', () => {
@@ -1445,8 +1435,6 @@ describe('useGlobalStyles() hook', () => {
       .map((el) => el.textContent)
       .join('');
     expect(styleContent).toContain('background-color: var(--red-color)');
-    expect(styleContent).toContain(
-      'border: var(--border-width) solid var(--dark-color)',
-    );
+    expect(styleContent).toContain('border: 1px solid var(--dark-color)'); // raw unit: 1 * 1px = 1px
   });
 });

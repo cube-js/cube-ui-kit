@@ -1,4 +1,3 @@
-// Register built-in plugins at module load time
 import { configure } from './config';
 import { okhslPlugin } from './plugins';
 

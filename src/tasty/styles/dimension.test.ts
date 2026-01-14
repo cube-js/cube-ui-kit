@@ -6,7 +6,7 @@ const { parseStyle } = require('../utils/styles');
 describe('dimensionStyle – width & height helpers', () => {
   test('single value width', () => {
     const res = widthStyle({ width: '10x' }) as any;
-    expect(res.width).toBe('calc(10 * var(--gap))');
+    expect(res.width).toBe('80px'); // raw unit: 10 * 8px
     expect(res['min-width']).toBe('initial');
     expect(res['max-width']).toBe('initial');
   });
@@ -14,14 +14,14 @@ describe('dimensionStyle – width & height helpers', () => {
   test('min & max width (two values)', () => {
     const res = widthStyle({ width: '1x 10x' }) as any;
     expect(res.width).toBe('auto');
-    expect(res['min-width']).toBe('var(--gap)');
-    expect(res['max-width']).toBe('calc(10 * var(--gap))');
+    expect(res['min-width']).toBe('8px'); // raw unit: 1 * 8px
+    expect(res['max-width']).toBe('80px'); // raw unit: 10 * 8px
   });
 
   test('min modifier width', () => {
     const res = widthStyle({ width: 'min 2x' }) as any;
     expect(res.width).toBe('auto');
-    expect(res['min-width']).toBe('calc(2 * var(--gap))');
+    expect(res['min-width']).toBe('16px'); // raw unit: 2 * 8px
     expect(res['max-width']).toBe('initial');
   });
 
@@ -29,12 +29,12 @@ describe('dimensionStyle – width & height helpers', () => {
     const res = widthStyle({ width: 'max 2x' }) as any;
     expect(res.width).toBe('auto');
     expect(res['min-width']).toBe('initial');
-    expect(res['max-width']).toBe('calc(2 * var(--gap))');
+    expect(res['max-width']).toBe('16px'); // raw unit: 2 * 8px
   });
 
   test('width three args', () => {
     const res = widthStyle({ width: 'initial 36x max-content' }) as any;
-    expect(res.width).toBe('calc(36 * var(--gap))');
+    expect(res.width).toBe('288px'); // raw unit: 36 * 8px
     expect(res['min-width']).toBe('initial');
     expect(res['max-width']).toBe('max-content');
   });
@@ -56,8 +56,8 @@ describe('dimensionStyle – width & height helpers', () => {
   test('responsive array width', () => {
     const res = widthStyle({ width: '1x 2x' }) as any;
     expect(res.width).toBe('auto');
-    expect(res['min-width']).toBe('var(--gap)');
-    expect(res['max-width']).toBe('calc(2 * var(--gap))');
+    expect(res['min-width']).toBe('8px'); // raw unit: 1 * 8px
+    expect(res['max-width']).toBe('16px'); // raw unit: 2 * 8px
   });
 
   test('single value height', () => {
@@ -69,9 +69,9 @@ describe('dimensionStyle – width & height helpers', () => {
 
   test('height three args', () => {
     const res = heightStyle({ height: '1x 5x 10x' }) as any;
-    expect(res.height).toBe('calc(5 * var(--gap))');
-    expect(res['min-height']).toBe('var(--gap)');
-    expect(res['max-height']).toBe('calc(10 * var(--gap))');
+    expect(res.height).toBe('40px'); // raw unit: 5 * 8px
+    expect(res['min-height']).toBe('8px'); // raw unit: 1 * 8px
+    expect(res['max-height']).toBe('80px'); // raw unit: 10 * 8px
   });
 
   test('boolean true height (auto)', () => {
@@ -120,9 +120,9 @@ describe('dimensionStyle – width & height helpers', () => {
 
   test('fixed modifier with gap units', () => {
     const res = heightStyle({ height: 'fixed 5x' }) as any;
-    expect(res.height).toBe('calc(5 * var(--gap))');
-    expect(res['min-height']).toBe('calc(5 * var(--gap))');
-    expect(res['max-height']).toBe('calc(5 * var(--gap))');
+    expect(res.height).toBe('40px'); // raw unit: 5 * 8px
+    expect(res['min-height']).toBe('40px');
+    expect(res['max-height']).toBe('40px');
   });
 
   test('fixed modifier with rem units', () => {
