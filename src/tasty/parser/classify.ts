@@ -126,11 +126,12 @@ export function classify(
               const normalizeArgs = (a: string) => a.replace(/,\s*/g, ' ');
               // Check if already has alpha:
               // - Modern syntax: has `/` separator (e.g., `rgb(R G B / alpha)` or `rgb(R G B / 50%)`)
-              // - Legacy syntax: function ends with 'a' (rgba, hsla) and has 4th comma value
+              // - Legacy syntax: function ends with 'a' (rgba, hsla) and has exactly 4 comma-separated values
               // Alpha can be numeric (0.5, .5) or percentage (50%)
               const hasModernAlpha = /\/\s*[\d.]+%?\s*$/.test(args);
-              const hasLegacyAlpha =
-                /a$/i.test(funcName) && /,\s*[\d.]+%?\s*$/.test(args);
+              // Count commas to detect 4-value legacy syntax (3 commas = 4 values)
+              const commaCount = (args.match(/,/g) || []).length;
+              const hasLegacyAlpha = /a$/i.test(funcName) && commaCount === 3;
               if (hasModernAlpha || hasLegacyAlpha) {
                 // Replace existing alpha (numeric or percentage)
                 const withoutAlpha = args

@@ -822,6 +822,26 @@ describe('Predefined tokens', () => {
     expect(result.output).toBe('rgb(255 255 255 / .5)');
   });
 
+  test('opacity suffix handles rgba() without alpha (3 values)', () => {
+    setGlobalPredefinedTokens({
+      '#no-alpha': 'rgba(0, 0, 0)',
+    });
+
+    // Should add alpha, not strip the blue channel
+    const result = parser.process('#no-alpha.5');
+    expect(result.output).toBe('rgb(0 0 0 / .5)');
+  });
+
+  test('opacity suffix handles hsla() without alpha (3 values)', () => {
+    setGlobalPredefinedTokens({
+      '#hsl-no-alpha': 'hsla(220, 80%, 50%)',
+    });
+
+    // Should add alpha, not strip the lightness value
+    const result = parser.process('#hsl-no-alpha.5');
+    expect(result.output).toBe('hsl(220 80% 50% / .5)');
+  });
+
   test('multiple predefined tokens in one expression', () => {
     setGlobalPredefinedTokens({
       $gap: '1x',
