@@ -230,7 +230,7 @@ export function setGlobalPredefinedTokens(
     ? { ...__globalPredefinedTokens, ...tokens }
     : tokens;
   // Clear parser cache since token values affect parsing
-  __tastyParser.updateOptions({});
+  __tastyParser.clearCache();
 }
 
 /**
@@ -249,7 +249,7 @@ export function getGlobalPredefinedTokens(): Record<string, string> | null {
 export function resetGlobalPredefinedTokens(): void {
   __globalPredefinedTokens = null;
   // Clear parser cache since token availability affects parsing
-  __tastyParser.updateOptions({});
+  __tastyParser.clearCache();
 }
 
 /**
