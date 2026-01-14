@@ -1,4 +1,4 @@
-import { CollectionChildren } from '@react-types/shared';
+import { CollectionChildren, FocusableRefValue } from '@react-types/shared';
 import {
   ForwardedRef,
   forwardRef,
@@ -44,23 +44,23 @@ import type { FieldBaseProps } from '../../../shared';
 
 export interface CubePickerProps<T>
   extends Omit<CubeListBoxProps<T>, 'size' | 'tooltip' | 'shape'>,
-    Omit<CubeItemProps, 'children' | 'size'>,
-    BasePropsWithoutChildren,
-    BaseStyleProps,
-    OuterStyleProps,
-    ColorStyleProps,
-    Omit<FieldBaseProps, 'tooltip'>,
-    Pick<
-      CubeItemButtonProps,
-      | 'type'
-      | 'theme'
-      | 'icon'
-      | 'rightIcon'
-      | 'prefix'
-      | 'suffix'
-      | 'hotkeys'
-      | 'shape'
-    > {
+  Omit<CubeItemProps, 'children' | 'size'>,
+  BasePropsWithoutChildren,
+  BaseStyleProps,
+  OuterStyleProps,
+  ColorStyleProps,
+  Omit<FieldBaseProps, 'tooltip'>,
+  Pick<
+    CubeItemButtonProps,
+    | 'type'
+    | 'theme'
+    | 'icon'
+    | 'rightIcon'
+    | 'prefix'
+    | 'suffix'
+    | 'hotkeys'
+    | 'shape'
+  > {
   /** Placeholder text when no selection is made */
   placeholder?: string;
   /** Size of the picker component */
@@ -97,14 +97,14 @@ export interface CubePickerProps<T>
    * Set to `false` to hide the summary text completely.
    */
   renderSummary?:
-    | ((args: {
-        selectedLabels?: string[];
-        selectedKeys?: 'all' | (string | number)[];
-        selectedLabel?: string;
-        selectedKey?: string | number | null;
-        selectionMode?: 'single' | 'multiple';
-      }) => ReactNode)
-    | false;
+  | ((args: {
+    selectedLabels?: string[];
+    selectedKeys?: 'all' | (string | number)[];
+    selectedLabel?: string;
+    selectedKey?: string | number | null;
+    selectionMode?: 'single' | 'multiple';
+  }) => ReactNode)
+  | false;
 
   /** Ref to access internal ListBox state */
   listStateRef?: MutableRefObject<ListState<T>>;
@@ -269,7 +269,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
   // Track popover open/close and capture children order for session
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
 
   const isControlledSingle = selectedKey !== undefined;
   const isControlledMultiple = selectedKeys !== undefined;
@@ -360,7 +360,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     if (sortSelectedToTopExplicit && !items) {
       console.warn(
         'Picker: sortSelectedToTop only works with the items prop. ' +
-          'Sorting will be skipped when using JSX children.',
+        'Sorting will be skipped when using JSX children.',
       );
       return items;
     }
@@ -506,15 +506,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
   const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
 
   // Capture trigger width for overlay min-width
-  const [triggerWidth, setTriggerWidth] = useState<number | undefined>(
-    undefined,
-  );
-
-  useEffect(() => {
-    if (triggerRef?.current) {
-      setTriggerWidth(triggerRef.current.offsetWidth);
-    }
-  }, [triggerRef]);
+  const triggerWidth = triggerRef?.current?.UNSAFE_getDOMNode()?.offsetWidth;
 
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
@@ -675,7 +667,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
             display="grid"
             styles={{
               gridRows: '1sf',
-              width: '$overlay-min-width max-content 50vw',
+              width: 'max($overlay-min-width, 30x) max-content 50vw',
               '$overlay-min-width': '30x',
               ...popoverStyles,
             }}

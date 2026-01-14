@@ -1,4 +1,4 @@
-import { CollectionChildren } from '@react-types/shared';
+import { CollectionChildren, FocusableRefValue } from '@react-types/shared';
 import {
   ForwardedRef,
   forwardRef,
@@ -300,7 +300,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   // Cache for sorted items array when using `items` prop
   const cachedItemsOrder = useRef<T[] | null>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
 
   // ---------------------------------------------------------------------------
   // Invalidate cached sorting whenever the available options change.
@@ -642,15 +642,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
 
   // Capture trigger width for overlay min-width
-  const [triggerWidth, setTriggerWidth] = useState<number | undefined>(
-    undefined,
-  );
-
-  useEffect(() => {
-    if (triggerRef.current) {
-      setTriggerWidth(triggerRef.current.offsetWidth);
-    }
-  }, []);
+  const triggerWidth = triggerRef?.current?.UNSAFE_getDOMNode()?.offsetWidth;
 
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
