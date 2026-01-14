@@ -803,6 +803,25 @@ describe('Predefined tokens', () => {
     expect(result.output).toBe('hsl(220 80% 50% / .5)');
   });
 
+  test('opacity suffix replaces percentage alpha in color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#semi-transparent': 'rgb(0 0 0 / 50%)',
+    });
+
+    // Should replace 50% alpha with .3, not produce invalid CSS
+    const result = parser.process('#semi-transparent.3');
+    expect(result.output).toBe('rgb(0 0 0 / .3)');
+  });
+
+  test('opacity suffix replaces percentage alpha in legacy rgba', () => {
+    setGlobalPredefinedTokens({
+      '#white-overlay': 'rgba(255, 255, 255, 80%)',
+    });
+
+    const result = parser.process('#white-overlay.5');
+    expect(result.output).toBe('rgb(255 255 255 / .5)');
+  });
+
   test('multiple predefined tokens in one expression', () => {
     setGlobalPredefinedTokens({
       $gap: '1x',

@@ -125,14 +125,17 @@ export function classify(
               // Normalize to modern syntax: replace commas with spaces
               const normalizeArgs = (a: string) => a.replace(/,\s*/g, ' ');
               // Check if already has alpha:
-              // - Modern syntax: has `/` separator (e.g., `rgb(R G B / alpha)`)
+              // - Modern syntax: has `/` separator (e.g., `rgb(R G B / alpha)` or `rgb(R G B / 50%)`)
               // - Legacy syntax: function ends with 'a' (rgba, hsla) and has 4th comma value
-              const hasModernAlpha = /\/\s*[\d.]+\s*$/.test(args);
+              // Alpha can be numeric (0.5, .5) or percentage (50%)
+              const hasModernAlpha = /\/\s*[\d.]+%?\s*$/.test(args);
               const hasLegacyAlpha =
-                /a$/i.test(funcName) && /,\s*[\d.]+\s*$/.test(args);
+                /a$/i.test(funcName) && /,\s*[\d.]+%?\s*$/.test(args);
               if (hasModernAlpha || hasLegacyAlpha) {
-                // Replace existing alpha
-                const withoutAlpha = args.replace(/[,/]\s*[\d.]+$/, '').trim();
+                // Replace existing alpha (numeric or percentage)
+                const withoutAlpha = args
+                  .replace(/[,/]\s*[\d.]+%?$/, '')
+                  .trim();
                 return {
                   bucket: Bucket.Color,
                   processed: `${normalizedFunc}(${normalizeArgs(withoutAlpha)} / ${alpha})`,
