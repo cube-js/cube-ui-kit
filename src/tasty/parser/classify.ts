@@ -98,7 +98,8 @@ export function classify(
       // Exact match
       if (token in predefinedTokens) {
         const tokenValue = predefinedTokens[token];
-        return classify(tokenValue, opts, recurse);
+        // Lowercase the token value to match parser behavior (parser lowercases input)
+        return classify(tokenValue.toLowerCase(), opts, recurse);
       }
       // Check for color token with alpha suffix: #token.alpha
       if (token[0] === '#') {
@@ -110,7 +111,12 @@ export function classify(
 
             // If resolved value starts with # (color token), use standard alpha syntax
             if (resolvedValue.startsWith('#')) {
-              return classify(`${resolvedValue}.${rawAlpha}`, opts, recurse);
+              // Lowercase to match parser behavior
+              return classify(
+                `${resolvedValue.toLowerCase()}.${rawAlpha}`,
+                opts,
+                recurse,
+              );
             }
 
             // For color functions like rgb(), rgba(), hsl(), hwb(), etc., inject alpha

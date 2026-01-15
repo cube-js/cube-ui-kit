@@ -970,4 +970,34 @@ describe('Predefined tokens', () => {
     const color = parser.process('#brandaccent');
     expect(color.output).toBe('var(--purple-color)');
   });
+
+  test('predefined token values with uppercase produce consistent CSS', () => {
+    // Token value has uppercase - should produce same output as direct use
+    setGlobalPredefinedTokens({
+      '#accent': '#Purple',
+    });
+
+    const tokenResult = parser.process('#accent');
+    const directResult = parser.process('#purple');
+
+    // Both should produce lowercase CSS custom property names
+    expect(tokenResult.output).toBe('var(--purple-color)');
+    expect(directResult.output).toBe('var(--purple-color)');
+    expect(tokenResult.output).toBe(directResult.output);
+  });
+
+  test('predefined token values with uppercase and alpha suffix produce consistent CSS', () => {
+    // Token value has uppercase - with alpha suffix should also produce lowercase
+    setGlobalPredefinedTokens({
+      '#accent': '#Purple',
+    });
+
+    const tokenResult = parser.process('#accent.5');
+    const directResult = parser.process('#purple.5');
+
+    // Both should produce lowercase CSS custom property names
+    expect(tokenResult.output).toBe('rgb(var(--purple-color-rgb) / .5)');
+    expect(directResult.output).toBe('rgb(var(--purple-color-rgb) / .5)');
+    expect(tokenResult.output).toBe(directResult.output);
+  });
 });
