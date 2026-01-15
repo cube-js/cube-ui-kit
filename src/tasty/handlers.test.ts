@@ -232,5 +232,24 @@ describe('Style Handlers Configuration', () => {
       expect(result[0].declarations).toContain('var(--blue-color)');
       expect(result[0].declarations).not.toContain('reset-test-');
     });
+
+    it('should clear pipeline cache when resetConfig is called', () => {
+      // First, render with custom handler to populate cache
+      const customFill = ({ fill }) =>
+        fill ? { 'background-color': `cached-${fill}` } : undefined;
+      customFill.__lookupStyles = ['fill'];
+      registerHandler(customFill);
+
+      // Render to populate cache
+      const cachedResult = renderStyles({ fill: 'test-value' }, '.cache-test');
+      expect(cachedResult[0].declarations).toContain('cached-test-value');
+
+      // Reset config (should clear both handlers and cache)
+      resetConfig();
+
+      // Render same styles - should use built-in handler, not cached custom result
+      const freshResult = renderStyles({ fill: 'test-value' }, '.cache-test');
+      expect(freshResult[0].declarations).not.toContain('cached-');
+    });
   });
 });

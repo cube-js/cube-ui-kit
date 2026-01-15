@@ -12,6 +12,7 @@
  */
 
 import { StyleInjector } from './injector/injector';
+import { clearPipelineCache } from './pipeline';
 import { setGlobalPredefinedStates } from './states';
 import {
   normalizeHandlerDefinition,
@@ -523,6 +524,7 @@ export function resetConfig(): void {
   globalKeyframes = null;
   resetGlobalPredefinedTokens();
   resetHandlers();
+  clearPipelineCache();
   emittedWarnings.clear();
 
   const storage = typeof window !== 'undefined' ? window : (globalThis as any);
