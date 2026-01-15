@@ -639,3 +639,365 @@ describe('StyleProcessor', () => {
     ]);
   });
 });
+
+describe('Predefined tokens', () => {
+  // Import inline to avoid circular dependency issues at module load time
+  let setGlobalPredefinedTokens: (tokens: Record<string, string>) => void;
+  let resetGlobalPredefinedTokens: () => void;
+  let getGlobalPredefinedTokens: () => Record<string, string> | null;
+
+  beforeAll(() => {
+    // Dynamic import to get the functions
+    const styles = jest.requireActual('../utils/styles');
+    setGlobalPredefinedTokens = styles.setGlobalPredefinedTokens;
+    resetGlobalPredefinedTokens = styles.resetGlobalPredefinedTokens;
+    getGlobalPredefinedTokens = styles.getGlobalPredefinedTokens;
+  });
+
+  beforeEach(() => {
+    // Reset tokens before each test
+    resetGlobalPredefinedTokens();
+  });
+
+  afterEach(() => {
+    // Cleanup after tests
+    resetGlobalPredefinedTokens();
+  });
+
+  test('predefined $token is replaced with its value', () => {
+    setGlobalPredefinedTokens({
+      $spacing: '2x',
+    });
+
+    const result = parser.process('$spacing');
+    // $spacing = '2x' = 2 * 8px = 16px
+    expect(result.output).toBe('16px');
+  });
+
+  test('predefined #token is replaced with color value', () => {
+    setGlobalPredefinedTokens({
+      '#accent': '#purple',
+    });
+
+    const result = parser.process('#accent');
+    // #accent = '#purple' -> var(--purple-color)
+    expect(result.output).toBe('var(--purple-color)');
+  });
+
+  test('predefined tokens work in complex expressions', () => {
+    setGlobalPredefinedTokens({
+      '$card-padding': '4x',
+      '#surface': '#white',
+    });
+
+    const padding = parser.process('$card-padding');
+    expect(padding.output).toBe('32px'); // 4 * 8px
+
+    const fill = parser.process('#surface');
+    expect(fill.output).toBe('var(--white-color)');
+  });
+
+  test('undefined tokens fall through to default behavior', () => {
+    // No tokens configured
+    const result = parser.process('$unknown');
+    // Should use default $name -> var(--name) behavior
+    expect(result.output).toBe('var(--unknown)');
+  });
+
+  test('predefined tokens can reference other tokens', () => {
+    setGlobalPredefinedTokens({
+      '#primary': '#purple.5',
+    });
+
+    const result = parser.process('#primary');
+    // #primary = '#purple.5' -> rgb(var(--purple-color-rgb) / .5)
+    expect(result.output).toBe('rgb(var(--purple-color-rgb) / .5)');
+  });
+
+  test('opacity suffix works with predefined color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#accent': '#purple',
+    });
+
+    // #accent.5 should resolve #accent to #purple, then apply .5 opacity
+    const result = parser.process('#accent.5');
+    expect(result.output).toBe('rgb(var(--purple-color-rgb) / .5)');
+  });
+
+  test('opacity suffix works with predefined rgb() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#brand': 'rgb(100 150 200)',
+    });
+
+    // #brand.5 should resolve to rgb(100 150 200) with .5 opacity
+    const result = parser.process('#brand.5');
+    expect(result.output).toBe('rgb(100 150 200 / .5)');
+  });
+
+  test('opacity suffix works with predefined rgba() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#overlay': 'rgba(0, 0, 0, 0.8)',
+    });
+
+    // #overlay.5 should apply .5 opacity to rgba color
+    const result = parser.process('#overlay.5');
+    // Opacity is replaced, normalized to modern rgb syntax
+    expect(result.output).toBe('rgb(0 0 0 / .5)');
+  });
+
+  test('opacity suffix works with predefined okhsl() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#vibrant': 'okhsl(250 80% 60%)',
+    });
+
+    // #vibrant.5 should apply .5 opacity, preserving okhsl color space
+    const result = parser.process('#vibrant.5');
+    expect(result.output).toBe('okhsl(250 80% 60% / .5)');
+  });
+
+  test('opacity suffix works with predefined hsl() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#primary': 'hsl(220 90% 50%)',
+    });
+
+    // #primary.5 should apply .5 opacity, preserving hsl color space
+    const result = parser.process('#primary.5');
+    expect(result.output).toBe('hsl(220 90% 50% / .5)');
+  });
+
+  test('opacity suffix works with predefined oklch() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#vivid': 'oklch(70% 0.15 250)',
+    });
+
+    // #vivid.5 should apply .5 opacity, preserving oklch color space
+    const result = parser.process('#vivid.5');
+    expect(result.output).toBe('oklch(70% 0.15 250 / .5)');
+  });
+
+  test('opacity suffix works with predefined hwb() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#warm': 'hwb(30 10% 20%)',
+    });
+
+    // #warm.5 should apply .5 opacity, preserving hwb color space
+    const result = parser.process('#warm.5');
+    expect(result.output).toBe('hwb(30 10% 20% / .5)');
+  });
+
+  test('opacity suffix preserves commas inside nested functions', () => {
+    setGlobalPredefinedTokens({
+      '#adaptive': 'rgb(min(100, 200), 50, 150)',
+    });
+
+    // Commas inside min() should be preserved, only top-level commas normalized
+    const result = parser.process('#adaptive.5');
+    expect(result.output).toBe('rgb(min(100, 200) 50 150 / .5)');
+  });
+
+  test('opacity suffix normalizes hsla to hsl', () => {
+    setGlobalPredefinedTokens({
+      '#legacy': 'hsla(180, 50%, 50%, 0.8)',
+    });
+
+    // Should normalize to modern hsl syntax with new alpha
+    const result = parser.process('#legacy.5');
+    expect(result.output).toBe('hsl(180 50% 50% / .5)');
+  });
+
+  test('legacy comma syntax rgb() is normalized to modern syntax', () => {
+    setGlobalPredefinedTokens({
+      '#legacy-rgb': 'rgb(100, 150, 200)',
+    });
+
+    const result = parser.process('#legacy-rgb.5');
+    expect(result.output).toBe('rgb(100 150 200 / .5)');
+  });
+
+  test('legacy comma syntax hsl() is normalized to modern syntax', () => {
+    setGlobalPredefinedTokens({
+      '#legacy-hsl': 'hsl(220, 80%, 50%)',
+    });
+
+    const result = parser.process('#legacy-hsl.5');
+    expect(result.output).toBe('hsl(220 80% 50% / .5)');
+  });
+
+  test('opacity suffix replaces percentage alpha in color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#semi-transparent': 'rgb(0 0 0 / 50%)',
+    });
+
+    // Should replace 50% alpha with .3, not produce invalid CSS
+    const result = parser.process('#semi-transparent.3');
+    expect(result.output).toBe('rgb(0 0 0 / .3)');
+  });
+
+  test('opacity suffix replaces dynamic alpha expressions', () => {
+    setGlobalPredefinedTokens({
+      '#semi': 'rgb(0 0 0 / var(--opacity))',
+    });
+
+    const result = parser.process('#semi.5');
+    // Suffix should override existing alpha (even if dynamic), not append another
+    expect(result.output).toBe('rgb(0 0 0 / .5)');
+  });
+
+  test('opacity suffix replaces calc() alpha expressions', () => {
+    setGlobalPredefinedTokens({
+      '#semi-calc': 'rgb(0 0 0 / calc(var(--opacity) - 10%))',
+    });
+
+    const result = parser.process('#semi-calc.4');
+    expect(result.output).toBe('rgb(0 0 0 / .4)');
+  });
+
+  test('opacity suffix replaces percentage alpha in legacy rgba', () => {
+    setGlobalPredefinedTokens({
+      '#white-overlay': 'rgba(255, 255, 255, 80%)',
+    });
+
+    const result = parser.process('#white-overlay.5');
+    expect(result.output).toBe('rgb(255 255 255 / .5)');
+  });
+
+  test('opacity suffix handles rgba() without alpha (3 values)', () => {
+    setGlobalPredefinedTokens({
+      '#no-alpha': 'rgba(0, 0, 0)',
+    });
+
+    // Should add alpha, not strip the blue channel
+    const result = parser.process('#no-alpha.5');
+    expect(result.output).toBe('rgb(0 0 0 / .5)');
+  });
+
+  test('opacity suffix handles hsla() without alpha (3 values)', () => {
+    setGlobalPredefinedTokens({
+      '#hsl-no-alpha': 'hsla(220, 80%, 50%)',
+    });
+
+    // Should add alpha, not strip the lightness value
+    const result = parser.process('#hsl-no-alpha.5');
+    expect(result.output).toBe('hsl(220 80% 50% / .5)');
+  });
+
+  test('multiple predefined tokens in one expression', () => {
+    setGlobalPredefinedTokens({
+      $gap: '1x',
+      $padding: '2x',
+    });
+
+    const result = parser.process('$gap $padding');
+    expect(result.output).toBe('8px 16px');
+  });
+
+  test('predefined tokens with number values', () => {
+    setGlobalPredefinedTokens({
+      $size: '100',
+    });
+
+    const result = parser.process('$size');
+    expect(result.output).toBe('100');
+  });
+
+  test('getGlobalPredefinedTokens returns null when not configured', () => {
+    expect(getGlobalPredefinedTokens()).toBeNull();
+  });
+
+  test('getGlobalPredefinedTokens returns configured tokens', () => {
+    setGlobalPredefinedTokens({
+      $test: '10px',
+    });
+
+    expect(getGlobalPredefinedTokens()).toEqual({
+      $test: '10px',
+    });
+  });
+
+  test('setGlobalPredefinedTokens merges with existing tokens', () => {
+    // First call
+    setGlobalPredefinedTokens({
+      $a: '10px',
+      $b: '20px',
+    });
+
+    // Second call should merge, not replace
+    setGlobalPredefinedTokens({
+      $b: '30px', // Override existing
+      $c: '40px', // New token
+    });
+
+    expect(getGlobalPredefinedTokens()).toEqual({
+      $a: '10px', // Preserved from first call
+      $b: '30px', // Overridden by second call
+      $c: '40px', // Added by second call
+    });
+  });
+
+  test('resetGlobalPredefinedTokens clears global parser cache', () => {
+    // Import the global parser to test cache clearing
+    const { getGlobalParser } = jest.requireActual('../utils/styles');
+    const globalParser = getGlobalParser();
+
+    // Set a token and parse it (caches the result)
+    setGlobalPredefinedTokens({
+      $spacing: '2x',
+    });
+
+    const resultWithToken = globalParser.process('$spacing');
+    expect(resultWithToken.output).toBe('16px'); // 2x = 2 * 8px
+
+    // Reset tokens
+    resetGlobalPredefinedTokens();
+
+    // Parse the same input - should NOT return cached result
+    // Without cache clear, this would incorrectly return '16px'
+    const resultAfterReset = globalParser.process('$spacing');
+    expect(resultAfterReset.output).toBe('var(--spacing)'); // Default $ behavior
+  });
+
+  test('predefined tokens with uppercase are matched case-insensitively', () => {
+    // Define tokens with uppercase
+    setGlobalPredefinedTokens({
+      $CardPadding: '4x',
+      '#BrandAccent': '#purple',
+    });
+
+    // Use tokens with different case - parser lowercases input, so these should still match
+    const padding = parser.process('$cardpadding');
+    expect(padding.output).toBe('32px'); // 4 * 8px
+
+    const color = parser.process('#brandaccent');
+    expect(color.output).toBe('var(--purple-color)');
+  });
+
+  test('predefined token values with uppercase produce consistent CSS', () => {
+    // Token value has uppercase - should produce same output as direct use
+    setGlobalPredefinedTokens({
+      '#accent': '#Purple',
+    });
+
+    const tokenResult = parser.process('#accent');
+    const directResult = parser.process('#purple');
+
+    // Both should produce lowercase CSS custom property names
+    expect(tokenResult.output).toBe('var(--purple-color)');
+    expect(directResult.output).toBe('var(--purple-color)');
+    expect(tokenResult.output).toBe(directResult.output);
+  });
+
+  test('predefined token values with uppercase and alpha suffix produce consistent CSS', () => {
+    // Token value has uppercase - with alpha suffix should also produce lowercase
+    setGlobalPredefinedTokens({
+      '#accent': '#Purple',
+    });
+
+    const tokenResult = parser.process('#accent.5');
+    const directResult = parser.process('#purple.5');
+
+    // Both should produce lowercase CSS custom property names
+    expect(tokenResult.output).toBe('rgb(var(--purple-color-rgb) / .5)');
+    expect(directResult.output).toBe('rgb(var(--purple-color-rgb) / .5)');
+    expect(tokenResult.output).toBe(directResult.output);
+  });
+});

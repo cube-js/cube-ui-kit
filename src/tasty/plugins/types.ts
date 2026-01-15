@@ -27,6 +27,10 @@ export interface TastyPlugin {
    * ```
    */
   handlers?: Record<string, StyleHandlerDefinition>;
+  /** Predefined tokens replaced during style parsing (`$name` or `#name`) */
+  tokens?: {
+    [key: `$${string}` | `#${string}`]: string | number;
+  };
 }
 
 /**
