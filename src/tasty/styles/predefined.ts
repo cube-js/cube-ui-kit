@@ -319,8 +319,9 @@ export function registerHandler(handler: StyleHandler): void {
  * Create a wrapped handler that can be safely called by users.
  * The wrapper preserves __lookupStyles for proper registration.
  */
-function wrapHandler<T extends StyleHandler>(handler: T): T {
-  const wrapped = ((props) => handler(props)) as T;
+function wrapHandler<T extends { __lookupStyles: string[] }>(handler: T): T {
+  const fn = handler as unknown as (props: unknown) => unknown;
+  const wrapped = ((props: unknown) => fn(props)) as unknown as T;
   wrapped.__lookupStyles = handler.__lookupStyles;
   return wrapped;
 }
