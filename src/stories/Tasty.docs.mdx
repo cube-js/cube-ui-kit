@@ -126,6 +126,7 @@ configure({
 | `parserCacheSize` | `number` | `1000` | Parser LRU cache size |
 | `units` | `Record<string, string \| Function>` | Built-in | Custom units (merged with built-in) |
 | `funcs` | `Record<string, Function>` | - | Custom parser functions (merged with existing) |
+| `handlers` | `Record<string, StyleHandlerDefinition>` | Built-in | Custom style handlers (replace built-in) |
 
 ### Built-in Units
 
@@ -240,6 +241,48 @@ const Box = tasty({
   },
 });
 ```
+
+### Custom Style Handlers
+
+Style handlers transform style properties into CSS declarations. Custom handlers **replace** built-in handlers for the same style name.
+
+```jsx
+import { configure, styleHandlers } from '@cube-dev/ui-kit';
+
+configure({
+  handlers: {
+    // Override fill with gradient support
+    fill: ({ fill }) => {
+      if (fill?.startsWith('gradient:')) {
+        return { background: fill.slice(9) };
+      }
+      return styleHandlers.fill({ fill }); // Delegate to built-in
+    },
+    
+    // Add new custom style
+    elevation: ({ elevation }) => {
+      const level = parseInt(elevation) || 1;
+      return {
+        'box-shadow': `0 ${level * 2}px ${level * 4}px rgba(0,0,0,0.1)`,
+        'z-index': String(level * 100),
+      };
+    },
+    
+    // Multi-property handler
+    customSpacing: [['gap', 'padding'], ({ gap, padding }) => ({
+      gap: gap || '1x',
+      padding: padding || '2x',
+    })],
+  },
+});
+```
+
+**Handler definition forms:**
+- Function only: `fill: (props) => ...` — lookup style inferred from key name
+- Single tuple: `['styleName', handler]` — explicit lookup style
+- Multi tuple: `[['style1', 'style2'], handler]` — multiple lookup styles
+
+Use `styleHandlers` export to delegate to built-in handlers when extending behavior.
 
 ---
 

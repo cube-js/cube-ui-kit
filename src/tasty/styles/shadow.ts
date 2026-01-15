@@ -11,7 +11,7 @@ function toBoxShadow(shadow) {
 }
 
 export function shadowStyle({ shadow }) {
-  if (!shadow) return '';
+  if (!shadow) return;
 
   if (shadow === true) shadow = 'var(--card-shadow)';
 

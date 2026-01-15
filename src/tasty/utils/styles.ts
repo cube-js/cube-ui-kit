@@ -28,14 +28,22 @@ export type CSSMap = { $?: string | string[] } & {
 
 export type StyleHandlerResult = CSSMap | CSSMap[] | void;
 
-export type RawStyleHandler = (
-  value: StyleValueStateMap,
-  suffix?: string,
-) => StyleHandlerResult;
+export type RawStyleHandler = (value: StyleValueStateMap) => StyleHandlerResult;
 
 export type StyleHandler = RawStyleHandler & {
   __lookupStyles: string[];
 };
+
+/**
+ * Handler definition forms for configure() and plugins.
+ * - Function only: lookup styles inferred from key name
+ * - Single property tuple: ['styleName', handler]
+ * - Multi-property tuple: [['style1', 'style2'], handler]
+ */
+export type StyleHandlerDefinition =
+  | RawStyleHandler
+  | [string, RawStyleHandler]
+  | [string[], RawStyleHandler];
 
 export interface StyleStateData {
   model?: ComputeModel;

@@ -8,7 +8,7 @@ const DIRECTION_MAP = {
 };
 
 export function fadeStyle({ fade }) {
-  if (!fade) return '';
+  if (!fade) return;
 
   const processed = parseStyle(fade);
   let { values, mods } =

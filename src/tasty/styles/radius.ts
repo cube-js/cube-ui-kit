@@ -8,7 +8,7 @@ export function radiusStyle({ radius }) {
     radius = `${radius}px`;
   }
 
-  if (!radius) return '';
+  if (!radius) return;
 
   if (radius === true) radius = '1r';
 

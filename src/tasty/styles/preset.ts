@@ -52,7 +52,7 @@ export function presetStyle({
   fontStyle?: string;
   font?: string;
 }) {
-  if (!preset) return '';
+  if (!preset) return;
 
   if (preset === true) preset = '';
 
