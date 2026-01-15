@@ -123,8 +123,29 @@ export function classify(
               const alpha = rawAlpha === '0' ? '0' : `.${rawAlpha}`;
               // Normalize function name: rgba->rgb, hsla->hsl (modern syntax doesn't need 'a' suffix)
               const normalizedFunc = funcName.replace(/a$/i, '').toLowerCase();
-              // Normalize to modern syntax: replace commas with spaces
-              const normalizeArgs = (a: string) => a.replace(/,\s*/g, ' ');
+              // Normalize to modern syntax: replace top-level commas with spaces
+              // Preserves commas inside nested functions like min(), max(), clamp()
+              const normalizeArgs = (a: string) => {
+                let result = '';
+                let depth = 0;
+                for (let i = 0; i < a.length; i++) {
+                  const c = a[i];
+                  if (c === '(') {
+                    depth++;
+                    result += c;
+                  } else if (c === ')') {
+                    depth = Math.max(0, depth - 1);
+                    result += c;
+                  } else if (c === ',' && depth === 0) {
+                    // Skip comma and any following whitespace at top level
+                    while (i + 1 < a.length && /\s/.test(a[i + 1])) i++;
+                    result += ' ';
+                  } else {
+                    result += c;
+                  }
+                }
+                return result;
+              };
               // Helper: find last top-level occurrence of a character (ignores parentheses)
               const findLastTopLevel = (str: string, ch: string) => {
                 let depth = 0;

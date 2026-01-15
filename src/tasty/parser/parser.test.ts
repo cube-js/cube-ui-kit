@@ -785,6 +785,16 @@ describe('Predefined tokens', () => {
     expect(result.output).toBe('hwb(30 10% 20% / .5)');
   });
 
+  test('opacity suffix preserves commas inside nested functions', () => {
+    setGlobalPredefinedTokens({
+      '#adaptive': 'rgb(min(100, 200), 50, 150)',
+    });
+
+    // Commas inside min() should be preserved, only top-level commas normalized
+    const result = parser.process('#adaptive.5');
+    expect(result.output).toBe('rgb(min(100, 200) 50 150 / .5)');
+  });
+
   test('opacity suffix normalizes hsla to hsl', () => {
     setGlobalPredefinedTokens({
       '#legacy': 'hsla(180, 50%, 50%, 0.8)',
