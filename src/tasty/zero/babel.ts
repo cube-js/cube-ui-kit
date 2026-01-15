@@ -142,6 +142,7 @@ export default declare<TastyZeroBabelOptions>((api, options) => {
 
   // Apply predefined tokens if configured
   if (config.tokens) {
+    // Store tokens (keys are normalized to lowercase by setGlobalPredefinedTokens)
     const processedTokens: Record<string, string> = {};
     for (const [key, value] of Object.entries(config.tokens)) {
       processedTokens[key] = String(value);

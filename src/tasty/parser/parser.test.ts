@@ -747,11 +747,11 @@ describe('Predefined tokens', () => {
 
   test('opacity suffix works with predefined okhsl() color tokens', () => {
     setGlobalPredefinedTokens({
-      '#okhsl-color': 'okhsl(250 80% 60%)',
+      '#vibrant': 'okhsl(250 80% 60%)',
     });
 
-    // #okhsl-color.5 should apply .5 opacity, preserving okhsl color space
-    const result = parser.process('#okhsl-color.5');
+    // #vibrant.5 should apply .5 opacity, preserving okhsl color space
+    const result = parser.process('#vibrant.5');
     expect(result.output).toBe('okhsl(250 80% 60% / .5)');
   });
 
@@ -767,11 +767,11 @@ describe('Predefined tokens', () => {
 
   test('opacity suffix works with predefined oklch() color tokens', () => {
     setGlobalPredefinedTokens({
-      '#oklch-color': 'oklch(70% 0.15 250)',
+      '#vivid': 'oklch(70% 0.15 250)',
     });
 
-    // #oklch-color.5 should apply .5 opacity, preserving oklch color space
-    const result = parser.process('#oklch-color.5');
+    // #vivid.5 should apply .5 opacity, preserving oklch color space
+    const result = parser.process('#vivid.5');
     expect(result.output).toBe('oklch(70% 0.15 250 / .5)');
   });
 
@@ -934,5 +934,20 @@ describe('Predefined tokens', () => {
     // Without cache clear, this would incorrectly return '16px'
     const resultAfterReset = globalParser.process('$spacing');
     expect(resultAfterReset.output).toBe('var(--spacing)'); // Default $ behavior
+  });
+
+  test('predefined tokens with uppercase are matched case-insensitively', () => {
+    // Define tokens with uppercase
+    setGlobalPredefinedTokens({
+      $CardPadding: '4x',
+      '#BrandAccent': '#purple',
+    });
+
+    // Use tokens with different case - parser lowercases input, so these should still match
+    const padding = parser.process('$cardpadding');
+    expect(padding.output).toBe('32px'); // 4 * 8px
+
+    const color = parser.process('#brandaccent');
+    expect(color.output).toBe('var(--purple-color)');
   });
 });

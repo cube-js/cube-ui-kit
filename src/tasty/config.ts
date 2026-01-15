@@ -403,7 +403,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
   // Note: Tokens are processed by the classifier, not here.
   // We just store the raw values; the classifier will process them when encountered.
   if (Object.keys(mergedTokens).length > 0) {
-    // Store tokens as-is (values will be processed when used in styles)
+    // Store tokens (keys are normalized to lowercase by setGlobalPredefinedTokens)
     const processedTokens: Record<string, string> = {};
     for (const [key, value] of Object.entries(mergedTokens)) {
       processedTokens[key] = String(value);
