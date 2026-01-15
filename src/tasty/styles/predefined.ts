@@ -60,6 +60,42 @@ type StyleHandlerMap = Record<string, StyleHandler[]>;
 
 export const STYLE_HANDLER_MAP: StyleHandlerMap = {};
 
+// Store initial handler state for reset functionality
+let initialHandlerMapSnapshot: StyleHandlerMap | null = null;
+
+/**
+ * Capture a snapshot of the current STYLE_HANDLER_MAP.
+ * Called after predefine() to preserve built-in handler state.
+ */
+function captureInitialHandlerState(): void {
+  initialHandlerMapSnapshot = {};
+  for (const key of Object.keys(STYLE_HANDLER_MAP)) {
+    // Shallow copy the array - handlers themselves are immutable
+    initialHandlerMapSnapshot[key] = [...STYLE_HANDLER_MAP[key]];
+  }
+}
+
+/**
+ * Reset STYLE_HANDLER_MAP to the initial built-in state.
+ * Called by resetConfig() to restore handlers after tests.
+ */
+export function resetHandlers(): void {
+  if (!initialHandlerMapSnapshot) {
+    // predefine() hasn't been called yet, nothing to reset
+    return;
+  }
+
+  // Clear current map
+  for (const key of Object.keys(STYLE_HANDLER_MAP)) {
+    delete STYLE_HANDLER_MAP[key];
+  }
+
+  // Restore initial state
+  for (const key of Object.keys(initialHandlerMapSnapshot)) {
+    STYLE_HANDLER_MAP[key] = [...initialHandlerMapSnapshot[key]];
+  }
+}
+
 export function defineCustomStyle(
   names: string[] | StyleHandler,
   handler?: RawStyleHandler,
@@ -181,6 +217,9 @@ export function predefine() {
   ]
     // @ts-ignore
     .forEach((handler) => defineCustomStyle(handler));
+
+  // Capture initial state after all built-in handlers are registered
+  captureInitialHandlerState();
 
   return { STYLE_HANDLER_MAP, defineCustomStyle, defineStyleAlias };
 }

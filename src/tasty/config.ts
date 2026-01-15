@@ -16,6 +16,7 @@ import { setGlobalPredefinedStates } from './states';
 import {
   normalizeHandlerDefinition,
   registerHandler,
+  resetHandlers,
 } from './styles/predefined';
 import { isDevEnv } from './utils/isDevEnv';
 import {
@@ -521,6 +522,7 @@ export function resetConfig(): void {
   currentConfig = null;
   globalKeyframes = null;
   resetGlobalPredefinedTokens();
+  resetHandlers();
   emittedWarnings.clear();
 
   const storage = typeof window !== 'undefined' ? window : (globalThis as any);

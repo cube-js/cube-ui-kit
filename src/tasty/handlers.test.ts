@@ -1,10 +1,12 @@
 /**
  * Tests for custom style handler registration via configure() and plugins.
  */
+import { resetConfig } from './config';
 import { renderStyles } from './pipeline';
 import {
   normalizeHandlerDefinition,
   registerHandler,
+  resetHandlers,
   STYLE_HANDLER_MAP,
   styleHandlers,
 } from './styles';
@@ -165,6 +167,70 @@ describe('Style Handlers Configuration', () => {
       if (originalHandler) {
         registerHandler(originalHandler);
       }
+    });
+  });
+
+  describe('resetHandlers', () => {
+    it('should restore STYLE_HANDLER_MAP to initial state', () => {
+      // Get original fill handler
+      const originalFillHandler = STYLE_HANDLER_MAP['fill']?.[0];
+
+      // Register a custom handler
+      const customFill = ({ fill }) =>
+        fill ? { 'background-color': `custom-${fill}` } : undefined;
+      customFill.__lookupStyles = ['fill'];
+      registerHandler(customFill);
+
+      // Verify custom handler is registered
+      expect(STYLE_HANDLER_MAP['fill'][0]).toBe(customFill);
+
+      // Reset handlers
+      resetHandlers();
+
+      // Verify original handler is restored
+      expect(STYLE_HANDLER_MAP['fill'][0]).not.toBe(customFill);
+      expect(STYLE_HANDLER_MAP['fill'][0].__lookupStyles).toEqual(['fill']);
+    });
+
+    it('should remove custom handlers for new style names', () => {
+      // Register a handler for a new style name
+      const customElevation = ({ elevation }) =>
+        elevation ? { 'box-shadow': `0 ${elevation}px` } : undefined;
+      customElevation.__lookupStyles = ['elevation'];
+      registerHandler(customElevation);
+
+      // Verify custom handler is registered
+      expect(STYLE_HANDLER_MAP['elevation']).toBeDefined();
+
+      // Reset handlers
+      resetHandlers();
+
+      // Verify custom handler is removed (elevation is not a built-in style)
+      expect(STYLE_HANDLER_MAP['elevation']).toBeUndefined();
+    });
+  });
+
+  describe('resetConfig integration', () => {
+    it('should reset handlers when resetConfig is called', () => {
+      // Register a custom handler
+      const customFill = ({ fill }) =>
+        fill ? { 'background-color': `reset-test-${fill}` } : undefined;
+      customFill.__lookupStyles = ['fill'];
+      registerHandler(customFill);
+
+      // Verify custom handler is registered
+      expect(STYLE_HANDLER_MAP['fill'][0]).toBe(customFill);
+
+      // Reset config (which should call resetHandlers)
+      resetConfig();
+
+      // Verify handlers are restored to built-in defaults
+      expect(STYLE_HANDLER_MAP['fill'][0]).not.toBe(customFill);
+
+      // Verify built-in handler works correctly
+      const result = renderStyles({ fill: '#blue' }, '.test');
+      expect(result[0].declarations).toContain('var(--blue-color)');
+      expect(result[0].declarations).not.toContain('reset-test-');
     });
   });
 });

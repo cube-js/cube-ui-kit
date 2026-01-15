@@ -12,5 +12,6 @@ export * from './createStyle';
 export {
   normalizeHandlerDefinition,
   registerHandler,
+  resetHandlers,
   validateHandlerResult,
 } from './predefined';
