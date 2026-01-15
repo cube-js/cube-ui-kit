@@ -1,5 +1,5 @@
 ---
-"@cube-dev/ui-kit": minor
+"@cube-dev/ui-kit": patch
 ---
 
 ### Added
