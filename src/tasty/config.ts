@@ -14,7 +14,13 @@
 import { StyleInjector } from './injector/injector';
 import { setGlobalPredefinedStates } from './states';
 import { isDevEnv } from './utils/isDevEnv';
-import { CUSTOM_UNITS, getGlobalFuncs, getGlobalParser } from './utils/styles';
+import {
+  CUSTOM_UNITS,
+  getGlobalFuncs,
+  getGlobalParser,
+  resetGlobalPredefinedTokens,
+  setGlobalPredefinedTokens,
+} from './utils/styles';
 
 import type { KeyframesSteps } from './injector/types';
 import type { StyleDetails, UnitHandler } from './parser/types';
@@ -100,6 +106,33 @@ export interface TastyConfig {
    * ```
    */
   keyframes?: Record<string, KeyframesSteps>;
+  /**
+   * Predefined tokens that are replaced during style parsing.
+   * Token values are processed through the parser (like component tokens).
+   * Use `$name` for custom properties and `#name` for color tokens.
+   * @example
+   * ```ts
+   * configure({
+   *   tokens: {
+   *     $spacing: '2x',
+   *     '$card-padding': '4x',
+   *     '#accent': '#purple',
+   *     '#surface': '#white',
+   *   },
+   * });
+   *
+   * // Now use in styles - tokens are replaced at parse time:
+   * const Card = tasty({
+   *   styles: {
+   *     padding: '$card-padding',  // → calc(4 * var(--gap))
+   *     fill: '#surface',          // → var(--white-color)
+   *   },
+   * });
+   * ```
+   */
+  tokens?: {
+    [key: `$${string}` | `#${string}`]: string | number;
+  };
 }
 
 // Warnings tracking to avoid duplicates
@@ -300,6 +333,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
   let mergedStates: Record<string, string> = {};
   let mergedUnits: Record<string, string | UnitHandler> = {};
   let mergedFuncs: Record<string, (groups: StyleDetails[]) => string> = {};
+  let mergedTokens: Record<string, string | number> = {};
 
   // Process plugins in order
   if (config.plugins) {
@@ -313,6 +347,9 @@ export function configure(config: Partial<TastyConfig> = {}): void {
       if (plugin.funcs) {
         mergedFuncs = { ...mergedFuncs, ...plugin.funcs };
       }
+      if (plugin.tokens) {
+        mergedTokens = { ...mergedTokens, ...plugin.tokens };
+      }
     }
   }
 
@@ -325,6 +362,9 @@ export function configure(config: Partial<TastyConfig> = {}): void {
   }
   if (config.funcs) {
     mergedFuncs = { ...mergedFuncs, ...config.funcs };
+  }
+  if (config.tokens) {
+    mergedTokens = { ...mergedTokens, ...config.tokens };
   }
 
   // Handle predefined states
@@ -359,7 +399,19 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     setGlobalKeyframes(config.keyframes);
   }
 
-  // Create config without states, parser options, plugins, and keyframes (handled separately)
+  // Handle predefined tokens
+  // Note: Tokens are processed by the classifier, not here.
+  // We just store the raw values; the classifier will process them when encountered.
+  if (Object.keys(mergedTokens).length > 0) {
+    // Store tokens (keys are normalized to lowercase by setGlobalPredefinedTokens)
+    const processedTokens: Record<string, string> = {};
+    for (const [key, value] of Object.entries(mergedTokens)) {
+      processedTokens[key] = String(value);
+    }
+    setGlobalPredefinedTokens(processedTokens);
+  }
+
+  // Create config without states, parser options, plugins, keyframes, and tokens (handled separately)
   const {
     states: _states,
     parserCacheSize: _parserCacheSize,
@@ -367,6 +419,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     funcs: _funcs,
     plugins: _plugins,
     keyframes: _keyframes,
+    tokens: _tokens,
     ...injectorConfig
   } = config;
 
@@ -417,6 +470,7 @@ export function resetConfig(): void {
   stylesGenerated = false;
   currentConfig = null;
   globalKeyframes = null;
+  resetGlobalPredefinedTokens();
   emittedWarnings.clear();
 
   const storage = typeof window !== 'undefined' ? window : (globalThis as any);

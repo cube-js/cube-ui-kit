@@ -120,6 +120,15 @@ export class StyleParser {
   }
 
   /**
+   * Clear the parser cache.
+   * Call this when external state that affects parsing results has changed
+   * (e.g., predefined tokens).
+   */
+  clearCache(): void {
+    this.cache.clear();
+  }
+
+  /**
    * Get the current units configuration.
    */
   getUnits(): ParserOptions['units'] {

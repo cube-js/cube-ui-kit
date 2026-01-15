@@ -206,6 +206,58 @@ export function getGlobalFuncs(): Record<
   return __tastyFuncs;
 }
 
+// ============================================================================
+// Global Predefined Tokens
+// ============================================================================
+
+/**
+ * Storage for predefined tokens that are replaced during style parsing.
+ * Keys are token names (with $ or # prefix), values are pre-processed CSS values.
+ */
+let __globalPredefinedTokens: Record<string, string> | null = null;
+
+/**
+ * Set global predefined tokens.
+ * Called from configure() after processing token values.
+ * Merges with existing tokens (new tokens override existing ones with same key).
+ * Keys are normalized to lowercase (parser lowercases input before classification).
+ * @internal
+ */
+export function setGlobalPredefinedTokens(
+  tokens: Record<string, string>,
+): void {
+  // Normalize keys to lowercase for case-insensitive matching
+  const normalizedTokens: Record<string, string> = {};
+  for (const [key, value] of Object.entries(tokens)) {
+    normalizedTokens[key.toLowerCase()] = value;
+  }
+  // Merge with existing tokens (consistent with how states, units, funcs are handled)
+  __globalPredefinedTokens = __globalPredefinedTokens
+    ? { ...__globalPredefinedTokens, ...normalizedTokens }
+    : normalizedTokens;
+  // Clear parser cache since token values affect parsing
+  __tastyParser.clearCache();
+}
+
+/**
+ * Get the current global predefined tokens.
+ * Returns null if no tokens are configured.
+ */
+export function getGlobalPredefinedTokens(): Record<string, string> | null {
+  return __globalPredefinedTokens;
+}
+
+/**
+ * Reset global predefined tokens.
+ * Used for testing.
+ * @internal
+ */
+export function resetGlobalPredefinedTokens(): void {
+  __globalPredefinedTokens = null;
+  // Clear parser cache since token availability affects parsing
+  __tastyParser.clearCache();
+}
+
 /**
  *
  * @param {String} value

@@ -24,7 +24,12 @@ import { replaceAnimationNames } from '../keyframes';
 import { setGlobalPredefinedStates } from '../states';
 import { Styles } from '../styles/types';
 import { mergeStyles } from '../utils/mergeStyles';
-import { CUSTOM_UNITS, getGlobalFuncs, getGlobalParser } from '../utils/styles';
+import {
+  CUSTOM_UNITS,
+  getGlobalFuncs,
+  getGlobalParser,
+  setGlobalPredefinedTokens,
+} from '../utils/styles';
 
 import { CSSWriter } from './css-writer';
 import {
@@ -71,6 +76,14 @@ export interface TastyZeroConfig {
    * @example { fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } } }
    */
   keyframes?: Record<string, KeyframesSteps>;
+  /**
+   * Predefined tokens that are replaced during style parsing.
+   * Use `$name` for custom properties and `#name` for color tokens.
+   * @example { $spacing: '2x', '#accent': '#purple' }
+   */
+  tokens?: {
+    [key: `$${string}` | `#${string}`]: string | number;
+  };
 }
 
 export interface TastyZeroBabelOptions {
@@ -125,6 +138,16 @@ export default declare<TastyZeroBabelOptions>((api, options) => {
     parser.setFuncs(mergedFuncs);
     // Also update the global registry so customFunc() continues to work
     Object.assign(currentFuncs, config.funcs);
+  }
+
+  // Apply predefined tokens if configured
+  if (config.tokens) {
+    // Store tokens (keys are normalized to lowercase by setGlobalPredefinedTokens)
+    const processedTokens: Record<string, string> = {};
+    for (const [key, value] of Object.entries(config.tokens)) {
+      processedTokens[key] = String(value);
+    }
+    setGlobalPredefinedTokens(processedTokens);
   }
 
   const cssWriter = new CSSWriter(outputPath, { devMode });

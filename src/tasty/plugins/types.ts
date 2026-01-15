@@ -12,6 +12,10 @@ export interface TastyPlugin {
   units?: Record<string, string | UnitHandler>;
   /** Custom state aliases (e.g., `'@mobile': '@media(w < 768px)'`) */
   states?: Record<string, string>;
+  /** Predefined tokens replaced during style parsing (`$name` or `#name`) */
+  tokens?: {
+    [key: `$${string}` | `#${string}`]: string | number;
+  };
 }
 
 /**

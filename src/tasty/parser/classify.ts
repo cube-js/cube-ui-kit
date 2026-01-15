@@ -1,3 +1,5 @@
+import { getGlobalPredefinedTokens } from '../utils/styles';
+
 import {
   COLOR_FUNCS,
   RE_HEX,
@@ -86,6 +88,132 @@ export function classify(
     (token.startsWith("'") && token.endsWith("'"))
   ) {
     return { bucket: Bucket.Value, processed: token };
+  }
+
+  // 0a. Check for predefined tokens (configured via configure({ tokens: {...} }))
+  // Must happen before default $ and # handling to allow overriding
+  if (token[0] === '$' || token[0] === '#') {
+    const predefinedTokens = getGlobalPredefinedTokens();
+    if (predefinedTokens) {
+      // Exact match
+      if (token in predefinedTokens) {
+        const tokenValue = predefinedTokens[token];
+        // Lowercase the token value to match parser behavior (parser lowercases input)
+        return classify(tokenValue.toLowerCase(), opts, recurse);
+      }
+      // Check for color token with alpha suffix: #token.alpha
+      if (token[0] === '#') {
+        const alphaMatch = token.match(/^(#[a-z0-9-]+)\.([0-9]+)$/i);
+        if (alphaMatch) {
+          const [, baseToken, rawAlpha] = alphaMatch;
+          if (baseToken in predefinedTokens) {
+            const resolvedValue = predefinedTokens[baseToken];
+
+            // If resolved value starts with # (color token), use standard alpha syntax
+            if (resolvedValue.startsWith('#')) {
+              // Lowercase to match parser behavior
+              return classify(
+                `${resolvedValue.toLowerCase()}.${rawAlpha}`,
+                opts,
+                recurse,
+              );
+            }
+
+            // For color functions like rgb(), rgba(), hsl(), hwb(), etc., inject alpha
+            // Includes all standard CSS color functions plus okhsl (plugin)
+            const funcMatch = resolvedValue.match(
+              /^(rgba?|hsla?|hwb|oklab|oklch|lab|lch|color|okhsl|device-cmyk|gray|color-mix|color-contrast)\((.+)\)$/i,
+            );
+            if (funcMatch) {
+              const [, funcName, args] = funcMatch;
+              const alpha = rawAlpha === '0' ? '0' : `.${rawAlpha}`;
+              // Normalize function name: rgba->rgb, hsla->hsl (modern syntax doesn't need 'a' suffix)
+              const normalizedFunc = funcName.replace(/a$/i, '').toLowerCase();
+              // Normalize to modern syntax: replace top-level commas with spaces
+              // Preserves commas inside nested functions like min(), max(), clamp()
+              const normalizeArgs = (a: string) => {
+                let result = '';
+                let depth = 0;
+                for (let i = 0; i < a.length; i++) {
+                  const c = a[i];
+                  if (c === '(') {
+                    depth++;
+                    result += c;
+                  } else if (c === ')') {
+                    depth = Math.max(0, depth - 1);
+                    result += c;
+                  } else if (c === ',' && depth === 0) {
+                    // Skip comma and any following whitespace at top level
+                    while (i + 1 < a.length && /\s/.test(a[i + 1])) i++;
+                    result += ' ';
+                  } else {
+                    result += c;
+                  }
+                }
+                return result;
+              };
+              // Helper: find last top-level occurrence of a character (ignores parentheses)
+              const findLastTopLevel = (str: string, ch: string) => {
+                let depth = 0;
+                for (let i = str.length - 1; i >= 0; i--) {
+                  const c = str[i];
+                  if (c === ')') depth++;
+                  else if (c === '(') depth = Math.max(0, depth - 1);
+                  else if (c === ch && depth === 0) return i;
+                }
+                return -1;
+              };
+
+              // Check if already has alpha:
+              // - Modern syntax: has `/` separator at top level (works with dynamic alpha like var()/calc())
+              // - Legacy syntax: function ends with 'a' (rgba, hsla) and has exactly 4 top-level comma-separated values
+              const slashIdx = findLastTopLevel(args, '/');
+              const hasModernAlpha = slashIdx !== -1;
+
+              // Count top-level commas to avoid commas inside nested functions
+              let topLevelCommaCount = 0;
+              let lastTopLevelComma = -1;
+              {
+                let depth = 0;
+                for (let i = 0; i < args.length; i++) {
+                  const c = args[i];
+                  if (c === '(') depth++;
+                  else if (c === ')') depth = Math.max(0, depth - 1);
+                  else if (c === ',' && depth === 0) {
+                    topLevelCommaCount++;
+                    lastTopLevelComma = i;
+                  }
+                }
+              }
+
+              const hasLegacyAlpha =
+                !hasModernAlpha &&
+                /a$/i.test(funcName) &&
+                topLevelCommaCount === 3;
+
+              if (hasModernAlpha || hasLegacyAlpha) {
+                // Strip existing alpha (numeric or dynamic) before applying suffix
+                const withoutAlpha = hasModernAlpha
+                  ? args.slice(0, slashIdx).trim()
+                  : args.slice(0, lastTopLevelComma).trim();
+                return {
+                  bucket: Bucket.Color,
+                  processed: `${normalizedFunc}(${normalizeArgs(withoutAlpha)} / ${alpha})`,
+                };
+              }
+              // Add alpha using modern syntax
+              return {
+                bucket: Bucket.Color,
+                processed: `${normalizedFunc}(${normalizeArgs(args)} / ${alpha})`,
+              };
+            }
+
+            // Fallback: try appending .alpha (may not work for all cases)
+            return classify(`${resolvedValue}.${rawAlpha}`, opts, recurse);
+          }
+        }
+      }
+    }
   }
 
   // 0. Direct var(--*-color) token
