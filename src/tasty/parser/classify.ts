@@ -113,9 +113,10 @@ export function classify(
               return classify(`${resolvedValue}.${rawAlpha}`, opts, recurse);
             }
 
-            // For color functions like rgb(), rgba(), hsl(), etc., inject alpha
+            // For color functions like rgb(), rgba(), hsl(), hwb(), etc., inject alpha
+            // Includes all standard CSS color functions plus okhsl (plugin)
             const funcMatch = resolvedValue.match(
-              /^(rgba?|hsla?|oklab|oklch|lab|lch|color|okhsl)\((.+)\)$/i,
+              /^(rgba?|hsla?|hwb|oklab|oklch|lab|lch|color|okhsl|device-cmyk|gray|color-mix|color-contrast)\((.+)\)$/i,
             );
             if (funcMatch) {
               const [, funcName, args] = funcMatch;

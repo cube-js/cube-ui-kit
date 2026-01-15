@@ -775,6 +775,16 @@ describe('Predefined tokens', () => {
     expect(result.output).toBe('oklch(70% 0.15 250 / .5)');
   });
 
+  test('opacity suffix works with predefined hwb() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#warm': 'hwb(30 10% 20%)',
+    });
+
+    // #warm.5 should apply .5 opacity, preserving hwb color space
+    const result = parser.process('#warm.5');
+    expect(result.output).toBe('hwb(30 10% 20% / .5)');
+  });
+
   test('opacity suffix normalizes hsla to hsl', () => {
     setGlobalPredefinedTokens({
       '#legacy': 'hsla(180, 50%, 50%, 0.8)',
