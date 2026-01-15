@@ -247,14 +247,27 @@ export function normalizeHandlerDefinition(
     lookupStyles = [keyName];
   } else if (Array.isArray(definition)) {
     const [first, fn] = definition;
+
+    if (typeof fn !== 'function') {
+      throw new Error(
+        `[Tasty] Invalid handler definition for "${keyName}". ` +
+          'Tuple must have a function as the second element: [string, function] or [string[], function].',
+      );
+    }
+
     handler = fn;
 
     if (typeof first === 'string') {
       // [string, fn] - single lookup style
       lookupStyles = [first];
-    } else {
+    } else if (Array.isArray(first)) {
       // [string[], fn] - multiple lookup styles
       lookupStyles = first;
+    } else {
+      throw new Error(
+        `[Tasty] Invalid handler definition for "${keyName}". ` +
+          'First element must be a string or string array.',
+      );
     }
   } else {
     throw new Error(

@@ -43,6 +43,33 @@ describe('Style Handlers Configuration', () => {
 
       expect(normalized.__lookupStyles).toEqual(['display', 'flow', 'gap']);
     });
+
+    it('should throw error for incomplete tuple (missing handler)', () => {
+      expect(() => {
+        // @ts-expect-error - testing invalid input
+        normalizeHandlerDefinition('fill', ['fill']);
+      }).toThrow(
+        '[Tasty] Invalid handler definition for "fill". Tuple must have a function as the second element',
+      );
+    });
+
+    it('should throw error for tuple with invalid first element', () => {
+      expect(() => {
+        // @ts-expect-error - testing invalid input
+        normalizeHandlerDefinition('test', [123, () => ({})]);
+      }).toThrow(
+        '[Tasty] Invalid handler definition for "test". First element must be a string or string array',
+      );
+    });
+
+    it('should throw error for non-function, non-array definition', () => {
+      expect(() => {
+        // @ts-expect-error - testing invalid input
+        normalizeHandlerDefinition('test', 'invalid');
+      }).toThrow(
+        '[Tasty] Invalid handler definition for "test". Expected function, [string, function], or [string[], function]',
+      );
+    });
   });
 
   describe('registerHandler', () => {
