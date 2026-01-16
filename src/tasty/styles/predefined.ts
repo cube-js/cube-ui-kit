@@ -346,6 +346,11 @@ export function validateHandlerResult(name: string, result: unknown): void {
 /**
  * Register a custom handler, replacing any existing handlers for the same lookup styles.
  * This is called by configure() to process user-defined handlers.
+ *
+ * When registering a handler for style X, any existing handler that processes X
+ * is removed from ALL its lookup styles to prevent double-processing.
+ * For example, if gapStyle handles ['display', 'flow', 'gap'] and a new handler
+ * is registered for just ['gap'], gapStyle is removed from display and flow too.
  */
 export function registerHandler(handler: StyleHandler): void {
   const lookupStyles = handler.__lookupStyles;
@@ -359,9 +364,45 @@ export function registerHandler(handler: StyleHandler): void {
     return;
   }
 
-  // Replace existing handlers for each lookup style
+  // Find and remove existing handlers that would conflict
+  // A handler conflicts if it handles any of the same styles as the new handler
+  const handlersToRemove = new Set<StyleHandler>();
+
   for (const styleName of lookupStyles) {
-    STYLE_HANDLER_MAP[styleName] = [handler];
+    const existing = STYLE_HANDLER_MAP[styleName];
+    if (existing) {
+      for (const existingHandler of existing) {
+        handlersToRemove.add(existingHandler);
+      }
+    }
+  }
+
+  // Remove conflicting handlers from ALL their lookup styles
+  for (const oldHandler of handlersToRemove) {
+    const oldLookupStyles = oldHandler.__lookupStyles;
+    if (oldLookupStyles) {
+      for (const oldStyleName of oldLookupStyles) {
+        const handlers = STYLE_HANDLER_MAP[oldStyleName];
+        if (handlers) {
+          const filtered = handlers.filter((h) => h !== oldHandler);
+          if (filtered.length === 0) {
+            delete STYLE_HANDLER_MAP[oldStyleName];
+          } else {
+            STYLE_HANDLER_MAP[oldStyleName] = filtered;
+          }
+        }
+      }
+    }
+  }
+
+  // Register the new handler under its lookup styles
+  for (const styleName of lookupStyles) {
+    const existing = STYLE_HANDLER_MAP[styleName];
+    if (existing) {
+      existing.push(handler);
+    } else {
+      STYLE_HANDLER_MAP[styleName] = [handler];
+    }
   }
 }
 
