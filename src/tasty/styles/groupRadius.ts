@@ -6,7 +6,7 @@ const MAP = {
 };
 
 export function groupRadiusAttr({ groupRadius, flow }) {
-  if (!groupRadius) return '';
+  if (!groupRadius) return;
 
   if (groupRadius === true) groupRadius = '1r';
 

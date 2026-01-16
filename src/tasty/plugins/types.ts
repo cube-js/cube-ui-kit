@@ -1,7 +1,8 @@
 import type { StyleDetails, UnitHandler } from '../parser/types';
+import type { StyleHandlerDefinition } from '../utils/styles';
 
 /**
- * A tasty plugin that extends the style system with custom functions, units, or states.
+ * A tasty plugin that extends the style system with custom functions, units, states, or handlers.
  */
 export interface TastyPlugin {
   /** Unique name for the plugin (used for debugging and conflict detection) */
@@ -12,6 +13,20 @@ export interface TastyPlugin {
   units?: Record<string, string | UnitHandler>;
   /** Custom state aliases (e.g., `'@mobile': '@media(w < 768px)'`) */
   states?: Record<string, string>;
+  /**
+   * Custom style handlers that transform style properties into CSS declarations.
+   * Handlers replace built-in handlers for the same style name.
+   * @example
+   * ```ts
+   * handlers: {
+   *   // Simple handler - lookup style inferred from key
+   *   fill: ({ fill }) => fill ? { 'background-color': fill } : undefined,
+   *   // Multi-property handler
+   *   spacing: [['gap', 'padding'], ({ gap, padding }) => ({ ... })],
+   * }
+   * ```
+   */
+  handlers?: Record<string, StyleHandlerDefinition>;
   /** Predefined tokens replaced during style parsing (`$name` or `#name`) */
   tokens?: {
     [key: `$${string}` | `#${string}`]: string | number;

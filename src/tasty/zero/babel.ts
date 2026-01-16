@@ -22,6 +22,10 @@ import * as t from '@babel/types';
 
 import { replaceAnimationNames } from '../keyframes';
 import { setGlobalPredefinedStates } from '../states';
+import {
+  normalizeHandlerDefinition,
+  registerHandler,
+} from '../styles/predefined';
 import { Styles } from '../styles/types';
 import { mergeStyles } from '../utils/mergeStyles';
 import {
@@ -29,6 +33,7 @@ import {
   getGlobalFuncs,
   getGlobalParser,
   setGlobalPredefinedTokens,
+  StyleHandlerDefinition,
 } from '../utils/styles';
 
 import { CSSWriter } from './css-writer';
@@ -76,6 +81,20 @@ export interface TastyZeroConfig {
    * @example { fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } } }
    */
   keyframes?: Record<string, KeyframesSteps>;
+  /**
+   * Custom style handlers that transform style properties into CSS declarations.
+   * Handlers replace built-in handlers for the same style name.
+   * @example
+   * ```ts
+   * handlers: {
+   *   fill: ({ fill }) => fill ? { 'background-color': fill } : undefined,
+   *   elevation: ({ elevation }) => ({
+   *     'box-shadow': `0 ${elevation}px ${elevation * 2}px rgba(0,0,0,0.1)`,
+   *   }),
+   * }
+   * ```
+   */
+  handlers?: Record<string, StyleHandlerDefinition>;
   /**
    * Predefined tokens that are replaced during style parsing.
    * Use `$name` for custom properties and `#name` for color tokens.
@@ -138,6 +157,14 @@ export default declare<TastyZeroBabelOptions>((api, options) => {
     parser.setFuncs(mergedFuncs);
     // Also update the global registry so customFunc() continues to work
     Object.assign(currentFuncs, config.funcs);
+  }
+
+  // Apply custom handlers
+  if (config.handlers) {
+    for (const [name, definition] of Object.entries(config.handlers)) {
+      const handler = normalizeHandlerDefinition(name, definition);
+      registerHandler(handler);
+    }
   }
 
   // Apply predefined tokens if configured

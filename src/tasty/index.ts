@@ -38,6 +38,7 @@ export * from './utils/filterBaseProps';
 export * from './utils/colors';
 export * from './utils/styles';
 export * from './utils/modAttrs';
+export { styleHandlers } from './styles';
 export { renderStyles, isSelector } from './pipeline';
 export type { StyleResult, RenderResult } from './pipeline';
 export * from './utils/dotize';

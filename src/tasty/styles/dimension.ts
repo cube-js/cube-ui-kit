@@ -16,7 +16,7 @@ export function dimensionStyle(name) {
       };
     }
 
-    if (val == null) return '';
+    if (val == null) return;
 
     if (typeof val === 'number') {
       val = `${val}px`;

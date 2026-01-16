@@ -12,7 +12,13 @@
  */
 
 import { StyleInjector } from './injector/injector';
+import { clearPipelineCache } from './pipeline';
 import { setGlobalPredefinedStates } from './states';
+import {
+  normalizeHandlerDefinition,
+  registerHandler,
+  resetHandlers,
+} from './styles/predefined';
 import { isDevEnv } from './utils/isDevEnv';
 import {
   CUSTOM_UNITS,
@@ -25,6 +31,7 @@ import {
 import type { KeyframesSteps } from './injector/types';
 import type { StyleDetails, UnitHandler } from './parser/types';
 import type { TastyPlugin } from './plugins/types';
+import type { StyleHandlerDefinition } from './utils/styles';
 
 /**
  * Configuration options for the Tasty style system
@@ -106,6 +113,35 @@ export interface TastyConfig {
    * ```
    */
   keyframes?: Record<string, KeyframesSteps>;
+  /**
+   * Custom style handlers that transform style properties into CSS declarations.
+   * Handlers replace built-in handlers for the same style name.
+   * @example
+   * ```ts
+   * import { styleHandlers } from '@cube-dev/ui-kit';
+   *
+   * configure({
+   *   handlers: {
+   *     // Override fill with custom behavior
+   *     fill: ({ fill }) => {
+   *       if (fill?.startsWith('gradient:')) {
+   *         return { background: fill.slice(9) };
+   *       }
+   *       return styleHandlers.fill({ fill });
+   *     },
+   *     // Add new custom style
+   *     elevation: ({ elevation }) => {
+   *       const level = parseInt(elevation) || 1;
+   *       return {
+   *         'box-shadow': `0 ${level * 2}px ${level * 4}px rgba(0,0,0,0.1)`,
+   *         'z-index': String(level * 100),
+   *       };
+   *     },
+   *   },
+   * });
+   * ```
+   */
+  handlers?: Record<string, StyleHandlerDefinition>;
   /**
    * Predefined tokens that are replaced during style parsing.
    * Token values are processed through the parser (like component tokens).
@@ -333,6 +369,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
   let mergedStates: Record<string, string> = {};
   let mergedUnits: Record<string, string | UnitHandler> = {};
   let mergedFuncs: Record<string, (groups: StyleDetails[]) => string> = {};
+  let mergedHandlers: Record<string, StyleHandlerDefinition> = {};
   let mergedTokens: Record<string, string | number> = {};
 
   // Process plugins in order
@@ -346,6 +383,9 @@ export function configure(config: Partial<TastyConfig> = {}): void {
       }
       if (plugin.funcs) {
         mergedFuncs = { ...mergedFuncs, ...plugin.funcs };
+      }
+      if (plugin.handlers) {
+        mergedHandlers = { ...mergedHandlers, ...plugin.handlers };
       }
       if (plugin.tokens) {
         mergedTokens = { ...mergedTokens, ...plugin.tokens };
@@ -362,6 +402,9 @@ export function configure(config: Partial<TastyConfig> = {}): void {
   }
   if (config.funcs) {
     mergedFuncs = { ...mergedFuncs, ...config.funcs };
+  }
+  if (config.handlers) {
+    mergedHandlers = { ...mergedHandlers, ...config.handlers };
   }
   if (config.tokens) {
     mergedTokens = { ...mergedTokens, ...config.tokens };
@@ -399,6 +442,14 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     setGlobalKeyframes(config.keyframes);
   }
 
+  // Handle custom handlers
+  if (Object.keys(mergedHandlers).length > 0) {
+    for (const [name, definition] of Object.entries(mergedHandlers)) {
+      const handler = normalizeHandlerDefinition(name, definition);
+      registerHandler(handler);
+    }
+  }
+
   // Handle predefined tokens
   // Note: Tokens are processed by the classifier, not here.
   // We just store the raw values; the classifier will process them when encountered.
@@ -411,7 +462,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     setGlobalPredefinedTokens(processedTokens);
   }
 
-  // Create config without states, parser options, plugins, keyframes, and tokens (handled separately)
+  // Create config without states, parser options, plugins, keyframes, handlers, and tokens (handled separately)
   const {
     states: _states,
     parserCacheSize: _parserCacheSize,
@@ -419,6 +470,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     funcs: _funcs,
     plugins: _plugins,
     keyframes: _keyframes,
+    handlers: _handlers,
     tokens: _tokens,
     ...injectorConfig
   } = config;
@@ -471,6 +523,8 @@ export function resetConfig(): void {
   currentConfig = null;
   globalKeyframes = null;
   resetGlobalPredefinedTokens();
+  resetHandlers();
+  clearPipelineCache();
   emittedWarnings.clear();
 
   const storage = typeof window !== 'undefined' ? window : (globalThis as any);

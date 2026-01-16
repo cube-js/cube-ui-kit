@@ -33,6 +33,7 @@ import {
   BasePropsWithoutChildren,
   COLOR_STYLES,
   extractStyles,
+  mergeStyles,
   OUTER_STYLES,
   Styles,
   tasty,
@@ -1243,7 +1244,7 @@ function Option({
       icon={effectiveIcon}
       labelProps={labelProps}
       descriptionProps={descriptionProps}
-      styles={styles}
+      styles={mergeStyles(styles, filteredItemProps.styles)}
       defaultTooltipPlacement="right"
       mods={{
         listboxitem: true,

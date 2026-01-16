@@ -1,4 +1,9 @@
-import { RawStyleHandler, StyleHandler } from '../utils/styles';
+import { isDevEnv } from '../utils/isDevEnv';
+import {
+  RawStyleHandler,
+  StyleHandler,
+  StyleHandlerDefinition,
+} from '../utils/styles';
 
 import { alignStyle } from './align';
 import { borderStyle } from './border';
@@ -27,6 +32,8 @@ import { styledScrollbarStyle } from './styledScrollbar';
 import { transitionStyle } from './transition';
 import { widthStyle } from './width';
 
+const devMode = isDevEnv();
+
 const numberConverter = (val) => {
   if (typeof val === 'number') {
     return `${val}px`;
@@ -52,6 +59,42 @@ const rowsConverter = (val) => {
 type StyleHandlerMap = Record<string, StyleHandler[]>;
 
 export const STYLE_HANDLER_MAP: StyleHandlerMap = {};
+
+// Store initial handler state for reset functionality
+let initialHandlerMapSnapshot: StyleHandlerMap | null = null;
+
+/**
+ * Capture a snapshot of the current STYLE_HANDLER_MAP.
+ * Called after predefine() to preserve built-in handler state.
+ */
+function captureInitialHandlerState(): void {
+  initialHandlerMapSnapshot = {};
+  for (const key of Object.keys(STYLE_HANDLER_MAP)) {
+    // Shallow copy the array - handlers themselves are immutable
+    initialHandlerMapSnapshot[key] = [...STYLE_HANDLER_MAP[key]];
+  }
+}
+
+/**
+ * Reset STYLE_HANDLER_MAP to the initial built-in state.
+ * Called by resetConfig() to restore handlers after tests.
+ */
+export function resetHandlers(): void {
+  if (!initialHandlerMapSnapshot) {
+    // predefine() hasn't been called yet, nothing to reset
+    return;
+  }
+
+  // Clear current map
+  for (const key of Object.keys(STYLE_HANDLER_MAP)) {
+    delete STYLE_HANDLER_MAP[key];
+  }
+
+  // Restore initial state
+  for (const key of Object.keys(initialHandlerMapSnapshot)) {
+    STYLE_HANDLER_MAP[key] = [...initialHandlerMapSnapshot[key]];
+  }
+}
 
 export function defineCustomStyle(
   names: string[] | StyleHandler,
@@ -175,5 +218,257 @@ export function predefine() {
     // @ts-ignore
     .forEach((handler) => defineCustomStyle(handler));
 
+  // Capture initial state after all built-in handlers are registered
+  captureInitialHandlerState();
+
   return { STYLE_HANDLER_MAP, defineCustomStyle, defineStyleAlias };
 }
+
+// ============================================================================
+// Handler Registration API (for configure())
+// ============================================================================
+
+/**
+ * Normalize a handler definition to a StyleHandler with __lookupStyles.
+ * - Function only: lookup styles inferred from key name
+ * - [string, fn]: single lookup style
+ * - [string[], fn]: multiple lookup styles
+ */
+export function normalizeHandlerDefinition(
+  keyName: string,
+  definition: StyleHandlerDefinition,
+): StyleHandler {
+  let handler: RawStyleHandler;
+  let lookupStyles: string[];
+
+  if (typeof definition === 'function') {
+    // Function only - lookup styles inferred from key name
+    handler = definition;
+    lookupStyles = [keyName];
+  } else if (Array.isArray(definition)) {
+    const [first, fn] = definition;
+
+    if (typeof fn !== 'function') {
+      throw new Error(
+        `[Tasty] Invalid handler definition for "${keyName}". ` +
+          'Tuple must have a function as the second element: [string, function] or [string[], function].',
+      );
+    }
+
+    handler = fn;
+
+    if (typeof first === 'string') {
+      // [string, fn] - single lookup style
+      lookupStyles = [first];
+    } else if (Array.isArray(first)) {
+      // [string[], fn] - multiple lookup styles
+      lookupStyles = first;
+    } else {
+      throw new Error(
+        `[Tasty] Invalid handler definition for "${keyName}". ` +
+          'First element must be a string or string array.',
+      );
+    }
+  } else {
+    throw new Error(
+      `[Tasty] Invalid handler definition for "${keyName}". ` +
+        'Expected function, [string, function], or [string[], function].',
+    );
+  }
+
+  // Validate handler in dev mode
+  validateHandler(keyName, handler, lookupStyles);
+
+  // Wrap the handler to avoid mutation issues when the same function
+  // is reused for multiple handler definitions. Each registration
+  // gets its own function identity with its own __lookupStyles.
+  const wrappedHandler = ((props) => handler(props)) as StyleHandler;
+  wrappedHandler.__lookupStyles = lookupStyles;
+
+  return wrappedHandler;
+}
+
+/**
+ * Validate a handler definition in development mode.
+ */
+function validateHandler(
+  name: string,
+  handler: RawStyleHandler,
+  lookupStyles: string[],
+): void {
+  if (!devMode) return;
+
+  if (typeof handler !== 'function') {
+    console.warn(
+      `[Tasty] Handler "${name}" is not a function. ` +
+        'Handlers must be functions that return CSSMap, CSSMap[], or void.',
+    );
+  }
+
+  if (
+    !lookupStyles ||
+    !Array.isArray(lookupStyles) ||
+    lookupStyles.length === 0
+  ) {
+    console.warn(
+      `[Tasty] Handler "${name}" has invalid lookupStyles. ` +
+        'Expected non-empty array of style names.',
+    );
+  }
+}
+
+/**
+ * Validate a handler result in development mode.
+ * Call this after invoking a handler to check the return value.
+ */
+export function validateHandlerResult(name: string, result: unknown): void {
+  if (!devMode) return;
+  if (result === undefined || result === null) return; // void is valid
+
+  // Check for empty string (migration from old pattern)
+  if (result === '') {
+    console.warn(
+      `[Tasty] Handler "${name}" returned empty string. ` +
+        'Return void/undefined instead for no output.',
+    );
+    return;
+  }
+
+  // Check result is object (CSSMap or CSSMap[])
+  if (typeof result !== 'object') {
+    console.warn(
+      `[Tasty] Handler "${name}" returned invalid type: ${typeof result}. ` +
+        'Expected CSSMap, CSSMap[], or void.',
+    );
+  }
+}
+
+/**
+ * Register a custom handler, replacing any existing handlers for the same lookup styles.
+ * This is called by configure() to process user-defined handlers.
+ *
+ * When registering a handler for style X, any existing handler that processes X
+ * is removed from ALL its lookup styles to prevent double-processing.
+ * For example, if gapStyle handles ['display', 'flow', 'gap'] and a new handler
+ * is registered for just ['gap'], gapStyle is removed from display and flow too.
+ */
+export function registerHandler(handler: StyleHandler): void {
+  const lookupStyles = handler.__lookupStyles;
+
+  if (!lookupStyles || lookupStyles.length === 0) {
+    if (devMode) {
+      console.warn(
+        '[Tasty] Cannot register handler without __lookupStyles property.',
+      );
+    }
+    return;
+  }
+
+  // Find and remove existing handlers that would conflict
+  // A handler conflicts if it handles any of the same styles as the new handler
+  const handlersToRemove = new Set<StyleHandler>();
+
+  for (const styleName of lookupStyles) {
+    const existing = STYLE_HANDLER_MAP[styleName];
+    if (existing) {
+      for (const existingHandler of existing) {
+        handlersToRemove.add(existingHandler);
+      }
+    }
+  }
+
+  // Remove conflicting handlers from ALL their lookup styles
+  for (const oldHandler of handlersToRemove) {
+    const oldLookupStyles = oldHandler.__lookupStyles;
+    if (oldLookupStyles) {
+      for (const oldStyleName of oldLookupStyles) {
+        const handlers = STYLE_HANDLER_MAP[oldStyleName];
+        if (handlers) {
+          const filtered = handlers.filter((h) => h !== oldHandler);
+          if (filtered.length === 0) {
+            delete STYLE_HANDLER_MAP[oldStyleName];
+          } else {
+            STYLE_HANDLER_MAP[oldStyleName] = filtered;
+          }
+        }
+      }
+    }
+  }
+
+  // Register the new handler under its lookup styles
+  for (const styleName of lookupStyles) {
+    const existing = STYLE_HANDLER_MAP[styleName];
+    if (existing) {
+      existing.push(handler);
+    } else {
+      STYLE_HANDLER_MAP[styleName] = [handler];
+    }
+  }
+}
+
+// ============================================================================
+// Wrapped Style Handlers Export
+// ============================================================================
+
+/**
+ * Create a wrapped handler that can be safely called by users.
+ * The wrapper preserves __lookupStyles for proper registration.
+ */
+function wrapHandler<T extends { __lookupStyles: string[] }>(handler: T): T {
+  const fn = handler as unknown as (props: unknown) => unknown;
+  const wrapped = ((props: unknown) => fn(props)) as unknown as T;
+  wrapped.__lookupStyles = handler.__lookupStyles;
+  return wrapped;
+}
+
+/**
+ * Exported object containing wrapped predefined style handlers.
+ * Users can import and call these to extend or delegate to built-in behavior.
+ *
+ * Internal handlers use *Style suffix for searchability.
+ * External API uses short names for convenience.
+ *
+ * @example
+ * ```ts
+ * import { styleHandlers, configure } from '@cube-dev/ui-kit';
+ *
+ * configure({
+ *   handlers: {
+ *     fill: ({ fill }) => {
+ *       if (fill?.startsWith('gradient:')) {
+ *         return { background: fill.slice(9) };
+ *       }
+ *       return styleHandlers.fill({ fill });
+ *     },
+ *   },
+ * });
+ * ```
+ */
+export const styleHandlers = {
+  align: wrapHandler(alignStyle),
+  border: wrapHandler(borderStyle),
+  color: wrapHandler(colorStyle),
+  display: wrapHandler(displayStyle),
+  fade: wrapHandler(fadeStyle),
+  fill: wrapHandler(fillStyle),
+  svgFill: wrapHandler(svgFillStyle),
+  flow: wrapHandler(flowStyle),
+  font: wrapHandler(fontStyle),
+  fontStyle: wrapHandler(fontStyleStyle),
+  gap: wrapHandler(gapStyle),
+  groupRadius: wrapHandler(groupRadiusAttr),
+  height: wrapHandler(heightStyle),
+  inset: wrapHandler(insetStyle),
+  justify: wrapHandler(justifyStyle),
+  margin: wrapHandler(marginStyle),
+  outline: wrapHandler(outlineStyle),
+  padding: wrapHandler(paddingStyle),
+  preset: wrapHandler(presetStyle),
+  radius: wrapHandler(radiusStyle),
+  reset: wrapHandler(resetStyle),
+  scrollbar: wrapHandler(scrollbarStyle),
+  shadow: wrapHandler(shadowStyle),
+  styledScrollbar: wrapHandler(styledScrollbarStyle),
+  transition: wrapHandler(transitionStyle),
+  width: wrapHandler(widthStyle),
+} as const;
