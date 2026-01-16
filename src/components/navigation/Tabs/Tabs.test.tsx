@@ -319,11 +319,12 @@ describe('<Tabs />', () => {
         </Tabs>,
       );
 
-      // The radio type affects the styling - tasty uses data-{mod} attributes
+      // The radio type affects the styling - TabsElement uses data-type="radio",
+      // while individual tabs use data-radio boolean attribute
       const tabsElement = getByTestId('Tabs');
       const tab = getByRole('tab');
 
-      expect(tabsElement.hasAttribute('data-radio')).toBe(true);
+      expect(tabsElement).toHaveAttribute('data-type', 'radio');
       expect(tab.hasAttribute('data-radio')).toBe(true);
     });
 
@@ -499,8 +500,8 @@ describe('<Tabs />', () => {
     it('should re-render active panel by default (no caching)', async () => {
       const renderFn = jest.fn((key) => <div>Content {key}</div>);
 
-      const { getByRole, rerender } = renderWithRoot(
-        <Tabs keepMounted defaultActiveKey="tab1" renderPanel={renderFn}>
+      const { rerender } = renderWithRoot(
+        <Tabs keepMounted activeKey="tab1" renderPanel={renderFn}>
           <Tab key="tab1" title="Tab 1" />
           <Tab key="tab2" title="Tab 2" />
         </Tabs>,
@@ -528,7 +529,7 @@ describe('<Tabs />', () => {
       const { getByRole, rerender } = renderWithRoot(
         <Tabs
           keepMounted
-          defaultActiveKey="tab1"
+          activeKey="tab1"
           renderPanel={renderFn}
           panelCacheKeys={{ tab1: 'v1', tab2: 'v1' }}
         >
@@ -580,7 +581,7 @@ describe('<Tabs />', () => {
       const { rerender } = renderWithRoot(
         <Tabs
           keepMounted
-          defaultActiveKey="tab1"
+          activeKey="tab1"
           renderPanel={renderFn}
           panelCacheKeys={{ tab1: 'v1' }}
         >
@@ -694,15 +695,14 @@ describe('<Tabs />', () => {
 
       expect(titleSpan).toBeInTheDocument();
 
-      await act(async () => {
-        await user.dblClick(titleSpan!);
+      await user.dblClick(titleSpan!);
+
+      // Wait for edit mode (uses chainRaf internally)
+      await waitFor(() => {
+        expect(getByRole('textbox')).toBeInTheDocument();
       });
 
-      // Should now have a textarea for editing
-      const input = getByRole('textbox');
-
-      expect(input).toBeInTheDocument();
-      expect(input).toHaveValue('Tab 1');
+      expect(getByRole('textbox')).toHaveValue('Tab 1');
     });
 
     it('should call onTitleChange when Enter is pressed', async () => {
@@ -719,8 +719,11 @@ describe('<Tabs />', () => {
       const tab = getByRole('tab');
       const titleSpan = tab.querySelector('span');
 
-      await act(async () => {
-        await user.dblClick(titleSpan!);
+      await user.dblClick(titleSpan!);
+
+      // Wait for edit mode
+      await waitFor(() => {
+        expect(getByRole('textbox')).toBeInTheDocument();
       });
 
       const input = getByRole('textbox') as HTMLInputElement;
@@ -748,8 +751,11 @@ describe('<Tabs />', () => {
       const tab = getByRole('tab');
       const titleSpan = tab.querySelector('span');
 
-      await act(async () => {
-        await user.dblClick(titleSpan!);
+      await user.dblClick(titleSpan!);
+
+      // Wait for edit mode
+      await waitFor(() => {
+        expect(getByRole('textbox')).toBeInTheDocument();
       });
 
       const input = getByRole('textbox');
@@ -779,8 +785,11 @@ describe('<Tabs />', () => {
       const tab = getByRole('tab');
       const titleSpan = tab.querySelector('span');
 
-      await act(async () => {
-        await user.dblClick(titleSpan!);
+      await user.dblClick(titleSpan!);
+
+      // Wait for edit mode
+      await waitFor(() => {
+        expect(getByRole('textbox')).toBeInTheDocument();
       });
 
       const input = getByRole('textbox');
@@ -807,8 +816,11 @@ describe('<Tabs />', () => {
       const tab = getByRole('tab');
       const titleSpan = tab.querySelector('span');
 
-      await act(async () => {
-        await user.dblClick(titleSpan!);
+      await user.dblClick(titleSpan!);
+
+      // Wait for edit mode
+      await waitFor(() => {
+        expect(getByRole('textbox')).toBeInTheDocument();
       });
 
       const input = getByRole('textbox') as HTMLInputElement;
