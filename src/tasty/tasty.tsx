@@ -486,7 +486,6 @@ function tastyElement<
     ...otherDefaultProps
   } = defaultProps ?? {};
 
-   
   const _TastyComponent = forwardRef<
     unknown,
     AllBasePropsWithMods<K> & WithVariant<V>

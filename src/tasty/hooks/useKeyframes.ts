@@ -94,7 +94,6 @@ export function useKeyframes(
 
       // Store steps for later use in effect
       return JSON.stringify(steps);
-       
     },
     isFactory ? deps ?? [] : [stepsOrFactory],
   );
