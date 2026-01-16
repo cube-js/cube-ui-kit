@@ -2,7 +2,13 @@ import { configure } from './config';
 import { okhslPlugin } from './plugins';
 
 export { tasty, Element } from './tasty';
-export { useStyles, useGlobalStyles, useRawCSS, useProperty } from './hooks';
+export {
+  useStyles,
+  useGlobalStyles,
+  useRawCSS,
+  useProperty,
+  useKeyframes,
+} from './hooks';
 export type {
   UseStylesOptions,
   UseStylesResult,

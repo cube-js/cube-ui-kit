@@ -1,7 +1,7 @@
 import { useInsertionEffect, useMemo, useRef } from 'react';
 
 import { keyframes } from '../injector';
-import { KeyframesSteps } from '../injector/types';
+import { KeyframesResult, KeyframesSteps } from '../injector/types';
 
 type UseKeyframesOptions = {
   name?: string;
@@ -82,62 +82,56 @@ export function useKeyframes(
     ? options
     : (depsOrOptions as UseKeyframesOptions | undefined);
 
-  const disposeRef = useRef<(() => void) | null>(null);
-  const nameRef = useRef<string>('');
+  // Store the current keyframes result for cleanup
+  const resultRef = useRef<KeyframesResult | null>(null);
+  // Track the previous key to detect changes
+  const prevKeyRef = useRef<string | null>(null);
 
-  // Generate a stable key for memoization
-  const stepsKey = useMemo(
+  // Inject keyframes synchronously during render to ensure the animation name
+  // is available on the first render. The keyframes() function uses reference
+  // counting internally, so multiple calls with the same content are deduplicated.
+  const name = useMemo(
     () => {
       const steps = isFactory
         ? (stepsOrFactory as () => KeyframesSteps)()
         : (stepsOrFactory as KeyframesSteps);
 
-      // Store steps for later use in effect
-      return JSON.stringify(steps);
+      const stepsKey = JSON.stringify(steps);
+
+      // If the key changed and we have a previous result, dispose it
+      if (prevKeyRef.current !== null && prevKeyRef.current !== stepsKey) {
+        resultRef.current?.dispose();
+        resultRef.current = null;
+      }
+      prevKeyRef.current = stepsKey;
+
+      if (!steps || Object.keys(steps).length === 0) {
+        return '';
+      }
+
+      // Inject keyframes synchronously
+      const result = keyframes(steps, {
+        name: opts?.name,
+        root: opts?.root,
+      });
+
+      resultRef.current = result;
+
+      return result.toString();
     },
-    isFactory ? deps ?? [] : [stepsOrFactory],
+     
+    isFactory
+      ? [...(deps ?? []), opts?.name, opts?.root]
+      : [stepsOrFactory, opts?.name, opts?.root],
   );
 
-  // Store parsed steps for the effect
-  const stepsRef = useRef<KeyframesSteps>({});
-
-  // Update steps when key changes
-  if (stepsKey) {
-    try {
-      stepsRef.current = JSON.parse(stepsKey);
-    } catch {
-      stepsRef.current = {};
-    }
-  }
-
-  // Inject keyframes in insertion effect
+  // Cleanup on unmount
   useInsertionEffect(() => {
-    // Dispose previous injection
-    disposeRef.current?.();
-    disposeRef.current = null;
-
-    const steps = stepsRef.current;
-
-    if (!steps || Object.keys(steps).length === 0) {
-      nameRef.current = '';
-      return;
-    }
-
-    // Inject keyframes
-    const result = keyframes(steps, {
-      name: opts?.name,
-      root: opts?.root,
-    });
-
-    nameRef.current = result.toString();
-    disposeRef.current = result.dispose;
-
-    // Cleanup on unmount or when steps change
     return () => {
-      disposeRef.current?.();
-      disposeRef.current = null;
+      resultRef.current?.dispose();
+      resultRef.current = null;
     };
-  }, [stepsKey, opts?.name, opts?.root]);
+  }, []);
 
-  return nameRef.current;
+  return name;
 }
