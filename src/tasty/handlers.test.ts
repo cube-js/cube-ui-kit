@@ -70,6 +70,28 @@ describe('Style Handlers Configuration', () => {
         '[Tasty] Invalid handler definition for "test". Expected function, [string, function], or [string[], function]',
       );
     });
+
+    it('should wrap handler to avoid mutation when same function is reused', () => {
+      const sharedHandler = ({ propA, propB }) => ({
+        'prop-a': propA || 'none',
+        'prop-b': propB || 'none',
+      });
+
+      const normalizedA = normalizeHandlerDefinition('propA', sharedHandler);
+      const normalizedB = normalizeHandlerDefinition('propB', sharedHandler);
+
+      // Each normalized handler should be a different function
+      expect(normalizedA).not.toBe(normalizedB);
+      expect(normalizedA).not.toBe(sharedHandler);
+      expect(normalizedB).not.toBe(sharedHandler);
+
+      // Each should have its own __lookupStyles
+      expect(normalizedA.__lookupStyles).toEqual(['propA']);
+      expect(normalizedB.__lookupStyles).toEqual(['propB']);
+
+      // Original function should not be mutated
+      expect((sharedHandler as any).__lookupStyles).toBeUndefined();
+    });
   });
 
   describe('registerHandler', () => {

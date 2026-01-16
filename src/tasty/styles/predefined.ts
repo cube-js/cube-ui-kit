@@ -279,11 +279,13 @@ export function normalizeHandlerDefinition(
   // Validate handler in dev mode
   validateHandler(keyName, handler, lookupStyles);
 
-  // Create StyleHandler with __lookupStyles
-  const styleHandler = handler as StyleHandler;
-  styleHandler.__lookupStyles = lookupStyles;
+  // Wrap the handler to avoid mutation issues when the same function
+  // is reused for multiple handler definitions. Each registration
+  // gets its own function identity with its own __lookupStyles.
+  const wrappedHandler = ((props) => handler(props)) as StyleHandler;
+  wrappedHandler.__lookupStyles = lookupStyles;
 
-  return styleHandler;
+  return wrappedHandler;
 }
 
 /**
