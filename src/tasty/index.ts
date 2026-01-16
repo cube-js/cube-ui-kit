@@ -2,8 +2,12 @@ import { configure } from './config';
 import { okhslPlugin } from './plugins';
 
 export { tasty, Element } from './tasty';
-export { useStyles, useGlobalStyles, useRawCSS } from './hooks';
-export type { UseStylesOptions, UseStylesResult } from './hooks';
+export { useStyles, useGlobalStyles, useRawCSS, useProperty } from './hooks';
+export type {
+  UseStylesOptions,
+  UseStylesResult,
+  UsePropertyOptions,
+} from './hooks';
 // Configuration API
 export {
   configure,

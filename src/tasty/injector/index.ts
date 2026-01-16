@@ -90,6 +90,70 @@ export function keyframes(
   return getGlobalInjector().keyframes(steps, nameOrOptions);
 }
 
+export interface PropertyOptions {
+  /**
+   * CSS syntax string for the property (e.g., '<color>', '<length>', '<angle>')
+   * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/syntax
+   */
+  syntax?: string;
+  /**
+   * Whether the property inherits from parent elements
+   * @default true
+   */
+  inherits?: boolean;
+  /**
+   * Initial value for the property
+   */
+  initialValue?: string | number;
+  /**
+   * Shadow root or document to inject into
+   */
+  root?: Document | ShadowRoot;
+}
+
+/**
+ * Define a CSS @property custom property.
+ * This enables advanced features like animating custom properties.
+ *
+ * Note: @property rules are global and persistent once defined.
+ * Re-registering the same property name is a no-op.
+ *
+ * @param name - The custom property name (must start with --)
+ * @param options - Property configuration
+ *
+ * @example
+ * ```ts
+ * // Define a color property that can be animated
+ * property('--my-color', {
+ *   syntax: '<color>',
+ *   initialValue: 'red',
+ * });
+ *
+ * // Define an angle property
+ * property('--rotation', {
+ *   syntax: '<angle>',
+ *   inherits: false,
+ *   initialValue: '0deg',
+ * });
+ * ```
+ */
+export function property(name: string, options?: PropertyOptions): void {
+  return getGlobalInjector().property(name, options);
+}
+
+/**
+ * Check if a CSS @property has already been defined
+ *
+ * @param name - The custom property name to check
+ * @param options - Options including root
+ */
+export function isPropertyDefined(
+  name: string,
+  options?: { root?: Document | ShadowRoot },
+): boolean {
+  return getGlobalInjector().isPropertyDefined(name, options);
+}
+
 /**
  * Get CSS text from all sheets (for SSR)
  */
