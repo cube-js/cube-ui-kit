@@ -1,5 +1,52 @@
 # @cube-dev/ui-kit
 
+## 0.100.0
+
+### Minor Changes
+
+- [#958](https://github.com/cube-js/cube-ui-kit/pull/958) [`22e0adc7`](https://github.com/cube-js/cube-ui-kit/commit/22e0adc7e3dadc1a22cb30541934431c52ffe761) Thanks [@tenphi](https://github.com/tenphi)! - ### Added
+
+  - Predefined tokens in `configure()`: Define reusable tokens (`$name` for values, `#name` for colors) that are replaced during style parsing. Unlike component-level `tokens` prop, predefined tokens are baked into the generated CSS for better performance and consistency.
+
+  ```ts
+  configure({
+    tokens: {
+      $spacing: "2x",
+      "$card-padding": "4x",
+      "#accent": "#purple",
+    },
+  });
+
+  // Use in styles - tokens are replaced at parse time
+  const Card = tasty({
+    styles: {
+      padding: "$card-padding", // → calc(4 * var(--gap))
+      fill: "#accent", // → var(--purple-color)
+    },
+  });
+  ```
+
+  - Plugins can now provide predefined tokens via the `tokens` property in `TastyPlugin`.
+
+### Patch Changes
+
+- [#959](https://github.com/cube-js/cube-ui-kit/pull/959) [`ed477654`](https://github.com/cube-js/cube-ui-kit/commit/ed4776543ce0cf2f02fd629f149100d7d0a8f9ec) Thanks [@tenphi](https://github.com/tenphi)! - Add custom style handlers API via `configure()` and plugins. Handlers transform style properties into CSS declarations and replace built-in handlers for the same style name. Export `styleHandlers` object for delegating to built-in behavior when extending.
+
+- [#961](https://github.com/cube-js/cube-ui-kit/pull/961) [`46e84833`](https://github.com/cube-js/cube-ui-kit/commit/46e8483379a8260888e00f682831093daaac3813) Thanks [@tenphi](https://github.com/tenphi)! - Fix FilterListBox custom value styles not appearing until hover and leaking to other items after filter is cleared. The issue was caused by ListBox virtualization using index-based keys instead of actual item keys, causing React to incorrectly reuse DOM elements. Added `getItemKey` to the virtualizer to use actual item keys for proper DOM reconciliation.
+
+  Additionally, when `allowsCustomValue` is enabled and there are filtered items visible, the custom value option is now visually separated from the filtered results using a section divider. The visibility check for filtered items now also considers previously-added custom values, ensuring the separator is shown when a search term matches an existing custom item.
+
+- [#959](https://github.com/cube-js/cube-ui-kit/pull/959) [`ed477654`](https://github.com/cube-js/cube-ui-kit/commit/ed4776543ce0cf2f02fd629f149100d7d0a8f9ec) Thanks [@tenphi](https://github.com/tenphi)! - Fix ListBox item styles not being applied when passed via `<ListBox.Item styles={...}>`. Item-level styles are now properly merged with parent styles using `mergeStyles`.
+
+- [#949](https://github.com/cube-js/cube-ui-kit/pull/949) [`69c96a34`](https://github.com/cube-js/cube-ui-kit/commit/69c96a34e834b83fbebda6addf4d4e1a71268c5e) Thanks [@tenphi](https://github.com/tenphi)! - ### Added
+
+  - Raw unit calculation: Custom units with raw CSS values (e.g., `8px`) are now calculated directly instead of using `calc()`, producing cleaner CSS output.
+  - Recursive unit resolution: Units can reference other custom units with automatic resolution (e.g., `{ x: '8px', y: '2x' }` → `1y` = `16px`).
+
+  ### Removed
+
+  - Units `rp`, `gp`, and `sp` have been removed from default units.
+
 ## 0.99.3
 
 ### Patch Changes
