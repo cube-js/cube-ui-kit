@@ -505,18 +505,17 @@ export const FilterListBox = forwardRef(function FilterListBox<
       return childrenToProcess;
     }
 
-    // Check if there are any items that would be visible after filtering.
-    // We wrap the new custom value in a Section to show a divider before it.
-    const hasVisibleItems = (() => {
+    // Check if there are any items that will match the filter
+    // This determines whether we need to visually separate the custom value
+    const hasVisibleFilteredItems = (() => {
       for (const item of localCollectionState.collection) {
         if (item.type === 'item') {
           const textValue = item.textValue || String(item.rendered || '');
           if (textFilterFn(textValue, term)) {
             return true;
           }
-        } else if (item.type === 'section') {
-          // Check if any child in the section would be visible
-          for (const child of item.childNodes || []) {
+        } else if (item.type === 'section' && item.childNodes) {
+          for (const child of item.childNodes) {
             const textValue = child.textValue || String(child.rendered || '');
             if (textFilterFn(textValue, term)) {
               return true;
@@ -527,8 +526,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
       return false;
     })();
 
-    // Create the custom option item
-    const customOptionItem = (
+    // Create the custom option
+    const customOption = (
       <Item
         key={term}
         textValue={term}
@@ -538,15 +537,25 @@ export const FilterListBox = forwardRef(function FilterListBox<
       </Item>
     );
 
-    // Wrap in a Section if there are other visible items (to get the divider)
-    const customOption = hasVisibleItems ? (
-      <BaseSection key="__new-custom-value-section__">
-        {customOptionItem}
-      </BaseSection>
-    ) : (
-      customOptionItem
-    );
+    // If there are visible filtered items, wrap in sections for visual separation
+    // This also disables virtualization in ListBox, allowing sections to render
+    if (hasVisibleFilteredItems && childrenToProcess) {
+      const filteredItemsSection = (
+        <BaseSection key="__filtered_items__" aria-label="Filtered items">
+          {childrenToProcess}
+        </BaseSection>
+      );
 
+      const customValueSection = (
+        <BaseSection key="__custom_value__" aria-label="Custom value">
+          {customOption}
+        </BaseSection>
+      );
+
+      return [filteredItemsSection, customValueSection];
+    }
+
+    // No visible filtered items, just return the custom option without sections
     if (Array.isArray(childrenToProcess)) {
       return [...childrenToProcess, customOption];
     }
