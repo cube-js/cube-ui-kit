@@ -98,9 +98,15 @@ export function useKeyframes(
 
       const stepsKey = JSON.stringify(steps);
 
-      // If the key changed and we have a previous result, dispose it
-      if (prevKeyRef.current !== null && prevKeyRef.current !== stepsKey) {
-        resultRef.current?.dispose();
+      // If key matches and we already have a result, reuse it without calling
+      // keyframes() again to avoid incrementing refCount unnecessarily.
+      if (prevKeyRef.current === stepsKey && resultRef.current !== null) {
+        return resultRef.current.toString();
+      }
+
+      // Key changed or no previous result - dispose old result if present
+      if (resultRef.current !== null) {
+        resultRef.current.dispose();
         resultRef.current = null;
       }
       prevKeyRef.current = stepsKey;
@@ -119,7 +125,7 @@ export function useKeyframes(
 
       return result.toString();
     },
-     
+
     isFactory
       ? [...(deps ?? []), opts?.name, opts?.root]
       : [stepsOrFactory, opts?.name, opts?.root],
