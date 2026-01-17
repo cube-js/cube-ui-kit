@@ -505,8 +505,30 @@ export const FilterListBox = forwardRef(function FilterListBox<
       return childrenToProcess;
     }
 
-    // Append the custom option at the end.
-    const customOption = (
+    // Check if there are any items that would be visible after filtering.
+    // We wrap the new custom value in a Section to show a divider before it.
+    const hasVisibleItems = (() => {
+      for (const item of localCollectionState.collection) {
+        if (item.type === 'item') {
+          const textValue = item.textValue || String(item.rendered || '');
+          if (textFilterFn(textValue, term)) {
+            return true;
+          }
+        } else if (item.type === 'section') {
+          // Check if any child in the section would be visible
+          for (const child of item.childNodes || []) {
+            const textValue = child.textValue || String(child.rendered || '');
+            if (textFilterFn(textValue, term)) {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    })();
+
+    // Create the custom option item
+    const customOptionItem = (
       <Item
         key={term}
         textValue={term}
@@ -514,6 +536,15 @@ export const FilterListBox = forwardRef(function FilterListBox<
       >
         {term}
       </Item>
+    );
+
+    // Wrap in a Section if there are other visible items (to get the divider)
+    const customOption = hasVisibleItems ? (
+      <BaseSection key="__new-custom-value-section__">
+        {customOptionItem}
+      </BaseSection>
+    ) : (
+      customOptionItem
     );
 
     if (Array.isArray(childrenToProcess)) {
@@ -533,6 +564,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     localCollectionState.collection,
     customValueProps,
     newCustomValueProps,
+    textFilterFn,
   ]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
