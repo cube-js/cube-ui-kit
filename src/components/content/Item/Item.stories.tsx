@@ -93,6 +93,14 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    preserveActionsSpace: {
+      control: { type: 'boolean' },
+      description:
+        'When true, preserves the actions width when hidden (only changes opacity). Only applies when showActionsOnHover is true.',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
     level: {
       options: [1, 2, 3, 4, 5, 6],
       control: { type: 'select' },
@@ -1886,6 +1894,165 @@ WithActionsOnHover.parameters = {
     description: {
       story:
         'Demonstrates the `showActionsOnHover` prop which hides actions by default and reveals them smoothly on hover, focus, or focus-within states using opacity transitions. This provides a cleaner interface while keeping actions easily accessible. The actions remain in the layout to prevent content shifting.',
+    },
+  },
+};
+
+export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>
+      Comparison: Collapse vs Preserve Space on Hover Actions
+    </Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        type="outline"
+        icon={<IconUser />}
+        showActionsOnHover={true}
+        preserveActionsSpace={false}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Collapse mode (default) - content shifts on hover
+      </Item>
+      <Item
+        {...args}
+        type="outline"
+        icon={<IconUser />}
+        showActionsOnHover={true}
+        preserveActionsSpace={true}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Preserve space mode - no content shift
+      </Item>
+    </Space>
+
+    <Title level={5}>Side by Side Comparison</Title>
+    <Space gap="2x" flow="row" placeItems="start">
+      <Space gap="1x" flow="column" placeItems="start">
+        <Title level={6}>preserveActionsSpace=false (default)</Title>
+        <Item
+          {...args}
+          type="outline"
+          icon={<IconCoin />}
+          showActionsOnHover={true}
+          preserveActionsSpace={false}
+          actions={
+            <>
+              <ItemAction icon={<IconEdit />} aria-label="Edit" />
+              <ItemAction icon={<IconTrash />} aria-label="Delete" />
+            </>
+          }
+        >
+          Hover to see actions expand
+        </Item>
+        <Item
+          {...args}
+          type="outline"
+          icon={<IconSettings />}
+          showActionsOnHover={true}
+          preserveActionsSpace={false}
+          actions={
+            <>
+              <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            </>
+          }
+        >
+          Single action item
+        </Item>
+      </Space>
+      <Space gap="1x" flow="column" placeItems="start">
+        <Title level={6}>preserveActionsSpace=true</Title>
+        <Item
+          {...args}
+          type="outline"
+          icon={<IconCoin />}
+          showActionsOnHover={true}
+          preserveActionsSpace={true}
+          actions={
+            <>
+              <ItemAction icon={<IconEdit />} aria-label="Edit" />
+              <ItemAction icon={<IconTrash />} aria-label="Delete" />
+            </>
+          }
+        >
+          Hover to see actions fade in
+        </Item>
+        <Item
+          {...args}
+          type="outline"
+          icon={<IconSettings />}
+          showActionsOnHover={true}
+          preserveActionsSpace={true}
+          actions={
+            <>
+              <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            </>
+          }
+        >
+          Single action item
+        </Item>
+      </Space>
+    </Space>
+
+    <Title level={5}>With Description</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        type="outline"
+        icon={<IconUser />}
+        description="Actions collapse on hover"
+        descriptionPlacement="inline"
+        showActionsOnHover={true}
+        preserveActionsSpace={false}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Collapse mode
+      </Item>
+      <Item
+        {...args}
+        type="outline"
+        icon={<IconUser />}
+        description="Actions fade in, space preserved"
+        descriptionPlacement="inline"
+        showActionsOnHover={true}
+        preserveActionsSpace={true}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Preserve space mode
+      </Item>
+    </Space>
+  </Space>
+);
+
+ActionsPreserveSpace.args = {
+  width: '400px',
+};
+
+ActionsPreserveSpace.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the `preserveActionsSpace` prop which works with `showActionsOnHover`. When `preserveActionsSpace={false}` (default), actions collapse to zero width when hidden, causing content to shift on hover. When `preserveActionsSpace={true}`, actions maintain their width and only change opacity, preventing any content shift.',
     },
   },
 };
