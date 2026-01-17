@@ -537,18 +537,32 @@ export const FilterListBox = forwardRef(function FilterListBox<
       </Item>
     );
 
-    // If there are visible filtered items, wrap in sections for visual separation
-    // This also disables virtualization in ListBox, allowing sections to render
+    // If there are visible filtered items, add visual separation for custom value
     if (hasVisibleFilteredItems && childrenToProcess) {
-      const filteredItemsSection = (
-        <BaseSection key="__filtered_items__" aria-label="Filtered items">
-          {childrenToProcess}
-        </BaseSection>
+      // Check if the collection contains any sections
+      // If it does, we can't wrap childrenToProcess in another section (would create nested sections)
+      const hasSections = [...localCollectionState.collection].some(
+        (item) => item.type === 'section',
       );
 
       const customValueSection = (
         <BaseSection key="__custom_value__" aria-label="Custom value">
           {customOption}
+        </BaseSection>
+      );
+
+      if (hasSections) {
+        // Collection has sections - just append the custom value section without wrapping
+        if (Array.isArray(childrenToProcess)) {
+          return [...childrenToProcess, customValueSection];
+        }
+        return [childrenToProcess, customValueSection];
+      }
+
+      // No sections in collection - wrap items in a section for visual separation
+      const filteredItemsSection = (
+        <BaseSection key="__filtered_items__" aria-label="Filtered items">
+          {childrenToProcess}
         </BaseSection>
       );
 
