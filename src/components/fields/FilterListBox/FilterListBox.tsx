@@ -508,6 +508,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     // Check if there are any items that will match the filter
     // This determines whether we need to visually separate the custom value
     const hasVisibleFilteredItems = (() => {
+      // Check original collection items
       for (const item of localCollectionState.collection) {
         if (item.type === 'item') {
           const textValue = item.textValue || String(item.rendered || '');
@@ -523,6 +524,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
           }
         }
       }
+
+      // Also check custom keys - they appear as items in mergedChildren
+      for (const customKey of customKeys) {
+        if (textFilterFn(customKey, term)) {
+          return true;
+        }
+      }
+
       return false;
     })();
 
