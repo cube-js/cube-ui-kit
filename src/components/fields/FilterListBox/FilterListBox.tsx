@@ -505,7 +505,37 @@ export const FilterListBox = forwardRef(function FilterListBox<
       return childrenToProcess;
     }
 
-    // Append the custom option at the end.
+    // Check if there are any items that will match the filter
+    // This determines whether we need to visually separate the custom value
+    const hasVisibleFilteredItems = (() => {
+      // Check original collection items
+      for (const item of localCollectionState.collection) {
+        if (item.type === 'item') {
+          const textValue = item.textValue || String(item.rendered || '');
+          if (textFilterFn(textValue, term)) {
+            return true;
+          }
+        } else if (item.type === 'section' && item.childNodes) {
+          for (const child of item.childNodes) {
+            const textValue = child.textValue || String(child.rendered || '');
+            if (textFilterFn(textValue, term)) {
+              return true;
+            }
+          }
+        }
+      }
+
+      // Also check custom keys - they appear as items in mergedChildren
+      for (const customKey of customKeys) {
+        if (textFilterFn(customKey, term)) {
+          return true;
+        }
+      }
+
+      return false;
+    })();
+
+    // Create the custom option
     const customOption = (
       <Item
         key={term}
@@ -516,6 +546,39 @@ export const FilterListBox = forwardRef(function FilterListBox<
       </Item>
     );
 
+    // If there are visible filtered items, add visual separation for custom value
+    if (hasVisibleFilteredItems && childrenToProcess) {
+      // Check if the collection contains any sections
+      // If it does, we can't wrap childrenToProcess in another section (would create nested sections)
+      const hasSections = [...localCollectionState.collection].some(
+        (item) => item.type === 'section',
+      );
+
+      const customValueSection = (
+        <BaseSection key="__custom_value__" aria-label="Custom value">
+          {customOption}
+        </BaseSection>
+      );
+
+      if (hasSections) {
+        // Collection has sections - just append the custom value section without wrapping
+        if (Array.isArray(childrenToProcess)) {
+          return [...childrenToProcess, customValueSection];
+        }
+        return [childrenToProcess, customValueSection];
+      }
+
+      // No sections in collection - wrap items in a section for visual separation
+      const filteredItemsSection = (
+        <BaseSection key="__filtered_items__" aria-label="Filtered items">
+          {childrenToProcess}
+        </BaseSection>
+      );
+
+      return [filteredItemsSection, customValueSection];
+    }
+
+    // No visible filtered items, just return the custom option without sections
     if (Array.isArray(childrenToProcess)) {
       return [...childrenToProcess, customOption];
     }
@@ -533,6 +596,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     localCollectionState.collection,
     customValueProps,
     newCustomValueProps,
+    textFilterFn,
   ]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);

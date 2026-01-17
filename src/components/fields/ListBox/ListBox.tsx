@@ -788,6 +788,13 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const rowVirtualizer = useVirtualizer({
     count: shouldVirtualize ? itemsArray.length : 0,
     getScrollElement: () => scrollRef.current,
+    // Use the actual item key to ensure React properly reconciles DOM elements
+    // when items are filtered, added, or removed. Without this, the virtualizer
+    // uses index-based keys which causes DOM reuse issues and style leaking.
+    getItemKey: (index: number) => {
+      const item = itemsArrayRef.current[index];
+      return item?.key ?? index;
+    },
     estimateSize: (index: number) => {
       const currentItem: any = itemsArrayRef.current[index];
 
@@ -940,7 +947,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
                   return (
                     <Option
-                      key={virtualItem.key}
+                      key={item.key}
                       size={size}
                       item={item}
                       state={listState}
