@@ -375,7 +375,7 @@ const TabsElement = tasty({
   },
 });
 
-const TabElement = tasty(Item, {
+const FileTabElement = tasty(Item, {
   as: 'button',
   type: 'clear',
   styles: {
@@ -391,7 +391,7 @@ const TabElement = tasty(Item, {
   },
 });
 
-const CardTabElement = tasty(Item, {
+const DefaultTabElement = tasty(Item, {
   as: 'button',
   type: 'clear',
   styles: {
@@ -944,9 +944,9 @@ function TabButton({
   if (isRadioType) {
     Element = RadioTabElement;
   } else if (isDefaultType) {
-    Element = CardTabElement;
+    Element = DefaultTabElement;
   } else {
-    Element = TabElement;
+    Element = FileTabElement;
   }
 
   // Determine Item type prop
