@@ -40,10 +40,10 @@ const meta = {
     /* Presentation */
     type: {
       control: 'radio',
-      options: ['default', 'panel', 'radio'],
+      options: ['default', 'file', 'panel', 'radio'],
       description: 'Visual style variant',
       table: {
-        type: { summary: "'default' | 'panel' | 'radio'" },
+        type: { summary: "'default' | 'file' | 'panel' | 'radio'" },
         defaultValue: { summary: 'default' },
       },
     },
@@ -168,6 +168,58 @@ export const DefaultType: Story = {
       </Tab>
       <Tab key="tab3" title="Tab 3">
         <Paragraph>Hover states use a light purple background.</Paragraph>
+      </Tab>
+    </Tabs>
+  ),
+};
+
+/**
+ * File-style tabs with fill highlight on selection and delimiter between tabs.
+ * Useful for file editor interfaces where multiple documents can be open.
+ */
+export const FileType: Story = {
+  render: (args) => (
+    <Tabs {...args} type="file" defaultActiveKey="file1">
+      <Tab key="file1" title="index.ts">
+        <Paragraph>
+          File tabs have a fill highlight when selected and a delimiter between
+          tabs.
+        </Paragraph>
+      </Tab>
+      <Tab key="file2" title="utils.ts">
+        <Paragraph>
+          The selected tab shows a purple tinted background.
+        </Paragraph>
+      </Tab>
+      <Tab key="file3" title="types.ts">
+        <Paragraph>Each tab is separated by a 1px border delimiter.</Paragraph>
+      </Tab>
+    </Tabs>
+  ),
+};
+
+/**
+ * Panel-style tabs with border bottom highlight on selection and delimiter between tabs.
+ * Uses a subtle border indicator instead of fill for selection.
+ */
+export const PanelType: Story = {
+  render: (args) => (
+    <Tabs {...args} type="panel" defaultActiveKey="panel1">
+      <Tab key="panel1" title="Overview">
+        <Paragraph>
+          Panel tabs use a border bottom highlight instead of fill for
+          selection.
+        </Paragraph>
+      </Tab>
+      <Tab key="panel2" title="Details">
+        <Paragraph>
+          The selected tab shows a purple border at the bottom.
+        </Paragraph>
+      </Tab>
+      <Tab key="panel3" title="Settings">
+        <Paragraph>
+          Panel tabs have a light background and consistent text color.
+        </Paragraph>
       </Tab>
     </Tabs>
   ),
@@ -451,10 +503,10 @@ export const KeepMounted: Story = {
 };
 
 /**
- * Panel type with delete functionality - sharp edges, no gaps
+ * File type with delete functionality - file editor style tabs
  */
-export const PanelDeletable: Story = {
-  render: function PanelDeletableStory(args) {
+export const FileDeletable: Story = {
+  render: function FileDeletableStory(args) {
     const [tabs, setTabs] = useState([
       { key: 'file1', title: 'index.ts', content: 'Index file content' },
       { key: 'file2', title: 'utils.ts', content: 'Utility functions' },
@@ -477,7 +529,7 @@ export const PanelDeletable: Story = {
     return (
       <Tabs
         {...args}
-        type="panel"
+        type="file"
         activeKey={activeKey}
         onChange={(key) => setActiveKey(String(key))}
         onDelete={handleDelete}
@@ -577,7 +629,7 @@ export const WithActionsMenu: Story = {
       <Tabs
         showActionsOnHover
         {...args}
-        type="panel"
+        type="file"
         activeKey={activeKey}
         onChange={(key) => setActiveKey(String(key))}
       >
@@ -665,7 +717,7 @@ export const WithEditableTabs: Story = {
         ref={tabsRef}
         showActionsOnHover
         {...args}
-        type="panel"
+        type="file"
         activeKey={activeKey}
         onChange={(key) => setActiveKey(String(key))}
         onTitleChange={(key, newTitle) =>

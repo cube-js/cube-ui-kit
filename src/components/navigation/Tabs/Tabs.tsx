@@ -45,7 +45,7 @@ import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
 // =============================================================================
 
 /** Visual appearance type for tabs */
-export type TabType = 'default' | 'panel' | 'radio';
+export type TabType = 'default' | 'file' | 'panel' | 'radio';
 
 /** Tab size options */
 export type TabSize = 'medium' | 'large';
@@ -118,7 +118,8 @@ export interface CubeTabsProps extends BaseProps, PanelBehaviorProps {
   /**
    * Visual appearance type for tabs.
    * - `default` - Standard tabs with selection indicator below (default)
-   * - `panel` - Panel-style tabs with sharp edges and no gaps
+   * - `file` - File-style tabs with fill highlight on selection, delimiter between tabs
+   * - `panel` - Panel-style tabs with border bottom highlight on selection, delimiter between tabs
    * - `radio` - Radio button style for tab selection
    * @default 'default'
    */
@@ -263,12 +264,12 @@ const TabsElement = tasty({
     flow: 'row',
     placeItems: {
       '': 'end stretch',
-      'type=radio | type=panel': 'stretch',
+      'type=radio | type=file | type=panel': 'stretch',
     },
     overflow: 'visible',
     border: {
       '': 0,
-      'type=default': 'bottom',
+      '(type=default | type=file | type=panel) & has-panels': 'bottom',
     },
     width: {
       '': '100%',
@@ -375,10 +376,27 @@ const TabsElement = tasty({
   },
 });
 
-const FileTabElement = tasty(Item, {
+const TabElement = tasty(Item, {
   as: 'button',
-  type: 'clear',
   styles: {
+    radius: {
+      '': false,
+      'type=radio': true,
+      'type=default': 'top',
+    },
+    color: {
+      '': '#dark-02',
+      'type=default & selected': '#purple-text',
+    },
+    fill: {
+      '': '#clear',
+      'type=file | type=panel': '#light',
+      '(type=file | type=panel | type=radio) & selected': '#white',
+    },
+    border: {
+      '': '0 #clear',
+      'type=panel & selected': '1ow #purple bottom',
+    },
     preset: {
       '': 't3m',
       'size=small | size=xsmall': 't4',
@@ -387,44 +405,14 @@ const FileTabElement = tasty(Item, {
     shadow: {
       '': 'none',
       editing: 'inset 0 0 0 1bw #purple-text',
-    },
-  },
-});
-
-const DefaultTabElement = tasty(Item, {
-  as: 'button',
-  type: 'clear',
-  styles: {
-    radius: 'top',
-    color: {
-      '': '#dark-03',
-      selected: '#purple-text',
-    },
-    fill: '#clear',
-    preset: 'h6',
-    shadow: {
-      '': 'none',
-      editing: 'inset 0 0 0 1bw #purple-text',
-    },
-  },
-});
-
-const RadioTabElement = tasty(Item, {
-  as: 'button',
-  type: 'neutral',
-  styles: {
-    fill: {
-      '': '#clear',
-      selected: '#white',
-    },
-    shadow: {
-      '': 'none',
-      selected: '$item-shadow',
+      'type=radio & selected': '$item-shadow',
     },
     Label: {
       placeSelf: {
         '': 'center start',
-        '!has-prefix & !has-suffix & !has-icon & !has-right-icon': 'center',
+        'type=radio': 'center start',
+        'type=radio & !has-prefix & !has-suffix & !has-icon & !has-right-icon':
+          'center',
       },
     },
   },
@@ -434,6 +422,10 @@ const TabContainer = tasty({
   styles: {
     position: 'relative',
     display: 'grid',
+    border: {
+      '': 0,
+      'type=file | type=panel': 'right',
+    },
   },
 });
 
@@ -880,9 +872,7 @@ function TabButton({
 
   const mods = useMemo(
     () => ({
-      default: effectiveType === 'default',
-      panel: effectiveType === 'panel',
-      radio: effectiveType === 'radio',
+      type: effectiveType,
       active: isActive,
       deletable: isDeletable,
       disabled: isDisabled,
@@ -918,8 +908,8 @@ function TabButton({
 
   // Determine effective size - map 'medium'/'large' to Item size values
   const isRadioType = effectiveType === 'radio';
-  const isPanelType = effectiveType === 'panel';
-  const isDefaultType = effectiveType === 'default';
+  const isFileOrPanelType =
+    effectiveType === 'file' || effectiveType === 'panel';
 
   const effectiveSize = tabData.size ?? size ?? 'medium';
 
@@ -938,26 +928,12 @@ function TabButton({
     itemSize = effectiveSize === 'large' ? 'large' : 'medium';
   }
 
-  // Determine which element to use based on type
-  let Element;
-
-  if (isRadioType) {
-    Element = RadioTabElement;
-  } else if (isDefaultType) {
-    Element = DefaultTabElement;
-  } else {
-    Element = FileTabElement;
-  }
-
   // Determine Item type prop
-  let itemType: string | undefined = !isRadioType
-    ? isActive
-      ? 'clear'
-      : 'neutral'
-    : 'neutral';
+  let itemType: string | undefined =
+    effectiveType === 'default' ? (isActive ? 'clear' : 'neutral') : 'neutral';
 
-  // Determine shape - panel type uses sharp edges
-  const itemShape = isPanelType ? 'sharp' : undefined;
+  // Determine shape - file/panel types use sharp edges
+  const itemShape = isFileOrPanelType ? 'sharp' : undefined;
 
   // Determine showActionsOnHover - tab-level overrides parent-level
   const effectiveShowActionsOnHover =
@@ -1000,7 +976,7 @@ function TabButton({
 
   return (
     <TabContainer mods={mods}>
-      <Element
+      <TabElement
         preserveActionsSpace
         showActionsOnHover={effectiveShowActionsOnHover}
         as="button"
@@ -1019,7 +995,7 @@ function TabButton({
         actions={actions}
       >
         {titleContent}
-      </Element>
+      </TabElement>
     </TabContainer>
   );
 }
@@ -1559,6 +1535,8 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
   const { handleHStyle, hasOverflowX, isScrolling, isAtStartX, isAtEndX } =
     useTinyScrollbar(scrollRef, isTinyScrollbar);
 
+  const hasPanels = hasAnyContent || !!renderPanel;
+
   const mods = useMemo(
     () => ({
       type,
@@ -1566,8 +1544,9 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
       scrolling: isScrolling,
       'fade-left': !isAtStartX,
       'fade-right': !isAtEndX,
+      'has-panels': hasPanels,
     }),
-    [type, onDelete, isScrolling, isAtStartX, isAtEndX],
+    [type, onDelete, isScrolling, isAtStartX, isAtEndX, hasPanels],
   );
 
   return (
