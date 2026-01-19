@@ -23,8 +23,8 @@ export const APPEARANCE_CHUNK_STYLES = [
   'opacity', // independent
   'border', // borderStyle (independent)
   'radius', // radiusStyle (independent)
-  'outline', // outlineStyle (independent)
-  'outlineOffset', // independent (used with outline)
+  'outline', // outlineStyle: outline ↔ outlineOffset
+  'outlineOffset', // outlineStyle: outline ↔ outlineOffset
   'shadow', // shadowStyle (independent)
   'fade', // fadeStyle (independent)
 ] as const;
@@ -33,6 +33,7 @@ export const APPEARANCE_CHUNK_STYLES = [
  * Font chunk - typography styles
  * ⚠️ presetStyle handler requires: preset, fontSize, lineHeight, letterSpacing,
  *    textTransform, fontWeight, fontStyle, font - all MUST stay together
+ * Note: textOverflow, whiteSpace moved to CONTAINER chunk (displayStyle handler)
  */
 export const FONT_CHUNK_STYLES = [
   // All from presetStyle handler - MUST stay together
@@ -47,9 +48,7 @@ export const FONT_CHUNK_STYLES = [
   // Independent text styles grouped for cohesion
   'fontFamily', // independent alias (logical grouping with font styles)
   'textAlign',
-  'whiteSpace',
   'textDecoration',
-  'textOverflow',
   'wordBreak',
   'wordWrap',
   'boldFontWeight',
@@ -91,18 +90,32 @@ export const DIMENSION_CHUNK_STYLES = [
 ] as const;
 
 /**
- * Container chunk - display, flow, and grid layout
- * ⚠️ FORCED TOGETHER by transitive handler dependencies:
- *    displayStyle(display,hide) + flowStyle(display,flow) +
- *    gapStyle(display,flow,gap)
+ * Display chunk - display mode, text overflow, and scrollbar
+ * ⚠️ displayStyle handler requires: display, hide, textOverflow, overflow, whiteSpace
+ *    Multi-line textOverflow needs display: -webkit-box
+ *    Single-line textOverflow forces white-space: nowrap and overflow: hidden
+ * ⚠️ scrollbarStyle reads overflow for 'always' mode fallback
  */
-export const CONTAINER_CHUNK_STYLES = [
-  // Forced together by handler dependencies
-  'display', // displayStyle: display ↔ hide
-  'hide', // displayStyle: display ↔ hide
+export const DISPLAY_CHUNK_STYLES = [
+  'display', // displayStyle
+  'hide', // displayStyle
+  'textOverflow', // displayStyle
+  'overflow', // displayStyle, scrollbarStyle (reads for 'always' mode)
+  'whiteSpace', // displayStyle
+  'scrollbar', // scrollbarStyle
+  'styledScrollbar', // styledScrollbarStyle (deprecated)
+] as const;
+
+/**
+ * Layout chunk - flex/grid flow and alignment
+ * ⚠️ flowStyle handler requires: display, flow together
+ * ⚠️ gapStyle handler requires: display, flow, gap together
+ * Note: display is in DISPLAY chunk, but flowStyle/gapStyle can still read it
+ */
+export const LAYOUT_CHUNK_STYLES = [
   'flow', // flowStyle: display ↔ flow
   'gap', // gapStyle: display ↔ flow ↔ gap
-  // Related container styles (independent but logically grouped)
+  // Alignment styles (independent but logically grouped)
   'placeItems',
   'placeContent',
   'alignItems',
@@ -114,6 +127,7 @@ export const CONTAINER_CHUNK_STYLES = [
   'place', // placeStyle (independent)
   'columnGap',
   'rowGap',
+  // Grid template styles
   'gridColumns',
   'gridRows',
   'gridTemplate',
@@ -121,16 +135,6 @@ export const CONTAINER_CHUNK_STYLES = [
   'gridAutoFlow',
   'gridAutoColumns',
   'gridAutoRows',
-] as const;
-
-/**
- * Scrollbar chunk - scrollbar and overflow
- * ⚠️ scrollbarStyle handler requires scrollbar ↔ overflow together
- */
-export const SCROLLBAR_CHUNK_STYLES = [
-  'scrollbar', // scrollbarStyle: scrollbar ↔ overflow
-  'overflow', // scrollbarStyle: scrollbar ↔ overflow
-  'styledScrollbar', // styledScrollbarStyle (independent, deprecated)
 ] as const;
 
 /**
@@ -167,8 +171,8 @@ export const CHUNK_NAMES = {
   APPEARANCE: 'appearance',
   FONT: 'font',
   DIMENSION: 'dimension',
-  CONTAINER: 'container',
-  SCROLLBAR: 'scrollbar',
+  DISPLAY: 'display',
+  LAYOUT: 'layout',
   POSITION: 'position',
   MISC: 'misc',
 } as const;
@@ -196,11 +200,11 @@ function populateStyleToChunkMap() {
   for (const style of DIMENSION_CHUNK_STYLES) {
     STYLE_TO_CHUNK.set(style, CHUNK_NAMES.DIMENSION);
   }
-  for (const style of CONTAINER_CHUNK_STYLES) {
-    STYLE_TO_CHUNK.set(style, CHUNK_NAMES.CONTAINER);
+  for (const style of DISPLAY_CHUNK_STYLES) {
+    STYLE_TO_CHUNK.set(style, CHUNK_NAMES.DISPLAY);
   }
-  for (const style of SCROLLBAR_CHUNK_STYLES) {
-    STYLE_TO_CHUNK.set(style, CHUNK_NAMES.SCROLLBAR);
+  for (const style of LAYOUT_CHUNK_STYLES) {
+    STYLE_TO_CHUNK.set(style, CHUNK_NAMES.LAYOUT);
   }
   for (const style of POSITION_CHUNK_STYLES) {
     STYLE_TO_CHUNK.set(style, CHUNK_NAMES.POSITION);
@@ -222,8 +226,8 @@ const CHUNK_ORDER: readonly string[] = [
   CHUNK_NAMES.APPEARANCE,
   CHUNK_NAMES.FONT,
   CHUNK_NAMES.DIMENSION,
-  CHUNK_NAMES.CONTAINER,
-  CHUNK_NAMES.SCROLLBAR,
+  CHUNK_NAMES.DISPLAY,
+  CHUNK_NAMES.LAYOUT,
   CHUNK_NAMES.POSITION,
   CHUNK_NAMES.MISC,
   CHUNK_NAMES.SUBCOMPONENTS,

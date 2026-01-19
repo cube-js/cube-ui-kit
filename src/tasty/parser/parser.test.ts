@@ -99,6 +99,82 @@ describe('StyleProcessor', () => {
     expect(result.groups[1].mods).toEqual(['right']);
   });
 
+  test('splits by top-level slash into parts', () => {
+    const result = parser.process('2px solid #red / 4px');
+    expect(result.groups.length).toBe(1);
+    expect(result.groups[0].parts.length).toBe(2);
+
+    // First part: 2px solid #red
+    expect(result.groups[0].parts[0].values).toEqual(['2px']);
+    expect(result.groups[0].parts[0].mods).toEqual(['solid']);
+    expect(result.groups[0].parts[0].colors).toEqual(['var(--red-color)']);
+    expect(result.groups[0].parts[0].output).toEqual(
+      '2px solid var(--red-color)',
+    );
+
+    // Second part: 4px
+    expect(result.groups[0].parts[1].values).toEqual(['4px']);
+    expect(result.groups[0].parts[1].mods).toEqual([]);
+    expect(result.groups[0].parts[1].colors).toEqual([]);
+    expect(result.groups[0].parts[1].output).toEqual('4px');
+
+    // Aggregated group-level arrays (backward compatible)
+    expect(result.groups[0].values).toEqual(['2px', '4px']);
+    expect(result.groups[0].mods).toEqual(['solid']);
+    expect(result.groups[0].colors).toEqual(['var(--red-color)']);
+
+    // Output with slash separator
+    expect(result.groups[0].output).toEqual('2px solid var(--red-color) / 4px');
+  });
+
+  test('handles multiple slash-separated parts', () => {
+    const result = parser.process('ellipsis / 3 / hidden');
+    expect(result.groups.length).toBe(1);
+    expect(result.groups[0].parts.length).toBe(3);
+
+    expect(result.groups[0].parts[0].mods).toEqual(['ellipsis']);
+    expect(result.groups[0].parts[1].values).toEqual(['3']);
+    expect(result.groups[0].parts[2].mods).toEqual(['hidden']);
+
+    expect(result.groups[0].output).toEqual('ellipsis / 3 / hidden');
+  });
+
+  test('combines comma and slash separators correctly', () => {
+    const result = parser.process('1x / 2x, 3x / 4x');
+    expect(result.groups.length).toBe(2);
+
+    // First group: 1x / 2x
+    expect(result.groups[0].parts.length).toBe(2);
+    expect(result.groups[0].parts[0].values).toEqual(['8px']);
+    expect(result.groups[0].parts[1].values).toEqual(['16px']);
+    expect(result.groups[0].output).toEqual('8px / 16px');
+
+    // Second group: 3x / 4x
+    expect(result.groups[1].parts.length).toBe(2);
+    expect(result.groups[1].parts[0].values).toEqual(['24px']);
+    expect(result.groups[1].parts[1].values).toEqual(['32px']);
+    expect(result.groups[1].output).toEqual('24px / 32px');
+  });
+
+  test('single value has one part', () => {
+    const result = parser.process('2x #purple');
+    expect(result.groups.length).toBe(1);
+    expect(result.groups[0].parts.length).toBe(1);
+    expect(result.groups[0].parts[0].values).toEqual(['16px']);
+    expect(result.groups[0].parts[0].colors).toEqual(['var(--purple-color)']);
+  });
+
+  test('slash inside parentheses is not treated as separator', () => {
+    // URL with path containing slash
+    const result = parser.process('url(path/to/image.png) / 2x');
+    expect(result.groups.length).toBe(1);
+    expect(result.groups[0].parts.length).toBe(2);
+    expect(result.groups[0].parts[0].values).toEqual([
+      'url(path/to/image.png)',
+    ]);
+    expect(result.groups[0].parts[1].values).toEqual(['16px']);
+  });
+
   test('handles edge cases and whitespace', () => {
     const result = parser.process('  2x   (100% - 2r)   max-content  ');
     expect(result.groups[0].values[0]).toBe('16px'); // raw unit: 2 * 8px

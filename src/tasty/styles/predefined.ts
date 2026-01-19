@@ -151,7 +151,7 @@ export function predefine() {
   defineStyleAlias('letterSpacing', 'letter-spacing', numberConverter);
   defineStyleAlias('textTransform');
   defineStyleAlias('fontFamily');
-  defineStyleAlias('overflow');
+  // Note: overflow is now handled by displayStyle (along with textOverflow, whiteSpace)
   defineStyleAlias('paddingTop', 'padding-top', numberConverter);
   defineStyleAlias('paddingRight', 'padding-right', numberConverter);
   defineStyleAlias('paddingBottom', 'padding-bottom', numberConverter);
@@ -182,8 +182,7 @@ export function predefine() {
       .map((s, i) => (i ? columnsConverter : rowsConverter)(s))
       .join('/');
   });
-  // Other styles
-  defineStyleAlias('outlineOffset', 'outline-offset', numberConverter);
+  // Note: outlineOffset is now handled by outlineStyle
 
   [
     displayStyle,
