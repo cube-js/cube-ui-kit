@@ -1507,6 +1507,8 @@ const Component = tasty({
 });
 ```
 
+> **Important:** The `##name` syntax automatically adds the `-color` suffix. Use `##theme` to get `--theme-color`, **not** `##theme-color` (which would incorrectly produce `--theme-color-color`). This mirrors how `#name` in `@properties` defines `--name-color`.
+
 #### Math with Custom Properties
 
 Use parentheses for math expressions with custom properties. Tasty auto-wraps in `calc()`:
