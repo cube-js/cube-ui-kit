@@ -530,19 +530,38 @@ export type SuffixForSelector =
 export type Selector = `${SuffixForSelector}${string}`;
 export type NotSelector = Exclude<string, Selector | keyof StylesInterface>;
 
+/** Special style keys that should not be wrapped in StyleValue/StyleValueStateMap */
+type SpecialStyleKeys = '@keyframes' | '@properties';
+
 export type StylesWithoutSelectors = {
-  [key in keyof StylesInterface]?:
+  [key in keyof StylesInterface as key extends SpecialStyleKeys
+    ? never
+    : key]?:
     | StyleValue<StylesInterface[key]>
     | StyleValueStateMap<StylesInterface[key]>;
 };
-export type Styles = StylesWithoutSelectors & {
+
+/** Special properties that are not regular style values */
+export interface SpecialStyleProperties {
+  '@keyframes'?: StylesInterface['@keyframes'];
+  '@properties'?: StylesInterface['@properties'];
+}
+
+/** Index signature for arbitrary style keys (sub-elements, CSS variables, etc.) */
+export interface StylesIndexSignature {
   [key: string]:
     | StyleValue<string | number | boolean | undefined>
     | StyleValueStateMap<string | number | boolean | undefined>
-    | Styles;
+    | Styles
+    | StylesInterface['@keyframes']
+    | StylesInterface['@properties'];
   /**
    * Selector combinator: `undefined` (descendant, default), `'>'` (child), `'+'` (adjacent), `'~'` (sibling).
    * Can chain with capitalized names: `'> Body > Row >'`. Spaces required around combinators.
    */
   $?: string;
-};
+}
+
+export type Styles = StylesWithoutSelectors &
+  SpecialStyleProperties &
+  StylesIndexSignature;
