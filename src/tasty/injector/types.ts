@@ -101,8 +101,8 @@ export interface RootRegistry {
   keyframesNameToContent: Map<string, string>; // providedName -> contentHash
   /** Counter for generating keyframes names like k0, k1, k2... */
   keyframesCounter: number;
-  /** Set of injected @property names for tracking */
-  injectedProperties: Set<string>;
+  /** Map of injected @property names to their normalized declarations for tracking */
+  injectedProperties: Map<string, string>; // propertyName -> normalized declaration
   /** Global rules tracking for index adjustment */
   globalRules: Map<string, RuleInfo>; // globalKey -> rule info
 }
@@ -130,6 +130,19 @@ export interface KeyframesCacheEntry {
   name: string;
   refCount: number;
   info: KeyframesInfo;
+}
+
+/**
+ * Definition for a CSS @property at-rule.
+ * Used to define custom property syntax, inheritance, and initial value.
+ */
+export interface PropertyDefinition {
+  /** CSS syntax string (e.g., '<color>', '<angle>', '<number>') */
+  syntax?: string;
+  /** Whether the property inherits (default: true) */
+  inherits?: boolean;
+  /** Initial value for the property */
+  initialValue?: string | number;
 }
 
 export interface RawCSSInfo {

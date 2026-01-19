@@ -7,8 +7,8 @@ import {
   renderStylesForChunk,
 } from '../chunks';
 import { getGlobalKeyframes, hasGlobalKeyframes } from '../config';
-import { allocateClassName, inject, keyframes } from '../injector';
-import { KeyframesSteps } from '../injector/types';
+import { allocateClassName, inject, keyframes, property } from '../injector';
+import { KeyframesSteps, PropertyDefinition } from '../injector/types';
 import {
   extractAnimationNamesFromStyles,
   extractLocalKeyframes,
@@ -18,6 +18,7 @@ import {
   replaceAnimationNames,
 } from '../keyframes';
 import { RenderResult, renderStyles } from '../pipeline';
+import { extractLocalProperties, hasLocalProperties } from '../properties';
 import { Styles } from '../styles/types';
 import { stringifyStyles } from '../utils/styles';
 
@@ -243,6 +244,20 @@ export function useStyles(styles: UseStylesOptions): UseStylesResult {
       // Clear map if no replacements needed
       if (nameMap.size === 0) {
         nameMap = null;
+      }
+    }
+
+    // Register local @properties if defined (no dispose needed - properties are permanent)
+    // Token formats: $name → --name, #name → --name-color (with auto syntax: '<color>')
+    // The injector.property() handles token parsing and auto-settings internally
+    // Note: Global properties are injected once when styles are first generated (see markStylesGenerated)
+    if (currentStyles && hasLocalProperties(currentStyles)) {
+      const localProperties = extractLocalProperties(currentStyles);
+      if (localProperties) {
+        for (const [token, definition] of Object.entries(localProperties)) {
+          // Pass the token directly - injector handles parsing
+          property(token, definition);
+        }
       }
     }
 

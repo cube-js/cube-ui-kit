@@ -172,6 +172,9 @@ export type { CubeTooltipProviderProps } from './components/overlays/Tooltip/Too
 
 export * from './components/content/Alert';
 
+// navigation
+export * from './components/navigation';
+
 // molecules
 export { FileTabs } from './components/organisms/FileTabs/FileTabs';
 export type { CubeFileTabProps } from './components/organisms/FileTabs/FileTabs';

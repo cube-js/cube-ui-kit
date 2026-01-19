@@ -273,8 +273,8 @@ export function categorizeStyleKeys(
 
   for (const key of keys) {
     // Skip the $ helper key (used for selector combinators)
-    // Skip @keyframes (processed separately in useStyles)
-    if (key === '$' || key === '@keyframes') {
+    // Skip @keyframes and @properties (processed separately in useStyles)
+    if (key === '$' || key === '@keyframes' || key === '@properties') {
       continue;
     }
 

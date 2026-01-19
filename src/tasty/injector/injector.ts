@@ -4,6 +4,11 @@
  */
 
 import { StyleResult } from '../pipeline';
+import {
+  getEffectiveDefinition,
+  normalizePropertyDefinition,
+} from '../properties';
+import { isDevEnv } from '../utils/isDevEnv';
 import { parseStyle } from '../utils/styles';
 
 import { SheetManager } from './sheet-manager';
@@ -12,6 +17,7 @@ import {
   InjectResult,
   KeyframesResult,
   KeyframesSteps,
+  PropertyDefinition,
   RawCSSResult,
   StyleInjectorConfig,
   StyleRule,
@@ -394,47 +400,92 @@ export class StyleInjector {
   }
 
   /**
-   * Define a CSS @property custom property
+   * Define a CSS @property custom property.
+   *
+   * Accepts tasty token syntax for the property name:
+   * - `$name` → defines `--name`
+   * - `#name` → defines `--name-color` (auto-sets syntax: '<color>', defaults initialValue: 'transparent')
+   * - `--name` → defines `--name` (legacy format)
+   *
    * Example:
    * @property --rotation { syntax: "<angle>"; inherits: false; initial-value: 45deg; }
+   *
    * Note: No caching or dispose — this defines a global property.
+   *
+   * If the same property is registered with different options, a warning is emitted
+   * but the original definition is preserved (CSS @property cannot be redefined).
    */
   property(
     name: string,
-    options?: {
-      syntax?: string;
-      inherits?: boolean;
-      initialValue?: string | number;
+    options?: PropertyDefinition & {
       root?: Document | ShadowRoot;
     },
   ): void {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
 
-    // Check if already defined to avoid duplicates
-    if (registry.injectedProperties.has(name)) {
+    // Parse the token and get effective definition
+    // This handles $name, #name, --name formats and auto-sets syntax for colors
+    const userDefinition: PropertyDefinition = {
+      syntax: options?.syntax,
+      inherits: options?.inherits,
+      initialValue: options?.initialValue,
+    };
+
+    const effectiveResult = getEffectiveDefinition(name, userDefinition);
+
+    if (!effectiveResult.isValid) {
+      if (isDevEnv()) {
+        console.warn(
+          `[Tasty] property(): ${effectiveResult.error}. Got: "${name}"`,
+        );
+      }
+      return;
+    }
+
+    const cssName = effectiveResult.cssName;
+    const definition = effectiveResult.definition;
+
+    // Normalize the definition for comparison
+    const normalizedDef = normalizePropertyDefinition(definition);
+
+    // Check if already defined
+    const existingDef = registry.injectedProperties.get(cssName);
+    if (existingDef !== undefined) {
+      // Property already exists - check if definitions match
+      if (existingDef !== normalizedDef) {
+        // Different definition - warn but don't replace (CSS @property can't be redefined)
+        if (isDevEnv()) {
+          console.warn(
+            `[Tasty] @property ${cssName} was already defined with a different declaration. ` +
+              `The new declaration will be ignored. ` +
+              `Original: ${existingDef}, New: ${normalizedDef}`,
+          );
+        }
+      }
+      // Either exact match or warned - skip injection
       return;
     }
 
     const parts: string[] = [];
 
-    if (options?.syntax != null) {
-      let syntax = String(options.syntax).trim();
+    if (definition.syntax != null) {
+      let syntax = String(definition.syntax).trim();
       if (!/^['"]/u.test(syntax)) syntax = `"${syntax}"`;
       parts.push(`syntax: ${syntax};`);
     }
 
     // inherits is required by the CSS @property spec - default to true
-    const inherits = options?.inherits ?? true;
+    const inherits = definition.inherits ?? true;
     parts.push(`inherits: ${inherits ? 'true' : 'false'};`);
 
-    if (options?.initialValue != null) {
+    if (definition.initialValue != null) {
       let initialValueStr: string;
-      if (typeof options.initialValue === 'number') {
-        initialValueStr = String(options.initialValue);
+      if (typeof definition.initialValue === 'number') {
+        initialValueStr = String(definition.initialValue);
       } else {
         // Process via tasty parser to resolve custom units/functions
-        initialValueStr = parseStyle(options.initialValue as any).output;
+        initialValueStr = parseStyle(definition.initialValue as any).output;
       }
       parts.push(`initial-value: ${initialValueStr};`);
     }
@@ -442,7 +493,7 @@ export class StyleInjector {
     const declarations = parts.join(' ').trim();
 
     const rule: StyleRule = {
-      selector: `@property ${name}`,
+      selector: `@property ${cssName}`,
       declarations,
     } as StyleRule;
 
@@ -454,12 +505,17 @@ export class StyleInjector {
       root,
     );
 
-    // Track that this property was injected
-    registry.injectedProperties.add(name);
+    // Track that this property was injected with its normalized definition
+    registry.injectedProperties.set(cssName, normalizedDef);
   }
 
   /**
-   * Check whether a given @property name was already injected by this injector
+   * Check whether a given @property name was already injected by this injector.
+   *
+   * Accepts tasty token syntax:
+   * - `$name` → checks `--name`
+   * - `#name` → checks `--name-color`
+   * - `--name` → checks `--name` (legacy format)
    */
   isPropertyDefined(
     name: string,
@@ -467,7 +523,14 @@ export class StyleInjector {
   ): boolean {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
-    return registry.injectedProperties.has(name);
+
+    // Parse the token to get the CSS property name
+    const effectiveResult = getEffectiveDefinition(name, {});
+    if (!effectiveResult.isValid) {
+      return false;
+    }
+
+    return registry.injectedProperties.has(effectiveResult.cssName);
   }
 
   /**

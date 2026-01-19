@@ -1,6 +1,6 @@
 import { CSSProperties } from 'react';
 
-import { KeyframesSteps } from '../injector/types';
+import { KeyframesSteps, PropertyDefinition } from '../injector/types';
 import { StyleValue, StyleValueStateMap } from '../utils/styles';
 
 type NamedColor =
@@ -150,13 +150,23 @@ export interface StylesInterface
   /**
    * The fade style applies gradient-based fading masks to the edges of an element. Replaces complex CSS mask gradients with a simple, declarative API.
    *
-   * Syntax: `[width] [directions]`
+   * Syntax: `[width] [directions] [#transparent-color] [#opaque-color]`
+   *
+   * Multiple groups can be separated by commas to specify different colors per direction.
+   *
+   * Color tokens (optional):
+   * - First color: transparent mask color (start of gradient, default: `rgb(0 0 0 / 0)`)
+   * - Second color: opaque mask color (end of gradient, default: `rgb(0 0 0 / 1)`)
    *
    * Examples:
    * - `fade="top"` // fade only top edge with default width
    * - `fade="2x left right"` // fade left and right edges with 2x width
    * - `fade="1x top"` // fade only top edge with 1x width
    * - `fade="3x 1x top bottom"` // top: 3x width, bottom: 1x width
+   * - `fade="2x #transparent #dark"` // custom colors for gradient mask
+   * - `fade="1x top #clear #solid"` // top edge with custom mask colors
+   * - `fade="top #red #blue, bottom #green #yellow"` // different colors per direction
+   * - `fade="2x top #a #b, 1x bottom #c #d"` // different widths and colors per direction
    */
   fade?: 'top' | 'right' | 'bottom' | 'left' | string;
   /**
@@ -256,11 +266,15 @@ export interface StylesInterface
    *
    * Syntax: `[width] [style] [color] [directions]` | `[directions]` | `true`
    *
+   * Multiple groups can be separated by commas. Later groups override earlier groups for conflicting directions.
+   *
    * Examples:
    * - `border={true}` // default border on all sides (1bw solid)
    * - `border="2bw dashed #purple"` // 2bw dashed purple border
    * - `border="2bw top"` // only top border: 2bw solid
    * - `border="dotted #danger left right"` // left/right: 1bw dotted danger
+   * - `border="1bw #red, 2bw #blue top"` // all sides red 1bw, top overridden to blue 2bw
+   * - `border="1bw, dashed top bottom, #purple left right"` // base 1bw, dashed on top/bottom, purple on left/right
    */
   border?: CSSProperties['border'] | string | boolean;
   /**
@@ -478,6 +492,19 @@ export interface StylesInterface
    * - `'@keyframes': { pulse: { '0%, 100%': 'transform: scale(1)', '50%': 'transform: scale(1.05)' } }`
    */
   '@keyframes'?: Record<string, KeyframesSteps>;
+  /**
+   * CSS @property definitions for custom properties using tasty token syntax.
+   * Properties are registered once and are permanent (never removed).
+   *
+   * Token formats:
+   * - `$name` for regular properties → `--name` (requires syntax to be specified)
+   * - `#name` for color properties → `--name-color` (auto-sets syntax: '<color>', defaults initialValue: 'transparent')
+   *
+   * Examples:
+   * - `'@properties': { '$rotation': { syntax: '<angle>', inherits: false, initialValue: '45deg' } }`
+   * - `'@properties': { '#theme': { initialValue: 'purple' } }` // syntax: '<color>' is auto-set
+   */
+  '@properties'?: Record<string, PropertyDefinition>;
 }
 
 export type SuffixForSelector =
@@ -512,19 +539,38 @@ export type SuffixForSelector =
 export type Selector = `${SuffixForSelector}${string}`;
 export type NotSelector = Exclude<string, Selector | keyof StylesInterface>;
 
+/** Special style keys that should not be wrapped in StyleValue/StyleValueStateMap */
+type SpecialStyleKeys = '@keyframes' | '@properties';
+
 export type StylesWithoutSelectors = {
-  [key in keyof StylesInterface]?:
+  [key in keyof StylesInterface as key extends SpecialStyleKeys
+    ? never
+    : key]?:
     | StyleValue<StylesInterface[key]>
     | StyleValueStateMap<StylesInterface[key]>;
 };
-export type Styles = StylesWithoutSelectors & {
+
+/** Special properties that are not regular style values */
+export interface SpecialStyleProperties {
+  '@keyframes'?: StylesInterface['@keyframes'];
+  '@properties'?: StylesInterface['@properties'];
+}
+
+/** Index signature for arbitrary style keys (sub-elements, CSS variables, etc.) */
+export interface StylesIndexSignature {
   [key: string]:
     | StyleValue<string | number | boolean | undefined>
     | StyleValueStateMap<string | number | boolean | undefined>
-    | Styles;
+    | Styles
+    | StylesInterface['@keyframes']
+    | StylesInterface['@properties'];
   /**
    * Selector combinator: `undefined` (descendant, default), `'>'` (child), `'+'` (adjacent), `'~'` (sibling).
    * Can chain with capitalized names: `'> Body > Row >'`. Spaces required around combinators.
    */
   $?: string;
-};
+}
+
+export type Styles = StylesWithoutSelectors &
+  SpecialStyleProperties &
+  StylesIndexSignature;

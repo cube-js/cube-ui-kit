@@ -51,6 +51,10 @@ export const BASE_TOKENS: Styles = {
   $transition: '80ms',
   /** Transition for disclosure animations */
   '$disclosure-transition': '120ms',
+  /** Transition for tab animations */
+  '$tab-transition': '120ms',
+  /** Transition for fade animations */
+  '$fade-transition': '200ms',
 
   // Scrollbar tokens
   '$scrollbar-width': '1.5x',

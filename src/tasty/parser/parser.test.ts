@@ -58,6 +58,22 @@ describe('StyleProcessor', () => {
     ]);
   });
 
+  test('parses double-prefix tokens for literal property names', () => {
+    // $$name outputs --name (the literal CSS property name)
+    const result1 = parser.process('$$gradient-angle 0.3s');
+    expect(result1.output).toBe('--gradient-angle 0.3s');
+
+    // ##name outputs --name-color (the literal CSS color property name)
+    const result2 = parser.process('##theme 0.3s');
+    expect(result2.output).toBe('--theme-color 0.3s');
+
+    // Combined in transition-like syntax
+    const result3 = parser.process('$$rotation 0.2s ease-out, ##accent 0.3s');
+    expect(result3.output).toBe(
+      '--rotation 0.2s ease-out, --accent-color 0.3s',
+    );
+  });
+
   test('parses value modifiers', () => {
     const result = parser.process(
       'none auto max-content min-content fit-content stretch space-between',

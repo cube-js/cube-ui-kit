@@ -24,6 +24,12 @@ export interface TinyScrollbarResult {
   hasOverflowY: boolean;
   hasOverflowX: boolean;
   isScrolling: boolean;
+  /** Whether scroll is at the start edge (top for Y, left for X) */
+  isAtStartX: boolean;
+  isAtStartY: boolean;
+  /** Whether scroll is at the end edge (bottom for Y, right for X) */
+  isAtEndX: boolean;
+  isAtEndY: boolean;
 }
 
 const MIN_HANDLE_SIZE = 20;
@@ -183,6 +189,27 @@ export function useTinyScrollbar(
   const vHandle = calculateVHandle();
   const hHandle = calculateHHandle();
 
+  // Calculate edge detection
+  const {
+    scrollTop,
+    scrollLeft,
+    scrollHeight,
+    scrollWidth,
+    clientHeight,
+    clientWidth,
+    hasOverflowY,
+    hasOverflowX,
+  } = scrollState;
+
+  // For Y axis: at start if scrollTop is 0, at end if scrolled to bottom
+  const isAtStartY = !hasOverflowY || scrollTop <= 0;
+  const isAtEndY =
+    !hasOverflowY || scrollTop >= scrollHeight - clientHeight - 1;
+
+  // For X axis: at start if scrollLeft is 0, at end if scrolled to right
+  const isAtStartX = !hasOverflowX || scrollLeft <= 0;
+  const isAtEndX = !hasOverflowX || scrollLeft >= scrollWidth - clientWidth - 1;
+
   return {
     handleVStyle: {
       '--scrollbar-v-top': `${vHandle.top}px`,
@@ -195,5 +222,9 @@ export function useTinyScrollbar(
     hasOverflowY: scrollState.hasOverflowY,
     hasOverflowX: scrollState.hasOverflowX,
     isScrolling,
+    isAtStartX,
+    isAtStartY,
+    isAtEndX,
+    isAtEndY,
   };
 }
