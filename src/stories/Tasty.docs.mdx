@@ -128,6 +128,8 @@ configure({
 | `funcs` | `Record<string, Function>` | - | Custom parser functions (merged with existing) |
 | `handlers` | `Record<string, StyleHandlerDefinition>` | Built-in | Custom style handlers (replace built-in) |
 | `tokens` | `Record<string, string \| number>` | - | Predefined tokens replaced during parsing |
+| `keyframes` | `Record<string, KeyframesSteps>` | - | Global keyframes for animations |
+| `properties` | `Record<string, PropertyDefinition>` | - | Global CSS @property definitions |
 
 ### Predefined Tokens
 
@@ -1312,6 +1314,160 @@ const Spinner = tasty({
 });
 ```
 
+### Properties
+
+Define CSS `@property` at-rules directly in styles using tasty token syntax. This enables advanced features like animating custom properties with proper type checking and initial values.
+
+#### Token Syntax
+
+Properties use the same token syntax as other tasty values:
+
+| Token | CSS Output | Description |
+|-------|-----------|-------------|
+| `$name` | `--name` | Regular property |
+| `#name` | `--name-color` | Color property (auto-sets `syntax: '<color>'`) |
+
+For **color tokens** (`#name`):
+- `syntax` is automatically set to `'<color>'` (cannot be overridden)
+- `initialValue` defaults to `'transparent'` if not specified
+
+```jsx
+const AnimatedGradient = tasty({
+  styles: {
+    '@properties': {
+      '$gradient-angle': {
+        syntax: '<angle>',
+        inherits: false,
+        initialValue: '0deg',
+      },
+      '#theme': {
+        initialValue: 'purple', // syntax: '<color>' is auto-set
+      },
+    },
+    background: 'linear-gradient($gradient-angle, #theme, transparent)',
+    transition: '$$gradient-angle 0.3s, ##theme 0.3s',
+  },
+});
+```
+
+**Key features:**
+- Properties are registered once and are permanent (never removed from the document)
+- If the same property is registered with different options, a warning is emitted
+- Color tokens automatically get `syntax: '<color>'` and default to `transparent`
+
+**Property options:**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `syntax` | `string` | `'*'` (or `'<color>'` for `#name`) | CSS syntax (e.g., `'<angle>'`, `'<length>'`, `'<number>'`) |
+| `inherits` | `boolean` | `true` | Whether the property inherits from parent elements |
+| `initialValue` | `string \| number` | - (`'transparent'` for `#name`) | Initial value for the property |
+
+**Common syntax values:**
+
+| Syntax | Description | Example values |
+|--------|-------------|----------------|
+| `<color>` | Any color value | `red`, `#ff0000`, `rgb(255,0,0)` |
+| `<length>` | Length values | `10px`, `2em`, `50%` |
+| `<angle>` | Angle values | `45deg`, `0.5turn`, `3.14rad` |
+| `<number>` | Numeric values | `0`, `1.5`, `-10` |
+| `<percentage>` | Percentage values | `50%`, `100%` |
+| `<length-percentage>` | Length or percentage | `10px`, `50%` |
+| `*` | Any value (default) | Any CSS value |
+
+#### Animating Custom Properties
+
+One of the main use cases for `@property` is enabling CSS transitions on custom properties:
+
+```jsx
+const AnimatedCard = tasty({
+  styles: {
+    '@properties': {
+      '$card-scale': {
+        syntax: '<number>',
+        inherits: false,
+        initialValue: 1,
+      },
+    },
+    transform: 'scale($card-scale)',
+    transition: '$$card-scale 0.2s ease-out',
+    '$card-scale': {
+      '': 1,
+      hovered: 1.05,
+    },
+  },
+});
+```
+
+#### useProperty Hook
+
+For imperative property registration, use the `useProperty` hook:
+
+```jsx
+import { useProperty } from '@cube-dev/ui-kit';
+
+function AnimatedComponent() {
+  // Register a property using token syntax
+  useProperty('$rotation', {
+    syntax: '<angle>',
+    inherits: false,
+    initialValue: '0deg',
+  });
+
+  // Color properties with token syntax (auto-sets syntax: '<color>')
+  useProperty('#accent', {
+    initialValue: 'purple', // defaults to 'transparent' if not specified
+  });
+
+  // Legacy format (--name) is also supported
+  useProperty('--scale-factor', {
+    syntax: '<number>',
+    initialValue: 1,
+  });
+
+  return <div>...</div>;
+}
+```
+
+The hook accepts the same token syntax as `@properties` in styles:
+- `$name` → registers `--name`
+- `#name` → registers `--name-color` with auto-set `syntax: '<color>'`
+- `--name` → legacy format, still supported
+
+#### Global Properties via configure()
+
+Define properties globally that are available to all components. Properties are registered once when the first style is injected:
+
+```jsx
+import { configure } from '@cube-dev/ui-kit';
+
+// Configure before app renders
+configure({
+  properties: {
+    '$rotation': { syntax: '<angle>', inherits: false, initialValue: '0deg' },
+    '$scale': { syntax: '<number>', initialValue: 1 },
+    '#accent': { initialValue: 'purple' }, // syntax: '<color>' auto-set
+  },
+});
+
+// Now any component can use these properties without defining them locally
+const Spinner = tasty({
+  styles: {
+    transform: 'rotate($rotation)',
+    transition: '$$rotation 0.5s linear',
+    '$rotation': {
+      '': '0deg',
+      spinning: '360deg',
+    },
+  },
+});
+```
+
+**Key features:**
+- Global properties are injected once when styles are first generated
+- Same token syntax as local properties (`$name`, `#name`)
+- Must be configured before any component renders
+
 ### Variants & Theming
 
 Create themed component variations:
@@ -1362,6 +1518,34 @@ const Component = tasty({
   },
 });
 ```
+
+#### Referencing Property Names
+
+When you need to reference the literal CSS property name (not its value), use the double-prefix syntax:
+
+| Syntax | Output | Use case |
+|--------|--------|----------|
+| `$$name` | `--name` | Reference the property name itself |
+| `##name` | `--name-color` | Reference the color property name itself |
+
+This is useful in CSS properties like `transition`, `animation`, or `will-change` where you need the property name:
+
+```jsx
+const Component = tasty({
+  styles: {
+    // $name → var(--name) (the value)
+    // $$name → --name (the property name)
+    transition: '$$rotation 0.2s ease-out, ##accent 0.3s',
+    // Outputs: transition: --rotation 0.2s ease-out, --accent-color 0.3s
+
+    // Other use cases
+    'will-change': '$$scale, ##theme',
+    // Outputs: will-change: --scale, --theme-color
+  },
+});
+```
+
+> **Important:** The `##name` syntax automatically adds the `-color` suffix. Use `##theme` to get `--theme-color`, **not** `##theme-color` (which would incorrectly produce `--theme-color-color`). This mirrors how `#name` in `@properties` defines `--name-color`.
 
 #### Math with Custom Properties
 

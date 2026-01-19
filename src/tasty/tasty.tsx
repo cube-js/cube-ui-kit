@@ -462,192 +462,154 @@ function tastyElement<
     ...defaultProps
   } = tastyOptions;
 
-  let _TastyComponent;
-
+  // Pre-compute merged styles for each variant (if variants are defined)
+  // This avoids creating separate component instances per variant
+  let variantStylesMap: Record<string, Styles | undefined> | undefined;
   if (variants) {
-    type VariantFC<K extends StyleList> = ForwardRefExoticComponent<
-      PropsWithoutRef<AllBasePropsWithMods<K>> & RefAttributes<unknown>
-    >;
-
     const variantEntries = Object.entries(variants) as [string, Styles][];
-    const variantComponents = variantEntries.reduce(
+    variantStylesMap = variantEntries.reduce(
       (map, [variant, variantStyles]) => {
-        map[variant] = tastyElement({
-          as: originalAs,
-          styles: mergeStyles(defaultStyles, variantStyles),
-          styleProps,
-          tokens: defaultTokens,
-          ...(defaultProps as Props),
-        } as TastyProps<K, never>) as unknown as VariantFC<K>;
+        map[variant] = mergeStyles(defaultStyles, variantStyles);
         return map;
       },
-      {} as Record<string, VariantFC<K>>,
+      {} as Record<string, Styles | undefined>,
     );
+    // Ensure 'default' variant always exists
+    if (!variantStylesMap['default']) {
+      variantStylesMap['default'] = defaultStyles;
+    }
+  }
 
-    if (!variantComponents['default']) {
-      variantComponents['default'] = tastyElement({
-        as: originalAs,
-        styles: defaultStyles,
-        styleProps,
-        tokens: defaultTokens,
-        ...(defaultProps as Props),
-      } as TastyProps<K, never>) as unknown as VariantFC<K>;
+  let {
+    qa: defaultQa,
+    qaVal: defaultQaVal,
+    ...otherDefaultProps
+  } = defaultProps ?? {};
+
+  const _TastyComponent = forwardRef<
+    unknown,
+    AllBasePropsWithMods<K> & WithVariant<V>
+  >((allProps, ref) => {
+    let {
+      as,
+      styles,
+      variant,
+      mods,
+      element,
+      qa,
+      qaVal,
+      className: userClassName,
+      tokens,
+      style,
+      ...otherProps
+    } = allProps as Record<string, unknown> as AllBasePropsWithMods<K> &
+      WithVariant<V> & {
+        className?: string;
+        tokens?: Tokens;
+        style?: Record<string, unknown>;
+      };
+
+    // Optimize propStyles extraction - avoid creating empty objects
+    let propStyles: Styles | null = null;
+    const propsToCheck = styleProps
+      ? (styleProps as StyleList).concat(BASE_STYLES)
+      : BASE_STYLES;
+
+    for (const prop of propsToCheck) {
+      const key = prop as unknown as string;
+
+      if (!propStyles) propStyles = {};
+
+      if (key in otherProps) {
+        (propStyles as any)[key] = (otherProps as any)[key];
+        delete (otherProps as any)[key];
+      }
     }
 
-    // eslint-disable-next-line react/display-name
-    _TastyComponent = forwardRef<
-      unknown,
-      AllBasePropsWithMods<K> & WithVariant<V>
-    >((allProps, ref) => {
-      const { variant, ...restProps } = allProps as WithVariant<V> &
-        Record<string, unknown>;
+    if (
+      !styles ||
+      (styles && Object.keys(styles as Record<string, unknown>).length === 0)
+    ) {
+      styles = undefined as unknown as Styles;
+    }
 
-      const Component =
-        variantComponents[(variant as unknown as string) || 'default'] ??
-        variantComponents['default'];
+    // Determine base styles: use variant styles if available, otherwise default styles
+    const baseStyles = variantStylesMap
+      ? variantStylesMap[(variant as string) || 'default'] ??
+        variantStylesMap['default']
+      : defaultStyles;
 
-      const componentProps = restProps as unknown as PropsWithoutRef<
-        AllBasePropsWithMods<K>
-      >;
+    // Merge base styles with instance styles and prop styles
+    const allStyles = useMemo(() => {
+      const hasStyles =
+        styles && Object.keys(styles as Record<string, unknown>).length > 0;
+      const hasPropStyles = propStyles && Object.keys(propStyles).length > 0;
 
-      const elementProps = {
-        ...componentProps,
-        ref,
-      } as PropsWithoutRef<AllBasePropsWithMods<K>> & RefAttributes<unknown>;
-
-      return createElement(Component, elementProps);
-    });
-  } else {
-    let {
-      qa: defaultQa,
-      qaVal: defaultQaVal,
-      ...otherDefaultProps
-    } = defaultProps ?? {};
-
-    // eslint-disable-next-line react/display-name
-    _TastyComponent = forwardRef<
-      unknown,
-      AllBasePropsWithMods<K> & WithVariant<V>
-    >((allProps, ref) => {
-      let {
-        as,
-        styles,
-        variant: _omitVariant,
-        mods,
-        element,
-        qa,
-        qaVal,
-        className: userClassName,
-        tokens,
-        style,
-        ...otherProps
-      } = allProps as Record<string, unknown> as AllBasePropsWithMods<K> &
-        WithVariant<V> & {
-          className?: string;
-          tokens?: Tokens;
-          style?: Record<string, unknown>;
-        };
-
-      // Optimize propStyles extraction - avoid creating empty objects
-      let propStyles: Styles | null = null;
-      const propsToCheck = styleProps
-        ? (styleProps as StyleList).concat(BASE_STYLES)
-        : BASE_STYLES;
-
-      for (const prop of propsToCheck) {
-        const key = prop as unknown as string;
-
-        if (!propStyles) propStyles = {};
-
-        if (key in otherProps) {
-          (propStyles as any)[key] = (otherProps as any)[key];
-          delete (otherProps as any)[key];
-        }
+      if (!hasStyles && !hasPropStyles) {
+        return baseStyles;
       }
 
-      if (
-        !styles ||
-        (styles && Object.keys(styles as Record<string, unknown>).length === 0)
-      ) {
-        styles = undefined as unknown as Styles;
-      }
+      return mergeStyles(baseStyles, styles as Styles, propStyles as Styles);
+    }, [baseStyles, styles, propStyles]);
 
-      // Merge default styles with instance styles and prop styles
-      const allStyles = useMemo(() => {
-        const hasStyles =
-          styles && Object.keys(styles as Record<string, unknown>).length > 0;
-        const hasPropStyles = propStyles && Object.keys(propStyles).length > 0;
+    // Use the useStyles hook for style generation and injection
+    const { className: stylesClassName } = useStyles(allStyles);
 
-        if (!hasStyles && !hasPropStyles) {
-          return defaultStyles;
-        }
+    // Merge default tokens with instance tokens (instance overrides defaults)
+    const tokensKey = stringifyTokens(tokens as Tokens | undefined);
+    const mergedTokens = useMemo(() => {
+      if (!defaultTokens && !tokens) return undefined;
+      if (!defaultTokens) return tokens as Tokens;
+      if (!tokens) return defaultTokens;
+      return { ...defaultTokens, ...tokens } as Tokens;
+    }, [tokensKey]);
 
-        return mergeStyles(
-          defaultStyles,
-          styles as Styles,
-          propStyles as Styles,
-        );
-      }, [styles, propStyles]);
+    // Process merged tokens into inline style properties
+    const processedTokenStyle = useMemo(() => {
+      return processTokens(mergedTokens);
+    }, [mergedTokens]);
 
-      // Use the useStyles hook for style generation and injection
-      const { className: stylesClassName } = useStyles(allStyles);
+    // Merge processed tokens with explicit style prop (style has priority)
+    const mergedStyle = useMemo(() => {
+      if (!processedTokenStyle && !style) return undefined;
+      if (!processedTokenStyle) return style;
+      if (!style) return processedTokenStyle;
+      return { ...processedTokenStyle, ...style };
+    }, [processedTokenStyle, style]);
 
-      // Merge default tokens with instance tokens (instance overrides defaults)
-      const tokensKey = stringifyTokens(tokens as Tokens | undefined);
-      const mergedTokens = useMemo(() => {
-        if (!defaultTokens && !tokens) return undefined;
-        if (!defaultTokens) return tokens as Tokens;
-        if (!tokens) return defaultTokens;
-        return { ...defaultTokens, ...tokens } as Tokens;
-      }, [tokensKey]);
+    let modProps: Record<string, unknown> | undefined;
+    if (mods) {
+      const modsObject = mods as unknown as Record<string, unknown>;
+      modProps = modAttrs(modsObject as any) as Record<string, unknown>;
+    }
 
-      // Process merged tokens into inline style properties
-      const processedTokenStyle = useMemo(() => {
-        return processTokens(mergedTokens);
-      }, [mergedTokens]);
+    // Merge user className with generated className
+    const finalClassName = [(userClassName as string) || '', stylesClassName]
+      .filter(Boolean)
+      .join(' ');
 
-      // Merge processed tokens with explicit style prop (style has priority)
-      const mergedStyle = useMemo(() => {
-        if (!processedTokenStyle && !style) return undefined;
-        if (!processedTokenStyle) return style;
-        if (!style) return processedTokenStyle;
-        return { ...processedTokenStyle, ...style };
-      }, [processedTokenStyle, style]);
+    const elementProps = {
+      'data-element': (element as string | undefined) || defaultElement,
+      'data-qa': (qa as string | undefined) || defaultQa,
+      'data-qaval': (qaVal as string | undefined) || defaultQaVal,
+      ...(otherDefaultProps as unknown as Record<string, unknown>),
+      ...(modProps || {}),
+      ...(otherProps as unknown as Record<string, unknown>),
+      className: finalClassName,
+      style: mergedStyle,
+      ref,
+    } as Record<string, unknown>;
 
-      let modProps: Record<string, unknown> | undefined;
-      if (mods) {
-        const modsObject = mods as unknown as Record<string, unknown>;
-        modProps = modAttrs(modsObject as any) as Record<string, unknown>;
-      }
+    // Apply the helper to handle is* properties
+    handleIsProperties(elementProps);
 
-      // Merge user className with generated className
-      const finalClassName = [(userClassName as string) || '', stylesClassName]
-        .filter(Boolean)
-        .join(' ');
+    const renderedElement = createElement(
+      (as as string | 'div') ?? originalAs,
+      elementProps,
+    );
 
-      const elementProps = {
-        'data-element': (element as string | undefined) || defaultElement,
-        'data-qa': (qa as string | undefined) || defaultQa,
-        'data-qaval': (qaVal as string | undefined) || defaultQaVal,
-        ...(otherDefaultProps as unknown as Record<string, unknown>),
-        ...(modProps || {}),
-        ...(otherProps as unknown as Record<string, unknown>),
-        className: finalClassName,
-        style: mergedStyle,
-        ref,
-      } as Record<string, unknown>;
-
-      // Apply the helper to handle is* properties
-      handleIsProperties(elementProps);
-
-      const renderedElement = createElement(
-        (as as string | 'div') ?? originalAs,
-        elementProps,
-      );
-
-      return renderedElement;
-    });
-  }
+    return renderedElement;
+  });
 
   _TastyComponent.displayName = `TastyComponent(${
     (defaultProps as any).qa || originalAs

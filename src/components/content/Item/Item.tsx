@@ -92,6 +92,7 @@ export type ItemMods = Mods<{
   'has-actions'?: boolean;
   'has-actions-content'?: boolean;
   'show-actions-on-hover'?: boolean;
+  'preserve-actions-space'?: boolean;
   checkbox?: boolean;
   disabled?: boolean;
   selected?: boolean;
@@ -126,6 +127,12 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * Uses opacity transition for visual hiding while maintaining layout space.
    */
   showActionsOnHover?: boolean;
+  /**
+   * When true, preserves the actions width when hidden (only changes opacity).
+   * Only applies when showActionsOnHover is true.
+   * @default false
+   */
+  preserveActionsSpace?: boolean;
   /**
    * When true, disables focus on action buttons by setting tabIndex={-1}.
    * @default true
@@ -330,8 +337,9 @@ const ItemElement = tasty({
       '!type=item': 't3m',
       'size=xsmall': 't4',
       'size=xlarge': 't2',
-      'size=xlarge & !type=item': 't2m',
       'size=inline': 'inline',
+      '!type=item & (size=medium | size=small | size=large)': 't3m',
+      '!type=item & size=xlarge': 't2m',
       '(type=header | type=card) & (size=xsmall | size=small | size=medium)':
         'h6',
       '(type=header | type=card) & size=large': 'h5',
@@ -474,7 +482,7 @@ const ItemElement = tasty({
       placeSelf: 'stretch',
       padding: {
         '': '0 $side-padding',
-        'has-actions-content & show-actions-on-hover & !:hover & !:focus & !:focus-within':
+        'has-actions-content & show-actions-on-hover & !preserve-actions-space & !:hover & !:focus & !:focus-within':
           '0',
       },
       boxSizing: 'border-box',
@@ -483,14 +491,17 @@ const ItemElement = tasty({
         '': 'fixed ($actions-width, 0px)',
         'has-actions-content & !show-actions-on-hover':
           'max calc-size(max-content, size)',
-        'has-actions-content & show-actions-on-hover': 'max 0px',
-        'has-actions-content & show-actions-on-hover & (:hover | :focus | :focus-within)':
+        'has-actions-content & show-actions-on-hover & !preserve-actions-space':
+          'max 0px',
+        'has-actions-content & show-actions-on-hover & !preserve-actions-space & (:hover | :focus | :focus-within)':
+          'max calc-size(max-content, size)',
+        'has-actions-content & show-actions-on-hover & preserve-actions-space':
           'max calc-size(max-content, size)',
       },
       opacity: {
         '': 1,
         'show-actions-on-hover': 0,
-        'show-actions-on-hover & (:hover | :focus | :focus-within)': 1,
+        'show-actions-on-hover & (:hover | :focus | :focus-within | :has([data-pressed]))': 1,
       },
       transition:
         'width $transition ease-out, opacity $transition ease-out, padding $transition ease-out',
@@ -574,6 +585,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isLoading = false,
     actions,
     showActionsOnHover = false,
+    preserveActionsSpace = false,
     disableActionsFocus = false,
     shape,
     defaultTooltipPlacement = 'top',
@@ -804,6 +816,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       'has-actions': !!actions,
       'has-actions-content': !!(actions && actions !== true),
       'show-actions-on-hover': showActionsOnHover === true,
+      'preserve-actions-space': preserveActionsSpace === true,
       checkbox: hasCheckbox,
       description: showDescription ? finalDescriptionPlacement : 'none',
     };
@@ -818,6 +831,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     hasCheckbox,
     actions,
     showActionsOnHover,
+    preserveActionsSpace,
     hasLabel,
   ]);
 

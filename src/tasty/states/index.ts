@@ -48,7 +48,12 @@ export interface AtRuleContext {
 }
 
 // Built-in state names that cannot be overridden
-const BUILTIN_STATES = new Set(['@starting', '@keyframes', '@supports']);
+const BUILTIN_STATES = new Set([
+  '@starting',
+  '@keyframes',
+  '@properties',
+  '@supports',
+]);
 
 // Reserved prefixes that are built-in
 const RESERVED_PREFIXES = [
@@ -58,6 +63,7 @@ const RESERVED_PREFIXES = [
   '@(',
   '@starting',
   '@keyframes',
+  '@properties',
   '@supports',
 ];
 

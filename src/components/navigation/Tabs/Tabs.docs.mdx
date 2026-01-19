@@ -1,0 +1,429 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Tab, Tabs } from './Tabs';
+import * as TabsStories from './Tabs.stories';
+
+<Meta of={TabsStories} />
+
+# Tabs
+
+An accessible tabbed interface for organizing content into multiple panels, showing one section at a time. Built with React Aria hooks for full keyboard navigation, screen reader support, and proper ARIA semantics.
+
+## When to Use
+
+- To organize related content into distinct sections within a single page
+- For settings panels with multiple categories
+- For navigation between different views without page reload
+- When content is mutually exclusive and only one section should be visible at a time
+- For file-like interfaces where multiple documents can be open
+
+## Component
+
+<Story of={TabsStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={TabsStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/BaseProperties)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the Tabs component.
+
+**Sub-elements:**
+
+- `Container` - The container holding the tab buttons
+- `Prefix` - Content rendered before the tab list
+- `Suffix` - Content rendered after the tab list
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `width`, `height`.
+
+### Modifiers
+
+The `mods` property accepts the following modifiers:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| `type` | `'default' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
+| `deletable` | `boolean` | True when onDelete callback is provided |
+
+For individual tabs:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| `type` | `'default' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
+| `active` | `boolean` | True when the tab is selected |
+| `deletable` | `boolean` | True when delete button is visible |
+| `disabled` | `boolean` | True when tab is disabled |
+
+## Variants
+
+### Types
+
+- `default` - Standard tabs with selection indicator below (default)
+- `file` - File-style tabs with fill highlight on selection, delimiter between tabs
+- `panel` - Panel-style tabs with border bottom highlight on selection, delimiter between tabs
+- `radio` - Radio button style for tab selection
+
+<Story of={TabsStories.DefaultType} />
+
+<Story of={TabsStories.FileType} />
+
+<Story of={TabsStories.PanelType} />
+
+### Sizes
+
+- `medium` - Default size with t3m typography
+- `large` - Larger tabs with t2m typography for emphasis
+
+<Story of={TabsStories.LargeSize} />
+
+## Compound Components
+
+### Tab
+
+Individual tab definition with title and optional content.
+
+```jsx
+<Tab key="unique-id" title="Tab Title">
+  Panel content here
+</Tab>
+```
+
+### Tabs.List
+
+Optional wrapper for tabs when using explicit panel placement.
+
+```jsx
+<Tabs.List>
+  <Tab key="tab1" title="Tab 1" />
+  <Tab key="tab2" title="Tab 2" />
+</Tabs.List>
+```
+
+### Tabs.Panel
+
+Explicit panel definition for advanced layout control.
+
+```jsx
+<Tabs.Panel key="tab1">
+  Panel 1 content
+</Tabs.Panel>
+```
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<Tabs defaultActiveKey="overview">
+  <Tab key="overview" title="Overview">
+    Overview content goes here.
+  </Tab>
+  <Tab key="settings" title="Settings">
+    Settings content goes here.
+  </Tab>
+</Tabs>
+```
+
+### Controlled Tabs
+
+Control the active tab externally with `activeKey` and `onChange`.
+
+<Story of={TabsStories.Controlled} />
+
+```jsx
+const [activeKey, setActiveKey] = useState('tab1');
+
+<Tabs activeKey={activeKey} onChange={setActiveKey}>
+  <Tab key="tab1" title="Tab 1">Content 1</Tab>
+  <Tab key="tab2" title="Tab 2">Content 2</Tab>
+</Tabs>
+```
+
+### Disabled Tab
+
+<Story of={TabsStories.DisabledTab} />
+
+```jsx
+<Tabs defaultActiveKey="tab1">
+  <Tab key="tab1" title="Active Tab">Content</Tab>
+  <Tab key="tab2" title="Disabled Tab" isDisabled>
+    Inaccessible content
+  </Tab>
+</Tabs>
+```
+
+### With Prefix and Suffix
+
+Add buttons or other elements before or after the tab list.
+
+<Story of={TabsStories.WithPrefixAndSuffix} />
+
+```jsx
+<Tabs
+  defaultActiveKey="items"
+  prefix={<Button size="small">Menu</Button>}
+  suffix={<Button size="small">Add New</Button>}
+>
+  <Tab key="items" title="Items">Item list</Tab>
+  <Tab key="archived" title="Archived">Archived items</Tab>
+</Tabs>
+```
+
+### Deletable Tabs
+
+Enable delete buttons with the `onDelete` callback.
+
+<Story of={TabsStories.Deletable} />
+
+```jsx
+const [tabs, setTabs] = useState([
+  { key: 'tab1', title: 'Tab 1' },
+  { key: 'tab2', title: 'Tab 2' },
+]);
+
+<Tabs
+  defaultActiveKey="tab1"
+  onDelete={(key) => setTabs(tabs.filter(t => t.key !== key))}
+>
+  {tabs.map(tab => (
+    <Tab key={tab.key} title={tab.title}>
+      Content for {tab.title}
+    </Tab>
+  ))}
+</Tabs>
+```
+
+### Navigation-Only Tabs
+
+Use tabs without panel content for navigation purposes.
+
+<Story of={TabsStories.NavigationOnly} />
+
+```jsx
+const [view, setView] = useState('overview');
+
+<Tabs activeKey={view} onChange={setView}>
+  <Tab key="overview" title="Overview" />
+  <Tab key="settings" title="Settings" />
+</Tabs>
+
+{view === 'overview' && <OverviewPage />}
+{view === 'settings' && <SettingsPage />}
+```
+
+### Explicit Panels
+
+Use `Tabs.List` and `Tabs.Panel` for more control over panel placement.
+
+<Story of={TabsStories.ExplicitPanels} />
+
+```jsx
+<Tabs defaultActiveKey="tab1">
+  <Tabs.List>
+    <Tab key="tab1" title="First" />
+    <Tab key="tab2" title="Second" />
+  </Tabs.List>
+  <Tabs.Panel key="tab1">First panel content</Tabs.Panel>
+  <Tabs.Panel key="tab2">Second panel content</Tabs.Panel>
+</Tabs>
+```
+
+### Prerender Mode
+
+Render all panels immediately but keep inactive ones hidden.
+
+<Story of={TabsStories.Prerender} />
+
+```jsx
+<Tabs defaultActiveKey="tab1" prerender>
+  <Tab key="tab1" title="Tab 1">Content 1</Tab>
+  <Tab key="tab2" title="Tab 2">Content 2</Tab>
+</Tabs>
+```
+
+### Keep Mounted Mode
+
+Keep visited panels in the DOM to preserve their state.
+
+<Story of={TabsStories.KeepMounted} />
+
+```jsx
+<Tabs defaultActiveKey="tab1" keepMounted>
+  <Tab key="tab1" title="Tab 1">
+    <FormWithState />
+  </Tab>
+  <Tab key="tab2" title="Tab 2">
+    <AnotherForm />
+  </Tab>
+</Tabs>
+```
+
+## Panel Rendering Modes
+
+| Mode | Behavior |
+|------|----------|
+| **Default** | Panel renders only when active, unmounts when inactive |
+| **prerender** | All panels render on mount, inactive ones hidden via `display: none` |
+| **keepMounted** | Panel renders when first activated, stays mounted thereafter |
+
+Override per-tab/panel:
+
+```jsx
+<Tabs prerender>
+  <Tab key="tab1" title="Prerendered">Always in DOM</Tab>
+  <Tab key="tab2" title="Lazy" prerender={false}>Lazy loaded</Tab>
+</Tabs>
+```
+
+### Optimized Lazy Rendering with `renderPanel`
+
+For tabs with expensive content, use the `renderPanel` prop for optimized lazy rendering.
+This prevents content from being evaluated on every parent render - only the active tab's
+content is computed, while inactive tabs use cached content.
+
+<Story of={TabsStories.LazyRenderingWithRenderPanel} />
+
+```jsx
+<Tabs
+  defaultActiveKey="tab1"
+  renderPanel={(key) => {
+    switch (key) {
+      case 'tab1': return <ExpensiveChart data={chartData} />;
+      case 'tab2': return <LargeTable rows={tableRows} />;
+      case 'tab3': return <ComplexForm fields={formFields} />;
+      default: return null;
+    }
+  }}
+>
+  <Tab key="tab1" title="Charts" />
+  <Tab key="tab2" title="Data Table" />
+  <Tab key="tab3" title="Settings" />
+</Tabs>
+```
+
+**How it works:**
+
+1. By default, `renderPanel(key)` is called on every Tabs render (no caching)
+2. Add `panelCacheKeys` to enable caching for specific panels
+3. Cached content is reused until the cache key changes
+
+```jsx
+// Enable caching with dependencies as cache keys
+<Tabs
+  renderPanel={(key) => <Panel data={data[key]} />}
+  panelCacheKeys={{
+    tab1: data.tab1.version,  // Cached, re-renders when version changes
+    tab2: data.tab2.version,  // Cached, re-renders when version changes
+    // tab3 has no cache key - re-renders on every Tabs render
+  }}
+>
+  ...
+</Tabs>
+```
+
+This approach is ideal for:
+- Tabs with complex visualizations or charts
+- Large data tables that are expensive to render
+- Forms with many fields
+- Any content that benefits from render caching
+- File Editor
+
+### Inside Layout
+
+Tabs work seamlessly inside Layout components. When placed in a `Layout` or `Layout.Content`, the tab panels automatically stretch to fill all remaining space below the tab bar. Use nested Layout components inside panels to create complex layouts.
+
+<Story of={TabsStories.InsideLayout} />
+
+```jsx
+<Layout height="400px">
+  <Layout.Content scrollbar="none" padding="0"> <!-- can be omitted if no other components are inside -->
+    <Tabs defaultActiveKey="tab1">
+      <Tab key="tab1" title="Dashboard">
+        <Layout fill="#purple.15">
+          <Layout.Content>
+            Dashboard content - stretches to fill remaining space
+          </Layout.Content>
+        </Layout>
+      </Tab>
+      <Tab key="tab2" title="Settings">
+        <Layout fill="#success.15">
+          <Layout.Content>
+            Settings content
+          </Layout.Content>
+        </Layout>
+      </Tab>
+    </Tabs>
+  </Layout.Content>
+</Layout>
+```
+
+**How it works:**
+- The tab bar has fixed height and doesn't grow
+- Tab panels use `display: contents`, allowing children to participate in parent flex layout
+- Nested Layout components with `flexGrow: 1` (default) stretch to fill remaining space
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Move focus into/out of the tab list
+- `ArrowLeft` / `ArrowRight` - Navigate between tabs
+- `Home` - Move to first tab
+- `End` - Move to last tab
+- `Enter` / `Space` - Activate focused tab
+
+### Screen Reader Support
+
+- Tab list announces as "tablist" role with proper label
+- Individual tabs announce as "tab" with selected state
+- Panels announce as "tabpanel" linked to their tab
+- Disabled tabs are announced as such
+
+### ARIA Properties
+
+- `aria-label` - Set via `label` prop on Tabs
+- `aria-selected` - Managed automatically for active tab
+- `aria-disabled` - Applied when `isDisabled` is true
+- `aria-controls` - Links tabs to their panels automatically
+- `aria-labelledby` - Links panels to their tabs automatically
+
+## Best Practices
+
+1. **Do**: Use clear, descriptive tab titles
+
+   ```jsx
+   <Tab key="billing" title="Billing & Payments">...</Tab>
+   ```
+
+2. **Don't**: Use vague or single-letter titles
+
+   ```jsx
+   <Tab key="b" title="B">...</Tab>
+   ```
+
+3. **Do**: Provide meaningful accessible labels
+
+   ```jsx
+   <Tabs label="Account Settings">...</Tabs>
+   ```
+
+4. **Performance**: Use `keepMounted` when tabs contain forms or stateful components
+
+5. **Performance**: Use `renderPanel` for tabs with expensive content to avoid re-evaluation on every render
+
+6. **Accessibility**: Ensure tab content is keyboard accessible
+
+## Related Components
+
+- [Disclosure](/docs/content-disclosure--docs) - For collapsible content sections
+- [Menu](/docs/actions-menu--docs) - For dropdown navigation menus
