@@ -259,11 +259,6 @@ export interface CubeTabsRef {
 
 const TabsElement = tasty({
   styles: {
-    '@properties': {
-      '$tabs-fade-left': { syntax: '<length>', initialValue: '0px' },
-      '$tabs-fade-right': { syntax: '<length>', initialValue: '0px' },
-    },
-
     display: 'flex',
     flow: 'row',
     placeItems: {
@@ -331,16 +326,20 @@ const TabsElement = tasty({
       scrollbar: 'none',
       flexGrow: 1,
       width: '100%',
-      fade: '$tabs-fade-left left $tabs-fade-right right',
-      transition: 'fade, $$tabs-fade-left, $$tabs-fade-right',
+      // Use multi-group fade with color tokens for smooth transitions
+      fade: '2x left #tabs-fade-left #black, 2x right #tabs-fade-right #black',
+      // ##name outputs --name-color (literal CSS property name)
+      transition:
+        '##tabs-fade-left $tab-transition ease-in, ##tabs-fade-right $tab-transition ease-in',
 
-      '$tabs-fade-left': {
-        '': '0px',
-        'fade-left': '2x',
+      // Transition transparent color: opaque (no fade) -> transparent (fade visible)
+      '#tabs-fade-left': {
+        '': 'rgb(0 0 0 / 1)',
+        'fade-left': 'rgb(0 0 0 / 0)',
       },
-      '$tabs-fade-right': {
-        '': '0px',
-        'fade-right': '2x',
+      '#tabs-fade-right': {
+        '': 'rgb(0 0 0 / 1)',
+        'fade-right': 'rgb(0 0 0 / 0)',
       },
     },
 
