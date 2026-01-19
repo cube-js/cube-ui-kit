@@ -7,6 +7,25 @@ const MAP = {
   scale: ['transform', 'scale'],
   placeSelf: ['transform', 'top', 'right', 'bottom', 'left'],
   fill: ['background-color'],
+  image: [
+    'background-image',
+    'background-position',
+    'background-size',
+    'background-repeat',
+    'background-attachment',
+    'background-origin',
+    'background-clip',
+  ],
+  background: [
+    'background-color',
+    'background-image',
+    'background-position',
+    'background-size',
+    'background-repeat',
+    'background-attachment',
+    'background-origin',
+    'background-clip',
+  ],
   border: ['border', 'box-shadow'],
   filter: ['filter', 'backdrop-filter'],
   radius: ['border-radius'],
@@ -34,7 +53,6 @@ const MAP = {
   height: ['max-height', 'min-height', 'height'],
   gap: ['gap', 'margin'],
   zIndex: ['z-index'],
-  image: ['background-image', 'background-position', 'background-size'],
 };
 
 export const DEFAULT_TIMING = 'var(--transition)';
