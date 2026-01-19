@@ -135,7 +135,19 @@ describe('Style Handlers Configuration', () => {
 
   describe('styleHandlers export', () => {
     it('should export wrapped handlers with __lookupStyles', () => {
-      expect(styleHandlers.fill.__lookupStyles).toEqual(['fill']);
+      expect(styleHandlers.fill.__lookupStyles).toEqual([
+        'fill',
+        'backgroundColor',
+        'image',
+        'backgroundImage',
+        'backgroundPosition',
+        'backgroundSize',
+        'backgroundRepeat',
+        'backgroundAttachment',
+        'backgroundOrigin',
+        'backgroundClip',
+        'background',
+      ]);
       expect(styleHandlers.gap.__lookupStyles).toEqual([
         'display',
         'flow',
@@ -238,7 +250,19 @@ describe('Style Handlers Configuration', () => {
 
       // Verify original handler is restored
       expect(STYLE_HANDLER_MAP['fill'][0]).not.toBe(customFill);
-      expect(STYLE_HANDLER_MAP['fill'][0].__lookupStyles).toEqual(['fill']);
+      expect(STYLE_HANDLER_MAP['fill'][0].__lookupStyles).toEqual([
+        'fill',
+        'backgroundColor',
+        'image',
+        'backgroundImage',
+        'backgroundPosition',
+        'backgroundSize',
+        'backgroundRepeat',
+        'backgroundAttachment',
+        'backgroundOrigin',
+        'backgroundClip',
+        'background',
+      ]);
     });
 
     it('should remove custom handlers for new style names', () => {

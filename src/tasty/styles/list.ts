@@ -44,7 +44,7 @@ export const BLOCK_STYLES = [
   ...BLOCK_OUTER_STYLES,
 ] as const;
 
-export const COLOR_STYLES = ['color', 'fill', 'fade'] as const;
+export const COLOR_STYLES = ['color', 'fill', 'fade', 'image'] as const;
 
 export const TEXT_STYLES = [
   'textTransform',

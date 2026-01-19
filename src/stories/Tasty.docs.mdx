@@ -727,6 +727,13 @@ color: {
 // Provides context variables: --current-color, --current-color-rgb
 ```
 
+#### `image` - Background Images
+```jsx
+image: 'url(/path/to/image.png)',
+image: 'linear-gradient(to right, #purple, #danger)',
+// Use with other background props: backgroundSize, backgroundPosition, etc.
+```
+
 #### `border` - Borders
 Enhanced border syntax with directional support:
 ```jsx
@@ -807,20 +814,15 @@ inset: true,                      // Default: 0
 #### `transition` - Animations
 Semantic transition names:
 ```jsx
-transition: 'fill 0.2s',          // Background transitions
+transition: 'fill 0.2s',          // Background color
+transition: 'background 0.2s',    // All background properties
 transition: 'fade 0.15s ease-in', // Mask transitions
 transition: 'theme 0.3s',         // All theme properties
 transition: 'border 0.2s, radius 0.3s', // Multiple properties
 
-// Available semantic names:
-// - fade: mask
-// - fill: background-color
-// - border: border, box-shadow
-// - radius: border-radius
-// - theme: color, background-color, box-shadow, border, border-radius, outline
-// - preset: font-size, line-height, letter-spacing, font-weight, font-style
-// - gap: gap, margin
-// - width/height: dimensions and constraints
+// Semantic names: fade, fill, image, background, border, radius, shadow,
+// outline, preset, text, theme, width, height, gap, zIndex, filter,
+// translate, rotate, scale, placeSelf, mark
 // Default timing: 'var(--transition)'
 ```
 

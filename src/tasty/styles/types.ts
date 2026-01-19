@@ -98,6 +98,27 @@ export interface StylesInterface
     | boolean
     | (string & {});
   /**
+   * @deprecated Use `fill` instead.
+   */
+  backgroundColor?: CSSProperties['backgroundColor'];
+  /**
+   * Set the background image of the element. Shortcut for `background-image` with enhanced support for Tasty tokens.
+   *
+   * Examples:
+   * - `image="url(/path/to/image.png)"` // image from URL
+   * - `image="linear-gradient(to right, #purple, #danger)"` // gradient
+   */
+  image?: CSSProperties['backgroundImage'];
+  /**
+   * @deprecated Use `image` instead.
+   */
+  backgroundImage?: CSSProperties['backgroundImage'];
+  /**
+   * @deprecated Use separate background styles (`fill`, `image`, `backgroundSize`, etc.) instead.
+   * When set, overrides all other background-related styles.
+   */
+  background?: CSSProperties['background'];
+  /**
    * Set the fill color of SVG elements. Outputs the native CSS `fill` property with enhanced support for Tasty color tokens and syntaxes.
    *
    * Examples:
