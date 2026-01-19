@@ -337,10 +337,9 @@ const ItemElement = tasty({
       '!type=item': 't3m',
       'size=xsmall': 't4',
       'size=xlarge': 't2',
-      'size=xlarge & !type=item': 't2m',
       'size=inline': 'inline',
-      'shape=button & size=medium': 't3m',
-      'shape=button & (size=large | size=xlarge)': 't2m',
+      '!type=item & (size=medium | size=small)': 't3m',
+      '!type=item & (size=large | size=xlarge)': 't2m',
       '(type=header | type=card) & (size=xsmall | size=small | size=medium)':
         'h6',
       '(type=header | type=card) & size=large': 'h5',
