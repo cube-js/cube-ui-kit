@@ -6,6 +6,37 @@
  * 2. Logical grouping - related styles grouped for better cache reuse
  *
  * See STYLE_CHUNKING_SPEC.md for detailed rationale.
+ *
+ * ============================================================================
+ * ⚠️  CRITICAL ARCHITECTURAL CONSTRAINT: NO CROSS-CHUNK HANDLER DEPENDENCIES
+ * ============================================================================
+ *
+ * Style handlers declare their dependencies via `__lookupStyles` array.
+ * This creates a dependency graph where handlers read multiple style props.
+ *
+ * **ALL styles in a handler's `__lookupStyles` MUST be in the SAME chunk.**
+ *
+ * Why this matters:
+ * 1. Each chunk computes a cache key from ONLY its own style values
+ * 2. If a handler reads a style from another chunk, that value isn't in the cache key
+ * 3. Changing the cross-chunk style won't invalidate this chunk's cache
+ * 4. Result: stale CSS output or incorrect cache hits
+ *
+ * Example of a violation:
+ * ```
+ * // flowStyle.__lookupStyles = ['display', 'flow']
+ * // If 'display' is in DISPLAY chunk and 'flow' is in LAYOUT chunk:
+ * // - User sets { display: 'grid', flow: 'column' }
+ * // - LAYOUT chunk caches CSS with flow=column, display=grid
+ * // - User changes to { display: 'flex', flow: 'column' }
+ * // - LAYOUT chunk cache key unchanged (only has 'flow')
+ * // - Returns stale CSS computed with display=grid!
+ * ```
+ *
+ * Before adding/moving styles, verify:
+ * 1. Find all handlers that use this style (grep for the style name in __lookupStyles)
+ * 2. Ensure ALL styles from each handler's __lookupStyles are in the same chunk
+ * ============================================================================
  */
 
 import { isSelector } from '../pipeline';
@@ -31,9 +62,10 @@ export const APPEARANCE_CHUNK_STYLES = [
 
 /**
  * Font chunk - typography styles
- * ⚠️ presetStyle handler requires: preset, fontSize, lineHeight, letterSpacing,
- *    textTransform, fontWeight, fontStyle, font - all MUST stay together
- * Note: textOverflow, whiteSpace moved to CONTAINER chunk (displayStyle handler)
+ *
+ * Handler dependencies (all styles in each handler MUST stay in this chunk):
+ * ⚠️ presetStyle: preset, fontSize, lineHeight, letterSpacing, textTransform,
+ *    fontWeight, fontStyle, font
  */
 export const FONT_CHUNK_STYLES = [
   // All from presetStyle handler - MUST stay together
@@ -56,8 +88,12 @@ export const FONT_CHUNK_STYLES = [
 
 /**
  * Dimension chunk - sizing and spacing
- * ⚠️ paddingStyle handler requires all padding variants together
- * ⚠️ marginStyle handler requires all margin variants together
+ *
+ * Handler dependencies (all styles in each handler MUST stay in this chunk):
+ * ⚠️ paddingStyle: padding, paddingTop/Right/Bottom/Left, paddingBlock/Inline
+ * ⚠️ marginStyle: margin, marginTop/Right/Bottom/Left, marginBlock/Inline
+ * ⚠️ widthStyle: width, minWidth, maxWidth
+ * ⚠️ heightStyle: height, minHeight, maxHeight
  */
 export const DIMENSION_CHUNK_STYLES = [
   // All from paddingStyle handler - MUST stay together
@@ -76,11 +112,12 @@ export const DIMENSION_CHUNK_STYLES = [
   'marginLeft',
   'marginBlock',
   'marginInline',
-  // Independent sizing styles
-  'width', // widthStyle (independent)
-  'height', // heightStyle (independent)
+  // widthStyle handler - MUST stay together
+  'width',
   'minWidth',
   'maxWidth',
+  // heightStyle handler - MUST stay together
+  'height',
   'minHeight',
   'maxHeight',
   'flexBasis',
@@ -90,32 +127,38 @@ export const DIMENSION_CHUNK_STYLES = [
 ] as const;
 
 /**
- * Display chunk - display mode, text overflow, and scrollbar
- * ⚠️ displayStyle handler requires: display, hide, textOverflow, overflow, whiteSpace
- *    Multi-line textOverflow needs display: -webkit-box
- *    Single-line textOverflow forces white-space: nowrap and overflow: hidden
- * ⚠️ scrollbarStyle reads overflow for 'always' mode fallback
+ * Display chunk - display mode, layout flow, text overflow, and scrollbar
+ *
+ * Handler dependencies (all styles in each handler MUST stay in this chunk):
+ * ⚠️ displayStyle: display, hide, textOverflow, overflow, whiteSpace
+ * ⚠️ flowStyle: display, flow
+ * ⚠️ gapStyle: display, flow, gap
+ * ⚠️ scrollbarStyle: scrollbar, overflow
  */
 export const DISPLAY_CHUNK_STYLES = [
-  'display', // displayStyle
-  'hide', // displayStyle
-  'textOverflow', // displayStyle
-  'overflow', // displayStyle, scrollbarStyle (reads for 'always' mode)
-  'whiteSpace', // displayStyle
-  'scrollbar', // scrollbarStyle
+  // displayStyle handler
+  'display',
+  'hide',
+  'textOverflow',
+  'overflow', // also used by scrollbarStyle
+  'whiteSpace',
+  // flowStyle handler (requires display)
+  'flow',
+  // gapStyle handler (requires display, flow)
+  'gap',
+  // scrollbarStyle handler (requires overflow)
+  'scrollbar',
   'styledScrollbar', // styledScrollbarStyle (deprecated)
 ] as const;
 
 /**
- * Layout chunk - flex/grid flow and alignment
- * ⚠️ flowStyle handler requires: display, flow together
- * ⚠️ gapStyle handler requires: display, flow, gap together
- * Note: display is in DISPLAY chunk, but flowStyle/gapStyle can still read it
+ * Layout chunk - flex/grid alignment and grid templates
+ *
+ * Note: flow and gap are in DISPLAY chunk due to handler dependencies
+ * (flowStyle and gapStyle both require 'display' prop).
  */
 export const LAYOUT_CHUNK_STYLES = [
-  'flow', // flowStyle: display ↔ flow
-  'gap', // gapStyle: display ↔ flow ↔ gap
-  // Alignment styles (independent but logically grouped)
+  // Alignment styles (all independent handlers)
   'placeItems',
   'placeContent',
   'alignItems',
