@@ -82,62 +82,81 @@ export function useKeyframes(
     ? options
     : (depsOrOptions as UseKeyframesOptions | undefined);
 
-  // Store the current keyframes result for cleanup
-  const resultRef = useRef<KeyframesResult | null>(null);
-  // Track the previous key to detect changes
-  const prevKeyRef = useRef<string | null>(null);
-
-  // Inject keyframes synchronously during render to ensure the animation name
-  // is available on the first render. The keyframes() function uses reference
-  // counting internally, so multiple calls with the same content are deduplicated.
-  const name = useMemo(
+  // Memoize the keyframes steps to get a stable reference
+  const stepsData = useMemo(
     () => {
       const steps = isFactory
         ? (stepsOrFactory as () => KeyframesSteps)()
         : (stepsOrFactory as KeyframesSteps);
 
-      const stepsKey = JSON.stringify(steps);
-
-      // If key matches and we already have a result, reuse it without calling
-      // keyframes() again to avoid incrementing refCount unnecessarily.
-      if (prevKeyRef.current === stepsKey && resultRef.current !== null) {
-        return resultRef.current.toString();
-      }
-
-      // Key changed or no previous result - dispose old result if present
-      if (resultRef.current !== null) {
-        resultRef.current.dispose();
-        resultRef.current = null;
-      }
-      prevKeyRef.current = stepsKey;
-
       if (!steps || Object.keys(steps).length === 0) {
-        return '';
+        return null;
       }
 
-      // Inject keyframes synchronously
-      const result = keyframes(steps, {
+      return steps;
+    },
+
+    isFactory ? deps ?? [] : [stepsOrFactory],
+  );
+
+  // Store keyframes results for cleanup - we need to track both the render-time
+  // injection (for the name) and the effect-time injection (for Strict Mode safety)
+  const renderResultRef = useRef<KeyframesResult | null>(null);
+  const effectResultRef = useRef<KeyframesResult | null>(null);
+
+  // Inject keyframes during render to ensure the animation name is available
+  // immediately. The keyframes() function uses reference counting internally,
+  // so multiple calls with the same content are deduplicated.
+  const name = useMemo(() => {
+    // Dispose previous render-time result if deps changed
+    renderResultRef.current?.dispose();
+    renderResultRef.current = null;
+
+    if (!stepsData) {
+      return '';
+    }
+
+    // Inject keyframes synchronously
+    const result = keyframes(stepsData, {
+      name: opts?.name,
+      root: opts?.root,
+    });
+
+    renderResultRef.current = result;
+
+    return result.toString();
+  }, [stepsData, opts?.name, opts?.root]);
+
+  // Handle injection and cleanup in useInsertionEffect to properly support
+  // React 18+ Strict Mode double-invocation (mount → unmount → mount).
+  // The effect setup re-injects the keyframes if cleanup was called, ensuring
+  // the CSS exists after Strict Mode remounts.
+  useInsertionEffect(() => {
+    // Dispose previous effect-time result
+    effectResultRef.current?.dispose();
+    effectResultRef.current = null;
+
+    // Re-inject keyframes. This ensures the CSS exists after Strict Mode cleanup.
+    // The keyframes() function uses reference counting, so this is idempotent
+    // if the CSS wasn't disposed.
+    if (stepsData) {
+      const result = keyframes(stepsData, {
         name: opts?.name,
         root: opts?.root,
       });
+      effectResultRef.current = result;
+    }
 
-      resultRef.current = result;
-
-      return result.toString();
-    },
-
-    isFactory
-      ? [...(deps ?? []), opts?.name, opts?.root]
-      : [stepsOrFactory, opts?.name, opts?.root],
-  );
-
-  // Cleanup on unmount
-  useInsertionEffect(() => {
+    // Cleanup on unmount or when dependencies change.
+    // Dispose both the effect-time and render-time results to properly
+    // decrement the reference count.
     return () => {
-      resultRef.current?.dispose();
-      resultRef.current = null;
+      effectResultRef.current?.dispose();
+      effectResultRef.current = null;
+      renderResultRef.current?.dispose();
+      renderResultRef.current = null;
     };
-  }, []);
+  }, [stepsData, opts?.name, opts?.root]);
 
   return name;
 }
