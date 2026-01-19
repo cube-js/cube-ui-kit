@@ -16,7 +16,6 @@ import { flowStyle } from './flow';
 import { fontStyle } from './font';
 import { fontStyleStyle } from './fontStyle';
 import { gapStyle } from './gap';
-import { groupRadiusAttr } from './groupRadius';
 import { heightStyle } from './height';
 import { insetStyle } from './inset';
 import { justifyStyle } from './justify';
@@ -208,7 +207,6 @@ export function predefine() {
     outlineStyle,
     fontStyle,
     fontStyleStyle,
-    groupRadiusAttr,
     // DEPRECATED: `styledScrollbar` is deprecated, use `scrollbar` instead
     styledScrollbarStyle,
     scrollbarStyle,
@@ -456,7 +454,6 @@ export const styleHandlers = {
   font: wrapHandler(fontStyle),
   fontStyle: wrapHandler(fontStyleStyle),
   gap: wrapHandler(gapStyle),
-  groupRadius: wrapHandler(groupRadiusAttr),
   height: wrapHandler(heightStyle),
   inset: wrapHandler(insetStyle),
   justify: wrapHandler(justifyStyle),

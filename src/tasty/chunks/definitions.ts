@@ -94,7 +94,7 @@ export const DIMENSION_CHUNK_STYLES = [
  * Container chunk - display, flow, and grid layout
  * ⚠️ FORCED TOGETHER by transitive handler dependencies:
  *    displayStyle(display,hide) + flowStyle(display,flow) +
- *    gapStyle(display,flow,gap) + groupRadiusAttr(groupRadius,flow)
+ *    gapStyle(display,flow,gap)
  */
 export const CONTAINER_CHUNK_STYLES = [
   // Forced together by handler dependencies
@@ -102,7 +102,6 @@ export const CONTAINER_CHUNK_STYLES = [
   'hide', // displayStyle: display ↔ hide
   'flow', // flowStyle: display ↔ flow
   'gap', // gapStyle: display ↔ flow ↔ gap
-  'groupRadius', // groupRadiusAttr: groupRadius ↔ flow
   // Related container styles (independent but logically grouped)
   'placeItems',
   'placeContent',

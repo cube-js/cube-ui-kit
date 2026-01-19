@@ -310,18 +310,6 @@ export interface StylesInterface
    */
   radius?: 'round' | 'ellipse' | 'leaf' | 'backleaf' | string | true;
   /**
-   * The group radius style rounds the corners of a container's outer border edge by applying radius styles to its children.
-   *
-   * Syntax: `[value] [shape]` | `true`
-   *
-   * Examples:
-   * - `groupRadius="2r"` // apply 2r radius to children
-   * - `groupRadius="round"` // fully rounded children
-   * - `groupRadius="ellipse"` // elliptical children corners
-   * - `groupRadius={true}` // default group radius
-   */
-  groupRadius?: 'round' | 'ellipse' | string | boolean;
-  /**
    * The flow style is a unified shorthand for controlling layout direction and wrapping in both flex and grid containers. Replaces `flexDirection` and `gridAutoFlow`.
    *
    * For flex: sets `flex-flow` (direction + wrapping)

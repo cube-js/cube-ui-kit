@@ -1,32 +1,140 @@
 import { DIRECTIONS, filterMods, parseStyle } from '../utils/styles';
 
-export function insetStyle({ inset }) {
-  if (typeof inset === 'number') {
-    inset = `${inset}px`;
-  }
+/**
+ * Parse an inset value and return the first processed value
+ */
+function parseInsetValue(value: string | number | boolean): string | null {
+  if (typeof value === 'number') return `${value}px`;
+  if (!value) return null;
+  if (value === true) value = '0';
 
-  if (!inset) return;
+  const { values } = parseStyle(value).groups[0] ?? { values: [] };
 
-  if (inset === true) inset = '0 0 0 0';
-
-  const processed = parseStyle(inset);
-  let { values, mods } =
-    processed.groups[0] ?? ({ values: [], mods: [] } as any);
-
-  let directions = filterMods(mods, DIRECTIONS);
-
-  if (!values.length) {
-    values = ['0'];
-  }
-
-  if (!directions.length) {
-    directions = DIRECTIONS;
-  }
-
-  return directions.reduce((styles, dir, index) => {
-    styles[dir] = values[index] || values[index % 2] || values[0];
-    return styles;
-  }, {});
+  return values[0] || '0';
 }
 
-insetStyle.__lookupStyles = ['inset'];
+/**
+ * Parse inset value with optional directions (like "1x top" or "2x left right")
+ */
+function parseDirectionalInset(value: string | number | boolean): {
+  values: string[];
+  directions: string[];
+} {
+  if (typeof value === 'number') {
+    return { values: [`${value}px`], directions: [] };
+  }
+  if (!value) return { values: [], directions: [] };
+  if (value === true) value = '0';
+
+  const { values = [], mods = [] } = parseStyle(value).groups[0] ?? {};
+
+  return {
+    values: values.length ? values : ['0'],
+    directions: filterMods(mods, DIRECTIONS),
+  };
+}
+
+export function insetStyle({
+  inset,
+  insetBlock,
+  insetInline,
+  top,
+  right,
+  bottom,
+  left,
+}: {
+  inset?: string | number | boolean;
+  insetBlock?: string | number | boolean;
+  insetInline?: string | number | boolean;
+  top?: string | number | boolean;
+  right?: string | number | boolean;
+  bottom?: string | number | boolean;
+  left?: string | number | boolean;
+}) {
+  // If no inset is defined, return empty object
+  if (
+    inset == null &&
+    insetBlock == null &&
+    insetInline == null &&
+    top == null &&
+    right == null &&
+    bottom == null &&
+    left == null
+  ) {
+    return {};
+  }
+
+  // Initialize all directions to auto
+  let [topVal, rightVal, bottomVal, leftVal] = ['auto', 'auto', 'auto', 'auto'];
+
+  // Priority 1 (lowest): inset
+  if (inset != null) {
+    const { values, directions } = parseDirectionalInset(inset);
+
+    if (values.length) {
+      if (directions.length === 0) {
+        topVal = values[0];
+        rightVal = values[1] || values[0];
+        bottomVal = values[2] || values[0];
+        leftVal = values[3] || values[1] || values[0];
+      } else {
+        for (const dir of directions) {
+          const idx = DIRECTIONS.indexOf(dir);
+          const val = values[idx] || values[idx % 2] || values[0];
+          if (dir === 'top') topVal = val;
+          else if (dir === 'right') rightVal = val;
+          else if (dir === 'bottom') bottomVal = val;
+          else if (dir === 'left') leftVal = val;
+        }
+      }
+    }
+  }
+
+  // Priority 2 (medium): insetBlock/insetInline
+  if (insetBlock != null) {
+    const val = parseInsetValue(insetBlock);
+    if (val) topVal = bottomVal = val;
+  }
+  if (insetInline != null) {
+    const val = parseInsetValue(insetInline);
+    if (val) leftVal = rightVal = val;
+  }
+
+  // Priority 3 (highest): individual directions
+  if (top != null) {
+    const val = parseInsetValue(top);
+    if (val) topVal = val;
+  }
+  if (right != null) {
+    const val = parseInsetValue(right);
+    if (val) rightVal = val;
+  }
+  if (bottom != null) {
+    const val = parseInsetValue(bottom);
+    if (val) bottomVal = val;
+  }
+  if (left != null) {
+    const val = parseInsetValue(left);
+    if (val) leftVal = val;
+  }
+
+  // Optimize output: 1 value if all same, 2 values if top==bottom && left==right
+  if (topVal === rightVal && rightVal === bottomVal && bottomVal === leftVal) {
+    return { inset: topVal };
+  }
+  if (topVal === bottomVal && leftVal === rightVal) {
+    return { inset: `${topVal} ${leftVal}` };
+  }
+
+  return { inset: `${topVal} ${rightVal} ${bottomVal} ${leftVal}` };
+}
+
+insetStyle.__lookupStyles = [
+  'inset',
+  'insetBlock',
+  'insetInline',
+  'top',
+  'right',
+  'bottom',
+  'left',
+];
