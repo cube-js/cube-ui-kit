@@ -319,13 +319,12 @@ describe('<Tabs />', () => {
         </Tabs>,
       );
 
-      // The radio type affects the styling - TabsElement uses data-type="radio",
-      // while individual tabs use data-radio boolean attribute
+      // Both TabsElement and individual tabs use data-type="radio" value modifier
       const tabsElement = getByTestId('Tabs');
       const tab = getByRole('tab');
 
       expect(tabsElement).toHaveAttribute('data-type', 'radio');
-      expect(tab.hasAttribute('data-radio')).toBe(true);
+      expect(tab).toHaveAttribute('data-type', 'radio');
     });
 
     it('should render with large size', () => {
