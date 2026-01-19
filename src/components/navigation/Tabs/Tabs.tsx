@@ -34,7 +34,7 @@ import {
 
 import { useEvent } from '../../../_internal/hooks';
 import { CloseIcon } from '../../../icons';
-import { BaseProps, Styles, tasty, useProperty } from '../../../tasty';
+import { BaseProps, Styles, tasty } from '../../../tasty';
 import { chainRaf } from '../../../utils/raf';
 import { ItemAction } from '../../actions/ItemAction';
 import { CubeItemProps, Item } from '../../content/Item';
@@ -259,6 +259,11 @@ export interface CubeTabsRef {
 
 const TabsElement = tasty({
   styles: {
+    '@properties': {
+      '$tabs-fade-left': { syntax: '<length>', initialValue: '0px' },
+      '$tabs-fade-right': { syntax: '<length>', initialValue: '0px' },
+    },
+
     display: 'flex',
     flow: 'row',
     placeItems: {
@@ -327,7 +332,7 @@ const TabsElement = tasty({
       flexGrow: 1,
       width: '100%',
       fade: '$tabs-fade-left left $tabs-fade-right right',
-      transition: 'fade, --tabs-fade-left, --tabs-fade-right',
+      transition: 'fade, $$tabs-fade-left, $$tabs-fade-right',
 
       '$tabs-fade-left': {
         '': '0px',
@@ -1314,10 +1319,6 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
     renderPanel,
     panelCacheKeys,
   } = props;
-
-  // Register CSS properties for fade animation
-  useProperty('--tabs-fade-left', { syntax: '<length>', initialValue: '0px' });
-  useProperty('--tabs-fade-right', { syntax: '<length>', initialValue: '0px' });
 
   // DOM element ref (separate from imperative handle ref)
   const elementRef = useRef<HTMLDivElement>(null);

@@ -90,6 +90,21 @@ export function classify(
     return { bucket: Bucket.Value, processed: token };
   }
 
+  // 0. Double prefix for literal CSS property names ($$name -> --name, ##name -> --name-color)
+  // Used in transitions and animations to reference the property name itself, not its value
+  if (token.startsWith('$$')) {
+    const name = token.slice(2);
+    if (/^[a-z_][a-z0-9-_]*$/i.test(name)) {
+      return { bucket: Bucket.Value, processed: `--${name}` };
+    }
+  }
+  if (token.startsWith('##')) {
+    const name = token.slice(2);
+    if (/^[a-z_][a-z0-9-_]*$/i.test(name)) {
+      return { bucket: Bucket.Value, processed: `--${name}-color` };
+    }
+  }
+
   // 0a. Check for predefined tokens (configured via configure({ tokens: {...} }))
   // Must happen before default $ and # handling to allow overriding
   if (token[0] === '$' || token[0] === '#') {

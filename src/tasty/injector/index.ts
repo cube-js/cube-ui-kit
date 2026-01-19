@@ -256,6 +256,7 @@ export type {
   KeyframesCacheEntry,
   CacheMetrics,
   RawCSSResult,
+  PropertyDefinition,
 } from './types';
 
 export { StyleInjector } from './injector';

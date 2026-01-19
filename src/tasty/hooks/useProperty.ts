@@ -4,7 +4,8 @@ import { getGlobalInjector } from '../config';
 
 export interface UsePropertyOptions {
   /**
-   * CSS syntax string for the property (e.g., '<color>', '<length>', '<angle>')
+   * CSS syntax string for the property (e.g., '<color>', '<length>', '<angle>').
+   * For color tokens (#name), this is auto-set to '<color>' and cannot be overridden.
    * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@property/syntax
    */
   syntax?: string;
@@ -14,7 +15,8 @@ export interface UsePropertyOptions {
    */
   inherits?: boolean;
   /**
-   * Initial value for the property
+   * Initial value for the property.
+   * For color tokens (#name), this defaults to 'transparent' if not specified.
    */
   initialValue?: string | number;
   /**
@@ -30,26 +32,18 @@ export interface UsePropertyOptions {
  * Note: @property rules are global and persistent once defined.
  * The hook ensures the property is only registered once per root.
  *
- * @param name - The custom property name (must start with --)
+ * Accepts tasty token syntax for the property name:
+ * - `$name` → defines `--name`
+ * - `#name` → defines `--name-color` (auto-sets syntax: '<color>', defaults initialValue: 'transparent')
+ * - `--name` → defines `--name` (legacy format)
+ *
+ * @param name - The property token ($name, #name) or CSS property name (--name)
  * @param options - Property configuration
  *
- * @example Basic color property
- * ```tsx
- * function MyComponent() {
- *   useProperty('--my-color', {
- *     syntax: '<color>',
- *     initialValue: 'red',
- *   });
- *
- *   // Now --my-color can be animated with CSS transitions
- *   return <div style={{ '--my-color': 'blue' } as React.CSSProperties}>Colored</div>;
- * }
- * ```
- *
- * @example Angle property for rotations
+ * @example Basic property with token syntax
  * ```tsx
  * function Spinner() {
- *   useProperty('--rotation', {
+ *   useProperty('$rotation', {
  *     syntax: '<angle>',
  *     inherits: false,
  *     initialValue: '0deg',
@@ -59,7 +53,19 @@ export interface UsePropertyOptions {
  * }
  * ```
  *
- * @example Length property
+ * @example Color property with token syntax (auto-sets syntax)
+ * ```tsx
+ * function MyComponent() {
+ *   useProperty('#theme', {
+ *     initialValue: 'red', // syntax: '<color>' is auto-set
+ *   });
+ *
+ *   // Now --theme-color can be animated with CSS transitions
+ *   return <div style={{ '--theme-color': 'blue' } as React.CSSProperties}>Colored</div>;
+ * }
+ * ```
+ *
+ * @example Legacy format (still supported)
  * ```tsx
  * function ResizableBox() {
  *   useProperty('--box-size', {
@@ -83,11 +89,9 @@ export function useProperty(name: string, options?: UsePropertyOptions): void {
   }, [options?.syntax, options?.inherits, options?.initialValue]);
 
   useInsertionEffect(() => {
-    if (!name || !name.startsWith('--')) {
+    if (!name) {
       if (process.env.NODE_ENV !== 'production') {
-        console.warn(
-          `[Tasty] useProperty: property name must start with "--". Got: "${name}"`,
-        );
+        console.warn(`[Tasty] useProperty: property name is required`);
       }
       return;
     }
@@ -95,11 +99,14 @@ export function useProperty(name: string, options?: UsePropertyOptions): void {
     const injector = getGlobalInjector();
 
     // Check if already defined (properties are persistent)
+    // The injector handles token parsing internally
     if (injector.isPropertyDefined(name, { root: options?.root })) {
       return;
     }
 
     // Register the property
+    // The injector handles $name, #name, --name parsing and auto-sets
+    // syntax for color tokens
     injector.property(name, {
       syntax: options?.syntax,
       inherits: options?.inherits,

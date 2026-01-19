@@ -1,6 +1,6 @@
 import { CSSProperties } from 'react';
 
-import { KeyframesSteps } from '../injector/types';
+import { KeyframesSteps, PropertyDefinition } from '../injector/types';
 import { StyleValue, StyleValueStateMap } from '../utils/styles';
 
 type NamedColor =
@@ -469,6 +469,19 @@ export interface StylesInterface
    * - `'@keyframes': { pulse: { '0%, 100%': 'transform: scale(1)', '50%': 'transform: scale(1.05)' } }`
    */
   '@keyframes'?: Record<string, KeyframesSteps>;
+  /**
+   * CSS @property definitions for custom properties using tasty token syntax.
+   * Properties are registered once and are permanent (never removed).
+   *
+   * Token formats:
+   * - `$name` for regular properties → `--name` (requires syntax to be specified)
+   * - `#name` for color properties → `--name-color` (auto-sets syntax: '<color>', defaults initialValue: 'transparent')
+   *
+   * Examples:
+   * - `'@properties': { '$rotation': { syntax: '<angle>', inherits: false, initialValue: '45deg' } }`
+   * - `'@properties': { '#theme': { initialValue: 'purple' } }` // syntax: '<color>' is auto-set
+   */
+  '@properties'?: Record<string, PropertyDefinition>;
 }
 
 export type SuffixForSelector =
