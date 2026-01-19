@@ -230,7 +230,7 @@ export const PanelType: Story = {
  */
 export const RadioType: Story = {
   render: (args) => (
-    <Tabs {...args} type="radio" defaultActiveKey="tab1">
+    <Tabs {...args} type="radio" defaultActiveKey="tab1" width="50x">
       <Tab key="tab1" title="Daily" />
       <Tab key="tab2" title="Weekly" />
       <Tab key="tab3" title="Monthly" />

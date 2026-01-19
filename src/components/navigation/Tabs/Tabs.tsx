@@ -34,7 +34,14 @@ import {
 
 import { useEvent } from '../../../_internal/hooks';
 import { CloseIcon } from '../../../icons';
-import { BaseProps, Styles, tasty } from '../../../tasty';
+import {
+  BaseProps,
+  extractStyles,
+  OUTER_STYLES,
+  OuterStyleProps,
+  Styles,
+  tasty,
+} from '../../../tasty';
 import { chainRaf } from '../../../utils/raf';
 import { ItemAction } from '../../actions/ItemAction';
 import { CubeItemProps, Item } from '../../content/Item';
@@ -110,7 +117,10 @@ interface TabStyleProps extends Omit<CubeItemProps, OmittedItemProps> {
   showActionsOnHover?: boolean;
 }
 
-export interface CubeTabsProps extends BaseProps, PanelBehaviorProps {
+export interface CubeTabsProps
+  extends BaseProps,
+    OuterStyleProps,
+    PanelBehaviorProps {
   /** Controlled active tab key. When provided, component is controlled. */
   activeKey?: Key;
   /** Initial active tab key for uncontrolled mode. */
@@ -315,6 +325,10 @@ const TabsElement = tasty({
       flexGrow: 1,
       flexShrink: 1,
       width: 'min 0',
+      overflow: {
+        '': 'hidden',
+        'type=radio': 'visible',
+      },
     },
 
     Scroll: {
@@ -327,6 +341,15 @@ const TabsElement = tasty({
       scrollbar: 'none',
       flexGrow: 1,
       width: '100%',
+      // Add padding/margin for radio type to allow shadow to render outside
+      padding: {
+        '': 0,
+        'type=radio': '.5x',
+      },
+      margin: {
+        '': 0,
+        'type=radio': '-.5x',
+      },
       // Use multi-group fade with color tokens for smooth transitions
       fade: '2x left #tabs-fade-left #black, 2x right #tabs-fade-right #black',
       // ##name outputs --name-color (literal CSS property name)
@@ -348,13 +371,20 @@ const TabsElement = tasty({
       position: 'relative',
       display: 'grid',
       gridAutoFlow: 'column',
+      gridAutoColumns: {
+        '': 'auto',
+        'type=radio': '1fr',
+      },
       gap: {
         '': 0,
         'type=radio': '.5x',
       },
       placeContent: 'start',
       overflow: 'visible',
-      width: 'max-content',
+      width: {
+        '': 'max-content',
+        'type=radio': '100%',
+      },
     },
 
     // Custom horizontal scrollbar (tiny) - positioned relative to ScrollWrapper
@@ -1285,7 +1315,6 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
     onTitleChange,
     showActionsOnHover,
     children,
-    styles,
     prefix,
     suffix,
     prerender = false,
@@ -1293,7 +1322,11 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
     qa = 'Tabs',
     renderPanel,
     panelCacheKeys,
+    ...otherProps
   } = props;
+
+  // Extract outer styles (width, height, margin, etc.) and styles prop from props
+  const combinedStyles = extractStyles(otherProps, OUTER_STYLES);
 
   // DOM element ref (separate from imperative handle ref)
   const elementRef = useRef<HTMLDivElement>(null);
@@ -1555,7 +1588,7 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
         ref={elementRef}
         qa={qa}
         mods={mods}
-        styles={styles}
+        styles={combinedStyles}
         style={handleHStyle}
         data-size={size}
       >
