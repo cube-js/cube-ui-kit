@@ -128,6 +128,8 @@ configure({
 | `funcs` | `Record<string, Function>` | - | Custom parser functions (merged with existing) |
 | `handlers` | `Record<string, StyleHandlerDefinition>` | Built-in | Custom style handlers (replace built-in) |
 | `tokens` | `Record<string, string \| number>` | - | Predefined tokens replaced during parsing |
+| `keyframes` | `Record<string, KeyframesSteps>` | - | Global keyframes for animations |
+| `properties` | `Record<string, PropertyDefinition>` | - | Global CSS @property definitions |
 
 ### Predefined Tokens
 
@@ -1431,6 +1433,40 @@ The hook accepts the same token syntax as `@properties` in styles:
 - `$name` → registers `--name`
 - `#name` → registers `--name-color` with auto-set `syntax: '<color>'`
 - `--name` → legacy format, still supported
+
+#### Global Properties via configure()
+
+Define properties globally that are available to all components. Properties are registered once when the first style is injected:
+
+```jsx
+import { configure } from '@cube-dev/ui-kit';
+
+// Configure before app renders
+configure({
+  properties: {
+    '$rotation': { syntax: '<angle>', inherits: false, initialValue: '0deg' },
+    '$scale': { syntax: '<number>', initialValue: 1 },
+    '#accent': { initialValue: 'purple' }, // syntax: '<color>' auto-set
+  },
+});
+
+// Now any component can use these properties without defining them locally
+const Spinner = tasty({
+  styles: {
+    transform: 'rotate($rotation)',
+    transition: '$$rotation 0.5s linear',
+    '$rotation': {
+      '': '0deg',
+      spinning: '360deg',
+    },
+  },
+});
+```
+
+**Key features:**
+- Global properties are injected once when styles are first generated
+- Same token syntax as local properties (`$name`, `#name`)
+- Must be configured before any component renders
 
 ### Variants & Theming
 

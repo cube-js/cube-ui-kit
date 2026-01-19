@@ -28,7 +28,7 @@ import {
   setGlobalPredefinedTokens,
 } from './utils/styles';
 
-import type { KeyframesSteps } from './injector/types';
+import type { KeyframesSteps, PropertyDefinition } from './injector/types';
 import type { StyleDetails, UnitHandler } from './parser/types';
 import type { TastyPlugin } from './plugins/types';
 import type { StyleHandlerDefinition } from './utils/styles';
@@ -113,6 +113,34 @@ export interface TastyConfig {
    * ```
    */
   keyframes?: Record<string, KeyframesSteps>;
+  /**
+   * Global CSS @property definitions for custom properties.
+   * Keys use tasty token syntax ($name for properties, #name for colors).
+   * Properties are only injected when the component using them is rendered.
+   *
+   * For color tokens (#name), `syntax: '<color>'` is auto-set and
+   * `initialValue` defaults to `'transparent'` if not specified.
+   *
+   * @example
+   * ```ts
+   * configure({
+   *   properties: {
+   *     '$rotation': { syntax: '<angle>', initialValue: '0deg' },
+   *     '$scale': { syntax: '<number>', inherits: false, initialValue: 1 },
+   *     '#accent': { initialValue: 'purple' }, // syntax: '<color>' auto-set
+   *   },
+   * });
+   *
+   * // Now use in styles - properties are registered when component renders:
+   * const Spinner = tasty({
+   *   styles: {
+   *     transform: 'rotate($rotation)',
+   *     transition: '$$rotation 0.3s', // outputs: --rotation 0.3s
+   *   },
+   * });
+   * ```
+   */
+  properties?: Record<string, PropertyDefinition>;
   /**
    * Custom style handlers that transform style properties into CSS declarations.
    * Handlers replace built-in handlers for the same style name.
@@ -199,6 +227,9 @@ let currentConfig: TastyConfig | null = null;
 // Global keyframes storage (null = no keyframes configured, empty object checked via hasGlobalKeyframes)
 let globalKeyframes: Record<string, KeyframesSteps> | null = null;
 
+// Global properties storage (null = no properties configured)
+let globalProperties: Record<string, PropertyDefinition> | null = null;
+
 // Global injector instance key
 const GLOBAL_INJECTOR_KEY = '__TASTY_GLOBAL_INJECTOR__';
 
@@ -267,9 +298,21 @@ function createDefaultConfig(isTest?: boolean): TastyConfig {
 /**
  * Mark that styles have been generated (called by injector on first inject)
  * This locks the configuration - no further changes allowed.
+ * Also injects any global properties that were configured.
  */
 export function markStylesGenerated(): void {
+  if (stylesGenerated) return; // Already marked, skip
+
   stylesGenerated = true;
+
+  // Inject global properties if any were configured
+  // Properties are permanent and only need to be injected once
+  if (globalProperties && Object.keys(globalProperties).length > 0) {
+    const injector = getGlobalInjector();
+    for (const [token, definition] of Object.entries(globalProperties)) {
+      injector.property(token, definition);
+    }
+  }
 }
 
 /**
@@ -321,6 +364,47 @@ function setGlobalKeyframes(keyframes: Record<string, KeyframesSteps>): void {
     return;
   }
   globalKeyframes = keyframes;
+}
+
+// ============================================================================
+// Global Properties Management
+// ============================================================================
+
+/**
+ * Check if any global properties are configured.
+ * Fast path: returns false if no properties were ever set.
+ */
+export function hasGlobalProperties(): boolean {
+  return globalProperties !== null && Object.keys(globalProperties).length > 0;
+}
+
+/**
+ * Get global properties configuration.
+ * Returns null if no properties configured (fast path for zero-overhead).
+ */
+export function getGlobalProperties(): Record<
+  string,
+  PropertyDefinition
+> | null {
+  return globalProperties;
+}
+
+/**
+ * Set global properties (called from configure).
+ * Internal use only.
+ */
+function setGlobalProperties(
+  properties: Record<string, PropertyDefinition>,
+): void {
+  if (stylesGenerated) {
+    warnOnce(
+      'properties-after-styles',
+      `[Tasty] Cannot update properties after styles have been generated.\n` +
+        `The new properties will be ignored.`,
+    );
+    return;
+  }
+  globalProperties = properties;
 }
 
 /**
@@ -442,6 +526,11 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     setGlobalKeyframes(config.keyframes);
   }
 
+  // Handle properties
+  if (config.properties) {
+    setGlobalProperties(config.properties);
+  }
+
   // Handle custom handlers
   if (Object.keys(mergedHandlers).length > 0) {
     for (const [name, definition] of Object.entries(mergedHandlers)) {
@@ -462,7 +551,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     setGlobalPredefinedTokens(processedTokens);
   }
 
-  // Create config without states, parser options, plugins, keyframes, handlers, and tokens (handled separately)
+  // Create config without states, parser options, plugins, keyframes, properties, handlers, and tokens (handled separately)
   const {
     states: _states,
     parserCacheSize: _parserCacheSize,
@@ -470,6 +559,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     funcs: _funcs,
     plugins: _plugins,
     keyframes: _keyframes,
+    properties: _properties,
     handlers: _handlers,
     tokens: _tokens,
     ...injectorConfig
@@ -522,6 +612,7 @@ export function resetConfig(): void {
   stylesGenerated = false;
   currentConfig = null;
   globalKeyframes = null;
+  globalProperties = null;
   resetGlobalPredefinedTokens();
   resetHandlers();
   clearPipelineCache();

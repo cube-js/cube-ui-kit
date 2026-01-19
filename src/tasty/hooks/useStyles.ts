@@ -247,13 +247,14 @@ export function useStyles(styles: UseStylesOptions): UseStylesResult {
       }
     }
 
-    // Register @properties if defined (no dispose needed - properties are permanent)
+    // Register local @properties if defined (no dispose needed - properties are permanent)
     // Token formats: $name → --name, #name → --name-color (with auto syntax: '<color>')
     // The injector.property() handles token parsing and auto-settings internally
+    // Note: Global properties are injected once when styles are first generated (see markStylesGenerated)
     if (currentStyles && hasLocalProperties(currentStyles)) {
-      const properties = extractLocalProperties(currentStyles);
-      if (properties) {
-        for (const [token, definition] of Object.entries(properties)) {
+      const localProperties = extractLocalProperties(currentStyles);
+      if (localProperties) {
+        for (const [token, definition] of Object.entries(localProperties)) {
           // Pass the token directly - injector handles parsing
           property(token, definition);
         }
