@@ -153,6 +153,58 @@ describe('<Tabs />', () => {
         'true',
       );
     });
+
+    it('should handle numeric activeKey (converted to string)', () => {
+      const { getByRole, rerender } = renderWithRoot(
+        <Tabs activeKey={1}>
+          <Tab key={1} title="Tab 1">
+            Content 1
+          </Tab>
+          <Tab key={2} title="Tab 2">
+            Content 2
+          </Tab>
+        </Tabs>,
+      );
+
+      expect(getByRole('tab', { name: 'Tab 1' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+
+      rerender(
+        <Tabs activeKey={2}>
+          <Tab key={1} title="Tab 1">
+            Content 1
+          </Tab>
+          <Tab key={2} title="Tab 2">
+            Content 2
+          </Tab>
+        </Tabs>,
+      );
+
+      expect(getByRole('tab', { name: 'Tab 2' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    });
+
+    it('should handle numeric defaultActiveKey', () => {
+      const { getByRole } = renderWithRoot(
+        <Tabs defaultActiveKey={2}>
+          <Tab key={1} title="Tab 1">
+            Content 1
+          </Tab>
+          <Tab key={2} title="Tab 2">
+            Content 2
+          </Tab>
+        </Tabs>,
+      );
+
+      expect(getByRole('tab', { name: 'Tab 2' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    });
   });
 
   describe('Disabled Tabs', () => {

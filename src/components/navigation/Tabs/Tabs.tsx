@@ -1523,19 +1523,25 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
     onChange?.(key);
   });
 
+  // Convert keys to strings for React Aria compatibility
+  // (all internal tab keys are strings via getRawKey)
+  const selectedKey = activeKey != null ? String(activeKey) : undefined;
+  const defaultSelectedKey =
+    defaultActiveKey != null ? String(defaultActiveKey) : undefined;
+
   // Create aria props for useTabListState
   const ariaProps: AriaTabListProps<object> = useMemo(
     () => ({
-      selectedKey: activeKey,
-      defaultSelectedKey: defaultActiveKey,
+      selectedKey,
+      defaultSelectedKey,
       onSelectionChange: handleSelectionChange,
       disabledKeys,
       children: collectionItems,
       'aria-label': label,
     }),
     [
-      activeKey,
-      defaultActiveKey,
+      selectedKey,
+      defaultSelectedKey,
       handleSelectionChange,
       disabledKeys,
       collectionItems,
