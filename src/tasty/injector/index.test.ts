@@ -453,8 +453,9 @@ describe('Global Style Injector API', () => {
       expect(allCssText).toContain('background-color: blue');
       expect(allCssText).toContain('font-size: 12px');
       expect(allCssText).toContain('font-size: 16px');
-      expect(allCssText).toContain('margin-top: 10px');
-      expect(allCssText).toContain('margin-top: 20px');
+      // marginTop is now handled by marginStyle which outputs margin shorthand
+      expect(allCssText).toContain('margin: 10px 0 0 0');
+      expect(allCssText).toContain('margin: 20px 0 0 0');
 
       // Check that camelCase properties are NOT present
       expect(allCssText).not.toContain('backgroundColor');
