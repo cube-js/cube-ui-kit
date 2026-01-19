@@ -5,7 +5,7 @@ export function insetStyle({ inset }) {
     inset = `${inset}px`;
   }
 
-  if (!inset) return '';
+  if (!inset) return;
 
   if (inset === true) inset = '0 0 0 0';
 

@@ -1,0 +1,304 @@
+/**
+ * Tests for custom style handler registration via configure() and plugins.
+ */
+import { resetConfig } from './config';
+import { renderStyles } from './pipeline';
+import {
+  normalizeHandlerDefinition,
+  registerHandler,
+  resetHandlers,
+  STYLE_HANDLER_MAP,
+  styleHandlers,
+} from './styles';
+
+describe('Style Handlers Configuration', () => {
+  describe('normalizeHandlerDefinition', () => {
+    it('should normalize function-only definition', () => {
+      const handler = ({ fill }) =>
+        fill ? { 'background-color': fill } : undefined;
+      const normalized = normalizeHandlerDefinition('fill', handler);
+
+      expect(normalized.__lookupStyles).toEqual(['fill']);
+      expect(typeof normalized).toBe('function');
+    });
+
+    it('should normalize single lookup style tuple', () => {
+      const handler = ({ myProp }) =>
+        myProp ? { 'custom-prop': myProp } : undefined;
+      const normalized = normalizeHandlerDefinition('customName', [
+        'myProp',
+        handler,
+      ]);
+
+      expect(normalized.__lookupStyles).toEqual(['myProp']);
+    });
+
+    it('should normalize multi lookup style tuple', () => {
+      const handler = ({ display, flow, gap }) =>
+        gap ? { gap: gap } : undefined;
+      const normalized = normalizeHandlerDefinition('customGap', [
+        ['display', 'flow', 'gap'],
+        handler,
+      ]);
+
+      expect(normalized.__lookupStyles).toEqual(['display', 'flow', 'gap']);
+    });
+
+    it('should throw error for incomplete tuple (missing handler)', () => {
+      expect(() => {
+        // @ts-expect-error - testing invalid input
+        normalizeHandlerDefinition('fill', ['fill']);
+      }).toThrow(
+        '[Tasty] Invalid handler definition for "fill". Tuple must have a function as the second element',
+      );
+    });
+
+    it('should throw error for tuple with invalid first element', () => {
+      expect(() => {
+        // @ts-expect-error - testing invalid input
+        normalizeHandlerDefinition('test', [123, () => ({})]);
+      }).toThrow(
+        '[Tasty] Invalid handler definition for "test". First element must be a string or string array',
+      );
+    });
+
+    it('should throw error for non-function, non-array definition', () => {
+      expect(() => {
+        // @ts-expect-error - testing invalid input
+        normalizeHandlerDefinition('test', 'invalid');
+      }).toThrow(
+        '[Tasty] Invalid handler definition for "test". Expected function, [string, function], or [string[], function]',
+      );
+    });
+
+    it('should wrap handler to avoid mutation when same function is reused', () => {
+      const sharedHandler = ({ propA, propB }) => ({
+        'prop-a': propA || 'none',
+        'prop-b': propB || 'none',
+      });
+
+      const normalizedA = normalizeHandlerDefinition('propA', sharedHandler);
+      const normalizedB = normalizeHandlerDefinition('propB', sharedHandler);
+
+      // Each normalized handler should be a different function
+      expect(normalizedA).not.toBe(normalizedB);
+      expect(normalizedA).not.toBe(sharedHandler);
+      expect(normalizedB).not.toBe(sharedHandler);
+
+      // Each should have its own __lookupStyles
+      expect(normalizedA.__lookupStyles).toEqual(['propA']);
+      expect(normalizedB.__lookupStyles).toEqual(['propB']);
+
+      // Original function should not be mutated
+      expect((sharedHandler as any).__lookupStyles).toBeUndefined();
+    });
+  });
+
+  describe('registerHandler', () => {
+    it('should replace existing handlers for lookup styles', () => {
+      // Get the original handler count
+      const originalHandlers = STYLE_HANDLER_MAP['fill']?.length || 0;
+
+      // Create a custom handler
+      const customFill = ({ fill }) =>
+        fill ? { 'background-color': `custom-${fill}` } : undefined;
+      customFill.__lookupStyles = ['fill'];
+
+      // Register it
+      registerHandler(customFill);
+
+      // Should have replaced (not appended)
+      expect(STYLE_HANDLER_MAP['fill']).toHaveLength(1);
+      expect(STYLE_HANDLER_MAP['fill'][0]).toBe(customFill);
+
+      // Restore original by re-registering built-in handler
+      registerHandler(styleHandlers.fill);
+    });
+
+    it('should register handler under multiple lookup styles', () => {
+      const multiHandler = ({ propA, propB }) => ({
+        'prop-a': propA || 'default',
+        'prop-b': propB || 'default',
+      });
+      multiHandler.__lookupStyles = ['propA', 'propB'];
+
+      registerHandler(multiHandler);
+
+      expect(STYLE_HANDLER_MAP['propA']).toEqual([multiHandler]);
+      expect(STYLE_HANDLER_MAP['propB']).toEqual([multiHandler]);
+
+      // Cleanup
+      delete STYLE_HANDLER_MAP['propA'];
+      delete STYLE_HANDLER_MAP['propB'];
+    });
+  });
+
+  describe('styleHandlers export', () => {
+    it('should export wrapped handlers with __lookupStyles', () => {
+      expect(styleHandlers.fill.__lookupStyles).toEqual(['fill']);
+      expect(styleHandlers.gap.__lookupStyles).toEqual([
+        'display',
+        'flow',
+        'gap',
+      ]);
+      expect(styleHandlers.border.__lookupStyles).toBeDefined();
+      expect(styleHandlers.padding.__lookupStyles).toBeDefined();
+    });
+
+    it('should allow calling wrapped handlers directly', () => {
+      const result = styleHandlers.fill({ fill: '#red' });
+      expect(result).toEqual({ 'background-color': 'var(--red-color)' });
+    });
+
+    it('should return void for falsy values', () => {
+      const result = styleHandlers.fill({ fill: '' });
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('custom handler integration', () => {
+    it('should use custom handler in renderStyles', () => {
+      // Register a custom handler that adds a prefix
+      const customFill = ({ fill }) => {
+        if (!fill) return;
+        return { 'background-color': `custom-${fill}` };
+      };
+      customFill.__lookupStyles = ['fill'];
+
+      // Save original
+      const originalHandler = STYLE_HANDLER_MAP['fill']?.[0];
+
+      // Register custom
+      registerHandler(customFill);
+
+      // Render styles
+      const result = renderStyles({ fill: 'blue' }, '.test');
+
+      // Should use custom handler
+      expect(result[0].declarations).toContain('custom-blue');
+
+      // Restore original
+      if (originalHandler) {
+        registerHandler(originalHandler);
+      }
+    });
+
+    it('should support delegating to built-in handler', () => {
+      const customFill = ({ fill }) => {
+        if (fill?.startsWith('gradient:')) {
+          return { background: fill.slice(9) };
+        }
+        // Delegate to built-in
+        return styleHandlers.fill({ fill });
+      };
+      customFill.__lookupStyles = ['fill'];
+
+      // Save original
+      const originalHandler = STYLE_HANDLER_MAP['fill']?.[0];
+
+      // Register custom
+      registerHandler(customFill);
+
+      // Test gradient path
+      const gradientResult = renderStyles(
+        { fill: 'gradient:linear-gradient(red, blue)' },
+        '.test',
+      );
+      expect(gradientResult[0].declarations).toContain(
+        'linear-gradient(red, blue)',
+      );
+
+      // Test delegation path
+      const normalResult = renderStyles({ fill: '#purple' }, '.test');
+      expect(normalResult[0].declarations).toContain('var(--purple-color)');
+
+      // Restore original
+      if (originalHandler) {
+        registerHandler(originalHandler);
+      }
+    });
+  });
+
+  describe('resetHandlers', () => {
+    it('should restore STYLE_HANDLER_MAP to initial state', () => {
+      // Get original fill handler
+      const originalFillHandler = STYLE_HANDLER_MAP['fill']?.[0];
+
+      // Register a custom handler
+      const customFill = ({ fill }) =>
+        fill ? { 'background-color': `custom-${fill}` } : undefined;
+      customFill.__lookupStyles = ['fill'];
+      registerHandler(customFill);
+
+      // Verify custom handler is registered
+      expect(STYLE_HANDLER_MAP['fill'][0]).toBe(customFill);
+
+      // Reset handlers
+      resetHandlers();
+
+      // Verify original handler is restored
+      expect(STYLE_HANDLER_MAP['fill'][0]).not.toBe(customFill);
+      expect(STYLE_HANDLER_MAP['fill'][0].__lookupStyles).toEqual(['fill']);
+    });
+
+    it('should remove custom handlers for new style names', () => {
+      // Register a handler for a new style name
+      const customElevation = ({ elevation }) =>
+        elevation ? { 'box-shadow': `0 ${elevation}px` } : undefined;
+      customElevation.__lookupStyles = ['elevation'];
+      registerHandler(customElevation);
+
+      // Verify custom handler is registered
+      expect(STYLE_HANDLER_MAP['elevation']).toBeDefined();
+
+      // Reset handlers
+      resetHandlers();
+
+      // Verify custom handler is removed (elevation is not a built-in style)
+      expect(STYLE_HANDLER_MAP['elevation']).toBeUndefined();
+    });
+  });
+
+  describe('resetConfig integration', () => {
+    it('should reset handlers when resetConfig is called', () => {
+      // Register a custom handler
+      const customFill = ({ fill }) =>
+        fill ? { 'background-color': `reset-test-${fill}` } : undefined;
+      customFill.__lookupStyles = ['fill'];
+      registerHandler(customFill);
+
+      // Verify custom handler is registered
+      expect(STYLE_HANDLER_MAP['fill'][0]).toBe(customFill);
+
+      // Reset config (which should call resetHandlers)
+      resetConfig();
+
+      // Verify handlers are restored to built-in defaults
+      expect(STYLE_HANDLER_MAP['fill'][0]).not.toBe(customFill);
+
+      // Verify built-in handler works correctly
+      const result = renderStyles({ fill: '#blue' }, '.test');
+      expect(result[0].declarations).toContain('var(--blue-color)');
+      expect(result[0].declarations).not.toContain('reset-test-');
+    });
+
+    it('should clear pipeline cache when resetConfig is called', () => {
+      // First, render with custom handler to populate cache
+      const customFill = ({ fill }) =>
+        fill ? { 'background-color': `cached-${fill}` } : undefined;
+      customFill.__lookupStyles = ['fill'];
+      registerHandler(customFill);
+
+      // Render to populate cache
+      const cachedResult = renderStyles({ fill: 'test-value' }, '.cache-test');
+      expect(cachedResult[0].declarations).toContain('cached-test-value');
+
+      // Reset config (should clear both handlers and cache)
+      resetConfig();
+
+      // Render same styles - should use built-in handler, not cached custom result
+      const freshResult = renderStyles({ fill: 'test-value' }, '.cache-test');
+      expect(freshResult[0].declarations).not.toContain('cached-');
+    });
+  });
+});

@@ -3,7 +3,7 @@ import { parseColor } from '../utils/styles';
 import { convertColorChainToRgbChain } from './createStyle';
 
 export function colorStyle({ color }) {
-  if (!color) return '';
+  if (!color) return;
 
   if (color === true) color = 'currentColor';
 

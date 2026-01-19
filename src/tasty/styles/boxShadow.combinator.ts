@@ -13,7 +13,7 @@ export function boxShadowCombinator(styles) {
     [],
   );
 
-  if (!values.length) return '';
+  if (!values.length) return;
 
   return { 'box-shadow': values.join(', ') };
 }
