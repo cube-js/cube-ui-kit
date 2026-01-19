@@ -245,11 +245,15 @@ export interface StylesInterface
    *
    * Syntax: `[width] [style] [color] [directions]` | `[directions]` | `true`
    *
+   * Multiple groups can be separated by commas. Later groups override earlier groups for conflicting directions.
+   *
    * Examples:
    * - `border={true}` // default border on all sides (1bw solid)
    * - `border="2bw dashed #purple"` // 2bw dashed purple border
    * - `border="2bw top"` // only top border: 2bw solid
    * - `border="dotted #danger left right"` // left/right: 1bw dotted danger
+   * - `border="1bw #red, 2bw #blue top"` // all sides red 1bw, top overridden to blue 2bw
+   * - `border="1bw, dashed top bottom, #purple left right"` // base 1bw, dashed on top/bottom, purple on left/right
    */
   border?: CSSProperties['border'] | string | boolean;
   /**
