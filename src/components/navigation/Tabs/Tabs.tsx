@@ -1486,7 +1486,7 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
         const keyStr = String(key);
         const tabData = tabDataMap.get(keyStr);
 
-        if (tabData?.isEditable) {
+        if (tabData?.isEditable && !tabData?.isDisabled) {
           const titleText =
             typeof tabData.title === 'string'
               ? tabData.title
