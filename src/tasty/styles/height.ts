@@ -2,8 +2,18 @@ import { dimensionStyle } from './dimension';
 
 const dimension = dimensionStyle('height');
 
-export function heightStyle({ height }) {
-  return dimension(height);
+interface HeightStyleProps {
+  height?: string | number | boolean;
+  minHeight?: string | number | boolean;
+  maxHeight?: string | number | boolean;
 }
 
-heightStyle.__lookupStyles = ['height'];
+export function heightStyle({
+  height,
+  minHeight,
+  maxHeight,
+}: HeightStyleProps) {
+  return dimension({ value: height, min: minHeight, max: maxHeight });
+}
+
+heightStyle.__lookupStyles = ['height', 'minHeight', 'maxHeight'];

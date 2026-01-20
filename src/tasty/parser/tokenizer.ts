@@ -1,8 +1,12 @@
 export type TokenCallback = (
   token: string,
   isComma: boolean,
+  isSlash: boolean,
   precedingChar: string | null,
 ) => void;
+
+const isWhitespace = (ch: string | undefined): boolean =>
+  ch === ' ' || ch === '\n' || ch === '\t' || ch === '\r' || ch === '\f';
 
 export function scan(src: string, cb: TokenCallback) {
   let depth = 0;
@@ -10,13 +14,21 @@ export function scan(src: string, cb: TokenCallback) {
   let inQuote: string | 0 = 0;
   let start = 0;
   let i = 0;
+  // Track if we just saw a standalone slash separator (whitespace before, whitespace after)
+  let pendingSlash = false;
 
-  const flush = (isComma: boolean) => {
+  const flush = (isComma: boolean, isSlash: boolean) => {
+    // If we have a pending slash, emit the part break
+    const actualSlash = isSlash || pendingSlash;
+    pendingSlash = false;
+
     if (start < i) {
       const prevChar = start > 0 ? src[start - 1] : null;
-      cb(src.slice(start, i), isComma, prevChar);
+      cb(src.slice(start, i), isComma, actualSlash, prevChar);
     } else if (isComma) {
-      cb('', true, null); // empty token followed by comma => group break.
+      cb('', true, false, null); // empty token followed by comma => group break.
+    } else if (actualSlash) {
+      cb('', false, true, null); // empty token followed by slash => part break.
     }
     start = i + 1;
   };
@@ -54,20 +66,28 @@ export function scan(src: string, cb: TokenCallback) {
 
     if (!depth) {
       if (ch === ',') {
-        flush(true);
+        flush(true, false);
         continue;
       }
-      if (
-        ch === ' ' ||
-        ch === '\n' ||
-        ch === '\t' ||
-        ch === '\r' ||
-        ch === '\f'
-      ) {
-        flush(false);
+      // Slash is only a separator when surrounded by whitespace (e.g., "a / b")
+      // This preserves CSS patterns like "center/cover" as single tokens
+      if (ch === '/') {
+        const prevIsWhitespace = isWhitespace(src[i - 1]);
+        const nextIsWhitespace = isWhitespace(src[i + 1]);
+        if (prevIsWhitespace && nextIsWhitespace) {
+          // Already flushed by whitespace before, mark pending slash
+          pendingSlash = true;
+          start = i + 1; // skip the slash character
+          continue;
+        }
+        // Not surrounded by whitespace - treat as part of token
+        continue;
+      }
+      if (isWhitespace(ch)) {
+        flush(false, false);
         continue;
       }
     }
   }
-  flush(false); // tail
+  flush(false, false); // tail
 }

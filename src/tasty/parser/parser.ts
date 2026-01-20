@@ -4,10 +4,13 @@ import { scan } from './tokenizer';
 import {
   Bucket,
   finalizeGroup,
+  finalizePart,
   makeEmptyDetails,
+  makeEmptyPart,
   ParserOptions,
   ProcessedStyle,
   StyleDetails,
+  StyleDetailsPart,
 } from './types';
 
 export class StyleParser {
@@ -28,7 +31,9 @@ export class StyleParser {
       .toLowerCase();
 
     const groups: StyleDetails[] = [];
-    let current = makeEmptyDetails();
+    let currentGroup = makeEmptyDetails();
+    let currentPart = makeEmptyPart();
+    let parts: StyleDetailsPart[] = [];
 
     const pushToken = (bucket: Bucket, processed: string) => {
       if (!processed) return;
@@ -37,15 +42,15 @@ export class StyleParser {
       // background layer segments like "url(img) no-repeat center/cover" are kept
       // as a single value entry.
       const mergeIntoPrevUrl = () => {
-        const lastIdx = current.values.length - 1;
-        current.values[lastIdx] += ` ${processed}`;
-        const lastAllIdx = current.all.length - 1;
-        current.all[lastAllIdx] += ` ${processed}`;
+        const lastIdx = currentPart.values.length - 1;
+        currentPart.values[lastIdx] += ` ${processed}`;
+        const lastAllIdx = currentPart.all.length - 1;
+        currentPart.all[lastAllIdx] += ` ${processed}`;
       };
 
       const prevIsUrlValue =
-        current.values.length > 0 &&
-        current.values[current.values.length - 1].startsWith('url(');
+        currentPart.values.length > 0 &&
+        currentPart.values[currentPart.values.length - 1].startsWith('url(');
 
       if (prevIsUrlValue) {
         // Extend the existing url(...) value regardless of current bucket.
@@ -57,31 +62,52 @@ export class StyleParser {
 
       switch (bucket) {
         case Bucket.Color:
-          current.colors.push(processed);
+          currentPart.colors.push(processed);
           break;
         case Bucket.Value:
-          current.values.push(processed);
+          currentPart.values.push(processed);
           break;
         case Bucket.Mod:
-          current.mods.push(processed);
+          currentPart.mods.push(processed);
           break;
       }
-      current.all.push(processed);
+      currentPart.all.push(processed);
+    };
+
+    const endPart = () => {
+      // Only add non-empty parts
+      if (currentPart.all.length > 0) {
+        finalizePart(currentPart);
+        parts.push(currentPart);
+      }
+      currentPart = makeEmptyPart();
     };
 
     const endGroup = () => {
-      finalizeGroup(current);
-      groups.push(current);
-      current = makeEmptyDetails();
+      endPart(); // finalize last part
+
+      // Ensure at least one part exists (even if empty) for backward compat
+      if (parts.length === 0) {
+        parts.push(makeEmptyPart());
+        finalizePart(parts[0]);
+      }
+
+      finalizeGroup(currentGroup, parts);
+      groups.push(currentGroup);
+
+      // Reset for next group
+      currentGroup = makeEmptyDetails();
+      parts = [];
+      currentPart = makeEmptyPart();
     };
 
-    scan(stripped, (tok, isComma, prevChar) => {
+    scan(stripped, (tok, isComma, isSlash, prevChar) => {
       if (tok) {
-        // Accumulate raw token into current.input
-        if (current.input) {
-          current.input += ` ${tok}`;
+        // Accumulate raw token into currentGroup.input
+        if (currentGroup.input) {
+          currentGroup.input += ` ${tok}`;
         } else {
-          current.input = tok;
+          currentGroup.input = tok;
         }
 
         const { bucket, processed } = classify(tok, this.opts, (sub) =>
@@ -89,11 +115,12 @@ export class StyleParser {
         );
         pushToken(bucket, processed);
       }
+      if (isSlash) endPart();
       if (isComma) endGroup();
     });
 
     // push final group if not already
-    if (current.all.length || !groups.length) endGroup();
+    if (currentPart.all.length || parts.length || !groups.length) endGroup();
 
     const output = groups.map((g) => g.output).join(', ');
     const result: ProcessedStyle = { output, groups };

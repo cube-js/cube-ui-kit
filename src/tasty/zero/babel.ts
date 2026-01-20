@@ -20,21 +20,10 @@
 import { declare } from '@babel/helper-plugin-utils';
 import * as t from '@babel/types';
 
-import { replaceAnimationNames } from '../keyframes';
-import { setGlobalPredefinedStates } from '../states';
-import {
-  normalizeHandlerDefinition,
-  registerHandler,
-} from '../styles/predefined';
+import { configure } from '../config';
 import { Styles } from '../styles/types';
 import { mergeStyles } from '../utils/mergeStyles';
-import {
-  CUSTOM_UNITS,
-  getGlobalFuncs,
-  getGlobalParser,
-  setGlobalPredefinedTokens,
-  StyleHandlerDefinition,
-} from '../utils/styles';
+import { StyleHandlerDefinition } from '../utils/styles';
 
 import { CSSWriter } from './css-writer';
 import {
@@ -47,6 +36,7 @@ import {
 import type { NodePath, PluginPass } from '@babel/core';
 import type { KeyframesSteps } from '../injector/types';
 import type { StyleDetails, UnitHandler } from '../parser/types';
+import type { TastyPlugin } from '../plugins/types';
 
 /**
  * Build-time configuration for zero-runtime mode.
@@ -64,6 +54,11 @@ export interface TastyZeroConfig {
    */
   devMode?: boolean;
   /**
+   * Parser LRU cache size (default: 1000).
+   * Larger values improve performance for builds with many unique style values.
+   */
+  parserCacheSize?: number;
+  /**
    * Custom units for the style parser (merged with built-in units).
    * Units transform numeric values like `2x` → `calc(2 * var(--gap))`.
    * @example { em: 'em', vw: 'vw', custom: (n) => `${n * 10}px` }
@@ -75,6 +70,24 @@ export interface TastyZeroConfig {
    * @example { myFunc: (groups) => groups.map(g => g.output).join(' ') }
    */
   funcs?: Record<string, (groups: StyleDetails[]) => string>;
+  /**
+   * Plugins that extend tasty with custom functions, units, states, handlers, or tokens.
+   * Plugins are processed in order, with later plugins overriding earlier ones.
+   * @example
+   * ```ts
+   * import { okhslPlugin } from '@cube-dev/ui-kit/tasty/plugins';
+   *
+   * // babel.config.js
+   * module.exports = {
+   *   plugins: [
+   *     ['@cube-dev/ui-kit/tasty/zero/babel', {
+   *       config: { plugins: [okhslPlugin()] }
+   *     }]
+   *   ]
+   * };
+   * ```
+   */
+  plugins?: TastyPlugin[];
   /**
    * Global keyframes definitions for static extraction.
    * Keys are animation names, values are keyframes step definitions.
@@ -136,46 +149,9 @@ export default declare<TastyZeroBabelOptions>((api, options) => {
   const config = options.config || {};
   const devMode = config.devMode ?? false;
 
-  // Apply global predefined states if configured
-  if (config.states) {
-    setGlobalPredefinedStates(config.states);
-  }
-
-  // Apply parser configuration (merge semantics - extend, not replace)
-  const parser = getGlobalParser();
-
-  if (config.units) {
-    // Merge with existing units
-    const currentUnits = parser.getUnits() ?? CUSTOM_UNITS;
-    parser.setUnits({ ...currentUnits, ...config.units });
-  }
-
-  if (config.funcs) {
-    // Merge with existing funcs
-    const currentFuncs = getGlobalFuncs();
-    const mergedFuncs = { ...currentFuncs, ...config.funcs };
-    parser.setFuncs(mergedFuncs);
-    // Also update the global registry so customFunc() continues to work
-    Object.assign(currentFuncs, config.funcs);
-  }
-
-  // Apply custom handlers
-  if (config.handlers) {
-    for (const [name, definition] of Object.entries(config.handlers)) {
-      const handler = normalizeHandlerDefinition(name, definition);
-      registerHandler(handler);
-    }
-  }
-
-  // Apply predefined tokens if configured
-  if (config.tokens) {
-    // Store tokens (keys are normalized to lowercase by setGlobalPredefinedTokens)
-    const processedTokens: Record<string, string> = {};
-    for (const [key, value] of Object.entries(config.tokens)) {
-      processedTokens[key] = String(value);
-    }
-    setGlobalPredefinedTokens(processedTokens);
-  }
+  // Apply configuration using the shared configure() function
+  // This handles plugin merging, states, units, funcs, handlers, tokens, etc.
+  configure(config);
 
   const cssWriter = new CSSWriter(outputPath, { devMode });
 

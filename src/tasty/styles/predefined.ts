@@ -13,10 +13,9 @@ import { displayStyle } from './display';
 import { fadeStyle } from './fade';
 import { fillStyle, svgFillStyle } from './fill';
 import { flowStyle } from './flow';
-import { fontStyle } from './font';
-import { fontStyleStyle } from './fontStyle';
+// Note: fontStyle (font.ts) and fontStyleStyle (fontStyle.ts) removed
+// Both font and fontStyle props are now handled by presetStyle
 import { gapStyle } from './gap';
-import { groupRadiusAttr } from './groupRadius';
 import { heightStyle } from './height';
 import { insetStyle } from './inset';
 import { justifyStyle } from './justify';
@@ -143,34 +142,6 @@ export function defineStyleAlias(
 }
 
 export function predefine() {
-  // Manually define styles that are used in other custom styles.
-  // Otherwise, they won't be handled as expected.
-  defineStyleAlias('fontSize', 'font-size', numberConverter);
-  defineStyleAlias('lineHeight', 'line-height', numberConverter);
-  defineStyleAlias('fontWeight', 'font-weight', numberConverter);
-  defineStyleAlias('fontStyle');
-  defineStyleAlias('letterSpacing', 'letter-spacing', numberConverter);
-  defineStyleAlias('textTransform');
-  defineStyleAlias('fontFamily');
-  defineStyleAlias('overflow');
-  defineStyleAlias('paddingTop', 'padding-top', numberConverter);
-  defineStyleAlias('paddingRight', 'padding-right', numberConverter);
-  defineStyleAlias('paddingBottom', 'padding-bottom', numberConverter);
-  defineStyleAlias('paddingLeft', 'padding-left', numberConverter);
-  defineStyleAlias('marginTop', 'margin-top', numberConverter);
-  defineStyleAlias('marginRight', 'margin-right', numberConverter);
-  defineStyleAlias('marginBottom', 'margin-bottom', numberConverter);
-  defineStyleAlias('marginLeft', 'margin-left', numberConverter);
-  // Coordinates
-  defineStyleAlias('top', 'top', numberConverter);
-  defineStyleAlias('right', 'right', numberConverter);
-  defineStyleAlias('bottom', 'bottom', numberConverter);
-  defineStyleAlias('left', 'left', numberConverter);
-  // Dimensions
-  defineStyleAlias('minWidth', 'min-width', numberConverter);
-  defineStyleAlias('maxWidth', 'max-width', numberConverter);
-  defineStyleAlias('minHeight', 'min-height', numberConverter);
-  defineStyleAlias('maxHeight', 'max-height', numberConverter);
   // Style aliases
   defineStyleAlias('gridAreas', 'grid-template-areas');
   defineStyleAlias('gridColumns', 'grid-template-columns', columnsConverter);
@@ -183,8 +154,7 @@ export function predefine() {
       .map((s, i) => (i ? columnsConverter : rowsConverter)(s))
       .join('/');
   });
-  // Other styles
-  defineStyleAlias('outlineOffset', 'outline-offset', numberConverter);
+  // Note: outlineOffset is now handled by outlineStyle
 
   [
     displayStyle,
@@ -206,9 +176,6 @@ export function predefine() {
     justifyStyle,
     presetStyle,
     outlineStyle,
-    fontStyle,
-    fontStyleStyle,
-    groupRadiusAttr,
     // DEPRECATED: `styledScrollbar` is deprecated, use `scrollbar` instead
     styledScrollbarStyle,
     scrollbarStyle,
@@ -453,10 +420,7 @@ export const styleHandlers = {
   fill: wrapHandler(fillStyle),
   svgFill: wrapHandler(svgFillStyle),
   flow: wrapHandler(flowStyle),
-  font: wrapHandler(fontStyle),
-  fontStyle: wrapHandler(fontStyleStyle),
   gap: wrapHandler(gapStyle),
-  groupRadius: wrapHandler(groupRadiusAttr),
   height: wrapHandler(heightStyle),
   inset: wrapHandler(insetStyle),
   justify: wrapHandler(justifyStyle),

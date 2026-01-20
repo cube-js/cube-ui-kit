@@ -103,12 +103,93 @@ describe('Tasty style tests', () => {
   });
 
   it('should handle inset styles', () => {
+    // Four-value shorthand
     expect(insetStyle({ inset: '0 10px 20px 30px' })).toEqual({
-      top: '0',
-      right: '10px',
-      bottom: '20px',
-      left: '30px',
+      inset: '0 10px 20px 30px',
     });
+
+    // Single value (all sides)
+    expect(insetStyle({ inset: '0' })).toEqual({
+      inset: '0',
+    });
+
+    // Two values (vertical horizontal)
+    expect(insetStyle({ inset: '10px 20px' })).toEqual({
+      inset: '10px 20px',
+    });
+
+    // Numeric value
+    expect(insetStyle({ inset: 0 })).toEqual({
+      inset: '0px',
+    });
+
+    // Boolean true
+    expect(insetStyle({ inset: true })).toEqual({
+      inset: '0',
+    });
+
+    // Direction modifiers
+    expect(insetStyle({ inset: 'top' })).toEqual({
+      inset: '0 auto auto auto',
+    });
+
+    expect(insetStyle({ inset: 'top right' })).toEqual({
+      inset: '0 0 auto auto',
+    });
+
+    expect(insetStyle({ inset: 'bottom left' })).toEqual({
+      inset: 'auto auto 0 0',
+    });
+
+    expect(insetStyle({ inset: '2x bottom left' })).toEqual({
+      inset: 'auto auto 16px 16px',
+    });
+
+    // Individual direction props - output individual CSS properties for proper cascade
+    expect(insetStyle({ top: '10px' })).toEqual({
+      top: '10px',
+    });
+
+    expect(insetStyle({ top: '10px', bottom: '20px' })).toEqual({
+      top: '10px',
+      bottom: '20px',
+    });
+
+    // All four directions as individual props
+    expect(
+      insetStyle({ top: '0', right: '0', bottom: '0', left: '0' }),
+    ).toEqual({
+      top: '0',
+      right: '0',
+      bottom: '0',
+      left: '0',
+    });
+
+    // Individual prop with 'initial' (common pattern for conditional modifiers)
+    expect(insetStyle({ top: 'initial' })).toEqual({
+      top: 'initial',
+    });
+
+    // Block/inline props
+    expect(insetStyle({ insetBlock: '10px' })).toEqual({
+      inset: '10px auto',
+    });
+
+    expect(insetStyle({ insetInline: '20px' })).toEqual({
+      inset: 'auto 20px',
+    });
+
+    // Priority: individual > block/inline > inset
+    expect(insetStyle({ inset: '0', top: '10px' })).toEqual({
+      inset: '10px 0 0 0',
+    });
+
+    expect(insetStyle({ inset: '0', insetBlock: '5px', top: '10px' })).toEqual({
+      inset: '10px 0 5px 0',
+    });
+
+    // Empty when no props
+    expect(insetStyle({})).toEqual({});
   });
 
   it('should handle radius styles', () => {

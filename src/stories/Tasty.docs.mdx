@@ -769,6 +769,19 @@ radius: '1r top',                 // Top corners only (top-left, top-right)
 // Directional modifiers: top, right, bottom, left
 ```
 
+#### `outline` - Focus/Highlight Outline
+Enhanced outline syntax with slash separator for offset:
+```jsx
+outline: true,                    // Default: '1ow solid var(--outline-color)'
+outline: '2px solid #purple',     // Custom width, style, color
+outline: '2px solid #red / 4px',  // With offset (slash separator)
+outline: '2px / 4px',             // Width with offset (simpler form)
+outlineOffset: '4px',             // Offset as separate prop
+
+// Priority: slash syntax in outline takes precedence over outlineOffset prop
+// Available styles: none, hidden, dotted, dashed, solid, double, groove, ridge, inset, outset
+```
+
 ### Typography Properties
 
 #### `preset` - Typography Presets
@@ -785,6 +798,20 @@ preset: 'h2 strong',              // Bold heading 2
 // Paragraphs: p1, p2, p3, p4
 // Main text: m1, m2, m3
 // Captions: c1, c2, tag
+```
+
+#### `textOverflow` - Text Truncation
+Automatic setup for text truncation with ellipsis or multi-line clamping:
+```jsx
+textOverflow: 'ellipsis',         // Single-line truncation with ellipsis
+textOverflow: 'ellipsis / 3',     // Multi-line clamping (3 lines)
+textOverflow: 'clip',             // Single-line truncation without ellipsis
+textOverflow: 'clip / 2',         // Multi-line clip (2 lines)
+textOverflow: true,               // Reset to initial
+
+// Single-line: auto-adds overflow: hidden, white-space: nowrap
+// Multi-line: auto-adds display: -webkit-box, -webkit-line-clamp
+// User-provided overflow/whiteSpace take precedence
 ```
 
 #### `align`, `justify`, & `place` - Alignment

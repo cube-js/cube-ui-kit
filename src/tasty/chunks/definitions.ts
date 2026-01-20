@@ -6,6 +6,37 @@
  * 2. Logical grouping - related styles grouped for better cache reuse
  *
  * See STYLE_CHUNKING_SPEC.md for detailed rationale.
+ *
+ * ============================================================================
+ * ⚠️  CRITICAL ARCHITECTURAL CONSTRAINT: NO CROSS-CHUNK HANDLER DEPENDENCIES
+ * ============================================================================
+ *
+ * Style handlers declare their dependencies via `__lookupStyles` array.
+ * This creates a dependency graph where handlers read multiple style props.
+ *
+ * **ALL styles in a handler's `__lookupStyles` MUST be in the SAME chunk.**
+ *
+ * Why this matters:
+ * 1. Each chunk computes a cache key from ONLY its own style values
+ * 2. If a handler reads a style from another chunk, that value isn't in the cache key
+ * 3. Changing the cross-chunk style won't invalidate this chunk's cache
+ * 4. Result: stale CSS output or incorrect cache hits
+ *
+ * Example of a violation:
+ * ```
+ * // flowStyle.__lookupStyles = ['display', 'flow']
+ * // If 'display' is in DISPLAY chunk and 'flow' is in LAYOUT chunk:
+ * // - User sets { display: 'grid', flow: 'column' }
+ * // - LAYOUT chunk caches CSS with flow=column, display=grid
+ * // - User changes to { display: 'flex', flow: 'column' }
+ * // - LAYOUT chunk cache key unchanged (only has 'flow')
+ * // - Returns stale CSS computed with display=grid!
+ * ```
+ *
+ * Before adding/moving styles, verify:
+ * 1. Find all handlers that use this style (grep for the style name in __lookupStyles)
+ * 2. Ensure ALL styles from each handler's __lookupStyles are in the same chunk
+ * ============================================================================
  */
 
 import { isSelector } from '../pipeline';
@@ -23,16 +54,18 @@ export const APPEARANCE_CHUNK_STYLES = [
   'opacity', // independent
   'border', // borderStyle (independent)
   'radius', // radiusStyle (independent)
-  'outline', // outlineStyle (independent)
-  'outlineOffset', // independent (used with outline)
+  'outline', // outlineStyle: outline ↔ outlineOffset
+  'outlineOffset', // outlineStyle: outline ↔ outlineOffset
   'shadow', // shadowStyle (independent)
   'fade', // fadeStyle (independent)
 ] as const;
 
 /**
  * Font chunk - typography styles
- * ⚠️ presetStyle handler requires: preset, fontSize, lineHeight, letterSpacing,
- *    textTransform, fontWeight, fontStyle, font - all MUST stay together
+ *
+ * Handler dependencies (all styles in each handler MUST stay in this chunk):
+ * ⚠️ presetStyle: preset, fontSize, lineHeight, letterSpacing, textTransform,
+ *    fontWeight, fontStyle, font
  */
 export const FONT_CHUNK_STYLES = [
   // All from presetStyle handler - MUST stay together
@@ -47,9 +80,7 @@ export const FONT_CHUNK_STYLES = [
   // Independent text styles grouped for cohesion
   'fontFamily', // independent alias (logical grouping with font styles)
   'textAlign',
-  'whiteSpace',
   'textDecoration',
-  'textOverflow',
   'wordBreak',
   'wordWrap',
   'boldFontWeight',
@@ -57,8 +88,12 @@ export const FONT_CHUNK_STYLES = [
 
 /**
  * Dimension chunk - sizing and spacing
- * ⚠️ paddingStyle handler requires all padding variants together
- * ⚠️ marginStyle handler requires all margin variants together
+ *
+ * Handler dependencies (all styles in each handler MUST stay in this chunk):
+ * ⚠️ paddingStyle: padding, paddingTop/Right/Bottom/Left, paddingBlock/Inline
+ * ⚠️ marginStyle: margin, marginTop/Right/Bottom/Left, marginBlock/Inline
+ * ⚠️ widthStyle: width, minWidth, maxWidth
+ * ⚠️ heightStyle: height, minHeight, maxHeight
  */
 export const DIMENSION_CHUNK_STYLES = [
   // All from paddingStyle handler - MUST stay together
@@ -77,11 +112,12 @@ export const DIMENSION_CHUNK_STYLES = [
   'marginLeft',
   'marginBlock',
   'marginInline',
-  // Independent sizing styles
-  'width', // widthStyle (independent)
-  'height', // heightStyle (independent)
+  // widthStyle handler - MUST stay together
+  'width',
   'minWidth',
   'maxWidth',
+  // heightStyle handler - MUST stay together
+  'height',
   'minHeight',
   'maxHeight',
   'flexBasis',
@@ -91,19 +127,38 @@ export const DIMENSION_CHUNK_STYLES = [
 ] as const;
 
 /**
- * Container chunk - display, flow, and grid layout
- * ⚠️ FORCED TOGETHER by transitive handler dependencies:
- *    displayStyle(display,hide) + flowStyle(display,flow) +
- *    gapStyle(display,flow,gap) + groupRadiusAttr(groupRadius,flow)
+ * Display chunk - display mode, layout flow, text overflow, and scrollbar
+ *
+ * Handler dependencies (all styles in each handler MUST stay in this chunk):
+ * ⚠️ displayStyle: display, hide, textOverflow, overflow, whiteSpace
+ * ⚠️ flowStyle: display, flow
+ * ⚠️ gapStyle: display, flow, gap
+ * ⚠️ scrollbarStyle: scrollbar, overflow
  */
-export const CONTAINER_CHUNK_STYLES = [
-  // Forced together by handler dependencies
-  'display', // displayStyle: display ↔ hide
-  'hide', // displayStyle: display ↔ hide
-  'flow', // flowStyle: display ↔ flow
-  'gap', // gapStyle: display ↔ flow ↔ gap
-  'groupRadius', // groupRadiusAttr: groupRadius ↔ flow
-  // Related container styles (independent but logically grouped)
+export const DISPLAY_CHUNK_STYLES = [
+  // displayStyle handler
+  'display',
+  'hide',
+  'textOverflow',
+  'overflow', // also used by scrollbarStyle
+  'whiteSpace',
+  // flowStyle handler (requires display)
+  'flow',
+  // gapStyle handler (requires display, flow)
+  'gap',
+  // scrollbarStyle handler (requires overflow)
+  'scrollbar',
+  'styledScrollbar', // styledScrollbarStyle (deprecated)
+] as const;
+
+/**
+ * Layout chunk - flex/grid alignment and grid templates
+ *
+ * Note: flow and gap are in DISPLAY chunk due to handler dependencies
+ * (flowStyle and gapStyle both require 'display' prop).
+ */
+export const LAYOUT_CHUNK_STYLES = [
+  // Alignment styles (all independent handlers)
   'placeItems',
   'placeContent',
   'alignItems',
@@ -115,6 +170,7 @@ export const CONTAINER_CHUNK_STYLES = [
   'place', // placeStyle (independent)
   'columnGap',
   'rowGap',
+  // Grid template styles
   'gridColumns',
   'gridRows',
   'gridTemplate',
@@ -125,21 +181,17 @@ export const CONTAINER_CHUNK_STYLES = [
 ] as const;
 
 /**
- * Scrollbar chunk - scrollbar and overflow
- * ⚠️ scrollbarStyle handler requires scrollbar ↔ overflow together
- */
-export const SCROLLBAR_CHUNK_STYLES = [
-  'scrollbar', // scrollbarStyle: scrollbar ↔ overflow
-  'overflow', // scrollbarStyle: scrollbar ↔ overflow
-  'styledScrollbar', // styledScrollbarStyle (independent, deprecated)
-] as const;
-
-/**
- * Position chunk - element positioning (all independent handlers)
+ * Position chunk - element positioning
+ *
+ * Handler dependencies (all styles in each handler MUST stay in this chunk):
+ * ⚠️ insetStyle: inset, insetBlock, insetInline, top, right, bottom, left
  */
 export const POSITION_CHUNK_STYLES = [
   'position',
-  'inset', // insetStyle (independent)
+  // All from insetStyle handler - MUST stay together
+  'inset',
+  'insetBlock',
+  'insetInline',
   'top',
   'right',
   'bottom',
@@ -168,8 +220,8 @@ export const CHUNK_NAMES = {
   APPEARANCE: 'appearance',
   FONT: 'font',
   DIMENSION: 'dimension',
-  CONTAINER: 'container',
-  SCROLLBAR: 'scrollbar',
+  DISPLAY: 'display',
+  LAYOUT: 'layout',
   POSITION: 'position',
   MISC: 'misc',
 } as const;
@@ -197,11 +249,11 @@ function populateStyleToChunkMap() {
   for (const style of DIMENSION_CHUNK_STYLES) {
     STYLE_TO_CHUNK.set(style, CHUNK_NAMES.DIMENSION);
   }
-  for (const style of CONTAINER_CHUNK_STYLES) {
-    STYLE_TO_CHUNK.set(style, CHUNK_NAMES.CONTAINER);
+  for (const style of DISPLAY_CHUNK_STYLES) {
+    STYLE_TO_CHUNK.set(style, CHUNK_NAMES.DISPLAY);
   }
-  for (const style of SCROLLBAR_CHUNK_STYLES) {
-    STYLE_TO_CHUNK.set(style, CHUNK_NAMES.SCROLLBAR);
+  for (const style of LAYOUT_CHUNK_STYLES) {
+    STYLE_TO_CHUNK.set(style, CHUNK_NAMES.LAYOUT);
   }
   for (const style of POSITION_CHUNK_STYLES) {
     STYLE_TO_CHUNK.set(style, CHUNK_NAMES.POSITION);
@@ -223,8 +275,8 @@ const CHUNK_ORDER: readonly string[] = [
   CHUNK_NAMES.APPEARANCE,
   CHUNK_NAMES.FONT,
   CHUNK_NAMES.DIMENSION,
-  CHUNK_NAMES.CONTAINER,
-  CHUNK_NAMES.SCROLLBAR,
+  CHUNK_NAMES.DISPLAY,
+  CHUNK_NAMES.LAYOUT,
   CHUNK_NAMES.POSITION,
   CHUNK_NAMES.MISC,
   CHUNK_NAMES.SUBCOMPONENTS,
