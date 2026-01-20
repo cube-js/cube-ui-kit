@@ -36,6 +36,35 @@ describe('outlineStyle', () => {
         outline: '2px dashed var(--red-color)',
       });
     });
+
+    it('handles numeric 0 to remove outline', () => {
+      const result = outlineStyle({ outline: 0 });
+      expect(result).toEqual({
+        outline: '0 solid var(--outline-color)',
+      });
+    });
+
+    it('handles string "0" to remove outline', () => {
+      const result = outlineStyle({ outline: '0' });
+      expect(result).toEqual({
+        outline: '0 solid var(--outline-color)',
+      });
+    });
+
+    it('handles outline: 0 with outlineOffset', () => {
+      const result = outlineStyle({ outline: 0, outlineOffset: 1 });
+      expect(result).toEqual({
+        outline: '0 solid var(--outline-color)',
+        'outline-offset': '1px',
+      });
+    });
+
+    it('handles outline: "none" style', () => {
+      const result = outlineStyle({ outline: 'none' });
+      expect(result).toEqual({
+        outline: 'var(--outline-width) none var(--outline-color)',
+      });
+    });
   });
 
   describe('outline with offset (slash syntax)', () => {

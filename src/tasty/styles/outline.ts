@@ -14,7 +14,7 @@ const BORDER_STYLES = [
 ];
 
 interface OutlineStyleProps {
-  outline?: string | boolean;
+  outline?: string | boolean | number;
   outlineOffset?: string | number;
 }
 
@@ -35,10 +35,11 @@ interface OutlineStyleProps {
 export function outlineStyle({ outline, outlineOffset }: OutlineStyleProps) {
   const result: Record<string, string> = {};
 
-  // Handle outline
-  if (outline) {
-    let outlineValue = outline;
+  // Handle outline (0 is valid - means no outline)
+  if (outline != null && outline !== false) {
+    let outlineValue: string | boolean | number = outline;
     if (outline === true) outlineValue = '1ow';
+    if (outline === 0) outlineValue = '0';
 
     const processed = parseStyle(String(outlineValue));
     const group = processed.groups[0];
