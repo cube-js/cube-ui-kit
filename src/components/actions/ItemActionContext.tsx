@@ -6,6 +6,7 @@ interface ItemActionContextValue {
   type?: CubeItemProps['type'];
   theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
   disableActionsFocus?: boolean;
+  isDisabled?: boolean;
 }
 
 const ItemActionContext = createContext<ItemActionContextValue | undefined>(
@@ -16,6 +17,7 @@ export interface ItemActionProviderProps {
   type?: CubeItemProps['type'];
   theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
   disableActionsFocus?: boolean;
+  isDisabled?: boolean;
   children: ReactNode;
 }
 
@@ -23,6 +25,7 @@ export function ItemActionProvider({
   type,
   theme,
   disableActionsFocus,
+  isDisabled,
   children,
 }: ItemActionProviderProps) {
   return (
@@ -39,6 +42,7 @@ export function ItemActionProvider({
               : type,
         theme,
         disableActionsFocus,
+        isDisabled,
       }}
     >
       {children}

@@ -941,6 +941,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
                 type={type}
                 theme={theme}
                 disableActionsFocus={disableActionsFocus}
+                isDisabled={finalIsDisabled}
               >
                 {actions}
               </ItemActionProvider>
