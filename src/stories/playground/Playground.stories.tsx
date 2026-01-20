@@ -103,7 +103,7 @@ function PlaygroundComponent() {
 
   const toolbar = (
     <>
-      <Text preset="t3" fontWeight={600} color="#dark-02">
+      <Text preset="h6" color="#dark-02">
         Tasty Playground
       </Text>
       {isModified && (
