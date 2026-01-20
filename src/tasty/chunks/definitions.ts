@@ -181,11 +181,17 @@ export const LAYOUT_CHUNK_STYLES = [
 ] as const;
 
 /**
- * Position chunk - element positioning (all independent handlers)
+ * Position chunk - element positioning
+ *
+ * Handler dependencies (all styles in each handler MUST stay in this chunk):
+ * ⚠️ insetStyle: inset, insetBlock, insetInline, top, right, bottom, left
  */
 export const POSITION_CHUNK_STYLES = [
   'position',
-  'inset', // insetStyle (independent)
+  // All from insetStyle handler - MUST stay together
+  'inset',
+  'insetBlock',
+  'insetInline',
   'top',
   'right',
   'bottom',
