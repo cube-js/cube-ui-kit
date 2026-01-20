@@ -1,5 +1,134 @@
 # @cube-dev/ui-kit
 
+## 0.100.0
+
+### Minor Changes
+
+- [#960](https://github.com/cube-js/cube-ui-kit/pull/960) [`d89a036e`](https://github.com/cube-js/cube-ui-kit/commit/d89a036e578591fe20f22a21a0c37c41f9c9daf5) Thanks [@tenphi](https://github.com/tenphi)! - Add `@properties` support for defining CSS `@property` at-rules in tasty styles.
+
+  **New features:**
+
+  - Define CSS custom properties with `@properties` in styles using token syntax (`$name`, `#name`)
+  - Color tokens (`#name`) auto-set `syntax: '<color>'` and default `initialValue: 'transparent'`
+  - Double-prefix syntax (`$name`, `##name`) for referencing property names in transitions and animations
+  - `useProperty()` hook and `injector.property()` now accept token syntax
+  - Global properties can be configured via `configure({ properties: {...} })`
+
+  **Example:**
+
+  ```jsx
+  // Global properties (optional)
+  configure({
+    properties: {
+      $rotation: { syntax: "<angle>", initialValue: "0deg" },
+    },
+  });
+
+  // Local properties in styles
+  const Component = tasty({
+    styles: {
+      "@properties": {
+        $scale: { syntax: "<number>", initialValue: 1 },
+        "#accent": { initialValue: "purple" }, // syntax: '<color>' auto-set
+      },
+      transform: "rotate($rotation) scale($scale)",
+      transition: "$rotation 0.3s, $scale 0.2s", // outputs: --rotation 0.3s, --scale 0.2s
+    },
+  });
+  ```
+
+- [#960](https://github.com/cube-js/cube-ui-kit/pull/960) [`d89a036e`](https://github.com/cube-js/cube-ui-kit/commit/d89a036e578591fe20f22a21a0c37c41f9c9daf5) Thanks [@tenphi](https://github.com/tenphi)! - Add color token support to `fade` style property. You can now specify custom transparent and opaque colors for the gradient mask, and use multiple comma-separated groups to apply different colors per direction.
+
+  Add multi-group support to `border` style property. Multiple comma-separated groups allow cascading border definitions where later groups override earlier ones for conflicting directions (e.g., `border="1bw #red, 2bw #blue top"`).
+
+- [#962](https://github.com/cube-js/cube-ui-kit/pull/962) [`09db7bee`](https://github.com/cube-js/cube-ui-kit/commit/09db7bee295e5df4ebe141a3ed9dc68294708ed5) Thanks [@tenphi](https://github.com/tenphi)! - Improve background style handling in Tasty. Add `image` style for background images. The `fill` handler now supports all background CSS properties (`backgroundPosition`, `backgroundSize`, `backgroundRepeat`, `backgroundAttachment`, `backgroundOrigin`, `backgroundClip`). Add `background` and `image` transition semantic names. Deprecate `backgroundColor`, `backgroundImage`, and `background` styles in favor of `fill`, `image`, and separate background properties.
+
+- [#960](https://github.com/cube-js/cube-ui-kit/pull/960) [`d89a036e`](https://github.com/cube-js/cube-ui-kit/commit/d89a036e578591fe20f22a21a0c37c41f9c9daf5) Thanks [@tenphi](https://github.com/tenphi)! - Added `useKeyframes` and `useProperty` React hooks for declarative CSS @keyframes and @property definitions. These hooks follow the same patterns as existing hooks like `useStyles` and `useRawCSS`, using `useInsertionEffect` for proper style injection and cleanup.
+
+- [#963](https://github.com/cube-js/cube-ui-kit/pull/963) [`290cfa6c`](https://github.com/cube-js/cube-ui-kit/commit/290cfa6c9b76544bb658723dc6b7ff0f4d003f75) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking:** Changed `outline` style syntax to use slash separator for offset: `outline: '2px solid #red / 4px'` instead of the previous space-separated format. Also added `outlineOffset` as a direct style prop.
+
+- [#963](https://github.com/cube-js/cube-ui-kit/pull/963) [`290cfa6c`](https://github.com/cube-js/cube-ui-kit/commit/290cfa6c9b76544bb658723dc6b7ff0f4d003f75) Thanks [@tenphi](https://github.com/tenphi)! - Added slash separator support in style parser. Style values can now use `/` surrounded by whitespace to define parts (e.g., `'ellipsis / 3'`, `'2px solid #red / 4px'`). Each part is available via `groups[n].parts` array for style handlers.
+
+- [#960](https://github.com/cube-js/cube-ui-kit/pull/960) [`d89a036e`](https://github.com/cube-js/cube-ui-kit/commit/d89a036e578591fe20f22a21a0c37c41f9c9daf5) Thanks [@tenphi](https://github.com/tenphi)! - Added `Tabs` component for organizing content into multiple panels with full accessibility support via React Aria. The component supports multiple visual styles (default, panel, radio), tab deletion, inline title editing, lazy rendering with content caching, and proper integration with Layout components for stretching panels to fill remaining space.
+
+- [#963](https://github.com/cube-js/cube-ui-kit/pull/963) [`290cfa6c`](https://github.com/cube-js/cube-ui-kit/commit/290cfa6c9b76544bb658723dc6b7ff0f4d003f75) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking:** Enhanced `textOverflow` style handler with automatic setup for text truncation. Previously, `textOverflow: 'ellipsis'` only set `text-overflow: ellipsis` (which doesn't work without `overflow: hidden`). Now it automatically adds `overflow: hidden` and `white-space: nowrap` for single-line ellipsis, making it actually functional.
+
+  New features:
+
+  - `textOverflow: 'ellipsis'` - single-line truncation with ellipsis (now works correctly)
+  - `textOverflow: 'ellipsis / 3'` - multi-line truncation (3 lines) with `-webkit-line-clamp`
+  - `textOverflow: 'clip'` - single-line clip with `overflow: hidden`
+
+  The `displayStyle` handler now manages `display`, `hide`, `textOverflow`, `overflow`, and `whiteSpace` together. User-provided `overflow` and `whiteSpace` values take precedence over auto-generated ones from `textOverflow`.
+
+- [#958](https://github.com/cube-js/cube-ui-kit/pull/958) [`22e0adc7`](https://github.com/cube-js/cube-ui-kit/commit/22e0adc7e3dadc1a22cb30541934431c52ffe761) Thanks [@tenphi](https://github.com/tenphi)! - ### Added
+
+  - Predefined tokens in `configure()`: Define reusable tokens (`$name` for values, `#name` for colors) that are replaced during style parsing. Unlike component-level `tokens` prop, predefined tokens are baked into the generated CSS for better performance and consistency.
+
+  ```ts
+  configure({
+    tokens: {
+      $spacing: "2x",
+      "$card-padding": "4x",
+      "#accent": "#purple",
+    },
+  });
+
+  // Use in styles - tokens are replaced at parse time
+  const Card = tasty({
+    styles: {
+      padding: "$card-padding", // → calc(4 * var(--gap))
+      fill: "#accent", // → var(--purple-color)
+    },
+  });
+  ```
+
+  - Plugins can now provide predefined tokens via the `tokens` property in `TastyPlugin`.
+
+### Patch Changes
+
+- [#963](https://github.com/cube-js/cube-ui-kit/pull/963) [`290cfa6c`](https://github.com/cube-js/cube-ui-kit/commit/290cfa6c9b76544bb658723dc6b7ff0f4d003f75) Thanks [@tenphi](https://github.com/tenphi)! - Aligned babel plugin configuration interface with runtime `TastyConfig`. The `TastyZeroConfig` now supports `plugins` and `parserCacheSize` options, and uses the shared `configure()` function internally.
+
+- [#963](https://github.com/cube-js/cube-ui-kit/pull/963) [`290cfa6c`](https://github.com/cube-js/cube-ui-kit/commit/290cfa6c9b76544bb658723dc6b7ff0f4d003f75) Thanks [@tenphi](https://github.com/tenphi)! - Reorganized internal style chunk definitions. Display-related styles (`display`, `hide`, `textOverflow`, `overflow`, `whiteSpace`, `scrollbar`) are now in a DISPLAY chunk. Layout styles (`flow`, `gap`, grid/flex properties) are in a separate LAYOUT chunk.
+
+- [#963](https://github.com/cube-js/cube-ui-kit/pull/963) [`290cfa6c`](https://github.com/cube-js/cube-ui-kit/commit/290cfa6c9b76544bb658723dc6b7ff0f4d003f75) Thanks [@tenphi](https://github.com/tenphi)! - Consolidated style handlers to reduce redundant handler registrations:
+
+  - `widthStyle` now handles `minWidth`, `maxWidth` directly
+  - `heightStyle` now handles `minHeight`, `maxHeight` directly
+  - `presetStyle` now handles all typography props (`fontSize`, `lineHeight`, `fontWeight`, `letterSpacing`, `textTransform`, `fontStyle`, `fontFamily`, `font`) with or without `preset` defined
+
+  Font props support number values: `fontSize={14}` → `font-size: 14px`, `fontWeight={700}` → `font-weight: 700`.
+
+  The `font` prop has special handling: `font="monospace"` → `var(--monospace-font)`, `font={true}` → `var(--font)`, `font="CustomFont"` → `CustomFont, var(--font)`. The `fontFamily` prop is a direct value without fallback.
+
+- [#959](https://github.com/cube-js/cube-ui-kit/pull/959) [`ed477654`](https://github.com/cube-js/cube-ui-kit/commit/ed4776543ce0cf2f02fd629f149100d7d0a8f9ec) Thanks [@tenphi](https://github.com/tenphi)! - Add custom style handlers API via `configure()` and plugins. Handlers transform style properties into CSS declarations and replace built-in handlers for the same style name. Export `styleHandlers` object for delegating to built-in behavior when extending.
+
+- [#961](https://github.com/cube-js/cube-ui-kit/pull/961) [`46e84833`](https://github.com/cube-js/cube-ui-kit/commit/46e8483379a8260888e00f682831093daaac3813) Thanks [@tenphi](https://github.com/tenphi)! - Fix FilterListBox custom value styles not appearing until hover and leaking to other items after filter is cleared. The issue was caused by ListBox virtualization using index-based keys instead of actual item keys, causing React to incorrectly reuse DOM elements. Added `getItemKey` to the virtualizer to use actual item keys for proper DOM reconciliation.
+
+  Additionally, when `allowsCustomValue` is enabled and there are filtered items visible, the custom value option is now visually separated from the filtered results using a section divider. The visibility check for filtered items now also considers previously-added custom values, ensuring the separator is shown when a search term matches an existing custom item.
+
+- [#963](https://github.com/cube-js/cube-ui-kit/pull/963) [`290cfa6c`](https://github.com/cube-js/cube-ui-kit/commit/290cfa6c9b76544bb658723dc6b7ff0f4d003f75) Thanks [@tenphi](https://github.com/tenphi)! - Refactored `inset` style handler with smart output strategy:
+
+  - When using the `inset` prop or `insetBlock`/`insetInline` props: outputs `inset` CSS shorthand for efficiency
+  - When using individual `top`, `right`, `bottom`, `left` props: outputs individual CSS properties to allow proper CSS cascade with modifiers
+
+  This fix resolves an issue where conditional modifiers on individual direction props (e.g., `top: { '': 0, 'side=bottom': 'initial' }`) would incorrectly override all four directions instead of just the specified one.
+
+- [#959](https://github.com/cube-js/cube-ui-kit/pull/959) [`ed477654`](https://github.com/cube-js/cube-ui-kit/commit/ed4776543ce0cf2f02fd629f149100d7d0a8f9ec) Thanks [@tenphi](https://github.com/tenphi)! - Fix ListBox item styles not being applied when passed via `<ListBox.Item styles={...}>`. Item-level styles are now properly merged with parent styles using `mergeStyles`.
+
+- [#949](https://github.com/cube-js/cube-ui-kit/pull/949) [`69c96a34`](https://github.com/cube-js/cube-ui-kit/commit/69c96a34e834b83fbebda6addf4d4e1a71268c5e) Thanks [@tenphi](https://github.com/tenphi)! - ### Added
+
+  - Raw unit calculation: Custom units with raw CSS values (e.g., `8px`) are now calculated directly instead of using `calc()`, producing cleaner CSS output.
+  - Recursive unit resolution: Units can reference other custom units with automatic resolution (e.g., `{ x: '8px', y: '2x' }` → `1y` = `16px`).
+
+  ### Removed
+
+  - Units `rp`, `gp`, and `sp` have been removed from default units.
+
+- [#960](https://github.com/cube-js/cube-ui-kit/pull/960) [`d89a036e`](https://github.com/cube-js/cube-ui-kit/commit/d89a036e578591fe20f22a21a0c37c41f9c9daf5) Thanks [@tenphi](https://github.com/tenphi)! - Fixed variant switching causing DOM element recreation. Components with `variants` now preserve their DOM element and state when the `variant` prop changes.
+
+- [#960](https://github.com/cube-js/cube-ui-kit/pull/960) [`d89a036e`](https://github.com/cube-js/cube-ui-kit/commit/d89a036e578591fe20f22a21a0c37c41f9c9daf5) Thanks [@tenphi](https://github.com/tenphi)! - Added `preserveActionsSpace` prop to Item component. When used with `showActionsOnHover={true}`, this prop prevents content shift by keeping the actions area at full width and only changing opacity on hover.
+
 ## 0.99.3
 
 ### Patch Changes
