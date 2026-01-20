@@ -34,6 +34,32 @@ function parseDirectionalInset(value: string | number | boolean): {
   };
 }
 
+/**
+ * Inset style handler.
+ *
+ * IMPORTANT: This handler uses individual CSS properties (top, right, bottom, left)
+ * when only individual direction props are specified. This allows CSS cascade to work
+ * correctly when modifiers override only some directions.
+ *
+ * Example problem with using `inset` shorthand everywhere:
+ *   styles: {
+ *     top: { '': 0, 'side=bottom': 'initial' },
+ *     right: { '': 0, 'side=left': 'initial' },
+ *     bottom: { '': 0, 'side=top': 'initial' },
+ *     left: { '': 0, 'side=right': 'initial' },
+ *   }
+ *
+ * If we output `inset` for both cases:
+ *   - Default: inset: 0 0 0 0
+ *   - side=bottom: inset: initial auto auto auto  ← WRONG! Overrides all 4 directions
+ *
+ * With individual properties:
+ *   - Default: top: 0; right: 0; bottom: 0; left: 0
+ *   - side=bottom: top: initial  ← CORRECT! Only overrides top
+ *
+ * The `inset` shorthand is only used when the base `inset` prop is specified
+ * OR when `insetBlock`/`insetInline` are used (which imply setting pairs).
+ */
 export function insetStyle({
   inset,
   insetBlock,
@@ -51,7 +77,7 @@ export function insetStyle({
   bottom?: string | number | boolean;
   left?: string | number | boolean;
 }) {
-  // If no inset is defined, return empty object
+  // If no props are defined, return empty object
   if (
     inset == null &&
     insetBlock == null &&
@@ -64,6 +90,35 @@ export function insetStyle({
     return {};
   }
 
+  // When only individual direction props are used (no inset, insetBlock, insetInline),
+  // output individual CSS properties to allow proper CSS cascade with modifiers
+  const onlyIndividualProps =
+    inset == null && insetBlock == null && insetInline == null;
+
+  if (onlyIndividualProps) {
+    const result: Record<string, string> = {};
+
+    if (top != null) {
+      const val = parseInsetValue(top);
+      if (val) result['top'] = val;
+    }
+    if (right != null) {
+      const val = parseInsetValue(right);
+      if (val) result['right'] = val;
+    }
+    if (bottom != null) {
+      const val = parseInsetValue(bottom);
+      if (val) result['bottom'] = val;
+    }
+    if (left != null) {
+      const val = parseInsetValue(left);
+      if (val) result['left'] = val;
+    }
+
+    return result;
+  }
+
+  // When inset, insetBlock, or insetInline is used, use the shorthand approach
   // Initialize all directions to auto
   let [topVal, rightVal, bottomVal, leftVal] = ['auto', 'auto', 'auto', 'auto'];
 

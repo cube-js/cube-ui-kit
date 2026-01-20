@@ -145,13 +145,29 @@ describe('Tasty style tests', () => {
       inset: 'auto auto 16px 16px',
     });
 
-    // Individual direction props
+    // Individual direction props - output individual CSS properties for proper cascade
     expect(insetStyle({ top: '10px' })).toEqual({
-      inset: '10px auto auto auto',
+      top: '10px',
     });
 
     expect(insetStyle({ top: '10px', bottom: '20px' })).toEqual({
-      inset: '10px auto 20px auto',
+      top: '10px',
+      bottom: '20px',
+    });
+
+    // All four directions as individual props
+    expect(
+      insetStyle({ top: '0', right: '0', bottom: '0', left: '0' }),
+    ).toEqual({
+      top: '0',
+      right: '0',
+      bottom: '0',
+      left: '0',
+    });
+
+    // Individual prop with 'initial' (common pattern for conditional modifiers)
+    expect(insetStyle({ top: 'initial' })).toEqual({
+      top: 'initial',
     });
 
     // Block/inline props

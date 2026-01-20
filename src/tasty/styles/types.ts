@@ -380,17 +380,24 @@ export interface StylesInterface
    */
   font?: CSSProperties['fontFamily'] | boolean;
   /**
-   * The outline style sets the outline for the element using `box-shadow` CSS property. The outline is drawn inside if `inset` modifier is set.
+   * The outline style sets the outline for the element.
    *
-   * Syntax: `[width] [style] [color] [offset]` | `[width] [color] inset` | `true`
+   * Syntax: `[width] [style] [color] / [offset]` | `true`
    *
    * Examples:
    * - `outline="2ow dashed #purple"` // 2ow dashed purple outline
-   * - `outline="2ow #danger 1x"` // 2ow solid danger outline, 1x offset
-   * - `outline="inset"` // inset outline with defaults
+   * - `outline="2ow #danger / 1x"` // 2ow solid danger outline, 1x offset
    * - `outline={true}` // default outline (1ow solid)
    */
   outline?: string | boolean;
+  /**
+   * The outline offset style sets the offset of the outline.
+   *
+   * Examples:
+   * - `outlineOffset="4px"` // 4px offset
+   * - `outlineOffset="1x"` // 1x (8px) offset
+   */
+  outlineOffset?: string | number;
   /**
    * The preset style sets base text settings according to named presets. Affects `font-size`, `line-height`, `letter-spacing`, `font-weight`, and `text-transform`.
    *
