@@ -104,6 +104,7 @@ const ItemButton = forwardRef(function ItemButton(
     wrapperStyles,
     showActionsOnHover = false,
     disableActionsFocus = false,
+    isDisabled,
     ...rest
   } = allProps as CubeItemButtonProps & {
     as?: 'a' | 'button' | 'div' | 'span';
@@ -156,7 +157,7 @@ const ItemButton = forwardRef(function ItemButton(
   const shouldShowActions = isHovered || isFocusWithin || hasPressed;
 
   const { actionProps } = useAction(
-    { ...(allProps as any), htmlType, to, as, mods },
+    { ...(allProps as any), htmlType, to, as, mods, isDisabled },
     ref,
   );
 
@@ -193,6 +194,7 @@ const ItemButton = forwardRef(function ItemButton(
           type={type}
           theme={theme}
           disableActionsFocus={disableActionsFocus}
+          isDisabled={isDisabled}
         >
           {showActionsOnHover ? (
             <DisplayTransition
