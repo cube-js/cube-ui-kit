@@ -76,7 +76,8 @@ const meta: Meta<typeof ItemAction> = {
     },
     isDisabled: {
       control: 'boolean',
-      description: 'Disables the action button',
+      description:
+        'Disables the action button. Inherits from parent Item/ItemButton when used inside actions prop. Use isDisabled={false} to keep action enabled when parent is disabled.',
       table: {
         defaultValue: { summary: false },
       },
@@ -671,6 +672,46 @@ export const InsideItem: Story = {
       </div>
 
       <div>
+        <h4>Disabled State Inheritance</h4>
+        <p style={{ fontSize: 14, color: '#666', marginBottom: 8 }}>
+          Actions inherit disabled state from parent Item. Use isDisabled=false
+          to keep action enabled.
+        </p>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <Item
+            isDisabled
+            type="item"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} tooltip="Edit (disabled)" />
+                <ItemAction icon={<IconTrash />} tooltip="Delete (disabled)" />
+              </>
+            }
+          >
+            Disabled Item (all actions disabled)
+          </Item>
+          <Item
+            isDisabled
+            type="item"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} tooltip="Edit (disabled)" />
+                <ItemAction
+                  icon={<IconTrash />}
+                  tooltip="Delete (enabled)"
+                  isDisabled={false}
+                />
+              </>
+            }
+          >
+            Disabled Item (delete action enabled)
+          </Item>
+        </div>
+      </div>
+
+      <div>
         <h4>Truncated Content</h4>
         <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
           <Item
@@ -695,7 +736,7 @@ export const InsideItem: Story = {
     docs: {
       description: {
         story:
-          'Demonstrates ItemAction usage inside Item component. Actions automatically inherit the type and theme from the parent Item context. Works with all Item configurations including descriptions, different sizes, and themes.',
+          'Demonstrates ItemAction usage inside Item component. Actions automatically inherit the type, theme, and disabled state from the parent Item context. Use isDisabled={false} on individual actions to keep them enabled when the parent is disabled. Works with all Item configurations including descriptions, different sizes, and themes.',
       },
     },
   },

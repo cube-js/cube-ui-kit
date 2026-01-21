@@ -104,10 +104,16 @@ const ItemButton = forwardRef(function ItemButton(
     wrapperStyles,
     showActionsOnHover = false,
     disableActionsFocus = false,
+    isDisabled,
+    isLoading = false,
     ...rest
   } = allProps as CubeItemButtonProps & {
     as?: 'a' | 'button' | 'div' | 'span';
   };
+
+  // Loading state makes the component disabled (same logic as Item)
+  const finalIsDisabled =
+    isDisabled === true || (isLoading && isDisabled !== false);
 
   const actionsRef = useRef<HTMLDivElement>(null);
   const [actionsWidth, setActionsWidth] = useState(0);
@@ -156,7 +162,14 @@ const ItemButton = forwardRef(function ItemButton(
   const shouldShowActions = isHovered || isFocusWithin || hasPressed;
 
   const { actionProps } = useAction(
-    { ...(allProps as any), htmlType, to, as, mods },
+    {
+      ...(allProps as any),
+      htmlType,
+      to,
+      as,
+      mods,
+      isDisabled: finalIsDisabled,
+    },
     ref,
   );
 
@@ -168,6 +181,8 @@ const ItemButton = forwardRef(function ItemButton(
       type={type}
       theme={theme}
       size={size}
+      isLoading={isLoading}
+      isDisabled={isDisabled}
     />
   );
 
@@ -193,6 +208,7 @@ const ItemButton = forwardRef(function ItemButton(
           type={type}
           theme={theme}
           disableActionsFocus={disableActionsFocus}
+          isDisabled={finalIsDisabled}
         >
           {showActionsOnHover ? (
             <DisplayTransition

@@ -134,6 +134,7 @@ export const ItemAction = forwardRef(function ItemAction(
     type: contextType,
     theme: contextTheme,
     disableActionsFocus,
+    isDisabled: contextIsDisabled,
   } = useItemActionContext();
 
   const {
@@ -146,8 +147,12 @@ export const ItemAction = forwardRef(function ItemAction(
     tooltip,
     mods,
     styles,
+    isDisabled: isDisabledProp,
     ...rest
   } = allProps;
+
+  // Inherit disabled state from context, but allow local override
+  const isDisabled = isDisabledProp ?? contextIsDisabled;
 
   // Determine if we should show checkbox
   const hasCheckbox = icon === 'checkbox';
@@ -190,6 +195,7 @@ export const ItemAction = forwardRef(function ItemAction(
   const { actionProps } = useAction(
     {
       ...rest,
+      isDisabled,
       'aria-label': ariaLabel,
       mods: finalMods,
       htmlType: 'button',

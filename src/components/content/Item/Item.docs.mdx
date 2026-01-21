@@ -283,7 +283,7 @@ Item supports inline actions that appear on the right side. Use the `Item.Action
 </Item>
 ```
 
-Actions automatically inherit the parent's `type` and `theme` props and adjust their styling accordingly. The component reserves space for actions to prevent content overlap.
+Actions automatically inherit the parent's `type`, `theme`, and `isDisabled` props and adjust their styling accordingly. When the parent Item is disabled, all actions are also disabled unless explicitly overridden with `isDisabled={false}`. The component reserves space for actions to prevent content overlap.
 
 By default, action buttons are focusable. Use `disableActionsFocus={true}` to prevent them from receiving keyboard focus.
 
