@@ -69,18 +69,15 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     '': '#clear',
     pressed: '#purple-text',
     focused: '#purple-text',
-    disabled: '#border',
+    disabled: '#clear',
   },
   fill: {
     '': '#purple',
     hovered: '#purple-text',
     pressed: '#purple',
-    disabled: '#dark.04',
+    disabled: '#purple.4',
   },
-  color: {
-    '': '#white',
-    disabled: '#dark-04',
-  },
+  color: '#white',
 } as const;
 
 export const DEFAULT_SECONDARY_STYLES: Styles = {
@@ -208,17 +205,14 @@ export const DANGER_PRIMARY_STYLES: Styles = {
   border: {
     '': '#clear',
     'pressed | focused': '#danger-text',
-    disabled: '#border',
+    disabled: '#clear',
   },
   fill: {
     '': '#danger',
     'hovered & !pressed': '#danger-text',
-    disabled: '#dark.04',
+    disabled: '#danger.4',
   },
-  color: {
-    '': '#white',
-    disabled: '#dark-04',
-  },
+  color: '#white',
 } as const;
 
 export const DANGER_SECONDARY_STYLES: Styles = {
@@ -340,17 +334,14 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
   border: {
     '': '#clear',
     'pressed | focused': '#success-text',
-    disabled: '#border',
+    disabled: '#clear',
   },
   fill: {
     '': '#success',
     'hovered & !pressed': '#success-text',
-    disabled: '#dark.04',
+    disabled: '#success.4',
   },
-  color: {
-    '': '#white',
-    disabled: '#dark-04',
-  },
+  color: '#white',
 } as const;
 
 export const SUCCESS_SECONDARY_STYLES: Styles = {
