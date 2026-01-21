@@ -108,7 +108,14 @@ export interface BasePropsWithoutChildren<K extends TagName = TagName>
     | CSSProperties
     | (CSSProperties & { [key: string]: string | number | null | undefined });
   /** User-defined theme for the element. Mapped to data-theme attribute. Use `default`, or `danger`, or any custom string value you need. */
-  theme?: 'default' | 'danger' | 'special' | 'success' | 'note' | (string & {});
+  theme?:
+    | 'default'
+    | 'danger'
+    | 'special'
+    | 'success'
+    | 'warning'
+    | 'note'
+    | (string & {});
   /** CSS custom property tokens rendered as inline styles */
   tokens?: Tokens;
 }

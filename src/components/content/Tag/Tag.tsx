@@ -27,7 +27,7 @@ const TagElement = tasty(Item, {
 });
 
 export interface CubeTagProps extends CubeItemProps {
-  theme?: 'default' | 'danger' | 'success' | 'note' | 'special';
+  theme?: 'default' | 'danger' | 'success' | 'warning' | 'note' | 'special';
   isClosable?: boolean;
   onClose?: () => void;
   closeButtonStyles?: Styles;

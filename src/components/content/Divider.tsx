@@ -28,7 +28,7 @@ const DividerElement = tasty({
       text: 'auto',
     },
     fill: {
-      '': '#light-border',
+      '': '#border',
       text: 'none',
     },
     border: '0',
@@ -36,7 +36,7 @@ const DividerElement = tasty({
 
     Line: {
       height: '1bw 1bw',
-      fill: '#light-border',
+      fill: '#border',
     },
   },
   styleProps: [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES],

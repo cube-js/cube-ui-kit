@@ -2,6 +2,7 @@ import { CSSProperties } from 'react';
 
 import { Tokens, TokenValue } from '../types';
 
+import { okhslToRgb } from './okhsl-to-rgb';
 import { getRgbValuesFromRgbaString, hexToRgb, parseStyle } from './styles';
 
 const devMode = process.env.NODE_ENV !== 'production';
@@ -68,7 +69,11 @@ function parseHslValues(str: string): [number, number, number] | null {
  * @param l - Lightness (0-1)
  * @returns RGB values in 0-255 range (may have fractional values)
  */
-function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+export function hslToRgbValues(
+  h: number,
+  s: number,
+  l: number,
+): [number, number, number] {
   const a = s * Math.min(l, 1 - l);
 
   const f = (n: number): number => {
@@ -118,8 +123,24 @@ function extractRgbValue(colorValue: string, parsedOutput: string): string {
     const hslValues =
       parseHslValues(parsedOutput) || parseHslValues(colorValue);
     if (hslValues) {
-      const [r, g, b] = hslToRgb(hslValues[0], hslValues[1], hslValues[2]);
+      const [r, g, b] = hslToRgbValues(
+        hslValues[0],
+        hslValues[1],
+        hslValues[2],
+      );
       return `${formatRgbComponent(r)} ${formatRgbComponent(g)} ${formatRgbComponent(b)}`;
+    }
+  }
+
+  // For okhsl(...) values, convert to RGB triplet
+  if (parsedOutput.startsWith('okhsl(') || colorValue.startsWith('okhsl(')) {
+    // Try parsedOutput first, then original colorValue
+    const rgbResult = okhslToRgb(parsedOutput) || okhslToRgb(colorValue);
+    if (rgbResult) {
+      const rgbValues = getRgbValuesFromRgbaString(rgbResult);
+      if (rgbValues && rgbValues.length >= 3) {
+        return rgbValues.join(' ');
+      }
     }
   }
 

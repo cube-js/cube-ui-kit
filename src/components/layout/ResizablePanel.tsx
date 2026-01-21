@@ -101,7 +101,7 @@ const HandlerElement = tasty({
         disabled: '0 0',
       },
       fill: {
-        '': '#border-opaque',
+        '': '#border',
         '(hovered | drag) & !disabled': '#purple-03',
       },
       transition: 'theme',

@@ -602,6 +602,12 @@ export const DANGER_CARD_STYLES: Styles = {
   color: '#danger-text',
 } as const;
 
+export const WARNING_CARD_STYLES: Styles = {
+  border: '#warning.20',
+  fill: '#warning-bg',
+  color: '#warning-text',
+} as const;
+
 export const NOTE_CARD_STYLES: Styles = {
   border: '#note.20',
   fill: '#note-bg',
@@ -640,4 +646,5 @@ export type ItemVariant =
   | 'special.clear'
   | 'special.link'
   | 'special.item'
+  | 'warning.card'
   | 'note.card';

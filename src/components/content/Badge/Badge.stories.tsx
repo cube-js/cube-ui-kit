@@ -39,7 +39,15 @@ const meta = {
     /* Presentation */
     theme: {
       control: 'radio',
-      options: [undefined, 'note', 'success', 'danger', 'special', 'disabled'],
+      options: [
+        undefined,
+        'warning',
+        'note',
+        'success',
+        'danger',
+        'special',
+        'disabled',
+      ],
       description: 'Visual theme of the badge',
       table: {
         type: { summary: 'string' },
@@ -78,6 +86,7 @@ export const Themes: Story = {
   render: () => (
     <Space gap="1x" placeItems="center">
       <Badge theme="special">Special</Badge>
+      <Badge theme="warning">Warning</Badge>
       <Badge theme="note">Note</Badge>
       <Badge theme="success">Success</Badge>
       <Badge theme="danger">Danger</Badge>

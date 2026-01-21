@@ -1,4 +1,4 @@
-import { processTokens } from './processTokens';
+import { processTokens } from './process-tokens';
 
 describe('processTokens', () => {
   describe('HSL color token processing', () => {
@@ -197,6 +197,54 @@ describe('processTokens', () => {
 
       expect(result).toBeDefined();
       expect(result!['--primary-color-rgb']).toBe('100 150 200');
+    });
+  });
+
+  describe('OKHSL color token processing', () => {
+    it('converts OKHSL to RGB triplet', () => {
+      const result = processTokens({
+        '#purple': 'okhsl(280.3 80% 52%)',
+      });
+
+      expect(result).toBeDefined();
+      expect(result!['--purple-color']).toBe('okhsl(280.3 80% 52%)');
+      // Should be RGB triplet, not the OKHSL string
+      expect(result!['--purple-color-rgb']).toMatch(
+        /^\d+(\.\d+)? \d+(\.\d+)? \d+(\.\d+)?$/,
+      );
+      // Should NOT be the OKHSL string
+      expect(result!['--purple-color-rgb']).not.toContain('okhsl');
+    });
+
+    it('converts OKHSL with alpha to RGB triplet', () => {
+      const result = processTokens({
+        '#custom': 'okhsl(280.3 80% 52% / 0.5)',
+      });
+
+      expect(result).toBeDefined();
+      // Alpha should be ignored for RGB triplet
+      expect(result!['--custom-color-rgb']).toMatch(
+        /^\d+(\.\d+)? \d+(\.\d+)? \d+(\.\d+)?$/,
+      );
+      expect(result!['--custom-color-rgb']).not.toContain('okhsl');
+    });
+
+    it('converts white OKHSL correctly', () => {
+      const result = processTokens({
+        '#white': 'okhsl(0 0% 100%)',
+      });
+
+      expect(result).toBeDefined();
+      expect(result!['--white-color-rgb']).toBe('255 255 255');
+    });
+
+    it('converts black OKHSL correctly', () => {
+      const result = processTokens({
+        '#black': 'okhsl(0 0% 0%)',
+      });
+
+      expect(result).toBeDefined();
+      expect(result!['--black-color-rgb']).toBe('0 0 0');
     });
   });
 

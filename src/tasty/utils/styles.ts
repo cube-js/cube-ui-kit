@@ -4,6 +4,8 @@ import { Styles } from '../styles/types';
 
 import { cacheWrapper } from './cache-wrapper';
 import { camelToKebab } from './case-converter';
+import { hslToRgb } from './hsl-to-rgb';
+import { okhslToRgb } from './okhsl-to-rgb';
 
 import type { ProcessedStyle, StyleDetails } from '../parser/types';
 import type { AtRuleContext, ParsedAdvancedState } from '../states';
@@ -368,6 +370,10 @@ export function strToRgb(color, ignoreAlpha = false) {
   if (color.startsWith('rgb')) return color;
 
   if (color.startsWith('#')) return hexToRgb(color);
+
+  if (color.startsWith('okhsl(')) return okhslToRgb(color);
+
+  if (color.startsWith('hsl')) return hslToRgb(color);
 
   return null;
 }

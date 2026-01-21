@@ -33,14 +33,14 @@ const IconPreset = tasty({
     boxSizing: 'border-box',
     display: 'flex',
     fill: {
-      '': '#note-bg',
-      attention: '#note-bg',
+      '': '#warning-bg',
+      attention: '#warning-bg',
       success: '#success-bg',
       danger: '#danger-bg',
     },
     color: {
-      '': '#note-text',
-      attention: '#note-text',
+      '': '#warning-text',
+      attention: '#warning-text',
       success: '#success-text',
       danger: '#danger-text',
     },

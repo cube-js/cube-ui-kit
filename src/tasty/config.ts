@@ -19,7 +19,7 @@ import {
   registerHandler,
   resetHandlers,
 } from './styles/predefined';
-import { isDevEnv } from './utils/isDevEnv';
+import { isDevEnv } from './utils/is-dev-env';
 import {
   CUSTOM_UNITS,
   getGlobalFuncs,

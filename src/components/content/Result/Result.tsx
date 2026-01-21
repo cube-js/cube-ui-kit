@@ -129,7 +129,7 @@ const statusIconMap: StatusIconMap = {
     component: () => <IconInfoCircleFilled />,
   },
   warning: {
-    color: 'note',
+    color: 'warning',
     component: () => <IconAlertTriangleFilled />,
   },
   404: {

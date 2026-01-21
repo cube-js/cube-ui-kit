@@ -39,4 +39,4 @@ export type { StaticStyle } from './types';
 export type { Styles } from '../styles/types';
 
 // Re-export mergeStyles for advanced use cases
-export { mergeStyles } from '../utils/mergeStyles';
+export { mergeStyles } from '../utils/merge-styles';

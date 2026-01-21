@@ -90,7 +90,7 @@ const TabElement = tasty(Action, {
     padding: '1x 1.5x',
     border: {
       '': 'left top right #clear',
-      disabled: 'left top right rgb(227, 227, 233)',
+      disabled: 'left top right #border',
     },
     fill: {
       '': '#dark.04',

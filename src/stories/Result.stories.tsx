@@ -81,7 +81,7 @@ export const CustomIcon = {
     subtitle: 'Request access from the administrator.',
 
     icon: (
-      <Icon color="#note">
+      <Icon color="#warning">
         <IconLock />
       </Icon>
     ),

@@ -1,4 +1,4 @@
-import { isDevEnv } from '../utils/isDevEnv';
+import { isDevEnv } from '../utils/is-dev-env';
 import {
   RawStyleHandler,
   StyleHandler,

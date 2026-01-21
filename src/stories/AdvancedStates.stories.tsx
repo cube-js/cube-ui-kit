@@ -171,8 +171,8 @@ const LocalPredefinedBox = tasty({
       '@compact': '1x',
     },
     fill: {
-      '': '#note-bg',
-      '@expanded': '#note',
+      '': '#warning-bg',
+      '@expanded': '#warning',
     },
     color: '#dark',
     radius: '2r',
@@ -207,8 +207,8 @@ const Box = tasty({
       '@compact': '1x',
     },
     fill: {
-      '': '#warning-04',
-      '@expanded': '#warning-03',
+      '': '#purple-04',
+      '@expanded': '#purple-03',
     },
   },
 });
@@ -257,7 +257,7 @@ export const ColorScheme: StoryObj = {
           Dark mode: dark background, white text
         </Text>
       </ColorSchemeBox>
-      <Text preset="c1" color="#note">
+      <Text preset="c1" color="#warning">
         Change your system appearance settings to see the effect
       </Text>
     </Flex>
@@ -600,7 +600,7 @@ const ContainerQueryBox = tasty({
       '@(w < 500px)': '2x',
       '@(w < 300px)': '1x',
     },
-    fill: '#note',
+    fill: '#warning',
     color: '#white',
     radius: '2r',
   },
@@ -695,7 +695,7 @@ const SupportsQueryBox = tasty({
     gap: '2x',
     padding: '3x',
     fill: {
-      '': '#note',
+      '': '#warning',
       '@supports(display: grid-lanes)': '#success',
     },
     color: '#white',
@@ -740,7 +740,7 @@ export const SupportsQueries: StoryObj = {
           </Block>
         ))}
       </SupportsQueryBox>
-      <Text preset="c1" color="#note">
+      <Text preset="c1" color="#warning">
         Tip: selector support checks use <code>@supports($, :has(*))</code>.
       </Text>
     </Flex>
@@ -1056,7 +1056,7 @@ const PriorityBox = tasty({
     fill: {
       '': '#light',
       'size=small': '#success',
-      'size=medium': '#note',
+      'size=medium': '#warning',
       'size=large': '#danger',
     },
     color: {

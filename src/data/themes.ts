@@ -14,6 +14,11 @@ export default {
     color: '#danger-text',
     border: '#danger.20',
   },
+  warning: {
+    fill: '#warning-bg',
+    color: '#warning-text',
+    border: '#warning.20',
+  },
   note: {
     fill: '#note-bg',
     color: '#note-text',

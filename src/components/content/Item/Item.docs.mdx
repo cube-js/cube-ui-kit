@@ -71,7 +71,7 @@ The `mods` property accepts the following modifiers:
 | loading | `boolean` | Applied when isLoading is true |
 | size | `string` | Applied based on size prop value (xsmall, small, medium, large, xlarge, inline) |
 | type | `string` | Applied based on type prop value (item, header, primary, secondary, outline, neutral, clear, link, card) |
-| theme | `string` | Applied based on theme prop value (default, danger, success, special, note) |
+| theme | `string` | Applied based on theme prop value (default, danger, success, special, warning, note) |
 | shape | `string` | Applied based on shape prop value (card, button, sharp, pill) |
 
 ## Variants
@@ -86,15 +86,16 @@ The `mods` property accepts the following modifiers:
 - `neutral` - Neutral colored item styling
 - `clear` - Transparent item with minimal styling
 - `link` - Link-styled item appearance (does not support icons or loading state)
-- `card` - Card appearance for notifications (supports `default`, `success`, `danger`, `note` themes; defaults to `shape="card"`, `descriptionPlacement="block"`, uses semantic heading tags via `level` prop, and has `.5x` padding)
+- `card` - Card appearance for notifications (supports `default`, `success`, `danger`, `warning`, `note` themes; defaults to `shape="card"`, `descriptionPlacement="block"`, uses semantic heading tags via `level` prop, and has `.5x` padding)
 
 ### Themes
 
 - `default` - Standard appearance with default colors
-- `danger` - Red theme for destructive or warning actions
+- `danger` - Red theme for destructive actions
 - `success` - Green theme for positive actions
 - `special` - Special theme with unique styling (not available for `card` or `header` types)
-- `note` - Note theme for informational cards (only available for `card` type)
+- `warning` - Yellow/amber theme for caution or attention (only available for `card` type)
+- `note` - Violet theme for informational cards (only available for `card` type)
 
 ### Sizes
 
@@ -228,6 +229,10 @@ Like headers, card labels use semantic heading tags (h1-h6) controlled by the `l
 
 <Item type="card" theme="danger" icon={<IconAlertTriangle />} description="Something went wrong">
   Error Card
+</Item>
+
+<Item type="card" theme="warning" icon={<IconAlertTriangle />} description="Proceed with caution">
+  Warning Card
 </Item>
 
 <Item type="card" theme="note" icon={<IconNote />} description="Additional context or tips">
