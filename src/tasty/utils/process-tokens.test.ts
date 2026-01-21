@@ -1,4 +1,4 @@
-import { processTokens } from './processTokens';
+import { processTokens } from './process-tokens';
 
 describe('processTokens', () => {
   describe('HSL color token processing', () => {

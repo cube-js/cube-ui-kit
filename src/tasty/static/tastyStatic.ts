@@ -1,5 +1,5 @@
 import { Styles } from '../styles/types';
-import { mergeStyles } from '../utils/mergeStyles';
+import { mergeStyles } from '../utils/merge-styles';
 
 import { createStaticStyle, isStaticStyle, StaticStyle } from './types';
 

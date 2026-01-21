@@ -16,7 +16,7 @@ const CardElement = tasty({
     flow: 'column',
     radius: '(1cr + 1bw)',
     fill: '#white',
-    border: '#light-border',
+    border: '#border',
     padding: '1.5x',
     preset: 't3',
   },

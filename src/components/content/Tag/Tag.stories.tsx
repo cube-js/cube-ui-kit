@@ -32,7 +32,15 @@ const meta = {
     /* Presentation */
     theme: {
       control: 'radio',
-      options: [undefined, 'note', 'success', 'danger', 'special', 'disabled'],
+      options: [
+        undefined,
+        'warning',
+        'note',
+        'success',
+        'danger',
+        'special',
+        'disabled',
+      ],
       description: 'Visual theme of the tag',
       table: {
         type: { summary: 'string' },
@@ -99,6 +107,7 @@ export const Themes: Story = {
   render: () => (
     <Space gap="1x">
       <Tag>Default</Tag>
+      <Tag theme="warning">Warning</Tag>
       <Tag theme="note">Note</Tag>
       <Tag theme="success">Success</Tag>
       <Tag theme="danger">Danger</Tag>
@@ -126,6 +135,9 @@ export const Closable: Story = {
   render: () => (
     <Space gap="1x">
       <Tag isClosable>Default</Tag>
+      <Tag isClosable theme="warning">
+        Warning
+      </Tag>
       <Tag isClosable theme="note">
         Note
       </Tag>

@@ -22,10 +22,10 @@ import {
   Props,
   Tokens,
 } from './types';
-import { getDisplayName } from './utils/getDisplayName';
-import { mergeStyles } from './utils/mergeStyles';
-import { modAttrs } from './utils/modAttrs';
-import { processTokens, stringifyTokens } from './utils/processTokens';
+import { getDisplayName } from './utils/get-display-name';
+import { mergeStyles } from './utils/merge-styles';
+import { modAttrs } from './utils/mod-attrs';
+import { processTokens, stringifyTokens } from './utils/process-tokens';
 
 import type { StyleValue, StyleValueStateMap } from './utils/styles';
 

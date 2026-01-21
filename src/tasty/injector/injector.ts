@@ -8,7 +8,7 @@ import {
   getEffectiveDefinition,
   normalizePropertyDefinition,
 } from '../properties';
-import { isDevEnv } from '../utils/isDevEnv';
+import { isDevEnv } from '../utils/is-dev-env';
 import { parseStyle } from '../utils/styles';
 
 import { SheetManager } from './sheet-manager';

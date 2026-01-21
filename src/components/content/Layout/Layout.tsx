@@ -29,7 +29,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { isDevEnv } from '../../../tasty/utils/isDevEnv';
+import { isDevEnv } from '../../../tasty/utils/is-dev-env';
 import { useCombinedRefs } from '../../../utils/react';
 import { Alert } from '../Alert';
 

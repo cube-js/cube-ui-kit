@@ -48,6 +48,7 @@ import {
   SUCCESS_OUTLINE_STYLES,
   SUCCESS_PRIMARY_STYLES,
   SUCCESS_SECONDARY_STYLES,
+  WARNING_CARD_STYLES,
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
@@ -158,7 +159,14 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'link'
     | 'card'
     | (string & {});
-  theme?: 'default' | 'danger' | 'success' | 'special' | 'note' | (string & {});
+  theme?:
+    | 'default'
+    | 'danger'
+    | 'success'
+    | 'special'
+    | 'warning'
+    | 'note'
+    | (string & {});
   /** Keyboard shortcut that triggers the element when pressed */
   hotkeys?: string;
   /**
@@ -549,6 +557,8 @@ const ItemElement = tasty({
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,
     'special.item': SPECIAL_ITEM_STYLES,
+    // Warning theme (card type only)
+    'warning.card': WARNING_CARD_STYLES,
     // Note theme (card type only)
     'note.card': NOTE_CARD_STYLES,
   },
@@ -614,7 +624,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
 
   // Validate type+theme combinations
   const STANDARD_THEMES = ['default', 'success', 'danger', 'special'];
-  const CARD_THEMES = ['default', 'success', 'danger', 'note'];
+  const CARD_THEMES = ['default', 'success', 'danger', 'warning', 'note'];
   const HEADER_THEMES = ['default'];
 
   const isInvalidCombination =
@@ -629,7 +639,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         (type === 'header'
           ? ' The "header" type only supports theme: default.'
           : type === 'card'
-            ? ' The "card" type only supports themes: default, success, danger, note.'
+            ? ' The "card" type only supports themes: default, success, danger, warning, note.'
             : ' Standard types support themes: default, success, danger, special.'),
     ],
   });

@@ -44,19 +44,19 @@ export type {
   ParsedAdvancedState,
   AtRuleContext,
 } from './states';
-export * from './utils/filterBaseProps';
+export * from './utils/filter-base-props';
 export * from './utils/colors';
 export * from './utils/styles';
-export * from './utils/modAttrs';
+export * from './utils/mod-attrs';
 export { styleHandlers } from './styles';
 export { renderStyles, isSelector } from './pipeline';
 export type { StyleResult, RenderResult } from './pipeline';
 export * from './utils/dotize';
 export * from './styles/list';
-export * from './utils/mergeStyles';
+export * from './utils/merge-styles';
 export * from './utils/warnings';
-export * from './utils/getDisplayName';
-export * from './utils/processTokens';
+export * from './utils/get-display-name';
+export * from './utils/process-tokens';
 export * from './utils/typography';
 export * from './injector';
 export * from './debug';

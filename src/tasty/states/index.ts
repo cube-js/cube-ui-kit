@@ -7,7 +7,7 @@
 
 import { hasStylesGenerated } from '../config';
 import { Styles } from '../styles/types';
-import { isDevEnv } from '../utils/isDevEnv';
+import { isDevEnv } from '../utils/is-dev-env';
 
 /**
  * Parsed advanced state information

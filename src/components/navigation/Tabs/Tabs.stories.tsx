@@ -967,7 +967,7 @@ export const InsideLayout: Story = {
           </Layout>
         </Tab>
         <Tab key="tab3" title="Settings">
-          <Layout fill="#note.15">
+          <Layout fill="#warning.15">
             <Layout.Content>
               <Paragraph>
                 This is the Settings panel. The yellow background demonstrates

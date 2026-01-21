@@ -22,7 +22,7 @@ import * as t from '@babel/types';
 
 import { configure } from '../config';
 import { Styles } from '../styles/types';
-import { mergeStyles } from '../utils/mergeStyles';
+import { mergeStyles } from '../utils/merge-styles';
 import { StyleHandlerDefinition } from '../utils/styles';
 
 import { CSSWriter } from './css-writer';

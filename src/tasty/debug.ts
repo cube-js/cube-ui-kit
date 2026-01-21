@@ -4,7 +4,7 @@
 
 import { CHUNK_NAMES } from './chunks/definitions';
 import { getCssTextForNode, injector } from './injector';
-import { isDevEnv } from './utils/isDevEnv';
+import { isDevEnv } from './utils/is-dev-env';
 
 // Type definitions for the new API
 type CSSTarget =
