@@ -181,6 +181,8 @@ const ItemButton = forwardRef(function ItemButton(
       type={type}
       theme={theme}
       size={size}
+      isLoading={isLoading}
+      isDisabled={isDisabled}
     />
   );
 
