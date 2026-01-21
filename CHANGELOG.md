@@ -1,5 +1,31 @@
 # @cube-dev/ui-kit
 
+## 0.101.0
+
+### Minor Changes
+
+- [#964](https://github.com/cube-js/cube-ui-kit/pull/964) [`1a2388be`](https://github.com/cube-js/cube-ui-kit/commit/1a2388be161ab19f55a7290792bc6f6113c2a327) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking:** `ItemAction` now inherits `isDisabled` state from parent `Item` or `ItemButton` via context. When the parent component is disabled, all nested `ItemAction` components are automatically disabled.
+
+  To keep an action enabled when the parent is disabled, explicitly set `isDisabled={false}` on the `ItemAction`:
+
+  ```jsx
+  <Item
+    isDisabled
+    actions={
+      <>
+        <ItemAction icon={<IconEdit />} tooltip="Disabled with parent" />
+        <ItemAction
+          icon={<IconTrash />}
+          tooltip="Still enabled"
+          isDisabled={false}
+        />
+      </>
+    }
+  >
+    Disabled item with one enabled action
+  </Item>
+  ```
+
 ## 0.100.0
 
 ### Minor Changes
