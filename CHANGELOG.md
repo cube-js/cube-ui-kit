@@ -1,5 +1,53 @@
 # @cube-dev/ui-kit
 
+## 0.102.0
+
+### Minor Changes
+
+- [#966](https://github.com/cube-js/cube-ui-kit/pull/966) [`3244c5d9`](https://github.com/cube-js/cube-ui-kit/commit/3244c5d958e4f1cbcb5637a205ca5cf64d3a9fa9) Thanks [@tenphi](https://github.com/tenphi)! - Refactor color system to use OKHSL format with unified constants
+
+  ### What's changed:
+
+  - Converted all color tokens from RGB to OKHSL format for perceptually uniform color manipulation
+  - Added color constants (`PURPLE_HUE`, `DANGER_HUE`, `MAIN_SATURATION`, etc.) for consistent color values across themes
+  - Moved color conversion utilities (`hslToRgb`, `okhslToRgb`) to separate files (`hsl-to-rgb.ts`, `okhsl-to-rgb.ts`)
+  - Renamed utility files to kebab-case for consistency (`filter-base-props.ts`, `get-display-name.ts`, etc.)
+  - Removed unused color tokens (`#draft`, `#dark-75`, `#pink-02`, `#pink-8`, `#pink-9`)
+  - Fixed hardcoded RGB value in `FileTabs` component to use `#border` token
+
+  ### Why:
+
+  OKHSL provides perceptually uniform color space, making it easier to create consistent color variations. Using constants ensures all theme colors maintain consistent saturation and lightness values.
+
+  ### Technical details:
+
+  - All color tokens now use `okhsl()` format
+  - Color conversion utilities properly handle OKHSL → RGB conversion for CSS variable generation
+  - Internal file organization improved with consistent naming conventions
+
+- [#966](https://github.com/cube-js/cube-ui-kit/pull/966) [`3244c5d9`](https://github.com/cube-js/cube-ui-kit/commit/3244c5d958e4f1cbcb5637a205ca5cf64d3a9fa9) Thanks [@tenphi](https://github.com/tenphi)! - Add warning theme and rename note theme across components
+
+  ### What's changed:
+
+  - Added `warning` theme support to `Badge`, `Tag`, and `Item` components
+  - Renamed previous `note` theme to `warning` (yellow/amber) across the codebase
+  - Added new `note` theme (violet) for informational content, available for `card` type items
+  - Updated component documentation and stories to reflect new themes
+  - Updated notification icons to use `warning` theme instead of `note`
+
+  ### Components affected:
+
+  - `Badge`: Added `warning` theme option
+  - `Tag`: Added `warning` theme option
+  - `Item`: Added `warning.card` and `note.card` theme variants
+  - `NotificationIcon`: Changed default/attention from `note` to `warning` colors
+
+  ### Migration:
+
+  - If you were using `theme="note"` on `Badge` or `Tag` components, change to `theme="warning"` for the same yellow/amber appearance
+  - For violet informational cards, use `type="card" theme="note"` on `Item` component
+  - Notification icons now use warning colors by default (previously note colors)
+
 ## 0.101.0
 
 ### Minor Changes
