@@ -150,13 +150,13 @@ export interface StylesInterface
   /**
    * The fade style applies gradient-based fading masks to the edges of an element. Replaces complex CSS mask gradients with a simple, declarative API.
    *
-   * Syntax: `[width] [directions] [#transparent-color] [#opaque-color]`
+   * Syntax: `[width] [directions] [#from-color] [#to-color]`
    *
    * Multiple groups can be separated by commas to specify different colors per direction.
    *
    * Color tokens (optional):
-   * - First color: transparent mask color (start of gradient, default: `rgb(0 0 0 / 0)`)
-   * - Second color: opaque mask color (end of gradient, default: `rgb(0 0 0 / 1)`)
+   * - First color: transparent start of gradient (default: `rgb(0 0 0 / 0)`)
+   * - Second color: opaque end of gradient (default: `rgb(0 0 0 / 1)`)
    *
    * Examples:
    * - `fade="top"` // fade only top edge with default width

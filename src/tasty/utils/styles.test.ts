@@ -153,6 +153,16 @@ describe('strToRgb', () => {
     expect(strToRgb('hsl(240 100% 50%)')).toBe('rgb(0 0 255)');
   });
 
+  it('converts hsl with alpha (modern slash syntax)', () => {
+    expect(strToRgb('hsl(0 100% 50% / 0.5)')).toBe('rgba(255, 0, 0, 0.5)');
+    expect(strToRgb('hsla(120 100% 50% / 0.8)')).toBe('rgba(0, 255, 0, 0.8)');
+  });
+
+  it('converts hsla with alpha (legacy comma syntax)', () => {
+    expect(strToRgb('hsla(0, 100%, 50%, 0.5)')).toBe('rgba(255, 0, 0, 0.5)');
+    expect(strToRgb('hsla(120, 100%, 50%, 0.8)')).toBe('rgba(0, 255, 0, 0.8)');
+  });
+
   it('converts okhsl to rgb', () => {
     // Purple: okhsl(280.3 80% 52%) should produce a blueish-purple color
     const result = strToRgb('okhsl(280.3 80% 52%)');

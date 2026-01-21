@@ -1,19 +1,26 @@
+import { hslToRgbValues } from './process-tokens';
+
 /**
  * Convert HSL color string to RGB.
- * Supports: hsl(h s% l%), hsla(h, s%, l%, a), hsl(h s% l% / a)
+ * Supports:
+ * - Modern: hsl(h s% l%), hsl(h s% l% / a)
+ * - Legacy: hsl(h, s%, l%), hsla(h, s%, l%, a)
  */
 export function hslToRgb(hslStr: string): string | null {
   const match = hslStr.match(/hsla?\(([^)]+)\)/i);
   if (!match) return null;
 
   const inner = match[1].trim();
-  const [colorPart, alphaPart] = inner.split('/');
+  const [colorPart, slashAlpha] = inner.split('/');
   const parts = colorPart
     .trim()
     .split(/[,\s]+/)
     .filter(Boolean);
 
   if (parts.length < 3) return null;
+
+  // Alpha can come from slash notation (modern) or 4th part (legacy comma syntax)
+  const alphaPart = slashAlpha?.trim() || (parts.length >= 4 ? parts[3] : null);
 
   // Parse hue
   let h = parseFloat(parts[0]);
@@ -30,21 +37,13 @@ export function hslToRgb(hslStr: string): string | null {
   const s = Math.max(0, Math.min(1, parsePercent(parts[1])));
   const l = Math.max(0, Math.min(1, parsePercent(parts[2])));
 
-  // HSL to RGB algorithm
-  const a = s * Math.min(l, 1 - l);
-  const f = (n: number): number => {
-    const k = (n + h / 30) % 12;
-    return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
-  };
-
-  const r = Math.round(f(0) * 255);
-  const g = Math.round(f(8) * 255);
-  const b = Math.round(f(4) * 255);
+  // Use shared HSL to RGB conversion
+  const [r, g, b] = hslToRgbValues(h, s, l);
 
   if (alphaPart) {
     const alpha = parseFloat(alphaPart.trim());
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${alpha})`;
   }
 
-  return `rgb(${r} ${g} ${b})`;
+  return `rgb(${Math.round(r)} ${Math.round(g)} ${Math.round(b)})`;
 }
