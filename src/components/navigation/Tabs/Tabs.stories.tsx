@@ -1,10 +1,8 @@
 import { Key, RefObject, useRef, useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
-import { DownIcon, MoreIcon } from '../../../icons';
 import { Button } from '../../actions/Button';
-import { ItemAction } from '../../actions/ItemAction';
-import { Menu, MenuTrigger } from '../../actions/Menu';
+import { Menu } from '../../actions/Menu';
 import { Layout } from '../../content/Layout';
 import { Paragraph } from '../../content/Paragraph';
 import { Space } from '../../layout/Space';
@@ -12,7 +10,6 @@ import { Space } from '../../layout/Space';
 import { Tab, Tabs } from './Tabs';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { CubeTabsRef } from './Tabs';
 
 const meta = {
   title: 'Navigation/Tabs',
@@ -566,10 +563,10 @@ export const ScrollableTabs: Story = {
 };
 
 /**
- * Tabs with custom actions menu - demonstrates adding menus to tabs with Delete and Duplicate actions
+ * Tabs with menu - demonstrates the simplified menu API with predefined actions
  */
-export const WithActionsMenu: Story = {
-  render: function WithActionsMenuRender(args) {
+export const WithMenu: Story = {
+  render: function WithMenuRender(args) {
     const [tabs, setTabs] = useState([
       { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
       { id: 'tab2', title: 'Tab 2', content: 'Content for Tab 2' },
@@ -595,7 +592,8 @@ export const WithActionsMenu: Story = {
       setActiveKey(newId);
     };
 
-    const handleDelete = (tabId: string) => {
+    const handleDelete = (key: Key) => {
+      const tabId = String(key);
       const newTabs = tabs.filter((t) => t.id !== tabId);
       setTabs(newTabs);
 
@@ -605,36 +603,29 @@ export const WithActionsMenu: Story = {
       }
     };
 
-    const createTabMenu = (tabId: string) => (
-      <MenuTrigger>
-        <ItemAction icon={<DownIcon />} aria-label="Tab actions" />
-        <Menu
-          onAction={(action) => {
-            if (action === 'duplicate') {
-              handleDuplicate(tabId);
-            } else if (action === 'delete') {
-              handleDelete(tabId);
-            }
-          }}
-        >
-          <Menu.Item key="duplicate">Duplicate</Menu.Item>
-          <Menu.Item key="delete" theme="danger">
-            Delete
-          </Menu.Item>
-        </Menu>
-      </MenuTrigger>
-    );
-
     return (
       <Tabs
         showActionsOnHover
         {...args}
         type="file"
         activeKey={activeKey}
+        // Define menu at Tabs level - all tabs share this menu
+        menu={
+          <>
+            <Menu.Item key="duplicate">Duplicate</Menu.Item>
+            <Menu.Item key="delete">Delete</Menu.Item>
+          </>
+        }
         onChange={(key) => setActiveKey(String(key))}
+        onAction={(action, tabKey) => {
+          if (action === 'duplicate') {
+            handleDuplicate(String(tabKey));
+          }
+        }}
+        onDelete={handleDelete}
       >
         {tabs.map((tab) => (
-          <Tab key={tab.id} title={tab.title} actions={createTabMenu(tab.id)}>
+          <Tab key={tab.id} title={tab.title}>
             {tab.content}
           </Tab>
         ))}
@@ -648,7 +639,6 @@ export const WithActionsMenu: Story = {
  */
 export const WithEditableTabs: Story = {
   render: function WithEditableTabsRender(args) {
-    const tabsRef = useRef<CubeTabsRef>(null);
     const [tabs, setTabs] = useState([
       { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
       { id: 'tab2', title: 'Tab 2', content: 'Content for Tab 2' },
@@ -656,7 +646,8 @@ export const WithEditableTabs: Story = {
     ]);
     const [activeKey, setActiveKey] = useState<string>('tab1');
 
-    const handleTitleChange = (tabId: string, newTitle: string) => {
+    const handleTitleChange = (key: Key, newTitle: string) => {
+      const tabId = String(key);
       setTabs((prev) =>
         prev.map((t) => (t.id === tabId ? { ...t, title: newTitle } : t)),
       );
@@ -680,7 +671,8 @@ export const WithEditableTabs: Story = {
       setActiveKey(newId);
     };
 
-    const handleDelete = (tabId: string) => {
+    const handleDelete = (key: Key) => {
+      const tabId = String(key);
       const newTabs = tabs.filter((t) => t.id !== tabId);
       setTabs(newTabs);
 
@@ -689,50 +681,198 @@ export const WithEditableTabs: Story = {
       }
     };
 
-    const createTabMenu = (tabId: string) => (
-      <MenuTrigger>
-        <ItemAction icon={<DownIcon />} aria-label="Tab actions" />
-        <Menu
-          onAction={(action) => {
-            if (action === 'rename') {
-              tabsRef.current?.startEditing(tabId);
-            } else if (action === 'duplicate') {
-              handleDuplicate(tabId);
-            } else if (action === 'delete') {
-              handleDelete(tabId);
-            }
+    return (
+      <Tabs
+        showActionsOnHover
+        {...args}
+        isEditable
+        type="file"
+        activeKey={activeKey}
+        menu={
+          <>
+            <Menu.Item key="rename">Rename</Menu.Item>
+            <Menu.Item key="duplicate">Duplicate</Menu.Item>
+            <Menu.Item key="delete">Delete</Menu.Item>
+          </>
+        }
+        onChange={(key) => setActiveKey(String(key))}
+        onTitleChange={handleTitleChange}
+        onDelete={handleDelete}
+        onAction={(action, tabKey) => {
+          console.log(`Action: ${String(action)}, Tab: ${String(tabKey)}`);
+          if (action === 'duplicate') {
+            handleDuplicate(String(tabKey));
+          }
+        }}
+      >
+        {tabs.map((tab) => (
+          <Tab key={tab.id} title={tab.title} width="max 30x">
+            {tab.content}
+          </Tab>
+        ))}
+      </Tabs>
+    );
+  },
+};
+
+/**
+ * Context menu - demonstrates right-click menu on tabs
+ */
+export const WithContextMenu: Story = {
+  render: function WithContextMenuRender(args) {
+    const [tabs, setTabs] = useState([
+      { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
+      { id: 'tab2', title: 'Tab 2', content: 'Content for Tab 2' },
+      { id: 'tab3', title: 'Tab 3', content: 'Content for Tab 3' },
+    ]);
+    const [activeKey, setActiveKey] = useState<string>('tab1');
+
+    const handleTitleChange = (key: Key, newTitle: string) => {
+      const tabId = String(key);
+      setTabs((prev) =>
+        prev.map((t) => (t.id === tabId ? { ...t, title: newTitle } : t)),
+      );
+    };
+
+    const handleDelete = (key: Key) => {
+      const tabId = String(key);
+      const newTabs = tabs.filter((t) => t.id !== tabId);
+      setTabs(newTabs);
+
+      if (activeKey === tabId && newTabs.length > 0) {
+        setActiveKey(newTabs[0].id);
+      }
+    };
+
+    return (
+      <Space flow="column" gap="2x">
+        <Paragraph>
+          Right-click on any tab to open the context menu. The same menu is also
+          accessible via the ⋮ button.
+        </Paragraph>
+        <Tabs
+          {...args}
+          isEditable
+          contextMenu
+          type="file"
+          activeKey={activeKey}
+          menu={
+            <>
+              <Menu.Item key="rename">Rename</Menu.Item>
+              <Menu.Item key="delete">Delete</Menu.Item>
+            </>
+          }
+          onChange={(key) => setActiveKey(String(key))}
+          onTitleChange={handleTitleChange}
+          onDelete={handleDelete}
+        >
+          {tabs.map((tab) => (
+            <Tab key={tab.id} title={tab.title}>
+              {tab.content}
+            </Tab>
+          ))}
+        </Tabs>
+      </Space>
+    );
+  },
+};
+
+/**
+ * Per-tab menu override - demonstrates overriding or disabling menu per tab
+ */
+export const WithPerTabMenuOverride: Story = {
+  render: function WithPerTabMenuOverrideRender(args) {
+    return (
+      <Space flow="column" gap="2x">
+        <Paragraph>
+          Tab 1 uses the default menu, Tab 2 has a custom menu, Tab 3 has no
+          menu (set to null).
+        </Paragraph>
+        <Tabs
+          {...args}
+          isEditable
+          type="file"
+          defaultActiveKey="tab1"
+          menu={
+            <>
+              <Menu.Item key="rename">Rename</Menu.Item>
+              <Menu.Item key="info">Show Info</Menu.Item>
+            </>
+          }
+          onAction={(action, tabKey) => {
+            console.log(`Action: ${String(action)}, Tab: ${String(tabKey)}`);
           }}
         >
-          <Menu.Item key="rename">Rename</Menu.Item>
-          <Menu.Item key="duplicate">Duplicate</Menu.Item>
-          <Menu.Item key="delete" theme="danger">
-            Delete
-          </Menu.Item>
-        </Menu>
-      </MenuTrigger>
+          <Tab key="tab1" title="Default Menu">
+            This tab uses the default menu from Tabs.
+          </Tab>
+          <Tab
+            key="tab2"
+            title="Custom Menu"
+            menu={
+              <>
+                <Menu.Item key="special">Special Action</Menu.Item>
+                <Menu.Item key="export">Export</Menu.Item>
+              </>
+            }
+          >
+            This tab has its own custom menu.
+          </Tab>
+          <Tab key="tab3" title="No Menu" menu={null}>
+            This tab has no menu (explicitly disabled).
+          </Tab>
+        </Tabs>
+      </Space>
     );
+  },
+};
+
+/**
+ * Menu with sections - demonstrates using Menu.Section for organized menus
+ */
+export const WithMenuSections: Story = {
+  render: function WithMenuSectionsRender(args) {
+    const [tabs, setTabs] = useState([
+      { id: 'tab1', title: 'Document.txt' },
+      { id: 'tab2', title: 'Report.pdf' },
+    ]);
+    const [activeKey, setActiveKey] = useState<string>('tab1');
+
+    const handleDelete = (key: Key) => {
+      const tabId = String(key);
+      const newTabs = tabs.filter((t) => t.id !== tabId);
+      setTabs(newTabs);
+
+      if (activeKey === tabId && newTabs.length > 0) {
+        setActiveKey(newTabs[0].id);
+      }
+    };
 
     return (
       <Tabs
-        ref={tabsRef}
-        showActionsOnHover
         {...args}
+        isEditable
         type="file"
         activeKey={activeKey}
-        onChange={(key) => setActiveKey(String(key))}
-        onTitleChange={(key, newTitle) =>
-          handleTitleChange(String(key), newTitle)
+        menu={
+          <>
+            <Menu.Item key="rename">Rename</Menu.Item>
+            <Menu.Item key="duplicate">Duplicate</Menu.Item>
+            <Menu.Item key="copy-path">Copy Path</Menu.Item>
+            <Menu.Section title="Danger Zone">
+              <Menu.Item key="delete">Delete</Menu.Item>
+            </Menu.Section>
+          </>
         }
+        onChange={(key) => setActiveKey(String(key))}
+        onDelete={handleDelete}
+        onAction={(action, tabKey) => {
+          console.log(`Action: ${String(action)}, Tab: ${String(tabKey)}`);
+        }}
       >
         {tabs.map((tab) => (
-          <Tab
-            key={tab.id}
-            isEditable
-            title={tab.title}
-            width="max 30x"
-            actions={createTabMenu(tab.id)}
-          >
-            {tab.content}
+          <Tab key={tab.id} title={tab.title}>
+            Content for {tab.title}
           </Tab>
         ))}
       </Tabs>
@@ -979,4 +1119,184 @@ export const InsideLayout: Story = {
       </Tabs>
     </Layout>
   ),
+};
+
+/**
+ * Reorderable tabs - demonstrates drag-and-drop tab reordering
+ */
+export const Reorderable: Story = {
+  render: function ReorderableRender(args) {
+    const [tabs] = useState([
+      { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
+      { id: 'tab2', title: 'Tab 2', content: 'Content for Tab 2' },
+      { id: 'tab3', title: 'Tab 3', content: 'Content for Tab 3' },
+      { id: 'tab4', title: 'Tab 4', content: 'Content for Tab 4' },
+    ]);
+    const [keyOrder, setKeyOrder] = useState<Key[]>([
+      'tab1',
+      'tab2',
+      'tab3',
+      'tab4',
+    ]);
+    const [activeKey, setActiveKey] = useState<string>('tab1');
+
+    return (
+      <Space flow="column" gap="2x">
+        <Paragraph>
+          Drag tabs to reorder them. The order is controlled via the `keyOrder`
+          prop.
+        </Paragraph>
+        <Paragraph preset="t3">
+          Current order: {keyOrder.map(String).join(', ')}
+        </Paragraph>
+        <Tabs
+          {...args}
+          isReorderable
+          type="file"
+          activeKey={activeKey}
+          keyOrder={keyOrder}
+          onChange={(key) => setActiveKey(String(key))}
+          onReorder={(newOrder) => setKeyOrder(newOrder)}
+        >
+          {tabs.map((tab) => (
+            <Tab key={tab.id} title={tab.title}>
+              {tab.content}
+            </Tab>
+          ))}
+        </Tabs>
+      </Space>
+    );
+  },
+};
+
+/**
+ * Reorderable tabs with delete and menu - demonstrates combining reordering with other features
+ */
+export const ReorderableWithMenu: Story = {
+  render: function ReorderableWithMenuRender(args) {
+    const [tabs, setTabs] = useState([
+      { id: 'tab1', title: 'Document 1' },
+      { id: 'tab2', title: 'Document 2' },
+      { id: 'tab3', title: 'Document 3' },
+    ]);
+    const [keyOrder, setKeyOrder] = useState<Key[]>(['tab1', 'tab2', 'tab3']);
+    const [activeKey, setActiveKey] = useState<string>('tab1');
+
+    const handleDelete = (key: Key) => {
+      const tabId = String(key);
+      const newTabs = tabs.filter((t) => t.id !== tabId);
+      const newOrder = keyOrder.filter((k) => String(k) !== tabId);
+
+      setTabs(newTabs);
+      setKeyOrder(newOrder);
+
+      if (activeKey === tabId && newTabs.length > 0) {
+        setActiveKey(newTabs[0].id);
+      }
+    };
+
+    const handleDuplicate = (tabId: string) => {
+      const tab = tabs.find((t) => t.id === tabId);
+
+      if (!tab) return;
+
+      const newId = `tab${Date.now()}`;
+      const newTab = { ...tab, id: newId, title: `${tab.title} (copy)` };
+      const insertIndex = tabs.findIndex((t) => t.id === tabId) + 1;
+
+      const newTabs = [...tabs];
+      newTabs.splice(insertIndex, 0, newTab);
+      setTabs(newTabs);
+
+      // Also insert in keyOrder after the original
+      const orderIndex = keyOrder.findIndex((k) => String(k) === tabId);
+      const newOrder = [...keyOrder];
+      newOrder.splice(orderIndex + 1, 0, newId);
+      setKeyOrder(newOrder);
+
+      setActiveKey(newId);
+    };
+
+    return (
+      <Space flow="column" gap="2x">
+        <Paragraph>
+          Tabs can be reordered, duplicated, and deleted. Menu actions work
+          alongside drag-and-drop.
+        </Paragraph>
+        <Tabs
+          {...args}
+          isReorderable
+          isEditable
+          showActionsOnHover
+          type="file"
+          activeKey={activeKey}
+          keyOrder={keyOrder}
+          menu={
+            <>
+              <Menu.Item key="rename">Rename</Menu.Item>
+              <Menu.Item key="duplicate">Duplicate</Menu.Item>
+              <Menu.Item key="delete">Delete</Menu.Item>
+            </>
+          }
+          onChange={(key) => setActiveKey(String(key))}
+          onReorder={(newOrder) => setKeyOrder(newOrder)}
+          onDelete={handleDelete}
+          onAction={(action, tabKey) => {
+            if (action === 'duplicate') {
+              handleDuplicate(String(tabKey));
+            }
+          }}
+        >
+          {tabs.map((tab) => (
+            <Tab key={tab.id} title={tab.title}>
+              Content for {tab.title}
+            </Tab>
+          ))}
+        </Tabs>
+      </Space>
+    );
+  },
+};
+
+/**
+ * Reorderable tabs with different types - shows reordering works with all tab types
+ */
+export const ReorderableDefaultType: Story = {
+  render: function ReorderableDefaultTypeRender(args) {
+    const [keyOrder, setKeyOrder] = useState<Key[]>([
+      'overview',
+      'analytics',
+      'reports',
+      'settings',
+    ]);
+
+    return (
+      <Space flow="column" gap="2x">
+        <Paragraph>
+          Drag-and-drop reordering also works with the default tab style.
+        </Paragraph>
+        <Tabs
+          {...args}
+          isReorderable
+          type="default"
+          defaultActiveKey="overview"
+          keyOrder={keyOrder}
+          onReorder={(newOrder) => setKeyOrder(newOrder)}
+        >
+          <Tab key="overview" title="Overview">
+            Overview content
+          </Tab>
+          <Tab key="analytics" title="Analytics">
+            Analytics content
+          </Tab>
+          <Tab key="reports" title="Reports">
+            Reports content
+          </Tab>
+          <Tab key="settings" title="Settings">
+            Settings content
+          </Tab>
+        </Tabs>
+      </Space>
+    );
+  },
 };

@@ -509,7 +509,7 @@ const ItemElement = tasty({
       opacity: {
         '': 1,
         'show-actions-on-hover': 0,
-        'show-actions-on-hover & (:hover | :focus | :focus-within | :has([data-pressed]))': 1,
+        'show-actions-on-hover & (active | pressed | :hover | :focus | :focus-within)': 1,
       },
       transition:
         'width $transition ease-out, opacity $transition ease-out, padding $transition ease-out',

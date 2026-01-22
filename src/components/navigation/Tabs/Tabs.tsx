@@ -1,6 +1,7 @@
 import { Key, Node } from '@react-types/shared';
 import {
   Children,
+  cloneElement,
   FocusEvent,
   ForwardedRef,
   forwardRef,
@@ -12,7 +13,6 @@ import {
   RefObject,
   useCallback,
   useEffect,
-  useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -21,6 +21,19 @@ import {
 import {
   AriaTabListProps,
   AriaTabPanelProps,
+  DragItem,
+  DroppableCollectionReorderEvent,
+  DropTarget,
+  ListDropTargetDelegate,
+  ListKeyboardDelegate,
+  useDraggableCollection,
+  useDraggableItem,
+  useDropIndicator,
+  useDroppableCollection,
+  useFocus,
+  useFocusRing,
+  useFocusVisible,
+  useHover,
   useTab,
   useTabList,
   useTabPanel,
@@ -28,12 +41,16 @@ import {
 } from 'react-aria';
 import {
   Item as CollectionItem,
+  DraggableCollectionState,
+  DroppableCollectionState,
   TabListState,
+  useDraggableCollectionState,
+  useDroppableCollectionState,
   useTabListState,
 } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks';
-import { CloseIcon } from '../../../icons';
+import { CloseIcon, MoreIcon } from '../../../icons';
 import {
   BaseProps,
   extractStyles,
@@ -43,7 +60,10 @@ import {
   tasty,
 } from '../../../tasty';
 import { chainRaf } from '../../../utils/raf';
-import { ItemAction } from '../../actions/ItemAction';
+import { mergeProps } from '../../../utils/react';
+import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
+import { CubeMenuProps, Menu, MenuTrigger } from '../../actions/Menu';
+import { useContextMenu } from '../../actions/use-context-menu';
 import { CubeItemProps, Item } from '../../content/Item';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
 
@@ -54,8 +74,20 @@ import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
 /** Visual appearance type for tabs */
 export type TabType = 'default' | 'file' | 'panel' | 'radio';
 
-/** Tab size options */
-export type TabSize = 'medium' | 'large';
+/**
+ * Tab size options.
+ * Radio type only supports 'medium' | 'large' (mapped to smaller Item sizes).
+ */
+export type TabSize = 'xsmall' | 'small' | 'medium' | 'large';
+
+/**
+ * Size mapping for radio type tabs.
+ * Radio type uses smaller sizes similar to RadioGroup tabs mode.
+ */
+const RADIO_SIZE_MAP: Record<'medium' | 'large', TabSize> = {
+  medium: 'xsmall',
+  large: 'medium',
+};
 
 /** Common props for panel rendering behavior */
 interface PanelBehaviorProps {
@@ -109,7 +141,10 @@ type OmittedItemProps =
 
 /** Common styling props for tabs - inherits style props from CubeItemProps */
 interface TabStyleProps extends Omit<CubeItemProps, OmittedItemProps> {
-  /** Tab size. Large uses `t2m` preset, medium uses `t3m`. */
+  /**
+   * Tab size. Supports 'xsmall', 'small', 'medium', 'large'.
+   * Radio type only supports 'medium' | 'large' (mapped to smaller Item sizes).
+   */
   size?: TabSize;
   /** Visual appearance type. */
   type?: TabType;
@@ -134,7 +169,11 @@ export interface CubeTabsProps
    * @default 'default'
    */
   type?: TabType;
-  /** Tab size. Large uses `t2m` preset, medium uses `t3m`. */
+  /**
+   * Tab size. Supports 'xsmall', 'small', 'medium', 'large'.
+   * Radio type only supports 'medium' | 'large' (mapped to smaller Item sizes).
+   * @default 'medium'
+   */
   size?: TabSize;
   /** Accessible label for the tab list. */
   label?: string;
@@ -150,6 +189,41 @@ export interface CubeTabsProps
   onTitleChange?: (key: Key, newTitle: string) => void;
   /** Whether to show tab actions only on hover. Can be overridden per-tab. */
   showActionsOnHover?: boolean;
+  /**
+   * Whether tabs are editable by default.
+   * Can be overridden per-tab via Tab's isEditable prop.
+   * @default false
+   */
+  isEditable?: boolean;
+  /**
+   * Default menu items for all tabs.
+   * Can be overridden per-tab via Tab's menu prop.
+   * Set to `null` on individual Tab to disable menu for that tab.
+   */
+  menu?: ReactNode;
+  /**
+   * Default props for the menu trigger button.
+   * Can be overridden per-tab via Tab's menuTriggerProps prop.
+   * @default { icon: <MoreIcon /> }
+   */
+  menuTriggerProps?: Partial<CubeItemActionProps>;
+  /**
+   * Default props passed to the Menu component.
+   * Can be overridden per-tab via Tab's menuProps prop.
+   */
+  menuProps?: Partial<CubeMenuProps<object>>;
+  /**
+   * Whether to show context menu on right-click for all tabs.
+   * Can be overridden per-tab via Tab's contextMenu prop.
+   * @default false
+   */
+  contextMenu?: boolean;
+  /**
+   * Callback when a menu action is triggered on any tab.
+   * Called with the action key and the tab key.
+   * Tab-level onAction is called first, then this.
+   */
+  onAction?: (action: Key, tabKey: Key) => void;
   /** Custom tasty styles for the tab bar container. */
   styles?: Styles;
   /** QA selector attribute. */
@@ -214,6 +288,23 @@ export interface CubeTabsProps
     string | number,
     string | number | boolean | null | undefined
   >;
+  /**
+   * Enable drag-and-drop tab reordering.
+   * When enabled, tabs can be dragged to reorder them.
+   * @default false
+   */
+  isReorderable?: boolean;
+  /**
+   * Controlled order of tab keys.
+   * When provided, tabs are displayed in this order.
+   * Keys not in this array are appended at the end.
+   */
+  keyOrder?: Key[];
+  /**
+   * Callback when tabs are reordered via drag-and-drop.
+   * Called with the new order of keys after a successful drop.
+   */
+  onReorder?: (newOrder: Key[]) => void;
 }
 
 export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {
@@ -229,12 +320,50 @@ export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {
   children?: ReactNode;
   /** Disables the tab (cannot be selected). */
   isDisabled?: boolean;
-  /** Actions to render in the tab (e.g., icons, buttons). Rendered before delete action if tab is deletable. */
+  /** Actions to render in the tab (e.g., icons, buttons). Rendered before menu trigger if tab has menu. */
   actions?: ReactNode;
-  /** Whether the tab title can be edited. Requires onTitleChange on Tabs or Tab. */
+  /** Whether the tab title can be edited. Overrides the Tabs-level isEditable default. */
   isEditable?: boolean;
   /** Callback when this tab's title is changed. Overrides parent's onTitleChange. */
   onTitleChange?: (newTitle: string) => void;
+  /**
+   * Menu items to display in a dropdown menu on the tab.
+   * Pass Menu.Item elements directly - they will be wrapped in a Menu internally.
+   * Overrides the Tabs-level menu default. Set to `null` to disable menu.
+   *
+   * Predefined action keys (handled automatically before onAction is called):
+   * - key="rename" - Enters inline title editing mode (requires isEditable)
+   * - key="delete" - Deletes the tab (requires onDelete set on Tabs)
+   *
+   * Predefined actions support auto-labels: if no children provided, default
+   * label is used (e.g., "Rename", "Delete").
+   */
+  menu?: ReactNode | null;
+  /**
+   * Props to customize the menu trigger button.
+   * Overrides the Tabs-level menuTriggerProps default.
+   * @default { icon: <MoreIcon /> }
+   */
+  menuTriggerProps?: Partial<CubeItemActionProps>;
+  /**
+   * Props passed to the Menu component.
+   * Overrides the Tabs-level menuProps default.
+   */
+  menuProps?: Partial<CubeMenuProps<object>>;
+  /**
+   * Whether to show context menu on right-click.
+   * Uses the same menu items as `menu` prop.
+   * @default false
+   */
+  contextMenu?: boolean;
+  /**
+   * Callback when a menu action is triggered.
+   * Called with the action key from Menu.Item.
+   *
+   * Note: Predefined actions ("rename", "delete") are handled automatically
+   * before this callback is invoked. Then Tabs-level onAction is called.
+   */
+  onAction?: (action: Key) => void;
 }
 
 export interface CubeTabPanelProps extends PanelBehaviorProps, QAProps {
@@ -252,16 +381,6 @@ export interface CubeTabPanelProps extends PanelBehaviorProps, QAProps {
 export interface CubeTabListProps {
   /** Tab components. */
   children?: ReactNode;
-}
-
-/** Ref API for programmatic control of Tabs component */
-export interface CubeTabsRef {
-  /** The root DOM element of the Tabs component */
-  element: HTMLDivElement | null;
-  /** Start editing a tab's title by its key */
-  startEditing: (key: Key) => void;
-  /** Cancel the current editing session */
-  cancelEditing: () => void;
 }
 
 // =============================================================================
@@ -416,11 +535,14 @@ const TabElement = tasty(Item, {
     },
     color: {
       '': '#dark-02',
+      'type=default & (hovered & !selected)': '#purple-text',
       'type=default & selected': '#purple-text',
     },
     fill: {
       '': '#clear',
       'type=file | type=panel': '#light',
+      '(type=file | type=panel) & hovered': '#light.5',
+      'type=radio & hovered': '#white.5',
       '(type=file | type=panel | type=radio) & selected': '#white',
     },
     border: {
@@ -434,6 +556,7 @@ const TabElement = tasty(Item, {
     },
     shadow: {
       '': 'none',
+      'focused & focus-visible': 'inset 0 0 0 1bw #purple-text',
       editing: 'inset 0 0 0 1bw #purple-text',
       'type=radio & selected': '$item-shadow',
     },
@@ -456,8 +579,77 @@ const TabContainer = tasty({
       '': 0,
       'type=file | type=panel': 'right',
     },
+    cursor: {
+      '': 'default',
+      draggable: 'grab',
+      dragging: 'grabbing',
+    },
   },
 });
+
+const DropIndicatorElement = tasty({
+  styles: {
+    zIndex: 10,
+    position: 'absolute',
+    pointerEvents: 'none',
+    opacity: {
+      '': 0,
+      'drop-target': 1,
+    },
+    fill: '#purple',
+    width: '.5x',
+    top: 0,
+    bottom: 0,
+    left: {
+      '': 'auto',
+      before: '-2px',
+    },
+    right: {
+      '': 'auto',
+      after: '-2px',
+    },
+  },
+});
+
+// =============================================================================
+// DropIndicator Component (visual indicator for drag-and-drop)
+// =============================================================================
+
+interface TabDropIndicatorProps {
+  target: DropTarget;
+  dropState: DroppableCollectionState;
+  position: 'before' | 'after';
+}
+
+function TabDropIndicator({
+  target,
+  dropState,
+  position,
+}: TabDropIndicatorProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { dropIndicatorProps, isHidden, isDropTarget } = useDropIndicator(
+    { target },
+    dropState,
+    ref,
+  );
+
+  if (isHidden) {
+    return null;
+  }
+
+  return (
+    <DropIndicatorElement
+      ref={ref}
+      role="option"
+      {...dropIndicatorProps}
+      mods={{
+        'drop-target': isDropTarget,
+        after: position === 'after',
+        before: position === 'before',
+      }}
+    />
+  );
+}
 
 // =============================================================================
 // EditableTitle Component (inline title editing)
@@ -734,15 +926,26 @@ function useTabIndicator(
 // Internal Types for parsed tabs
 // =============================================================================
 
+/**
+ * Internal representation of a parsed Tab.
+ * Uses `content` instead of `children` to distinguish from the Tab component's
+ * children prop and to clarify that this is panel content, not React children.
+ */
 interface ParsedTab extends Omit<CubeTabProps, 'id' | 'children'> {
-  /** Tab key (always a string internally) */
+  /** Tab key (always a string internally for React Aria compatibility) */
   key: string;
+  /** Panel content extracted from Tab's children prop */
   content: ReactNode;
 }
 
+/**
+ * Internal representation of a parsed TabPanel.
+ * Uses `content` instead of `children` for consistency with ParsedTab.
+ */
 interface ParsedPanel extends Omit<CubeTabPanelProps, 'id' | 'children'> {
-  /** Panel key (always a string internally) */
+  /** Panel key (always a string internally for React Aria compatibility) */
   key: string;
+  /** Panel content extracted from TabPanel's children prop */
   content: ReactNode;
 }
 
@@ -751,61 +954,49 @@ interface ParsedPanel extends Omit<CubeTabPanelProps, 'id' | 'children'> {
 // =============================================================================
 
 /**
- * Checks if a child is a Tab component.
+ * Generic helper to check if a child is a specific component by displayName.
  */
-function isTabElement(child: ReactNode): child is ReactElement<CubeTabProps> {
-  return (
-    isValidElement(child) &&
-    typeof child.type === 'function' &&
-    (child.type as any).displayName === 'CubeTab'
-  );
-}
-
-/**
- * Checks if a child is a TabPanel component.
- */
-function isTabPanelElement(
+function isComponentElement<T>(
   child: ReactNode,
-): child is ReactElement<CubeTabPanelProps> {
+  displayName: string,
+): child is ReactElement<T> {
   return (
     isValidElement(child) &&
     typeof child.type === 'function' &&
-    (child.type as any).displayName === 'CubeTabPanel'
+    (child.type as any).displayName === displayName
   );
 }
 
-/**
- * Checks if a child is a TabList component.
- */
-function isTabListElement(
+/** Checks if a child is a Tab component. */
+const isTabElement = (child: ReactNode): child is ReactElement<CubeTabProps> =>
+  isComponentElement<CubeTabProps>(child, 'CubeTab');
+
+/** Checks if a child is a TabPanel component. */
+const isTabPanelElement = (
   child: ReactNode,
-): child is ReactElement<CubeTabListProps> {
-  return (
-    isValidElement(child) &&
-    typeof child.type === 'function' &&
-    (child.type as any).displayName === 'CubeTabList'
-  );
-}
+): child is ReactElement<CubeTabPanelProps> =>
+  isComponentElement<CubeTabPanelProps>(child, 'CubeTabPanel');
+
+/** Checks if a child is a TabList component. */
+const isTabListElement = (
+  child: ReactNode,
+): child is ReactElement<CubeTabListProps> =>
+  isComponentElement<CubeTabListProps>(child, 'CubeTabList');
 
 /**
- * Extracts the raw key from a React child (strips the ".$" prefix added by Children.map).
+ * Extracts the raw key from a React element, stripping the ".$" prefix
+ * that React adds via Children.map/toArray.
  *
  * Note: All keys are converted to strings for React Aria compatibility.
  * This means numeric keys like `key={1}` become `"1"`.
  *
  * @returns The key as a string, or null if no key is present
  */
-function getRawKey(child: ReactElement): string | null {
-  if (child.key == null) return null;
-
-  const keyStr = String(child.key);
-
-  // React prefixes keys with ".$" in Children.map
-  if (keyStr.startsWith('.$')) {
-    return keyStr.slice(2);
-  }
-
-  return keyStr;
+function getRawKey(element: ReactElement): string | null {
+  if (element.key == null) return null;
+  const keyStr = String(element.key);
+  // React prefixes keys with ".$" in Children.map/toArray
+  return keyStr.startsWith('.$') ? keyStr.slice(2) : keyStr;
 }
 
 // =============================================================================
@@ -849,6 +1040,87 @@ interface TabButtonProps extends TabEditingProps {
   onDelete?: (key: Key) => void;
   /** Parent-level showActionsOnHover default */
   showActionsOnHover?: boolean;
+  /** Parent-level isEditable default */
+  parentIsEditable?: boolean;
+  /** Parent-level menu default */
+  parentMenu?: ReactNode;
+  /** Parent-level menuTriggerProps default */
+  parentMenuTriggerProps?: Partial<CubeItemActionProps>;
+  /** Parent-level menuProps default */
+  parentMenuProps?: Partial<CubeMenuProps<object>>;
+  /** Parent-level contextMenu default */
+  parentContextMenu?: boolean;
+  /** Parent-level onAction callback */
+  parentOnAction?: (action: Key, tabKey: Key) => void;
+  /** Drag state for reorderable tabs */
+  dragState?: DraggableCollectionState;
+  /** Drop state for reorderable tabs */
+  dropState?: DroppableCollectionState;
+  /** Whether this is the last tab (for drop indicator) */
+  isLastTab?: boolean;
+}
+
+/**
+ * Process menu items for predefined action keys (rename, delete).
+ * Auto-adds labels and disables items when requirements aren't met.
+ */
+interface MenuItemLikeProps {
+  children?: ReactNode;
+  isDisabled?: boolean;
+  theme?: string;
+}
+
+function processMenuItems(
+  children: ReactNode,
+  effectiveIsEditable: boolean,
+  isDeletable: boolean,
+): ReactNode {
+  // Use Children.toArray to avoid key prefixing that Children.map does
+  return Children.toArray(children).map((child) => {
+    if (!isValidElement(child)) return child;
+
+    const childKey = getRawKey(child);
+    const childProps = child.props as MenuItemLikeProps;
+
+    // Handle predefined action keys
+    if (childKey === 'rename') {
+      return cloneElement(child as ReactElement<MenuItemLikeProps>, {
+        children: childProps.children ?? 'Rename',
+        isDisabled: childProps.isDisabled ?? !effectiveIsEditable,
+      });
+    }
+    if (childKey === 'delete') {
+      return cloneElement(child as ReactElement<MenuItemLikeProps>, {
+        children: childProps.children ?? 'Delete',
+        theme: childProps.theme ?? 'danger',
+        isDisabled: childProps.isDisabled ?? !isDeletable,
+      });
+    }
+
+    // Recursively process Menu.Section children
+    if (childProps.children && typeof childProps.children !== 'string') {
+      return cloneElement(child as ReactElement<MenuItemLikeProps>, {
+        children: processMenuItems(
+          childProps.children,
+          effectiveIsEditable,
+          isDeletable,
+        ),
+      });
+    }
+
+    return child;
+  });
+}
+
+/**
+ * Check if menu children is empty (null, undefined, or empty fragment)
+ */
+function isMenuEmpty(menu: ReactNode): boolean {
+  if (menu === null || menu === undefined) return true;
+
+  const children = Children.toArray(menu);
+
+  return children.length === 0;
 }
 
 function TabButton({
@@ -859,28 +1131,79 @@ function TabButton({
   size,
   onDelete,
   showActionsOnHover: parentShowActionsOnHover,
+  parentIsEditable,
+  parentMenu,
+  parentMenuTriggerProps,
+  parentMenuProps,
+  parentContextMenu,
+  parentOnAction,
   isEditing = false,
   editValue = '',
   onEditValueChange,
   onStartEditing,
   onSubmitEditing,
   onCancelEditing,
+  dragState,
+  dropState,
+  isLastTab,
 }: TabButtonProps) {
   const ref = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { tabProps } = useTab({ key: item.key }, state, ref);
+
+  // Drag-and-drop support - only get drag props when state is available
+  const isDraggable = !!dragState && !!dropState;
+  // Note: useDraggableItem returns empty props when dragState is not properly set up
+  // We still need to call it to satisfy Rules of Hooks
+  const dragResult = useDraggableItem({ key: item.key }, dragState as any);
+  const effectiveDragProps = isDraggable ? dragResult.dragProps : {};
+  const isDragging = isDraggable && dragResult.isDragging;
+
+  // Controlled state for menu trigger (enables keyboard opening with Shift+F10)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Hover, focus, and focus-visible state handling
+  const { hoverProps, isHovered } = useHover({});
+  const [isFocused, setIsFocused] = useState(false);
+  const { focusProps } = useFocus({ onFocusChange: setIsFocused });
+  const { isFocusVisible } = useFocusVisible();
+
+  // Suppress focus-visible when restoring focus after editing
+  const [suppressFocusVisible, setSuppressFocusVisible] = useState(false);
+  const effectiveFocusVisible = isFocusVisible && !suppressFocusVisible;
 
   const isActive = state.selectedKey === item.key;
   const isDisabled = state.disabledKeys.has(item.key);
   const isDeletable = !!onDelete;
-  const isEditable = tabData.isEditable ?? false;
+
+  // Compute effective values - Tab-level overrides Tabs-level
+  const effectiveIsEditable = tabData.isEditable ?? parentIsEditable ?? false;
+  const effectiveMenu =
+    tabData.menu === null ? null : tabData.menu ?? parentMenu;
+  const effectiveMenuTriggerProps = {
+    ...parentMenuTriggerProps,
+    ...tabData.menuTriggerProps,
+  };
+  const effectiveMenuProps = { ...parentMenuProps, ...tabData.menuProps };
+  const effectiveContextMenu =
+    tabData.contextMenu ?? parentContextMenu ?? false;
   const effectiveType = tabData.type ?? type ?? 'default';
+
+  // Delete button shown only if onDelete is set AND no menu
+  const showDeleteButton = isDeletable && isMenuEmpty(effectiveMenu);
+
+  // Process menu items for auto-labels and disabled states (computed early for use in handlers)
+  const processedMenu =
+    effectiveMenu && !isMenuEmpty(effectiveMenu)
+      ? processMenuItems(effectiveMenu, effectiveIsEditable, isDeletable)
+      : null;
 
   const handleDelete = useEvent(() => {
     onDelete?.(item.key);
   });
 
   const handleStartEditing = useEvent(() => {
-    if (!isEditable || isDisabled) return;
+    if (!effectiveIsEditable || isDisabled) return;
 
     const titleText =
       typeof tabData.title === 'string' ? tabData.title : String(item.key);
@@ -890,14 +1213,68 @@ function TabButton({
 
   const handleSubmitEditing = useEvent(() => {
     onSubmitEditing?.(item.key, editValue, tabData.onTitleChange);
+    // Suppress focus-visible and restore focus to the tab button after editing
+    setSuppressFocusVisible(true);
+    requestAnimationFrame(() => {
+      ref.current?.focus();
+    });
   });
 
   const handleCancelEditing = useEvent(() => {
     onCancelEditing?.();
+    // Suppress focus-visible and restore focus to the tab button after editing
+    setSuppressFocusVisible(true);
+    requestAnimationFrame(() => {
+      ref.current?.focus();
+    });
   });
 
   const handleEditValueChange = useEvent((value: string) => {
     onEditValueChange?.(value);
+  });
+
+  // Handle menu actions - predefined actions first, then callbacks
+  const handleMenuAction = useEvent((action: Key) => {
+    // Strip the ".$" prefix that React adds via Children.toArray/map
+    const actionStr = String(action);
+    const normalizedAction = actionStr.startsWith('.$')
+      ? actionStr.slice(2)
+      : actionStr;
+
+    // Handle predefined actions first (only if requirements are met)
+    if (normalizedAction === 'rename' && effectiveIsEditable) {
+      handleStartEditing();
+    }
+    if (normalizedAction === 'delete' && isDeletable) {
+      onDelete?.(item.key);
+    }
+    // Call Tab-level onAction first (with normalized action)
+    tabData.onAction?.(normalizedAction);
+    // Then call Tabs-level onAction with tab key (with normalized action)
+    parentOnAction?.(normalizedAction, item.key);
+  });
+
+  // Keyboard handler for accessibility shortcuts (WAI-ARIA Tabs Pattern)
+  // - Shift+F10: Opens context menu (standard desktop convention)
+  // - Delete: Deletes the tab (optional per ARIA spec)
+  const handleKeyDown = useEvent((e: KeyboardEvent) => {
+    // Reset focus-visible suppression on any keyboard interaction
+    if (suppressFocusVisible) {
+      setSuppressFocusVisible(false);
+    }
+
+    // Shift+F10 opens the menu (standard context menu shortcut)
+    if (e.key === 'F10' && e.shiftKey && processedMenu) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsMenuOpen(true);
+    }
+
+    // Delete key for direct tab deletion (ARIA Tabs pattern optional feature)
+    if (e.key === 'Delete' && isDeletable) {
+      e.preventDefault();
+      onDelete?.(item.key);
+    }
   });
 
   const mods = useMemo(
@@ -907,8 +1284,24 @@ function TabButton({
       deletable: isDeletable,
       disabled: isDisabled,
       editing: isEditing,
+      hovered: isHovered,
+      focused: isFocused,
+      'focus-visible': effectiveFocusVisible,
+      draggable: isDraggable,
+      dragging: isDragging,
     }),
-    [effectiveType, isActive, isDeletable, isDisabled, isEditing],
+    [
+      effectiveType,
+      isActive,
+      isDeletable,
+      isDisabled,
+      isEditing,
+      isHovered,
+      isFocused,
+      effectiveFocusVisible,
+      isDraggable,
+      isDragging,
+    ],
   );
 
   // Scroll active tab into view
@@ -918,8 +1311,34 @@ function TabButton({
     }
   }, [isActive]);
 
-  // Build actions for the tab (custom actions + delete button)
-  const deleteAction = isDeletable ? (
+  // Build menu element - onAction AFTER spread so it's not overridden
+  const menuElement = processedMenu ? (
+    <Menu {...effectiveMenuProps} onAction={handleMenuAction}>
+      {processedMenu}
+    </Menu>
+  ) : null;
+
+  // Use the useContextMenu hook for context menu handling
+  const contextMenu = useContextMenu<HTMLDivElement, CubeMenuProps<object>>(
+    Menu,
+    { placement: 'bottom start' },
+    {
+      ...effectiveMenuProps,
+      onAction: handleMenuAction,
+      children: processedMenu,
+    },
+  );
+
+  // Build menu trigger action with controlled state for keyboard accessibility
+  const menuAction = menuElement ? (
+    <MenuTrigger isOpen={isMenuOpen} onOpenChange={setIsMenuOpen}>
+      <ItemAction icon={<MoreIcon />} {...effectiveMenuTriggerProps} />
+      {menuElement}
+    </MenuTrigger>
+  ) : null;
+
+  // Build delete button (only shown when no menu)
+  const deleteAction = showDeleteButton ? (
     <ItemAction
       icon={<CloseIcon />}
       tooltip="Delete tab"
@@ -927,42 +1346,31 @@ function TabButton({
     />
   ) : null;
 
-  // Combine tab's custom actions with delete action
+  // Order: custom actions → menu trigger → delete button
   const actions =
-    tabData.actions || deleteAction ? (
+    tabData.actions || menuAction || deleteAction ? (
       <>
         {tabData.actions}
+        {menuAction}
         {deleteAction}
       </>
     ) : undefined;
 
-  // Determine effective size - map 'medium'/'large' to Item size values
-  const isRadioType = effectiveType === 'radio';
-  const isFileOrPanelType =
-    effectiveType === 'file' || effectiveType === 'panel';
-
+  // Determine effective size
+  // Radio type only supports medium/large and maps to smaller Item sizes
   const effectiveSize = tabData.size ?? size ?? 'medium';
-
-  // For radio type, use smaller sizes like RadioGroup tabs mode
-  let itemSize: 'xsmall' | 'small' | 'medium' | 'large';
-
-  if (isRadioType) {
-    // Map sizes similar to RadioGroup tabs mode
-    if (effectiveSize === 'medium') {
-      itemSize = 'xsmall';
-    } else {
-      // large -> medium
-      itemSize = 'medium';
-    }
-  } else {
-    itemSize = effectiveSize === 'large' ? 'large' : 'medium';
-  }
+  const itemSize =
+    effectiveType === 'radio'
+      ? RADIO_SIZE_MAP[effectiveSize === 'large' ? 'large' : 'medium']
+      : effectiveSize;
 
   // Determine Item type prop
-  let itemType: string | undefined =
+  const itemType =
     effectiveType === 'default' ? (isActive ? 'clear' : 'neutral') : 'neutral';
 
   // Determine shape - file/panel types use sharp edges
+  const isFileOrPanelType =
+    effectiveType === 'file' || effectiveType === 'panel';
   const itemShape = isFileOrPanelType ? 'sharp' : undefined;
 
   // Determine showActionsOnHover - tab-level overrides parent-level
@@ -970,7 +1378,7 @@ function TabButton({
     tabData.showActionsOnHover ?? parentShowActionsOnHover;
 
   // Render title with editing support if editable
-  const titleContent = isEditable ? (
+  const titleContent = effectiveIsEditable ? (
     <EditableTitle
       title={tabData.title}
       isEditing={isEditing}
@@ -998,19 +1406,48 @@ function TabButton({
     showActionsOnHover: _showActionsOnHover,
     isEditable: _isEditable,
     onTitleChange: _onTitleChange,
+    menu: _menu,
+    menuTriggerProps: _menuTriggerProps,
+    menuProps: _menuProps,
+    contextMenu: _contextMenu,
+    onAction: _onAction,
     qa,
     qaVal,
     styles,
     ...itemStyleProps
   } = tabData;
 
+  // Use the hook's targetRef when context menu is enabled, otherwise use local containerRef
+  const effectiveContainerRef =
+    effectiveContextMenu && processedMenu
+      ? contextMenu.targetRef
+      : containerRef;
+
+  // ARIA: indicate popup menu presence (WAI-ARIA Tabs pattern)
+  const ariaProps = processedMenu ? { 'aria-haspopup': 'menu' as const } : {};
+
   return (
-    <TabContainer mods={mods}>
+    <TabContainer
+      ref={effectiveContainerRef}
+      mods={mods}
+      {...effectiveDragProps}
+    >
+      {/* Drop indicator before this tab */}
+      {isDraggable && dropState && (
+        <TabDropIndicator
+          target={{ type: 'item', key: item.key, dropPosition: 'before' }}
+          dropState={dropState}
+          position="before"
+        />
+      )}
       <TabElement
         preserveActionsSpace
         showActionsOnHover={effectiveShowActionsOnHover}
         as="button"
-        {...tabProps}
+        {...mergeProps(tabProps, hoverProps, focusProps, {
+          onKeyDown: handleKeyDown,
+        })}
+        {...ariaProps}
         {...itemStyleProps}
         ref={ref}
         qa={qa ?? `Tab-${String(item.key)}`}
@@ -1026,6 +1463,15 @@ function TabButton({
       >
         {titleContent}
       </TabElement>
+      {effectiveContextMenu && processedMenu && contextMenu.rendered}
+      {/* Drop indicator after the last tab */}
+      {isDraggable && dropState && isLastTab && (
+        <TabDropIndicator
+          target={{ type: 'item', key: item.key, dropPosition: 'after' }}
+          dropState={dropState}
+          position="after"
+        />
+      )}
     </TabContainer>
   );
 }
@@ -1139,15 +1585,19 @@ interface CachedPanelRendererProps {
 }
 
 /**
- * Renders panels with optional content caching.
- * Only the content from renderPanel is cached - the TabPanelRenderer wrapper
- * is always rendered fresh so it can correctly determine the active state.
+ * Renders panels with content caching for `renderPanel`.
+ *
+ * Core principle: `renderPanel` is only called when the tab is active
+ * (or once on mount for `prerender`). Inactive panels use cached content.
  *
  * Caching behavior:
- * - By default, panels re-render on every Tabs render (no caching)
- * - When a panel has a non-undefined cache key in `panelCacheKeys`, caching is enabled
- * - Cached content is reused until the cache key changes
- * - Setting a cache key to `undefined` is the same as not having it (no caching)
+ * - `keepMounted=true`: Cache content after first activation, reuse while inactive
+ * - `prerender=true`: Call `renderPanel` once on mount, reuse until active again
+ * - `panelCacheKeys`: Adds cache-key-based invalidation (lazy - only when active)
+ * - No caching props: Only active panel is rendered, unmount when inactive
+ *
+ * Cache invalidation is lazy: changing a cache key for an inactive panel
+ * does NOT trigger `renderPanel` - it only re-executes when the tab becomes active.
  */
 function CachedPanelRenderer({
   parsedTabs,
@@ -1164,30 +1614,56 @@ function CachedPanelRenderer({
     Map<string, { content: ReactNode; cacheKey: CacheKeyValue }>
   >(new Map());
 
-  /**
-   * Get the cache key for a panel.
-   * Returns undefined if no cache key is defined or if set to undefined (no caching).
-   */
-  const getCacheKey = (key: string): CacheKeyValue | undefined => {
-    if (!panelCacheKeys) return undefined;
-    if (Object.prototype.hasOwnProperty.call(panelCacheKeys, key)) {
-      const value = panelCacheKeys[key];
-      // undefined means no caching
-      return value;
-    }
-    return undefined;
-  };
+  /** Get the cache key for a panel. Returns undefined if not defined. */
+  const getCacheKey = (key: string): CacheKeyValue => panelCacheKeys?.[key];
+
+  /** Check if a panel has a defined (non-undefined) cache key. */
+  const hasCacheKey = (key: string): boolean =>
+    panelCacheKeys != null &&
+    key in panelCacheKeys &&
+    panelCacheKeys[key] !== undefined;
 
   /**
-   * Check if a panel has caching enabled.
-   * Only enabled when a non-undefined cache key is defined.
+   * Determine if we should call renderPanel for this tab.
+   *
+   * Rules:
+   * 1. No cache exists + panel is visible → call renderPanel (first render/visit)
+   * 2. Active + panelCacheKeys entry + cache key matches → use cache
+   * 3. Active + panelCacheKeys entry + cache key changed → call renderPanel
+   * 4. Active + no panelCacheKeys entry → always call renderPanel (no content caching)
+   * 5. Inactive + cache exists → use cache, don't call renderPanel
+   *
+   * Key insight: panelCacheKeys enables content caching.
+   * keepMounted/prerender only control DOM mounting, not content caching.
+   * But we always need to populate cache on first render when panel becomes visible.
    */
-  const hasCacheKey = (key: string): boolean => {
-    if (!panelCacheKeys) return false;
-    if (!Object.prototype.hasOwnProperty.call(panelCacheKeys, key))
-      return false;
-    // undefined value means no caching
-    return panelCacheKeys[key] !== undefined;
+  const shouldCallRenderPanel = (
+    tabKey: string,
+    isActive: boolean,
+  ): boolean => {
+    const cached = contentCacheRef.current.get(tabKey);
+
+    // No cache exists - always need to populate on first render
+    // (This function is only called for visible panels, so we always render)
+    if (!cached) {
+      return true;
+    }
+
+    // Cache exists
+    if (isActive) {
+      // If panelCacheKeys has an entry for this panel, use cache-key-based invalidation
+      if (hasCacheKey(tabKey)) {
+        const currentCacheKey = getCacheKey(tabKey);
+        // Cache is valid if key matches
+        return cached.cacheKey !== currentCacheKey;
+      }
+
+      // No panelCacheKeys entry = always re-render when active (no content caching)
+      return true;
+    }
+
+    // Inactive with cache - use cache, don't re-render
+    return false;
   };
 
   // Clean up cache entries for removed tabs
@@ -1196,7 +1672,7 @@ function CachedPanelRenderer({
     [parsedTabs],
   );
 
-  // Use effect to clean up stale cache entries when tabs change
+  // Clean up stale cache entries when tabs are removed
   useEffect(() => {
     for (const key of contentCacheRef.current.keys()) {
       if (!currentTabKeys.has(key)) {
@@ -1217,6 +1693,7 @@ function CachedPanelRenderer({
         const isActive = state.selectedKey === tab.key;
         const wasVisited = visitedKeys.has(tab.key);
 
+        // Determine if panel should be in DOM (visibility)
         if (
           !shouldRenderPanel(
             isActive,
@@ -1225,35 +1702,29 @@ function CachedPanelRenderer({
             effectiveKeepMounted,
           )
         ) {
+          // Panel not in DOM - clear cache if no caching strategy
+          if (!effectiveKeepMounted && !effectivePrerender) {
+            contentCacheRef.current.delete(tab.key);
+          }
           return null;
         }
 
-        // Check if this panel has caching enabled
-        const isCachingEnabled = hasCacheKey(tab.key);
+        // Determine if we need to call renderPanel
         let content: ReactNode;
+        const needsRender = shouldCallRenderPanel(tab.key, isActive);
 
-        if (isCachingEnabled) {
-          // Caching is enabled for this panel - check cache
-          const currentCacheKey = getCacheKey(tab.key);
-          const cached = contentCacheRef.current.get(tab.key);
-
-          // Cache hit if keys match (currentCacheKey is guaranteed non-undefined here)
-          if (cached !== undefined && cached.cacheKey === currentCacheKey) {
-            // Cache hit - use cached content
-            content = cached.content;
-          } else {
-            // Cache miss or key changed - compute fresh and cache
-            content = renderPanel(tab.key);
-            contentCacheRef.current.set(tab.key, {
-              content,
-              cacheKey: currentCacheKey!,
-            });
-          }
-        } else {
-          // No caching - always compute fresh
+        if (needsRender) {
+          // Call renderPanel and cache the result
           content = renderPanel(tab.key);
-          // Clear any stale cache entry
-          contentCacheRef.current.delete(tab.key);
+          const currentCacheKey = getCacheKey(tab.key);
+          contentCacheRef.current.set(tab.key, {
+            content,
+            cacheKey: currentCacheKey,
+          });
+        } else {
+          // Use cached content
+          const cached = contentCacheRef.current.get(tab.key);
+          content = cached?.content ?? null;
         }
 
         return (
@@ -1303,7 +1774,10 @@ TabList.displayName = 'CubeTabList';
 // Main Tabs Component
 // =============================================================================
 
-function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
+function TabsComponent(
+  props: CubeTabsProps,
+  ref: ForwardedRef<HTMLDivElement>,
+) {
   const {
     label = 'Tabs',
     defaultActiveKey,
@@ -1314,6 +1788,12 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
     onDelete,
     onTitleChange,
     showActionsOnHover,
+    isEditable: parentIsEditable,
+    menu: parentMenu,
+    menuTriggerProps: parentMenuTriggerProps,
+    menuProps: parentMenuProps,
+    contextMenu: parentContextMenu,
+    onAction: parentOnAction,
     children,
     prefix,
     suffix,
@@ -1322,14 +1802,16 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
     qa = 'Tabs',
     renderPanel,
     panelCacheKeys,
+    isReorderable = false,
+    keyOrder,
+    onReorder,
     ...otherProps
   } = props;
 
   // Extract outer styles (width, height, margin, etc.) and styles prop from props
   const combinedStyles = extractStyles(otherProps, OUTER_STYLES);
 
-  // DOM element ref (separate from imperative handle ref)
-  const elementRef = useRef<HTMLDivElement>(null);
+  // DOM element refs
   const listRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -1426,15 +1908,15 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
         const key = getRawKey(child) ?? child.props.id;
 
         if (key != null) {
-          const { id: _id, children: tabChildren, ...tabProps } = child.props;
+          const { id: _id, children: tabContent, ...tabProps } = child.props;
 
           tabs.push({
             ...tabProps,
             key,
-            content: tabChildren,
+            content: tabContent,
           });
 
-          if (tabChildren != null) {
+          if (tabContent != null) {
             hasContent = true;
           }
         }
@@ -1462,9 +1944,44 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
     }
   }, [currentTabKeysSet]);
 
-  // Create collection items for React Stately
+  // Order tabs according to keyOrder if provided (used for both collection and rendering)
+  const orderedParsedTabs = useMemo(() => {
+    if (!keyOrder || keyOrder.length === 0) {
+      return parsedTabs;
+    }
+
+    // Create a map for quick lookup
+    const tabMap = new Map<string, ParsedTab>();
+
+    for (const tab of parsedTabs) {
+      tabMap.set(tab.key, tab);
+    }
+
+    // Build ordered array based on keyOrder
+    const ordered: ParsedTab[] = [];
+
+    for (const key of keyOrder) {
+      const tab = tabMap.get(String(key));
+
+      if (tab) {
+        ordered.push(tab);
+        tabMap.delete(String(key));
+      }
+    }
+
+    // Append any tabs not in keyOrder (in their original order)
+    for (const tab of parsedTabs) {
+      if (tabMap.has(tab.key)) {
+        ordered.push(tab);
+      }
+    }
+
+    return ordered;
+  }, [parsedTabs, keyOrder]);
+
+  // Create collection items for React Stately (in the ordered order)
   const collectionItems = useMemo(() => {
-    return parsedTabs.map((tab) => (
+    return orderedParsedTabs.map((tab) => (
       <CollectionItem
         key={tab.key}
         textValue={typeof tab.title === 'string' ? tab.title : String(tab.key)}
@@ -1472,7 +1989,7 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
         {tab.title}
       </CollectionItem>
     ));
-  }, [parsedTabs]);
+  }, [orderedParsedTabs]);
 
   // Create a lookup map for tab data
   const tabDataMap = useMemo(() => {
@@ -1484,30 +2001,6 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
 
     return map;
   }, [parsedTabs]);
-
-  // Expose ref API for programmatic control (separate from DOM ref)
-  useImperativeHandle(
-    ref,
-    () => ({
-      element: elementRef.current,
-      startEditing: (key: Key) => {
-        // Convert key to string for internal lookup
-        const keyStr = String(key);
-        const tabData = tabDataMap.get(keyStr);
-
-        if (tabData?.isEditable && !tabData?.isDisabled) {
-          const titleText =
-            typeof tabData.title === 'string'
-              ? tabData.title
-              : String(tabData.key);
-
-          startEditing(keyStr, titleText);
-        }
-      },
-      cancelEditing,
-    }),
-    [tabDataMap, startEditing, cancelEditing],
-  );
 
   // Determine disabled keys
   const disabledKeys = useMemo(() => {
@@ -1562,6 +2055,119 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
   // Get tablist props from react-aria
   const { tabListProps } = useTabList(ariaProps, state, listRef);
 
+  // ==========================================================================
+  // Drag-and-Drop State (only when isReorderable is true)
+  // ==========================================================================
+
+  // Handle reorder event from drag-and-drop
+  const handleReorder = useEvent((e: DroppableCollectionReorderEvent) => {
+    if (!onReorder) return;
+
+    const currentKeys = orderedParsedTabs.map((t) => t.key);
+    const { target, keys: movableKeys } = e;
+    const { dropPosition, key: targetKey } = target;
+    const movableKey = [...movableKeys][0] as string;
+
+    const movableIndex = currentKeys.indexOf(movableKey);
+    const targetIndex = currentKeys.indexOf(String(targetKey));
+
+    if (movableIndex === -1 || targetIndex === -1) return;
+
+    // Reorder keys
+    const newKeys =
+      movableIndex !== targetIndex
+        ? currentKeys.reduce((arr, key, i) => {
+            // Skip the key we are moving
+            if (i === movableIndex) {
+              return arr;
+            }
+
+            // Insert the movable key at the target position
+            if (i === targetIndex) {
+              if (dropPosition === 'before') {
+                arr.push(movableKey);
+                arr.push(key);
+              } else if (dropPosition === 'after') {
+                arr.push(key);
+                arr.push(movableKey);
+              } else {
+                arr.push(key);
+              }
+            } else {
+              arr.push(key);
+            }
+
+            return arr;
+          }, [] as string[])
+        : currentKeys;
+
+    onReorder(newKeys);
+  });
+
+  // Get items for draggable collection
+  const getItems = useCallback(
+    (keys: Set<Key>): DragItem[] => {
+      return [...keys].map((key) => {
+        const item = state.collection.getItem(key);
+
+        return {
+          'text/plain': item?.textValue || String(key),
+        };
+      });
+    },
+    [state.collection],
+  );
+
+  // Setup drag state for the collection
+  const dragState = useDraggableCollectionState({
+    collection: state.collection,
+    selectionManager: state.selectionManager,
+    getItems,
+    getAllowedDropOperations: () => ['move'],
+  });
+
+  // Actually enable the draggable collection hook only when isReorderable
+  useDraggableCollection(
+    isReorderable
+      ? {
+          getItems,
+          getAllowedDropOperations: () => ['move'],
+        }
+      : { getItems: () => [], getAllowedDropOperations: () => [] },
+    dragState,
+    listRef,
+  );
+
+  // Setup drop state for the collection
+  const dropState = useDroppableCollectionState({
+    collection: state.collection,
+    selectionManager: state.selectionManager,
+    onReorder: handleReorder,
+  });
+
+  const { collectionProps } = useDroppableCollection(
+    isReorderable
+      ? {
+          keyboardDelegate: new ListKeyboardDelegate(
+            state.collection,
+            state.disabledKeys,
+            listRef,
+          ),
+          dropTargetDelegate: new ListDropTargetDelegate(
+            state.collection,
+            listRef,
+            { orientation: 'horizontal' },
+          ),
+          onReorder: handleReorder,
+        }
+      : {
+          keyboardDelegate: undefined as any,
+          dropTargetDelegate: undefined as any,
+        },
+    dropState,
+    listRef,
+  );
+
   // Tab indicator for default type
   const indicatorStyle = useTabIndicator(
     listRef,
@@ -1591,7 +2197,7 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
   return (
     <>
       <TabsElement
-        ref={elementRef}
+        ref={ref}
         qa={qa}
         mods={mods}
         styles={combinedStyles}
@@ -1601,26 +2207,43 @@ function TabsComponent(props: CubeTabsProps, ref: ForwardedRef<CubeTabsRef>) {
         {prefix ? <div data-element="Prefix">{prefix}</div> : null}
         <div data-element="ScrollWrapper">
           <div ref={scrollRef} data-element="Scroll">
-            <div {...tabListProps} ref={listRef} data-element="Container">
-              {[...state.collection].map((item) => {
-                // Convert item.key to string for internal lookup
-                const tabData = tabDataMap.get(String(item.key));
+            <div
+              {...mergeProps(
+                tabListProps,
+                isReorderable ? collectionProps : {},
+              )}
+              ref={listRef}
+              data-element="Container"
+            >
+              {/* Render tabs in order (respecting keyOrder if provided) */}
+              {orderedParsedTabs.map((tab, index) => {
+                const item = state.collection.getItem(tab.key);
 
-                if (!tabData) return null;
+                if (!item) return null;
 
                 const isItemEditing = editingKey === item.key;
+                const isLastTab = index === orderedParsedTabs.length - 1;
 
                 return (
                   <TabButton
                     key={item.key}
                     item={item}
                     state={state}
-                    tabData={tabData}
+                    tabData={tab}
                     type={type}
                     size={size}
                     showActionsOnHover={showActionsOnHover}
+                    parentIsEditable={parentIsEditable}
+                    parentMenu={parentMenu}
+                    parentMenuTriggerProps={parentMenuTriggerProps}
+                    parentMenuProps={parentMenuProps}
+                    parentContextMenu={parentContextMenu}
+                    parentOnAction={parentOnAction}
                     isEditing={isItemEditing}
                     editValue={isItemEditing ? editValue : ''}
+                    dragState={isReorderable ? dragState : undefined}
+                    dropState={isReorderable ? dropState : undefined}
+                    isLastTab={isLastTab}
                     onDelete={onDelete}
                     onEditValueChange={setEditValue}
                     onStartEditing={startEditing}

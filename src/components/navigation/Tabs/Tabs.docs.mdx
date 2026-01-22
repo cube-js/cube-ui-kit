@@ -181,7 +181,7 @@ Add buttons or other elements before or after the tab list.
 
 ### Deletable Tabs
 
-Enable delete buttons with the `onDelete` callback.
+Enable delete buttons with the `onDelete` callback. When no `menu` is defined, a delete button appears on each tab.
 
 <Story of={TabsStories.Deletable} />
 
@@ -199,6 +199,196 @@ const [tabs, setTabs] = useState([
     <Tab key={tab.key} title={tab.title}>
       Content for {tab.title}
     </Tab>
+  ))}
+</Tabs>
+```
+
+### Tab Menus
+
+Add dropdown menus to tabs using the `menu` prop. This replaces the need for manually composing `MenuTrigger`, `ItemAction`, and `Menu` components.
+
+<Story of={TabsStories.WithMenu} />
+
+```jsx
+<Tabs
+  onDelete={handleDelete}
+  menu={
+    <>
+      <Menu.Item key="duplicate">Duplicate</Menu.Item>
+      <Menu.Item key="delete">Delete</Menu.Item>
+    </>
+  }
+  onAction={(action, tabKey) => {
+    if (action === 'duplicate') handleDuplicate(tabKey);
+    // 'delete' is handled automatically via onDelete
+  }}
+>
+  <Tab key="tab1" title="Tab 1">Content</Tab>
+</Tabs>
+```
+
+**Key features:**
+
+- **Predefined actions**: `key="rename"` and `key="delete"` are handled automatically
+- **Auto-labels**: Predefined actions get default labels if children not provided
+- **Tabs-level menu**: Define menu once, all tabs inherit it
+- **Tab-level override**: Individual tabs can override or disable menu with `menu={null}`
+- **Delete button logic**: When `menu` is present, delete button is hidden (use `key="delete"` in menu instead)
+
+### Editable Tabs with Menu
+
+Combine editable tabs with a menu for rename, duplicate, and delete actions.
+
+<Story of={TabsStories.WithEditableTabs} />
+
+```jsx
+<Tabs
+  isEditable
+  onDelete={handleDelete}
+  onTitleChange={handleTitleChange}
+  menu={
+    <>
+      <Menu.Item key="rename">Rename</Menu.Item>
+      <Menu.Item key="duplicate">Duplicate</Menu.Item>
+      <Menu.Item key="delete">Delete</Menu.Item>
+    </>
+  }
+  onAction={(action, tabKey) => {
+    if (action === 'duplicate') handleDuplicate(tabKey);
+    // 'rename' triggers inline editing automatically
+    // 'delete' triggers onDelete automatically
+  }}
+>
+  <Tab key="tab1" title="Tab 1">Content</Tab>
+</Tabs>
+```
+
+### Context Menu
+
+Enable right-click context menus with the `contextMenu` prop. Uses the same menu items.
+
+<Story of={TabsStories.WithContextMenu} />
+
+```jsx
+<Tabs
+  contextMenu
+  menu={
+    <>
+      <Menu.Item key="rename">Rename</Menu.Item>
+      <Menu.Item key="delete">Delete</Menu.Item>
+    </>
+  }
+>
+  <Tab key="tab1" title="Tab 1">Content</Tab>
+</Tabs>
+```
+
+### Per-Tab Menu Override
+
+Override or disable menus on individual tabs.
+
+<Story of={TabsStories.WithPerTabMenuOverride} />
+
+```jsx
+<Tabs
+  menu={
+    <>
+      <Menu.Item key="rename">Rename</Menu.Item>
+      <Menu.Item key="info">Show Info</Menu.Item>
+    </>
+  }
+>
+  <Tab key="tab1" title="Uses Default Menu">Content</Tab>
+  <Tab 
+    key="tab2" 
+    title="Custom Menu"
+    menu={
+      <>
+        <Menu.Item key="special">Special Action</Menu.Item>
+      </>
+    }
+  >
+    Content
+  </Tab>
+  <Tab key="tab3" title="No Menu" menu={null}>Content</Tab>
+</Tabs>
+```
+
+### Menu with Sections
+
+Use `Menu.Section` for organized menus.
+
+<Story of={TabsStories.WithMenuSections} />
+
+```jsx
+<Tabs
+  menu={
+    <>
+      <Menu.Item key="rename">Rename</Menu.Item>
+      <Menu.Item key="duplicate">Duplicate</Menu.Item>
+      <Menu.Section title="Danger Zone">
+        <Menu.Item key="delete">Delete</Menu.Item>
+      </Menu.Section>
+    </>
+  }
+>
+  <Tab key="tab1" title="Tab 1">Content</Tab>
+</Tabs>
+```
+
+### Reorderable Tabs
+
+Enable drag-and-drop tab reordering with the `isReorderable` prop. Control the order via `keyOrder` and handle changes with `onReorder`.
+
+<Story of={TabsStories.Reorderable} />
+
+```jsx
+const [keyOrder, setKeyOrder] = useState(['tab1', 'tab2', 'tab3']);
+
+<Tabs
+  isReorderable
+  keyOrder={keyOrder}
+  onReorder={(newOrder) => setKeyOrder(newOrder)}
+>
+  <Tab key="tab1" title="Tab 1">Content 1</Tab>
+  <Tab key="tab2" title="Tab 2">Content 2</Tab>
+  <Tab key="tab3" title="Tab 3">Content 3</Tab>
+</Tabs>
+```
+
+**Key features:**
+
+- **Drag-and-drop**: Reorder tabs by dragging them to new positions
+- **Controlled order**: Use `keyOrder` to control tab display order
+- **Callback**: `onReorder` is called with the new key order after a drop
+- **Accessibility**: Full keyboard support for reordering
+
+### Reorderable Tabs with Menu
+
+Combine drag-and-drop reordering with menu actions, editing, and delete functionality.
+
+<Story of={TabsStories.ReorderableWithMenu} />
+
+```jsx
+const [tabs, setTabs] = useState([...]);
+const [keyOrder, setKeyOrder] = useState(['tab1', 'tab2', 'tab3']);
+
+<Tabs
+  isReorderable
+  isEditable
+  keyOrder={keyOrder}
+  onReorder={(newOrder) => setKeyOrder(newOrder)}
+  onDelete={handleDelete}
+  menu={
+    <>
+      <Menu.Item key="rename">Rename</Menu.Item>
+      <Menu.Item key="duplicate">Duplicate</Menu.Item>
+      <Menu.Item key="delete">Delete</Menu.Item>
+    </>
+  }
+>
+  {tabs.map((tab) => (
+    <Tab key={tab.id} title={tab.title}>{tab.content}</Tab>
   ))}
 </Tabs>
 ```
@@ -381,6 +571,8 @@ Tabs work seamlessly inside Layout components. When placed in a `Layout` or `Lay
 - `Home` - Move to first tab
 - `End` - Move to last tab
 - `Enter` / `Space` - Activate focused tab
+- `Shift+F10` - Open tab menu (when menu is present)
+- `Delete` - Delete focused tab (when deletable)
 
 ### Screen Reader Support
 
@@ -396,6 +588,7 @@ Tabs work seamlessly inside Layout components. When placed in a `Layout` or `Lay
 - `aria-disabled` - Applied when `isDisabled` is true
 - `aria-controls` - Links tabs to their panels automatically
 - `aria-labelledby` - Links panels to their tabs automatically
+- `aria-haspopup` - Set to "menu" when tab has a menu
 
 ## Best Practices
 
