@@ -334,7 +334,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     }
 
     // Delete key for direct tab deletion (ARIA Tabs pattern optional feature)
-    if (e.key === 'Delete' && isDeletable) {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && isDeletable) {
       e.preventDefault();
       onDelete?.(item.key);
     }
