@@ -159,6 +159,7 @@ export const TabElement = tasty(Item, {
       '': '#dark-02',
       'type=default & (hovered & !selected)': '#purple-text',
       'type=default & selected': '#purple-text',
+      disabled: '#dark-04',
     },
     fill: {
       '': '#clear',

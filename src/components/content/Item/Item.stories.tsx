@@ -2456,3 +2456,141 @@ SemanticHeadingLevel.parameters = {
     },
   },
 };
+
+export const Disabled: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Basic Disabled Items</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item {...args} isDisabled={true}>
+        Disabled item
+      </Item>
+      <Item {...args} isDisabled={false}>
+        Enabled item
+      </Item>
+    </Space>
+
+    <Title level={5}>Disabled with Icons</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item {...args} isDisabled={true} icon={<IconUser />}>
+        Disabled with icon
+      </Item>
+      <Item
+        {...args}
+        isDisabled={true}
+        icon={<IconUser />}
+        rightIcon={<IconSettings />}
+      >
+        Disabled with both icons
+      </Item>
+    </Space>
+
+    <Title level={5}>Disabled Across Different Types</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item {...args} type="primary" isDisabled={true} icon={<IconUser />}>
+        Disabled primary
+      </Item>
+      <Item {...args} type="secondary" isDisabled={true} icon={<IconUser />}>
+        Disabled secondary
+      </Item>
+      <Item {...args} type="outline" isDisabled={true} icon={<IconUser />}>
+        Disabled outline
+      </Item>
+      <Item {...args} type="neutral" isDisabled={true} icon={<IconUser />}>
+        Disabled neutral
+      </Item>
+      <Item {...args} type="clear" isDisabled={true} icon={<IconUser />}>
+        Disabled clear
+      </Item>
+    </Space>
+
+    <Title level={5}>Disabled Across Different Sizes</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item {...args} size="xsmall" isDisabled={true} icon={<IconUser />}>
+        Disabled xsmall
+      </Item>
+      <Item {...args} size="small" isDisabled={true} icon={<IconUser />}>
+        Disabled small
+      </Item>
+      <Item {...args} size="medium" isDisabled={true} icon={<IconUser />}>
+        Disabled medium
+      </Item>
+      <Item {...args} size="large" isDisabled={true} icon={<IconUser />}>
+        Disabled large
+      </Item>
+      <Item {...args} size="xlarge" isDisabled={true} icon={<IconUser />}>
+        Disabled xlarge
+      </Item>
+    </Space>
+
+    <Title level={5}>Disabled with Description</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        type="outline"
+        isDisabled={true}
+        icon={<IconUser />}
+        description="Inline description"
+        descriptionPlacement="inline"
+      >
+        Disabled with inline description
+      </Item>
+      <Item
+        {...args}
+        type="outline"
+        isDisabled={true}
+        icon={<IconUser />}
+        description="Block description"
+        descriptionPlacement="block"
+      >
+        Disabled with block description
+      </Item>
+    </Space>
+
+    <Title level={5}>Disabled with Actions</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item
+        {...args}
+        type="outline"
+        isDisabled={true}
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Disabled with actions
+      </Item>
+    </Space>
+
+    <Title level={5}>Comparison: Enabled vs Disabled</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <Item {...args} type="primary" icon={<IconUser />} isDisabled={false}>
+        Enabled primary button
+      </Item>
+      <Item {...args} type="primary" icon={<IconUser />} isDisabled={true}>
+        Disabled primary button
+      </Item>
+      <Item {...args} type="outline" icon={<IconSettings />} isDisabled={false}>
+        Enabled outline button
+      </Item>
+      <Item {...args} type="outline" icon={<IconSettings />} isDisabled={true}>
+        Disabled outline button
+      </Item>
+    </Space>
+  </Space>
+);
+
+Disabled.args = {
+  width: '300px',
+};
+
+Disabled.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the disabled state of Item components. When `isDisabled={true}`, the item becomes non-interactive, shows reduced opacity, and prevents all click/hover interactions. Disabled state works across all types, sizes, and configurations including icons, descriptions, and actions.',
+    },
+  },
+};
