@@ -182,6 +182,8 @@ export const TabElement = tasty(Item, {
       'focused & focus-visible': 'inset 0 0 0 1bw #purple-text',
       editing: 'inset 0 0 0 1bw #purple-text',
       'type=radio & selected': '$item-shadow',
+      'type=radio & selected & focused & focus-visible':
+        '$item-shadow, inset 0 0 0 1bw #purple-text',
     },
     Label: {
       placeSelf: {
