@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { ReactNode, RefObject, useCallback, useMemo } from 'react';
 import {
   DragItem,
   DroppableCollectionReorderEvent,
@@ -18,15 +18,12 @@ import {
 import { useEvent } from '../../../_internal/hooks';
 
 import type { Key } from '@react-types/shared';
-import type { RefObject } from 'react';
 
 // =============================================================================
 // Types
 // =============================================================================
 
-export interface UseTabReorderingOptions {
-  /** Whether reordering is enabled */
-  isReorderable: boolean;
+export interface DraggableTabListProps {
   /** Tab list state from React Stately */
   state: TabListState<object>;
   /** Ref to the tab list container */
@@ -35,34 +32,34 @@ export interface UseTabReorderingOptions {
   orderedKeys: string[];
   /** Callback when tabs are reordered */
   onReorder?: (newOrder: Key[]) => void;
-}
-
-export interface UseTabReorderingResult {
-  /** Drag state (undefined if not reorderable) */
-  dragState: DraggableCollectionState | undefined;
-  /** Drop state (undefined if not reorderable) */
-  dropState: DroppableCollectionState | undefined;
-  /** Collection props to spread on the container */
-  collectionProps: Record<string, unknown>;
+  /** Tab list props from useTabList */
+  tabListProps: Record<string, unknown>;
+  /** Render function that receives drag/drop states */
+  children: (
+    dragState: DraggableCollectionState,
+    dropState: DroppableCollectionState,
+    collectionProps: Record<string, unknown>,
+  ) => ReactNode;
 }
 
 // =============================================================================
-// Hook
+// Component
 // =============================================================================
 
 /**
- * Hook to manage drag-and-drop tab reordering.
+ * Component that enables drag-and-drop reordering for tabs.
  *
- * Sets up draggable and droppable collection states from React Aria
- * and handles the reorder logic when tabs are dropped.
+ * This component encapsulates all drag/drop hook calls, ensuring they're only
+ * called when reordering is actually enabled. It uses the render prop pattern
+ * to pass the drag/drop states to its children.
  */
-export function useTabReordering({
-  isReorderable,
+export function DraggableTabList({
   state,
   listRef,
   orderedKeys,
   onReorder,
-}: UseTabReorderingOptions): UseTabReorderingResult {
+  children,
+}: DraggableTabListProps) {
   // Handle reorder event from drag-and-drop
   const handleReorder = useEvent((e: DroppableCollectionReorderEvent) => {
     if (!onReorder) return;
@@ -128,14 +125,12 @@ export function useTabReordering({
     getAllowedDropOperations: () => ['move'],
   });
 
-  // Actually enable the draggable collection hook only when isReorderable
+  // Enable the draggable collection
   useDraggableCollection(
-    isReorderable
-      ? {
-          getItems,
-          getAllowedDropOperations: () => ['move'],
-        }
-      : { getItems: () => [], getAllowedDropOperations: () => [] },
+    {
+      getItems,
+      getAllowedDropOperations: () => ['move'],
+    },
     dragState,
     listRef,
   );
@@ -147,41 +142,30 @@ export function useTabReordering({
     onReorder: handleReorder,
   });
 
+  // Create delegates for drop handling
+  const keyboardDelegate = useMemo(
+    () =>
+      new ListKeyboardDelegate(state.collection, state.disabledKeys, listRef),
+    [state.collection, state.disabledKeys, listRef],
+  );
+
+  const dropTargetDelegate = useMemo(
+    () =>
+      new ListDropTargetDelegate(state.collection, listRef, {
+        orientation: 'horizontal',
+      }),
+    [state.collection, listRef],
+  );
+
   const { collectionProps } = useDroppableCollection(
-    isReorderable
-      ? {
-          keyboardDelegate: new ListKeyboardDelegate(
-            state.collection,
-            state.disabledKeys,
-            listRef,
-          ),
-          dropTargetDelegate: new ListDropTargetDelegate(
-            state.collection,
-            listRef,
-            { orientation: 'horizontal' },
-          ),
-          onReorder: handleReorder,
-        }
-      : {
-          keyboardDelegate: undefined as any,
-          dropTargetDelegate: undefined as any,
-        },
+    {
+      keyboardDelegate,
+      dropTargetDelegate,
+      onReorder: handleReorder,
+    },
     dropState,
     listRef,
   );
 
-  // Return undefined states when not reorderable
-  if (!isReorderable) {
-    return {
-      dragState: undefined,
-      dropState: undefined,
-      collectionProps: {},
-    };
-  }
-
-  return {
-    dragState,
-    dropState,
-    collectionProps,
-  };
+  return children(dragState, dropState, collectionProps);
 }

@@ -10,20 +10,25 @@ import {
   useRef,
 } from 'react';
 import { AriaTabListProps, useTabList } from 'react-aria';
-import { Item as CollectionItem, useTabListState } from 'react-stately';
+import {
+  Item as CollectionItem,
+  DraggableCollectionState,
+  DroppableCollectionState,
+  useTabListState,
+} from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks';
 import { extractStyles, OUTER_STYLES } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
 
+import { DraggableTabList } from './DraggableTabList';
 import { TabIndicatorElement, TabsElement } from './styled';
 import { TabButton } from './TabButton';
 import { CachedPanelRenderer, TabPanelRenderer } from './TabPanel';
 import { TabsContextValue, TabsProvider } from './TabsContext';
 import { useTabEditing } from './use-tab-editing';
 import { useTabIndicator } from './use-tab-indicator';
-import { useTabReordering } from './use-tab-reordering';
 
 import type { Key } from '@react-types/shared';
 import type {
@@ -346,17 +351,6 @@ function TabsComponent(
   const { tabListProps } = useTabList(ariaProps, state, listRef);
 
   // =========================================================================
-  // Drag-and-Drop Reordering
-  // =========================================================================
-  const { dragState, dropState, collectionProps } = useTabReordering({
-    isReorderable,
-    state,
-    listRef,
-    orderedKeys: orderedParsedTabs.map((t) => t.key),
-    onReorder,
-  });
-
-  // =========================================================================
   // Tab Indicator (for default type)
   // =========================================================================
   // Create order token that changes when tab order changes (for indicator recalculation)
@@ -382,9 +376,9 @@ function TabsComponent(
   const hasPanels = hasAnyContent || !!renderPanel;
 
   // =========================================================================
-  // Context Value
+  // Base Context Value (without drag/drop states)
   // =========================================================================
-  const contextValue: TabsContextValue = useMemo(
+  const baseContextValue = useMemo(
     () => ({
       state,
       type,
@@ -397,8 +391,6 @@ function TabsComponent(
       contextMenu: parentContextMenu,
       onDelete,
       onAction: parentOnAction,
-      dragState,
-      dropState,
       editingKey,
       editValue,
       setEditValue,
@@ -418,8 +410,6 @@ function TabsComponent(
       parentContextMenu,
       onDelete,
       parentOnAction,
-      dragState,
-      dropState,
       editingKey,
       editValue,
       setEditValue,
@@ -427,6 +417,54 @@ function TabsComponent(
       submitEditing,
       cancelEditing,
     ],
+  );
+
+  // Helper to create full context value with optional drag/drop states
+  const createContextValue = (
+    dragState?: DraggableCollectionState,
+    dropState?: DroppableCollectionState,
+  ): TabsContextValue => ({
+    ...baseContextValue,
+    dragState,
+    dropState,
+  });
+
+  // =========================================================================
+  // Tab List Content Renderer
+  // =========================================================================
+  const renderTabListContent = (
+    contextValue: TabsContextValue,
+    collectionProps: Record<string, unknown> = {},
+  ) => (
+    <div
+      {...mergeProps(tabListProps, collectionProps)}
+      ref={listRef}
+      data-element="Container"
+    >
+      <TabsProvider value={contextValue}>
+        {orderedParsedTabs.map((tab, index) => {
+          const item = state.collection.getItem(tab.key);
+          if (!item) return null;
+
+          return (
+            <TabButton
+              key={item.key}
+              item={item}
+              tabData={tab}
+              isLastTab={index === orderedParsedTabs.length - 1}
+            />
+          );
+        })}
+      </TabsProvider>
+      {indicatorStyle && (
+        <TabIndicatorElement
+          style={{
+            left: indicatorStyle.left,
+            width: indicatorStyle.width,
+          }}
+        />
+      )}
+    </div>
   );
 
   // =========================================================================
@@ -457,38 +495,24 @@ function TabsComponent(
         {prefix ? <div data-element="Prefix">{prefix}</div> : null}
         <div data-element="ScrollWrapper">
           <div ref={scrollRef} data-element="Scroll">
-            <div
-              {...mergeProps(
-                tabListProps,
-                isReorderable ? collectionProps : {},
-              )}
-              ref={listRef}
-              data-element="Container"
-            >
-              <TabsProvider value={contextValue}>
-                {orderedParsedTabs.map((tab, index) => {
-                  const item = state.collection.getItem(tab.key);
-                  if (!item) return null;
-
-                  return (
-                    <TabButton
-                      key={item.key}
-                      item={item}
-                      tabData={tab}
-                      isLastTab={index === orderedParsedTabs.length - 1}
-                    />
-                  );
-                })}
-              </TabsProvider>
-              {indicatorStyle && (
-                <TabIndicatorElement
-                  style={{
-                    left: indicatorStyle.left,
-                    width: indicatorStyle.width,
-                  }}
-                />
-              )}
-            </div>
+            {isReorderable ? (
+              <DraggableTabList
+                state={state}
+                listRef={listRef}
+                orderedKeys={orderedParsedTabs.map((t) => t.key)}
+                tabListProps={tabListProps}
+                onReorder={onReorder}
+              >
+                {(dragState, dropState, collectionProps) =>
+                  renderTabListContent(
+                    createContextValue(dragState, dropState),
+                    collectionProps,
+                  )
+                }
+              </DraggableTabList>
+            ) : (
+              renderTabListContent(createContextValue())
+            )}
           </div>
           {isTinyScrollbar && hasOverflowX && <div data-element="ScrollbarH" />}
         </div>
