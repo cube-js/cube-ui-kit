@@ -114,6 +114,7 @@ export const TabsElement = tasty({
       },
       gap: {
         '': 0,
+        'type=narrow': '1.5x',
         'type=radio': '.5x',
       },
       placeContent: 'start',
@@ -153,12 +154,12 @@ export const TabElement = tasty(Item, {
     radius: {
       '': false,
       'type=radio': true,
-      'type=default': 'top',
+      'type=default | type=narrow': 'top',
     },
     color: {
       '': '#dark-02',
-      'type=default & (hovered & !selected)': '#purple-text',
-      'type=default & selected': '#purple-text',
+      '(type=default | type=narrow) & (hovered & !selected)': '#purple-text',
+      '(type=default | type=narrow) & selected': '#purple-text',
       disabled: '#dark-04',
     },
     fill: {
@@ -170,7 +171,7 @@ export const TabElement = tasty(Item, {
     },
     border: {
       '': '0 #clear',
-      'type=panel & selected': '1ow #purple bottom',
+      'type=panel & selected': '2bw #purple bottom',
     },
     preset: {
       '': 't3m',
@@ -184,6 +185,17 @@ export const TabElement = tasty(Item, {
       'type=radio & selected': '$item-shadow',
       'type=radio & selected & focused & focus-visible':
         '$item-shadow, inset 0 0 0 1bw #purple-text',
+    },
+    // Collapse horizontal padding for narrow type
+    '$label-padding-left': {
+      '': '$inline-padding',
+      'has-start-content': 0,
+      'type=narrow': 0,
+    },
+    '$label-padding-right': {
+      '': '$inline-padding',
+      'has-end-content': 0,
+      'type=narrow': 0,
     },
     Label: {
       placeSelf: {
@@ -290,7 +302,7 @@ export const TabIndicatorElement = tasty({
     position: 'absolute',
     bottom: '0',
     left: 0,
-    height: '1ow',
+    height: '2bw',
     fill: '#purple',
     transition: 'left, width',
     transitionDuration: '.2s',

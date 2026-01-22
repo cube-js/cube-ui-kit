@@ -55,7 +55,7 @@ The `mods` property accepts the following modifiers:
 
 | Modifier | Type | Description |
 |----------|------|-------------|
-| `type` | `'default' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
+| `type` | `'default' \| 'narrow' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
 | `deletable` | `boolean` | True when onDelete callback is provided |
 | `scrolling` | `boolean` | True when tabs are being scrolled |
 | `fade-left` | `boolean` | True when content is scrolled (left fade visible) |
@@ -66,7 +66,7 @@ For individual tabs:
 
 | Modifier | Type | Description |
 |----------|------|-------------|
-| `type` | `'default' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
+| `type` | `'default' \| 'narrow' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
 | `active` | `boolean` | True when the tab is selected |
 | `deletable` | `boolean` | True when delete button is visible |
 | `disabled` | `boolean` | True when tab is disabled |
@@ -82,11 +82,14 @@ For individual tabs:
 ### Types
 
 - `default` - Standard tabs with selection indicator below (default)
+- `narrow` - Same as default but with collapsed horizontal label padding for compact layouts
 - `file` - File-style tabs with fill highlight on selection, delimiter between tabs
 - `panel` - Panel-style tabs with border bottom highlight on selection, delimiter between tabs
 - `radio` - Radio button style for tab selection
 
 <Story of={TabsStories.DefaultType} />
+
+<Story of={TabsStories.NarrowType} />
 
 <Story of={TabsStories.FileType} />
 

@@ -37,10 +37,10 @@ const meta = {
     /* Presentation */
     type: {
       control: 'radio',
-      options: ['default', 'file', 'panel', 'radio'],
+      options: ['default', 'narrow', 'file', 'panel', 'radio'],
       description: 'Visual style variant',
       table: {
-        type: { summary: "'default' | 'file' | 'panel' | 'radio'" },
+        type: { summary: "'default' | 'narrow' | 'file' | 'panel' | 'radio'" },
         defaultValue: { summary: 'default' },
       },
     },
@@ -165,6 +165,34 @@ export const DefaultType: Story = {
       </Tab>
       <Tab key="tab3" title="Tab 3">
         <Paragraph>Hover states use a light purple background.</Paragraph>
+      </Tab>
+    </Tabs>
+  ),
+};
+
+/**
+ * Narrow type - same as default but with collapsed horizontal padding on labels.
+ * Useful for compact tab layouts where space is at a premium.
+ */
+export const NarrowType: Story = {
+  render: (args) => (
+    <Tabs {...args} type="narrow" defaultActiveKey="tab1">
+      <Tab key="tab1" title="Tab 1">
+        <Paragraph>
+          Narrow tabs have collapsed horizontal label padding for a more compact
+          appearance.
+        </Paragraph>
+      </Tab>
+      <Tab key="tab2" title="Tab 2">
+        <Paragraph>
+          Same selection indicator as default type, but tabs take less
+          horizontal space.
+        </Paragraph>
+      </Tab>
+      <Tab key="tab3" title="Tab 3">
+        <Paragraph>
+          Useful when horizontal space is limited or many tabs are needed.
+        </Paragraph>
       </Tab>
     </Tabs>
   ),

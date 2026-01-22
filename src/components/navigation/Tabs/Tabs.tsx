@@ -362,7 +362,7 @@ function TabsComponent(
   const indicatorStyle = useTabIndicator(
     listRef,
     state.selectedKey,
-    type === 'default',
+    type === 'default' || type === 'narrow',
     orderToken,
   );
 
