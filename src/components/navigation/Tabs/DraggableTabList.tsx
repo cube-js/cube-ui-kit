@@ -32,8 +32,6 @@ export interface DraggableTabListProps {
   orderedKeys: string[];
   /** Callback when tabs are reordered */
   onReorder?: (newOrder: Key[]) => void;
-  /** Tab list props from useTabList */
-  tabListProps: Record<string, unknown>;
   /** Render function that receives drag/drop states */
   children: (
     dragState: DraggableCollectionState,
@@ -87,11 +85,10 @@ export function DraggableTabList({
               if (dropPosition === 'before') {
                 arr.push(movableKey);
                 arr.push(key);
-              } else if (dropPosition === 'after') {
+              } else {
+                // 'after' or 'on' - treat 'on' as 'after' since tabs are linear
                 arr.push(key);
                 arr.push(movableKey);
-              } else {
-                arr.push(key);
               }
             } else {
               arr.push(key);

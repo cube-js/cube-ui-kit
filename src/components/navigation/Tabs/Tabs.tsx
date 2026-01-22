@@ -500,7 +500,6 @@ function TabsComponent(
                 state={state}
                 listRef={listRef}
                 orderedKeys={orderedParsedTabs.map((t) => t.key)}
-                tabListProps={tabListProps}
                 onReorder={onReorder}
               >
                 {(dragState, dropState, collectionProps) =>
