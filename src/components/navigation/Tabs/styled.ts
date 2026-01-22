@@ -193,6 +193,9 @@ export const TabElement = tasty(Item, {
           'center',
       },
     },
+    Actions: {
+      transition: false,
+    },
   },
 });
 
