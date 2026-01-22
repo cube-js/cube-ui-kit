@@ -359,10 +359,17 @@ function TabsComponent(
   // =========================================================================
   // Tab Indicator (for default type)
   // =========================================================================
+  // Create order token that changes when tab order changes (for indicator recalculation)
+  const orderToken = useMemo(
+    () => orderedParsedTabs.map((t) => t.key).join(','),
+    [orderedParsedTabs],
+  );
+
   const indicatorStyle = useTabIndicator(
     listRef,
     state.selectedKey,
     type === 'default',
+    orderToken,
   );
 
   // =========================================================================

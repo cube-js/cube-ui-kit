@@ -34,12 +34,14 @@ export interface IndicatorStyle {
  * @param containerRef - Ref to the tab container element
  * @param selectedKey - Currently selected tab key
  * @param enabled - Whether the indicator should be shown
+ * @param orderToken - Optional token that changes when tab order changes (triggers recalculation)
  * @returns Indicator style (left, width) or null if disabled/not ready
  */
 export function useTabIndicator(
   containerRef: RefObject<HTMLElement | null>,
   selectedKey: Key | null,
   enabled: boolean,
+  orderToken?: string,
 ): IndicatorStyle | null {
   const [style, setStyle] = useState<IndicatorStyle | null>(null);
   const cancelRef = useRef<(() => void) | null>(null);
@@ -71,7 +73,7 @@ export function useTabIndicator(
         width: tabRect.width,
       });
     }
-  }, [containerRef, selectedKey, enabled]);
+  }, [containerRef, selectedKey, enabled, orderToken]);
 
   // Update on selectedKey change - use chainRaf to ensure DOM is fully painted
   useLayoutEffect(() => {
