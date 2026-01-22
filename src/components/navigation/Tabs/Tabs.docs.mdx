@@ -41,6 +41,9 @@ Customizes the root element of the Tabs component.
 - `Container` - The container holding the tab buttons
 - `Prefix` - Content rendered before the tab list
 - `Suffix` - Content rendered after the tab list
+- `ScrollWrapper` - Wrapper for scroll area and scrollbar positioning
+- `Scroll` - Scrollable area containing the tab container
+- `ScrollbarH` - Custom horizontal scrollbar indicator
 
 ### Style Properties
 
@@ -54,6 +57,10 @@ The `mods` property accepts the following modifiers:
 |----------|------|-------------|
 | `type` | `'default' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
 | `deletable` | `boolean` | True when onDelete callback is provided |
+| `scrolling` | `boolean` | True when tabs are being scrolled |
+| `fade-left` | `boolean` | True when content is scrolled (left fade visible) |
+| `fade-right` | `boolean` | True when more content exists to the right |
+| `has-panels` | `boolean` | True when tabs have panel content |
 
 For individual tabs:
 
@@ -63,6 +70,12 @@ For individual tabs:
 | `active` | `boolean` | True when the tab is selected |
 | `deletable` | `boolean` | True when delete button is visible |
 | `disabled` | `boolean` | True when tab is disabled |
+| `editing` | `boolean` | True when tab title is being edited |
+| `hovered` | `boolean` | True when tab is hovered |
+| `focused` | `boolean` | True when tab has focus |
+| `focus-visible` | `boolean` | True when tab has keyboard focus |
+| `draggable` | `boolean` | True when tab can be dragged (reorderable) |
+| `dragging` | `boolean` | True when tab is being dragged |
 
 ## Variants
 
@@ -81,8 +94,12 @@ For individual tabs:
 
 ### Sizes
 
+- `xsmall` - Extra small size with t4 typography (radio type only)
+- `small` - Small size with t4 typography
 - `medium` - Default size with t3m typography
 - `large` - Larger tabs with t2m typography for emphasis
+
+**Note:** Radio type only supports `medium` and `large` sizes, which are mapped to smaller Item sizes internally.
 
 <Story of={TabsStories.LargeSize} />
 
@@ -118,6 +135,28 @@ Explicit panel definition for advanced layout control.
   Panel 1 content
 </Tabs.Panel>
 ```
+
+### Tab Props
+
+Individual tabs accept these props in addition to style props:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `title` | `ReactNode` | Content displayed in the tab button (required) |
+| `isDisabled` | `boolean` | Disables the tab |
+| `size` | `TabSize` | Override tab size for this tab |
+| `type` | `TabType` | Override tab type for this tab |
+| `actions` | `ReactNode` | Custom actions to render in the tab |
+| `showActionsOnHover` | `boolean` | Show actions only on hover (overrides Tabs-level) |
+| `isEditable` | `boolean` | Whether the tab title can be edited (overrides Tabs-level) |
+| `onTitleChange` | `(newTitle: string) => void` | Callback when title changes (overrides Tabs-level) |
+| `menu` | `ReactNode \| null` | Menu items for this tab (overrides Tabs-level, `null` disables) |
+| `menuTriggerProps` | `Partial<CubeItemActionProps>` | Props for menu trigger button |
+| `menuProps` | `Partial<CubeMenuProps>` | Props for Menu component |
+| `contextMenu` | `boolean` | Enable right-click context menu |
+| `onAction` | `(action: Key) => void` | Callback when menu action is triggered |
+| `prerender` | `boolean` | Override panel prerender behavior |
+| `keepMounted` | `boolean` | Override panel keepMounted behavior |
 
 ## Examples
 
