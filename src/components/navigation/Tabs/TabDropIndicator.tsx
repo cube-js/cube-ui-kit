@@ -3,7 +3,8 @@ import { useDropIndicator } from 'react-aria';
 
 import { DropIndicatorElement } from './styled';
 
-import type { DroppableCollectionState, DropTarget } from 'react-aria';
+import type { DropTarget } from 'react-aria';
+import type { DroppableCollectionState } from 'react-stately';
 
 // =============================================================================
 // Types
