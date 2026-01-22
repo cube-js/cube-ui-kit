@@ -118,7 +118,7 @@ export const TabsElement = tasty({
       },
       gap: {
         '': 0,
-        'type=narrow': '1.5x',
+        'type=narrow': '2x',
         'type=radio': '.5x',
       },
       placeContent: 'start',
