@@ -38,6 +38,10 @@ export const TabsElement = tasty({
     flexGrow: 0,
 
     $transition: '$tab-transition',
+    '$tab-indicator-size': {
+      '': '2bw',
+      'size=large': '1ow',
+    },
 
     Prefix: {
       display: 'flex',
@@ -171,7 +175,7 @@ export const TabElement = tasty(Item, {
     },
     border: {
       '': '0 #clear',
-      'type=panel & selected': '2bw #purple bottom',
+      'type=panel & selected': '$tab-indicator-size #purple bottom',
     },
     preset: {
       '': 't3m',
@@ -302,7 +306,7 @@ export const TabIndicatorElement = tasty({
     position: 'absolute',
     bottom: '0',
     left: 0,
-    height: '2bw',
+    height: '$tab-indicator-size',
     fill: '#purple',
     transition: 'left, width',
     transitionDuration: '.2s',

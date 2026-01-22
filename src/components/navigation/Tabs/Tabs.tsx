@@ -473,13 +473,14 @@ function TabsComponent(
   const mods = useMemo(
     () => ({
       type,
+      size,
       deletable: !!onDelete,
       scrolling: isScrolling,
       'fade-left': !isAtStartX,
       'fade-right': !isAtEndX,
       'has-panels': hasPanels,
     }),
-    [type, onDelete, isScrolling, isAtStartX, isAtEndX, hasPanels],
+    [type, size, onDelete, isScrolling, isAtStartX, isAtEndX, hasPanels],
   );
 
   return (
