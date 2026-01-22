@@ -4,4 +4,6 @@ export type {
   CubeTabProps,
   CubeTabPanelProps,
   CubeTabListProps,
-} from './Tabs';
+  TabType,
+  TabSize,
+} from './types';
