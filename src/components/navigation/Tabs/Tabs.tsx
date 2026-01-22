@@ -8,6 +8,7 @@ import {
   isValidElement,
   KeyboardEvent,
   MouseEvent,
+  PointerEvent,
   ReactElement,
   ReactNode,
   RefObject,
@@ -62,6 +63,7 @@ import {
 import { chainRaf } from '../../../utils/raf';
 import { mergeProps } from '../../../utils/react';
 import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
+import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { CubeMenuProps, Menu, MenuTrigger } from '../../actions/Menu';
 import { useContextMenu } from '../../actions/use-context-menu';
 import { CubeItemProps, Item } from '../../content/Item';
@@ -384,6 +386,23 @@ export interface CubeTabListProps {
 }
 
 // =============================================================================
+// Event handlers for actions to prevent event propagation to tab button
+// =============================================================================
+
+const ACTIONS_EVENT_HANDLERS = {
+  onClick: (e: MouseEvent) => e.stopPropagation(),
+  onPointerDown: (e: PointerEvent) => e.stopPropagation(),
+  onPointerUp: (e: PointerEvent) => e.stopPropagation(),
+  onMouseDown: (e: MouseEvent) => e.stopPropagation(),
+  onMouseUp: (e: MouseEvent) => e.stopPropagation(),
+  onKeyDown: (e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.stopPropagation();
+    }
+  },
+};
+
+// =============================================================================
 // Styled Components
 // =============================================================================
 
@@ -583,6 +602,40 @@ const TabContainer = tasty({
       '': 'default',
       draggable: 'grab',
       dragging: 'grabbing',
+    },
+
+    // Size variable for actions (same as ItemButton's ActionsWrapper)
+    $size: {
+      '': '$size-md',
+      'size=xsmall': '$size-xs',
+      'size=small': '$size-sm',
+      'size=medium': '$size-md',
+      'size=large': '$size-lg',
+      'size=xlarge': '$size-xl',
+    },
+
+    // Actions rendered outside the button for accessibility
+    Actions: {
+      $: '>',
+      position: 'absolute',
+      inset: '1bw 1bw auto auto',
+      display: 'flex',
+      gap: '1bw',
+      placeItems: 'center',
+      placeContent: 'center end',
+      pointerEvents: 'auto',
+      height: 'min ($size - 2bw)',
+      padding: '0 $side-padding',
+      // Simple CSS opacity for show-on-hover
+      opacity: {
+        '': 1,
+        'show-actions-on-hover': 0,
+        'show-actions-on-hover & (active | :hover | :focus-within)': 1,
+      },
+      transition: 'opacity $transition',
+      // Size variables (same as Item)
+      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (4x - 2bw))',
+      '$side-padding': '(($size - $action-size - 2bw) / 2)',
     },
   },
 });
@@ -1149,13 +1202,31 @@ function TabButton({
 }: TabButtonProps) {
   const ref = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
   const { tabProps } = useTab({ key: item.key }, state, ref);
 
-  // Drag-and-drop support - only get drag props when state is available
+  // Measure actions width for proper space allocation in Item
+  const [actionsWidth, setActionsWidth] = useState(0);
+
+  // Drag-and-drop support - only enable when both states are provided
   const isDraggable = !!dragState && !!dropState;
-  // Note: useDraggableItem returns empty props when dragState is not properly set up
-  // We still need to call it to satisfy Rules of Hooks
-  const dragResult = useDraggableItem({ key: item.key }, dragState as any);
+
+  // useDraggableItem must be called unconditionally (Rules of Hooks)
+  // When dragState is undefined, we pass a minimal mock state to satisfy the hook
+  const mockDragState = {
+    collection: state.collection,
+    selectionManager: state.selectionManager,
+    isDragging: () => false,
+    getKeysForDrag: () => new Set<Key>(),
+    isDisabled: false,
+    startDrag: () => {},
+    endDrag: () => {},
+  } as DraggableCollectionState;
+
+  const dragResult = useDraggableItem(
+    { key: item.key },
+    dragState ?? mockDragState,
+  );
   const effectiveDragProps = isDraggable ? dragResult.dragProps : {};
   const isDragging = isDraggable && dragResult.isDragging;
 
@@ -1332,7 +1403,11 @@ function TabButton({
   // Build menu trigger action with controlled state for keyboard accessibility
   const menuAction = menuElement ? (
     <MenuTrigger isOpen={isMenuOpen} onOpenChange={setIsMenuOpen}>
-      <ItemAction icon={<MoreIcon />} {...effectiveMenuTriggerProps} />
+      <ItemAction
+        tabIndex={-1}
+        icon={<MoreIcon />}
+        {...effectiveMenuTriggerProps}
+      />
       {menuElement}
     </MenuTrigger>
   ) : null;
@@ -1340,6 +1415,7 @@ function TabButton({
   // Build delete button (only shown when no menu)
   const deleteAction = showDeleteButton ? (
     <ItemAction
+      tabIndex={-1}
       icon={<CloseIcon />}
       tooltip="Delete tab"
       onPress={handleDelete}
@@ -1355,6 +1431,17 @@ function TabButton({
         {deleteAction}
       </>
     ) : undefined;
+
+  // Measure actions width to pass to Item for proper space allocation
+  useLayoutEffect(() => {
+    if (actions && actionsRef.current) {
+      const width = Math.round(actionsRef.current.offsetWidth);
+
+      if (width !== actionsWidth) {
+        setActionsWidth(width);
+      }
+    }
+  }, [actions, actionsWidth]);
 
   // Determine effective size
   // Radio type only supports medium/large and maps to smaller Item sizes
@@ -1426,10 +1513,18 @@ function TabButton({
   // ARIA: indicate popup menu presence (WAI-ARIA Tabs pattern)
   const ariaProps = processedMenu ? { 'aria-haspopup': 'menu' as const } : {};
 
+  // Mods for TabContainer (includes show-actions-on-hover for CSS targeting)
+  const containerMods = {
+    ...mods,
+    'show-actions-on-hover': effectiveShowActionsOnHover,
+  };
+
   return (
     <TabContainer
       ref={effectiveContainerRef}
-      mods={mods}
+      data-size={itemSize}
+      mods={containerMods}
+      tokens={{ '$actions-width': `${actionsWidth}px` }}
       {...effectiveDragProps}
     >
       {/* Drop indicator before this tab */}
@@ -1459,10 +1554,26 @@ function TabButton({
         size={itemSize}
         type={itemType}
         shape={itemShape}
-        actions={actions}
+        actions={actions ? true : undefined}
       >
         {titleContent}
       </TabElement>
+      {/* Actions rendered outside the button for accessibility (no nested interactive elements) */}
+      {actions && (
+        <div
+          ref={actionsRef}
+          data-element="Actions"
+          {...ACTIONS_EVENT_HANDLERS}
+        >
+          <ItemActionProvider
+            type={itemType}
+            theme="default"
+            isDisabled={isDisabled}
+          >
+            {actions}
+          </ItemActionProvider>
+        </div>
+      )}
       {effectiveContextMenu && processedMenu && contextMenu.rendered}
       {/* Drop indicator after the last tab */}
       {isDraggable && dropState && isLastTab && (
