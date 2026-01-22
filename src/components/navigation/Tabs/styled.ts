@@ -179,7 +179,7 @@ export const TabElement = tasty(Item, {
     },
     preset: {
       '': 't3m',
-      'size=small | size=xsmall | size=large': 't4',
+      'size=xsmall': 't4',
       'size=xlarge': 't2m',
     },
     shadow: {
