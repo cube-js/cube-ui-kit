@@ -259,7 +259,7 @@ export const TabContainer = tasty({
       opacity: {
         '': 1,
         'show-actions-on-hover': 0,
-        'show-actions-on-hover & (active | :hover | :focus-within)': 1,
+        'show-actions-on-hover & (active | :hover | :focus-within | :has([data-pressed]))': 1,
       },
       transition: 'opacity $transition',
       // Size variables (same as Item)
