@@ -238,6 +238,17 @@ describe('paddingStyle', () => {
         padding: '8px 24px 0 24px', // raw units
       });
     });
+
+    it('assigns values to directions in order they appear', () => {
+      // First value (1x) → first direction (right), second value (2x) → second direction (top)
+      expect(paddingStyle({ padding: 'right 1x top 2x' })).toEqual({
+        padding: '16px 8px 0 0',
+      });
+
+      expect(paddingStyle({ padding: 'left 2x right 1x' })).toEqual({
+        padding: '0 8px 0 16px',
+      });
+    });
   });
 
   describe('output optimization', () => {
