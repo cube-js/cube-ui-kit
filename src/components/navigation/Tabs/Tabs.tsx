@@ -17,7 +17,7 @@ import {
   useTabListState,
 } from 'react-stately';
 
-import { useEvent } from '../../../_internal/hooks';
+import { useEvent, useWarn } from '../../../_internal/hooks';
 import { extractStyles, OUTER_STYLES } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
@@ -26,6 +26,7 @@ import { DraggableTabList } from './DraggableTabList';
 import { TabIndicatorElement, TabsElement } from './styled';
 import { TabButton } from './TabButton';
 import { CachedPanelRenderer, TabPanelRenderer } from './TabPanel';
+import { TabPicker } from './TabPicker';
 import { TabsContextValue, TabsProvider } from './TabsContext';
 import { useTabEditing } from './use-tab-editing';
 import { useTabIndicator } from './use-tab-indicator';
@@ -149,6 +150,7 @@ function TabsComponent(
     isReorderable = false,
     keyOrder,
     onReorder,
+    showTabPicker = false,
     ...otherProps
   } = props;
 
@@ -350,6 +352,14 @@ function TabsComponent(
   // Get tablist props from react-aria
   const { tabListProps } = useTabList(ariaProps, state, listRef);
 
+  // Handle selection from TabPicker (needs to update internal state in uncontrolled mode)
+  const handleTabPickerSelect = useEvent((key: Key) => {
+    // Update internal state (for uncontrolled mode)
+    state.setSelectedKey(key);
+    // Also call the external onChange handler
+    handleSelectionChange(key);
+  });
+
   // =========================================================================
   // Tab Indicator (for default type)
   // =========================================================================
@@ -374,6 +384,21 @@ function TabsComponent(
     useTinyScrollbar(scrollRef, isTinyScrollbar);
 
   const hasPanels = hasAnyContent || !!renderPanel;
+
+  // =========================================================================
+  // Tab Picker visibility
+  // =========================================================================
+  useWarn(showTabPicker && type === 'radio', {
+    key: ['tabs-tabpicker-radio-unsupported'],
+    args: [
+      'Tabs:',
+      '`showTabPicker` is not supported when `type="radio"`. The TabPicker will not be rendered.',
+    ],
+  });
+
+  const shouldShowTabPicker =
+    type !== 'radio' &&
+    (showTabPicker === true || (showTabPicker === 'auto' && hasOverflowX));
 
   // =========================================================================
   // Base Context Value (without drag/drop states)
@@ -516,7 +541,19 @@ function TabsComponent(
           </div>
           {isTinyScrollbar && hasOverflowX && <div data-element="ScrollbarH" />}
         </div>
-        {suffix ? <div data-element="Suffix">{suffix}</div> : null}
+        {suffix || shouldShowTabPicker ? (
+          <div data-element="Suffix">
+            {shouldShowTabPicker && (
+              <TabPicker
+                tabs={orderedParsedTabs}
+                selectedKey={state.selectedKey}
+                onSelect={handleTabPickerSelect}
+                onDelete={onDelete}
+              />
+            )}
+            {suffix}
+          </div>
+        ) : null}
       </TabsElement>
 
       {/* Functional panel rendering with content caching */}

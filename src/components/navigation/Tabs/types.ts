@@ -208,6 +208,14 @@ export interface CubeTabsProps
    * Callback when tabs are reordered via drag-and-drop.
    */
   onReorder?: (newOrder: Key[]) => void;
+  /**
+   * Whether to show a tab picker dropdown in the suffix area.
+   * - `true` - always show the tab picker
+   * - `false` - never show the tab picker (default)
+   * - `'auto'` - show only when tabs overflow (has horizontal scroll)
+   * @default false
+   */
+  showTabPicker?: boolean | 'auto';
 }
 
 export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {

@@ -571,6 +571,7 @@ export const FileDeletable: Story = {
 
 /**
  * Scrollable tabs with tiny scrollbar - demonstrates horizontal scrolling
+ * and tab picker dropdown for quick navigation when tabs overflow
  */
 export const ScrollableTabs: Story = {
   render: (args) => (
@@ -588,6 +589,56 @@ export const ScrollableTabs: Story = {
       ))}
     </Tabs>
   ),
+};
+
+/**
+ * Scrollable tabs with tab picker and delete functionality - demonstrates
+ * auto-showing tab picker when tabs overflow with deletable tabs in the picker dropdown
+ */
+export const ScrollableTabsWithPicker: Story = {
+  render: function ScrollableTabsWithPickerRender(args) {
+    const [tabs, setTabs] = useState(
+      Array.from({ length: 15 }, (_, i) => ({
+        id: `tab${i + 1}`,
+        title: `Tab ${i + 1}`,
+        content: `Content for Tab ${i + 1}`,
+      })),
+    );
+    const [activeKey, setActiveKey] = useState<string>('tab1');
+
+    const handleDelete = (key: Key) => {
+      const tabId = String(key);
+      const newTabs = tabs.filter((t) => t.id !== tabId);
+
+      if (newTabs.length === 0) return;
+
+      // If deleting the active tab, select the next or previous tab
+      if (activeKey === tabId) {
+        const currentIndex = tabs.findIndex((t) => t.id === tabId);
+        const newActiveIndex = Math.min(currentIndex, newTabs.length - 1);
+        setActiveKey(newTabs[newActiveIndex].id);
+      }
+
+      setTabs(newTabs);
+    };
+
+    return (
+      <Tabs
+        {...args}
+        activeKey={activeKey}
+        showTabPicker="auto"
+        styles={{ width: '500px' }}
+        onChange={(key) => setActiveKey(String(key))}
+        onDelete={handleDelete}
+      >
+        {tabs.map((tab) => (
+          <Tab key={tab.id} title={tab.title}>
+            <Paragraph>{tab.content}</Paragraph>
+          </Tab>
+        ))}
+      </Tabs>
+    );
+  },
 };
 
 /**
