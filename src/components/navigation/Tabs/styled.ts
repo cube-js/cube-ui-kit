@@ -16,7 +16,8 @@ export const TabsElement = tasty({
     overflow: 'visible',
     border: {
       '': 0,
-      '(type=default | type=file | type=panel) & has-panels': 'bottom',
+      '(type=default | type=file | type=panel | type=narrow) & has-panels':
+        'bottom',
     },
     width: {
       '': '100%',
@@ -180,7 +181,6 @@ export const TabElement = tasty(Item, {
     preset: {
       '': 't3m',
       'size=xsmall': 't4',
-      'size=xlarge': 't2m',
     },
     shadow: {
       '': 'none',
