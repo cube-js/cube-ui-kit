@@ -1,6 +1,7 @@
 import { Key, RefObject, useRef, useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
+import { PlusIcon } from '../../../icons';
 import { Button } from '../../actions/Button';
 import { Menu } from '../../actions/Menu';
 import { Layout } from '../../content/Layout';
@@ -380,7 +381,7 @@ export const WithPrefixAndSuffix: Story = {
 };
 
 /**
- * Deletable tabs with onDelete callback
+ * Deletable tabs with onDelete callback and an "Add" button using Tabs.Action
  */
 export const Deletable: Story = {
   render: function DeletableStory(args) {
@@ -390,6 +391,7 @@ export const Deletable: Story = {
       { key: 'tab3', title: 'Tab 3', content: 'Content for Tab 3' },
     ]);
     const [activeKey, setActiveKey] = useState('tab1');
+    const [counter, setCounter] = useState(4);
 
     const handleDelete = (key: Key) => {
       setTabs((prev) => prev.filter((tab) => tab.key !== key));
@@ -403,10 +405,31 @@ export const Deletable: Story = {
       }
     };
 
+    const handleAdd = () => {
+      const newKey = `tab${counter}`;
+      setTabs((prev) => [
+        ...prev,
+        {
+          key: newKey,
+          title: `Tab ${counter}`,
+          content: `Content for Tab ${counter}`,
+        },
+      ]);
+      setActiveKey(newKey);
+      setCounter((c) => c + 1);
+    };
+
     return (
       <Tabs
         {...args}
         activeKey={activeKey}
+        suffix={
+          <Tabs.Action
+            icon={<PlusIcon />}
+            aria-label="Add tab"
+            onPress={handleAdd}
+          />
+        }
         onChange={(key) => setActiveKey(String(key))}
         onDelete={handleDelete}
       >
@@ -594,6 +617,7 @@ export const ScrollableTabs: Story = {
 /**
  * Scrollable tabs with tab picker and delete functionality - demonstrates
  * auto-showing tab picker when tabs overflow with deletable tabs in the picker dropdown
+ * and an "Add" button in the prefix slot
  */
 export const ScrollableTabsWithPicker: Story = {
   render: function ScrollableTabsWithPickerRender(args) {
@@ -605,6 +629,7 @@ export const ScrollableTabsWithPicker: Story = {
       })),
     );
     const [activeKey, setActiveKey] = useState<string>('tab1');
+    const [counter, setCounter] = useState(16);
 
     const handleDelete = (key: Key) => {
       const tabId = String(key);
@@ -622,12 +647,34 @@ export const ScrollableTabsWithPicker: Story = {
       setTabs(newTabs);
     };
 
+    const handleAdd = () => {
+      const newId = `tab${counter}`;
+      setTabs((prev) => [
+        ...prev,
+        {
+          id: newId,
+          title: `Tab ${counter}`,
+          content: `Content for Tab ${counter}`,
+        },
+      ]);
+      setActiveKey(newId);
+      setCounter((c) => c + 1);
+    };
+
     return (
       <Tabs
         {...args}
         activeKey={activeKey}
         showTabPicker="auto"
+        type="panel"
         styles={{ width: '500px' }}
+        prefix={
+          <Tabs.Action
+            icon={<PlusIcon />}
+            aria-label="Add tab"
+            onPress={handleAdd}
+          />
+        }
         onChange={(key) => setActiveKey(String(key))}
         onDelete={handleDelete}
       >

@@ -1,4 +1,4 @@
-export { Tabs, Tab } from './Tabs';
+export { Tabs, Tab, TabsAction } from './Tabs';
 export type {
   CubeTabsProps,
   CubeTabProps,
@@ -7,3 +7,4 @@ export type {
   TabType,
   TabSize,
 } from './types';
+export type { CubeTabsActionProps } from './TabsAction';

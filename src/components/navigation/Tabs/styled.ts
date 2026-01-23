@@ -49,7 +49,11 @@ export const TabsElement = tasty({
       placeItems: 'center',
       placeContent: 'center',
       flexShrink: 0,
-      placeSelf: 'center',
+      placeSelf: 'stretch',
+      border: {
+        '': 0,
+        'type=panel | type=file': 'right',
+      },
     },
 
     Suffix: {
@@ -57,7 +61,11 @@ export const TabsElement = tasty({
       placeItems: 'center',
       placeContent: 'center',
       flexShrink: 0,
-      placeSelf: 'center',
+      placeSelf: 'stretch',
+      border: {
+        '': 0,
+        'type=panel | type=file': 'left',
+      },
     },
 
     // Wrapper for scroll area and scrollbar (scrollbar is positioned relative to this)

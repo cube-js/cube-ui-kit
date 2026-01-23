@@ -27,6 +27,7 @@ import { TabIndicatorElement, TabsElement } from './styled';
 import { TabButton } from './TabButton';
 import { CachedPanelRenderer, TabPanelRenderer } from './TabPanel';
 import { TabPicker } from './TabPicker';
+import { TabsAction } from './TabsAction';
 import { TabsContextValue, TabsProvider } from './TabsContext';
 import { useTabEditing } from './use-tab-editing';
 import { useTabIndicator } from './use-tab-indicator';
@@ -547,6 +548,8 @@ function TabsComponent(
               <TabPicker
                 tabs={orderedParsedTabs}
                 selectedKey={state.selectedKey}
+                size={size}
+                type={type}
                 onSelect={handleTabPickerSelect}
                 onDelete={onDelete}
               />
@@ -641,6 +644,7 @@ export const Tabs = Object.assign(_Tabs, {
   Tab,
   List: TabList,
   Panel: TabPanel,
+  Action: TabsAction,
 });
 
-export { Tab, TabList, TabPanel };
+export { Tab, TabList, TabPanel, TabsAction };

@@ -139,6 +139,32 @@ Explicit panel definition for advanced layout control.
 </Tabs.Panel>
 ```
 
+### Tabs.Action
+
+Action button designed for the Tabs prefix/suffix slots. Styled with sharp edges and no border to match the TabPicker trigger. When multiple `Tabs.Action` components are placed together, they automatically display dividers between them.
+
+```jsx
+<Tabs
+  suffix={
+    <>
+      <Tabs.Action icon={<PlusIcon />} onPress={handleAdd} />
+      <Tabs.Action icon={<SettingsIcon />} onPress={handleSettings} />
+    </>
+  }
+>
+  <Tab key="tab1" title="Tab 1">Content</Tab>
+</Tabs>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `icon` | `ReactNode` | Icon to display in the action button |
+| `size` | `TabSize` | Override size (inherits from Tabs by default) |
+| `onPress` | `() => void` | Callback when the action is pressed |
+| `aria-label` | `string` | Accessible label for the button |
+
+Inherits all props from `ItemButton` except `shape` (always sharp).
+
 ### Tab Props
 
 Individual tabs accept these props in addition to style props:
@@ -223,7 +249,7 @@ Add buttons or other elements before or after the tab list.
 
 ### Deletable Tabs
 
-Enable delete buttons with the `onDelete` callback. When no `menu` is defined, a delete button appears on each tab.
+Enable delete buttons with the `onDelete` callback. When no `menu` is defined, a delete button appears on each tab. Use `Tabs.Action` in the suffix slot to add an "Add" button.
 
 <Story of={TabsStories.Deletable} />
 
@@ -236,6 +262,13 @@ const [tabs, setTabs] = useState([
 <Tabs
   defaultActiveKey="tab1"
   onDelete={(key) => setTabs(tabs.filter(t => t.key !== key))}
+  suffix={
+    <Tabs.Action
+      icon={<PlusIcon />}
+      aria-label="Add tab"
+      onPress={handleAdd}
+    />
+  }
 >
   {tabs.map(tab => (
     <Tab key={tab.key} title={tab.title}>

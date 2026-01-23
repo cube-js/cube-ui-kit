@@ -95,3 +95,11 @@ export function useTabsContext(): TabsContextValue {
 
   return context;
 }
+
+/**
+ * Optional hook to get TabsContext value.
+ * Returns null when used outside a TabsProvider (e.g., for TabsAction in standalone usage).
+ */
+export function useOptionalTabsContext(): TabsContextValue | null {
+  return useContext(TabsContext);
+}
