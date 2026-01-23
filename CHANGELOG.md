@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.103.0
+
+### Minor Changes
+
+- [#968](https://github.com/cube-js/cube-ui-kit/pull/968) [`b1322fdc`](https://github.com/cube-js/cube-ui-kit/commit/b1322fdcc7ea52ab7552100ef738ff7e2a4e3d04) Thanks [@tenphi](https://github.com/tenphi)! - Added drag-and-drop reordering and inline editing capabilities to Tabs component. Tabs can now be reordered by dragging, and tab titles can be edited inline by double-clicking. Added `showTabPicker` prop to display a dropdown menu for quick tab navigation when tabs overflow. Added `TabType` and `TabSize` type exports. Improved tab indicator positioning and state management. Added disabled state support to Item and ItemButton components.
+
+### Patch Changes
+
+- [#971](https://github.com/cube-js/cube-ui-kit/pull/971) [`08fa1670`](https://github.com/cube-js/cube-ui-kit/commit/08fa167064f5063fd6d379cc2b9d5c643d1696d1) Thanks [@tenphi](https://github.com/tenphi)! - Fixed inset, padding, and margin style handlers to correctly assign values to directions in the order they appear. Previously, `inset: 'right 1x top 0'` would incorrectly map values based on direction position rather than input order. Now values are correctly assigned: first value to first direction, second value to second direction, etc.
+
 ## 0.102.0
 
 ### Minor Changes
