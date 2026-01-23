@@ -78,14 +78,15 @@ export function paddingStyle({
         bottom = values[2] || values[0];
         left = values[3] || values[1] || values[0];
       } else {
-        for (const dir of directions) {
-          const idx = DIRECTIONS.indexOf(dir);
-          const val = values[idx] || values[idx % 2] || values[0];
+        // Assign values to directions in the order they appear
+        // e.g., 'right 1x top 2x' → right: 1x, top: 2x
+        directions.forEach((dir, i) => {
+          const val = values[i] ?? values[0];
           if (dir === 'top') top = val;
           else if (dir === 'right') right = val;
           else if (dir === 'bottom') bottom = val;
           else if (dir === 'left') left = val;
-        }
+        });
       }
     }
   }

@@ -145,6 +145,15 @@ describe('Tasty style tests', () => {
       inset: 'auto auto 16px 16px',
     });
 
+    // Multiple values with directions - values assigned in order they appear
+    expect(insetStyle({ inset: 'right 1x top 0' })).toEqual({
+      inset: '0 8px auto auto',
+    });
+
+    expect(insetStyle({ inset: 'left 2x right 1x' })).toEqual({
+      inset: 'auto 8px auto 16px',
+    });
+
     // Individual direction props - output individual CSS properties for proper cascade
     expect(insetStyle({ top: '10px' })).toEqual({
       top: '10px',

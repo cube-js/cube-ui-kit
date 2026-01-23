@@ -133,14 +133,15 @@ export function insetStyle({
         bottomVal = values[2] || values[0];
         leftVal = values[3] || values[1] || values[0];
       } else {
-        for (const dir of directions) {
-          const idx = DIRECTIONS.indexOf(dir);
-          const val = values[idx] || values[idx % 2] || values[0];
+        // Assign values to directions in the order they appear
+        // e.g., 'right 1x top 0' → right: 1x, top: 0
+        directions.forEach((dir, i) => {
+          const val = values[i] ?? values[0];
           if (dir === 'top') topVal = val;
           else if (dir === 'right') rightVal = val;
           else if (dir === 'bottom') bottomVal = val;
           else if (dir === 'left') leftVal = val;
-        }
+        });
       }
     }
   }
