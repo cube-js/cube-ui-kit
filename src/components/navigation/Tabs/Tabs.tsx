@@ -509,8 +509,10 @@ function TabsComponent(
     [type, size, onDelete, isScrolling, isAtStartX, isAtEndX, hasPanels],
   );
 
+  // Wrap with TabsProvider so prefix/suffix can access context (size, type)
+  // The inner TabsProvider in renderTabListContent will override for tab buttons
   return (
-    <>
+    <TabsProvider value={baseContextValue}>
       <TabsElement
         ref={ref}
         qa={qa}
@@ -599,7 +601,7 @@ function TabsComponent(
             />
           );
         })}
-    </>
+    </TabsProvider>
   );
 }
 
