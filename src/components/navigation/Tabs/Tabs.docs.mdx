@@ -41,6 +41,9 @@ Customizes the root element of the Tabs component.
 - `Container` - The container holding the tab buttons
 - `Prefix` - Content rendered before the tab list
 - `Suffix` - Content rendered after the tab list
+- `ScrollWrapper` - Wrapper for scroll area and scrollbar positioning
+- `Scroll` - Scrollable area containing the tab container
+- `ScrollbarH` - Custom horizontal scrollbar indicator
 
 ### Style Properties
 
@@ -52,28 +55,41 @@ The `mods` property accepts the following modifiers:
 
 | Modifier | Type | Description |
 |----------|------|-------------|
-| `type` | `'default' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
+| `type` | `'default' \| 'narrow' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
 | `deletable` | `boolean` | True when onDelete callback is provided |
+| `scrolling` | `boolean` | True when tabs are being scrolled |
+| `fade-left` | `boolean` | True when content is scrolled (left fade visible) |
+| `fade-right` | `boolean` | True when more content exists to the right |
+| `has-panels` | `boolean` | True when tabs have panel content |
 
 For individual tabs:
 
 | Modifier | Type | Description |
 |----------|------|-------------|
-| `type` | `'default' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
+| `type` | `'default' \| 'narrow' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
 | `active` | `boolean` | True when the tab is selected |
 | `deletable` | `boolean` | True when delete button is visible |
 | `disabled` | `boolean` | True when tab is disabled |
+| `editing` | `boolean` | True when tab title is being edited |
+| `hovered` | `boolean` | True when tab is hovered |
+| `focused` | `boolean` | True when tab has focus |
+| `focus-visible` | `boolean` | True when tab has keyboard focus |
+| `draggable` | `boolean` | True when tab can be dragged (reorderable) |
+| `dragging` | `boolean` | True when tab is being dragged |
 
 ## Variants
 
 ### Types
 
 - `default` - Standard tabs with selection indicator below (default)
+- `narrow` - Same as default but with collapsed horizontal label padding for compact layouts
 - `file` - File-style tabs with fill highlight on selection, delimiter between tabs
 - `panel` - Panel-style tabs with border bottom highlight on selection, delimiter between tabs
 - `radio` - Radio button style for tab selection
 
 <Story of={TabsStories.DefaultType} />
+
+<Story of={TabsStories.NarrowType} />
 
 <Story of={TabsStories.FileType} />
 
@@ -81,8 +97,12 @@ For individual tabs:
 
 ### Sizes
 
+- `xsmall` - Extra small size with t4 typography (radio type only)
+- `small` - Small size with t3m typography (default)
 - `medium` - Default size with t3m typography
-- `large` - Larger tabs with t2m typography for emphasis
+- `large` - Larger tabs with t3m typography
+
+**Note:** Radio type only supports `medium` and `large` sizes, which are mapped to smaller Item sizes internally.
 
 <Story of={TabsStories.LargeSize} />
 
@@ -118,6 +138,28 @@ Explicit panel definition for advanced layout control.
   Panel 1 content
 </Tabs.Panel>
 ```
+
+### Tab Props
+
+Individual tabs accept these props in addition to style props:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `title` | `ReactNode` | Content displayed in the tab button (required) |
+| `isDisabled` | `boolean` | Disables the tab |
+| `size` | `TabSize` | Override tab size for this tab |
+| `type` | `TabType` | Override tab type for this tab |
+| `actions` | `ReactNode` | Custom actions to render in the tab |
+| `showActionsOnHover` | `boolean` | Show actions only on hover (overrides Tabs-level) |
+| `isEditable` | `boolean` | Whether the tab title can be edited (overrides Tabs-level) |
+| `onTitleChange` | `(newTitle: string) => void` | Callback when title changes (overrides Tabs-level) |
+| `menu` | `ReactNode \| null` | Menu items for this tab (overrides Tabs-level, `null` disables) |
+| `menuTriggerProps` | `Partial<CubeItemActionProps>` | Props for menu trigger button |
+| `menuProps` | `Partial<CubeMenuProps>` | Props for Menu component |
+| `contextMenu` | `boolean` | Enable right-click context menu |
+| `onAction` | `(action: Key) => void` | Callback when menu action is triggered |
+| `prerender` | `boolean` | Override panel prerender behavior |
+| `keepMounted` | `boolean` | Override panel keepMounted behavior |
 
 ## Examples
 
@@ -181,7 +223,7 @@ Add buttons or other elements before or after the tab list.
 
 ### Deletable Tabs
 
-Enable delete buttons with the `onDelete` callback.
+Enable delete buttons with the `onDelete` callback. When no `menu` is defined, a delete button appears on each tab.
 
 <Story of={TabsStories.Deletable} />
 
@@ -199,6 +241,196 @@ const [tabs, setTabs] = useState([
     <Tab key={tab.key} title={tab.title}>
       Content for {tab.title}
     </Tab>
+  ))}
+</Tabs>
+```
+
+### Tab Menus
+
+Add dropdown menus to tabs using the `menu` prop. This replaces the need for manually composing `MenuTrigger`, `ItemAction`, and `Menu` components.
+
+<Story of={TabsStories.WithMenu} />
+
+```jsx
+<Tabs
+  onDelete={handleDelete}
+  menu={
+    <>
+      <Menu.Item key="duplicate">Duplicate</Menu.Item>
+      <Menu.Item key="delete">Delete</Menu.Item>
+    </>
+  }
+  onAction={(action, tabKey) => {
+    if (action === 'duplicate') handleDuplicate(tabKey);
+    // 'delete' is handled automatically via onDelete
+  }}
+>
+  <Tab key="tab1" title="Tab 1">Content</Tab>
+</Tabs>
+```
+
+**Key features:**
+
+- **Predefined actions**: `key="rename"` and `key="delete"` are handled automatically
+- **Auto-labels**: Predefined actions get default labels if children not provided
+- **Tabs-level menu**: Define menu once, all tabs inherit it
+- **Tab-level override**: Individual tabs can override or disable menu with `menu={null}`
+- **Delete button logic**: When `menu` is present, delete button is hidden (use `key="delete"` in menu instead)
+
+### Editable Tabs with Menu
+
+Combine editable tabs with a menu for rename, duplicate, and delete actions.
+
+<Story of={TabsStories.WithEditableTabs} />
+
+```jsx
+<Tabs
+  isEditable
+  onDelete={handleDelete}
+  onTitleChange={handleTitleChange}
+  menu={
+    <>
+      <Menu.Item key="rename">Rename</Menu.Item>
+      <Menu.Item key="duplicate">Duplicate</Menu.Item>
+      <Menu.Item key="delete">Delete</Menu.Item>
+    </>
+  }
+  onAction={(action, tabKey) => {
+    if (action === 'duplicate') handleDuplicate(tabKey);
+    // 'rename' triggers inline editing automatically
+    // 'delete' triggers onDelete automatically
+  }}
+>
+  <Tab key="tab1" title="Tab 1">Content</Tab>
+</Tabs>
+```
+
+### Context Menu
+
+Enable right-click context menus with the `contextMenu` prop. Uses the same menu items.
+
+<Story of={TabsStories.WithContextMenu} />
+
+```jsx
+<Tabs
+  contextMenu
+  menu={
+    <>
+      <Menu.Item key="rename">Rename</Menu.Item>
+      <Menu.Item key="delete">Delete</Menu.Item>
+    </>
+  }
+>
+  <Tab key="tab1" title="Tab 1">Content</Tab>
+</Tabs>
+```
+
+### Per-Tab Menu Override
+
+Override or disable menus on individual tabs.
+
+<Story of={TabsStories.WithPerTabMenuOverride} />
+
+```jsx
+<Tabs
+  menu={
+    <>
+      <Menu.Item key="rename">Rename</Menu.Item>
+      <Menu.Item key="info">Show Info</Menu.Item>
+    </>
+  }
+>
+  <Tab key="tab1" title="Uses Default Menu">Content</Tab>
+  <Tab 
+    key="tab2" 
+    title="Custom Menu"
+    menu={
+      <>
+        <Menu.Item key="special">Special Action</Menu.Item>
+      </>
+    }
+  >
+    Content
+  </Tab>
+  <Tab key="tab3" title="No Menu" menu={null}>Content</Tab>
+</Tabs>
+```
+
+### Menu with Sections
+
+Use `Menu.Section` for organized menus.
+
+<Story of={TabsStories.WithMenuSections} />
+
+```jsx
+<Tabs
+  menu={
+    <>
+      <Menu.Item key="rename">Rename</Menu.Item>
+      <Menu.Item key="duplicate">Duplicate</Menu.Item>
+      <Menu.Section title="Danger Zone">
+        <Menu.Item key="delete">Delete</Menu.Item>
+      </Menu.Section>
+    </>
+  }
+>
+  <Tab key="tab1" title="Tab 1">Content</Tab>
+</Tabs>
+```
+
+### Reorderable Tabs
+
+Enable drag-and-drop tab reordering with the `isReorderable` prop. Control the order via `keyOrder` and handle changes with `onReorder`.
+
+<Story of={TabsStories.Reorderable} />
+
+```jsx
+const [keyOrder, setKeyOrder] = useState(['tab1', 'tab2', 'tab3']);
+
+<Tabs
+  isReorderable
+  keyOrder={keyOrder}
+  onReorder={(newOrder) => setKeyOrder(newOrder)}
+>
+  <Tab key="tab1" title="Tab 1">Content 1</Tab>
+  <Tab key="tab2" title="Tab 2">Content 2</Tab>
+  <Tab key="tab3" title="Tab 3">Content 3</Tab>
+</Tabs>
+```
+
+**Key features:**
+
+- **Drag-and-drop**: Reorder tabs by dragging them to new positions
+- **Controlled order**: Use `keyOrder` to control tab display order
+- **Callback**: `onReorder` is called with the new key order after a drop
+- **Accessibility**: Full keyboard support for reordering
+
+### Reorderable Tabs with Menu
+
+Combine drag-and-drop reordering with menu actions, editing, and delete functionality.
+
+<Story of={TabsStories.ReorderableWithMenu} />
+
+```jsx
+const [tabs, setTabs] = useState([...]);
+const [keyOrder, setKeyOrder] = useState(['tab1', 'tab2', 'tab3']);
+
+<Tabs
+  isReorderable
+  isEditable
+  keyOrder={keyOrder}
+  onReorder={(newOrder) => setKeyOrder(newOrder)}
+  onDelete={handleDelete}
+  menu={
+    <>
+      <Menu.Item key="rename">Rename</Menu.Item>
+      <Menu.Item key="duplicate">Duplicate</Menu.Item>
+      <Menu.Item key="delete">Delete</Menu.Item>
+    </>
+  }
+>
+  {tabs.map((tab) => (
+    <Tab key={tab.id} title={tab.title}>{tab.content}</Tab>
   ))}
 </Tabs>
 ```
@@ -381,6 +613,9 @@ Tabs work seamlessly inside Layout components. When placed in a `Layout` or `Lay
 - `Home` - Move to first tab
 - `End` - Move to last tab
 - `Enter` / `Space` - Activate focused tab
+- `Shift+F10` - Open tab menu (when menu is present)
+- `Delete` - Delete focused tab (when deletable)
+- `F2` - Start editing tab title (when editable)
 
 ### Screen Reader Support
 
@@ -396,6 +631,7 @@ Tabs work seamlessly inside Layout components. When placed in a `Layout` or `Lay
 - `aria-disabled` - Applied when `isDisabled` is true
 - `aria-controls` - Links tabs to their panels automatically
 - `aria-labelledby` - Links panels to their tabs automatically
+- `aria-haspopup` - Set to "menu" when tab has a menu
 
 ## Best Practices
 

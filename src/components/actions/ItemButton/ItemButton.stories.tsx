@@ -1274,3 +1274,237 @@ export const WithActionsHoverBehavior: Story = {
     },
   },
 };
+
+export const Disabled: Story = {
+  render: (args) => (
+    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
+      <div>
+        <h4>Basic Disabled Buttons</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton {...args} isDisabled={true}>
+            Disabled button
+          </ItemButton>
+          <ItemButton {...args} isDisabled={false}>
+            Enabled button
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Disabled with Icons</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton {...args} isDisabled={true} icon={<IconFile />}>
+            Disabled with icon
+          </ItemButton>
+          <ItemButton
+            {...args}
+            isDisabled={true}
+            icon={<IconFile />}
+            rightIcon={<IconExternalLink />}
+          >
+            Disabled with both icons
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Disabled Across Different Types</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="primary"
+            isDisabled={true}
+            icon={<IconFile />}
+          >
+            Disabled primary
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="secondary"
+            isDisabled={true}
+            icon={<IconFile />}
+          >
+            Disabled secondary
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            isDisabled={true}
+            icon={<IconFile />}
+          >
+            Disabled outline
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="neutral"
+            isDisabled={true}
+            icon={<IconFile />}
+          >
+            Disabled neutral
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="clear"
+            isDisabled={true}
+            icon={<IconFile />}
+          >
+            Disabled clear
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Disabled Across Different Sizes</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            size="xsmall"
+            isDisabled={true}
+            icon={<IconFile />}
+          >
+            Disabled xsmall
+          </ItemButton>
+          <ItemButton
+            {...args}
+            size="small"
+            isDisabled={true}
+            icon={<IconFile />}
+          >
+            Disabled small
+          </ItemButton>
+          <ItemButton
+            {...args}
+            size="medium"
+            isDisabled={true}
+            icon={<IconFile />}
+          >
+            Disabled medium
+          </ItemButton>
+          <ItemButton
+            {...args}
+            size="large"
+            isDisabled={true}
+            icon={<IconFile />}
+          >
+            Disabled large
+          </ItemButton>
+          <ItemButton
+            {...args}
+            size="xlarge"
+            isDisabled={true}
+            icon={<IconFile />}
+          >
+            Disabled xlarge
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Disabled with Description</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            isDisabled={true}
+            icon={<IconFile />}
+            description="Inline description"
+            descriptionPlacement="inline"
+          >
+            Disabled with inline description
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            isDisabled={true}
+            icon={<IconFile />}
+            description="Block description"
+            descriptionPlacement="block"
+          >
+            Disabled with block description
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Disabled with Actions</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="outline"
+            isDisabled={true}
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Disabled with actions
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Disabled with Hotkeys</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            isDisabled={true}
+            hotkeys="cmd+s"
+            icon={<IconFile />}
+            onPress={() => alert('This should not trigger!')}
+          >
+            Disabled with hotkeys (won't work)
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Comparison: Enabled vs Disabled</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="primary"
+            icon={<IconFile />}
+            isDisabled={false}
+          >
+            Enabled primary button
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="primary"
+            icon={<IconFile />}
+            isDisabled={true}
+          >
+            Disabled primary button
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconExternalLink />}
+            isDisabled={false}
+          >
+            Enabled outline button
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconExternalLink />}
+            isDisabled={true}
+          >
+            Disabled outline button
+          </ItemButton>
+        </div>
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the disabled state of ItemButton components. When `isDisabled={true}`, the button becomes non-interactive, shows reduced opacity, prevents all click/hover interactions, and disables hotkeys. Disabled state works across all types, sizes, and configurations including icons, descriptions, actions, and hotkeys.',
+      },
+    },
+  },
+};
