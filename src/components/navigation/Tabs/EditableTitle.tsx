@@ -104,9 +104,11 @@ export function EditableTitle({
     } else if (
       e.key === 'ArrowLeft' ||
       e.key === 'ArrowRight' ||
-      e.key === ' '
+      e.key === ' ' ||
+      e.key === 'Delete' ||
+      e.key === 'Backspace'
     ) {
-      // Stop propagation to prevent tab navigation while editing
+      // Stop propagation to prevent tab navigation/deletion while editing
       e.stopPropagation();
     }
   });
