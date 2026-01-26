@@ -48,8 +48,8 @@ export function TabPicker({
   // Map TabSize to FilterPicker size (xsmall -> small)
   const pickerSize = size === 'xsmall' ? 'small' : size;
 
-  // Only show border divider for panel and file types
-  const showBorderDivider = type === 'panel' || type === 'file';
+  // Only show border divider for file type
+  const showBorderDivider = type === 'file';
 
   return (
     <FilterPicker

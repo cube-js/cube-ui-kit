@@ -10,7 +10,7 @@ import type { CubeItemProps } from '../../content/Item';
 // =============================================================================
 
 /** Visual appearance type for tabs */
-export type TabType = 'default' | 'narrow' | 'file' | 'panel' | 'radio';
+export type TabType = 'default' | 'narrow' | 'file' | 'radio';
 
 /**
  * Tab size options.
@@ -117,8 +117,7 @@ export interface CubeTabsProps
    * Visual appearance type for tabs.
    * - `default` - Standard tabs with selection indicator below (default)
    * - `narrow` - Same as default but with collapsed vertical padding on labels
-   * - `file` - File-style tabs with fill highlight on selection, delimiter between tabs
-   * - `panel` - Panel-style tabs with border bottom highlight on selection, delimiter between tabs
+   * - `file` - File-style tabs with border bottom highlight on selection, delimiter between tabs
    * - `radio` - Radio button style for tab selection
    * @default 'default'
    */

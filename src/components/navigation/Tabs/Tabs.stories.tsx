@@ -38,10 +38,10 @@ const meta = {
     /* Presentation */
     type: {
       control: 'radio',
-      options: ['default', 'narrow', 'file', 'panel', 'radio'],
+      options: ['default', 'narrow', 'file', 'radio'],
       description: 'Visual style variant',
       table: {
-        type: { summary: "'default' | 'narrow' | 'file' | 'panel' | 'radio'" },
+        type: { summary: "'default' | 'narrow' | 'file' | 'radio'" },
         defaultValue: { summary: 'default' },
       },
     },
@@ -200,52 +200,25 @@ export const NarrowType: Story = {
 };
 
 /**
- * File-style tabs with fill highlight on selection and delimiter between tabs.
- * Useful for file editor interfaces where multiple documents can be open.
+ * File-style tabs with border bottom highlight on selection and delimiter between tabs.
+ * Useful for file editor interfaces or panel-like navigation where multiple items can be open.
  */
 export const FileType: Story = {
   render: (args) => (
     <Tabs {...args} type="file" defaultActiveKey="file1">
       <Tab key="file1" title="index.ts">
         <Paragraph>
-          File tabs have a fill highlight when selected and a delimiter between
-          tabs.
+          File tabs use a border bottom highlight when selected and a delimiter
+          between tabs.
         </Paragraph>
       </Tab>
       <Tab key="file2" title="utils.ts">
         <Paragraph>
-          The selected tab shows a purple tinted background.
+          The selected tab shows a purple border at the bottom.
         </Paragraph>
       </Tab>
       <Tab key="file3" title="types.ts">
         <Paragraph>Each tab is separated by a 1px border delimiter.</Paragraph>
-      </Tab>
-    </Tabs>
-  ),
-};
-
-/**
- * Panel-style tabs with border bottom highlight on selection and delimiter between tabs.
- * Uses a subtle border indicator instead of fill for selection.
- */
-export const PanelType: Story = {
-  render: (args) => (
-    <Tabs {...args} type="panel" defaultActiveKey="panel1">
-      <Tab key="panel1" title="Overview">
-        <Paragraph>
-          Panel tabs use a border bottom highlight instead of fill for
-          selection.
-        </Paragraph>
-      </Tab>
-      <Tab key="panel2" title="Details">
-        <Paragraph>
-          The selected tab shows a purple border at the bottom.
-        </Paragraph>
-      </Tab>
-      <Tab key="panel3" title="Settings">
-        <Paragraph>
-          Panel tabs have a light background and consistent text color.
-        </Paragraph>
       </Tab>
     </Tabs>
   ),
@@ -666,7 +639,7 @@ export const ScrollableTabsWithPicker: Story = {
         {...args}
         activeKey={activeKey}
         showTabPicker="auto"
-        type="panel"
+        type="file"
         styles={{ width: '500px' }}
         prefix={
           <Tabs.Action

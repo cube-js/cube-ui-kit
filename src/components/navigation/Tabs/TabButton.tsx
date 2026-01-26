@@ -451,10 +451,9 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   const itemType =
     effectiveType === 'default' ? (isActive ? 'clear' : 'neutral') : 'neutral';
 
-  // Determine shape - file/panel types use sharp edges
-  const isFileOrPanelType =
-    effectiveType === 'file' || effectiveType === 'panel';
-  const itemShape = isFileOrPanelType ? 'sharp' : undefined;
+  // Determine shape - file type uses sharp edges
+  const isFileType = effectiveType === 'file';
+  const itemShape = isFileType ? 'sharp' : undefined;
 
   // Determine showActionsOnHover - tab-level overrides parent-level
   const effectiveShowActionsOnHover =

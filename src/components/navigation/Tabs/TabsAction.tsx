@@ -34,7 +34,7 @@ const TabsActionElement = tasty(ItemButton, {
   styles: {
     border: {
       '': 0,
-      '(tabs-type-panel | tabs-type-file) & !:first-child': 'left',
+      'tabs-type-file & !:first-child': 'left',
     },
   },
 });
@@ -49,7 +49,7 @@ const TabsActionElement = tasty(ItemButton, {
  * Styled with sharp edges and no border to match the TabPicker trigger.
  * When multiple TabsAction components are placed together, they automatically
  * display dividers between them using CSS :not(:first-child) border styling
- * (only for panel and file tab types).
+ * (only for file tab type).
  *
  * Inherits size from the parent Tabs component when used inside prefix/suffix slots.
  *
@@ -84,7 +84,6 @@ export const TabsAction = forwardRef(function TabsAction(
 
   const combinedMods = useMemo(
     () => ({
-      'tabs-type-panel': tabsType === 'panel',
       'tabs-type-file': tabsType === 'file',
       ...mods,
     }),
