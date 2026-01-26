@@ -26,6 +26,12 @@ import {
   DEFAULT_OUTLINE_STYLES,
   DEFAULT_PRIMARY_STYLES,
   DEFAULT_SECONDARY_STYLES,
+  NOTE_CLEAR_STYLES,
+  NOTE_LINK_STYLES,
+  NOTE_NEUTRAL_STYLES,
+  NOTE_OUTLINE_STYLES,
+  NOTE_PRIMARY_STYLES,
+  NOTE_SECONDARY_STYLES,
   SPECIAL_CLEAR_STYLES,
   SPECIAL_LINK_STYLES,
   SPECIAL_NEUTRAL_STYLES,
@@ -38,6 +44,12 @@ import {
   SUCCESS_OUTLINE_STYLES,
   SUCCESS_PRIMARY_STYLES,
   SUCCESS_SECONDARY_STYLES,
+  WARNING_CLEAR_STYLES,
+  WARNING_LINK_STYLES,
+  WARNING_NEUTRAL_STYLES,
+  WARNING_OUTLINE_STYLES,
+  WARNING_PRIMARY_STYLES,
+  WARNING_SECONDARY_STYLES,
 } from '../../../data/item-themes';
 import { LoadingIcon } from '../../../icons';
 import {
@@ -137,6 +149,18 @@ export type ButtonVariant =
   | 'success.neutral'
   | 'success.clear'
   | 'success.link'
+  | 'warning.primary'
+  | 'warning.secondary'
+  | 'warning.outline'
+  | 'warning.neutral'
+  | 'warning.clear'
+  | 'warning.link'
+  | 'note.primary'
+  | 'note.secondary'
+  | 'note.outline'
+  | 'note.neutral'
+  | 'note.clear'
+  | 'note.link'
   | 'special.primary'
   | 'special.secondary'
   | 'special.outline'
@@ -318,6 +342,22 @@ const ButtonElement = tasty({
     'success.neutral': SUCCESS_NEUTRAL_STYLES,
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
+
+    // Warning theme
+    'warning.primary': WARNING_PRIMARY_STYLES,
+    'warning.secondary': WARNING_SECONDARY_STYLES,
+    'warning.outline': WARNING_OUTLINE_STYLES,
+    'warning.neutral': WARNING_NEUTRAL_STYLES,
+    'warning.clear': WARNING_CLEAR_STYLES,
+    'warning.link': WARNING_LINK_STYLES,
+
+    // Note theme
+    'note.primary': NOTE_PRIMARY_STYLES,
+    'note.secondary': NOTE_SECONDARY_STYLES,
+    'note.outline': NOTE_OUTLINE_STYLES,
+    'note.neutral': NOTE_NEUTRAL_STYLES,
+    'note.clear': NOTE_CLEAR_STYLES,
+    'note.link': NOTE_LINK_STYLES,
 
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,

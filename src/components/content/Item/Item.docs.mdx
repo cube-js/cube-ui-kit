@@ -93,9 +93,9 @@ The `mods` property accepts the following modifiers:
 - `default` - Standard appearance with default colors
 - `danger` - Red theme for destructive actions
 - `success` - Green theme for positive actions
+- `warning` - Yellow/amber theme for caution or attention
+- `note` - Violet theme for informational context
 - `special` - Special theme with unique styling (not available for `card` or `header` types)
-- `warning` - Yellow/amber theme for caution or attention (only available for `card` type)
-- `note` - Violet theme for informational cards (only available for `card` type)
 
 ### Sizes
 
@@ -214,7 +214,7 @@ Use `type="header"` for section headers. Header items have larger text preset an
 
 ### Card Type
 
-Use `type="card"` for notification-style items. Card items automatically use card shape, block description placement, and have `.5x` padding. They support `default`, `success`, `danger`, and `note` themes.
+Use `type="card"` for notification-style items. Card items automatically use card shape, block description placement, and have `.5x` padding. They support `default`, `success`, `danger`, `warning`, and `note` themes.
 
 Like headers, card labels use semantic heading tags (h1-h6) controlled by the `level` prop (default: 3):
 

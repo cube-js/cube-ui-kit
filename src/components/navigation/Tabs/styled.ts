@@ -137,6 +137,16 @@ export const TabsElement = tasty({
       },
     },
 
+    // Size variable for actions (if ItemAction is used instead of TabsAction)
+    $size: {
+      '': '$size-md',
+      'size=xsmall': '$size-xs',
+      'size=small': '$size-sm',
+      'size=medium': '$size-md',
+      'size=large': '$size-lg',
+      'size=xlarge': '$size-xl',
+    },
+
     // Custom horizontal scrollbar (tiny) - positioned relative to ScrollWrapper
     ScrollbarH: {
       position: 'absolute',

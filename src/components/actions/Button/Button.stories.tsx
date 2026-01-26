@@ -27,7 +27,7 @@ export default {
       },
     },
     theme: {
-      options: ['default', 'danger', 'success', 'special'],
+      options: ['default', 'danger', 'success', 'warning', 'note', 'special'],
       control: { type: 'radio' },
       description: 'Semantic colour palette theme',
       table: {
@@ -437,6 +437,78 @@ export const SuccessLinkStates = TemplateStates.bind({});
 SuccessLinkStates.args = {
   type: 'link',
   theme: 'success',
+};
+
+export const WarningSecondaryStates = TemplateStates.bind({});
+WarningSecondaryStates.args = {
+  type: 'secondary',
+  theme: 'warning',
+};
+
+export const WarningPrimaryStates = TemplateStates.bind({});
+WarningPrimaryStates.args = {
+  type: 'primary',
+  theme: 'warning',
+};
+
+export const WarningOutlineStates = TemplateStates.bind({});
+WarningOutlineStates.args = {
+  type: 'outline',
+  theme: 'warning',
+};
+
+export const WarningClearStates = TemplateStates.bind({});
+WarningClearStates.args = {
+  type: 'clear',
+  theme: 'warning',
+};
+
+export const WarningNeutralStates = TemplateStates.bind({});
+WarningNeutralStates.args = {
+  type: 'neutral',
+  theme: 'warning',
+};
+
+export const WarningLinkStates = TemplateStates.bind({});
+WarningLinkStates.args = {
+  type: 'link',
+  theme: 'warning',
+};
+
+export const NoteSecondaryStates = TemplateStates.bind({});
+NoteSecondaryStates.args = {
+  type: 'secondary',
+  theme: 'note',
+};
+
+export const NotePrimaryStates = TemplateStates.bind({});
+NotePrimaryStates.args = {
+  type: 'primary',
+  theme: 'note',
+};
+
+export const NoteOutlineStates = TemplateStates.bind({});
+NoteOutlineStates.args = {
+  type: 'outline',
+  theme: 'note',
+};
+
+export const NoteClearStates = TemplateStates.bind({});
+NoteClearStates.args = {
+  type: 'clear',
+  theme: 'note',
+};
+
+export const NoteNeutralStates = TemplateStates.bind({});
+NoteNeutralStates.args = {
+  type: 'neutral',
+  theme: 'note',
+};
+
+export const NoteLinkStates = TemplateStates.bind({});
+NoteLinkStates.args = {
+  type: 'link',
+  theme: 'note',
 };
 
 export const SpecialSecondaryStates = DarkTemplateStates.bind({});

@@ -2333,8 +2333,8 @@ CustomSize.parameters = {
 export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
   // Valid type+theme combinations:
   // - title: only 'default'
-  // - card: 'default', 'success', 'danger', 'note'
-  // - all other types: 'default', 'success', 'danger', 'special'
+  // - card: 'default', 'success', 'danger', 'warning', 'note'
+  // - all other types: 'default', 'success', 'danger', 'warning', 'note', 'special'
   const standardTypes = [
     'item',
     'primary',
@@ -2343,8 +2343,21 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
     'neutral',
     'clear',
   ] as const;
-  const standardThemes = ['default', 'danger', 'success', 'special'] as const;
-  const cardThemes = ['default', 'danger', 'success', 'note'] as const;
+  const standardThemes = [
+    'default',
+    'danger',
+    'success',
+    'warning',
+    'note',
+    'special',
+  ] as const;
+  const cardThemes = [
+    'default',
+    'danger',
+    'success',
+    'warning',
+    'note',
+  ] as const;
 
   return (
     <Space gap="4x" flow="column" placeItems="start">
@@ -2419,7 +2432,7 @@ TypesAndThemes.parameters = {
   docs: {
     description: {
       story:
-        'Showcases all valid type and theme combinations. Valid combinations: `title` type only supports `default` theme; `card` type supports `default`, `success`, `danger`, and `note` themes; all other types (`item`, `primary`, `secondary`, `outline`, `neutral`, `clear`, `link`) support `default`, `success`, `danger`, and `special` themes. The `link` type does not support icons or loading state (`isLoading`). Using an invalid type+theme combination, icons with `link` type, or `isLoading` with `link` type will trigger a console warning.',
+        'Showcases all valid type and theme combinations. Valid combinations: `title` type only supports `default` theme; `card` type supports `default`, `success`, `danger`, `warning`, and `note` themes; all other types (`item`, `primary`, `secondary`, `outline`, `neutral`, `clear`, `link`) support `default`, `success`, `danger`, `warning`, `note`, and `special` themes. The `link` type does not support icons or loading state (`isLoading`). Using an invalid type+theme combination, icons with `link` type, or `isLoading` with `link` type will trigger a console warning.',
     },
   },
 };
