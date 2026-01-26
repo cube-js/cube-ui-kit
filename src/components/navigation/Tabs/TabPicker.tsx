@@ -61,7 +61,9 @@ export function TabPicker({
       shape="sharp"
       type="neutral"
       size={pickerSize}
-      triggerStyles={{
+      // Apply border to wrapper (FilterPickerWrapper) so :first-child evaluates
+      // relative to Suffix container, not the internal DialogTrigger
+      styles={{
         border: showBorderDivider
           ? {
               '': 0,
@@ -69,6 +71,7 @@ export function TabPicker({
             }
           : 0,
       }}
+      triggerStyles={{ border: 0 }}
       aria-label="Select tab"
       onSelectionChange={(key) => {
         if (key != null) {
