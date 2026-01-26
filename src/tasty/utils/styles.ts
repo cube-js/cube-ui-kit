@@ -92,6 +92,7 @@ const SIMPLE_COLOR_PATTERNS = [
   /^hsl\(/, // HSL/HSLA functions
   /^lch\(/, // LCH color functions
   /^oklch\(/, // OKLCH color functions
+  /^okhsl\(/, // OKHSL color functions
   /^var\(--[a-z0-9-]+-color/, // CSS custom properties for colors
   /^currentColor$/, // CSS currentColor keyword
   /^transparent$/, // CSS transparent keyword
