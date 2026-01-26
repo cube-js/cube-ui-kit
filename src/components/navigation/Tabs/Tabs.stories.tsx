@@ -1457,3 +1457,35 @@ export const WithScrollArrowsAndPicker: Story = {
     );
   },
 };
+
+/**
+ * Tabs with scroll arrows and tab picker in the prefix slot
+ */
+export const ActionsInPrefix: Story = {
+  render: function ActionsInPrefixRender(args) {
+    const tabs = Array.from({ length: 15 }, (_, i) => ({
+      id: `tab${i + 1}`,
+      title: `Tab ${i + 1}`,
+      content: `Content for Tab ${i + 1}`,
+    }));
+
+    return (
+      <Tabs
+        {...args}
+        showTabPicker
+        showScrollArrows
+        defaultActiveKey="tab1"
+        tabPickerPosition="prefix"
+        scrollArrowsPosition="prefix"
+        type="file"
+        styles={{ width: '500px' }}
+      >
+        {tabs.map((tab) => (
+          <Tab key={tab.id} title={tab.title}>
+            <Paragraph>{tab.content}</Paragraph>
+          </Tab>
+        ))}
+      </Tabs>
+    );
+  },
+};

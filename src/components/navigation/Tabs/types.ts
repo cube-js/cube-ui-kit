@@ -12,6 +12,9 @@ import type { CubeItemProps } from '../../content/Item';
 /** Visual appearance type for tabs */
 export type TabType = 'default' | 'narrow' | 'file' | 'radio';
 
+/** Position for TabPicker and scroll arrows */
+export type TabsActionPosition = 'prefix' | 'suffix';
+
 /**
  * Tab size options.
  * Radio type only supports 'medium' | 'large' (mapped to smaller Item sizes).
@@ -223,6 +226,20 @@ export interface CubeTabsProps
    * @default false
    */
   showScrollArrows?: boolean | 'auto';
+  /**
+   * Position of the tab picker dropdown.
+   * - `'prefix'` - render in the prefix slot (before tab list)
+   * - `'suffix'` - render in the suffix slot (after tab list)
+   * @default 'suffix'
+   */
+  tabPickerPosition?: TabsActionPosition;
+  /**
+   * Position of the scroll arrow buttons.
+   * - `'prefix'` - render in the prefix slot (before tab list)
+   * - `'suffix'` - render in the suffix slot (after tab list)
+   * @default 'suffix'
+   */
+  scrollArrowsPosition?: TabsActionPosition;
 }
 
 export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {

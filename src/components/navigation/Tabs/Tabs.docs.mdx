@@ -504,6 +504,34 @@ Combine with `showTabPicker` for both scroll arrows and a dropdown picker:
 </Tabs>
 ```
 
+### Actions in Prefix
+
+By default, scroll arrows and the tab picker appear in the suffix (after the tab list). Use `scrollArrowsPosition` and `tabPickerPosition` to move them to the prefix (before the tab list).
+
+<Story of={TabsStories.ActionsInPrefix} />
+
+```jsx
+<Tabs
+  defaultActiveKey="tab1"
+  showTabPicker
+  showScrollArrows
+  tabPickerPosition="prefix"
+  scrollArrowsPosition="prefix"
+  type="file"
+  styles={{ width: '500px' }}
+>
+  {tabs.map(tab => (
+    <Tab key={tab.id} title={tab.title}>
+      {tab.content}
+    </Tab>
+  ))}
+</Tabs>
+```
+
+When both are in the same slot:
+- In **prefix**: TabPicker appears first (left), then scroll arrows (right)
+- In **suffix**: Scroll arrows appear first (left), then TabPicker (right)
+
 ### Navigation-Only Tabs
 
 Use tabs without panel content for navigation purposes.

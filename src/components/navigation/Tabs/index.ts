@@ -6,5 +6,6 @@ export type {
   CubeTabListProps,
   TabType,
   TabSize,
+  TabsActionPosition,
 } from './types';
 export type { CubeTabsActionProps } from './TabsAction';

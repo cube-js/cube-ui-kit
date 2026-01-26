@@ -154,6 +154,8 @@ function TabsComponent(
     onReorder,
     showTabPicker = false,
     showScrollArrows = false,
+    tabPickerPosition = 'suffix',
+    scrollArrowsPosition = 'suffix',
     ...otherProps
   } = props;
 
@@ -547,6 +549,48 @@ function TabsComponent(
     [type, size, onDelete, isScrolling, isAtStartX, isAtEndX, hasPanels],
   );
 
+  // =========================================================================
+  // Action Elements (TabPicker and Scroll Arrows)
+  // =========================================================================
+  const scrollArrowsElement = shouldShowScrollArrows ? (
+    <>
+      <TabsAction
+        icon={<DirectionIcon to="left" />}
+        aria-label="Scroll tabs left"
+        isDisabled={isAtStartX}
+        onPress={handleScrollLeft}
+      />
+      <TabsAction
+        icon={<DirectionIcon to="right" />}
+        aria-label="Scroll tabs right"
+        isDisabled={isAtEndX}
+        onPress={handleScrollRight}
+      />
+    </>
+  ) : null;
+
+  const tabPickerElement = shouldShowTabPicker ? (
+    <TabPicker
+      tabs={orderedParsedTabs}
+      selectedKey={state.selectedKey}
+      size={size}
+      type={type}
+      onSelect={handleTabPickerSelect}
+      onDelete={onDelete}
+    />
+  ) : null;
+
+  // Determine which actions go in prefix/suffix
+  // In prefix: TabPicker first (left), then scroll arrows (right)
+  // In suffix: scroll arrows first (left), then TabPicker (right)
+  const prefixHasActions =
+    (shouldShowTabPicker && tabPickerPosition === 'prefix') ||
+    (shouldShowScrollArrows && scrollArrowsPosition === 'prefix');
+
+  const suffixHasActions =
+    (shouldShowTabPicker && tabPickerPosition === 'suffix') ||
+    (shouldShowScrollArrows && scrollArrowsPosition === 'suffix');
+
   // Wrap with TabsProvider so prefix/suffix can access context (size, type)
   // The inner TabsProvider in renderTabListContent will override for tab buttons
   return (
@@ -559,7 +603,13 @@ function TabsComponent(
         style={handleHStyle}
         data-size={size}
       >
-        {prefix ? <div data-element="Prefix">{prefix}</div> : null}
+        {prefix || prefixHasActions ? (
+          <div data-element="Prefix">
+            {tabPickerPosition === 'prefix' && tabPickerElement}
+            {scrollArrowsPosition === 'prefix' && scrollArrowsElement}
+            {prefix}
+          </div>
+        ) : null}
         <div data-element="ScrollWrapper">
           <div ref={scrollRef} data-element="Scroll">
             {isReorderable ? (
@@ -582,34 +632,10 @@ function TabsComponent(
           </div>
           {isTinyScrollbar && hasOverflowX && <div data-element="ScrollbarH" />}
         </div>
-        {suffix || shouldShowScrollArrows || shouldShowTabPicker ? (
+        {suffix || suffixHasActions ? (
           <div data-element="Suffix">
-            {shouldShowScrollArrows && (
-              <>
-                <TabsAction
-                  icon={<DirectionIcon to="left" />}
-                  aria-label="Scroll tabs left"
-                  isDisabled={isAtStartX}
-                  onPress={handleScrollLeft}
-                />
-                <TabsAction
-                  icon={<DirectionIcon to="right" />}
-                  aria-label="Scroll tabs right"
-                  isDisabled={isAtEndX}
-                  onPress={handleScrollRight}
-                />
-              </>
-            )}
-            {shouldShowTabPicker && (
-              <TabPicker
-                tabs={orderedParsedTabs}
-                selectedKey={state.selectedKey}
-                size={size}
-                type={type}
-                onSelect={handleTabPickerSelect}
-                onDelete={onDelete}
-              />
-            )}
+            {scrollArrowsPosition === 'suffix' && scrollArrowsElement}
+            {tabPickerPosition === 'suffix' && tabPickerElement}
             {suffix}
           </div>
         ) : null}
