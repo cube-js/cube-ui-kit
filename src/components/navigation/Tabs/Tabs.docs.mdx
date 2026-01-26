@@ -465,6 +465,45 @@ const [keyOrder, setKeyOrder] = useState(['tab1', 'tab2', 'tab3']);
 </Tabs>
 ```
 
+### Scroll Arrows
+
+Add left/right navigation arrows to scroll overflowed tabs. Use `showScrollArrows` with `true`, `false`, or `'auto'` (shows only when tabs overflow).
+
+<Story of={TabsStories.WithScrollArrows} />
+
+```jsx
+<Tabs
+  defaultActiveKey="tab1"
+  showScrollArrows="auto"
+  styles={{ width: '500px' }}
+>
+  {tabs.map(tab => (
+    <Tab key={tab.id} title={tab.title}>
+      {tab.content}
+    </Tab>
+  ))}
+</Tabs>
+```
+
+Combine with `showTabPicker` for both scroll arrows and a dropdown picker:
+
+<Story of={TabsStories.WithScrollArrowsAndPicker} />
+
+```jsx
+<Tabs
+  defaultActiveKey="tab1"
+  showScrollArrows="auto"
+  showTabPicker="auto"
+  type="file"
+>
+  {tabs.map(tab => (
+    <Tab key={tab.id} title={tab.title}>
+      {tab.content}
+    </Tab>
+  ))}
+</Tabs>
+```
+
 ### Navigation-Only Tabs
 
 Use tabs without panel content for navigation purposes.

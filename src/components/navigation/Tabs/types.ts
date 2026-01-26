@@ -215,6 +215,14 @@ export interface CubeTabsProps
    * @default false
    */
   showTabPicker?: boolean | 'auto';
+  /**
+   * Whether to show scroll arrow buttons in the suffix area.
+   * - `true` - always show scroll arrows
+   * - `false` - never show scroll arrows (default)
+   * - `'auto'` - show only when tabs overflow (has horizontal scroll)
+   * @default false
+   */
+  showScrollArrows?: boolean | 'auto';
 }
 
 export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {

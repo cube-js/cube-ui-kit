@@ -18,6 +18,7 @@ import {
 } from 'react-stately';
 
 import { useEvent, useWarn } from '../../../_internal/hooks';
+import { DirectionIcon } from '../../../icons';
 import { extractStyles, OUTER_STYLES } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
@@ -152,6 +153,7 @@ function TabsComponent(
     keyOrder,
     onReorder,
     showTabPicker = false,
+    showScrollArrows = false,
     ...otherProps
   } = props;
 
@@ -402,6 +404,42 @@ function TabsComponent(
     (showTabPicker === true || (showTabPicker === 'auto' && hasOverflowX));
 
   // =========================================================================
+  // Scroll Arrows visibility and handlers
+  // =========================================================================
+  useWarn(showScrollArrows && type === 'radio', {
+    key: ['tabs-scrollarrows-radio-unsupported'],
+    args: [
+      'Tabs:',
+      '`showScrollArrows` is not supported when `type="radio"`. The scroll arrows will not be rendered.',
+    ],
+  });
+
+  const shouldShowScrollArrows =
+    type !== 'radio' &&
+    (showScrollArrows === true ||
+      (showScrollArrows === 'auto' && hasOverflowX));
+
+  const handleScrollLeft = useEvent(() => {
+    const el = scrollRef.current;
+    if (el) {
+      el.scrollTo({
+        left: el.scrollLeft - el.clientWidth,
+        behavior: 'smooth',
+      });
+    }
+  });
+
+  const handleScrollRight = useEvent(() => {
+    const el = scrollRef.current;
+    if (el) {
+      el.scrollTo({
+        left: el.scrollLeft + el.clientWidth,
+        behavior: 'smooth',
+      });
+    }
+  });
+
+  // =========================================================================
   // Base Context Value (without drag/drop states)
   // =========================================================================
   const baseContextValue = useMemo(
@@ -544,8 +582,24 @@ function TabsComponent(
           </div>
           {isTinyScrollbar && hasOverflowX && <div data-element="ScrollbarH" />}
         </div>
-        {suffix || shouldShowTabPicker ? (
+        {suffix || shouldShowScrollArrows || shouldShowTabPicker ? (
           <div data-element="Suffix">
+            {shouldShowScrollArrows && (
+              <>
+                <TabsAction
+                  icon={<DirectionIcon to="left" />}
+                  aria-label="Scroll tabs left"
+                  isDisabled={isAtStartX}
+                  onPress={handleScrollLeft}
+                />
+                <TabsAction
+                  icon={<DirectionIcon to="right" />}
+                  aria-label="Scroll tabs right"
+                  isDisabled={isAtEndX}
+                  onPress={handleScrollRight}
+                />
+              </>
+            )}
             {shouldShowTabPicker && (
               <TabPicker
                 tabs={orderedParsedTabs}

@@ -1399,3 +1399,61 @@ export const ReorderableDefaultType: Story = {
     );
   },
 };
+
+/**
+ * Tabs with scroll arrows - shows left/right navigation arrows for scrolling tabs
+ */
+export const WithScrollArrows: Story = {
+  render: function WithScrollArrowsRender(args) {
+    const tabs = Array.from({ length: 15 }, (_, i) => ({
+      id: `tab${i + 1}`,
+      title: `Tab ${i + 1}`,
+      content: `Content for Tab ${i + 1}`,
+    }));
+
+    return (
+      <Tabs
+        {...args}
+        defaultActiveKey="tab1"
+        showScrollArrows="auto"
+        styles={{ width: '500px' }}
+      >
+        {tabs.map((tab) => (
+          <Tab key={tab.id} title={tab.title}>
+            <Paragraph>{tab.content}</Paragraph>
+          </Tab>
+        ))}
+      </Tabs>
+    );
+  },
+};
+
+/**
+ * Tabs with scroll arrows and tab picker combined
+ */
+export const WithScrollArrowsAndPicker: Story = {
+  render: function WithScrollArrowsAndPickerRender(args) {
+    const tabs = Array.from({ length: 15 }, (_, i) => ({
+      id: `tab${i + 1}`,
+      title: `Tab ${i + 1}`,
+      content: `Content for Tab ${i + 1}`,
+    }));
+
+    return (
+      <Tabs
+        {...args}
+        defaultActiveKey="tab1"
+        showScrollArrows="auto"
+        showTabPicker="auto"
+        type="file"
+        styles={{ width: '500px' }}
+      >
+        {tabs.map((tab) => (
+          <Tab key={tab.id} title={tab.title}>
+            <Paragraph>{tab.content}</Paragraph>
+          </Tab>
+        ))}
+      </Tabs>
+    );
+  },
+};
