@@ -17,7 +17,6 @@ export const COLOR_FUNCS = new Set([
   'lch',
   'oklab',
   'oklch',
-  'okhsl',
   'color',
   'device-cmyk',
   'gray',
