@@ -18,6 +18,7 @@ import { VERSION } from '../version';
 import { GlobalStyles } from './GlobalStyles';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
 import { NotificationsProvider } from './overlays/NewNotifications/NotificationsContext/NotificationsProvider';
+import { ToastProvider } from './overlays/Toast';
 import { PortalProvider } from './portal';
 
 const RootElement = tasty({
@@ -105,7 +106,9 @@ export function Root(allProps: CubeRootProps) {
             <PortalProvider value={ref}>
               <EventBusProvider>
                 <NotificationsProvider rootRef={ref}>
-                  <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
+                  <ToastProvider>
+                    <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
+                  </ToastProvider>
                 </NotificationsProvider>
               </EventBusProvider>
             </PortalProvider>

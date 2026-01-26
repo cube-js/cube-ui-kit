@@ -12,7 +12,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { Button } from '../../actions';
-import { useToastsApi } from '../../overlays/Toasts';
+import { useToast } from '../../overlays/Toast';
 import { Card, CubeCardProps } from '../Card/Card';
 
 const StyledBlock = tasty({
@@ -140,6 +140,7 @@ function CopyPasteBlock(
   const styles = extractStyles(props, POSITION_STYLES);
 
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   const { clipboardProps } = useClipboard({
     async onPaste(items) {
@@ -179,8 +180,6 @@ function CopyPasteBlock(
     },
     isDisabled: !error,
   });
-
-  const { toast } = useToastsApi();
 
   async function onCopy() {
     await copy(value);
