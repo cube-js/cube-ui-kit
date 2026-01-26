@@ -22,15 +22,15 @@ export class CSSWriter {
   }
 
   /**
-   * Add CSS block with deduplication key.
-   * Always overwrites existing entries to support HMR (Hot Module Replacement).
-   * Identical content with the same key is idempotent.
+   * Add CSS block with deduplication key
    * @param key - Unique key for deduplication
    * @param css - CSS content
    * @param source - Optional source file path (used in devMode)
    */
   add(key: string, css: string, source?: string): void {
-    this.cssBlocks.set(key, { css, source });
+    if (!this.cssBlocks.has(key)) {
+      this.cssBlocks.set(key, { css, source });
+    }
   }
 
   /**
