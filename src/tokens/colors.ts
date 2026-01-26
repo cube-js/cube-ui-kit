@@ -23,6 +23,12 @@ export const TEXT_LIGHTNESS = 45;
 export const BG_LIGHTNESS = 97;
 export const ICON_LIGHTNESS = 60;
 
+// Disabled state values (60% white + 40% main color in okhsl)
+// Saturation: 0.6 * 0 + 0.4 * MAIN_SATURATION = 32
+// Lightness: 0.6 * 100 + 0.4 * MAIN_LIGHTNESS = 80.8
+export const DISABLED_SATURATION = 32;
+export const DISABLED_LIGHTNESS = 80.8;
+
 // ============================================================================
 // Helper function
 // ============================================================================
@@ -49,6 +55,11 @@ export const COLOR_TOKENS: Styles = {
   '#purple-text': okhsl(PURPLE_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
   '#purple-bg': okhsl(PURPLE_HUE, BG_SATURATION, BG_LIGHTNESS), // Unused
   '#purple-icon': okhsl(PURPLE_HUE, ICON_SATURATION, ICON_LIGHTNESS), // Unused
+  '#purple-disabled': okhsl(
+    PURPLE_HUE,
+    DISABLED_SATURATION,
+    DISABLED_LIGHTNESS,
+  ),
   '#purple-01': okhsl(PURPLE_HUE, 100, 58), // Unused
   '#purple-02': okhsl(PURPLE_HUE, 100, 66), // Unused
   '#purple-03': okhsl(PURPLE_HUE, 100, 74),
@@ -81,24 +92,40 @@ export const COLOR_TOKENS: Styles = {
   '#danger-text': okhsl(DANGER_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
   '#danger-bg': okhsl(DANGER_HUE, BG_SATURATION, BG_LIGHTNESS),
   '#danger-icon': okhsl(DANGER_HUE, ICON_SATURATION, ICON_LIGHTNESS),
+  '#danger-disabled': okhsl(
+    DANGER_HUE,
+    DISABLED_SATURATION,
+    DISABLED_LIGHTNESS,
+  ),
 
   // Success (green)
   '#success': okhsl(SUCCESS_HUE, MAIN_SATURATION, MAIN_LIGHTNESS),
   '#success-text': okhsl(SUCCESS_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
   '#success-bg': okhsl(SUCCESS_HUE, BG_SATURATION, BG_LIGHTNESS),
   '#success-icon': okhsl(SUCCESS_HUE, ICON_SATURATION, ICON_LIGHTNESS),
+  '#success-disabled': okhsl(
+    SUCCESS_HUE,
+    DISABLED_SATURATION,
+    DISABLED_LIGHTNESS,
+  ),
 
   // Warning (yellow/amber)
   '#warning': okhsl(WARNING_HUE, MAIN_SATURATION, MAIN_LIGHTNESS),
   '#warning-text': okhsl(WARNING_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
   '#warning-bg': okhsl(WARNING_HUE, BG_SATURATION, BG_LIGHTNESS),
   '#warning-icon': okhsl(WARNING_HUE, ICON_SATURATION, ICON_LIGHTNESS),
+  '#warning-disabled': okhsl(
+    WARNING_HUE,
+    DISABLED_SATURATION,
+    DISABLED_LIGHTNESS,
+  ),
 
   // Note (violet)
   '#note': okhsl(NOTE_HUE, MAIN_SATURATION, MAIN_LIGHTNESS),
   '#note-text': okhsl(NOTE_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
   '#note-bg': okhsl(NOTE_HUE, BG_SATURATION, BG_LIGHTNESS),
   '#note-icon': okhsl(NOTE_HUE, ICON_SATURATION, ICON_LIGHTNESS),
+  '#note-disabled': okhsl(NOTE_HUE, DISABLED_SATURATION, DISABLED_LIGHTNESS),
 
   // Border
   '#border': okhsl(PURPLE_HUE, 13, 90),

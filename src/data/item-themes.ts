@@ -75,12 +75,9 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     '': '#purple',
     hovered: '#purple-text',
     pressed: '#purple',
-    disabled: '#purple.4',
+    disabled: '#purple-disabled',
   },
-  color: {
-    '': '#white',
-    disabled: '#white.4',
-  },
+  color: '#white',
 } as const;
 
 export const DEFAULT_SECONDARY_STYLES: Styles = {
@@ -213,12 +210,9 @@ export const DANGER_PRIMARY_STYLES: Styles = {
   fill: {
     '': '#danger',
     'hovered & !pressed': '#danger-text',
-    disabled: '#danger.4',
+    disabled: '#danger-disabled',
   },
-  color: {
-    '': '#white',
-    disabled: '#white.4',
-  },
+  color: '#white',
 } as const;
 
 export const DANGER_SECONDARY_STYLES: Styles = {
@@ -345,12 +339,9 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
   fill: {
     '': '#success',
     'hovered & !pressed': '#success-text',
-    disabled: '#success.4',
+    disabled: '#success-disabled',
   },
-  color: {
-    '': '#white',
-    disabled: '#white.4',
-  },
+  color: '#white',
 } as const;
 
 export const SUCCESS_SECONDARY_STYLES: Styles = {
@@ -477,12 +468,9 @@ export const WARNING_PRIMARY_STYLES: Styles = {
   fill: {
     '': '#warning',
     'hovered & !pressed': '#warning-text',
-    disabled: '#warning.4',
+    disabled: '#warning-disabled',
   },
-  color: {
-    '': '#white',
-    disabled: '#white.4',
-  },
+  color: '#white',
 } as const;
 
 export const WARNING_SECONDARY_STYLES: Styles = {
@@ -609,12 +597,9 @@ export const NOTE_PRIMARY_STYLES: Styles = {
   fill: {
     '': '#note',
     'hovered & !pressed': '#note-text',
-    disabled: '#note.4',
+    disabled: '#note-disabled',
   },
-  color: {
-    '': '#white',
-    disabled: '#white.4',
-  },
+  color: '#white',
 } as const;
 
 export const NOTE_SECONDARY_STYLES: Styles = {
