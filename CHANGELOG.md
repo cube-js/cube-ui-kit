@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.104.0
+
+### Minor Changes
+
+- [#972](https://github.com/cube-js/cube-ui-kit/pull/972) [`c703a035`](https://github.com/cube-js/cube-ui-kit/commit/c703a03573a509e79fa995d28e2efde09289f32b) Thanks [@tenphi](https://github.com/tenphi)! - Add `warning` and `note` themes to Button, Item, and ItemAction components. These themes are now available for all standard types (primary, secondary, outline, neutral, clear, link, item) in addition to the existing card type support.
+
+- [#972](https://github.com/cube-js/cube-ui-kit/pull/972) [`c703a035`](https://github.com/cube-js/cube-ui-kit/commit/c703a03573a509e79fa995d28e2efde09289f32b) Thanks [@tenphi](https://github.com/tenphi)! - Add `Tabs.Action` component for prefix/suffix slot actions with automatic dividers and size inheritance from Tabs context
+
+- [#972](https://github.com/cube-js/cube-ui-kit/pull/972) [`c703a035`](https://github.com/cube-js/cube-ui-kit/commit/c703a03573a509e79fa995d28e2efde09289f32b) Thanks [@tenphi](https://github.com/tenphi)! - Add `tabPickerPosition` and `scrollArrowsPosition` props to Tabs component for controlling where the tab picker and scroll arrows are rendered. Both accept `'prefix' | 'suffix'` with `'suffix'` as default.
+
+- [#972](https://github.com/cube-js/cube-ui-kit/pull/972) [`c703a035`](https://github.com/cube-js/cube-ui-kit/commit/c703a03573a509e79fa995d28e2efde09289f32b) Thanks [@tenphi](https://github.com/tenphi)! - Add `showScrollArrows` prop to Tabs component for left/right navigation arrows that scroll overflowed tabs. Supports `true`, `false`, and `'auto'` (show only when overflow exists).
+
+- [#972](https://github.com/cube-js/cube-ui-kit/pull/972) [`c703a035`](https://github.com/cube-js/cube-ui-kit/commit/c703a03573a509e79fa995d28e2efde09289f32b) Thanks [@tenphi](https://github.com/tenphi)! - Remove `panel` tab type and unify its visual style into the `file` type. The `file` type now uses border bottom highlight on selection instead of fill highlight.
+
 ## 0.103.0
 
 ### Minor Changes
