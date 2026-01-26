@@ -4,8 +4,7 @@ import { MoreIcon, TrashIcon } from '../../../icons';
 import { ItemAction } from '../../actions/ItemAction';
 import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
 
-import type { MouseEvent } from 'react';
-import type { ParsedTab } from './types';
+import type { ParsedTab, TabSize, TabType } from './types';
 
 // =============================================================================
 // Types
@@ -20,6 +19,10 @@ export interface TabPickerProps {
   onSelect: (key: Key) => void;
   /** Callback when a tab should be deleted. When provided, shows delete action on items. */
   onDelete?: (key: Key) => void;
+  /** Size of the picker trigger button */
+  size?: TabSize;
+  /** Type of the parent Tabs component (for border styling) */
+  type?: TabType;
 }
 
 // =============================================================================
@@ -37,8 +40,16 @@ export function TabPicker({
   selectedKey,
   onSelect,
   onDelete,
+  size,
+  type = 'default',
 }: TabPickerProps) {
   const isDeletable = !!onDelete;
+
+  // Map TabSize to FilterPicker size (xsmall -> small)
+  const pickerSize = size === 'xsmall' ? 'small' : size;
+
+  // Only show border divider for file type
+  const showBorderDivider = type === 'file';
 
   return (
     <FilterPicker
@@ -49,6 +60,17 @@ export function TabPicker({
       rightIcon={null}
       shape="sharp"
       type="neutral"
+      size={pickerSize}
+      // Apply border to wrapper (FilterPickerWrapper) so :first-child evaluates
+      // relative to Suffix container, not the internal DialogTrigger
+      styles={{
+        border: showBorderDivider
+          ? {
+              '': 0,
+              '!:first-child': 'left',
+            }
+          : 0,
+      }}
       triggerStyles={{ border: 0 }}
       aria-label="Select tab"
       onSelectionChange={(key) => {

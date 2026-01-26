@@ -10,7 +10,10 @@ import type { CubeItemProps } from '../../content/Item';
 // =============================================================================
 
 /** Visual appearance type for tabs */
-export type TabType = 'default' | 'narrow' | 'file' | 'panel' | 'radio';
+export type TabType = 'default' | 'narrow' | 'file' | 'radio';
+
+/** Position for TabPicker and scroll arrows */
+export type TabsActionPosition = 'prefix' | 'suffix';
 
 /**
  * Tab size options.
@@ -117,8 +120,7 @@ export interface CubeTabsProps
    * Visual appearance type for tabs.
    * - `default` - Standard tabs with selection indicator below (default)
    * - `narrow` - Same as default but with collapsed vertical padding on labels
-   * - `file` - File-style tabs with fill highlight on selection, delimiter between tabs
-   * - `panel` - Panel-style tabs with border bottom highlight on selection, delimiter between tabs
+   * - `file` - File-style tabs with border bottom highlight on selection, delimiter between tabs
    * - `radio` - Radio button style for tab selection
    * @default 'default'
    */
@@ -216,6 +218,28 @@ export interface CubeTabsProps
    * @default false
    */
   showTabPicker?: boolean | 'auto';
+  /**
+   * Whether to show scroll arrow buttons in the suffix area.
+   * - `true` - always show scroll arrows
+   * - `false` - never show scroll arrows (default)
+   * - `'auto'` - show only when tabs overflow (has horizontal scroll)
+   * @default false
+   */
+  showScrollArrows?: boolean | 'auto';
+  /**
+   * Position of the tab picker dropdown.
+   * - `'prefix'` - render in the prefix slot (before tab list)
+   * - `'suffix'` - render in the suffix slot (after tab list)
+   * @default 'suffix'
+   */
+  tabPickerPosition?: TabsActionPosition;
+  /**
+   * Position of the scroll arrow buttons.
+   * - `'prefix'` - render in the prefix slot (before tab list)
+   * - `'suffix'` - render in the suffix slot (after tab list)
+   * @default 'suffix'
+   */
+  scrollArrowsPosition?: TabsActionPosition;
 }
 
 export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {

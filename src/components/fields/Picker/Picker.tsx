@@ -628,7 +628,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
         tooltip={triggerTooltip}
         description={triggerDescription}
         descriptionPlacement={descriptionPlacement}
-        styles={styles}
+        styles={triggerStyles}
         {...keyboardProps}
         aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
       >
@@ -645,7 +645,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
       <DialogTrigger
         type="popover"
         placement="bottom start"
-        styles={triggerStyles}
         containerPadding={containerPadding}
         shouldUpdatePosition={shouldUpdatePosition}
         shouldFlip={shouldFlip && shouldUpdatePosition}

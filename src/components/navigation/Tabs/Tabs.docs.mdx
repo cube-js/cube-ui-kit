@@ -55,7 +55,7 @@ The `mods` property accepts the following modifiers:
 
 | Modifier | Type | Description |
 |----------|------|-------------|
-| `type` | `'default' \| 'narrow' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
+| `type` | `'default' \| 'narrow' \| 'file' \| 'radio'` | Current tab type |
 | `deletable` | `boolean` | True when onDelete callback is provided |
 | `scrolling` | `boolean` | True when tabs are being scrolled |
 | `fade-left` | `boolean` | True when content is scrolled (left fade visible) |
@@ -66,7 +66,7 @@ For individual tabs:
 
 | Modifier | Type | Description |
 |----------|------|-------------|
-| `type` | `'default' \| 'narrow' \| 'file' \| 'panel' \| 'radio'` | Current tab type |
+| `type` | `'default' \| 'narrow' \| 'file' \| 'radio'` | Current tab type |
 | `active` | `boolean` | True when the tab is selected |
 | `deletable` | `boolean` | True when delete button is visible |
 | `disabled` | `boolean` | True when tab is disabled |
@@ -83,8 +83,7 @@ For individual tabs:
 
 - `default` - Standard tabs with selection indicator below (default)
 - `narrow` - Same as default but with collapsed horizontal label padding for compact layouts
-- `file` - File-style tabs with fill highlight on selection, delimiter between tabs
-- `panel` - Panel-style tabs with border bottom highlight on selection, delimiter between tabs
+- `file` - File-style tabs with border bottom highlight on selection, delimiter between tabs
 - `radio` - Radio button style for tab selection
 
 <Story of={TabsStories.DefaultType} />
@@ -92,8 +91,6 @@ For individual tabs:
 <Story of={TabsStories.NarrowType} />
 
 <Story of={TabsStories.FileType} />
-
-<Story of={TabsStories.PanelType} />
 
 ### Sizes
 
@@ -138,6 +135,32 @@ Explicit panel definition for advanced layout control.
   Panel 1 content
 </Tabs.Panel>
 ```
+
+### Tabs.Action
+
+Action button designed for the Tabs prefix/suffix slots. Styled with sharp edges and no border to match the TabPicker trigger. When multiple `Tabs.Action` components are placed together, they automatically display dividers between them.
+
+```jsx
+<Tabs
+  suffix={
+    <>
+      <Tabs.Action icon={<PlusIcon />} onPress={handleAdd} />
+      <Tabs.Action icon={<SettingsIcon />} onPress={handleSettings} />
+    </>
+  }
+>
+  <Tab key="tab1" title="Tab 1">Content</Tab>
+</Tabs>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `icon` | `ReactNode` | Icon to display in the action button |
+| `size` | `TabSize` | Override size (inherits from Tabs by default) |
+| `onPress` | `() => void` | Callback when the action is pressed |
+| `aria-label` | `string` | Accessible label for the button |
+
+Inherits all props from `ItemButton` except `shape` (always sharp).
 
 ### Tab Props
 
@@ -223,7 +246,7 @@ Add buttons or other elements before or after the tab list.
 
 ### Deletable Tabs
 
-Enable delete buttons with the `onDelete` callback. When no `menu` is defined, a delete button appears on each tab.
+Enable delete buttons with the `onDelete` callback. When no `menu` is defined, a delete button appears on each tab. Use `Tabs.Action` in the suffix slot to add an "Add" button.
 
 <Story of={TabsStories.Deletable} />
 
@@ -236,6 +259,13 @@ const [tabs, setTabs] = useState([
 <Tabs
   defaultActiveKey="tab1"
   onDelete={(key) => setTabs(tabs.filter(t => t.key !== key))}
+  suffix={
+    <Tabs.Action
+      icon={<PlusIcon />}
+      aria-label="Add tab"
+      onPress={handleAdd}
+    />
+  }
 >
   {tabs.map(tab => (
     <Tab key={tab.key} title={tab.title}>
@@ -434,6 +464,73 @@ const [keyOrder, setKeyOrder] = useState(['tab1', 'tab2', 'tab3']);
   ))}
 </Tabs>
 ```
+
+### Scroll Arrows
+
+Add left/right navigation arrows to scroll overflowed tabs. Use `showScrollArrows` with `true`, `false`, or `'auto'` (shows only when tabs overflow).
+
+<Story of={TabsStories.WithScrollArrows} />
+
+```jsx
+<Tabs
+  defaultActiveKey="tab1"
+  showScrollArrows="auto"
+  styles={{ width: '500px' }}
+>
+  {tabs.map(tab => (
+    <Tab key={tab.id} title={tab.title}>
+      {tab.content}
+    </Tab>
+  ))}
+</Tabs>
+```
+
+Combine with `showTabPicker` for both scroll arrows and a dropdown picker:
+
+<Story of={TabsStories.WithScrollArrowsAndPicker} />
+
+```jsx
+<Tabs
+  defaultActiveKey="tab1"
+  showScrollArrows="auto"
+  showTabPicker="auto"
+  type="file"
+>
+  {tabs.map(tab => (
+    <Tab key={tab.id} title={tab.title}>
+      {tab.content}
+    </Tab>
+  ))}
+</Tabs>
+```
+
+### Actions in Prefix
+
+By default, scroll arrows and the tab picker appear in the suffix (after the tab list). Use `scrollArrowsPosition` and `tabPickerPosition` to move them to the prefix (before the tab list).
+
+<Story of={TabsStories.ActionsInPrefix} />
+
+```jsx
+<Tabs
+  defaultActiveKey="tab1"
+  showTabPicker
+  showScrollArrows
+  tabPickerPosition="prefix"
+  scrollArrowsPosition="prefix"
+  type="file"
+  styles={{ width: '500px' }}
+>
+  {tabs.map(tab => (
+    <Tab key={tab.id} title={tab.title}>
+      {tab.content}
+    </Tab>
+  ))}
+</Tabs>
+```
+
+When both are in the same slot:
+- In **prefix**: TabPicker appears first (left), then scroll arrows (right)
+- In **suffix**: Scroll arrows appear first (left), then TabPicker (right)
 
 ### Navigation-Only Tabs
 

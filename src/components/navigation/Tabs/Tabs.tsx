@@ -18,6 +18,7 @@ import {
 } from 'react-stately';
 
 import { useEvent, useWarn } from '../../../_internal/hooks';
+import { DirectionIcon } from '../../../icons';
 import { extractStyles, OUTER_STYLES } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
@@ -27,6 +28,7 @@ import { TabIndicatorElement, TabsElement } from './styled';
 import { TabButton } from './TabButton';
 import { CachedPanelRenderer, TabPanelRenderer } from './TabPanel';
 import { TabPicker } from './TabPicker';
+import { TabsAction } from './TabsAction';
 import { TabsContextValue, TabsProvider } from './TabsContext';
 import { useTabEditing } from './use-tab-editing';
 import { useTabIndicator } from './use-tab-indicator';
@@ -151,6 +153,9 @@ function TabsComponent(
     keyOrder,
     onReorder,
     showTabPicker = false,
+    showScrollArrows = false,
+    tabPickerPosition = 'suffix',
+    scrollArrowsPosition = 'suffix',
     ...otherProps
   } = props;
 
@@ -401,6 +406,42 @@ function TabsComponent(
     (showTabPicker === true || (showTabPicker === 'auto' && hasOverflowX));
 
   // =========================================================================
+  // Scroll Arrows visibility and handlers
+  // =========================================================================
+  useWarn(showScrollArrows && type === 'radio', {
+    key: ['tabs-scrollarrows-radio-unsupported'],
+    args: [
+      'Tabs:',
+      '`showScrollArrows` is not supported when `type="radio"`. The scroll arrows will not be rendered.',
+    ],
+  });
+
+  const shouldShowScrollArrows =
+    type !== 'radio' &&
+    (showScrollArrows === true ||
+      (showScrollArrows === 'auto' && hasOverflowX));
+
+  const handleScrollLeft = useEvent(() => {
+    const el = scrollRef.current;
+    if (el) {
+      el.scrollTo({
+        left: el.scrollLeft - el.clientWidth,
+        behavior: 'smooth',
+      });
+    }
+  });
+
+  const handleScrollRight = useEvent(() => {
+    const el = scrollRef.current;
+    if (el) {
+      el.scrollTo({
+        left: el.scrollLeft + el.clientWidth,
+        behavior: 'smooth',
+      });
+    }
+  });
+
+  // =========================================================================
   // Base Context Value (without drag/drop states)
   // =========================================================================
   const baseContextValue = useMemo(
@@ -508,8 +549,52 @@ function TabsComponent(
     [type, size, onDelete, isScrolling, isAtStartX, isAtEndX, hasPanels],
   );
 
-  return (
+  // =========================================================================
+  // Action Elements (TabPicker and Scroll Arrows)
+  // =========================================================================
+  const scrollArrowsElement = shouldShowScrollArrows ? (
     <>
+      <TabsAction
+        icon={<DirectionIcon to="left" />}
+        aria-label="Scroll tabs left"
+        isDisabled={isAtStartX}
+        onPress={handleScrollLeft}
+      />
+      <TabsAction
+        icon={<DirectionIcon to="right" />}
+        aria-label="Scroll tabs right"
+        isDisabled={isAtEndX}
+        onPress={handleScrollRight}
+      />
+    </>
+  ) : null;
+
+  const tabPickerElement = shouldShowTabPicker ? (
+    <TabPicker
+      tabs={orderedParsedTabs}
+      selectedKey={state.selectedKey}
+      size={size}
+      type={type}
+      onSelect={handleTabPickerSelect}
+      onDelete={onDelete}
+    />
+  ) : null;
+
+  // Determine which actions go in prefix/suffix
+  // In prefix: TabPicker first (left), then scroll arrows (right)
+  // In suffix: scroll arrows first (left), then TabPicker (right)
+  const prefixHasActions =
+    (shouldShowTabPicker && tabPickerPosition === 'prefix') ||
+    (shouldShowScrollArrows && scrollArrowsPosition === 'prefix');
+
+  const suffixHasActions =
+    (shouldShowTabPicker && tabPickerPosition === 'suffix') ||
+    (shouldShowScrollArrows && scrollArrowsPosition === 'suffix');
+
+  // Wrap with TabsProvider so prefix/suffix can access context (size, type)
+  // The inner TabsProvider in renderTabListContent will override for tab buttons
+  return (
+    <TabsProvider value={baseContextValue}>
       <TabsElement
         ref={ref}
         qa={qa}
@@ -518,7 +603,13 @@ function TabsComponent(
         style={handleHStyle}
         data-size={size}
       >
-        {prefix ? <div data-element="Prefix">{prefix}</div> : null}
+        {prefix || prefixHasActions ? (
+          <div data-element="Prefix">
+            {tabPickerPosition === 'prefix' && tabPickerElement}
+            {scrollArrowsPosition === 'prefix' && scrollArrowsElement}
+            {prefix}
+          </div>
+        ) : null}
         <div data-element="ScrollWrapper">
           <div ref={scrollRef} data-element="Scroll">
             {isReorderable ? (
@@ -541,16 +632,10 @@ function TabsComponent(
           </div>
           {isTinyScrollbar && hasOverflowX && <div data-element="ScrollbarH" />}
         </div>
-        {suffix || shouldShowTabPicker ? (
+        {suffix || suffixHasActions ? (
           <div data-element="Suffix">
-            {shouldShowTabPicker && (
-              <TabPicker
-                tabs={orderedParsedTabs}
-                selectedKey={state.selectedKey}
-                onSelect={handleTabPickerSelect}
-                onDelete={onDelete}
-              />
-            )}
+            {scrollArrowsPosition === 'suffix' && scrollArrowsElement}
+            {tabPickerPosition === 'suffix' && tabPickerElement}
             {suffix}
           </div>
         ) : null}
@@ -596,7 +681,7 @@ function TabsComponent(
             />
           );
         })}
-    </>
+    </TabsProvider>
   );
 }
 
@@ -641,6 +726,7 @@ export const Tabs = Object.assign(_Tabs, {
   Tab,
   List: TabList,
   Panel: TabPanel,
+  Action: TabsAction,
 });
 
-export { Tab, TabList, TabPanel };
+export { Tab, TabList, TabPanel, TabsAction };

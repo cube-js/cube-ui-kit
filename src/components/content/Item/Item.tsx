@@ -33,6 +33,13 @@ import {
   DEFAULT_SECONDARY_STYLES,
   ItemVariant,
   NOTE_CARD_STYLES,
+  NOTE_CLEAR_STYLES,
+  NOTE_ITEM_STYLES,
+  NOTE_LINK_STYLES,
+  NOTE_NEUTRAL_STYLES,
+  NOTE_OUTLINE_STYLES,
+  NOTE_PRIMARY_STYLES,
+  NOTE_SECONDARY_STYLES,
   SPECIAL_CLEAR_STYLES,
   SPECIAL_ITEM_STYLES,
   SPECIAL_LINK_STYLES,
@@ -49,6 +56,13 @@ import {
   SUCCESS_PRIMARY_STYLES,
   SUCCESS_SECONDARY_STYLES,
   WARNING_CARD_STYLES,
+  WARNING_CLEAR_STYLES,
+  WARNING_ITEM_STYLES,
+  WARNING_LINK_STYLES,
+  WARNING_NEUTRAL_STYLES,
+  WARNING_OUTLINE_STYLES,
+  WARNING_PRIMARY_STYLES,
+  WARNING_SECONDARY_STYLES,
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
@@ -549,6 +563,24 @@ const ItemElement = tasty({
     'success.link': SUCCESS_LINK_STYLES,
     'success.item': SUCCESS_ITEM_STYLES,
     'success.card': SUCCESS_CARD_STYLES,
+    // Warning theme
+    'warning.primary': WARNING_PRIMARY_STYLES,
+    'warning.secondary': WARNING_SECONDARY_STYLES,
+    'warning.outline': WARNING_OUTLINE_STYLES,
+    'warning.neutral': WARNING_NEUTRAL_STYLES,
+    'warning.clear': WARNING_CLEAR_STYLES,
+    'warning.link': WARNING_LINK_STYLES,
+    'warning.item': WARNING_ITEM_STYLES,
+    'warning.card': WARNING_CARD_STYLES,
+    // Note theme
+    'note.primary': NOTE_PRIMARY_STYLES,
+    'note.secondary': NOTE_SECONDARY_STYLES,
+    'note.outline': NOTE_OUTLINE_STYLES,
+    'note.neutral': NOTE_NEUTRAL_STYLES,
+    'note.clear': NOTE_CLEAR_STYLES,
+    'note.link': NOTE_LINK_STYLES,
+    'note.item': NOTE_ITEM_STYLES,
+    'note.card': NOTE_CARD_STYLES,
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
     'special.secondary': SPECIAL_SECONDARY_STYLES,
@@ -557,10 +589,6 @@ const ItemElement = tasty({
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,
     'special.item': SPECIAL_ITEM_STYLES,
-    // Warning theme (card type only)
-    'warning.card': WARNING_CARD_STYLES,
-    // Note theme (card type only)
-    'note.card': NOTE_CARD_STYLES,
   },
   styleProps: CONTAINER_STYLES,
 });
@@ -623,7 +651,14 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isDisabled === true || (isLoading && isDisabled !== false);
 
   // Validate type+theme combinations
-  const STANDARD_THEMES = ['default', 'success', 'danger', 'special'];
+  const STANDARD_THEMES = [
+    'default',
+    'success',
+    'danger',
+    'warning',
+    'note',
+    'special',
+  ];
   const CARD_THEMES = ['default', 'success', 'danger', 'warning', 'note'];
   const HEADER_THEMES = ['default'];
 
@@ -640,7 +675,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           ? ' The "header" type only supports theme: default.'
           : type === 'card'
             ? ' The "card" type only supports themes: default, success, danger, warning, note.'
-            : ' Standard types support themes: default, success, danger, special.'),
+            : ' Standard types support themes: default, success, danger, warning, note, special.'),
     ],
   });
 

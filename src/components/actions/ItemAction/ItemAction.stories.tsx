@@ -51,7 +51,7 @@ const meta: Meta<typeof ItemAction> = {
     },
     theme: {
       control: 'select',
-      options: ['default', 'danger', 'success', 'special'],
+      options: ['default', 'danger', 'success', 'warning', 'note', 'special'],
       description:
         'Color theme of the action button (inherits from context when inside ItemButton/Item)',
       table: {
@@ -203,6 +203,22 @@ export const Themes: Story = {
           <ItemAction theme="success" icon={<IconEdit />} tooltip="Edit" />
           <ItemAction theme="success" icon={<IconCopy />} tooltip="Copy" />
           <ItemAction theme="success" icon={<IconTrash />} tooltip="Delete" />
+        </Space>
+      </div>
+      <div>
+        <h4>Warning Theme</h4>
+        <Space>
+          <ItemAction theme="warning" icon={<IconEdit />} tooltip="Edit" />
+          <ItemAction theme="warning" icon={<IconCopy />} tooltip="Copy" />
+          <ItemAction theme="warning" icon={<IconTrash />} tooltip="Delete" />
+        </Space>
+      </div>
+      <div>
+        <h4>Note Theme</h4>
+        <Space>
+          <ItemAction theme="note" icon={<IconEdit />} tooltip="Edit" />
+          <ItemAction theme="note" icon={<IconCopy />} tooltip="Copy" />
+          <ItemAction theme="note" icon={<IconTrash />} tooltip="Delete" />
         </Space>
       </div>
       <div>

@@ -75,7 +75,7 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     '': '#purple',
     hovered: '#purple-text',
     pressed: '#purple',
-    disabled: '#purple.4',
+    disabled: '#purple-disabled',
   },
   color: '#white',
 } as const;
@@ -210,7 +210,7 @@ export const DANGER_PRIMARY_STYLES: Styles = {
   fill: {
     '': '#danger',
     'hovered & !pressed': '#danger-text',
-    disabled: '#danger.4',
+    disabled: '#danger-disabled',
   },
   color: '#white',
 } as const;
@@ -339,7 +339,7 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
   fill: {
     '': '#success',
     'hovered & !pressed': '#success-text',
-    disabled: '#success.4',
+    disabled: '#success-disabled',
   },
   color: '#white',
 } as const;
@@ -425,7 +425,7 @@ export const SUCCESS_LINK_STYLES: Styles = {
     '': '0 #success-text.0',
     focused: '1bw #success-text',
   },
-  border: '0',
+  border: 0,
   fill: {
     '': '#clear',
   },
@@ -451,6 +451,264 @@ export const SUCCESS_ITEM_STYLES: Styles = {
     hovered: '#success-text',
     pressed: '#success-text',
     disabled: '#success-text.4',
+  },
+} as const;
+
+// ---------- WARNING THEME ----------
+export const WARNING_PRIMARY_STYLES: Styles = {
+  outline: {
+    '': '0 #warning-text.0',
+    focused: '1bw #warning-text',
+  },
+  border: {
+    '': '#clear',
+    'pressed | focused': '#warning-text',
+    disabled: '#clear',
+  },
+  fill: {
+    '': '#warning',
+    'hovered & !pressed': '#warning-text',
+    disabled: '#warning-disabled',
+  },
+  color: '#white',
+} as const;
+
+export const WARNING_SECONDARY_STYLES: Styles = {
+  border: {
+    '': '#warning.15',
+    pressed: '#warning.3',
+    focused: '#warning-text',
+    disabled: '#border',
+  },
+  fill: {
+    '': '#warning.05',
+    'hovered & !pressed': '#warning.1',
+    disabled: '#dark.04',
+  },
+  color: {
+    '': '#warning-text',
+    disabled: '#dark-04',
+  },
+} as const;
+
+export const WARNING_OUTLINE_STYLES: Styles = {
+  border: {
+    '': '#warning.15',
+    pressed: '#warning.3',
+    focused: '#warning-text',
+    disabled: '#border',
+  },
+  fill: {
+    '': '#warning.0',
+    hovered: '#warning.1',
+    'pressed | (selected & !hovered)': '#warning.05',
+    disabled: '#dark.04',
+  },
+  color: {
+    '': '#warning-text',
+    disabled: '#dark-04',
+  },
+} as const;
+
+export const WARNING_NEUTRAL_STYLES: Styles = {
+  border: {
+    '': '#clear',
+    focused: '#warning-text',
+  },
+  fill: {
+    '': '#dark.0',
+    hovered: '#dark.04',
+    'pressed | (selected & !hovered)': '#dark.05',
+  },
+  color: {
+    '': '#dark-02',
+    'pressed | (selected & !hovered)': '#warning-text',
+    disabled: '#dark-04',
+  },
+} as const;
+
+export const WARNING_CLEAR_STYLES: Styles = {
+  border: {
+    '': '#clear',
+    pressed: '#warning.05',
+    focused: '#warning-text',
+  },
+  fill: {
+    '': '#warning-text.0',
+    hovered: '#warning-text.03',
+    selected: '#warning-text.09',
+    'selected & hovered': '#warning-text.12',
+    pressed: '#warning-text.09',
+    disabled: '#clear',
+  },
+  color: {
+    '': '#warning-text',
+    hovered: '#warning-text',
+    pressed: '#warning-text',
+    disabled: '#warning-text.4',
+  },
+} as const;
+
+export const WARNING_LINK_STYLES: Styles = {
+  outline: {
+    '': '0 #warning-text.0',
+    focused: '1bw #warning-text',
+  },
+  border: 0,
+  fill: {
+    '': '#clear',
+  },
+  color: {
+    '': '#warning-text',
+    'hovered & !pressed': '#warning',
+    disabled: '#dark-04',
+  },
+} as const;
+
+export const WARNING_ITEM_STYLES: Styles = {
+  border: '#clear',
+  fill: {
+    '': '#warning-text.0',
+    'hovered | focused': '#warning-text.03',
+    selected: '#warning-text.09',
+    'selected & (hovered | focused)': '#warning-text.12',
+    pressed: '#warning-text.09',
+    disabled: '#clear',
+  },
+  color: {
+    '': '#warning-text',
+    hovered: '#warning-text',
+    pressed: '#warning-text',
+    disabled: '#warning-text.4',
+  },
+} as const;
+
+// ---------- NOTE THEME ----------
+export const NOTE_PRIMARY_STYLES: Styles = {
+  outline: {
+    '': '0 #note-text.0',
+    focused: '1bw #note-text',
+  },
+  border: {
+    '': '#clear',
+    'pressed | focused': '#note-text',
+    disabled: '#clear',
+  },
+  fill: {
+    '': '#note',
+    'hovered & !pressed': '#note-text',
+    disabled: '#note-disabled',
+  },
+  color: '#white',
+} as const;
+
+export const NOTE_SECONDARY_STYLES: Styles = {
+  border: {
+    '': '#note.15',
+    pressed: '#note.3',
+    focused: '#note-text',
+    disabled: '#border',
+  },
+  fill: {
+    '': '#note.05',
+    'hovered & !pressed': '#note.1',
+    disabled: '#dark.04',
+  },
+  color: {
+    '': '#note-text',
+    disabled: '#dark-04',
+  },
+} as const;
+
+export const NOTE_OUTLINE_STYLES: Styles = {
+  border: {
+    '': '#note.15',
+    pressed: '#note.3',
+    focused: '#note-text',
+    disabled: '#border',
+  },
+  fill: {
+    '': '#note.0',
+    hovered: '#note.1',
+    'pressed | (selected & !hovered)': '#note.05',
+    disabled: '#dark.04',
+  },
+  color: {
+    '': '#note-text',
+    disabled: '#dark-04',
+  },
+} as const;
+
+export const NOTE_NEUTRAL_STYLES: Styles = {
+  border: {
+    '': '#clear',
+    focused: '#note-text',
+  },
+  fill: {
+    '': '#dark.0',
+    hovered: '#dark.04',
+    'pressed | (selected & !hovered)': '#dark.05',
+  },
+  color: {
+    '': '#dark-02',
+    'pressed | (selected & !hovered)': '#note-text',
+    disabled: '#dark-04',
+  },
+} as const;
+
+export const NOTE_CLEAR_STYLES: Styles = {
+  border: {
+    '': '#clear',
+    pressed: '#note.05',
+    focused: '#note-text',
+  },
+  fill: {
+    '': '#note-text.0',
+    hovered: '#note-text.03',
+    selected: '#note-text.09',
+    'selected & hovered': '#note-text.12',
+    pressed: '#note-text.09',
+    disabled: '#clear',
+  },
+  color: {
+    '': '#note-text',
+    hovered: '#note-text',
+    pressed: '#note-text',
+    disabled: '#note-text.4',
+  },
+} as const;
+
+export const NOTE_LINK_STYLES: Styles = {
+  outline: {
+    '': '0 #note-text.0',
+    focused: '1bw #note-text',
+  },
+  border: 0,
+  fill: {
+    '': '#clear',
+  },
+  color: {
+    '': '#note-text',
+    'hovered & !pressed': '#note',
+    disabled: '#dark-04',
+  },
+} as const;
+
+export const NOTE_ITEM_STYLES: Styles = {
+  border: '#clear',
+  fill: {
+    '': '#note-text.0',
+    'hovered | focused': '#note-text.03',
+    selected: '#note-text.09',
+    'selected & (hovered | focused)': '#note-text.12',
+    pressed: '#note-text.09',
+    disabled: '#clear',
+  },
+  color: {
+    '': '#note-text',
+    hovered: '#note-text',
+    pressed: '#note-text',
+    disabled: '#note-text.4',
   },
 } as const;
 
@@ -639,12 +897,26 @@ export type ItemVariant =
   | 'success.link'
   | 'success.item'
   | 'success.card'
+  | 'warning.primary'
+  | 'warning.secondary'
+  | 'warning.outline'
+  | 'warning.neutral'
+  | 'warning.clear'
+  | 'warning.link'
+  | 'warning.item'
+  | 'warning.card'
+  | 'note.primary'
+  | 'note.secondary'
+  | 'note.outline'
+  | 'note.neutral'
+  | 'note.clear'
+  | 'note.link'
+  | 'note.item'
+  | 'note.card'
   | 'special.primary'
   | 'special.secondary'
   | 'special.outline'
   | 'special.neutral'
   | 'special.clear'
   | 'special.link'
-  | 'special.item'
-  | 'warning.card'
-  | 'note.card';
+  | 'special.item';

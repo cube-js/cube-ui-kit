@@ -11,13 +11,12 @@ export const TabsElement = tasty({
     flow: 'row',
     placeItems: {
       '': 'end stretch',
-      'type=radio | type=file | type=panel': 'stretch',
+      'type=radio | type=file': 'stretch',
     },
     overflow: 'visible',
     border: {
       '': 0,
-      '(type=default | type=file | type=panel | type=narrow) & has-panels':
-        'bottom',
+      '(type=default | type=file | type=narrow) & has-panels': 'bottom',
     },
     width: {
       '': '100%',
@@ -49,7 +48,11 @@ export const TabsElement = tasty({
       placeItems: 'center',
       placeContent: 'center',
       flexShrink: 0,
-      placeSelf: 'center',
+      placeSelf: 'stretch',
+      border: {
+        '': 0,
+        'type=file': 'right',
+      },
     },
 
     Suffix: {
@@ -57,7 +60,11 @@ export const TabsElement = tasty({
       placeItems: 'center',
       placeContent: 'center',
       flexShrink: 0,
-      placeSelf: 'center',
+      placeSelf: 'stretch',
+      border: {
+        '': 0,
+        'type=file': 'left',
+      },
     },
 
     // Wrapper for scroll area and scrollbar (scrollbar is positioned relative to this)
@@ -130,6 +137,16 @@ export const TabsElement = tasty({
       },
     },
 
+    // Size variable for actions (if ItemAction is used instead of TabsAction)
+    $size: {
+      '': '$size-md',
+      'size=xsmall': '$size-xs',
+      'size=small': '$size-sm',
+      'size=medium': '$size-md',
+      'size=large': '$size-lg',
+      'size=xlarge': '$size-xl',
+    },
+
     // Custom horizontal scrollbar (tiny) - positioned relative to ScrollWrapper
     ScrollbarH: {
       position: 'absolute',
@@ -169,14 +186,14 @@ export const TabElement = tasty(Item, {
     },
     fill: {
       '': '#clear',
-      'type=file | type=panel': '#light',
-      '(type=file | type=panel) & hovered': '#light.5',
+      'type=file': '#light',
+      'type=file & hovered': '#light.5',
       'type=radio & hovered': '#white.5',
-      '(type=file | type=panel | type=radio) & selected': '#white',
+      '(type=file | type=radio) & selected': '#white',
     },
     border: {
       '': '0 #clear',
-      'type=panel & selected': '$tab-indicator-size #purple bottom',
+      'type=file & selected': '$tab-indicator-size #purple bottom',
     },
     preset: {
       '': 't3m',
@@ -225,7 +242,7 @@ export const TabContainer = tasty({
     display: 'grid',
     border: {
       '': 0,
-      'type=file | type=panel': 'right',
+      'type=file': 'right',
     },
     cursor: {
       '': 'default',

@@ -771,7 +771,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         tooltip={triggerTooltip}
         description={triggerDescription}
         descriptionPlacement={descriptionPlacement}
-        styles={styles}
+        styles={triggerStyles}
         {...keyboardProps}
         aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
       >
@@ -789,7 +789,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <DialogTrigger
         type="popover"
         placement="bottom start"
-        styles={triggerStyles}
         containerPadding={containerPadding}
         shouldUpdatePosition={shouldUpdatePosition}
         shouldFlip={shouldFlip && shouldUpdatePosition}
