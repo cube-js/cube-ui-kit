@@ -349,7 +349,8 @@ export function parseColor(val: string, ignoreError = false): ParsedColor {
     firstColor.startsWith('rgb') ||
     firstColor.startsWith('hsl') ||
     firstColor.startsWith('lch') ||
-    firstColor.startsWith('oklch')
+    firstColor.startsWith('oklch') ||
+    firstColor.startsWith('okhsl')
   ) {
     const alphaMatch = firstColor.match(RGB_ALPHA_PATTERN);
     if (alphaMatch) {
