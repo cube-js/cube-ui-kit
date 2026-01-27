@@ -1,14 +1,31 @@
-import { Key, useEffect, useRef } from 'react';
+import { Key, ReactNode, useEffect, useRef } from 'react';
 
 import { useToastContext } from './ToastProvider';
+import { THEME_ICONS } from './useToast';
 
-import type { ProgressToastOptions } from './types';
+import type { ProgressToastOptions, ToastType } from './types';
 
 const RESULT_DURATION = 3000;
 
 // Get string value for comparison (only strings are compared for re-show logic)
 function getStringValue(value: unknown): string | undefined {
   return typeof value === 'string' ? value : undefined;
+}
+
+// Get default icon for a theme (only when not loading and no icon provided)
+function getDefaultIcon(
+  isLoading: boolean,
+  icon: ReactNode | undefined,
+  theme: ToastType | undefined,
+): ReactNode | undefined {
+  // Don't apply default icon when loading (loading state has its own indicator)
+  if (isLoading) return icon;
+
+  // If icon is explicitly provided, use it
+  if (icon !== undefined) return icon;
+
+  // Apply theme-based default icon
+  return theme ? THEME_ICONS[theme] : undefined;
 }
 
 /**
@@ -83,10 +100,18 @@ export function useProgressToast(options: ProgressToastOptions): void {
         removeToast(toastIdRef.current);
       }
 
+      // Get default icon based on theme (only when not loading)
+      const icon = getDefaultIcon(
+        currentIsLoading,
+        currentToastData.icon,
+        currentToastData.theme,
+      );
+
       // Create new toast with fresh data
       toastIdRef.current = addToast(
         {
           ...currentToastData,
+          icon,
           isLoading: currentIsLoading,
           duration: null, // Persistent - we control removal
         },
