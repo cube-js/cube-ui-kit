@@ -21,11 +21,16 @@ const THEME_ICONS: Partial<Record<ToastType, ReactNode>> = {
 };
 
 function isToastData(data: ToastData | ReactNode): data is ToastData {
+  // ReactNode includes: ReactElement | string | number | boolean | null | undefined | Iterable<ReactNode>
   const isReactNode =
     isValidElement(data) ||
     isFragment(data) ||
     typeof data === 'string' ||
-    typeof data === 'number';
+    typeof data === 'number' ||
+    typeof data === 'boolean' ||
+    data === null ||
+    data === undefined ||
+    Array.isArray(data);
 
   return !isReactNode;
 }
