@@ -1,5 +1,28 @@
 # @cube-dev/ui-kit
 
+## 0.105.0
+
+### Minor Changes
+
+- [#977](https://github.com/cube-js/cube-ui-kit/pull/977) [`18cb18bd`](https://github.com/cube-js/cube-ui-kit/commit/18cb18bd965bf46064335d9340debcae82379fe6) Thanks [@tenphi](https://github.com/tenphi)! - Add support for dual-color `fill` style. When two color tokens are provided (e.g., `fill="#primary #secondary"`), the first color is applied as `background-color` and the second as a `background-image` gradient layer via a registered CSS custom property (`--tasty-second-fill-color`), enabling smooth CSS transitions. Explicit `backgroundImage` or `background` properties override the second color.
+
+- [#975](https://github.com/cube-js/cube-ui-kit/pull/975) [`38152302`](https://github.com/cube-js/cube-ui-kit/commit/38152302f04338fd67084c18fa15b1865583ca1e) Thanks [@tenphi](https://github.com/tenphi)! - Replaced the toast system with a new implementation:
+
+  - **New API**: `useToast()` hook with `toast()`, `toast.success()`, `toast.danger()`, `toast.warning()`, and `toast.note()` methods
+  - **Progress toasts**: `useProgressToast()` hook for loading states that persist while `isLoading` is true
+  - **Declarative usage**: `<Toast>` and `<Toast.Progress>` components for declarative toast rendering
+  - **Default icons**: Each theme now has a predefined icon (can be overridden)
+  - **Collapse on hover**: Toasts collapse when hovering the toast area to reveal content behind
+  - **Deduplication**: Toasts with the same content are deduplicated automatically
+
+  **Breaking changes:**
+
+  - Removed `useToastsApi` hook - migrate to `useToast`
+  - Removed `attention` theme - use `warning` instead
+  - Renamed `header` prop to `title`
+
+- [#974](https://github.com/cube-js/cube-ui-kit/pull/974) [`402d5618`](https://github.com/cube-js/cube-ui-kit/commit/402d56186104ebcdbba3841ef1a03804d33e8d5f) Thanks [@tenphi](https://github.com/tenphi)! - Add support for OKHSL color functions in style parsing and fix CSSWriter.add() method.
+
 ## 0.104.0
 
 ### Minor Changes
