@@ -25,10 +25,21 @@ export function fillStyle({
   const colorValue = backgroundColor ?? fill;
   if (colorValue) {
     const parsed = parseStyle(colorValue);
-    result['background-color'] = parsed.groups[0]?.colors[0] || colorValue;
+    const firstColor = parsed.groups[0]?.colors[0];
+    const secondColor = parsed.groups[0]?.colors[1];
+
+    result['background-color'] = firstColor || colorValue;
+
+    // Apply second color as gradient layer (only if no explicit backgroundImage/image)
+    // Uses a registered custom property to enable CSS transitions
+    if (secondColor && !backgroundImage && !image) {
+      result['--tasty-second-fill-color'] = secondColor;
+      result['background-image'] =
+        'linear-gradient(var(--tasty-second-fill-color), var(--tasty-second-fill-color))';
+    }
   }
 
-  // Priority: backgroundImage > image
+  // Priority: backgroundImage > image (overrides second fill color if set)
   const imageValue = backgroundImage ?? image;
   if (imageValue) {
     const parsed = parseStyle(imageValue);

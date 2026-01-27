@@ -230,6 +230,20 @@ let globalKeyframes: Record<string, KeyframesSteps> | null = null;
 // Global properties storage (null = no properties configured)
 let globalProperties: Record<string, PropertyDefinition> | null = null;
 
+/**
+ * Internal properties required by tasty core features.
+ * These are always injected when styles are first generated.
+ * Keys use tasty token syntax (#name for colors, $name for other properties).
+ */
+export const INTERNAL_PROPERTIES: Record<string, PropertyDefinition> = {
+  // Used by dual-fill feature to enable CSS transitions on the second fill color
+  '#tasty-second-fill': {
+    syntax: '<color>',
+    inherits: false,
+    initialValue: 'transparent',
+  },
+};
+
 // Global injector instance key
 const GLOBAL_INJECTOR_KEY = '__TASTY_GLOBAL_INJECTOR__';
 
@@ -298,17 +312,23 @@ function createDefaultConfig(isTest?: boolean): TastyConfig {
 /**
  * Mark that styles have been generated (called by injector on first inject)
  * This locks the configuration - no further changes allowed.
- * Also injects any global properties that were configured.
+ * Also injects internal and global properties.
  */
 export function markStylesGenerated(): void {
   if (stylesGenerated) return; // Already marked, skip
 
   stylesGenerated = true;
 
+  const injector = getGlobalInjector();
+
+  // Inject internal properties required by tasty core features
+  for (const [token, definition] of Object.entries(INTERNAL_PROPERTIES)) {
+    injector.property(token, definition);
+  }
+
   // Inject global properties if any were configured
   // Properties are permanent and only need to be injected once
   if (globalProperties && Object.keys(globalProperties).length > 0) {
-    const injector = getGlobalInjector();
     for (const [token, definition] of Object.entries(globalProperties)) {
       injector.property(token, definition);
     }

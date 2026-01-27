@@ -76,6 +76,49 @@ describe('Tasty style tests', () => {
     });
   });
 
+  it('should handle dual-color fill styles', () => {
+    // Two color tokens - second becomes background-image gradient via custom property
+    expect(fillStyle({ fill: '#primary #secondary' })).toEqual({
+      'background-color': 'var(--primary-color)',
+      '--tasty-second-fill-color': 'var(--secondary-color)',
+      'background-image':
+        'linear-gradient(var(--tasty-second-fill-color), var(--tasty-second-fill-color))',
+    });
+
+    // Two colors with explicit backgroundImage - backgroundImage overrides second color
+    expect(
+      fillStyle({
+        fill: '#primary #secondary',
+        backgroundImage: 'url(/image.png)',
+      }),
+    ).toEqual({
+      'background-color': 'var(--primary-color)',
+      'background-image': 'url(/image.png)',
+    });
+
+    // Two colors with explicit image - image overrides second color
+    expect(
+      fillStyle({
+        fill: '#primary #secondary',
+        image: 'url(/image.png)',
+      }),
+    ).toEqual({
+      'background-color': 'var(--primary-color)',
+      'background-image': 'url(/image.png)',
+    });
+
+    // Two colors with explicit background - background overrides everything
+    expect(
+      fillStyle({
+        fill: '#primary #secondary',
+        background: 'linear-gradient(to right, #red, #blue)',
+      }),
+    ).toEqual({
+      background:
+        'linear-gradient(to right, var(--red-color), var(--blue-color))',
+    });
+  });
+
   it('should handle outline styles', () => {
     expect(outlineStyle({ outline: '2px dashed #f00' })).toEqual({
       outline: '2px dashed var(--f00-color, #f00)',

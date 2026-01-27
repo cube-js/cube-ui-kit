@@ -1,12 +1,14 @@
 import { parseStyle } from '../utils/styles';
 
+const SECOND_FILL_COLOR_PROPERTY = '--tasty-second-fill-color';
+
 const MAP = {
   fade: ['mask'],
   translate: ['transform', 'translate'],
   rotate: ['transform', 'rotate'],
   scale: ['transform', 'scale'],
   placeSelf: ['transform', 'top', 'right', 'bottom', 'left'],
-  fill: ['background-color'],
+  fill: ['background-color', 'background-image', SECOND_FILL_COLOR_PROPERTY],
   image: [
     'background-image',
     'background-position',
@@ -15,6 +17,7 @@ const MAP = {
     'background-attachment',
     'background-origin',
     'background-clip',
+    SECOND_FILL_COLOR_PROPERTY,
   ],
   background: [
     'background-color',
@@ -25,6 +28,7 @@ const MAP = {
     'background-attachment',
     'background-origin',
     'background-clip',
+    SECOND_FILL_COLOR_PROPERTY,
   ],
   border: ['border', 'box-shadow'],
   filter: ['filter', 'backdrop-filter'],
@@ -42,11 +46,13 @@ const MAP = {
   theme: [
     'color',
     'background-color',
+    'background-image',
     'box-shadow',
     'border',
     'border-radius',
     'outline',
     'opacity',
+    SECOND_FILL_COLOR_PROPERTY,
   ],
   mark: ['box-shadow'],
   width: ['max-width', 'min-width', 'width'],
