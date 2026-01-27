@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.105.1
+
+### Patch Changes
+
+- [#978](https://github.com/cube-js/cube-ui-kit/pull/978) [`744e9696`](https://github.com/cube-js/cube-ui-kit/commit/744e969674d2e4fd4b867357affdbdeb0128d83e) Thanks [@tenphi](https://github.com/tenphi)! - Add default theme-based icons to `useProgressToast` result states, matching the behavior of `toast.*()` API.
+
 ## 0.105.0
 
 ### Minor Changes
