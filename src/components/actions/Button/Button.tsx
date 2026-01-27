@@ -206,6 +206,7 @@ export const DEFAULT_BUTTON_STYLES = {
     '': 't3m',
     'size=xsmall': 't4',
     'size=xlarge': 't2m',
+    'type=link': 'strong',
   },
   textDecoration: 'none',
   reset: 'button',

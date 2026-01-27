@@ -12,8 +12,8 @@ import { useToastContext } from './ToastProvider';
 
 import type { ToastApi, ToastData, ToastType } from './types';
 
-// Default icons for each theme
-const THEME_ICONS: Partial<Record<ToastType, ReactNode>> = {
+// Default icons for each theme (exported for use in useProgressToast)
+export const THEME_ICONS: Partial<Record<ToastType, ReactNode>> = {
   success: <CheckIcon />,
   danger: <DangerIcon />,
   warning: <WarningIcon />,
