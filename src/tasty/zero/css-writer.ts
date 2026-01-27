@@ -28,9 +28,7 @@ export class CSSWriter {
    * @param source - Optional source file path (used in devMode)
    */
   add(key: string, css: string, source?: string): void {
-    if (!this.cssBlocks.has(key)) {
-      this.cssBlocks.set(key, { css, source });
-    }
+    this.cssBlocks.set(key, { css, source });
   }
 
   /**
