@@ -107,12 +107,12 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
-    '': '#dark.0',
-    hovered: '#dark.03',
-    selected: '#dark.09',
-    'selected & hovered': '#dark.12',
-    pressed: '#dark.09',
-    disabled: '#dark.04',
+    '': '#white #dark.0',
+    hovered: '#white #dark.03',
+    selected: '#white #dark.09',
+    'selected & hovered': '#white #dark.12',
+    pressed: '#white #dark.09',
+    disabled: '#white #dark.04',
   },
   color: {
     '': '#dark-02',
@@ -241,10 +241,10 @@ export const DANGER_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#danger.0',
-    hovered: '#danger.1',
-    'pressed | (selected & !hovered)': '#danger.05',
-    disabled: '#dark.04',
+    '': '#white #danger.0',
+    hovered: '#white #danger.1',
+    'pressed | (selected & !hovered)': '#white #danger.05',
+    disabled: '#white #dark.04',
   },
   color: {
     '': '#danger-text',
@@ -370,10 +370,10 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#success.0',
-    hovered: '#success.1',
-    'pressed | (selected & !hovered)': '#success.05',
-    disabled: '#dark.04',
+    '': '#white #success.0',
+    hovered: '#white #success.1',
+    'pressed | (selected & !hovered)': '#white #success.05',
+    disabled: '#white #dark.04',
   },
   color: {
     '': '#success-text',
@@ -499,10 +499,10 @@ export const WARNING_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#warning.0',
-    hovered: '#warning.1',
-    'pressed | (selected & !hovered)': '#warning.05',
-    disabled: '#dark.04',
+    '': '#white #warning.0',
+    hovered: '#white #warning.1',
+    'pressed | (selected & !hovered)': '#white #warning.05',
+    disabled: '#white #dark.04',
   },
   color: {
     '': '#warning-text',
@@ -628,10 +628,10 @@ export const NOTE_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#note.0',
-    hovered: '#note.1',
-    'pressed | (selected & !hovered)': '#note.05',
-    disabled: '#dark.04',
+    '': '#white #note.0',
+    hovered: '#white #note.1',
+    'pressed | (selected & !hovered)': '#white #note.05',
+    disabled: '#white #dark.04',
   },
   color: {
     '': '#note-text',
@@ -759,10 +759,10 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
-    '': '#white.0',
-    hovered: '#white.18',
-    'pressed | (selected & !hovered)': '#white.12',
-    disabled: '#white.12',
+    '': '#dark #white.0',
+    hovered: '#dark #white.18',
+    'pressed | (selected & !hovered)': '#dark #white.12',
+    disabled: '#dark #white.12',
   },
   color: {
     '': '#white',

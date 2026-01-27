@@ -717,6 +717,7 @@ color: '#text',                   // Text color token
 color: true,                      // Default: 'currentColor'
 fill: '#purple.10',               // Background with opacity
 fill: '#surface',                 // Background color token
+fill: '#white #dark.1',           // Dual-fill: base color + overlay (for transitions)
 color: '(#primary, #dark)',       // Color with fallback
 fill: '(#surface, (#white, #default))', // Nested fallbacks
 color: {
@@ -727,6 +728,11 @@ color: {
 
 // color default (true): 'currentColor'
 // Provides context variables: --current-color, --current-color-rgb
+
+// Dual-fill: Two colors create a layered background
+// First color → background-color, second → background-image gradient
+// Enables CSS transitions on semi-transparent overlays
+fill: '#white #purple.1',         // White base with purple overlay
 ```
 
 #### `image` - Background Images

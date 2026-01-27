@@ -1,12 +1,13 @@
 import { parseStyle } from '../utils/styles';
 
+const SECOND_FILL_COLOR_PROPERTY = '--tasty-second-fill-color';
+
 const MAP = {
-  fade: ['mask'],
+  fade: ['mask', 'mask-composite'],
   translate: ['transform', 'translate'],
   rotate: ['transform', 'rotate'],
   scale: ['transform', 'scale'],
-  placeSelf: ['transform', 'top', 'right', 'bottom', 'left'],
-  fill: ['background-color'],
+  fill: ['background-color', 'background-image', SECOND_FILL_COLOR_PROPERTY],
   image: [
     'background-image',
     'background-position',
@@ -15,6 +16,7 @@ const MAP = {
     'background-attachment',
     'background-origin',
     'background-clip',
+    SECOND_FILL_COLOR_PROPERTY,
   ],
   background: [
     'background-color',
@@ -25,12 +27,19 @@ const MAP = {
     'background-attachment',
     'background-origin',
     'background-clip',
+    SECOND_FILL_COLOR_PROPERTY,
   ],
-  border: ['border', 'box-shadow'],
+  border: [
+    'border',
+    'border-top',
+    'border-right',
+    'border-bottom',
+    'border-left',
+  ],
   filter: ['filter', 'backdrop-filter'],
   radius: ['border-radius'],
   shadow: ['box-shadow'],
-  outline: ['box-shadow'],
+  outline: ['outline', 'outline-offset'],
   preset: [
     'font-size',
     'line-height',
@@ -39,20 +48,24 @@ const MAP = {
     'font-style',
   ],
   text: ['font-weight', 'text-decoration-color'],
+  color: ['color'],
+  opacity: ['opacity'],
   theme: [
     'color',
     'background-color',
+    'background-image',
     'box-shadow',
     'border',
     'border-radius',
     'outline',
     'opacity',
+    SECOND_FILL_COLOR_PROPERTY,
   ],
-  mark: ['box-shadow'],
   width: ['max-width', 'min-width', 'width'],
   height: ['max-height', 'min-height', 'height'],
   gap: ['gap', 'margin'],
   zIndex: ['z-index'],
+  inset: ['inset', 'top', 'right', 'bottom', 'left'],
 };
 
 export const DEFAULT_TIMING = 'var(--transition)';

@@ -192,7 +192,9 @@ describe('Global Style Injector API', () => {
       });
 
       expect(result.className).toMatch(/^t\d+$/);
-      expect(document.head.querySelectorAll('[data-tasty]').length).toBe(0);
+      // Internal properties (@property rules) are always injected into document.head
+      // because they are global CSS rules, but component styles go to the custom root
+      expect(document.head.querySelectorAll('[data-tasty]').length).toBe(1);
       expect(shadowRoot.querySelectorAll('[data-tasty]').length).toBe(1);
     });
   });
