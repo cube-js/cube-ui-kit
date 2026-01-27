@@ -18,6 +18,10 @@ export const BASE_TOKENS: Styles = {
   '$input-line-height': '20px',
   '$input-letter-spacing': '0.02em',
 
+  // Typography
+  '$font-weight': 400,
+  '$bold-font-weight': 500,
+
   // Opacity & dimensions
   /** Opacity for disabled elements */
   '$disabled-opacity': '.4',
