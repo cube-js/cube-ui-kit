@@ -726,7 +726,7 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
   fill: {
     '': '#purple',
     'hovered & !pressed': '#purple-text',
-    disabled: '#dark #white.12',
+    disabled: '#white.12',
   },
   color: {
     '': '#white',
