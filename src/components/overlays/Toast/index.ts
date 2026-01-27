@@ -74,6 +74,9 @@ export function Toast(props: ToastProps): null {
     toastData.description,
     toastData.theme,
     toastData.icon,
+    toastData.isLoading,
+    toastData.id,
+    updateToast,
   ]);
 
   return null;

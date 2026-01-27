@@ -12,7 +12,6 @@ import {
 
 import { useEvent } from '../../../_internal';
 import { tasty } from '../../../tasty';
-import { useId } from '../../../utils/react/useId';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { Portal } from '../../portal';
 
@@ -100,6 +99,8 @@ function ToastContainer({ toasts, onExitComplete }: ToastContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const boundsRef = useRef<DOMRect | null>(null);
   const toastRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  // Track last known positions for exiting toasts to prevent animation to top: 0
+  const lastPositionsRef = useRef<Map<string, number>>(new Map());
 
   // Calculate bounds from all toast elements
   const updateBounds = useCallback(() => {
@@ -243,10 +244,31 @@ function ToastContainer({ toasts, onExitComplete }: ToastContainerProps) {
     return posMap;
   }, [visibleToasts, heights]);
 
+  // Update lastPositionsRef with current positions for visible toasts
+  // This preserves positions for toasts that will exit later
+  useEffect(() => {
+    positions.forEach((pos, id) => {
+      lastPositionsRef.current.set(id, pos);
+    });
+  }, [positions]);
+
+  // Clean up lastPositionsRef when toast exit completes
+  const handleExitComplete = useCallback(
+    (internalId: string) => {
+      lastPositionsRef.current.delete(internalId);
+      onExitComplete(internalId);
+    },
+    [onExitComplete],
+  );
+
   // Calculate collapsed positions
   const getToastStyle = useCallback(
     (toast: InternalToast, index: number, total: number) => {
-      const baseTop = positions.get(toast.internalId) ?? 0;
+      // Use current position for visible toasts, or last known position for exiting toasts
+      const baseTop =
+        positions.get(toast.internalId) ??
+        lastPositionsRef.current.get(toast.internalId) ??
+        0;
       const height = heights[toast.internalId] ?? DEFAULT_TOAST_HEIGHT;
 
       if (!isCollapsed) {
@@ -286,7 +308,7 @@ function ToastContainer({ toasts, onExitComplete }: ToastContainerProps) {
               isShown={!toast.isExiting}
               onRest={(transition) => {
                 if (transition === 'exit') {
-                  onExitComplete(toast.internalId);
+                  handleExitComplete(toast.internalId);
                 }
               }}
             >
@@ -420,7 +442,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
       // If we exceed limit, mark oldest temporal toasts as exiting
       while (activeToasts.length > MAX_TOASTS) {
         // Always allow at least 1 temporal toast even with 3 progress toasts
-        if (temporalToasts.length > 1 || progressToasts.length <= MAX_TOASTS) {
+        if (temporalToasts.length > 1 || progressToasts.length < MAX_TOASTS) {
           const oldestTemporal = temporalToasts.shift();
 
           if (oldestTemporal) {

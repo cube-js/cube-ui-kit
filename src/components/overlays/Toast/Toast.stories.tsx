@@ -1,5 +1,5 @@
 import { IconCheck, IconLoader2 } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { CheckIcon } from '../../../icons';
 import { Button } from '../../actions/Button/Button';
@@ -293,17 +293,17 @@ Deduplication.parameters = {
  */
 export const MultipleToasts = () => {
   const toast = useToast();
-  let counter = 0;
+  const counterRef = useRef(0);
 
   return (
     <Space gap="1x">
       <Button
         onPress={() => {
-          counter++;
+          counterRef.current++;
           toast({
-            title: `Toast ${counter}`,
-            description: `This is toast number ${counter}`,
-            id: `toast-${counter}`,
+            title: `Toast ${counterRef.current}`,
+            description: `This is toast number ${counterRef.current}`,
+            id: `toast-${counterRef.current}`,
           });
         }}
       >
