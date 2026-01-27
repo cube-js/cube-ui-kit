@@ -8,7 +8,7 @@ import {
   CubePrismCodeProps,
   PrismCode,
 } from '../../content/PrismCode/PrismCode';
-import { useToastsApi } from '../../overlays/Toasts';
+import { useToast } from '../../overlays/Toast';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 import { Card, CubeCardProps } from '../Card/Card';
@@ -184,7 +184,7 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
     ...props
   } = allProps;
 
-  const { toast } = useToastsApi();
+  const toast = useToast();
 
   const [showHidden, setShowHidden] = useState(false);
 

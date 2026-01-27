@@ -235,7 +235,7 @@ export * from './tasty';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';
 export * from './components/overlays/NewNotifications';
-export * from './components/overlays/Toasts';
+export * from './components/overlays/Toast';
 export * from './shared';
 export * from './icons';
 export * from './components/form';

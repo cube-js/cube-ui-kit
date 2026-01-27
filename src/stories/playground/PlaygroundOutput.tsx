@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react';
 import { Button } from '../../components/actions/Button';
 import { Layout } from '../../components/content/Layout';
 import { PrismCode } from '../../components/content/PrismCode/PrismCode';
-import { useToastsApi } from '../../components/overlays/Toasts';
+import { useToast } from '../../components/overlays/Toast';
 import { CopyIcon } from '../../icons';
 import { tasty } from '../../tasty';
 import { renderStyles, StyleResult } from '../../tasty/pipeline';
@@ -77,7 +77,7 @@ function formatStyleResults(results: StyleResult[]): string {
 }
 
 export function PlaygroundOutput({ styles }: PlaygroundOutputProps) {
-  const { toast } = useToastsApi();
+  const toast = useToast();
 
   const cssOutput = useMemo(() => {
     if (!styles || Object.keys(styles).length === 0) {
