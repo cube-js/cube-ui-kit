@@ -92,6 +92,7 @@ const SIMPLE_COLOR_PATTERNS = [
   /^hsl\(/, // HSL/HSLA functions
   /^lch\(/, // LCH color functions
   /^oklch\(/, // OKLCH color functions
+  /^okhsl\(/, // OKHSL color functions
   /^var\(--[a-z0-9-]+-color/, // CSS custom properties for colors
   /^currentColor$/, // CSS currentColor keyword
   /^transparent$/, // CSS transparent keyword
@@ -348,7 +349,8 @@ export function parseColor(val: string, ignoreError = false): ParsedColor {
     firstColor.startsWith('rgb') ||
     firstColor.startsWith('hsl') ||
     firstColor.startsWith('lch') ||
-    firstColor.startsWith('oklch')
+    firstColor.startsWith('oklch') ||
+    firstColor.startsWith('okhsl')
   ) {
     const alphaMatch = firstColor.match(RGB_ALPHA_PATTERN);
     if (alphaMatch) {
