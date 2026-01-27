@@ -76,6 +76,8 @@ export function Toast(props: ToastProps): null {
     toastData.icon,
     toastData.isLoading,
     toastData.id,
+    // Note: itemProps is intentionally excluded - it's an object that would cause
+    // unnecessary re-runs. Users needing dynamic itemProps should remount the component.
     updateToast,
   ]);
 
