@@ -28,6 +28,16 @@ export interface ProgressToastOptions extends Omit<ToastData, 'duration'> {
   // Re-shows toast if theme/description/icon change by reference while not visible
 }
 
+/**
+ * Empty value that indicates no toast should be shown.
+ * When passed to useProgressToast, any existing toast is immediately removed.
+ */
+export type ProgressToastEmpty =
+  | null
+  | undefined
+  | false
+  | Record<string, never>;
+
 export interface ToastApi {
   /** Show a toast with default theme */
   (data: ToastData | ReactNode): Key;

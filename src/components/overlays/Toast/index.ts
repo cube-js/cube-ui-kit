@@ -15,6 +15,7 @@ export type {
   ToastType,
   ToastApi,
   ProgressToastOptions,
+  ProgressToastEmpty,
 } from './types';
 
 export interface ToastProps extends Omit<ToastData, 'duration'> {

@@ -3,9 +3,26 @@ import { Key, ReactNode, useEffect, useRef } from 'react';
 import { useToastContext } from './ToastProvider';
 import { THEME_ICONS } from './useToast';
 
-import type { ProgressToastOptions, ToastType } from './types';
+import type {
+  ProgressToastEmpty,
+  ProgressToastOptions,
+  ToastType,
+} from './types';
 
 const RESULT_DURATION = 3000;
+
+/**
+ * Check if the options represent an "empty" value (null, undefined, false, or empty object).
+ * When empty, the hook should immediately remove any existing toast.
+ */
+function isEmptyOptions(
+  options: ProgressToastOptions | ProgressToastEmpty,
+): options is ProgressToastEmpty {
+  if (options == null || options === false) return true;
+  if (typeof options === 'object' && Object.keys(options).length === 0)
+    return true;
+  return false;
+}
 
 // Get string value for comparison (only strings are compared for re-show logic)
 function getStringValue(value: unknown): string | undefined {
@@ -47,10 +64,14 @@ function getDefaultIcon(
  *       ? { isLoading: false, title: 'Error', description: errorMessage, theme: 'danger' }
  *       : { isLoading: false, title: 'Saved!', theme: 'success' }
  * );
+ *
+ * // Pass empty value to immediately remove any existing toast:
+ * useProgressToast(shouldShow ? { isLoading: true, title: 'Loading...' } : null);
  * ```
  */
-export function useProgressToast(options: ProgressToastOptions): void {
-  const { isLoading, ...toastData } = options;
+export function useProgressToast(
+  options: ProgressToastOptions | ProgressToastEmpty,
+): void {
   const { addToast, removeToast } = useToastContext();
 
   const toastIdRef = useRef<Key | null>(null);
@@ -58,6 +79,7 @@ export function useProgressToast(options: ProgressToastOptions): void {
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRenderRef = useRef(true);
   const optionsRef = useRef(options);
+  const wasEmptyRef = useRef<boolean>(false);
 
   // Track previous string values for re-show comparison
   const prevThemeRef = useRef<string | undefined>(undefined);
@@ -75,15 +97,44 @@ export function useProgressToast(options: ProgressToastOptions): void {
     }
   };
 
-  // Get current string values for comparison
-  const currentTheme = toastData.theme;
-  const currentTitle = getStringValue(toastData.title);
-  const currentDescription = getStringValue(toastData.description);
+  // Check if current options are empty
+  const isEmpty = isEmptyOptions(options);
+
+  // Extract values only when options are not empty
+  const isLoading = isEmpty ? false : options.isLoading;
+  const currentTheme = isEmpty ? undefined : options.theme;
+  const currentTitle = isEmpty ? undefined : getStringValue(options.title);
+  const currentDescription = isEmpty
+    ? undefined
+    : getStringValue(options.description);
 
   useEffect(() => {
     const wasLoading = wasLoadingRef.current;
+    const wasEmpty = wasEmptyRef.current;
     const isFirstRender = isFirstRenderRef.current;
     const currentOptions = optionsRef.current;
+    const currentIsEmpty = isEmptyOptions(currentOptions);
+
+    // Handle empty options - immediately remove any existing toast
+    if (currentIsEmpty) {
+      clearHideTimer();
+
+      if (toastIdRef.current != null) {
+        removeToast(toastIdRef.current);
+        toastIdRef.current = null;
+      }
+
+      // Update refs for next comparison
+      wasLoadingRef.current = null;
+      wasEmptyRef.current = true;
+      isFirstRenderRef.current = false;
+      prevThemeRef.current = undefined;
+      prevTitleRef.current = undefined;
+      prevDescriptionRef.current = undefined;
+      return;
+    }
+
+    // From here, we know options is a valid ProgressToastOptions
     const { isLoading: currentIsLoading, ...currentToastData } = currentOptions;
 
     // Check if meaningful data changed (only string values)
@@ -143,8 +194,8 @@ export function useProgressToast(options: ProgressToastOptions): void {
         // Toast exists but data changed (e.g., switching back to loading from another state)
         showToast();
       }
-    } else if (wasLoading === true && !currentIsLoading) {
-      // Transitioning from loading to not loading
+    } else if ((wasLoading === true || wasEmpty) && !currentIsLoading) {
+      // Transitioning from loading (or from empty) to not loading
       clearHideTimer();
 
       if (currentTitle) {
@@ -173,11 +224,13 @@ export function useProgressToast(options: ProgressToastOptions): void {
 
     // Update refs for next comparison
     wasLoadingRef.current = currentIsLoading;
+    wasEmptyRef.current = false;
     isFirstRenderRef.current = false;
     prevThemeRef.current = currentTheme;
     prevTitleRef.current = currentTitle;
     prevDescriptionRef.current = currentDescription;
   }, [
+    isEmpty,
     isLoading,
     currentTheme,
     currentTitle,
