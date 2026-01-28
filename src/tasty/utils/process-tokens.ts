@@ -238,10 +238,18 @@ export function processTokens(
       // Color token: #name -> --name-color and --name-color-rgb
       const colorName = key.slice(1);
       const originalValue = typeof value === 'number' ? String(value) : value;
+      const lowerValue = originalValue.toLowerCase();
       const processedValue = processTokenValue(value);
 
       if (!result) result = {};
       result[`--${colorName}-color`] = processedValue;
+
+      // Skip RGB generation for #current values (currentcolor is dynamic, cannot extract RGB)
+      // Match only #current or #current.opacity, not #current-theme or #currently-used
+      if (/^#current(?:\.|$)/i.test(lowerValue)) {
+        continue;
+      }
+
       result[`--${colorName}-color-rgb`] = extractRgbValue(
         originalValue,
         processedValue,

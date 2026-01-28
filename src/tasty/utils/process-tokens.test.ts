@@ -279,4 +279,67 @@ describe('processTokens', () => {
       expect(result!['--invalid-color']).toBeUndefined();
     });
   });
+
+  describe('#current color token', () => {
+    it('processes #current to currentcolor without RGB', () => {
+      const result = processTokens({
+        '#my-color': '#current',
+      });
+
+      expect(result).toBeDefined();
+      expect(result!['--my-color-color']).toBe('currentcolor');
+      // No RGB should be generated for currentcolor
+      expect(result!['--my-color-color-rgb']).toBeUndefined();
+    });
+
+    it('processes #current.5 to color-mix without RGB', () => {
+      const result = processTokens({
+        '#my-color': '#current.5',
+      });
+
+      expect(result).toBeDefined();
+      expect(result!['--my-color-color']).toBe(
+        'color-mix(in oklab, currentcolor 50%, transparent)',
+      );
+      // No RGB should be generated for currentcolor-based values
+      expect(result!['--my-color-color-rgb']).toBeUndefined();
+    });
+
+    it('processes #current.$opacity to color-mix without RGB', () => {
+      const result = processTokens({
+        '#my-color': '#current.$fade',
+      });
+
+      expect(result).toBeDefined();
+      expect(result!['--my-color-color']).toBe(
+        'color-mix(in oklab, currentcolor calc(var(--fade) * 100%), transparent)',
+      );
+      // No RGB should be generated for currentcolor-based values
+      expect(result!['--my-color-color-rgb']).toBeUndefined();
+    });
+
+    it('does not match #current-theme or similar token names', () => {
+      // Tokens like #current-theme should NOT be treated as #current
+      const result = processTokens({
+        '#accent': '#current-theme',
+      });
+
+      expect(result).toBeDefined();
+      // Should be processed as a regular color token reference
+      expect(result!['--accent-color']).toBe('var(--current-theme-color)');
+      // RGB should be generated since this is NOT #current
+      expect(result!['--accent-color-rgb']).toBeDefined();
+    });
+
+    it('does not match #currently-used or similar token names', () => {
+      const result = processTokens({
+        '#my-color': '#currently-used',
+      });
+
+      expect(result).toBeDefined();
+      expect(result!['--my-color-color']).toBe('var(--currently-used-color)');
+      // RGB should be generated since this is NOT #current
+      expect(result!['--my-color-color-rgb']).toBeDefined();
+    });
+  });
 });

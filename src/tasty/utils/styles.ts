@@ -240,7 +240,21 @@ export function setGlobalPredefinedTokens(
   // Normalize keys to lowercase for case-insensitive matching
   const normalizedTokens: Record<string, string> = {};
   for (const [key, value] of Object.entries(tokens)) {
-    normalizedTokens[key.toLowerCase()] = value;
+    const lowerKey = key.toLowerCase();
+    const lowerValue = value.toLowerCase();
+
+    // Warn if trying to use bare #current to define other color tokens
+    // #current represents currentcolor which cannot be used as a base for recursive token resolution
+    // Note: #current.5 (with opacity) is allowed since it resolves to a concrete color-mix value
+    if (lowerKey.startsWith('#') && lowerValue === '#current') {
+      console.warn(
+        `Tasty: Using #current to define color token "${key}" is not supported. ` +
+          `The #current token represents currentcolor which cannot be used as a base for other tokens.`,
+      );
+      continue; // Skip this token
+    }
+
+    normalizedTokens[lowerKey] = value;
   }
   // Merge with existing tokens (consistent with how states, units, funcs are handled)
   __globalPredefinedTokens = __globalPredefinedTokens

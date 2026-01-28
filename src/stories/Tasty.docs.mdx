@@ -594,9 +594,15 @@ Tasty enhances CSS with:
 
 ```jsx
 // Color tokens with opacity
-color: '#purple',      // Full opacity
-color: '#purple.5',    // 50% opacity
-color: '#purple.05',   // 5% opacity
+color: '#purple',           // Full opacity
+color: '#purple.5',         // 50% opacity
+color: '#purple.05',        // 5% opacity
+color: '#purple.$disabled', // Dynamic opacity via CSS custom property
+
+// #current - inherits from CSS currentcolor
+fill: '#current',           // → currentcolor
+fill: '#current.5',         // → color-mix(in oklab, currentcolor 50%, transparent)
+fill: '#current.$fade',     // → color-mix with dynamic opacity
 
 // Color token fallback syntax (supports nesting)
 color: '(#primary, #secondary)',                    // Single fallback
@@ -613,6 +619,8 @@ fill: '(#surface, (#fallback, #default))',          // Nested fallbacks
 // Via custom property
 '$custom-color': 'rgb(255 128 0)',
 ```
+
+> **Note:** `#current` is a reserved token that cannot be overridden via `configure({ tokens: {...} })`.
 
 ### Custom Units Reference
 
