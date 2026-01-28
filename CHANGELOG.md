@@ -1,5 +1,30 @@
 # @cube-dev/ui-kit
 
+## 0.106.0
+
+### Minor Changes
+
+- [#983](https://github.com/cube-js/cube-ui-kit/pull/983) [`48bc9c70`](https://github.com/cube-js/cube-ui-kit/commit/48bc9c70cb7777c4b7b728eb1ee3eb78bfe0192c) Thanks [@tenphi](https://github.com/tenphi)! - Add `#current` color token that maps to CSS `currentcolor` keyword. Supports opacity using `color-mix`:
+
+  - `#current` → `currentcolor`
+  - `#current.5` → `color-mix(in oklab, currentcolor 50%, transparent)`
+  - `#current.$opacity` → `color-mix(in oklab, currentcolor calc(var(--opacity) * 100%), transparent)`
+
+  Note: `#current` is a reserved token and cannot be overridden via `configure({ tokens: {...} })`. Using `#current` to define other color tokens will log a warning and be ignored.
+
+- [#983](https://github.com/cube-js/cube-ui-kit/pull/983) [`48bc9c70`](https://github.com/cube-js/cube-ui-kit/commit/48bc9c70cb7777c4b7b728eb1ee3eb78bfe0192c) Thanks [@tenphi](https://github.com/tenphi)! - Add custom property opacity syntax for color tokens. You can now use `$name` syntax to reference a CSS custom property as the opacity value:
+
+  - `#purple.$disabled` → `rgb(var(--purple-color-rgb) / var(--disabled))`
+  - `#dark-05.$my-opacity` → `rgb(var(--dark-05-color-rgb) / var(--my-opacity))`
+
+  This allows for dynamic opacity values that can be controlled via CSS custom properties.
+
+### Patch Changes
+
+- [#980](https://github.com/cube-js/cube-ui-kit/pull/980) [`9e6cd5da`](https://github.com/cube-js/cube-ui-kit/commit/9e6cd5dab2d290c0882d145c5c2d375c2a71fa24) Thanks [@tenphi](https://github.com/tenphi)! - Allow passing empty values (null, undefined, false, or empty object) to `useProgressToast` hook to immediately remove any existing toast without delay.
+
+- [#980](https://github.com/cube-js/cube-ui-kit/pull/980) [`9e6cd5da`](https://github.com/cube-js/cube-ui-kit/commit/9e6cd5dab2d290c0882d145c5c2d375c2a71fa24) Thanks [@tenphi](https://github.com/tenphi)! - Add automatic theme-based icons to declarative `<Toast>` component, matching the behavior of `useToast` and `useProgressToast` hooks. Consolidate icon logic into a shared `getThemeIcon` helper.
+
 ## 0.105.1
 
 ### Patch Changes
