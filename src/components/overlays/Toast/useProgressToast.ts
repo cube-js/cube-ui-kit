@@ -1,13 +1,9 @@
-import { Key, ReactNode, useEffect, useRef } from 'react';
+import { Key, useEffect, useRef } from 'react';
 
 import { useToastContext } from './ToastProvider';
-import { THEME_ICONS } from './useToast';
+import { getThemeIcon } from './useToast';
 
-import type {
-  ProgressToastEmpty,
-  ProgressToastOptions,
-  ToastType,
-} from './types';
+import type { ProgressToastEmpty, ProgressToastOptions } from './types';
 
 const RESULT_DURATION = 3000;
 
@@ -27,22 +23,6 @@ function isEmptyOptions(
 // Get string value for comparison (only strings are compared for re-show logic)
 function getStringValue(value: unknown): string | undefined {
   return typeof value === 'string' ? value : undefined;
-}
-
-// Get default icon for a theme (only when not loading and no icon provided)
-function getDefaultIcon(
-  isLoading: boolean,
-  icon: ReactNode | undefined,
-  theme: ToastType | undefined,
-): ReactNode | undefined {
-  // Don't apply default icon when loading (loading state has its own indicator)
-  if (isLoading) return icon;
-
-  // If icon is explicitly provided, use it
-  if (icon !== undefined) return icon;
-
-  // Apply theme-based default icon
-  return theme ? THEME_ICONS[theme] : undefined;
 }
 
 /**
@@ -151,11 +131,11 @@ export function useProgressToast(
         removeToast(toastIdRef.current);
       }
 
-      // Get default icon based on theme (only when not loading)
-      const icon = getDefaultIcon(
-        currentIsLoading,
-        currentToastData.icon,
+      // Get appropriate icon based on theme and loading state
+      const icon = getThemeIcon(
         currentToastData.theme,
+        currentToastData.icon,
+        currentIsLoading,
       );
 
       // Create new toast with fresh data

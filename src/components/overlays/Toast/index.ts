@@ -4,11 +4,12 @@ import { Key, ReactNode, useEffect, useRef } from 'react';
 import { useToastContext } from './ToastProvider';
 import { ProgressToastOptions, ToastData, ToastType } from './types';
 import { useProgressToast } from './useProgressToast';
+import { getThemeIcon } from './useToast';
 
 export { ToastProvider, useToastContext } from './ToastProvider';
 export { ToastItem } from './ToastItem';
 export type { ToastItemProps } from './ToastItem';
-export { useToast } from './useToast';
+export { useToast, getThemeIcon } from './useToast';
 export { useProgressToast } from './useProgressToast';
 export type {
   ToastData,
@@ -41,12 +42,20 @@ export function Toast(props: ToastProps): null {
   const { addToast, removeToast, updateToast } = useToastContext();
   const toastIdRef = useRef<Key | null>(null);
 
+  // Apply theme-based icon if not loading and no icon provided
+  const icon = getThemeIcon(
+    toastData.theme,
+    toastData.icon,
+    toastData.isLoading,
+  );
+
   useEffect(() => {
     // Add toast on mount
     toastIdRef.current = addToast(
       {
         ...toastData,
         title: toastData.title ?? children,
+        icon,
         duration: null, // Persistent while mounted
       },
       true, // isProgress = true (persistent)
@@ -67,6 +76,7 @@ export function Toast(props: ToastProps): null {
       updateToast(toastIdRef.current, {
         ...toastData,
         title: toastData.title ?? children,
+        icon,
       });
     }
   }, [
@@ -77,6 +87,7 @@ export function Toast(props: ToastProps): null {
     toastData.icon,
     toastData.isLoading,
     toastData.id,
+    icon,
     // Note: itemProps is intentionally excluded - it's an object that would cause
     // unnecessary re-runs. Users needing dynamic itemProps should remount the component.
     updateToast,
