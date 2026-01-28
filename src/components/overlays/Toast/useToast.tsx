@@ -12,13 +12,33 @@ import { useToastContext } from './ToastProvider';
 
 import type { ToastApi, ToastData, ToastType } from './types';
 
-// Default icons for each theme (exported for use in useProgressToast)
-export const THEME_ICONS: Partial<Record<ToastType, ReactNode>> = {
+// Default icons for each theme
+const THEME_ICONS: Partial<Record<ToastType, ReactNode>> = {
   success: <CheckIcon />,
   danger: <DangerIcon />,
   warning: <WarningIcon />,
   note: <InfoCircleIcon />,
 };
+
+/**
+ * Get the appropriate icon for a toast based on theme and loading state.
+ * - When loading, returns the provided icon as-is (loading indicator is separate)
+ * - When not loading, returns the provided icon or falls back to theme-based default
+ */
+export function getThemeIcon(
+  theme: ToastType | undefined,
+  icon: ReactNode | undefined,
+  isLoading?: boolean,
+): ReactNode | undefined {
+  // When loading, don't apply theme icons (loading indicator is shown separately)
+  if (isLoading) return icon;
+
+  // If icon is explicitly provided, use it
+  if (icon !== undefined) return icon;
+
+  // Apply theme-based default icon
+  return theme ? THEME_ICONS[theme] : undefined;
+}
 
 function isToastData(data: ToastData | ReactNode): data is ToastData {
   // ReactNode includes: ReactElement | string | number | boolean | null | undefined | Iterable<ReactNode>
@@ -40,13 +60,15 @@ function normalizeToastData(
   defaultTheme?: ToastType,
 ): ToastData {
   const theme = isToastData(data) ? data.theme ?? defaultTheme : defaultTheme;
-  const defaultIcon = theme ? THEME_ICONS[theme] : undefined;
+  const isLoading = isToastData(data) ? data.isLoading : undefined;
+  const providedIcon = isToastData(data) ? data.icon : undefined;
+  const icon = getThemeIcon(theme, providedIcon, isLoading);
 
   if (isToastData(data)) {
     return {
-      icon: defaultIcon,
-      theme: defaultTheme,
       ...data,
+      theme: data.theme ?? defaultTheme,
+      icon,
     };
   }
 
@@ -54,7 +76,7 @@ function normalizeToastData(
   return {
     title: data,
     theme: defaultTheme,
-    icon: defaultIcon,
+    icon,
   };
 }
 

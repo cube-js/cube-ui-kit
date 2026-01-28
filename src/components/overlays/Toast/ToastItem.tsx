@@ -20,6 +20,10 @@ const StyledItem = tasty(Item, {
   styles: {
     transition: 'theme, inset',
     pointerEvents: 'none',
+
+    Description: {
+      preset: 't4',
+    },
   },
 });
 

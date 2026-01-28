@@ -99,17 +99,127 @@ Use the `<Toast>` component for toasts that should be visible while mounted:
 
 ### Progress Toast
 
-Use `useProgressToast` for toasts that show loading states and transition to success/error:
-
-```jsx
-useProgressToast(
-  isLoading
-    ? { isLoading: true, title: 'Saving...', icon: <Spinner /> }
-    : { isLoading: false, title: 'Saved!', icon: <IconCheck />, theme: 'success' }
-);
-```
+Use `useProgressToast` for operations that have loading, success, and error states. The hook manages the entire lifecycle of the toast automatically.
 
 <Story of={ToastStories.ProgressToast} />
+
+#### How It Works
+
+The `useProgressToast` hook accepts a single options object that controls the toast state:
+
+```tsx
+interface ProgressToastOptions {
+  isLoading: boolean;      // Whether the operation is in progress
+  title?: ReactNode;       // Primary message
+  description?: ReactNode; // Secondary message
+  theme?: ToastType;       // 'default' | 'success' | 'danger' | 'warning' | 'note'
+  icon?: ReactNode;        // Custom icon (theme-based icons applied automatically when not loading)
+  id?: Key;                // For deduplication
+}
+
+// Or pass empty value to immediately dismiss any existing toast
+type ProgressToastEmpty = null | undefined | false | {};
+```
+
+#### State Transitions
+
+The hook handles three main scenarios:
+
+**1. Loading State** (`isLoading: true`)
+- Toast appears immediately and persists until `isLoading` becomes `false`
+- No auto-dismiss timer while loading
+- Useful for showing progress during async operations
+
+**2. Result State** (`isLoading: false` with content)
+- When transitioning from loading to not loading, the toast updates to show the result
+- Result toast auto-dismisses after 3 seconds
+- Theme-based icons are automatically applied (success checkmark, danger X, etc.)
+
+**3. Dismissed** (empty value or no title when not loading)
+- Pass `null`, `undefined`, `false`, or `{}` to immediately remove any existing toast
+- Useful for conditional rendering or cleanup
+
+#### Basic Usage
+
+```jsx
+function SaveButton() {
+  const [status, setStatus] = useState('idle');
+  
+  useProgressToast(
+    status === 'saving'
+      ? { isLoading: true, title: 'Saving...' }
+      : status === 'success'
+        ? { isLoading: false, title: 'Saved!', theme: 'success' }
+        : status === 'error'
+          ? { isLoading: false, title: 'Failed to save', theme: 'danger' }
+          : null // idle state - no toast
+  );
+  
+  return <Button onPress={() => setStatus('saving')}>Save</Button>;
+}
+```
+
+#### With Error Handling
+
+```jsx
+function DataLoader() {
+  const { data, isLoading, error } = useQuery('data');
+  
+  useProgressToast(
+    isLoading
+      ? { isLoading: true, title: 'Loading data...' }
+      : error
+        ? { isLoading: false, title: 'Error', description: error.message, theme: 'danger' }
+        : { isLoading: false, title: 'Data loaded', theme: 'success' }
+  );
+  
+  return <div>{/* content */}</div>;
+}
+```
+
+#### Conditional Display
+
+Pass an empty value to prevent the toast from showing or to immediately remove an existing one:
+
+```jsx
+// Only show toast when needed
+useProgressToast(
+  shouldShowProgress 
+    ? { isLoading: true, title: 'Processing...' } 
+    : null
+);
+
+// All of these are equivalent "empty" values:
+useProgressToast(null);
+useProgressToast(undefined);
+useProgressToast(false);
+useProgressToast({});
+```
+
+#### Custom Icons
+
+When `isLoading` is `false`, the hook automatically applies theme-based icons. You can override this with a custom icon:
+
+```jsx
+useProgressToast({
+  isLoading: false,
+  title: 'Uploaded!',
+  theme: 'success',
+  icon: <IconCloudUpload />, // Custom icon instead of default checkmark
+});
+```
+
+#### Declarative Alternative
+
+For component-based usage, use `<Toast.Progress>`:
+
+```jsx
+<Toast.Progress
+  {...(isLoading
+    ? { isLoading: true, title: 'Saving...' }
+    : { isLoading: false, title: 'Saved!', theme: 'success' }
+  )}
+/>
 
 ### Interactive Progress State Toggle
 
