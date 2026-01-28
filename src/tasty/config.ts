@@ -11,6 +11,7 @@
  * reconfigure will emit a warning and be ignored.
  */
 
+import { CSS_RESET } from './css-reset';
 import { StyleInjector } from './injector/injector';
 import { clearPipelineCache } from './pipeline';
 import { setGlobalPredefinedStates } from './states';
@@ -32,6 +33,9 @@ import type { KeyframesSteps, PropertyDefinition } from './injector/types';
 import type { StyleDetails, UnitHandler } from './parser/types';
 import type { TastyPlugin } from './plugins/types';
 import type { StyleHandlerDefinition } from './utils/styles';
+
+// Re-export CSS_RESET for external use
+export { CSS_RESET };
 
 /**
  * Configuration options for the Tasty style system
@@ -197,6 +201,13 @@ export interface TastyConfig {
   tokens?: {
     [key: `$${string}` | `#${string}`]: string | number;
   };
+  /**
+   * Whether to inject a global CSS reset when styles are first generated.
+   * The reset includes sensible defaults for box-sizing, margins, typography,
+   * and form elements. It's wrapped in an unnamed `@layer` for lowest cascade priority.
+   * @default false
+   */
+  cssReset?: boolean;
 }
 
 // Warnings tracking to avoid duplicates
@@ -302,6 +313,7 @@ function createDefaultConfig(isTest?: boolean): TastyConfig {
     devMode: isDevEnv(),
     bulkCleanupBatchRatio: 0.5,
     unusedStylesMinAgeMs: 10000,
+    cssReset: false,
   };
 }
 
@@ -320,6 +332,12 @@ export function markStylesGenerated(): void {
   stylesGenerated = true;
 
   const injector = getGlobalInjector();
+
+  // Inject CSS reset if enabled (default: false)
+  const config = getConfig();
+  if (config.cssReset === true) {
+    injector.injectRawCSS(CSS_RESET);
+  }
 
   // Inject internal properties required by tasty core features
   for (const [token, definition] of Object.entries(INTERNAL_PROPERTIES)) {

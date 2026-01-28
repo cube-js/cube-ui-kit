@@ -32,6 +32,22 @@ export class CSSWriter {
   }
 
   /**
+   * Prepend CSS block at the beginning (before all existing blocks)
+   * @param key - Unique key for deduplication
+   * @param css - CSS content
+   * @param source - Optional source file path (used in devMode)
+   */
+  prepend(key: string, css: string, source?: string): void {
+    // Create new Map with the prepended entry first
+    const newBlocks = new Map<string, CSSBlock>();
+    newBlocks.set(key, { css, source });
+    for (const [existingKey, existingBlock] of this.cssBlocks) {
+      newBlocks.set(existingKey, existingBlock);
+    }
+    this.cssBlocks = newBlocks;
+  }
+
+  /**
    * Check if a key already exists
    */
   has(key: string): boolean {
