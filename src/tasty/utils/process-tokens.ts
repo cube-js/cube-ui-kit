@@ -239,20 +239,17 @@ export function processTokens(
       const colorName = key.slice(1);
       const originalValue = typeof value === 'number' ? String(value) : value;
       const lowerValue = originalValue.toLowerCase();
-
-      // Skip #current as it cannot have RGB extracted (it represents currentcolor)
-      // Also skip any value that references #current
-      if (key.toLowerCase() === '#current' || lowerValue.includes('#current')) {
-        // Only set the color property, skip RGB since currentcolor is dynamic
-        if (!result) result = {};
-        result[`--${colorName}-color`] = 'currentcolor';
-        continue;
-      }
-
       const processedValue = processTokenValue(value);
 
       if (!result) result = {};
       result[`--${colorName}-color`] = processedValue;
+
+      // Skip RGB generation for #current values (currentcolor is dynamic, cannot extract RGB)
+      // Match only #current or #current.opacity, not #current-theme or #currently-used
+      if (/^#current(?:\.|$)/i.test(lowerValue)) {
+        continue;
+      }
+
       result[`--${colorName}-color-rgb`] = extractRgbValue(
         originalValue,
         processedValue,

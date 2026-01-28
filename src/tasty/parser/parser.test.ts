@@ -1216,7 +1216,7 @@ describe('#current color token', () => {
     expect(result.output).toBe('currentcolor');
   });
 
-  test('warning is logged when defining token with #current value', () => {
+  test('warning is logged when defining token with bare #current value', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     setGlobalPredefinedTokens({
@@ -1230,6 +1230,48 @@ describe('#current color token', () => {
     // Token should be skipped
     const tokens = getGlobalPredefinedTokens();
     expect(tokens?.['#my-color']).toBeUndefined();
+
+    warnSpy.mockRestore();
+  });
+
+  test('#current with opacity is allowed in predefined tokens', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    setGlobalPredefinedTokens({
+      '#my-color': '#current.5',
+    });
+
+    // No warning should be logged
+    expect(warnSpy).not.toHaveBeenCalled();
+
+    // Token should be added
+    const tokens = getGlobalPredefinedTokens();
+    expect(tokens?.['#my-color']).toBe('#current.5');
+
+    // Using the token should produce color-mix
+    const result = parser.process('#my-color');
+    expect(result.output).toBe(
+      'color-mix(in oklab, currentcolor 50%, transparent)',
+    );
+
+    warnSpy.mockRestore();
+  });
+
+  test('#current-theme is allowed (not confused with #current)', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    setGlobalPredefinedTokens({
+      '#current-theme': '#purple',
+      '#accent': '#current-theme',
+    });
+
+    // No warning should be logged - #current-theme is a valid token name
+    expect(warnSpy).not.toHaveBeenCalled();
+
+    // Both tokens should be added
+    const tokens = getGlobalPredefinedTokens();
+    expect(tokens?.['#current-theme']).toBe('#purple');
+    expect(tokens?.['#accent']).toBe('#current-theme');
 
     warnSpy.mockRestore();
   });
