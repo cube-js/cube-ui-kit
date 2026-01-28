@@ -41,10 +41,6 @@ export const CSS_RESET = `@layer {
 		max-inline-size: 100%;
 	}
 
-	svg:not([fill]) {
-		fill: currentColor;
-	}
-
 	input,
 	button,
 	textarea,
@@ -134,7 +130,7 @@ export const CSS_RESET = `@layer {
 		line-height: 0;
 	}
 
-	:disabled:not([data-disabled]) {
+	:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
 	}
