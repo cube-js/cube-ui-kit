@@ -21,6 +21,7 @@ import { declare } from '@babel/helper-plugin-utils';
 import * as t from '@babel/types';
 
 import { configure } from '../config';
+import { CSS_RESET } from '../css-reset';
 import { Styles } from '../styles/types';
 import { mergeStyles } from '../utils/merge-styles';
 import { StyleHandlerDefinition } from '../utils/styles';
@@ -116,6 +117,13 @@ export interface TastyZeroConfig {
   tokens?: {
     [key: `$${string}` | `#${string}`]: string | number;
   };
+  /**
+   * Whether to include a global CSS reset at the beginning of the generated CSS.
+   * The reset includes sensible defaults for box-sizing, margins, typography,
+   * and form elements. It's wrapped in an unnamed `@layer` for lowest cascade priority.
+   * @default false
+   */
+  cssReset?: boolean;
 }
 
 export interface TastyZeroBabelOptions {
@@ -267,6 +275,11 @@ export default declare<TastyZeroBabelOptions>((api, options) => {
     },
 
     post() {
+      // Prepend CSS reset at the beginning if enabled (default: false)
+      if (config.cssReset === true) {
+        cssWriter.prepend('__css_reset__', CSS_RESET);
+      }
+
       // Write all collected CSS at the end of the build
       if (cssWriter.size > 0) {
         cssWriter.write();

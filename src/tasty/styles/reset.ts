@@ -14,7 +14,6 @@ const RESET_MAP = {
   input: [
     {
       '-webkit-appearance': 'none',
-      'word-spacing': 'initial',
       '-webkit-text-fill-color': 'currentColor',
     },
     {
