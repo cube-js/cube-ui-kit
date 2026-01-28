@@ -238,6 +238,17 @@ export function processTokens(
       // Color token: #name -> --name-color and --name-color-rgb
       const colorName = key.slice(1);
       const originalValue = typeof value === 'number' ? String(value) : value;
+      const lowerValue = originalValue.toLowerCase();
+
+      // Skip #current as it cannot have RGB extracted (it represents currentcolor)
+      // Also skip any value that references #current
+      if (key.toLowerCase() === '#current' || lowerValue.includes('#current')) {
+        // Only set the color property, skip RGB since currentcolor is dynamic
+        if (!result) result = {};
+        result[`--${colorName}-color`] = 'currentcolor';
+        continue;
+      }
+
       const processedValue = processTokenValue(value);
 
       if (!result) result = {};

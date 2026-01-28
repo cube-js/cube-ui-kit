@@ -816,6 +816,28 @@ describe('Predefined tokens', () => {
     expect(result.output).toBe('rgb(var(--purple-color-rgb) / .5)');
   });
 
+  test('custom property opacity works with predefined color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#accent': '#purple',
+    });
+
+    // #accent.$disabled should resolve #accent to #purple, then apply var(--disabled)
+    const result = parser.process('#accent.$disabled');
+    expect(result.output).toBe(
+      'rgb(var(--purple-color-rgb) / var(--disabled))',
+    );
+  });
+
+  test('custom property opacity works with predefined rgb() color tokens', () => {
+    setGlobalPredefinedTokens({
+      '#brand': 'rgb(100 150 200)',
+    });
+
+    // #brand.$opacity should resolve to rgb with var(--opacity)
+    const result = parser.process('#brand.$opacity');
+    expect(result.output).toBe('rgb(100 150 200 / var(--opacity))');
+  });
+
   test('opacity suffix works with predefined rgb() color tokens', () => {
     setGlobalPredefinedTokens({
       '#brand': 'rgb(100 150 200)',
@@ -1091,5 +1113,124 @@ describe('Predefined tokens', () => {
     expect(tokenResult.output).toBe('rgb(var(--purple-color-rgb) / .5)');
     expect(directResult.output).toBe('rgb(var(--purple-color-rgb) / .5)');
     expect(tokenResult.output).toBe(directResult.output);
+  });
+});
+
+describe('Custom property opacity syntax', () => {
+  test('#color.$prop uses var() for alpha', () => {
+    const result = parser.process('#purple.$disabled');
+    expect(result.output).toBe(
+      'rgb(var(--purple-color-rgb) / var(--disabled))',
+    );
+  });
+
+  test('#color.$prop works with hyphenated names', () => {
+    const result = parser.process('#dark-05.$my-opacity');
+    expect(result.output).toBe(
+      'rgb(var(--dark-05-color-rgb) / var(--my-opacity))',
+    );
+  });
+
+  test('#color.$prop works with underscore names', () => {
+    const result = parser.process('#blue.$_private');
+    expect(result.output).toBe('rgb(var(--blue-color-rgb) / var(--_private))');
+  });
+});
+
+describe('#current color token', () => {
+  // Import inline to avoid circular dependency issues at module load time
+  let setGlobalPredefinedTokens: (tokens: Record<string, string>) => void;
+  let resetGlobalPredefinedTokens: () => void;
+  let getGlobalPredefinedTokens: () => Record<string, string> | null;
+
+  beforeAll(() => {
+    // Dynamic import to get the functions
+    const styles = jest.requireActual('../utils/styles');
+    setGlobalPredefinedTokens = styles.setGlobalPredefinedTokens;
+    resetGlobalPredefinedTokens = styles.resetGlobalPredefinedTokens;
+    getGlobalPredefinedTokens = styles.getGlobalPredefinedTokens;
+  });
+
+  beforeEach(() => {
+    resetGlobalPredefinedTokens();
+  });
+
+  afterEach(() => {
+    resetGlobalPredefinedTokens();
+  });
+
+  test('#current produces currentcolor', () => {
+    const result = parser.process('#current');
+    expect(result.output).toBe('currentcolor');
+    expect(result.groups[0].colors).toEqual(['currentcolor']);
+  });
+
+  test('#current.5 uses color-mix with 50%', () => {
+    const result = parser.process('#current.5');
+    expect(result.output).toBe(
+      'color-mix(in oklab, currentcolor 50%, transparent)',
+    );
+  });
+
+  test('#current.05 uses color-mix with 5%', () => {
+    const result = parser.process('#current.05');
+    expect(result.output).toBe(
+      'color-mix(in oklab, currentcolor 5%, transparent)',
+    );
+  });
+
+  test('#current.0 uses color-mix with 0%', () => {
+    const result = parser.process('#current.0');
+    expect(result.output).toBe(
+      'color-mix(in oklab, currentcolor 0%, transparent)',
+    );
+  });
+
+  test('#current.$opacity uses color-mix with calc()', () => {
+    const result = parser.process('#current.$opacity');
+    expect(result.output).toBe(
+      'color-mix(in oklab, currentcolor calc(var(--opacity) * 100%), transparent)',
+    );
+  });
+
+  test('#current.$disabled uses color-mix with calc()', () => {
+    const result = parser.process('#current.$disabled');
+    expect(result.output).toBe(
+      'color-mix(in oklab, currentcolor calc(var(--disabled) * 100%), transparent)',
+    );
+  });
+
+  test('#current is classified as color', () => {
+    const result = parser.process('#current 1x');
+    expect(result.groups[0].colors).toEqual(['currentcolor']);
+    expect(result.groups[0].values).toEqual(['8px']);
+  });
+
+  test('#current cannot be overridden by predefined tokens', () => {
+    setGlobalPredefinedTokens({
+      '#current': '#purple',
+    });
+
+    // Should still produce currentcolor, not var(--purple-color)
+    const result = parser.process('#current');
+    expect(result.output).toBe('currentcolor');
+  });
+
+  test('warning is logged when defining token with #current value', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    setGlobalPredefinedTokens({
+      '#my-color': '#current',
+    });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Using #current to define color token'),
+    );
+
+    // Token should be skipped
+    const tokens = getGlobalPredefinedTokens();
+    expect(tokens?.['#my-color']).toBeUndefined();
+
+    warnSpy.mockRestore();
   });
 });

@@ -105,7 +105,37 @@ export function classify(
     }
   }
 
-  // 0a. Check for predefined tokens (configured via configure({ tokens: {...} }))
+  // 0b. Special handling for #current (reserved keyword, cannot be overridden by predefined tokens)
+  // #current maps to CSS currentcolor keyword
+  if (token === '#current') {
+    return { bucket: Bucket.Color, processed: 'currentcolor' };
+  }
+
+  // #current with opacity: #current.5 or #current.$opacity
+  // Uses color-mix since currentcolor doesn't support rgb() alpha syntax
+  const currentAlphaMatch = token.match(
+    /^#current\.(\$[a-z_][a-z0-9-_]*|[0-9]+)$/i,
+  );
+  if (currentAlphaMatch) {
+    const rawAlpha = currentAlphaMatch[1];
+    let percentage: string;
+    if (rawAlpha.startsWith('$')) {
+      // Custom property: $disabled -> calc(var(--disabled) * 100%)
+      const propName = rawAlpha.slice(1);
+      percentage = `calc(var(--${propName}) * 100%)`;
+    } else if (rawAlpha === '0') {
+      percentage = '0%';
+    } else {
+      // Convert .5 -> 50%, .05 -> 5%
+      percentage = `${parseFloat('.' + rawAlpha) * 100}%`;
+    }
+    return {
+      bucket: Bucket.Color,
+      processed: `color-mix(in oklab, currentcolor ${percentage}, transparent)`,
+    };
+  }
+
+  // 0c. Check for predefined tokens (configured via configure({ tokens: {...} }))
   // Must happen before default $ and # handling to allow overriding
   if (token[0] === '$' || token[0] === '#') {
     const predefinedTokens = getGlobalPredefinedTokens();
@@ -116,9 +146,11 @@ export function classify(
         // Lowercase the token value to match parser behavior (parser lowercases input)
         return classify(tokenValue.toLowerCase(), opts, recurse);
       }
-      // Check for color token with alpha suffix: #token.alpha
+      // Check for color token with alpha suffix: #token.alpha or #token.$prop
       if (token[0] === '#') {
-        const alphaMatch = token.match(/^(#[a-z0-9-]+)\.([0-9]+)$/i);
+        const alphaMatch = token.match(
+          /^(#[a-z0-9-]+)\.(\$[a-z_][a-z0-9-_]*|[0-9]+)$/i,
+        );
         if (alphaMatch) {
           const [, baseToken, rawAlpha] = alphaMatch;
           if (baseToken in predefinedTokens) {
@@ -141,7 +173,14 @@ export function classify(
             );
             if (funcMatch) {
               const [, funcName, args] = funcMatch;
-              const alpha = rawAlpha === '0' ? '0' : `.${rawAlpha}`;
+              // Handle $prop syntax for custom property alpha
+              let alpha: string;
+              if (rawAlpha.startsWith('$')) {
+                const propName = rawAlpha.slice(1);
+                alpha = `var(--${propName})`;
+              } else {
+                alpha = rawAlpha === '0' ? '0' : `.${rawAlpha}`;
+              }
               // Normalize function name: rgba->rgb, hsla->hsl (modern syntax doesn't need 'a' suffix)
               const normalizedFunc = funcName.replace(/a$/i, '').toLowerCase();
               // Normalize to modern syntax: replace top-level commas with spaces
@@ -257,15 +296,24 @@ export function classify(
     // invalid custom property → modifier
   }
 
-  // 3. Hash colors (with optional alpha suffix e.g., #purple.5)
+  // 3. Hash colors (with optional alpha suffix e.g., #purple.5 or #purple.$disabled)
   if (token[0] === '#' && token.length > 1) {
-    // alpha form: #name.alpha
-    const alphaMatch = token.match(/^#([a-z0-9-]+)\.([0-9]+)$/i);
+    // alpha form: #name.alpha or #name.$prop
+    const alphaMatch = token.match(
+      /^#([a-z0-9-]+)\.(\$[a-z_][a-z0-9-_]*|[0-9]+)$/i,
+    );
     if (alphaMatch) {
       const [, base, rawAlpha] = alphaMatch;
       let alpha: string;
-      if (rawAlpha === '0') alpha = '0';
-      else alpha = `.${rawAlpha}`;
+      if (rawAlpha.startsWith('$')) {
+        // Custom property: $disabled -> var(--disabled)
+        const propName = rawAlpha.slice(1);
+        alpha = `var(--${propName})`;
+      } else if (rawAlpha === '0') {
+        alpha = '0';
+      } else {
+        alpha = `.${rawAlpha}`;
+      }
       return {
         bucket: Bucket.Color,
         processed: `rgb(var(--${base}-color-rgb) / ${alpha})`,
