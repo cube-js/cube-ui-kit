@@ -753,7 +753,7 @@ function transformPattern(pattern: string): string {
       continue;
     }
 
-    // Class (.active)
+    // Class (.active, .myClass, .navItem)
     if (char === '.') {
       // Keep attached if directly after ] (element), @ (placeholder), or alphanumeric (tag)
       // Otherwise add space (standalone class selector)
@@ -765,13 +765,12 @@ function transformPattern(pattern: string): string {
       if (result && !attachToLast && !result.endsWith(' ')) {
         result += ' ';
       }
-      let cls = '';
-      while (
-        i < pattern.length &&
-        !/[\s>+~,@]/.test(pattern[i]) &&
-        !/[A-Z]/.test(pattern[i])
-      ) {
-        // Allow : in class parsing to handle pseudo after class
+      // Start with the dot
+      let cls = '.';
+      i++;
+      // Class names can contain uppercase letters (camelCase, BEM, etc.)
+      // Stop at: whitespace, combinators, comma, @, or new token starters (. : [)
+      while (i < pattern.length && /[a-zA-Z0-9_-]/.test(pattern[i])) {
         cls += pattern[i];
         i++;
       }
@@ -848,8 +847,10 @@ function shouldInjectKey(pattern: string): boolean {
   }
 
   // Rule 2: Ends with uppercase element name → inject key as descendant
+  // The lookbehind ensures we're matching a standalone element name, not
+  // part of a class like .myClass (where C is preceded by lowercase)
   // e.g., '>Body' → '> [data-element="Body"] [data-element="Key"]'
-  if (/[A-Z][a-zA-Z0-9]*$/.test(trimmed)) {
+  if (/(?:^|[\s>+~\]:])[A-Z][a-zA-Z0-9]*$/.test(trimmed)) {
     return true;
   }
 

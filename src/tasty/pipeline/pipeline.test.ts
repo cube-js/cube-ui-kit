@@ -998,6 +998,53 @@ describe('Sub-element selector affix ($) tests', () => {
       expect(result[0].selector).not.toContain('data-element');
     });
 
+    it('should handle camelCase class names (.myClass)', () => {
+      const styles = {
+        Item: {
+          $: '.myClass',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.card');
+      expect(result.length).toBe(1);
+      // Should preserve the full class name with uppercase letters
+      expect(result[0].selector).toContain('.myClass');
+      // Should NOT incorrectly split into .my and [data-element="Class"]
+      expect(result[0].selector).not.toContain('data-element');
+    });
+
+    it('should handle camelCase class on sub-element (>@.navItem)', () => {
+      const styles = {
+        Link: {
+          $: '>@.navItem',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.nav');
+      expect(result.length).toBe(1);
+      // Should attach full camelCase class to the element
+      expect(result[0].selector).toContain('[data-element="Link"].navItem');
+      // Should NOT incorrectly treat "Item" as a sub-element
+      expect(result[0].selector).not.toContain('[data-element="Item"]');
+    });
+
+    it('should handle class followed by pseudo (.active:hover)', () => {
+      const styles = {
+        Button: {
+          $: '.active:hover',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.card');
+      expect(result.length).toBe(1);
+      // Should have class followed by pseudo without space
+      expect(result[0].selector).toContain('.active:hover');
+      expect(result[0].selector).not.toContain('data-element');
+    });
+
     it('should handle >@.active (class on sub-element)', () => {
       const styles = {
         Item: {
