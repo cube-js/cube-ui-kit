@@ -1010,6 +1010,39 @@ describe('Sub-element selector affix ($) tests', () => {
       expect(result.length).toBe(1);
       expect(result[0].selector).toContain('> [data-element="Item"].active');
     });
+
+    it('should handle @[disabled] (attribute on sub-element)', () => {
+      const styles = {
+        Item: {
+          $: '@[disabled]',
+          opacity: '0.5',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(1);
+      // Should attach attribute directly to element, not as descendant
+      expect(result[0].selector).toContain('[data-element="Item"][disabled]');
+      // Should NOT have space between element and attribute
+      expect(result[0].selector).not.toMatch(
+        /\[data-element="Item"\]\s+\[disabled\]/,
+      );
+    });
+
+    it('should handle >@[aria-selected="true"] (attribute on direct child)', () => {
+      const styles = {
+        Option: {
+          $: '>@[aria-selected="true"]',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.select');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain(
+        '> [data-element="Option"][aria-selected="true"]',
+      );
+    });
   });
 
   describe('Sibling combinators', () => {

@@ -781,7 +781,11 @@ function transformPattern(pattern: string): string {
 
     // Attribute selector [...]
     if (char === '[') {
-      if (result && !result.endsWith(' ') && !result.endsWith(']')) {
+      // Keep attached if directly after ] (element) or @ (placeholder)
+      // Otherwise add space (standalone attribute selector)
+      const lastNonSpace = result.replace(/\s+$/, '').slice(-1);
+      const attachToLast = lastNonSpace === ']' || lastNonSpace === '@';
+      if (result && !attachToLast && !result.endsWith(' ')) {
         result += ' ';
       }
       let attr = '';

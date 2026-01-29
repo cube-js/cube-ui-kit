@@ -1249,135 +1249,35 @@ const Card = tasty({
 
 #### Selector Affix (`$`)
 
-Control sub-element selector using the `$` property. The system auto-injects `[data-element="Key"]` based on the pattern:
+Control sub-element selector using the `$` property. The key `[data-element="Key"]` is auto-injected based on pattern:
 
-```jsx
-const Table = tasty({
+| Pattern | Result | Description |
+|---------|--------|-------------|
+| *(none)* | ` [el]` | Descendant (default) |
+| `>` | `> [el]` | Direct child |
+| `>Body>Row>` | `> [Body] > [Row] > [el]` | Chained elements |
+| `>Body>Row` | `> [Body] > [Row] [el]` | Descendant of chain |
+| `::before` | `::before` | Root pseudo (no key) |
+| `@:hover` | `[el]:hover` | Key with pseudo |
+| `>@.active` | `> [el].active` | Key with class |
+| `@[disabled]` | `[el][disabled]` | Key with attribute |
+| `>Item+` | `> [Item] + [el]` | After sibling |
+| `::before, ::after` | Both pseudos | Multiple selectors |
+| `>ul>li` | `> ul > li [el]` | HTML tags |
+| `a:hover` | `a:hover` | Tag with pseudo (no key) |
+
+Use `@` placeholder to control key position. Without `@`, key is auto-injected at the end unless pattern ends with pseudo/class/attribute.
+
+```jsx live=false
+const Component = tasty({
   styles: {
-    // Direct child: trailing > injects key
-    Row: {
-      $: '>',                     // → .table > [data-element="Row"]
-      padding: '1x',
-    },
-    
-    // Chained selectors (compact syntax supported)
-    Cell: {
-      $: '>Body>Row>',            // → > [data-element="Body"] > [data-element="Row"] > [data-element="Cell"]
-      border: '1bw solid #border',
-    },
-    
-    // Descendant of element (no trailing >)
-    Text: {
-      $: '>Body>Row',             // → > [data-element="Body"] > [data-element="Row"] [data-element="Text"]
-      color: '#text',
-    },
-    
-    // Default: descendant selector (no $)
-    Label: {
-      color: '#text',             // → .table [data-element="Label"]
-    },
+    Row: { $: '>' },              // Direct child
+    Cell: { $: '>Body>Row>' },    // Chained path
+    Before: { $: '::before' },    // Root pseudo-element  
+    Item: { $: '>@:hover' },      // Key with pseudo
   },
 });
 ```
-
-**Pseudo-elements on root** — no key injection:
-
-```jsx
-const Divider = tasty({
-  styles: {
-    Before: {
-      $: '::before',              // → .divider::before
-      content: '""',
-    },
-  },
-});
-```
-
-**Pseudo on sub-element** — use `@` placeholder:
-
-```jsx
-const List = tasty({
-  styles: {
-    Item: {
-      $: '>@:hover',              // → > [data-element="Item"]:hover
-      fill: '#hover',
-    },
-    Label: {
-      $: '@::before',             // → [data-element="Label"]::before
-      content: '"•"',
-    },
-  },
-});
-```
-
-**Sibling combinators** — must follow an element:
-
-```jsx
-const List = tasty({
-  styles: {
-    Next: {
-      $: '>Item+',                // → > [data-element="Item"] + [data-element="Next"]
-      marginTop: '1x',
-    },
-    // ❌ Invalid: standalone + or ~ (targets outside root)
-    // Bad: { $: '+' }
-  },
-});
-```
-
-**Multiple selectors** — comma-separated:
-
-```jsx
-const Container = tasty({
-  styles: {
-    Deco: {
-      $: '::before, ::after',     // Applies to both pseudo-elements
-      content: '""',
-    },
-  },
-});
-```
-
-**HTML tag selectors** — lowercase names target native elements:
-
-```jsx
-const Nav = tasty({
-  styles: {
-    // Style all <a> tags inside, key injected as descendant
-    Link: {
-      $: 'a',                     // → .nav a [data-element="Link"]
-      textDecoration: 'none',
-    },
-    // Direct child tags
-    Item: {
-      $: '>li',                   // → > li [data-element="Item"]
-      padding: '1x',
-    },
-    // Chained tags
-    ListItem: {
-      $: '>ul>li',                // → > ul > li [data-element="ListItem"]
-      margin: '0',
-    },
-    // Tag with pseudo (no key injection)
-    HoverLink: {
-      $: 'a:hover',               // → a:hover (no key)
-      color: '#primary',
-    },
-    // Mixed with elements
-    Text: {
-      $: '>Body>span',            // → > [data-element="Body"] > span [data-element="Text"]
-      color: '#text',
-    },
-  },
-});
-```
-
-**Key injection rules:**
-1. `@` present → inject key at `@` position
-2. Ends with combinator (`>`, `+`, `~`) → inject key after it
-3. Ends with uppercase element → inject key as descendant
-4. Ends with lowercase tag → inject key as descendant
-5. Otherwise (pseudo, class, attribute) → no injection
 
 #### `:has()` Selector with Sub-elements
 
