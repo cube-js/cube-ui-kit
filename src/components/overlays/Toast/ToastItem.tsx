@@ -29,7 +29,7 @@ const StyledItem = tasty(Item, {
 
 export const ToastItem = forwardRef<HTMLElement, ToastItemProps>(
   function ToastItem(props, ref) {
-    const { title, description, theme, isLoading, children, ...itemProps } =
+    const { title, description, theme, isLoading, children, qa, ...itemProps } =
       props;
 
     // If only description provided (no title/children), use description as primary content
@@ -39,6 +39,7 @@ export const ToastItem = forwardRef<HTMLElement, ToastItemProps>(
     return (
       <StyledItem
         ref={ref}
+        qa={qa ?? 'Toast'}
         type="card"
         theme={theme}
         isLoading={isLoading}
