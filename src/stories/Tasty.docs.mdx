@@ -1249,35 +1249,135 @@ const Card = tasty({
 
 #### Selector Affix (`$`)
 
-Control sub-element selector combinator using the `$` property:
+Control sub-element selector using the `$` property. The system auto-injects `[data-element="Key"]` based on the pattern:
 
 ```jsx
 const Table = tasty({
   styles: {
-    // Direct child selector
+    // Direct child: trailing > injects key
     Row: {
-      $: '>',                     // .table > [data-element="Row"]
+      $: '>',                     // → .table > [data-element="Row"]
       padding: '1x',
     },
     
-    // Chained selectors (auto-transforms capitalized words)
-    // ⚠️ Important: Spaces required around combinators for parsing
+    // Chained selectors (compact syntax supported)
     Cell: {
-      $: '> Body > Row >',        // ✅ Correct: spaces around > 
-                                  // ❌ Wrong: '>Body>Row>' (parser can't split)
-                                  // → .table > [data-element="Body"] > [data-element="Row"] > [data-element="Cell"]
+      $: '>Body>Row>',            // → > [data-element="Body"] > [data-element="Row"] > [data-element="Cell"]
       border: '1bw solid #border',
     },
     
-    // Default: descendant selector (space)
+    // Descendant of element (no trailing >)
     Text: {
-      color: '#text',             // .table [data-element="Text"]
+      $: '>Body>Row',             // → > [data-element="Body"] > [data-element="Row"] [data-element="Text"]
+      color: '#text',
+    },
+    
+    // Default: descendant selector (no $)
+    Label: {
+      color: '#text',             // → .table [data-element="Label"]
     },
   },
 });
 ```
 
-> **⚠️ Space Requirements:** Combinators (`>`, `+`, `~`) in selector affixes **must have spaces** around them when used with capitalized element names. Use `$: '> Body > Row'` ✅, not `$: '>Body>Row'` ❌. This is a performance consideration—the parser uses simple whitespace splitting to identify element names.
+**Pseudo-elements on root** — no key injection:
+
+```jsx
+const Divider = tasty({
+  styles: {
+    Before: {
+      $: '::before',              // → .divider::before
+      content: '""',
+    },
+  },
+});
+```
+
+**Pseudo on sub-element** — use `@` placeholder:
+
+```jsx
+const List = tasty({
+  styles: {
+    Item: {
+      $: '>@:hover',              // → > [data-element="Item"]:hover
+      fill: '#hover',
+    },
+    Label: {
+      $: '@::before',             // → [data-element="Label"]::before
+      content: '"•"',
+    },
+  },
+});
+```
+
+**Sibling combinators** — must follow an element:
+
+```jsx
+const List = tasty({
+  styles: {
+    Next: {
+      $: '>Item+',                // → > [data-element="Item"] + [data-element="Next"]
+      marginTop: '1x',
+    },
+    // ❌ Invalid: standalone + or ~ (targets outside root)
+    // Bad: { $: '+' }
+  },
+});
+```
+
+**Multiple selectors** — comma-separated:
+
+```jsx
+const Container = tasty({
+  styles: {
+    Deco: {
+      $: '::before, ::after',     // Applies to both pseudo-elements
+      content: '""',
+    },
+  },
+});
+```
+
+**HTML tag selectors** — lowercase names target native elements:
+
+```jsx
+const Nav = tasty({
+  styles: {
+    // Style all <a> tags inside, key injected as descendant
+    Link: {
+      $: 'a',                     // → .nav a [data-element="Link"]
+      textDecoration: 'none',
+    },
+    // Direct child tags
+    Item: {
+      $: '>li',                   // → > li [data-element="Item"]
+      padding: '1x',
+    },
+    // Chained tags
+    ListItem: {
+      $: '>ul>li',                // → > ul > li [data-element="ListItem"]
+      margin: '0',
+    },
+    // Tag with pseudo (no key injection)
+    HoverLink: {
+      $: 'a:hover',               // → a:hover (no key)
+      color: '#primary',
+    },
+    // Mixed with elements
+    Text: {
+      $: '>Body>span',            // → > [data-element="Body"] > span [data-element="Text"]
+      color: '#text',
+    },
+  },
+});
+```
+
+**Key injection rules:**
+1. `@` present → inject key at `@` position
+2. Ends with combinator (`>`, `+`, `~`) → inject key after it
+3. Ends with uppercase element → inject key as descendant
+4. Ends with lowercase tag → inject key as descendant
+5. Otherwise (pseudo, class, attribute) → no injection
 
 #### `:has()` Selector with Sub-elements
 
@@ -1288,21 +1388,17 @@ const List = tasty({
   styles: {
     border: {
       '': 'none',
-      // ⚠️ Spaces required around combinators (>, +, ~)
-      ':has(Body > Row)': '1bw solid #border',  // ✅ Correct
-      // ':has(Body>Row)': ...                   // ❌ Wrong: parser can't split
+      ':has(Body>Row)': '1bw solid #border',    // Compact syntax supported
     },
     
     padding: {
       '': '2x',
-      ':has(Item)': '4x',                       // Single element, no combinator
+      ':has(Item)': '4x',
       'hovered & :has(Item)': '6x',             // Combining with other modifiers
     },
   },
 });
 ```
-
-> **⚠️ Space Requirements:** Combinators (`>`, `+`, `~`) **must have spaces** around them when used with capitalized element names. Use `:has(Body > Row)` ✅, not `:has(Body>Row)` ❌. This is a performance consideration—the parser uses whitespace splitting to identify element names. A console error will warn if spaces are missing.
 
 ### Keyframes
 

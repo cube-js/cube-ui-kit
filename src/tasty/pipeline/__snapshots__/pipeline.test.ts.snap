@@ -7,21 +7,21 @@ exports[`@supports queries snapshot tests should eliminate impossible @supports 
       "@supports (not (display: grid))",
     ],
     "declarations": "display: inline-block;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@supports (display: grid) and selector(:has(*))",
     ],
     "declarations": "display: flex;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@supports (not selector(:has(*))) and (display: grid)",
     ],
     "declarations": "display: grid;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
 ]
 `;
@@ -34,14 +34,14 @@ exports[`@supports queries snapshot tests should render @supports combined with 
       "@supports (display: grid)",
     ],
     "declarations": "display: grid;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@container (not (width <= 400px))",
     ],
     "declarations": "display: block;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
@@ -49,7 +49,7 @@ exports[`@supports queries snapshot tests should render @supports combined with 
       "@supports (not (display: grid))",
     ],
     "declarations": "display: block;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
 ]
 `;
@@ -62,14 +62,14 @@ exports[`@supports queries snapshot tests should render @supports combined with 
       "@supports (display: grid)",
     ],
     "declarations": "display: grid;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@media (not (width <= 768px))",
     ],
     "declarations": "display: block;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
@@ -77,7 +77,7 @@ exports[`@supports queries snapshot tests should render @supports combined with 
       "@supports (not (display: grid))",
     ],
     "declarations": "display: block;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
 ]
 `;
@@ -89,21 +89,21 @@ exports[`@supports queries snapshot tests should render @supports combined with 
       "@supports (display: grid) and selector(:has(*))",
     ],
     "declarations": "display: grid;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@supports (not (display: grid))",
     ],
     "declarations": "display: block;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@supports (not selector(:has(*))) and (display: grid)",
     ],
     "declarations": "display: block;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
 ]
 `;
@@ -115,21 +115,21 @@ exports[`@supports queries snapshot tests should render @supports combined with 
       "@supports (display: grid)",
     ],
     "declarations": "display: flex;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@supports (not (display: grid)) and (display: flex)",
     ],
     "declarations": "display: flex;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@supports (not (display: grid)) and (not (display: flex))",
     ],
     "declarations": "display: block;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
 ]
 `;
@@ -141,14 +141,14 @@ exports[`@supports queries snapshot tests should render @supports feature query 
       "@supports (display: grid)",
     ],
     "declarations": "display: grid;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@supports (not (display: grid))",
     ],
     "declarations": "display: block;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
 ]
 `;
@@ -160,14 +160,14 @@ exports[`@supports queries snapshot tests should render @supports selector query
       "@supports selector(:has(*))",
     ],
     "declarations": "display: flex;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@supports (not selector(:has(*)))",
     ],
     "declarations": "display: block;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
 ]
 `;
@@ -179,21 +179,21 @@ exports[`@supports queries snapshot tests should render @supports with modifier 
       "@supports selector(:has(*))",
     ],
     "declarations": "display: grid;",
-    "selector": ".demo:has(> Icon)",
+    "selector": ".demo.demo:has(> Icon)",
   },
   {
     "atRules": [
       "@supports (not selector(:has(*)))",
     ],
     "declarations": "display: block;",
-    "selector": ".demo",
+    "selector": ".demo.demo",
   },
   {
     "atRules": [
       "@supports selector(:has(*))",
     ],
     "declarations": "display: block;",
-    "selector": ".demo:not(:has(> Icon))",
+    "selector": ".demo.demo:not(:has(> Icon))",
   },
 ]
 `;
@@ -205,21 +205,21 @@ exports[`@supports queries snapshot tests should render @supports with modifiers
       "@supports (display: grid)",
     ],
     "declarations": "color: blue;",
-    "selector": ".component[data-hovered]",
+    "selector": ".component.component[data-hovered]",
   },
   {
     "atRules": [
       "@supports (not (display: grid))",
     ],
     "declarations": "color: black;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@supports (display: grid)",
     ],
     "declarations": "color: black;",
-    "selector": ".component:not([data-hovered])",
+    "selector": ".component.component:not([data-hovered])",
   },
 ]
 `;
@@ -231,21 +231,21 @@ exports[`@supports queries snapshot tests should render @supports with multiple 
       "@supports selector(:has(*))",
     ],
     "declarations": "display: grid;",
-    "selector": ".demo:has(> Icon)",
+    "selector": ".demo.demo:has(> Icon)",
   },
   {
     "atRules": [
       "@supports selector(:has(*))",
     ],
     "declarations": "display: flex;",
-    "selector": ".demo:not(:has(> Icon))",
+    "selector": ".demo.demo:not(:has(> Icon))",
   },
   {
     "atRules": [
       "@supports (not selector(:has(*)))",
     ],
     "declarations": "display: block;",
-    "selector": ".demo",
+    "selector": ".demo.demo",
   },
 ]
 `;
@@ -257,21 +257,21 @@ exports[`@supports queries snapshot tests should render multiple @supports with 
       "@supports (display: grid)",
     ],
     "declarations": "display: grid;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@supports (not (display: grid)) and (display: flex)",
     ],
     "declarations": "display: flex;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
   {
     "atRules": [
       "@supports (not (display: flex)) and (not (display: grid))",
     ],
     "declarations": "display: block;",
-    "selector": ".component",
+    "selector": ".component.component",
   },
 ]
 `;

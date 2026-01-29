@@ -1159,15 +1159,15 @@ describe('useGlobalStyles() hook', () => {
     );
   });
 
-  it('should warn when combinator lacks spaces in selector affix ($)', () => {
-    const consoleErrorSpy = jest
-      .spyOn(console, 'error')
+  it('should warn when selector affix targets outside root scope', () => {
+    const consoleWarnSpy = jest
+      .spyOn(console, 'warn')
       .mockImplementation(() => {});
 
     const Component = tasty({
       styles: {
         Item: {
-          $: '>Body>Row',
+          $: '+', // Invalid: targets sibling of root
           color: '#primary',
         },
       },
@@ -1175,14 +1175,33 @@ describe('useGlobalStyles() hook', () => {
 
     render(<Component />);
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('[Tasty] Invalid selector affix ($) syntax'),
-    );
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('>Body>Row'),
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('outside the root scope'),
     );
 
-    consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('should support compact selector affix syntax without spaces', () => {
+    const Component = tasty({
+      styles: {
+        Cell: {
+          $: '>Body>Row>',
+          color: '#primary',
+        },
+      },
+    });
+
+    render(<Component />);
+
+    // Get the injected styles
+    const styleElement = document.querySelector('style');
+    const styleContent = styleElement?.textContent || '';
+
+    // Should transform to: > [data-element="Body"] > [data-element="Row"] > [data-element="Cell"]
+    expect(styleContent).toMatch(
+      />\s*\[data-element="Body"\]\s*>\s*\[data-element="Row"\]\s*>\s*\[data-element="Cell"\]/,
+    );
   });
 
   it('should not warn when combinator has proper spaces in selector affix ($)', () => {
