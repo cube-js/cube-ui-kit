@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.106.1
+
+### Patch Changes
+
+- [#984](https://github.com/cube-js/cube-ui-kit/pull/984) [`ee37ff63`](https://github.com/cube-js/cube-ui-kit/commit/ee37ff63fb3fe9151586ca4148ecff888827573f) Thanks [@tenphi](https://github.com/tenphi)! - Add qa prop to Toast.
+
 ## 0.106.0
 
 ### Minor Changes
