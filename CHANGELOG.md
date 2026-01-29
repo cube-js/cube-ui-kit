@@ -1,5 +1,18 @@
 # @cube-dev/ui-kit
 
+## 0.107.0
+
+### Minor Changes
+
+- [#986](https://github.com/cube-js/cube-ui-kit/pull/986) [`43804e80`](https://github.com/cube-js/cube-ui-kit/commit/43804e8053815d2f060572307e4547253e544fe9) Thanks [@tenphi](https://github.com/tenphi)! - Improved sub-element selector affix (`# @cube-dev/ui-kit) with new capabilities:
+
+  - **Compact syntax**: No spaces required around combinators (`'>Body>Row>'` now works)
+  - **Pseudo-elements on root**: Use `$: '::before'` to style root pseudo-elements
+  - **Pseudo on sub-elements**: Use `@` placeholder for pseudo on keyed elements (`$: '>@:hover'`)
+  - **Multiple selectors**: Comma-separated patterns (`$: '::before, ::after'`)
+  - **Sibling combinators**: Support `+` and `~` after elements (`$: '>Item+'`)
+  - **Validation**: Standalone `+` or `~` warns and skips (targets outside root scope)
+
 ## 0.106.1
 
 ### Patch Changes
