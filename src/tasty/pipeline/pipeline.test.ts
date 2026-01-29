@@ -1459,6 +1459,22 @@ describe('Sub-element selector affix ($) tests', () => {
       expect(result[0].selector).toContain('> my-component');
       expect(result[0].selector).toContain('[data-element="Custom"]');
     });
+
+    it('should handle tag with attribute: button[disabled] (no key injection)', () => {
+      const styles = {
+        Disabled: {
+          $: 'button[disabled]',
+          opacity: '0.5',
+        },
+      };
+
+      const result = renderStyles(styles, '.form');
+      expect(result.length).toBe(1);
+      // Should be compound selector without space between tag and attribute
+      expect(result[0].selector).toContain(' button[disabled]');
+      // No key injection because pattern ends with attribute
+      expect(result[0].selector).not.toContain('data-element');
+    });
   });
 
   describe('Invalid pattern validation', () => {
