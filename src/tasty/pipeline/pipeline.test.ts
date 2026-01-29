@@ -702,6 +702,30 @@ describe('renderStyles integration', () => {
     expect(noGridRule).toBeDefined();
     expect(noGridRule!.declarations).toContain('display: inline-block');
   });
+
+  it('should support doubleSelector option for increased specificity', () => {
+    const styles = { color: 'red' };
+
+    // Default: no doubling
+    const resultDefault = renderStyles(styles, '.card');
+    expect(resultDefault[0].selector).toBe('.card');
+
+    // Explicit doubleSelector: true
+    const resultDoubled = renderStyles(styles, '.card', {
+      doubleSelector: true,
+    });
+    expect(resultDoubled[0].selector).toBe('.card.card');
+
+    // Explicit doubleSelector: false
+    const resultNotDoubled = renderStyles(styles, '.card', {
+      doubleSelector: false,
+    });
+    expect(resultNotDoubled[0].selector).toBe('.card');
+
+    // Non-class selectors are never doubled
+    const resultBody = renderStyles(styles, 'body', { doubleSelector: true });
+    expect(resultBody[0].selector).toBe('body');
+  });
 });
 
 describe('Complex OR conditions with mixed types', () => {
@@ -773,6 +797,771 @@ describe('Complex OR conditions with mixed types', () => {
         r.selector.includes(':root:not([data-prefers-schema="system"])'),
       ),
     ).toBe(true);
+  });
+});
+
+describe('Sub-element selector affix ($) tests', () => {
+  beforeEach(() => {
+    clearPipelineCache();
+  });
+
+  describe('Basic combinators', () => {
+    it('should handle direct child selector ">"', () => {
+      const styles = {
+        Row: {
+          $: '>',
+          padding: '1x',
+        },
+      };
+
+      const result = renderStyles(styles, '.table');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('> [data-element="Row"]');
+    });
+
+    it('should handle default descendant selector (no $)', () => {
+      const styles = {
+        Label: {
+          color: 'red',
+        },
+      };
+
+      const result = renderStyles(styles, '.input');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain(' [data-element="Label"]');
+    });
+
+    it('should handle empty $ as default descendant', () => {
+      const styles = {
+        Label: {
+          $: '',
+          color: 'red',
+        },
+      };
+
+      const result = renderStyles(styles, '.input');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain(' [data-element="Label"]');
+    });
+  });
+
+  describe('Chained selectors', () => {
+    it('should handle chained selectors with trailing combinator', () => {
+      const styles = {
+        Cell: {
+          $: '>Body>Row>',
+          border: true,
+        },
+      };
+
+      const result = renderStyles(styles, '.table');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('[data-element="Body"]');
+      expect(result[0].selector).toContain('[data-element="Row"]');
+      expect(result[0].selector).toContain('[data-element="Cell"]');
+      expect(result[0].selector).toMatch(
+        /> \[data-element="Body"\] > \[data-element="Row"\] > \[data-element="Cell"\]/,
+      );
+    });
+
+    it('should handle chained selectors ending with element (descendant)', () => {
+      const styles = {
+        Text: {
+          $: '>Body>Row',
+          color: 'red',
+        },
+      };
+
+      const result = renderStyles(styles, '.table');
+      expect(result.length).toBe(1);
+      // Text should be a descendant of Row
+      expect(result[0].selector).toMatch(
+        /> \[data-element="Body"\] > \[data-element="Row"\] \[data-element="Text"\]/,
+      );
+    });
+
+    it('should support spaced syntax (backward compatible)', () => {
+      const styles = {
+        Cell: {
+          $: '> Body > Row >',
+          border: true,
+        },
+      };
+
+      const result = renderStyles(styles, '.table');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toMatch(
+        /> \[data-element="Body"\] > \[data-element="Row"\] > \[data-element="Cell"\]/,
+      );
+    });
+  });
+
+  describe('Pseudo-elements on root', () => {
+    it('should handle ::before on root', () => {
+      const styles = {
+        Before: {
+          $: '::before',
+          content: '""',
+        },
+      };
+
+      const result = renderStyles(styles, '.divider');
+      expect(result.length).toBe(1);
+      // Selectors are NOT doubled by default (use { doubleSelector: true } to double)
+      expect(result[0].selector).toBe('.divider::before');
+      expect(result[0].selector).not.toContain('data-element');
+    });
+
+    it('should handle ::after on root', () => {
+      const styles = {
+        After: {
+          $: '::after',
+          content: '""',
+        },
+      };
+
+      const result = renderStyles(styles, '.divider');
+      expect(result.length).toBe(1);
+      // Selectors are NOT doubled by default (use { doubleSelector: true } to double)
+      expect(result[0].selector).toBe('.divider::after');
+    });
+  });
+
+  describe('Pseudo on sub-element using @', () => {
+    it('should handle @::before on sub-element', () => {
+      const styles = {
+        Label: {
+          $: '@::before',
+          content: '""',
+        },
+      };
+
+      const result = renderStyles(styles, '.input');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('[data-element="Label"]::before');
+    });
+
+    it('should handle >@::before (direct child with pseudo)', () => {
+      const styles = {
+        Label: {
+          $: '>@::before',
+          content: '""',
+        },
+      };
+
+      const result = renderStyles(styles, '.input');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('> [data-element="Label"]::before');
+    });
+
+    it('should handle >@:hover (pseudo-class on sub-element)', () => {
+      const styles = {
+        Item: {
+          $: '>@:hover',
+          fill: '#hover',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('> [data-element="Item"]:hover');
+    });
+
+    it('should handle multiple pseudo-classes', () => {
+      const styles = {
+        Item: {
+          $: '>@:hover:focus',
+          outline: '2px solid blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain(
+        '> [data-element="Item"]:hover:focus',
+      );
+    });
+  });
+
+  describe('Class selectors', () => {
+    it('should handle class selector (no key injection)', () => {
+      const styles = {
+        Active: {
+          $: '.active',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.card');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('.active');
+      expect(result[0].selector).not.toContain('data-element');
+    });
+
+    it('should handle camelCase class names (.myClass)', () => {
+      const styles = {
+        Item: {
+          $: '.myClass',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.card');
+      expect(result.length).toBe(1);
+      // Should preserve the full class name with uppercase letters
+      expect(result[0].selector).toContain('.myClass');
+      // Should NOT incorrectly split into .my and [data-element="Class"]
+      expect(result[0].selector).not.toContain('data-element');
+    });
+
+    it('should handle camelCase class on sub-element (>@.navItem)', () => {
+      const styles = {
+        Link: {
+          $: '>@.navItem',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.nav');
+      expect(result.length).toBe(1);
+      // Should attach full camelCase class to the element
+      expect(result[0].selector).toContain('[data-element="Link"].navItem');
+      // Should NOT incorrectly treat "Item" as a sub-element
+      expect(result[0].selector).not.toContain('[data-element="Item"]');
+    });
+
+    it('should handle class followed by pseudo (.active:hover)', () => {
+      const styles = {
+        Button: {
+          $: '.active:hover',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.card');
+      expect(result.length).toBe(1);
+      // Should have class followed by pseudo without space
+      expect(result[0].selector).toContain('.active:hover');
+      expect(result[0].selector).not.toContain('data-element');
+    });
+
+    it('should handle >@.active (class on sub-element)', () => {
+      const styles = {
+        Item: {
+          $: '>@.active',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('> [data-element="Item"].active');
+    });
+
+    it('should handle @[disabled] (attribute on sub-element)', () => {
+      const styles = {
+        Item: {
+          $: '@[disabled]',
+          opacity: '0.5',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(1);
+      // Should attach attribute directly to element, not as descendant
+      expect(result[0].selector).toContain('[data-element="Item"][disabled]');
+      // Should NOT have space between element and attribute
+      expect(result[0].selector).not.toMatch(
+        /\[data-element="Item"\]\s+\[disabled\]/,
+      );
+    });
+
+    it('should handle >@[aria-selected="true"] (attribute on direct child)', () => {
+      const styles = {
+        Option: {
+          $: '>@[aria-selected="true"]',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.select');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain(
+        '> [data-element="Option"][aria-selected="true"]',
+      );
+    });
+  });
+
+  describe('Sibling combinators', () => {
+    it('should handle valid sibling after element: >Item+', () => {
+      const styles = {
+        Next: {
+          $: '>Item+',
+          marginTop: '1x',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain(
+        '> [data-element="Item"] + [data-element="Next"]',
+      );
+    });
+
+    it('should handle valid general sibling: >First~', () => {
+      const styles = {
+        Rest: {
+          $: '>First~',
+          opacity: '0.8',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain(
+        '> [data-element="First"] ~ [data-element="Rest"]',
+      );
+    });
+
+    it('should warn and skip invalid standalone + selector', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const styles = {
+        Item: {
+          $: '+',
+          marginTop: '1x',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      // Should be empty - invalid selector is skipped
+      expect(result.length).toBe(0);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('outside the root scope'),
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it('should warn and skip invalid standalone ~ selector', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const styles = {
+        Item: {
+          $: '~',
+          marginTop: '1x',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(0);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('outside the root scope'),
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it('should warn and skip +Element pattern (targets outside root)', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const styles = {
+        Next: {
+          $: '+Item',
+          marginTop: '1x',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(0);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('outside the root scope'),
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it('should warn and skip ~Element pattern (targets outside root)', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const styles = {
+        Other: {
+          $: '~Item',
+          marginTop: '1x',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(0);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('outside the root scope'),
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it('should warn and skip consecutive combinators', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const styles = {
+        Item: {
+          $: '>>',
+          marginTop: '1x',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(0);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('consecutive combinators'),
+      );
+
+      warnSpy.mockRestore();
+    });
+  });
+
+  describe('Multiple selectors (comma)', () => {
+    it('should handle comma-separated patterns', () => {
+      const styles = {
+        Cell: {
+          $: '>, >Body>',
+          padding: '1x',
+        },
+      };
+
+      const result = renderStyles(styles, '.table');
+      // Should generate styles for both patterns (may be 1 merged or 2 separate rules)
+      expect(result.length).toBeGreaterThanOrEqual(1);
+      // Check that both selector patterns are covered
+      const selectors = result.map((r) => r.selector).join(' ');
+      expect(selectors).toContain('[data-element="Cell"]');
+      // Both patterns should be present
+      expect(selectors).toContain('> [data-element="Cell"]');
+      expect(selectors).toContain('[data-element="Body"]');
+    });
+
+    it('should handle multiple pseudo patterns', () => {
+      const styles = {
+        Deco: {
+          $: '::before, ::after',
+          content: '""',
+        },
+      };
+
+      const result = renderStyles(styles, '.divider');
+      // Both ::before and ::after should be generated
+      const selectors = result.map((r) => r.selector);
+      expect(selectors.some((s) => s.includes('::before'))).toBe(true);
+      expect(selectors.some((s) => s.includes('::after'))).toBe(true);
+    });
+  });
+
+  describe('Pseudo-class on root (no injection)', () => {
+    it('should handle :hover on root', () => {
+      const styles = {
+        Hover: {
+          $: ':hover',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.button');
+      expect(result.length).toBe(1);
+      // Selectors are NOT doubled by default (use { doubleSelector: true } to double)
+      expect(result[0].selector).toBe('.button:hover');
+      expect(result[0].selector).not.toContain('data-element');
+    });
+
+    it('should handle :first-child on root', () => {
+      const styles = {
+        First: {
+          $: ':first-child',
+          marginTop: '0',
+        },
+      };
+
+      const result = renderStyles(styles, '.item');
+      expect(result.length).toBe(1);
+      // Selectors are NOT doubled by default (use { doubleSelector: true } to double)
+      expect(result[0].selector).toBe('.item:first-child');
+    });
+  });
+
+  describe('Attribute selectors', () => {
+    it('should handle attribute selector (no key injection)', () => {
+      const styles = {
+        TextInput: {
+          $: '[type="text"]',
+          border: true,
+        },
+      };
+
+      const result = renderStyles(styles, '.form');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('[type="text"]');
+      expect(result[0].selector).not.toContain('data-element="TextInput"');
+    });
+  });
+
+  describe('Edge cases', () => {
+    it('should strip leading & from pattern', () => {
+      const styles = {
+        Before: {
+          $: '&::before',
+          content: '""',
+        },
+      };
+
+      const result = renderStyles(styles, '.el');
+      expect(result.length).toBe(1);
+      // Selectors are NOT doubled by default (use { doubleSelector: true } to double)
+      expect(result[0].selector).toBe('.el::before');
+    });
+
+    it('should handle complex pattern: >Body>Item+', () => {
+      const styles = {
+        Next: {
+          $: '>Body>Item+',
+          marginLeft: '1x',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('[data-element="Body"]');
+      expect(result[0].selector).toContain('[data-element="Item"]');
+      expect(result[0].selector).toContain('[data-element="Next"]');
+      expect(result[0].selector).toMatch(/\+ \[data-element="Next"\]/);
+    });
+
+    it('should handle element without leading combinator: Body>', () => {
+      const styles = {
+        Cell: {
+          $: 'Body>',
+          padding: '1x',
+        },
+      };
+
+      const result = renderStyles(styles, '.table');
+      expect(result.length).toBe(1);
+      // Body is descendant of root, Cell is direct child of Body
+      expect(result[0].selector).toMatch(
+        /\[data-element="Body"\] > \[data-element="Cell"\]/,
+      );
+    });
+
+    it('should handle direct child class selector: >.active', () => {
+      const styles = {
+        Active: {
+          $: '>.active',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.card');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('> .active');
+      expect(result[0].selector).not.toContain('data-element');
+    });
+
+    it('should handle class on sub-element without combinator: @.active', () => {
+      const styles = {
+        Item: {
+          $: '@.active',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('[data-element="Item"].active');
+    });
+  });
+
+  describe('HTML tag selectors', () => {
+    it('should handle simple tag selector: a', () => {
+      const styles = {
+        Links: {
+          $: 'a',
+          color: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.nav');
+      expect(result.length).toBe(1);
+      // Tag is descendant of root, key is descendant of tag
+      expect(result[0].selector).toContain(' a');
+      expect(result[0].selector).toContain('[data-element="Links"]');
+    });
+
+    it('should handle direct child tag: >a', () => {
+      const styles = {
+        Link: {
+          $: '>a',
+          textDecoration: 'none',
+        },
+      };
+
+      const result = renderStyles(styles, '.nav');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('> a');
+      expect(result[0].selector).toContain('[data-element="Link"]');
+    });
+
+    it('should handle chained tags: >ul>li', () => {
+      const styles = {
+        Item: {
+          $: '>ul>li',
+          padding: '1x',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toMatch(/> ul > li/);
+      expect(result[0].selector).toContain('[data-element="Item"]');
+    });
+
+    it('should handle tag with trailing combinator: >li>', () => {
+      const styles = {
+        Content: {
+          $: '>li>',
+          padding: '1x',
+        },
+      };
+
+      const result = renderStyles(styles, '.list');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toMatch(/> li > \[data-element="Content"\]/);
+    });
+
+    it('should handle mixed tags and elements: >Body>span', () => {
+      const styles = {
+        Text: {
+          $: '>Body>span',
+          color: 'red',
+        },
+      };
+
+      const result = renderStyles(styles, '.card');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('[data-element="Body"]');
+      expect(result[0].selector).toContain('> span');
+      expect(result[0].selector).toContain('[data-element="Text"]');
+    });
+
+    it('should handle tag with pseudo: a:hover (no key injection)', () => {
+      const styles = {
+        HoverLink: {
+          $: 'a:hover',
+          color: 'red',
+        },
+      };
+
+      const result = renderStyles(styles, '.nav');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain(' a:hover');
+      // No key injection because pattern ends with pseudo
+      expect(result[0].selector).not.toContain('data-element');
+    });
+
+    it('should handle tag with class: button.primary (no key injection)', () => {
+      const styles = {
+        Primary: {
+          $: 'button.primary',
+          fill: 'blue',
+        },
+      };
+
+      const result = renderStyles(styles, '.form');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain(' button.primary');
+      // No key injection because pattern ends with class
+      expect(result[0].selector).not.toContain('data-element');
+    });
+
+    it('should handle tag with @ placeholder: >@>span', () => {
+      const styles = {
+        Label: {
+          $: '>@>span',
+          fontWeight: 'bold',
+        },
+      };
+
+      const result = renderStyles(styles, '.button');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toMatch(/> \[data-element="Label"\] > span/);
+    });
+
+    it('should handle custom element tags: my-component', () => {
+      const styles = {
+        Custom: {
+          $: '>my-component',
+          display: 'block',
+        },
+      };
+
+      const result = renderStyles(styles, '.container');
+      expect(result.length).toBe(1);
+      expect(result[0].selector).toContain('> my-component');
+      expect(result[0].selector).toContain('[data-element="Custom"]');
+    });
+
+    it('should handle tag with attribute: button[disabled] (no key injection)', () => {
+      const styles = {
+        Disabled: {
+          $: 'button[disabled]',
+          opacity: '0.5',
+        },
+      };
+
+      const result = renderStyles(styles, '.form');
+      expect(result.length).toBe(1);
+      // Should be compound selector without space between tag and attribute
+      expect(result[0].selector).toContain(' button[disabled]');
+      // No key injection because pattern ends with attribute
+      expect(result[0].selector).not.toContain('data-element');
+    });
+  });
+
+  describe('Invalid pattern validation', () => {
+    it('should warn and skip numeric-only patterns', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const styles = {
+        Label: {
+          $: '123',
+          color: 'red',
+        },
+      };
+
+      const result = renderStyles(styles, '.input');
+      expect(result.length).toBe(0);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('unrecognized token'),
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it('should warn and skip patterns starting with numbers', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const styles = {
+        Label: {
+          $: '123abc',
+          color: 'red',
+        },
+      };
+
+      const result = renderStyles(styles, '.input');
+      expect(result.length).toBe(0);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('unrecognized token'),
+      );
+
+      warnSpy.mockRestore();
+    });
   });
 });
 

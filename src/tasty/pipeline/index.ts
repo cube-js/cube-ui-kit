@@ -219,16 +219,21 @@ function processStyles(
     const nestedStyles = styles[key] as Styles;
     if (!nestedStyles || typeof nestedStyles !== 'object') continue;
 
-    const suffix = getSelector(key, nestedStyles);
-    if (suffix) {
-      // Create sub-element context for @own() validation
-      const subContext: StateParserContext = {
-        ...parserContext,
-        isSubElement: true,
-      };
+    // Get all selectors (handles comma-separated patterns)
+    const suffixes = getAllSelectors(key, nestedStyles);
+    if (!suffixes) continue; // Invalid selector, skip
 
-      // Remove $ from nested styles
-      const { $: _omit, ...cleanedStyles } = nestedStyles;
+    // Create sub-element context for @own() validation
+    const subContext: StateParserContext = {
+      ...parserContext,
+      isSubElement: true,
+    };
+
+    // Remove $ from nested styles
+    const { $: _omit, ...cleanedStyles } = nestedStyles;
+
+    // Process for each selector (multiple selectors = same styles applied to each)
+    for (const suffix of suffixes) {
       processStyles(
         cleanedStyles,
         selectorSuffix + suffix,
@@ -358,54 +363,509 @@ export function isSelector(key: string): boolean {
 }
 
 /**
- * Get selector suffix for a key
+ * Result of processing a selector affix ($) pattern.
+ *
+ * @example
+ * // Valid result with multiple selectors
+ * { valid: true, selectors: ['> [data-element="Cell"]', ' [data-element="Body"] > [data-element="Cell"]'] }
+ *
+ * // Invalid result with error message
+ * { valid: false, reason: 'Selector affix "+" targets elements outside the root scope.' }
  */
-function getSelector(key: string, styles?: Styles): string | null {
+type AffixResult =
+  | { valid: true; selectors: string[] }
+  | { valid: false; reason: string };
+
+/**
+ * Get all selector suffixes for a sub-element key.
+ *
+ * Handles three types of selector keys:
+ * - `&` prefix: Raw selector suffix (e.g., `&:hover` → `:hover`)
+ * - `.` prefix: Class selector (e.g., `.active` → ` .active`)
+ * - Uppercase: Sub-element with optional `$` affix pattern
+ *
+ * @param key - The sub-element key (e.g., 'Label', '&:hover', '.active')
+ * @param styles - The styles object, may contain `$` property for selector affix
+ * @returns Array of selector suffixes, or null if invalid (with console warning)
+ *
+ * @example
+ * getAllSelectors('Label', {})
+ * // → [' [data-element="Label"]']
+ *
+ * getAllSelectors('Cell', { $: '>, >Body>' })
+ * // → ['> [data-element="Cell"]', ' [data-element="Body"] > [data-element="Cell"]']
+ */
+function getAllSelectors(key: string, styles?: Styles): string[] | null {
   if (key.startsWith('&')) {
-    return key.slice(1);
+    return [key.slice(1)];
   }
 
   if (key.startsWith('.')) {
-    return ` ${key}`;
+    return [` ${key}`];
   }
 
   if (/^[A-Z]/.test(key)) {
     const affix = styles?.$;
     if (affix !== undefined) {
-      const prefix = transformSelectorAffix(String(affix));
-      return `${prefix}[data-element="${key}"]`;
+      const result = processAffix(String(affix), key);
+      if (!result.valid) {
+        console.warn(`[Tasty] ${result.reason}`);
+        return null; // Skip this sub-element entirely
+      }
+      return result.selectors;
     }
-    return ` [data-element="${key}"]`;
+    return [` [data-element="${key}"]`];
   }
 
   return null;
 }
 
 /**
- * Transform selector affix
+ * Process selector affix pattern and return selector(s)
+ *
+ * Supports:
+ * - Direct child: '>'
+ * - Chained elements: '>Body>Row>'
+ * - HTML tags: 'a', '>ul>li', 'button:hover'
+ * - Pseudo-elements on root: '::before'
+ * - Pseudo on sub-element: '@::before', '>@:hover'
+ * - Classes: '.active', '>@.active'
+ * - Multiple selectors: '>, >Body>'
+ * - Sibling combinators (after element): '>Item+', '>Item~'
  */
-function transformSelectorAffix(affix: string): string {
+function processAffix(affix: string, key: string): AffixResult {
   const trimmed = affix.trim();
-  if (!trimmed) return ' ';
 
-  // Validate that combinators have spaces around them
-  // Check for capitalized words adjacent to combinators without spaces
-  const invalidPattern = /[A-Z][a-z]*[>+~]|[>+~][A-Z][a-z]*/;
-  if (invalidPattern.test(trimmed)) {
-    console.error(
-      `[Tasty] Invalid selector affix ($) syntax: "${affix}"\n` +
-        `Combinators (>, +, ~) must have spaces around them when used with element names.\n` +
-        `Example: Use "$: '> Body > Row'" instead of "$: '>Body>Row'"\n` +
-        `This is a design choice: the parser uses simple whitespace splitting for performance.`,
-    );
+  // Empty = default behavior (descendant selector with key)
+  if (!trimmed) {
+    return { valid: true, selectors: [` [data-element="${key}"]`] };
   }
 
-  const tokens = trimmed.split(/\s+/);
-  const transformed = tokens.map((token) =>
-    /^[A-Z]/.test(token) ? `[data-element="${token}"]` : token,
-  );
+  // Split by comma for multiple selectors
+  const patterns = trimmed.split(',').map((p) => p.trim());
+  const selectors: string[] = [];
 
-  return ` ${transformed.join(' ')} `;
+  for (const pattern of patterns) {
+    const validation = validatePattern(pattern);
+    if (!validation.valid) {
+      return validation;
+    }
+
+    const selector = processSinglePattern(pattern, key);
+    selectors.push(selector);
+  }
+
+  return { valid: true, selectors };
+}
+
+/**
+ * Recognized token patterns for selector affix validation.
+ *
+ * These patterns are used to tokenize and validate `$` affix strings.
+ * Order matters: more specific patterns must come first to avoid
+ * partial matches (e.g., `::before` must match before `:` alone).
+ *
+ * Unrecognized tokens (like `#id`, `*`, or numbers) will cause validation to fail.
+ */
+const VALID_TOKEN_PATTERNS = [
+  /^[>+~]/, // Combinators: >, +, ~
+  /^[A-Z][a-zA-Z0-9]*/, // Uppercase element names → [data-element="..."]
+  /^@/, // @ placeholder for key injection position
+  /^::?[a-z][a-z0-9-]*(?:\([^)]*\))?/, // Pseudo-elements/classes (:hover, ::before, :not(.x))
+  /^\.[a-zA-Z_-][a-zA-Z0-9_-]*/, // Class selectors (.active, .is-open)
+  /^\[[^\]]+\]/, // Attribute selectors ([type="text"], [role])
+  /^[a-z][a-z0-9-]*/, // HTML tag names (a, div, button, my-component)
+  /^\s+/, // Whitespace (ignored during parsing)
+  /^&/, // Root reference (stripped, kept for backward compat)
+];
+
+/**
+ * Scan a pattern for unrecognized tokens.
+ *
+ * Iterates through the pattern, consuming recognized tokens until
+ * either the pattern is fully consumed (valid) or an unrecognized
+ * character sequence is found (invalid).
+ *
+ * @param pattern - The selector pattern to validate
+ * @returns The first unrecognized token found, or null if all tokens are valid
+ *
+ * @example
+ * findUnrecognizedTokens('>Body>Row>') // → null (valid)
+ * findUnrecognizedTokens('123')         // → '123' (invalid)
+ * findUnrecognizedTokens('#myId')       // → '#' (invalid)
+ */
+function findUnrecognizedTokens(pattern: string): string | null {
+  let remaining = pattern;
+
+  while (remaining.length > 0) {
+    let matched = false;
+
+    for (const regex of VALID_TOKEN_PATTERNS) {
+      const match = remaining.match(regex);
+      if (match) {
+        remaining = remaining.slice(match[0].length);
+        matched = true;
+        break;
+      }
+    }
+
+    if (!matched) {
+      // Found unrecognized content - extract the problematic part
+      const unrecognized = remaining.match(/^[^\s>+~@.:[\]A-Z]+/);
+      return unrecognized ? unrecognized[0] : remaining[0];
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Validate a selector pattern for structural correctness.
+ *
+ * Checks for:
+ * 1. Out-of-scope selectors: Patterns starting with `+` or `~` target siblings
+ *    of the root element, which is outside the component's DOM scope.
+ * 2. Consecutive combinators: Patterns like `>>` or `>+` are malformed CSS.
+ * 3. Unrecognized tokens: Characters/sequences not matching valid CSS selectors.
+ *
+ * @param pattern - A single selector pattern (already split by comma)
+ * @returns AffixResult indicating validity and error reason if invalid
+ *
+ * @example
+ * validatePattern('>Body>Row>')  // → { valid: true, selectors: [] }
+ * validatePattern('+')           // → { valid: false, reason: '...outside root scope...' }
+ * validatePattern('>>')          // → { valid: false, reason: '...consecutive combinators...' }
+ */
+function validatePattern(pattern: string): AffixResult {
+  const trimmed = pattern.trim();
+
+  // Patterns starting with + or ~ target siblings of the root element,
+  // which is outside the component's scope. Valid sibling patterns must
+  // be preceded by an element: ">Item+", ">Item~"
+  if (/^[+~]/.test(trimmed)) {
+    return {
+      valid: false,
+      reason:
+        `Selector affix "${pattern}" targets elements outside the root scope. ` +
+        `Sibling selectors (+, ~) must be preceded by an element inside the root. ` +
+        `Use ">Element+" or ">Element~" instead.`,
+    };
+  }
+
+  // Check for consecutive combinators
+  if (/[>+~]{2,}/.test(trimmed.replace(/\s+/g, ''))) {
+    return {
+      valid: false,
+      reason: `Selector affix "${pattern}" contains consecutive combinators.`,
+    };
+  }
+
+  // Check for unrecognized tokens (e.g., lowercase text like "foo")
+  const unrecognized = findUnrecognizedTokens(trimmed);
+  if (unrecognized) {
+    return {
+      valid: false,
+      reason:
+        `Selector affix "${pattern}" contains unrecognized token "${unrecognized}". ` +
+        `Valid tokens: combinators (>, +, ~), element names (Uppercase), ` +
+        `@ placeholder, pseudo (:hover, ::before), class (.name), attribute ([attr]).`,
+    };
+  }
+
+  return { valid: true, selectors: [] };
+}
+
+/**
+ * Process a single selector pattern into a CSS selector suffix.
+ *
+ * This is the main transformation function that converts a `$` affix pattern
+ * into a valid CSS selector suffix. It handles:
+ *
+ * 1. `@` placeholder replacement with `[data-element="key"]`
+ * 2. Key injection based on pattern ending (see `shouldInjectKey`)
+ * 3. Proper spacing for descendant vs direct child selectors
+ *
+ * @param pattern - A single validated selector pattern
+ * @param key - The sub-element key to inject (e.g., 'Label', 'Cell')
+ * @returns CSS selector suffix ready to append to the root selector
+ *
+ * @example
+ * processSinglePattern('>', 'Row')
+ * // → '> [data-element="Row"]'
+ *
+ * processSinglePattern('>Body>Row>', 'Cell')
+ * // → '> [data-element="Body"] > [data-element="Row"] > [data-element="Cell"]'
+ *
+ * processSinglePattern('::before', 'Before')
+ * // → '::before' (no key injection for pseudo on root)
+ *
+ * processSinglePattern('>@:hover', 'Item')
+ * // → '> [data-element="Item"]:hover'
+ */
+function processSinglePattern(pattern: string, key: string): string {
+  // Strip leading & if present (implicit root reference, kept for compat)
+  let normalized = pattern.replace(/^&/, '').trim();
+
+  if (!normalized) {
+    return ` [data-element="${key}"]`;
+  }
+
+  // Pseudo-elements/classes at start apply directly to root (no space prefix)
+  const startsWithPseudo = /^::?[a-z]/.test(normalized);
+
+  // Transform the pattern: convert element names and normalize spacing
+  let result = transformPattern(normalized);
+
+  // Handle @ placeholder: explicit key injection position
+  if (result.includes('@')) {
+    // Remove space between @ and following class/pseudo for proper attachment
+    // e.g., "@ .active" → "[el].active", but "@ > span" → "[el] > span"
+    result = result.replace(/@ (?=[.:])/g, '@');
+    result = result.replace(/@/g, `[data-element="${key}"]`);
+
+    if (!startsWithPseudo && !result.startsWith(' ')) {
+      result = ' ' + result;
+    }
+    return result;
+  }
+
+  // Auto-inject key based on pattern ending (see shouldInjectKey for rules)
+  if (shouldInjectKey(normalized)) {
+    result = result + ' ' + `[data-element="${key}"]`;
+  }
+
+  // Add space prefix for selectors targeting inside root (not pseudo on root)
+  if (!startsWithPseudo && !result.startsWith(' ')) {
+    result = ' ' + result;
+  }
+
+  return result;
+}
+
+/**
+ * Transform a selector pattern by converting element names and normalizing spacing.
+ *
+ * This is a character-by-character tokenizer that:
+ * - Converts uppercase names to `[data-element="Name"]` selectors
+ * - Adds proper spacing around combinators (>, +, ~)
+ * - Preserves lowercase tags, classes, pseudos, and attributes as-is
+ * - Keeps @ placeholder for later replacement
+ *
+ * The tokenizer handles these token types in order:
+ * 1. Whitespace (skipped)
+ * 2. Combinators: >, +, ~ (add surrounding spaces)
+ * 3. Uppercase names: Body, Row (convert to [data-element="..."])
+ * 4. @ placeholder (keep for later replacement)
+ * 5. Pseudo: :hover, ::before (attach to previous token)
+ * 6. Tags: a, div, button (keep as-is with spacing)
+ * 7. Classes: .active (attach to previous element/tag/placeholder)
+ * 8. Attributes: [type="text"] (keep as-is)
+ *
+ * @param pattern - The raw selector pattern to transform
+ * @returns Transformed pattern with proper CSS selector syntax
+ *
+ * @example
+ * transformPattern('>Body>Row>')
+ * // → '> [data-element="Body"] > [data-element="Row"] >'
+ *
+ * transformPattern('button.primary:hover')
+ * // → 'button.primary:hover'
+ */
+function transformPattern(pattern: string): string {
+  let result = '';
+  let i = 0;
+
+  while (i < pattern.length) {
+    const char = pattern[i];
+
+    // Skip whitespace
+    if (/\s/.test(char)) {
+      i++;
+      continue;
+    }
+
+    // Combinator: > + ~
+    if (/[>+~]/.test(char)) {
+      // Add combinator with surrounding spaces
+      if (result && !result.endsWith(' ')) {
+        result += ' ';
+      }
+      result += char;
+      i++;
+      continue;
+    }
+
+    // Uppercase element name
+    if (/[A-Z]/.test(char)) {
+      // Read the full element name
+      let name = '';
+      while (i < pattern.length && /[a-zA-Z0-9]/.test(pattern[i])) {
+        name += pattern[i];
+        i++;
+      }
+      // Add with proper spacing
+      if (result && !result.endsWith(' ')) {
+        result += ' ';
+      }
+      result += `[data-element="${name}"]`;
+      continue;
+    }
+
+    // @ placeholder
+    if (char === '@') {
+      if (result && !result.endsWith(' ')) {
+        result += ' ';
+      }
+      result += '@';
+      i++;
+      // Don't add space after @ - let the next token attach if it's a class/pseudo
+      continue;
+    }
+
+    // Pseudo-element/class (::before, :hover)
+    if (char === ':') {
+      // Don't add space before pseudo if attached to previous element
+      let pseudo = '';
+      while (
+        i < pattern.length &&
+        !/[\s>+~,@]/.test(pattern[i]) &&
+        !/[A-Z]/.test(pattern[i])
+      ) {
+        pseudo += pattern[i];
+        i++;
+      }
+      result += pseudo;
+      continue;
+    }
+
+    // Lowercase HTML tag name (a, div, button, my-component)
+    if (/[a-z]/.test(char)) {
+      let tag = '';
+      while (i < pattern.length && /[a-z0-9-]/.test(pattern[i])) {
+        tag += pattern[i];
+        i++;
+      }
+      // Add with proper spacing
+      if (result && !result.endsWith(' ')) {
+        result += ' ';
+      }
+      result += tag;
+      continue;
+    }
+
+    // Class (.active, .myClass, .navItem)
+    if (char === '.') {
+      // Keep attached if directly after ] (element), @ (placeholder), or alphanumeric (tag)
+      // Otherwise add space (standalone class selector)
+      const lastNonSpace = result.replace(/\s+$/, '').slice(-1);
+      const attachToLast =
+        lastNonSpace === ']' ||
+        lastNonSpace === '@' ||
+        /[a-zA-Z0-9-]/.test(lastNonSpace);
+      if (result && !attachToLast && !result.endsWith(' ')) {
+        result += ' ';
+      }
+      // Start with the dot
+      let cls = '.';
+      i++;
+      // Class names can contain uppercase letters (camelCase, BEM, etc.)
+      // Stop at: whitespace, combinators, comma, @, or new token starters (. : [)
+      while (i < pattern.length && /[a-zA-Z0-9_-]/.test(pattern[i])) {
+        cls += pattern[i];
+        i++;
+      }
+      result += cls;
+      continue;
+    }
+
+    // Attribute selector [...]
+    if (char === '[') {
+      // Keep attached if directly after ] (element), @ (placeholder), or alphanumeric (tag)
+      // Otherwise add space (standalone attribute selector)
+      const lastNonSpace = result.replace(/\s+$/, '').slice(-1);
+      const attachToLast =
+        lastNonSpace === ']' ||
+        lastNonSpace === '@' ||
+        /[a-zA-Z0-9-]/.test(lastNonSpace);
+      if (result && !attachToLast && !result.endsWith(' ')) {
+        result += ' ';
+      }
+      let attr = '';
+      let depth = 0;
+      while (i < pattern.length) {
+        attr += pattern[i];
+        if (pattern[i] === '[') depth++;
+        if (pattern[i] === ']') depth--;
+        i++;
+        if (depth === 0) break;
+      }
+      result += attr;
+      continue;
+    }
+
+    // Other characters - just append
+    result += char;
+    i++;
+  }
+
+  return result;
+}
+
+/**
+ * Determine if the sub-element key should be auto-injected based on pattern ending.
+ *
+ * Key injection rules (when no @ placeholder is present):
+ *
+ * | Pattern Ending | Inject Key? | Example | Result |
+ * |----------------|-------------|---------|--------|
+ * | Combinator (>, +, ~) | Yes | `'>Body>'` | `> [data-element="Body"] > [el]` |
+ * | Uppercase element | Yes | `'>Body>Row'` | `> [el1] > [el2] [key]` |
+ * | Lowercase tag | Yes | `'>ul>li'` | `> ul > li [key]` |
+ * | Pseudo (:hover, ::before) | No | `'::before'` | `::before` |
+ * | Class (.active) | No | `'.active'` | `.active` |
+ * | Attribute ([type]) | No | `'[type="text"]'` | `[type="text"]` |
+ *
+ * @param pattern - The normalized pattern (after stripping &)
+ * @returns true if key should be injected, false otherwise
+ *
+ * @example
+ * shouldInjectKey('>')           // → true (trailing combinator)
+ * shouldInjectKey('>Body>Row')   // → true (ends with element)
+ * shouldInjectKey('>ul>li')      // → true (ends with tag)
+ * shouldInjectKey('::before')    // → false (ends with pseudo)
+ * shouldInjectKey('.active')     // → false (ends with class)
+ * shouldInjectKey('a:hover')     // → false (ends with pseudo)
+ * shouldInjectKey('button.primary') // → false (ends with class)
+ */
+function shouldInjectKey(pattern: string): boolean {
+  const trimmed = pattern.trim();
+
+  // Rule 1: Ends with combinator → inject key after it
+  // e.g., '>' → '> [data-element="Key"]'
+  if (/[>+~]$/.test(trimmed)) {
+    return true;
+  }
+
+  // Rule 2: Ends with uppercase element name → inject key as descendant
+  // The lookbehind ensures we're matching a standalone element name, not
+  // part of a class like .myClass (where C is preceded by lowercase)
+  // e.g., '>Body' → '> [data-element="Body"] [data-element="Key"]'
+  if (/(?:^|[\s>+~\]:])[A-Z][a-zA-Z0-9]*$/.test(trimmed)) {
+    return true;
+  }
+
+  // Rule 3: Ends with lowercase tag name → inject key as descendant
+  // The negative lookbehind (?<![:.]) ensures we don't match:
+  // - ':hover' (pseudo ending)
+  // - '.primary' (class ending)
+  // e.g., '>ul>li' → '> ul > li [data-element="Key"]'
+  if (/(?<![:.])(?:^|[\s>+~])[a-z][a-z0-9-]*$/.test(trimmed)) {
+    return true;
+  }
+
+  // Rule 4: Otherwise (pseudo, class, attribute) → no injection
+  // The pattern is complete as-is, applying to root or a specific selector
+  return false;
 }
 
 /**
@@ -668,6 +1128,23 @@ function materializeComputedRule(rule: ComputedRule): CSSRule[] {
 // ============================================================================
 
 /**
+ * Options for renderStyles when using direct selector mode.
+ */
+export interface RenderStylesOptions {
+  /**
+   * Whether to double the class selector for increased specificity.
+   * When true, `.myClass` becomes `.myClass.myClass` for higher specificity.
+   *
+   * @default false - User-provided selectors are not doubled.
+   *
+   * Note: This only applies when a classNameOrSelector is provided.
+   * When renderStyles returns RenderResult with needsClassName=true,
+   * the injector handles doubling automatically.
+   */
+  doubleSelector?: boolean;
+}
+
+/**
  * Render styles to CSS rules.
  *
  * When called without classNameOrSelector, returns RenderResult with needsClassName=true.
@@ -677,10 +1154,12 @@ export function renderStyles(styles?: Styles): RenderResult;
 export function renderStyles(
   styles: Styles | undefined,
   classNameOrSelector: string,
+  options?: RenderStylesOptions,
 ): StyleResult[];
 export function renderStyles(
   styles?: Styles,
   classNameOrSelector?: string,
+  options?: RenderStylesOptions,
 ): RenderResult | StyleResult[] {
   // Check if we have a direct selector/className
   const directSelector = !!classNameOrSelector;
@@ -706,6 +1185,8 @@ export function renderStyles(
 
   // Direct selector/className mode: return StyleResult[] directly
   if (directSelector) {
+    const shouldDouble = options?.doubleSelector ?? false;
+
     return rules.map((rule): StyleResult => {
       // Handle selector as array (OR conditions) or string
       const selectorParts = Array.isArray(rule.selector)
@@ -720,9 +1201,10 @@ export function renderStyles(
             ? `${classNameOrSelector}${part}`
             : classNameOrSelector;
 
-          // Increase specificity for tasty class selectors by duplicating the class
-          if (sel.startsWith('.') && /^\.t\d+/.test(sel)) {
-            const classMatch = sel.match(/^\.t\d+/);
+          // Double class selector for increased specificity if requested
+          // This is used when the caller explicitly wants higher specificity
+          if (shouldDouble && sel.startsWith('.')) {
+            const classMatch = sel.match(/^\.[a-zA-Z_-][a-zA-Z0-9_-]*/);
             if (classMatch) {
               const baseClass = classMatch[0];
               sel = baseClass + sel;
