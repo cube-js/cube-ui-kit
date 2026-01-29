@@ -1120,6 +1120,23 @@ function materializeComputedRule(rule: ComputedRule): CSSRule[] {
 // ============================================================================
 
 /**
+ * Options for renderStyles when using direct selector mode.
+ */
+export interface RenderStylesOptions {
+  /**
+   * Whether to double the class selector for increased specificity.
+   * When true, `.myClass` becomes `.myClass.myClass` for higher specificity.
+   *
+   * @default false - User-provided selectors are not doubled.
+   *
+   * Note: This only applies when a classNameOrSelector is provided.
+   * When renderStyles returns RenderResult with needsClassName=true,
+   * the injector handles doubling automatically.
+   */
+  doubleSelector?: boolean;
+}
+
+/**
  * Render styles to CSS rules.
  *
  * When called without classNameOrSelector, returns RenderResult with needsClassName=true.
@@ -1129,10 +1146,12 @@ export function renderStyles(styles?: Styles): RenderResult;
 export function renderStyles(
   styles: Styles | undefined,
   classNameOrSelector: string,
+  options?: RenderStylesOptions,
 ): StyleResult[];
 export function renderStyles(
   styles?: Styles,
   classNameOrSelector?: string,
+  options?: RenderStylesOptions,
 ): RenderResult | StyleResult[] {
   // Check if we have a direct selector/className
   const directSelector = !!classNameOrSelector;
@@ -1158,6 +1177,8 @@ export function renderStyles(
 
   // Direct selector/className mode: return StyleResult[] directly
   if (directSelector) {
+    const shouldDouble = options?.doubleSelector ?? false;
+
     return rules.map((rule): StyleResult => {
       // Handle selector as array (OR conditions) or string
       const selectorParts = Array.isArray(rule.selector)
@@ -1168,12 +1189,19 @@ export function renderStyles(
 
       let finalSelector = selectorParts
         .map((part) => {
-          // Double the class for specificity (e.g., .divider.divider)
-          const doubledClass = classNameOrSelector.startsWith('.')
-            ? `${classNameOrSelector}${classNameOrSelector}`
+          let sel = part
+            ? `${classNameOrSelector}${part}`
             : classNameOrSelector;
 
-          let sel = part ? `${doubledClass}${part}` : doubledClass;
+          // Double class selector for increased specificity if requested
+          // This is used when the caller explicitly wants higher specificity
+          if (shouldDouble && sel.startsWith('.')) {
+            const classMatch = sel.match(/^\.[a-zA-Z_-][a-zA-Z0-9_-]*/);
+            if (classMatch) {
+              const baseClass = classMatch[0];
+              sel = baseClass + sel;
+            }
+          }
 
           // Handle root prefix for this selector
           if (rule.rootPrefix) {

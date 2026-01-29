@@ -702,6 +702,30 @@ describe('renderStyles integration', () => {
     expect(noGridRule).toBeDefined();
     expect(noGridRule!.declarations).toContain('display: inline-block');
   });
+
+  it('should support doubleSelector option for increased specificity', () => {
+    const styles = { color: 'red' };
+
+    // Default: no doubling
+    const resultDefault = renderStyles(styles, '.card');
+    expect(resultDefault[0].selector).toBe('.card');
+
+    // Explicit doubleSelector: true
+    const resultDoubled = renderStyles(styles, '.card', {
+      doubleSelector: true,
+    });
+    expect(resultDoubled[0].selector).toBe('.card.card');
+
+    // Explicit doubleSelector: false
+    const resultNotDoubled = renderStyles(styles, '.card', {
+      doubleSelector: false,
+    });
+    expect(resultNotDoubled[0].selector).toBe('.card');
+
+    // Non-class selectors are never doubled
+    const resultBody = renderStyles(styles, 'body', { doubleSelector: true });
+    expect(resultBody[0].selector).toBe('body');
+  });
 });
 
 describe('Complex OR conditions with mixed types', () => {
@@ -883,7 +907,8 @@ describe('Sub-element selector affix ($) tests', () => {
 
       const result = renderStyles(styles, '.divider');
       expect(result.length).toBe(1);
-      expect(result[0].selector).toBe('.divider.divider::before');
+      // Selectors are NOT doubled by default (use { doubleSelector: true } to double)
+      expect(result[0].selector).toBe('.divider::before');
       expect(result[0].selector).not.toContain('data-element');
     });
 
@@ -897,7 +922,8 @@ describe('Sub-element selector affix ($) tests', () => {
 
       const result = renderStyles(styles, '.divider');
       expect(result.length).toBe(1);
-      expect(result[0].selector).toBe('.divider.divider::after');
+      // Selectors are NOT doubled by default (use { doubleSelector: true } to double)
+      expect(result[0].selector).toBe('.divider::after');
     });
   });
 
@@ -1161,7 +1187,8 @@ describe('Sub-element selector affix ($) tests', () => {
 
       const result = renderStyles(styles, '.button');
       expect(result.length).toBe(1);
-      expect(result[0].selector).toBe('.button.button:hover');
+      // Selectors are NOT doubled by default (use { doubleSelector: true } to double)
+      expect(result[0].selector).toBe('.button:hover');
       expect(result[0].selector).not.toContain('data-element');
     });
 
@@ -1175,7 +1202,8 @@ describe('Sub-element selector affix ($) tests', () => {
 
       const result = renderStyles(styles, '.item');
       expect(result.length).toBe(1);
-      expect(result[0].selector).toBe('.item.item:first-child');
+      // Selectors are NOT doubled by default (use { doubleSelector: true } to double)
+      expect(result[0].selector).toBe('.item:first-child');
     });
   });
 
@@ -1206,7 +1234,8 @@ describe('Sub-element selector affix ($) tests', () => {
 
       const result = renderStyles(styles, '.el');
       expect(result.length).toBe(1);
-      expect(result[0].selector).toBe('.el.el::before');
+      // Selectors are NOT doubled by default (use { doubleSelector: true } to double)
+      expect(result[0].selector).toBe('.el::before');
     });
 
     it('should handle complex pattern: >Body>Item+', () => {
