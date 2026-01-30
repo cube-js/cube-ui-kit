@@ -1,11 +1,9 @@
 import {
-  Children,
   CSSProperties,
   FocusEvent,
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
-  isValidElement,
   KeyboardEvent,
   ReactNode,
   useCallback,
@@ -33,7 +31,12 @@ import { isDevEnv } from '../../../tasty/utils/is-dev-env';
 import { useCombinedRefs } from '../../../utils/react';
 import { Alert } from '../Alert';
 
-import { LayoutProvider, useLayoutContext } from './LayoutContext';
+import {
+  LayoutProvider,
+  useLayoutActionsContext,
+  useLayoutRefsContext,
+  useLayoutStateContext,
+} from './LayoutContext';
 
 const LayoutElement = tasty({
   as: 'div',
@@ -112,19 +115,12 @@ export interface CubeLayoutProps
   _forceShowDevWarning?: boolean;
 }
 
-// Check if a child is a Layout.Panel
-function isPanelElement(child: ReactNode): boolean {
-  return (
-    isValidElement(child) &&
-    typeof child.type !== 'string' &&
-    (child.type as { displayName?: string }).displayName === 'Layout.Panel'
-  );
-}
-
 function LayoutInner(
   props: CubeLayoutProps & { forwardedRef?: ForwardedRef<HTMLDivElement> },
 ) {
-  const layoutContext = useLayoutContext();
+  const layoutActions = useLayoutActionsContext();
+  const layoutState = useLayoutStateContext();
+  const layoutRefs = useLayoutRefsContext();
   const localRef = useRef<HTMLDivElement>(null);
   const [isAutoHeight, setIsAutoHeight] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -147,22 +143,6 @@ function LayoutInner(
   } = props;
 
   const combinedInnerRef = useCombinedRefs(innerRefProp);
-
-  // Separate panels from other children
-  const { panels, content } = useMemo(() => {
-    const panelElements: ReactNode[] = [];
-    const contentElements: ReactNode[] = [];
-
-    Children.forEach(children, (child) => {
-      if (isPanelElement(child)) {
-        panelElements.push(child);
-      } else {
-        contentElements.push(child);
-      }
-    });
-
-    return { panels: panelElements, content: contentElements };
-  }, [children]);
 
   // Extract outer wrapper styles and inner content styles
   const outerStyles = extractStyles(otherProps, OUTER_STYLES);
@@ -217,18 +197,18 @@ function LayoutInner(
   ]);
 
   // Calculate inset values from panel sizes
-  const panelSizes = layoutContext?.panelSizes ?? {
+  const panelSizes = layoutState?.panelSizes ?? {
     left: 0,
     top: 0,
     right: 0,
     bottom: 0,
   };
 
-  const isDragging = layoutContext?.isDragging ?? false;
-  const isReady = layoutContext?.isReady ?? true;
-  const markReady = layoutContext?.markReady;
-  const dismissOverlayPanels = layoutContext?.dismissOverlayPanels;
-  const hasOverlayPanels = layoutContext?.hasOverlayPanels ?? false;
+  const isDragging = layoutState?.isDragging ?? false;
+  const isReady = layoutState?.isReady ?? true;
+  const markReady = layoutActions?.markReady;
+  const dismissOverlayPanels = layoutActions?.dismissOverlayPanels;
+  const hasOverlayPanels = layoutState?.hasOverlayPanels ?? false;
 
   // Mark layout as ready after first paint
   // Using useEffect + requestAnimationFrame ensures:
@@ -355,16 +335,19 @@ function LayoutInner(
         </Alert>
       ) : (
         <>
-          {/* Panels are rendered outside the Inner element */}
-          {panels}
-          {/* Other content goes inside the Inner element */}
+          {/* Container for panels to portal into - renders panels outside the Inner element */}
+          <div
+            ref={layoutRefs?.setPanelContainer}
+            data-element="PanelContainer"
+          />
+          {/* All children go inside the Inner element - panels will portal themselves out */}
           <div
             ref={combinedInnerRef}
             data-element="Inner"
             onFocus={handleInnerFocus}
             {...innerProps}
           >
-            {content}
+            {children}
           </div>
         </>
       )}

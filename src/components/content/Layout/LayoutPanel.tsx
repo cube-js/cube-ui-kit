@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react';
 import { useFocusRing, useHover, useMove } from 'react-aria';
+import { createPortal } from 'react-dom';
 
 import { useDebouncedValue } from '../../../_internal/hooks';
 import {
@@ -40,7 +41,9 @@ import {
   LayoutContextReset,
   LayoutPanelContext,
   Side,
-  useLayoutContext,
+  useLayoutActionsContext,
+  useLayoutRefsContext,
+  useLayoutStateContext,
 } from './LayoutContext';
 import { clampSize } from './utils';
 
@@ -400,10 +403,15 @@ function LayoutPanel(
   props: CubeLayoutPanelProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const layoutContext = useLayoutContext();
+  const layoutActions = useLayoutActionsContext();
+  const layoutState = useLayoutStateContext();
+  const layoutRefs = useLayoutRefsContext();
 
-  if (!layoutContext) {
-    throw new Error('Layout.Panel must be a direct child of Layout component.');
+  if (!layoutActions || !layoutState || !layoutRefs) {
+    throw new Error(
+      'Layout.Panel must be used within a Layout component. ' +
+        'Ensure your panel is rendered inside a <Layout> parent.',
+    );
   }
 
   const {
@@ -442,7 +450,7 @@ function LayoutPanel(
   const isStickyMode = mode === 'sticky';
 
   // Use prop value if provided, otherwise fall back to context value
-  const hasTransition = hasTransitionProp ?? layoutContext.hasTransition;
+  const hasTransition = hasTransitionProp ?? layoutActions.hasTransition;
 
   const combinedRef = useCombinedRefs(ref);
   const prevProvidedSizeRef = useRef(providedSize);
@@ -497,7 +505,7 @@ function LayoutPanel(
     [minSize, maxSize],
   );
 
-  const setContextDragging = layoutContext.setDragging;
+  const setContextDragging = layoutActions.setDragging;
 
   const { moveProps } = useMove({
     onMoveStart() {
@@ -561,8 +569,8 @@ function LayoutPanel(
       (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
   );
 
-  const { registerPanel, unregisterPanel, updatePanelSize, isReady } =
-    layoutContext;
+  const { registerPanel, unregisterPanel, updatePanelSize } = layoutActions;
+  const { isReady } = layoutState;
 
   // Track the last reported size to prevent unnecessary updates
   const lastSizeRef = useRef<number>(effectiveInsetSize);
@@ -602,7 +610,7 @@ function LayoutPanel(
   }, [isDismissable, handleOpenChange]);
 
   // Register overlay panel with Layout context for coordinated dismissal
-  const { registerOverlayPanel } = layoutContext;
+  const { registerOverlayPanel } = layoutActions;
 
   useEffect(() => {
     // Only register if in overlay mode, open, and dismissable
@@ -740,7 +748,7 @@ function LayoutPanel(
     );
   };
 
-  // Dialog mode
+  // Dialog mode - uses its own portal via DialogContainer
   if (isDialogMode) {
     return (
       <DialogContainer
@@ -758,21 +766,29 @@ function LayoutPanel(
     );
   }
 
-  // Panel with transition
+  // Wait for portal container to be ready before rendering
+  if (!layoutRefs.isPanelContainerReady) {
+    return null;
+  }
+
+  const portalContainer = layoutRefs.panelContainerRef.current!;
+
+  // Panel with transition - portal to panel container
   if (hasTransition) {
-    return (
+    return createPortal(
       <DisplayTransition isShown={isOpen} animateOnMount={false}>
         {({ isShown, ref: transitionRef }) =>
           renderPanelContent(!isShown, transitionRef)
         }
-      </DisplayTransition>
+      </DisplayTransition>,
+      portalContainer,
     );
   }
 
-  // Simple panel (no transition)
+  // Simple panel (no transition) - portal to panel container
   if (!isOpen) return null;
 
-  return renderPanelContent(false);
+  return createPortal(renderPanelContent(false), portalContainer);
 }
 
 const _LayoutPanel = forwardRef(LayoutPanel);
