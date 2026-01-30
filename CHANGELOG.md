@@ -1,5 +1,31 @@
 # @cube-dev/ui-kit
 
+## 0.108.0
+
+### Minor Changes
+
+- [#988](https://github.com/cube-js/cube-ui-kit/pull/988) [`77b87cec`](https://github.com/cube-js/cube-ui-kit/commit/77b87cec90dbb00af09a07c0d7717bc89aa647f2) Thanks [@tenphi](https://github.com/tenphi)! - Add HueSlider component for selecting hue values (0-359) with a rainbow gradient track using okhsl color space. The thumb dynamically reflects the current hue color.
+
+  Add `trackStyles`, `thumbStyles`, and `thumbTokens` props to the Slider component to enable customization of track and thumb elements. The thumb fill color can be customized via `#slider-thumb` and `#slider-thumb-hovered` color tokens.
+
+- [#988](https://github.com/cube-js/cube-ui-kit/pull/988) [`77b87cec`](https://github.com/cube-js/cube-ui-kit/commit/77b87cec90dbb00af09a07c0d7717bc89aa647f2) Thanks [@tenphi](https://github.com/tenphi)! - Allow passing `false` to sub-element keys in tasty styles to remove all styles for that sub-element when extending/wrapping styled components.
+
+  ```tsx
+  const CustomTable = tasty(Table, {
+    Cell: false, // Removes all Cell styles from the base component
+  });
+  ```
+
+  Nullish values (`null`, `undefined`) are treated as ignored (no change to styles).
+
+### Patch Changes
+
+- [#989](https://github.com/cube-js/cube-ui-kit/pull/989) [`6fb56a68`](https://github.com/cube-js/cube-ui-kit/commit/6fb56a6865ccf388f6d6cc0afd8404d9d463d800) Thanks [@tenphi](https://github.com/tenphi)! - Fix nested Layout panels affecting parent layouts by splitting context into actions and state, and add LayoutContextReset component to isolate nested panel contexts.
+
+  Layout.Panel now uses React portals for rendering, which allows panels to work correctly even when wrapped in custom components. This removes the need for child detection heuristics and ensures reliable panel positioning regardless of component composition.
+
+- [#992](https://github.com/cube-js/cube-ui-kit/pull/992) [`945375c4`](https://github.com/cube-js/cube-ui-kit/commit/945375c4bdf22e5c8214fbac8bf3a84e40f181a8) Thanks [@tenphi](https://github.com/tenphi)! - Update Tabs component API to use `string` type instead of `Key` for all key-related props and callbacks. This aligns the public API with the internal implementation which already converts keys to strings for React Aria compatibility.
+
 ## 0.107.0
 
 ### Minor Changes
