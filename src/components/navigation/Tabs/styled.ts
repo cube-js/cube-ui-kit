@@ -167,33 +167,6 @@ export const TabsElement = tasty({
 });
 
 // =============================================================================
-// Tab List Container (the grid that holds all tabs)
-// =============================================================================
-
-export const TabListContainer = tasty({
-  styles: {
-    position: 'relative',
-    display: 'grid',
-    gridAutoFlow: 'column',
-    gridAutoColumns: {
-      '': 'auto',
-      'type=radio': '1fr',
-    },
-    gap: {
-      '': 0,
-      'type=narrow': '2x',
-      'type=radio': '.5x',
-    },
-    placeContent: 'start',
-    overflow: 'visible',
-    width: {
-      '': 'max-content',
-      'type=radio': '100%',
-    },
-  },
-});
-
-// =============================================================================
 // Tab Button (extends Item)
 // =============================================================================
 
@@ -218,21 +191,23 @@ export const TabElement = tasty(Item, {
       'type=radio & hovered': '#white.5',
       '(type=file | type=radio) & selected': '#white',
     },
-    border: {
-      '': '0 #clear',
-      'type=file & selected': '$tab-indicator-size #purple bottom',
-    },
+    border: 0,
     preset: {
       '': 't3m',
       'size=xsmall': 't4',
     },
     shadow: {
-      '': 'none',
-      'focused & focus-visible': 'inset 0 0 0 1bw #purple-text',
-      editing: 'inset 0 0 0 1bw #purple-text',
+      '': '$selection-shadow',
+      'focused & focus-visible':
+        'inset 0 0 0 1bw #purple-text, $selection-shadow',
+      editing: 'inset 0 0 0 1bw #purple-text, $selection-shadow',
       'type=radio & selected': '$item-shadow',
       'type=radio & selected & focused & focus-visible':
         '$item-shadow, inset 0 0 0 1bw #purple-text',
+    },
+    '$selection-shadow': {
+      '': 'inset 0 0 0 0 #purple',
+      'type=file & selected': 'inset 0 (-1 * $tab-indicator-size) 0 0 #purple',
     },
     // Collapse horizontal padding for narrow type
     '$label-padding-left': {

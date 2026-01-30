@@ -24,7 +24,7 @@ import { mergeProps } from '../../../utils/react';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
 
 import { DraggableTabList } from './DraggableTabList';
-import { TabIndicatorElement, TabListContainer, TabsElement } from './styled';
+import { TabIndicatorElement, TabsElement } from './styled';
 import { TabButton } from './TabButton';
 import { CachedPanelRenderer, TabPanelRenderer } from './TabPanel';
 import { TabPicker } from './TabPicker';
@@ -162,8 +162,15 @@ function TabsComponent(
     ...otherProps
   } = props;
 
-  // Extract outer styles
-  const combinedStyles = extractStyles(otherProps, OUTER_STYLES);
+  // Extract outer styles and merge with tabListStyles for Container sub-element
+  const baseStyles = extractStyles(otherProps, OUTER_STYLES);
+  const combinedStyles = useMemo(() => {
+    if (!tabListStyles) return baseStyles;
+    return {
+      ...baseStyles,
+      Container: tabListStyles,
+    };
+  }, [baseStyles, tabListStyles]);
 
   // DOM element refs
   const listRef = useRef<HTMLDivElement>(null);
@@ -508,11 +515,10 @@ function TabsComponent(
     contextValue: TabsContextValue,
     collectionProps: Record<string, unknown> = {},
   ) => (
-    <TabListContainer
+    <div
       {...mergeProps(tabListProps, collectionProps)}
       ref={listRef}
-      mods={mods}
-      styles={tabListStyles}
+      data-element="Container"
     >
       <TabsProvider value={contextValue}>
         {orderedParsedTabs.map((tab, index) => {
@@ -537,7 +543,7 @@ function TabsComponent(
           }}
         />
       )}
-    </TabListContainer>
+    </div>
   );
 
   // =========================================================================
