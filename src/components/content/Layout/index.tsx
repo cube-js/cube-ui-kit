@@ -32,15 +32,18 @@ export type { CubeLayoutToolbarProps } from './LayoutToolbar';
 export {
   LayoutActionsContext,
   LayoutStateContext,
+  LayoutRefsContext,
   LayoutPanelContext,
   LayoutContextReset,
   useLayoutActionsContext,
   useLayoutStateContext,
+  useLayoutRefsContext,
   useLayoutPanelContext,
 } from './LayoutContext';
 export type {
   LayoutActionsContextValue,
   LayoutStateContextValue,
+  LayoutRefsContextValue,
   LayoutPanelContextValue,
   Side,
 } from './LayoutContext';

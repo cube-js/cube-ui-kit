@@ -1,11 +1,9 @@
 import {
-  Children,
   CSSProperties,
   FocusEvent,
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
-  isValidElement,
   KeyboardEvent,
   ReactNode,
   useCallback,
@@ -36,6 +34,7 @@ import { Alert } from '../Alert';
 import {
   LayoutProvider,
   useLayoutActionsContext,
+  useLayoutRefsContext,
   useLayoutStateContext,
 } from './LayoutContext';
 
@@ -116,29 +115,12 @@ export interface CubeLayoutProps
   _forceShowDevWarning?: boolean;
 }
 
-// Valid side values for Layout.Panel
-const VALID_PANEL_SIDES = ['left', 'right', 'top', 'bottom'] as const;
-
-// Check if a child is a Layout.Panel by checking for required `side` prop
-// (displayName is stripped in production builds, so we can't rely on it)
-// This works even when the panel is wrapped with tasty() since props pass through
-function isPanelElement(child: ReactNode): boolean {
-  if (!isValidElement(child) || typeof child.type === 'string') return false;
-
-  const props = child.props as Record<string, unknown> | null;
-  const side = props?.side;
-
-  return (
-    typeof side === 'string' &&
-    VALID_PANEL_SIDES.includes(side as (typeof VALID_PANEL_SIDES)[number])
-  );
-}
-
 function LayoutInner(
   props: CubeLayoutProps & { forwardedRef?: ForwardedRef<HTMLDivElement> },
 ) {
   const layoutActions = useLayoutActionsContext();
   const layoutState = useLayoutStateContext();
+  const layoutRefs = useLayoutRefsContext();
   const localRef = useRef<HTMLDivElement>(null);
   const [isAutoHeight, setIsAutoHeight] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -161,22 +143,6 @@ function LayoutInner(
   } = props;
 
   const combinedInnerRef = useCombinedRefs(innerRefProp);
-
-  // Separate panels from other children
-  const { panels, content } = useMemo(() => {
-    const panelElements: ReactNode[] = [];
-    const contentElements: ReactNode[] = [];
-
-    Children.forEach(children, (child) => {
-      if (isPanelElement(child)) {
-        panelElements.push(child);
-      } else {
-        contentElements.push(child);
-      }
-    });
-
-    return { panels: panelElements, content: contentElements };
-  }, [children]);
 
   // Extract outer wrapper styles and inner content styles
   const outerStyles = extractStyles(otherProps, OUTER_STYLES);
@@ -369,16 +335,19 @@ function LayoutInner(
         </Alert>
       ) : (
         <>
-          {/* Panels are rendered outside the Inner element */}
-          {panels}
-          {/* Other content goes inside the Inner element */}
+          {/* Container for panels to portal into - renders panels outside the Inner element */}
+          <div
+            ref={layoutRefs?.panelContainerRef}
+            data-element="PanelContainer"
+          />
+          {/* All children go inside the Inner element - panels will portal themselves out */}
           <div
             ref={combinedInnerRef}
             data-element="Inner"
             onFocus={handleInnerFocus}
             {...innerProps}
           >
-            {content}
+            {children}
           </div>
         </>
       )}

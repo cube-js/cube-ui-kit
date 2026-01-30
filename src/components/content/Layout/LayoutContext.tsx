@@ -1,5 +1,6 @@
 import {
   createContext,
+  MutableRefObject,
   ReactNode,
   useContext,
   useMemo,
@@ -10,6 +11,23 @@ import {
 import { useEvent } from '../../../_internal/hooks';
 
 export type Side = 'left' | 'top' | 'right' | 'bottom';
+
+/**
+ * Refs context - stable refs that don't change and don't trigger re-renders.
+ * Provides portal container ref for panels to render into.
+ */
+export interface LayoutRefsContextValue {
+  /** Container element ref for panels to portal into */
+  panelContainerRef: MutableRefObject<HTMLDivElement | null>;
+}
+
+export const LayoutRefsContext = createContext<LayoutRefsContextValue | null>(
+  null,
+);
+
+export function useLayoutRefsContext(): LayoutRefsContextValue | null {
+  return useContext(LayoutRefsContext);
+}
 
 /** Callback to dismiss an overlay panel */
 export type OverlayDismissCallback = () => void;
@@ -71,6 +89,7 @@ export function LayoutProvider({
 }: LayoutProviderProps) {
   const registeredPanels = useRef<Set<Side>>(new Set());
   const overlayPanelCallbacks = useRef<Set<OverlayDismissCallback>>(new Set());
+  const panelContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [panelSizes, setPanelSizes] = useState<Record<Side, number>>({
     left: 0,
@@ -172,12 +191,22 @@ export function LayoutProvider({
     [panelSizes, isDragging, isReady, hasOverlayPanels],
   );
 
+  // Refs context - stable refs that never change
+  const refsValue = useMemo(
+    () => ({
+      panelContainerRef,
+    }),
+    [],
+  );
+
   return (
-    <LayoutActionsContext.Provider value={actionsValue}>
-      <LayoutStateContext.Provider value={stateValue}>
-        {children}
-      </LayoutStateContext.Provider>
-    </LayoutActionsContext.Provider>
+    <LayoutRefsContext.Provider value={refsValue}>
+      <LayoutActionsContext.Provider value={actionsValue}>
+        <LayoutStateContext.Provider value={stateValue}>
+          {children}
+        </LayoutStateContext.Provider>
+      </LayoutActionsContext.Provider>
+    </LayoutRefsContext.Provider>
   );
 }
 
@@ -187,11 +216,13 @@ export function LayoutProvider({
  */
 export function LayoutContextReset({ children }: { children: ReactNode }) {
   return (
-    <LayoutActionsContext.Provider value={null}>
-      <LayoutStateContext.Provider value={null}>
-        {children}
-      </LayoutStateContext.Provider>
-    </LayoutActionsContext.Provider>
+    <LayoutRefsContext.Provider value={null}>
+      <LayoutActionsContext.Provider value={null}>
+        <LayoutStateContext.Provider value={null}>
+          {children}
+        </LayoutStateContext.Provider>
+      </LayoutActionsContext.Provider>
+    </LayoutRefsContext.Provider>
   );
 }
 

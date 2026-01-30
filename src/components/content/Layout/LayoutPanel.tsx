@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react';
 import { useFocusRing, useHover, useMove } from 'react-aria';
+import { createPortal } from 'react-dom';
 
 import { useDebouncedValue } from '../../../_internal/hooks';
 import {
@@ -41,6 +42,7 @@ import {
   LayoutPanelContext,
   Side,
   useLayoutActionsContext,
+  useLayoutRefsContext,
   useLayoutStateContext,
 } from './LayoutContext';
 import { clampSize } from './utils';
@@ -403,9 +405,13 @@ function LayoutPanel(
 ) {
   const layoutActions = useLayoutActionsContext();
   const layoutState = useLayoutStateContext();
+  const layoutRefs = useLayoutRefsContext();
 
-  if (!layoutActions || !layoutState) {
-    throw new Error('Layout.Panel must be a direct child of Layout component.');
+  if (!layoutActions || !layoutState || !layoutRefs) {
+    throw new Error(
+      'Layout.Panel must be used within a Layout component. ' +
+        'Ensure your panel is rendered inside a <Layout> parent.',
+    );
   }
 
   const {
@@ -742,7 +748,7 @@ function LayoutPanel(
     );
   };
 
-  // Dialog mode
+  // Dialog mode - uses its own portal via DialogContainer
   if (isDialogMode) {
     return (
       <DialogContainer
@@ -760,21 +766,31 @@ function LayoutPanel(
     );
   }
 
-  // Panel with transition
+  // Get the portal container - if not available yet, don't render
+  const portalContainer = layoutRefs.panelContainerRef.current;
+
+  if (!portalContainer) {
+    // Container not ready yet - this shouldn't happen in practice
+    // since Layout renders the container before children
+    return null;
+  }
+
+  // Panel with transition - portal to panel container
   if (hasTransition) {
-    return (
+    return createPortal(
       <DisplayTransition isShown={isOpen} animateOnMount={false}>
         {({ isShown, ref: transitionRef }) =>
           renderPanelContent(!isShown, transitionRef)
         }
-      </DisplayTransition>
+      </DisplayTransition>,
+      portalContainer,
     );
   }
 
-  // Simple panel (no transition)
+  // Simple panel (no transition) - portal to panel container
   if (!isOpen) return null;
 
-  return renderPanelContent(false);
+  return createPortal(renderPanelContent(false), portalContainer);
 }
 
 const _LayoutPanel = forwardRef(LayoutPanel);

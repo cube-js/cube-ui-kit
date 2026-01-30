@@ -391,6 +391,123 @@ describe('Layout nested isolation', () => {
     expect(screen.getByText('Styled panel content')).toBeInTheDocument();
     expect(screen.getByText('Main content')).toBeInTheDocument();
   });
+
+  it('styled (tasty-wrapped) panel renders with correct panel structure', () => {
+    // Verify the wrapped panel is rendered as a proper Layout.Panel
+    // (with data-qa="LayoutPanel" and data-side attribute)
+    const StyledPanel = tasty(Layout.Panel, {
+      styles: { fill: '#purple-03' },
+    });
+
+    renderWithRoot(
+      <Layout>
+        <StyledPanel side="right" size={250}>
+          <div>Panel content</div>
+        </StyledPanel>
+      </Layout>,
+    );
+
+    // Panel should have data-qa="LayoutPanel" (from PanelElement)
+    const panel = screen.getByTestId('LayoutPanel');
+    expect(panel).toBeInTheDocument();
+
+    // Panel should have data-side="right" attribute
+    expect(panel).toHaveAttribute('data-side', 'right');
+
+    // Panel content should be inside the panel, not in the Inner content area
+    expect(panel).toContainElement(screen.getByText('Panel content'));
+
+    // The Layout Inner element should NOT contain the panel content
+    // (panels render outside the Inner element)
+    const layoutInner = document.querySelector('[data-element="Inner"]');
+    expect(layoutInner).not.toContainElement(screen.getByText('Panel content'));
+  });
+
+  it('custom wrapper components work with Layout.Panel via portals', () => {
+    // Test that Layout.Panel works when wrapped in a custom component
+    // This is enabled by the portal-based rendering approach
+    function SidebarPanel({ children }: { children: React.ReactNode }) {
+      return (
+        <Layout.Panel side="left" size={250}>
+          <Layout.PanelHeader title="Sidebar" />
+          {children}
+        </Layout.Panel>
+      );
+    }
+
+    renderWithRoot(
+      <Layout>
+        <SidebarPanel>
+          <div>Sidebar content</div>
+        </SidebarPanel>
+        <Layout.Content>
+          <div>Main content</div>
+        </Layout.Content>
+      </Layout>,
+    );
+
+    // Panel should render correctly
+    expect(screen.getByText('Sidebar')).toBeInTheDocument();
+    expect(screen.getByText('Sidebar content')).toBeInTheDocument();
+    expect(screen.getByText('Main content')).toBeInTheDocument();
+
+    // Verify the panel is portaled to the PanelContainer (outside Inner)
+    const panel = screen.getByTestId('LayoutPanel');
+    const panelContainer = document.querySelector(
+      '[data-element="PanelContainer"]',
+    );
+    const layoutInner = document.querySelector('[data-element="Inner"]');
+
+    expect(panelContainer).toContainElement(panel);
+    expect(layoutInner).not.toContainElement(panel);
+  });
+
+  it('nested layouts with resizable panels work independently', () => {
+    // Test that resizable panels in nested layouts don't interfere with each other
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel isResizable side="left" size={200}>
+          <div>Parent panel</div>
+          <Layout>
+            <Layout.Panel isResizable side="right" size={150}>
+              <div>Nested panel</div>
+            </Layout.Panel>
+            <Layout.Content>
+              <div>Nested content</div>
+            </Layout.Content>
+          </Layout>
+        </Layout.Panel>
+        <Layout.Content>
+          <div>Parent content</div>
+        </Layout.Content>
+      </Layout>,
+    );
+
+    // Both panels should render with resize handlers
+    const resizeHandlers = screen.getAllByRole('separator');
+    expect(resizeHandlers).toHaveLength(2);
+
+    // Both panels should render correctly
+    expect(screen.getByText('Parent panel')).toBeInTheDocument();
+    expect(screen.getByText('Nested panel')).toBeInTheDocument();
+    expect(screen.getByText('Parent content')).toBeInTheDocument();
+    expect(screen.getByText('Nested content')).toBeInTheDocument();
+
+    // Verify each panel is in its own Layout's PanelContainer
+    const panelContainers = document.querySelectorAll(
+      '[data-element="PanelContainer"]',
+    );
+    expect(panelContainers).toHaveLength(2);
+
+    // Each panel container should have exactly one panel
+    const panels = screen.getAllByTestId('LayoutPanel');
+    expect(panels).toHaveLength(2);
+
+    // Parent panel should be in the first (outer) panel container
+    expect(panelContainers[0]).toContainElement(panels[0]);
+    // Nested panel should be in the second (inner) panel container
+    expect(panelContainers[1]).toContainElement(panels[1]);
+  });
 });
 
 describe('Layout.Panel validation', () => {
