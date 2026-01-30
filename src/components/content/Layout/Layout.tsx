@@ -337,7 +337,7 @@ function LayoutInner(
         <>
           {/* Container for panels to portal into - renders panels outside the Inner element */}
           <div
-            ref={layoutRefs?.panelContainerRef}
+            ref={layoutRefs?.setPanelContainer}
             data-element="PanelContainer"
           />
           {/* All children go inside the Inner element - panels will portal themselves out */}

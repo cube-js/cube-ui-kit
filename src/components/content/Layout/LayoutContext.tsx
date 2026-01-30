@@ -19,6 +19,10 @@ export type Side = 'left' | 'top' | 'right' | 'bottom';
 export interface LayoutRefsContextValue {
   /** Container element ref for panels to portal into */
   panelContainerRef: MutableRefObject<HTMLDivElement | null>;
+  /** Whether the panel container is mounted and ready for portals */
+  isPanelContainerReady: boolean;
+  /** Callback ref to set on the panel container element */
+  setPanelContainer: (element: HTMLDivElement | null) => void;
 }
 
 export const LayoutRefsContext = createContext<LayoutRefsContextValue | null>(
@@ -77,6 +81,29 @@ export function useLayoutStateContext(): LayoutStateContextValue | null {
   return useContext(LayoutStateContext);
 }
 
+/** Combined layout context value for convenience */
+export interface LayoutContextValue
+  extends LayoutActionsContextValue,
+    LayoutStateContextValue,
+    LayoutRefsContextValue {}
+
+/**
+ * Combined hook that returns all layout context values.
+ * Convenience wrapper around the individual context hooks.
+ * Returns null if used outside of a Layout component.
+ */
+export function useLayoutContext(): LayoutContextValue | null {
+  const actions = useLayoutActionsContext();
+  const state = useLayoutStateContext();
+  const refs = useLayoutRefsContext();
+
+  if (!actions || !state || !refs) {
+    return null;
+  }
+
+  return { ...actions, ...state, ...refs };
+}
+
 export interface LayoutProviderProps {
   children: ReactNode;
   /** Whether transitions are enabled for panels */
@@ -90,6 +117,13 @@ export function LayoutProvider({
   const registeredPanels = useRef<Set<Side>>(new Set());
   const overlayPanelCallbacks = useRef<Set<OverlayDismissCallback>>(new Set());
   const panelContainerRef = useRef<HTMLDivElement | null>(null);
+  const [isPanelContainerReady, setIsPanelContainerReady] = useState(false);
+
+  // Callback ref for panel container - triggers re-render when container mounts
+  const setPanelContainer = useEvent((element: HTMLDivElement | null) => {
+    panelContainerRef.current = element;
+    setIsPanelContainerReady(element !== null);
+  });
 
   const [panelSizes, setPanelSizes] = useState<Record<Side, number>>({
     left: 0,
@@ -191,12 +225,14 @@ export function LayoutProvider({
     [panelSizes, isDragging, isReady, hasOverlayPanels],
   );
 
-  // Refs context - stable refs that never change
+  // Refs context - includes container ready state
   const refsValue = useMemo(
     () => ({
       panelContainerRef,
+      isPanelContainerReady,
+      setPanelContainer,
     }),
-    [],
+    [isPanelContainerReady],
   );
 
   return (

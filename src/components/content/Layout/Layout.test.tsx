@@ -508,6 +508,51 @@ describe('Layout nested isolation', () => {
     // Nested panel should be in the second (inner) panel container
     expect(panelContainers[1]).toContainElement(panels[1]);
   });
+
+  it('panels render correctly after portal container becomes ready', () => {
+    // This test verifies that the portal container ready state mechanism works
+    // Panels should wait for the container to be ready before rendering via portal
+    const { rerender } = renderWithRoot(
+      <Layout>
+        <Layout.Panel side="left" size={200}>
+          <div>Panel content</div>
+        </Layout.Panel>
+        <Layout.Content>
+          <div>Main content</div>
+        </Layout.Content>
+      </Layout>,
+    );
+
+    // Panel should render correctly on initial mount
+    expect(screen.getByText('Panel content')).toBeInTheDocument();
+    expect(screen.getByText('Main content')).toBeInTheDocument();
+
+    // Panel should be in the PanelContainer (portaled correctly)
+    const panelContainer = document.querySelector(
+      '[data-element="PanelContainer"]',
+    );
+    const panel = screen.getByTestId('LayoutPanel');
+    expect(panelContainer).toContainElement(panel);
+
+    // Panel content should NOT be inside the Inner element
+    const layoutInner = document.querySelector('[data-element="Inner"]');
+    expect(layoutInner).not.toContainElement(panel);
+
+    // Rerender to verify stability
+    rerender(
+      <Layout>
+        <Layout.Panel side="left" size={200}>
+          <div>Panel content</div>
+        </Layout.Panel>
+        <Layout.Content>
+          <div>Main content</div>
+        </Layout.Content>
+      </Layout>,
+    );
+
+    // Should still be rendered correctly after rerender
+    expect(screen.getByText('Panel content')).toBeInTheDocument();
+  });
 });
 
 describe('Layout.Panel validation', () => {

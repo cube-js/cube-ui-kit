@@ -766,14 +766,12 @@ function LayoutPanel(
     );
   }
 
-  // Get the portal container - if not available yet, don't render
-  const portalContainer = layoutRefs.panelContainerRef.current;
-
-  if (!portalContainer) {
-    // Container not ready yet - this shouldn't happen in practice
-    // since Layout renders the container before children
+  // Wait for portal container to be ready before rendering
+  if (!layoutRefs.isPanelContainerReady) {
     return null;
   }
+
+  const portalContainer = layoutRefs.panelContainerRef.current!;
 
   // Panel with transition - portal to panel container
   if (hasTransition) {

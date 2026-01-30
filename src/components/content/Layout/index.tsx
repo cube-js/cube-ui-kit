@@ -39,12 +39,14 @@ export {
   useLayoutStateContext,
   useLayoutRefsContext,
   useLayoutPanelContext,
+  useLayoutContext,
 } from './LayoutContext';
 export type {
   LayoutActionsContextValue,
   LayoutStateContextValue,
   LayoutRefsContextValue,
   LayoutPanelContextValue,
+  LayoutContextValue,
   Side,
 } from './LayoutContext';
 
