@@ -324,6 +324,52 @@ describe('Layout.Panel resize handler', () => {
   });
 });
 
+describe('Layout nested isolation', () => {
+  it('nested Layout panels do not affect parent layout', () => {
+    // This test verifies that LayoutContextReset properly isolates nested Layouts
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel side="left" size={200}>
+          <div>Parent panel content</div>
+          <Layout>
+            <Layout.Panel side="right" size={150}>
+              <div>Nested panel content</div>
+            </Layout.Panel>
+          </Layout>
+        </Layout.Panel>
+        <Layout.Content>
+          <div>Main content</div>
+        </Layout.Content>
+      </Layout>,
+    );
+
+    // Both panels should render without throwing
+    expect(screen.getByText('Parent panel content')).toBeInTheDocument();
+    expect(screen.getByText('Nested panel content')).toBeInTheDocument();
+    expect(screen.getByText('Main content')).toBeInTheDocument();
+  });
+
+  it('nested Layout can use same side as parent without conflict', () => {
+    // Parent has left panel, nested Layout should be able to have left panel too
+    // because LayoutContextReset isolates the contexts
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel side="left" size={200}>
+          <div>Parent left panel</div>
+          <Layout>
+            <Layout.Panel side="left" size={100}>
+              <div>Nested left panel</div>
+            </Layout.Panel>
+          </Layout>
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    expect(screen.getByText('Parent left panel')).toBeInTheDocument();
+    expect(screen.getByText('Nested left panel')).toBeInTheDocument();
+  });
+});
+
 describe('Layout.Panel validation', () => {
   beforeEach(() => {
     // Suppress console.error for expected errors

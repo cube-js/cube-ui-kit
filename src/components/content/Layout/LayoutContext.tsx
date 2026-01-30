@@ -1,7 +1,6 @@
 import {
   createContext,
   ReactNode,
-  useCallback,
   useContext,
   useMemo,
   useRef,
@@ -9,27 +8,37 @@ import {
   useSyncExternalStore,
 } from 'react';
 
+import { useEvent } from '../../../_internal/hooks';
+
 export type Side = 'left' | 'top' | 'right' | 'bottom';
 
 /** Callback to dismiss an overlay panel */
 export type OverlayDismissCallback = () => void;
 
-/** Actions context - stable functions that don't change */
+/**
+ * Actions context - stable functions and configuration that don't change.
+ * Separating these from state prevents unnecessary re-renders when only state changes.
+ */
 export interface LayoutActionsContextValue {
+  /** Register a panel on a specific side with initial size */
   registerPanel: (side: Side, size: number) => void;
+  /** Unregister a panel from a specific side */
   unregisterPanel: (side: Side) => void;
+  /** Update the size of a registered panel */
   updatePanelSize: (side: Side, size: number) => void;
+  /** Set global dragging state (when any panel is being resized) */
   setDragging: (isDragging: boolean) => void;
+  /** Mark the layout as ready (after initial mount) */
   markReady: () => void;
   /** Register an overlay panel's dismiss callback. Returns unregister function. */
   registerOverlayPanel: (dismiss: OverlayDismissCallback) => () => void;
   /** Dismiss all overlay panels */
   dismissOverlayPanels: () => void;
-  /** Whether transitions are enabled for panels */
+  /** Whether transitions are enabled for panels (stable config value) */
   hasTransition: boolean;
   /** Subscribe to panel sizes changes (for useSyncExternalStore) */
   subscribeToPanelSizes: (callback: () => void) => () => void;
-  /** Get current panel sizes snapshot */
+  /** Get current panel sizes snapshot (for useSyncExternalStore) */
   getPanelSizes: () => Record<Side, number>;
 }
 
@@ -41,7 +50,12 @@ export interface LayoutStateContextValue {
   hasOverlayPanels: boolean;
 }
 
-/** Combined context value for backwards compatibility */
+/**
+ * Combined context value for backwards compatibility.
+ * @deprecated Use useLayoutActionsContext and useLayoutStateContext separately
+ * for better performance - using this combined context will cause re-renders
+ * whenever any state changes.
+ */
 export interface LayoutContextValue
   extends LayoutActionsContextValue,
     LayoutStateContextValue {}
@@ -67,6 +81,16 @@ export function useLayoutContext(): LayoutContextValue | null {
   return useContext(LayoutContext);
 }
 
+// Default panel sizes - hoisted for referential stability with useSyncExternalStore
+const DEFAULT_PANEL_SIZES: Record<Side, number> = {
+  left: 0,
+  top: 0,
+  right: 0,
+  bottom: 0,
+};
+const noopSubscribe = () => () => {};
+const getDefaultPanelSizes = () => DEFAULT_PANEL_SIZES;
+
 /**
  * Hook to get panel sizes without causing re-renders on every size change.
  * Uses useSyncExternalStore for efficient subscriptions.
@@ -74,12 +98,10 @@ export function useLayoutContext(): LayoutContextValue | null {
 export function usePanelSizes(): Record<Side, number> {
   const actions = useLayoutActionsContext();
 
-  const defaultSizes = { left: 0, top: 0, right: 0, bottom: 0 };
-
   return useSyncExternalStore(
-    actions?.subscribeToPanelSizes ?? (() => () => {}),
-    actions?.getPanelSizes ?? (() => defaultSizes),
-    () => defaultSizes,
+    actions?.subscribeToPanelSizes ?? noopSubscribe,
+    actions?.getPanelSizes ?? getDefaultPanelSizes,
+    getDefaultPanelSizes,
   );
 }
 
@@ -96,7 +118,16 @@ export function LayoutProvider({
   const registeredPanels = useRef<Set<Side>>(new Set());
   const overlayPanelCallbacks = useRef<Set<OverlayDismissCallback>>(new Set());
 
-  // Use ref for panel sizes to avoid re-renders in Panels when sizes change
+  /**
+   * Panel sizes are stored in both a ref and state:
+   * - panelSizesRef: For useSyncExternalStore (usePanelSizes hook) - allows
+   *   consumers to subscribe to size changes without causing re-renders in the
+   *   entire Layout tree.
+   * - panelSizes state: For the Layout component to re-render and adjust content
+   *   area when panel sizes change.
+   *
+   * Both are kept in sync by updating them together in register/unregister/update.
+   */
   const panelSizesRef = useRef<Record<Side, number>>({
     left: 0,
     top: 0,
@@ -105,7 +136,6 @@ export function LayoutProvider({
   });
   const panelSizesSubscribers = useRef<Set<() => void>>(new Set());
 
-  // State for values that need to trigger re-renders
   const [panelSizes, setPanelSizes] = useState<Record<Side, number>>({
     left: 0,
     top: 0,
@@ -116,128 +146,92 @@ export function LayoutProvider({
   const [isReady, setIsReady] = useState(false);
   const [hasOverlayPanels, setHasOverlayPanels] = useState(false);
 
-  // Notify subscribers when panel sizes change
-  const notifyPanelSizesSubscribers = useCallback(() => {
-    panelSizesSubscribers.current.forEach((callback) => callback());
-  }, []);
+  // Helper to update both ref and state in sync
+  const updatePanelSizeInternal = (side: Side, size: number) => {
+    // Update ref immediately for synchronous access via useSyncExternalStore
+    if (panelSizesRef.current[side] !== size) {
+      panelSizesRef.current = { ...panelSizesRef.current, [side]: size };
+      // Notify useSyncExternalStore subscribers
+      panelSizesSubscribers.current.forEach((callback) => callback());
+    }
 
-  const registerPanel = useCallback(
-    (side: Side, size: number) => {
-      if (registeredPanels.current.has(side)) {
+    // Update state for Layout component re-renders
+    setPanelSizes((prev) => {
+      if (prev[side] === size) return prev;
+      return { ...prev, [side]: size };
+    });
+  };
+
+  const registerPanel = useEvent((side: Side, size: number) => {
+    if (registeredPanels.current.has(side)) {
+      throw new Error(
+        `Layout: Only one panel per side is allowed. ` +
+          `A panel is already registered on the "${side}" side.`,
+      );
+    }
+
+    // Check for axis conflict
+    const isHorizontal = side === 'left' || side === 'right';
+    const conflictingSides: Side[] = isHorizontal
+      ? ['top', 'bottom']
+      : ['left', 'right'];
+
+    for (const conflictSide of conflictingSides) {
+      if (registeredPanels.current.has(conflictSide)) {
         throw new Error(
-          `Layout: Only one panel per side is allowed. ` +
-            `A panel is already registered on the "${side}" side.`,
+          `Layout: Panels from different axes cannot be combined. ` +
+            `Cannot register "${side}" panel when "${conflictSide}" panel exists. ` +
+            `Use either horizontal (left/right) or vertical (top/bottom) panels.`,
         );
       }
+    }
 
-      // Check for axis conflict
-      const isHorizontal = side === 'left' || side === 'right';
-      const conflictingSides: Side[] = isHorizontal
-        ? ['top', 'bottom']
-        : ['left', 'right'];
+    registeredPanels.current.add(side);
+    updatePanelSizeInternal(side, size);
+  });
 
-      for (const conflictSide of conflictingSides) {
-        if (registeredPanels.current.has(conflictSide)) {
-          throw new Error(
-            `Layout: Panels from different axes cannot be combined. ` +
-              `Cannot register "${side}" panel when "${conflictSide}" panel exists. ` +
-              `Use either horizontal (left/right) or vertical (top/bottom) panels.`,
-          );
-        }
-      }
+  const unregisterPanel = useEvent((side: Side) => {
+    registeredPanels.current.delete(side);
+    updatePanelSizeInternal(side, 0);
+  });
 
-      registeredPanels.current.add(side);
+  const updatePanelSize = useEvent((side: Side, size: number) => {
+    updatePanelSizeInternal(side, size);
+  });
 
-      // Update ref immediately for synchronous access
-      if (panelSizesRef.current[side] !== size) {
-        panelSizesRef.current = { ...panelSizesRef.current, [side]: size };
-        notifyPanelSizesSubscribers();
-      }
-
-      // Also update state for Layout component re-renders
-      setPanelSizes((prev) => {
-        if (prev[side] === size) return prev;
-        return { ...prev, [side]: size };
-      });
-    },
-    [notifyPanelSizesSubscribers],
-  );
-
-  const unregisterPanel = useCallback(
-    (side: Side) => {
-      registeredPanels.current.delete(side);
-
-      // Update ref immediately
-      if (panelSizesRef.current[side] !== 0) {
-        panelSizesRef.current = { ...panelSizesRef.current, [side]: 0 };
-        notifyPanelSizesSubscribers();
-      }
-
-      setPanelSizes((prev) => {
-        if (prev[side] === 0) return prev;
-        return { ...prev, [side]: 0 };
-      });
-    },
-    [notifyPanelSizesSubscribers],
-  );
-
-  const updatePanelSize = useCallback(
-    (side: Side, size: number) => {
-      // Update ref immediately
-      if (panelSizesRef.current[side] !== size) {
-        panelSizesRef.current = { ...panelSizesRef.current, [side]: size };
-        notifyPanelSizesSubscribers();
-      }
-
-      setPanelSizes((prev) => {
-        // Only update if the size actually changed
-        if (prev[side] === size) return prev;
-        return { ...prev, [side]: size };
-      });
-    },
-    [notifyPanelSizesSubscribers],
-  );
-
-  const setDragging = useCallback((dragging: boolean) => {
+  const setDragging = useEvent((dragging: boolean) => {
     setIsDragging(dragging);
-  }, []);
+  });
 
-  const markReady = useCallback(() => {
+  const markReady = useEvent(() => {
     setIsReady(true);
-  }, []);
+  });
 
-  // Register an overlay panel's dismiss callback
-  const registerOverlayPanel = useCallback(
-    (dismiss: OverlayDismissCallback) => {
-      overlayPanelCallbacks.current.add(dismiss);
-      setHasOverlayPanels(true);
+  const registerOverlayPanel = useEvent((dismiss: OverlayDismissCallback) => {
+    overlayPanelCallbacks.current.add(dismiss);
+    setHasOverlayPanels(true);
 
-      // Return unregister function
-      return () => {
-        overlayPanelCallbacks.current.delete(dismiss);
-        setHasOverlayPanels(overlayPanelCallbacks.current.size > 0);
-      };
-    },
-    [],
-  );
+    // Return unregister function
+    return () => {
+      overlayPanelCallbacks.current.delete(dismiss);
+      setHasOverlayPanels(overlayPanelCallbacks.current.size > 0);
+    };
+  });
 
-  // Dismiss all overlay panels
-  const dismissOverlayPanels = useCallback(() => {
+  const dismissOverlayPanels = useEvent(() => {
     overlayPanelCallbacks.current.forEach((dismiss) => dismiss());
-  }, []);
+  });
 
-  // Subscribe to panel sizes changes (for useSyncExternalStore)
-  const subscribeToPanelSizes = useCallback((callback: () => void) => {
+  const subscribeToPanelSizes = useEvent((callback: () => void) => {
     panelSizesSubscribers.current.add(callback);
     return () => {
       panelSizesSubscribers.current.delete(callback);
     };
-  }, []);
+  });
 
-  // Get current panel sizes snapshot
-  const getPanelSizes = useCallback(() => panelSizesRef.current, []);
+  const getPanelSizes = useEvent(() => panelSizesRef.current);
 
-  // Actions context - stable, doesn't change
+  // Actions context - stable because all callbacks use useEvent
   const actionsValue = useMemo(
     () => ({
       registerPanel,
@@ -251,18 +245,8 @@ export function LayoutProvider({
       subscribeToPanelSizes,
       getPanelSizes,
     }),
-    [
-      registerPanel,
-      unregisterPanel,
-      updatePanelSize,
-      setDragging,
-      markReady,
-      hasTransition,
-      registerOverlayPanel,
-      dismissOverlayPanels,
-      subscribeToPanelSizes,
-      getPanelSizes,
-    ],
+    // Only hasTransition can change - all other values are stable useEvent callbacks
+    [hasTransition],
   );
 
   // State context - changes when state updates
