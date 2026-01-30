@@ -5,7 +5,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
@@ -36,10 +35,6 @@ export interface LayoutActionsContextValue {
   dismissOverlayPanels: () => void;
   /** Whether transitions are enabled for panels (stable config value) */
   hasTransition: boolean;
-  /** Subscribe to panel sizes changes (for useSyncExternalStore) */
-  subscribeToPanelSizes: (callback: () => void) => () => void;
-  /** Get current panel sizes snapshot (for useSyncExternalStore) */
-  getPanelSizes: () => Record<Side, number>;
 }
 
 /** State context - reactive state that triggers re-renders */
@@ -64,30 +59,6 @@ export function useLayoutStateContext(): LayoutStateContextValue | null {
   return useContext(LayoutStateContext);
 }
 
-// Default panel sizes - hoisted for referential stability with useSyncExternalStore
-const DEFAULT_PANEL_SIZES: Record<Side, number> = {
-  left: 0,
-  top: 0,
-  right: 0,
-  bottom: 0,
-};
-const noopSubscribe = () => () => {};
-const getDefaultPanelSizes = () => DEFAULT_PANEL_SIZES;
-
-/**
- * Hook to get panel sizes with efficient subscription.
- * Uses useSyncExternalStore so only components using this hook re-render on size changes.
- */
-export function usePanelSizes(): Record<Side, number> {
-  const actions = useLayoutActionsContext();
-
-  return useSyncExternalStore(
-    actions?.subscribeToPanelSizes ?? noopSubscribe,
-    actions?.getPanelSizes ?? getDefaultPanelSizes,
-    getDefaultPanelSizes,
-  );
-}
-
 export interface LayoutProviderProps {
   children: ReactNode;
   /** Whether transitions are enabled for panels */
@@ -101,24 +72,6 @@ export function LayoutProvider({
   const registeredPanels = useRef<Set<Side>>(new Set());
   const overlayPanelCallbacks = useRef<Set<OverlayDismissCallback>>(new Set());
 
-  /**
-   * Panel sizes are stored in both a ref and state:
-   * - panelSizesRef: For useSyncExternalStore (usePanelSizes hook) - allows
-   *   consumers to subscribe to size changes without causing re-renders in the
-   *   entire Layout tree.
-   * - panelSizes state: For the Layout component to re-render and adjust content
-   *   area when panel sizes change.
-   *
-   * Both are kept in sync by updating them together in register/unregister/update.
-   */
-  const panelSizesRef = useRef<Record<Side, number>>({
-    left: 0,
-    top: 0,
-    right: 0,
-    bottom: 0,
-  });
-  const panelSizesSubscribers = useRef<Set<() => void>>(new Set());
-
   const [panelSizes, setPanelSizes] = useState<Record<Side, number>>({
     left: 0,
     top: 0,
@@ -129,16 +82,11 @@ export function LayoutProvider({
   const [isReady, setIsReady] = useState(false);
   const [hasOverlayPanels, setHasOverlayPanels] = useState(false);
 
-  // Helper to update both ref and state in sync
-  const updatePanelSizeInternal = useEvent((side: Side, size: number) => {
-    if (panelSizesRef.current[side] === size) return;
-
-    // Update ref immediately for synchronous access via useSyncExternalStore
-    panelSizesRef.current = { ...panelSizesRef.current, [side]: size };
-    // Notify useSyncExternalStore subscribers
-    panelSizesSubscribers.current.forEach((callback) => callback());
-    // Update state for Layout component re-renders
-    setPanelSizes((prev) => ({ ...prev, [side]: size }));
+  const updatePanelSize = useEvent((side: Side, size: number) => {
+    setPanelSizes((prev) => {
+      if (prev[side] === size) return prev;
+      return { ...prev, [side]: size };
+    });
   });
 
   const registerPanel = useEvent((side: Side, size: number) => {
@@ -166,16 +114,12 @@ export function LayoutProvider({
     }
 
     registeredPanels.current.add(side);
-    updatePanelSizeInternal(side, size);
+    updatePanelSize(side, size);
   });
 
   const unregisterPanel = useEvent((side: Side) => {
     registeredPanels.current.delete(side);
-    updatePanelSizeInternal(side, 0);
-  });
-
-  const updatePanelSize = useEvent((side: Side, size: number) => {
-    updatePanelSizeInternal(side, size);
+    updatePanelSize(side, 0);
   });
 
   const setDragging = useEvent((dragging: boolean) => {
@@ -201,15 +145,6 @@ export function LayoutProvider({
     overlayPanelCallbacks.current.forEach((dismiss) => dismiss());
   });
 
-  const subscribeToPanelSizes = useEvent((callback: () => void) => {
-    panelSizesSubscribers.current.add(callback);
-    return () => {
-      panelSizesSubscribers.current.delete(callback);
-    };
-  });
-
-  const getPanelSizes = useEvent(() => panelSizesRef.current);
-
   // Actions context - stable because all callbacks use useEvent
   const actionsValue = useMemo(
     () => ({
@@ -221,8 +156,6 @@ export function LayoutProvider({
       hasTransition,
       registerOverlayPanel,
       dismissOverlayPanels,
-      subscribeToPanelSizes,
-      getPanelSizes,
     }),
     // Only hasTransition can change - all other values are stable useEvent callbacks
     [hasTransition],

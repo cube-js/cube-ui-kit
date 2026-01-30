@@ -36,7 +36,6 @@ export {
   useLayoutActionsContext,
   useLayoutStateContext,
   useLayoutPanelContext,
-  usePanelSizes,
 } from './LayoutContext';
 export type {
   LayoutActionsContextValue,
