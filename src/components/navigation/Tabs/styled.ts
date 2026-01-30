@@ -211,7 +211,7 @@ export const TabElement = tasty(Item, {
     '$selection-shadow': {
       '': 'inset 0 0 0 0 #purple',
       'type=file & selected': 'inset 0 (-1 * $tab-indicator-size) 0 0 #purple',
-      '!type=file': 'none',
+      '!type=file': 'inset 0 0 0 0 #purple.0',
     },
     // Collapse horizontal padding for narrow type
     '$label-padding-left': {
