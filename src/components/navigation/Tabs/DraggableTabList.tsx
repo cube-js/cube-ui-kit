@@ -31,7 +31,7 @@ export interface DraggableTabListProps {
   /** Current ordered keys */
   orderedKeys: string[];
   /** Callback when tabs are reordered */
-  onReorder?: (newOrder: Key[]) => void;
+  onReorder?: (newOrder: string[]) => void;
   /** Render function that receives drag/drop states */
   children: (
     dragState: DraggableCollectionState,

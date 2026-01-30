@@ -1,4 +1,3 @@
-import type { Key } from '@react-types/shared';
 import type { ReactNode } from 'react';
 import type { BaseProps, OuterStyleProps, Styles } from '../../../tasty';
 import type { CubeItemActionProps } from '../../actions/ItemAction';
@@ -113,9 +112,9 @@ export interface CubeTabsProps
     OuterStyleProps,
     PanelBehaviorProps {
   /** Controlled active tab key. When provided, component is controlled. */
-  activeKey?: Key;
+  activeKey?: string;
   /** Initial active tab key for uncontrolled mode. */
-  defaultActiveKey?: Key;
+  defaultActiveKey?: string;
   /**
    * Visual appearance type for tabs.
    * - `default` - Standard tabs with selection indicator below (default)
@@ -138,11 +137,11 @@ export interface CubeTabsProps
   /** Content rendered after the tab list. */
   suffix?: ReactNode;
   /** Callback when active tab changes. */
-  onChange?: (key: Key) => void;
+  onChange?: (key: string) => void;
   /** Callback when tab delete button is clicked. Presence enables delete buttons. */
-  onDelete?: (key: Key) => void;
+  onDelete?: (key: string) => void;
   /** Callback when a tab title is changed. Enables title editing on tabs with isEditable. */
-  onTitleChange?: (key: Key, newTitle: string) => void;
+  onTitleChange?: (key: string, newTitle: string) => void;
   /** Whether to show tab actions only on hover. Can be overridden per-tab. */
   showActionsOnHover?: boolean;
   /**
@@ -179,7 +178,7 @@ export interface CubeTabsProps
    * Called with the action key and the tab key.
    * Tab-level onAction is called first, then this.
    */
-  onAction?: (action: Key, tabKey: Key) => void;
+  onAction?: (action: string, tabKey: string) => void;
   /** Custom tasty styles for the tab bar container. */
   styles?: Styles;
   /** QA selector attribute. */
@@ -191,7 +190,7 @@ export interface CubeTabsProps
    * When provided, panel content is only evaluated for the active tab,
    * while inactive tabs use cached content.
    */
-  renderPanel?: (key: Key) => ReactNode;
+  renderPanel?: (key: string) => ReactNode;
   /**
    * Cache keys for individual panels. Enables caching for specified panels.
    */
@@ -205,11 +204,11 @@ export interface CubeTabsProps
    * Controlled order of tab keys.
    * When provided, tabs are displayed in this order.
    */
-  keyOrder?: Key[];
+  keyOrder?: string[];
   /**
    * Callback when tabs are reordered via drag-and-drop.
    */
-  onReorder?: (newOrder: Key[]) => void;
+  onReorder?: (newOrder: string[]) => void;
   /**
    * Whether to show a tab picker dropdown in the suffix area.
    * - `true` - always show the tab picker
@@ -286,7 +285,7 @@ export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {
    * Callback when a menu action is triggered.
    * Called with the action key from Menu.Item.
    */
-  onAction?: (action: Key) => void;
+  onAction?: (action: string) => void;
 }
 
 export interface CubeTabPanelProps extends PanelBehaviorProps, QAProps {
