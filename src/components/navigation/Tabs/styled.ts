@@ -191,7 +191,10 @@ export const TabElement = tasty(Item, {
       'type=radio & hovered': '#white.5',
       '(type=file | type=radio) & selected': '#white',
     },
-    border: 0,
+    border: {
+      '': '#clear',
+      'type=file': '0 #clear',
+    },
     preset: {
       '': 't3m',
       'size=xsmall': 't4',
