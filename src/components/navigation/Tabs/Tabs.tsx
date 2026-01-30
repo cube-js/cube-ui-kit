@@ -624,7 +624,7 @@ function TabsComponent(
           </div>
         ) : null}
         <div data-element="ScrollWrapper">
-          <div ref={scrollRef} data-element="Scroll">
+          <div ref={scrollRef} data-element="TabList">
             {isReorderable ? (
               <DraggableTabList
                 state={state}

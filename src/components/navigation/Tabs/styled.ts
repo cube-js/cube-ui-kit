@@ -44,6 +44,7 @@ export const TabsElement = tasty({
     },
 
     Prefix: {
+      $: '>',
       display: 'flex',
       placeItems: 'center',
       placeContent: 'center',
@@ -56,6 +57,7 @@ export const TabsElement = tasty({
     },
 
     Suffix: {
+      $: '>',
       display: 'flex',
       placeItems: 'center',
       placeContent: 'center',
@@ -69,6 +71,7 @@ export const TabsElement = tasty({
 
     // Wrapper for scroll area and scrollbar (scrollbar is positioned relative to this)
     ScrollWrapper: {
+      $: '>',
       position: 'relative',
       display: 'flex',
       flexGrow: 1,
@@ -80,7 +83,8 @@ export const TabsElement = tasty({
       },
     },
 
-    Scroll: {
+    TabList: {
+      $: '> ScrollWrapper >',
       position: 'relative',
       display: 'block',
       overflow: {
@@ -117,6 +121,7 @@ export const TabsElement = tasty({
     },
 
     Container: {
+      $: '> ScrollWrapper > TabList >',
       position: 'relative',
       display: 'grid',
       gridAutoFlow: 'column',
@@ -149,6 +154,7 @@ export const TabsElement = tasty({
 
     // Custom horizontal scrollbar (tiny) - positioned relative to ScrollWrapper
     ScrollbarH: {
+      $: '> ScrollWrapper >',
       position: 'absolute',
       bottom: '1px',
       left: '$scrollbar-h-left',
