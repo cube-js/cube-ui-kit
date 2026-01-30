@@ -8,14 +8,14 @@ export const SliderThumbElement = tasty({
     width: '2x',
     height: '2x',
     fill: {
-      '': '#purple',
-      hovered: '#purple-text',
-      dragged: '#purple',
+      '': '(#slider-thumb, #purple)',
+      hovered: '(#slider-thumb-hovered, #purple-text)',
+      dragged: '(#slider-thumb, #purple)',
       disabled: '#dark-04',
     },
     cursor: '$pointer',
     outline: {
-      '': '#purple-text.0',
+      '': '1bw #purple-text.0',
       focused: '1bw #purple-text',
     },
     outlineOffset: 1,
@@ -51,7 +51,8 @@ export const SliderTrackContainerElement = tasty({
     },
     radius: true,
 
-    '&::before': {
+    Fill: {
+      $: '::before',
       content: '""',
       display: 'block',
       position: 'absolute',

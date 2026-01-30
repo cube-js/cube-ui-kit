@@ -15,7 +15,10 @@ export function mergeStyles(...objects: (Styles | undefined | null)[]): Styles {
       const resultStyles = { ...styles, ...newStyles };
 
       for (let key of selectorKeys) {
-        if (newStyles?.[key]) {
+        if (newStyles?.[key] === false) {
+          // Remove sub-element styles when explicitly set to false
+          delete resultStyles[key];
+        } else if (newStyles?.[key]) {
           resultStyles[key] = {
             ...(styles[key] as StylesWithoutSelectors),
             ...(newStyles[key] as StylesWithoutSelectors),
