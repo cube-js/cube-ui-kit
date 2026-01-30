@@ -405,6 +405,9 @@ const ItemElement = tasty({
     '$label-padding-right': {
       '': '$inline-padding',
       'has-end-content': '0',
+      // Restore padding when actions are hidden AND no other visible end content
+      'has-actions & !has-suffix & !has-right-icon & (show-actions-on-hover | !has-actions-content) & !preserve-actions-space & !:hover & !:focus & !:focus-within':
+        '$inline-padding',
     },
     '$label-padding-bottom': {
       '': '$block-padding',
@@ -504,7 +507,7 @@ const ItemElement = tasty({
       placeSelf: 'stretch',
       padding: {
         '': '0 $side-padding',
-        'has-actions & show-actions-on-hover & !preserve-actions-space & !:hover & !:focus & !:focus-within':
+        'has-actions & (show-actions-on-hover | !has-actions-content) & !preserve-actions-space & !:hover & !:focus & !:focus-within':
           '0',
       },
       boxSizing: 'border-box',
