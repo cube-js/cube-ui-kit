@@ -313,10 +313,11 @@ function TabsComponent(
     );
   }, [parsedTabs]);
 
-  // Handle selection change
+  // Handle selection change (converts React Aria's Key to string for our API)
   const handleSelectionChange = useEvent((key: Key) => {
-    visitedKeysRef.current.add(String(key));
-    onChange?.(key);
+    const keyStr = String(key);
+    visitedKeysRef.current.add(keyStr);
+    onChange?.(keyStr);
   });
 
   // Convert keys to strings for React Aria compatibility
@@ -358,7 +359,7 @@ function TabsComponent(
   const { tabListProps } = useTabList(ariaProps, state, listRef);
 
   // Handle selection from TabPicker (needs to update internal state in uncontrolled mode)
-  const handleTabPickerSelect = useEvent((key: Key) => {
+  const handleTabPickerSelect = useEvent((key: string) => {
     // Update internal state (for uncontrolled mode)
     state.setSelectedKey(key);
     // Also call the external onChange handler

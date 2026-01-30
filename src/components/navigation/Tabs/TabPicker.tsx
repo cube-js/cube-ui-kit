@@ -1,5 +1,3 @@
-import { Key } from 'react-aria';
-
 import { MoreIcon, TrashIcon } from '../../../icons';
 import { ItemAction } from '../../actions/ItemAction';
 import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
@@ -14,11 +12,11 @@ export interface TabPickerProps {
   /** Ordered list of parsed tabs to display in the picker */
   tabs: ParsedTab[];
   /** Currently selected tab key */
-  selectedKey: Key | null;
+  selectedKey: string | null;
   /** Callback when a tab is selected from the picker */
-  onSelect: (key: Key) => void;
+  onSelect: (key: string) => void;
   /** Callback when a tab should be deleted. When provided, shows delete action on items. */
-  onDelete?: (key: Key) => void;
+  onDelete?: (key: string) => void;
   /** Size of the picker trigger button */
   size?: TabSize;
   /** Type of the parent Tabs component (for border styling) */
@@ -75,7 +73,7 @@ export function TabPicker({
       aria-label="Select tab"
       onSelectionChange={(key) => {
         if (key != null) {
-          onSelect(key as Key);
+          onSelect(String(key));
         }
       }}
     >

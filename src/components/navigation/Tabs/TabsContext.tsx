@@ -1,6 +1,5 @@
 import { createContext, ReactNode, useContext } from 'react';
 
-import type { Key } from '@react-types/shared';
 import type {
   DraggableCollectionState,
   DroppableCollectionState,
@@ -34,9 +33,9 @@ export interface TabsContextValue {
   /** Parent-level contextMenu default */
   contextMenu?: boolean;
   /** Callback when tab is deleted */
-  onDelete?: (key: Key) => void;
+  onDelete?: (key: string) => void;
   /** Parent-level onAction callback */
-  onAction?: (action: Key, tabKey: Key) => void;
+  onAction?: (action: string, tabKey: string) => void;
   /** Drag state for reorderable tabs (undefined if not reorderable) */
   dragState?: DraggableCollectionState;
   /** Drop state for reorderable tabs (undefined if not reorderable) */
@@ -44,16 +43,16 @@ export interface TabsContextValue {
 
   // Editing callbacks
   /** Current tab being edited (null if none) */
-  editingKey: Key | null;
+  editingKey: string | null;
   /** Current edit value */
   editValue: string;
   /** Set the edit value */
   setEditValue: (value: string) => void;
   /** Start editing a tab */
-  startEditing: (key: Key, currentTitle: string) => void;
+  startEditing: (key: string, currentTitle: string) => void;
   /** Submit the current edit */
   submitEditing: (
-    key: Key,
+    key: string,
     newTitle: string,
     tabOnTitleChange?: (title: string) => void,
   ) => void;

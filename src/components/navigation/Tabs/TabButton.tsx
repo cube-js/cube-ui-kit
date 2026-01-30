@@ -256,21 +256,23 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
       ? processMenuItems(effectiveMenu, effectiveIsEditable, isDeletable)
       : null;
 
+  const itemKeyStr = String(item.key);
+
   const handleDelete = useEvent(() => {
-    onDelete?.(item.key);
+    onDelete?.(itemKeyStr);
   });
 
   const handleStartEditing = useEvent(() => {
     if (!effectiveIsEditable || isDisabled) return;
 
     const titleText =
-      typeof tabData.title === 'string' ? tabData.title : String(item.key);
+      typeof tabData.title === 'string' ? tabData.title : itemKeyStr;
 
-    startEditing(item.key, titleText);
+    startEditing(itemKeyStr, titleText);
   });
 
   const handleSubmitEditing = useEvent(() => {
-    submitEditing(item.key, editValue, tabData.onTitleChange);
+    submitEditing(itemKeyStr, editValue, tabData.onTitleChange);
     // Suppress focus-visible and restore focus to the tab button after editing
     setSuppressFocusVisible(true);
     requestAnimationFrame(() => {
@@ -304,12 +306,12 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
       handleStartEditing();
     }
     if (normalizedAction === 'delete' && isDeletable) {
-      onDelete?.(item.key);
+      onDelete?.(itemKeyStr);
     }
     // Call Tab-level onAction first (with normalized action)
     tabData.onAction?.(normalizedAction);
     // Then call Tabs-level onAction with tab key (with normalized action)
-    parentOnAction?.(normalizedAction, item.key);
+    parentOnAction?.(normalizedAction, itemKeyStr);
   });
 
   // Keyboard handler for accessibility shortcuts (WAI-ARIA Tabs Pattern)
@@ -341,7 +343,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
       !isEditing
     ) {
       e.preventDefault();
-      onDelete?.(item.key);
+      onDelete?.(itemKeyStr);
     }
   });
 

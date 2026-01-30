@@ -3,7 +3,6 @@ import { useTabPanel } from 'react-aria';
 
 import { TabPanelElement } from './styled';
 
-import type { Key } from '@react-types/shared';
 import type { ReactNode } from 'react';
 import type { AriaTabPanelProps } from 'react-aria';
 import type { TabListState } from 'react-stately';
@@ -111,7 +110,7 @@ export interface CachedPanelRendererProps {
   parsedTabs: ParsedTab[];
   explicitPanels: Map<string, ParsedPanel>;
   state: TabListState<object>;
-  renderPanel: (key: Key) => ReactNode;
+  renderPanel: (key: string) => ReactNode;
   panelCacheKeys?: Record<string | number, CacheKeyValue>;
   prerender: boolean;
   keepMounted: boolean;
