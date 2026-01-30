@@ -82,7 +82,7 @@ const ContentElement = tasty({
     },
 
     ScrollbarH: {
-      $: '> Inner >',
+      $: '>',
       position: 'absolute',
       bottom: '1px',
       left: '$scrollbar-h-left',
