@@ -197,7 +197,7 @@ describe('<Disclosure />', () => {
         </Disclosure>,
       );
 
-      expect(getByRole('button')).toHaveAttribute('aria-disabled', 'true');
+      expect(getByRole('button')).toBeDisabled();
     });
 
     it('should not expand when disabled', async () => {
@@ -445,7 +445,7 @@ describe('<Disclosure.Group />', () => {
     const triggers = getAllByRole('button');
 
     triggers.forEach((trigger) => {
-      expect(trigger).toHaveAttribute('aria-disabled', 'true');
+      expect(trigger).toBeDisabled();
     });
   });
 });
