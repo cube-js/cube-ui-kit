@@ -569,6 +569,7 @@ export interface StylesIndexSignature {
     | StyleValue<string | number | boolean | undefined>
     | StyleValueStateMap<string | number | boolean | undefined>
     | Styles
+    | false // Removes all styles for this sub-element when extending
     | StylesInterface['@keyframes']
     | StylesInterface['@properties'];
   /**

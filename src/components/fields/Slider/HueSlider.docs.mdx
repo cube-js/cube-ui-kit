@@ -1,0 +1,183 @@
+import { Meta, Canvas, Controls } from '@storybook/addon-docs/blocks';
+import { Badge } from 'storybook/internal/components';
+import * as HueSliderStories from './HueSlider.stories';
+
+<Meta of={HueSliderStories} />
+
+# HueSlider
+
+<Badge variant="neutral">Form component</Badge>
+
+The HueSlider component allows users to select a hue value (0-359 degrees) from the color wheel. It displays a rainbow gradient track using the okhsl color space and dynamically colors the thumb to match the selected hue.
+
+## When to Use
+
+- When building a color picker that needs hue selection
+- When users need to choose a color from the full spectrum
+- When you want a visual representation of hue values
+
+## Component
+
+<Canvas of={HueSliderStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={HueSliderStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the component.
+
+**Sub-elements:**
+
+- `SliderControls` - The container for the track and thumb
+- `SliderTrackContainer` - The track background with rainbow gradient
+- `SliderThumb` - The draggable thumb element (colored to match current hue)
+
+#### trackStyles
+
+Customizes the track element. The default displays a rainbow gradient.
+
+#### thumbStyles
+
+Customizes the thumb element. The default fills with the current hue color.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `width`, `height`.
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| horizontal | `boolean` | Whether the slider is horizontal (default) or vertical |
+| disabled | `boolean` | Whether the slider is disabled |
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<HueSlider defaultValue={180} />
+```
+
+### With Label
+
+<Canvas of={HueSliderStories.WithLabel} />
+
+```jsx
+<HueSlider label="Hue" defaultValue={180} />
+```
+
+### Custom Value Formatting
+
+<Canvas of={HueSliderStories.WithCustomLabel} />
+
+```jsx
+<HueSlider 
+  label="Hue" 
+  defaultValue={180}
+  getValueLabel={(val) => `${val}°`}
+/>
+```
+
+### Controlled Mode
+
+<Canvas of={HueSliderStories.Controlled} />
+
+```jsx
+function ColorPicker() {
+  const [hue, setHue] = useState(0);
+
+  return (
+    <HueSlider
+      label="Hue"
+      value={hue}
+      onChange={setHue}
+      getValueLabel={(val) => `${val}°`}
+    />
+  );
+}
+```
+
+### Disabled State
+
+<Canvas of={HueSliderStories.Disabled} />
+
+```jsx
+<HueSlider label="Disabled Hue" isDisabled />
+```
+
+### Vertical Orientation
+
+<Canvas of={HueSliderStories.Vertical} />
+
+```jsx
+<HueSlider 
+  orientation="vertical" 
+  fieldStyles={{ height: '200px' }} 
+/>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the slider
+- `Arrow Left/Down` - Decreases the hue value
+- `Arrow Right/Up` - Increases the hue value
+- `Home` - Sets value to minimum (0)
+- `End` - Sets value to maximum (359)
+
+### Screen Reader Support
+
+- Announces as a slider with current value
+- Value changes are announced to screen readers
+- Labels are properly associated with the slider input
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-valuemin` - Set to 0
+- `aria-valuemax` - Set to 359
+- `aria-valuenow` - Current hue value
+
+## Best Practices
+
+1. **Do**: Provide a label for clarity
+
+```jsx
+<HueSlider label="Select Hue" />
+```
+
+2. **Don't**: Use without context in a color picker
+
+```jsx
+{/* Missing label makes it unclear what the slider controls */}
+<HueSlider />
+```
+
+3. **Accessibility**: Use `getValueLabel` to provide meaningful value descriptions
+
+```jsx
+<HueSlider getValueLabel={(val) => `${val} degrees`} />
+```
+
+## Integration with Forms
+
+This component supports all [Field properties](/docs/field-properties) when used within a Form.
+
+## Related Components
+
+- [Slider](/docs/forms-slider--docs) - Base numeric slider component
+- [RangeSlider](/docs/forms-rangeslider--docs) - For selecting a range of values

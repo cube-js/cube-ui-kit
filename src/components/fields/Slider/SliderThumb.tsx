@@ -6,6 +6,7 @@ import {
   VisuallyHidden,
 } from 'react-aria';
 
+import { Styles, Tokens } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 
 import { SliderThumbElement } from './elements';
@@ -18,10 +19,12 @@ export interface SliderThumbProps extends AriaSliderThumbOptions {
   trackRef: RefObject<HTMLElement | null>;
   inputRef: RefObject<HTMLInputElement | null>;
   index: number;
+  styles?: Styles;
+  tokens?: Tokens;
 }
 
 export function SliderThumb(props: SliderThumbProps) {
-  let { state, index, inputRef, isDisabled } = props;
+  let { state, index, inputRef, isDisabled, styles, tokens } = props;
 
   const backupRef = useRef<HTMLInputElement>(null);
 
@@ -56,6 +59,8 @@ export function SliderThumb(props: SliderThumbProps) {
   return (
     <SliderThumbElement
       mods={mods}
+      styles={styles}
+      tokens={tokens}
       {...mergeProps(thumbProps, hoverProps)}
       role="presentation"
     >

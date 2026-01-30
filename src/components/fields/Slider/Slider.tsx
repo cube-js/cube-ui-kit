@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 
-import { extractStyles, OUTER_STYLES } from '../../../tasty';
+import { extractStyles, OUTER_STYLES, Styles, Tokens } from '../../../tasty';
 import { mergeProps } from '../../../utils/react/index';
 
 import { Gradation } from './Gradation';
@@ -17,6 +17,12 @@ import type { CubeSliderBaseProps } from './types';
 
 export interface CubeSliderProps extends CubeSliderBaseProps<number> {
   gradation?: string[];
+  /** Custom styles for the track element */
+  trackStyles?: Styles;
+  /** Custom styles for the thumb element */
+  thumbStyles?: Styles;
+  /** Custom tokens for the thumb element (e.g., #slider-thumb for fill color) */
+  thumbTokens?: Tokens;
 }
 
 function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
@@ -30,6 +36,9 @@ function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
     styles,
     gradation,
     orientation,
+    trackStyles,
+    thumbStyles,
+    thumbTokens,
     ...otherProps
   } = props;
 
@@ -64,6 +73,7 @@ function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
               state={state}
               isDisabled={isDisabled}
               orientation={orientation}
+              styles={trackStyles}
             />
             <SliderThumb
               index={0}
@@ -71,6 +81,8 @@ function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
               inputRef={inputRef}
               trackRef={trackRef}
               isDisabled={isDisabled}
+              styles={thumbStyles}
+              tokens={thumbTokens}
             />
           </>
         );
