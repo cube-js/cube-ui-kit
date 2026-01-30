@@ -504,7 +504,7 @@ const ItemElement = tasty({
       placeSelf: 'stretch',
       padding: {
         '': '0 $side-padding',
-        'has-actions-content & show-actions-on-hover & !preserve-actions-space & !:hover & !:focus & !:focus-within':
+        'has-actions & show-actions-on-hover & !preserve-actions-space & !:hover & !:focus & !:focus-within':
           '0',
       },
       boxSizing: 'border-box',
