@@ -40,7 +40,8 @@ import {
   LayoutContextReset,
   LayoutPanelContext,
   Side,
-  useLayoutContext,
+  useLayoutActionsContext,
+  useLayoutStateContext,
 } from './LayoutContext';
 import { clampSize } from './utils';
 
@@ -400,9 +401,10 @@ function LayoutPanel(
   props: CubeLayoutPanelProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const layoutContext = useLayoutContext();
+  const layoutActions = useLayoutActionsContext();
+  const layoutState = useLayoutStateContext();
 
-  if (!layoutContext) {
+  if (!layoutActions || !layoutState) {
     throw new Error('Layout.Panel must be a direct child of Layout component.');
   }
 
@@ -442,7 +444,7 @@ function LayoutPanel(
   const isStickyMode = mode === 'sticky';
 
   // Use prop value if provided, otherwise fall back to context value
-  const hasTransition = hasTransitionProp ?? layoutContext.hasTransition;
+  const hasTransition = hasTransitionProp ?? layoutActions.hasTransition;
 
   const combinedRef = useCombinedRefs(ref);
   const prevProvidedSizeRef = useRef(providedSize);
@@ -497,7 +499,7 @@ function LayoutPanel(
     [minSize, maxSize],
   );
 
-  const setContextDragging = layoutContext.setDragging;
+  const setContextDragging = layoutActions.setDragging;
 
   const { moveProps } = useMove({
     onMoveStart() {
@@ -561,8 +563,8 @@ function LayoutPanel(
       (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
   );
 
-  const { registerPanel, unregisterPanel, updatePanelSize, isReady } =
-    layoutContext;
+  const { registerPanel, unregisterPanel, updatePanelSize } = layoutActions;
+  const { isReady } = layoutState;
 
   // Track the last reported size to prevent unnecessary updates
   const lastSizeRef = useRef<number>(effectiveInsetSize);
@@ -602,7 +604,7 @@ function LayoutPanel(
   }, [isDismissable, handleOpenChange]);
 
   // Register overlay panel with Layout context for coordinated dismissal
-  const { registerOverlayPanel } = layoutContext;
+  const { registerOverlayPanel } = layoutActions;
 
   useEffect(() => {
     // Only register if in overlay mode, open, and dismissable
