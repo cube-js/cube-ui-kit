@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { tasty } from '../../../tasty';
 import { Root } from '../../Root';
 
 import { GridLayout, Layout } from './index';
@@ -367,6 +368,28 @@ describe('Layout nested isolation', () => {
 
     expect(screen.getByText('Parent left panel')).toBeInTheDocument();
     expect(screen.getByText('Nested left panel')).toBeInTheDocument();
+  });
+
+  it('styled (tasty-wrapped) panels are correctly detected', () => {
+    // Panels wrapped with tasty() should still be detected as panels
+    // because detection uses prop-based checking, not component reference
+    const StyledPanel = tasty(Layout.Panel, {
+      styles: { fill: '#purple-03' },
+    });
+
+    renderWithRoot(
+      <Layout>
+        <StyledPanel side="left" size={200}>
+          <div>Styled panel content</div>
+        </StyledPanel>
+        <Layout.Content>
+          <div>Main content</div>
+        </Layout.Content>
+      </Layout>,
+    );
+
+    expect(screen.getByText('Styled panel content')).toBeInTheDocument();
+    expect(screen.getByText('Main content')).toBeInTheDocument();
   });
 });
 

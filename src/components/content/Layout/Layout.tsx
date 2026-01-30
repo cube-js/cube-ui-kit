@@ -116,12 +116,21 @@ export interface CubeLayoutProps
   _forceShowDevWarning?: boolean;
 }
 
-// Check if a child is a Layout.Panel
+// Valid side values for Layout.Panel
+const VALID_PANEL_SIDES = ['left', 'right', 'top', 'bottom'] as const;
+
+// Check if a child is a Layout.Panel by checking for required `side` prop
+// (displayName is stripped in production builds, so we can't rely on it)
+// This works even when the panel is wrapped with tasty() since props pass through
 function isPanelElement(child: ReactNode): boolean {
+  if (!isValidElement(child) || typeof child.type === 'string') return false;
+
+  const props = child.props as Record<string, unknown> | null;
+  const side = props?.side;
+
   return (
-    isValidElement(child) &&
-    typeof child.type !== 'string' &&
-    (child.type as { displayName?: string }).displayName === 'Layout.Panel'
+    typeof side === 'string' &&
+    VALID_PANEL_SIDES.includes(side as (typeof VALID_PANEL_SIDES)[number])
   );
 }
 
