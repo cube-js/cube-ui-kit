@@ -33,6 +33,7 @@ export {
   LayoutActionsContext,
   LayoutStateContext,
   LayoutPanelContext,
+  LayoutContextReset,
   useLayoutActionsContext,
   useLayoutStateContext,
   useLayoutPanelContext,
