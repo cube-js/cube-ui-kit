@@ -506,7 +506,7 @@ function TabsComponent(
     <div
       {...mergeProps(tabListProps, collectionProps)}
       ref={listRef}
-      data-element="Container"
+      data-element="TabList"
     >
       <TabsProvider value={contextValue}>
         {orderedParsedTabs.map((tab, index) => {

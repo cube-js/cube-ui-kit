@@ -183,6 +183,11 @@ const ItemButton = forwardRef(function ItemButton(
       size={size}
       isLoading={isLoading}
       isDisabled={isDisabled}
+      mods={
+        actions && showActionsOnHover
+          ? { active: shouldShowActions }
+          : undefined
+      }
     />
   );
 
