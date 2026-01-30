@@ -30,18 +30,15 @@ export type { CubeLayoutPanelProps, LayoutPanelMode } from './LayoutPanel';
 export type { CubeLayoutPanelHeaderProps } from './LayoutPanelHeader';
 export type { CubeLayoutToolbarProps } from './LayoutToolbar';
 export {
-  LayoutContext,
   LayoutActionsContext,
   LayoutStateContext,
   LayoutPanelContext,
-  useLayoutContext,
   useLayoutActionsContext,
   useLayoutStateContext,
   useLayoutPanelContext,
   usePanelSizes,
 } from './LayoutContext';
 export type {
-  LayoutContextValue,
   LayoutActionsContextValue,
   LayoutStateContextValue,
   LayoutPanelContextValue,

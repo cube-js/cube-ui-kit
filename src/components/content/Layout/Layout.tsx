@@ -33,7 +33,11 @@ import { isDevEnv } from '../../../tasty/utils/is-dev-env';
 import { useCombinedRefs } from '../../../utils/react';
 import { Alert } from '../Alert';
 
-import { LayoutProvider, useLayoutContext } from './LayoutContext';
+import {
+  LayoutProvider,
+  useLayoutActionsContext,
+  useLayoutStateContext,
+} from './LayoutContext';
 
 const LayoutElement = tasty({
   as: 'div',
@@ -124,7 +128,8 @@ function isPanelElement(child: ReactNode): boolean {
 function LayoutInner(
   props: CubeLayoutProps & { forwardedRef?: ForwardedRef<HTMLDivElement> },
 ) {
-  const layoutContext = useLayoutContext();
+  const layoutActions = useLayoutActionsContext();
+  const layoutState = useLayoutStateContext();
   const localRef = useRef<HTMLDivElement>(null);
   const [isAutoHeight, setIsAutoHeight] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -217,18 +222,18 @@ function LayoutInner(
   ]);
 
   // Calculate inset values from panel sizes
-  const panelSizes = layoutContext?.panelSizes ?? {
+  const panelSizes = layoutState?.panelSizes ?? {
     left: 0,
     top: 0,
     right: 0,
     bottom: 0,
   };
 
-  const isDragging = layoutContext?.isDragging ?? false;
-  const isReady = layoutContext?.isReady ?? true;
-  const markReady = layoutContext?.markReady;
-  const dismissOverlayPanels = layoutContext?.dismissOverlayPanels;
-  const hasOverlayPanels = layoutContext?.hasOverlayPanels ?? false;
+  const isDragging = layoutState?.isDragging ?? false;
+  const isReady = layoutState?.isReady ?? true;
+  const markReady = layoutActions?.markReady;
+  const dismissOverlayPanels = layoutActions?.dismissOverlayPanels;
+  const hasOverlayPanels = layoutState?.hasOverlayPanels ?? false;
 
   // Mark layout as ready after first paint
   // Using useEffect + requestAnimationFrame ensures:

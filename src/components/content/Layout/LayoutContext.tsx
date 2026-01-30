@@ -50,24 +50,11 @@ export interface LayoutStateContextValue {
   hasOverlayPanels: boolean;
 }
 
-/**
- * Combined context value for backwards compatibility.
- * @deprecated Use useLayoutActionsContext and useLayoutStateContext separately
- * for better performance - using this combined context will cause re-renders
- * whenever any state changes.
- */
-export interface LayoutContextValue
-  extends LayoutActionsContextValue,
-    LayoutStateContextValue {}
-
 export const LayoutActionsContext =
   createContext<LayoutActionsContextValue | null>(null);
 export const LayoutStateContext = createContext<LayoutStateContextValue | null>(
   null,
 );
-
-/** @deprecated Use useLayoutActionsContext and useLayoutStateContext separately */
-export const LayoutContext = createContext<LayoutContextValue | null>(null);
 
 export function useLayoutActionsContext(): LayoutActionsContextValue | null {
   return useContext(LayoutActionsContext);
@@ -75,10 +62,6 @@ export function useLayoutActionsContext(): LayoutActionsContextValue | null {
 
 export function useLayoutStateContext(): LayoutStateContextValue | null {
   return useContext(LayoutStateContext);
-}
-
-export function useLayoutContext(): LayoutContextValue | null {
-  return useContext(LayoutContext);
 }
 
 // Default panel sizes - hoisted for referential stability with useSyncExternalStore
@@ -92,8 +75,8 @@ const noopSubscribe = () => () => {};
 const getDefaultPanelSizes = () => DEFAULT_PANEL_SIZES;
 
 /**
- * Hook to get panel sizes without causing re-renders on every size change.
- * Uses useSyncExternalStore for efficient subscriptions.
+ * Hook to get panel sizes with efficient subscription.
+ * Uses useSyncExternalStore so only components using this hook re-render on size changes.
  */
 export function usePanelSizes(): Record<Side, number> {
   const actions = useLayoutActionsContext();
@@ -147,20 +130,16 @@ export function LayoutProvider({
   const [hasOverlayPanels, setHasOverlayPanels] = useState(false);
 
   // Helper to update both ref and state in sync
-  const updatePanelSizeInternal = (side: Side, size: number) => {
-    // Update ref immediately for synchronous access via useSyncExternalStore
-    if (panelSizesRef.current[side] !== size) {
-      panelSizesRef.current = { ...panelSizesRef.current, [side]: size };
-      // Notify useSyncExternalStore subscribers
-      panelSizesSubscribers.current.forEach((callback) => callback());
-    }
+  const updatePanelSizeInternal = useEvent((side: Side, size: number) => {
+    if (panelSizesRef.current[side] === size) return;
 
+    // Update ref immediately for synchronous access via useSyncExternalStore
+    panelSizesRef.current = { ...panelSizesRef.current, [side]: size };
+    // Notify useSyncExternalStore subscribers
+    panelSizesSubscribers.current.forEach((callback) => callback());
     // Update state for Layout component re-renders
-    setPanelSizes((prev) => {
-      if (prev[side] === size) return prev;
-      return { ...prev, [side]: size };
-    });
-  };
+    setPanelSizes((prev) => ({ ...prev, [side]: size }));
+  });
 
   const registerPanel = useEvent((side: Side, size: number) => {
     if (registeredPanels.current.has(side)) {
@@ -260,21 +239,10 @@ export function LayoutProvider({
     [panelSizes, isDragging, isReady, hasOverlayPanels],
   );
 
-  // Combined value for backwards compatibility
-  const combinedValue = useMemo(
-    () => ({
-      ...actionsValue,
-      ...stateValue,
-    }),
-    [actionsValue, stateValue],
-  );
-
   return (
     <LayoutActionsContext.Provider value={actionsValue}>
       <LayoutStateContext.Provider value={stateValue}>
-        <LayoutContext.Provider value={combinedValue}>
-          {children}
-        </LayoutContext.Provider>
+        {children}
       </LayoutStateContext.Provider>
     </LayoutActionsContext.Provider>
   );
@@ -288,7 +256,7 @@ export function LayoutContextReset({ children }: { children: ReactNode }) {
   return (
     <LayoutActionsContext.Provider value={null}>
       <LayoutStateContext.Provider value={null}>
-        <LayoutContext.Provider value={null}>{children}</LayoutContext.Provider>
+        {children}
       </LayoutStateContext.Provider>
     </LayoutActionsContext.Provider>
   );
