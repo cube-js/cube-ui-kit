@@ -1,5 +1,5 @@
 ---
-"@cube-dev/ui-kit": minor
+"@cube-dev/ui-kit": patch
 ---
 
-Add styling props to Tabs component: `tabListStyles`, `tabStyles`, and `tabPanelStyles` for customizing the tab list container, individual tabs, and tab panels respectively. Per-tab and per-panel styles can override these defaults.
+Improve Tabs component styling with better element selectors and enhanced visual appearance. Updated shadow handling for file type tabs and refined scrollbar positioning in Layout components.

@@ -83,7 +83,7 @@ export const TabsElement = tasty({
       },
     },
 
-    TabList: {
+    Scroll: {
       $: '> ScrollWrapper >',
       position: 'relative',
       display: 'block',
@@ -120,8 +120,8 @@ export const TabsElement = tasty({
       },
     },
 
-    Container: {
-      $: '> ScrollWrapper > TabList >',
+    TabList: {
+      $: '> ScrollWrapper > Scroll >',
       position: 'relative',
       display: 'grid',
       gridAutoFlow: 'column',

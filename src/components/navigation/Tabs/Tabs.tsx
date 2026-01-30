@@ -156,21 +156,11 @@ function TabsComponent(
     showScrollArrows = false,
     tabPickerPosition = 'suffix',
     scrollArrowsPosition = 'suffix',
-    tabListStyles,
-    tabStyles,
-    tabPanelStyles,
     ...otherProps
   } = props;
 
-  // Extract outer styles and merge with tabListStyles for Container sub-element
-  const baseStyles = extractStyles(otherProps, OUTER_STYLES);
-  const combinedStyles = useMemo(() => {
-    if (!tabListStyles) return baseStyles;
-    return {
-      ...baseStyles,
-      Container: tabListStyles,
-    };
-  }, [baseStyles, tabListStyles]);
+  // Extract outer styles
+  const combinedStyles = extractStyles(otherProps, OUTER_STYLES);
 
   // DOM element refs
   const listRef = useRef<HTMLDivElement>(null);
@@ -468,7 +458,6 @@ function TabsComponent(
       contextMenu: parentContextMenu,
       onDelete,
       onAction: parentOnAction,
-      tabStyles,
       editingKey,
       editValue,
       setEditValue,
@@ -488,7 +477,6 @@ function TabsComponent(
       parentContextMenu,
       onDelete,
       parentOnAction,
-      tabStyles,
       editingKey,
       editValue,
       setEditValue,
@@ -518,7 +506,7 @@ function TabsComponent(
     <div
       {...mergeProps(tabListProps, collectionProps)}
       ref={listRef}
-      data-element="Container"
+      data-element="TabList"
     >
       <TabsProvider value={contextValue}>
         {orderedParsedTabs.map((tab, index) => {
@@ -624,7 +612,7 @@ function TabsComponent(
           </div>
         ) : null}
         <div data-element="ScrollWrapper">
-          <div ref={scrollRef} data-element="TabList">
+          <div ref={scrollRef} data-element="Scroll">
             {isReorderable ? (
               <DraggableTabList
                 state={state}
@@ -665,7 +653,6 @@ function TabsComponent(
           prerender={prerender}
           keepMounted={keepMounted}
           visitedKeys={visitedKeysRef.current}
-          defaultPanelStyles={tabPanelStyles}
         />
       )}
 
@@ -689,7 +676,6 @@ function TabsComponent(
               tabPrerender={explicitPanel?.prerender ?? tab.prerender}
               tabKeepMounted={explicitPanel?.keepMounted ?? tab.keepMounted}
               visitedKeys={visitedKeysRef.current}
-              defaultPanelStyles={tabPanelStyles}
               panelStyles={explicitPanel?.styles}
               qa={explicitPanel?.qa}
               qaVal={explicitPanel?.qaVal}

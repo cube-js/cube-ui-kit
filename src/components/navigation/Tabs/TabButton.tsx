@@ -171,7 +171,6 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     onDelete,
     dragState,
     dropState,
-    tabStyles: parentTabStyles,
     editingKey,
     editValue,
     setEditValue,
@@ -498,17 +497,9 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     onAction: _onAction,
     qa,
     qaVal,
-    styles: tabSpecificStyles,
+    styles,
     ...itemStyleProps
   } = tabData;
-
-  // Merge parent tabStyles with tab-specific styles (tab-specific overrides parent)
-  const effectiveStyles = useMemo(() => {
-    if (!parentTabStyles && !tabSpecificStyles) return undefined;
-    if (!parentTabStyles) return tabSpecificStyles;
-    if (!tabSpecificStyles) return parentTabStyles;
-    return { ...parentTabStyles, ...tabSpecificStyles };
-  }, [parentTabStyles, tabSpecificStyles]);
 
   // Use the hook's targetRef when context menu is enabled
   const effectiveContainerRef =
@@ -553,7 +544,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
         ref={ref}
         qa={qa ?? `Tab-${String(item.key)}`}
         qaVal={qaVal}
-        styles={effectiveStyles}
+        styles={styles}
         mods={mods}
         isSelected={isActive}
         isDisabled={isDisabled}
