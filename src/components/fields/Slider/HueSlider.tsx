@@ -44,6 +44,7 @@ function HueSlider(
     orientation = 'horizontal',
     thumbTokens: userThumbTokens,
     thumbStyles: userThumbStyles,
+    trackStyles: userTrackStyles,
     ...rest
   } = props;
 
@@ -84,8 +85,15 @@ function HueSlider(
     [userThumbStyles],
   );
 
-  const trackStyles =
-    orientation === 'vertical' ? verticalTrackStyles : horizontalTrackStyles;
+  const trackStyles: Styles = useMemo(
+    () => ({
+      ...(orientation === 'vertical'
+        ? verticalTrackStyles
+        : horizontalTrackStyles),
+      ...userTrackStyles,
+    }),
+    [orientation, userTrackStyles],
+  );
 
   return (
     <Slider
