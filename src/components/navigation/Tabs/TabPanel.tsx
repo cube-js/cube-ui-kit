@@ -40,6 +40,7 @@ export interface TabPanelRendererProps {
   tabPrerender?: boolean;
   tabKeepMounted?: boolean;
   visitedKeys: Set<string>;
+  defaultPanelStyles?: Styles;
   panelStyles?: Styles;
   qa?: string;
   qaVal?: string;
@@ -57,6 +58,7 @@ export function TabPanelRenderer({
   tabPrerender,
   tabKeepMounted,
   visitedKeys,
+  defaultPanelStyles,
   panelStyles,
   qa,
   qaVal,
@@ -73,6 +75,14 @@ export function TabPanelRenderer({
   // Determine effective prerender/keepMounted (tab-level overrides global)
   const effectivePrerender = tabPrerender ?? prerender;
   const effectiveKeepMounted = tabKeepMounted ?? keepMounted;
+
+  // Merge default panel styles with panel-specific styles (panel-specific overrides default)
+  const effectiveStyles = useMemo(() => {
+    if (!defaultPanelStyles && !panelStyles) return undefined;
+    if (!defaultPanelStyles) return panelStyles;
+    if (!panelStyles) return defaultPanelStyles;
+    return { ...defaultPanelStyles, ...panelStyles };
+  }, [defaultPanelStyles, panelStyles]);
 
   // Determine if panel should render
   if (
@@ -92,7 +102,7 @@ export function TabPanelRenderer({
       ref={ref}
       qa={qa ?? 'TabPanel'}
       qaVal={qaVal ?? String(tabKey)}
-      styles={panelStyles}
+      styles={effectiveStyles}
       style={{
         display: isActive ? 'contents' : 'none',
       }}
@@ -115,6 +125,7 @@ export interface CachedPanelRendererProps {
   prerender: boolean;
   keepMounted: boolean;
   visitedKeys: Set<string>;
+  defaultPanelStyles?: Styles;
 }
 
 /**
@@ -138,6 +149,7 @@ export function CachedPanelRenderer({
   prerender,
   keepMounted,
   visitedKeys,
+  defaultPanelStyles,
 }: CachedPanelRendererProps) {
   // Cache for rendered content - stores { content, cacheKey } per panel
   const contentCacheRef = useRef<
@@ -254,6 +266,7 @@ export function CachedPanelRenderer({
             tabPrerender={tabPrerender}
             tabKeepMounted={tabKeepMounted}
             visitedKeys={visitedKeys}
+            defaultPanelStyles={defaultPanelStyles}
             panelStyles={explicitPanel?.styles}
             qa={explicitPanel?.qa}
             qaVal={explicitPanel?.qaVal}

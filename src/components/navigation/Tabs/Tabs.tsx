@@ -24,7 +24,7 @@ import { mergeProps } from '../../../utils/react';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
 
 import { DraggableTabList } from './DraggableTabList';
-import { TabIndicatorElement, TabsElement } from './styled';
+import { TabIndicatorElement, TabListContainer, TabsElement } from './styled';
 import { TabButton } from './TabButton';
 import { CachedPanelRenderer, TabPanelRenderer } from './TabPanel';
 import { TabPicker } from './TabPicker';
@@ -156,6 +156,9 @@ function TabsComponent(
     showScrollArrows = false,
     tabPickerPosition = 'suffix',
     scrollArrowsPosition = 'suffix',
+    tabListStyles,
+    tabStyles,
+    tabPanelStyles,
     ...otherProps
   } = props;
 
@@ -458,6 +461,7 @@ function TabsComponent(
       contextMenu: parentContextMenu,
       onDelete,
       onAction: parentOnAction,
+      tabStyles,
       editingKey,
       editValue,
       setEditValue,
@@ -477,6 +481,7 @@ function TabsComponent(
       parentContextMenu,
       onDelete,
       parentOnAction,
+      tabStyles,
       editingKey,
       editValue,
       setEditValue,
@@ -503,10 +508,11 @@ function TabsComponent(
     contextValue: TabsContextValue,
     collectionProps: Record<string, unknown> = {},
   ) => (
-    <div
+    <TabListContainer
       {...mergeProps(tabListProps, collectionProps)}
       ref={listRef}
-      data-element="Container"
+      mods={mods}
+      styles={tabListStyles}
     >
       <TabsProvider value={contextValue}>
         {orderedParsedTabs.map((tab, index) => {
@@ -531,7 +537,7 @@ function TabsComponent(
           }}
         />
       )}
-    </div>
+    </TabListContainer>
   );
 
   // =========================================================================
@@ -653,6 +659,7 @@ function TabsComponent(
           prerender={prerender}
           keepMounted={keepMounted}
           visitedKeys={visitedKeysRef.current}
+          defaultPanelStyles={tabPanelStyles}
         />
       )}
 
@@ -676,6 +683,7 @@ function TabsComponent(
               tabPrerender={explicitPanel?.prerender ?? tab.prerender}
               tabKeepMounted={explicitPanel?.keepMounted ?? tab.keepMounted}
               visitedKeys={visitedKeysRef.current}
+              defaultPanelStyles={tabPanelStyles}
               panelStyles={explicitPanel?.styles}
               qa={explicitPanel?.qa}
               qaVal={explicitPanel?.qaVal}

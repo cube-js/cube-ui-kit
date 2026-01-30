@@ -167,6 +167,33 @@ export const TabsElement = tasty({
 });
 
 // =============================================================================
+// Tab List Container (the grid that holds all tabs)
+// =============================================================================
+
+export const TabListContainer = tasty({
+  styles: {
+    position: 'relative',
+    display: 'grid',
+    gridAutoFlow: 'column',
+    gridAutoColumns: {
+      '': 'auto',
+      'type=radio': '1fr',
+    },
+    gap: {
+      '': 0,
+      'type=narrow': '2x',
+      'type=radio': '.5x',
+    },
+    placeContent: 'start',
+    overflow: 'visible',
+    width: {
+      '': 'max-content',
+      'type=radio': '100%',
+    },
+  },
+});
+
+// =============================================================================
 // Tab Button (extends Item)
 // =============================================================================
 

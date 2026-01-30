@@ -239,6 +239,20 @@ export interface CubeTabsProps
    * @default 'suffix'
    */
   scrollArrowsPosition?: TabsActionPosition;
+  /**
+   * Custom styles for the tab list container (the scrollable area containing tabs).
+   */
+  tabListStyles?: Styles;
+  /**
+   * Default styles applied to all tab buttons.
+   * Can be overridden per-tab via Tab's styles prop.
+   */
+  tabStyles?: Styles;
+  /**
+   * Default styles applied to all tab panels.
+   * Can be overridden per-panel via Panel's styles prop.
+   */
+  tabPanelStyles?: Styles;
 }
 
 export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {

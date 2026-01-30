@@ -5,6 +5,7 @@ import type {
   DroppableCollectionState,
   TabListState,
 } from 'react-stately';
+import type { Styles } from '../../../tasty';
 import type { CubeItemActionProps } from '../../actions/ItemAction';
 import type { CubeMenuProps } from '../../actions/Menu';
 import type { TabSize, TabType } from './types';
@@ -40,6 +41,8 @@ export interface TabsContextValue {
   dragState?: DraggableCollectionState;
   /** Drop state for reorderable tabs (undefined if not reorderable) */
   dropState?: DroppableCollectionState;
+  /** Default styles for all tabs */
+  tabStyles?: Styles;
 
   // Editing callbacks
   /** Current tab being edited (null if none) */
