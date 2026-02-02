@@ -194,6 +194,12 @@ const ItemButton = forwardRef(function ItemButton(
     />
   );
 
+  const finalMods = useMemo(() => {
+    return actions && autoHideActions && areActionsShown
+      ? { ...mods, 'actions-visible': shouldShowActions }
+      : mods;
+  }, [actions, mods]);
+
   if (actions) {
     return (
       <ActionsWrapper

@@ -1886,7 +1886,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
 );
 
 WithActionsOnHover.args = {
-  width: '450px',
+  width: '250px',
 };
 
 WithActionsOnHover.parameters = {
@@ -2045,7 +2045,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
 );
 
 ActionsPreserveSpace.args = {
-  width: '400px',
+  width: '250px',
 };
 
 ActionsPreserveSpace.parameters = {

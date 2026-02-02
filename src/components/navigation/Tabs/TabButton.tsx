@@ -161,7 +161,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     state,
     type,
     size,
-    autoHideActions: parentShowActionsOnHover,
+    autoHideActions: parentAutoHideActions,
     isEditable: parentIsEditable,
     menu: parentMenu,
     menuTriggerProps: parentMenuTriggerProps,
@@ -458,8 +458,8 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   const itemShape = isFileType ? 'sharp' : undefined;
 
   // Determine autoHideActions - tab-level overrides parent-level
-  const effectiveShowActionsOnHover =
-    tabData.autoHideActions ?? parentShowActionsOnHover;
+  const effectiveAutoHideActions =
+    tabData.autoHideActions ?? parentAutoHideActions;
 
   // Render title with editing support if editable
   const titleContent = effectiveIsEditable ? (
@@ -513,7 +513,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   // Mods for TabContainer
   const containerMods = {
     ...mods,
-    'show-actions-on-hover': effectiveShowActionsOnHover,
+    'auto-hide-actions': effectiveAutoHideActions,
   };
 
   return (
@@ -534,7 +534,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
       )}
       <TabElement
         preserveActionsSpace
-        autoHideActions={effectiveShowActionsOnHover}
+        autoHideActions={effectiveAutoHideActions}
         as="button"
         {...mergeProps(tabProps, hoverProps, focusProps, {
           onKeyDown: handleKeyDown,
