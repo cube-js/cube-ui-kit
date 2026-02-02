@@ -3,7 +3,12 @@ import { CSSProperties } from 'react';
 import { Tokens, TokenValue } from '../types';
 
 import { okhslToRgb } from './okhsl-to-rgb';
-import { getRgbValuesFromRgbaString, hexToRgb, parseStyle } from './styles';
+import {
+  getRgbValuesFromRgbaString,
+  hexToRgb,
+  normalizeColorTokenValue,
+  parseStyle,
+} from './styles';
 
 const devMode = process.env.NODE_ENV !== 'production';
 
@@ -245,8 +250,10 @@ export function processTokens(
       // Color token: #name -> --name-color and --name-color-rgb
       const colorName = key.slice(1);
 
-      // For color tokens, boolean true means 'transparent'
-      const effectiveValue = value === true ? 'transparent' : value;
+      // Normalize color token value (true → 'transparent', false is already filtered by isValidTokenValue)
+      const effectiveValue = normalizeColorTokenValue(value);
+      // Skip if normalized to null (shouldn't happen since false is filtered by isValidTokenValue)
+      if (effectiveValue === null) continue;
 
       const originalValue =
         typeof effectiveValue === 'number'

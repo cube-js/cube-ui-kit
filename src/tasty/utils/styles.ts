@@ -12,6 +12,27 @@ import type { AtRuleContext, ParsedAdvancedState } from '../states';
 
 export type StyleValue<T = string> = T | boolean | number | null | undefined;
 
+/**
+ * Normalize a color token value.
+ * - Boolean `true` is converted to `'transparent'`
+ * - Boolean `false` returns `null` (signals the token should be skipped)
+ * - Other values are returned as-is
+ *
+ * @param value - The raw token value
+ * @returns Normalized value or null if the token should be skipped
+ */
+export function normalizeColorTokenValue<T>(
+  value: T | boolean,
+): T | 'transparent' | null {
+  if (value === true) {
+    return 'transparent';
+  }
+  if (value === false) {
+    return null;
+  }
+  return value as T;
+}
+
 export type StyleValueStateMap<T = string> = {
   [key: string]: StyleValue<T>;
 };

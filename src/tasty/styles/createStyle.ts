@@ -1,6 +1,7 @@
 import { toSnakeCase } from '../utils/string';
 import {
   getRgbValuesFromRgbaString,
+  normalizeColorTokenValue,
   parseColor,
   parseStyle,
   strToRgb,
@@ -72,9 +73,11 @@ export function createStyle(
         finalCssStyle = cssStyle || toSnakeCase(styleName).replace(/^\$/, '--');
       }
 
-      // For color tokens, convert boolean true to 'transparent'
-      if (isColorToken && styleValue === true) {
-        styleValue = 'transparent';
+      // For color tokens, normalize boolean values (true → 'transparent', false → skip)
+      if (isColorToken) {
+        const normalized = normalizeColorTokenValue(styleValue);
+        if (normalized === null) return; // Skip false values
+        styleValue = normalized;
       }
 
       // convert non-string values

@@ -24,6 +24,7 @@ import {
   CUSTOM_UNITS,
   getGlobalFuncs,
   getGlobalParser,
+  normalizeColorTokenValue,
   resetGlobalPredefinedTokens,
   setGlobalPredefinedTokens,
 } from './utils/styles';
@@ -199,7 +200,7 @@ export interface TastyConfig {
    * ```
    */
   tokens?: {
-    [key: `$${string}`]: string | number;
+    [key: `$${string}`]: string | number | boolean;
   } & {
     [key: `#${string}`]: string | number | boolean;
   };
@@ -572,11 +573,13 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     // Store tokens (keys are normalized to lowercase by setGlobalPredefinedTokens)
     const processedTokens: Record<string, string> = {};
     for (const [key, value] of Object.entries(mergedTokens)) {
-      // For color tokens (#name), convert boolean true to 'transparent'
-      if (key.startsWith('#') && value === true) {
-        processedTokens[key] = 'transparent';
+      if (key.startsWith('#')) {
+        // Color token - use shared helper for boolean handling
+        const normalized = normalizeColorTokenValue(value);
+        if (normalized === null) continue; // Skip false values
+        processedTokens[key] = String(normalized);
       } else if (value === false) {
-        // Skip false values - they mean "no value"
+        // Skip false values for non-color tokens
         continue;
       } else {
         processedTokens[key] = String(value);
