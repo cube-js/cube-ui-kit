@@ -235,7 +235,9 @@ export function processTokens(
     if (key.startsWith('$')) {
       // Custom property token: $name -> --name
       const propName = `--${key.slice(1)}`;
-      const processedValue = processTokenValue(value);
+      // Boolean true for custom properties converts to empty string (valid CSS value)
+      const effectiveValue = value === true ? '' : value;
+      const processedValue = processTokenValue(effectiveValue);
 
       if (!result) result = {};
       result[propName] = processedValue;

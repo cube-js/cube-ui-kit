@@ -480,7 +480,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
   let mergedUnits: Record<string, string | UnitHandler> = {};
   let mergedFuncs: Record<string, (groups: StyleDetails[]) => string> = {};
   let mergedHandlers: Record<string, StyleHandlerDefinition> = {};
-  let mergedTokens: Record<string, string | number> = {};
+  let mergedTokens: Record<string, string | number | boolean> = {};
 
   // Process plugins in order
   if (config.plugins) {
