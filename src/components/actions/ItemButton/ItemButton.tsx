@@ -44,10 +44,6 @@ const ActionsWrapper = tasty({
     placeContent: 'stretch',
     placeItems: 'stretch',
 
-    $interacted: {
-      '': false,
-      ':focus | :focus-within | :hover': true,
-    },
     $size: {
       '': '$size-md',
       'size=xsmall': '$size-xs',
