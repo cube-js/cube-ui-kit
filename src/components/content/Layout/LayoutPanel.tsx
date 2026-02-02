@@ -60,7 +60,7 @@ const PanelElement = tasty({
   styles: {
     container: 'panel / inline-size',
     position: 'absolute',
-    zIndex: 10,
+    zIndex: 1,
     display: 'flex',
     flow: 'column',
     overflow: 'hidden',
