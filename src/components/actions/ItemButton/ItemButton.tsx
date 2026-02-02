@@ -185,8 +185,8 @@ const ItemButton = forwardRef(function ItemButton(
       isDisabled={isDisabled}
       mods={
         actions && showActionsOnHover
-          ? { active: shouldShowActions }
-          : undefined
+          ? { ...mods, active: shouldShowActions }
+          : mods
       }
     />
   );
