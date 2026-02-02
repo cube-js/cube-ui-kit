@@ -60,7 +60,7 @@ const PanelElement = tasty({
   styles: {
     container: 'panel / inline-size',
     position: 'absolute',
-    zIndex: 1,
+    zIndex: 2,
     display: 'flex',
     flow: 'column',
     overflow: 'hidden',
@@ -269,7 +269,7 @@ const OverlayBackdrop = tasty({
   styles: {
     position: 'absolute',
     inset: 0,
-    zIndex: 9, // Below panel (10) but above content
+    zIndex: 1, // Below panel (10) but above content
     // fill: '#white.2',
     backdropFilter: 'invert(.15)',
     cursor: 'pointer',
