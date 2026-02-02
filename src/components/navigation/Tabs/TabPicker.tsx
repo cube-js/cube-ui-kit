@@ -1,4 +1,4 @@
-import { CloseIcon, MoreIcon, TrashIcon } from '../../../icons';
+import { CloseIcon, MoreIcon } from '../../../icons';
 import { ItemAction } from '../../actions/ItemAction';
 import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
 
