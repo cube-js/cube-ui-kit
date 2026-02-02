@@ -541,7 +541,7 @@ const ItemElement = tasty({
       opacity: {
         '': 1,
         'auto-hide-actions': 0,
-        'auto-hide-actions & (@interacted & !inside-wrapper) | (inside-wrapper & actions-shown)': 1,
+        'auto-hide-actions & ((@interacted & !inside-wrapper) | (inside-wrapper & actions-shown))': 1,
       },
       transition:
         'width $transition ease-out, opacity $transition ease-out, padding $transition ease-out',

@@ -181,7 +181,7 @@ const ItemButton = forwardRef(function ItemButton(
 
   const finalMods = useMemo(() => {
     return shouldShowActions ? { ...mods, 'actions-shown': true } : mods;
-  }, [actions, mods, shouldShowActions]);
+  }, [mods, shouldShowActions]);
 
   const button = (
     <StyledItem
