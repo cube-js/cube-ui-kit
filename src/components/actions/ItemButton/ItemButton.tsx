@@ -43,7 +43,6 @@ const ActionsWrapper = tasty({
     position: 'relative',
     placeContent: 'stretch',
     placeItems: 'stretch',
-    container: 'item-wrapper',
 
     $interacted: {
       '': false,

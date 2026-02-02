@@ -523,7 +523,7 @@ const ItemElement = tasty({
       placeSelf: 'stretch',
       padding: {
         '': '0 $side-padding',
-        'inside-wrapper & @(item-wrapper, $interacted)': 0,
+        'inside-wrapper & actions-shown': 0,
       },
       boxSizing: 'border-box',
       height: 'min ($size - 2bw)',
