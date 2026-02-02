@@ -421,7 +421,7 @@ const ItemElement = tasty({
       // Restore padding when actions are hidden AND no other visible end content
       '!inside-wrapper & !has-suffix & !has-right-icon & auto-hide-actions & !preserve-actions-space & !@interacted':
         '$inline-padding',
-      'inside-wrapper & !has-suffix & !has-right-icon & auto-hide-actions & !preserve-actions-space & !actions-shown':
+      'inside-wrapper & !has-suffix & !has-right-icon & !preserve-actions-space & !actions-shown':
         '$inline-padding',
     },
     '$label-padding-bottom': {
@@ -533,7 +533,7 @@ const ItemElement = tasty({
           'max calc-size(max-content, size)',
         'has-actions-content & auto-hide-actions & !preserve-actions-space':
           'max 0px',
-        'has-actions-content & auto-hide-actions & (!preserve-actions-space & ((@interacted & !inside-wrapper) | (inside-wrapper & !actions-shown)))':
+        'has-actions-content & auto-hide-actions & (!preserve-actions-space & ((@interacted & !inside-wrapper) | (inside-wrapper & actions-shown)))':
           'max calc-size(max-content, size)',
         'has-actions-content & auto-hide-actions & preserve-actions-space':
           'max calc-size(max-content, size)',
@@ -900,6 +900,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     autoHideActions,
     preserveActionsSpace,
     hasLabel,
+    showActions,
+    insideWrapper,
   ]);
 
   const {

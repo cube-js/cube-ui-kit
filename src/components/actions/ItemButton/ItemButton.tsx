@@ -180,15 +180,13 @@ const ItemButton = forwardRef(function ItemButton(
   );
 
   const finalMods = useMemo(() => {
-    return actions && shouldShowActions
-      ? { ...mods, 'actions-shown': true }
-      : mods;
+    return shouldShowActions ? { ...mods, 'actions-shown': true } : mods;
   }, [actions, mods, shouldShowActions]);
 
   const button = (
     <StyledItem
       insideWrapper={!!actions}
-      showActions={areActionsShown}
+      showActions={shouldShowActions}
       actions={actions ? true : undefined}
       {...(mergeProps(rest, actionProps) as any)}
       htmlType={actionProps.type}
@@ -197,7 +195,7 @@ const ItemButton = forwardRef(function ItemButton(
       size={size}
       isLoading={isLoading}
       isDisabled={isDisabled}
-      mods={finalMods}
+      mods={mods}
     />
   );
 
