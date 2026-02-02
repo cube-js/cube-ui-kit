@@ -70,11 +70,11 @@ const ActionsWrapper = tasty({
       height: 'min ($size - 2bw)',
       opacity: {
         '': 1,
-        'actions-hidden': 0,
+        '!actions-shown': 0,
       },
       translate: {
         '': '0 0',
-        'actions-hidden': '.5x 0',
+        '!actions-shown': '.5x 0',
       },
       transition: 'theme, translate',
 
@@ -164,7 +164,8 @@ const ItemButton = forwardRef(function ItemButton(
     return () => observer.disconnect();
   }, [areActionsVisible, autoHideActions]);
 
-  const shouldShowActions = isHovered || isFocusWithin || hasPressed;
+  const shouldShowActions =
+    isHovered || isFocusWithin || hasPressed || !autoHideActions;
 
   const { actionProps } = useAction(
     {
@@ -178,9 +179,16 @@ const ItemButton = forwardRef(function ItemButton(
     ref,
   );
 
+  const finalMods = useMemo(() => {
+    return actions && shouldShowActions
+      ? { ...mods, 'actions-shown': true }
+      : mods;
+  }, [actions, mods, shouldShowActions]);
+
   const button = (
     <StyledItem
       insideWrapper={!!actions}
+      showActions={areActionsShown}
       actions={actions ? true : undefined}
       {...(mergeProps(rest, actionProps) as any)}
       htmlType={actionProps.type}
@@ -189,22 +197,16 @@ const ItemButton = forwardRef(function ItemButton(
       size={size}
       isLoading={isLoading}
       isDisabled={isDisabled}
-      mods={mods}
+      mods={finalMods}
     />
   );
-
-  const finalMods = useMemo(() => {
-    return actions && autoHideActions && areActionsShown
-      ? { ...mods, 'actions-visible': shouldShowActions }
-      : mods;
-  }, [actions, mods]);
 
   if (actions) {
     return (
       <ActionsWrapper
         {...hoverProps}
         data-size={size}
-        mods={{ 'actions-hidden': !areActionsShown && autoHideActions }}
+        mods={finalMods}
         styles={wrapperStyles}
         style={
           {

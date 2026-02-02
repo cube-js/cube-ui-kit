@@ -421,7 +421,7 @@ const ItemElement = tasty({
       // Restore padding when actions are hidden AND no other visible end content
       '!inside-wrapper & !has-suffix & !has-right-icon & auto-hide-actions & !preserve-actions-space & !@interacted':
         '$inline-padding',
-      'inside-wrapper & !has-suffix & !has-right-icon & auto-hide-actions & !preserve-actions-space & actions-shown':
+      'inside-wrapper & !has-suffix & !has-right-icon & auto-hide-actions & !preserve-actions-space & !actions-shown':
         '$inline-padding',
     },
     '$label-padding-bottom': {
@@ -523,7 +523,7 @@ const ItemElement = tasty({
       placeSelf: 'stretch',
       padding: {
         '': '0 $side-padding',
-        'inside-wrapper & actions-shown': 0,
+        'inside-wrapper & !actions-shown': 0,
       },
       boxSizing: 'border-box',
       height: 'min ($size - 2bw)',
@@ -533,7 +533,7 @@ const ItemElement = tasty({
           'max calc-size(max-content, size)',
         'has-actions-content & auto-hide-actions & !preserve-actions-space':
           'max 0px',
-        'has-actions-content & auto-hide-actions & (!preserve-actions-space & ((@interacted & !inside-wrapper) | (inside-wrapper & actions-shown)))':
+        'has-actions-content & auto-hide-actions & (!preserve-actions-space & ((@interacted & !inside-wrapper) | (inside-wrapper & !actions-shown)))':
           'max calc-size(max-content, size)',
         'has-actions-content & auto-hide-actions & preserve-actions-space':
           'max calc-size(max-content, size)',
@@ -883,7 +883,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       'auto-hide-actions': autoHideActions === true,
       'preserve-actions-space': preserveActionsSpace === true,
       'inside-wrapper': insideWrapper,
-      'actions-shown': showActions,
+      'actions-shown': showActions && insideWrapper,
       checkbox: hasCheckbox,
       description: showDescription ? finalDescriptionPlacement : 'none',
     };
