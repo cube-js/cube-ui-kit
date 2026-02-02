@@ -106,7 +106,7 @@ export type ItemMods = Mods<{
   'has-description'?: boolean;
   'has-actions'?: boolean;
   'has-actions-content'?: boolean;
-  'show-actions-on-hover'?: boolean;
+  'auto-hide-actions'?: boolean;
   'preserve-actions-space'?: boolean;
   checkbox?: boolean;
   disabled?: boolean;
@@ -127,6 +127,11 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   description?: ReactNode;
   descriptionPlacement?: 'inline' | 'block';
   /**
+   * When true, the item is rendered inside a wrapper element to separate the actions from the item.
+   * @default false
+   */
+  insideWrapper?: boolean;
+  /**
    * Whether the item is selected.
    * @default false
    */
@@ -141,10 +146,10 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * When true, actions are hidden by default and shown only on hover, focus, or focus-within.
    * Uses opacity transition for visual hiding while maintaining layout space.
    */
-  showActionsOnHover?: boolean;
+  autoHideActions?: boolean;
   /**
    * When true, preserves the actions width when hidden (only changes opacity).
-   * Only applies when showActionsOnHover is true.
+   * Only applies when autoHideActions is true.
    * @default false
    */
   preserveActionsSpace?: boolean;
@@ -297,6 +302,9 @@ const ACTIONS_EVENT_HANDLERS = {
 const ItemElement = tasty({
   as: 'div',
   styles: {
+    '@interacted':
+      'active | :hover | :focus | :focus-within | :has([data-pressed])',
+
     display: 'inline-grid',
     flow: 'column dense',
     gap: 0,
@@ -406,7 +414,9 @@ const ItemElement = tasty({
       '': '$inline-padding',
       'has-end-content': '0',
       // Restore padding when actions are hidden AND no other visible end content
-      'has-actions & !has-suffix & !has-right-icon & (show-actions-on-hover | !has-actions-content) & !preserve-actions-space & !active & !:hover & !:focus & !:focus-within':
+      'has-actions & !has-suffix & !has-right-icon & auto-hide-actions & !preserve-actions-space & !@interacted':
+        '$inline-padding',
+      'inside-wrapper & !has-suffix & !has-right-icon & auto-hide-actions & !preserve-actions-space & @(item-wrapper, $interacted)':
         '$inline-padding',
     },
     '$label-padding-bottom': {
@@ -508,33 +518,34 @@ const ItemElement = tasty({
       placeSelf: 'stretch',
       padding: {
         '': '0 $side-padding',
-        'has-actions & (show-actions-on-hover | !has-actions-content) & !preserve-actions-space & !active & !:hover & !:focus & !:focus-within':
-          '0',
+        'inside-wrapper & @(item-wrapper, $interacted)': 0,
       },
       boxSizing: 'border-box',
       height: 'min ($size - 2bw)',
       width: {
         '': 'fixed ($actions-width, 0px)',
-        'has-actions-content & !show-actions-on-hover':
+        'has-actions-content & !auto-hide-actions':
           'max calc-size(max-content, size)',
-        'has-actions-content & show-actions-on-hover & !preserve-actions-space':
+        'has-actions-content & auto-hide-actions & !preserve-actions-space':
           'max 0px',
-        'has-actions-content & show-actions-on-hover & !preserve-actions-space & (:hover | :focus | :focus-within)':
+        'has-actions-content & auto-hide-actions & !preserve-actions-space & @interacted':
           'max calc-size(max-content, size)',
-        'has-actions-content & show-actions-on-hover & preserve-actions-space':
+        'has-actions-content & auto-hide-actions & !preserve-actions-space & inside-wrapper & @(item-wrapper, $interacted)':
+          'max calc-size(max-content, size)',
+        'has-actions-content & auto-hide-actions & preserve-actions-space':
           'max calc-size(max-content, size)',
       },
       opacity: {
         '': 1,
-        'show-actions-on-hover': 0,
-        'show-actions-on-hover & (active | :has([data-pressed]) | :hover | :focus | :focus-within)': 1,
+        'auto-hide-actions': 0,
+        'auto-hide-actions & @interacted | (inside-wrapper & @(item-wrapper, $interacted))': 1,
       },
       transition:
         'width $transition ease-out, opacity $transition ease-out, padding $transition ease-out',
       interpolateSize: 'allow-keywords',
 
       // Size for the action buttons
-      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (4x - 2bw))',
+      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (3x - 2bw))',
       // Side padding for the button
       '$side-padding': '(($size - $action-size - 2bw) / 2)',
     },
@@ -626,7 +637,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     loadingSlot = 'auto',
     isLoading = false,
     actions,
-    showActionsOnHover = false,
+    autoHideActions = false,
     preserveActionsSpace = false,
     disableActionsFocus = false,
     shape,
@@ -635,6 +646,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     highlight,
     highlightCaseSensitive = false,
     highlightStyles,
+    insideWrapper = false,
     ...rest
   } = props;
 
@@ -864,8 +876,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       'has-description': showDescription,
       'has-actions': !!actions,
       'has-actions-content': !!(actions && actions !== true),
-      'show-actions-on-hover': showActionsOnHover === true,
+      'auto-hide-actions': autoHideActions === true,
       'preserve-actions-space': preserveActionsSpace === true,
+      'inside-wrapper': insideWrapper,
       checkbox: hasCheckbox,
       description: showDescription ? finalDescriptionPlacement : 'none',
     };
@@ -879,7 +892,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     finalDescriptionPlacement,
     hasCheckbox,
     actions,
-    showActionsOnHover,
+    autoHideActions,
     preserveActionsSpace,
     hasLabel,
   ]);

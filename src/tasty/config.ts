@@ -174,6 +174,9 @@ export interface TastyConfig {
    * Predefined tokens that are replaced during style parsing.
    * Token values are processed through the parser (like component tokens).
    * Use `$name` for custom properties and `#name` for color tokens.
+   *
+   * For color tokens (#name), boolean `true` is converted to `transparent`.
+   *
    * @example
    * ```ts
    * configure({
@@ -182,6 +185,7 @@ export interface TastyConfig {
    *     '$card-padding': '4x',
    *     '#accent': '#purple',
    *     '#surface': '#white',
+   *     '#overlay': true, // → transparent
    *   },
    * });
    *
@@ -195,7 +199,9 @@ export interface TastyConfig {
    * ```
    */
   tokens?: {
-    [key: `$${string}` | `#${string}`]: string | number;
+    [key: `$${string}`]: string | number;
+  } & {
+    [key: `#${string}`]: string | number | boolean;
   };
 }
 
@@ -566,7 +572,15 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     // Store tokens (keys are normalized to lowercase by setGlobalPredefinedTokens)
     const processedTokens: Record<string, string> = {};
     for (const [key, value] of Object.entries(mergedTokens)) {
-      processedTokens[key] = String(value);
+      // For color tokens (#name), convert boolean true to 'transparent'
+      if (key.startsWith('#') && value === true) {
+        processedTokens[key] = 'transparent';
+      } else if (value === false) {
+        // Skip false values - they mean "no value"
+        continue;
+      } else {
+        processedTokens[key] = String(value);
+      }
     }
     setGlobalPredefinedTokens(processedTokens);
   }

@@ -37,8 +37,13 @@ export type Mods<T extends Record<string, ModValue> = {}> = T & {
   [key: string]: ModValue;
 };
 
-/** Token value: string or number (processed), undefined/null (skipped) */
-export type TokenValue = string | number | undefined | null;
+/**
+ * Token value: string or number (processed), boolean for special handling, undefined/null (skipped).
+ * For color tokens (#name), boolean `true` is converted to `transparent`.
+ * For non-color tokens ($name), boolean `true` results in an empty string value.
+ * Boolean `false` results in no CSS output (token is skipped).
+ */
+export type TokenValue = string | number | boolean | undefined | null;
 
 /**
  * Tokens definition for inline CSS custom properties.

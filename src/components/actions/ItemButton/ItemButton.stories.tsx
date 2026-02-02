@@ -77,7 +77,7 @@ const meta: Meta<typeof ItemButton> = {
       description:
         'Which slot to replace with loading icon (auto intelligently selects)',
     },
-    showActionsOnHover: {
+    autoHideActions: {
       control: 'boolean',
       description:
         'When true, actions are hidden by default and fade in on hover',
@@ -1104,7 +1104,7 @@ export const WithActionsHoverBehavior: Story = {
           <ItemButton
             {...args}
             type="outline"
-            showActionsOnHover={false}
+            autoHideActions={false}
             wrapperStyles={{ width: 'max 250px' }}
             actions={
               <>
@@ -1118,7 +1118,7 @@ export const WithActionsHoverBehavior: Story = {
           <ItemButton
             {...args}
             type="outline"
-            showActionsOnHover={true}
+            autoHideActions={true}
             wrapperStyles={{ width: 'max 250px' }}
             actions={
               <>
@@ -1141,7 +1141,7 @@ export const WithActionsHoverBehavior: Story = {
             {...args}
             type="outline"
             icon={<IconFile />}
-            showActionsOnHover={false}
+            autoHideActions={false}
             wrapperStyles={{ width: 'max 250px' }}
             actions={
               <>
@@ -1156,7 +1156,7 @@ export const WithActionsHoverBehavior: Story = {
             {...args}
             type="outline"
             icon={<IconFile />}
-            showActionsOnHover={true}
+            autoHideActions={true}
             wrapperStyles={{ width: 'max 250px' }}
             actions={
               <>
@@ -1181,7 +1181,7 @@ export const WithActionsHoverBehavior: Story = {
             icon={<IconFile />}
             description="Additional info"
             descriptionPlacement="inline"
-            showActionsOnHover={false}
+            autoHideActions={false}
             wrapperStyles={{ width: 'max 250px' }}
             actions={
               <>
@@ -1198,7 +1198,7 @@ export const WithActionsHoverBehavior: Story = {
             icon={<IconFile />}
             description="Additional info"
             descriptionPlacement="inline"
-            showActionsOnHover={true}
+            autoHideActions={true}
             wrapperStyles={{ width: 'max 250px' }}
             actions={
               <>
@@ -1223,7 +1223,7 @@ export const WithActionsHoverBehavior: Story = {
             icon={<IconFile />}
             description="Additional information"
             descriptionPlacement="block"
-            showActionsOnHover={false}
+            autoHideActions={false}
             wrapperStyles={{ width: 'max 250px' }}
             actions={
               <>
@@ -1240,7 +1240,7 @@ export const WithActionsHoverBehavior: Story = {
             icon={<IconFile />}
             description="Additional information"
             descriptionPlacement="block"
-            showActionsOnHover={true}
+            autoHideActions={true}
             wrapperStyles={{ width: 'max 250px' }}
             actions={
               <>
@@ -1259,7 +1259,7 @@ export const WithActionsHoverBehavior: Story = {
     const canvas = within(canvasElement);
     const buttons = canvas.getAllByRole('button');
 
-    // Find the first button with showActionsOnHover={true}
+    // Find the first button with autoHideActions={true}
     // It should be the second button in the first row
     if (buttons[3]) {
       await userEvent.hover(buttons[3]);
@@ -1269,7 +1269,7 @@ export const WithActionsHoverBehavior: Story = {
     docs: {
       description: {
         story:
-          'Demonstrates the `showActionsOnHover` flag behavior. Each row compares two buttons side-by-side: one with actions always visible (left) and one with actions shown only on hover (right). The play function automatically hovers over the first button with `showActionsOnHover={true}` to demonstrate the hover behavior.',
+          'Demonstrates the `autoHideActions` flag behavior. Each row compares two buttons side-by-side: one with actions always visible (left) and one with actions shown only on hover (right). The play function automatically hovers over the first button with `autoHideActions={true}` to demonstrate the hover behavior.',
       },
     },
   },

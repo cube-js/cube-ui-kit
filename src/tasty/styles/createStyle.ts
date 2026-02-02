@@ -60,17 +60,21 @@ export function createStyle(
       // - "$foo" → "--foo"
       // - "#name"        → "--name-color" (alternative color definition syntax)
       let finalCssStyle: string;
-      if (
-        !cssStyle &&
-        typeof styleName === 'string' &&
-        styleName.startsWith('#')
-      ) {
+      const isColorToken =
+        !cssStyle && typeof styleName === 'string' && styleName.startsWith('#');
+
+      if (isColorToken) {
         const raw = styleName.slice(1);
         // Convert camelCase to kebab and remove possible leading dash from uppercase start
         const name = toSnakeCase(raw).replace(/^-+/, '');
         finalCssStyle = `--${name}-color`;
       } else {
         finalCssStyle = cssStyle || toSnakeCase(styleName).replace(/^\$/, '--');
+      }
+
+      // For color tokens, convert boolean true to 'transparent'
+      if (isColorToken && styleValue === true) {
+        styleValue = 'transparent';
       }
 
       // convert non-string values

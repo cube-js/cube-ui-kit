@@ -160,12 +160,13 @@ function extractRgbValue(colorValue: string, parsedOutput: string): string {
 }
 
 /**
- * Check if a value is a valid token value (string or number, not object).
+ * Check if a value is a valid token value (string, number, or boolean - not object).
+ * Returns false for `false` values (they mean "skip this token").
  */
 function isValidTokenValue(
   value: unknown,
-): value is Exclude<TokenValue, undefined | null> {
-  if (value === undefined || value === null) {
+): value is Exclude<TokenValue, undefined | null | false> {
+  if (value === undefined || value === null || value === false) {
     return false;
   }
 
@@ -179,7 +180,11 @@ function isValidTokenValue(
     return false;
   }
 
-  return typeof value === 'string' || typeof value === 'number';
+  return (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  );
 }
 
 /**
@@ -237,9 +242,16 @@ export function processTokens(
     } else if (key.startsWith('#')) {
       // Color token: #name -> --name-color and --name-color-rgb
       const colorName = key.slice(1);
-      const originalValue = typeof value === 'number' ? String(value) : value;
+
+      // For color tokens, boolean true means 'transparent'
+      const effectiveValue = value === true ? 'transparent' : value;
+
+      const originalValue =
+        typeof effectiveValue === 'number'
+          ? String(effectiveValue)
+          : effectiveValue;
       const lowerValue = originalValue.toLowerCase();
-      const processedValue = processTokenValue(value);
+      const processedValue = processTokenValue(effectiveValue);
 
       if (!result) result = {};
       result[`--${colorName}-color`] = processedValue;

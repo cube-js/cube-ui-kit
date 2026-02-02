@@ -83,7 +83,7 @@ export function TabPicker({
           textValue={
             typeof tab.title === 'string' ? tab.title : String(tab.key)
           }
-          showActionsOnHover={isDeletable}
+          autoHideActions={isDeletable}
           actions={
             isDeletable ? (
               <ItemAction

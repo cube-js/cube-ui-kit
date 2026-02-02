@@ -704,7 +704,7 @@ export const WithMenu: Story = {
 
     return (
       <Tabs
-        showActionsOnHover
+        autoHideActions
         {...args}
         type="file"
         activeKey={activeKey}
@@ -782,7 +782,7 @@ export const WithEditableTabs: Story = {
 
     return (
       <Tabs
-        showActionsOnHover
+        autoHideActions
         {...args}
         isEditable
         type="file"
@@ -1326,7 +1326,7 @@ export const ReorderableWithMenu: Story = {
           {...args}
           isReorderable
           isEditable
-          showActionsOnHover
+          autoHideActions
           type="file"
           activeKey={activeKey}
           keyOrder={keyOrder}
