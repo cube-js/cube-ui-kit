@@ -4,12 +4,18 @@
  * This file configures the tasty VSCode extension for the @cube-dev/ui-kit project.
  * It provides token names, units, presets, and state aliases for validation and autocomplete.
  *
+ * Projects using @cube-dev/ui-kit can extend this config:
+ * ```typescript
+ * export default {
+ *   extends: '@cube-dev/ui-kit',
+ *   // Add project-specific tokens, presets, etc.
+ * };
+ * ```
+ *
  * @see https://github.com/tenphi/tasty-vscode-extension for extension documentation
  */
 
-import type { TastyExtensionConfig } from './src/tasty';
-
-const config: TastyExtensionConfig = {
+export default {
   /**
    * Valid token names for validation and autocomplete.
    * Color tokens use # prefix, custom properties use $ prefix.
@@ -191,20 +197,8 @@ const config: TastyExtensionConfig = {
     '$scrollbar-h-width',
   ],
 
-  /**
-   * Valid custom unit names.
-   * Built-in units are always available: x, r, cr, bw, ow, fs, lh, sf
-   */
-  units: [
-    'x', // Gap multiplier (e.g., 2x = 2 * $gap)
-    'r', // Border radius (e.g., 1r = $radius)
-    'cr', // Card radius (e.g., 1cr = $card-radius)
-    'bw', // Border width (e.g., 1bw = $border-width)
-    'ow', // Outline width (e.g., 1ow = $outline-width)
-    'fs', // Font size
-    'lh', // Line height
-    'sf', // Stable fraction
-  ],
+  // Note: Built-in units (x, r, cr, bw, ow, fs, lh, sf) are always available.
+  // No need to list them here - they're automatically included by the extension.
 
   /**
    * State alias names for autocomplete.
@@ -262,6 +256,56 @@ const config: TastyExtensionConfig = {
     'strong',
     'em',
   ],
-};
 
-export default config;
+  /**
+   * Descriptions for presets, shown on hover.
+   * Based on typography.ts definitions.
+   */
+  presetDescriptions: {
+    // Headings
+    h1: 'Heading 1 (36px/44px, semibold)',
+    h2: 'Heading 2 (24px/32px, semibold)',
+    h3: 'Heading 3 (20px/28px, semibold)',
+    h4: 'Heading 4 (18px/24px, semibold)',
+    h5: 'Heading 5 (16px/22px, semibold)',
+    h6: 'Heading 6 (14px/20px, semibold)',
+
+    // Text styles
+    t1: 'Text large (18px/24px)',
+    t2: 'Text regular (16px/22px)',
+    t2m: 'Text regular medium (16px/22px, medium weight)',
+    t3: 'Text default (14px/20px)',
+    t3m: 'Text default medium (14px/20px, medium weight)',
+    t4: 'Text small (12px/18px, medium weight)',
+    t4m: 'Text small semibold (12px/18px, semibold)',
+
+    // Markdown/prose styles
+    m1: 'Markdown large (18px/32px, relaxed line-height)',
+    m2: 'Markdown regular (16px/28px, relaxed line-height)',
+    m3: 'Markdown default (14px/24px, relaxed line-height)',
+
+    // Paragraph styles
+    p1: 'Paragraph large (18px/28px)',
+    p2: 'Paragraph regular (16px/24px)',
+    p3: 'Paragraph default (14px/22px)',
+    p4: 'Paragraph small (12px/20px, medium weight)',
+
+    // Caption/uppercase
+    c1: 'Caption (14px/20px, semibold, uppercase)',
+    c2: 'Caption small (12px/18px, semibold, uppercase)',
+
+    // Other
+    tag: 'Tag/badge typography (12px/18px, semibold)',
+    default: 'Base text style (inherits t3)',
+    strong: 'Bold/semibold text (inherits font size)',
+    em: 'Italic text (inherits font size)',
+  },
+
+  /**
+   * Descriptions for state aliases, shown on hover.
+   */
+  stateDescriptions: {
+    '@mobile': 'Mobile viewport (width < 768px)',
+    '@compact': 'Compact layout (width < 600px)',
+  },
+};
