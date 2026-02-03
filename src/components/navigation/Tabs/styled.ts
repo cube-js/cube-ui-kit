@@ -337,9 +337,8 @@ export const TabIndicatorElement = tasty({
     left: 0,
     height: '$tab-indicator-size',
     fill: '#purple',
-    transition: 'left, width',
-    transitionDuration: '.2s',
-    transitionTimingFunction: 'ease-out',
+    transition:
+      'left $tab-transition ease-in-out, width $tab-transition ease-in-out',
     pointerEvents: 'none',
   },
 });

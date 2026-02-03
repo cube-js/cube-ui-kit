@@ -190,3 +190,91 @@ export interface Props {
 }
 
 export type TagName = keyof HTMLElementTagNameMap;
+
+// =============================================================================
+// Tasty Extension Configuration Types
+// =============================================================================
+
+/**
+ * Configuration type for tasty.config.ts files.
+ * Used by the Tasty VSCode extension for validation and autocomplete.
+ *
+ * @example
+ * ```typescript
+ * import type { TastyExtensionConfig } from '@cube-dev/ui-kit';
+ *
+ * const config: TastyExtensionConfig = {
+ *   tokens: ['#primary', '#danger', '$spacing'],
+ *   units: ['x', 'r', 'bw'],
+ *   states: ['@mobile', '@tablet', '@dark'],
+ *   presets: ['h1', 'h2', 't1', 't2'],
+ * };
+ *
+ * export default config;
+ * ```
+ */
+export interface TastyExtensionConfig {
+  /**
+   * Extend another config file. Path is relative to this config file.
+   * The extended config is merged first, then this config's values are added.
+   * @example '../tasty.config.ts'
+   */
+  extends?: string;
+
+  /**
+   * Valid token names for validation and autocomplete.
+   * Use # prefix for colors, $ prefix for custom properties.
+   * Set to `false` to disable token validation (overrides parent).
+   * @example ['#primary', '#danger', '$spacing', '$gap']
+   */
+  tokens?: false | string[];
+
+  /**
+   * Valid custom unit names.
+   * Set to `false` to disable unit validation (overrides parent).
+   * @example ['x', 'r', 'bw', 'cols']
+   */
+  units?: false | string[];
+
+  /**
+   * Valid custom function names.
+   * Set to `false` to disable function validation (overrides parent).
+   * @example ['clamp', 'double']
+   */
+  funcs?: false | string[];
+
+  /**
+   * State alias names for autocomplete.
+   * Must start with @ prefix.
+   * @example ['@mobile', '@tablet', '@dark']
+   */
+  states?: string[];
+
+  /**
+   * Valid preset names for the `preset` style property.
+   * Tasty has no built-in presets - they are project-specific.
+   * @example ['h1', 'h2', 'h3', 't1', 't2', 't3', 'tag']
+   */
+  presets?: string[];
+
+  /**
+   * Custom style property names added via configure({ handlers }).
+   * Suppresses "unknown property" warnings for these names.
+   * @example ['myGradient', 'customLayout', 'brandBorder']
+   */
+  styles?: string[];
+
+  /**
+   * Descriptions for presets, shown on hover in the extension.
+   * Maps preset names to human-readable descriptions.
+   * @example { h1: 'Heading 1 (36px/44px, semibold)', t1: 'Text large (18px/24px)' }
+   */
+  presetDescriptions?: Record<string, string>;
+
+  /**
+   * Descriptions for state aliases, shown on hover in the extension.
+   * Maps state names to human-readable descriptions.
+   * @example { '@mobile': 'Mobile viewport (width < 768px)' }
+   */
+  stateDescriptions?: Record<string, string>;
+}
