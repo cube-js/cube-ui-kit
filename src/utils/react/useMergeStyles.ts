@@ -44,6 +44,5 @@ export function useMergeStyles(
 
     // Merge base styles with sub-element styles
     return mergeStyles(styles, subStyles);
-     
   }, [styles, ...subStylesValues]);
 }
