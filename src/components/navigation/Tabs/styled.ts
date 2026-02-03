@@ -125,7 +125,6 @@ export const TabsElement = tasty({
       position: 'relative',
       display: 'grid',
       gridAutoFlow: 'column',
-      container: 'center',
       gridAutoColumns: {
         '': 'auto',
         'type=radio': '1fr',
