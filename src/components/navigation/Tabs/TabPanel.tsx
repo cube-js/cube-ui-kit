@@ -90,12 +90,10 @@ export function TabPanelRenderer({
     <TabPanelElement
       {...tabPanelProps}
       ref={ref}
+      mods={{ active: isActive }}
       qa={qa ?? 'TabPanel'}
       qaVal={qaVal ?? String(tabKey)}
       styles={panelStyles}
-      style={{
-        display: isActive ? 'contents' : 'none',
-      }}
     >
       {content}
     </TabPanelElement>

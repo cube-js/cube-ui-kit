@@ -2090,6 +2090,70 @@ function ThemeCSS({ theme }: { theme: 'dark' | 'light' }) {
 |--------|------|-------------|
 | `root` | `Document \| ShadowRoot` | Where to inject the `<style>` tag (defaults to `document`) |
 
+### useMergeStyles
+
+The `useMergeStyles` hook merges a base `styles` object with separate sub-element style props. This simplifies the common pattern of accepting props like `tabListStyles`, `prefixStyles`, etc. that should merge into `styles.TabList`, `styles.Prefix`, etc.
+
+```tsx
+import { useMergeStyles } from '@cube-dev/ui-kit';
+
+function MyTabs({ styles, tabListStyles, prefixStyles, suffixStyles, ...rest }) {
+  const mergedStyles = useMergeStyles(styles, {
+    TabList: tabListStyles,
+    Prefix: prefixStyles,
+    Suffix: suffixStyles,
+  });
+
+  return <TabsElement styles={mergedStyles} {...rest} />;
+}
+```
+
+**When to use `useMergeStyles`:**
+- Creating components that accept separate style props for sub-elements (e.g., `triggerStyles`, `popoverStyles`)
+- Simplifying the merging of user-provided sub-element styles with base styles
+- Maintaining a clean API where users can style sub-elements via dedicated props
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `styles` | `Styles \| undefined` | Base styles object |
+| `subStylesMap` | `Record<string, Styles \| undefined>` | Mapping of sub-element names to their additional styles |
+
+**Returns:** `Styles` - Merged styles object ready to pass to a tasty component.
+
+**Features:**
+- Memoized to avoid unnecessary object creation on re-renders
+- Leverages `mergeStyles` internally for proper deep merging of sub-element styles
+- Handles `undefined` values gracefully (they are skipped)
+
+```tsx
+// Example: Creating a Picker component with separate style props
+interface MyPickerProps {
+  styles?: Styles;
+  triggerStyles?: Styles;
+  popoverStyles?: Styles;
+  listBoxStyles?: Styles;
+}
+
+function MyPicker({ styles, triggerStyles, popoverStyles, listBoxStyles, ...rest }: MyPickerProps) {
+  const mergedStyles = useMergeStyles(styles, {
+    Trigger: triggerStyles,
+    Popover: popoverStyles,
+    ListBox: listBoxStyles,
+  });
+
+  return <PickerElement styles={mergedStyles} {...rest} />;
+}
+
+// Usage
+<MyPicker
+  styles={{ padding: '2x' }}
+  triggerStyles={{ fill: '#surface' }}
+  popoverStyles={{ shadow: '2x 2x 4x #shadow' }}
+/>
+```
+
 ---
 
 ## 🔗 Cross-References
@@ -2101,7 +2165,7 @@ function ThemeCSS({ theme }: { theme: 'dark' | 'light' }) {
 - **Interactivity**: See [Modifiers & State Binding](#modifiers--state-binding) for hover, focus, and custom states
 - **Theming**: See [Variants & Theming](#variants--theming) for component variations
 - **Performance**: See [Performance Tips](#performance-tips-) for optimization techniques
-- **Hooks**: See [Hooks](#-hooks) for `useStyles`, `useGlobalStyles`, and `useRawCSS`
+- **Hooks**: See [Hooks](#-hooks) for `useStyles`, `useGlobalStyles`, `useRawCSS`, and `useMergeStyles`
 - **Create Component Guide**: See [CreateComponent.docs.mdx](/docs/tasty-create-component--docs) for component creation patterns
 
 ---

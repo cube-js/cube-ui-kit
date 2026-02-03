@@ -239,6 +239,17 @@ export interface CubeTabsProps
    * @default 'suffix'
    */
   scrollArrowsPosition?: TabsActionPosition;
+  /**
+   * Inline padding for the tab list container.
+   * Sets horizontal padding only (e.g., "2x" → padding: "0 2x").
+   */
+  tabListPadding?: string;
+  /** Custom tasty styles for the TabList sub-element. */
+  tabListStyles?: Styles;
+  /** Custom tasty styles for the Prefix sub-element. */
+  prefixStyles?: Styles;
+  /** Custom tasty styles for the Suffix sub-element. */
+  suffixStyles?: Styles;
 }
 
 export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {

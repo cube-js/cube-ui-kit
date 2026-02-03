@@ -352,6 +352,10 @@ export const TabPanelElement = tasty({
   as: 'section',
   styles: {
     display: 'contents',
+    hide: {
+      '': true,
+      active: false,
+    },
   },
 });
 

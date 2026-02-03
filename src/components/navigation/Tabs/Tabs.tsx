@@ -19,8 +19,8 @@ import {
 
 import { useEvent, useWarn } from '../../../_internal/hooks';
 import { DirectionIcon } from '../../../icons';
-import { extractStyles, OUTER_STYLES } from '../../../tasty';
-import { mergeProps } from '../../../utils/react';
+import { extractStyles, mergeStyles, OUTER_STYLES } from '../../../tasty';
+import { mergeProps, useMergeStyles } from '../../../utils/react';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
 
 import { DraggableTabList } from './DraggableTabList';
@@ -156,11 +156,34 @@ function TabsComponent(
     showScrollArrows = false,
     tabPickerPosition = 'suffix',
     scrollArrowsPosition = 'suffix',
+    tabListPadding,
+    tabListStyles,
+    prefixStyles,
+    suffixStyles,
     ...otherProps
   } = props;
 
   // Extract outer styles
-  const combinedStyles = extractStyles(otherProps, OUTER_STYLES);
+  const baseStyles = extractStyles(otherProps, OUTER_STYLES);
+
+  // Build TabList padding style (memoized)
+  const tabListPaddingStyles = useMemo(
+    () => (tabListPadding ? { padding: `0 ${tabListPadding}` } : undefined),
+    [tabListPadding],
+  );
+
+  // Merge tabListPaddingStyles with tabListStyles (memoized)
+  const mergedTabListStyles = useMemo(
+    () => mergeStyles(tabListPaddingStyles, tabListStyles),
+    [tabListPaddingStyles, tabListStyles],
+  );
+
+  // Merge all sub-element styles into baseStyles
+  const combinedStyles = useMergeStyles(baseStyles, {
+    TabList: mergedTabListStyles,
+    Prefix: prefixStyles,
+    Suffix: suffixStyles,
+  });
 
   // DOM element refs
   const listRef = useRef<HTMLDivElement>(null);
