@@ -1310,8 +1310,8 @@ const Pulse = tasty({
     animation: 'pulse 2s infinite',
     '@keyframes': {
       pulse: {
-        '0%, 100%': 'transform: scale(1);',
-        '50%': 'transform: scale(1.05);',
+        '0%, 100%': { transform: 'scale(1)' },
+        '50%': { transform: 'scale(1.05)' },
       },
     },
   },
@@ -1323,7 +1323,7 @@ Global keyframes via `configure()`:
 ```jsx
 configure({
   keyframes: {
-    fadeIn: { from: 'opacity: 0;', to: 'opacity: 1;' },
+    fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
   },
 });
 ```
@@ -1343,8 +1343,8 @@ const Spinner = tasty({
     },
     '@keyframes': {
       spin: {
-        '0%': 'transform: rotate(0deg);',
-        '100%': 'transform: rotate(360deg);',
+        '0%': { transform: 'rotate(0deg)' },
+        '100%': { transform: 'rotate(360deg)' },
       },
     },
   },

@@ -125,6 +125,7 @@ export const TabsElement = tasty({
       position: 'relative',
       display: 'grid',
       gridAutoFlow: 'column',
+      container: 'center',
       gridAutoColumns: {
         '': 'auto',
         'type=radio': '1fr',
@@ -185,7 +186,7 @@ export const TabElement = tasty(Item, {
       'type=default | type=narrow': 'top',
     },
     color: {
-      '': '#dark-02',
+      '': '#dark',
       '(type=default | type=narrow) & (hovered & !selected)': '#purple-text',
       '(type=default | type=narrow) & selected': '#purple-text',
       disabled: '#dark-04',
@@ -337,9 +338,8 @@ export const TabIndicatorElement = tasty({
     left: 0,
     height: '$tab-indicator-size',
     fill: '#purple',
-    transition: 'left, width',
-    transitionDuration: '.2s',
-    transitionTimingFunction: 'ease-out',
+    transition:
+      'left $tab-transition ease-in-out, width $tab-transition ease-in-out',
     pointerEvents: 'none',
   },
 });
