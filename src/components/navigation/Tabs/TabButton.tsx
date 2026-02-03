@@ -434,13 +434,9 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   // Measure actions width to pass to Item for proper space allocation
   useLayoutEffect(() => {
     if (actions && actionsRef.current) {
-      const width = Math.round(actionsRef.current.offsetWidth);
-
-      if (width !== actionsWidth) {
-        setActionsWidth(width);
-      }
+      setActionsWidth(Math.round(actionsRef.current.offsetWidth));
     }
-  }, [actions, actionsWidth]);
+  }, [actions]);
 
   // Determine effective size
   const effectiveSize = tabData.size ?? size ?? 'medium';
