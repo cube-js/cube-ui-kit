@@ -89,7 +89,7 @@ export function TabPicker({
               <ItemAction
                 icon={<CloseIcon />}
                 theme="danger"
-                aria-label="Delete tab"
+                aria-label="Close"
                 onPress={() => {
                   onDelete(tab.key);
                 }}

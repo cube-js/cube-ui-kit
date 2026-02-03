@@ -416,7 +416,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     <ItemAction
       tabIndex={-1}
       icon={<CloseIcon />}
-      tooltip="Delete tab"
+      tooltip="Close"
       onPress={handleDelete}
     />
   ) : null;
