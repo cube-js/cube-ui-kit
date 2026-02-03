@@ -263,4 +263,18 @@ export interface TastyExtensionConfig {
    * @example ['myGradient', 'customLayout', 'brandBorder']
    */
   styles?: string[];
+
+  /**
+   * Descriptions for presets, shown on hover in the extension.
+   * Maps preset names to human-readable descriptions.
+   * @example { h1: 'Heading 1 (36px/44px, semibold)', t1: 'Text large (18px/24px)' }
+   */
+  presetDescriptions?: Record<string, string>;
+
+  /**
+   * Descriptions for state aliases, shown on hover in the extension.
+   * Maps state names to human-readable descriptions.
+   * @example { '@mobile': 'Mobile viewport (width < 768px)' }
+   */
+  stateDescriptions?: Record<string, string>;
 }
