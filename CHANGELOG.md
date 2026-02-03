@@ -1,5 +1,20 @@
 # @cube-dev/ui-kit
 
+## 0.108.1
+
+### Patch Changes
+
+- [#994](https://github.com/cube-js/cube-ui-kit/pull/994) [`3516a129`](https://github.com/cube-js/cube-ui-kit/commit/3516a129658f8dac4e064c0df7c9ee78fa9b03eb) Thanks [@tenphi](https://github.com/tenphi)! - Export tasty.config.ts
+
+- [#995](https://github.com/cube-js/cube-ui-kit/pull/995) [`cbc20da3`](https://github.com/cube-js/cube-ui-kit/commit/cbc20da3c86ab6bdf8d2f37af4e199afa6aff057) Thanks [@tenphi](https://github.com/tenphi)! - Fix unnecessary re-renders in Tabs component:
+
+  - Fix actions width measurement effect dependency
+  - Stabilize `getAllowedDropOperations` callback in drag/drop hooks
+
+  Fix ItemButton missing hover/press/focus states by not overriding actionProps.mods
+
+- [#994](https://github.com/cube-js/cube-ui-kit/pull/994) [`3516a129`](https://github.com/cube-js/cube-ui-kit/commit/3516a129658f8dac4e064c0df7c9ee78fa9b03eb) Thanks [@tenphi](https://github.com/tenphi)! - Migrate all `@keyframes` definitions to use object format for style values instead of raw CSS strings. This ensures consistent token processing and better type safety.
+
 ## 0.108.0
 
 ### Minor Changes
