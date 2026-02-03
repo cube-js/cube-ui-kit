@@ -323,7 +323,7 @@ describe('<Tabs />', () => {
         </Tabs>,
       );
 
-      expect(getByLabelText('Delete tab')).toBeInTheDocument();
+      expect(getByLabelText('Close')).toBeInTheDocument();
     });
 
     it('should call onDelete when delete button is clicked', async () => {
@@ -336,7 +336,7 @@ describe('<Tabs />', () => {
         </Tabs>,
       );
 
-      await userEvent.click(getByLabelText('Delete tab'));
+      await userEvent.click(getByLabelText('Close'));
 
       expect(onDelete).toHaveBeenCalledWith('tab1');
     });
