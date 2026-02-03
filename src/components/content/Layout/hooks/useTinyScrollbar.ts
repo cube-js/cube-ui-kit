@@ -34,6 +34,8 @@ export interface TinyScrollbarResult {
 
 const MIN_HANDLE_SIZE = 20;
 const SCROLL_VISIBILITY_DURATION = 1000;
+// Threshold to prevent overflow oscillation at boundary
+const OVERFLOW_THRESHOLD = 2;
 
 export function useTinyScrollbar(
   ref: RefObject<HTMLElement | null>,
@@ -51,6 +53,7 @@ export function useTinyScrollbar(
   });
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resizeFrameRef = useRef<number | null>(null);
 
   const updateScrollState = useCallback(() => {
     const element = ref.current;
@@ -66,15 +69,35 @@ export function useTinyScrollbar(
       clientWidth,
     } = element;
 
-    setScrollState({
-      hasOverflowY: scrollHeight > clientHeight,
-      hasOverflowX: scrollWidth > clientWidth,
-      scrollTop,
-      scrollLeft,
-      scrollHeight,
-      scrollWidth,
-      clientHeight,
-      clientWidth,
+    // Use threshold to prevent oscillation at overflow boundary
+    const hasOverflowY = scrollHeight > clientHeight + OVERFLOW_THRESHOLD;
+    const hasOverflowX = scrollWidth > clientWidth + OVERFLOW_THRESHOLD;
+
+    setScrollState((prev) => {
+      // Only update if values actually changed to prevent unnecessary re-renders
+      if (
+        prev.hasOverflowY === hasOverflowY &&
+        prev.hasOverflowX === hasOverflowX &&
+        prev.scrollTop === scrollTop &&
+        prev.scrollLeft === scrollLeft &&
+        prev.scrollHeight === scrollHeight &&
+        prev.scrollWidth === scrollWidth &&
+        prev.clientHeight === clientHeight &&
+        prev.clientWidth === clientWidth
+      ) {
+        return prev; // Return same reference to skip re-render
+      }
+
+      return {
+        hasOverflowY,
+        hasOverflowX,
+        scrollTop,
+        scrollLeft,
+        scrollHeight,
+        scrollWidth,
+        clientHeight,
+        clientWidth,
+      };
     });
   }, [ref]);
 
@@ -118,17 +141,22 @@ export function useTinyScrollbar(
     element.addEventListener('mouseenter', handleMouseEnter);
 
     // ResizeObserver for content size changes
+    // Uses requestAnimationFrame to coalesce updates and prevent cascading events
     const resizeObserver = new ResizeObserver(() => {
-      updateScrollState();
-      showScrollbarBriefly();
+      if (resizeFrameRef.current) {
+        cancelAnimationFrame(resizeFrameRef.current);
+      }
+
+      resizeFrameRef.current = requestAnimationFrame(() => {
+        updateScrollState();
+        showScrollbarBriefly();
+      });
     });
 
     resizeObserver.observe(element);
 
-    // Observe children for size changes
-    Array.from(element.children).forEach((child) => {
-      resizeObserver.observe(child);
-    });
+    // Note: We intentionally don't observe children to prevent
+    // cascading resize events in nested layouts
 
     return () => {
       element.removeEventListener('scroll', handleScroll);
@@ -137,6 +165,10 @@ export function useTinyScrollbar(
 
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
+      }
+
+      if (resizeFrameRef.current) {
+        cancelAnimationFrame(resizeFrameRef.current);
       }
     };
   }, [enabled, ref, updateScrollState]);
