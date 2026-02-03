@@ -18,3 +18,4 @@ export type { RenderCacheProps } from './RenderCache';
 export { useLocalStorage } from './useLocalStorage';
 export { resolveIcon } from './resolveIcon';
 export type { DynamicIcon, IconRenderFn, ResolvedIcon } from './resolveIcon';
+export { useMergeStyles } from './useMergeStyles';

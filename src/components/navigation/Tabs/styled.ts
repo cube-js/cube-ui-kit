@@ -44,6 +44,7 @@ export const TabsElement = tasty({
     },
 
     Prefix: {
+      $: '>',
       display: 'flex',
       placeItems: 'center',
       placeContent: 'center',
@@ -56,6 +57,7 @@ export const TabsElement = tasty({
     },
 
     Suffix: {
+      $: '>',
       display: 'flex',
       placeItems: 'center',
       placeContent: 'center',
@@ -69,6 +71,7 @@ export const TabsElement = tasty({
 
     // Wrapper for scroll area and scrollbar (scrollbar is positioned relative to this)
     ScrollWrapper: {
+      $: '>',
       position: 'relative',
       display: 'flex',
       flexGrow: 1,
@@ -81,6 +84,7 @@ export const TabsElement = tasty({
     },
 
     Scroll: {
+      $: '> ScrollWrapper >',
       position: 'relative',
       display: 'block',
       overflow: {
@@ -116,7 +120,8 @@ export const TabsElement = tasty({
       },
     },
 
-    Container: {
+    TabList: {
+      $: '> ScrollWrapper > Scroll >',
       position: 'relative',
       display: 'grid',
       gridAutoFlow: 'column',
@@ -149,6 +154,7 @@ export const TabsElement = tasty({
 
     // Custom horizontal scrollbar (tiny) - positioned relative to ScrollWrapper
     ScrollbarH: {
+      $: '> ScrollWrapper >',
       position: 'absolute',
       bottom: '1px',
       left: '$scrollbar-h-left',
@@ -192,20 +198,26 @@ export const TabElement = tasty(Item, {
       '(type=file | type=radio) & selected': '#white',
     },
     border: {
-      '': '0 #clear',
-      'type=file & selected': '$tab-indicator-size #purple bottom',
+      '': '#clear',
+      'type=file': '0 #clear',
     },
     preset: {
       '': 't3m',
       'size=xsmall': 't4',
     },
     shadow: {
-      '': 'none',
-      'focused & focus-visible': 'inset 0 0 0 1bw #purple-text',
-      editing: 'inset 0 0 0 1bw #purple-text',
+      '': '$selection-shadow',
+      'focused & focus-visible':
+        'inset 0 0 0 1bw #purple-text, $selection-shadow',
+      editing: 'inset 0 0 0 1bw #purple-text, $selection-shadow',
       'type=radio & selected': '$item-shadow',
       'type=radio & selected & focused & focus-visible':
         '$item-shadow, inset 0 0 0 1bw #purple-text',
+    },
+    '$selection-shadow': {
+      '': 'inset 0 0 0 0 #purple',
+      'type=file & selected': 'inset 0 (-1 * $tab-indicator-size) 0 0 #purple',
+      '!type=file': 'inset 0 0 0 0 #purple.0',
     },
     // Collapse horizontal padding for narrow type
     '$label-padding-left': {
@@ -275,12 +287,12 @@ export const TabContainer = tasty({
       // Simple CSS opacity for show-on-hover
       opacity: {
         '': 1,
-        'show-actions-on-hover': 0,
-        'show-actions-on-hover & (active | :hover | :focus-within | :has([data-pressed]))': 1,
+        'auto-hide-actions': 0,
+        'auto-hide-actions & (active | :hover | :focus-within | :has([data-pressed]))': 1,
       },
       transition: 'opacity $transition',
       // Size variables (same as Item)
-      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (4x - 2bw))',
+      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (3x - 2bw))',
       '$side-padding': '(($size - $action-size - 2bw) / 2)',
     },
   },
@@ -340,6 +352,10 @@ export const TabPanelElement = tasty({
   as: 'section',
   styles: {
     display: 'contents',
+    hide: {
+      '': true,
+      active: false,
+    },
   },
 });
 

@@ -85,7 +85,7 @@ export default {
         defaultValue: { summary: 'button' },
       },
     },
-    showActionsOnHover: {
+    autoHideActions: {
       control: { type: 'boolean' },
       description:
         'When true, actions are hidden by default and shown only on hover, focus, or focus-within',
@@ -96,7 +96,7 @@ export default {
     preserveActionsSpace: {
       control: { type: 'boolean' },
       description:
-        'When true, preserves the actions width when hidden (only changes opacity). Only applies when showActionsOnHover is true.',
+        'When true, preserves the actions width when hidden (only changes opacity). Only applies when autoHideActions is true.',
       table: {
         defaultValue: { summary: false },
       },
@@ -1740,7 +1740,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
         qa="hover-actions-item"
         type="outline"
         icon={<IconUser />}
-        showActionsOnHover={true}
+        autoHideActions={true}
         actions={
           <>
             <ItemAction icon={<IconEdit />} aria-label="Edit" />
@@ -1754,7 +1754,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
         {...args}
         type="outline"
         icon={<IconCoin />}
-        showActionsOnHover={true}
+        autoHideActions={true}
         actions={
           <>
             <ItemAction icon={<IconEdit />} aria-label="Edit" />
@@ -1772,7 +1772,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
         {...args}
         type="outline"
         icon={<IconUser />}
-        showActionsOnHover={false}
+        autoHideActions={false}
         actions={
           <>
             <ItemAction icon={<IconEdit />} aria-label="Edit" />
@@ -1786,7 +1786,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
         {...args}
         type="outline"
         icon={<IconUser />}
-        showActionsOnHover={true}
+        autoHideActions={true}
         actions={
           <>
             <ItemAction icon={<IconEdit />} aria-label="Edit" />
@@ -1805,7 +1805,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
         type="outline"
         size="small"
         icon={<IconUser />}
-        showActionsOnHover={true}
+        autoHideActions={true}
         actions={
           <>
             <ItemAction icon={<IconEdit />} aria-label="Edit" />
@@ -1820,7 +1820,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
         type="outline"
         size="medium"
         icon={<IconUser />}
-        showActionsOnHover={true}
+        autoHideActions={true}
         actions={
           <>
             <ItemAction icon={<IconEdit />} aria-label="Edit" />
@@ -1835,7 +1835,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
         type="outline"
         size="large"
         icon={<IconUser />}
-        showActionsOnHover={true}
+        autoHideActions={true}
         actions={
           <>
             <ItemAction icon={<IconEdit />} aria-label="Edit" />
@@ -1855,7 +1855,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
         icon={<IconUser />}
         description="Inline description"
         descriptionPlacement="inline"
-        showActionsOnHover={true}
+        autoHideActions={true}
         actions={
           <>
             <ItemAction icon={<IconEdit />} aria-label="Edit" />
@@ -1871,7 +1871,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
         icon={<IconUser />}
         description="Block description below the item"
         descriptionPlacement="block"
-        showActionsOnHover={true}
+        autoHideActions={true}
         actions={
           <>
             <ItemAction icon={<IconEdit />} aria-label="Edit" />
@@ -1886,14 +1886,14 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
 );
 
 WithActionsOnHover.args = {
-  width: '450px',
+  width: '250px',
 };
 
 WithActionsOnHover.parameters = {
   docs: {
     description: {
       story:
-        'Demonstrates the `showActionsOnHover` prop which hides actions by default and reveals them smoothly on hover, focus, or focus-within states using opacity transitions. This provides a cleaner interface while keeping actions easily accessible. The actions remain in the layout to prevent content shifting.',
+        'Demonstrates the `autoHideActions` prop which hides actions by default and reveals them smoothly on hover, focus, or focus-within states using opacity transitions. This provides a cleaner interface while keeping actions easily accessible. The actions remain in the layout to prevent content shifting.',
     },
   },
 };
@@ -1908,7 +1908,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
         {...args}
         type="outline"
         icon={<IconUser />}
-        showActionsOnHover={true}
+        autoHideActions={true}
         preserveActionsSpace={false}
         actions={
           <>
@@ -1923,7 +1923,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
         {...args}
         type="outline"
         icon={<IconUser />}
-        showActionsOnHover={true}
+        autoHideActions={true}
         preserveActionsSpace={true}
         actions={
           <>
@@ -1944,7 +1944,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
           {...args}
           type="outline"
           icon={<IconCoin />}
-          showActionsOnHover={true}
+          autoHideActions={true}
           preserveActionsSpace={false}
           actions={
             <>
@@ -1959,7 +1959,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
           {...args}
           type="outline"
           icon={<IconSettings />}
-          showActionsOnHover={true}
+          autoHideActions={true}
           preserveActionsSpace={false}
           actions={
             <>
@@ -1976,7 +1976,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
           {...args}
           type="outline"
           icon={<IconCoin />}
-          showActionsOnHover={true}
+          autoHideActions={true}
           preserveActionsSpace={true}
           actions={
             <>
@@ -1991,7 +1991,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
           {...args}
           type="outline"
           icon={<IconSettings />}
-          showActionsOnHover={true}
+          autoHideActions={true}
           preserveActionsSpace={true}
           actions={
             <>
@@ -2012,7 +2012,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
         icon={<IconUser />}
         description="Actions collapse on hover"
         descriptionPlacement="inline"
-        showActionsOnHover={true}
+        autoHideActions={true}
         preserveActionsSpace={false}
         actions={
           <>
@@ -2029,7 +2029,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
         icon={<IconUser />}
         description="Actions fade in, space preserved"
         descriptionPlacement="inline"
-        showActionsOnHover={true}
+        autoHideActions={true}
         preserveActionsSpace={true}
         actions={
           <>
@@ -2045,14 +2045,14 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
 );
 
 ActionsPreserveSpace.args = {
-  width: '400px',
+  width: '250px',
 };
 
 ActionsPreserveSpace.parameters = {
   docs: {
     description: {
       story:
-        'Demonstrates the `preserveActionsSpace` prop which works with `showActionsOnHover`. When `preserveActionsSpace={false}` (default), actions collapse to zero width when hidden, causing content to shift on hover. When `preserveActionsSpace={true}`, actions maintain their width and only change opacity, preventing any content shift.',
+        'Demonstrates the `preserveActionsSpace` prop which works with `autoHideActions`. When `preserveActionsSpace={false}` (default), actions collapse to zero width when hidden, causing content to shift on hover. When `preserveActionsSpace={true}`, actions maintain their width and only change opacity, preventing any content shift.',
     },
   },
 };

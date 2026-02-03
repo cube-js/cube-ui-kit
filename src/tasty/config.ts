@@ -24,6 +24,7 @@ import {
   CUSTOM_UNITS,
   getGlobalFuncs,
   getGlobalParser,
+  normalizeColorTokenValue,
   resetGlobalPredefinedTokens,
   setGlobalPredefinedTokens,
 } from './utils/styles';
@@ -174,6 +175,9 @@ export interface TastyConfig {
    * Predefined tokens that are replaced during style parsing.
    * Token values are processed through the parser (like component tokens).
    * Use `$name` for custom properties and `#name` for color tokens.
+   *
+   * For color tokens (#name), boolean `true` is converted to `transparent`.
+   *
    * @example
    * ```ts
    * configure({
@@ -182,6 +186,7 @@ export interface TastyConfig {
    *     '$card-padding': '4x',
    *     '#accent': '#purple',
    *     '#surface': '#white',
+   *     '#overlay': true, // → transparent
    *   },
    * });
    *
@@ -195,7 +200,9 @@ export interface TastyConfig {
    * ```
    */
   tokens?: {
-    [key: `$${string}` | `#${string}`]: string | number;
+    [key: `$${string}`]: string | number | boolean;
+  } & {
+    [key: `#${string}`]: string | number | boolean;
   };
 }
 
@@ -474,7 +481,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
   let mergedUnits: Record<string, string | UnitHandler> = {};
   let mergedFuncs: Record<string, (groups: StyleDetails[]) => string> = {};
   let mergedHandlers: Record<string, StyleHandlerDefinition> = {};
-  let mergedTokens: Record<string, string | number> = {};
+  let mergedTokens: Record<string, string | number | boolean> = {};
 
   // Process plugins in order
   if (config.plugins) {
@@ -566,7 +573,17 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     // Store tokens (keys are normalized to lowercase by setGlobalPredefinedTokens)
     const processedTokens: Record<string, string> = {};
     for (const [key, value] of Object.entries(mergedTokens)) {
-      processedTokens[key] = String(value);
+      if (key.startsWith('#')) {
+        // Color token - use shared helper for boolean handling
+        const normalized = normalizeColorTokenValue(value);
+        if (normalized === null) continue; // Skip false values
+        processedTokens[key] = String(normalized);
+      } else if (value === false) {
+        // Skip false values for non-color tokens
+        continue;
+      } else {
+        processedTokens[key] = String(value);
+      }
     }
     setGlobalPredefinedTokens(processedTokens);
   }

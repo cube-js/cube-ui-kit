@@ -107,6 +107,7 @@ const PaneElement = tasty({
     },
 
     ScrollbarH: {
+      $: '>',
       position: 'absolute',
       bottom: {
         '': '1px',

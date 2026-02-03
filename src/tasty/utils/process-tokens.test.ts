@@ -280,6 +280,42 @@ describe('processTokens', () => {
     });
   });
 
+  describe('boolean color token values', () => {
+    it('converts boolean true to transparent for color tokens', () => {
+      const result = processTokens({
+        '#overlay': true,
+      });
+
+      expect(result).toBeDefined();
+      // Boolean true converts to 'transparent' which the parser keeps as-is
+      expect(result!['--overlay-color']).toBe('transparent');
+      // RGB extraction for transparent yields 0 0 0
+      expect(result!['--overlay-color-rgb']).toBe('transparent');
+    });
+
+    it('skips color tokens with boolean false', () => {
+      const result = processTokens({
+        '#hidden': false,
+        '#visible': '#purple',
+      });
+
+      expect(result).toBeDefined();
+      expect(result!['--hidden-color']).toBeUndefined();
+      expect(result!['--visible-color']).toBeDefined();
+    });
+
+    it('handles mixed boolean and string color tokens', () => {
+      const result = processTokens({
+        '#background': true,
+        '#foreground': '#dark',
+      });
+
+      expect(result).toBeDefined();
+      expect(result!['--background-color']).toBe('transparent');
+      expect(result!['--foreground-color']).toBe('var(--dark-color)');
+    });
+  });
+
   describe('#current color token', () => {
     it('processes #current to currentcolor without RGB', () => {
       const result = processTokens({

@@ -4,6 +4,7 @@ import {
   forwardRef,
   ReactNode,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -65,16 +66,16 @@ const ActionsWrapper = tasty({
       height: 'min ($size - 2bw)',
       opacity: {
         '': 1,
-        'actions-hidden': 0,
+        '!actions-shown': 0,
       },
       translate: {
         '': '0 0',
-        'actions-hidden': '.5x 0',
+        '!actions-shown': '.5x 0',
       },
       transition: 'theme, translate',
 
       // Size for the action buttons
-      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (4x - 2bw))',
+      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (3x - 2bw))',
       // Side padding for the button
       '$side-padding': '(($size - $action-size - 2bw) / 2)',
     },
@@ -102,7 +103,7 @@ const ItemButton = forwardRef(function ItemButton(
     actions,
     size = 'medium',
     wrapperStyles,
-    showActionsOnHover = false,
+    autoHideActions = false,
     disableActionsFocus = false,
     isDisabled,
     isLoading = false,
@@ -140,7 +141,7 @@ const ItemButton = forwardRef(function ItemButton(
   useLayoutEffect(() => {
     const actionsEl = actionsRef.current;
 
-    if (!actionsEl || !showActionsOnHover) return;
+    if (!actionsEl || !autoHideActions) return;
 
     const checkPressed = () => {
       setHasPressed(actionsEl.querySelector('[data-pressed]') !== null);
@@ -157,9 +158,10 @@ const ItemButton = forwardRef(function ItemButton(
     checkPressed();
 
     return () => observer.disconnect();
-  }, [areActionsVisible, showActionsOnHover]);
+  }, [areActionsVisible, autoHideActions]);
 
-  const shouldShowActions = isHovered || isFocusWithin || hasPressed;
+  const shouldShowActions =
+    isHovered || isFocusWithin || hasPressed || !autoHideActions;
 
   const { actionProps } = useAction(
     {
@@ -173,8 +175,14 @@ const ItemButton = forwardRef(function ItemButton(
     ref,
   );
 
+  const finalMods = useMemo(() => {
+    return shouldShowActions ? { ...mods, 'actions-shown': true } : mods;
+  }, [mods, shouldShowActions]);
+
   const button = (
     <StyledItem
+      insideWrapper={!!actions}
+      showActions={shouldShowActions}
       actions={actions ? true : undefined}
       {...(mergeProps(rest, actionProps) as any)}
       htmlType={actionProps.type}
@@ -183,6 +191,7 @@ const ItemButton = forwardRef(function ItemButton(
       size={size}
       isLoading={isLoading}
       isDisabled={isDisabled}
+      mods={mods}
     />
   );
 
@@ -191,12 +200,12 @@ const ItemButton = forwardRef(function ItemButton(
       <ActionsWrapper
         {...hoverProps}
         data-size={size}
-        mods={{ 'actions-hidden': !areActionsShown && showActionsOnHover }}
+        mods={finalMods}
         styles={wrapperStyles}
         style={
           {
             '--actions-width':
-              areActionsVisible || !showActionsOnHover
+              areActionsVisible || !autoHideActions
                 ? `${actionsWidth}px`
                 : '0px',
             ...(typeof size === 'number' && { '--size': `${size}px` }),
@@ -210,7 +219,7 @@ const ItemButton = forwardRef(function ItemButton(
           disableActionsFocus={disableActionsFocus}
           isDisabled={finalIsDisabled}
         >
-          {showActionsOnHover ? (
+          {autoHideActions ? (
             <DisplayTransition
               exposeUnmounted
               isShown={shouldShowActions}

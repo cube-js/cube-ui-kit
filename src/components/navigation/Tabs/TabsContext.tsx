@@ -20,8 +20,8 @@ export interface TabsContextValue {
   type: TabType;
   /** Parent-level size default */
   size?: TabSize;
-  /** Parent-level showActionsOnHover default */
-  showActionsOnHover?: boolean;
+  /** Parent-level autoHideActions default */
+  autoHideActions?: boolean;
   /** Parent-level isEditable default */
   isEditable?: boolean;
   /** Parent-level menu default */

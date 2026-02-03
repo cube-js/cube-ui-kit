@@ -808,6 +808,36 @@ describe('tokens prop', () => {
     // Should have RGB property
     expect(element.style.getPropertyValue('--custom-color-rgb')).toBeTruthy();
   });
+
+  it('should convert boolean true to transparent for color tokens', () => {
+    const Element = tasty({});
+
+    const { container } = render(<Element tokens={{ '#overlay': true }} />);
+    const element = container.firstElementChild as HTMLElement;
+
+    // Should convert true to transparent
+    expect(element.style.getPropertyValue('--overlay-color')).toBe(
+      'transparent',
+    );
+    // Should have RGB property (transparent yields 'transparent' as fallback)
+    expect(element.style.getPropertyValue('--overlay-color-rgb')).toBe(
+      'transparent',
+    );
+  });
+
+  it('should skip color tokens with boolean false', () => {
+    const Element = tasty({});
+
+    const { container } = render(
+      <Element tokens={{ '#hidden': false, '#visible': '#purple' }} />,
+    );
+    const element = container.firstElementChild as HTMLElement;
+
+    // false should skip the token
+    expect(element.style.getPropertyValue('--hidden-color')).toBe('');
+    // Other tokens should still work
+    expect(element.style.getPropertyValue('--visible-color')).toBeTruthy();
+  });
 });
 
 describe('useGlobalStyles() hook', () => {

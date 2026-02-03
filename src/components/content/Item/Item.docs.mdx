@@ -63,7 +63,7 @@ The `mods` property accepts the following modifiers:
 | has-description-block | `boolean` | Applied when description placement is "block" |
 | has-actions | `boolean` | Applied when actions prop is provided |
 | has-actions-content | `boolean` | Applied when actions have actual content (not just placeholder) |
-| show-actions-on-hover | `boolean` | Applied when showActionsOnHover is true |
+| auto-hide-actions | `boolean` | Applied when autoHideActions is true |
 | preserve-actions-space | `boolean` | Applied when preserveActionsSpace is true |
 | checkbox | `boolean` | Applied when using checkbox icon (icon="checkbox") |
 | selected | `boolean` | Applied when isSelected is true |
@@ -294,12 +294,12 @@ By default, action buttons are focusable. Use `disableActionsFocus={true}` to pr
 
 #### Show Actions on Hover
 
-Use `showActionsOnHover` to hide actions by default and reveal them on hover, focus, or focus-within:
+Use `autoHideActions` to hide actions by default and reveal them on hover, focus, or focus-within:
 
 ```jsx
 <Item 
   icon={<IconFile />}
-  showActionsOnHover={true}
+  autoHideActions={true}
   actions={
     <>
       <Item.Action icon={<IconEdit />} aria-label="Edit" onPress={handleEdit} />
@@ -315,12 +315,12 @@ This provides a cleaner interface while keeping actions easily accessible. By de
 
 #### Preserve Actions Space
 
-Use `preserveActionsSpace` together with `showActionsOnHover` to keep the actions area visible (preserving its width) while only changing the opacity. This prevents content from shifting when actions appear:
+Use `preserveActionsSpace` together with `autoHideActions` to keep the actions area visible (preserving its width) while only changing the opacity. This prevents content from shifting when actions appear:
 
 ```jsx
 <Item 
   icon={<IconFile />}
-  showActionsOnHover={true}
+  autoHideActions={true}
   preserveActionsSpace={true}
   actions={
     <>

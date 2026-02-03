@@ -85,7 +85,7 @@ type OmittedItemProps =
   | 'preserveActionsSpace' // Set internally in TabButton
   | 'disableActionsFocus' // Not used in Tab
   | 'actions' // Tab has its own actions definition
-  | 'showActionsOnHover'; // Tab has its own showActionsOnHover
+  | 'autoHideActions'; // Tab has its own autoHideActions
 
 /** Common styling props for tabs - inherits style props from CubeItemProps */
 export interface TabStyleProps extends Omit<CubeItemProps, OmittedItemProps> {
@@ -97,7 +97,7 @@ export interface TabStyleProps extends Omit<CubeItemProps, OmittedItemProps> {
   /** Visual appearance type. */
   type?: TabType;
   /** Whether to show actions only on hover. */
-  showActionsOnHover?: boolean;
+  autoHideActions?: boolean;
 }
 
 // =============================================================================
@@ -143,7 +143,7 @@ export interface CubeTabsProps
   /** Callback when a tab title is changed. Enables title editing on tabs with isEditable. */
   onTitleChange?: (key: string, newTitle: string) => void;
   /** Whether to show tab actions only on hover. Can be overridden per-tab. */
-  showActionsOnHover?: boolean;
+  autoHideActions?: boolean;
   /**
    * Whether tabs are editable by default.
    * Can be overridden per-tab via Tab's isEditable prop.
@@ -239,6 +239,17 @@ export interface CubeTabsProps
    * @default 'suffix'
    */
   scrollArrowsPosition?: TabsActionPosition;
+  /**
+   * Inline padding for the tab list container.
+   * Sets horizontal padding only (e.g., "2x" → padding: "0 2x").
+   */
+  tabListPadding?: string;
+  /** Custom tasty styles for the TabList sub-element. */
+  tabListStyles?: Styles;
+  /** Custom tasty styles for the Prefix sub-element. */
+  prefixStyles?: Styles;
+  /** Custom tasty styles for the Suffix sub-element. */
+  suffixStyles?: Styles;
 }
 
 export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {

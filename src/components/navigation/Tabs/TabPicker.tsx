@@ -1,4 +1,4 @@
-import { MoreIcon, TrashIcon } from '../../../icons';
+import { CloseIcon, MoreIcon } from '../../../icons';
 import { ItemAction } from '../../actions/ItemAction';
 import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
 
@@ -83,11 +83,11 @@ export function TabPicker({
           textValue={
             typeof tab.title === 'string' ? tab.title : String(tab.key)
           }
-          showActionsOnHover={isDeletable}
+          autoHideActions={isDeletable}
           actions={
             isDeletable ? (
               <ItemAction
-                icon={<TrashIcon />}
+                icon={<CloseIcon />}
                 theme="danger"
                 aria-label="Delete tab"
                 onPress={() => {
