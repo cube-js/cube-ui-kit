@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.108.3
+
+### Patch Changes
+
+- [#1002](https://github.com/cube-js/cube-ui-kit/pull/1002) [`0890e022`](https://github.com/cube-js/cube-ui-kit/commit/0890e022fe1d57907dde6069993cf12821b98826) Thanks [@tenphi](https://github.com/tenphi)! - Fixed a bug where styles would intermittently disappear from elements after garbage collection. The issue occurred when multiple CSS rules were deleted at non-contiguous indices, causing index corruption for remaining rules.
+
 ## 0.108.2
 
 ### Patch Changes
