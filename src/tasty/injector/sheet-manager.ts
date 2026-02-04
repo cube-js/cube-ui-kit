@@ -434,6 +434,14 @@ export class SheetManager {
         deletedIndices && deletedIndices.length > 0
           ? [...deletedIndices].sort((a, b) => a - b)
           : null;
+      const countDeletedBefore = (sorted: number[], idx: number): number => {
+        let shift = 0;
+        for (const delIdx of sorted) {
+          if (delIdx < idx) shift++;
+          else break;
+        }
+        return shift;
+      };
       // Helper function to adjust a single RuleInfo
       const adjustRuleInfo = (info: RuleInfo): void => {
         if (info === deletedRuleInfo) return; // Skip the deleted rule
@@ -446,13 +454,7 @@ export class SheetManager {
         if (sortedDeleted) {
           // Adjust each index based on how many deleted indices are before it
           info.indices = info.indices.map((idx) => {
-            // Count how many deleted indices are less than this index
-            let shift = 0;
-            for (const delIdx of sortedDeleted) {
-              if (delIdx < idx) shift++;
-              else break;
-            }
-            return idx - shift;
+            return idx - countDeletedBefore(sortedDeleted, idx);
           });
         } else {
           // Contiguous deletion: shift indices after the deleted range
@@ -485,11 +487,7 @@ export class SheetManager {
         const ki = entry.info as KeyframesInfo;
         if (ki.sheetIndex !== sheetIndex) continue;
         if (sortedDeleted) {
-          let shift = 0;
-          for (const delIdx of sortedDeleted) {
-            if (delIdx < ki.ruleIndex) shift++;
-            else break;
-          }
+          const shift = countDeletedBefore(sortedDeleted, ki.ruleIndex);
           if (shift > 0) {
             ki.ruleIndex = Math.max(0, ki.ruleIndex - shift);
           }
