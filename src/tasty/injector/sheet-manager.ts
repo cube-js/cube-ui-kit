@@ -360,13 +360,17 @@ export class SheetManager {
       // Sheet ruleCount is now updated immediately after each insertion
       // No need for deferred update logic
 
+      if (insertedIndices.length === 0) {
+        return null;
+      }
+
       return {
         className,
         ruleIndex: firstInsertedIndex ?? 0,
         sheetIndex,
         cssText: this.config.devMode ? insertedRuleTexts : undefined,
         endRuleIndex: lastInsertedIndex ?? firstInsertedIndex ?? 0,
-        indices: insertedIndices.length > 0 ? insertedIndices : undefined,
+        indices: insertedIndices,
       };
     } catch (error) {
       console.warn('Failed to insert CSS rules:', error, {
@@ -426,53 +430,43 @@ export class SheetManager {
     deletedIndices?: number[],
   ): void {
     try {
+      const sortedDeleted =
+        deletedIndices && deletedIndices.length > 0
+          ? [...deletedIndices].sort((a, b) => a - b)
+          : null;
+      const countDeletedBefore = (sorted: number[], idx: number): number => {
+        let shift = 0;
+        for (const delIdx of sorted) {
+          if (delIdx < idx) shift++;
+          else break;
+        }
+        return shift;
+      };
       // Helper function to adjust a single RuleInfo
       const adjustRuleInfo = (info: RuleInfo): void => {
         if (info === deletedRuleInfo) return; // Skip the deleted rule
         if (info.sheetIndex !== sheetIndex) return; // Different sheet
 
-        // If info has exact indices, adjust them
-        if (info.indices && info.indices.length > 0 && deletedIndices) {
-          // Sort deleted indices for efficient binary search
-          const sortedDeleted = [...deletedIndices].sort((a, b) => a - b);
+        if (!info.indices || info.indices.length === 0) {
+          return;
+        }
 
+        if (sortedDeleted) {
           // Adjust each index based on how many deleted indices are before it
           info.indices = info.indices.map((idx) => {
-            // Count how many deleted indices are less than this index
-            let shift = 0;
-            for (const delIdx of sortedDeleted) {
-              if (delIdx < idx) shift++;
-              else break;
-            }
-            return idx - shift;
+            return idx - countDeletedBefore(sortedDeleted, idx);
           });
-
-          // Update ruleIndex and endRuleIndex to match adjusted indices
-          if (info.indices.length > 0) {
-            info.ruleIndex = Math.min(...info.indices);
-            info.endRuleIndex = Math.max(...info.indices);
-          }
         } else {
-          // Fallback: adjust using range logic
-          const infoEnd = (info.endRuleIndex as number) ?? info.ruleIndex;
+          // Contiguous deletion: shift indices after the deleted range
+          info.indices = info.indices.map((idx) =>
+            idx > endIdx ? Math.max(0, idx - deleteCount) : idx,
+          );
+        }
 
-          if (info.ruleIndex > endIdx) {
-            // Rule is after deleted range - shift left
-            info.ruleIndex = Math.max(0, info.ruleIndex - deleteCount);
-            if (info.endRuleIndex != null) {
-              info.endRuleIndex = Math.max(
-                info.ruleIndex,
-                infoEnd - deleteCount,
-              );
-            }
-          } else if (info.ruleIndex <= endIdx && infoEnd >= startIdx) {
-            // Rule overlaps with deleted range (should not normally happen)
-            // Clamp endRuleIndex to avoid pointing into deleted region
-            if (info.endRuleIndex != null) {
-              const newEnd = Math.max(info.ruleIndex, startIdx - 1);
-              info.endRuleIndex = Math.max(info.ruleIndex, newEnd);
-            }
-          }
+        // Update ruleIndex and endRuleIndex to match adjusted indices
+        if (info.indices.length > 0) {
+          info.ruleIndex = Math.min(...info.indices);
+          info.endRuleIndex = Math.max(...info.indices);
         }
       };
 
@@ -492,7 +486,12 @@ export class SheetManager {
       for (const entry of registry.keyframesCache.values()) {
         const ki = entry.info as KeyframesInfo;
         if (ki.sheetIndex !== sheetIndex) continue;
-        if (ki.ruleIndex > endIdx) {
+        if (sortedDeleted) {
+          const shift = countDeletedBefore(sortedDeleted, ki.ruleIndex);
+          if (shift > 0) {
+            ki.ruleIndex = Math.max(0, ki.ruleIndex - shift);
+          }
+        } else if (ki.ruleIndex > endIdx) {
           ki.ruleIndex = Math.max(0, ki.ruleIndex - deleteCount);
         }
       }
@@ -1059,6 +1058,7 @@ export class SheetManager {
               ruleIndex: info.ruleIndex,
               sheetIndex: info.sheetIndex,
             } as RuleInfo,
+            [info.ruleIndex],
           );
         }
       }
