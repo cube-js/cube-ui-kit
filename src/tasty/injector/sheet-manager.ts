@@ -430,6 +430,10 @@ export class SheetManager {
     deletedIndices?: number[],
   ): void {
     try {
+      const sortedDeleted =
+        deletedIndices && deletedIndices.length > 0
+          ? [...deletedIndices].sort((a, b) => a - b)
+          : null;
       // Helper function to adjust a single RuleInfo
       const adjustRuleInfo = (info: RuleInfo): void => {
         if (info === deletedRuleInfo) return; // Skip the deleted rule
@@ -439,10 +443,7 @@ export class SheetManager {
           return;
         }
 
-        if (deletedIndices && deletedIndices.length > 0) {
-          // Sort deleted indices for efficient binary search
-          const sortedDeleted = [...deletedIndices].sort((a, b) => a - b);
-
+        if (sortedDeleted) {
           // Adjust each index based on how many deleted indices are before it
           info.indices = info.indices.map((idx) => {
             // Count how many deleted indices are less than this index
@@ -483,8 +484,7 @@ export class SheetManager {
       for (const entry of registry.keyframesCache.values()) {
         const ki = entry.info as KeyframesInfo;
         if (ki.sheetIndex !== sheetIndex) continue;
-        if (deletedIndices && deletedIndices.length > 0) {
-          const sortedDeleted = [...deletedIndices].sort((a, b) => a - b);
+        if (sortedDeleted) {
           let shift = 0;
           for (const delIdx of sortedDeleted) {
             if (delIdx < ki.ruleIndex) shift++;
