@@ -483,7 +483,17 @@ export class SheetManager {
       for (const entry of registry.keyframesCache.values()) {
         const ki = entry.info as KeyframesInfo;
         if (ki.sheetIndex !== sheetIndex) continue;
-        if (ki.ruleIndex > endIdx) {
+        if (deletedIndices && deletedIndices.length > 0) {
+          const sortedDeleted = [...deletedIndices].sort((a, b) => a - b);
+          let shift = 0;
+          for (const delIdx of sortedDeleted) {
+            if (delIdx < ki.ruleIndex) shift++;
+            else break;
+          }
+          if (shift > 0) {
+            ki.ruleIndex = Math.max(0, ki.ruleIndex - shift);
+          }
+        } else if (ki.ruleIndex > endIdx) {
           ki.ruleIndex = Math.max(0, ki.ruleIndex - deleteCount);
         }
       }

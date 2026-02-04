@@ -497,7 +497,7 @@ export class StyleInjector {
       declarations,
     } as StyleRule;
 
-    // Insert as a global rule; ignore returned info (no tracking/dispose)
+    // Insert as a global rule; no tracking/dispose required
     this.sheetManager.insertGlobalRule(
       registry,
       [rule],
