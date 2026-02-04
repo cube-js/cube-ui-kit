@@ -93,6 +93,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '24px',
     letterSpacing: '0',
     fontWeight: '400',
+    boldFontWeight: '600',
     iconSize: '20px',
   },
   t2: {
@@ -100,6 +101,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '22px',
     letterSpacing: '0',
     fontWeight: '400',
+    boldFontWeight: '600',
     iconSize: '20px',
   },
   t2m: {
@@ -107,6 +109,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '22px',
     letterSpacing: '0',
     fontWeight: '500',
+    boldFontWeight: '600',
     iconSize: '20px',
   },
   t3: {
@@ -114,6 +117,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '20px',
     letterSpacing: '0',
     fontWeight: '400',
+    boldFontWeight: '600',
     iconSize: '18px',
   },
   t3m: {
@@ -121,6 +125,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '20px',
     letterSpacing: '0',
     fontWeight: '500',
+    boldFontWeight: '600',
     iconSize: '18px',
   },
   t4: {
@@ -128,6 +133,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '18px',
     letterSpacing: '0',
     fontWeight: '500',
+    boldFontWeight: '600',
     iconSize: '16px',
   },
   t4m: {
@@ -145,6 +151,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '32px',
     letterSpacing: '0',
     fontWeight: '400',
+    boldFontWeight: '600',
     iconSize: '22px',
   },
   m2: {
@@ -152,6 +159,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '28px',
     letterSpacing: '0',
     fontWeight: '400',
+    boldFontWeight: '600',
     iconSize: '20px',
   },
   m3: {
@@ -159,6 +167,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '24px',
     letterSpacing: '0',
     fontWeight: '400',
+    boldFontWeight: '600',
     iconSize: '20px',
   },
 
@@ -168,6 +177,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '28px',
     letterSpacing: '0',
     fontWeight: '400',
+    boldFontWeight: '600',
     iconSize: '22px',
   },
   p2: {
@@ -175,6 +185,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '24px',
     letterSpacing: '0',
     fontWeight: '400',
+    boldFontWeight: '600',
     iconSize: '20px',
   },
   p3: {
@@ -182,6 +193,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '22px',
     letterSpacing: '0',
     fontWeight: '400',
+    boldFontWeight: '600',
     iconSize: '18px',
   },
   p4: {
@@ -189,6 +201,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: '20px',
     letterSpacing: '0',
     fontWeight: '500',
+    boldFontWeight: '600',
     iconSize: '16px',
   },
 
