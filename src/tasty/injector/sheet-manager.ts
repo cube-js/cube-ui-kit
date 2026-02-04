@@ -360,13 +360,17 @@ export class SheetManager {
       // Sheet ruleCount is now updated immediately after each insertion
       // No need for deferred update logic
 
+      if (insertedIndices.length === 0) {
+        return null;
+      }
+
       return {
         className,
         ruleIndex: firstInsertedIndex ?? 0,
         sheetIndex,
         cssText: this.config.devMode ? insertedRuleTexts : undefined,
         endRuleIndex: lastInsertedIndex ?? firstInsertedIndex ?? 0,
-        indices: insertedIndices.length > 0 ? insertedIndices : undefined,
+        indices: insertedIndices,
       };
     } catch (error) {
       console.warn('Failed to insert CSS rules:', error, {
@@ -431,8 +435,11 @@ export class SheetManager {
         if (info === deletedRuleInfo) return; // Skip the deleted rule
         if (info.sheetIndex !== sheetIndex) return; // Different sheet
 
-        // If info has exact indices, adjust them
-        if (info.indices && info.indices.length > 0 && deletedIndices) {
+        if (!info.indices || info.indices.length === 0) {
+          return;
+        }
+
+        if (deletedIndices && deletedIndices.length > 0) {
           // Sort deleted indices for efficient binary search
           const sortedDeleted = [...deletedIndices].sort((a, b) => a - b);
 
@@ -446,33 +453,17 @@ export class SheetManager {
             }
             return idx - shift;
           });
-
-          // Update ruleIndex and endRuleIndex to match adjusted indices
-          if (info.indices.length > 0) {
-            info.ruleIndex = Math.min(...info.indices);
-            info.endRuleIndex = Math.max(...info.indices);
-          }
         } else {
-          // Fallback: adjust using range logic
-          const infoEnd = (info.endRuleIndex as number) ?? info.ruleIndex;
+          // Contiguous deletion: shift indices after the deleted range
+          info.indices = info.indices.map((idx) =>
+            idx > endIdx ? Math.max(0, idx - deleteCount) : idx,
+          );
+        }
 
-          if (info.ruleIndex > endIdx) {
-            // Rule is after deleted range - shift left
-            info.ruleIndex = Math.max(0, info.ruleIndex - deleteCount);
-            if (info.endRuleIndex != null) {
-              info.endRuleIndex = Math.max(
-                info.ruleIndex,
-                infoEnd - deleteCount,
-              );
-            }
-          } else if (info.ruleIndex <= endIdx && infoEnd >= startIdx) {
-            // Rule overlaps with deleted range (should not normally happen)
-            // Clamp endRuleIndex to avoid pointing into deleted region
-            if (info.endRuleIndex != null) {
-              const newEnd = Math.max(info.ruleIndex, startIdx - 1);
-              info.endRuleIndex = Math.max(info.ruleIndex, newEnd);
-            }
-          }
+        // Update ruleIndex and endRuleIndex to match adjusted indices
+        if (info.indices.length > 0) {
+          info.ruleIndex = Math.min(...info.indices);
+          info.endRuleIndex = Math.max(...info.indices);
         }
       };
 
@@ -1059,6 +1050,7 @@ export class SheetManager {
               ruleIndex: info.ruleIndex,
               sheetIndex: info.sheetIndex,
             } as RuleInfo,
+            [info.ruleIndex],
           );
         }
       }
