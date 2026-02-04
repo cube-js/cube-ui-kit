@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.108.2
+
+### Patch Changes
+
+- [#997](https://github.com/cube-js/cube-ui-kit/pull/997) [`7b19f4d5`](https://github.com/cube-js/cube-ui-kit/commit/7b19f4d55c04ad38444e3dc7615e25412434d22b) Thanks [@tenphi](https://github.com/tenphi)! - Add missing bold weight tokens in presets.
+
 ## 0.108.1
 
 ### Patch Changes
