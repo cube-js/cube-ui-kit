@@ -497,13 +497,17 @@ export class StyleInjector {
       declarations,
     } as StyleRule;
 
-    // Insert as a global rule; no tracking/dispose required
-    this.sheetManager.insertGlobalRule(
+    // Insert as a global rule; only mark injected when insertion succeeds
+    const info = this.sheetManager.insertGlobalRule(
       registry,
       [rule],
       `property:${name}`,
       root,
     );
+
+    if (!info) {
+      return;
+    }
 
     // Track that this property was injected with its normalized definition
     registry.injectedProperties.set(cssName, normalizedDef);
