@@ -27,6 +27,7 @@ const HeaderElement = tasty(LayoutContent, {
     flexGrow: 0,
 
     Inner: {
+      $: '>',
       display: 'grid',
       gridTemplate: `
         "breadcrumbs breadcrumbs breadcrumbs" auto
@@ -40,6 +41,7 @@ const HeaderElement = tasty(LayoutContent, {
     },
 
     Breadcrumbs: {
+      $: '> Inner >',
       gridArea: 'breadcrumbs',
       display: 'flex',
       flow: 'row nowrap',
@@ -50,6 +52,7 @@ const HeaderElement = tasty(LayoutContent, {
     },
 
     Title: {
+      $: '> Inner >',
       gridArea: 'title',
       preset: {
         '': 'h3',
@@ -68,12 +71,14 @@ const HeaderElement = tasty(LayoutContent, {
     },
 
     Suffix: {
+      $: '> Inner >',
       gridArea: 'suffix',
       display: 'flex',
       placeItems: 'center',
     },
 
     Extra: {
+      $: '> Inner >',
       gridArea: 'extra',
       display: 'flex',
       placeItems: 'center',
@@ -83,6 +88,7 @@ const HeaderElement = tasty(LayoutContent, {
     },
 
     Subtitle: {
+      $: '> Inner >',
       gridArea: 'subtitle',
       preset: 't3',
       color: '#dark-02',
