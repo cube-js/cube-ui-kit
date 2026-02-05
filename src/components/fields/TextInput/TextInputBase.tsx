@@ -117,7 +117,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   },
 
   ValidationIcon: {
-    $: '> Suffix >',
+    $: '> Suffix > State >',
     display: 'grid',
     placeItems: 'center',
     width: {
