@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.108.4
+
+### Patch Changes
+
+- [#1004](https://github.com/cube-js/cube-ui-kit/pull/1004) [`7032020f`](https://github.com/cube-js/cube-ui-kit/commit/7032020f6ce7676a8992f0bf932ed581a4faa533) Thanks [@tenphi](https://github.com/tenphi)! - Fix style leaking in LayoutHeader and TextInput components by adding more specific CSS selectors to prevent styles from affecting unintended child elements.
+
 ## 0.108.3
 
 ### Patch Changes
