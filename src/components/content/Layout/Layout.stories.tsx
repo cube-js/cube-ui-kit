@@ -1348,7 +1348,12 @@ export const OverflowControl: Story = {
 
     return (
       <Block height="300px" padding="4x" fill="#dark.04">
-        <Layout height="100%" fill="#white" doNotOverflow={doNotOverflow}>
+        <Layout
+          height="100%"
+          width="300px"
+          fill="#white"
+          doNotOverflow={doNotOverflow}
+        >
           <Layout.Toolbar>
             <Button onPress={() => setDoNotOverflow(!doNotOverflow)}>
               {doNotOverflow ? 'Allow Overflow' : 'Prevent Overflow'}
@@ -1357,22 +1362,21 @@ export const OverflowControl: Story = {
               doNotOverflow: <b>{doNotOverflow ? 'true' : 'false'}</b>
             </Text>
           </Layout.Toolbar>
-          <Layout.Content>
-            <Block
-              position="relative"
-              width="150%"
-              height="150px"
-              fill="#purple.2"
-              radius="1r"
-              padding="1x"
-            >
-              <Text>
-                This block is wider than the Layout. Toggle the button to see
-                the difference between overflow: visible (default) and overflow:
-                hidden.
-              </Text>
-            </Block>
-          </Layout.Content>
+          <Block
+            position="relative"
+            width="150%"
+            height="150px"
+            fill="#purple.2"
+            radius="1r"
+            padding="1x"
+            margin="1x"
+          >
+            <Text>
+              This block is wider than the Layout. Toggle the button to see the
+              difference between overflow: visible (default) and overflow:
+              hidden.
+            </Text>
+          </Block>
         </Layout>
       </Block>
     );
