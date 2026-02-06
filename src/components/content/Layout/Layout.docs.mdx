@@ -42,6 +42,12 @@ Customizes the root Layout element.
 
 These properties allow direct style application: `width`, `height`, `padding`, `gap`, `fill`, `border`, `flow`.
 
+### Overflow Control
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| doNotOverflow | `boolean` | `false` | When true, applies `overflow: hidden` to the root element. By default, overflow is visible. |
+
 ### Inner Element Properties
 
 | Property | Type | Description |
@@ -833,7 +839,7 @@ function ApplicationShell() {
 
 ### Overflow-Safe Design
 
-Layout uses a two-element architecture (wrapper + content) to ensure content never overflows its container. The wrapper has `overflow: hidden` while the inner element has absolute positioning with insets that adjust based on panel sizes.
+Layout uses a two-element architecture (wrapper + content). The wrapper has `overflow: visible` by default, allowing content to be visible outside its boundaries. Use `doNotOverflow` prop to apply `overflow: hidden` when you need to clip content. The inner element has absolute positioning with insets that adjust based on panel sizes.
 
 ### Panel Registration
 
