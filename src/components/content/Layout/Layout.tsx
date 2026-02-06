@@ -64,7 +64,6 @@ const LayoutElement = tasty({
       // .base-class[data-hover] > [data-element="Inner"] { ...}
       // Direct child selector required for nested layouts
       $: '>',
-      zIndex: 0,
       container: 'layout / inline-size',
       position: 'absolute',
       inset: '$inset-top $inset-right $inset-bottom $inset-left',
@@ -336,11 +335,6 @@ function LayoutInner(
         </Alert>
       ) : (
         <>
-          {/* Container for panels to portal into - renders panels outside the Inner element */}
-          <div
-            ref={layoutRefs?.setPanelContainer}
-            data-element="PanelContainer"
-          />
           {/* All children go inside the Inner element - panels will portal themselves out */}
           <div
             ref={combinedInnerRef}
@@ -350,6 +344,11 @@ function LayoutInner(
           >
             {children}
           </div>
+          {/* Container for panels to portal into - rendered after Inner so panels paint on top via DOM order */}
+          <div
+            ref={layoutRefs?.setPanelContainer}
+            data-element="PanelContainer"
+          />
         </>
       )}
     </LayoutElement>
