@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.108.5
+
+### Patch Changes
+
+- [#1009](https://github.com/cube-js/cube-ui-kit/pull/1009) [`f6efe1dc`](https://github.com/cube-js/cube-ui-kit/commit/f6efe1dc1c1b5795d7d90bf0c7f5b9df3be5f43c) Thanks [@tenphi](https://github.com/tenphi)! - Fix TextArea controlled state handling to prevent cursor position reset when typing
+
+- [#1006](https://github.com/cube-js/cube-ui-kit/pull/1006) [`93a65944`](https://github.com/cube-js/cube-ui-kit/commit/93a65944a0697e1b4c6a7a0288b397cebbdad9f6) Thanks [@tenphi](https://github.com/tenphi)! - Fix button reset styles by moving appearance, touchAction, and textDecoration from global reset to individual component styles
+
 ## 0.108.4
 
 ### Patch Changes
