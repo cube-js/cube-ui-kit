@@ -238,3 +238,30 @@ export const Controlled = () => {
     />
   );
 };
+
+export const ControlledAutoSize = () => {
+  const [value, setValue] = useState('Line 1');
+
+  return (
+    <>
+      <TextArea
+        autoSize
+        label="Controlled AutoSize TextArea"
+        rows={2}
+        maxRows={6}
+        value={value}
+        description="Height adjusts when value changes programmatically"
+        onChange={setValue}
+      />
+      <button
+        style={{ marginTop: '8px' }}
+        onClick={() => setValue('Line 1\nLine 2\nLine 3\nLine 4')}
+      >
+        Add lines programmatically
+      </button>
+      <button style={{ marginTop: '8px' }} onClick={() => setValue('Line 1')}>
+        Reset to single line
+      </button>
+    </>
+  );
+};

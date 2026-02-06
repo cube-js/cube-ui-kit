@@ -51,6 +51,7 @@ function TextArea(
     mods,
     labelProps: userLabelProps,
     inputRef: propsInputRef,
+    value,
     ...otherProps
   } = props;
 
@@ -101,6 +102,7 @@ function TextArea(
   let { labelProps, inputProps } = useTextField(
     {
       ...otherProps,
+      value,
       isDisabled,
       isReadOnly,
       isRequired,
@@ -128,6 +130,13 @@ function TextArea(
 
     return () => resizeObserver.disconnect();
   }, [autoSize, inputRef?.current]);
+
+  // Adjust height when value changes programmatically (controlled mode with autoSize)
+  useEnvironmentalEffect(() => {
+    if (autoSize && inputRef.current) {
+      adjustHeight();
+    }
+  }, [value]);
 
   return (
     <TextInputBase
