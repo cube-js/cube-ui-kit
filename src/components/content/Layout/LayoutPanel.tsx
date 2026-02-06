@@ -127,7 +127,7 @@ const ResizeHandlerElement = tasty({
   qa: 'PanelResizeHandler',
   styles: {
     position: 'absolute',
-    zIndex: 11, // Above panel (zIndex: 10)
+    zIndex: 4,
 
     // Handler size
     width: {
