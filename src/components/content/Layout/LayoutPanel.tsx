@@ -60,7 +60,6 @@ const PanelElement = tasty({
   styles: {
     container: 'panel / inline-size',
     position: 'absolute',
-    zIndex: 3,
     display: 'flex',
     flow: 'column',
     overflow: 'hidden',
@@ -127,7 +126,6 @@ const ResizeHandlerElement = tasty({
   qa: 'PanelResizeHandler',
   styles: {
     position: 'absolute',
-    zIndex: 4,
 
     // Handler size
     width: {
@@ -269,7 +267,6 @@ const OverlayBackdrop = tasty({
   styles: {
     position: 'absolute',
     inset: 0,
-    zIndex: 2, // Below panel (10) but above content
     // fill: '#white.2',
     backdropFilter: 'invert(.15)',
     cursor: 'pointer',

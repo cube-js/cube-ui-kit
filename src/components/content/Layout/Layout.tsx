@@ -44,7 +44,10 @@ const LayoutElement = tasty({
   styles: {
     position: 'relative',
     display: 'block',
-    overflow: 'hidden',
+    overflow: {
+      '': 'visible',
+      'do-not-overflow': 'hidden',
+    },
     flexGrow: 1,
     placeSelf: 'stretch',
     height: {
@@ -64,13 +67,11 @@ const LayoutElement = tasty({
       // .base-class[data-hover] > [data-element="Inner"] { ...}
       // Direct child selector required for nested layouts
       $: '>',
-      zIndex: 0,
       container: 'layout / inline-size',
       position: 'absolute',
       inset: '$inset-top $inset-right $inset-bottom $inset-left',
       display: 'flex',
       flow: 'column',
-      overflow: 'hidden',
       placeContent: 'stretch',
       placeItems: 'stretch',
       // Disable transition during panel resize for snappy feedback
@@ -114,6 +115,11 @@ export interface CubeLayoutProps
    * @internal Force show dev warning even in production (for storybook testing)
    */
   _forceShowDevWarning?: boolean;
+  /**
+   * When true, applies overflow: hidden to the root element.
+   * By default, overflow is visible.
+   */
+  doNotOverflow?: boolean;
 }
 
 function LayoutInner(
@@ -140,6 +146,7 @@ function LayoutInner(
     innerRef: innerRefProp,
     innerProps,
     _forceShowDevWarning,
+    doNotOverflow,
     ...otherProps
   } = props;
 
@@ -270,8 +277,17 @@ function LayoutInner(
       'auto-height': isAutoHeight && !isCollapsed,
       collapsed: isCollapsed,
       vertical: isVertical,
+      'do-not-overflow': doNotOverflow,
     }),
-    [isDragging, isReady, hasTransition, isAutoHeight, isCollapsed, isVertical],
+    [
+      isDragging,
+      isReady,
+      hasTransition,
+      isAutoHeight,
+      isCollapsed,
+      isVertical,
+      doNotOverflow,
+    ],
   );
 
   // Combine local ref with forwarded ref
@@ -336,11 +352,6 @@ function LayoutInner(
         </Alert>
       ) : (
         <>
-          {/* Container for panels to portal into - renders panels outside the Inner element */}
-          <div
-            ref={layoutRefs?.setPanelContainer}
-            data-element="PanelContainer"
-          />
           {/* All children go inside the Inner element - panels will portal themselves out */}
           <div
             ref={combinedInnerRef}
@@ -350,6 +361,11 @@ function LayoutInner(
           >
             {children}
           </div>
+          {/* Container for panels to portal into - rendered after Inner so panels paint on top via DOM order */}
+          <div
+            ref={layoutRefs?.setPanelContainer}
+            data-element="PanelContainer"
+          />
         </>
       )}
     </LayoutElement>
