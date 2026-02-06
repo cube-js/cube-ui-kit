@@ -1,4 +1,3 @@
-import { useControlledState } from '@react-stately/utils';
 import {
   ForwardedRef,
   forwardRef,
@@ -58,28 +57,8 @@ function TextArea(
   rows = Math.max(rows, 1);
   maxRows = Math.max(maxRows, rows);
 
-  let [inputValue, setInputValue] = useControlledState<string>(
-    props.value,
-    props.defaultValue,
-    () => {},
-  );
   let localInputRef = useRef<HTMLTextAreaElement>(null);
   let inputRef = propsInputRef ?? localInputRef;
-
-  let { labelProps, inputProps } = useTextField(
-    {
-      ...otherProps,
-      isDisabled,
-      isReadOnly,
-      isRequired,
-      onChange: chain(onChange, setInputValue),
-      inputElementType: 'textarea',
-    },
-    inputRef,
-  );
-
-  // Merge user-provided labelProps with aria labelProps
-  const mergedLabelProps = mergeProps(labelProps, userLabelProps);
 
   const adjustHeight = useEvent(() => {
     const textarea = inputRef.current;
@@ -119,15 +98,28 @@ function TextArea(
     textarea.style.height = `${totalHeight}px`;
   });
 
+  let { labelProps, inputProps } = useTextField(
+    {
+      ...otherProps,
+      isDisabled,
+      isReadOnly,
+      isRequired,
+      // Chain adjustHeight into onChange so the textarea resizes on every input.
+      // We avoid useControlledState here because its forceUpdate() in controlled mode
+      // causes an intermediate render with stale props, resetting the cursor position.
+      onChange: chain(onChange, adjustHeight),
+      inputElementType: 'textarea',
+    },
+    inputRef,
+  );
+
+  // Merge user-provided labelProps with aria labelProps
+  const mergedLabelProps = mergeProps(labelProps, userLabelProps);
+
   const useEnvironmentalEffect =
     typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
-  // Call adjustHeight on content change
-  useEnvironmentalEffect(() => {
-    adjustHeight();
-  }, [inputValue]);
-
-  // Also call it on element resize as that can affect wrapping
+  // Also call adjustHeight on element resize as that can affect wrapping
   useEnvironmentalEffect(() => {
     if (!autoSize || !inputRef.current) return;
 

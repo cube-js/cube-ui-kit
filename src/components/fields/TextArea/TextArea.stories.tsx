@@ -1,5 +1,6 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
+import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -223,4 +224,17 @@ AutoSizeMaxRows.args = {
   maxRows: 3,
   defaultValue: '1\n2\n3\n4',
   rows: 2,
+};
+
+export const Controlled = () => {
+  const [value, setValue] = useState('Initial controlled value');
+
+  return (
+    <TextArea
+      label="Controlled TextArea"
+      value={value}
+      description={`Character count: ${value.length}`}
+      onChange={setValue}
+    />
+  );
 };
