@@ -210,6 +210,8 @@ export const DEFAULT_BUTTON_STYLES = {
   },
   textDecoration: 'none',
   reset: 'button',
+  appearance: 'none',
+  touchAction: 'manipulation',
   outline: 0,
   outlineOffset: 1,
   padding: {

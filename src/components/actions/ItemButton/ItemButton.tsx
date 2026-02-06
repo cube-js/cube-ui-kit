@@ -33,6 +33,9 @@ const StyledItem = tasty(Item, {
   theme: 'default',
   styles: {
     reset: 'button',
+    appearance: 'none',
+    touchAction: 'manipulation',
+    textDecoration: 'none',
     placeContent: 'center stretch',
   },
 });
