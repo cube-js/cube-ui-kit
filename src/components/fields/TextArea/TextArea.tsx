@@ -104,9 +104,6 @@ function TextArea(
       isDisabled,
       isReadOnly,
       isRequired,
-      // Chain adjustHeight into onChange so the textarea resizes on every input.
-      // We avoid useControlledState here because its forceUpdate() in controlled mode
-      // causes an intermediate render with stale props, resetting the cursor position.
       onChange: chain(onChange, adjustHeight),
       inputElementType: 'textarea',
     },
