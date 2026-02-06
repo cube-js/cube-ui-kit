@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.109.0
+
+### Minor Changes
+
+- [#1010](https://github.com/cube-js/cube-ui-kit/pull/1010) [`9f35c79e`](https://github.com/cube-js/cube-ui-kit/commit/9f35c79e171255e8a057a732e0247c5afd7a439c) Thanks [@tenphi](https://github.com/tenphi)! - - Fix Layout component z-index stacking by using DOM order instead of explicit z-index values
+  - Add `doNotOverflow` prop to Layout component to control overflow behavior
+  - **BREAKING**: Layout root element now defaults to `overflow: visible` instead of `overflow: hidden`. Use `doNotOverflow` prop to restore the previous behavior.
+
 ## 0.108.5
 
 ### Patch Changes
