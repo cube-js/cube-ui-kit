@@ -74,9 +74,12 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     '': '#white #primary',
     hovered: '#white #primary-text',
     pressed: '#white #primary',
-    disabled: '#primary-desaturated.5',
+    disabled: '#primary-desaturated.6',
   },
-  color: '#white',
+  color: {
+    '': '#white',
+    disabled: '#white.6',
+  },
 } as const;
 
 export const DEFAULT_SECONDARY_STYLES: Styles = {
@@ -210,9 +213,12 @@ export const DANGER_PRIMARY_STYLES: Styles = {
     '': '#white #danger',
     hovered: '#white #danger-text',
     pressed: '#white #danger',
-    disabled: '#danger-desaturated.5',
+    disabled: '#danger-desaturated.6',
   },
-  color: '#white',
+  color: {
+    '': '#white',
+    disabled: '#white.6',
+  },
 } as const;
 
 export const DANGER_SECONDARY_STYLES: Styles = {
@@ -340,9 +346,12 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
     '': '#white #success',
     hovered: '#white #success-text',
     pressed: '#white #success',
-    disabled: '#success-desaturated.5',
+    disabled: '#success-desaturated.6',
   },
-  color: '#white',
+  color: {
+    '': '#white',
+    disabled: '#white.6',
+  },
 } as const;
 
 export const SUCCESS_SECONDARY_STYLES: Styles = {
@@ -470,9 +479,12 @@ export const WARNING_PRIMARY_STYLES: Styles = {
     '': '#white #warning',
     hovered: '#white #warning-text',
     pressed: '#white #warning',
-    disabled: '#warning-desaturated.5',
+    disabled: '#warning-desaturated.6',
   },
-  color: '#white',
+  color: {
+    '': '#white',
+    disabled: '#white.6',
+  },
 } as const;
 
 export const WARNING_SECONDARY_STYLES: Styles = {
@@ -600,9 +612,12 @@ export const NOTE_PRIMARY_STYLES: Styles = {
     '': '#white #note',
     hovered: '#white #note-text',
     pressed: '#white #note',
-    disabled: '#note-desaturated.5',
+    disabled: '#note-desaturated.6',
   },
-  color: '#white',
+  color: {
+    '': '#white',
+    disabled: '#white.6',
+  },
 } as const;
 
 export const NOTE_SECONDARY_STYLES: Styles = {
@@ -730,11 +745,11 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
     '': '#white #primary',
     hovered: '#white #primary-text',
     pressed: '#white #primary',
-    disabled: '#primary-desaturated.5',
+    disabled: '#primary-desaturated.6',
   },
   color: {
     '': '#white',
-    disabled: '#white.4',
+    disabled: '#white.6',
   },
 } as const;
 
@@ -751,7 +766,7 @@ export const SPECIAL_SECONDARY_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    disabled: '#white.4',
+    disabled: '#white.5',
   },
 } as const;
 
@@ -770,7 +785,7 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    disabled: '#white.4',
+    disabled: '#white.5',
   },
 } as const;
 
@@ -787,7 +802,7 @@ export const SPECIAL_NEUTRAL_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    disabled: '#white.4',
+    disabled: '#white.5',
   },
 } as const;
 
@@ -810,7 +825,7 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
     '': '#primary-text',
     hovered: '#primary',
     'pressed & hovered': '#primary-text',
-    disabled: '#white.4',
+    disabled: '#white.5',
   },
 } as const;
 
@@ -826,7 +841,7 @@ export const SPECIAL_LINK_STYLES: Styles = {
   color: {
     '': '#white',
     'hovered & !pressed': '#white.9',
-    disabled: '#white.4',
+    disabled: '#white.5',
   },
 } as const;
 
@@ -839,7 +854,7 @@ export const SPECIAL_ITEM_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    disabled: '#white.4',
+    disabled: '#white.5',
   },
 } as const;
 
