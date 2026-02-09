@@ -142,4 +142,8 @@ export const COLOR_TOKENS: Styles = {
   '#disabled': '#dark-01.25',
   '#disabled-text': '#dark-01.25',
   '#disabled-bg': '#dark-05.2',
+
+  // Scrollbar
+  '#scrollbar-thumb-color': '#dark-03',
+  '#scrollbar-track-color': 'transparent',
 };
