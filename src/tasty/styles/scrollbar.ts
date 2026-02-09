@@ -38,7 +38,8 @@ export function scrollbarStyle({ scrollbar, overflow }: ScrollbarStyleProps) {
     style['scrollbar-width'] = 'thin';
   } else if (mods.includes('none')) {
     style['scrollbar-width'] = 'none';
-    style['scrollbar-color'] = 'transparent transparent';
+    // Remove scrollbar-color as it's not needed when scrollbar is hidden
+    delete style['scrollbar-color'];
     // Also hide WebKit scrollbars
     style['&::-webkit-scrollbar'] = {
       width: '0px',

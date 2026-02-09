@@ -20,7 +20,7 @@ describe('scrollbarStyle', () => {
   it('handles "none" modifier', () => {
     const result = scrollbarStyle({ scrollbar: 'none' });
     expect(result['scrollbar-width']).toBe('none');
-    expect((result as any)['scrollbar-color']).toBe('transparent transparent');
+    expect((result as any)['scrollbar-color']).toBeUndefined();
     expect(result['&::-webkit-scrollbar']['width']).toBe('0px');
   });
 

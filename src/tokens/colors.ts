@@ -69,7 +69,7 @@ export const COLOR_TOKENS: Styles = {
   '#focus': okhsl(PURPLE_HUE, 69, 71),
 
   // Text
-  '#text': okhsl(PURPLE_HUE, 27, 41),
+  '#text': okhsl(PURPLE_HUE, 30, 31),
 
   // Dark
   '#dark': okhsl(PURPLE_HUE, 38, 12),
