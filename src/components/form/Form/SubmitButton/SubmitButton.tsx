@@ -33,7 +33,9 @@ function SubmitButton(
       type="primary"
       htmlType="submit"
       isLoading={form?.isSubmitting}
-      isDisabled={isSomethingDisabled ? true : form?.isInvalid}
+      isDisabled={
+        isSomethingDisabled || form?.isSubmitting ? true : form?.isInvalid
+      }
       {...otherProps}
     />
   );
