@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.110.0
+
+### Minor Changes
+
+- [#1014](https://github.com/cube-js/cube-ui-kit/pull/1014) [`a7047d35`](https://github.com/cube-js/cube-ui-kit/commit/a7047d351138b43f92bd5c464d504d05ff5fd985) Thanks [@tenphi](https://github.com/tenphi)! - Add `#primary`, `#primary-text`, `#primary-bg`, `#primary-icon`, and `#primary-disabled` semantic color tokens. Internal components now use these primary tokens instead of purple variants. The original `#purple*` tokens remain available as aliases for backward compatibility.
+
+### Patch Changes
+
+- [#1012](https://github.com/cube-js/cube-ui-kit/pull/1012) [`cd316981`](https://github.com/cube-js/cube-ui-kit/commit/cd3169814b6fa916caf833b7cf27d8e6fa5fc6a0) Thanks [@tenphi](https://github.com/tenphi)! - Fix scrollbar color when scrollbar is hidden and add scrollbar color tokens (`#scrollbar-thumb-color`, `#scrollbar-track-color`)
+
+- [#1013](https://github.com/cube-js/cube-ui-kit/pull/1013) [`9da597e0`](https://github.com/cube-js/cube-ui-kit/commit/9da597e042170552526c3a09f7a5a33355214758) Thanks [@tenphi](https://github.com/tenphi)! - Allow partial chunking for styles with `@starting-style`: top-level styles are still combined into a single chunk (required by CSS cascade), but sub-element styles are now kept in a separate chunk for better caching.
+
 ## 0.109.0
 
 ### Minor Changes
