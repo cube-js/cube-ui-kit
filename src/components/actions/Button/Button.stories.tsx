@@ -174,7 +174,7 @@ const TypeStatesRow = ({
   type: CubeButtonProps['type'];
   theme?: CubeButtonProps['theme'];
 }) => (
-  <Space flow="column" gap="1x">
+  <Space flow="column">
     <span
       style={{
         fontSize: 12,
