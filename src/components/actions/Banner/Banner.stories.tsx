@@ -29,7 +29,7 @@ Default.args = {
  */
 export const Themes: StoryFn<BannerProps> = () => {
   return (
-    <Space direction="vertical" gap="1x" width="100%">
+    <Space direction="vertical" width="100%">
       <Banner
         theme="danger"
         actions={<Banner.Action>Update Payment</Banner.Action>}

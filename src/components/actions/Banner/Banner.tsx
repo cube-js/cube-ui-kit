@@ -112,6 +112,8 @@ export function Banner(props: BannerProps) {
 
   const defaultIcon = useMemo(() => DEFAULT_ICONS[theme], [theme]);
 
+  const hasActions = !!(actions || isDismissible);
+
   return (
     <BannerElement
       qa="Banner"
@@ -122,16 +124,18 @@ export function Banner(props: BannerProps) {
       icon={icon ?? defaultIcon}
       {...rest}
       actions={
-        <>
-          {actions}
-          {isDismissible && (
-            <Item.Action
-              icon={<IconX />}
-              tooltip="Hide banner"
-              onPress={onDismissEvent}
-            />
-          )}
-        </>
+        hasActions ? (
+          <>
+            {actions}
+            {isDismissible && (
+              <Item.Action
+                icon={<IconX />}
+                tooltip="Hide banner"
+                onPress={onDismissEvent}
+              />
+            )}
+          </>
+        ) : undefined
       }
     >
       {children}
