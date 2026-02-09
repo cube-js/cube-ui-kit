@@ -900,7 +900,7 @@ export const tastyDebug = {
       );
       if (registry?.injectedProperties) {
         properties = Array.from(
-          registry.injectedProperties as Set<string>,
+          (registry.injectedProperties as Map<string, string>).keys(),
         ).sort();
       }
     } catch {
