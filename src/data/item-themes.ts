@@ -74,11 +74,11 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     '': '#white #primary',
     hovered: '#white #primary-text',
     pressed: '#white #primary',
-    disabled: '#primary-desaturated.6',
+    disabled: '#white #primary-disabled',
   },
   color: {
     '': '#white',
-    disabled: '#white.6',
+    disabled: '#white',
   },
 } as const;
 
@@ -745,11 +745,11 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
     '': '#white #primary',
     hovered: '#white #primary-text',
     pressed: '#white #primary',
-    disabled: '#primary-desaturated.6',
+    disabled: '#primary-disabled.5',
   },
   color: {
     '': '#white',
-    disabled: '#white.6',
+    disabled: '#white.4',
   },
 } as const;
 
@@ -766,7 +766,7 @@ export const SPECIAL_SECONDARY_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    disabled: '#white.5',
+    disabled: '#white.4',
   },
 } as const;
 
@@ -785,7 +785,7 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    disabled: '#white.5',
+    disabled: '#white.4',
   },
 } as const;
 
@@ -802,7 +802,7 @@ export const SPECIAL_NEUTRAL_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    disabled: '#white.5',
+    disabled: '#white.4',
   },
 } as const;
 
@@ -825,7 +825,7 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
     '': '#primary-text',
     hovered: '#primary',
     'pressed & hovered': '#primary-text',
-    disabled: '#white.5',
+    disabled: '#white.4',
   },
 } as const;
 
@@ -841,7 +841,7 @@ export const SPECIAL_LINK_STYLES: Styles = {
   color: {
     '': '#white',
     'hovered & !pressed': '#white.9',
-    disabled: '#white.5',
+    disabled: '#white.4',
   },
 } as const;
 
@@ -854,7 +854,7 @@ export const SPECIAL_ITEM_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    disabled: '#white.5',
+    disabled: '#white.4',
   },
 } as const;
 

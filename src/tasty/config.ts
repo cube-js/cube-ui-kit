@@ -249,6 +249,26 @@ export const INTERNAL_PROPERTIES: Record<string, PropertyDefinition> = {
     inherits: false,
     initialValue: 'transparent',
   },
+  '#white': {
+    syntax: '<color>',
+    inherits: false,
+    initialValue: 'rgb(255 255 255 / 1)',
+  },
+  '$white-color-rgb': {
+    syntax: '<number> <number> <number>',
+    inherits: false,
+    initialValue: '255 255 255',
+  },
+  '#black': {
+    syntax: '<color>',
+    inherits: false,
+    initialValue: 'rgb(0 0 0 / 1)',
+  },
+  '$black-color-rgb': {
+    syntax: '<number> <number> <number>',
+    inherits: false,
+    initialValue: '0 0 0',
+  },
 };
 
 // Global injector instance key
