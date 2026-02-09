@@ -137,6 +137,7 @@ export const COLOR_TOKENS: Styles = {
   // Border
   '#border': okhsl(PURPLE_HUE, 13, 90),
 
+  // Placeholder
   '#placeholder': '#dark-04',
 
   // Semantic colors
