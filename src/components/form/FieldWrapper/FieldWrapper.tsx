@@ -139,7 +139,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
 
           {tooltip ? (
             <Item
-              icon={<InfoCircleIcon color="#purple-text" />}
+              icon={<InfoCircleIcon color="#primary-text" />}
               size="inline"
               tooltip={
                 typeof tooltip === 'string' ? tooltip : { title: tooltip }

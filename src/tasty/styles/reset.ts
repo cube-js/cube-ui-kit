@@ -1,8 +1,8 @@
 import { parseStyle } from '../utils/styles';
 
 const AUTOFILL_STYLES = {
-  'caret-color': 'var(--purple-color)',
-  '-webkit-text-fill-color': 'var(--purple-color)',
+  'caret-color': 'var(--primary-color)',
+  '-webkit-text-fill-color': 'var(--primary-color)',
   '-webkit-box-shadow': '0 0 0px 9999rem var(--white-color) inset',
   'box-shadow': '0 0 0px 9999rem var(--white-color) inset',
   'font-family': 'inherit',

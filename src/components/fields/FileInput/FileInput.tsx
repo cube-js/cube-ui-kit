@@ -40,13 +40,13 @@ const FileInputElement = tasty(Action, {
     placeItems: 'center start',
     fill: {
       '': '#white',
-      'drag-hover': '#purple.16',
-      ':hover': '#purple.08',
+      'drag-hover': '#primary.16',
+      ':hover': '#primary.08',
       disabled: '#dark.04',
     },
     border: {
       '': true,
-      ':focus-within & :focus-visible': '#purple-text',
+      ':focus-within & :focus-visible': '#primary-text',
     },
     radius: true,
     cursor: '$pointer',
@@ -57,11 +57,11 @@ const FileInputElement = tasty(Action, {
       radius: true,
       border: {
         '': '#clear',
-        pressed: '#purple.30',
+        pressed: '#primary.30',
       },
-      fill: '#purple.12',
+      fill: '#primary.12',
       color: {
-        '': '#purple',
+        '': '#primary',
         disabled: '#dark.30',
       },
       padding: '.5x (1.5x - 1px)',

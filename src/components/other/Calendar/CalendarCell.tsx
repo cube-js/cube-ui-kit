@@ -19,15 +19,15 @@ const CalendarButtonElement = tasty({
     width: '3x',
     height: '3x',
     fill: {
-      '': '#purple.0',
-      ':hover': '#purple.16',
-      pressed: '#purple.10',
+      '': '#primary.0',
+      ':hover': '#primary.16',
+      pressed: '#primary.10',
 
-      selected: '#purple',
-      'selected & :hover': '#purple-text',
-      'selected & pressed': '#purple',
+      selected: '#primary',
+      'selected & :hover': '#primary-text',
+      'selected & pressed': '#primary',
 
-      'disabled | unavailable': '#purple.0',
+      'disabled | unavailable': '#primary.0',
     },
     color: {
       '': '#dark',
@@ -35,8 +35,8 @@ const CalendarButtonElement = tasty({
       'disabled | unavailable': '#dark.30',
     },
     outline: {
-      '': '1bw #purple-text.0',
-      focused: '1bw #purple-text',
+      '': '1bw #primary-text.0',
+      focused: '1bw #primary-text',
     },
     outlineOffset: 0.5,
     radius: true,

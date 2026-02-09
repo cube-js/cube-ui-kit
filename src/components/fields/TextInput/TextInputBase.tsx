@@ -66,7 +66,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     '': true,
     valid: '#success-text.50',
     invalid: '#danger-text.50',
-    focused: '#purple-text',
+    focused: '#primary-text',
     'valid & focused': '#success-text',
     'invalid & focused': '#danger-text',
     disabled: true,

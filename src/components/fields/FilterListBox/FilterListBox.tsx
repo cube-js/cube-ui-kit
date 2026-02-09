@@ -61,7 +61,7 @@ const FilterListBoxWrapperElement = tasty({
     },
     border: {
       '': true,
-      focused: '#purple-text',
+      focused: '#primary-text',
       valid: '#success-text.50',
       invalid: '#danger-text.50',
       disabled: true,

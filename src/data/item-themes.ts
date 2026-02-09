@@ -62,39 +62,39 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
 // ---------- DEFAULT THEME ----------
 export const DEFAULT_PRIMARY_STYLES: Styles = {
   outline: {
-    '': '0 #purple-text.0',
-    focused: '1bw #purple-text',
+    '': '0 #primary-text.0',
+    focused: '1bw #primary-text',
   },
   border: {
     '': '#clear',
-    pressed: '#purple-text',
-    focused: '#purple-text',
+    pressed: '#primary-text',
+    focused: '#primary-text',
     disabled: '#clear',
   },
   fill: {
-    '': '#purple',
-    hovered: '#purple-text',
-    pressed: '#purple',
-    disabled: '#purple-disabled',
+    '': '#primary',
+    hovered: '#primary-text',
+    pressed: '#primary',
+    disabled: '#primary-disabled',
   },
   color: '#white',
 } as const;
 
 export const DEFAULT_SECONDARY_STYLES: Styles = {
   border: {
-    '': '#purple.15',
-    pressed: '#purple.3',
-    focused: '#purple-text',
+    '': '#primary.15',
+    pressed: '#primary.3',
+    focused: '#primary-text',
     disabled: '#border',
   },
   fill: {
-    '': '#purple.10',
-    hovered: '#purple.16',
-    pressed: '#purple-text.10',
+    '': '#primary.10',
+    hovered: '#primary.16',
+    pressed: '#primary-text.10',
     disabled: '#dark.04',
   },
   color: {
-    '': '#purple',
+    '': '#primary',
     disabled: '#dark-04',
   },
 } as const;
@@ -102,7 +102,7 @@ export const DEFAULT_SECONDARY_STYLES: Styles = {
 export const DEFAULT_OUTLINE_STYLES: Styles = {
   border: {
     '': true,
-    focused: '#purple-text',
+    focused: '#primary-text',
     disabled: true,
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
@@ -125,7 +125,7 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
 export const DEFAULT_NEUTRAL_STYLES: Styles = {
   border: {
     '': '#clear',
-    focused: '#purple-text',
+    focused: '#primary-text',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
@@ -147,33 +147,33 @@ export const DEFAULT_NEUTRAL_STYLES: Styles = {
 export const DEFAULT_CLEAR_STYLES: Styles = {
   border: {
     '': '#clear',
-    pressed: '#purple-text.10',
-    focused: '#purple-text',
+    pressed: '#primary-text.10',
+    focused: '#primary-text',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
-    '': '#purple.0',
-    hovered: '#purple.16',
-    'pressed | (selected & !hovered)': '#purple.10',
+    '': '#primary.0',
+    hovered: '#primary.16',
+    'pressed | (selected & !hovered)': '#primary.10',
   },
   color: {
-    '': '#purple-text',
+    '': '#primary-text',
     disabled: '#dark-04',
   },
 } as const;
 
 export const DEFAULT_LINK_STYLES: Styles = {
   outline: {
-    '': '0 #purple-text.0',
-    focused: '1bw #purple-text',
+    '': '0 #primary-text.0',
+    focused: '1bw #primary-text',
   },
   border: '0',
   fill: {
     '': '#clear',
   },
   color: {
-    '': '#purple-text',
-    'hovered & !pressed': '#purple',
+    '': '#primary-text',
+    'hovered & !pressed': '#primary',
     disabled: '#dark-04',
   },
 } as const;
@@ -720,12 +720,12 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
   },
   border: {
     '': '#clear',
-    pressed: '#purple-03',
+    pressed: '#purple-text',
     disabled: '#white.3',
   },
   fill: {
-    '': '#purple',
-    'hovered & !pressed': '#purple-text',
+    '': '#primary',
+    'hovered & !pressed': '#primary-text',
     disabled: '#white.12',
   },
   color: {
@@ -803,9 +803,9 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
     disabled: '#white.12',
   },
   color: {
-    '': '#purple-text',
-    hovered: '#purple',
-    'pressed & hovered': '#purple-text',
+    '': '#primary-text',
+    hovered: '#primary',
+    'pressed & hovered': '#primary-text',
     disabled: '#white.4',
   },
 } as const;

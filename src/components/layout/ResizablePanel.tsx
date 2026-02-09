@@ -106,8 +106,8 @@ const HandlerElement = tasty({
       },
       transition: 'theme',
       outline: {
-        '': '1bw #purple-text.0',
-        drag: '1bw #purple-text',
+        '': '1bw #primary-text.0',
+        drag: '1bw #primary-text',
       },
       outlineOffset: 1,
     },
