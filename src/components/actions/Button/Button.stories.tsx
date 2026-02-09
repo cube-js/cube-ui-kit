@@ -156,394 +156,166 @@ const TemplateSizesOnlyIcon: StoryFn<CubeButtonProps> = ({
   </Space>
 );
 
-const TemplateStates: StoryFn<CubeButtonProps> = ({
-  children,
-  mods,
-  ...props
+const BUTTON_TYPES = [
+  'primary',
+  'secondary',
+  'outline',
+  'neutral',
+  'clear',
+  'link',
+] as const;
+
+const SELECTED_TYPES: string[] = ['outline', 'neutral', 'clear'];
+
+const TypeStatesRow = ({
+  type,
+  theme,
+}: {
+  type: CubeButtonProps['type'];
+  theme?: CubeButtonProps['theme'];
 }) => (
-  <Space>
-    <Button
-      {...props}
-      mods={{
-        hovered: false,
-        pressed: false,
-        focused: false,
-        disabled: false,
+  <Space flow="column">
+    <span
+      style={{
+        fontSize: 12,
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        opacity: 0.6,
+        color: theme === 'special' ? '#fff' : undefined,
       }}
     >
-      {children || 'Default'}
-    </Button>
-    <Button
-      {...props}
-      mods={{
-        hovered: true,
-        pressed: false,
-        focused: false,
-        disabled: false,
-      }}
-    >
-      {children || 'Hovered'}
-    </Button>
-    <Button
-      {...props}
-      mods={{
-        hovered: false,
-        pressed: true,
-        focused: false,
-        disabled: false,
-      }}
-    >
-      {children || 'Pressed'}
-    </Button>
-    <Button
-      {...props}
-      mods={{
-        hovered: true,
-        pressed: true,
-        focused: false,
-        disabled: false,
-      }}
-    >
-      {children || 'Pressed & Hovered'}
-    </Button>
-    <Button
-      {...props}
-      mods={{
-        hovered: false,
-        pressed: false,
-        focused: true,
-        disabled: false,
-      }}
-    >
-      {children || 'Focused'}
-    </Button>
-    <Button
-      {...props}
-      isDisabled
-      mods={{
-        hovered: false,
-        pressed: false,
-        focused: false,
-      }}
-    >
-      {children || 'Disabled'}
-    </Button>
-    {['outline', 'neutral', 'clear'].includes(props.type) || !props.type ? (
+      {type}
+    </span>
+    <Space>
       <Button
-        {...props}
+        type={type}
+        theme={theme}
         mods={{
+          hovered: false,
           pressed: false,
           focused: false,
           disabled: false,
-          selected: true,
         }}
       >
-        {children || 'Selected'}
+        Default
       </Button>
-    ) : null}
+      <Button
+        type={type}
+        theme={theme}
+        mods={{
+          hovered: true,
+          pressed: false,
+          focused: false,
+          disabled: false,
+        }}
+      >
+        Hovered
+      </Button>
+      <Button
+        type={type}
+        theme={theme}
+        mods={{
+          hovered: false,
+          pressed: true,
+          focused: false,
+          disabled: false,
+        }}
+      >
+        Pressed
+      </Button>
+      <Button
+        type={type}
+        theme={theme}
+        mods={{ hovered: true, pressed: true, focused: false, disabled: false }}
+      >
+        Pressed & Hovered
+      </Button>
+      <Button
+        type={type}
+        theme={theme}
+        mods={{
+          hovered: false,
+          pressed: false,
+          focused: true,
+          disabled: false,
+        }}
+      >
+        Focused
+      </Button>
+      <Button
+        isDisabled
+        type={type}
+        theme={theme}
+        mods={{ hovered: false, pressed: false, focused: false }}
+      >
+        Disabled
+      </Button>
+      {SELECTED_TYPES.includes(type!) ? (
+        <Button
+          type={type}
+          theme={theme}
+          mods={{
+            pressed: false,
+            focused: false,
+            disabled: false,
+            selected: true,
+          }}
+        >
+          Selected
+        </Button>
+      ) : null}
+    </Space>
   </Space>
 );
 
-const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
-  children,
-  mods,
-  ...props
-}) => (
-  <Space padding="2x" radius="1x" fill="#dark">
-    <Button
-      {...props}
-      mods={{
-        hovered: false,
-        pressed: false,
-        focused: false,
-        disabled: false,
-      }}
+const ThemeStatesTemplate: StoryFn<CubeButtonProps> = ({ theme }) => {
+  const isSpecial = theme === 'special';
+
+  return (
+    <Space
+      flow="column"
+      gap="3x"
+      padding={isSpecial ? '2x' : undefined}
+      fill={isSpecial ? '#dark' : undefined}
+      radius="1x"
     >
-      {children || 'Secondary'}
-    </Button>
-    <Button
-      {...props}
-      mods={{
-        hovered: true,
-        pressed: false,
-        focused: false,
-        disabled: false,
-      }}
-    >
-      {children || 'Hovered'}
-    </Button>
-    <Button
-      {...props}
-      mods={{
-        hovered: false,
-        pressed: true,
-        focused: false,
-        disabled: false,
-      }}
-    >
-      {children || 'Pressed'}
-    </Button>
-    <Button
-      {...props}
-      mods={{
-        hovered: true,
-        pressed: true,
-        focused: false,
-        disabled: false,
-      }}
-    >
-      {children || 'Pressed & Hovered'}
-    </Button>
-    <Button
-      {...props}
-      mods={{
-        hovered: false,
-        pressed: false,
-        focused: true,
-        disabled: false,
-      }}
-    >
-      {children || 'Focused'}
-    </Button>
-    <Button
-      {...props}
-      isDisabled
-      mods={{
-        hovered: false,
-        pressed: false,
-        focused: false,
-      }}
-    >
-      {children || 'Disabled'}
-    </Button>
-    {['outline', 'neutral'].includes(props.type) || !props.type ? (
-      <Button
-        {...props}
-        mods={{
-          pressed: false,
-          focused: false,
-          disabled: false,
-          selected: true,
-        }}
-      >
-        {children || 'Selected'}
-      </Button>
-    ) : null}
-  </Space>
-);
+      {BUTTON_TYPES.map((type) => (
+        <TypeStatesRow key={type} type={type} theme={theme} />
+      ))}
+    </Space>
+  );
+};
 
 export const Default = Template.bind({});
 Default.args = {
   children: 'Button',
 };
 
-export const SecondaryStates = TemplateStates.bind({});
-SecondaryStates.args = {
-  type: 'secondary',
-};
+export const DefaultStates = ThemeStatesTemplate.bind({});
+DefaultStates.args = {};
 
-export const PrimaryStates = TemplateStates.bind({});
-PrimaryStates.args = {
-  type: 'primary',
-};
-
-export const OutlineStates = TemplateStates.bind({});
-OutlineStates.args = {
-  type: 'outline',
-};
-
-export const ClearStates = TemplateStates.bind({});
-ClearStates.args = {
-  type: 'clear',
-};
-
-export const NeutralStates = TemplateStates.bind({});
-NeutralStates.args = {
-  type: 'neutral',
-};
-
-export const LinkStates = TemplateStates.bind({});
-LinkStates.args = {
-  type: 'link',
-};
-
-export const DangerSecondaryStates = TemplateStates.bind({});
-DangerSecondaryStates.args = {
-  type: 'secondary',
+export const DangerStates = ThemeStatesTemplate.bind({});
+DangerStates.args = {
   theme: 'danger',
 };
 
-export const DangerPrimaryStates = TemplateStates.bind({});
-DangerPrimaryStates.args = {
-  type: 'primary',
-  theme: 'danger',
-};
-
-export const DangerOutlineStates = TemplateStates.bind({});
-DangerOutlineStates.args = {
-  type: 'outline',
-  theme: 'danger',
-};
-
-export const DangerClearStates = TemplateStates.bind({});
-DangerClearStates.args = {
-  type: 'clear',
-  theme: 'danger',
-};
-
-export const DangerNeutralStates = TemplateStates.bind({});
-DangerNeutralStates.args = {
-  type: 'neutral',
-  theme: 'danger',
-};
-
-export const DangerLinkStates = TemplateStates.bind({});
-DangerLinkStates.args = {
-  type: 'link',
-  theme: 'danger',
-};
-
-export const SuccessSecondaryStates = TemplateStates.bind({});
-SuccessSecondaryStates.args = {
-  type: 'secondary',
+export const SuccessStates = ThemeStatesTemplate.bind({});
+SuccessStates.args = {
   theme: 'success',
 };
 
-export const SuccessPrimaryStates = TemplateStates.bind({});
-SuccessPrimaryStates.args = {
-  type: 'primary',
-  theme: 'success',
-};
-
-export const SuccessOutlineStates = TemplateStates.bind({});
-SuccessOutlineStates.args = {
-  type: 'outline',
-  theme: 'success',
-};
-
-export const SuccessClearStates = TemplateStates.bind({});
-SuccessClearStates.args = {
-  type: 'clear',
-  theme: 'success',
-};
-
-export const SuccessNeutralStates = TemplateStates.bind({});
-SuccessNeutralStates.args = {
-  type: 'neutral',
-  theme: 'success',
-};
-
-export const SuccessLinkStates = TemplateStates.bind({});
-SuccessLinkStates.args = {
-  type: 'link',
-  theme: 'success',
-};
-
-export const WarningSecondaryStates = TemplateStates.bind({});
-WarningSecondaryStates.args = {
-  type: 'secondary',
+export const WarningStates = ThemeStatesTemplate.bind({});
+WarningStates.args = {
   theme: 'warning',
 };
 
-export const WarningPrimaryStates = TemplateStates.bind({});
-WarningPrimaryStates.args = {
-  type: 'primary',
-  theme: 'warning',
-};
-
-export const WarningOutlineStates = TemplateStates.bind({});
-WarningOutlineStates.args = {
-  type: 'outline',
-  theme: 'warning',
-};
-
-export const WarningClearStates = TemplateStates.bind({});
-WarningClearStates.args = {
-  type: 'clear',
-  theme: 'warning',
-};
-
-export const WarningNeutralStates = TemplateStates.bind({});
-WarningNeutralStates.args = {
-  type: 'neutral',
-  theme: 'warning',
-};
-
-export const WarningLinkStates = TemplateStates.bind({});
-WarningLinkStates.args = {
-  type: 'link',
-  theme: 'warning',
-};
-
-export const NoteSecondaryStates = TemplateStates.bind({});
-NoteSecondaryStates.args = {
-  type: 'secondary',
+export const NoteStates = ThemeStatesTemplate.bind({});
+NoteStates.args = {
   theme: 'note',
 };
 
-export const NotePrimaryStates = TemplateStates.bind({});
-NotePrimaryStates.args = {
-  type: 'primary',
-  theme: 'note',
-};
-
-export const NoteOutlineStates = TemplateStates.bind({});
-NoteOutlineStates.args = {
-  type: 'outline',
-  theme: 'note',
-};
-
-export const NoteClearStates = TemplateStates.bind({});
-NoteClearStates.args = {
-  type: 'clear',
-  theme: 'note',
-};
-
-export const NoteNeutralStates = TemplateStates.bind({});
-NoteNeutralStates.args = {
-  type: 'neutral',
-  theme: 'note',
-};
-
-export const NoteLinkStates = TemplateStates.bind({});
-NoteLinkStates.args = {
-  type: 'link',
-  theme: 'note',
-};
-
-export const SpecialSecondaryStates = DarkTemplateStates.bind({});
-SpecialSecondaryStates.args = {
-  type: 'secondary',
-  theme: 'special',
-};
-
-export const SpecialPrimaryStates = DarkTemplateStates.bind({});
-SpecialPrimaryStates.args = {
-  type: 'primary',
-  theme: 'special',
-};
-
-export const SpecialOutlineStates = DarkTemplateStates.bind({});
-SpecialOutlineStates.args = {
-  type: 'outline',
-  theme: 'special',
-};
-
-export const SpecialClearStates = DarkTemplateStates.bind({});
-SpecialClearStates.args = {
-  type: 'clear',
-  theme: 'special',
-};
-
-export const SpecialNeutralStates = DarkTemplateStates.bind({});
-SpecialNeutralStates.args = {
-  type: 'neutral',
-  theme: 'special',
-};
-
-export const SpecialLinkStates = DarkTemplateStates.bind({});
-SpecialLinkStates.args = {
-  type: 'link',
+export const SpecialStates = ThemeStatesTemplate.bind({});
+SpecialStates.args = {
   theme: 'special',
 };
 

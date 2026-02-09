@@ -14,6 +14,16 @@ const CACHE = {};
  * Example: var(--primary-color, var(--secondary-color)) → var(--primary-color-rgb, var(--secondary-color-rgb))
  */
 export function convertColorChainToRgbChain(colorValue: string): string {
+  // Handle rgb(var(--name-color-rgb) / alpha) pattern.
+  // When #name.opacity is parsed, the classifier produces rgb(var(--name-color-rgb) / .opacity).
+  // The RGB chain should be just the inner var() reference, without the rgb() wrapper and opacity.
+  const rgbVarMatch = colorValue.match(
+    /^rgba?\(\s*(var\(--[a-z0-9-]+-color-rgb\))\s*\//,
+  );
+  if (rgbVarMatch) {
+    return rgbVarMatch[1];
+  }
+
   // Match var(--name-color, ...) pattern
   const varPattern = /var\(--([a-z0-9-]+)-color\s*(?:,\s*(.+))?\)/;
   const match = colorValue.match(varPattern);

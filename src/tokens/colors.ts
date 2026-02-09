@@ -55,6 +55,11 @@ export const COLOR_TOKENS: Styles = {
   '#primary-text': okhsl(PURPLE_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
   '#primary-bg': okhsl(PURPLE_HUE, BG_SATURATION, BG_LIGHTNESS),
   '#primary-icon': okhsl(PURPLE_HUE, ICON_SATURATION, ICON_LIGHTNESS),
+  '#primary-desaturated': okhsl(
+    PURPLE_HUE,
+    DISABLED_SATURATION,
+    MAIN_LIGHTNESS,
+  ),
   '#primary-disabled': okhsl(
     PURPLE_HUE,
     DISABLED_SATURATION,
@@ -99,6 +104,7 @@ export const COLOR_TOKENS: Styles = {
   '#danger-text': okhsl(DANGER_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
   '#danger-bg': okhsl(DANGER_HUE, BG_SATURATION, BG_LIGHTNESS),
   '#danger-icon': okhsl(DANGER_HUE, ICON_SATURATION, ICON_LIGHTNESS),
+  '#danger-desaturated': okhsl(DANGER_HUE, DISABLED_SATURATION, MAIN_LIGHTNESS),
   '#danger-disabled': okhsl(
     DANGER_HUE,
     DISABLED_SATURATION,
@@ -110,6 +116,11 @@ export const COLOR_TOKENS: Styles = {
   '#success-text': okhsl(SUCCESS_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
   '#success-bg': okhsl(SUCCESS_HUE, BG_SATURATION, BG_LIGHTNESS),
   '#success-icon': okhsl(SUCCESS_HUE, ICON_SATURATION, ICON_LIGHTNESS),
+  '#success-desaturated': okhsl(
+    SUCCESS_HUE,
+    DISABLED_SATURATION,
+    MAIN_LIGHTNESS,
+  ),
   '#success-disabled': okhsl(
     SUCCESS_HUE,
     DISABLED_SATURATION,
@@ -121,6 +132,11 @@ export const COLOR_TOKENS: Styles = {
   '#warning-text': okhsl(WARNING_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
   '#warning-bg': okhsl(WARNING_HUE, BG_SATURATION, BG_LIGHTNESS),
   '#warning-icon': okhsl(WARNING_HUE, ICON_SATURATION, ICON_LIGHTNESS),
+  '#warning-desaturated': okhsl(
+    WARNING_HUE,
+    DISABLED_SATURATION,
+    MAIN_LIGHTNESS,
+  ),
   '#warning-disabled': okhsl(
     WARNING_HUE,
     DISABLED_SATURATION,
@@ -132,6 +148,7 @@ export const COLOR_TOKENS: Styles = {
   '#note-text': okhsl(NOTE_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
   '#note-bg': okhsl(NOTE_HUE, BG_SATURATION, BG_LIGHTNESS),
   '#note-icon': okhsl(NOTE_HUE, ICON_SATURATION, ICON_LIGHTNESS),
+  '#note-desaturated': okhsl(NOTE_HUE, DISABLED_SATURATION, MAIN_LIGHTNESS),
   '#note-disabled': okhsl(NOTE_HUE, DISABLED_SATURATION, DISABLED_LIGHTNESS),
 
   // Border

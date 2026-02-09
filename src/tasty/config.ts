@@ -245,9 +245,24 @@ let globalProperties: Record<string, PropertyDefinition> | null = null;
 export const INTERNAL_PROPERTIES: Record<string, PropertyDefinition> = {
   // Used by dual-fill feature to enable CSS transitions on the second fill color
   '#tasty-second-fill': {
-    syntax: '<color>',
     inherits: false,
     initialValue: 'transparent',
+  },
+  // Current color context variable (set by the color style handler).
+  // Companion --current-color-rgb is auto-created.
+  '#current': {
+    inherits: true,
+    initialValue: 'transparent',
+  },
+  // White and black are fundamental colors that need explicit initial values.
+  // Companion -rgb properties are auto-created from the color initial values.
+  '#white': {
+    inherits: true,
+    initialValue: 'rgb(255 255 255)',
+  },
+  '#black': {
+    inherits: true,
+    initialValue: 'rgb(0 0 0)',
   },
 };
 

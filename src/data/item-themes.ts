@@ -67,17 +67,19 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
   },
   border: {
     '': '#clear',
-    pressed: '#primary-text',
-    focused: '#primary-text',
+    'pressed | focused': '#primary-text',
     disabled: '#clear',
   },
   fill: {
-    '': '#primary',
-    hovered: '#primary-text',
-    pressed: '#primary',
-    disabled: '#primary-disabled',
+    '': '#white #primary',
+    hovered: '#white #primary-text',
+    pressed: '#white #primary',
+    disabled: '#white #primary-disabled',
   },
-  color: '#white',
+  color: {
+    '': '#white',
+    disabled: '#white',
+  },
 } as const;
 
 export const DEFAULT_SECONDARY_STYLES: Styles = {
@@ -208,11 +210,15 @@ export const DANGER_PRIMARY_STYLES: Styles = {
     disabled: '#clear',
   },
   fill: {
-    '': '#danger',
-    'hovered & !pressed': '#danger-text',
-    disabled: '#danger-disabled',
+    '': '#white #danger',
+    hovered: '#white #danger-text',
+    pressed: '#white #danger',
+    disabled: '#danger-desaturated.6',
   },
-  color: '#white',
+  color: {
+    '': '#white',
+    disabled: '#white.6',
+  },
 } as const;
 
 export const DANGER_SECONDARY_STYLES: Styles = {
@@ -337,11 +343,15 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
     disabled: '#clear',
   },
   fill: {
-    '': '#success',
-    'hovered & !pressed': '#success-text',
-    disabled: '#success-disabled',
+    '': '#white #success',
+    hovered: '#white #success-text',
+    pressed: '#white #success',
+    disabled: '#success-desaturated.6',
   },
-  color: '#white',
+  color: {
+    '': '#white',
+    disabled: '#white.6',
+  },
 } as const;
 
 export const SUCCESS_SECONDARY_STYLES: Styles = {
@@ -466,11 +476,15 @@ export const WARNING_PRIMARY_STYLES: Styles = {
     disabled: '#clear',
   },
   fill: {
-    '': '#warning',
-    'hovered & !pressed': '#warning-text',
-    disabled: '#warning-disabled',
+    '': '#white #warning',
+    hovered: '#white #warning-text',
+    pressed: '#white #warning',
+    disabled: '#warning-desaturated.6',
   },
-  color: '#white',
+  color: {
+    '': '#white',
+    disabled: '#white.6',
+  },
 } as const;
 
 export const WARNING_SECONDARY_STYLES: Styles = {
@@ -595,11 +609,15 @@ export const NOTE_PRIMARY_STYLES: Styles = {
     disabled: '#clear',
   },
   fill: {
-    '': '#note',
-    'hovered & !pressed': '#note-text',
-    disabled: '#note-disabled',
+    '': '#white #note',
+    hovered: '#white #note-text',
+    pressed: '#white #note',
+    disabled: '#note-desaturated.6',
   },
-  color: '#white',
+  color: {
+    '': '#white',
+    disabled: '#white.6',
+  },
 } as const;
 
 export const NOTE_SECONDARY_STYLES: Styles = {
@@ -720,13 +738,14 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
   },
   border: {
     '': '#clear',
-    pressed: '#purple-text',
-    disabled: '#white.3',
+    'pressed | focused': '#purple-text',
+    disabled: '#clear',
   },
   fill: {
-    '': '#primary',
-    'hovered & !pressed': '#primary-text',
-    disabled: '#white.12',
+    '': '#white #primary',
+    hovered: '#white #primary-text',
+    pressed: '#white #primary',
+    disabled: '#primary-disabled.5',
   },
   color: {
     '': '#white',
