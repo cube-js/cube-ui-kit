@@ -27,7 +27,8 @@ import { stringifyStyles } from '../utils/styles';
  *
  * @starting-style CSS cannot be applied via multiple class names because
  * of cascade - later rules override earlier ones. When @starting is detected,
- * we disable chunking and use a single class name for all styles.
+ * we combine top-level styles into a single chunk but keep sub-element styles
+ * in their own chunk for better caching.
  */
 function containsStartingStyle(styleKey: string): boolean {
   return styleKey.includes('@starting');
@@ -140,27 +141,82 @@ export function useStyles(styles: UseStylesOptions): UseStylesResult {
       return [];
     }
 
-    // Disable chunking for styles containing @starting-style rules.
+    // Partial chunking for styles containing @starting-style rules.
     // @starting-style CSS cannot work with multiple class names due to cascade -
     // the rules would override each other instead of combining properly.
+    // However, sub-element styles don't have this limitation and can be
+    // cached independently in their own chunk.
     if (containsStartingStyle(styleKey)) {
-      const renderResult = renderStyles(currentStyles);
+      const chunkMap = categorizeStyleKeys(
+        currentStyles as Record<string, unknown>,
+      );
+      const chunks: ProcessedChunk[] = [];
 
-      if (renderResult.rules.length === 0) {
-        return [];
+      // Collect all non-subcomponent keys into a single combined chunk
+      const combinedKeys: string[] = [];
+
+      for (const [chunkName, chunkStyleKeys] of chunkMap) {
+        if (chunkName === CHUNK_NAMES.SUBCOMPONENTS) {
+          continue;
+        }
+        combinedKeys.push(...chunkStyleKeys);
       }
 
-      const { className } = allocateClassName(styleKey);
+      // Render combined top-level styles as a single chunk
+      if (combinedKeys.length > 0) {
+        const renderResult = renderStylesForChunk(
+          currentStyles,
+          CHUNK_NAMES.COMBINED,
+          combinedKeys,
+        );
 
-      return [
-        {
-          name: CHUNK_NAMES.COMBINED,
-          styleKeys: Object.keys(currentStyles),
-          cacheKey: styleKey,
-          renderResult,
-          className,
-        },
-      ];
+        if (renderResult.rules.length > 0) {
+          const combinedCacheKey = generateChunkCacheKey(
+            currentStyles,
+            CHUNK_NAMES.COMBINED,
+            combinedKeys,
+          );
+          const { className } = allocateClassName(combinedCacheKey);
+
+          chunks.push({
+            name: CHUNK_NAMES.COMBINED,
+            styleKeys: combinedKeys,
+            cacheKey: combinedCacheKey,
+            renderResult,
+            className,
+          });
+        }
+      }
+
+      // Render subcomponents chunk separately (if present)
+      const subKeys = chunkMap.get(CHUNK_NAMES.SUBCOMPONENTS);
+
+      if (subKeys && subKeys.length > 0) {
+        const renderResult = renderStylesForChunk(
+          currentStyles,
+          CHUNK_NAMES.SUBCOMPONENTS,
+          subKeys,
+        );
+
+        if (renderResult.rules.length > 0) {
+          const subCacheKey = generateChunkCacheKey(
+            currentStyles,
+            CHUNK_NAMES.SUBCOMPONENTS,
+            subKeys,
+          );
+          const { className } = allocateClassName(subCacheKey);
+
+          chunks.push({
+            name: CHUNK_NAMES.SUBCOMPONENTS,
+            styleKeys: subKeys,
+            cacheKey: subCacheKey,
+            renderResult,
+            className,
+          });
+        }
+      }
+
+      return chunks;
     }
 
     // Categorize style keys into chunks
