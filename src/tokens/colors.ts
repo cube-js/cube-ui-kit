@@ -144,6 +144,6 @@ export const COLOR_TOKENS: Styles = {
   '#disabled-bg': '#dark-05.2',
 
   // Scrollbar
-  '#scrollbar-thumb-color': '#dark-03',
-  '#scrollbar-track-color': 'transparent',
+  '#scrollbar-thumb': '#dark-03',
+  '#scrollbar-track': 'transparent',
 };
