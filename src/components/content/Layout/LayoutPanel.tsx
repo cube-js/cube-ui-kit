@@ -207,8 +207,8 @@ const ResizeHandlerElement = tasty({
       border: 0,
       transition: 'theme',
       outline: {
-        '': '1bw #purple-text.0',
-        'drag | focused': '1bw #purple-text',
+        '': '1bw #primary-text.0',
+        'drag | focused': '1bw #primary-text',
       },
       outlineOffset: 1,
     },
@@ -253,7 +253,7 @@ const ResizeHandlerElement = tasty({
       radius: true,
       fill: {
         '': '#dark-03',
-        'hovered | drag | focused': '#purple-text',
+        'hovered | drag | focused': '#primary-text',
         disabled: '#dark-04',
       },
     },

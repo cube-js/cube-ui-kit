@@ -23,8 +23,8 @@ const Action = tasty(Button, {
     textOverflow: 'ellipsis',
     overflow: 'hidden',
     color: {
-      '': '#purple-text',
-      primary: '#purple-text',
+      '': '#primary-text',
+      primary: '#primary-text',
       secondary: '#dark-03',
     },
   },

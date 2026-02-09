@@ -50,18 +50,25 @@ export const COLOR_TOKENS: Styles = {
   // Base colors - Pink
   '#pink': okhsl(PINK_HUE, 100, 67),
 
-  // Base colors - Purple (primary)
-  '#purple': okhsl(PURPLE_HUE, MAIN_SATURATION, MAIN_LIGHTNESS),
-  '#purple-text': okhsl(PURPLE_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
-  '#purple-bg': okhsl(PURPLE_HUE, BG_SATURATION, BG_LIGHTNESS), // Unused
-  '#purple-icon': okhsl(PURPLE_HUE, ICON_SATURATION, ICON_LIGHTNESS), // Unused
-  '#purple-disabled': okhsl(
+  // Primary colors (semantic aliases)
+  '#primary': okhsl(PURPLE_HUE, MAIN_SATURATION, MAIN_LIGHTNESS),
+  '#primary-text': okhsl(PURPLE_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
+  '#primary-bg': okhsl(PURPLE_HUE, BG_SATURATION, BG_LIGHTNESS),
+  '#primary-icon': okhsl(PURPLE_HUE, ICON_SATURATION, ICON_LIGHTNESS),
+  '#primary-disabled': okhsl(
     PURPLE_HUE,
     DISABLED_SATURATION,
     DISABLED_LIGHTNESS,
   ),
-  '#purple-01': okhsl(PURPLE_HUE, 100, 58), // Unused
-  '#purple-02': okhsl(PURPLE_HUE, 100, 66), // Unused
+
+  // Base colors - Purple (legacy aliases for backward compatibility)
+  '#purple': '#primary',
+  '#purple-text': '#primary-text',
+  '#purple-bg': '#primary-bg',
+  '#purple-icon': '#primary-icon',
+  '#purple-disabled': '#primary-disabled',
+  '#purple-01': okhsl(PURPLE_HUE, 100, 58),
+  '#purple-02': okhsl(PURPLE_HUE, 100, 66),
   '#purple-03': okhsl(PURPLE_HUE, 100, 74),
   '#purple-04': okhsl(PURPLE_HUE, 100, 83),
 
@@ -136,7 +143,6 @@ export const COLOR_TOKENS: Styles = {
   '#clear': 'transparent',
   '#shadow': '#dark.06',
   '#minor': '#dark.65',
-  '#primary': '#purple',
 
   // Disabled state colors
   '#disabled': '#dark-01.25',

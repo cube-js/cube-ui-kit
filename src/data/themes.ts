@@ -1,6 +1,6 @@
 export default {
   special: {
-    fill: '#purple',
+    fill: '#primary',
     color: '#white',
     border: '#white',
   },

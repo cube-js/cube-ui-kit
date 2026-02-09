@@ -14,7 +14,7 @@ const DEFAULT_STYLES = {
   display: 'grid',
   gap: '1x',
   flow: 'row',
-  fill: '#purple',
+  fill: '#primary',
   color: '#white',
   radius: 'round',
   placeContent: 'center',

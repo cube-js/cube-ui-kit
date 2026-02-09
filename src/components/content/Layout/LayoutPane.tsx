@@ -198,7 +198,7 @@ const PaneElement = tasty({
       radius: 'round',
       outline: {
         '': '0',
-        'focused | drag': '1bw #purple-text',
+        'focused | drag': '1bw #primary-text',
       },
       outlineOffset: 1,
     },
@@ -207,7 +207,7 @@ const PaneElement = tasty({
       radius: true,
       fill: {
         '': '#dark-03',
-        'handlerHovered | drag | focused': '#purple-text',
+        'handlerHovered | drag | focused': '#primary-text',
         disabled: '#dark-04',
       },
     },

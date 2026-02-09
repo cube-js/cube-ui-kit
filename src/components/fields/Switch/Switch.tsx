@@ -52,7 +52,7 @@ const SwitchElement = tasty({
     radius: 'round',
     fill: {
       '': '#white',
-      checked: '#purple',
+      checked: '#primary',
       disabled: '#border.5',
       'disabled & checked': '#border',
     },
@@ -62,7 +62,7 @@ const SwitchElement = tasty({
     },
     border: {
       '': '#dark-05',
-      checked: '#purple-text',
+      checked: '#primary-text',
       disabled: '#dark-05.5',
       invalid: '#danger',
     },
@@ -77,8 +77,8 @@ const SwitchElement = tasty({
       'size=small': '2x 2x',
     },
     outline: {
-      '': '#purple-text.0',
-      focused: '1bw #purple-text',
+      '': '#primary-text.0',
+      focused: '1bw #primary-text',
     },
     outlineOffset: 1,
     transition: 'theme',

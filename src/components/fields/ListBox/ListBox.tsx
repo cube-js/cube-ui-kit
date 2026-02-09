@@ -84,7 +84,7 @@ const ListBoxWrapperElement = tasty({
     },
     border: {
       '': true,
-      focused: '#purple-text',
+      focused: '#primary-text',
       valid: '#success-text.50',
       invalid: '#danger-text.50',
       disabled: true,
@@ -174,7 +174,7 @@ const ListBoxCheckbox = tasty({
     },
     fill: {
       '': '#white',
-      'selected | indeterminate': '#purple-text',
+      'selected | indeterminate': '#primary-text',
       'invalid & !(selected | indeterminate)': '#white',
       'invalid & (selected | indeterminate)': '#danger',
       disabled: '#dark.12',

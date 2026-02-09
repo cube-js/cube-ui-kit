@@ -19,7 +19,7 @@ const BadgeElement = tasty(Item, {
     radius: 'round',
     color: '#white',
     fill: {
-      '': '#purple',
+      '': '#primary',
       ...FILL_STYLES,
     },
     preset: {

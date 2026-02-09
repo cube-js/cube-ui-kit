@@ -170,13 +170,13 @@ const STATIC_CSS = `
   pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
   code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
     text-shadow: none;
-    background: rgb(var(--purple-color-rgb) / .2);
+    background: rgb(var(--primary-color-rgb) / .2);
   }
 
   pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
   code[class*="language-"]::selection, code[class*="language-"] ::selection {
     text-shadow: none;
-    background: rgb(var(--purple-color-rgb) / .2);
+    background: rgb(var(--primary-color-rgb) / .2);
   }
 
   @media print {
@@ -256,7 +256,7 @@ const STATIC_CSS = `
   .token.string,
   .token.char,
   .token.builtin {
-    color: var(--purple-text-color);
+    color: var(--primary-text-color);
   }
 
   .token.url,

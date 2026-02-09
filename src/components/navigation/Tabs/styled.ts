@@ -180,8 +180,8 @@ export const TabElement = tasty(Item, {
     },
     color: {
       '': '#dark-02',
-      '(type=default | type=narrow) & (hovered & !selected)': '#purple-text',
-      '(type=default | type=narrow) & selected': '#purple-text',
+      '(type=default | type=narrow) & (hovered & !selected)': '#primary-text',
+      '(type=default | type=narrow) & selected': '#primary-text',
       disabled: '#dark-04',
     },
     fill: {
@@ -193,7 +193,7 @@ export const TabElement = tasty(Item, {
     },
     border: {
       '': '0 #clear',
-      'type=file & selected': '$tab-indicator-size #purple bottom',
+      'type=file & selected': '$tab-indicator-size #primary bottom',
     },
     preset: {
       '': 't3m',
@@ -201,11 +201,11 @@ export const TabElement = tasty(Item, {
     },
     shadow: {
       '': 'none',
-      'focused & focus-visible': 'inset 0 0 0 1bw #purple-text',
-      editing: 'inset 0 0 0 1bw #purple-text',
+      'focused & focus-visible': 'inset 0 0 0 1bw #primary-text',
+      editing: 'inset 0 0 0 1bw #primary-text',
       'type=radio & selected': '$item-shadow',
       'type=radio & selected & focused & focus-visible':
-        '$item-shadow, inset 0 0 0 1bw #purple-text',
+        '$item-shadow, inset 0 0 0 1bw #primary-text',
     },
     // Collapse horizontal padding for narrow type
     '$label-padding-left': {
@@ -299,7 +299,7 @@ export const DropIndicatorElement = tasty({
       '': 0,
       'drop-target': 1,
     },
-    fill: '#purple',
+    fill: '#primary',
     width: '.5x',
     top: 0,
     bottom: 0,
@@ -324,7 +324,7 @@ export const TabIndicatorElement = tasty({
     bottom: '0',
     left: 0,
     height: '$tab-indicator-size',
-    fill: '#purple',
+    fill: '#primary',
     transition: 'left, width',
     transitionDuration: '.2s',
     transitionTimingFunction: 'ease-out',

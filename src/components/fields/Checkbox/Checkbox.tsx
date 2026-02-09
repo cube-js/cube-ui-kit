@@ -78,7 +78,7 @@ const CheckboxElement = tasty({
     radius: '.5r',
     fill: {
       '': '#white',
-      'checked | indeterminate': '#purple',
+      'checked | indeterminate': '#primary',
       'invalid & !checked': '#white',
       'invalid & checked': '#danger',
       disabled: '#dark.12',
@@ -95,8 +95,8 @@ const CheckboxElement = tasty({
     width: '(2x - 2bw)',
     height: '(2x - 2bw)',
     outline: {
-      '': '#purple-text.0',
-      focused: '1bw #purple-text',
+      '': '#primary-text.0',
+      focused: '1bw #primary-text',
     },
     outlineOffset: 1,
     transition: 'theme',
