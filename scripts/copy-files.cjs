@@ -3,7 +3,7 @@ const path = require('path');
 
 function copyRequiredFiles() {
   copyPackageJson();
-  ['./README.md', './CHANGELOG.md'].forEach((file) => includeFileInBuild(file));
+  ['./README.md', './CHANGELOG.md', './tasty.config.ts'].forEach((file) => includeFileInBuild(file));
 }
 
 function copyPackageJson() {
@@ -54,6 +54,7 @@ function copyPackageJson() {
         import: './es/tasty/zero/babel.js',
         types: './types/tasty/zero/babel.d.ts',
       },
+      './tasty.config': './tasty.config.ts',
     },
     private: false,
   };

@@ -48,7 +48,7 @@ describe('extractKeyframesFromStyles', () => {
     const styles = {
       animation: 'fadeIn 1s',
       '@keyframes': {
-        fadeIn: { from: 'opacity: 0', to: 'opacity: 1' },
+        fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
       },
     };
     const result = extractKeyframesFromStyles(styles);
@@ -62,8 +62,8 @@ describe('extractKeyframesFromStyles', () => {
     const styles = {
       animation: 'fadeIn 1s, appear 2s',
       '@keyframes': {
-        fadeIn: { from: 'opacity: 0', to: 'opacity: 1' },
-        appear: { from: 'opacity: 0', to: 'opacity: 1' }, // Same content
+        fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
+        appear: { from: { opacity: 0 }, to: { opacity: 1 } }, // Same content
       },
     };
     const result = extractKeyframesFromStyles(styles);
@@ -79,13 +79,13 @@ describe('extractKeyframesFromStyles', () => {
     const styles1 = {
       animation: 'fadeIn 1s',
       '@keyframes': {
-        fadeIn: { from: 'opacity: 0', to: 'opacity: 1' },
+        fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
       },
     };
     const styles2 = {
       animation: 'appear 1s',
       '@keyframes': {
-        appear: { from: 'opacity: 0', to: 'opacity: 1' }, // Same content, different name
+        appear: { from: { opacity: 0 }, to: { opacity: 1 } }, // Same content, different name
       },
     };
 
@@ -101,15 +101,15 @@ describe('extractKeyframesFromStyles', () => {
     const styles1 = {
       animation: 'fadeIn 1s',
       '@keyframes': {
-        fadeIn: { from: 'opacity: 0', to: 'opacity: 1' },
+        fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
       },
     };
     const styles2 = {
       animation: 'slideIn 1s',
       '@keyframes': {
         slideIn: {
-          from: 'transform: translateX(-100%)',
-          to: 'transform: translateX(0)',
+          from: { transform: 'translateX(-100%)' },
+          to: { transform: 'translateX(0)' },
         },
       },
     };
@@ -123,7 +123,7 @@ describe('extractKeyframesFromStyles', () => {
   it('should use global keyframes when local not defined', () => {
     const styles = { animation: 'fadeIn 1s' };
     const globalKeyframes = {
-      fadeIn: { from: 'opacity: 0', to: 'opacity: 1' },
+      fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
     };
 
     const result = extractKeyframesFromStyles(styles, globalKeyframes);
@@ -136,11 +136,11 @@ describe('extractKeyframesFromStyles', () => {
     const styles = {
       animation: 'fadeIn 1s',
       '@keyframes': {
-        fadeIn: { from: 'opacity: 0', to: 'opacity: 0.5' }, // Different from global
+        fadeIn: { from: { opacity: 0 }, to: { opacity: 0.5 } }, // Different from global
       },
     };
     const globalKeyframes = {
-      fadeIn: { from: 'opacity: 0', to: 'opacity: 1' },
+      fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
     };
 
     const result = extractKeyframesFromStyles(styles, globalKeyframes);
@@ -169,13 +169,13 @@ describe('CSSWriter deduplication', () => {
     const styles1 = {
       animation: 'fadeIn 1s',
       '@keyframes': {
-        fadeIn: { from: 'opacity: 0', to: 'opacity: 1' },
+        fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
       },
     };
     const styles2 = {
       animation: 'appear 1s',
       '@keyframes': {
-        appear: { from: 'opacity: 0', to: 'opacity: 1' }, // Same content
+        appear: { from: { opacity: 0 }, to: { opacity: 1 } }, // Same content
       },
     };
 

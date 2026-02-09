@@ -267,6 +267,117 @@ describe('SheetManager', () => {
 
       expect(() => sheetManager.deleteRule(registry, fakeRule)).not.toThrow();
     });
+
+    it('should correctly adjust indices after non-contiguous deletions', () => {
+      // This test verifies the fix for the bug where non-contiguous deletions
+      // would corrupt indices of remaining rules. See BUG_INVESTIGATION_REPORT.md
+      const registry = sheetManager.getRegistry(document);
+
+      // Insert 8 rules at indices 0-7
+      const rules = [];
+      for (let i = 0; i < 8; i++) {
+        const rule = sheetManager.insertRule(
+          registry,
+          [createStyleRule(`.rule${i}`, `order: ${i};`)],
+          `rule${i}`,
+          document,
+        );
+        rules.push(rule);
+        registry.rules.set(`class${i}`, rule!);
+      }
+
+      // Verify initial indices
+      expect(rules[0]!.indices).toEqual([0]);
+      expect(rules[4]!.indices).toEqual([4]);
+      expect(rules[7]!.indices).toEqual([7]);
+
+      // Delete rules at non-contiguous indices: 1, 3, 5
+      // Before: [0, 1, 2, 3, 4, 5, 6, 7]
+      // After:  [0, 2, 4, 6, 7] -> shifted to [0, 1, 2, 3, 4]
+      sheetManager.deleteRule(registry, rules[1]!);
+      sheetManager.deleteRule(registry, rules[3]!);
+      sheetManager.deleteRule(registry, rules[5]!);
+
+      // Verify remaining rules have correctly adjusted indices:
+      // rule0: was 0, stays 0 (nothing deleted before it)
+      expect(rules[0]!.indices).toEqual([0]);
+      expect(rules[0]!.ruleIndex).toBe(0);
+
+      // rule2: was 2, now 1 (1 deletion at index 1 before it)
+      expect(rules[2]!.indices).toEqual([1]);
+      expect(rules[2]!.ruleIndex).toBe(1);
+
+      // rule4: was 4, now 2 (deletions at 1, 3 before it = 2 shifts)
+      expect(rules[4]!.indices).toEqual([2]);
+      expect(rules[4]!.ruleIndex).toBe(2);
+
+      // rule6: was 6, now 3 (deletions at 1, 3, 5 before it = 3 shifts)
+      expect(rules[6]!.indices).toEqual([3]);
+      expect(rules[6]!.ruleIndex).toBe(3);
+
+      // rule7: was 7, now 4 (deletions at 1, 3, 5 before it = 3 shifts)
+      expect(rules[7]!.indices).toEqual([4]);
+      expect(rules[7]!.ruleIndex).toBe(4);
+
+      // Verify sheet rule count
+      expect(registry.sheets[0].ruleCount).toBe(5);
+    });
+
+    it('should correctly adjust indices for rules with multiple CSS declarations', () => {
+      // Test that multi-rule insertions (multiple indices per RuleInfo) are handled correctly
+      const registry = sheetManager.getRegistry(document);
+
+      // Insert rules - some with multiple declarations
+      const rule1 = sheetManager.insertRule(
+        registry,
+        [
+          createStyleRule('.rule1', 'color: red;'),
+          createStyleRule('.rule1:hover', 'color: blue;'),
+        ],
+        'rule1',
+        document,
+      );
+      registry.rules.set('class1', rule1!);
+
+      const rule2 = sheetManager.insertRule(
+        registry,
+        [createStyleRule('.rule2', 'color: green;')],
+        'rule2',
+        document,
+      );
+      registry.rules.set('class2', rule2!);
+
+      const rule3 = sheetManager.insertRule(
+        registry,
+        [
+          createStyleRule('.rule3', 'color: yellow;'),
+          createStyleRule('.rule3:active', 'color: orange;'),
+        ],
+        'rule3',
+        document,
+      );
+      registry.rules.set('class3', rule3!);
+
+      // rule1 occupies indices [0, 1], rule2 at [2], rule3 at [3, 4]
+      expect(rule1!.indices).toEqual([0, 1]);
+      expect(rule2!.indices).toEqual([2]);
+      expect(rule3!.indices).toEqual([3, 4]);
+
+      // Delete rule1 (removes indices 0, 1)
+      sheetManager.deleteRule(registry, rule1!);
+
+      // rule2: was [2], now [0] (shifted left by 2)
+      expect(rule2!.indices).toEqual([0]);
+      expect(rule2!.ruleIndex).toBe(0);
+      expect(rule2!.endRuleIndex).toBe(0);
+
+      // rule3: was [3, 4], now [1, 2] (shifted left by 2)
+      expect(rule3!.indices).toEqual([1, 2]);
+      expect(rule3!.ruleIndex).toBe(1);
+      expect(rule3!.endRuleIndex).toBe(2);
+
+      expect(registry.sheets[0].ruleCount).toBe(3);
+    });
   });
 
   describe('findAvailableRuleIndex', () => {

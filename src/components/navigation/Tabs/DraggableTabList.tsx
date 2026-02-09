@@ -17,7 +17,10 @@ import {
 
 import { useEvent } from '../../../_internal/hooks';
 
-import type { Key } from '@react-types/shared';
+import type { DropOperation, Key } from '@react-types/shared';
+
+// Stable function reference to avoid re-renders in drag/drop hooks
+const getAllowedDropOperations = (): DropOperation[] => ['move'];
 
 // =============================================================================
 // Types
@@ -31,7 +34,7 @@ export interface DraggableTabListProps {
   /** Current ordered keys */
   orderedKeys: string[];
   /** Callback when tabs are reordered */
-  onReorder?: (newOrder: Key[]) => void;
+  onReorder?: (newOrder: string[]) => void;
   /** Render function that receives drag/drop states */
   children: (
     dragState: DraggableCollectionState,
@@ -119,14 +122,14 @@ export function DraggableTabList({
     collection: state.collection,
     selectionManager: state.selectionManager,
     getItems,
-    getAllowedDropOperations: () => ['move'],
+    getAllowedDropOperations,
   });
 
   // Enable the draggable collection
   useDraggableCollection(
     {
       getItems,
-      getAllowedDropOperations: () => ['move'],
+      getAllowedDropOperations,
     },
     dragState,
     listRef,

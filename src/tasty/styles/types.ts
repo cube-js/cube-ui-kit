@@ -496,7 +496,7 @@ export interface StylesInterface
    *
    * Examples:
    * - `'@keyframes': { fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } } }`
-   * - `'@keyframes': { pulse: { '0%, 100%': 'transform: scale(1)', '50%': 'transform: scale(1.05)' } }`
+   * - `'@keyframes': { pulse: { '0%, 100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.05)' } } }`
    */
   '@keyframes'?: Record<string, KeyframesSteps>;
   /**

@@ -2,31 +2,29 @@ import { useCallback, useState } from 'react';
 
 import { chainRaf } from '../../../utils/raf';
 
-import type { Key } from '@react-types/shared';
-
 // =============================================================================
 // Types
 // =============================================================================
 
 export interface UseTabEditingOptions {
   /** Callback when tab selection changes (used to select tab when editing starts) */
-  onChange?: (key: Key) => void;
+  onChange?: (key: string) => void;
   /** Callback when a tab title is changed */
-  onTitleChange?: (key: Key, newTitle: string) => void;
+  onTitleChange?: (key: string, newTitle: string) => void;
 }
 
 export interface UseTabEditingResult {
   /** Currently editing tab key (null if not editing) */
-  editingKey: Key | null;
+  editingKey: string | null;
   /** Current edit input value */
   editValue: string;
   /** Set the edit value */
   setEditValue: (value: string) => void;
   /** Start editing a tab with the given title */
-  startEditing: (key: Key, currentTitle: string) => void;
+  startEditing: (key: string, currentTitle: string) => void;
   /** Submit the current edit */
   submitEditing: (
-    key: Key,
+    key: string,
     newTitle: string,
     tabOnTitleChange?: (title: string) => void,
   ) => void;
@@ -50,11 +48,11 @@ export function useTabEditing({
   onChange,
   onTitleChange,
 }: UseTabEditingOptions = {}): UseTabEditingResult {
-  const [editingKey, setEditingKey] = useState<Key | null>(null);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
 
   const startEditing = useCallback(
-    (key: Key, currentTitle: string) => {
+    (key: string, currentTitle: string) => {
       // Also select the tab being edited
       onChange?.(key);
       // Use chainRaf to ensure DOM is ready before entering edit mode
@@ -73,7 +71,7 @@ export function useTabEditing({
 
   const submitEditing = useCallback(
     (
-      key: Key,
+      key: string,
       newTitle: string,
       tabOnTitleChange?: (title: string) => void,
     ) => {

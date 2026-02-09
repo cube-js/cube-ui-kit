@@ -2025,7 +2025,7 @@ export const ItemsWithActions = (props) => {
         <Menu.Item
           key="file3"
           icon={<IconPlus />}
-          showActionsOnHover={true}
+          autoHideActions={true}
           actions={
             <>
               <ItemAction

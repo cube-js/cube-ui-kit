@@ -453,7 +453,7 @@ export const InsideItemButton: Story = {
         </p>
         <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
           <ItemButton
-            showActionsOnHover
+            autoHideActions
             type="outline"
             icon={<IconFile />}
             actions={
@@ -466,7 +466,7 @@ export const InsideItemButton: Story = {
             Hover to See Actions
           </ItemButton>
           <ItemButton
-            showActionsOnHover
+            autoHideActions
             type="outline"
             icon={<IconFile />}
             wrapperStyles={{ width: 'max 250px' }}
@@ -488,7 +488,7 @@ export const InsideItemButton: Story = {
     const canvas = within(canvasElement);
     const buttons = canvas.getAllByRole('button');
 
-    // Find the last button (with showActionsOnHover)
+    // Find the last button (with autoHideActions)
     if (buttons.length > 0) {
       await userEvent.hover(buttons[buttons.length - 1]);
     }
@@ -826,7 +826,7 @@ export const InteractiveExample: Story = {
           Report.xlsx
         </ItemButton>
         <ItemButton
-          showActionsOnHover
+          autoHideActions
           type="outline"
           icon={<IconFile />}
           actions={

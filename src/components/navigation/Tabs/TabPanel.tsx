@@ -3,7 +3,6 @@ import { useTabPanel } from 'react-aria';
 
 import { TabPanelElement } from './styled';
 
-import type { Key } from '@react-types/shared';
 import type { ReactNode } from 'react';
 import type { AriaTabPanelProps } from 'react-aria';
 import type { TabListState } from 'react-stately';
@@ -91,12 +90,10 @@ export function TabPanelRenderer({
     <TabPanelElement
       {...tabPanelProps}
       ref={ref}
+      mods={{ active: isActive }}
       qa={qa ?? 'TabPanel'}
       qaVal={qaVal ?? String(tabKey)}
       styles={panelStyles}
-      style={{
-        display: isActive ? 'contents' : 'none',
-      }}
     >
       {content}
     </TabPanelElement>
@@ -111,7 +108,7 @@ export interface CachedPanelRendererProps {
   parsedTabs: ParsedTab[];
   explicitPanels: Map<string, ParsedPanel>;
   state: TabListState<object>;
-  renderPanel: (key: Key) => ReactNode;
+  renderPanel: (key: string) => ReactNode;
   panelCacheKeys?: Record<string | number, CacheKeyValue>;
   prerender: boolean;
   keepMounted: boolean;

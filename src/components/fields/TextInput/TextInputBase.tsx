@@ -32,6 +32,7 @@ import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 
 const ADD_STYLES = {
+  $: '>',
   display: 'grid',
   placeContent: 'stretch',
   placeItems: 'center',
@@ -103,6 +104,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   Suffix: ADD_STYLES,
 
   State: {
+    $: '> Suffix >',
     display: 'flex',
   },
 
@@ -115,6 +117,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   },
 
   ValidationIcon: {
+    $: '> Suffix > State >',
     display: 'grid',
     placeItems: 'center',
     width: {

@@ -142,7 +142,7 @@ describe('Global Style Injector API', () => {
             name: 'test-plugin',
             tokens: {
               $plugin: '1x',
-              '#plugin-color': '#blue',
+              '#plugin': '#blue',
             },
           },
         ],
@@ -154,7 +154,7 @@ describe('Global Style Injector API', () => {
       const tokens = getGlobalPredefinedTokens();
       expect(tokens).toEqual({
         $plugin: '1x',
-        '#plugin-color': '#blue',
+        '#plugin': '#blue',
         $config: '2x',
       });
 
@@ -409,16 +409,16 @@ describe('Global Style Injector API', () => {
     });
 
     it('should deduplicate identical keyframes', () => {
-      const fadeA = keyframes({ from: 'opacity: 0;', to: 'opacity: 1;' });
-      const fadeB = keyframes({ from: 'opacity: 0;', to: 'opacity: 1;' });
+      const fadeA = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } });
+      const fadeB = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } });
 
       expect(fadeA.toString()).toBe(fadeB.toString());
     });
 
     it('should work with percentage steps', () => {
       const spin = keyframes({
-        '0%': 'transform: rotate(0deg);',
-        '100%': 'transform: rotate(360deg);',
+        '0%': { transform: 'rotate(0deg)' },
+        '100%': { transform: 'rotate(360deg)' },
       });
 
       expect(spin.toString()).toMatch(/^k\d+$/);
@@ -465,27 +465,29 @@ describe('Global Style Injector API', () => {
       expect(allCssText).not.toContain('marginTop');
     });
 
-    it('should handle mixed string and object values with camelCase', () => {
-      const mixedAnimation = keyframes({
-        '0%': 'opacity: 0; transform: scale(1);', // string value
+    it('should handle object values with camelCase', () => {
+      const animation = keyframes({
+        '0%': {
+          opacity: 0,
+          transform: 'scale(1)',
+        },
         '50%': {
           opacity: 0.5,
           transform: 'scale(1.2)',
           backgroundColor: 'yellow', // camelCase in object
         },
-        '100%': 'opacity: 1; transform: scale(1);', // string value
+        '100%': {
+          opacity: 1,
+          transform: 'scale(1)',
+        },
       });
 
-      expect(mixedAnimation.toString()).toMatch(/^k\d+$/);
+      expect(animation.toString()).toMatch(/^k\d+$/);
 
       const styleElements = document.head.querySelectorAll('[data-tasty]');
       const allCssText = Array.from(styleElements)
         .map((el) => el.textContent || '')
         .join('');
-
-      // Check string values are preserved as-is
-      expect(allCssText).toContain('opacity: 0; transform: scale(1)');
-      expect(allCssText).toContain('opacity: 1; transform: scale(1)');
 
       // Check object values have camelCase converted
       expect(allCssText).toContain('background-color: yellow');
@@ -499,9 +501,9 @@ describe('Global Style Injector API', () => {
 
       const pulse = keyframes(
         {
-          '0%': 'opacity: 0.5;',
-          '50%': 'opacity: 1;',
-          '100%': 'opacity: 0.5;',
+          '0%': { opacity: 0.5 },
+          '50%': { opacity: 1 },
+          '100%': { opacity: 0.5 },
         },
         { root: shadowRoot },
       );
@@ -511,7 +513,7 @@ describe('Global Style Injector API', () => {
     });
 
     it('should dispose keyframes properly', () => {
-      const fade = keyframes({ from: 'opacity: 0;', to: 'opacity: 1;' });
+      const fade = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } });
       const name = fade.toString();
 
       fade.dispose();
@@ -522,7 +524,7 @@ describe('Global Style Injector API', () => {
 
     it('should allow custom names via options', () => {
       const customFade = keyframes(
-        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        { from: { opacity: 0 }, to: { opacity: 1 } },
         { name: 'customFade' },
       );
 
@@ -531,7 +533,7 @@ describe('Global Style Injector API', () => {
 
     it('should allow custom names via string parameter', () => {
       const customFade = keyframes(
-        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        { from: { opacity: 0 }, to: { opacity: 1 } },
         'directName',
       );
 
@@ -540,14 +542,14 @@ describe('Global Style Injector API', () => {
 
     it('should cache by content (steps) for deduplication', () => {
       const fade1 = keyframes(
-        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        { from: { opacity: 0 }, to: { opacity: 1 } },
         { name: 'fade' },
       );
       const fade2 = keyframes(
-        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        { from: { opacity: 0 }, to: { opacity: 1 } },
         'fade',
       );
-      const fade3 = keyframes({ from: 'opacity: 0;', to: 'opacity: 1;' });
+      const fade3 = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } });
 
       expect(fade1.toString()).toBe('fade');
       expect(fade2.toString()).toBe('fade'); // Same content = reused
@@ -556,11 +558,11 @@ describe('Global Style Injector API', () => {
 
     it('should generate unique name for same name with different content', () => {
       const fade1 = keyframes(
-        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        { from: { opacity: 0 }, to: { opacity: 1 } },
         { name: 'fade' },
       );
       const fade2 = keyframes(
-        { from: 'opacity: 0.5;', to: 'opacity: 1;' }, // Different content
+        { from: { opacity: 0.5 }, to: { opacity: 1 } }, // Different content
         { name: 'fade' },
       );
 
@@ -571,7 +573,7 @@ describe('Global Style Injector API', () => {
     it('should allow same name after dispose (for dynamic updates)', () => {
       // Simulate dynamic update: inject A, dispose A, inject B with same name
       const fadeA = keyframes(
-        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        { from: { opacity: 0 }, to: { opacity: 1 } },
         { name: 'fade' },
       );
       expect(fadeA.toString()).toBe('fade');
@@ -581,7 +583,7 @@ describe('Global Style Injector API', () => {
 
       // Inject B with same name but different content
       const fadeB = keyframes(
-        { from: 'opacity: 0.5;', to: 'opacity: 1;' },
+        { from: { opacity: 0.5 }, to: { opacity: 1 } },
         { name: 'fade' },
       );
 

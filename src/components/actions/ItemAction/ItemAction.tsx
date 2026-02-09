@@ -117,6 +117,9 @@ const ItemActionElement = tasty({
   styles: {
     ...ITEM_ACTION_BASE_STYLES,
     reset: 'button',
+    appearance: 'none',
+    touchAction: 'manipulation',
+    textDecoration: 'none',
     outline: 0,
     outlineOffset: 1,
     cursor: { '': '$pointer', disabled: 'default' },

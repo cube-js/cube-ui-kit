@@ -1,6 +1,7 @@
 import { toSnakeCase } from '../utils/string';
 import {
   getRgbValuesFromRgbaString,
+  normalizeColorTokenValue,
   parseColor,
   parseStyle,
   strToRgb,
@@ -60,17 +61,23 @@ export function createStyle(
       // - "$foo" → "--foo"
       // - "#name"        → "--name-color" (alternative color definition syntax)
       let finalCssStyle: string;
-      if (
-        !cssStyle &&
-        typeof styleName === 'string' &&
-        styleName.startsWith('#')
-      ) {
+      const isColorToken =
+        !cssStyle && typeof styleName === 'string' && styleName.startsWith('#');
+
+      if (isColorToken) {
         const raw = styleName.slice(1);
         // Convert camelCase to kebab and remove possible leading dash from uppercase start
         const name = toSnakeCase(raw).replace(/^-+/, '');
         finalCssStyle = `--${name}-color`;
       } else {
         finalCssStyle = cssStyle || toSnakeCase(styleName).replace(/^\$/, '--');
+      }
+
+      // For color tokens, normalize boolean values (true → 'transparent', false → skip)
+      if (isColorToken) {
+        const normalized = normalizeColorTokenValue(styleValue);
+        if (normalized === null) return; // Skip false values
+        styleValue = normalized;
       }
 
       // convert non-string values

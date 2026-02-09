@@ -66,6 +66,7 @@ const ContentElement = tasty({
 
     // Custom scrollbar handles (when scrollbar="tiny")
     ScrollbarV: {
+      $: '>',
       position: 'absolute',
       right: '1px',
       top: '$scrollbar-v-top',
@@ -82,6 +83,7 @@ const ContentElement = tasty({
     },
 
     ScrollbarH: {
+      $: '>',
       position: 'absolute',
       bottom: '1px',
       left: '$scrollbar-h-left',

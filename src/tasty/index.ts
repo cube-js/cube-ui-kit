@@ -92,6 +92,7 @@ export type {
   ModValue,
   Tokens,
   TokenValue,
+  TastyExtensionConfig,
 } from './types';
 export type {
   StylesInterface,

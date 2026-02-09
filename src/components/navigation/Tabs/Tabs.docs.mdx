@@ -38,7 +38,7 @@ Customizes the root element of the Tabs component.
 
 **Sub-elements:**
 
-- `Container` - The container holding the tab buttons
+- `TabList` - The container holding the tab buttons
 - `Prefix` - Content rendered before the tab list
 - `Suffix` - Content rendered after the tab list
 - `ScrollWrapper` - Wrapper for scroll area and scrollbar positioning
@@ -173,7 +173,7 @@ Individual tabs accept these props in addition to style props:
 | `size` | `TabSize` | Override tab size for this tab |
 | `type` | `TabType` | Override tab type for this tab |
 | `actions` | `ReactNode` | Custom actions to render in the tab |
-| `showActionsOnHover` | `boolean` | Show actions only on hover (overrides Tabs-level) |
+| `autoHideActions` | `boolean` | Show actions only on hover (overrides Tabs-level) |
 | `isEditable` | `boolean` | Whether the tab title can be edited (overrides Tabs-level) |
 | `onTitleChange` | `(newTitle: string) => void` | Callback when title changes (overrides Tabs-level) |
 | `menu` | `ReactNode \| null` | Menu items for this tab (overrides Tabs-level, `null` disables) |

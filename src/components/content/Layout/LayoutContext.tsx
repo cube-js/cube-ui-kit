@@ -1,41 +1,107 @@
 import {
   createContext,
+  MutableRefObject,
   ReactNode,
-  useCallback,
   useContext,
   useMemo,
   useRef,
   useState,
 } from 'react';
 
+import { useEvent } from '../../../_internal/hooks';
+
 export type Side = 'left' | 'top' | 'right' | 'bottom';
+
+/**
+ * Refs context - stable refs that don't change and don't trigger re-renders.
+ * Provides portal container ref for panels to render into.
+ */
+export interface LayoutRefsContextValue {
+  /** Container element ref for panels to portal into */
+  panelContainerRef: MutableRefObject<HTMLDivElement | null>;
+  /** Whether the panel container is mounted and ready for portals */
+  isPanelContainerReady: boolean;
+  /** Callback ref to set on the panel container element */
+  setPanelContainer: (element: HTMLDivElement | null) => void;
+}
+
+export const LayoutRefsContext = createContext<LayoutRefsContextValue | null>(
+  null,
+);
+
+export function useLayoutRefsContext(): LayoutRefsContextValue | null {
+  return useContext(LayoutRefsContext);
+}
 
 /** Callback to dismiss an overlay panel */
 export type OverlayDismissCallback = () => void;
 
-export interface LayoutContextValue {
+/**
+ * Actions context - stable functions and configuration that don't change.
+ * Separating these from state prevents unnecessary re-renders when only state changes.
+ */
+export interface LayoutActionsContextValue {
+  /** Register a panel on a specific side with initial size */
   registerPanel: (side: Side, size: number) => void;
+  /** Unregister a panel from a specific side */
   unregisterPanel: (side: Side) => void;
+  /** Update the size of a registered panel */
   updatePanelSize: (side: Side, size: number) => void;
+  /** Set global dragging state (when any panel is being resized) */
   setDragging: (isDragging: boolean) => void;
+  /** Mark the layout as ready (after initial mount) */
   markReady: () => void;
-  panelSizes: Record<Side, number>;
-  isDragging: boolean;
-  isReady: boolean;
-  /** Whether transitions are enabled for panels */
-  hasTransition: boolean;
   /** Register an overlay panel's dismiss callback. Returns unregister function. */
   registerOverlayPanel: (dismiss: OverlayDismissCallback) => () => void;
   /** Dismiss all overlay panels */
   dismissOverlayPanels: () => void;
-  /** Whether there are any overlay panels currently open */
+  /** Whether transitions are enabled for panels (stable config value) */
+  hasTransition: boolean;
+}
+
+/** State context - reactive state that triggers re-renders */
+export interface LayoutStateContextValue {
+  panelSizes: Record<Side, number>;
+  isDragging: boolean;
+  isReady: boolean;
   hasOverlayPanels: boolean;
 }
 
-export const LayoutContext = createContext<LayoutContextValue | null>(null);
+export const LayoutActionsContext =
+  createContext<LayoutActionsContextValue | null>(null);
+export const LayoutStateContext = createContext<LayoutStateContextValue | null>(
+  null,
+);
 
+export function useLayoutActionsContext(): LayoutActionsContextValue | null {
+  return useContext(LayoutActionsContext);
+}
+
+export function useLayoutStateContext(): LayoutStateContextValue | null {
+  return useContext(LayoutStateContext);
+}
+
+/** Combined layout context value for convenience */
+export interface LayoutContextValue
+  extends LayoutActionsContextValue,
+    LayoutStateContextValue,
+    LayoutRefsContextValue {}
+
+/**
+ * Combined hook that returns all layout context values.
+ * Convenience wrapper around the individual context hooks.
+ * Returns null if used outside of a Layout component.
+ */
 export function useLayoutContext(): LayoutContextValue | null {
-  return useContext(LayoutContext);
+  const actions = useLayoutActionsContext();
+  const state = useLayoutStateContext();
+  const refs = useLayoutRefsContext();
+
+  if (!actions || !state || !refs) {
+    return null;
+  }
+
+  return { ...actions, ...state, ...refs };
 }
 
 export interface LayoutProviderProps {
@@ -50,6 +116,15 @@ export function LayoutProvider({
 }: LayoutProviderProps) {
   const registeredPanels = useRef<Set<Side>>(new Set());
   const overlayPanelCallbacks = useRef<Set<OverlayDismissCallback>>(new Set());
+  const panelContainerRef = useRef<HTMLDivElement | null>(null);
+  const [isPanelContainerReady, setIsPanelContainerReady] = useState(false);
+
+  // Callback ref for panel container - triggers re-render when container mounts
+  const setPanelContainer = useEvent((element: HTMLDivElement | null) => {
+    panelContainerRef.current = element;
+    setIsPanelContainerReady(element !== null);
+  });
+
   const [panelSizes, setPanelSizes] = useState<Record<Side, number>>({
     left: 0,
     top: 0,
@@ -60,7 +135,14 @@ export function LayoutProvider({
   const [isReady, setIsReady] = useState(false);
   const [hasOverlayPanels, setHasOverlayPanels] = useState(false);
 
-  const registerPanel = useCallback((side: Side, size: number) => {
+  const updatePanelSize = useEvent((side: Side, size: number) => {
+    setPanelSizes((prev) => {
+      if (prev[side] === size) return prev;
+      return { ...prev, [side]: size };
+    });
+  });
+
+  const registerPanel = useEvent((side: Side, size: number) => {
     if (registeredPanels.current.has(side)) {
       throw new Error(
         `Layout: Only one panel per side is allowed. ` +
@@ -85,89 +167,82 @@ export function LayoutProvider({
     }
 
     registeredPanels.current.add(side);
-    setPanelSizes((prev) => {
-      if (prev[side] === size) return prev;
-      return { ...prev, [side]: size };
-    });
-  }, []);
+    updatePanelSize(side, size);
+  });
 
-  const unregisterPanel = useCallback((side: Side) => {
+  const unregisterPanel = useEvent((side: Side) => {
     registeredPanels.current.delete(side);
-    setPanelSizes((prev) => {
-      if (prev[side] === 0) return prev;
-      return { ...prev, [side]: 0 };
-    });
-  }, []);
+    updatePanelSize(side, 0);
+  });
 
-  const updatePanelSize = useCallback((side: Side, size: number) => {
-    setPanelSizes((prev) => {
-      // Only update if the size actually changed
-      if (prev[side] === size) return prev;
-      return { ...prev, [side]: size };
-    });
-  }, []);
-
-  const setDragging = useCallback((dragging: boolean) => {
+  const setDragging = useEvent((dragging: boolean) => {
     setIsDragging(dragging);
-  }, []);
+  });
 
-  const markReady = useCallback(() => {
+  const markReady = useEvent(() => {
     setIsReady(true);
-  }, []);
+  });
 
-  // Register an overlay panel's dismiss callback
-  const registerOverlayPanel = useCallback(
-    (dismiss: OverlayDismissCallback) => {
-      overlayPanelCallbacks.current.add(dismiss);
-      setHasOverlayPanels(true);
+  const registerOverlayPanel = useEvent((dismiss: OverlayDismissCallback) => {
+    overlayPanelCallbacks.current.add(dismiss);
+    setHasOverlayPanels(true);
 
-      // Return unregister function
-      return () => {
-        overlayPanelCallbacks.current.delete(dismiss);
-        setHasOverlayPanels(overlayPanelCallbacks.current.size > 0);
-      };
-    },
-    [],
-  );
+    // Return unregister function
+    return () => {
+      overlayPanelCallbacks.current.delete(dismiss);
+      setHasOverlayPanels(overlayPanelCallbacks.current.size > 0);
+    };
+  });
 
-  // Dismiss all overlay panels
-  const dismissOverlayPanels = useCallback(() => {
+  const dismissOverlayPanels = useEvent(() => {
     overlayPanelCallbacks.current.forEach((dismiss) => dismiss());
-  }, []);
+  });
 
-  const value = useMemo(
+  // Actions context - stable because all callbacks use useEvent
+  const actionsValue = useMemo(
     () => ({
       registerPanel,
       unregisterPanel,
       updatePanelSize,
       setDragging,
       markReady,
-      panelSizes,
-      isDragging,
-      isReady,
       hasTransition,
       registerOverlayPanel,
       dismissOverlayPanels,
+    }),
+    // Only hasTransition can change - all other values are stable useEvent callbacks
+    [hasTransition],
+  );
+
+  // State context - changes when state updates
+  const stateValue = useMemo(
+    () => ({
+      panelSizes,
+      isDragging,
+      isReady,
       hasOverlayPanels,
     }),
-    [
-      registerPanel,
-      unregisterPanel,
-      updatePanelSize,
-      setDragging,
-      markReady,
-      panelSizes,
-      isDragging,
-      isReady,
-      hasTransition,
-      registerOverlayPanel,
-      dismissOverlayPanels,
-      hasOverlayPanels,
-    ],
+    [panelSizes, isDragging, isReady, hasOverlayPanels],
+  );
+
+  // Refs context - includes container ready state
+  const refsValue = useMemo(
+    () => ({
+      panelContainerRef,
+      isPanelContainerReady,
+      setPanelContainer,
+    }),
+    [isPanelContainerReady],
   );
 
   return (
-    <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>
+    <LayoutRefsContext.Provider value={refsValue}>
+      <LayoutActionsContext.Provider value={actionsValue}>
+        <LayoutStateContext.Provider value={stateValue}>
+          {children}
+        </LayoutStateContext.Provider>
+      </LayoutActionsContext.Provider>
+    </LayoutRefsContext.Provider>
   );
 }
 
@@ -177,7 +252,13 @@ export function LayoutProvider({
  */
 export function LayoutContextReset({ children }: { children: ReactNode }) {
   return (
-    <LayoutContext.Provider value={null}>{children}</LayoutContext.Provider>
+    <LayoutRefsContext.Provider value={null}>
+      <LayoutActionsContext.Provider value={null}>
+        <LayoutStateContext.Provider value={null}>
+          {children}
+        </LayoutStateContext.Provider>
+      </LayoutActionsContext.Provider>
+    </LayoutRefsContext.Provider>
   );
 }
 

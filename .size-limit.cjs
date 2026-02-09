@@ -34,6 +34,6 @@ module.exports = [
     path: './dist/es/index.js',
     webpack: true,
     import: '{ tasty }',
-    limit: '35kB',
+    limit: '36kB',
   },
 ];

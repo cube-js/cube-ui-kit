@@ -50,10 +50,7 @@ const RESET_MAP = {
   ],
   button: [
     {
-      appearance: 'none',
-      'touch-action': 'manipulation',
       '-webkit-tap-highlight-color': 'transparent',
-      'text-decoration': 'none',
     },
   ],
 };

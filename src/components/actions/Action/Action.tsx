@@ -32,6 +32,9 @@ const ActionElement = tasty({
   as: 'button',
   styles: {
     reset: 'button',
+    appearance: 'none',
+    touchAction: 'manipulation',
+    textDecoration: 'none',
     position: 'relative',
     margin: 0,
     preset: 'inherit',
@@ -40,7 +43,6 @@ const ActionElement = tasty({
     outline: 0,
     transition: 'theme',
     cursor: '$pointer',
-    textDecoration: 'none',
     fill: '#clear',
   },
 });

@@ -48,9 +48,6 @@ jest.mock('@tanstack/react-virtual', () => ({
 // These warnings occur because the form system uses asynchronous updates that are hard to wrap in act()
 const originalError = console.error;
 
-// Store the original console.error to restore it later
-let isConsoleSuppressed = false;
-
 // Override console.error globally to suppress act warnings
 const suppressedConsoleError = (...args: any[]) => {
   const firstArg = args[0];
@@ -80,3 +77,21 @@ const suppressedConsoleError = (...args: any[]) => {
 
 // Apply the suppression immediately
 console.error = suppressedConsoleError;
+
+// Suppress console.warn for tasty @container query rejections
+// These warnings occur because jsdom/cssom doesn't support CSS container style queries
+const originalWarn = console.warn;
+console.warn = (...args: any[]) => {
+  const firstArg = args[0];
+  const secondArg = args[1];
+  if (
+    typeof firstArg === 'string' &&
+    firstArg.includes('[tasty] Browser rejected CSS rule:')
+  ) {
+    // Only suppress @container query warnings (style() not supported in jsdom)
+    if (typeof secondArg === 'string' && secondArg.includes('@container')) {
+      return;
+    }
+  }
+  return originalWarn.call(console, ...args);
+};

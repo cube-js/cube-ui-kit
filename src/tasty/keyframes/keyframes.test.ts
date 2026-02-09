@@ -45,8 +45,8 @@ describe('Keyframes Utilities', () => {
       const keyframes = {
         fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
         slideIn: {
-          '0%': 'transform: translateX(-100%)',
-          '100%': 'transform: translateX(0)',
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(0)' },
         },
       };
       const styles: Styles = {
@@ -82,7 +82,7 @@ describe('Keyframes Utilities', () => {
       };
       const global = {
         fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
-        slideIn: { '0%': 'transform: translateX(-100%)' },
+        slideIn: { '0%': { transform: 'translateX(-100%)' } },
       };
       const result = mergeKeyframes(local, global);
       expect(result).toEqual({
@@ -241,7 +241,7 @@ describe('Keyframes Utilities', () => {
     it('should filter to only used keyframes', () => {
       const keyframes = {
         fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
-        slideIn: { '0%': 'transform: translateX(-100%)' },
+        slideIn: { '0%': { transform: 'translateX(-100%)' } },
         pulse: { '0%, 100%': { transform: 'scale(1)' } },
       };
       const result = filterUsedKeyframes(

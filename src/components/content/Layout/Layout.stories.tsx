@@ -82,6 +82,15 @@ const meta: Meta<typeof Layout> = {
         defaultValue: { summary: false },
       },
     },
+    doNotOverflow: {
+      control: 'boolean',
+      description:
+        'When true, applies overflow: hidden to the root element. By default, overflow is visible.',
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: false },
+      },
+    },
 
     /* Inner Element */
     innerRef: {
@@ -1325,4 +1334,51 @@ export const Center: Story = {
       </Layout.Center>
     </Layout>
   ),
+};
+
+/**
+ * The `doNotOverflow` prop controls the overflow behavior of the Layout root element.
+ * By default, overflow is visible. When `doNotOverflow` is true, overflow is hidden.
+ *
+ * This is useful when you want to clip content that exceeds the Layout boundaries.
+ */
+export const OverflowControl: Story = {
+  render: function OverflowControlStory() {
+    const [doNotOverflow, setDoNotOverflow] = useState(false);
+
+    return (
+      <Block height="300px" padding="4x" fill="#dark.04">
+        <Layout
+          height="100%"
+          width="300px"
+          fill="#white"
+          doNotOverflow={doNotOverflow}
+        >
+          <Layout.Toolbar>
+            <Button onPress={() => setDoNotOverflow(!doNotOverflow)}>
+              {doNotOverflow ? 'Allow Overflow' : 'Prevent Overflow'}
+            </Button>
+            <Text>
+              doNotOverflow: <b>{doNotOverflow ? 'true' : 'false'}</b>
+            </Text>
+          </Layout.Toolbar>
+          <Block
+            position="relative"
+            width="150%"
+            height="150px"
+            fill="#purple.2"
+            radius="1r"
+            padding="1x"
+            margin="1x"
+          >
+            <Text>
+              This block is wider than the Layout. Toggle the button to see the
+              difference between overflow: visible (default) and overflow:
+              hidden.
+            </Text>
+          </Block>
+        </Layout>
+      </Block>
+    );
+  },
 };

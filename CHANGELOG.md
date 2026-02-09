@@ -1,5 +1,96 @@
 # @cube-dev/ui-kit
 
+## 0.109.0
+
+### Minor Changes
+
+- [#1010](https://github.com/cube-js/cube-ui-kit/pull/1010) [`9f35c79e`](https://github.com/cube-js/cube-ui-kit/commit/9f35c79e171255e8a057a732e0247c5afd7a439c) Thanks [@tenphi](https://github.com/tenphi)! - - Fix Layout component z-index stacking by using DOM order instead of explicit z-index values
+  - Add `doNotOverflow` prop to Layout component to control overflow behavior
+  - **BREAKING**: Layout root element now defaults to `overflow: visible` instead of `overflow: hidden`. Use `doNotOverflow` prop to restore the previous behavior.
+
+## 0.108.5
+
+### Patch Changes
+
+- [#1009](https://github.com/cube-js/cube-ui-kit/pull/1009) [`f6efe1dc`](https://github.com/cube-js/cube-ui-kit/commit/f6efe1dc1c1b5795d7d90bf0c7f5b9df3be5f43c) Thanks [@tenphi](https://github.com/tenphi)! - Fix TextArea controlled state handling to prevent cursor position reset when typing
+
+- [#1006](https://github.com/cube-js/cube-ui-kit/pull/1006) [`93a65944`](https://github.com/cube-js/cube-ui-kit/commit/93a65944a0697e1b4c6a7a0288b397cebbdad9f6) Thanks [@tenphi](https://github.com/tenphi)! - Fix button reset styles by moving appearance, touchAction, and textDecoration from global reset to individual component styles
+
+## 0.108.4
+
+### Patch Changes
+
+- [#1004](https://github.com/cube-js/cube-ui-kit/pull/1004) [`7032020f`](https://github.com/cube-js/cube-ui-kit/commit/7032020f6ce7676a8992f0bf932ed581a4faa533) Thanks [@tenphi](https://github.com/tenphi)! - Fix style leaking in LayoutHeader and TextInput components by adding more specific CSS selectors to prevent styles from affecting unintended child elements.
+
+## 0.108.3
+
+### Patch Changes
+
+- [#1002](https://github.com/cube-js/cube-ui-kit/pull/1002) [`0890e022`](https://github.com/cube-js/cube-ui-kit/commit/0890e022fe1d57907dde6069993cf12821b98826) Thanks [@tenphi](https://github.com/tenphi)! - Fixed a bug where styles would intermittently disappear from elements after garbage collection. The issue occurred when multiple CSS rules were deleted at non-contiguous indices, causing index corruption for remaining rules.
+
+## 0.108.2
+
+### Patch Changes
+
+- [#997](https://github.com/cube-js/cube-ui-kit/pull/997) [`7b19f4d5`](https://github.com/cube-js/cube-ui-kit/commit/7b19f4d55c04ad38444e3dc7615e25412434d22b) Thanks [@tenphi](https://github.com/tenphi)! - Add missing bold weight tokens in presets.
+
+## 0.108.1
+
+### Patch Changes
+
+- [#994](https://github.com/cube-js/cube-ui-kit/pull/994) [`3516a129`](https://github.com/cube-js/cube-ui-kit/commit/3516a129658f8dac4e064c0df7c9ee78fa9b03eb) Thanks [@tenphi](https://github.com/tenphi)! - Export tasty.config.ts
+
+- [#995](https://github.com/cube-js/cube-ui-kit/pull/995) [`cbc20da3`](https://github.com/cube-js/cube-ui-kit/commit/cbc20da3c86ab6bdf8d2f37af4e199afa6aff057) Thanks [@tenphi](https://github.com/tenphi)! - Fix unnecessary re-renders in Tabs component:
+
+  - Fix actions width measurement effect dependency
+  - Stabilize `getAllowedDropOperations` callback in drag/drop hooks
+
+  Fix ItemButton missing hover/press/focus states by not overriding actionProps.mods
+
+- [#994](https://github.com/cube-js/cube-ui-kit/pull/994) [`3516a129`](https://github.com/cube-js/cube-ui-kit/commit/3516a129658f8dac4e064c0df7c9ee78fa9b03eb) Thanks [@tenphi](https://github.com/tenphi)! - Migrate all `@keyframes` definitions to use object format for style values instead of raw CSS strings. This ensures consistent token processing and better type safety.
+
+## 0.108.0
+
+### Minor Changes
+
+- [#988](https://github.com/cube-js/cube-ui-kit/pull/988) [`77b87cec`](https://github.com/cube-js/cube-ui-kit/commit/77b87cec90dbb00af09a07c0d7717bc89aa647f2) Thanks [@tenphi](https://github.com/tenphi)! - Add HueSlider component for selecting hue values (0-359) with a rainbow gradient track using okhsl color space. The thumb dynamically reflects the current hue color.
+
+  Add `trackStyles`, `thumbStyles`, and `thumbTokens` props to the Slider component to enable customization of track and thumb elements. The thumb fill color can be customized via `#slider-thumb` and `#slider-thumb-hovered` color tokens.
+
+- [#993](https://github.com/cube-js/cube-ui-kit/pull/993) [`8b539949`](https://github.com/cube-js/cube-ui-kit/commit/8b5399490a7fbc6d3e4d64726717a419125f8e6f) Thanks [@tenphi](https://github.com/tenphi)! - Add support for boolean `true` values in color tokens. When `true` is provided for a color token (`#name`), it converts to `transparent`. This works in:
+
+  - Component styles: `#overlay: { '': true, ':hover': '#purple' }`
+  - Tokens prop: `<Element tokens={{ '#overlay': true }} />`
+  - Global config: `configure({ tokens: { '#surface': true } })`
+
+  Boolean `false` skips the token entirely (no CSS output).
+
+- [#993](https://github.com/cube-js/cube-ui-kit/pull/993) [`8b539949`](https://github.com/cube-js/cube-ui-kit/commit/8b5399490a7fbc6d3e4d64726717a419125f8e6f) Thanks [@tenphi](https://github.com/tenphi)! - Rename `showActionsOnHover` prop to `autoHideActions` in Item, ItemButton, and Tabs components. The new name better reflects the behavior: actions are hidden by default and revealed on hover, focus, or when an action is pressed.
+
+- [#988](https://github.com/cube-js/cube-ui-kit/pull/988) [`77b87cec`](https://github.com/cube-js/cube-ui-kit/commit/77b87cec90dbb00af09a07c0d7717bc89aa647f2) Thanks [@tenphi](https://github.com/tenphi)! - Allow passing `false` to sub-element keys in tasty styles to remove all styles for that sub-element when extending/wrapping styled components.
+
+  ```tsx
+  const CustomTable = tasty(Table, {
+    Cell: false, // Removes all Cell styles from the base component
+  });
+  ```
+
+  Nullish values (`null`, `undefined`) are treated as ignored (no change to styles).
+
+### Patch Changes
+
+- [#989](https://github.com/cube-js/cube-ui-kit/pull/989) [`6fb56a68`](https://github.com/cube-js/cube-ui-kit/commit/6fb56a6865ccf388f6d6cc0afd8404d9d463d800) Thanks [@tenphi](https://github.com/tenphi)! - Fix nested Layout panels affecting parent layouts by splitting context into actions and state, and add LayoutContextReset component to isolate nested panel contexts.
+
+  Layout.Panel now uses React portals for rendering, which allows panels to work correctly even when wrapped in custom components. This removes the need for child detection heuristics and ensures reliable panel positioning regardless of component composition.
+
+- [#992](https://github.com/cube-js/cube-ui-kit/pull/992) [`945375c4`](https://github.com/cube-js/cube-ui-kit/commit/945375c4bdf22e5c8214fbac8bf3a84e40f181a8) Thanks [@tenphi](https://github.com/tenphi)! - Update Tabs component API to use `string` type instead of `Key` for all key-related props and callbacks. This aligns the public API with the internal implementation which already converts keys to strings for React Aria compatibility.
+
+- [#993](https://github.com/cube-js/cube-ui-kit/pull/993) [`8b539949`](https://github.com/cube-js/cube-ui-kit/commit/8b5399490a7fbc6d3e4d64726717a419125f8e6f) Thanks [@tenphi](https://github.com/tenphi)! - Improve Tabs component styling with better element selectors and enhanced visual appearance. Updated shadow handling for file type tabs and refined scrollbar positioning in Layout components.
+
+- [#993](https://github.com/cube-js/cube-ui-kit/pull/993) [`8b539949`](https://github.com/cube-js/cube-ui-kit/commit/8b5399490a7fbc6d3e4d64726717a419125f8e6f) Thanks [@tenphi](https://github.com/tenphi)! - Add styling props to Tabs component for sub-element customization: `tabListPadding`, `tabListStyles`, `prefixStyles`, and `suffixStyles`.
+
+- [#993](https://github.com/cube-js/cube-ui-kit/pull/993) [`8b539949`](https://github.com/cube-js/cube-ui-kit/commit/8b5399490a7fbc6d3e4d64726717a419125f8e6f) Thanks [@tenphi](https://github.com/tenphi)! - Add `useMergeStyles` hook for merging base styles with sub-element style props. Simplifies accepting props like `tabListStyles`, `prefixStyles` that merge into `styles.TabList`, `styles.Prefix`.
+
 ## 0.107.0
 
 ### Minor Changes

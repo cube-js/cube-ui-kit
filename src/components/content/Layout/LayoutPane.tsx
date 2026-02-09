@@ -107,6 +107,7 @@ const PaneElement = tasty({
     },
 
     ScrollbarH: {
+      $: '>',
       position: 'absolute',
       bottom: {
         '': '1px',
@@ -128,7 +129,6 @@ const PaneElement = tasty({
     // Compact resize handler - only drag dots
     ResizeHandler: {
       position: 'absolute',
-      zIndex: 1,
       // Size: 9px interactive area
       width: {
         '': '100%',
