@@ -1,5 +1,25 @@
 # @cube-dev/ui-kit
 
+## 0.111.0
+
+### Minor Changes
+
+- [#1017](https://github.com/cube-js/cube-ui-kit/pull/1017) [`82100de3`](https://github.com/cube-js/cube-ui-kit/commit/82100de3dbd9957b4a2846be8e2744226f866c54) Thanks [@tenphi](https://github.com/tenphi)! - Added Banner component with Banner.Action and Banner.Link sub-components for displaying contextual notifications and alerts with support for danger, warning, note, and success themes.
+
+### Patch Changes
+
+- [#1018](https://github.com/cube-js/cube-ui-kit/pull/1018) [`8552358e`](https://github.com/cube-js/cube-ui-kit/commit/8552358e0e03f895d63d28105a50e8d3e518edc7) Thanks [@tenphi](https://github.com/tenphi)! - Fix button colors to ensure proper contrast and consistent styling across all button variants
+
+- [#1018](https://github.com/cube-js/cube-ui-kit/pull/1018) [`8552358e`](https://github.com/cube-js/cube-ui-kit/commit/8552358e0e03f895d63d28105a50e8d3e518edc7) Thanks [@tenphi](https://github.com/tenphi)! - Fix color RGB custom property generation and @property syntax
+
+  - Fix `convertColorChainToRgbChain` to correctly extract RGB values from `rgb(var(--name-color-rgb) / alpha)` patterns. Previously, `--current-color-rgb` was incorrectly set to the full `rgb()` expression instead of just the `var(--name-color-rgb)` reference.
+  - Fix `INTERNAL_PROPERTIES` syntax: change invalid `<number> <number> <number>` syntax to valid `<number>+` for RGB triplet properties.
+  - Automatically create companion `-rgb` custom properties when registering color `@property` definitions. Color properties (e.g., `#white`) now automatically get their `--white-color-rgb` companion with proper syntax and initial value derived from the color's initial value.
+
+- [#1020](https://github.com/cube-js/cube-ui-kit/pull/1020) [`c60c03a3`](https://github.com/cube-js/cube-ui-kit/commit/c60c03a335c590f7600d2e75bac3a409e2d7c5d9) Thanks [@tenphi](https://github.com/tenphi)! - Fixed SubmitButton to properly disable when form is submitting, preventing double submissions.
+
+- [#1016](https://github.com/cube-js/cube-ui-kit/pull/1016) [`c468f38b`](https://github.com/cube-js/cube-ui-kit/commit/c468f38b382b23043b1a46fc9c11499499e467a0) Thanks [@tenphi](https://github.com/tenphi)! - Set the default menu size inside popovers to max-content.
+
 ## 0.110.0
 
 ### Minor Changes
