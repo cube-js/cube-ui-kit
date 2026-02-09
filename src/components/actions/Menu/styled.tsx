@@ -13,6 +13,10 @@ export const StyledMenuWrapper = tasty({
     padding: 0,
     border: true,
     radius: '(1cr + 1bw)',
+    width: {
+      '': 'auto',
+      popover: 'max-content',
+    },
     shadow: {
       '': '',
       'popover | tray': '0px 5px 15px #dark.05',
