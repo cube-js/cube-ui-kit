@@ -14,7 +14,7 @@ exports[`tasty() API should allow nested modifiers 1`] = `
 `;
 
 exports[`tasty() API should be able to override styles 1`] = `
-".t17.t17 {color: rgb(var(--black-color-rgb) / .1); --current-color: rgb(var(--black-color-rgb) / .1); --current-color-rgb: rgb(var(--black-color-rgb) / .1);}
+".t17.t17 {color: rgb(var(--black-color-rgb) / .1); --current-color: rgb(var(--black-color-rgb) / .1); --current-color-rgb: var(--black-color-rgb);}
 .t12.t12 {display: block;}"
 `;
 
@@ -71,7 +71,7 @@ exports[`tasty() API should optimize attribute selectors 3`] = `
 `;
 
 exports[`tasty() API should pass styles from tasty 1`] = `
-".t11.t11 {color: rgb(var(--clear-color-rgb) / .1); --current-color: rgb(var(--clear-color-rgb) / .1); --current-color-rgb: rgb(var(--clear-color-rgb) / .1);}
+".t11.t11 {color: rgb(var(--clear-color-rgb) / .1); --current-color: rgb(var(--clear-color-rgb) / .1); --current-color-rgb: var(--clear-color-rgb);}
 .t12.t12 {display: block;}"
 `;
 
