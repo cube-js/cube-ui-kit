@@ -17,7 +17,7 @@ import {
   mergeKeyframes,
   replaceAnimationNames,
 } from '../keyframes';
-import { RenderResult, renderStyles } from '../pipeline';
+import { RenderResult } from '../pipeline';
 import { extractLocalProperties, hasLocalProperties } from '../properties';
 import { Styles } from '../styles/types';
 import { stringifyStyles } from '../utils/styles';
@@ -27,7 +27,8 @@ import { stringifyStyles } from '../utils/styles';
  *
  * @starting-style CSS cannot be applied via multiple class names because
  * of cascade - later rules override earlier ones. When @starting is detected,
- * we disable chunking and use a single class name for all styles.
+ * we combine top-level styles into a single chunk but keep sub-element styles
+ * in their own chunk for better caching.
  */
 function containsStartingStyle(styleKey: string): boolean {
   return styleKey.includes('@starting');
@@ -57,6 +58,60 @@ interface ProcessedChunk {
   cacheKey: string;
   renderResult: RenderResult;
   className: string;
+}
+
+/**
+ * Render, cache-key, and allocate a className for a single chunk.
+ * Returns a ProcessedChunk, or null if the chunk produces no CSS rules.
+ */
+function processChunk(
+  styles: Styles,
+  chunkName: string,
+  styleKeys: string[],
+): ProcessedChunk | null {
+  if (styleKeys.length === 0) return null;
+
+  const renderResult = renderStylesForChunk(styles, chunkName, styleKeys);
+  if (renderResult.rules.length === 0) return null;
+
+  const cacheKey = generateChunkCacheKey(styles, chunkName, styleKeys);
+  const { className } = allocateClassName(cacheKey);
+
+  return { name: chunkName, styleKeys, cacheKey, renderResult, className };
+}
+
+/**
+ * Merge chunk map entries for @starting-style partial chunking.
+ *
+ * All non-subcomponent chunks are merged into a single COMBINED entry,
+ * while SUBCOMPONENTS stays separate. This preserves CSS cascade for
+ * @starting-style while still allowing sub-element styles to cache independently.
+ */
+function mergeChunksForStartingStyle(
+  chunkMap: Map<string, string[]>,
+): Map<string, string[]> {
+  const merged = new Map<string, string[]>();
+  const combinedKeys: string[] = [];
+
+  for (const [chunkName, keys] of chunkMap) {
+    if (chunkName === CHUNK_NAMES.SUBCOMPONENTS) {
+      merged.set(CHUNK_NAMES.SUBCOMPONENTS, keys);
+    } else {
+      combinedKeys.push(...keys);
+    }
+  }
+
+  if (combinedKeys.length > 0) {
+    // Insert COMBINED first so it appears before SUBCOMPONENTS
+    const result = new Map<string, string[]>();
+    result.set(CHUNK_NAMES.COMBINED, combinedKeys);
+    for (const [k, v] of merged) {
+      result.set(k, v);
+    }
+    return result;
+  }
+
+  return merged;
 }
 
 /**
@@ -140,70 +195,26 @@ export function useStyles(styles: UseStylesOptions): UseStylesResult {
       return [];
     }
 
-    // Disable chunking for styles containing @starting-style rules.
-    // @starting-style CSS cannot work with multiple class names due to cascade -
-    // the rules would override each other instead of combining properly.
-    if (containsStartingStyle(styleKey)) {
-      const renderResult = renderStyles(currentStyles);
-
-      if (renderResult.rules.length === 0) {
-        return [];
-      }
-
-      const { className } = allocateClassName(styleKey);
-
-      return [
-        {
-          name: CHUNK_NAMES.COMBINED,
-          styleKeys: Object.keys(currentStyles),
-          cacheKey: styleKey,
-          renderResult,
-          className,
-        },
-      ];
-    }
-
     // Categorize style keys into chunks
-    const chunkMap = categorizeStyleKeys(
+    let chunkMap = categorizeStyleKeys(
       currentStyles as Record<string, unknown>,
     );
+
+    // Partial chunking for styles containing @starting-style rules.
+    // @starting-style CSS cannot work with multiple class names due to cascade,
+    // so we merge all top-level chunks into one but keep sub-element styles separate.
+    if (containsStartingStyle(styleKey)) {
+      chunkMap = mergeChunksForStartingStyle(chunkMap);
+    }
+
+    // Process each chunk: render → cache key → allocate className
     const chunks: ProcessedChunk[] = [];
 
     for (const [chunkName, chunkStyleKeys] of chunkMap) {
-      // Skip empty chunks
-      if (chunkStyleKeys.length === 0) {
-        continue;
+      const chunk = processChunk(currentStyles, chunkName, chunkStyleKeys);
+      if (chunk) {
+        chunks.push(chunk);
       }
-
-      // Generate cache key for this chunk
-      const cacheKey = generateChunkCacheKey(
-        currentStyles,
-        chunkName,
-        chunkStyleKeys,
-      );
-
-      // Render styles for this chunk
-      const renderResult = renderStylesForChunk(
-        currentStyles,
-        chunkName,
-        chunkStyleKeys,
-      );
-
-      // Skip chunks with no rules
-      if (renderResult.rules.length === 0) {
-        continue;
-      }
-
-      // Allocate className for this chunk (safe in render phase)
-      const { className } = allocateClassName(cacheKey);
-
-      chunks.push({
-        name: chunkName,
-        styleKeys: chunkStyleKeys,
-        cacheKey,
-        renderResult,
-        className,
-      });
     }
 
     return chunks;
