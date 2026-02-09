@@ -1,0 +1,205 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Banner } from './Banner';
+import * as BannerStories from './Banner.stories';
+
+<Meta of={BannerStories} />
+
+# Banner
+
+Banner displays prominent messages and notifications to users. It supports different visual themes with appropriate icons and can include action buttons and inline links.
+
+## When to Use
+
+- Display system-wide notifications or alerts that require user attention
+- Show billing, subscription, or account status warnings
+- Communicate deployment errors or operational issues
+- Provide contextual information with optional calls-to-action
+
+## Component
+
+<Story of={BannerStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={BannerStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the component.
+
+**Sub-elements:**
+- `Label` - The main text content area
+- `Actions` - Container for action buttons
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| theme | `'danger' \| 'warning' \| 'note' \| 'success'` | Visual theme of the banner |
+
+## Variants
+
+### Themes
+
+- `note` (default) - Informational messages, tips, or neutral notifications
+- `warning` - Alerts that require attention but are not critical
+- `danger` - Critical errors or issues that need immediate action
+- `success` - Confirmation of successful operations
+
+<Story of={BannerStories.Themes} />
+
+## Sub-components
+
+### Banner.Action
+
+Action button styled to match the banner's theme. Use for primary calls-to-action.
+
+```jsx
+<Banner theme="warning" actions={<Banner.Action to="/upgrade">Upgrade Plan</Banner.Action>}>
+  You are approaching your monthly API request limit.
+</Banner>
+```
+
+### Banner.Link
+
+Inline link styled with white color and underline. Use for links within the banner's text content.
+
+```jsx
+<Banner theme="danger">
+  <Banner.Link to="https://docs.example.com">Daily limit</Banner.Link> exceeded.
+  Please contact support.
+</Banner>
+```
+
+## Examples
+
+### Basic Banner
+
+```jsx
+<Banner theme="note">
+  Scheduled maintenance will occur on Sunday at 2:00 AM UTC.
+</Banner>
+```
+
+### Dismissible Banner
+
+```jsx
+<Banner theme="success" isDismissible onDismiss={() => console.log('Dismissed')}>
+  Your deployment has been successfully updated.
+</Banner>
+```
+
+### Banner with Actions
+
+```jsx
+<Banner
+  theme="danger"
+  actions={
+    <>
+      <Banner.Action to="/billing">Go to Billing</Banner.Action>
+      <Banner.Action onPress={() => openChat()}>Contact us</Banner.Action>
+    </>
+  }
+>
+  Your account has been suspended due to payment failure.
+</Banner>
+```
+
+### Banner with Inline Links
+
+<Story of={BannerStories.WithLinks} />
+
+```jsx
+<Banner theme="warning" actions={<Banner.Action>Upgrade tier</Banner.Action>}>
+  The selected time range exceeds{' '}
+  <Banner.Link to="https://docs.example.com/retention">
+    the retention period
+  </Banner.Link>
+  . To extend this period, please upgrade or contact us.
+</Banner>
+```
+
+### Stacked Banners
+
+Use `shape="sharp"` when stacking multiple banners to remove gaps between them.
+
+<Story of={BannerStories.Stacked} />
+
+```jsx
+<Flex flow="column">
+  <Banner theme="danger" shape="sharp">Critical alert</Banner>
+  <Banner theme="warning" shape="sharp">Warning message</Banner>
+  <Banner theme="note" shape="sharp">Information</Banner>
+</Flex>
+```
+
+### Custom Icon
+
+```jsx
+import { IconBell } from '@tabler/icons-react';
+
+<Banner theme="note" icon={<IconBell />} isDismissible>
+  You have new notifications.
+</Banner>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to action buttons within the banner
+- `Space/Enter` - Activates focused action button or dismiss button
+
+### Screen Reader Support
+
+- Banner has `role="status"` to announce content changes
+- Dismiss button includes tooltip "Hide banner" for accessibility
+
+### ARIA Properties
+
+- `role="status"` - Announces the banner as a status message
+- Action buttons inherit proper focus management from Item.Action
+
+## Best Practices
+
+1. **Do**: Use appropriate theme for the message severity
+
+```jsx
+<Banner theme="danger">Critical error requiring immediate action</Banner>
+<Banner theme="warning">Warning that needs attention</Banner>
+<Banner theme="note">Informational message</Banner>
+<Banner theme="success">Success confirmation</Banner>
+```
+
+2. **Do**: Keep banner messages concise and actionable
+
+```jsx
+<Banner theme="warning" actions={<Banner.Action>Upgrade</Banner.Action>}>
+  API usage at 85% of monthly limit.
+</Banner>
+```
+
+3. **Don't**: Use banners for non-important information that doesn't need prominent display
+
+4. **Do**: Use Banner.Link for inline links within content, Banner.Action for buttons
+
+```jsx
+<Banner theme="danger" actions={<Banner.Action>Contact us</Banner.Action>}>
+  <Banner.Link to="/docs/limits">Daily limit</Banner.Link> exceeded.
+</Banner>
+```
+
+## Related Components
+
+- [Item](/docs/content-item--docs) - Base component that Banner extends
+- [ItemAction](/docs/actions-itemaction--docs) - Action button component used by Banner.Action

@@ -8,6 +8,7 @@ const Button = Object.assign(
   { Group: ButtonGroup },
 );
 
+export * from './Banner';
 export * from './Button';
 export * from './Action/Action';
 export * from './ItemAction';
