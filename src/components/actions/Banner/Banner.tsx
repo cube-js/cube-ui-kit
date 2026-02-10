@@ -48,7 +48,7 @@ const BannerElement = tasty(Item, {
   styles: {
     width: '100%',
 
-    Label: {
+    Description: {
       textOverflow: 'ellipsis / 2',
       textWrap: 'initial',
     },
