@@ -45,7 +45,6 @@ const DEFAULT_ICONS: Record<BannerTheme, ReactNode> = {
 };
 
 const BannerElement = tasty(Item, {
-  descriptionPlacement: 'block',
   styles: {
     width: '100%',
 
