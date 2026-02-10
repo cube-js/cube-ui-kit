@@ -3,6 +3,7 @@ import { useInsertionEffect, useMemo, useRef } from 'react';
 import { injectGlobal } from '../injector';
 import { renderStyles, StyleResult } from '../pipeline';
 import { Styles } from '../styles/types';
+import { resolveRecipes } from '../utils/resolve-recipes';
 
 /**
  * Hook to inject global styles for a given selector.
@@ -27,10 +28,16 @@ import { Styles } from '../styles/types';
 export function useGlobalStyles(selector: string, styles?: Styles): void {
   const disposeRef = useRef<(() => void) | null>(null);
 
+  // Resolve recipes before rendering (zero overhead if no recipes configured)
+  const resolvedStyles = useMemo(() => {
+    if (!styles) return styles;
+    return resolveRecipes(styles);
+  }, [styles]);
+
   // Render styles with the provided selector
   // Note: renderStyles overload with selector string returns StyleResult[] directly
   const styleResults = useMemo((): StyleResult[] => {
-    if (!styles) return [];
+    if (!resolvedStyles) return [];
 
     // Validate selector - empty string would cause renderStyles to return RenderResult instead of StyleResult[]
     if (!selector) {
@@ -43,10 +50,10 @@ export function useGlobalStyles(selector: string, styles?: Styles): void {
       return [];
     }
 
-    const result = renderStyles(styles, selector);
+    const result = renderStyles(resolvedStyles, selector);
     // When a non-empty selector is provided, renderStyles returns StyleResult[]
     return result as StyleResult[];
-  }, [styles, selector]);
+  }, [resolvedStyles, selector]);
 
   // Inject as global styles
   useInsertionEffect(() => {

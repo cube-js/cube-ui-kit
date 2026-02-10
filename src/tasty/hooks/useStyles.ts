@@ -20,6 +20,7 @@ import {
 import { RenderResult } from '../pipeline';
 import { extractLocalProperties, hasLocalProperties } from '../properties';
 import { Styles } from '../styles/types';
+import { resolveRecipes } from '../utils/resolve-recipes';
 import { stringifyStyles } from '../utils/styles';
 
 /**
@@ -174,17 +175,23 @@ export function useStyles(styles: UseStylesOptions): UseStylesResult {
     styles: undefined,
   });
 
+  // Resolve recipes before any processing (zero overhead if no recipes configured)
+  const resolvedStyles = useMemo(() => {
+    if (!styles) return styles;
+    return resolveRecipes(styles);
+  }, [styles]);
+
   // Compute style key - this is a primitive string that captures style content
   const styleKey = useMemo(() => {
-    if (!styles || Object.keys(styles).length === 0) {
+    if (!resolvedStyles || Object.keys(resolvedStyles).length === 0) {
       return '';
     }
-    return stringifyStyles(styles);
-  }, [styles]);
+    return stringifyStyles(resolvedStyles);
+  }, [resolvedStyles]);
 
   // Update ref when styleKey changes (content actually changed)
   if (stylesRef.current.key !== styleKey) {
-    stylesRef.current = { key: styleKey, styles };
+    stylesRef.current = { key: styleKey, styles: resolvedStyles };
   }
 
   // Process chunks: categorize, generate cache keys, render, and allocate classNames

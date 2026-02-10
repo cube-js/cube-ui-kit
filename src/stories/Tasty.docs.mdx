@@ -130,6 +130,7 @@ configure({
 | `tokens` | `Record<string, string \| number>` | - | Predefined tokens replaced during parsing |
 | `keyframes` | `Record<string, KeyframesSteps>` | - | Global keyframes for animations |
 | `properties` | `Record<string, PropertyDefinition>` | - | Global CSS @property definitions |
+| `recipes` | `Record<string, StylesWithoutSelectors>` | - | Predefined style recipes (named style bundles) |
 
 ### Predefined Tokens
 
@@ -184,6 +185,70 @@ const Button = tasty({
 | Output | Baked into CSS classes | Inline CSS custom properties |
 | Runtime | Static | Dynamic (can change) |
 | Use case | Design system values | Dynamic/computed values |
+
+### Recipes
+
+Recipes are predefined, named style bundles that can be applied to any component via the `recipe` style property. Think of them like CSS utility classes, but without cascade issues -- component styles always override recipe values.
+
+```jsx
+configure({
+  recipes: {
+    card: {
+      padding: '4x',
+      fill: '#surface',
+      radius: '1r',
+      border: true,
+    },
+    elevated: {
+      shadow: '2x 2x 4x #shadow',
+    },
+    rounded: {
+      radius: '2r',
+    },
+  },
+});
+```
+
+**Using recipes in components:**
+
+```jsx
+// Apply a single recipe
+const Card = tasty({
+  styles: {
+    recipe: 'card',
+    color: '#text', // Component styles override recipe values
+  },
+});
+
+// Compose multiple recipes (merged in order)
+const ElevatedCard = tasty({
+  styles: {
+    recipe: 'card, elevated',
+    color: '#text',
+  },
+});
+
+// Recipes in sub-elements
+const Panel = tasty({
+  styles: {
+    recipe: 'card',
+    Title: {
+      recipe: 'header',
+      fontWeight: 'bold',
+    },
+  },
+});
+```
+
+**Merging order:** `recipe_1 → recipe_2 → ... → component styles`. Later recipes override earlier ones, and component styles always win.
+
+**Key rules:**
+- Recipes are flat styles -- they cannot contain sub-element keys
+- Recipes cannot reference other recipes -- for composition, list multiple recipes: `recipe: 'card, elevated, rounded'`
+- Use `recipe: ''` (empty string) to clear recipes when extending a base component
+- Recipes may contain `@keyframes`, `@properties`, and token definitions (`$name`/`#name`)
+
+**Performance:** When no `recipe` key is present in styles, the overhead is negligible (a single property check). When recipes are used, styles are resolved once and then enter the normal caching pipeline.
 
 ### Built-in Units
 
@@ -429,6 +494,18 @@ const ButtonElement = tasty({
 - Supports `mods` (generates `data-*` attributes).
 - Supports `isDisabled`, `isHidden`, `isChecked` (mapped to native attributes + `data-*`).
 - Supports `tokens` (rendered as inline CSS custom properties; merged with `style`, where `style` has priority).
+
+### Recipe
+
+A predefined, named style bundle registered via `configure({ recipes })`. Applied to components via the `recipe` style property. Multiple recipes are composed with commas. Component styles always override recipe values.
+
+```jsx
+// In config
+recipes: { card: { padding: '4x', fill: '#surface', radius: '1r' } }
+
+// In styles
+styles: { recipe: 'card', color: '#text' }
+```
 
 ### Custom Styles
 

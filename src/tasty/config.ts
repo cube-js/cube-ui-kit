@@ -12,7 +12,7 @@
  */
 
 import { StyleInjector } from './injector/injector';
-import { clearPipelineCache } from './pipeline';
+import { clearPipelineCache, isSelector } from './pipeline';
 import { setGlobalPredefinedStates } from './states';
 import {
   normalizeHandlerDefinition,
@@ -32,6 +32,7 @@ import {
 import type { KeyframesSteps, PropertyDefinition } from './injector/types';
 import type { StyleDetails, UnitHandler } from './parser/types';
 import type { TastyPlugin } from './plugins/types';
+import type { StylesWithoutSelectors } from './styles/types';
 import type { StyleHandlerDefinition } from './utils/styles';
 
 /**
@@ -204,6 +205,36 @@ export interface TastyConfig {
   } & {
     [key: `#${string}`]: string | number | boolean;
   };
+  /**
+   * Predefined style recipes -- named style bundles that can be applied via `recipe` style property.
+   * Recipe values are flat tasty styles (no sub-element keys). They may contain base styles,
+   * tokens (`$name`/`#name` definitions), local states, `@keyframes`, and `@properties`.
+   *
+   * Components reference recipes via: `recipe: 'name1, name2'` in their styles.
+   * Recipes are resolved before the style pipeline by merging in order:
+   * `recipe_1 → recipe_2 → ... → component styles`.
+   *
+   * Recipes cannot reference other recipes.
+   *
+   * @example
+   * ```ts
+   * configure({
+   *   recipes: {
+   *     card: { padding: '4x', fill: '#surface', radius: '1r', border: true },
+   *     elevated: { shadow: '2x 2x 4x #shadow' },
+   *   },
+   * });
+   *
+   * // Usage in styles:
+   * const Card = tasty({
+   *   styles: {
+   *     recipe: 'card, elevated',
+   *     color: '#text', // Overrides recipe values
+   *   },
+   * });
+   * ```
+   */
+  recipes?: Record<string, StylesWithoutSelectors>;
 }
 
 // Warnings tracking to avoid duplicates
@@ -236,6 +267,9 @@ let globalKeyframes: Record<string, KeyframesSteps> | null = null;
 
 // Global properties storage (null = no properties configured)
 let globalProperties: Record<string, PropertyDefinition> | null = null;
+
+// Global recipes storage (null = no recipes configured)
+let globalRecipes: Record<string, StylesWithoutSelectors> | null = null;
 
 /**
  * Internal properties required by tasty core features.
@@ -449,6 +483,72 @@ function setGlobalProperties(
   globalProperties = properties;
 }
 
+// ============================================================================
+// Global Recipes Management
+// ============================================================================
+
+/**
+ * Check if any global recipes are configured.
+ * Fast path: returns false if no recipes were ever set.
+ */
+export function hasGlobalRecipes(): boolean {
+  return globalRecipes !== null && Object.keys(globalRecipes).length > 0;
+}
+
+/**
+ * Get global recipes configuration.
+ * Returns null if no recipes configured (fast path for zero-overhead).
+ */
+export function getGlobalRecipes(): Record<
+  string,
+  StylesWithoutSelectors
+> | null {
+  return globalRecipes;
+}
+
+/**
+ * Set global recipes (called from configure).
+ * Internal use only.
+ */
+function setGlobalRecipes(
+  recipes: Record<string, StylesWithoutSelectors>,
+): void {
+  if (stylesGenerated) {
+    warnOnce(
+      'recipes-after-styles',
+      `[Tasty] Cannot update recipes after styles have been generated.\n` +
+        `The new recipes will be ignored.`,
+    );
+    return;
+  }
+
+  // Dev-mode validation
+  if (devMode) {
+    for (const [name, recipeStyles] of Object.entries(recipes)) {
+      for (const key of Object.keys(recipeStyles)) {
+        if (isSelector(key)) {
+          warnOnce(
+            `recipe-selector-${name}-${key}`,
+            `[Tasty] Recipe "${name}" contains sub-element key "${key}". ` +
+              `Recipes must be flat styles without sub-element keys. ` +
+              `The sub-element key will be ignored during resolution.`,
+          );
+        }
+        if (key === 'recipe') {
+          warnOnce(
+            `recipe-recursive-${name}`,
+            `[Tasty] Recipe "${name}" contains a "recipe" key. ` +
+              `Recipes cannot reference other recipes. ` +
+              `Use comma-separated names for composition: recipe: 'base, elevated'.`,
+          );
+        }
+      }
+    }
+  }
+
+  globalRecipes = recipes;
+}
+
 /**
  * Check if configuration is locked (styles have been generated)
  */
@@ -497,6 +597,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
   let mergedFuncs: Record<string, (groups: StyleDetails[]) => string> = {};
   let mergedHandlers: Record<string, StyleHandlerDefinition> = {};
   let mergedTokens: Record<string, string | number | boolean> = {};
+  let mergedRecipes: Record<string, StylesWithoutSelectors> = {};
 
   // Process plugins in order
   if (config.plugins) {
@@ -516,6 +617,9 @@ export function configure(config: Partial<TastyConfig> = {}): void {
       if (plugin.tokens) {
         mergedTokens = { ...mergedTokens, ...plugin.tokens };
       }
+      if (plugin.recipes) {
+        mergedRecipes = { ...mergedRecipes, ...plugin.recipes };
+      }
     }
   }
 
@@ -534,6 +638,9 @@ export function configure(config: Partial<TastyConfig> = {}): void {
   }
   if (config.tokens) {
     mergedTokens = { ...mergedTokens, ...config.tokens };
+  }
+  if (config.recipes) {
+    mergedRecipes = { ...mergedRecipes, ...config.recipes };
   }
 
   // Handle predefined states
@@ -603,7 +710,12 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     setGlobalPredefinedTokens(processedTokens);
   }
 
-  // Create config without states, parser options, plugins, keyframes, properties, handlers, and tokens (handled separately)
+  // Handle recipes
+  if (Object.keys(mergedRecipes).length > 0) {
+    setGlobalRecipes(mergedRecipes);
+  }
+
+  // Create config without states, parser options, plugins, keyframes, properties, handlers, tokens, and recipes (handled separately)
   const {
     states: _states,
     parserCacheSize: _parserCacheSize,
@@ -614,6 +726,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
     properties: _properties,
     handlers: _handlers,
     tokens: _tokens,
+    recipes: _recipes,
     ...injectorConfig
   } = config;
 
@@ -665,6 +778,7 @@ export function resetConfig(): void {
   currentConfig = null;
   globalKeyframes = null;
   globalProperties = null;
+  globalRecipes = null;
   resetGlobalPredefinedTokens();
   resetHandlers();
   clearPipelineCache();

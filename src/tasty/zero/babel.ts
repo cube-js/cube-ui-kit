@@ -21,8 +21,9 @@ import { declare } from '@babel/helper-plugin-utils';
 import * as t from '@babel/types';
 
 import { configure } from '../config';
-import { Styles } from '../styles/types';
+import { Styles, StylesWithoutSelectors } from '../styles/types';
 import { mergeStyles } from '../utils/merge-styles';
+import { resolveRecipes } from '../utils/resolve-recipes';
 import { StyleHandlerDefinition } from '../utils/styles';
 
 import { CSSWriter } from './css-writer';
@@ -116,6 +117,18 @@ export interface TastyZeroConfig {
   tokens?: {
     [key: `$${string}` | `#${string}`]: string | number;
   };
+  /**
+   * Predefined style recipes -- named style bundles that can be applied via `recipe` style property.
+   * Recipe values are flat tasty styles (no sub-element keys).
+   * @example
+   * ```ts
+   * recipes: {
+   *   card: { padding: '4x', fill: '#surface', radius: '1r', border: true },
+   *   elevated: { shadow: '2x 2x 4x #shadow' },
+   * }
+   * ```
+   */
+  recipes?: Record<string, StylesWithoutSelectors>;
 }
 
 export interface TastyZeroBabelOptions {
@@ -346,7 +359,10 @@ function handleStylesMode(
   }
 
   // Evaluate styles object at build time
-  const styles = evaluateObjectExpression(stylesArg, path) as Styles;
+  const rawStyles = evaluateObjectExpression(stylesArg, path) as Styles;
+
+  // Resolve recipes before extraction
+  const styles = resolveRecipes(rawStyles);
 
   // Extract keyframes (deduplicated by content)
   const { keyframes, nameMap } = extractKeyframesFromStyles(
@@ -431,8 +447,10 @@ function handleExtensionMode(
   // Evaluate override styles
   const overrideStyles = evaluateObjectExpression(stylesArg, path) as Styles;
 
-  // Merge styles using mergeStyles
-  const mergedStyles = mergeStyles(baseEntry.styles, overrideStyles);
+  // Merge styles using mergeStyles, then resolve recipes
+  const mergedStyles = resolveRecipes(
+    mergeStyles(baseEntry.styles, overrideStyles),
+  );
 
   // Extract keyframes (deduplicated by content)
   const { keyframes, nameMap } = extractKeyframesFromStyles(
@@ -507,7 +525,10 @@ function handleSelectorMode(
   }
 
   const selector = selectorArg.value;
-  const styles = evaluateObjectExpression(stylesArg, path) as Styles;
+  const rawStyles = evaluateObjectExpression(stylesArg, path) as Styles;
+
+  // Resolve recipes before extraction
+  const styles = resolveRecipes(rawStyles);
 
   // Extract keyframes (deduplicated by content)
   const { keyframes, nameMap } = extractKeyframesFromStyles(
