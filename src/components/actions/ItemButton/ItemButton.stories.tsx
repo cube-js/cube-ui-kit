@@ -1236,7 +1236,6 @@ export const WithActionsHoverBehavior: Story = {
           </ItemButton>
           <ItemButton
             {...args}
-            type="card"
             icon={<IconFile />}
             description="Additional information"
             descriptionPlacement="block"

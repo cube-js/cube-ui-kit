@@ -490,7 +490,7 @@ export const InsideItemButton: Story = {
 
     // Find the last button (with autoHideActions)
     if (buttons.length > 0) {
-      await userEvent.hover(buttons[buttons.length - 1]);
+      await userEvent.hover(buttons[buttons.length - 4]);
     }
   },
   parameters: {
