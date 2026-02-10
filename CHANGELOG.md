@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.111.1
+
+### Patch Changes
+
+- [#1022](https://github.com/cube-js/cube-ui-kit/pull/1022) [`5885ac14`](https://github.com/cube-js/cube-ui-kit/commit/5885ac1422f330a8a1a79a5b1cea1fdd47db61e3) Thanks [@tenphi](https://github.com/tenphi)! - Fixed Banner component description text styling by correcting the style selector from `Label` to `Description`. Improved display style system to respect user-provided `whiteSpace` prop, allowing it to override default white-space values set by `textOverflow`.
+
 ## 0.111.0
 
 ### Minor Changes
