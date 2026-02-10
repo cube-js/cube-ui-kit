@@ -45,12 +45,13 @@ const DEFAULT_ICONS: Record<BannerTheme, ReactNode> = {
 };
 
 const BannerElement = tasty(Item, {
+  descriptionPlacement: 'block',
   styles: {
     width: '100%',
 
     Description: {
       textOverflow: 'ellipsis / 2',
-      textWrap: 'initial',
+      whiteSpace: 'normal',
     },
 
     Actions: {
