@@ -121,3 +121,19 @@ CustomIcon.args = {
   icon: <IconBell />,
   isDismissible: true,
 };
+
+/**
+ * Shows the `description` prop with a long description that overflows.
+ * Narrow width triggers text truncation with ellipsis after two lines.
+ */
+export const WithDescription: StoryFn<BannerProps> = () => {
+  return (
+    <Banner
+      theme="note"
+      width="300px"
+      description="This is an extended description that spans multiple lines to demonstrate text overflow behavior. When the banner container has limited width, the description should show ellipsis after two lines."
+    >
+      Payment method expiring soon
+    </Banner>
+  );
+};

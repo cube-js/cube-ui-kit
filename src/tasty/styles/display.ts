@@ -21,7 +21,8 @@ interface DisplayStyleProps {
  * Priority:
  * 1. `hide` takes precedence (display: none)
  * 2. Multi-line `textOverflow` forces display: -webkit-box
- * 3. Single-line `textOverflow` forces white-space: nowrap and overflow: hidden
+ * 3. Single-line `textOverflow` defaults white-space to nowrap, multi-line defaults to initial
+ * 4. Explicit `whiteSpace` overrides the default white-space from `textOverflow`
  */
 export function displayStyle({
   display,
@@ -63,12 +64,13 @@ export function displayStyle({
           result['text-overflow'] = hasEllipsis ? 'ellipsis' : 'clip';
 
           if (clamp === 1) {
-            result['white-space'] = 'nowrap';
+            result['white-space'] = whiteSpace || 'nowrap';
           } else {
             result['display'] = '-webkit-box';
             result['-webkit-box-orient'] = 'vertical';
             result['-webkit-line-clamp'] = clamp;
             result['line-clamp'] = clamp;
+            result['white-space'] = whiteSpace || 'initial';
           }
         }
       }

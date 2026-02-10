@@ -74,6 +74,7 @@ describe('displayStyle', () => {
       expect(result).toEqual({
         overflow: 'hidden',
         'text-overflow': 'ellipsis',
+        'white-space': 'initial',
         display: '-webkit-box',
         '-webkit-box-orient': 'vertical',
         '-webkit-line-clamp': 2,
@@ -86,6 +87,7 @@ describe('displayStyle', () => {
       expect(result).toEqual({
         overflow: 'hidden',
         'text-overflow': 'ellipsis',
+        'white-space': 'initial',
         display: '-webkit-box',
         '-webkit-box-orient': 'vertical',
         '-webkit-line-clamp': 3,
@@ -98,6 +100,7 @@ describe('displayStyle', () => {
       expect(result).toEqual({
         overflow: 'hidden',
         'text-overflow': 'clip',
+        'white-space': 'initial',
         display: '-webkit-box',
         '-webkit-box-orient': 'vertical',
         '-webkit-line-clamp': 2,
@@ -132,12 +135,12 @@ describe('displayStyle', () => {
       expect(result!['overflow']).toBe('hidden');
     });
 
-    it('textOverflow white-space takes precedence over user whiteSpace', () => {
+    it('user whiteSpace overrides textOverflow default white-space', () => {
       const result = displayStyle({
         textOverflow: 'ellipsis',
         whiteSpace: 'pre-wrap',
       });
-      expect(result!['white-space']).toBe('nowrap');
+      expect(result!['white-space']).toBe('pre-wrap');
     });
 
     it('multi-line textOverflow display takes precedence over user display', () => {
@@ -164,6 +167,14 @@ describe('displayStyle', () => {
         display: 'flex',
       });
       expect(result!['display']).toBe('flex');
+    });
+
+    it('user whiteSpace overrides multi-line textOverflow default white-space', () => {
+      const result = displayStyle({
+        textOverflow: 'ellipsis / 2',
+        whiteSpace: 'pre-wrap',
+      });
+      expect(result!['white-space']).toBe('pre-wrap');
     });
 
     it('preserves user overflow when textOverflow is reset', () => {
