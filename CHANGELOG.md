@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.112.0
+
+### Minor Changes
+
+- [#1024](https://github.com/cube-js/cube-ui-kit/pull/1024) [`b12a07ac`](https://github.com/cube-js/cube-ui-kit/commit/b12a07ac7fd355bc3dc4b9b1692033967687f6db) Thanks [@tenphi](https://github.com/tenphi)! - Add recipes feature to the tasty style system. Recipes are predefined, named style bundles registered via `configure({ recipes })` and applied to components via the `recipe` style property. Multiple recipes can be composed with commas (`recipe: 'card, elevated'`), and component styles always override recipe values. Recipes work with both runtime `tasty` and zero-runtime `tastyStatic`.
+
+### Patch Changes
+
+- [#1027](https://github.com/cube-js/cube-ui-kit/pull/1027) [`1e2ca928`](https://github.com/cube-js/cube-ui-kit/commit/1e2ca9284e9e71471068ae146fd1798e2209e94a) Thanks [@tenphi](https://github.com/tenphi)! - Fix Item description width to properly handle responsive sizing and prevent overflow issues.
+
 ## 0.111.2
 
 ### Patch Changes
