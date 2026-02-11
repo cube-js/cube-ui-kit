@@ -117,6 +117,45 @@ describe('Advanced State Mapping', () => {
         expect(result.type).toBe('container');
         expect(result.condition).toBe('style(--variant: "compact")');
       });
+
+      it('should handle raw function query @(scroll-state(stuck: top))', () => {
+        const result = parseAdvancedState(
+          '@(scroll-state(stuck: top))',
+          defaultCtx,
+        );
+        expect(result.type).toBe('container');
+        expect(result.condition).toBe('scroll-state(stuck: top)');
+        expect(result.containerName).toBeUndefined();
+      });
+
+      it('should handle named raw function query @(nav, scroll-state(stuck: top))', () => {
+        const result = parseAdvancedState(
+          '@(nav, scroll-state(stuck: top))',
+          defaultCtx,
+        );
+        expect(result.type).toBe('container');
+        expect(result.condition).toBe('scroll-state(stuck: top)');
+        expect(result.containerName).toBe('nav');
+      });
+
+      it('should handle raw style() function @(style(display: flex))', () => {
+        const result = parseAdvancedState(
+          '@(style(display: flex))',
+          defaultCtx,
+        );
+        expect(result.type).toBe('container');
+        expect(result.condition).toBe('style(display: flex)');
+      });
+
+      it('should handle function with inner commas @(scroll-state(snapped, inline))', () => {
+        const result = parseAdvancedState(
+          '@(scroll-state(snapped, inline))',
+          defaultCtx,
+        );
+        expect(result.type).toBe('container');
+        expect(result.condition).toBe('scroll-state(snapped, inline)');
+        expect(result.containerName).toBeUndefined();
+      });
     });
 
     describe('Root States', () => {

@@ -241,6 +241,62 @@ describe('parseStateKey()', () => {
     }
   });
 
+  it('should parse container raw function query (unnamed)', () => {
+    const result = parseStateKey('@(scroll-state(stuck: top))');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('container');
+      expect((result as any).subtype).toBe('raw');
+      expect((result as any).rawCondition).toBe('scroll-state(stuck: top)');
+      expect((result as any).containerName).toBeUndefined();
+    }
+  });
+
+  it('should parse container raw function query (named)', () => {
+    const result = parseStateKey('@(nav, scroll-state(stuck: top))');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('container');
+      expect((result as any).subtype).toBe('raw');
+      expect((result as any).rawCondition).toBe('scroll-state(stuck: top)');
+      expect((result as any).containerName).toBe('nav');
+    }
+  });
+
+  it('should parse container raw style() function query', () => {
+    const result = parseStateKey('@(style(display: flex))');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('container');
+      expect((result as any).subtype).toBe('raw');
+      expect((result as any).rawCondition).toBe('style(display: flex)');
+    }
+  });
+
+  it('should parse container raw style() with custom property', () => {
+    const result = parseStateKey('@(card, style(--theme: dark))');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('container');
+      expect((result as any).subtype).toBe('raw');
+      expect((result as any).rawCondition).toBe('style(--theme: dark)');
+      expect((result as any).containerName).toBe('card');
+    }
+  });
+
+  it('should handle function with inner commas (paren-aware split)', () => {
+    const result = parseStateKey('@(scroll-state(snapped, inline))');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('container');
+      expect((result as any).subtype).toBe('raw');
+      expect((result as any).rawCondition).toBe(
+        'scroll-state(snapped, inline)',
+      );
+      expect((result as any).containerName).toBeUndefined();
+    }
+  });
+
   it('should parse @supports feature query', () => {
     const result = parseStateKey('@supports(display: grid)');
     expect(result.kind).toBe('state');

@@ -9,6 +9,7 @@ import { Lru } from '../parser/lru';
 import {
   expandDimensionShorthands,
   expandTastyUnits,
+  findTopLevelComma,
   resolvePredefinedState,
   StateParserContext,
 } from '../states';
@@ -18,6 +19,7 @@ import {
   and,
   ConditionNode,
   createContainerDimensionCondition,
+  createContainerRawCondition,
   createContainerStyleCondition,
   createMediaDimensionCondition,
   createMediaFeatureCondition,
@@ -59,11 +61,12 @@ const parseCache = new Lru<string, ConditionNode>(5000);
  * Matches: operators, parentheses, @-prefixed states, value mods, boolean mods,
  * pseudo-classes, class selectors, and attribute selectors.
  *
- * Note: For @supports we need to handle nested parentheses like @supports($, :has(*))
+ * Note: For @supports and @(...) container queries we need to handle nested parentheses
+ * like @supports($, :has(*)) or @(scroll-state(stuck: top)).
  * We use a pattern that allows one level of nesting: [^()]*(?:\([^)]*\))?[^)]*
  */
 const STATE_TOKEN_PATTERN =
-  /([&|!^])|([()])|(@media:[a-z]+)|(@media\([^)]+\))|(@supports\([^()]*(?:\([^)]*\))?[^)]*\))|(@root\([^)]+\))|(@own\([^)]+\))|(@\([^)]+\))|(@starting)|(@[A-Za-z][A-Za-z0-9-]*)|([a-z][a-z0-9-]*(?:\^=|\$=|\*=|=)(?:"[^"]*"|'[^']*'|[^\s&|!^()]+))|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9-]*(?:\([^)]+\))?)|(\.[a-z][a-z0-9-]+)|(\[[^\]]+\])/gi;
+  /([&|!^])|([()])|(@media:[a-z]+)|(@media\([^)]+\))|(@supports\([^()]*(?:\([^)]*\))?[^)]*\))|(@root\([^)]+\))|(@own\([^)]+\))|(@\([^()]*(?:\([^)]*\))?[^)]*\))|(@starting)|(@[A-Za-z][A-Za-z0-9-]*)|([a-z][a-z0-9-]*(?:\^=|\$=|\*=|=)(?:"[^"]*"|'[^']*'|[^\s&|!^()]+))|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9-]*(?:\([^)]+\))?)|(\.[a-z][a-z0-9-]+)|(\[[^\]]+\])/gi;
 
 // ============================================================================
 // Token Types
@@ -561,7 +564,8 @@ class Parser {
     }
 
     // Check for named container: @(layout, w < 600px)
-    const commaIdx = content.indexOf(',');
+    // Use parentheses-aware comma search so inner commas (e.g., scroll-state(a, b)) are skipped
+    const commaIdx = findTopLevelComma(content);
     let containerName: string | undefined;
     let condition: string;
 
@@ -572,7 +576,7 @@ class Parser {
       condition = content.trim();
     }
 
-    // Check for style query: @($variant=primary)
+    // Check for style query shorthand: @($variant=primary)
     if (condition.startsWith('$')) {
       const styleQuery = condition.slice(1); // Remove '$'
       const eqIdx = styleQuery.indexOf('=');
@@ -606,6 +610,12 @@ class Parser {
         false,
         raw,
       );
+    }
+
+    // Check for function-like syntax: scroll-state(...), style(...), etc.
+    // Passes the condition through to CSS verbatim.
+    if (/^[a-zA-Z][\w-]*\s*\(/.test(condition)) {
+      return createContainerRawCondition(condition, containerName, false, raw);
     }
 
     // Dimension query
