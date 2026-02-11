@@ -323,7 +323,13 @@ export function categorizeStyleKeys(
   for (const key of keys) {
     // Skip the $ helper key (used for selector combinators)
     // Skip @keyframes and @properties (processed separately in useStyles)
-    if (key === '$' || key === '@keyframes' || key === '@properties') {
+    // Skip recipe (resolved before pipeline by resolveRecipes)
+    if (
+      key === '$' ||
+      key === '@keyframes' ||
+      key === '@properties' ||
+      key === 'recipe'
+    ) {
       continue;
     }
 

@@ -171,6 +171,49 @@ module.exports = {
 | `output` | `string` | `'tasty.css'` | Path for generated CSS file |
 | `config.states` | `Record<string, string>` | `{}` | Predefined state aliases |
 | `config.devMode` | `boolean` | `false` | Add source comments to CSS |
+| `config.recipes` | `Record<string, RecipeStyles>` | `{}` | Predefined style recipes |
+
+---
+
+## Recipes
+
+Recipes work with `tastyStatic` the same way as with runtime `tasty`. Define recipes in the plugin config and reference them via the `recipe` style property:
+
+```javascript
+// babel.config.js
+module.exports = {
+  plugins: [
+    ['@cube-dev/ui-kit/tasty/zero/babel', {
+      output: 'public/tasty.css',
+      config: {
+        recipes: {
+          card: { padding: '4x', fill: '#surface', radius: '1r', border: true },
+          elevated: { shadow: '2x 2x 4x #shadow' },
+        },
+      },
+    }]
+  ]
+};
+```
+
+```tsx
+import { tastyStatic } from '@cube-dev/ui-kit/tasty/static';
+
+// Apply recipes
+const card = tastyStatic({
+  recipe: 'card, elevated',
+  color: '#text',
+});
+
+// Extend with recipes
+const primaryCard = tastyStatic(card, {
+  fill: '#purple.05',
+});
+
+<div className={card}>Styled card</div>
+```
+
+Recipes are resolved at build time before CSS extraction, so they have zero runtime overhead.
 
 ---
 

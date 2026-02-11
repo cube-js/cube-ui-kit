@@ -512,6 +512,18 @@ export interface StylesInterface
    * - `'@properties': { '#theme': { initialValue: 'purple' } }` // syntax: '<color>' is auto-set
    */
   '@properties'?: Record<string, PropertyDefinition>;
+  /**
+   * Apply one or more predefined style recipes by name.
+   * Recipes are defined globally via `configure({ recipes: { ... } })`.
+   * Multiple recipes are separated by commas and merged in order.
+   * Component styles override recipe values.
+   *
+   * Examples:
+   * - `recipe: 'card'` // Apply the 'card' recipe
+   * - `recipe: 'card, elevated'` // Apply 'card' then 'elevated', then component styles
+   * - `recipe: ''` // Clear recipes from base styles when extending
+   */
+  recipe?: string;
 }
 
 export type SuffixForSelector =
@@ -547,7 +559,7 @@ export type Selector = `${SuffixForSelector}${string}`;
 export type NotSelector = Exclude<string, Selector | keyof StylesInterface>;
 
 /** Special style keys that should not be wrapped in StyleValue/StyleValueStateMap */
-type SpecialStyleKeys = '@keyframes' | '@properties';
+type SpecialStyleKeys = '@keyframes' | '@properties' | 'recipe';
 
 export type StylesWithoutSelectors = {
   [key in keyof StylesInterface as key extends SpecialStyleKeys
@@ -557,10 +569,21 @@ export type StylesWithoutSelectors = {
     | StyleValueStateMap<StylesInterface[key]>;
 };
 
+/**
+ * Style type for recipe definitions.
+ * Like StylesWithoutSelectors but also allows `@keyframes` and `@properties`.
+ * Excludes `recipe` to prevent recursive references.
+ */
+export type RecipeStyles = StylesWithoutSelectors & {
+  '@keyframes'?: StylesInterface['@keyframes'];
+  '@properties'?: StylesInterface['@properties'];
+};
+
 /** Special properties that are not regular style values */
 export interface SpecialStyleProperties {
   '@keyframes'?: StylesInterface['@keyframes'];
   '@properties'?: StylesInterface['@properties'];
+  recipe?: StylesInterface['recipe'];
 }
 
 /** Index signature for arbitrary style keys (sub-elements, CSS variables, etc.) */

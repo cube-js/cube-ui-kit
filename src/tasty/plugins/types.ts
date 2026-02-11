@@ -1,4 +1,5 @@
 import type { StyleDetails, UnitHandler } from '../parser/types';
+import type { RecipeStyles } from '../styles/types';
 import type { StyleHandlerDefinition } from '../utils/styles';
 
 /**
@@ -31,6 +32,18 @@ export interface TastyPlugin {
   tokens?: {
     [key: `$${string}` | `#${string}`]: string | number;
   };
+  /**
+   * Predefined style recipes -- named style bundles that can be applied via `recipe` style property.
+   * Recipe values are flat tasty styles (no sub-element keys).
+   * @example
+   * ```ts
+   * recipes: {
+   *   card: { padding: '4x', fill: '#surface', radius: '1r', border: true },
+   *   elevated: { shadow: '2x 2x 4x #shadow' },
+   * }
+   * ```
+   */
+  recipes?: Record<string, RecipeStyles>;
 }
 
 /**

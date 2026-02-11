@@ -24,6 +24,8 @@ export {
   isTestEnvironment,
   hasGlobalKeyframes,
   getGlobalKeyframes,
+  hasGlobalRecipes,
+  getGlobalRecipes,
 } from './config';
 export type { TastyConfig } from './config';
 
@@ -54,6 +56,7 @@ export type { StyleResult, RenderResult } from './pipeline';
 export * from './utils/dotize';
 export * from './styles/list';
 export * from './utils/merge-styles';
+export { resolveRecipes } from './utils/resolve-recipes';
 export * from './utils/warnings';
 export * from './utils/get-display-name';
 export * from './utils/process-tokens';
@@ -98,6 +101,7 @@ export type {
   StylesInterface,
   Styles,
   StylesWithoutSelectors,
+  RecipeStyles,
   NoType,
   Selector,
   SuffixForSelector,
