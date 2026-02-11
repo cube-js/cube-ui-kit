@@ -689,14 +689,11 @@ function parseStyleQuery(condition: string): string | null {
 }
 
 /**
- * Find matching closing parenthesis
- */
-/**
  * Find the index of the first comma at parentheses depth 0.
  * Returns -1 if no top-level comma is found.
  * This prevents splitting on commas inside function calls like scroll-state(a, b).
  */
-function findTopLevelComma(s: string): number {
+export function findTopLevelComma(s: string): number {
   let depth = 0;
 
   for (let i = 0; i < s.length; i++) {

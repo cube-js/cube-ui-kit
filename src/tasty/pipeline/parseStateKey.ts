@@ -9,6 +9,7 @@ import { Lru } from '../parser/lru';
 import {
   expandDimensionShorthands,
   expandTastyUnits,
+  findTopLevelComma,
   resolvePredefinedState,
   StateParserContext,
 } from '../states';
@@ -50,27 +51,6 @@ export interface ParseStateKeyOptions {
 
 // Cache for parsed state keys (key -> ConditionNode)
 const parseCache = new Lru<string, ConditionNode>(5000);
-
-// ============================================================================
-// Helpers
-// ============================================================================
-
-/**
- * Find the index of the first comma at parentheses depth 0.
- * Returns -1 if no top-level comma is found.
- * This prevents splitting on commas inside function calls like scroll-state(a, b).
- */
-function findTopLevelComma(s: string): number {
-  let depth = 0;
-
-  for (let i = 0; i < s.length; i++) {
-    if (s[i] === '(') depth++;
-    else if (s[i] === ')') depth--;
-    else if (s[i] === ',' && depth === 0) return i;
-  }
-
-  return -1;
-}
 
 // ============================================================================
 // Tokenizer Patterns
