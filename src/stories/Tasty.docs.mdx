@@ -341,6 +341,35 @@ configure({
 
 Use `styleHandlers` export to delegate to built-in handlers when extending behavior.
 
+### Extending Style Types (TypeScript)
+
+When you add custom handlers via `configure({ handlers })`, TypeScript won't know about the new style properties. Use [module augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation) to extend the `StylesInterface` so that `Styles`, `tasty()`, and all style props pick up your custom properties automatically:
+
+```tsx
+// tasty.d.ts (or any .d.ts / .ts file loaded by your project)
+declare module '@cube-dev/ui-kit' {
+  interface StylesInterface {
+    /** Custom elevation shadow */
+    elevation?: string;
+    /** Custom gradient fill */
+    gradient?: string;
+  }
+}
+```
+
+After this, custom properties are recognized everywhere — in `tasty()` styles, `useStyles()`, style props, and the `styles` prop on component instances:
+
+```tsx
+const Card = tasty({
+  styles: {
+    elevation: '3',   // ✅ typed
+    gradient: 'linear-gradient(to right, #purple, #danger)', // ✅ typed
+  },
+});
+```
+
+You can also override the type of an existing property by re-declaring it in the augmentation.
+
 ---
 
 ## 📚 Dictionary
