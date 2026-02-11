@@ -491,7 +491,7 @@ const ItemElement = tasty({
         'type=card | type=header': 'normal',
       },
       textOverflow: 'ellipsis',
-      maxWidth: '100%',
+      width: 'initial 100% 100%',
       textAlign: 'left',
       padding:
         '0 $description-padding-right $description-padding-bottom $description-padding-left',
