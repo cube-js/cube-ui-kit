@@ -59,12 +59,18 @@ const ActionsWrapper = tasty({
     Actions: {
       $: '>',
       position: 'absolute',
-      inset: '1bw 1bw auto auto',
+      inset: {
+        '': '1bw 1bw auto auto',
+        'type=card': '(1bw + .5x) (1bw + .5x) auto auto',
+      },
       display: 'flex',
       gap: '1bw',
       placeItems: 'center',
       placeContent: 'center end',
-      pointerEvents: 'auto',
+      pointerEvents: {
+        '': 'auto',
+        '!actions-shown': 'none',
+      },
       padding: '0 $side-padding',
       height: 'min ($size - 2bw)',
       opacity: {
@@ -202,6 +208,8 @@ const ItemButton = forwardRef(function ItemButton(
       <ActionsWrapper
         {...hoverProps}
         data-size={size}
+        data-type={type}
+        data-theme={theme}
         mods={finalMods}
         styles={wrapperStyles}
         style={
