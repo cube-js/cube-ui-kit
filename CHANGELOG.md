@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.111.2
+
+### Patch Changes
+
+- [#1021](https://github.com/cube-js/cube-ui-kit/pull/1021) [`6e677a27`](https://github.com/cube-js/cube-ui-kit/commit/6e677a27d438f91b944d387e1e6e74fb993e99ce) Thanks [@tenphi](https://github.com/tenphi)! - Fix ItemButton actions positioning for card type variant and disable pointer events when actions are not shown
+
 ## 0.111.1
 
 ### Patch Changes
