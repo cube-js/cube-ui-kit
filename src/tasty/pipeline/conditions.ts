@@ -71,7 +71,7 @@ export interface MediaCondition extends BaseStateCondition {
  */
 export interface ContainerCondition extends BaseStateCondition {
   type: 'container';
-  subtype: 'dimension' | 'style';
+  subtype: 'dimension' | 'style' | 'raw';
   containerName?: string; // e.g., 'layout', 'sidebar' (undefined = nearest)
 
   // For dimension queries: @(w < 600px), @(layout, w < 600px)
@@ -82,6 +82,9 @@ export interface ContainerCondition extends BaseStateCondition {
   // For style queries: @(layout, $variant=danger), @($theme)
   property?: string; // CSS custom property name (without --)
   propertyValue?: string; // e.g., 'danger' (undefined = existence check)
+
+  // For raw function queries: @(scroll-state(stuck: top)), @(style(display: flex))
+  rawCondition?: string; // Verbatim CSS condition string
 }
 
 /**
@@ -379,7 +382,7 @@ export function mediaUniqueId(
  * Generate a normalized unique ID for a container condition
  */
 export function containerUniqueId(
-  subtype: 'dimension' | 'style',
+  subtype: 'dimension' | 'style' | 'raw',
   props: {
     containerName?: string;
     dimension?: string;
@@ -387,6 +390,7 @@ export function containerUniqueId(
     upperBound?: NumericBound;
     property?: string;
     propertyValue?: string;
+    rawCondition?: string;
   },
   negated: boolean = false,
 ): string {
@@ -404,6 +408,8 @@ export function containerUniqueId(
       parts.push(props.upperBound.value);
     }
     base = parts.join(':');
+  } else if (subtype === 'raw') {
+    base = `container:raw:${name}:${props.rawCondition}`;
   } else {
     base = props.propertyValue
       ? `container:style:${name}:--${props.property}:${props.propertyValue}`
@@ -620,6 +626,33 @@ export function createContainerStyleCondition(
     containerName,
     property,
     propertyValue,
+  };
+}
+
+/**
+ * Create a container raw function condition (e.g., scroll-state(), style(), etc.)
+ * The condition string is passed through to CSS verbatim.
+ */
+export function createContainerRawCondition(
+  rawCondition: string,
+  containerName?: string,
+  negated: boolean = false,
+  raw?: string,
+): ContainerCondition {
+  return {
+    kind: 'state',
+    type: 'container',
+    subtype: 'raw',
+    negated,
+    raw:
+      raw || `@(${containerName ? containerName + ', ' : ''}${rawCondition})`,
+    uniqueId: containerUniqueId(
+      'raw',
+      { containerName, rawCondition },
+      negated,
+    ),
+    containerName,
+    rawCondition,
   };
 }
 

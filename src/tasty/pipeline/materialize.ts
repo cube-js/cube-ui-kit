@@ -67,7 +67,7 @@ export interface ParsedContainerCondition {
   /** Whether this is a negated condition */
   negated: boolean;
   /** Subtype for structured analysis */
-  subtype: 'dimension' | 'style';
+  subtype: 'dimension' | 'style' | 'raw';
   /** For style queries: property name (without --) */
   property?: string;
   /** For style queries: property value (undefined = existence check) */
@@ -489,6 +489,9 @@ function containerToParsed(
     } else {
       condition = `style(--${state.property})`;
     }
+  } else if (state.subtype === 'raw') {
+    // Raw function query: passed through verbatim (e.g., scroll-state(stuck: top))
+    condition = state.rawCondition!;
   } else {
     // Dimension query
     condition = dimensionToContainerCondition(

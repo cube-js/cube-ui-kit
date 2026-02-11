@@ -574,7 +574,8 @@ export function parseAdvancedState(
     }
 
     // Check if named container (first token is name, followed by comma)
-    const commaIndex = content.indexOf(',');
+    // Use parentheses-aware comma search so inner commas (e.g., scroll-state(a, b)) are skipped
+    const commaIndex = findTopLevelComma(content);
     let containerName: string | undefined;
     let condition: string;
 
@@ -587,7 +588,7 @@ export function parseAdvancedState(
       condition = content.trim();
     }
 
-    // Check for style query (starts with $)
+    // Check for style query shorthand (starts with $)
     if (condition.startsWith('$')) {
       // Style query: @(layout, $compact) or @(layout, $variant=compact)
       const styleCondition = parseStyleQuery(condition);
@@ -599,6 +600,9 @@ export function parseAdvancedState(
         return { type: 'modifier', condition: stateKey, raw };
       }
       condition = styleCondition;
+    } else if (/^[a-zA-Z][\w-]*\s*\(/.test(condition)) {
+      // Function-like syntax: scroll-state(...), style(...), etc.
+      // Pass through verbatim — no dimension expansion needed
     } else {
       // Dimension query - expand shorthands and units
       condition = expandDimensionShorthands(condition);
@@ -687,6 +691,23 @@ function parseStyleQuery(condition: string): string | null {
 /**
  * Find matching closing parenthesis
  */
+/**
+ * Find the index of the first comma at parentheses depth 0.
+ * Returns -1 if no top-level comma is found.
+ * This prevents splitting on commas inside function calls like scroll-state(a, b).
+ */
+function findTopLevelComma(s: string): number {
+  let depth = 0;
+
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === '(') depth++;
+    else if (s[i] === ')') depth--;
+    else if (s[i] === ',' && depth === 0) return i;
+  }
+
+  return -1;
+}
+
 function findMatchingParen(str: string, startIndex: number): number {
   let depth = 1;
   let i = startIndex + 1;

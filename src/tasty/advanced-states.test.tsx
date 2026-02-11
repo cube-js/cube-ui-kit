@@ -1053,6 +1053,90 @@ describe('Advanced State Mapping - renderStyles direct tests', () => {
       expect(dangerCondition).not.toContain('not style(--variant: success)');
       expect(dangerCondition).not.toContain('(not style');
     });
+
+    it('should generate @container at-rule for raw function query (unnamed)', () => {
+      const { rules } = renderStyles({
+        position: {
+          '': 'relative',
+          '@(scroll-state(stuck: top))': 'sticky',
+        },
+      });
+
+      const containerRule = rules.find((r: any) =>
+        r.atRules?.some((at: string) => at.startsWith('@container')),
+      );
+      expect(containerRule).toBeDefined();
+      expect(containerRule.atRules[0]).toBe(
+        '@container scroll-state(stuck: top)',
+      );
+    });
+
+    it('should generate @container at-rule for raw function query (named)', () => {
+      const { rules } = renderStyles({
+        position: {
+          '': 'relative',
+          '@(nav, scroll-state(stuck: top))': 'sticky',
+        },
+      });
+
+      const containerRule = rules.find((r: any) =>
+        r.atRules?.some((at: string) => at.includes('nav')),
+      );
+      expect(containerRule).toBeDefined();
+      expect(containerRule.atRules[0]).toBe(
+        '@container nav scroll-state(stuck: top)',
+      );
+    });
+
+    it('should negate raw function container query', () => {
+      const { rules } = renderStyles({
+        position: {
+          '': 'sticky',
+          '!@(scroll-state(stuck: top))': 'relative',
+        },
+      });
+
+      const containerRule = rules.find((r: any) =>
+        r.atRules?.some((at: string) => at.includes('not')),
+      );
+      expect(containerRule).toBeDefined();
+      expect(containerRule.atRules[0]).toBe(
+        '@container (not scroll-state(stuck: top))',
+      );
+    });
+
+    it('should combine raw function query with style query on same container', () => {
+      const { rules } = renderStyles({
+        fill: {
+          '': '#white',
+          '@(nav, scroll-state(stuck: top)) & @(nav, $variant=dark)': '#dark',
+        },
+      });
+
+      const containerRule = rules.find((r: any) =>
+        r.atRules?.some((at: string) => at.includes('scroll-state')),
+      );
+      expect(containerRule).toBeDefined();
+      // Both conditions should be combined in one @container rule for same name
+      expect(containerRule.atRules[0]).toContain('@container nav');
+      expect(containerRule.atRules[0]).toContain('scroll-state(stuck: top)');
+      expect(containerRule.atRules[0]).toContain('style(--variant: dark)');
+    });
+
+    it('should generate @container for raw style() function', () => {
+      const { rules } = renderStyles({
+        color: {
+          '': '#text',
+          '@(style(--theme: dark))': '#white',
+        },
+      });
+
+      const containerRule = rules.find((r: any) =>
+        r.atRules?.some((at: string) => at.startsWith('@container')),
+      );
+      expect(containerRule).toBeDefined();
+      expect(containerRule.atRules[0]).toBe('@container style(--theme: dark)');
+    });
   });
 
   describe('edge cases with undefined values', () => {

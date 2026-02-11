@@ -1198,7 +1198,7 @@ styles: {
 }
 ```
 
-**Style queries inside `@(...)`:**
+**Style query shorthand inside `@(...)`:**
 
 - `$name` → checks for existence of `--name` (`style(--name)`)
 - `$name=value` → checks equality (`style(--name: "value")`)
@@ -1221,6 +1221,26 @@ const Child = tasty({
   },
 });
 ```
+
+**CSS function syntax inside `@(...)`:**
+
+Any CSS function-like syntax (e.g., `scroll-state()`, `style()`) is passed through to the `@container` rule verbatim. This means current and future container query functions work out of the box.
+
+```jsx
+styles: {
+  position: {
+    '': 'relative',
+    '@(scroll-state(stuck: top))': 'sticky',                  // @container scroll-state(stuck: top)
+    '@(nav, scroll-state(stuck: top))': 'sticky',             // @container nav scroll-state(stuck: top)
+  },
+  color: {
+    '': '#text',
+    '@(style(--theme: dark))': '#white',                      // @container style(--theme: dark)
+  },
+}
+```
+
+Note: The `$` shorthand (`$name`, `$name=value`) is still the recommended way to query CSS custom properties since it automatically adds the `--` prefix and wraps the value in quotes. Use the raw `style()` function when you need to query regular CSS properties or need full control over the syntax.
 
 #### Supports Queries (`@supports`)
 
