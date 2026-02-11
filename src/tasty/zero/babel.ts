@@ -21,7 +21,7 @@ import { declare } from '@babel/helper-plugin-utils';
 import * as t from '@babel/types';
 
 import { configure } from '../config';
-import { Styles, StylesWithoutSelectors } from '../styles/types';
+import { RecipeStyles, Styles } from '../styles/types';
 import { mergeStyles } from '../utils/merge-styles';
 import { resolveRecipes } from '../utils/resolve-recipes';
 import { StyleHandlerDefinition } from '../utils/styles';
@@ -128,7 +128,7 @@ export interface TastyZeroConfig {
    * }
    * ```
    */
-  recipes?: Record<string, StylesWithoutSelectors>;
+  recipes?: Record<string, RecipeStyles>;
 }
 
 export interface TastyZeroBabelOptions {

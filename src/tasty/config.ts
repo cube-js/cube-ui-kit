@@ -32,7 +32,7 @@ import {
 import type { KeyframesSteps, PropertyDefinition } from './injector/types';
 import type { StyleDetails, UnitHandler } from './parser/types';
 import type { TastyPlugin } from './plugins/types';
-import type { StylesWithoutSelectors } from './styles/types';
+import type { RecipeStyles } from './styles/types';
 import type { StyleHandlerDefinition } from './utils/styles';
 
 /**
@@ -234,7 +234,7 @@ export interface TastyConfig {
    * });
    * ```
    */
-  recipes?: Record<string, StylesWithoutSelectors>;
+  recipes?: Record<string, RecipeStyles>;
 }
 
 // Warnings tracking to avoid duplicates
@@ -269,7 +269,7 @@ let globalKeyframes: Record<string, KeyframesSteps> | null = null;
 let globalProperties: Record<string, PropertyDefinition> | null = null;
 
 // Global recipes storage (null = no recipes configured)
-let globalRecipes: Record<string, StylesWithoutSelectors> | null = null;
+let globalRecipes: Record<string, RecipeStyles> | null = null;
 
 /**
  * Internal properties required by tasty core features.
@@ -499,10 +499,7 @@ export function hasGlobalRecipes(): boolean {
  * Get global recipes configuration.
  * Returns null if no recipes configured (fast path for zero-overhead).
  */
-export function getGlobalRecipes(): Record<
-  string,
-  StylesWithoutSelectors
-> | null {
+export function getGlobalRecipes(): Record<string, RecipeStyles> | null {
   return globalRecipes;
 }
 
@@ -510,9 +507,7 @@ export function getGlobalRecipes(): Record<
  * Set global recipes (called from configure).
  * Internal use only.
  */
-function setGlobalRecipes(
-  recipes: Record<string, StylesWithoutSelectors>,
-): void {
+function setGlobalRecipes(recipes: Record<string, RecipeStyles>): void {
   if (stylesGenerated) {
     warnOnce(
       'recipes-after-styles',
@@ -531,7 +526,7 @@ function setGlobalRecipes(
             `recipe-selector-${name}-${key}`,
             `[Tasty] Recipe "${name}" contains sub-element key "${key}". ` +
               `Recipes must be flat styles without sub-element keys. ` +
-              `The sub-element key will be ignored during resolution.`,
+              `Remove the sub-element key from the recipe definition.`,
           );
         }
         if (key === 'recipe') {
@@ -597,7 +592,7 @@ export function configure(config: Partial<TastyConfig> = {}): void {
   let mergedFuncs: Record<string, (groups: StyleDetails[]) => string> = {};
   let mergedHandlers: Record<string, StyleHandlerDefinition> = {};
   let mergedTokens: Record<string, string | number | boolean> = {};
-  let mergedRecipes: Record<string, StylesWithoutSelectors> = {};
+  let mergedRecipes: Record<string, RecipeStyles> = {};
 
   // Process plugins in order
   if (config.plugins) {

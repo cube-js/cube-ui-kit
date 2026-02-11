@@ -101,6 +101,7 @@ export type {
   StylesInterface,
   Styles,
   StylesWithoutSelectors,
+  RecipeStyles,
   NoType,
   Selector,
   SuffixForSelector,

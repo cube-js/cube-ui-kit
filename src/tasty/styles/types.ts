@@ -569,6 +569,16 @@ export type StylesWithoutSelectors = {
     | StyleValueStateMap<StylesInterface[key]>;
 };
 
+/**
+ * Style type for recipe definitions.
+ * Like StylesWithoutSelectors but also allows `@keyframes` and `@properties`.
+ * Excludes `recipe` to prevent recursive references.
+ */
+export type RecipeStyles = StylesWithoutSelectors & {
+  '@keyframes'?: StylesInterface['@keyframes'];
+  '@properties'?: StylesInterface['@properties'];
+};
+
 /** Special properties that are not regular style values */
 export interface SpecialStyleProperties {
   '@keyframes'?: StylesInterface['@keyframes'];

@@ -1,5 +1,5 @@
 import type { StyleDetails, UnitHandler } from '../parser/types';
-import type { StylesWithoutSelectors } from '../styles/types';
+import type { RecipeStyles } from '../styles/types';
 import type { StyleHandlerDefinition } from '../utils/styles';
 
 /**
@@ -43,7 +43,7 @@ export interface TastyPlugin {
    * }
    * ```
    */
-  recipes?: Record<string, StylesWithoutSelectors>;
+  recipes?: Record<string, RecipeStyles>;
 }
 
 /**

@@ -12,7 +12,7 @@
 
 import { getGlobalRecipes } from '../config';
 import { isSelector } from '../pipeline';
-import { Styles, StylesWithoutSelectors } from '../styles/types';
+import { RecipeStyles, Styles } from '../styles/types';
 
 import { isDevEnv } from './is-dev-env';
 
@@ -40,7 +40,7 @@ function parseRecipeNames(value: unknown): string[] | null {
  */
 function resolveRecipesForLevel(
   styles: Record<string, unknown>,
-  recipes: Record<string, StylesWithoutSelectors>,
+  recipes: Record<string, RecipeStyles>,
 ): Record<string, unknown> | null {
   if (!('recipe' in styles)) return null;
 
@@ -106,8 +106,8 @@ export function resolveRecipes(styles: Styles): Styles {
     changed = true;
     result = topResolved;
   } else {
-    // Copy reference for potential sub-element changes
-    result = { ...(styles as Record<string, unknown>) };
+    // Keep reference; a shallow copy is deferred until a sub-element actually changes
+    result = styles as Record<string, unknown>;
   }
 
   // Resolve sub-element recipes
