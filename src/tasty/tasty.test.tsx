@@ -410,6 +410,81 @@ describe('tasty() API', () => {
     // Check that explicit style prop is also applied
     expect(style).toContain('padding: 10px');
   });
+
+  it('should preserve sub-element components when wrapping with tasty()', () => {
+    const CardElement = tasty({
+      styles: {
+        padding: '2x',
+        Header: { preset: 'h3' },
+        Body: { color: '#dark' },
+      },
+      elements: {
+        Header: 'header',
+        Body: { as: 'section', qa: 'card-body' },
+      },
+    });
+
+    // Wrap the component with tasty() to customize styles
+    const StyledCard = tasty(CardElement, {
+      styles: { fill: '#white' },
+    });
+
+    // Sub-elements should be accessible on the wrapped component
+    expect(StyledCard.Header).toBeDefined();
+    expect(StyledCard.Body).toBeDefined();
+
+    // Sub-elements should render correctly
+    const { container } = render(
+      <StyledCard>
+        <StyledCard.Header qa="header">Title</StyledCard.Header>
+        <StyledCard.Body>Content</StyledCard.Body>
+      </StyledCard>,
+    );
+
+    const header = getByTestId(container, 'header');
+    const body = getByTestId(container, 'card-body');
+
+    expect(header.getAttribute('data-element')).toBe('Header');
+    expect(header.tagName).toBe('HEADER');
+    expect(body.getAttribute('data-element')).toBe('Body');
+    expect(body.tagName).toBe('SECTION');
+  });
+
+  it('should preserve sub-element components through multiple wrapping levels', () => {
+    const BaseElement = tasty({
+      elements: {
+        Icon: 'span',
+        Label: 'div',
+      },
+    });
+
+    const StyledOnce = tasty(BaseElement, {
+      styles: { padding: '1x' },
+    });
+
+    const StyledTwice = tasty(StyledOnce, {
+      styles: { fill: '#white' },
+    });
+
+    // Sub-elements should survive multiple wrapping levels
+    expect(StyledTwice.Icon).toBeDefined();
+    expect(StyledTwice.Label).toBeDefined();
+
+    const { container } = render(
+      <StyledTwice>
+        <StyledTwice.Icon qa="icon">I</StyledTwice.Icon>
+        <StyledTwice.Label qa="label">Text</StyledTwice.Label>
+      </StyledTwice>,
+    );
+
+    const icon = getByTestId(container, 'icon');
+    const label = getByTestId(container, 'label');
+
+    expect(icon.getAttribute('data-element')).toBe('Icon');
+    expect(icon.tagName).toBe('SPAN');
+    expect(label.getAttribute('data-element')).toBe('Label');
+    expect(label.tagName).toBe('DIV');
+  });
 });
 
 describe('style order consistency', () => {

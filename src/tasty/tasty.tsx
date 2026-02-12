@@ -368,10 +368,12 @@ export function tasty<
 export function tasty<
   Props extends PropsWithStyles,
   DefaultProps extends Partial<Props> = Partial<Props>,
+  C extends ComponentType<Props> = ComponentType<Props>,
 >(
-  Component: ComponentType<Props>,
+  Component: C,
   options?: TastyProps<never, never, {}, Props>,
-): ComponentType<TastyComponentPropsWithDefaults<Props, DefaultProps>>;
+): ComponentType<TastyComponentPropsWithDefaults<Props, DefaultProps>> &
+  Omit<C, keyof ComponentType<any>>;
 
 // Implementation
 export function tasty<
@@ -440,6 +442,13 @@ function tastyWrap<
     Component,
     (defaultProps as any).qa ?? (extendTag as any) ?? 'Anonymous',
   )})`;
+
+  // Copy static properties (e.g. sub-element components) from the source component
+  for (const key of Object.keys(Component)) {
+    if (!(key in _WrappedComponent)) {
+      (_WrappedComponent as any)[key] = (Component as any)[key];
+    }
+  }
 
   return _WrappedComponent as unknown as ComponentType<
     TastyComponentPropsWithDefaults<P, DefaultProps>
