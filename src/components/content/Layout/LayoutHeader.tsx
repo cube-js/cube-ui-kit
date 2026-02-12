@@ -11,7 +11,6 @@ import {
 import { SlashIcon } from '../../../icons/SlashIcon';
 import { tasty } from '../../../tasty';
 import { Link } from '../../actions/Link/Link';
-import { Text } from '../Text';
 import { useAutoTooltip } from '../use-auto-tooltip';
 
 import { CubeLayoutContentProps, LayoutContent } from './LayoutContent';
@@ -150,7 +149,6 @@ function LayoutHeader(
             <SlashIcon />
           </Fragment>
         ))}
-        {typeof title === 'string' && <Text color="#dark-02">{title}</Text>}
       </div>
     );
   };
