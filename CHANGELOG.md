@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.113.0
+
+### Minor Changes
+
+- [#1028](https://github.com/cube-js/cube-ui-kit/pull/1028) [`d3fed9e8`](https://github.com/cube-js/cube-ui-kit/commit/d3fed9e8e69c33ac091fbb97e5b0374b537084a1) Thanks [@tenphi](https://github.com/tenphi)! - Add support for arbitrary CSS function syntax in container queries. Functions like `scroll-state()` and `style()` can now be used directly in `@(...)` container queries and are passed through to CSS verbatim. The existing `# @cube-dev/ui-kit shorthand for custom property style queries remains unchanged and is still the recommended approach for querying CSS custom properties.
+
+### Patch Changes
+
+- [#1030](https://github.com/cube-js/cube-ui-kit/pull/1030) [`6079d7b0`](https://github.com/cube-js/cube-ui-kit/commit/6079d7b0e16cb542bf8eea51d91589c693bd1504) Thanks [@tenphi](https://github.com/tenphi)! - Fix Layout.Header breadcrumbs to no longer duplicate the title. Breadcrumbs now end with a trailing slash separator, and the title appears only once as the heading below.
+
 ## 0.112.0
 
 ### Minor Changes
