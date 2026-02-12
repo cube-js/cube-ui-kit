@@ -225,8 +225,8 @@ describe('Layout.Header breadcrumbs', () => {
 
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Parent')).toBeInTheDocument();
-    // Title appears twice - once in breadcrumbs and once in title
-    expect(screen.getAllByText('Current Page')).toHaveLength(2);
+    // Title appears only once - as the heading (not in breadcrumbs)
+    expect(screen.getByText('Current Page')).toBeInTheDocument();
   });
 });
 

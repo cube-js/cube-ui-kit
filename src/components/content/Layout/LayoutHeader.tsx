@@ -11,7 +11,6 @@ import {
 import { SlashIcon } from '../../../icons/SlashIcon';
 import { tasty } from '../../../tasty';
 import { Link } from '../../actions/Link/Link';
-import { Text } from '../Text';
 import { useAutoTooltip } from '../use-auto-tooltip';
 
 import { CubeLayoutContentProps, LayoutContent } from './LayoutContent';
@@ -46,7 +45,7 @@ const HeaderElement = tasty(LayoutContent, {
       display: 'flex',
       flow: 'row nowrap',
       placeItems: 'center start',
-      gap: '0.5x',
+      gap: '1bw',
       preset: 't3 strong',
       color: '#dark-02',
     },
@@ -150,7 +149,6 @@ function LayoutHeader(
             <SlashIcon />
           </Fragment>
         ))}
-        {typeof title === 'string' && <Text color="#dark-02">{title}</Text>}
       </div>
     );
   };
