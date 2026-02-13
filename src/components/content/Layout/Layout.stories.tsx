@@ -1321,8 +1321,8 @@ export const Container: Story = {
 export const Center: Story = {
   render: () => (
     <Layout height="400px" fill="#dark.04">
-      <Layout.Center width="60%" gap="1x">
-        <Title level={3}>Welcome!</Title>
+      <Layout.Center width="400px" gap="1x">
+        <Title level={3}>!Welcome!</Title>
         <Text>
           This content is centered both horizontally and vertically.&#8203; Text
           is also center-aligned by default.

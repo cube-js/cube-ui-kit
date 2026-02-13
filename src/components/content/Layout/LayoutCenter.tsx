@@ -7,12 +7,13 @@ import { CubeLayoutContainerProps, LayoutContainer } from './LayoutContainer';
 const CenterElement = tasty(LayoutContainer, {
   qa: 'LayoutCenter',
   styles: {
-    placeItems: 'center',
-    placeContent: 'center',
+    placeItems: 'stretch',
+    placeContent: 'stretch',
 
     Inner: {
       textAlign: 'center',
       placeItems: 'center',
+      placeContent: 'center',
     },
   },
 });
