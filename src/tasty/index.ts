@@ -1,6 +1,3 @@
-import { configure } from './config';
-import { okhslPlugin } from './plugins';
-
 export { tasty, Element } from './tasty';
 export {
   useStyles,
@@ -33,9 +30,6 @@ export type { TastyConfig } from './config';
 export { okhslPlugin, okhslFunc } from './plugins';
 export type { TastyPlugin, TastyPluginFactory } from './plugins';
 
-configure({
-  plugins: [okhslPlugin()],
-});
 // Chunk utilities for advanced use cases
 export { CHUNK_NAMES, STYLE_TO_CHUNK, categorizeStyleKeys } from './chunks';
 export type { ChunkName, ChunkInfo } from './chunks';

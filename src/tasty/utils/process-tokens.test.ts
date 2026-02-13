@@ -207,7 +207,8 @@ describe('processTokens', () => {
       });
 
       expect(result).toBeDefined();
-      expect(result!['--purple-color']).toBe('okhsl(280.3 80% 52%)');
+      // okhsl is now a built-in parser function, so the color value is converted to rgb
+      expect(result!['--purple-color']).toMatch(/^rgb\(/);
       // Should be RGB triplet, not the OKHSL string
       expect(result!['--purple-color-rgb']).toMatch(
         /^\d+(\.\d+)? \d+(\.\d+)? \d+(\.\d+)?$/,

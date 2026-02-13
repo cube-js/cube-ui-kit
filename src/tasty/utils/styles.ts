@@ -1,4 +1,5 @@
 import { StyleParser } from '../parser/parser';
+import { okhslFunc } from '../plugins/okhsl-plugin';
 import { createStateParserContext, parseAdvancedState } from '../states';
 import { Styles } from '../styles/types';
 
@@ -209,7 +210,14 @@ const __tastyParser = new StyleParser({ units: CUSTOM_UNITS });
 
 // Registry for user-provided custom functions that the parser can call.
 // It is updated through the `customFunc` helper exported below.
-const __tastyFuncs: Record<string, (groups: StyleDetails[]) => string> = {};
+// okhsl is registered as a built-in function so it works regardless of
+// tree-shaking or module initialization order.
+const __tastyFuncs: Record<string, (groups: StyleDetails[]) => string> = {
+  okhsl: okhslFunc,
+};
+
+// Eagerly register built-in functions on the parser.
+__tastyParser.setFuncs(__tastyFuncs);
 
 export function customFunc(
   name: string,
