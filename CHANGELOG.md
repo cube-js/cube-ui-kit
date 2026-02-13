@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.113.1
+
+### Patch Changes
+
+- [#1032](https://github.com/cube-js/cube-ui-kit/pull/1032) [`4b57a4e8`](https://github.com/cube-js/cube-ui-kit/commit/4b57a4e868eabd411f5d16b8940c48db68c181ce) Thanks [@tenphi](https://github.com/tenphi)! - Fix Layout.Center component centering behavior by adjusting placeItems and placeContent styles.
+
+- [#1031](https://github.com/cube-js/cube-ui-kit/pull/1031) [`c2c36157`](https://github.com/cube-js/cube-ui-kit/commit/c2c36157c18ea556743bb7c0820ec18721ed5cbf) Thanks [@tenphi](https://github.com/tenphi)! - Fix okhsl color conversion in production builds by registering okhsl as a built-in parser function instead of relying on a side-effect configure() call that can be tree-shaken away.
+
 ## 0.113.0
 
 ### Minor Changes
