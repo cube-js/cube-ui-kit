@@ -34,7 +34,6 @@ const ContainerElement = tasty({
     scrollbar: 'thin',
     padding: '$content-padding',
     placeSelf: 'stretch',
-    width: '100%',
     border: {
       '': 0,
       '!:last-child': '($layout-border-size, 1bw) solid #border bottom',
@@ -45,8 +44,9 @@ const ContainerElement = tasty({
       placeSelf: 'center',
       display: 'flex',
       flow: 'column',
-      width: '40x 100% 120x',
       boxSizing: 'border-box',
+      width: '40x 100% 120x',
+      flexGrow: 1,
 
       '$layout-border-size': '0',
     },
