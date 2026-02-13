@@ -45,6 +45,7 @@ const ContainerElement = tasty({
       display: 'flex',
       flow: 'column',
       boxSizing: 'border-box',
+      width: '40x 100% 120x',
       flexGrow: 1,
 
       '$layout-border-size': '0',
