@@ -245,7 +245,7 @@ function useCollapseState(
   const updateBounds = useCallback(() => {
     const refs = itemRefs.current;
 
-    if (refs.size === 0) {
+    if (!refs || refs.size === 0) {
       boundsRef.current = null;
       return;
     }
@@ -426,7 +426,7 @@ export function OverlayContainer({
 
   const handleExitComplete = useEvent((item: OverlayItem) => {
     const id = getItemId(item);
-    lastPositionsRef.current.delete(id);
+    lastPositionsRef.current?.delete(id);
 
     if (item.kind === 'toast') {
       onToastExitComplete(item.data.internalId);
@@ -442,7 +442,7 @@ export function OverlayContainer({
     (item: OverlayItem, index: number, total: number) => {
       const id = getItemId(item);
       const baseTop =
-        positions.get(id) ?? lastPositionsRef.current.get(id) ?? 0;
+        positions.get(id) ?? lastPositionsRef.current?.get(id) ?? 0;
       const height = heights[id] ?? DEFAULT_ITEM_HEIGHT;
 
       if (!isCollapsed || !canCollapse) {

@@ -68,7 +68,7 @@ export function useToastState(
     const toast = findToast(toastsRef.current, id);
 
     if (toast) {
-      timersRef.current.clearToastTimer(toast.internalId);
+      timersRef.current?.clearToastTimer(toast.internalId);
     }
 
     setToasts((prev) =>
@@ -102,7 +102,7 @@ export function useToastState(
     );
 
     if (existingToast) {
-      timersRef.current.clearToastTimer(existingToast.internalId);
+      timersRef.current?.clearToastTimer(existingToast.internalId);
     }
 
     // Single setState call: mark duplicate as exiting, append new toast,
@@ -165,12 +165,12 @@ export function useToastState(
 
     // Clear timers for evicted toasts outside the updater (StrictMode-safe)
     for (const evictedId of evictedIds) {
-      timersRef.current.clearToastTimer(evictedId);
+      timersRef.current?.clearToastTimer(evictedId);
     }
 
     // Start timer only if the toast wasn't immediately evicted
     if (!wasEvicted && duration != null && duration > 0) {
-      timersRef.current.startToastTimer(
+      timersRef.current?.startToastTimer(
         internalId,
         data.id ?? internalId,
         duration,

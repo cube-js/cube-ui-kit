@@ -166,7 +166,7 @@ export function useOverlayTimers(deps: OverlayTimersDeps): OverlayTimers {
       isPausedRef,
       (id) => removeToast(id),
       (internalId) =>
-        toastsRef.current.find((t) => t.internalId === internalId),
+        toastsRef.current?.find((t) => t.internalId === internalId),
     );
   }
 
@@ -177,7 +177,7 @@ export function useOverlayTimers(deps: OverlayTimersDeps): OverlayTimers {
       isPausedRef,
       (id) => removeNotification(id, 'timeout'),
       (internalId) =>
-        notificationsRef.current.find((n) => n.internalId === internalId),
+        notificationsRef.current?.find((n) => n.internalId === internalId),
     );
   }
 

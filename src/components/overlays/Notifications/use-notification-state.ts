@@ -94,7 +94,7 @@ export function useNotificationState(
     // Oldest by createdAt (active list preserves insertion order)
     const oldest = active[0];
 
-    timersRef.current.clearNotificationTimer(oldest.internalId);
+    timersRef.current?.clearNotificationTimer(oldest.internalId);
 
     // Eviction counts as a timeout dismissal — move to persistent list if applicable
     if (oldest.persistent) {
@@ -126,7 +126,7 @@ export function useNotificationState(
 
       if (!notif || notif.isExiting) return;
 
-      timersRef.current.clearNotificationTimer(notif.internalId);
+      timersRef.current?.clearNotificationTimer(notif.internalId);
 
       // If persistent and dismissed by timeout, move to persistent list.
       // User-initiated dismissals (action, close) intentionally skip persistence.
@@ -197,7 +197,7 @@ export function useNotificationState(
           const duration = getDuration(options);
 
           if (duration != null && duration > 0) {
-            timersRef.current.startNotificationTimer(
+            timersRef.current?.startNotificationTimer(
               existingNotif.internalId,
               existingNotif.id ?? existingNotif.internalId,
               duration,
@@ -250,7 +250,7 @@ export function useNotificationState(
       const duration = getDuration(options);
 
       if (duration != null && duration > 0) {
-        timersRef.current.startNotificationTimer(internalId, id, duration);
+        timersRef.current?.startNotificationTimer(internalId, id, duration);
       }
 
       setNotifications((prev) => {
@@ -292,7 +292,7 @@ export function useNotificationState(
     );
 
     for (const n of owned) {
-      timersRef.current.clearNotificationTimer(n.internalId);
+      timersRef.current?.clearNotificationTimer(n.internalId);
     }
 
     setNotifications((prev) =>
