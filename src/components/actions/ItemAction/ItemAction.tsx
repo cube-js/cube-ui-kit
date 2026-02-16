@@ -123,6 +123,10 @@ const ItemActionElement = tasty({
     outline: 0,
     outlineOffset: 1,
     cursor: { '': '$pointer', disabled: 'default' },
+    preset: {
+      '': 't4',
+      'size=xlarge': 't3m',
+    },
     padding: {
       '': '0 $inline-padding',
       'has-icon': 0,

@@ -1,0 +1,392 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import * as NotificationStories from './Notifications.stories';
+
+<Meta of={NotificationStories} />
+
+# Notification
+
+Action-oriented overlay messages that support custom actions, a dismiss button, timer-based auto-dismiss, and persistent storage. Notifications share the same floating container with [Toast](/docs/overlays-toast--docs) (top-center position) via the unified `OverlayProvider`.
+
+## When to Use
+
+- When a message requires user action (e.g., "View logs", "Upgrade", "Accept")
+- When you need persistent notifications that remain in a list after dismissal
+- When server-sourced events need to be stored for later review
+- For simple dismissible messages with no custom actions (only the auto-appended "Dismiss" button)
+- **If no actions are needed and no persistence is required, use [Toast](/docs/overlays-toast--docs) instead**
+
+## Component
+
+<Story of={NotificationStories.AllTypes} />
+
+---
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the notification.
+
+**Sub-elements:**
+- `Description` - The description text area below the title
+
+## Variants
+
+### Themes
+
+- `success` - Positive outcome (CheckIcon)
+- `danger` - Error or failure (ExclamationIcon)
+- `warning` - Caution or attention needed (WarningIcon)
+- `note` - Informational message (InfoIcon)
+- No theme - Neutral styling with no icon
+
+## Examples
+
+### Imperative API
+
+Use `useNotifications()` to show notifications programmatically. Each hook instance acts as an owner scope — on unmount, all attached visible notifications are dismissed.
+
+```jsx
+import { useNotifications, Notification } from '@cube-dev/ui-kit';
+
+const { notify, record, dismiss } = useNotifications();
+
+const handle = notify({
+  id: 'deploy:123',
+  theme: 'success',
+  title: 'Deployment completed',
+  description: 'Version 1.4.2 is live.',
+  actions: (
+    <>
+      <Notification.Action onPress={() => openLogs()}>
+        View logs
+      </Notification.Action>
+      <Notification.Action onPress={() => openDeployment()}>
+        Open
+      </Notification.Action>
+    </>
+  ),
+});
+
+// Dismiss programmatically
+handle.dismiss();
+// or
+dismiss('deploy:123');
+```
+
+<Story of={NotificationStories.ImperativeAPI} />
+
+### Declarative API
+
+The `<Notification>` component shows a notification while mounted and removes it on unmount.
+
+```jsx
+import { Notification } from '@cube-dev/ui-kit';
+
+<Notification
+  id="release:new-version"
+  theme="warning"
+  title="New release available"
+  description="2.0.0 can be installed now."
+  actions={
+    <>
+      <Notification.Action onPress={() => upgrade()}>
+        Upgrade
+      </Notification.Action>
+      <Notification.Action isDismiss>Later</Notification.Action>
+    </>
+  }
+/>
+```
+
+<Story of={NotificationStories.DeclarativeNotification} />
+
+### Notification.Action
+
+Action buttons inside notifications. Every action auto-dismisses the notification by default (`closeOnPress: true`).
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `onPress` | `() => void` | — | Called when the action is pressed |
+| `closeOnPress` | `boolean` | `true` | Auto-dismiss the notification after press |
+| `isDismiss` | `boolean` | `false` | Marks this action as the dismiss button (see below) |
+| `isDisabled` | `boolean` | `false` | Disables the action |
+
+#### Dismiss behavior
+
+By default, a "Dismiss" button is auto-appended to the right of the actions area (when `isDismissible` is `true`). To customize the dismiss label, add `isDismiss` to a `Notification.Action` — the default button is automatically suppressed via context detection (no extra prop needed).
+
+When `actions` is omitted, only the default "Dismiss" button is shown.
+
+Place the dismiss action **last** so it renders on the right (consistent with the auto-appended position):
+
+```jsx
+// Custom dismiss label — "Later" appears on the right.
+// isDismiss auto-suppresses the default "Dismiss" button.
+notify({
+  actions: (
+    <>
+      <Notification.Action onPress={() => alert('View plans')}>
+        View plans
+      </Notification.Action>
+      <Notification.Action isDismiss>Later</Notification.Action>
+    </>
+  ),
+});
+```
+
+```jsx
+// No isDismiss action — default "Dismiss" button is auto-appended on the right
+notify({
+  actions: (
+    <Notification.Action onPress={() => openLogs()}>
+      View logs
+    </Notification.Action>
+  ),
+});
+```
+
+```jsx
+// No actions at all — only the default "Dismiss" button is shown
+notify({
+  theme: 'success',
+  title: 'Saved successfully',
+});
+```
+
+<Story of={NotificationStories.CustomDismissAction} />
+
+### Update by ID
+
+Calling `notify()` with the same `id` performs an in-place update (instant content swap). The auto-dismiss timer resets when `title` or `description` changes (string values only).
+
+```jsx
+const { notify } = useNotifications();
+
+// Initial notification
+notify({
+  id: 'sync:workspace-42',
+  theme: 'warning',
+  title: 'Sync in progress',
+  persistent: true,
+  duration: null,
+  actions: (
+    <Notification.Action onPress={() => alert('Details')}>
+      Details
+    </Notification.Action>
+  ),
+});
+
+// Later: update same id — timer resets because title changed
+notify({
+  id: 'sync:workspace-42',
+  theme: 'success',
+  title: 'Sync complete',
+  persistent: true,
+  actions: (
+    <Notification.Action onPress={() => alert('Open')}>
+      Open
+    </Notification.Action>
+  ),
+});
+```
+
+<Story of={NotificationStories.UpdateById} />
+
+### Persistent Notifications
+
+Overlay notifications with `persistent: true` are stored in an in-memory list **only when they auto-dismiss by timeout**. User-initiated dismissals (clicking an action, the dismiss button, or calling `dismiss()`) intentionally skip persistence — this ensures users can "truly dismiss" a notification without it reappearing in the persistent list.
+
+#### `record()` — Store Directly
+
+Use `record()` to write notifications directly to the persistent list without rendering in the overlay. This is a shorthand for `notify({ mode: 'stored', ... })`.
+
+The persistent list is **in-memory only** — it does not send data to a server. The intended flow is one-way: the server pushes events to the client, and the client uses `record()` to populate the list. Pass `createdAt` (epoch ms) to preserve the original server timestamp; if omitted it defaults to `Date.now()`.
+
+```jsx
+const { notify, record } = useNotifications();
+const { items, count, remove, clear } = usePersistentNotifications();
+
+// Overlay notification that persists after timeout
+notify({
+  id: 'deploy:1',
+  theme: 'success',
+  title: 'Deployment completed',
+  persistent: true,
+  actions: (
+    <Notification.Action onPress={() => alert('View')}>
+      View
+    </Notification.Action>
+  ),
+});
+
+// Stored notification (no overlay, goes directly to list)
+record({
+  id: 'server:alert-1',
+  theme: 'warning',
+  title: 'Server alert',
+  createdAt: serverEvent.timestamp, // preserve original server timestamp
+  actions: (
+    <Notification.Action onPress={() => alert('Details')}>
+      View details
+    </Notification.Action>
+  ),
+});
+```
+
+<Story of={NotificationStories.PersistentNotifications} />
+
+### PersistentNotificationsList
+
+Renders archived notifications with relative timestamps. Automatically marks all items as read after being visible for 2 seconds.
+
+Reads items directly from the notification context store.
+
+```jsx
+import { PersistentNotificationsList, usePersistentNotifications } from '@cube-dev/ui-kit';
+
+const { remove } = usePersistentNotifications();
+
+<PersistentNotificationsList
+  onDismissItem={(item) => remove(item.id)}
+  emptyState="No notifications"
+/>
+```
+
+### Unread Count
+
+Use `useNotificationsCount()` to track total and unread persistent notifications. Unread count resets when `PersistentNotificationsList` has been visible for 2 seconds.
+
+```jsx
+import { useNotificationsCount } from '@cube-dev/ui-kit';
+
+const { total, unread } = useNotificationsCount();
+
+<Button>
+  Notifications {unread > 0 && `(${unread})`}
+</Button>
+```
+
+<Story of={NotificationStories.UnreadCountBadge} />
+
+### Stack Cap
+
+Maximum 5 notifications are visible at once. When a new notification arrives and the cap is reached, the oldest notification is evicted (dismissed) to make room. This ensures the most recent notifications are always visible. Evicted persistent notifications are moved to the persistent list.
+
+<Story of={NotificationStories.StackCap} />
+
+## Duration Defaults
+
+| Scenario | Default Duration |
+|----------|-----------------|
+| Non-persistent overlay | 5000ms |
+| Persistent overlay | 10000ms |
+| `duration: null` | No auto-dismiss |
+
+All timers pause when any item in the container receives hover or focus, ensuring actionable notifications remain reliably clickable.
+
+## Toast Collapse Behavior
+
+When only toasts are visible in the overlay container (no notifications), hovering over the toast stack collapses all toasts behind the newest one. Moving the mouse away from the collapsed area expands them back. This reduces visual clutter for transient messages while keeping the latest toast visible.
+
+Collapse is disabled when notifications are present, since notifications require user interaction.
+
+## Accessibility
+
+### ARIA Roles and Live Regions
+
+- `success`, `note` themes: `role="status"`, `aria-live="polite"`
+- `danger`, `warning` themes: `role="alert"`, `aria-live="assertive"`
+- All live regions use `aria-atomic="true"` for full content announcement on updates
+- `aria-relevant="additions text"` announces new items and text changes
+- `PersistentNotificationsList` uses `role="log"` and `aria-label="Notifications"`
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to notification items (notifications are focusable)
+- `Escape` - Dismisses the focused notification
+- Action buttons are keyboard-focusable in tab order (left to right)
+
+### Screen Reader Support
+
+- Notifications do not steal focus on arrival
+- Screen reader announcement is handled by `aria-live` regions
+
+### Timer Behavior
+
+- All timers pause when any item in the container receives hover or focus
+- This ensures actionable notifications remain reliably clickable
+
+## Best Practices
+
+1. **Do**: Use notifications for action-oriented messages
+   ```jsx
+   notify({
+     theme: 'success',
+     title: 'Deployment completed',
+     actions: (
+       <Notification.Action onPress={() => viewLogs()}>
+         View logs
+       </Notification.Action>
+     ),
+   });
+   ```
+
+2. **Don't**: Use notifications for simple messages without actions — use Toast instead
+   ```jsx
+   // Use toast.success('Copied to clipboard') instead
+   ```
+
+3. **Do**: Provide explicit `id` for persistent and stored notifications
+   ```jsx
+   notify({ id: 'deploy:123', persistent: true, ... });
+   ```
+
+4. **Do**: Place the dismiss action last for consistent right-side positioning
+   ```jsx
+   notify({
+     actions: (
+       <>
+         <Notification.Action onPress={() => upgrade()}>Upgrade</Notification.Action>
+         <Notification.Action isDismiss>Later</Notification.Action>
+       </>
+     ),
+   });
+   ```
+
+5. **Do**: When using `isDismissible: false`, always provide actions — the user needs a way to interact
+   ```jsx
+   // isDismissible: false hides the default "Dismiss" button and Escape key,
+   // but actions with closeOnPress (default true) still close the notification.
+   notify({
+     isDismissible: false,
+     duration: null,
+     actions: (
+       <>
+         <Notification.Action onPress={() => accept()}>Accept</Notification.Action>
+         <Notification.Action onPress={() => decline()}>Decline</Notification.Action>
+       </>
+     ),
+   });
+   ```
+
+6. **Do**: Use `record()` for server-sourced events that don't need overlay display. Pass `createdAt` to preserve the original timestamp.
+   ```jsx
+   const { record } = useNotifications();
+   record({
+     id: 'alert:1',
+     theme: 'warning',
+     title: 'Server alert',
+     createdAt: serverEvent.timestamp,
+   });
+   ```
+
+## Related Components
+
+- [Toast](/docs/overlays-toast--docs) - Lightweight transient messages without actions
+- [Item](/docs/content-item--docs) - Base component used for notification rendering
+- [ItemAction](/docs/actions-itemaction--docs) - Base action component wrapped by Notification.Action

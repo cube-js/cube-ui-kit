@@ -3,6 +3,8 @@ import { forwardRef, ReactNode } from 'react';
 import { tasty } from '../../../tasty';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 
+import { getThemeIcon } from './useToast';
+
 import type { ToastType } from './types';
 
 export interface ToastItemProps extends Partial<Omit<CubeItemProps, 'type'>> {
@@ -29,8 +31,18 @@ const StyledItem = tasty(Item, {
 
 export const ToastItem = forwardRef<HTMLElement, ToastItemProps>(
   function ToastItem(props, ref) {
-    const { title, description, theme, isLoading, children, qa, ...itemProps } =
-      props;
+    const {
+      title,
+      description,
+      theme,
+      isLoading,
+      icon: providedIcon,
+      children,
+      qa,
+      ...itemProps
+    } = props;
+
+    const icon = getThemeIcon(theme, providedIcon, isLoading);
 
     // If only description provided (no title/children), use description as primary content
     const primaryContent = children ?? title ?? description;
@@ -42,6 +54,7 @@ export const ToastItem = forwardRef<HTMLElement, ToastItemProps>(
         qa={qa ?? 'Toast'}
         type="card"
         theme={theme}
+        icon={icon}
         isLoading={isLoading}
         description={secondaryContent}
         {...itemProps}

@@ -1,0 +1,166 @@
+import { Key, useEffect, useRef, useState } from 'react';
+
+import { useEvent } from '../../../_internal';
+import { tasty } from '../../../tasty';
+import { Text } from '../../content/Text';
+
+import { formatRelativeTime } from './format-relative-time';
+import { NotificationCard } from './NotificationCard';
+import { usePersistentNotifications } from './use-persistent-notifications';
+
+import type {
+  DismissReason,
+  PersistentNotificationItem,
+  PersistentNotificationsListProps,
+} from './types';
+
+// ─── Constants ───────────────────────────────────────────────────────
+
+const MARK_READ_DELAY = 2000;
+/** Interval (ms) at which relative timestamps refresh while the list is mounted. */
+const TIMESTAMP_REFRESH_INTERVAL = 10_000;
+
+// ─── Styled Components ──────────────────────────────────────────────
+
+const ListContainer = tasty({
+  qa: 'PersistentNotificationsList',
+  role: 'log',
+  'aria-label': 'Notifications',
+  styles: {
+    display: 'flex',
+    flow: 'column',
+    gap: '.5x',
+  },
+});
+
+const EmptyStateContainer = tasty({
+  styles: {
+    display: 'flex',
+    placeItems: 'center',
+    placeContent: 'center',
+    padding: '4x',
+    color: '#dark.5',
+    preset: 't3',
+  },
+});
+
+// ─── PersistentNotificationsList Component ───────────────────────────
+
+/**
+ * Standardized rendering for archived/persistent notifications.
+ * Always reads items from the notification context.
+ * Composable with app-specific shells (popover, dialog, page section).
+ *
+ * Marks all items as read after being visible for 2 seconds.
+ * Relative timestamps refresh every 10 seconds while the list is mounted.
+ *
+ * @example
+ * ```tsx
+ * <PersistentNotificationsList
+ *   onDismissItem={(item) => remove(item.id)}
+ *   emptyState="No notifications"
+ * />
+ * ```
+ */
+export function PersistentNotificationsList({
+  onDismissItem,
+  emptyState,
+}: PersistentNotificationsListProps) {
+  const { items, markAllAsRead } = usePersistentNotifications();
+  const markReadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Tick counter that increments every TIMESTAMP_REFRESH_INTERVAL to force
+  // re-render so relative timestamps (e.g. "5 min ago") stay up to date.
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    if (items.length === 0) return;
+
+    const interval = setInterval(() => {
+      setTick((t) => t + 1);
+    }, TIMESTAMP_REFRESH_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [items.length]);
+
+  // Mark all persistent notifications as read after a 2s delay.
+  // Re-starts the timer whenever items change (e.g. new unread items arrive
+  // while the list is already visible).
+  useEffect(() => {
+    const hasUnread = items.some((i) => !i.isRead);
+
+    if (!hasUnread) return;
+
+    markReadTimerRef.current = setTimeout(() => {
+      markAllAsRead();
+    }, MARK_READ_DELAY);
+
+    return () => {
+      if (markReadTimerRef.current) {
+        clearTimeout(markReadTimerRef.current);
+        markReadTimerRef.current = null;
+      }
+    };
+  }, [markAllAsRead, items]);
+
+  if (items.length === 0) {
+    return (
+      <ListContainer>
+        <EmptyStateContainer>
+          {emptyState ?? 'No notifications'}
+        </EmptyStateContainer>
+      </ListContainer>
+    );
+  }
+
+  return (
+    <ListContainer>
+      {items.map((item) => (
+        <PersistentNotificationListItem
+          key={String(item.id)}
+          item={item}
+          onDismiss={onDismissItem}
+        />
+      ))}
+    </ListContainer>
+  );
+}
+
+// ─── List Item ───────────────────────────────────────────────────────
+
+interface PersistentNotificationListItemProps {
+  item: PersistentNotificationItem;
+  onDismiss?: (item: PersistentNotificationItem) => void;
+}
+
+function PersistentNotificationListItem({
+  item,
+  onDismiss,
+}: PersistentNotificationListItemProps) {
+  const suffix = (
+    <Text opacity={0.5} preset="c2">
+      {formatRelativeTime(item.createdAt)}
+    </Text>
+  );
+
+  // useEvent keeps the callback stable across re-renders regardless of
+  // item reference changes (avoids unnecessary NotificationCard re-renders).
+  const handleDismiss = useEvent((_id: Key, _reason: DismissReason) => {
+    onDismiss?.(item);
+  });
+
+  return (
+    <NotificationCard
+      qa="PersistentNotificationItem"
+      theme={item.theme}
+      title={item.title}
+      description={item.description}
+      icon={item.icon}
+      actions={item.actions}
+      isDismissible={!!onDismiss}
+      notificationId={item.id}
+      suffix={suffix}
+      onDismiss={onDismiss ? handleDismiss : undefined}
+    />
+  );
+}
