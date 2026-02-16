@@ -20,10 +20,19 @@ import type { DismissReason, NotificationType } from './types';
 
 const StyledItem = tasty(Item, {
   styles: {
-    width: 'max min((100vw - 4x), 50x)',
+    width: {
+      '': 'max min((100vw - 4x), 50x)',
+      flat: '100%',
+    },
     shadow: {
       '': '$card-shadow',
       flat: false,
+    },
+    radius: {
+      flat: '0',
+    },
+    border: {
+      flat: '0',
     },
     transition: 'theme, inset',
 

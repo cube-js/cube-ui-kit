@@ -1,7 +1,8 @@
-import { Key, useEffect, useRef, useState } from 'react';
+import { Fragment, Key, useEffect, useRef, useState } from 'react';
 
 import { useEvent } from '../../../_internal';
 import { tasty } from '../../../tasty';
+import { Divider } from '../../content/Divider';
 import { Text } from '../../content/Text';
 
 import { formatRelativeTime } from './format-relative-time';
@@ -29,7 +30,6 @@ const ListContainer = tasty({
   styles: {
     display: 'flex',
     flow: 'column',
-    gap: '.5x',
   },
 });
 
@@ -115,12 +115,14 @@ export function PersistentNotificationsList({
 
   return (
     <ListContainer>
-      {items.map((item) => (
-        <PersistentNotificationListItem
-          key={String(item.id)}
-          item={item}
-          onDismiss={onDismissItem}
-        />
+      {items.map((item, index) => (
+        <Fragment key={String(item.id)}>
+          {index > 0 && <Divider />}
+          <PersistentNotificationListItem
+            item={item}
+            onDismiss={onDismissItem}
+          />
+        </Fragment>
       ))}
     </ListContainer>
   );
