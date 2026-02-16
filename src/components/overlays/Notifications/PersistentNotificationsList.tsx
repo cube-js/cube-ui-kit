@@ -158,6 +158,7 @@ function PersistentNotificationListItem({
       icon={item.icon}
       actions={item.actions}
       isDismissible={!!onDismiss}
+      elevated={false}
       notificationId={item.id}
       suffix={suffix}
       onDismiss={onDismiss ? handleDismiss : undefined}

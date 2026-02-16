@@ -21,7 +21,10 @@ import type { DismissReason, NotificationType } from './types';
 const StyledItem = tasty(Item, {
   styles: {
     width: 'max min((100vw - 4x), 50x)',
-    shadow: '$card-shadow',
+    shadow: {
+      '': '$card-shadow',
+      flat: false,
+    },
     transition: 'theme, inset',
 
     Description: {
@@ -150,6 +153,8 @@ export interface NotificationCardProps {
    * the notification.
    */
   isDismissible?: boolean;
+  /** When false the card drops its shadow (e.g. inside a list). Default: true. */
+  elevated?: boolean;
   /** Notification id */
   notificationId?: Key;
   /** Called when the notification is dismissed */
@@ -170,6 +175,7 @@ export function NotificationCard({
   icon: providedIcon,
   actions,
   isDismissible = true,
+  elevated = true,
   notificationId,
   onDismiss,
   suffix,
@@ -205,6 +211,7 @@ export function NotificationCard({
       icon={icon}
       description={descriptionContent}
       suffix={suffix}
+      mods={{ flat: !elevated }}
     >
       {title}
     </StyledItem>
