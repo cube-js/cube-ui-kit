@@ -99,7 +99,7 @@ function ActionsSection({
   onDismiss,
 }: ActionsSectionProps) {
   const actionsContent = (
-    <Space placeContent="end" gap="1x" flexGrow={1}>
+    <Space placeContent="end" flexGrow={1}>
       {actions}
       {showAutoDismiss && <AutoDismissButton />}
     </Space>

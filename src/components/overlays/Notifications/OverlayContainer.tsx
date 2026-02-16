@@ -144,18 +144,35 @@ function useItemPositions(visibleItems: OverlayItem[]): ItemPositionsResult {
   // This ensures the item is painted at its correct position (with no top
   // transition) before we enable the transition.
   useEffect(() => {
-    const newIds = Object.keys(heights).filter((id) => !settledIds.has(id));
+    const heightKeys = Object.keys(heights);
+    const newIds = heightKeys.filter((id) => !settledIds.has(id));
+    const hasStaleIds =
+      settledIds.size > 0 && [...settledIds].some((id) => !(id in heights));
 
-    if (newIds.length === 0) return;
+    if (newIds.length === 0 && !hasStaleIds) return;
 
     if (rafRef.current != null) {
       cancelAnimationFrame(rafRef.current);
     }
 
+    // For pruning-only updates (no new items), apply synchronously since
+    // there's no need to wait for a paint frame.
+    if (newIds.length === 0 && hasStaleIds) {
+      setSettledIds((prev) => new Set(heightKeys.filter((id) => prev.has(id))));
+      return;
+    }
+
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
       setSettledIds((prev) => {
-        const next = new Set(prev);
+        const next = new Set<string>();
+
+        // Only keep IDs that still exist in heights (prune removed items)
+        for (const id of heightKeys) {
+          if (prev.has(id)) {
+            next.add(id);
+          }
+        }
 
         for (const id of newIds) {
           next.add(id);
