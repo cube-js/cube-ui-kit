@@ -8,6 +8,11 @@ import type { NotificationProps } from './types';
  * Declarative Notification component that shows a notification while mounted.
  * Only supports `mode: 'overlay'` (the default).
  *
+ * Duration defaults are the same as for imperative `notify()`:
+ * - 5000ms for non-persistent notifications
+ * - 10000ms for persistent notifications
+ * - Pass `duration={null}` explicitly to disable auto-dismiss.
+ *
  * Semantics:
  * - mount → show or update by `id`
  * - unmount → dismiss unless `disableRemoveOnUnmount`
@@ -47,7 +52,6 @@ export function Notification(props: NotificationProps): null {
     const id = addNotification({
       ...notificationOptions,
       mode: 'overlay',
-      duration: notificationOptions.duration ?? null, // Persistent while mounted
     });
 
     notificationIdRef.current = id;
@@ -73,7 +77,6 @@ export function Notification(props: NotificationProps): null {
       updateNotification(notificationIdRef.current, {
         ...notificationOptions,
         mode: 'overlay',
-        duration: notificationOptions.duration ?? null,
       });
     }
   }, [
