@@ -31,6 +31,10 @@
     "./tasty/zero/next": {
       "import": "./dist/es/tasty/zero/next.js",
       "types": "./dist/types/tasty/zero/next.d.ts"
+    },
+    "./tasty/glaze": {
+      "import": "./dist/es/tasty/glaze/index.js",
+      "types": "./dist/types/tasty/glaze/index.d.ts"
     }
   },
   "files": [

@@ -101,3 +101,19 @@ export type {
   SuffixForSelector,
   NotSelector,
 } from './styles/types';
+
+// Glaze theming API
+export { glaze } from './glaze';
+export type {
+  GlazeConfig,
+  GlazeTheme,
+  GlazePalette,
+  GlazeTokenOptions,
+  GlazeJsonOptions,
+  GlazeOutputModes,
+  ColorDef,
+  ResolvedColor,
+  AdaptationMode,
+  HCPair,
+  MinContrast,
+} from './glaze';
