@@ -1,6 +1,7 @@
 // @ts-check
 import { readFileSync } from 'node:fs';
 
+import react from '@vitejs/plugin-react';
 import remarkGfm from 'remark-gfm';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
@@ -47,6 +48,11 @@ const config = {
   ],
 
   viteFinal(config) {
+    config.plugins = [
+      ...(config.plugins ?? []),
+      react({ jsxRuntime: 'automatic' }),
+    ];
+
     config.define = {
       ...config.define,
       __UIKIT_VERSION__: JSON.stringify(pkg.version),
