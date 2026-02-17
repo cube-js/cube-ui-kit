@@ -37,8 +37,12 @@ import type { NotificationProps } from './types';
  */
 export function Notification(props: NotificationProps): null {
   const { disableRemoveOnUnmount, ...notificationOptions } = props;
-  const { addNotification, removeNotification, updateNotification } =
-    useNotificationContext();
+  const {
+    addNotification,
+    removeNotification,
+    updateNotification,
+    removePersistentItem,
+  } = useNotificationContext();
   const notificationIdRef = useRef<Key | null>(null);
   // Tracks how many times the update effect has run. The first run (0 → 1)
   // coincides with mount and must be skipped because addNotification already
@@ -59,6 +63,7 @@ export function Notification(props: NotificationProps): null {
     return () => {
       if (!disableRemoveRef.current && notificationIdRef.current != null) {
         removeNotification(notificationIdRef.current, 'api');
+        removePersistentItem(notificationIdRef.current);
         notificationIdRef.current = null;
       }
     };
