@@ -8,15 +8,14 @@
  */
 
 import {
-  formatOkhsl,
-  okhslToLinearSrgb,
-  relativeLuminanceFromLinearRgb,
-} from '../utils/okhsl-color-math';
-
-import {
   findLightnessForContrast,
   resolveMinContrast,
 } from './contrast-solver';
+import {
+  formatOkhsl,
+  okhslToLinearSrgb,
+  relativeLuminanceFromLinearRgb,
+} from './okhsl-color-math';
 
 import type {
   AdaptationMode,

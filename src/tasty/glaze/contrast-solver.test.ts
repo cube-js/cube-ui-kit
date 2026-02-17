@@ -1,13 +1,12 @@
 import {
-  contrastRatioFromLuminance,
-  okhslToLinearSrgb,
-  relativeLuminanceFromLinearRgb,
-} from '../utils/okhsl-color-math';
-
-import {
   findLightnessForContrast,
   resolveMinContrast,
 } from './contrast-solver';
+import {
+  contrastRatioFromLuminance,
+  okhslToLinearSrgb,
+  relativeLuminanceFromLinearRgb,
+} from './okhsl-color-math';
 
 describe('contrast-solver', () => {
   describe('resolveMinContrast', () => {

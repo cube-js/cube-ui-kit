@@ -12,7 +12,7 @@ import {
   contrastRatioFromLuminance,
   okhslToLinearSrgb,
   relativeLuminanceFromLinearRgb,
-} from '../utils/okhsl-color-math';
+} from './okhsl-color-math';
 
 // ============================================================================
 // Types

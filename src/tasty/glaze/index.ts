@@ -45,4 +45,4 @@ export {
   relativeLuminanceFromLinearRgb,
   contrastRatioFromLuminance,
   formatOkhsl,
-} from '../utils/okhsl-color-math';
+} from './okhsl-color-math';

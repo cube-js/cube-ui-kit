@@ -1,15 +1,15 @@
 /**
- * OKHSL color math primitives.
+ * OKHSL color math primitives for the glaze theme generator.
  *
- * Single source of truth for all OKHSL ↔ sRGB conversions, luminance,
- * and WCAG 2 contrast utilities used by tasty core and glaze.
+ * Provides OKHSL → linear sRGB conversion (skipping gamma encoding)
+ * and relative luminance computation for WCAG 2 contrast calculations.
+ *
+ * The math is the same as in `../utils/okhsl-to-rgb.ts` but stops at
+ * linear sRGB so the contrast solver can compute luminance directly
+ * without unnecessary gamma round-trips.
  */
 
-// ============================================================================
-// Types
-// ============================================================================
-
-export type Vec3 = [number, number, number];
+type Vec3 = [number, number, number];
 
 // ============================================================================
 // Matrices (from texel-color / Björn Ottosson's reference)
@@ -25,18 +25,6 @@ const LMS_to_linear_sRGB_M: Vec3[] = [
   [4.076741636075959, -3.307711539258062, 0.2309699031821041],
   [-1.2684379732850313, 2.6097573492876878, -0.3413193760026569],
   [-0.004196076138675526, -0.703418617935936, 1.7076146940746113],
-];
-
-const linear_sRGB_to_LMS_M: Vec3[] = [
-  [0.4122214708, 0.5363325363, 0.0514459929],
-  [0.2119034982, 0.6806995451, 0.1073969566],
-  [0.0883024619, 0.2817188376, 0.6299787005],
-];
-
-const LMS_to_OKLab_M: Vec3[] = [
-  [0.2104542553, 0.793617785, -0.0040720468],
-  [1.9779984951, -2.428592205, 0.4505937099],
-  [0.0259040371, 0.7827717662, -0.808675766],
 ];
 
 const OKLab_to_linear_sRGB_coefficients: [
@@ -66,82 +54,32 @@ const TAU = 2 * Math.PI;
 const K1 = 0.206;
 const K2 = 0.03;
 const K3 = (1.0 + K1) / (1.0 + K2);
-const EPSILON = 1e-10;
 
 // ============================================================================
-// Low-level helpers
+// Helpers
 // ============================================================================
 
 const constrainAngle = (angle: number): number => ((angle % 360) + 360) % 360;
-
-export const toe = (x: number): number =>
-  0.5 *
-  (K3 * x - K1 + Math.sqrt((K3 * x - K1) * (K3 * x - K1) + 4 * K2 * K3 * x));
-
-export const toeInv = (x: number): number =>
-  (x ** 2 + K1 * x) / (K3 * (x + K2));
-
-const clamp = (value: number, min: number, max: number): number =>
-  Math.max(Math.min(value, max), min);
-
+const toeInv = (x: number): number => (x ** 2 + K1 * x) / (K3 * (x + K2));
 const dot3 = (a: Vec3, b: Vec3): number =>
   a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-
 const dotXY = (a: [number, number], b: [number, number]): number =>
   a[0] * b[0] + a[1] * b[1];
-
 const transform = (input: Vec3, matrix: Vec3[]): Vec3 => [
   dot3(input, matrix[0]),
   dot3(input, matrix[1]),
   dot3(input, matrix[2]),
 ];
-
 const cubed3 = (lms: Vec3): Vec3 => [lms[0] ** 3, lms[1] ** 3, lms[2] ** 3];
 
-const cbrt3 = (lms: Vec3): Vec3 => [
-  Math.cbrt(lms[0]),
-  Math.cbrt(lms[1]),
-  Math.cbrt(lms[2]),
-];
-
 // ============================================================================
-// Gamma conversion
-// ============================================================================
-
-export const sRGBLinearToGamma = (val: number): number => {
-  const sign = val < 0 ? -1 : 1;
-  const abs = Math.abs(val);
-  return abs > 0.0031308
-    ? sign * (1.055 * Math.pow(abs, 1 / 2.4) - 0.055)
-    : 12.92 * val;
-};
-
-export const sRGBGammaToLinear = (val: number): number => {
-  const sign = val < 0 ? -1 : 1;
-  const abs = Math.abs(val);
-  return abs <= 0.04045
-    ? val / 12.92
-    : sign * Math.pow((abs + 0.055) / 1.055, 2.4);
-};
-
-// ============================================================================
-// OKLab ↔ linear sRGB
+// Internal OKHSL pipeline
 // ============================================================================
 
 const OKLabToLinearSRGB = (lab: Vec3): Vec3 => {
   const lms = transform(lab, OKLab_to_LMS_M);
   return transform(cubed3(lms), LMS_to_linear_sRGB_M);
 };
-
-export const linearSRGBToOKLab = (rgb: Vec3): Vec3 => {
-  const lms = transform(rgb, linear_sRGB_to_LMS_M);
-  const lms_ = cbrt3(lms);
-  return transform(lms_, LMS_to_OKLab_M);
-};
-
-// ============================================================================
-// OKHSL internal pipeline
-// ============================================================================
 
 const computeMaxSaturationOKLC = (a: number, b: number): number => {
   const okCoeff = OKLab_to_linear_sRGB_coefficients;
@@ -344,10 +282,18 @@ const getCs = (
 };
 
 // ============================================================================
-// OKHSL → OKLab (shared by forward conversions)
+// Public API
 // ============================================================================
 
-const OKHSLToOKLab = (h: number, s: number, l: number): Vec3 => {
+/**
+ * Convert OKHSL (h: 0–360, s: 0–1, l: 0–1) to linear sRGB.
+ * Channels may exceed [0, 1] near gamut boundaries — caller must clamp if needed.
+ */
+export function okhslToLinearSrgb(
+  h: number,
+  s: number,
+  l: number,
+): [number, number, number] {
   let L = toeInv(l);
   let a = 0;
   let b = 0;
@@ -383,110 +329,16 @@ const OKHSLToOKLab = (h: number, s: number, l: number): Vec3 => {
     b = c * b_;
   }
 
-  return [L, a, b];
-};
-
-// ============================================================================
-// OKLab → OKHSL (reverse conversion)
-// ============================================================================
-
-const OKLabToOKHSL = (lab: Vec3): Vec3 => {
-  const L = lab[0];
-  const a = lab[1];
-  const b = lab[2];
-
-  const C = Math.sqrt(a * a + b * b);
-
-  if (C < EPSILON) {
-    return [0, 0, toe(L)];
-  }
-
-  const a_ = a / C;
-  const b_ = b / C;
-
-  let h = Math.atan2(b, a) * (180 / Math.PI);
-  h = constrainAngle(h);
-
-  const cusp = findCuspOKLCH(a_, b_);
-  const Cs = getCs(L, a_, b_, cusp);
-  const [c0, cMid, cMax] = Cs;
-
-  const mid = 0.8;
-  const midInv = 1.25;
-
-  let s: number;
-
-  if (C < cMid) {
-    const k1 = mid * c0;
-    const k2 = 1.0 - k1 / cMid;
-    const t = C / (k1 + C * k2);
-    s = t / midInv;
-  } else {
-    const k0 = cMid;
-    const k1 = (0.2 * cMid ** 2 * 1.25 ** 2) / c0;
-    const k2 = 1.0 - k1 / (cMax - cMid);
-    const cDiff = C - k0;
-    const t = cDiff / (k1 + cDiff * k2);
-    s = mid + t / 5;
-  }
-
-  const l = toe(L);
-
-  return [h, clamp(s, 0, 1), clamp(l, 0, 1)];
-};
-
-// ============================================================================
-// Public API — Forward conversions
-// ============================================================================
-
-/**
- * Convert OKHSL (h: 0–360, s: 0–1, l: 0–1) to linear sRGB.
- * Channels may exceed [0, 1] near gamut boundaries — caller must clamp if needed.
- */
-export function okhslToLinearSrgb(h: number, s: number, l: number): Vec3 {
-  const oklab = OKHSLToOKLab(h, s, l);
-  return OKLabToLinearSRGB(oklab);
+  return OKLabToLinearSRGB([L, a, b]);
 }
-
-/**
- * Convert OKHSL to gamma-encoded sRGB (clamped to 0–1).
- */
-export function okhslToSrgb(h: number, s: number, l: number): Vec3 {
-  const lin = okhslToLinearSrgb(h, s, l);
-  return [
-    clamp(sRGBLinearToGamma(lin[0]), 0, 1),
-    clamp(sRGBLinearToGamma(lin[1]), 0, 1),
-    clamp(sRGBLinearToGamma(lin[2]), 0, 1),
-  ];
-}
-
-// ============================================================================
-// Public API — Reverse conversions
-// ============================================================================
-
-/**
- * Convert sRGB values (0–1 range) to OKHSL.
- * Returns [H, S, L] where H is 0–360, S is 0–1, L is 0–1.
- */
-export function sRGBToOKHSL(rgb: Vec3): Vec3 {
-  const linear: Vec3 = [
-    sRGBGammaToLinear(rgb[0]),
-    sRGBGammaToLinear(rgb[1]),
-    sRGBGammaToLinear(rgb[2]),
-  ];
-  const oklab = linearSRGBToOKLab(linear);
-  return OKLabToOKHSL(oklab);
-}
-
-// ============================================================================
-// Public API — Luminance & contrast
-// ============================================================================
 
 /**
  * Compute relative luminance Y from linear sRGB channels.
  * Per WCAG 2: Y = 0.2126·R + 0.7152·G + 0.0722·B
  */
-export function relativeLuminanceFromLinearRgb(rgb: Vec3): number {
+export function relativeLuminanceFromLinearRgb(
+  rgb: [number, number, number],
+): number {
   return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
 }
 
@@ -499,9 +351,29 @@ export function contrastRatioFromLuminance(yA: number, yB: number): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-// ============================================================================
-// Public API — Formatting
-// ============================================================================
+const sRGBLinearToGamma = (val: number): number => {
+  const sign = val < 0 ? -1 : 1;
+  const abs = Math.abs(val);
+  return abs > 0.0031308
+    ? sign * (1.055 * Math.pow(abs, 1 / 2.4) - 0.055)
+    : 12.92 * val;
+};
+
+/**
+ * Convert OKHSL to gamma-encoded sRGB (clamped to 0–1).
+ */
+export function okhslToSrgb(
+  h: number,
+  s: number,
+  l: number,
+): [number, number, number] {
+  const lin = okhslToLinearSrgb(h, s, l);
+  return [
+    Math.max(0, Math.min(1, sRGBLinearToGamma(lin[0]))),
+    Math.max(0, Math.min(1, sRGBLinearToGamma(lin[1]))),
+    Math.max(0, Math.min(1, sRGBLinearToGamma(lin[2]))),
+  ];
+}
 
 /**
  * Format OKHSL values as a CSS `okhsl(H S% L%)` string.
