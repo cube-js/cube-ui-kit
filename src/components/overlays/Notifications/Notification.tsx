@@ -9,13 +9,12 @@ import type { NotificationProps } from './types';
  * Only supports `mode: 'overlay'` (the default).
  *
  * Duration defaults are the same as for imperative `notify()`:
- * - 5000ms for non-persistent notifications
- * - 10000ms for persistent notifications
+ * - 5000ms for all notifications
  * - Pass `duration={null}` explicitly to disable auto-dismiss.
  *
  * Semantics:
  * - mount → show or update by `id`
- * - unmount → dismiss unless `disableRemoveOnUnmount`
+ * - unmount → remove from overlay and persistent list
  *
  * @example
  * ```tsx
@@ -36,7 +35,6 @@ import type { NotificationProps } from './types';
  * ```
  */
 export function Notification(props: NotificationProps): null {
-  const { disableRemoveOnUnmount, ...notificationOptions } = props;
   const {
     addNotification,
     removeNotification,
@@ -48,20 +46,18 @@ export function Notification(props: NotificationProps): null {
   // coincides with mount and must be skipped because addNotification already
   // handles the initial state.
   const renderCountRef = useRef(0);
-  const disableRemoveRef = useRef(disableRemoveOnUnmount);
-  disableRemoveRef.current = disableRemoveOnUnmount;
 
   // Show notification on mount
   useEffect(() => {
     const id = addNotification({
-      ...notificationOptions,
+      ...props,
       mode: 'overlay',
     });
 
     notificationIdRef.current = id;
 
     return () => {
-      if (!disableRemoveRef.current && notificationIdRef.current != null) {
+      if (notificationIdRef.current != null) {
         removeNotification(notificationIdRef.current, 'api');
         removePersistentItem(notificationIdRef.current);
         notificationIdRef.current = null;
@@ -80,20 +76,20 @@ export function Notification(props: NotificationProps): null {
 
     if (notificationIdRef.current != null) {
       updateNotification(notificationIdRef.current, {
-        ...notificationOptions,
+        ...props,
         mode: 'overlay',
       });
     }
   }, [
-    notificationOptions.id,
-    notificationOptions.theme,
-    notificationOptions.title,
-    notificationOptions.description,
-    notificationOptions.icon,
-    notificationOptions.actions,
-    notificationOptions.isDismissible,
-    notificationOptions.persistent,
-    notificationOptions.duration,
+    props.id,
+    props.theme,
+    props.title,
+    props.description,
+    props.icon,
+    props.actions,
+    props.isDismissible,
+    props.persistent,
+    props.duration,
   ]);
 
   return null;

@@ -204,7 +204,4 @@ export interface OverlayProviderProps {
 
 // ─── Declarative Notification Props ──────────────────────────────────
 
-export interface NotificationProps extends OverlayNotificationOptions {
-  /** If true, the notification is not removed when the component unmounts */
-  disableRemoveOnUnmount?: boolean;
-}
+export interface NotificationProps extends OverlayNotificationOptions {}
