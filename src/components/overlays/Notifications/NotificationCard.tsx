@@ -29,9 +29,11 @@ const StyledItem = tasty(Item, {
       flat: false,
     },
     radius: {
+      '': '1cr',
       flat: '0',
     },
     border: {
+      '': '#clear',
       flat: '0',
     },
     transition: 'theme, inset',
