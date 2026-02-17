@@ -12,8 +12,8 @@ import type { OverlayTimers } from './use-overlay-timers';
 
 // ─── Constants ───────────────────────────────────────────────────────
 
-const DEFAULT_NOTIFICATION_DURATION = 5000;
-const DEFAULT_PERSISTENT_NOTIFICATION_DURATION = 10000;
+const DEFAULT_NOTIFICATION_DURATION = 3000;
+const DEFAULT_PERSISTENT_NOTIFICATION_DURATION = 5000;
 const MAX_NOTIFICATIONS = 5;
 
 // ─── Types ───────────────────────────────────────────────────────────
