@@ -11,10 +11,10 @@ import {
 
 import { ensureYamlSqlExtensions, Prism } from './prismSetup';
 
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-yaml';
-import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-sql';
+import 'prismjs/components/prism-javascript.js';
+import 'prismjs/components/prism-yaml.js';
+import 'prismjs/components/prism-bash.js';
+import 'prismjs/components/prism-sql.js';
 
 const PreElement = tasty({
   as: 'pre',
