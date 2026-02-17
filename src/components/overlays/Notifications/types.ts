@@ -151,6 +151,8 @@ export interface PersistentNotificationItem {
 
 export interface PersistentNotificationsListProps {
   onDismissItem?: (item: PersistentNotificationItem) => void;
+  /** Called before any action's onPress handler fires. Useful for closing a parent popover. */
+  onAction?: () => void;
   emptyState?: ReactNode;
 }
 

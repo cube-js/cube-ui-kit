@@ -6,6 +6,7 @@ import { Divider } from '../../content/Divider';
 import { Text } from '../../content/Text';
 
 import { formatRelativeTime } from './format-relative-time';
+import { NotificationActionInterceptorContext } from './NotificationAction';
 import { NotificationCard } from './NotificationCard';
 import { usePersistentNotifications } from './use-persistent-notifications';
 
@@ -64,6 +65,7 @@ const EmptyStateContainer = tasty({
  */
 export function PersistentNotificationsList({
   onDismissItem,
+  onAction,
   emptyState,
 }: PersistentNotificationsListProps) {
   const { items, markAllAsRead } = usePersistentNotifications();
@@ -114,17 +116,19 @@ export function PersistentNotificationsList({
   }
 
   return (
-    <ListContainer>
-      {items.map((item, index) => (
-        <Fragment key={String(item.id)}>
-          {index > 0 && <Divider />}
-          <PersistentNotificationListItem
-            item={item}
-            onDismiss={onDismissItem}
-          />
-        </Fragment>
-      ))}
-    </ListContainer>
+    <NotificationActionInterceptorContext.Provider value={onAction ?? null}>
+      <ListContainer>
+        {items.map((item, index) => (
+          <Fragment key={String(item.id)}>
+            {index > 0 && <Divider />}
+            <PersistentNotificationListItem
+              item={item}
+              onDismiss={onDismissItem}
+            />
+          </Fragment>
+        ))}
+      </ListContainer>
+    </NotificationActionInterceptorContext.Provider>
   );
 }
 

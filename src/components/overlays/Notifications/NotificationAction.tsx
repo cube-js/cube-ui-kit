@@ -12,6 +12,19 @@ import { ItemAction } from '../../actions/ItemAction/ItemAction';
 
 import type { NotificationActionProps } from './types';
 
+// ─── Notification Action Interceptor Context ─────────────────────────
+
+/**
+ * Optional callback invoked BEFORE any action's onPress handler.
+ * Provided by PersistentNotificationsList so the parent (e.g. popover)
+ * can close itself when an action is triggered.
+ */
+const NotificationActionInterceptorContext = createContext<(() => void) | null>(
+  null,
+);
+
+export { NotificationActionInterceptorContext };
+
 // ─── Notification Dismiss Context ────────────────────────────────────
 
 interface NotificationDismissContextValue {
@@ -92,7 +105,10 @@ export function NotificationAction({
     dismissDetectedRef.current = true;
   }
 
+  const actionInterceptor = useContext(NotificationActionInterceptorContext);
+
   const handlePress = useEvent(() => {
+    actionInterceptor?.();
     onPress?.();
 
     if (closeOnPress) {

@@ -197,7 +197,7 @@ export function NotificationCard({
 
   const descriptionContent: ReactNode =
     description || hasActions ? (
-      <Flex flow="row wrap" gap="0.5x 1x" placeItems="center stretch">
+      <Flex flow="row wrap" gap="0.5x 1x" placeItems="end stretch">
         {description && <Block>{description}</Block>}
         {hasActions && (
           <ActionsSection
