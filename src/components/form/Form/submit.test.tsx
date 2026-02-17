@@ -7,13 +7,13 @@ import { ResetButton, SubmitButton } from '../../form';
 
 import { Form } from './index';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<Form />', () => {
   it('should not be displayed if validation is failed on submit', async () => {
-    jest.setTimeout(10000);
-    const onSubmit = jest.fn(() => Promise.reject('Custom Error'));
-    const onSubmitFailed = jest.fn(() => {});
+    vi.setConfig({ testTimeout: 10000 });
+    const onSubmit = vi.fn(() => Promise.reject('Custom Error'));
+    const onSubmitFailed = vi.fn(() => {});
 
     const { getByRole, formInstance } = renderWithForm(
       <>
@@ -58,10 +58,10 @@ describe('<Form />', () => {
   });
 
   it('should throw uncaught rejection if error is not handled', async () => {
-    const onSubmit = jest.fn(() => {
+    const onSubmit = vi.fn(() => {
       throw new Error('Custom Error');
     });
-    const onSubmitFailed = jest.fn(() => {});
+    const onSubmitFailed = vi.fn(() => {});
 
     const { getByRole, getByText, formInstance } = renderWithForm(
       <>
@@ -92,7 +92,7 @@ describe('<Form />', () => {
   });
 
   it('should handle reset button behavior correctly', async () => {
-    const onSubmit = jest.fn((data) => {});
+    const onSubmit = vi.fn((data) => {});
 
     const { getByRole, getByText } = renderWithForm(
       <>
@@ -155,8 +155,8 @@ describe('<Form />', () => {
   });
 
   it('should respect the isDisabled:true property for ResetButton and SubmitButton', async () => {
-    const onSubmit = jest.fn(() => Promise.resolve());
-    const onSubmitFailed = jest.fn(() => {});
+    const onSubmit = vi.fn(() => Promise.resolve());
+    const onSubmitFailed = vi.fn(() => {});
 
     const { getByRole } = renderWithForm(
       <>
@@ -200,8 +200,8 @@ describe('<Form />', () => {
   });
 
   it('Respect isDisabled:false property for ResetButton and SubmitButton', async () => {
-    const onSubmit = jest.fn(() => Promise.resolve());
-    const onSubmitFailed = jest.fn(() => {});
+    const onSubmit = vi.fn(() => Promise.resolve());
+    const onSubmitFailed = vi.fn(() => {});
 
     // Render with isDisabled = false for buttons
     const { getByRole: getByRoleNew } = renderWithForm(
@@ -252,7 +252,7 @@ describe('<Form />', () => {
   });
 
   it('should clear validation errors using clearFieldsValidation', async () => {
-    const onSubmit = jest.fn(() => Promise.reject('Submit Error'));
+    const onSubmit = vi.fn(() => Promise.reject('Submit Error'));
 
     const { getByRole, getByText, formInstance } = renderWithForm(
       <>
@@ -317,7 +317,7 @@ describe('<Form />', () => {
   });
 
   it('should set validation error using setFieldError', async () => {
-    const onSubmit = jest.fn(() => Promise.resolve());
+    const onSubmit = vi.fn(() => Promise.resolve());
 
     const { getByRole, getByText, formInstance } = renderWithForm(
       <>
@@ -371,7 +371,7 @@ describe('<Form />', () => {
   });
 
   it('should update isTouched when an input is interacted with', async () => {
-    const onSubmit = jest.fn(() => Promise.resolve());
+    const onSubmit = vi.fn(() => Promise.resolve());
     const { getByRole, formInstance } = renderWithForm(
       <>
         <Form.Item name="test" label="Test">
@@ -395,7 +395,7 @@ describe('<Form />', () => {
   });
 
   it('should update isDirty when input value differs from the initial value', async () => {
-    const onSubmit = jest.fn(() => Promise.resolve());
+    const onSubmit = vi.fn(() => Promise.resolve());
     const defaultValues = { test: 'initial' };
     const { getByRole, formInstance } = renderWithForm(
       <>
@@ -420,7 +420,7 @@ describe('<Form />', () => {
   });
 
   it('should maintain isTouched true but set isDirty false when input value reverts to initial', async () => {
-    const onSubmit = jest.fn(() => Promise.resolve());
+    const onSubmit = vi.fn(() => Promise.resolve());
     const initialValue = { test: 'initial' };
     const { getByRole, formInstance } = renderWithForm(
       <>

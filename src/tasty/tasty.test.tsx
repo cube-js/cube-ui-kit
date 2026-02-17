@@ -762,7 +762,7 @@ describe('tokens prop', () => {
   });
 
   it('should warn on object token values', () => {
-    const consoleWarnSpy = jest
+    const consoleWarnSpy = vi
       .spyOn(console, 'warn')
       .mockImplementation(() => {});
 
@@ -1190,7 +1190,7 @@ describe('useGlobalStyles() hook', () => {
   });
 
   it('should warn when selector affix targets outside root scope', () => {
-    const consoleWarnSpy = jest
+    const consoleWarnSpy = vi
       .spyOn(console, 'warn')
       .mockImplementation(() => {});
 
@@ -1235,7 +1235,7 @@ describe('useGlobalStyles() hook', () => {
   });
 
   it('should not warn when combinator has proper spaces in selector affix ($)', () => {
-    const consoleErrorSpy = jest
+    const consoleErrorSpy = vi
       .spyOn(console, 'error')
       .mockImplementation(() => {});
 

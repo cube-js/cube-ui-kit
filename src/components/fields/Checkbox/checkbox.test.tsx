@@ -5,7 +5,7 @@ import { Field } from '../../form';
 
 import { Checkbox } from './Checkbox';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<Checkbox />', () => {
   it('should work without form', async () => {

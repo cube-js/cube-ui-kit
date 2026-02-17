@@ -8,8 +8,8 @@ describe('<NotificationsBar />', () => {
   it.each(['Delete', 'Esc', 'Backspace'])(
     'should close on keypress %s',
     async (key) => {
-      const onRemoveToast = jest.fn();
-      const onDismiss = jest.fn();
+      const onRemoveToast = vi.fn();
+      const onDismiss = vi.fn();
 
       render(
         <NotificationsBar
@@ -36,8 +36,8 @@ describe('<NotificationsBar />', () => {
   );
 
   it('should not render more than 5 notifications at the same time', () => {
-    const onRemoveToast = jest.fn(),
-      onDismiss = jest.fn();
+    const onRemoveToast = vi.fn(),
+      onDismiss = vi.fn();
 
     render(
       <NotificationsBar

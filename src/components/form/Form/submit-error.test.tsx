@@ -8,8 +8,8 @@ import { Form } from './index';
 
 describe('<SubmitError />', () => {
   it('should display a submit error if onSubmit callback is failed', async () => {
-    const onSubmit = jest.fn(() => Promise.reject('Custom Error'));
-    const onSubmitFailed = jest.fn();
+    const onSubmit = vi.fn(() => Promise.reject('Custom Error'));
+    const onSubmitFailed = vi.fn();
 
     const { getByRole, getByText } = renderWithForm(
       <>
@@ -45,8 +45,8 @@ describe('<SubmitError />', () => {
   });
 
   it('should clean the submit error if any value is changed', async () => {
-    const onSubmit = jest.fn(() => Promise.reject('Custom Error'));
-    const onSubmitFailed = jest.fn();
+    const onSubmit = vi.fn(() => Promise.reject('Custom Error'));
+    const onSubmitFailed = vi.fn();
 
     const { getByRole, getByText } = renderWithForm(
       <>
@@ -91,10 +91,10 @@ describe('<SubmitError />', () => {
   });
 
   it('should display an error placeholder if error is not handled properly', async () => {
-    const onSubmit = jest.fn(() => {
+    const onSubmit = vi.fn(() => {
       return Promise.reject([]); // non-valid error
     });
-    const onSubmitFailed = jest.fn();
+    const onSubmitFailed = vi.fn();
 
     const { getByRole, getByText } = renderWithForm(
       <>

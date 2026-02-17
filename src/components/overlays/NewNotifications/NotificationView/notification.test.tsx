@@ -15,24 +15,24 @@ import { NotificationView } from './NotificationView';
 
 describe('<Notification />', () => {
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
   it('should stop timer on hover', async () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
 
     render(
       <NotificationView description="test" duration={50} onClose={onClose} />,
     );
 
     await act(() => userEvent.hover(screen.getByTestId('notification')));
-    jest.useFakeTimers();
-    jest.runAllTimers();
+    vi.useFakeTimers();
+    vi.runAllTimers();
 
     expect(onClose).not.toBeCalled();
   });
 
   it('should resume timer on unhover', async () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
 
     render(
       <NotificationView description="test" duration={10} onDismiss={onClose} />,
@@ -42,21 +42,21 @@ describe('<Notification />', () => {
 
     await act(() => userEvent.hover(notification));
 
-    jest.useFakeTimers();
-    jest.runAllTimers();
-    jest.useRealTimers();
+    vi.useFakeTimers();
+    vi.runAllTimers();
+    vi.useRealTimers();
 
     await act(() => userEvent.unhover(notification));
 
-    jest.useFakeTimers();
-    jest.runAllTimers();
-    jest.useRealTimers();
+    vi.useFakeTimers();
+    vi.runAllTimers();
+    vi.useRealTimers();
 
     await waitFor(() => expect(onClose).toBeCalledTimes(1));
   });
 
   it('should close on click', async () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
     render(<NotificationView description="test" onDismiss={onClose} />);
 
     const notification = screen.getByTestId('notification');
@@ -69,23 +69,23 @@ describe('<Notification />', () => {
   });
 
   it('should kill timer on unmount', async () => {
-    const onClose = jest.fn();
-    jest.useFakeTimers();
+    const onClose = vi.fn();
+    vi.useFakeTimers();
 
     render(
       <NotificationView description="test" duration={10} onClose={onClose} />,
     );
     cleanup();
 
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     expect(onClose).toBeCalledTimes(0);
   });
 
   it('should work with custom timer', async () => {
-    const onClose = jest.fn();
-    const timerCallback = jest.fn();
-    jest.useFakeTimers();
+    const onClose = vi.fn();
+    const timerCallback = vi.fn();
+    vi.useFakeTimers();
 
     const timer = new Timer(timerCallback, 100);
 
@@ -93,14 +93,14 @@ describe('<Notification />', () => {
       <NotificationView description="test" timer={timer} onClose={onClose} />,
     );
 
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     expect(timerCallback).toBeCalledTimes(1);
     expect(onClose).toBeCalledTimes(0);
   });
 
   it('should render actions correctly', async () => {
-    const onActionPress = jest.fn();
+    const onActionPress = vi.fn();
 
     render(
       <NotificationView
@@ -146,8 +146,8 @@ describe('<Notification />', () => {
   });
 
   it('should render actions as function', async () => {
-    const onClose = jest.fn();
-    const onDismiss = jest.fn();
+    const onClose = vi.fn();
+    const onDismiss = vi.fn();
 
     render(
       <NotificationView

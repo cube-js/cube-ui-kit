@@ -1,3 +1,5 @@
+import { diffLines } from 'diff';
+
 import { ensureYamlSqlExtensions, Prism } from '../prismSetup';
 
 describe('Prism diff-highlight plugin', () => {
@@ -143,9 +145,6 @@ describe('Prism diff-highlight plugin', () => {
   });
 
   test('PrismDiffCode generates proper diff-sql tokens', () => {
-    // Test the actual diffLines logic from PrismDiffCode
-    const { diffLines } = require('diff');
-
     const original = `SELECT id, name FROM users;`;
     const modified = `SELECT id, name, email FROM users WHERE active = 1;`;
 
@@ -268,9 +267,6 @@ describe('Prism diff-highlight plugin', () => {
 
   test('PrismDiffCode with YAML containing multiline SQL blocks', () => {
     ensureYamlSqlExtensions();
-
-    // Test that PrismDiffCode properly handles YAML with multiline SQL
-    const { diffLines } = require('diff');
 
     const originalYaml = `cubes:
   - name: orders

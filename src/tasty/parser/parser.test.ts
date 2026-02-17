@@ -550,7 +550,7 @@ describe('StyleProcessor', () => {
   });
 
   test('skips invalid functions while parsing (for example missing closing parenthesis)', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const expr =
       'blur(10px) drop-shadow(0 0 1px rgb(var(--dark-color-rgb) / 20%)';
@@ -738,9 +738,9 @@ describe('Predefined tokens', () => {
   let resetGlobalPredefinedTokens: () => void;
   let getGlobalPredefinedTokens: () => Record<string, string> | null;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     // Dynamic import to get the functions
-    const styles = jest.requireActual('../utils/styles');
+    const styles = await vi.importActual<any>('../utils/styles');
     setGlobalPredefinedTokens = styles.setGlobalPredefinedTokens;
     resetGlobalPredefinedTokens = styles.resetGlobalPredefinedTokens;
     getGlobalPredefinedTokens = styles.getGlobalPredefinedTokens;
@@ -1048,9 +1048,9 @@ describe('Predefined tokens', () => {
     });
   });
 
-  test('resetGlobalPredefinedTokens clears global parser cache', () => {
+  test('resetGlobalPredefinedTokens clears global parser cache', async () => {
     // Import the global parser to test cache clearing
-    const { getGlobalParser } = jest.requireActual('../utils/styles');
+    const { getGlobalParser } = await vi.importActual<any>('../utils/styles');
     const globalParser = getGlobalParser();
 
     // Set a token and parse it (caches the result)
@@ -1143,9 +1143,9 @@ describe('#current color token', () => {
   let resetGlobalPredefinedTokens: () => void;
   let getGlobalPredefinedTokens: () => Record<string, string> | null;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     // Dynamic import to get the functions
-    const styles = jest.requireActual('../utils/styles');
+    const styles = await vi.importActual<any>('../utils/styles');
     setGlobalPredefinedTokens = styles.setGlobalPredefinedTokens;
     resetGlobalPredefinedTokens = styles.resetGlobalPredefinedTokens;
     getGlobalPredefinedTokens = styles.getGlobalPredefinedTokens;
@@ -1217,7 +1217,7 @@ describe('#current color token', () => {
   });
 
   test('warning is logged when defining token with bare #current value', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     setGlobalPredefinedTokens({
       '#my-color': '#current',
@@ -1235,7 +1235,7 @@ describe('#current color token', () => {
   });
 
   test('#current with opacity is allowed in predefined tokens', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     setGlobalPredefinedTokens({
       '#my-color': '#current.5',
@@ -1258,7 +1258,7 @@ describe('#current color token', () => {
   });
 
   test('#current-theme is allowed (not confused with #current)', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     setGlobalPredefinedTokens({
       '#current-theme': '#purple',

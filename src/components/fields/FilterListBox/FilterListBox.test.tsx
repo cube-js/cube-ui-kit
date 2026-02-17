@@ -3,7 +3,7 @@ import { createRef, JSX } from 'react';
 import { FilterListBox } from '../../../index';
 import { act, render, renderWithRoot, userEvent } from '../../../test';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<FilterListBox />', () => {
   const basicItems = [
@@ -43,7 +43,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should work in uncontrolled mode', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByRole, getByText } = render(
         <FilterListBox
@@ -68,7 +68,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should work in controlled mode', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByText, rerender } = render(
         <FilterListBox
@@ -193,7 +193,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should work in uncontrolled mode with defaultSelectedKeys', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByText } = render(
         <FilterListBox
@@ -324,7 +324,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should support multiple selection', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByText } = render(
         <FilterListBox
@@ -355,7 +355,7 @@ describe('<FilterListBox />', () => {
 
   describe('Search functionality', () => {
     it('should work with controlled search and filter={false} for external filtering', async () => {
-      const onSearchChange = jest.fn();
+      const onSearchChange = vi.fn();
 
       const { getByPlaceholderText, getByText, queryByText, rerender } = render(
         <FilterListBox
@@ -503,7 +503,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should reset selection when no search results are found', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByPlaceholderText, getByText } = render(
         <FilterListBox
@@ -557,7 +557,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should support custom filter function', async () => {
-      const customFilter = jest.fn((text, search) =>
+      const customFilter = vi.fn((text, search) =>
         text.toLowerCase().startsWith(search.toLowerCase()),
       );
 
@@ -649,7 +649,7 @@ describe('<FilterListBox />', () => {
 
   describe('Disabled state', () => {
     it('should disable search input and prevent selection when disabled', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByPlaceholderText, getByText } = render(
         <FilterListBox
@@ -909,7 +909,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should allow selecting custom value in single selection mode', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByPlaceholderText, getByText } = render(
         <FilterListBox
@@ -939,7 +939,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should allow selecting custom values in multiple selection mode', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByPlaceholderText, getByText } = render(
         <FilterListBox
@@ -978,7 +978,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should persist custom values after they are selected', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByPlaceholderText, getByText } = render(
         <FilterListBox
@@ -1014,7 +1014,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should remove custom values when they are deselected', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByPlaceholderText, getByText, queryByText } = render(
         <FilterListBox
@@ -1059,7 +1059,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should handle multiple custom values correctly', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByPlaceholderText, getByText } = render(
         <FilterListBox
@@ -1164,7 +1164,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should work with keyboard navigation to select custom values', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByPlaceholderText } = render(
         <FilterListBox
@@ -1213,7 +1213,7 @@ describe('<FilterListBox />', () => {
     });
 
     afterEach(() => {
-      jest.restoreAllMocks();
+      vi.restoreAllMocks();
     });
 
     // Create 60 items to trigger virtualization (threshold is 30)
@@ -1381,7 +1381,7 @@ describe('<FilterListBox />', () => {
 
     it('should handle selection in virtualized list', async () => {
       const items = createManyItems();
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { container } = renderWithRoot(
         <FilterListBox

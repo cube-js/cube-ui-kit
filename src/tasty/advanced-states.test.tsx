@@ -1,6 +1,7 @@
 import { cleanup, render } from '@testing-library/react';
 
 import { configure, resetConfig } from './config';
+import { renderStyles } from './pipeline';
 import {
   clearGlobalPredefinedStates,
   setGlobalPredefinedStates,
@@ -774,9 +775,6 @@ describe('Advanced State Mapping - CSS Output', () => {
 
 // Direct renderStyles tests for features that jsdom doesn't support
 describe('Advanced State Mapping - renderStyles direct tests', () => {
-  // Import renderStyles for direct testing
-  const { renderStyles } = require('./pipeline');
-
   describe('@starting-style tests', () => {
     it('should generate @starting-style at-rule for entry animations', () => {
       const { rules } = renderStyles({

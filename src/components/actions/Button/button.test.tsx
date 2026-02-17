@@ -47,7 +47,7 @@ describe('<Button />', () => {
     ['none', {}],
     ['icon', { icon: <IconCopy /> }],
   ])(`should warn if %s specified`, (_, value) => {
-    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     render(<Button {...value} />);
 
@@ -76,7 +76,7 @@ describe('<Button />', () => {
     // prettier-ignore
     ['rightIcon and aria-labelledby', { rightIcon: <IconCopy />, 'aria-labelledby': 'test' }],
   ])('should not warn if %s is provided', (_, value) => {
-    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     render(<Button {...value} />);
 

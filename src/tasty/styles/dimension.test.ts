@@ -1,7 +1,7 @@
+import { parseStyle } from '../utils/styles';
+
 import { heightStyle } from './height';
 import { widthStyle } from './width';
-
-const { parseStyle } = require('../utils/styles');
 
 describe('dimensionStyle – width & height helpers', () => {
   test('single value width', () => {

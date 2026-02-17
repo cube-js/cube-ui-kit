@@ -17,7 +17,7 @@ import { CommandMenu } from './CommandMenu';
 import { Menu } from './Menu';
 import { useContextMenu } from './use-context-menu';
 
-jest.mock('../../_internal/hooks/use-warn');
+vi.mock('../../_internal/hooks/use-warn');
 
 // Wrapper for hooks that need EventBusProvider
 const HookWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -137,7 +137,7 @@ describe('useContextMenu', () => {
   });
 
   it('should render menu when opened with Menu component', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole, getByText } = renderWithRoot(
       <TestWrapper
@@ -167,7 +167,7 @@ describe('useContextMenu', () => {
   });
 
   it('should render CommandMenu when opened with CommandMenu component', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole, getByText, getByPlaceholderText } =
       renderWithRoot(
@@ -199,7 +199,7 @@ describe('useContextMenu', () => {
   });
 
   it('should close menu when close function is called', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole, queryByRole } = renderWithRoot(
       <TestWrapper
@@ -231,7 +231,7 @@ describe('useContextMenu', () => {
   });
 
   it('should handle menu item actions correctly', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByText } = renderWithRoot(
       <TestWrapper
@@ -257,7 +257,7 @@ describe('useContextMenu', () => {
   });
 
   it('should handle context menu events correctly', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole, getByText } = renderWithRoot(
       <TestWrapper
@@ -290,7 +290,7 @@ describe('useContextMenu', () => {
   });
 
   it('should position menu at click coordinates', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId } = renderWithRoot(
       <TestWrapper
@@ -302,7 +302,7 @@ describe('useContextMenu', () => {
     const container = getByTestId('container');
 
     // Mock getBoundingClientRect to return a predictable rect
-    const mockGetBoundingClientRect = jest.fn(() => ({
+    const mockGetBoundingClientRect = vi.fn(() => ({
       left: 10,
       top: 20,
       width: 200,
@@ -333,7 +333,7 @@ describe('useContextMenu', () => {
   });
 
   it('should clamp coordinates to container bounds', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId } = renderWithRoot(
       <TestWrapper
@@ -345,7 +345,7 @@ describe('useContextMenu', () => {
     const container = getByTestId('container');
 
     // Mock getBoundingClientRect
-    const mockGetBoundingClientRect = jest.fn(() => ({
+    const mockGetBoundingClientRect = vi.fn(() => ({
       left: 10,
       top: 20,
       width: 200,
@@ -376,7 +376,7 @@ describe('useContextMenu', () => {
   });
 
   it('should pass trigger props to MenuTrigger', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole } = renderWithRoot(
       <TestWrapper
@@ -402,7 +402,7 @@ describe('useContextMenu', () => {
   });
 
   it('should merge default trigger props with runtime trigger props', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole } = renderWithRoot(
       <TestWrapper
@@ -429,8 +429,8 @@ describe('useContextMenu', () => {
   });
 
   it('should update component props when opened multiple times', async () => {
-    const onAction1 = jest.fn();
-    const onAction2 = jest.fn();
+    const onAction1 = vi.fn();
+    const onAction2 = vi.fn();
 
     // Custom wrapper to test multiple opens with different props
     const MultiOpenWrapper = () => {
@@ -491,7 +491,7 @@ describe('useContextMenu', () => {
   });
 
   it('should handle CommandMenu search functionality', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByPlaceholderText, getByText, queryByText } =
       renderWithRoot(
@@ -563,7 +563,7 @@ describe('useContextMenu', () => {
   });
 
   it('should work with custom MenuTrigger placement', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole } = renderWithRoot(
       <TestWrapper
@@ -596,7 +596,7 @@ describe('useContextMenu', () => {
     const mockEvent = {
       clientX: 100,
       clientY: 50,
-      preventDefault: jest.fn(),
+      preventDefault: vi.fn(),
     } as any;
 
     expect(() => {
@@ -607,7 +607,7 @@ describe('useContextMenu', () => {
   });
 
   it('should prevent default on context menu events', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId } = renderWithRoot(
       <TestWrapper
@@ -619,7 +619,7 @@ describe('useContextMenu', () => {
     const container = getByTestId('container');
 
     // Create a spy for preventDefault on the event
-    const preventDefault = jest.fn();
+    const preventDefault = vi.fn();
 
     await act(async () => {
       // Create a real event that includes preventDefault
@@ -640,7 +640,7 @@ describe('useContextMenu', () => {
   });
 
   it('should handle events without coordinates gracefully', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole } = renderWithRoot(
       <TestWrapper
@@ -652,7 +652,7 @@ describe('useContextMenu', () => {
     const container = getByTestId('container');
 
     // Mock getBoundingClientRect
-    const mockGetBoundingClientRect = jest.fn(() => ({
+    const mockGetBoundingClientRect = vi.fn(() => ({
       left: 10,
       top: 20,
       width: 200,
@@ -722,7 +722,7 @@ describe('useContextMenu', () => {
   });
 
   it('should respect placement property from defaultTriggerProps', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const TestPlacementWrapper = ({ placement }: { placement: any }) => {
       const { targetRef, open, rendered } = useContextMenu<HTMLDivElement>(
@@ -769,7 +769,7 @@ describe('useContextMenu', () => {
   });
 
   it('should automatically bind context menu events with defaultMenuProps', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const TestAutoContextWrapper = () => {
       const { targetRef, isOpen, rendered } = useContextMenu<HTMLDivElement>(
@@ -827,8 +827,8 @@ describe('useContextMenu', () => {
   });
 
   it('should merge defaultMenuProps with runtime props when using open function', async () => {
-    const defaultAction = jest.fn();
-    const runtimeAction = jest.fn();
+    const defaultAction = vi.fn();
+    const runtimeAction = vi.fn();
 
     const TestMergeWrapper = () => {
       const { targetRef, open, rendered } = useContextMenu<HTMLDivElement>(
@@ -888,7 +888,7 @@ describe('useContextMenu', () => {
   });
 
   it('should position menu at element center when no event is provided', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const TestCenterWrapper = () => {
       const { targetRef, open, rendered } = useContextMenu<HTMLDivElement>(

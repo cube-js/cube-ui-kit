@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 import { SheetManager } from './sheet-manager';
 import { StyleInjectorConfig, StyleRule } from './types';
@@ -452,7 +452,7 @@ describe('SheetManager', () => {
       expect(registry.rules.has(className)).toBe(true);
     });
 
-    it('should schedule bulk cleanup when threshold is exceeded', (done) => {
+    it('should schedule bulk cleanup when threshold is exceeded', () => {
       const manager = new SheetManager({ unusedStylesThreshold: 2 });
       const registry = manager.getRegistry(document);
 
@@ -478,12 +478,14 @@ describe('SheetManager', () => {
       expect(registry.cleanupCheckTimeout).toBeTruthy();
 
       // Wait for async cleanup check to complete
-      setTimeout(() => {
-        // Should have scheduled bulk cleanup after the check
-        expect(registry.bulkCleanupTimeout).toBeTruthy();
-        expect(registry.cleanupCheckTimeout).toBe(null);
-        done();
-      }, 10);
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          // Should have scheduled bulk cleanup after the check
+          expect(registry.bulkCleanupTimeout).toBeTruthy();
+          expect(registry.cleanupCheckTimeout).toBe(null);
+          resolve();
+        }, 10);
+      });
     });
   });
 
@@ -560,12 +562,12 @@ describe('SheetManager', () => {
   });
 
   describe('bulk cleanup scheduling', () => {
-    it('should use requestIdleCallback when idleCleanup is enabled', (done) => {
+    it('should use requestIdleCallback when idleCleanup is enabled', () => {
       // Mock requestIdleCallback
-      const mockRequestIdleCallback = jest.fn((callback) => {
+      const mockRequestIdleCallback = vi.fn((callback) => {
         return 123; // mock handle - don't execute callback immediately
       });
-      const mockCancelIdleCallback = jest.fn();
+      const mockCancelIdleCallback = vi.fn();
 
       (global as any).requestIdleCallback = mockRequestIdleCallback;
       (global as any).cancelIdleCallback = mockCancelIdleCallback;
@@ -594,19 +596,21 @@ describe('SheetManager', () => {
       expect(registry.cleanupCheckTimeout).toBeTruthy();
 
       // Wait for async cleanup check to complete
-      setTimeout(() => {
-        expect(mockRequestIdleCallback).toHaveBeenCalled();
-        expect(registry.bulkCleanupTimeout).toBe(123);
-        expect(registry.cleanupCheckTimeout).toBe(null);
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          expect(mockRequestIdleCallback).toHaveBeenCalled();
+          expect(registry.bulkCleanupTimeout).toBe(123);
+          expect(registry.cleanupCheckTimeout).toBe(null);
 
-        // Cleanup mocks
-        delete (global as any).requestIdleCallback;
-        delete (global as any).cancelIdleCallback;
-        done();
-      }, 10);
+          // Cleanup mocks
+          delete (global as any).requestIdleCallback;
+          delete (global as any).cancelIdleCallback;
+          resolve();
+        }, 10);
+      });
     });
 
-    it('should fallback to setTimeout when requestIdleCallback is not available', (done) => {
+    it('should fallback to setTimeout when requestIdleCallback is not available', () => {
       // Ensure requestIdleCallback is not available
       delete (global as any).requestIdleCallback;
 
@@ -618,7 +622,7 @@ describe('SheetManager', () => {
       const registry = manager.getRegistry(document);
 
       // Mock setTimeout
-      const mockSetTimeout = jest.spyOn(global, 'setTimeout');
+      const mockSetTimeout = vi.spyOn(global, 'setTimeout');
 
       // Create a rule and mark as unused to trigger bulk cleanup
       const ruleInfo = manager.insertRule(
@@ -638,15 +642,20 @@ describe('SheetManager', () => {
       expect(registry.cleanupCheckTimeout).toBeTruthy();
 
       // Wait for async cleanup check to complete
-      setTimeout(() => {
-        // Should have called setTimeout again for bulk cleanup (100ms)
-        expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 100);
-        expect(registry.bulkCleanupTimeout).toBeTruthy();
-        expect(registry.cleanupCheckTimeout).toBe(null);
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          // Should have called setTimeout again for bulk cleanup (100ms)
+          expect(mockSetTimeout).toHaveBeenCalledWith(
+            expect.any(Function),
+            100,
+          );
+          expect(registry.bulkCleanupTimeout).toBeTruthy();
+          expect(registry.cleanupCheckTimeout).toBe(null);
 
-        mockSetTimeout.mockRestore();
-        done();
-      }, 10);
+          mockSetTimeout.mockRestore();
+          resolve();
+        }, 10);
+      });
     });
   });
 });
