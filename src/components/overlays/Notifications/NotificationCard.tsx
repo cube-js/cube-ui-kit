@@ -32,10 +32,6 @@ const StyledItem = tasty(Item, {
       '': '1cr',
       flat: '0',
     },
-    border: {
-      '': '#clear',
-      flat: '0',
-    },
     transition: 'theme, inset',
 
     Description: {
@@ -223,6 +219,7 @@ export function NotificationCard({
       description={descriptionContent}
       suffix={suffix}
       mods={{ flat: !elevated }}
+      styles={!elevated ? { border: '0' } : undefined}
     >
       {title}
     </StyledItem>
