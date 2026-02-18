@@ -189,7 +189,7 @@ describe('NotificationItem', () => {
     expect(getByText('View')).toBeInTheDocument();
   });
 
-  it('should call onDismiss with "action" reason when Dismiss is clicked', async () => {
+  it('should call onDismiss with "close" reason when Dismiss is clicked', async () => {
     const onDismiss = jest.fn();
 
     const { getByText } = render(
@@ -203,7 +203,7 @@ describe('NotificationItem', () => {
       getByText('Dismiss').click();
     });
 
-    expect(onDismiss).toHaveBeenCalledWith('test-1', 'action');
+    expect(onDismiss).toHaveBeenCalledWith('test-1', 'close');
   });
 
   it('should still close via action closeOnPress when isDismissible is false', async () => {
