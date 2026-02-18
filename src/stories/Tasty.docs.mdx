@@ -50,6 +50,63 @@ const PrimaryButton = tasty(Button, {
 <Button styles={{ fill: '#purple' }}>Click me</Button>
 ```
 
+#### Extending State Maps with `@extend`
+
+When extending a component, style properties with state maps are **replaced** by default. Use `@extend` to merge with the parent's states instead:
+
+```jsx live=false
+// Parent has: fill: { '': '#white', hovered: '#blue', disabled: '#gray' }
+
+// ❌ This replaces ALL parent states
+const MyButton = tasty(Button, {
+  styles: { fill: { '': '#red' } },
+});
+
+// ✅ This preserves parent states and adds/overrides
+const MyButton = tasty(Button, {
+  styles: {
+    fill: {
+      '@extend': true,
+      'loading': '#yellow',      // append new state
+      'disabled': '#gray.20',    // override existing state in place
+    },
+  },
+});
+```
+
+Use `'@inherit'` to reposition a parent state (e.g., keep `disabled` as highest priority):
+
+```jsx live=false
+fill: {
+  '@extend': true,
+  'loading': '#yellow',
+  disabled: '@inherit',      // moves disabled to end (highest CSS priority)
+}
+```
+
+Use `null` inside `@extend` to remove a parent state:
+
+```jsx live=false
+fill: { '@extend': true, pressed: null }   // removes pressed from the result
+```
+
+#### Resetting Properties with `null` and `false`
+
+```jsx live=false
+const SimpleButton = tasty(Button, {
+  styles: {
+    fill: null,    // discard parent's fill, let recipe fill in
+    border: false, // no border at all (tombstone — blocks recipe too)
+  },
+});
+```
+
+| Value | Meaning | Recipe fills in? |
+|-------|---------|-----------------|
+| `undefined` | Not provided — parent preserved | N/A |
+| `null` | Intentional unset — parent discarded | Yes |
+| `false` | Tombstone — blocks everything | No |
+
 ### Essential Patterns
 
 ```jsx

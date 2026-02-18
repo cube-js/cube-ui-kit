@@ -53,6 +53,10 @@ const BUILTIN_STATES = new Set([
   '@keyframes',
   '@properties',
   '@supports',
+  '@extend',
+  // @inherit is a value (not a key), but reserved here to prevent
+  // users from accidentally defining a state named '@inherit'.
+  '@inherit',
 ]);
 
 // Reserved prefixes that are built-in
@@ -65,6 +69,8 @@ const RESERVED_PREFIXES = [
   '@keyframes',
   '@properties',
   '@supports',
+  '@extend',
+  '@inherit',
 ];
 
 // Global predefined states storage
