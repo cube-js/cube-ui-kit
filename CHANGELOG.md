@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.114.0
+
+### Minor Changes
+
+- [#1034](https://github.com/cube-js/cube-ui-kit/pull/1034) [`10f3e422`](https://github.com/cube-js/cube-ui-kit/commit/10f3e4225028a70a116496de1d46315f2290574c) Thanks [@tenphi](https://github.com/tenphi)! - Refactored notifications system: replaced `NotificationsProvider` and `ToastProvider` with unified `OverlayProvider`. Removed `NotificationsBar` and `NotificationsDialog` components. Introduced new `Notification` component API with `useNotifications` and `usePersistentNotifications` hooks. The Root component now uses `OverlayProvider` instead of separate providers.
+
+### Patch Changes
+
+- [#1036](https://github.com/cube-js/cube-ui-kit/pull/1036) [`19d27844`](https://github.com/cube-js/cube-ui-kit/commit/19d27844326fafaac7a7b94440bf990f2c634802) Thanks [@tenphi](https://github.com/tenphi)! - Fix TabDropIndicator position recalculation when tab content changes during drag operations. The drop indicator now properly updates its position when any tab's content is modified.
+
 ## 0.113.1
 
 ### Patch Changes
