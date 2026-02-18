@@ -111,10 +111,32 @@ Action buttons inside notifications. Every action auto-dismisses the notificatio
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `onPress` | `() => void` | — | Called when the action is pressed |
+| `onPress` | `() => void \| false \| Promise<void \| false>` | — | Called when the action is pressed. Return `false` to cancel the auto-dismiss. |
 | `closeOnPress` | `boolean` | `true` | Auto-dismiss the notification after press |
 | `isDismiss` | `boolean` | `false` | Marks this action as the dismiss button (see below) |
 | `isDisabled` | `boolean` | `false` | Disables the action |
+
+#### Cancelling dismiss
+
+When `closeOnPress` is `true` (the default), the notification is dismissed after `onPress` completes. To conditionally prevent this — for example, when the user cancels a confirmation dialog — return `false` from `onPress`:
+
+```jsx
+<Notification.Action
+  onPress={async () => {
+    const confirmed = await showConfirmDialog();
+    if (!confirmed) {
+      return false; // keep the notification visible
+    }
+    await performAction();
+  }}
+>
+  Resume
+</Notification.Action>
+```
+
+This works with both sync and async handlers. Returning `undefined` (the default `void` return) proceeds with dismiss as usual.
+
+<Story of={NotificationStories.CancelDismiss} />
 
 #### Dismiss behavior
 
@@ -376,7 +398,20 @@ Collapse is disabled when notifications are present, since notifications require
    });
    ```
 
-6. **Do**: Use `record()` for server-sourced events that don't need overlay display. Pass `createdAt` to preserve the original timestamp.
+6. **Do**: Return `false` from `onPress` to keep the notification when the user cancels a confirmation flow
+   ```jsx
+   <Notification.Action
+     onPress={async () => {
+       const confirmed = await showConfirmDialog();
+       if (!confirmed) return false;
+       await performAction();
+     }}
+   >
+     Upgrade
+   </Notification.Action>
+   ```
+
+7. **Do**: Use `record()` for server-sourced events that don't need overlay display. Pass `createdAt` to preserve the original timestamp.
    ```jsx
    const { record } = useNotifications();
    record({

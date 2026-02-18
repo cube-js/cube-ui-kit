@@ -88,8 +88,12 @@ export type DismissReason = 'close' | 'timeout' | 'action' | 'api';
 export interface NotificationActionProps {
   /** Action label */
   children?: ReactNode;
-  /** Called when the action is pressed */
-  onPress?: () => void;
+  /**
+   * Called when the action is pressed.
+   * Return `false` to prevent the auto-dismiss that would normally follow.
+   * Useful for async flows where the user may cancel (e.g. confirmation dialogs).
+   */
+  onPress?: () => void | false | Promise<void | false>;
   /** Whether to auto-dismiss the notification after onPress. Default: true */
   closeOnPress?: boolean;
   /** Whether the action is disabled */

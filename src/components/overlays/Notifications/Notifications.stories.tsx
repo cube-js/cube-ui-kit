@@ -354,6 +354,56 @@ CustomDismissAction.parameters = {
   },
 };
 
+// ─── Cancel Dismiss ──────────────────────────────────────────────────
+
+/**
+ * Returning `false` from `onPress` prevents auto-dismiss.
+ * Useful when the action opens a confirmation dialog and the user cancels.
+ */
+export const CancelDismiss = () => {
+  const { notify } = useNotifications();
+
+  return (
+    <Button
+      onPress={() =>
+        notify({
+          id: `cancel-dismiss:${Date.now()}`,
+          theme: 'note',
+          title: 'Instance Suspended',
+          description: 'Your instance has been suspended due to inactivity.',
+          duration: null,
+          actions: (
+            <Notification.Action
+              onPress={async () => {
+                const confirmed = window.confirm(
+                  'Are you sure you want to resume?',
+                );
+                if (!confirmed) {
+                  return false;
+                }
+                alert('Resuming instance...');
+              }}
+            >
+              Resume
+            </Notification.Action>
+          ),
+        })
+      }
+    >
+      Show Notification (cancel dismiss demo)
+    </Button>
+  );
+};
+
+CancelDismiss.parameters = {
+  docs: {
+    description: {
+      story:
+        'Return `false` from `onPress` to prevent auto-dismiss. Click "Resume", then cancel the dialog — the notification stays visible. Confirm the dialog — the notification dismisses.',
+    },
+  },
+};
+
 // ─── Update by ID ────────────────────────────────────────────────────
 
 /**
