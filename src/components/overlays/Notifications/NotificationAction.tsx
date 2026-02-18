@@ -108,12 +108,13 @@ export function NotificationAction({
   const actionInterceptor = useContext(NotificationActionInterceptorContext);
 
   const handlePress = useEvent(async () => {
-    actionInterceptor?.();
     const result = await onPress?.();
 
     if (result === false) {
       return;
     }
+
+    actionInterceptor?.();
 
     if (closeOnPress) {
       // isDismiss actions (dismiss button, Escape) use 'close' reason — the
