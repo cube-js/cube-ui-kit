@@ -116,11 +116,13 @@ export function NotificationAction({
 
     actionInterceptor?.();
 
-    if (closeOnPress) {
+    if (closeOnPress || actionInterceptor) {
       // isDismiss actions (dismiss button, Escape) use 'close' reason — the
       // notification moves to the persistent list.
       // Regular actions use 'action' reason — the notification is fully dismissed
       // and won't reappear.
+      // When an actionInterceptor is present (persistent list), always dismiss
+      // regardless of closeOnPress — all actions remove the item permanently.
       dismissCtx?.dismiss(isDismiss ? 'close' : 'action');
     }
   });

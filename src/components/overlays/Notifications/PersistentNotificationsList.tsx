@@ -166,13 +166,11 @@ function PersistentNotificationListItem({
 
   const parentInterceptor = useContext(NotificationActionInterceptorContext);
 
-  // Any action inside a persistent list item removes the item permanently
-  // (including actions with closeOnPress={false} that wouldn't normally
-  // trigger the dismiss flow). Chains with the list-level interceptor
-  // (e.g. closing the parent popover).
+  // Chains with the list-level interceptor (e.g. closing the parent popover).
+  // Dismissal itself is handled by NotificationAction via the dismiss context
+  // to avoid double-firing onDismiss.
   const handleItemAction = useEvent(() => {
     parentInterceptor?.();
-    onDismiss?.(item);
   });
 
   return (
