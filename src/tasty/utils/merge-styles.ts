@@ -3,11 +3,8 @@ import { Styles, StylesWithoutSelectors } from '../styles/types';
 
 import { isDevEnv } from './is-dev-env';
 
-import type { StyleValueStateMap } from './styles';
-
 const devMode = isDevEnv();
 
-const EXTEND_KEY = '@extend';
 const INHERIT_VALUE = '@inherit';
 
 /**
@@ -18,87 +15,66 @@ function isStateMap(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Strip `@inherit` values from a state map that was used without `@extend: true`.
- * Returns a new object if any values were stripped, otherwise the original.
+ * Normalize a parent value to a state map.
+ * - Already a state map → return as-is
+ * - Non-null, non-false primitive → wrap as `{ '': value }`
+ * - null / undefined / false → return null (no parent to merge with)
  */
-function stripInheritValues(
-  map: Record<string, unknown>,
-): Record<string, unknown> {
-  let hasInherit = false;
-  for (const key of Object.keys(map)) {
-    if (map[key] === INHERIT_VALUE) {
-      hasInherit = true;
-      break;
-    }
-  }
-  if (!hasInherit) return map;
-
-  const result: Record<string, unknown> = {};
-  for (const key of Object.keys(map)) {
-    if (map[key] !== INHERIT_VALUE) {
-      result[key] = map[key];
-    }
-  }
-  return result;
+function normalizeToStateMap(value: unknown): Record<string, unknown> | null {
+  if (isStateMap(value)) return value as Record<string, unknown>;
+  if (value != null && value !== false) return { '': value };
+  return null;
 }
 
 /**
- * Check if a value is a state map object with `@extend: true`.
- */
-function isExtendMap(
-  value: unknown,
-): value is StyleValueStateMap & { '@extend': true } {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    !Array.isArray(value) &&
-    (value as any)[EXTEND_KEY] === true
-  );
-}
-
-/**
- * Resolve a state map with `@extend: true` against a parent value.
+ * Resolve a child state map against a parent value.
  *
- * - Shared keys: parent's position, child's value (override in place)
- * - Parent-only keys: kept in original position and value
- * - Child-only keys: appended at end (highest CSS priority)
- * - `@inherit` value: reposition parent's value to this position in child order
- * - `null` value: remove this state from the result
+ * Mode is determined by whether the child contains a `''` (default) key:
+ * - No `''` → extend mode: parent entries preserved, child adds/overrides/repositions
+ * - Has `''` → replace mode: child defines everything, `@inherit` cherry-picks from parent
+ *
+ * In both modes:
+ * - `@inherit` value → resolve from parent state map
+ * - `null` value → remove this state from the result
  */
-function resolveExtendMap(
+function resolveStateMap(
   parentValue: unknown,
   childMap: Record<string, unknown>,
 ): Record<string, unknown> {
-  const { [EXTEND_KEY]: _, ...childEntries } = childMap;
+  const isExtend = !('' in childMap);
+  const parentMap = normalizeToStateMap(parentValue);
 
-  // Normalize parent to state map
-  let parentMap: Record<string, unknown>;
-  if (
-    typeof parentValue === 'object' &&
-    parentValue !== null &&
-    !Array.isArray(parentValue)
-  ) {
-    parentMap = parentValue as Record<string, unknown>;
-  } else if (parentValue != null && parentValue !== false) {
-    parentMap = { '': parentValue };
-  } else {
-    // No parent to extend from — strip nulls and @inherit, return child entries
+  if (!parentMap) {
+    // No parent to merge with — strip nulls and @inherit, return child entries
     const result: Record<string, unknown> = {};
-    for (const key of Object.keys(childEntries)) {
-      const val = childEntries[key];
+    for (const key of Object.keys(childMap)) {
+      const val = childMap[key];
       if (val === null || val === INHERIT_VALUE) continue;
       result[key] = val;
     }
     return result;
   }
 
-  // Classify child entries
+  if (isExtend) {
+    return resolveExtendMode(parentMap, childMap);
+  }
+
+  return resolveReplaceMode(parentMap, childMap);
+}
+
+/**
+ * Extend mode: parent entries are preserved, child entries add/override/reposition.
+ */
+function resolveExtendMode(
+  parentMap: Record<string, unknown>,
+  childMap: Record<string, unknown>,
+): Record<string, unknown> {
   const inheritKeys = new Set<string>();
   const removeKeys = new Set<string>();
   const overrideKeys = new Map<string, unknown>();
 
-  for (const key of Object.keys(childEntries)) {
-    const val = childEntries[key];
+  for (const key of Object.keys(childMap)) {
+    const val = childMap[key];
     if (val === INHERIT_VALUE) {
       if (key in parentMap) {
         inheritKeys.add(key);
@@ -114,7 +90,6 @@ function resolveExtendMap(
     }
   }
 
-  // Build result:
   // 1. Parent entries in order (skip removed, skip repositioned, apply overrides)
   const result: Record<string, unknown> = {};
   for (const key of Object.keys(parentMap)) {
@@ -128,15 +103,15 @@ function resolveExtendMap(
   }
 
   // 2. Append new + repositioned entries in child declaration order
-  for (const key of Object.keys(childEntries)) {
+  for (const key of Object.keys(childMap)) {
     if (inheritKeys.has(key)) {
       result[key] = parentMap[key];
     } else if (
       !removeKeys.has(key) &&
       !overrideKeys.has(key) &&
-      childEntries[key] !== INHERIT_VALUE
+      childMap[key] !== INHERIT_VALUE
     ) {
-      result[key] = childEntries[key];
+      result[key] = childMap[key];
     }
   }
 
@@ -144,7 +119,34 @@ function resolveExtendMap(
 }
 
 /**
- * Merge sub-element properties with @extend / null / undefined support.
+ * Replace mode: child entries define the result, `@inherit` pulls from parent.
+ */
+function resolveReplaceMode(
+  parentMap: Record<string, unknown>,
+  childMap: Record<string, unknown>,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+
+  for (const key of Object.keys(childMap)) {
+    const val = childMap[key];
+    if (val === INHERIT_VALUE) {
+      if (key in parentMap) {
+        result[key] = parentMap[key];
+      } else if (devMode) {
+        console.warn(
+          `[Tasty] @inherit used for state '${key}' that does not exist in the parent style map. Entry skipped.`,
+        );
+      }
+    } else if (val !== null) {
+      result[key] = val;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Merge sub-element properties with state map / null / undefined support.
  */
 function mergeSubElementStyles(
   parentSub: StylesWithoutSelectors | undefined,
@@ -163,13 +165,11 @@ function mergeSubElementStyles(
       }
     } else if (val === null) {
       delete merged[key];
-    } else if (isExtendMap(val)) {
-      merged[key] = resolveExtendMap(
+    } else if (isStateMap(val)) {
+      merged[key] = resolveStateMap(
         parent ? parent[key] : undefined,
         val as Record<string, unknown>,
       );
-    } else if (isStateMap(val)) {
-      merged[key] = stripInheritValues(val as Record<string, unknown>);
     }
   }
 
@@ -199,7 +199,6 @@ export function mergeStyles(...objects: (Styles | undefined | null)[]): Styles {
         if (newValue === false || newValue === null) {
           delete resultStyles[key];
         } else if (newValue === undefined) {
-          // Not provided — keep parent's value
           resultStyles[key] = styles[key];
         } else if (newValue) {
           resultStyles[key] = mergeSubElementStyles(
@@ -209,29 +208,23 @@ export function mergeStyles(...objects: (Styles | undefined | null)[]): Styles {
         }
       }
 
-      // Handle non-selector properties: @extend, null, undefined
+      // Handle non-selector properties: state maps, null, undefined
       for (const key of Object.keys(newStyles)) {
         if (isSelector(key)) continue;
 
         const newValue = newStyles[key];
 
         if (newValue === undefined) {
-          // Not provided — keep parent's value
           if (key in styles) {
             resultStyles[key] = styles[key];
           } else {
             delete resultStyles[key];
           }
         } else if (newValue === null) {
-          // Intentional unset — remove property, recipe fills in
           delete resultStyles[key];
-        } else if (isExtendMap(newValue)) {
-          (resultStyles as Record<string, unknown>)[key] = resolveExtendMap(
-            styles[key],
-            newValue as Record<string, unknown>,
-          );
         } else if (isStateMap(newValue)) {
-          (resultStyles as Record<string, unknown>)[key] = stripInheritValues(
+          (resultStyles as Record<string, unknown>)[key] = resolveStateMap(
+            styles[key],
             newValue as Record<string, unknown>,
           );
         }

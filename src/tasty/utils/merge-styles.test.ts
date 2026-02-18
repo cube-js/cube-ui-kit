@@ -105,7 +105,7 @@ describe('mergeStyles', () => {
     });
   });
 
-  describe('@extend — state map merging', () => {
+  describe('extend mode — state map without default key', () => {
     const parentStyles: Styles = {
       fill: {
         '': '#white #primary',
@@ -118,7 +118,6 @@ describe('mergeStyles', () => {
     it('should preserve parent states and append new states', () => {
       const result = mergeStyles(parentStyles, {
         fill: {
-          '@extend': true,
           'custom-state': '#custom',
         },
       } as Styles);
@@ -141,7 +140,6 @@ describe('mergeStyles', () => {
     it('should override an existing state in place', () => {
       const result = mergeStyles(parentStyles, {
         fill: {
-          '@extend': true,
           disabled: '#gray.20',
         },
       } as Styles);
@@ -155,7 +153,6 @@ describe('mergeStyles', () => {
     it('should remove a state with null', () => {
       const result = mergeStyles(parentStyles, {
         fill: {
-          '@extend': true,
           pressed: null,
         },
       } as Styles);
@@ -168,7 +165,6 @@ describe('mergeStyles', () => {
     it('should normalize plain string parent to state map', () => {
       const result = mergeStyles({ fill: '#purple' }, {
         fill: {
-          '@extend': true,
           hovered: '#blue',
         },
       } as Styles);
@@ -179,38 +175,11 @@ describe('mergeStyles', () => {
       });
     });
 
-    it('should work when parent has no value for the property', () => {
-      const result = mergeStyles({ padding: '2x' }, {
-        fill: {
-          '@extend': true,
-          '': '#white',
-          hovered: '#blue',
-        },
-      } as Styles);
-
-      expect(result.fill).toEqual({
-        '': '#white',
-        hovered: '#blue',
-      });
-    });
-
-    it('should strip @extend key from result', () => {
-      const result = mergeStyles(parentStyles, {
-        fill: {
-          '@extend': true,
-          'custom-state': '#custom',
-        },
-      } as Styles);
-
-      expect((result.fill as any)['@extend']).toBeUndefined();
-    });
-
     it('should handle boolean parent value', () => {
       const result = mergeStyles(
         { fill: true } as Styles,
         {
           fill: {
-            '@extend': true,
             hovered: '#blue',
           },
         } as Styles,
@@ -227,7 +196,6 @@ describe('mergeStyles', () => {
         { fill: false } as Styles,
         {
           fill: {
-            '@extend': true,
             hovered: '#blue',
           },
         } as Styles,
@@ -243,7 +211,6 @@ describe('mergeStyles', () => {
         { opacity: 1 } as Styles,
         {
           opacity: {
-            '@extend': true,
             hovered: 0.8,
           },
         } as Styles,
@@ -254,9 +221,107 @@ describe('mergeStyles', () => {
         hovered: 0.8,
       });
     });
+
+    it('should handle empty parent state map', () => {
+      const result = mergeStyles(
+        { fill: {} } as Styles,
+        {
+          fill: {
+            hovered: '#blue',
+          },
+        } as Styles,
+      );
+
+      expect(result.fill).toEqual({ hovered: '#blue' });
+    });
   });
 
-  describe('@inherit — state repositioning', () => {
+  describe('replace mode — state map with default key', () => {
+    const parentStyles: Styles = {
+      fill: {
+        '': '#white #primary',
+        hovered: '#white #primary-text',
+        pressed: '#white #primary',
+        disabled: '#white #primary-disabled',
+      },
+    };
+
+    it('should replace all parent states', () => {
+      const result = mergeStyles(parentStyles, {
+        fill: {
+          '': '#red',
+          hovered: '#blue',
+        },
+      } as Styles);
+
+      const keys = Object.keys(result.fill as object);
+      expect(keys).toEqual(['', 'hovered']);
+      expect((result.fill as any)['']).toBe('#red');
+      expect((result.fill as any).hovered).toBe('#blue');
+    });
+
+    it('should cherry-pick parent states with @inherit', () => {
+      const result = mergeStyles(parentStyles, {
+        fill: {
+          '': '#red',
+          hovered: '#blue',
+          disabled: '@inherit',
+        },
+      } as Styles);
+
+      const keys = Object.keys(result.fill as object);
+      expect(keys).toEqual(['', 'hovered', 'disabled']);
+      expect((result.fill as any)['']).toBe('#red');
+      expect((result.fill as any).hovered).toBe('#blue');
+      expect((result.fill as any).disabled).toBe('#white #primary-disabled');
+    });
+
+    it('should strip null entries', () => {
+      const result = mergeStyles(parentStyles, {
+        fill: {
+          '': '#red',
+          hovered: '#blue',
+          pressed: null,
+        },
+      } as Styles);
+
+      const keys = Object.keys(result.fill as object);
+      expect(keys).toEqual(['', 'hovered']);
+    });
+
+    it('should skip @inherit for non-existent parent key (dev warning)', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const result = mergeStyles(parentStyles, {
+        fill: {
+          '': '#red',
+          nonexistent: '@inherit',
+        },
+      } as Styles);
+
+      const keys = Object.keys(result.fill as object);
+      expect(keys).toEqual(['']);
+      expect((result.fill as any).nonexistent).toBeUndefined();
+
+      warnSpy.mockRestore();
+    });
+
+    it('should work when parent has no value for the property', () => {
+      const result = mergeStyles({ padding: '2x' }, {
+        fill: {
+          '': '#white',
+          hovered: '#blue',
+        },
+      } as Styles);
+
+      expect(result.fill).toEqual({
+        '': '#white',
+        hovered: '#blue',
+      });
+    });
+  });
+
+  describe('@inherit — state repositioning (extend mode)', () => {
     const parentStyles: Styles = {
       fill: {
         '': '#white #primary',
@@ -269,7 +334,6 @@ describe('mergeStyles', () => {
     it('should reposition a parent state to child order', () => {
       const result = mergeStyles(parentStyles, {
         fill: {
-          '@extend': true,
           'custom-state': '#custom',
           disabled: '@inherit',
         },
@@ -290,7 +354,6 @@ describe('mergeStyles', () => {
     it('should reposition multiple states', () => {
       const result = mergeStyles(parentStyles, {
         fill: {
-          '@extend': true,
           'custom-state': '#custom',
           pressed: '@inherit',
           disabled: '@inherit',
@@ -310,7 +373,6 @@ describe('mergeStyles', () => {
     it('should preserve child declaration order for interleaved new and @inherit entries', () => {
       const result = mergeStyles(parentStyles, {
         fill: {
-          '@extend': true,
           newA: '#a',
           pressed: '@inherit',
           newB: '#b',
@@ -334,7 +396,6 @@ describe('mergeStyles', () => {
 
       const result = mergeStyles(parentStyles, {
         fill: {
-          '@extend': true,
           nonexistent: '@inherit',
         },
       } as Styles);
@@ -345,22 +406,9 @@ describe('mergeStyles', () => {
 
       warnSpy.mockRestore();
     });
-
-    it('should strip @inherit without @extend (treated as false)', () => {
-      const result = mergeStyles(parentStyles, {
-        fill: {
-          '': '#new',
-          disabled: '@inherit',
-        },
-      } as Styles);
-
-      expect((result.fill as any)['']).toBe('#new');
-      expect((result.fill as any).disabled).toBeUndefined();
-      expect('disabled' in (result.fill as object)).toBe(false);
-    });
   });
 
-  describe('@extend within sub-elements', () => {
+  describe('extend mode within sub-elements', () => {
     it('should extend state maps inside sub-element blocks', () => {
       const result = mergeStyles(
         {
@@ -374,7 +422,6 @@ describe('mergeStyles', () => {
         {
           Icon: {
             color: {
-              '@extend': true,
               loading: '#dark-gray',
             },
           },
@@ -388,9 +435,22 @@ describe('mergeStyles', () => {
         loading: '#dark-gray',
       });
     });
+
+    it('should resolve @inherit inside a new sub-element (no parent property)', () => {
+      const result = mergeStyles({ fill: '#white' }, {
+        Icon: {
+          color: {
+            hovered: '#blue',
+          },
+        },
+      } as Styles);
+
+      const iconStyles = result.Icon as any;
+      expect(iconStyles.color).toEqual({ hovered: '#blue' });
+    });
   });
 
-  describe('combined @extend + @inherit + null', () => {
+  describe('combined extend + @inherit + null', () => {
     it('should handle extend + remove + reposition together', () => {
       const parentStyles: Styles = {
         fill: {
@@ -404,7 +464,6 @@ describe('mergeStyles', () => {
 
       const result = mergeStyles(parentStyles, {
         fill: {
-          '@extend': true,
           pressed: null,
           custom: '#custom',
           disabled: '@inherit',
@@ -429,13 +488,11 @@ describe('mergeStyles', () => {
       };
       const level1: Styles = {
         fill: {
-          '@extend': true,
           pressed: '#green',
         },
       } as Styles;
       const level2: Styles = {
         fill: {
-          '@extend': true,
           disabled: '#gray',
         },
       } as Styles;
@@ -460,14 +517,12 @@ describe('mergeStyles', () => {
       };
       const level1: Styles = {
         fill: {
-          '@extend': true,
           pressed: '#green',
           disabled: '@inherit',
         },
       } as Styles;
       const level2: Styles = {
         fill: {
-          '@extend': true,
           loading: '#yellow',
           disabled: '@inherit',
         },
@@ -481,34 +536,31 @@ describe('mergeStyles', () => {
     });
   });
 
-  describe('@extend with no parent value', () => {
+  describe('extend mode with no parent value', () => {
     it('should strip @inherit when no parent exists', () => {
       const result = mergeStyles({ padding: '2x' }, {
         fill: {
-          '@extend': true,
-          '': '#white',
+          hovered: '#blue',
           disabled: '@inherit',
         },
       } as Styles);
 
-      expect(result.fill).toEqual({ '': '#white' });
+      expect(result.fill).toEqual({ hovered: '#blue' });
       expect((result.fill as any).disabled).toBeUndefined();
     });
 
     it('should strip null entries when no parent exists', () => {
       const result = mergeStyles({}, {
         fill: {
-          '@extend': true,
-          '': '#white',
           hovered: '#blue',
           pressed: null,
         },
       } as Styles);
 
-      expect(result.fill).toEqual({ '': '#white', hovered: '#blue' });
+      expect(result.fill).toEqual({ hovered: '#blue' });
     });
 
-    it('should handle @extend with all entries removed via null', () => {
+    it('should handle extend with all entries removed via null', () => {
       const parentStyles: Styles = {
         fill: {
           '': '#white',
@@ -518,7 +570,6 @@ describe('mergeStyles', () => {
 
       const result = mergeStyles(parentStyles, {
         fill: {
-          '@extend': true,
           '': null,
           hovered: null,
         },
@@ -526,72 +577,35 @@ describe('mergeStyles', () => {
 
       expect(result.fill).toEqual({});
     });
+  });
 
-    it('should handle empty parent state map', () => {
+  describe('replace mode within sub-elements', () => {
+    it('should replace state maps inside sub-element blocks', () => {
       const result = mergeStyles(
-        { fill: {} } as Styles,
         {
-          fill: {
-            '@extend': true,
-            hovered: '#blue',
+          Icon: {
+            color: {
+              '': '#gray',
+              disabled: '#light-gray',
+              hovered: '#dark-gray',
+            },
+          },
+        } as Styles,
+        {
+          Icon: {
+            color: {
+              '': '#blue',
+              disabled: '@inherit',
+            },
           },
         } as Styles,
       );
 
-      expect(result.fill).toEqual({ hovered: '#blue' });
-    });
-  });
-
-  describe('new sub-element with @extend properties', () => {
-    it('should resolve @extend inside a new sub-element (not in parent)', () => {
-      const result = mergeStyles({ fill: '#white' }, {
-        Icon: {
-          color: {
-            '@extend': true,
-            hovered: '#blue',
-          },
-        },
-      } as Styles);
-
       const iconStyles = result.Icon as any;
-      expect(iconStyles.color).toEqual({ hovered: '#blue' });
-      expect(iconStyles.color['@extend']).toBeUndefined();
-    });
-
-    it('should strip @inherit inside a new sub-element property without @extend', () => {
-      const result = mergeStyles({ fill: '#white' }, {
-        Icon: {
-          color: {
-            '': '#gray',
-            disabled: '@inherit',
-          },
-        },
-      } as Styles);
-
-      const iconStyles = result.Icon as any;
-      expect(iconStyles.color).toEqual({ '': '#gray' });
-      expect(iconStyles.color.disabled).toBeUndefined();
-    });
-  });
-
-  describe('@inherit stripped from non-@extend state maps', () => {
-    it('should strip @inherit from top-level state map without @extend', () => {
-      const result = mergeStyles({ fill: '#white' }, {
-        fill: {
-          '': '#new',
-          hovered: '#blue',
-          disabled: '@inherit',
-        },
-      } as Styles);
-
-      expect(result.fill).toEqual({ '': '#new', hovered: '#blue' });
-    });
-
-    it('should pass through state map without @inherit unchanged', () => {
-      const stateMap = { '': '#white', hovered: '#blue' };
-      const result = mergeStyles({}, { fill: stateMap } as Styles);
-
-      expect(result.fill).toBe(stateMap);
+      expect(iconStyles.color).toEqual({
+        '': '#blue',
+        disabled: '#light-gray',
+      });
     });
   });
 });

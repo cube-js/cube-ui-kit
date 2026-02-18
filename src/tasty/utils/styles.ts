@@ -36,9 +36,6 @@ export function normalizeColorTokenValue<T>(
 
 export type StyleValueStateMap<T = string> = {
   [key: string]: StyleValue<T> | '@inherit';
-} & {
-  /** Merge with parent's state map instead of replacing it. */
-  '@extend'?: true;
 };
 
 /**
