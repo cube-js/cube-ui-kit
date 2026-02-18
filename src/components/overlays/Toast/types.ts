@@ -1,7 +1,9 @@
 import type { Key, ReactNode } from 'react';
 import type { CubeItemProps } from '../../content/Item/Item';
+import type { NotificationType } from '../Notifications/types';
 
-export type ToastType = 'default' | 'success' | 'danger' | 'warning' | 'note';
+/** @deprecated Use `NotificationType` instead. Kept as alias for backward compatibility. */
+export type ToastType = NotificationType;
 
 export interface ToastData {
   /** Unique identifier for deduplication (auto-generated if not provided) */
