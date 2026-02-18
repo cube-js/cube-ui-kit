@@ -109,7 +109,7 @@ function ActionsSection({
   onDismiss,
 }: ActionsSectionProps) {
   const actionsContent = (
-    <Space placeContent="end" flexGrow={1}>
+    <Space placeSelf="end" placeContent="end" flexGrow={1}>
       {actions}
       {showAutoDismiss && <AutoDismissButton />}
     </Space>
@@ -195,7 +195,7 @@ export function NotificationCard({
 
   const descriptionContent: ReactNode =
     description || hasActions ? (
-      <Flex flow="row wrap" gap="0.5x 1x" placeItems="end stretch">
+      <Flex flow="row wrap" gap="0.5x 1x" placeItems="center stretch">
         {description && <Block>{description}</Block>}
         {hasActions && (
           <ActionsSection
