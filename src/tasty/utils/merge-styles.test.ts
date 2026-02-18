@@ -289,9 +289,7 @@ describe('mergeStyles', () => {
       expect(keys).toEqual(['', 'hovered']);
     });
 
-    it('should skip @inherit for non-existent parent key (dev warning)', () => {
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-
+    it('should skip @inherit for non-existent parent key', () => {
       const result = mergeStyles(parentStyles, {
         fill: {
           '': '#red',
@@ -302,8 +300,6 @@ describe('mergeStyles', () => {
       const keys = Object.keys(result.fill as object);
       expect(keys).toEqual(['']);
       expect((result.fill as any).nonexistent).toBeUndefined();
-
-      warnSpy.mockRestore();
     });
 
     it('should work when parent has no value for the property', () => {
@@ -391,9 +387,7 @@ describe('mergeStyles', () => {
       ]);
     });
 
-    it('should skip @inherit for non-existent parent key (dev warning)', () => {
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-
+    it('should skip @inherit for non-existent parent key', () => {
       const result = mergeStyles(parentStyles, {
         fill: {
           nonexistent: '@inherit',
@@ -403,8 +397,6 @@ describe('mergeStyles', () => {
       const keys = Object.keys(result.fill as object);
       expect(keys).toEqual(['', 'hovered', 'pressed', 'disabled']);
       expect((result.fill as any).nonexistent).toBeUndefined();
-
-      warnSpy.mockRestore();
     });
   });
 

@@ -36,6 +36,7 @@ function normalizeToStateMap(value: unknown): Record<string, unknown> | null {
  * In both modes:
  * - `@inherit` value → resolve from parent state map
  * - `null` value → remove this state from the result
+ * - `false` value → tombstone, persists through all layers, blocks recipe
  */
 function resolveStateMap(
   parentValue: unknown,
@@ -109,6 +110,7 @@ function resolveExtendMode(
     } else if (
       !removeKeys.has(key) &&
       !overrideKeys.has(key) &&
+      // Skip @inherit for keys that weren't in the parent (already warned above)
       childMap[key] !== INHERIT_VALUE
     ) {
       result[key] = childMap[key];

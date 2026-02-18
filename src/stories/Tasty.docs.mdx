@@ -97,10 +97,11 @@ fill: {
 }
 ```
 
-Use `null` inside a state map to remove a state:
+Use `null` inside a state map to remove a state, or `false` to block it entirely (tombstone):
 
 ```jsx live=false
 fill: { pressed: null }   // removes pressed from the result
+fill: { disabled: false } // tombstone — no CSS for disabled, blocks recipe too
 ```
 
 #### Resetting Properties with `null` and `false`
