@@ -223,7 +223,7 @@ notify({
 
 Overlay notifications with `persistent: true` are stored in an in-memory list whenever they leave the overlay — whether by auto-dismiss timeout, user clicking an action, or the dismiss button. The only exception is programmatic cleanup (component unmount / `dismiss()` call), which removes the notification without archiving it.
 
-Once a persistent notification has been archived, subsequent calls with the **same `id`** skip the overlay entirely and update the persistent list directly. This prevents the same notification from re-appearing as a popup after the user has already seen it. Removing the item from the persistent list (via `remove()`) resets this tracking, allowing the notification to show in the overlay again if triggered.
+Once a persistent notification has been archived, subsequent calls with the **same `id`** skip the overlay entirely and update the persistent list directly. This prevents the same notification from re-appearing as a popup after the user has already seen it. Removing the item from the persistent list (via `remove()`) permanently suppresses the notification — future calls with that `id` are completely ignored (no overlay, no persistent storage).
 
 #### `record()` — Store Directly
 

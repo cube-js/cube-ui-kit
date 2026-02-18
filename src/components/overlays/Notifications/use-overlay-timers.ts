@@ -107,12 +107,17 @@ function createTimerManager(
 
   const resumeAll = () => {
     pausedMap.forEach((info, internalId) => {
+      const item = findItem(internalId);
+
       if (info.remaining <= 0) {
         pausedMap.delete(internalId);
+
+        if (item && !item.isExiting) {
+          onTimeout(item.id ?? item.internalId);
+        }
+
         return;
       }
-
-      const item = findItem(internalId);
 
       if (item && !item.isExiting) {
         const timer = setTimeout(() => {
