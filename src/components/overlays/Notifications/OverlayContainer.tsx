@@ -441,6 +441,16 @@ export function OverlayContainer({
 
   // ─── Callbacks ─────────────────────────────────────────────────────
 
+  // When the user dismisses a notification they were hovering, the element
+  // is removed from the DOM so mouseLeave never fires. Explicitly unpause
+  // so remaining notifications' timers resume.
+  const handleNotificationDismiss = useEvent(
+    (id: Key, reason: DismissReason) => {
+      onNotificationDismiss(id, reason);
+      onPauseChange(false);
+    },
+  );
+
   const handleExitComplete = useEvent((item: OverlayItem) => {
     const id = getItemId(item);
     lastPositionsRef.current?.delete(id);
@@ -535,7 +545,7 @@ export function OverlayContainer({
                   ) : (
                     <NotificationItem
                       notification={item.data}
-                      onDismiss={onNotificationDismiss}
+                      onDismiss={handleNotificationDismiss}
                     />
                   )}
                 </OverlayItemWrapper>

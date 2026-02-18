@@ -28,7 +28,7 @@ export { NotificationActionInterceptorContext };
 // ─── Notification Dismiss Context ────────────────────────────────────
 
 interface NotificationDismissContextValue {
-  dismiss: (reason: 'action') => void;
+  dismiss: (reason: 'action' | 'close') => void;
 }
 
 const NotificationDismissContext =
@@ -36,7 +36,7 @@ const NotificationDismissContext =
 
 export interface NotificationDismissProviderProps {
   notificationId: Key;
-  onDismiss: (id: Key, reason: 'action') => void;
+  onDismiss: (id: Key, reason: 'action' | 'close') => void;
   children: ReactNode;
 }
 
@@ -45,8 +45,8 @@ export function NotificationDismissProvider({
   onDismiss,
   children,
 }: NotificationDismissProviderProps) {
-  const dismiss = useEvent(() => {
-    onDismiss(notificationId, 'action');
+  const dismiss = useEvent((reason: 'action' | 'close') => {
+    onDismiss(notificationId, reason);
   });
 
   const value = useMemo(() => ({ dismiss }), [dismiss]);
@@ -112,7 +112,11 @@ export function NotificationAction({
     onPress?.();
 
     if (closeOnPress) {
-      dismissCtx?.dismiss('action');
+      // isDismiss actions (dismiss button, Escape) use 'close' reason — the
+      // notification moves to the persistent list.
+      // Regular actions use 'action' reason — the notification is fully dismissed
+      // and won't reappear.
+      dismissCtx?.dismiss(isDismiss ? 'close' : 'action');
     }
   });
 

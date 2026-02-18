@@ -9,7 +9,7 @@ import type { NotificationProps } from './types';
  * Only supports `mode: 'overlay'` (the default).
  *
  * Duration defaults are the same as for imperative `notify()`:
- * - 5000ms for all notifications
+ * - 3000ms for non-persistent, 5000ms for persistent notifications
  * - Pass `duration={null}` explicitly to disable auto-dismiss.
  *
  * Semantics:

@@ -1,4 +1,4 @@
-import { Fragment, Key, useEffect, useRef, useState } from 'react';
+import { Fragment, Key, useContext, useEffect, useRef, useState } from 'react';
 
 import { useEvent } from '../../../_internal';
 import { tasty } from '../../../tasty';
@@ -55,12 +55,13 @@ const EmptyStateContainer = tasty({
  * Marks all items as read after being visible for 2 seconds.
  * Relative timestamps refresh every 10 seconds while the list is mounted.
  *
+ * Items are always dismissible. Dismissing an item removes it from the
+ * persistent list and marks its ID as "fully dismissed" — subsequent triggers
+ * with the same ID will be completely ignored (no overlay, no re-archival).
+ *
  * @example
  * ```tsx
- * <PersistentNotificationsList
- *   onDismissItem={(item) => remove(item.id)}
- *   emptyState="No notifications"
- * />
+ * <PersistentNotificationsList emptyState="No notifications" />
  * ```
  */
 export function PersistentNotificationsList({
@@ -68,7 +69,15 @@ export function PersistentNotificationsList({
   onAction,
   emptyState,
 }: PersistentNotificationsListProps) {
-  const { items, markAllAsRead } = usePersistentNotifications();
+  const { items, remove, markAllAsRead } = usePersistentNotifications();
+
+  // Default dismiss handler removes the item from the persistent list (which
+  // also marks the id as "fully dismissed" so it won't reappear).
+  // If a consumer provides `onDismissItem`, it is called *after* the built-in removal.
+  const handleDismiss = useEvent((item: PersistentNotificationItem) => {
+    remove(item.id);
+    onDismissItem?.(item);
+  });
   const markReadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Tick counter that increments every TIMESTAMP_REFRESH_INTERVAL to force
@@ -123,7 +132,7 @@ export function PersistentNotificationsList({
             {index > 0 && <Divider />}
             <PersistentNotificationListItem
               item={item}
-              onDismiss={onDismissItem}
+              onDismiss={handleDismiss}
             />
           </Fragment>
         ))}
@@ -155,19 +164,32 @@ function PersistentNotificationListItem({
     onDismiss?.(item);
   });
 
+  const parentInterceptor = useContext(NotificationActionInterceptorContext);
+
+  // Any action inside a persistent list item removes the item permanently
+  // (including actions with closeOnPress={false} that wouldn't normally
+  // trigger the dismiss flow). Chains with the list-level interceptor
+  // (e.g. closing the parent popover).
+  const handleItemAction = useEvent(() => {
+    parentInterceptor?.();
+    onDismiss?.(item);
+  });
+
   return (
-    <NotificationCard
-      qa="PersistentNotificationItem"
-      theme={item.theme}
-      title={item.title}
-      description={item.description}
-      icon={item.icon}
-      actions={item.actions}
-      isDismissible={!!onDismiss}
-      elevated={false}
-      notificationId={item.id}
-      suffix={suffix}
-      onDismiss={onDismiss ? handleDismiss : undefined}
-    />
+    <NotificationActionInterceptorContext.Provider value={handleItemAction}>
+      <NotificationCard
+        qa="PersistentNotificationItem"
+        theme={item.theme}
+        title={item.title}
+        description={item.description}
+        icon={item.icon}
+        actions={item.actions}
+        isDismissible={!!onDismiss}
+        elevated={false}
+        notificationId={item.id}
+        suffix={suffix}
+        onDismiss={onDismiss ? handleDismiss : undefined}
+      />
+    </NotificationActionInterceptorContext.Provider>
   );
 }

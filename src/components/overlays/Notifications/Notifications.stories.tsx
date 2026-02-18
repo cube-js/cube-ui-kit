@@ -417,13 +417,13 @@ UpdateById.parameters = {
 // ─── Persistent Notifications ────────────────────────────────────────
 
 /**
- * Persistent notifications that remain in the list after dismiss.
- * Only `timeout` dismissals move to the persistent list — user-initiated
- * dismissals (`close`, `action`) intentionally skip persistence.
+ * Persistent notifications that move to the persistent list when dismissed
+ * from the overlay (dismiss button, Escape, or timeout). Clicking a regular
+ * action (not dismiss) fully removes the notification.
  */
 export const PersistentNotifications = () => {
   const { notify, record } = useNotifications();
-  const { items, count, remove, clear } = usePersistentNotifications();
+  const { count, clear } = usePersistentNotifications();
   const counterRef = useRef(0);
 
   return (
@@ -473,10 +473,7 @@ export const PersistentNotifications = () => {
         {count > 0 && <Button onPress={clear}>Clear All ({count})</Button>}
       </Space>
 
-      <PersistentNotificationsList
-        emptyState="No notifications yet. Click a button above to add some."
-        onDismissItem={(item) => remove(item.id)}
-      />
+      <PersistentNotificationsList emptyState="No notifications yet. Click a button above to add some." />
     </Flex>
   );
 };

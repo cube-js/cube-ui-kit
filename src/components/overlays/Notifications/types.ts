@@ -44,15 +44,20 @@ export interface OverlayNotificationOptions extends NotificationBaseOptions {
 
   /**
    * Duration in ms before auto-dismiss.
-   * Default: 5000ms (non-persistent) or 10000ms (persistent).
+   * Default: 3000ms (non-persistent) or 5000ms (persistent).
    * null = no auto-dismiss.
    */
   duration?: number | null;
 
   /**
-   * Whether to retain in persistent list on timeout dismissal.
-   * Only `timeout` dismissals move to the persistent list — user-initiated
-   * dismissals (`close`, `action`) intentionally skip persistence.
+   * Whether to retain in persistent list when dismissed.
+   * All user-visible dismissals (timeout, action, close) move the notification
+   * to the persistent list. Only programmatic cleanup (`'api'`, e.g. component
+   * unmount) skips persistence.
+   *
+   * Once archived, subsequent calls with the same `id` skip the overlay and
+   * update the persistent list directly.
+   *
    * Default: false
    */
   persistent?: boolean;

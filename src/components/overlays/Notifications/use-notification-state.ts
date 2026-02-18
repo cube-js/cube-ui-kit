@@ -20,6 +20,9 @@ const MAX_NOTIFICATIONS = 5;
 
 export interface PersistentCallbacks {
   addPersistentItem: (item: PersistentNotificationItem) => void;
+  removePersistentItem: (id: Key) => void;
+  hasDismissedPersistentId: (id: Key) => boolean;
+  isFullyDismissedId: (id: Key) => boolean;
 }
 
 export interface NotificationState {
@@ -128,21 +131,30 @@ export function useNotificationState(
 
       timersRef.current?.clearNotificationTimer(notif.internalId);
 
-      // If persistent and dismissed by timeout, move to persistent list.
-      // User-initiated dismissals (action, close) intentionally skip persistence.
-      if (notif.persistent && reason === 'timeout') {
-        persistent.addPersistentItem({
-          id: notif.id ?? notif.internalId,
-          theme: notif.theme,
-          title: notif.title,
-          description: notif.description,
-          icon: notif.icon,
-          actions: notif.actions,
-          createdAt: notif.createdAt,
-          updatedAt: notif.updatedAt,
-          isRead: false,
-          ownerId: notif.ownerId,
-        });
+      if (notif.persistent) {
+        if (reason === 'close' || reason === 'timeout') {
+          // Dismiss button, Escape, or auto-dismiss timeout — move to persistent list.
+          // If the same id is triggered again, it skips the overlay and updates the
+          // persistent list directly.
+          persistent.addPersistentItem({
+            id: notif.id ?? notif.internalId,
+            theme: notif.theme,
+            title: notif.title,
+            description: notif.description,
+            icon: notif.icon,
+            actions: notif.actions,
+            createdAt: notif.createdAt,
+            updatedAt: notif.updatedAt,
+            isRead: true,
+            ownerId: notif.ownerId,
+          });
+        } else if (reason === 'action') {
+          // User clicked a regular action (not dismiss) — fully dismiss the
+          // notification so it never reappears (overlay or persistent list).
+          persistent.removePersistentItem(notif.id ?? notif.internalId);
+        }
+        // reason === 'api' — programmatic cleanup (e.g. component unmount).
+        // No persistence, no full-dismiss tracking.
       }
 
       setNotifications((prev) =>
@@ -167,6 +179,35 @@ export function useNotificationState(
       const internalId = `notif-${idCounter.current}-${Date.now()}`;
       const now = Date.now();
       const id = options.id ?? internalId;
+
+      // If the user explicitly removed this notification from the persistent
+      // list, completely ignore it — no overlay, no persistent storage.
+      if (options.id != null && persistent.isFullyDismissedId(options.id)) {
+        return id;
+      }
+
+      // If this persistent id was previously dismissed to the persistent list,
+      // skip the overlay and update the persistent item directly.
+      if (
+        options.persistent &&
+        options.id != null &&
+        persistent.hasDismissedPersistentId(options.id)
+      ) {
+        persistent.addPersistentItem({
+          id,
+          theme: options.theme,
+          title: options.title,
+          description: options.description,
+          icon: options.icon,
+          actions: options.actions,
+          createdAt: now,
+          updatedAt: now,
+          isRead: false,
+          ownerId,
+        });
+
+        return id;
+      }
 
       // Check for existing notification with same id via the ref (synchronous read).
       const existingNotif =
