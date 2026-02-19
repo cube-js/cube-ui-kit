@@ -10,7 +10,7 @@ import {
   waitFor,
 } from '../../../test';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<ListBox />', () => {
   const basicItems = [
@@ -20,7 +20,7 @@ describe('<ListBox />', () => {
   ];
 
   it('should work in uncontrolled mode', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole, getByText } = render(
       <ListBox
@@ -45,7 +45,7 @@ describe('<ListBox />', () => {
   });
 
   it('should work in controlled mode', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByText, rerender } = render(
       <ListBox
@@ -129,7 +129,7 @@ describe('<ListBox />', () => {
   });
 
   it('should support multiple selection', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByText } = render(
       <ListBox
@@ -239,7 +239,7 @@ describe('<ListBox />', () => {
   });
 
   it('should handle keyboard navigation', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole } = render(
       <ListBox label="Select a fruit" onSelectionChange={onSelectionChange}>
@@ -281,7 +281,7 @@ describe('<ListBox />', () => {
   });
 
   it('should clear selection when null is passed', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByText, rerender } = render(
       <ListBox
@@ -312,7 +312,7 @@ describe('<ListBox />', () => {
   });
 
   it('should work with form integration and onSelectionChange handler together', async () => {
-    const onSelectionChangeMock = jest.fn();
+    const onSelectionChangeMock = vi.fn();
 
     const { getByText, formInstance } = renderWithForm(
       <ListBox
@@ -410,7 +410,7 @@ describe('<ListBox />', () => {
   });
 
   it('should work in uncontrolled mode with defaultSelectedKeys', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByText } = render(
       <ListBox
@@ -488,7 +488,7 @@ describe('<ListBox />', () => {
   });
 
   it('should handle keyboard navigation when no item is initially focused', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole, getByText } = render(
       <ListBox label="Select a fruit" onSelectionChange={onSelectionChange}>
@@ -522,7 +522,7 @@ describe('<ListBox />', () => {
   });
 
   it('should handle keyboard navigation', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
     const { getByRole } = render(
       <ListBox label="Select a fruit" onSelectionChange={onSelectionChange}>
         {basicItems}
@@ -650,7 +650,7 @@ describe('<ListBox />', () => {
     });
 
     it('should handle select all click to select all items', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       render(
         <ListBox
@@ -672,7 +672,7 @@ describe('<ListBox />', () => {
     });
 
     it('should handle select all click to deselect all when all are selected', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       render(
         <ListBox

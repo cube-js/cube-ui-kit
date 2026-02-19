@@ -14,7 +14,7 @@ const items = [
   { key: 'violet', children: 'Violet' },
 ];
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<ComboBox />', () => {
   it('should handle basic functionality and popover state', async () => {
@@ -99,7 +99,7 @@ describe('<ComboBox />', () => {
   });
 
   it('should support custom filter function', async () => {
-    const customFilterFn = jest.fn((textValue, inputValue) =>
+    const customFilterFn = vi.fn((textValue, inputValue) =>
       textValue.toLowerCase().startsWith(inputValue.toLowerCase()),
     );
 
@@ -190,7 +190,7 @@ describe('<ComboBox />', () => {
   });
 
   it('should manage selection correctly', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
       <ComboBox label="test" onSelectionChange={onSelectionChange}>
@@ -301,7 +301,7 @@ describe('<ComboBox />', () => {
   });
 
   it('should handle clear functionality', async () => {
-    const onClear = jest.fn();
+    const onClear = vi.fn();
 
     const { getByRole, queryByTestId } = renderWithRoot(
       <ComboBox isClearable label="test" onClear={onClear}>
@@ -347,8 +347,8 @@ describe('<ComboBox />', () => {
   });
 
   it('should handle custom values', async () => {
-    const onInputChange = jest.fn();
-    const onSelectionChange = jest.fn();
+    const onInputChange = vi.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole, rerender, getAllByRole, queryByRole } = renderWithRoot(
       <ComboBox
@@ -423,7 +423,7 @@ describe('<ComboBox />', () => {
   });
 
   it('should respect shouldCommitOnBlur={false}', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole } = renderWithRoot(
       <ComboBox
@@ -464,7 +464,7 @@ describe('<ComboBox />', () => {
   });
 
   it('should allow form submission with single Enter press when allowsCustomValue and no matches', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vi.fn();
     const { getByRole, formInstance } = renderWithForm(
       <ComboBox allowsCustomValue name="tag" label="Tag">
         {items.map((item) => (
@@ -494,7 +494,7 @@ describe('<ComboBox />', () => {
   });
 
   it('should clear invalid input on blur when clearOnBlur is true', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
       <ComboBox clearOnBlur label="test" onSelectionChange={onSelectionChange}>
@@ -542,7 +542,7 @@ describe('<ComboBox />', () => {
   }, 15000);
 
   it('should maintain selection on blur without clearOnBlur flag', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
       <ComboBox label="test" onSelectionChange={onSelectionChange}>
@@ -588,7 +588,7 @@ describe('<ComboBox />', () => {
   }, 15000);
 
   it('should not apply clearOnBlur in allowsCustomValue mode', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole } = renderWithRoot(
       <ComboBox
@@ -622,7 +622,7 @@ describe('<ComboBox />', () => {
   });
 
   it('should auto-select when there is exactly one filtered result on blur', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole } = renderWithRoot(
       <ComboBox label="test" onSelectionChange={onSelectionChange}>
@@ -650,7 +650,7 @@ describe('<ComboBox />', () => {
   });
 
   it('should reset to selected value on blur when clearOnBlur is false and input is invalid', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
       <ComboBox label="test" onSelectionChange={onSelectionChange}>
@@ -700,7 +700,7 @@ describe('<ComboBox />', () => {
   });
 
   it('should clear selection when input is empty on blur even with clearOnBlur false', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
       <ComboBox label="test" onSelectionChange={onSelectionChange}>
@@ -1123,8 +1123,8 @@ describe('<ComboBox />', () => {
   });
 
   it('should handle wrapper-level focus and blur events', async () => {
-    const onFocus = jest.fn();
-    const onBlur = jest.fn();
+    const onFocus = vi.fn();
+    const onBlur = vi.fn();
 
     const { getByRole, getByTestId } = renderWithRoot(
       <ComboBox label="test" onFocus={onFocus} onBlur={onBlur}>
@@ -1202,7 +1202,7 @@ describe('<ComboBox />', () => {
   });
 
   it('should allow typing when defaultInputValue is set', async () => {
-    const onInputChange = jest.fn();
+    const onInputChange = vi.fn();
 
     const { getByRole } = renderWithRoot(
       <ComboBox
@@ -1227,7 +1227,7 @@ describe('<ComboBox />', () => {
   });
 
   it('should work with defaultInputValue in allowsCustomValue mode', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByRole } = renderWithRoot(
       <ComboBox
@@ -1265,7 +1265,7 @@ describe('<ComboBox />', () => {
   });
 
   it('should not interfere with controlled inputValue', async () => {
-    const onInputChange = jest.fn();
+    const onInputChange = vi.fn();
 
     const { getByRole } = renderWithRoot(
       <ComboBox

@@ -104,7 +104,7 @@ describe('Layout', () => {
   });
 
   it('renders Layout.PanelHeader with close button', () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
 
     renderWithRoot(
       <Layout>
@@ -119,7 +119,7 @@ describe('Layout', () => {
   });
 
   it('calls onOpenChange when close button is clicked', async () => {
-    const onOpenChange = jest.fn();
+    const onOpenChange = vi.fn();
 
     renderWithRoot(
       <Layout>
@@ -136,8 +136,8 @@ describe('Layout', () => {
   });
 
   it('calls both onClose and onOpenChange when close button is clicked', async () => {
-    const onClose = jest.fn();
-    const onOpenChange = jest.fn();
+    const onClose = vi.fn();
+    const onOpenChange = vi.fn();
 
     renderWithRoot(
       <Layout>
@@ -277,7 +277,7 @@ describe('Layout.Panel resize handler', () => {
   });
 
   it('calls onSizeChange when double-clicking resize handler', async () => {
-    const onSizeChange = jest.fn();
+    const onSizeChange = vi.fn();
 
     renderWithRoot(
       <Layout>
@@ -300,7 +300,7 @@ describe('Layout.Panel resize handler', () => {
   });
 
   it('resets to defaultSize clamped by minSize on double-click', async () => {
-    const onSizeChange = jest.fn();
+    const onSizeChange = vi.fn();
 
     renderWithRoot(
       <Layout>
@@ -558,11 +558,11 @@ describe('Layout nested isolation', () => {
 describe('Layout.Panel validation', () => {
   beforeEach(() => {
     // Suppress console.error for expected errors
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('throws error when two panels are on the same side', () => {

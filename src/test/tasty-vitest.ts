@@ -1,18 +1,15 @@
+import { expect } from 'vitest';
+
 import { getCssTextForNode } from '../tasty/injector';
 
-// Import jest globals for TypeScript
-/// <reference types="jest" />
-
-declare global {
-  namespace jest {
-    interface Matchers<R> {
-      toMatchTastySnapshot(): R;
-    }
+declare module 'vitest' {
+  interface Assertion {
+    toMatchTastySnapshot(): void;
   }
 }
 
 /**
- * Jest matcher for tasty CSS snapshots
+ * Vitest matcher for tasty CSS snapshots
  * Similar to jest-styled-components but for our tasty system
  */
 expect.extend({
@@ -43,7 +40,7 @@ expect.extend({
 });
 
 /**
- * Snapshot serializer that includes both markup and CSS like jest-styled-components
+ * Snapshot serializer that includes both markup and CSS
  */
 export const tastySerializer = {
   test(val: unknown): val is ParentNode {

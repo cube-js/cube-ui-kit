@@ -10,11 +10,11 @@ import { parseTo, performClickHandler, useAction } from './use-action';
 // Mock navigation adapter for testing
 const createMockNavigationAdapter = (): {
   adapter: NavigationAdapter;
-  mockNavigate: jest.Mock;
-  mockUseHref: jest.Mock;
+  mockNavigate: ReturnType<typeof vi.fn>;
+  mockUseHref: ReturnType<typeof vi.fn>;
 } => {
-  const mockNavigate = jest.fn();
-  const mockUseHref = jest.fn((to) => {
+  const mockNavigate = vi.fn();
+  const mockUseHref = vi.fn((to) => {
     if (typeof to === 'string') return to;
     const { pathname = '', search = '', hash = '' } = to;
     return `${pathname}${search ? (search.startsWith('?') ? search : `?${search}`) : ''}${hash ? (hash.startsWith('#') ? hash : `#${hash}`) : ''}`;
@@ -250,28 +250,28 @@ describe('useAction', () => {
 });
 
 describe('performClickHandler', () => {
-  let mockNavigate: jest.Mock;
-  let mockTracking: { event: jest.Mock };
-  let mockOnPress: jest.Mock;
+  let mockNavigate: ReturnType<typeof vi.fn>;
+  let mockTracking: { event: ReturnType<typeof vi.fn> };
+  let mockOnPress: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mockNavigate = jest.fn();
-    mockTracking = { event: jest.fn() };
-    mockOnPress = jest.fn();
+    mockNavigate = vi.fn();
+    mockTracking = { event: vi.fn() };
+    mockOnPress = vi.fn();
 
     // Mock DOM APIs
     Object.defineProperty(window, 'location', {
-      value: { assign: jest.fn(), reload: jest.fn(), href: '' },
+      value: { assign: vi.fn(), reload: vi.fn(), href: '' },
       writable: true,
     });
 
-    global.window.history.go = jest.fn();
-    global.document.getElementById = jest.fn();
+    global.window.history.go = vi.fn();
+    global.document.getElementById = vi.fn();
   });
 
   const createMockEvent = (modifiers = {}) => ({
-    target: { getAttribute: jest.fn(() => 'test-qa') },
-    preventDefault: jest.fn(),
+    target: { getAttribute: vi.fn(() => 'test-qa') },
+    preventDefault: vi.fn(),
     shiftKey: false,
     metaKey: false,
     ...modifiers,
@@ -318,8 +318,10 @@ describe('performClickHandler', () => {
   });
 
   it('should handle hash navigation with scroll', () => {
-    const mockElement = { scrollIntoView: jest.fn() };
-    (global.document.getElementById as jest.Mock).mockReturnValue(mockElement);
+    const mockElement = { scrollIntoView: vi.fn() };
+    (
+      global.document.getElementById as ReturnType<typeof vi.fn>
+    ).mockReturnValue(mockElement);
     const evt = createMockEvent();
 
     performClickHandler(evt, {

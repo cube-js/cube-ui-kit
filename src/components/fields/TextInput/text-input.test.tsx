@@ -3,7 +3,7 @@ import { createRef } from 'react';
 import { Field, TextInput } from '../../../index';
 import { act, render, renderWithForm, userEvent } from '../../../test';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<TextInput />', () => {
   it('should work without form', async () => {

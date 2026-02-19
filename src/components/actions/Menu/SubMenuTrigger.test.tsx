@@ -555,7 +555,7 @@ describe('<SubMenuTrigger />', () => {
 
   describe('Selection and actions', () => {
     it('should handle onAction in submenu items', async () => {
-      const onAction = jest.fn();
+      const onAction = vi.fn();
 
       const submenuWithAction = (
         <Menu id="test-menu" aria-label="Test menu" onAction={onAction}>
@@ -587,7 +587,7 @@ describe('<SubMenuTrigger />', () => {
     });
 
     it('should close menu hierarchy after selection', async () => {
-      const onAction = jest.fn();
+      const onAction = vi.fn();
 
       const { getByText, queryByText } = renderWithRoot(
         <MenuTrigger>

@@ -1,14 +1,16 @@
 ---
-globs: *.test.tsx
+globs: *.test.tsx,*.test.ts
 alwaysApply: false
 ---
 
 # Testing Rules for UI Kit
 
+Test runner: **Vitest** (globals enabled — `vi`, `describe`, `it`, `expect` etc. are available without imports).
+
 ## Setup
 
 - Place test files next to components with `.test.tsx` extension
-- Mock internal warnings: `jest.mock('../../../_internal/hooks/use-warn')`
+- Mock internal warnings: `vi.mock('../../../_internal/hooks/use-warn')`
 - Define test data at the top of `describe` blocks
 
 ## Render Functions
@@ -55,7 +57,7 @@ Wait for removal: `await waitForElementToBeRemoved(() => queryByRole('dialog'))`
 ### Basic Rendering & User Interactions
 ```tsx
 it('should handle button press', async () => {
-  const onPress = jest.fn();
+  const onPress = vi.fn();
   const { getByRole } = render(<Button onPress={onPress}>Label</Button>);
   
   await userEvent.click(getByRole('button'));
@@ -163,7 +165,7 @@ it.each([
   ['aria-label', { 'aria-label': 'test' }],
   ['label', { label: 'test' }],
 ])('should not warn if %s is provided', (_, props) => {
-  const spy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
   render(<Button {...props} />);
   expect(spy).not.toHaveBeenCalled();
   spy.mockRestore();

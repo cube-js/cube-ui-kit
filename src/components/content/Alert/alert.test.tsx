@@ -4,12 +4,12 @@ import { useAlert } from './use-alert';
 
 describe('<Alert /> component', () => {
   beforeAll(() => {
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
-    jest.spyOn(console, 'group').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'group').mockImplementation(() => {});
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should correctly render disabled', () => {

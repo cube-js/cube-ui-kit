@@ -3,7 +3,7 @@ import { createRef } from 'react';
 import { Picker } from '../../../index';
 import { act, renderWithRoot, userEvent, within } from '../../../test';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<Picker />', () => {
   const basicItems = [
@@ -485,8 +485,8 @@ describe('<Picker />', () => {
     });
 
     it('should clear selection when clear button is clicked', async () => {
-      const onSelectionChange = jest.fn();
-      const onClear = jest.fn();
+      const onSelectionChange = vi.fn();
+      const onClear = vi.fn();
 
       const { getAllByRole, getByTestId } = renderWithRoot(
         <Picker
@@ -524,7 +524,7 @@ describe('<Picker />', () => {
     });
 
     it('should work with multiple selection mode', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getAllByRole, getByTestId } = renderWithRoot(
         <Picker
@@ -644,7 +644,7 @@ describe('<Picker />', () => {
     });
 
     it('should select all items when select all is clicked', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByRole, getByText } = renderWithRoot(
         <Picker
@@ -761,7 +761,7 @@ describe('<Picker />', () => {
 
   describe('Custom renderSummary', () => {
     it('should use custom renderSummary function', () => {
-      const renderSummary = jest.fn(({ selectedLabels }) => {
+      const renderSummary = vi.fn(({ selectedLabels }) => {
         if (!selectedLabels || selectedLabels.length === 0) return null;
         return `${selectedLabels.length} selected`;
       });

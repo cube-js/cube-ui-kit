@@ -2,12 +2,12 @@ import { render, renderHook } from '../../test';
 
 import { useWarn } from './use-warn';
 
-jest.unmock('./use-warn');
+vi.unmock('./use-warn');
 
 describe('useWarn()', () => {
-  let spy: jest.SpyInstance;
+  let spy: ReturnType<typeof vi.spyOn>;
 
-  beforeEach(() => (spy = jest.spyOn(console, 'warn').mockImplementation()));
+  beforeEach(() => (spy = vi.spyOn(console, 'warn').mockImplementation()));
   afterEach(() => spy.mockRestore());
 
   it('should warn', () => {

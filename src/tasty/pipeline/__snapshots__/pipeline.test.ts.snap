@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`@supports queries snapshot tests should eliminate impossible @supports combinations 1`] = `
+exports[`@supports queries snapshot tests > should eliminate impossible @supports combinations 1`] = `
 [
   {
     "atRules": [
@@ -26,7 +26,7 @@ exports[`@supports queries snapshot tests should eliminate impossible @supports 
 ]
 `;
 
-exports[`@supports queries snapshot tests should render @supports combined with @container 1`] = `
+exports[`@supports queries snapshot tests > should render @supports combined with @container 1`] = `
 [
   {
     "atRules": [
@@ -54,7 +54,7 @@ exports[`@supports queries snapshot tests should render @supports combined with 
 ]
 `;
 
-exports[`@supports queries snapshot tests should render @supports combined with @media 1`] = `
+exports[`@supports queries snapshot tests > should render @supports combined with @media 1`] = `
 [
   {
     "atRules": [
@@ -82,7 +82,7 @@ exports[`@supports queries snapshot tests should render @supports combined with 
 ]
 `;
 
-exports[`@supports queries snapshot tests should render @supports combined with AND 1`] = `
+exports[`@supports queries snapshot tests > should render @supports combined with AND 1`] = `
 [
   {
     "atRules": [
@@ -108,7 +108,7 @@ exports[`@supports queries snapshot tests should render @supports combined with 
 ]
 `;
 
-exports[`@supports queries snapshot tests should render @supports combined with OR 1`] = `
+exports[`@supports queries snapshot tests > should render @supports combined with OR 1`] = `
 [
   {
     "atRules": [
@@ -134,7 +134,7 @@ exports[`@supports queries snapshot tests should render @supports combined with 
 ]
 `;
 
-exports[`@supports queries snapshot tests should render @supports feature query 1`] = `
+exports[`@supports queries snapshot tests > should render @supports feature query 1`] = `
 [
   {
     "atRules": [
@@ -153,7 +153,7 @@ exports[`@supports queries snapshot tests should render @supports feature query 
 ]
 `;
 
-exports[`@supports queries snapshot tests should render @supports selector query 1`] = `
+exports[`@supports queries snapshot tests > should render @supports selector query 1`] = `
 [
   {
     "atRules": [
@@ -172,7 +172,7 @@ exports[`@supports queries snapshot tests should render @supports selector query
 ]
 `;
 
-exports[`@supports queries snapshot tests should render @supports with modifier - 2 exclusive rules 1`] = `
+exports[`@supports queries snapshot tests > should render @supports with modifier - 2 exclusive rules 1`] = `
 [
   {
     "atRules": [
@@ -198,7 +198,7 @@ exports[`@supports queries snapshot tests should render @supports with modifier 
 ]
 `;
 
-exports[`@supports queries snapshot tests should render @supports with modifiers 1`] = `
+exports[`@supports queries snapshot tests > should render @supports with modifiers 1`] = `
 [
   {
     "atRules": [
@@ -224,7 +224,7 @@ exports[`@supports queries snapshot tests should render @supports with modifiers
 ]
 `;
 
-exports[`@supports queries snapshot tests should render @supports with multiple modifier states - 3 exclusive rules 1`] = `
+exports[`@supports queries snapshot tests > should render @supports with multiple modifier states - 3 exclusive rules 1`] = `
 [
   {
     "atRules": [
@@ -250,7 +250,7 @@ exports[`@supports queries snapshot tests should render @supports with multiple 
 ]
 `;
 
-exports[`@supports queries snapshot tests should render multiple @supports with exclusive logic 1`] = `
+exports[`@supports queries snapshot tests > should render multiple @supports with exclusive logic 1`] = `
 [
   {
     "atRules": [

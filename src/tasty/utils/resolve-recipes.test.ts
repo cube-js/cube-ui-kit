@@ -144,7 +144,7 @@ describe('resolveRecipes', () => {
     });
 
     it('skips unknown recipe names gracefully', () => {
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation();
 
       const styles: Styles = { recipe: 'unknown, card' };
       const result = resolveRecipes(styles);

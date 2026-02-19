@@ -19,7 +19,7 @@ import {
 
 import type { InternalNotification } from './types';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 // ─── Test Wrapper ────────────────────────────────────────────────────
 
@@ -190,7 +190,7 @@ describe('NotificationItem', () => {
   });
 
   it('should call onDismiss with "close" reason when Dismiss is clicked', async () => {
-    const onDismiss = jest.fn();
+    const onDismiss = vi.fn();
 
     const { getByText } = render(
       <NotificationItem
@@ -207,7 +207,7 @@ describe('NotificationItem', () => {
   });
 
   it('should still close via action closeOnPress when isDismissible is false', async () => {
-    const onDismiss = jest.fn();
+    const onDismiss = vi.fn();
 
     const { getByText, queryByText } = render(
       <NotificationItem
@@ -501,7 +501,7 @@ describe('NotificationAction', () => {
   });
 
   it('should call onPress when clicked', async () => {
-    const onPress = jest.fn();
+    const onPress = vi.fn();
 
     const { getByText } = render(
       <NotificationAction onPress={onPress}>Click me</NotificationAction>,
@@ -789,143 +789,145 @@ describe('useNotificationsCount', () => {
     });
   });
 
-  it('should mark as read after PersistentNotificationsList is visible for 2s', async () => {
-    jest.useFakeTimers();
-
-    function TestComponent() {
-      const { record } = useNotifications();
-      const { total, unread } = useNotificationsCount();
-      const [showList, setShowList] = useState(false);
-
-      return (
-        <div>
-          <Button
-            onPress={() =>
-              record({
-                id: 'read-test',
-                theme: 'note',
-                title: 'Will be read',
-              })
-            }
-          >
-            Add
-          </Button>
-          <Button onPress={() => setShowList(true)}>Show List</Button>
-          <span data-qa="counts">
-            total:{total} unread:{unread}
-          </span>
-          {showList && <PersistentNotificationsList />}
-        </div>
-      );
-    }
-
-    const { getByRole, getByText } = renderWithOverlay(<TestComponent />);
-
-    // Add a stored notification
-    await act(async () => {
-      getByRole('button', { name: 'Add' }).click();
+  describe('with fake timers', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
     });
 
-    await waitFor(() => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should mark as read after PersistentNotificationsList is visible for 2s', async () => {
+      function TestComponent() {
+        const { record } = useNotifications();
+        const { total, unread } = useNotificationsCount();
+        const [showList, setShowList] = useState(false);
+
+        return (
+          <div>
+            <Button
+              onPress={() =>
+                record({
+                  id: 'read-test',
+                  theme: 'note',
+                  title: 'Will be read',
+                })
+              }
+            >
+              Add
+            </Button>
+            <Button onPress={() => setShowList(true)}>Show List</Button>
+            <span data-qa="counts">
+              total:{total} unread:{unread}
+            </span>
+            {showList && <PersistentNotificationsList />}
+          </div>
+        );
+      }
+
+      const { getByRole, getByText } = renderWithOverlay(<TestComponent />);
+
+      // Add a stored notification
+      await act(async () => {
+        getByRole('button', { name: 'Add' }).click();
+      });
+
+      await waitFor(() => {
+        expect(getByText('total:1 unread:1')).toBeInTheDocument();
+      });
+
+      // Show the list — should NOT mark as read immediately
+      await act(async () => {
+        getByRole('button', { name: 'Show List' }).click();
+      });
+
+      // Still unread right after showing
       expect(getByText('total:1 unread:1')).toBeInTheDocument();
+
+      // Advance past the 2s delay
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2100);
+      });
+
+      await waitFor(() => {
+        expect(getByText('total:1 unread:0')).toBeInTheDocument();
+      });
     });
 
-    // Show the list — should NOT mark as read immediately
-    await act(async () => {
-      getByRole('button', { name: 'Show List' }).click();
+    it('should mark new items as read when added while list is already visible', async () => {
+      let recordCounter = 0;
+
+      function TestComponent() {
+        const { record } = useNotifications();
+        const { total, unread } = useNotificationsCount();
+        const [showList, setShowList] = useState(false);
+
+        return (
+          <div>
+            <Button
+              onPress={() => {
+                recordCounter++;
+                record({
+                  id: `late-${recordCounter}`,
+                  theme: 'note',
+                  title: `Late notification ${recordCounter}`,
+                });
+              }}
+            >
+              Add
+            </Button>
+            <Button onPress={() => setShowList(true)}>Show List</Button>
+            <span data-qa="counts">
+              total:{total} unread:{unread}
+            </span>
+            {showList && <PersistentNotificationsList />}
+          </div>
+        );
+      }
+
+      const { getByRole, getByText } = renderWithOverlay(<TestComponent />);
+
+      // Add first item and show the list
+      await act(async () => {
+        getByRole('button', { name: 'Add' }).click();
+      });
+      await act(async () => {
+        getByRole('button', { name: 'Show List' }).click();
+      });
+
+      // Wait for the first batch to be marked as read
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2100);
+      });
+
+      await waitFor(() => {
+        expect(getByText('total:1 unread:0')).toBeInTheDocument();
+      });
+
+      // Now add more items while the list is already visible
+      await act(async () => {
+        getByRole('button', { name: 'Add' }).click();
+      });
+      await act(async () => {
+        getByRole('button', { name: 'Add' }).click();
+      });
+
+      // New items should be unread
+      await waitFor(() => {
+        expect(getByText('total:3 unread:2')).toBeInTheDocument();
+      });
+
+      // After another 2s, new items should be marked as read
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2100);
+      });
+
+      await waitFor(() => {
+        expect(getByText('total:3 unread:0')).toBeInTheDocument();
+      });
     });
-
-    // Still unread right after showing
-    expect(getByText('total:1 unread:1')).toBeInTheDocument();
-
-    // Advance past the 2s delay
-    await act(async () => {
-      jest.advanceTimersByTime(2100);
-    });
-
-    await waitFor(() => {
-      expect(getByText('total:1 unread:0')).toBeInTheDocument();
-    });
-
-    jest.useRealTimers();
-  });
-
-  it('should mark new items as read when added while list is already visible', async () => {
-    jest.useFakeTimers();
-
-    let recordCounter = 0;
-
-    function TestComponent() {
-      const { record } = useNotifications();
-      const { total, unread } = useNotificationsCount();
-      const [showList, setShowList] = useState(false);
-
-      return (
-        <div>
-          <Button
-            onPress={() => {
-              recordCounter++;
-              record({
-                id: `late-${recordCounter}`,
-                theme: 'note',
-                title: `Late notification ${recordCounter}`,
-              });
-            }}
-          >
-            Add
-          </Button>
-          <Button onPress={() => setShowList(true)}>Show List</Button>
-          <span data-qa="counts">
-            total:{total} unread:{unread}
-          </span>
-          {showList && <PersistentNotificationsList />}
-        </div>
-      );
-    }
-
-    const { getByRole, getByText } = renderWithOverlay(<TestComponent />);
-
-    // Add first item and show the list
-    await act(async () => {
-      getByRole('button', { name: 'Add' }).click();
-    });
-    await act(async () => {
-      getByRole('button', { name: 'Show List' }).click();
-    });
-
-    // Wait for the first batch to be marked as read
-    await act(async () => {
-      jest.advanceTimersByTime(2100);
-    });
-
-    await waitFor(() => {
-      expect(getByText('total:1 unread:0')).toBeInTheDocument();
-    });
-
-    // Now add more items while the list is already visible
-    await act(async () => {
-      getByRole('button', { name: 'Add' }).click();
-    });
-    await act(async () => {
-      getByRole('button', { name: 'Add' }).click();
-    });
-
-    // New items should be unread
-    await waitFor(() => {
-      expect(getByText('total:3 unread:2')).toBeInTheDocument();
-    });
-
-    // After another 2s, new items should be marked as read
-    await act(async () => {
-      jest.advanceTimersByTime(2100);
-    });
-
-    await waitFor(() => {
-      expect(getByText('total:3 unread:0')).toBeInTheDocument();
-    });
-
-    jest.useRealTimers();
-  });
+  }); // end describe('with fake timers')
 });
 
 // ─── PersistentNotificationsList ─────────────────────────────────────
@@ -1030,11 +1032,11 @@ describe('PersistentNotificationsList', () => {
 
 describe('Duration defaults', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('should auto-dismiss non-persistent notification after 5000ms', async () => {
@@ -1069,7 +1071,7 @@ describe('Duration defaults', () => {
 
     // Advance past the 5000ms default duration
     await act(async () => {
-      jest.advanceTimersByTime(5100);
+      await vi.advanceTimersByTimeAsync(5100);
     });
 
     await waitFor(() => {
@@ -1265,7 +1267,7 @@ describe('Owner cleanup', () => {
 
 describe('Keyboard navigation', () => {
   it('should dismiss notification on Escape key', async () => {
-    const onDismiss = jest.fn();
+    const onDismiss = vi.fn();
 
     const { container } = render(
       <NotificationItem
@@ -1290,7 +1292,7 @@ describe('Keyboard navigation', () => {
   });
 
   it('should not dismiss on Escape when not isDismissible', async () => {
-    const onDismiss = jest.fn();
+    const onDismiss = vi.fn();
 
     const { container } = render(
       <NotificationItem
@@ -1343,11 +1345,11 @@ describe('Error handling', () => {
 
 describe('Persistent notification on timeout', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('should move persistent notification to persistent list after timeout', async () => {
@@ -1394,7 +1396,7 @@ describe('Persistent notification on timeout', () => {
 
     // Advance past the default persistent duration (10000ms)
     await act(async () => {
-      jest.advanceTimersByTime(10100);
+      await vi.advanceTimersByTimeAsync(10100);
     });
 
     // After timeout, it should be in the persistent list
@@ -1408,11 +1410,11 @@ describe('Persistent notification on timeout', () => {
 
 describe('Timer reset on update', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('should reset timer when title changes via in-place update', async () => {
@@ -1464,7 +1466,7 @@ describe('Timer reset on update', () => {
 
     // Wait 4 seconds (almost expired)
     await act(async () => {
-      jest.advanceTimersByTime(4000);
+      await vi.advanceTimersByTimeAsync(4000);
     });
 
     // Update the title — should reset the 5s timer
@@ -1478,7 +1480,7 @@ describe('Timer reset on update', () => {
 
     // Wait another 4 seconds — would have expired if timer wasn't reset
     await act(async () => {
-      jest.advanceTimersByTime(4000);
+      await vi.advanceTimersByTimeAsync(4000);
     });
 
     // Should still be visible (timer was reset)
@@ -1486,7 +1488,7 @@ describe('Timer reset on update', () => {
 
     // Wait past the full 5s from the update
     await act(async () => {
-      jest.advanceTimersByTime(2000);
+      await vi.advanceTimersByTimeAsync(2000);
     });
 
     // Now it should be dismissed
@@ -1607,11 +1609,11 @@ describe('Stored notification handle dismiss', () => {
 
 describe('Timestamp refresh', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('should refresh relative timestamps while list is visible', async () => {
@@ -1648,7 +1650,7 @@ describe('Timestamp refresh', () => {
 
     // Advance time by 2 minutes
     await act(async () => {
-      jest.advanceTimersByTime(2 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(2 * 60 * 1000);
     });
 
     // After a 10s refresh interval tick, the timestamp should update

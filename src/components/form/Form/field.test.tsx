@@ -8,7 +8,7 @@ import { Root } from '../../Root';
 
 import { Field, Form } from './index';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('Legacy <Field />', () => {
   it('should set default value as value', () => {
@@ -188,7 +188,7 @@ describe('Legacy <Field />', () => {
   });
 
   it("shouldn't override onChange in component", async () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
 
     const { getByRole, formInstance } = renderWithForm(
       <Radio.Group label="Deploy mode" name="test" onChange={onChange}>

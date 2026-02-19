@@ -2,7 +2,7 @@ import { act, renderWithRoot, userEvent, waitFor } from '../../../test';
 
 import { Disclosure } from './Disclosure';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<Disclosure />', () => {
   describe('Basic Rendering', () => {
@@ -94,7 +94,7 @@ describe('<Disclosure />', () => {
     });
 
     it('should call onExpandedChange when expanded', async () => {
-      const onExpandedChange = jest.fn();
+      const onExpandedChange = vi.fn();
 
       const { getByRole } = renderWithRoot(
         <Disclosure onExpandedChange={onExpandedChange}>
@@ -201,7 +201,7 @@ describe('<Disclosure />', () => {
     });
 
     it('should not expand when disabled', async () => {
-      const onExpandedChange = jest.fn();
+      const onExpandedChange = vi.fn();
 
       const { getByRole } = renderWithRoot(
         <Disclosure isDisabled onExpandedChange={onExpandedChange}>
@@ -404,7 +404,7 @@ describe('<Disclosure.Group />', () => {
   });
 
   it('should call onExpandedChange with updated keys', async () => {
-    const onExpandedChange = jest.fn();
+    const onExpandedChange = vi.fn();
 
     const { getAllByRole } = renderWithRoot(
       <Disclosure.Group onExpandedChange={onExpandedChange}>
@@ -490,11 +490,11 @@ describe('Nested Disclosures', () => {
 
 describe('Content Preservation', () => {
   beforeEach(() => {
-    jest.useFakeTimers({ legacyFakeTimers: false });
+    vi.useFakeTimers({ legacyFakeTimers: false });
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('should preserve content during exit phase', () => {
@@ -534,7 +534,7 @@ describe('Content Preservation', () => {
 
     // Advance timers to move into exit phase
     act(() => {
-      jest.advanceTimersByTime(50);
+      vi.advanceTimersByTime(50);
     });
 
     // During exit phase, content should still be preserved
@@ -542,7 +542,7 @@ describe('Content Preservation', () => {
 
     // Advance through the rest of the exit flow
     act(() => {
-      jest.advanceTimersByTime(150);
+      vi.advanceTimersByTime(150);
     });
 
     // After completing the exit transition, content should have been preserved

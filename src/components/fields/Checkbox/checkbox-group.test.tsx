@@ -1,7 +1,7 @@
 import { Checkbox, Field } from '../../../index';
 import { act, render, renderWithForm, userEvent } from '../../../test';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<CheckboxGroup />', () => {
   it('should respect defaultValue prop', () => {

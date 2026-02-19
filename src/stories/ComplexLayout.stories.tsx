@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Button } from '../components/actions/Button/Button';
+import { Button } from '../components/actions';
 import { ItemButton } from '../components/actions/ItemButton/ItemButton';
 import { Card } from '../components/content/Card/Card';
 import { Layout } from '../components/content/Layout';
