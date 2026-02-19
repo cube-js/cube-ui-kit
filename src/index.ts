@@ -16,6 +16,62 @@ configure({
     bw: 'var(--border-width)',
     ow: 'var(--outline-width)',
   },
+  recipes: {
+    reset: {
+      margin: 0,
+      padding: 0,
+      border: 0,
+      outline: 0,
+      boxSizing: 'border-box',
+    },
+    button: {
+      appearance: 'none',
+      touchAction: 'manipulation',
+      textDecoration: 'none',
+      '-webkit-tap-highlight-color': 'transparent',
+      fill: '#clear',
+      color: 'inherit',
+      cursor: {
+        '': 'default',
+        ':is(a)': 'pointer',
+        ':is(button)': '$pointer',
+        disabled: 'not-allowed',
+      },
+    },
+    input: {
+      '@autofill': ':-webkit-autofill',
+      appearance: 'none',
+      wordSpacing: 'initial',
+      color: 'inherit',
+      fill: '#clear',
+      '-webkit-text-fill-color': {
+        '': 'currentColor',
+        '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
+      },
+      caretColor: {
+        '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
+      },
+      shadow: {
+        '@autofill | (@autofill & :hover) | (@autofill & :focus)':
+          '0 0 0 9999rem rgb(255 255 255) inset',
+      },
+      preset: {
+        '@autofill | (@autofill & :hover) | (@autofill & :focus)': 'inherit',
+      },
+      '-webkit-opacity': {
+        '': false,
+        '[disabled]': '1',
+      },
+    },
+    'input-placeholder': {
+      '-webkit-text-fill-color': 'var(--placeholder-color, initial)',
+      color: 'var(--placeholder-color, initial)',
+    },
+    'input-search-cancel-button': {
+      hide: true,
+      appearance: 'none',
+    },
+  },
 });
 
 export { Section } from 'react-stately';

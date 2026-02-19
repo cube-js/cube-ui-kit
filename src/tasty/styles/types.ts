@@ -170,11 +170,6 @@ export interface StylesInterface
    */
   fade?: 'top' | 'right' | 'bottom' | 'left' | string;
   /**
-   * Whether styles of the element should be reset.
-   * Possible values: `input`, `button`.
-   */
-  reset?: 'input' | 'button';
-  /**
    * @deprecated Use `scrollbar` style instead.
    * Whether the element has styled scrollbar.
    */
@@ -570,14 +565,28 @@ export type StylesWithoutSelectors = {
 };
 
 /**
+ * Index signature for recipe-specific arbitrary keys.
+ * Supports local predefined states (`@name`), vendor-prefixed CSS properties (`-webkit-*`),
+ * CSS custom properties (`$name`), and color tokens (`#name`).
+ * Unlike StylesIndexSignature, does NOT allow sub-element selectors (recipes are flat).
+ */
+export interface RecipeIndexSignature {
+  [key: string]:
+    | StyleValue<string | number | boolean | undefined>
+    | StyleValueStateMap<string | number | boolean | undefined>;
+}
+
+/**
  * Style type for recipe definitions.
- * Like StylesWithoutSelectors but also allows `@keyframes` and `@properties`.
+ * Like StylesWithoutSelectors but also allows `@keyframes`, `@properties`,
+ * local predefined states, and vendor-prefixed CSS properties.
  * Excludes `recipe` to prevent recursive references.
  */
-export type RecipeStyles = StylesWithoutSelectors & {
-  '@keyframes'?: StylesInterface['@keyframes'];
-  '@properties'?: StylesInterface['@properties'];
-};
+export type RecipeStyles = StylesWithoutSelectors &
+  RecipeIndexSignature & {
+    '@keyframes'?: StylesInterface['@keyframes'];
+    '@properties'?: StylesInterface['@properties'];
+  };
 
 /** Special properties that are not regular style values */
 export interface SpecialStyleProperties {

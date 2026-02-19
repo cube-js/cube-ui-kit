@@ -24,7 +24,6 @@ import { outlineStyle } from './outline';
 import { paddingStyle } from './padding';
 import { presetStyle } from './preset';
 import { radiusStyle } from './radius';
-import { resetStyle } from './reset';
 import { scrollbarStyle } from './scrollbar';
 import { shadowStyle } from './shadow';
 import { styledScrollbarStyle } from './styledScrollbar';
@@ -159,7 +158,6 @@ export function predefine() {
   [
     displayStyle,
     transitionStyle,
-    resetStyle,
     fillStyle,
     svgFillStyle,
     widthStyle,
@@ -429,7 +427,6 @@ export const styleHandlers = {
   padding: wrapHandler(paddingStyle),
   preset: wrapHandler(presetStyle),
   radius: wrapHandler(radiusStyle),
-  reset: wrapHandler(resetStyle),
   scrollbar: wrapHandler(scrollbarStyle),
   shadow: wrapHandler(shadowStyle),
   styledScrollbar: wrapHandler(styledScrollbarStyle),

@@ -185,6 +185,7 @@ const DEFAULT_ICON_STYLES: Styles = {
 };
 
 export const DEFAULT_BUTTON_STYLES = {
+  recipe: 'reset, button',
   display: 'inline-grid',
   flow: 'column dense',
   gap: 0,
@@ -194,25 +195,12 @@ export const DEFAULT_BUTTON_STYLES = {
   },
   placeContent: 'center',
   position: 'relative',
-  margin: 0,
-  boxSizing: 'border-box',
-  cursor: {
-    '': 'default',
-    ':is(a)': 'pointer',
-    ':is(button)': '$pointer',
-    disabled: 'not-allowed',
-  },
   preset: {
     '': 't3m',
     'size=xsmall': 't4',
     'size=xlarge': 't2m',
     'type=link': 'strong',
   },
-  textDecoration: 'none',
-  reset: 'button',
-  appearance: 'none',
-  touchAction: 'manipulation',
-  outline: 0,
   outlineOffset: 1,
   padding: {
     '': 0,

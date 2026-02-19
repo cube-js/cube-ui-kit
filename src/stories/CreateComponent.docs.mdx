@@ -303,23 +303,15 @@ export interface CubeActionProps<T extends TagName = 'button'>
 }
 
 const DEFAULT_ACTION_STYLES: Styles = {
-  reset: 'button',
-  appearance: 'none',
-  touchAction: 'manipulation',
-  textDecoration: 'none',
+  recipe: 'reset, button',
   position: 'relative',
-  margin: 0,
   preset: 'inherit',
-  border: 0,
-  padding: 0,
   outline: {
     '': '#purple-03.0',
     focused: '#purple-03',
   },
   transition: 'theme',
   cursor: '$pointer',
-  textDecoration: 'none',
-  fill: '#clear',
 } as const;
 
 const ActionElement = tasty({

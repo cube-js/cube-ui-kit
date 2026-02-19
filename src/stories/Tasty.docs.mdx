@@ -1414,6 +1414,27 @@ styles: {
 
 > **⚠️ Important:** Place more specific rules last - they take precedence.
 
+#### Composing States
+
+Each state in a state key is a **single token**. You cannot concatenate two states into one token — use the `&` operator to combine them:
+
+```jsx
+styles: {
+  '@autofill': ':-webkit-autofill',
+
+  // ❌ Wrong — @autofill:hover is two states written as one token
+  color: { '@autofill:hover': '#blue' },
+
+  // ✅ Correct — use & to compose separate states
+  color: { '(@autofill & :hover)': '#blue' },
+
+  // ✅ Multiple variants with |
+  fill: {
+    '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#white',
+  },
+}
+```
+
 ### Sub-element Styling
 
 Style inner elements using `data-element` attributes:
