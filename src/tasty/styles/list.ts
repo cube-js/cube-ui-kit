@@ -23,7 +23,6 @@ export const POSITION_STYLES = [
 ] as const;
 
 export const BLOCK_INNER_STYLES = [
-  'reset',
   'padding',
   'paddingInline',
   'paddingBlock',
