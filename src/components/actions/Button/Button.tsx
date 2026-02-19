@@ -185,7 +185,7 @@ const DEFAULT_ICON_STYLES: Styles = {
 };
 
 export const DEFAULT_BUTTON_STYLES = {
-  recipe: 'reset, button',
+  recipe: 'reset button',
   display: 'inline-grid',
   flow: 'column dense',
   gap: 0,

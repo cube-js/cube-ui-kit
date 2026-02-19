@@ -35,7 +35,7 @@ export const StyledSearchInput = tasty({
   qa: 'SearchInput',
   as: 'input',
   styles: {
-    recipe: 'reset, input',
+    recipe: 'reset input | input-autofill',
     display: 'grid',
     width: '100%',
     color: '#dark',

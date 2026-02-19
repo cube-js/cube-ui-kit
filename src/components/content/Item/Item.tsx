@@ -380,7 +380,7 @@ const ItemElement = tasty({
       '(type=header | type=card) & size=large': 'h5',
       '(type=header | type=card) & size=xlarge': 'h4',
     },
-    recipe: 'reset, button',
+    recipe: 'reset button',
     transition: 'theme',
     outlineOffset: 1,
     cursor: {

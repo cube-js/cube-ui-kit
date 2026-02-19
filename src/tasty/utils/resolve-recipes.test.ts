@@ -75,7 +75,7 @@ describe('resolveRecipes', () => {
     });
 
     it('resolves multiple recipes in order', () => {
-      const styles: Styles = { recipe: 'card, elevated', color: '#text' };
+      const styles: Styles = { recipe: 'card elevated', color: '#text' };
       const result = resolveRecipes(styles);
 
       expect(result).toEqual({
@@ -89,7 +89,7 @@ describe('resolveRecipes', () => {
     });
 
     it('later recipes override earlier ones', () => {
-      const styles: Styles = { recipe: 'card, rounded' };
+      const styles: Styles = { recipe: 'card rounded' };
       const result = resolveRecipes(styles);
 
       // 'rounded' overrides 'card' radius
@@ -130,7 +130,7 @@ describe('resolveRecipes', () => {
     });
 
     it('handles recipe with extra whitespace', () => {
-      const styles: Styles = { recipe: '  card , elevated  ', color: '#text' };
+      const styles: Styles = { recipe: '  card   elevated  ', color: '#text' };
       const result = resolveRecipes(styles);
 
       expect(result).toEqual({
@@ -146,7 +146,7 @@ describe('resolveRecipes', () => {
     it('skips unknown recipe names gracefully', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation();
 
-      const styles: Styles = { recipe: 'unknown, card' };
+      const styles: Styles = { recipe: 'unknown card' };
       const result = resolveRecipes(styles);
 
       // Should still resolve the known recipe
@@ -337,6 +337,142 @@ describe('resolveRecipes', () => {
       expect(result).toEqual({
         padding: '4x',
         Title: 'some-value',
+      });
+    });
+  });
+
+  // ============================================================================
+  // Post-merge recipe resolution
+  // ============================================================================
+
+  describe('post-merge recipes (| separator)', () => {
+    beforeEach(() => {
+      configure({
+        recipes: {
+          reset: { margin: 0, padding: 0 },
+          input: { appearance: 'none', color: 'inherit' },
+          'input-autofill': {
+            preset: {
+              ':-webkit-autofill': 'inherit',
+            },
+            '-webkit-text-fill-color': {
+              '': 'currentColor',
+              ':-webkit-autofill': '#primary',
+            },
+          },
+          card: { padding: '4x', fill: '#surface' },
+          elevated: { shadow: '2x 2x 4x #shadow' },
+        },
+      });
+    });
+
+    it('post recipe state map extends component primitive', () => {
+      const styles: Styles = {
+        recipe: 'reset input | input-autofill',
+        preset: 't3',
+      };
+      const result = resolveRecipes(styles);
+
+      expect(result).toEqual({
+        margin: 0,
+        padding: 0,
+        appearance: 'none',
+        color: 'inherit',
+        preset: {
+          '': 't3',
+          ':-webkit-autofill': 'inherit',
+        },
+        '-webkit-text-fill-color': {
+          '': 'currentColor',
+          ':-webkit-autofill': '#primary',
+        },
+      });
+    });
+
+    it('post recipe state map extends component state map', () => {
+      const styles: Styles = {
+        recipe: 'reset input | input-autofill',
+        preset: {
+          '': 't3',
+          ':hover': 't2',
+        },
+      };
+      const result = resolveRecipes(styles);
+
+      expect(result).toEqual({
+        margin: 0,
+        padding: 0,
+        appearance: 'none',
+        color: 'inherit',
+        preset: {
+          '': 't3',
+          ':hover': 't2',
+          ':-webkit-autofill': 'inherit',
+        },
+        '-webkit-text-fill-color': {
+          '': 'currentColor',
+          ':-webkit-autofill': '#primary',
+        },
+      });
+    });
+
+    it('base-only (no |) still works', () => {
+      const styles: Styles = { recipe: 'reset card', color: '#text' };
+      const result = resolveRecipes(styles);
+
+      expect(result).toEqual({
+        margin: 0,
+        padding: '4x',
+        fill: '#surface',
+        color: '#text',
+      });
+    });
+
+    it('post-only (| post-recipe) works', () => {
+      const styles: Styles = {
+        recipe: '| input-autofill',
+        preset: 't3',
+      };
+      const result = resolveRecipes(styles);
+
+      expect(result).toEqual({
+        preset: {
+          '': 't3',
+          ':-webkit-autofill': 'inherit',
+        },
+        '-webkit-text-fill-color': {
+          '': 'currentColor',
+          ':-webkit-autofill': '#primary',
+        },
+      });
+    });
+
+    it('multiple post recipes', () => {
+      const styles: Styles = {
+        recipe: 'reset | card elevated',
+        padding: '2x',
+      };
+      const result = resolveRecipes(styles);
+
+      expect(result).toEqual({
+        margin: 0,
+        padding: '4x',
+        fill: '#surface',
+        shadow: '2x 2x 4x #shadow',
+      });
+    });
+
+    it('post recipe adds new keys without affecting existing ones', () => {
+      const styles: Styles = {
+        recipe: 'reset | elevated',
+        padding: '2x',
+      };
+      const result = resolveRecipes(styles);
+
+      expect(result).toEqual({
+        margin: 0,
+        padding: '2x',
+        shadow: '2x 2x 4x #shadow',
       });
     });
   });

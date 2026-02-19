@@ -44,6 +44,8 @@ configure({
       wordSpacing: 'initial',
       color: 'inherit',
       fill: '#clear',
+    },
+    'input-autofill': {
       '-webkit-text-fill-color': {
         '': 'currentColor',
         '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',

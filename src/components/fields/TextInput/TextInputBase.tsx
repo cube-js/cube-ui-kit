@@ -136,7 +136,7 @@ const InputWrapperElement = tasty({
 const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
-  recipe: 'reset, input',
+  recipe: 'reset input | input-autofill',
   placeSelf: 'stretch',
   width: 'initial 100% 100%',
   transition: 'theme',

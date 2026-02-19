@@ -210,9 +210,9 @@ export interface TastyConfig {
    * Recipe values are flat tasty styles (no sub-element keys). They may contain base styles,
    * tokens (`$name`/`#name` definitions), local states, `@keyframes`, and `@properties`.
    *
-   * Components reference recipes via: `recipe: 'name1, name2'` in their styles.
-   * Recipes are resolved before the style pipeline by merging in order:
-   * `recipe_1 → recipe_2 → ... → component styles`.
+   * Components reference recipes via: `recipe: 'name1 name2'` in their styles.
+   * Use `|` to separate base recipes from post recipes: `recipe: 'base1 base2 | post1'`.
+   * Resolution order: `base_recipes → component styles → post_recipes`.
    *
    * Recipes cannot reference other recipes.
    *
@@ -228,7 +228,7 @@ export interface TastyConfig {
    * // Usage in styles:
    * const Card = tasty({
    *   styles: {
-   *     recipe: 'card, elevated',
+   *     recipe: 'card elevated',
    *     color: '#text', // Overrides recipe values
    *   },
    * });
@@ -606,7 +606,7 @@ function setGlobalRecipes(recipes: Record<string, RecipeStyles>): void {
             `recipe-recursive-${name}`,
             `[Tasty] Recipe "${name}" contains a "recipe" key. ` +
               `Recipes cannot reference other recipes. ` +
-              `Use comma-separated names for composition: recipe: 'base, elevated'.`,
+              `Use space-separated names for composition: recipe: 'base elevated'.`,
           );
         }
       }

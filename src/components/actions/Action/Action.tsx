@@ -31,7 +31,7 @@ export interface CubeActionProps<
 const ActionElement = tasty({
   as: 'button',
   styles: {
-    recipe: 'reset, button',
+    recipe: 'reset button',
     position: 'relative',
     preset: 'inherit',
     transition: 'theme',

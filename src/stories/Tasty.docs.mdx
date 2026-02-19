@@ -291,10 +291,10 @@ const Card = tasty({
   },
 });
 
-// Compose multiple recipes (merged in order)
+// Compose multiple recipes (merged in order, space-separated)
 const ElevatedCard = tasty({
   styles: {
-    recipe: 'card, elevated',
+    recipe: 'card elevated',
     color: '#text',
   },
 });
@@ -311,11 +311,31 @@ const Panel = tasty({
 });
 ```
 
-**Merging order:** `recipe_1 → recipe_2 → ... → component styles`. Later recipes override earlier ones, and component styles always win.
+**Merging order:** `base_recipe_1 base_recipe_2 → component styles → post_recipe_1 post_recipe_2`. All merges use `mergeStyles` semantics: primitives and state maps with a `''` key fully replace; state maps without `''` extend the existing value.
+
+**Post-merge recipes (`|` separator):**
+
+Recipes listed after `|` are applied *after* component styles using `mergeStyles`, allowing recipe state maps to extend component values instead of being overridden by them:
+
+```jsx
+const Input = tasty({
+  styles: {
+    recipe: 'reset input | input-autofill',
+    preset: 't3',
+    //       ^^^^^^^^^^   ^^^^^^^^^^^^^^^
+    //       base group    post group
+  },
+});
+// Result: preset becomes { '': 't3', ':-webkit-autofill': 'inherit' }
+// The post recipe's state map extends the component's primitive value.
+```
 
 **Key rules:**
-- Recipes are flat styles -- they cannot contain sub-element keys
-- Recipes cannot reference other recipes -- for composition, list multiple recipes: `recipe: 'card, elevated, rounded'`
+- Recipe names are space-separated within each group
+- `|` separates base (before component styles) from post (after component styles) groups
+- `|` is optional — if absent, all recipes are base
+- Recipes are flat styles — they cannot contain sub-element keys
+- Recipes cannot reference other recipes — for composition, list multiple recipes: `recipe: 'card elevated rounded'`
 - Use `recipe: ''` (empty string) to clear recipes when extending a base component
 - Recipes may contain `@keyframes`, `@properties`, and token definitions (`$name`/`#name`)
 
@@ -597,14 +617,17 @@ const ButtonElement = tasty({
 
 ### Recipe
 
-A predefined, named style bundle registered via `configure({ recipes })`. Applied to components via the `recipe` style property. Multiple recipes are composed with commas. Component styles always override recipe values.
+A predefined, named style bundle registered via `configure({ recipes })`. Applied to components via the `recipe` style property. Multiple recipes are space-separated. Base recipes (before `|`) are merged first, then component styles, then post recipes (after `|`). All merges use `mergeStyles` semantics.
 
 ```jsx
 // In config
 recipes: { card: { padding: '4x', fill: '#surface', radius: '1r' } }
 
-// In styles
+// In styles — base recipes (component styles override)
 styles: { recipe: 'card', color: '#text' }
+
+// Post recipes (extend component styles via mergeStyles)
+styles: { recipe: 'reset input | input-autofill', preset: 't3' }
 ```
 
 ### Custom Styles

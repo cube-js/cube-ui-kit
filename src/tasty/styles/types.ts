@@ -18,7 +18,7 @@ import { StyleValue, StyleValueStateMap } from '../utils/styles';
  * }
  * ```
  */
- 
+
 export interface TastyNamedColors {}
 
 type NamedColorKey = Extract<keyof TastyNamedColors, string>;
@@ -38,7 +38,7 @@ type NamedColor = [NamedColorKey] extends [never] ? string : NamedColorKey;
  * }
  * ```
  */
- 
+
 export interface TastyPresetNames {}
 
 type PresetNameKey = Extract<keyof TastyPresetNames, string>;
@@ -479,12 +479,13 @@ export interface StylesInterface
   /**
    * Apply one or more predefined style recipes by name.
    * Recipes are defined globally via `configure({ recipes: { ... } })`.
-   * Multiple recipes are separated by commas and merged in order.
-   * Component styles override recipe values.
+   * Multiple recipes are space-separated. Use `|` to separate base recipes
+   * (applied before component styles) from post recipes (applied after, via mergeStyles).
    *
    * Examples:
    * - `recipe: 'card'` // Apply the 'card' recipe
-   * - `recipe: 'card, elevated'` // Apply 'card' then 'elevated', then component styles
+   * - `recipe: 'card elevated'` // Apply 'card' then 'elevated', then component styles
+   * - `recipe: 'reset input | input-autofill'` // Base recipes, then post recipe
    * - `recipe: ''` // Clear recipes from base styles when extending
    */
   recipe?: string;

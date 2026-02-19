@@ -116,7 +116,7 @@ const ItemActionElement = tasty({
   qa: 'ItemAction',
   styles: {
     ...ITEM_ACTION_BASE_STYLES,
-    recipe: 'reset, button',
+    recipe: 'reset button',
     outlineOffset: 1,
     cursor: { '': '$pointer', disabled: 'default' },
     preset: {
