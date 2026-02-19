@@ -443,13 +443,15 @@ export function markStylesGenerated(): void {
     injector.property(token, definition);
   }
 
-  // Inject internal token defaults as :root CSS variables
+  // Inject internal token defaults as :root CSS variables.
+  // Use injectGlobal (not injectRawCSS) so the rule goes through the same
+  // injection path as all other tasty styles (consistent in both DOM and text/test mode).
   const internalTokenEntries = Object.entries(INTERNAL_TOKENS);
   if (internalTokenEntries.length > 0) {
     const declarations = internalTokenEntries
-      .map(([name, value]) => `  ${name}: ${value};`)
-      .join('\n');
-    injector.injectRawCSS(`:root {\n${declarations}\n}`);
+      .map(([name, value]) => `${name}: ${value}`)
+      .join('; ');
+    injector.injectGlobal([{ selector: ':root', declarations }]);
   }
 
   // Inject global properties if any were configured
