@@ -13,8 +13,10 @@ import type { Styles } from '../tasty/styles/types';
 export const SHADOW_TOKENS: Styles = {
   /** Subtle shadow for list items */
   '$item-shadow': '0 1bw .375x #dark.15',
-  /** Standard card elevation */
+  /** Standard card shadow */
   '$card-shadow': '0 .5x 2x #shadow',
+  /** Standard elevation */
+  $shadow: '0 .5x 2x #shadow',
   /** Elevated dialog shadow */
   '$dialog-shadow': '0 1x 4x #dark.15',
 };

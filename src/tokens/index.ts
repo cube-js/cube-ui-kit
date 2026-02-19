@@ -36,7 +36,7 @@ import type { SizeKey, SizeName } from './sizes';
  * - Base tokens ($gap, $radius, etc.)
  * - Space tokens ($space-xs, $space-sm, etc.)
  * - Size tokens ($size-xs, $size-sm, etc.)
- * - Shadow tokens ($item-shadow, $card-shadow, etc.)
+ * - Shadow tokens ($shadow, $item-shadow, etc.)
  * - Layout tokens ($max-content-width, $topbar-height, etc.)
  * - Typography tokens ($h1-font-size, $t3-line-height, etc.)
  * - Color tokens ($purple-color, $purple-color-rgb, etc.)

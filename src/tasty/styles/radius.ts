@@ -1,7 +1,7 @@
 import { DIRECTIONS, parseStyle } from '../utils/styles';
 
 const PROP = 'var(--radius)';
-const SHARP = 'var(--leaf-sharp-radius)';
+const SHARP = 'var(--sharp-radius)';
 
 export function radiusStyle({ radius }) {
   if (typeof radius === 'number') {

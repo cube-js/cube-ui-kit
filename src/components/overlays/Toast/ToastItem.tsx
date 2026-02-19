@@ -23,7 +23,7 @@ export interface ToastItemProps
 
 const StyledItem = tasty(Item, {
   styles: {
-    shadow: '$card-shadow',
+    shadow: '$shadow',
     transition: 'theme, inset',
     pointerEvents: 'none',
 

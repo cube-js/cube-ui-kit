@@ -73,7 +73,7 @@ const DialogElement = tasty({
     },
     shadow: {
       '': '$dialog-shadow',
-      'type=popover | type=panel': '$card-shadow',
+      'type=popover | type=panel': '$shadow',
     },
     top: {
       '': false,

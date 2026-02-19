@@ -38,7 +38,7 @@ export const BASE_TOKENS: Styles = {
   /** Card border radius */
   '$card-radius': '(1r + .5x)',
   /** Sharp corner for leaf shapes */
-  '$leaf-sharp-radius': '0px',
+  '$sharp-radius': '0px',
 
   // Misc dimensions
   /** Minimum dialog width (responsive) */

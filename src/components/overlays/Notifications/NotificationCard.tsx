@@ -25,7 +25,7 @@ const StyledItem = tasty(Item, {
       flat: '100%',
     },
     shadow: {
-      '': '$card-shadow',
+      '': '$shadow',
       flat: false,
     },
     radius: {
