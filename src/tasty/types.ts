@@ -35,7 +35,7 @@ export interface GlobalStyledProps {
  * }
  * ```
  */
- 
+
 export interface TastyThemeNames {}
 
 type ThemeNameKey = Extract<keyof TastyThemeNames, string>;
