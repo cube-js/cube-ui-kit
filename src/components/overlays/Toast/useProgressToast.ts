@@ -1,7 +1,6 @@
 import { Key, useEffect, useRef } from 'react';
 
 import { useToastContext } from './ToastProvider';
-import { getThemeIcon } from './useToast';
 
 import type { ProgressToastEmpty, ProgressToastOptions } from './types';
 
@@ -131,18 +130,11 @@ export function useProgressToast(
         removeToast(toastIdRef.current);
       }
 
-      // Get appropriate icon based on theme and loading state
-      const icon = getThemeIcon(
-        currentToastData.theme,
-        currentToastData.icon,
-        currentIsLoading,
-      );
-
       // Create new toast with fresh data
+      // Icon auto-resolved by ToastItem based on theme/isLoading
       toastIdRef.current = addToast(
         {
           ...currentToastData,
-          icon,
           isLoading: currentIsLoading,
           duration: null, // Persistent - we control removal
         },

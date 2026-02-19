@@ -186,10 +186,6 @@ export {
 } from './components/overlays/AlertDialog';
 export type { CubeAlertDialogProps } from './components/overlays/AlertDialog';
 
-// services
-export { notification } from './services/notification';
-export type { CubeNotificationOptions } from './services/notification';
-
 export * from './tasty';
 
 export const Typography = {
@@ -234,8 +230,8 @@ export * from './utils';
 export * from './tasty';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';
-export * from './components/overlays/NewNotifications';
 export * from './components/overlays/Toast';
+export * from './components/overlays/Notifications';
 export * from './shared';
 export * from './icons';
 export * from './components/form';

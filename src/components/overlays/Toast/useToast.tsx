@@ -59,16 +59,10 @@ function normalizeToastData(
   data: ToastData | ReactNode,
   defaultTheme?: ToastType,
 ): ToastData {
-  const theme = isToastData(data) ? data.theme ?? defaultTheme : defaultTheme;
-  const isLoading = isToastData(data) ? data.isLoading : undefined;
-  const providedIcon = isToastData(data) ? data.icon : undefined;
-  const icon = getThemeIcon(theme, providedIcon, isLoading);
-
   if (isToastData(data)) {
     return {
       ...data,
       theme: data.theme ?? defaultTheme,
-      icon,
     };
   }
 
@@ -76,7 +70,6 @@ function normalizeToastData(
   return {
     title: data,
     theme: defaultTheme,
-    icon,
   };
 }
 
