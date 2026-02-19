@@ -7,5 +7,3 @@
 **Migration:**
 - Replace `reset: 'button'` with `recipe: 'reset button'`
 - Replace `reset: 'input'` with `recipe: 'reset input | input-autofill'` and add sub-element styles for `Placeholder` and `&::-webkit-search-cancel-button`
-
-All UI kit components have been migrated. See `RESET-MIGRATION-SPEC.md` for details.
