@@ -21,6 +21,26 @@ export interface GlobalStyledProps {
   breakpoints?: number[];
 }
 
+/**
+ * Extensible interface for theme names.
+ * Augment this interface to register project-specific theme names for autocomplete.
+ *
+ * @example
+ * ```typescript
+ * declare module '@cube-dev/ui-kit' {
+ *   interface TastyThemeNames {
+ *     danger: true;
+ *     success: true;
+ *   }
+ * }
+ * ```
+ */
+ 
+export interface TastyThemeNames {}
+
+type ThemeNameKey = Extract<keyof TastyThemeNames, string>;
+type ThemeName = [ThemeNameKey] extends [never] ? string : ThemeNameKey;
+
 /** Allowed mod value types */
 export type ModValue = boolean | string | number | undefined | null;
 
@@ -112,15 +132,8 @@ export interface BasePropsWithoutChildren<K extends TagName = TagName>
   style?:
     | CSSProperties
     | (CSSProperties & { [key: string]: string | number | null | undefined });
-  /** User-defined theme for the element. Mapped to data-theme attribute. Use `default`, or `danger`, or any custom string value you need. */
-  theme?:
-    | 'default'
-    | 'danger'
-    | 'special'
-    | 'success'
-    | 'warning'
-    | 'note'
-    | (string & {});
+  /** User-defined theme for the element. Mapped to `data-theme` attribute. Augment `TastyThemeNames` to register project-specific themes for autocomplete. */
+  theme?: ThemeName | (string & {});
   /** CSS custom property tokens rendered as inline styles */
   tokens?: Tokens;
 }

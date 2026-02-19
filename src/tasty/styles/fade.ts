@@ -29,7 +29,7 @@ function processGroup(group: GroupData, isOnlyGroup: boolean): string[] {
   ) as (typeof DIRECTIONS)[number][];
 
   if (!values.length) {
-    values = ['var(--fade-width)'];
+    values = ['calc(2 * var(--gap))'];
   }
 
   // If this is the only group and no directions specified, apply to all edges
