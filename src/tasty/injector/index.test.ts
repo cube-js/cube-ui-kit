@@ -1,8 +1,12 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 import { configure, resetConfig } from '../config';
 import { StyleResult } from '../pipeline';
+import {
+  getGlobalPredefinedTokens,
+  resetGlobalPredefinedTokens,
+} from '../utils/styles';
 
 import {
   cleanup,
@@ -102,11 +106,6 @@ describe('Global Style Injector API', () => {
     });
 
     it('should configure predefined tokens', () => {
-      const {
-        getGlobalPredefinedTokens,
-        resetGlobalPredefinedTokens,
-      } = require('../utils/styles');
-
       // Clean up first
       resetGlobalPredefinedTokens();
 
@@ -128,11 +127,6 @@ describe('Global Style Injector API', () => {
     });
 
     it('should merge tokens from plugins', () => {
-      const {
-        getGlobalPredefinedTokens,
-        resetGlobalPredefinedTokens,
-      } = require('../utils/styles');
-
       // Clean up first
       resetGlobalPredefinedTokens();
 

@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 import { configure, resetConfig } from '../config';
 import { destroy } from '../injector';

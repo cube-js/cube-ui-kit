@@ -9,7 +9,7 @@ import { Field } from '../../form';
 
 import { Select } from './Select';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<Select />', () => {
   it('should select value', async () => {

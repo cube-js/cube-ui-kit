@@ -5,7 +5,7 @@ import { Field } from '../../form';
 
 import { PasswordInput } from './PasswordInput';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<PasswordInput />', () => {
   it('should work without form', async () => {

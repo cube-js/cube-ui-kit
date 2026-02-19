@@ -1,12 +1,8 @@
-import '@testing-library/jest-dom';
-import './tasty-jest';
+import '@testing-library/jest-dom/vitest';
+import './tasty-vitest';
 
 import { configure } from '@testing-library/react';
-import { AbortController } from 'node-abort-controller';
 import { config } from 'react-transition-group';
-
-// @ts-expect-error Setup AbortController for test environment
-global.AbortController = AbortController;
 
 // Mock ResizeObserver for test environment
 global.ResizeObserver = class ResizeObserver {
@@ -24,23 +20,22 @@ configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 15000 });
 global.IS_REACT_ACT_ENVIRONMENT = true;
 
 // Mock @tanstack/react-virtual for test environment
-
-jest.mock('@tanstack/react-virtual', () => ({
-  useVirtualizer: jest.fn().mockImplementation(({ count = 0 }) => ({
+vi.mock('@tanstack/react-virtual', () => ({
+  useVirtualizer: vi.fn().mockImplementation(({ count = 0 }) => ({
     getVirtualItems: () =>
       Array.from({ length: count }, (_, index) => ({
         index,
         key: index,
-        start: index * 40, // Mock height per item
+        start: index * 40,
         size: 40,
       })),
     getTotalSize: () => count * 40,
 
-    scrollToIndex: jest.fn(),
+    scrollToIndex: vi.fn(),
 
-    measure: jest.fn(),
+    measure: vi.fn(),
 
-    measureElement: jest.fn(),
+    measureElement: vi.fn(),
   })),
 }));
 

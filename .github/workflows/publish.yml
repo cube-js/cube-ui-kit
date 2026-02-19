@@ -80,7 +80,6 @@ jobs:
         run: npm config delete //registry.npmjs.org/:_authToken || true
 
       - name: Publish canary to npm
-        working-directory: ./dist
         run: npm publish --access public --tag pr_${{ github.event.number }} --provenance
 
       - name: Comment PR

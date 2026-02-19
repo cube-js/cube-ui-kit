@@ -6,11 +6,11 @@ import { DisplayTransition } from './DisplayTransition';
 
 describe('DisplayTransition', () => {
   beforeEach(() => {
-    jest.useFakeTimers({ legacyFakeTimers: false });
+    vi.useFakeTimers({ legacyFakeTimers: false });
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('should handle initial states correctly based on props', () => {
@@ -91,7 +91,7 @@ describe('DisplayTransition', () => {
   });
 
   it('should complete enter flow: unmounted → enter → entered with correct isShown values and onRest callback', () => {
-    const onRest = jest.fn();
+    const onRest = vi.fn();
     const phases: string[] = [];
 
     const { container } = render(
@@ -113,7 +113,7 @@ describe('DisplayTransition', () => {
 
     // Advance through double-rAF to reach "entered"
     act(() => {
-      jest.advanceTimersByTime(50); // Advance enough to process rAFs
+      vi.advanceTimersByTime(50); // Advance enough to process rAFs
     });
 
     expect(
@@ -124,7 +124,7 @@ describe('DisplayTransition', () => {
 
     // After duration, onRest should fire
     act(() => {
-      jest.advanceTimersByTime(150);
+      vi.advanceTimersByTime(150);
     });
 
     expect(onRest).toHaveBeenCalledWith('enter');
@@ -132,7 +132,7 @@ describe('DisplayTransition', () => {
   });
 
   it('should complete exit flow: entered → exit → unmounted with correct isShown values and onRest callback', () => {
-    const onRest = jest.fn();
+    const onRest = vi.fn();
 
     const { container, rerender } = render(
       <DisplayTransition
@@ -182,7 +182,7 @@ describe('DisplayTransition', () => {
 
     // Advance through double-rAF to reach "exit" phase
     act(() => {
-      jest.advanceTimersByTime(50);
+      vi.advanceTimersByTime(50);
     });
 
     // Now should be in exit phase, isShown=false
@@ -192,7 +192,7 @@ describe('DisplayTransition', () => {
 
     // After duration, should reach unmounted and fire onRest
     act(() => {
-      jest.advanceTimersByTime(150);
+      vi.advanceTimersByTime(150);
     });
 
     expect(
@@ -221,7 +221,7 @@ describe('DisplayTransition', () => {
   });
 
   it('should handle zero duration with immediate transitions and fire callbacks', () => {
-    const onRest = jest.fn();
+    const onRest = vi.fn();
 
     // Test enter flow with duration=0
     const { container, rerender } = render(
@@ -243,7 +243,7 @@ describe('DisplayTransition', () => {
 
     // Advance timers to trigger onRest
     act(() => {
-      jest.advanceTimersByTime(50);
+      vi.advanceTimersByTime(50);
     });
 
     expect(onRest).toHaveBeenCalledWith('enter');
@@ -267,7 +267,7 @@ describe('DisplayTransition', () => {
 
     // Advance through double-rAF for exit-pending → exit transition
     act(() => {
-      jest.advanceTimersByTime(50);
+      vi.advanceTimersByTime(50);
     });
 
     // With duration=0, it should go directly to unmounted (exit completes instantly after rAF)
@@ -278,15 +278,15 @@ describe('DisplayTransition', () => {
   });
 
   it('should respect prefers-reduced-motion', () => {
-    const matchMediaMock = jest.fn().mockImplementation((query) => ({
+    const matchMediaMock = vi.fn().mockImplementation((query) => ({
       matches: query === '(prefers-reduced-motion: reduce)',
       media: query,
       onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
     }));
 
     Object.defineProperty(window, 'matchMedia', {
@@ -294,7 +294,7 @@ describe('DisplayTransition', () => {
       value: matchMediaMock,
     });
 
-    const onRest = jest.fn();
+    const onRest = vi.fn();
 
     const { container } = render(
       <DisplayTransition
@@ -323,7 +323,7 @@ describe('DisplayTransition', () => {
 
     // With internal duration of 0, it should transition to entered very quickly
     act(() => {
-      jest.advanceTimersByTime(50);
+      vi.advanceTimersByTime(50);
     });
 
     expect(
@@ -334,7 +334,7 @@ describe('DisplayTransition', () => {
   });
 
   it('should handle rapid toggles and cancel previous timers', () => {
-    const onRest = jest.fn();
+    const onRest = vi.fn();
 
     const { container, rerender } = render(
       <DisplayTransition
@@ -402,7 +402,7 @@ describe('DisplayTransition', () => {
 
     // Complete all transitions
     act(() => {
-      jest.advanceTimersByTime(200);
+      vi.advanceTimersByTime(200);
     });
 
     // Should end in unmounted
@@ -466,7 +466,7 @@ describe('DisplayTransition', () => {
 
     // Advance through the entire exit flow
     act(() => {
-      jest.advanceTimersByTime(200);
+      vi.advanceTimersByTime(200);
     });
 
     // After completing the exit transition, should reach unmounted

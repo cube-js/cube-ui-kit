@@ -448,7 +448,7 @@ describe('Value Mods', () => {
       });
 
       it('should warn when combinator lacks spaces in :has()', () => {
-        const consoleErrorSpy = jest
+        const consoleErrorSpy = vi
           .spyOn(console, 'error')
           .mockImplementation(() => {});
 
@@ -479,7 +479,7 @@ describe('Value Mods', () => {
       });
 
       it('should not warn when combinator has proper spaces in :has()', () => {
-        const consoleErrorSpy = jest
+        const consoleErrorSpy = vi
           .spyOn(console, 'error')
           .mockImplementation(() => {});
 

@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 import { createElement } from 'react';
 
@@ -561,23 +561,23 @@ describe('StyleInjector', () => {
     it('should handle injection failures gracefully', () => {
       // Mock insertRule to throw - we need to mock it properly
       const mockSheet = {
-        insertRule: jest.fn(() => {
+        insertRule: vi.fn(() => {
           throw new Error('Mock injection failure');
         }),
-        deleteRule: jest.fn(),
+        deleteRule: vi.fn(),
         cssRules: [],
       };
 
       const originalCreateElement = document.createElement;
-      document.createElement = jest.fn().mockReturnValue({
+      document.createElement = vi.fn().mockReturnValue({
         sheet: mockSheet,
-        setAttribute: jest.fn(),
+        setAttribute: vi.fn(),
         style: {},
       });
 
       // Mock appendChild to avoid actual DOM manipulation
       const originalAppendChild = document.head.appendChild;
-      document.head.appendChild = jest.fn();
+      document.head.appendChild = vi.fn();
 
       try {
         const result = injector.inject(cssToStyleResults('&{ color: red; }'));

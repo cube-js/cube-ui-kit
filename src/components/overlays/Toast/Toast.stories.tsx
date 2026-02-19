@@ -1,10 +1,11 @@
 import { IconCheck, IconLoader2 } from '@tabler/icons-react';
-import { useRef, useState } from 'react';
+import { ReactNode, useRef, useState } from 'react';
 
 import { CheckIcon } from '../../../icons';
 import { Button } from '../../actions/Button/Button';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
+import { OverlayProvider } from '../Notifications/OverlayProvider';
 
 import { ToastItem } from './ToastItem';
 
@@ -12,9 +13,22 @@ import { Toast, useProgressToast, useToast } from './index';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+// ─── Decorator wrapper (stable reference for HMR) ────────────────────
+
+function WithOverlayProvider({ children }: { children: ReactNode }) {
+  return <OverlayProvider>{children}</OverlayProvider>;
+}
+
 const meta = {
   title: 'Overlays/Toast',
   component: ToastItem,
+  decorators: [
+    (Story) => (
+      <WithOverlayProvider>
+        <Story />
+      </WithOverlayProvider>
+    ),
+  ],
   args: {
     title: 'Toast message',
     theme: 'default',

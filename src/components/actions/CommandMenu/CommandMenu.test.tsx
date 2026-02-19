@@ -2,6 +2,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
+import { MenuContext } from '../Menu/context';
+
 import { CommandMenu } from './CommandMenu';
 
 describe('CommandMenu', () => {
@@ -204,7 +206,7 @@ describe('CommandMenu', () => {
 
   it('triggers action with Enter key', async () => {
     const user = userEvent.setup();
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     render(
       <CommandMenu onAction={onAction as any} {...({} as any)}>
@@ -228,7 +230,7 @@ describe('CommandMenu', () => {
 
   it('supports selection mode when explicitly set', async () => {
     const user = userEvent.setup();
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     render(
       <CommandMenu
@@ -516,7 +518,7 @@ describe('CommandMenu', () => {
 
   it('handles controlled search value', async () => {
     const user = userEvent.setup();
-    const onSearchChange = jest.fn();
+    const onSearchChange = vi.fn();
 
     render(
       <CommandMenu searchValue="test" onSearchChange={onSearchChange}>
@@ -695,7 +697,7 @@ describe('CommandMenu', () => {
   });
 
   it('renders hotkey elements correctly', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { container } = render(
       <CommandMenu onAction={onAction as any} {...({} as any)}>
@@ -724,7 +726,7 @@ describe('CommandMenu', () => {
 
   it('hotkeys work when menu item is clicked directly', async () => {
     const user = userEvent.setup();
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     render(
       <CommandMenu onAction={onAction as any} {...({} as any)}>
@@ -746,7 +748,7 @@ describe('CommandMenu', () => {
 
   it('hotkeys trigger actions through direct mechanism', async () => {
     const user = userEvent.setup();
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     render(
       <CommandMenu onAction={onAction as any} {...({} as any)}>
@@ -782,7 +784,7 @@ describe('CommandMenu', () => {
 
   it('handles multiple selection with string[] selectedKeys', async () => {
     const user = userEvent.setup();
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     // Create a component that properly handles string[] selectedKeys
     const TestComponent = () => {
@@ -847,8 +849,6 @@ describe('CommandMenu', () => {
 
   describe('CommandMenu mods', () => {
     it('should apply popover mod when used with MenuTrigger', () => {
-      const { MenuContext } = require('../Menu/context');
-
       render(
         <MenuContext.Provider value={{ mods: { popover: true } }}>
           <CommandMenu qa="test-command-menu">
@@ -863,8 +863,6 @@ describe('CommandMenu', () => {
     });
 
     it('should apply tray mod when used with MenuTrigger', () => {
-      const { MenuContext } = require('../Menu/context');
-
       render(
         <MenuContext.Provider value={{ mods: { tray: true } }}>
           <CommandMenu qa="test-command-menu">

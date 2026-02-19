@@ -4,9 +4,13 @@ declare global {
       version: string;
     };
   }
+
+  /** Replaced at build time by tsdown `define` */
+  const __UIKIT_VERSION__: string;
 }
 
-export const VERSION = '__UIKIT_VERSION__';
+// eslint-disable-next-line no-undef -- replaced at build time by tsdown `define`
+export const VERSION: string = __UIKIT_VERSION__;
 
 if (typeof window !== 'undefined') {
   const version = VERSION;

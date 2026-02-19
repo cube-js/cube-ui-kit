@@ -4,7 +4,7 @@ import { act, renderWithRoot, userEvent, waitFor } from '../../../test';
 
 import { Tab, Tabs } from './Tabs';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<Tabs />', () => {
   describe('Basic Rendering', () => {
@@ -101,7 +101,7 @@ describe('<Tabs />', () => {
     });
 
     it('should call onChange when tab is selected', async () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       const { getByRole } = renderWithRoot(
         <Tabs defaultActiveKey="tab1" onChange={onChange}>
           <Tab key="tab1" title="Tab 1">
@@ -227,7 +227,7 @@ describe('<Tabs />', () => {
     });
 
     it('should not switch to disabled tab on click', async () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       const { getByRole } = renderWithRoot(
         <Tabs defaultActiveKey="tab1" onChange={onChange}>
           <Tab key="tab1" title="Tab 1">
@@ -314,7 +314,7 @@ describe('<Tabs />', () => {
 
   describe('Delete Functionality', () => {
     it('should show delete button when onDelete is provided', () => {
-      const onDelete = jest.fn();
+      const onDelete = vi.fn();
       const { getByLabelText } = renderWithRoot(
         <Tabs defaultActiveKey="tab1" onDelete={onDelete}>
           <Tab key="tab1" title="Tab 1">
@@ -327,7 +327,7 @@ describe('<Tabs />', () => {
     });
 
     it('should call onDelete when delete button is clicked', async () => {
-      const onDelete = jest.fn();
+      const onDelete = vi.fn();
       const { getByLabelText } = renderWithRoot(
         <Tabs defaultActiveKey="tab1" onDelete={onDelete}>
           <Tab key="tab1" title="Tab 1">
@@ -524,7 +524,7 @@ describe('<Tabs />', () => {
     });
 
     it('should only call renderPanel for active tab (lazy evaluation)', async () => {
-      const renderFn = jest.fn((key) => <div>Content {key}</div>);
+      const renderFn = vi.fn((key) => <div>Content {key}</div>);
 
       const { getByRole } = renderWithRoot(
         <Tabs defaultActiveKey="tab1" renderPanel={renderFn}>
@@ -549,7 +549,7 @@ describe('<Tabs />', () => {
     });
 
     it('should re-render active panel by default (no caching)', async () => {
-      const renderFn = jest.fn((key) => <div>Content {key}</div>);
+      const renderFn = vi.fn((key) => <div>Content {key}</div>);
 
       const { rerender } = renderWithRoot(
         <Tabs keepMounted activeKey="tab1" renderPanel={renderFn}>
@@ -575,7 +575,7 @@ describe('<Tabs />', () => {
     });
 
     it('should cache panel content when panelCacheKeys is provided', async () => {
-      const renderFn = jest.fn((key) => <div>Content {key}</div>);
+      const renderFn = vi.fn((key) => <div>Content {key}</div>);
 
       const { getByRole, rerender } = renderWithRoot(
         <Tabs
@@ -627,7 +627,7 @@ describe('<Tabs />', () => {
     });
 
     it('should invalidate cache when panelCacheKeys change', async () => {
-      const renderFn = jest.fn((key) => <div>Content {key}</div>);
+      const renderFn = vi.fn((key) => <div>Content {key}</div>);
 
       const { rerender } = renderWithRoot(
         <Tabs
@@ -682,7 +682,7 @@ describe('<Tabs />', () => {
     });
 
     it('should work with prerender option', () => {
-      const renderFn = jest.fn((key) => <div>Content {key}</div>);
+      const renderFn = vi.fn((key) => <div>Content {key}</div>);
 
       renderWithRoot(
         <Tabs prerender defaultActiveKey="tab1" renderPanel={renderFn}>
@@ -734,7 +734,7 @@ describe('<Tabs />', () => {
     it('should enter edit mode on double-click when isEditable', async () => {
       const user = userEvent.setup();
       const { getByRole } = renderWithRoot(
-        <Tabs defaultActiveKey="tab1" onTitleChange={jest.fn()}>
+        <Tabs defaultActiveKey="tab1" onTitleChange={vi.fn()}>
           <Tab key="tab1" isEditable title="Tab 1">
             Content 1
           </Tab>
@@ -758,7 +758,7 @@ describe('<Tabs />', () => {
 
     it('should call onTitleChange when Enter is pressed', async () => {
       const user = userEvent.setup();
-      const handleTitleChange = jest.fn();
+      const handleTitleChange = vi.fn();
       const { getByRole } = renderWithRoot(
         <Tabs defaultActiveKey="tab1" onTitleChange={handleTitleChange}>
           <Tab key="tab1" isEditable title="Tab 1">
@@ -790,7 +790,7 @@ describe('<Tabs />', () => {
 
     it('should cancel editing when Escape is pressed', async () => {
       const user = userEvent.setup();
-      const handleTitleChange = jest.fn();
+      const handleTitleChange = vi.fn();
       const { getByRole, queryByRole } = renderWithRoot(
         <Tabs defaultActiveKey="tab1" onTitleChange={handleTitleChange}>
           <Tab key="tab1" isEditable title="Tab 1">
@@ -824,7 +824,7 @@ describe('<Tabs />', () => {
 
     it('should not submit empty title', async () => {
       const user = userEvent.setup();
-      const handleTitleChange = jest.fn();
+      const handleTitleChange = vi.fn();
       const { getByRole } = renderWithRoot(
         <Tabs defaultActiveKey="tab1" onTitleChange={handleTitleChange}>
           <Tab key="tab1" isEditable title="Tab 1">
@@ -855,7 +855,7 @@ describe('<Tabs />', () => {
 
     it('should trim title on submit', async () => {
       const user = userEvent.setup();
-      const handleTitleChange = jest.fn();
+      const handleTitleChange = vi.fn();
       const { getByRole } = renderWithRoot(
         <Tabs defaultActiveKey="tab1" onTitleChange={handleTitleChange}>
           <Tab key="tab1" isEditable title="Tab 1">

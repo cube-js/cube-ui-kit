@@ -3,7 +3,7 @@ import { createRef } from 'react';
 import { FilterPicker } from '../../../index';
 import { act, renderWithRoot, userEvent, within } from '../../../test';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<FilterPicker />', () => {
   const basicItems = [
@@ -730,7 +730,7 @@ describe('<FilterPicker />', () => {
 
   describe('allowsCustomValue functionality', () => {
     it('should support custom values and display them in trigger', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByRole, getByPlaceholderText, getByText } = renderWithRoot(
         <FilterPicker
@@ -778,7 +778,7 @@ describe('<FilterPicker />', () => {
     });
 
     it('should support custom values in multiple selection mode', async () => {
-      const onSelectionChange = jest.fn();
+      const onSelectionChange = vi.fn();
 
       const { getByRole, getByPlaceholderText, getByText } = renderWithRoot(
         <FilterPicker
@@ -948,7 +948,7 @@ describe('<FilterPicker />', () => {
     });
 
     it('should display correct labels in multiple selection mode with items prop', async () => {
-      const renderSummary = jest.fn(
+      const renderSummary = vi.fn(
         ({ selectedLabels }) => `Selected: ${selectedLabels.join(', ')}`,
       );
 

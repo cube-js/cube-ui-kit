@@ -318,10 +318,10 @@ export function isTestEnvironment(): boolean {
     return true;
   }
 
-  // Check for Jest globals (safely)
+  // Check for test runner globals (safely)
   if (typeof global !== 'undefined') {
     const g = global as any;
-    if (g.jest || g.expect || g.describe || g.it) {
+    if (g.vi || g.jest || g.expect || g.describe || g.it) {
       return true;
     }
   }

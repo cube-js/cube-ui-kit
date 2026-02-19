@@ -8,7 +8,7 @@ import {
 
 import { Radio } from './Radio';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<Radio /> and <RadioGroup />', () => {
   it('should work without form', async () => {
@@ -41,7 +41,7 @@ describe('<Radio /> and <RadioGroup />', () => {
   });
 
   it("Radio shouldn't work without <RadioGroup />", () => {
-    const inst = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const inst = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     expect(() => {
       renderWithRoot(<Radio value="test">test</Radio>);

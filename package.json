@@ -1,52 +1,53 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.113.1",
+  "version": "0.114.0",
   "type": "module",
   "description": "UIKit for Cube Projects",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cube-js/cube-ui-kit.git"
   },
-  "module": "dist/es/index.js",
-  "types": "dist/types/index.d.ts",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "sideEffects": false,
   "packageManager": "pnpm@10.19.0",
   "exports": {
     ".": {
-      "import": "./dist/es/index.js",
-      "types": "./dist/types/index.d.ts"
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     },
     "./tasty/static": {
-      "import": "./dist/es/tasty/static/index.js",
-      "types": "./dist/types/tasty/static/index.d.ts"
+      "import": "./dist/tasty/static/index.js",
+      "types": "./dist/tasty/static/index.d.ts"
     },
     "./tasty/zero": {
-      "import": "./dist/es/tasty/zero/index.js",
-      "types": "./dist/types/tasty/zero/index.d.ts"
+      "import": "./dist/tasty/zero/index.js",
+      "types": "./dist/tasty/zero/index.d.ts"
     },
     "./tasty/zero/babel": {
-      "import": "./dist/es/tasty/zero/babel.js",
-      "types": "./dist/types/tasty/zero/babel.d.ts"
+      "import": "./dist/tasty/zero/babel.js",
+      "types": "./dist/tasty/zero/babel.d.ts"
     },
     "./tasty/zero/next": {
-      "import": "./dist/es/tasty/zero/next.js",
-      "types": "./dist/types/tasty/zero/next.d.ts"
+      "import": "./dist/tasty/zero/next.js",
+      "types": "./dist/tasty/zero/next.d.ts"
     }
   },
   "files": [
     "dist/**/*.js",
+    "dist/**/*.d.ts",
     "dist/**/*.map",
-    "dist/**/*.d.ts"
+    "dist/README.md",
+    "dist/CHANGELOG.md",
+    "dist/tasty.config.ts"
   ],
   "scripts": {
     "start": "pnpm storybook",
-    "build": "npm-run-all clear:dist -p build:* && node scripts/fix-esm-imports.cjs && node scripts/copy-files.cjs && node scripts/add-banner.cjs && node scripts/replace-version.cjs",
-    "build:esm": "tsc -p tsconfig.es.json",
-    "watch": "pnpm build:esm --watch",
-    "test": "jest",
-    "test:no-cache": "jest --no-cache",
-    "test-cover": "jest --coverage",
-    "test-watch": "jest --watch",
+    "build": "tsdown",
+    "watch": "tsdown --watch",
+    "test": "vitest run",
+    "test-cover": "vitest run --coverage",
+    "test-watch": "vitest",
     "prettier": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
     "prettier:fix": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "eslint": "eslint --cache src",
@@ -67,9 +68,6 @@
     "postinstall": "git config blame.ignoreRevsFile .git-blame-ignore-revs",
     "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix"
   },
-  "publishConfig": {
-    "directory": "dist"
-  },
   "keywords": [
     "uikit"
   ],
@@ -81,7 +79,6 @@
   "dependencies": {
     "@babel/helper-plugin-utils": "^7.24.0",
     "@babel/types": "^7.24.0",
-    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@internationalized/date": "^3.10.1",
     "@react-aria/focus": "^3.21.3",
     "@react-aria/i18n": "^3.12.14",
@@ -92,17 +89,12 @@
     "@react-spectrum/utils": "^3.12.10",
     "@react-stately/utils": "^3.11.0",
     "@react-types/shared": "^3.32.1",
-    "@sparticuz/chromium": "^137.0.1",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
-    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
-    "@vitejs/plugin-react": "^4.3.2",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",
     "email-validator": "^2.0.4",
-    "globals": "^16.0.0",
-    "playwright-core": "^1.53.2",
     "prism-react-renderer": "^2.4.1",
     "prismjs": "^1.30.0",
     "react-aria": "^3.45.0",
@@ -113,10 +105,7 @@
     "react-stately": "^3.43.0",
     "react-transition-group": "^4.4.5",
     "react-types": "^0.1.0",
-    "remark-gfm": "^4.0.1",
-    "serve-handler": "^6.1.6",
     "tiny-invariant": "^1.3.3",
-    "typescript-eslint": "^8.31.0",
     "usehooks-ts": "^3.1.0",
     "valid-url": "^1.0.9"
   },
@@ -131,24 +120,21 @@
     "@commitlint/cli": "^17.4.4",
     "@commitlint/config-conventional": "^17.4.4",
     "@eslint/js": "^9.25.1",
-    "@jest/types": "^29.6.3",
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@size-limit/file": "^8.2.4",
     "@size-limit/webpack": "^8.2.4",
     "@size-limit/webpack-why": "^8.2.4",
+    "@sparticuz/chromium": "^137.0.1",
     "@statoscope/cli": "^5.20.1",
     "@storybook/addon-docs": "^10.2.3",
     "@storybook/addon-links": "^10.2.3",
     "@storybook/react-vite": "^10.2.3",
-    "@swc/core": "^1.3.36",
-    "@swc/jest": "^0.2.36",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.7.0",
     "@testing-library/react": "^16.3.0",
-    "@testing-library/react-hooks": "^8.0.1",
     "@testing-library/user-event": "14.6.1",
     "@types/babel__core": "^7.20.5",
     "@types/babel__helper-plugin-utils": "^7.10.3",
-    "@types/jest": "^29.5.12",
     "@types/node": "^22.17.2",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
@@ -158,10 +144,11 @@
     "@typescript-eslint/eslint-plugin": "^8.31.0",
     "@typescript-eslint/parser": "^8.31.0",
     "@uiw/react-codemirror": "^4.25.4",
+    "@vitejs/plugin-react": "^4.3.2",
+    "@vitest/coverage-v8": "^4.0.18",
     "best-effort-json-parser": "^1.2.1",
     "bytes": "^3.1.2",
     "chromatic": "^13.1.4",
-    "cross-env": "^7.0.3",
     "csstype": "^3.1.2",
     "dedent": "^0.7.0",
     "eslint": "^9.25.1",
@@ -172,26 +159,29 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-storybook": "^10.2.3",
+    "globals": "^16.0.0",
     "husky": "^6.0.0",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^10.0.0",
     "markdown-table": "^3.0.3",
-    "node-abort-controller": "^3.1.1",
     "npm-run-all": "^4.1.5",
     "playwright": "^1.53.2",
+    "playwright-core": "^1.53.2",
     "prettier": "^3.2.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router": "^6.22.3",
     "react-test-renderer": "^19.1.1",
+    "remark-gfm": "^4.0.1",
     "rimraf": "^6.0.1",
+    "serve-handler": "^6.1.6",
     "size-limit": "^8.2.6",
     "storybook": "^10.2.3",
     "storybook-addon-turbo-build": "^2.0.1",
-    "swc-loader": "^0.2.6",
+    "tsdown": "^0.20.3",
     "typescript": "^5.6.3",
-    "vite": "^7.1.3"
+    "typescript-eslint": "^8.31.0",
+    "vite": "^7.1.3",
+    "vitest": "^4.0.18"
   },
   "browserslist": [
     "last 2 Chrome versions",

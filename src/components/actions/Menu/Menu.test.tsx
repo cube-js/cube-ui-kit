@@ -20,10 +20,11 @@ import { CommandMenu } from '../CommandMenu';
 import { useAnchoredMenu } from '../use-anchored-menu';
 import { useContextMenu } from '../use-context-menu';
 
+import { MenuContext } from './context';
 import { Menu } from './Menu';
 import { MenuTrigger } from './MenuTrigger';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 // Wrapper for hooks that need EventBusProvider
 const HookWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -53,7 +54,7 @@ describe('<Menu />', () => {
   });
 
   it('should call onAction when menu item is clicked', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByText } = render(
       <Menu id="test-menu" aria-label="Test menu" onAction={onAction}>
@@ -71,7 +72,7 @@ describe('<Menu />', () => {
 
   // Selection mode tests
   it('should work with single selection mode', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByText } = render(
       <Menu
@@ -95,7 +96,7 @@ describe('<Menu />', () => {
   });
 
   it('should work with multiple selection mode', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByText } = render(
       <Menu
@@ -216,7 +217,7 @@ describe('<Menu />', () => {
 
   // Disabled keys tests
   it('should handle disabled keys', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByText } = render(
       <Menu
@@ -475,7 +476,7 @@ describe('<Menu />', () => {
 
   // Keyboard navigation tests
   it('should handle keyboard navigation', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByRole } = renderWithRoot(
       <Menu id="test-menu" aria-label="Test menu" onAction={onAction}>
@@ -606,7 +607,7 @@ describe('<Menu />', () => {
   });
 
   it('should handle onClose callback', () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
 
     render(
       <Menu id="test-menu" aria-label="Test menu" onClose={onClose}>
@@ -671,8 +672,8 @@ describe('<Menu />', () => {
 
   // Combined functionality tests
   it('should handle both selection and action modes', async () => {
-    const onAction = jest.fn();
-    const onSelectionChange = jest.fn();
+    const onAction = vi.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByText } = render(
       <Menu
@@ -735,7 +736,7 @@ describe('<Menu />', () => {
 
   // Controlled state tests
   it('should handle selection changes with controlled state', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByText, rerender, getByRole } = render(
       <Menu
@@ -776,7 +777,7 @@ describe('<Menu />', () => {
   });
 
   it('should handle multiple selection with controlled state', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByText, rerender, getByRole } = render(
       <Menu
@@ -931,7 +932,7 @@ describe('<Menu />', () => {
 
   // Test deselection in multiple selection mode
   it('should handle deselection in multiple selection mode', async () => {
-    const onSelectionChange = jest.fn();
+    const onSelectionChange = vi.fn();
 
     const { getByText } = render(
       <Menu
@@ -1036,8 +1037,6 @@ describe('<Menu />', () => {
 
 describe('Menu popover mod', () => {
   it('should apply popover mod when context provides it', () => {
-    const { MenuContext } = require('./context');
-
     const { container } = render(
       <MenuContext.Provider value={{ mods: { popover: true } }}>
         <Menu aria-label="Test menu">
@@ -1064,8 +1063,6 @@ describe('Menu popover mod', () => {
   });
 
   it('should not apply popover mod when context provides false', () => {
-    const { MenuContext } = require('./context');
-
     const { container } = render(
       <MenuContext.Provider value={{ mods: { popover: false } }}>
         <Menu aria-label="Test menu">
@@ -1183,7 +1180,7 @@ describe('useAnchoredMenu', () => {
   });
 
   it('should render menu when opened with Menu component', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole, getByText } = renderWithRoot(
       <TestWrapper
@@ -1213,7 +1210,7 @@ describe('useAnchoredMenu', () => {
   });
 
   it('should render CommandMenu when opened with CommandMenu component', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole, getByText, getByPlaceholderText } =
       renderWithRoot(
@@ -1245,7 +1242,7 @@ describe('useAnchoredMenu', () => {
   });
 
   it('should close menu when close function is called', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole, queryByRole } = renderWithRoot(
       <TestWrapper
@@ -1277,7 +1274,7 @@ describe('useAnchoredMenu', () => {
   });
 
   it('should handle menu item actions correctly', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByText } = renderWithRoot(
       <TestWrapper
@@ -1303,7 +1300,7 @@ describe('useAnchoredMenu', () => {
   });
 
   it('should pass trigger props to MenuTrigger', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole } = renderWithRoot(
       <TestWrapper
@@ -1330,7 +1327,7 @@ describe('useAnchoredMenu', () => {
   });
 
   it('should merge default trigger props with runtime trigger props', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole } = renderWithRoot(
       <TestWrapper
@@ -1357,8 +1354,8 @@ describe('useAnchoredMenu', () => {
   });
 
   it('should update component props when opened multiple times', async () => {
-    const onAction1 = jest.fn();
-    const onAction2 = jest.fn();
+    const onAction1 = vi.fn();
+    const onAction2 = vi.fn();
 
     // Custom wrapper to test multiple opens with different props
     const MultiOpenWrapper = () => {
@@ -1416,7 +1413,7 @@ describe('useAnchoredMenu', () => {
   });
 
   it('should handle CommandMenu search functionality', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByPlaceholderText, getByText, queryByText } =
       renderWithRoot(
@@ -1487,7 +1484,7 @@ describe('useAnchoredMenu', () => {
   });
 
   it('should work with custom MenuTrigger placement', async () => {
-    const onAction = jest.fn();
+    const onAction = vi.fn();
 
     const { getByTestId, getByRole } = renderWithRoot(
       <TestWrapper

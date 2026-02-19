@@ -7,7 +7,7 @@ import { ToastItem } from './ToastItem';
 
 import { Toast, useProgressToast, useToast } from './index';
 
-jest.mock('../../../_internal/hooks/use-warn');
+vi.mock('../../../_internal/hooks/use-warn');
 
 describe('Toast', () => {
   describe('ToastItem', () => {

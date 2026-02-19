@@ -7,7 +7,7 @@ const reportFolder = process.env.REPORT_FOLDER ?? './size-limit-report';
 module.exports = [
   {
     name: 'All',
-    path: './dist/es/index.js',
+    path: './dist/index.js',
     webpack: true,
     import: '*',
     modifyWebpackConfig: (webpackConfig) => {
@@ -20,18 +20,18 @@ module.exports = [
         }),
       );
     },
-    limit: '395kB',
+    limit: '370kB',
   },
   {
     name: 'Tree shaking (just a Button)',
-    path: './dist/es/index.js',
+    path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
     limit: '62kB',
   },
   {
     name: 'Tree shaking (just tasty)',
-    path: './dist/es/index.js',
+    path: './dist/index.js',
     webpack: true,
     import: '{ tasty }',
     limit: '38kB',

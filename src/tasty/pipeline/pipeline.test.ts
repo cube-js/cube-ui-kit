@@ -1180,7 +1180,7 @@ describe('Sub-element selector affix ($) tests', () => {
     });
 
     it('should warn and skip invalid standalone + selector', () => {
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const styles = {
         Item: {
@@ -1200,7 +1200,7 @@ describe('Sub-element selector affix ($) tests', () => {
     });
 
     it('should warn and skip invalid standalone ~ selector', () => {
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const styles = {
         Item: {
@@ -1219,7 +1219,7 @@ describe('Sub-element selector affix ($) tests', () => {
     });
 
     it('should warn and skip +Element pattern (targets outside root)', () => {
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const styles = {
         Next: {
@@ -1238,7 +1238,7 @@ describe('Sub-element selector affix ($) tests', () => {
     });
 
     it('should warn and skip ~Element pattern (targets outside root)', () => {
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const styles = {
         Other: {
@@ -1257,7 +1257,7 @@ describe('Sub-element selector affix ($) tests', () => {
     });
 
     it('should warn and skip consecutive combinators', () => {
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const styles = {
         Item: {
@@ -1582,7 +1582,7 @@ describe('Sub-element selector affix ($) tests', () => {
 
   describe('Invalid pattern validation', () => {
     it('should warn and skip numeric-only patterns', () => {
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const styles = {
         Label: {
@@ -1601,7 +1601,7 @@ describe('Sub-element selector affix ($) tests', () => {
     });
 
     it('should warn and skip patterns starting with numbers', () => {
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const styles = {
         Label: {
