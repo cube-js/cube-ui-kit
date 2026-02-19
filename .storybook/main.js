@@ -48,10 +48,17 @@ const config = {
   ],
 
   viteFinal(config) {
-    config.plugins = [
-      ...(config.plugins ?? []),
-      react({ jsxRuntime: 'automatic' }),
-    ];
+    const REACT_PLUGIN_NAMES = ['vite:react-babel', 'vite:react-refresh'];
+    const existingPlugins = (config.plugins ?? [])
+      .flat()
+      .filter(
+        (p) =>
+          p &&
+          typeof p === 'object' &&
+          !REACT_PLUGIN_NAMES.includes(/** @type {any} */ (p).name),
+      );
+
+    config.plugins = [...existingPlugins, react({ jsxRuntime: 'automatic' })];
 
     config.define = {
       ...config.define,
