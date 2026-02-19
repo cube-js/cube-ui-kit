@@ -146,6 +146,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   preset: 't3',
   flexGrow: 1,
   margin: {
+    '': 0,
     multiline: '((($size-md - 1lh) / 2) - 1bw) 0',
     'multiline & size=small': '((($size-sm - 1lh) / 2) - 1bw) 0',
     'multiline & size=large': '((($size-lg - 1lh) / 2) - 1bw) 0',
