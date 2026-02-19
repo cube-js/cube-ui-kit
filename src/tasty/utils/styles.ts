@@ -35,7 +35,7 @@ export function normalizeColorTokenValue<T>(
 }
 
 export type StyleValueStateMap<T = string> = {
-  [key: string]: StyleValue<T>;
+  [key: string]: StyleValue<T> | '@inherit';
 };
 
 /**

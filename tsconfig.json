@@ -19,7 +19,8 @@
     "preserveSymlinks": true,
     "noImplicitAny": false,
     "target": "es2022",
-    "noEmit": true
+    "noEmit": true,
+    "types": ["vitest/globals"]
   },
   "include": ["src/**/*"]
 }

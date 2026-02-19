@@ -50,6 +50,77 @@ const PrimaryButton = tasty(Button, {
 <Button styles={{ fill: '#purple' }}>Click me</Button>
 ```
 
+#### Extending vs. Replacing State Maps
+
+When a style property uses a state map, the merge behavior depends on whether the child provides a `''` (default) key:
+
+- **No `''` key** — extend mode: parent states are preserved, child adds/overrides
+- **Has `''` key** — replace mode: child defines everything from scratch
+
+```jsx live=false
+// Parent has: fill: { '': '#white', hovered: '#blue', disabled: '#gray' }
+
+// ✅ Extend — no '' key, parent states preserved
+const MyButton = tasty(Button, {
+  styles: {
+    fill: {
+      'loading': '#yellow',      // append new state
+      'disabled': '#gray.20',    // override existing state in place
+    },
+  },
+});
+
+// Replace — has '' key, parent states dropped
+const MyButton = tasty(Button, {
+  styles: {
+    fill: {
+      '': '#red',
+      'hovered': '#blue',
+    },
+  },
+});
+```
+
+Use `'@inherit'` to pull a parent state value. In extend mode it repositions the state; in replace mode it cherry-picks it:
+
+```jsx live=false
+// Extend mode: reposition disabled to end (highest CSS priority)
+fill: {
+  'loading': '#yellow',
+  disabled: '@inherit',
+}
+
+// Replace mode: cherry-pick disabled from parent
+fill: {
+  '': '#red',
+  disabled: '@inherit',
+}
+```
+
+Use `null` inside a state map to remove a state, or `false` to block it entirely (tombstone):
+
+```jsx live=false
+fill: { pressed: null }   // removes pressed from the result
+fill: { disabled: false } // tombstone — no CSS for disabled, blocks recipe too
+```
+
+#### Resetting Properties with `null` and `false`
+
+```jsx live=false
+const SimpleButton = tasty(Button, {
+  styles: {
+    fill: null,    // discard parent's fill, let recipe fill in
+    border: false, // no border at all (tombstone — blocks recipe too)
+  },
+});
+```
+
+| Value | Meaning | Recipe fills in? |
+|-------|---------|-----------------|
+| `undefined` | Not provided — parent preserved | N/A |
+| `null` | Intentional unset — parent discarded | Yes |
+| `false` | Tombstone — blocks everything | No |
+
 ### Essential Patterns
 
 ```jsx
