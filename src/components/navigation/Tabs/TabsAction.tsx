@@ -76,7 +76,7 @@ export const TabsAction = forwardRef(function TabsAction(
   props: CubeTabsActionProps,
   ref: FocusableRef<HTMLElement>,
 ) {
-  const { size, mods, ...rest } = props;
+  const { size, mods, type, ...rest } = props;
 
   // Get size and type from context if available (when used inside Tabs)
   const tabsContext = useOptionalTabsContext();
@@ -94,7 +94,7 @@ export const TabsAction = forwardRef(function TabsAction(
   return (
     <TabsActionElement
       ref={ref}
-      type={tabsType === 'default' ? 'outline' : 'neutral'}
+      type={type ?? (tabsType === 'default' ? 'outline' : 'neutral')}
       size={effectiveSize}
       mods={combinedMods}
       {...rest}
