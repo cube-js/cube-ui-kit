@@ -339,8 +339,8 @@ export const WithPrefixAndSuffix: Story = {
     <Tabs
       {...args}
       defaultActiveKey="tab1"
-      prefix={<Tabs.Action size="small">Menu</Tabs.Action>}
-      suffix={<Tabs.Action size="small">Add New</Tabs.Action>}
+      prefix={<Tabs.Action>Menu</Tabs.Action>}
+      suffix={<Tabs.Action>Add New</Tabs.Action>}
     >
       <Tab key="tab1" title="Items">
         <Paragraph>List of items here.</Paragraph>

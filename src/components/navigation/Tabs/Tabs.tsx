@@ -168,7 +168,8 @@ function TabsComponent(
 
   // Build TabList padding style (memoized)
   const tabListPaddingStyles = useMemo(
-    () => (tabListPadding ? { padding: `0 ${tabListPadding}` } : undefined),
+    () =>
+      tabListPadding ? { '$tablist-padding': `${tabListPadding}` } : undefined,
     [tabListPadding],
   );
 

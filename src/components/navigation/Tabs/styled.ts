@@ -52,7 +52,7 @@ export const TabsElement = tasty({
       placeSelf: 'stretch',
       padding: {
         '': 0,
-        'type=default': '.5x',
+        'type=default': '.5x 0 .5x 1x',
       },
       gap: {
         '': 0,
@@ -73,7 +73,7 @@ export const TabsElement = tasty({
       placeSelf: 'stretch',
       padding: {
         '': 0,
-        'type=default': '.5x',
+        'type=default': '.5x 1x .5x 0',
       },
       gap: {
         '': 0,
@@ -155,6 +155,12 @@ export const TabsElement = tasty({
       width: {
         '': 'max-content',
         'type=radio': '100%',
+      },
+      padding: '0 $tablist-padding',
+
+      '$tablist-padding': {
+        '': '0',
+        'type=default | type=narrow': '1x',
       },
     },
 
