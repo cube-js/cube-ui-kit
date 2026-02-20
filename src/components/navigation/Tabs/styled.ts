@@ -50,6 +50,14 @@ export const TabsElement = tasty({
       placeContent: 'center',
       flexShrink: 0,
       placeSelf: 'stretch',
+      padding: {
+        '': 0,
+        'type=default': '.5x',
+      },
+      gap: {
+        '': 0,
+        'type=default': '.5x',
+      },
       border: {
         '': 0,
         'type=file': 'right',
@@ -63,6 +71,14 @@ export const TabsElement = tasty({
       placeContent: 'center',
       flexShrink: 0,
       placeSelf: 'stretch',
+      padding: {
+        '': 0,
+        'type=default': '.5x',
+      },
+      gap: {
+        '': 0,
+        'type=default': '.5x',
+      },
       border: {
         '': 0,
         'type=file': 'left',
@@ -181,17 +197,18 @@ export const TabElement = tasty(Item, {
   styles: {
     radius: {
       '': false,
-      'type=radio': true,
-      'type=default | type=narrow': 'top',
+      'type=radio | type=default': true,
+      'type=narrow': 'top',
     },
     color: {
       '': '#dark-02',
-      '(type=default | type=narrow) & (hovered & !selected)': '#primary-text',
+      'type=narrow & (hovered & !selected)': '#primary-text',
       '(type=default | type=narrow) & selected': '#primary-text',
       disabled: '#dark-04',
     },
     fill: {
       '': '#clear',
+      'hovered & !type=narrow': '#dark.03',
       'type=file': '#light',
       'type=file & hovered': '#light.5',
       'type=radio & hovered': '#white.5',
@@ -252,6 +269,10 @@ export const TabContainer = tasty({
   styles: {
     position: 'relative',
     display: 'grid',
+    margin: {
+      '': 0,
+      'type=default': '.5x 0',
+    },
     border: {
       '': 0,
       'type=file': 'right',

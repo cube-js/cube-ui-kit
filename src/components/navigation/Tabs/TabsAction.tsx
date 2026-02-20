@@ -29,12 +29,13 @@ export interface CubeTabsActionProps
 // =============================================================================
 
 const TabsActionElement = tasty(ItemButton, {
-  shape: 'sharp',
-  type: 'neutral',
   styles: {
     border: {
-      '': 0,
-      'tabs-type-file & !:first-child': 'left',
+      'type=neutral': 0,
+      'type=neutral & tabs-type-file & !:first-child': 'left',
+    },
+    radius: {
+      'type=neutral': 0,
     },
   },
 });
@@ -93,6 +94,7 @@ export const TabsAction = forwardRef(function TabsAction(
   return (
     <TabsActionElement
       ref={ref}
+      type={tabsType === 'default' ? 'outline' : 'neutral'}
       size={effectiveSize}
       mods={combinedMods}
       {...rest}
