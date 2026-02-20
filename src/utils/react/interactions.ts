@@ -6,6 +6,14 @@ export function useFocus(
   onlyVisible = false,
 ) {
   let [isFocused, setIsFocused] = useState(false);
+
+  // React-aria detaches focus handlers when disabled, so blur events
+  // aren't captured. Clear stale focus synchronously during render
+  // to avoid a one-frame glitch (useEffect would be too late).
+  if (isDisabled && isFocused) {
+    setIsFocused(false);
+  }
+
   let { isFocusVisible } = useFocusVisible({});
   let { focusProps } = reactAriaUseFocus({
     isDisabled,
@@ -14,7 +22,6 @@ export function useFocus(
 
   return {
     focusProps,
-    isFocused:
-      !isDisabled && isFocused && (onlyVisible ? isFocusVisible : true),
+    isFocused: isFocused && (onlyVisible ? isFocusVisible : true),
   };
 }
