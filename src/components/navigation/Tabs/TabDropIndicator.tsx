@@ -35,7 +35,6 @@ export function TabDropIndicator({
   position,
 }: TabDropIndicatorProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const prevContentRef = useRef<string | null>(null);
   const [, setTick] = useState(0);
 
   const { dropIndicatorProps, isHidden, isDropTarget } = useDropIndicator(
@@ -44,7 +43,7 @@ export function TabDropIndicator({
     ref,
   );
 
-  // Re-evaluate drop target registration when tab content changes.
+  // Re-evaluate drop target registration when tab layout changes.
   // Active only while the indicator is rendered in the DOM (during drags).
   useEffect(() => {
     const element = ref.current;
@@ -53,22 +52,11 @@ export function TabDropIndicator({
     const tabList = element.closest('[data-element="TabList"]');
     if (!tabList) return;
 
-    prevContentRef.current = tabList.textContent;
-
-    const observer = new MutationObserver(() => {
-      const currentContent = tabList.textContent;
-
-      if (currentContent !== prevContentRef.current) {
-        prevContentRef.current = currentContent;
-        setTick((n) => n + 1);
-      }
+    const observer = new ResizeObserver(() => {
+      setTick((n) => n + 1);
     });
 
-    observer.observe(tabList, {
-      subtree: true,
-      characterData: true,
-      childList: true,
-    });
+    observer.observe(tabList);
 
     return () => observer.disconnect();
   }, [isHidden]);
