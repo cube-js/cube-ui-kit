@@ -330,8 +330,8 @@ export function GlobalStyles(props: GlobalStylesProps) {
     return `
   html {
     overscroll-behavior-y: none;
-    --font: ${fontValue}-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-    --monospace-font: ${monospaceFontValue}Menlo, Monaco, Consolas, 'Courier New', monospace;
+    --font: ${fontValue}system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    --monospace-font: ${monospaceFontValue}ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   }
 ${STATIC_CSS}`;
   }, [font, monospaceFont]);
