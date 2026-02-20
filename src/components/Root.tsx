@@ -52,7 +52,6 @@ configure({
       },
     },
     input: {
-      '@autofill': ':-webkit-autofill',
       appearance: 'none',
       wordSpacing: 'initial',
       color: 'inherit',
@@ -61,17 +60,20 @@ configure({
     'input-autofill': {
       '-webkit-text-fill-color': {
         '': 'currentColor',
-        '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
+        ':-webkit-autofill | (:-webkit-autofill & :hover) | (:-webkit-autofill & :focus)':
+          '#primary',
       },
       caretColor: {
-        '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
+        ':-webkit-autofill | (:-webkit-autofill & :hover) | (:-webkit-autofill & :focus)':
+          '#primary',
       },
       shadow: {
-        '@autofill | (@autofill & :hover) | (@autofill & :focus)':
+        ':-webkit-autofill | (:-webkit-autofill & :hover) | (:-webkit-autofill & :focus)':
           '0 0 0 9999rem rgb(255 255 255) inset',
       },
       preset: {
-        '@autofill | (@autofill & :hover) | (@autofill & :focus)': 'inherit',
+        ':-webkit-autofill | (:-webkit-autofill & :hover) | (:-webkit-autofill & :focus)':
+          'inherit',
       },
       '-webkit-opacity': {
         '': false,
