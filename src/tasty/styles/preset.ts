@@ -137,10 +137,14 @@ export function presetStyle({
 
     mods = mods.filter(
       (mod) =>
-        mod !== 'bold' && mod !== 'italic' && mod !== 'icon' && mod !== 'tight',
+        mod !== 'strong' &&
+        mod !== 'bold' &&
+        mod !== 'italic' &&
+        mod !== 'icon' &&
+        mod !== 'tight',
     );
 
-    const name = mods[0] || 'default';
+    const name = mods[0] || 'inherit';
 
     // Set preset values for properties not explicitly overridden
     if (fontSize == null) {

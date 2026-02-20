@@ -90,6 +90,7 @@ export type {
   Tokens,
   TokenValue,
   TastyExtensionConfig,
+  TastyThemeNames,
 } from './types';
 export type {
   StylesInterface,
@@ -100,4 +101,6 @@ export type {
   Selector,
   SuffixForSelector,
   NotSelector,
+  TastyNamedColors,
+  TastyPresetNames,
 } from './styles/types';

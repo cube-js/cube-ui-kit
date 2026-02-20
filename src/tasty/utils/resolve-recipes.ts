@@ -5,7 +5,12 @@
  * from global configuration and merging them with the component's own styles.
  *
  * Resolution order per level (top-level and each sub-element independently):
- * recipe_1 → recipe_2 → ... → component styles (without recipe key)
+ * base_recipe_1 base_recipe_2 → component styles → post_recipe_1 post_recipe_2
+ *
+ * The `|` separator splits base recipes (before component styles)
+ * from post recipes (after component styles). All merges use mergeStyles
+ * semantics: primitives and state maps with '' key fully replace;
+ * state maps without '' key extend the existing value.
  *
  * Returns the same object reference if no recipes are present (zero overhead).
  */
@@ -15,46 +20,61 @@ import { isSelector } from '../pipeline';
 import { RecipeStyles, Styles } from '../styles/types';
 
 import { isDevEnv } from './is-dev-env';
+import { mergeStyles } from './merge-styles';
 
 const devMode = isDevEnv();
 
-/**
- * Parse a recipe string into an array of trimmed recipe names.
- * Returns null if the string is empty or only whitespace.
- */
-function parseRecipeNames(value: unknown): string[] | null {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  if (trimmed === '') return null;
+interface ParsedRecipeGroups {
+  base: string[] | null;
+  post: string[] | null;
+}
 
-  const names = trimmed
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
+/**
+ * Parse a recipe string into base and post recipe name groups.
+ *
+ * Syntax: `'base1 base2 | post1 post2'`
+ * - Names are space-separated within each group
+ * - `|` separates base (before component) from post (after component) groups
+ * - `|` is optional; if absent, all names are base
+ *
+ * Returns `{ base: null, post: null }` if the string is empty or invalid.
+ */
+function parseRecipeNames(value: unknown): ParsedRecipeGroups {
+  const empty: ParsedRecipeGroups = { base: null, post: null };
+
+  if (typeof value !== 'string') return empty;
+  const trimmed = value.trim();
+  if (trimmed === '') return empty;
+
+  const pipeIndex = trimmed.indexOf('|');
+
+  if (pipeIndex === -1) {
+    const names = splitNames(trimmed);
+    return { base: names, post: null };
+  }
+
+  const basePart = trimmed.slice(0, pipeIndex);
+  const postPart = trimmed.slice(pipeIndex + 1);
+
+  return {
+    base: splitNames(basePart),
+    post: splitNames(postPart),
+  };
+}
+
+function splitNames(s: string): string[] | null {
+  const names = s.split(/\s+/).filter(Boolean);
   return names.length > 0 ? names : null;
 }
 
 /**
- * Resolve recipe references in a flat styles object (no sub-elements).
- * Returns the original object if no `recipe` key is present.
+ * Collect merged styles for a list of recipe names.
+ * Each recipe is flat-spread on top of the previous.
  */
-function resolveRecipesForLevel(
-  styles: Record<string, unknown>,
+function collectRecipeStyles(
+  names: string[],
   recipes: Record<string, RecipeStyles>,
-): Record<string, unknown> | null {
-  if (!('recipe' in styles)) return null;
-
-  const names = parseRecipeNames(styles.recipe);
-
-  // Remove recipe key from the rest of styles
-  const { recipe: _recipe, ...restStyles } = styles;
-
-  if (!names) {
-    // recipe: '' or invalid value -- just remove the recipe key
-    return restStyles;
-  }
-
-  // Merge recipes in order, then component styles on top
+): Record<string, unknown> {
   let merged: Record<string, unknown> = {};
 
   for (const name of names) {
@@ -73,8 +93,70 @@ function resolveRecipesForLevel(
     merged = { ...merged, ...(recipeStyles as Record<string, unknown>) };
   }
 
-  // Component styles override recipe values
-  return { ...merged, ...restStyles };
+  return merged;
+}
+
+/**
+ * Resolve recipe references in a flat styles object (no sub-elements).
+ * Returns null if no `recipe` key is present.
+ *
+ * Resolution: base recipes → component styles → post recipes (all via mergeStyles)
+ */
+function resolveRecipesForLevel(
+  styles: Record<string, unknown>,
+  recipes: Record<string, RecipeStyles>,
+): Record<string, unknown> | null {
+  if (!('recipe' in styles)) return null;
+
+  const { base, post } = parseRecipeNames(styles.recipe);
+
+  // Separate selector keys (sub-elements) from flat style properties.
+  // mergeStyles handles selectors with its own semantics (e.g. false = delete),
+  // but at this level we only want recipe merging on flat properties.
+  const { recipe: _recipe, ...allRest } = styles;
+  const flatStyles: Record<string, unknown> = {};
+  const selectorStyles: Record<string, unknown> = {};
+
+  for (const key of Object.keys(allRest)) {
+    if (isSelector(key)) {
+      selectorStyles[key] = allRest[key];
+    } else {
+      flatStyles[key] = allRest[key];
+    }
+  }
+
+  if (!base && !post) {
+    return allRest;
+  }
+
+  // 1. Merge base recipes, then component styles on top (via mergeStyles)
+  let result: Record<string, unknown>;
+
+  if (base) {
+    const baseStyles = collectRecipeStyles(base, recipes);
+    result = mergeStyles(baseStyles as Styles, flatStyles as Styles) as Record<
+      string,
+      unknown
+    >;
+  } else {
+    result = { ...flatStyles };
+  }
+
+  // 2. Apply post recipes via mergeStyles (state map extend semantics)
+  if (post) {
+    const postStyles = collectRecipeStyles(post, recipes);
+    result = mergeStyles(result as Styles, postStyles as Styles) as Record<
+      string,
+      unknown
+    >;
+  }
+
+  // Re-attach selector keys unchanged
+  for (const key of Object.keys(selectorStyles)) {
+    result[key] = selectorStyles[key];
+  }
+
+  return result;
 }
 
 /**

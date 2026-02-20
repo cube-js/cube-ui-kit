@@ -32,10 +32,7 @@ const StyledItem = tasty(Item, {
   type: 'neutral',
   theme: 'default',
   styles: {
-    reset: 'button',
-    appearance: 'none',
-    touchAction: 'manipulation',
-    textDecoration: 'none',
+    recipe: 'reset button',
     placeContent: 'center stretch',
   },
 });

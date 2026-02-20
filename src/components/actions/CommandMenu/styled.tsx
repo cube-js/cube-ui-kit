@@ -35,19 +35,15 @@ export const StyledSearchInput = tasty({
   qa: 'SearchInput',
   as: 'input',
   styles: {
+    recipe: 'reset input | input-autofill',
     display: 'grid',
     width: '100%',
     color: '#dark',
-    fill: '#clear',
     border: '#border bottom',
-    outline: 'none',
     transition: 'theme',
     radius: 0,
     textAlign: 'left',
-    reset: 'input',
     preset: 't3',
-    margin: 0,
-    boxSizing: 'border-box',
     userSelect: 'auto',
     height: '($size + 1x)',
     padding: {
@@ -60,6 +56,14 @@ export const StyledSearchInput = tasty({
       'size=small': '$size-sm',
       'size=medium': '$size-md',
       'size=large': '$size-lg',
+    },
+
+    Placeholder: {
+      $: '::placeholder',
+      recipe: 'input-placeholder',
+    },
+    '&::-webkit-search-cancel-button': {
+      recipe: 'input-search-cancel-button',
     },
   },
 });

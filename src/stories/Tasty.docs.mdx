@@ -291,10 +291,10 @@ const Card = tasty({
   },
 });
 
-// Compose multiple recipes (merged in order)
+// Compose multiple recipes (merged in order, space-separated)
 const ElevatedCard = tasty({
   styles: {
-    recipe: 'card, elevated',
+    recipe: 'card elevated',
     color: '#text',
   },
 });
@@ -311,11 +311,31 @@ const Panel = tasty({
 });
 ```
 
-**Merging order:** `recipe_1 → recipe_2 → ... → component styles`. Later recipes override earlier ones, and component styles always win.
+**Merging order:** `base_recipe_1 base_recipe_2 → component styles → post_recipe_1 post_recipe_2`. All merges use `mergeStyles` semantics: primitives and state maps with a `''` key fully replace; state maps without `''` extend the existing value.
+
+**Post-merge recipes (`|` separator):**
+
+Recipes listed after `|` are applied *after* component styles using `mergeStyles`, allowing recipe state maps to extend component values instead of being overridden by them:
+
+```jsx
+const Input = tasty({
+  styles: {
+    recipe: 'reset input | input-autofill',
+    preset: 't3',
+    //       ^^^^^^^^^^   ^^^^^^^^^^^^^^^
+    //       base group    post group
+  },
+});
+// Result: preset becomes { '': 't3', ':-webkit-autofill': 'inherit' }
+// The post recipe's state map extends the component's primitive value.
+```
 
 **Key rules:**
-- Recipes are flat styles -- they cannot contain sub-element keys
-- Recipes cannot reference other recipes -- for composition, list multiple recipes: `recipe: 'card, elevated, rounded'`
+- Recipe names are space-separated within each group
+- `|` separates base (before component styles) from post (after component styles) groups
+- `|` is optional — if absent, all recipes are base
+- Recipes are flat styles — they cannot contain sub-element keys
+- Recipes cannot reference other recipes — for composition, list multiple recipes: `recipe: 'card elevated rounded'`
 - Use `recipe: ''` (empty string) to clear recipes when extending a base component
 - Recipes may contain `@keyframes`, `@properties`, and token definitions (`$name`/`#name`)
 
@@ -597,14 +617,17 @@ const ButtonElement = tasty({
 
 ### Recipe
 
-A predefined, named style bundle registered via `configure({ recipes })`. Applied to components via the `recipe` style property. Multiple recipes are composed with commas. Component styles always override recipe values.
+A predefined, named style bundle registered via `configure({ recipes })`. Applied to components via the `recipe` style property. Multiple recipes are space-separated. Base recipes (before `|`) are merged first, then component styles, then post recipes (after `|`). All merges use `mergeStyles` semantics.
 
 ```jsx
 // In config
 recipes: { card: { padding: '4x', fill: '#surface', radius: '1r' } }
 
-// In styles
+// In styles — base recipes (component styles override)
 styles: { recipe: 'card', color: '#text' }
+
+// Post recipes (extend component styles via mergeStyles)
+styles: { recipe: 'reset input | input-autofill', preset: 't3' }
 ```
 
 ### Custom Styles
@@ -1071,7 +1094,7 @@ fade: '2x left right',            // Left/right edges, 2x width
 fade: '1x top',                   // Top edge only
 fade: '3x 1x top bottom',         // Different widths per edge
 
-// Default width: 'var(--fade-width)'
+// Default width: 'calc(2 * var(--gap))'
 // Default edges: top, right, bottom, left (all)
 // Available modifiers: top, right, bottom, left
 // Uses CSS mask with linear gradients and mask-composite: intersect
@@ -1208,7 +1231,7 @@ You can use them anywhere a normal state key is used (including inside sub-eleme
 
 #### Predefined State Aliases (recommended)
 
-If you repeat the same advanced state in many places, define an alias once and reuse it. You can define aliases globally via `configure({ states })`, or locally per component via `tasty({ states: { ... } })`.
+If you repeat the same advanced state in many places, define an alias once and reuse it. You can define aliases globally via `configure({ states })`, locally per component as top-level `@name` keys in the styles object, or scoped to a specific sub-element by defining `@name` inside a sub-element block (see [Scoped Predefined States](#scoped-predefined-states)).
 
 ```jsx
 import { configure, tasty } from '@cube-dev/ui-kit';
@@ -1414,6 +1437,27 @@ styles: {
 
 > **⚠️ Important:** Place more specific rules last - they take precedence.
 
+#### Composing States
+
+Each state in a state key is a **single token**. You cannot concatenate two states into one token — use the `&` operator to combine them:
+
+```jsx
+styles: {
+  '@autofill': ':-webkit-autofill',
+
+  // ❌ Wrong — @autofill:hover is two states written as one token
+  color: { '@autofill:hover': '#blue' },
+
+  // ✅ Correct — use & to compose separate states
+  color: { '(@autofill & :hover)': '#blue' },
+
+  // ✅ Multiple variants with |
+  fill: {
+    '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#white',
+  },
+}
+```
+
 ### Sub-element Styling
 
 Style inner elements using `data-element` attributes:
@@ -1443,6 +1487,33 @@ const Card = tasty({
   <div data-element="Content">Card content</div>
 </Card>
 ```
+
+#### Scoped Predefined States
+
+Predefined states (`@name`) can be defined inside sub-element blocks. They are **scoped** to that sub-element and any deeper nesting — they do not leak to sibling sub-elements or the parent:
+
+```jsx
+styles: {
+  '@shared': ':hover',  // available everywhere
+
+  Label: {
+    '@active': ':focus',                          // scoped to Label only
+    color: { '': '#text', '@active': '#primary' },
+
+    '&::placeholder': {
+      color: { '@active': 'transparent' },        // inherited from Label
+    },
+  },
+
+  Icon: {
+    // ❌ @active is NOT available here — it's scoped to Label
+    // ✅ @shared IS available — defined at the parent level
+    color: { '': '#text', '@shared': '#primary' },
+  },
+}
+```
+
+A sub-element `@name` overrides a same-named parent `@name` within that scope. Parent-level states are always inherited.
 
 #### Selector Affix (`$`)
 

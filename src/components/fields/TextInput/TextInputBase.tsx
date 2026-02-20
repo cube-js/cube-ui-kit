@@ -136,16 +136,13 @@ const InputWrapperElement = tasty({
 const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
+  recipe: 'reset input | input-autofill',
   placeSelf: 'stretch',
   width: 'initial 100% 100%',
-  color: 'inherit',
-  fill: '#clear',
-  border: 0,
   transition: 'theme',
   radius: true,
   padding: '$vertical-padding $right-padding $vertical-padding $left-padding',
   textAlign: 'left',
-  reset: 'input',
   preset: 't3',
   flexGrow: 1,
   margin: {
@@ -155,9 +152,15 @@ export const DEFAULT_INPUT_STYLES: Styles = {
     'multiline & size=large': '((($size-lg - 1lh) / 2) - 1bw) 0',
   },
   resize: 'none',
-  boxSizing: 'border-box',
   userSelect: 'auto',
-  outline: 0,
+
+  Placeholder: {
+    $: '::placeholder',
+    recipe: 'input-placeholder',
+  },
+  '&::-webkit-search-cancel-button': {
+    recipe: 'input-search-cancel-button',
+  },
 
   '$vertical-padding': 0,
   '$left-padding': {

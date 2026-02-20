@@ -210,9 +210,9 @@ export interface TastyConfig {
    * Recipe values are flat tasty styles (no sub-element keys). They may contain base styles,
    * tokens (`$name`/`#name` definitions), local states, `@keyframes`, and `@properties`.
    *
-   * Components reference recipes via: `recipe: 'name1, name2'` in their styles.
-   * Recipes are resolved before the style pipeline by merging in order:
-   * `recipe_1 → recipe_2 → ... → component styles`.
+   * Components reference recipes via: `recipe: 'name1 name2'` in their styles.
+   * Use `|` to separate base recipes from post recipes: `recipe: 'base1 base2 | post1'`.
+   * Resolution order: `base_recipes → component styles → post_recipes`.
    *
    * Recipes cannot reference other recipes.
    *
@@ -228,7 +228,7 @@ export interface TastyConfig {
    * // Usage in styles:
    * const Card = tasty({
    *   styles: {
-   *     recipe: 'card, elevated',
+   *     recipe: 'card elevated',
    *     color: '#text', // Overrides recipe values
    *   },
    * });
@@ -275,6 +275,9 @@ let globalRecipes: Record<string, RecipeStyles> | null = null;
  * Internal properties required by tasty core features.
  * These are always injected when styles are first generated.
  * Keys use tasty token syntax (#name for colors, $name for other properties).
+ *
+ * For properties with CSS @property-compatible types (length, time, number, color),
+ * an `initialValue` is provided so the property works even without a project-level token.
  */
 export const INTERNAL_PROPERTIES: Record<string, PropertyDefinition> = {
   // Used by dual-fill feature to enable CSS transitions on the second fill color
@@ -298,6 +301,64 @@ export const INTERNAL_PROPERTIES: Record<string, PropertyDefinition> = {
     inherits: true,
     initialValue: 'rgb(0 0 0)',
   },
+
+  // ---- Core design tokens used by style handlers ----
+  // These provide sensible defaults so tasty works standalone without a design system.
+  // Consuming projects (e.g. uikit) override these by defining tokens on :root.
+
+  $gap: {
+    syntax: '<length>',
+    inherits: true,
+    initialValue: '4px',
+  },
+  $radius: {
+    syntax: '<length>',
+    inherits: true,
+    initialValue: '6px',
+  },
+  '$border-width': {
+    syntax: '<length>',
+    inherits: true,
+    initialValue: '1px',
+  },
+  '$outline-width': {
+    syntax: '<length>',
+    inherits: true,
+    initialValue: '3px',
+  },
+  $transition: {
+    syntax: '<time>',
+    inherits: true,
+    initialValue: '80ms',
+  },
+  // Used by radius.ts for `radius="leaf"` modifier
+  '$sharp-radius': {
+    syntax: '<length>',
+    inherits: true,
+    initialValue: '0px',
+  },
+  // Used by preset.ts for `preset="... strong"`
+  '$bold-font-weight': {
+    syntax: '<number>',
+    inherits: true,
+    initialValue: '700',
+  },
+};
+
+/**
+ * Internal token defaults that cannot be expressed as CSS @property initial values
+ * (e.g. font stacks, keyword colors). These are injected as :root CSS variables.
+ * Consuming projects override them by setting their own tokens on :root.
+ *
+ * Keys are raw CSS custom property names (--name).
+ */
+export const INTERNAL_TOKENS: Record<string, string> = {
+  '--font':
+    'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif',
+  '--monospace-font':
+    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+  // Default border color to the element's current text color
+  '--border-color': 'currentColor',
 };
 
 // Global injector instance key
@@ -380,6 +441,17 @@ export function markStylesGenerated(): void {
   // Inject internal properties required by tasty core features
   for (const [token, definition] of Object.entries(INTERNAL_PROPERTIES)) {
     injector.property(token, definition);
+  }
+
+  // Inject internal token defaults as :root CSS variables.
+  // Use injectGlobal (not injectRawCSS) so the rule goes through the same
+  // injection path as all other tasty styles (consistent in both DOM and text/test mode).
+  const internalTokenEntries = Object.entries(INTERNAL_TOKENS);
+  if (internalTokenEntries.length > 0) {
+    const declarations = internalTokenEntries
+      .map(([name, value]) => `${name}: ${value}`)
+      .join('; ');
+    injector.injectGlobal([{ selector: ':root', declarations }]);
   }
 
   // Inject global properties if any were configured
@@ -534,7 +606,7 @@ function setGlobalRecipes(recipes: Record<string, RecipeStyles>): void {
             `recipe-recursive-${name}`,
             `[Tasty] Recipe "${name}" contains a "recipe" key. ` +
               `Recipes cannot reference other recipes. ` +
-              `Use comma-separated names for composition: recipe: 'base, elevated'.`,
+              `Use space-separated names for composition: recipe: 'base elevated'.`,
           );
         }
       }

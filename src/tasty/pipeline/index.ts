@@ -15,7 +15,11 @@
  */
 
 import { Lru } from '../parser/lru';
-import { createStateParserContext, StateParserContext } from '../states';
+import {
+  createStateParserContext,
+  extractLocalPredefinedStates,
+  StateParserContext,
+} from '../states';
 import { createStyle, STYLE_HANDLER_MAP } from '../styles';
 import { Styles } from '../styles/types';
 import { stringifyStyles, StyleHandler, StyleValue } from '../utils/styles';
@@ -223,14 +227,19 @@ function processStyles(
     const suffixes = getAllSelectors(key, nestedStyles);
     if (!suffixes) continue; // Invalid selector, skip
 
-    // Create sub-element context for @own() validation
+    // Remove $ from nested styles
+    const { $: _omit, ...cleanedStyles } = nestedStyles;
+
+    // Extract local predefined states scoped to this sub-element
+    const subLocalStates = extractLocalPredefinedStates(cleanedStyles);
+    const hasSubStates = Object.keys(subLocalStates).length > 0;
     const subContext: StateParserContext = {
       ...parserContext,
       isSubElement: true,
+      localPredefinedStates: hasSubStates
+        ? { ...parserContext.localPredefinedStates, ...subLocalStates }
+        : parserContext.localPredefinedStates,
     };
-
-    // Remove $ from nested styles
-    const { $: _omit, ...cleanedStyles } = nestedStyles;
 
     // Process for each selector (multiple selectors = same styles applied to each)
     for (const suffix of suffixes) {

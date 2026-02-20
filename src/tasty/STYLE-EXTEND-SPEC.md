@@ -394,10 +394,20 @@ else:
 
 ### `resolveRecipes` changes
 
-No changes needed. The existing merge order `{ ...recipeValues, ...componentValues }` handles both cases naturally:
+The recipe string now supports a `|` separator that splits recipes into **base** and **post** groups:
+
+```
+recipe: 'base1 base2 | post1 post2'
+```
+
+**Base recipes** (left of `|`) are merged with component styles via `mergeStyles`. Primitives and state maps with a `''` key fully replace recipe values. This handles both cases naturally:
 
 - Properties deleted (via `null`) are absent from `componentValues`, so recipe values fill in.
 - Properties set to `false` remain in `componentValues` and overwrite recipe values.
+
+**Post recipes** (right of `|`) are applied after component styles using `mergeStyles`. This enables state map extension: a post recipe with `preset: { ':-webkit-autofill': 'inherit' }` extends a component's `preset: 't3'` to `{ '': 't3', ':-webkit-autofill': 'inherit' }` instead of being overridden.
+
+Resolution order: `base_recipe_1 base_recipe_2 → component styles → post_recipe_1 post_recipe_2`.
 
 ---
 

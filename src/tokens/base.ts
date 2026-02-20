@@ -38,11 +38,9 @@ export const BASE_TOKENS: Styles = {
   /** Card border radius */
   '$card-radius': '(1r + .5x)',
   /** Sharp corner for leaf shapes */
-  '$leaf-sharp-radius': '0px',
+  '$sharp-radius': '0px',
 
   // Misc dimensions
-  /** Width of fade effect for overflowing content */
-  '$fade-width': '32px',
   /** Minimum dialog width (responsive) */
   '$min-dialog-size': 'min(288px, calc(100vw - (2 * var(--gap))))',
 

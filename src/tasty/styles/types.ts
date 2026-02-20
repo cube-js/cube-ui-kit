@@ -3,51 +3,47 @@ import { CSSProperties } from 'react';
 import { KeyframesSteps, PropertyDefinition } from '../injector/types';
 import { StyleValue, StyleValueStateMap } from '../utils/styles';
 
-type NamedColor =
-  | 'purple'
-  | 'purple-text'
-  | 'purple-icon'
-  | 'purple-bg'
-  | 'purple-01'
-  | 'purple-02'
-  | 'purple-03'
-  | 'purple-04'
-  | 'dark'
-  | 'dark-01'
-  | 'dark-02'
-  | 'dark-03'
-  | 'dark-04'
-  | 'dark-05'
-  | 'dark-bg'
-  | 'text'
-  | 'primary'
-  | 'disabled'
-  | 'disabled-bg'
-  | 'disabled-text'
-  | 'danger'
-  | 'danger-bg'
-  | 'danger-text'
-  | 'danger-icon'
-  | 'success'
-  | 'success-bg'
-  | 'success-text'
-  | 'success-icon'
-  | 'note'
-  | 'note-bg'
-  | 'note-text'
-  | 'note-icon'
-  | 'white'
-  | 'light'
-  | 'light-grey'
-  | 'black'
-  | 'pink'
-  | 'pink-01'
-  | 'pink-02'
-  | 'border'
-  | 'clear'
-  | 'shadow'
-  | 'draft'
-  | 'minor';
+/**
+ * Extensible interface for named color tokens.
+ * Augment this interface to register project-specific color names
+ * for autocomplete in `fill`, `color`, `svgFill`, and other color style props.
+ *
+ * @example
+ * ```typescript
+ * declare module '@cube-dev/ui-kit' {
+ *   interface TastyNamedColors {
+ *     primary: true;
+ *     danger: true;
+ *   }
+ * }
+ * ```
+ */
+
+export interface TastyNamedColors {}
+
+type NamedColorKey = Extract<keyof TastyNamedColors, string>;
+type NamedColor = [NamedColorKey] extends [never] ? string : NamedColorKey;
+
+/**
+ * Extensible interface for typography preset names.
+ * Augment this interface to register project-specific preset names for autocomplete.
+ *
+ * @example
+ * ```typescript
+ * declare module '@cube-dev/ui-kit' {
+ *   interface TastyPresetNames {
+ *     h1: true;
+ *     t3: true;
+ *   }
+ * }
+ * ```
+ */
+
+export interface TastyPresetNames {}
+
+type PresetNameKey = Extract<keyof TastyPresetNames, string>;
+type PresetName = [PresetNameKey] extends [never] ? string : PresetNameKey;
+
 type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 type OpaquePercentage = '' | `.${Digit}` | `.${Digit}${Digit}` | '.100';
 export type NoType = false | null | undefined;
@@ -169,11 +165,6 @@ export interface StylesInterface
    * - `fade="2x top #a #b, 1x bottom #c #d"` // different widths and colors per direction
    */
   fade?: 'top' | 'right' | 'bottom' | 'left' | string;
-  /**
-   * Whether styles of the element should be reset.
-   * Possible values: `input`, `button`.
-   */
-  reset?: 'input' | 'button';
   /**
    * @deprecated Use `scrollbar` style instead.
    * Whether the element has styled scrollbar.
@@ -401,41 +392,14 @@ export interface StylesInterface
   /**
    * The preset style sets base text settings according to named presets. Affects `font-size`, `line-height`, `letter-spacing`, `font-weight`, and `text-transform`.
    *
-   * Available presets:
-   * - Headings: `h1`, `h2`, `h3`, `h4`, `h5`, `h6`
-   * - Text: `t1`, `t2`, `t2m`, `t3`, `t3m`, `t4`, `t4m`
-   * - Paragraphs: `p1`, `p2`, `p3`, `p4`
-   * - Main text: `m1`, `m2`, `m3`
-   * - Captions: `c1`, `c2`
-   * - Special: `tag`, `strong`, `em`, `default`
+   * Preset names are project-specific. Augment `TastyPresetNames` to register them for autocomplete.
    *
    * Examples:
    * - `preset="h1"` // heading 1 typography
    * - `preset="h2 strong"` // bold heading 2
    * - `preset="t3"` // text size 3
    */
-  preset?:
-    | 'h1'
-    | 'h2'
-    | 'h3'
-    | 'h4'
-    | 'h5'
-    | 'h6'
-    | 't1'
-    | 't2'
-    | 't2m'
-    | 't3'
-    | 't3m'
-    | 't4'
-    | 'p1'
-    | 'p2'
-    | 'p3'
-    | 'p4'
-    | 'c1'
-    | 'c2'
-    | 'tag'
-    | 'default'
-    | string;
+  preset?: PresetName | (string & {});
   /**
    * Shorthand for `align-items` and `align-content`. Sets both properties for unified vertical alignment in flex/grid layouts.
    *
@@ -515,12 +479,13 @@ export interface StylesInterface
   /**
    * Apply one or more predefined style recipes by name.
    * Recipes are defined globally via `configure({ recipes: { ... } })`.
-   * Multiple recipes are separated by commas and merged in order.
-   * Component styles override recipe values.
+   * Multiple recipes are space-separated. Use `|` to separate base recipes
+   * (applied before component styles) from post recipes (applied after, via mergeStyles).
    *
    * Examples:
    * - `recipe: 'card'` // Apply the 'card' recipe
-   * - `recipe: 'card, elevated'` // Apply 'card' then 'elevated', then component styles
+   * - `recipe: 'card elevated'` // Apply 'card' then 'elevated', then component styles
+   * - `recipe: 'reset input | input-autofill'` // Base recipes, then post recipe
    * - `recipe: ''` // Clear recipes from base styles when extending
    */
   recipe?: string;
@@ -570,14 +535,28 @@ export type StylesWithoutSelectors = {
 };
 
 /**
+ * Index signature for recipe-specific arbitrary keys.
+ * Supports local predefined states (`@name`), vendor-prefixed CSS properties (`-webkit-*`),
+ * CSS custom properties (`$name`), and color tokens (`#name`).
+ * Unlike StylesIndexSignature, does NOT allow sub-element selectors (recipes are flat).
+ */
+export interface RecipeIndexSignature {
+  [key: string]:
+    | StyleValue<string | number | boolean | undefined>
+    | StyleValueStateMap<string | number | boolean | undefined>;
+}
+
+/**
  * Style type for recipe definitions.
- * Like StylesWithoutSelectors but also allows `@keyframes` and `@properties`.
+ * Like StylesWithoutSelectors but also allows `@keyframes`, `@properties`,
+ * local predefined states, and vendor-prefixed CSS properties.
  * Excludes `recipe` to prevent recursive references.
  */
-export type RecipeStyles = StylesWithoutSelectors & {
-  '@keyframes'?: StylesInterface['@keyframes'];
-  '@properties'?: StylesInterface['@properties'];
-};
+export type RecipeStyles = StylesWithoutSelectors &
+  RecipeIndexSignature & {
+    '@keyframes'?: StylesInterface['@keyframes'];
+    '@properties'?: StylesInterface['@properties'];
+  };
 
 /** Special properties that are not regular style values */
 export interface SpecialStyleProperties {

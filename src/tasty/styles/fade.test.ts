@@ -18,14 +18,14 @@ describe('fadeStyle', () => {
     expect(result.mask).toContain('to left');
     expect(result.mask).toContain('to top');
     expect(result.mask).toContain('to right');
-    expect(result.mask).toContain('var(--fade-width)');
+    expect(result.mask).toContain('calc(2 * var(--gap))');
     expect(result['mask-composite']).toBe('intersect');
   });
 
   it('applies fade to specific direction', () => {
     const result = fadeStyle({ fade: 'top' });
     expect(result.mask).toBe(
-      'linear-gradient(to bottom, rgb(0 0 0 / 0) 0%, rgb(0 0 0 / 1) var(--fade-width))',
+      'linear-gradient(to bottom, rgb(0 0 0 / 0) 0%, rgb(0 0 0 / 1) calc(2 * var(--gap)))',
     );
   });
 
@@ -48,14 +48,14 @@ describe('fadeStyle', () => {
   it('handles custom transparent color only', () => {
     const result = fadeStyle({ fade: 'top #transparent-mask' });
     expect(result.mask).toBe(
-      'linear-gradient(to bottom, var(--transparent-mask-color) 0%, rgb(0 0 0 / 1) var(--fade-width))',
+      'linear-gradient(to bottom, var(--transparent-mask-color) 0%, rgb(0 0 0 / 1) calc(2 * var(--gap)))',
     );
   });
 
   it('handles both custom colors', () => {
     const result = fadeStyle({ fade: 'top #clear #solid' });
     expect(result.mask).toBe(
-      'linear-gradient(to bottom, var(--clear-color) 0%, var(--solid-color) var(--fade-width))',
+      'linear-gradient(to bottom, var(--clear-color) 0%, var(--solid-color) calc(2 * var(--gap)))',
     );
   });
 

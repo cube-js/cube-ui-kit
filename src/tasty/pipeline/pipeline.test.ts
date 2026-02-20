@@ -325,6 +325,15 @@ describe('parseStateKey()', () => {
     }
   });
 
+  it('should parse vendor-prefixed pseudo-class', () => {
+    const result = parseStateKey(':-webkit-autofill');
+    expect(result.kind).toBe('state');
+    if (result.kind === 'state') {
+      expect(result.type).toBe('pseudo');
+      expect(result.pseudo).toBe(':-webkit-autofill');
+    }
+  });
+
   it('should parse combined states', () => {
     const result = parseStateKey('@media(w < 768px) & hovered');
     expect(result.kind).toBe('compound');
@@ -1838,5 +1847,205 @@ describe('@supports queries snapshot tests', () => {
     const result = renderStyles(styles, '.component');
     // Default 'block' should be eliminated as other rules cover all cases
     expect(result).toMatchSnapshot();
+  });
+});
+
+describe('Vendor-prefixed pseudo-classes', () => {
+  beforeEach(() => {
+    clearPipelineCache();
+  });
+
+  it('should tokenize :-webkit-autofill as a pseudo-class', () => {
+    const styles = {
+      color: { '': 'black', ':-webkit-autofill': 'blue' },
+    };
+
+    const result = renderStyles(styles, '.input');
+    const autofillRule = result.find((r) =>
+      r.selector.includes(':-webkit-autofill'),
+    );
+    expect(autofillRule).toBeDefined();
+    expect(autofillRule!.declarations).toContain('blue');
+    // Should NOT have a [data-webkit-autofill] attribute selector
+    const attrRule = result.find((r) =>
+      r.selector.includes('[data-webkit-autofill]'),
+    );
+    expect(attrRule).toBeUndefined();
+  });
+
+  it('should work in combined states with &', () => {
+    const styles = {
+      color: { '(:-webkit-autofill & :hover)': 'red' },
+    };
+
+    const result = renderStyles(styles, '.input');
+    const rule = result.find(
+      (r) =>
+        r.selector.includes(':-webkit-autofill') &&
+        r.selector.includes(':hover'),
+    );
+    expect(rule).toBeDefined();
+    expect(rule!.declarations).toContain('red');
+  });
+
+  it('should work with predefined state alias', () => {
+    const styles = {
+      '@autofill': ':-webkit-autofill',
+      color: { '': 'black', '@autofill': 'blue' },
+    };
+
+    const result = renderStyles(styles, '.input');
+    const autofillRule = result.find((r) =>
+      r.selector.includes(':-webkit-autofill'),
+    );
+    expect(autofillRule).toBeDefined();
+    expect(autofillRule!.declarations).toContain('blue');
+  });
+
+  it('should work with :-moz-placeholder', () => {
+    const styles = {
+      color: { '': 'black', ':-moz-placeholder': 'gray' },
+    };
+
+    const result = renderStyles(styles, '.input');
+    const mozRule = result.find((r) =>
+      r.selector.includes(':-moz-placeholder'),
+    );
+    expect(mozRule).toBeDefined();
+    expect(mozRule!.declarations).toContain('gray');
+  });
+});
+
+describe('Sub-element scoped predefined states', () => {
+  beforeEach(() => {
+    clearPipelineCache();
+  });
+
+  it('should resolve @name defined inside a sub-element', () => {
+    const styles = {
+      Label: {
+        '@active': ':focus',
+        color: { '': 'black', '@active': 'blue' },
+      },
+    };
+
+    const result = renderStyles(styles, '.input');
+    expect(result.length).toBe(2);
+    const activeRule = result.find((r) => r.selector.includes(':focus'));
+    expect(activeRule).toBeDefined();
+    expect(activeRule!.selector).toContain('[data-element="Label"]');
+    expect(activeRule!.declarations).toContain('blue');
+  });
+
+  it('should inherit parent-level @name inside sub-elements', () => {
+    const styles = {
+      '@compact': '@(w < 400px)',
+      padding: { '': '16px', '@compact': '8px' },
+      Label: {
+        color: { '': 'black', '@compact': 'gray' },
+      },
+    };
+
+    const result = renderStyles(styles, '.card');
+    const labelCompact = result.find(
+      (r) =>
+        r.selector.includes('[data-element="Label"]') &&
+        r.atRules?.some((a) => a.includes('container')),
+    );
+    expect(labelCompact).toBeDefined();
+    expect(labelCompact!.declarations).toContain('gray');
+  });
+
+  it('should NOT leak sub-element @name to sibling sub-elements', () => {
+    const styles = {
+      Label: {
+        '@active': ':focus',
+        color: { '': 'black', '@active': 'blue' },
+      },
+      Icon: {
+        color: { '': 'black', '@active': 'red' },
+      },
+    };
+
+    const result = renderStyles(styles, '.input');
+
+    // Label should have a :focus rule from its own @active
+    const labelFocus = result.find(
+      (r) =>
+        r.selector.includes('[data-element="Label"]') &&
+        r.selector.includes(':focus'),
+    );
+    expect(labelFocus).toBeDefined();
+
+    // Icon should NOT have a :focus rule — @active is undefined in its scope.
+    // Instead, it falls back to a modifier attribute [data-active].
+    const iconFocus = result.find(
+      (r) =>
+        r.selector.includes('[data-element="Icon"]') &&
+        r.selector.includes(':focus'),
+    );
+    expect(iconFocus).toBeUndefined();
+  });
+
+  it('should allow sub-element @name to override parent @name', () => {
+    const styles = {
+      '@custom': ':hover',
+      color: { '': 'black', '@custom': 'red' },
+      Label: {
+        '@custom': ':focus',
+        color: { '': 'black', '@custom': 'blue' },
+      },
+    };
+
+    const result = renderStyles(styles, '.widget');
+
+    // Root-level @custom should resolve to :hover
+    const rootHover = result.find(
+      (r) =>
+        !r.selector.includes('[data-element') && r.selector.includes(':hover'),
+    );
+    expect(rootHover).toBeDefined();
+    expect(rootHover!.declarations).toContain('red');
+
+    // Label-level @custom should resolve to :focus (overridden)
+    const labelFocus = result.find(
+      (r) =>
+        r.selector.includes('[data-element="Label"]') &&
+        r.selector.includes(':focus'),
+    );
+    expect(labelFocus).toBeDefined();
+    expect(labelFocus!.declarations).toContain('blue');
+
+    // Label should NOT have a :hover rule from the parent @custom
+    const labelHover = result.find(
+      (r) =>
+        r.selector.includes('[data-element="Label"]') &&
+        r.selector.includes(':hover'),
+    );
+    expect(labelHover).toBeUndefined();
+  });
+
+  it('should inherit sub-element @name into deeper nesting via &', () => {
+    const styles = {
+      Label: {
+        '@active': ':focus',
+        color: { '': 'black', '@active': 'blue' },
+        '&::placeholder': {
+          color: { '': 'gray', '@active': 'lightblue' },
+        },
+      },
+    };
+
+    const result = renderStyles(styles, '.input');
+
+    // The ::placeholder nested inside Label should also resolve @active
+    const placeholderActive = result.find(
+      (r) =>
+        r.selector.includes('[data-element="Label"]') &&
+        r.selector.includes('::placeholder') &&
+        r.selector.includes(':focus'),
+    );
+    expect(placeholderActive).toBeDefined();
+    expect(placeholderActive!.declarations).toContain('lightblue');
   });
 });

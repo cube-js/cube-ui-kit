@@ -31,19 +31,10 @@ export interface CubeActionProps<
 const ActionElement = tasty({
   as: 'button',
   styles: {
-    reset: 'button',
-    appearance: 'none',
-    touchAction: 'manipulation',
-    textDecoration: 'none',
+    recipe: 'reset button',
     position: 'relative',
-    margin: 0,
     preset: 'inherit',
-    border: 0,
-    padding: 0,
-    outline: 0,
     transition: 'theme',
-    cursor: '$pointer',
-    fill: '#clear',
   },
 });
 
