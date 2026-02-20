@@ -58,22 +58,20 @@ configure({
       fill: '#clear',
     },
     'input-autofill': {
+      '@autofill': ':-webkit-autofill',
       '-webkit-text-fill-color': {
         '': 'currentColor',
-        ':-webkit-autofill | (:-webkit-autofill & :hover) | (:-webkit-autofill & :focus)':
-          '#primary',
+        '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
       },
       caretColor: {
-        ':-webkit-autofill | (:-webkit-autofill & :hover) | (:-webkit-autofill & :focus)':
-          '#primary',
+        '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
       },
       shadow: {
-        ':-webkit-autofill | (:-webkit-autofill & :hover) | (:-webkit-autofill & :focus)':
+        '@autofill | (@autofill & :hover) | (@autofill & :focus)':
           '0 0 0 9999rem rgb(255 255 255) inset',
       },
       preset: {
-        ':-webkit-autofill | (:-webkit-autofill & :hover) | (:-webkit-autofill & :focus)':
-          'inherit',
+        '@autofill | (@autofill & :hover) | (@autofill & :focus)': 'inherit',
       },
       '-webkit-opacity': {
         '': false,

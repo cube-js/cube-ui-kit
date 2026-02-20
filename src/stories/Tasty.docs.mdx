@@ -1231,7 +1231,7 @@ You can use them anywhere a normal state key is used (including inside sub-eleme
 
 #### Predefined State Aliases (recommended)
 
-If you repeat the same advanced state in many places, define an alias once and reuse it. You can define aliases globally via `configure({ states })`, or locally per component via `tasty({ states: { ... } })`.
+If you repeat the same advanced state in many places, define an alias once and reuse it. You can define aliases globally via `configure({ states })`, locally per component as top-level `@name` keys in the styles object, or scoped to a specific sub-element by defining `@name` inside a sub-element block (see [Scoped Predefined States](#scoped-predefined-states)).
 
 ```jsx
 import { configure, tasty } from '@cube-dev/ui-kit';
@@ -1487,6 +1487,33 @@ const Card = tasty({
   <div data-element="Content">Card content</div>
 </Card>
 ```
+
+#### Scoped Predefined States
+
+Predefined states (`@name`) can be defined inside sub-element blocks. They are **scoped** to that sub-element and any deeper nesting — they do not leak to sibling sub-elements or the parent:
+
+```jsx
+styles: {
+  '@shared': ':hover',  // available everywhere
+
+  Label: {
+    '@active': ':focus',                          // scoped to Label only
+    color: { '': '#text', '@active': '#primary' },
+
+    '&::placeholder': {
+      color: { '@active': 'transparent' },        // inherited from Label
+    },
+  },
+
+  Icon: {
+    // ❌ @active is NOT available here — it's scoped to Label
+    // ✅ @shared IS available — defined at the parent level
+    color: { '': '#text', '@shared': '#primary' },
+  },
+}
+```
+
+A sub-element `@name` overrides a same-named parent `@name` within that scope. Parent-level states are always inherited.
 
 #### Selector Affix (`$`)
 
