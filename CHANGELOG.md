@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.116.0
+
+### Minor Changes
+
+- [#1044](https://github.com/cube-js/cube-ui-kit/pull/1044) [`696fd599`](https://github.com/cube-js/cube-ui-kit/commit/696fd599cbe98d2973456c2bbdcad1c356bb547a) Thanks [@tenphi](https://github.com/tenphi)! - Add support for default type styling in Tabs component. TabsAction now adapts its appearance based on tabs type (outline for default type, neutral for others).
+
+### Patch Changes
+
+- [#1042](https://github.com/cube-js/cube-ui-kit/pull/1042) [`32a07b40`](https://github.com/cube-js/cube-ui-kit/commit/32a07b40f3c804f1da0faaf4af04dbea154dcc33) Thanks [@tenphi](https://github.com/tenphi)! - Revert wrong font definition.
+
 ## 0.115.0
 
 ### Minor Changes
