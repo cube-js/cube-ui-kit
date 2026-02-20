@@ -50,6 +50,14 @@ export const TabsElement = tasty({
       placeContent: 'center',
       flexShrink: 0,
       placeSelf: 'stretch',
+      padding: {
+        '': 0,
+        'type=default': '.5x 0 .5x 1x',
+      },
+      gap: {
+        '': 0,
+        'type=default': '.5x',
+      },
       border: {
         '': 0,
         'type=file': 'right',
@@ -63,6 +71,14 @@ export const TabsElement = tasty({
       placeContent: 'center',
       flexShrink: 0,
       placeSelf: 'stretch',
+      padding: {
+        '': 0,
+        'type=default': '.5x 1x .5x 0',
+      },
+      gap: {
+        '': 0,
+        'type=default': '.5x',
+      },
       border: {
         '': 0,
         'type=file': 'left',
@@ -131,6 +147,7 @@ export const TabsElement = tasty({
       },
       gap: {
         '': 0,
+        'type=default': '1x',
         'type=narrow': '2x',
         'type=radio': '.5x',
       },
@@ -139,6 +156,12 @@ export const TabsElement = tasty({
       width: {
         '': 'max-content',
         'type=radio': '100%',
+      },
+      padding: '0 $tablist-padding',
+
+      '$tablist-padding': {
+        '': '0',
+        'type=default | type=narrow': '1x',
       },
     },
 
@@ -181,17 +204,18 @@ export const TabElement = tasty(Item, {
   styles: {
     radius: {
       '': false,
-      'type=radio': true,
-      'type=default | type=narrow': 'top',
+      'type=radio | type=default': true,
+      'type=narrow': 'top',
     },
     color: {
       '': '#dark-02',
-      '(type=default | type=narrow) & (hovered & !selected)': '#primary-text',
+      'type=narrow & (hovered & !selected)': '#primary-text',
       '(type=default | type=narrow) & selected': '#primary-text',
       disabled: '#dark-04',
     },
     fill: {
       '': '#clear',
+      'hovered & !type=narrow': '#dark.03',
       'type=file': '#light',
       'type=file & hovered': '#light.5',
       'type=radio & hovered': '#white.5',
@@ -252,6 +276,10 @@ export const TabContainer = tasty({
   styles: {
     position: 'relative',
     display: 'grid',
+    margin: {
+      '': 0,
+      'type=default': '.5x 0',
+    },
     border: {
       '': 0,
       'type=file': 'right',

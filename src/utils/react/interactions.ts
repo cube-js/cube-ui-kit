@@ -1,19 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useFocus as reactAriaUseFocus, useFocusVisible } from 'react-aria';
 
 export function useFocus(
   { isDisabled }: { isDisabled?: boolean },
   onlyVisible = false,
 ) {
-  useEffect(() => {
-    setIsFocused(false);
-  }, [isDisabled]);
-
   let [isFocused, setIsFocused] = useState(false);
+
+  // React-aria detaches focus handlers when disabled, so blur events
+  // aren't captured. Clear stale focus synchronously during render
+  // to avoid a one-frame glitch (useEffect would be too late).
+  if (isDisabled && isFocused) {
+    setIsFocused(false);
+  }
+
   let { isFocusVisible } = useFocusVisible({});
   let { focusProps } = reactAriaUseFocus({
     isDisabled,
-    // @ts-ignore
     onFocusChange: setIsFocused,
   });
 
