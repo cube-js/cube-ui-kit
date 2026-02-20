@@ -1,5 +1,55 @@
 # @cube-dev/ui-kit
 
+## 0.115.0
+
+### Minor Changes
+
+- [#1041](https://github.com/cube-js/cube-ui-kit/pull/1041) [`44d5512f`](https://github.com/cube-js/cube-ui-kit/commit/44d5512f1b91aff1ea6792154c7ce4b4d0d533a4) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking change:** Removed `reset` style property from tasty style system. Browser reset styles are now provided via recipes (`reset`, `button`, `input`, `input-autofill`, `input-placeholder`, `input-search-cancel-button`) registered in the UI kit configuration. Recipe names are now space-separated, with `|` separating base recipes from post-merge recipes.
+
+  **Migration:**
+
+  - Replace `reset: 'button'` with `recipe: 'reset button'`
+  - Replace `reset: 'input'` with `recipe: 'reset input | input-autofill'` and add sub-element styles for `Placeholder` and `&::-webkit-search-cancel-button`
+
+- [`c0931497`](https://github.com/cube-js/cube-ui-kit/commit/c09314970629e5312b60681461bd282572960301) Thanks [@tenphi](https://github.com/tenphi)! - Add style extend functionality to `tasty` style system, enabling state map merging, `@inherit` keyword, and property reset semantics.
+
+  **New features:**
+
+  - **State map extension mode**: When extending a component with a state map that doesn't include a `''` key, parent states are preserved and new states are appended
+  - **State map replace mode**: When a state map includes a `''` key, it replaces all parent states (existing behavior)
+  - **`@inherit` keyword**: Pull parent state values into child state maps, supporting both repositioning (extend mode) and cherry-picking (replace mode)
+  - **`null` reset**: Use `null` as a property value to discard parent values and let recipe values fill in
+  - **`false` tombstone**: Use `false` to block a property entirely, preventing both parent and recipe values
+
+  **Behavior changes:**
+
+  - Sub-element handling now uses strict equality (`=== null`) instead of loose equality (`== null`) for better semantic clarity
+
+- [#1041](https://github.com/cube-js/cube-ui-kit/pull/1041) [`44d5512f`](https://github.com/cube-js/cube-ui-kit/commit/44d5512f1b91aff1ea6792154c7ce4b4d0d533a4) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking change:** Renamed design tokens used by the tasty style system:
+
+  - `$leaf-sharp-radius` → `$sharp-radius`
+  - `$card-shadow` → `$shadow` (in shadow.ts default and component styles)
+  - `$fade-width` removed — fade now defaults to `calc(2 * var(--gap))`
+
+  **New:** Tasty now ships with built-in defaults for core design tokens, so the style system works out of the box without a project-level token setup:
+
+  - CSS `@property` registrations with initial values for `$gap` (4px), `$radius` (6px), `$border-width` (1px), `$outline-width` (3px), `$transition` (80ms), `$sharp-radius` (0px), `$bold-font-weight` (700)
+  - Default `:root` variables for `--font`, `--monospace-font`, and `--border-color` (currentColor)
+
+  These defaults are overridden by any tokens the consuming project sets on `:root`.
+
+### Patch Changes
+
+- [#1041](https://github.com/cube-js/cube-ui-kit/pull/1041) [`44d5512f`](https://github.com/cube-js/cube-ui-kit/commit/44d5512f1b91aff1ea6792154c7ce4b4d0d533a4) Thanks [@tenphi](https://github.com/tenphi)! - **Fix:** `preset="strong"` (and other modifier-only presets like `"italic"`, `"icon"`, `"tight"`) now correctly inherits typography instead of resolving to `--strong-*` CSS variables. When no preset name is provided, the base preset defaults to `inherit`.
+
+- [#1041](https://github.com/cube-js/cube-ui-kit/pull/1041) [`44d5512f`](https://github.com/cube-js/cube-ui-kit/commit/44d5512f1b91aff1ea6792154c7ce4b4d0d533a4) Thanks [@tenphi](https://github.com/tenphi)! - **Fix:** Vendor-prefixed pseudo-classes (e.g. `:-webkit-autofill`, `:-moz-placeholder`) are now correctly tokenized as pseudo-classes instead of being misinterpreted as boolean modifiers (`[data-webkit-autofill]`).
+
+- [#1041](https://github.com/cube-js/cube-ui-kit/pull/1041) [`44d5512f`](https://github.com/cube-js/cube-ui-kit/commit/44d5512f1b91aff1ea6792154c7ce4b4d0d533a4) Thanks [@tenphi](https://github.com/tenphi)! - **Internal refactoring:** Made token type definitions extensible in the tasty style system. Color names (`TastyNamedColors`), preset names (`TastyPresetNames`), and theme names (`TastyThemeNames`) are now defined via extensible interfaces instead of hardcoded unions.
+
+  This change maintains full backward compatibility - all existing UI kit tokens continue to work via module augmentation. Projects can now augment these interfaces to register their own token names for autocomplete.
+
+- [#1041](https://github.com/cube-js/cube-ui-kit/pull/1041) [`44d5512f`](https://github.com/cube-js/cube-ui-kit/commit/44d5512f1b91aff1ea6792154c7ce4b4d0d533a4) Thanks [@tenphi](https://github.com/tenphi)! - **New:** Predefined state aliases (`@name`) can now be defined inside sub-element blocks and are scoped to that sub-element and its nested children. Parent-level states are inherited; sub-element states do not leak to siblings.
+
 ## 0.114.0
 
 ### Minor Changes
