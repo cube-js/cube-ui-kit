@@ -105,7 +105,7 @@ Use `useProgressToast` for operations that have loading, success, and error stat
 
 #### How It Works
 
-The `useProgressToast` hook accepts a single options object that controls the toast state:
+The `useProgressToast` hook accepts an optional options object that controls the toast state. The toast only appears after `isLoading: true` is seen — non-loading initial states are silently ignored until a loading cycle occurs.
 
 ```tsx
 interface ProgressToastOptions {
@@ -123,20 +123,22 @@ type ProgressToastEmpty = null | undefined | false | {};
 
 #### State Transitions
 
-The hook handles three main scenarios:
+The hook requires a loading cycle (`isLoading: true`) before any toast becomes visible. If the initial state is not loading, no toast is shown until `isLoading: true` is passed. The hook handles three main scenarios:
 
-**1. Loading State** (`isLoading: true`)
+**1. Loading State** (`isLoading: true`) — triggers initial appearance
 - Toast appears immediately and persists until `isLoading` becomes `false`
 - No auto-dismiss timer while loading
-- Useful for showing progress during async operations
+- This is the only state that can trigger the initial appearance of the toast
 
 **2. Result State** (`isLoading: false` with content)
+- Only shown after a prior loading state — ignored if loading was never seen
 - When transitioning from loading to not loading, the toast updates to show the result
 - Result toast auto-dismisses after 3 seconds
 - Theme-based icons are automatically applied (success checkmark, danger X, etc.)
 
-**3. Dismissed** (empty value or no title when not loading)
-- Pass `null`, `undefined`, `false`, or `{}` to immediately remove any existing toast
+**3. Dismissed** (empty value, no argument, or no title when not loading)
+- Pass `null`, `undefined`, `false`, `{}`, or call with no argument to immediately remove any existing toast
+- Also resets the loading gate, so the next toast cycle requires `isLoading: true` again
 - Useful for conditional rendering or cleanup
 
 #### Basic Usage
@@ -194,6 +196,7 @@ useProgressToast(null);
 useProgressToast(undefined);
 useProgressToast(false);
 useProgressToast({});
+useProgressToast(); // no argument also works
 ```
 
 #### Custom Icons
