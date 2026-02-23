@@ -46,10 +46,13 @@ function getStringValue(value: unknown): string | undefined {
  *
  * // Pass empty value to immediately remove any existing toast:
  * useProgressToast(shouldShow ? { isLoading: true, title: 'Loading...' } : null);
+ *
+ * // Or call with no argument to dismiss:
+ * useProgressToast();
  * ```
  */
 export function useProgressToast(
-  options: ProgressToastOptions | ProgressToastEmpty,
+  options?: ProgressToastOptions | ProgressToastEmpty,
 ): void {
   const { addToast, removeToast } = useToastContext();
 
@@ -58,7 +61,7 @@ export function useProgressToast(
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRenderRef = useRef(true);
   const optionsRef = useRef(options);
-  const wasEmptyRef = useRef<boolean>(false);
+  const hasBeenLoadingRef = useRef(false);
 
   // Track previous string values for re-show comparison
   const prevThemeRef = useRef<string | undefined>(undefined);
@@ -89,7 +92,6 @@ export function useProgressToast(
 
   useEffect(() => {
     const wasLoading = wasLoadingRef.current;
-    const wasEmpty = wasEmptyRef.current;
     const isFirstRender = isFirstRenderRef.current;
     const currentOptions = optionsRef.current;
     const currentIsEmpty = isEmptyOptions(currentOptions);
@@ -103,9 +105,9 @@ export function useProgressToast(
         toastIdRef.current = null;
       }
 
-      // Update refs for next comparison
+      // Reset loading gate so the next cycle requires isLoading again
+      hasBeenLoadingRef.current = false;
       wasLoadingRef.current = null;
-      wasEmptyRef.current = true;
       isFirstRenderRef.current = false;
       prevThemeRef.current = undefined;
       prevTitleRef.current = undefined;
@@ -157,6 +159,7 @@ export function useProgressToast(
 
     if (currentIsLoading) {
       // Starting or continuing loading
+      hasBeenLoadingRef.current = true;
       clearHideTimer();
 
       if (toastIdRef.current == null) {
@@ -166,8 +169,8 @@ export function useProgressToast(
         // Toast exists but data changed (e.g., switching back to loading from another state)
         showToast();
       }
-    } else if ((wasLoading === true || wasEmpty) && !currentIsLoading) {
-      // Transitioning from loading (or from empty) to not loading
+    } else if (wasLoading === true && !currentIsLoading) {
+      // Transitioning from loading to not loading
       clearHideTimer();
 
       if (currentTitle) {
@@ -180,14 +183,17 @@ export function useProgressToast(
           toastIdRef.current = null;
         }
       }
-    } else if (!currentIsLoading && !isFirstRender && dataChanged) {
-      // Not loading, data changed - update or re-show toast
-      // But only if there's meaningful content (non-empty title)
+    } else if (
+      !currentIsLoading &&
+      !isFirstRender &&
+      hasBeenLoadingRef.current &&
+      dataChanged
+    ) {
+      // Not loading, data changed after a loading cycle - update or re-show toast
       if (currentTitle) {
         clearHideTimer();
         showToastWithTimer();
       } else if (toastIdRef.current != null) {
-        // No content - hide existing toast
         clearHideTimer();
         removeToast(toastIdRef.current);
         toastIdRef.current = null;
@@ -196,7 +202,6 @@ export function useProgressToast(
 
     // Update refs for next comparison
     wasLoadingRef.current = currentIsLoading;
-    wasEmptyRef.current = false;
     isFirstRenderRef.current = false;
     prevThemeRef.current = currentTheme;
     prevTitleRef.current = currentTitle;
