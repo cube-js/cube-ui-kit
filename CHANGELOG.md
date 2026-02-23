@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.116.1
+
+### Patch Changes
+
+- [#1045](https://github.com/cube-js/cube-ui-kit/pull/1045) [`552e078c`](https://github.com/cube-js/cube-ui-kit/commit/552e078c62a6ef776121cb008b994bd8f962c7dc) Thanks [@tenphi](https://github.com/tenphi)! - Toast: Make `useProgressToast` options parameter optional and require loading cycle before showing toast. Non-loading initial states are now silently ignored until a loading cycle occurs. Calling the hook with no argument now dismisses the toast.
+
 ## 0.116.0
 
 ### Minor Changes
