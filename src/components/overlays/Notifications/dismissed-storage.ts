@@ -36,10 +36,10 @@ export function saveDismissedId(id: Key): void {
  * Reads the dismissed-IDs map from localStorage, removes entries older than
  * 24 hours, writes the cleaned map back, and returns the remaining valid IDs.
  */
-export function cleanupAndGetValidIds(): Set<Key> {
+export function cleanupAndGetValidIds(): Set<string> {
   const map = readMap();
   const now = Date.now();
-  const validIds = new Set<Key>();
+  const validIds = new Set<string>();
   let changed = false;
 
   for (const [id, timestamp] of Object.entries(map)) {
