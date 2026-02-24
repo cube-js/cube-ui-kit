@@ -3,6 +3,7 @@ import { ReactNode, useRef, useState } from 'react';
 
 import { CheckIcon } from '../../../icons';
 import { Button } from '../../actions/Button/Button';
+import { Item } from '../../content/Item/Item';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
 import { OverlayProvider } from '../Notifications/OverlayProvider';
@@ -332,6 +333,43 @@ MultipleToasts.parameters = {
     description: {
       story:
         'Maximum 3 toasts are visible at once. Oldest toasts are removed first.',
+    },
+  },
+};
+
+/**
+ * Progress toast with a cancel action
+ */
+export const ProgressToastWithAction = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  useProgressToast(
+    isLoading
+      ? {
+          isLoading: true,
+          title: 'Deploying...',
+          theme: 'note',
+          actions: (
+            <Item.Action type="secondary" onPress={() => setIsLoading(false)}>
+              Cancel
+            </Item.Action>
+          ),
+        }
+      : null,
+  );
+
+  return (
+    <Button isDisabled={isLoading} onPress={() => setIsLoading(true)}>
+      Deploy
+    </Button>
+  );
+};
+
+ProgressToastWithAction.parameters = {
+  docs: {
+    description: {
+      story:
+        'Progress toast with an action button. The user controls dismissal — clicking Cancel sets loading to false, which removes the toast.',
     },
   },
 };

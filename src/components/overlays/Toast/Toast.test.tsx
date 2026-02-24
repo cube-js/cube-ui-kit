@@ -1,7 +1,9 @@
 import { act, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { renderWithRoot } from '../../../test/render';
 import { Button } from '../../actions/Button/Button';
+import { Item } from '../../content/Item/Item';
 
 import { ToastItem } from './ToastItem';
 
@@ -212,6 +214,37 @@ describe('Toast', () => {
       await waitFor(() => {
         expect(getByText('Complete!')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Toast with actions', () => {
+    it('should render action button inside toast', async () => {
+      const onPress = vi.fn();
+
+      const { getByText } = renderWithRoot(
+        <ToastItem
+          title="Deploying..."
+          actions={<Item.Action onPress={onPress}>Cancel</Item.Action>}
+        />,
+      );
+
+      expect(getByText('Deploying...')).toBeInTheDocument();
+      expect(getByText('Cancel')).toBeInTheDocument();
+    });
+
+    it('should call onPress when action is clicked', async () => {
+      const onPress = vi.fn();
+
+      const { getByRole } = renderWithRoot(
+        <ToastItem
+          title="Processing..."
+          actions={<Item.Action onPress={onPress}>Cancel</Item.Action>}
+        />,
+      );
+
+      await userEvent.click(getByRole('button', { name: 'Cancel' }));
+
+      expect(onPress).toHaveBeenCalledTimes(1);
     });
   });
 
