@@ -157,5 +157,30 @@ describe('okhslPlugin', () => {
         expect(result.output).toBe('rgb(17.2% 41.1% 42.3%)');
       });
     });
+
+    describe('alpha / opacity', () => {
+      it('preserves alpha with slash syntax', () => {
+        const result = parser.process('okhsl(200 60% 40% / .5)');
+        expect(result.output).toBe('rgb(17.2% 41.1% 42.3% / .5)');
+      });
+
+      it('preserves alpha value of 0', () => {
+        const result = parser.process('okhsl(0 0% 0% / 0)');
+        expect(result.output).toBe('rgb(0% 0% 0% / 0)');
+      });
+
+      it('preserves alpha value of 1', () => {
+        const result = parser.process('okhsl(0 100% 50% / 1)');
+        expect(result.output).toBe('rgb(84.2% 0% 44.5% / 1)');
+      });
+
+      it('produces same color channels with and without alpha', () => {
+        const withoutAlpha = parser.process('okhsl(240 50% 50%)');
+        const withAlpha = parser.process('okhsl(240 50% 50% / .7)');
+        // Extract just the color channels (before the /)
+        const channelsOnly = withAlpha.output.replace(/ \/ .+\)$/, ')');
+        expect(channelsOnly).toBe(withoutAlpha.output);
+      });
+    });
   });
 });

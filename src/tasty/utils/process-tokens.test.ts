@@ -223,7 +223,10 @@ describe('processTokens', () => {
       });
 
       expect(result).toBeDefined();
-      // Alpha should be ignored for RGB triplet
+      // Main color value should be rgb with alpha preserved
+      expect(result!['--custom-color']).toMatch(/^rgb\(.+ \/ /);
+      expect(result!['--custom-color']).not.toContain('okhsl');
+      // RGB triplet should not contain alpha
       expect(result!['--custom-color-rgb']).toMatch(
         /^\d+(\.\d+)? \d+(\.\d+)? \d+(\.\d+)?$/,
       );

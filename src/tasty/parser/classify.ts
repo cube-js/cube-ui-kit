@@ -245,21 +245,28 @@ export function classify(
                 /a$/i.test(funcName) &&
                 topLevelCommaCount === 3;
 
-              if (hasModernAlpha || hasLegacyAlpha) {
-                // Strip existing alpha (numeric or dynamic) before applying suffix
-                const withoutAlpha = hasModernAlpha
-                  ? args.slice(0, slashIdx).trim()
-                  : args.slice(0, lastTopLevelComma).trim();
-                return {
-                  bucket: Bucket.Color,
-                  processed: `${normalizedFunc}(${normalizeArgs(withoutAlpha)} / ${alpha})`,
-                };
+              const colorArgs =
+                hasModernAlpha || hasLegacyAlpha
+                  ? normalizeArgs(
+                      hasModernAlpha
+                        ? args.slice(0, slashIdx).trim()
+                        : args.slice(0, lastTopLevelComma).trim(),
+                    )
+                  : normalizeArgs(args);
+
+              const constructed = `${normalizedFunc}(${colorArgs} / ${alpha})`;
+
+              // Custom functions (not native CSS) must be re-classified
+              // so the function handler can convert them to valid CSS
+              if (
+                !COLOR_FUNCS.has(normalizedFunc) &&
+                opts.funcs &&
+                normalizedFunc in opts.funcs
+              ) {
+                return classify(constructed, opts, recurse);
               }
-              // Add alpha using modern syntax
-              return {
-                bucket: Bucket.Color,
-                processed: `${normalizedFunc}(${normalizeArgs(args)} / ${alpha})`,
-              };
+
+              return { bucket: Bucket.Color, processed: constructed };
             }
 
             // Fallback: try appending .alpha (may not work for all cases)
