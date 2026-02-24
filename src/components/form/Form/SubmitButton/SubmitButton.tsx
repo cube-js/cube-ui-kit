@@ -2,7 +2,7 @@ import { FocusableRef } from '@react-types/shared';
 import { forwardRef } from 'react';
 
 import { useProviderProps } from '../../../../provider';
-import { Button, CubeButtonProps } from '../../../actions/index';
+import { Button, CubeButtonProps } from '../../../actions/Button/Button';
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
 import { CubeFormInstance } from '../use-form';

@@ -10,9 +10,8 @@ import { ReactNode, useMemo } from 'react';
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { tasty } from '../../../tasty';
 import { CubeItemProps, Item } from '../../content/Item/Item';
-import { CubeButtonProps } from '../Button/Button';
+import { Button, CubeButtonProps } from '../Button/Button';
 import { CubeItemActionProps } from '../ItemAction/ItemAction';
-import { Link } from '../Link/Link';
 
 export type BannerTheme = 'danger' | 'warning' | 'note' | 'success';
 
@@ -67,7 +66,9 @@ const BannerActionElement = tasty(Item.Action, {
   },
 });
 
-const BannerLinkElement = tasty(Link, {
+const BannerLinkElement = tasty(Button, {
+  type: 'link',
+  size: 'inline',
   styles: {
     color: '#white',
     textDecoration: 'underline',

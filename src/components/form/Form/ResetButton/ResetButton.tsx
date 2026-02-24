@@ -4,7 +4,7 @@ import { forwardRef } from 'react';
 import { useEvent } from '../../../../_internal/index';
 import { useProviderProps } from '../../../../provider';
 import { mergeProps } from '../../../../utils/react/index';
-import { Button, CubeButtonProps } from '../../../actions/index';
+import { Button, CubeButtonProps } from '../../../actions/Button/Button';
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
 import { CubeFormInstance } from '../use-form';
