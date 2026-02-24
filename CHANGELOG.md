@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.116.2
+
+### Patch Changes
+
+- [#1048](https://github.com/cube-js/cube-ui-kit/pull/1048) [`3416f067`](https://github.com/cube-js/cube-ui-kit/commit/3416f067c59695c4fec19f39f77c0728c53b0703) Thanks [@tenphi](https://github.com/tenphi)! - Banner: Use Button component instead of Link for BannerLink implementation. This is an internal refactoring that maintains the same public API and visual appearance.
+
+- [#1048](https://github.com/cube-js/cube-ui-kit/pull/1048) [`3416f067`](https://github.com/cube-js/cube-ui-kit/commit/3416f067c59695c4fec19f39f77c0728c53b0703) Thanks [@tenphi](https://github.com/tenphi)! - Fix okhsl color function to preserve opacity/alpha channel when converting to RGB. Previously, alpha values were silently dropped when using okhsl() colors in styles or tokens. Now okhsl() colors with alpha (e.g., `okhsl(240 50% 50% / .5)`) are correctly converted to `rgb()` format with alpha preserved.
+
+- [#1050](https://github.com/cube-js/cube-ui-kit/pull/1050) [`f4f3f829`](https://github.com/cube-js/cube-ui-kit/commit/f4f3f829047b46471252c98e2ba7b720d8529954) Thanks [@tenphi](https://github.com/tenphi)! - Persist dismissed notification IDs in localStorage so they survive page reloads (24h TTL)
+
+- [#1050](https://github.com/cube-js/cube-ui-kit/pull/1050) [`f4f3f829`](https://github.com/cube-js/cube-ui-kit/commit/f4f3f829047b46471252c98e2ba7b720d8529954) Thanks [@tenphi](https://github.com/tenphi)! - Add `actions` prop to Toast component to support interactive action buttons (e.g., Cancel button in progress toasts). Toasts with actions remain interactive and prevent overlay collapse.
+
 ## 0.116.1
 
 ### Patch Changes
