@@ -23,6 +23,7 @@ export interface PersistentCallbacks {
   removePersistentItem: (id: Key) => void;
   hasDismissedPersistentId: (id: Key) => boolean;
   isFullyDismissedId: (id: Key) => boolean;
+  saveDismissedPersistentId: (id: Key) => void;
 }
 
 export interface NotificationState {
@@ -151,6 +152,7 @@ export function useNotificationState(
         } else if (reason === 'action') {
           // User clicked a regular action (not dismiss) — fully dismiss the
           // notification so it never reappears (overlay or persistent list).
+          persistent.saveDismissedPersistentId(notif.id ?? notif.internalId);
           persistent.removePersistentItem(notif.id ?? notif.internalId);
         }
         // reason === 'api' — programmatic cleanup (e.g. component unmount).

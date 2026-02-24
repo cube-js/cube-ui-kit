@@ -2,6 +2,8 @@ import { Key, useRef, useState } from 'react';
 
 import { useEvent } from '../../../_internal';
 
+import { cleanupAndGetValidIds, saveDismissedId } from './dismissed-storage';
+
 import type { PersistentNotificationItem } from './types';
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -25,6 +27,12 @@ export interface PersistentState {
    * subsequent triggers (no overlay, no persistent storage).
    */
   isFullyDismissedId: (id: Key) => boolean;
+  /**
+   * Marks an id as dismissed in both the in-memory set and localStorage.
+   * Used for `'action'` dismissals that go through `removePersistentItem`
+   * instead of `addPersistentItem`.
+   */
+  saveDismissedPersistentId: (id: Key) => void;
 }
 
 // ─── Hook ────────────────────────────────────────────────────────────
@@ -36,17 +44,22 @@ export function usePersistentState(maxItems: number): PersistentState {
 
   // Tracks IDs that have been moved to the persistent list at least once.
   // Used to skip the overlay when the same id reappears.
-  const dismissedPersistentIdsRef = useRef<Set<Key>>(new Set());
+  // Lazy-initialized from localStorage so dismissed IDs survive page reloads.
+  const dismissedPersistentIdsRef = useRef<Set<string> | null>(null);
+  if (dismissedPersistentIdsRef.current === null) {
+    dismissedPersistentIdsRef.current = cleanupAndGetValidIds();
+  }
 
   // Tracks IDs that were explicitly removed from the persistent list by the
   // user. These should be completely ignored on subsequent triggers.
-  const fullyDismissedIdsRef = useRef<Set<Key>>(new Set());
+  const fullyDismissedIdsRef = useRef<Set<string>>(new Set());
 
   const addPersistentItem = useEvent((item: PersistentNotificationItem) => {
     // If the user already dismissed this item from the persistent list, don't re-add it.
-    if (fullyDismissedIdsRef.current.has(item.id)) return;
+    if (fullyDismissedIdsRef.current.has(String(item.id))) return;
 
-    dismissedPersistentIdsRef.current.add(item.id);
+    dismissedPersistentIdsRef.current!.add(String(item.id));
+    saveDismissedId(item.id);
 
     setPersistentItems((prev) => {
       // Upsert by id
@@ -78,7 +91,7 @@ export function usePersistentState(maxItems: number): PersistentState {
   });
 
   const removePersistentItem = useEvent((id: Key) => {
-    fullyDismissedIdsRef.current.add(id);
+    fullyDismissedIdsRef.current.add(String(id));
     setPersistentItems((prev) => prev.filter((i) => i.id !== id));
   });
 
@@ -101,11 +114,16 @@ export function usePersistentState(maxItems: number): PersistentState {
   });
 
   const hasDismissedPersistentId = useEvent((id: Key): boolean => {
-    return dismissedPersistentIdsRef.current.has(id);
+    return dismissedPersistentIdsRef.current!.has(String(id));
   });
 
   const isFullyDismissedId = useEvent((id: Key): boolean => {
-    return fullyDismissedIdsRef.current.has(id);
+    return fullyDismissedIdsRef.current.has(String(id));
+  });
+
+  const saveDismissedPersistentId = useEvent((id: Key): void => {
+    dismissedPersistentIdsRef.current!.add(String(id));
+    saveDismissedId(id);
   });
 
   return {
@@ -117,5 +135,6 @@ export function usePersistentState(maxItems: number): PersistentState {
     markAllAsRead,
     hasDismissedPersistentId,
     isFullyDismissedId,
+    saveDismissedPersistentId,
   };
 }

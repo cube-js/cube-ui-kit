@@ -20,6 +20,8 @@ export interface ToastData {
   isLoading?: boolean;
   /** Duration in ms before auto-dismiss. null = persistent */
   duration?: number | null;
+  /** Action buttons rendered inside the toast (e.g. Cancel) */
+  actions?: ReactNode;
   /** Additional Item props to pass through */
   itemProps?: Partial<CubeItemProps>;
 }

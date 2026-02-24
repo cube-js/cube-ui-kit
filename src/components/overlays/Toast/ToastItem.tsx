@@ -25,7 +25,10 @@ const StyledItem = tasty(Item, {
   styles: {
     shadow: '$shadow',
     transition: 'theme, inset',
-    pointerEvents: 'none',
+    pointerEvents: {
+      '': 'none',
+      'has-actions': 'auto',
+    },
 
     Description: {
       preset: 't4',
@@ -60,6 +63,7 @@ export const ToastItem = forwardRef<HTMLElement, ToastItemProps>(
         theme={theme}
         icon={icon}
         isLoading={isLoading}
+        isDisabled={false}
         description={secondaryContent}
         {...itemProps}
       >

@@ -419,7 +419,8 @@ export function OverlayContainer({
     [allItems],
   );
   const hasNotifications = notifications.some((n) => !n.isExiting);
-  const canCollapse = !hasNotifications;
+  const hasActionableToasts = toasts.some((t) => !t.isExiting && t.actions);
+  const canCollapse = !hasNotifications && !hasActionableToasts;
 
   const {
     heights,
@@ -541,6 +542,7 @@ export function OverlayContainer({
                       theme={item.data.theme}
                       icon={item.data.icon}
                       isLoading={item.data.isLoading}
+                      actions={item.data.actions}
                     />
                   ) : (
                     <NotificationItem
