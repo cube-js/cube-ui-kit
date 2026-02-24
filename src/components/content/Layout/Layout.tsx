@@ -55,10 +55,6 @@ const LayoutElement = tasty({
       'auto-height': 'fixed 100%',
       collapsed: '6x',
     },
-    border: {
-      '': 0,
-      '!:last-child': '($layout-border-size, 1bw) solid #border bottom',
-    },
 
     '$content-padding': '1x',
     // Auto-border size for sub-components (set when layout is vertical)

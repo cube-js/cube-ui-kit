@@ -478,7 +478,7 @@ const okhslFunc = (groups: StyleDetails[]): string => {
   // Alpha is in the second slash-separated part (e.g., okhsl(240 50% 50% / .5))
   const alpha =
     group.parts.length > 1 && group.parts[1].all.length > 0
-      ? group.parts[1].all[0]
+      ? group.parts[1].output
       : undefined;
 
   // Create cache key from input tokens
