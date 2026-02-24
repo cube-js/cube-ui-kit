@@ -1,8 +1,11 @@
+import { okhslFunc } from '../plugins/okhsl-plugin';
+
 import { StyleParser } from './parser';
 import { StyleDetails } from './types';
 
 const parser = new StyleParser({
   funcs: {
+    okhsl: okhslFunc,
     sum(parsed: StyleDetails[]) {
       return `calc(${parsed
         .map((s) => s.values[0])
@@ -864,9 +867,9 @@ describe('Predefined tokens', () => {
       '#vibrant': 'okhsl(250 80% 60%)',
     });
 
-    // #vibrant.5 should apply .5 opacity, preserving okhsl color space
+    // #vibrant.5 should convert okhsl to rgb and apply .5 opacity
     const result = parser.process('#vibrant.5');
-    expect(result.output).toBe('okhsl(250 80% 60% / .5)');
+    expect(result.output).toMatch(/^rgb\(.+ \/ \.5\)$/);
   });
 
   test('opacity suffix works with predefined hsl() color tokens', () => {

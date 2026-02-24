@@ -1,6 +1,6 @@
 import { AriaButtonProps } from 'react-aria';
 
-import { CubeButtonProps } from '../../components/actions';
+import { CubeButtonProps } from '../../components/actions/Button/Button';
 
 /** Converts AriaButtonProps to CubeButtonProps */
 export function ariaToCubeButtonProps(

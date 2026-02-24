@@ -6,6 +6,7 @@ import { CubeTitleProps, Title } from './components/content/Title';
 import './version';
 
 export { Section } from 'react-stately';
+export type { MenuTriggerState } from 'react-stately';
 
 export * from '@internationalized/date';
 

@@ -466,15 +466,23 @@ const parsePercentage = (value: string): number => {
  */
 const okhslFunc = (groups: StyleDetails[]): string => {
   // We expect a single group with 3 values: H, S, L
+  // and an optional slash-separated alpha part
   if (groups.length === 0 || groups[0].all.length < 3) {
     console.warn('[okhsl] Expected 3 values (H S L), got:', groups);
     return 'rgb(0% 0% 0%)';
   }
 
-  const tokens = groups[0].all;
+  const group = groups[0];
+  const tokens = group.all;
+
+  // Alpha is in the second slash-separated part (e.g., okhsl(240 50% 50% / .5))
+  const alpha =
+    group.parts.length > 1 && group.parts[1].all.length > 0
+      ? group.parts[1].output
+      : undefined;
 
   // Create cache key from input tokens
-  const cacheKey = tokens.slice(0, 3).join(' ');
+  const cacheKey = tokens.slice(0, 3).join(' ') + (alpha ? ` / ${alpha}` : '');
   const cached = conversionCache.get(cacheKey);
   if (cached) return cached;
 
@@ -484,12 +492,14 @@ const okhslFunc = (groups: StyleDetails[]): string => {
 
   const [r, g, b] = okhslToSRGB(h, clamp(s, 0, 1), clamp(l, 0, 1));
 
-  // Return as rgb() with percentage syntax for best compatibility
   const format = (n: number): string => {
     const pct = n * 100;
     return parseFloat(pct.toFixed(1)).toString() + '%';
   };
-  const result = `rgb(${format(r)} ${format(g)} ${format(b)})`;
+
+  const result = alpha
+    ? `rgb(${format(r)} ${format(g)} ${format(b)} / ${alpha})`
+    : `rgb(${format(r)} ${format(g)} ${format(b)})`;
 
   conversionCache.set(cacheKey, result);
   return result;
