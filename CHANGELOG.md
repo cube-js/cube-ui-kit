@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.116.3
+
+### Patch Changes
+
+- [#1051](https://github.com/cube-js/cube-ui-kit/pull/1051) [`abe13ad2`](https://github.com/cube-js/cube-ui-kit/commit/abe13ad229aade781785264a212a446b5a262e4e) Thanks [@tenphi](https://github.com/tenphi)! - Fix slider track fill color in disabled state
+
 ## 0.116.2
 
 ### Patch Changes
