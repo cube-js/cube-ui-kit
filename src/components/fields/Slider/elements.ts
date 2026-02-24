@@ -62,7 +62,10 @@ export const SliderTrackContainerElement = tasty({
         range: 'auto 0 $slider-range-start 0',
         'range & horizontal': '0 auto 0 $slider-range-start',
       },
-      fill: '#primary',
+      fill: {
+        '': '#primary',
+        disabled: '#dark-04',
+      },
       width: {
         '': 'auto',
         horizontal: '$slider-value',
