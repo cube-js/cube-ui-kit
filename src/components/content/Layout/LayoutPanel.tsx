@@ -615,10 +615,11 @@ function LayoutPanel(
   // Register panel with layout context
   // Include handler outside portion (minus border overlap) for proper content inset
   // In sticky, overlay, and dialog modes, panel doesn't push content, so size is 0
-  // Use clampValue(size) so the inset matches the CSS-clamped visual size even before
-  // the auto-shrink effect updates the size state.
-  const effectivePanelSize =
-    isOpen && mode === 'default' ? clampValue(size) : 0;
+  // NOTE: We intentionally use `size` (not `clampValue(size)`) here to avoid a feedback
+  // loop. `clampValue` depends on the opposite panel's context size, so clamping here
+  // would create a period-2 oscillation through shared context. CSS --max-size handles
+  // visual clamping immediately; the auto-shrink effect converges `size` state.
+  const effectivePanelSize = isOpen && mode === 'default' ? size : 0;
   const effectiveInsetSize = Math.round(
     effectivePanelSize +
       (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
