@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.117.0
+
+### Minor Changes
+
+- [#1054](https://github.com/cube-js/cube-ui-kit/pull/1054) [`9bbc6de2`](https://github.com/cube-js/cube-ui-kit/commit/9bbc6de27b95f5f7d45503370a8fecf4c83aa1bb) Thanks [@tenphi](https://github.com/tenphi)! - Added `onBack` prop to `Layout.Header` component. When provided, a back button with arrow icon is rendered to the left of the title, allowing users to navigate back from the current page.
+
+- [#1053](https://github.com/cube-js/cube-ui-kit/pull/1053) [`9b68b794`](https://github.com/cube-js/cube-ui-kit/commit/9b68b794ed9924cb5a9eec3b1eb5ba13956ec8a0) Thanks [@tenphi](https://github.com/tenphi)! - Added support for CSS string values (like percentages) for `maxSize` prop in Layout.Panel, added `minContentSize` prop to Layout component to control minimum content area between panels, and implemented natural boundaries logic so panels on opposite sides automatically prevent overlap and maintain minimum content space.
+
 ## 0.116.3
 
 ### Patch Changes
