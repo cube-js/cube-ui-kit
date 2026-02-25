@@ -459,12 +459,19 @@ function LayoutPanel(
   const containerDimension = isHorizontal ? containerWidth : containerHeight;
   const oppositeSide = getOppositeSide(side);
   const oppositePanelSize = layoutState.panelSizes[oppositeSide];
+  const ownInsetOffset = isResizable ? RESIZABLE_INSET_OFFSET : 0;
   const naturalMax = useMemo(
     () =>
       containerDimension > 0
-        ? Math.max(0, containerDimension - oppositePanelSize - minContentSize)
+        ? Math.max(
+            0,
+            containerDimension -
+              oppositePanelSize -
+              minContentSize -
+              ownInsetOffset,
+          )
         : Infinity,
-    [containerDimension, oppositePanelSize, minContentSize],
+    [containerDimension, oppositePanelSize, minContentSize, ownInsetOffset],
   );
 
   // Panel open state
@@ -510,11 +517,15 @@ function LayoutPanel(
     [extractedStyles, contentPadding, styles],
   );
 
-  // Resolve user's maxSize to pixels for JS-level clamping
-  const resolvedMax = useMemo(
-    () => resolveCssSize(maxSize, containerDimension),
-    [maxSize, containerDimension],
-  );
+  // Resolve user's maxSize to pixels for JS-level clamping.
+  // String values (e.g. "50%") can only be resolved once we know the container size.
+  const resolvedMax = useMemo(() => {
+    if (typeof maxSize === 'number') return maxSize;
+    if (typeof maxSize === 'string' && containerDimension > 0) {
+      return resolveCssSize(maxSize, containerDimension);
+    }
+    return undefined;
+  }, [maxSize, containerDimension]);
 
   // Effective max combines user's maxSize with natural boundary
   const effectiveMax = useMemo(() => {
@@ -604,7 +615,10 @@ function LayoutPanel(
   // Register panel with layout context
   // Include handler outside portion (minus border overlap) for proper content inset
   // In sticky, overlay, and dialog modes, panel doesn't push content, so size is 0
-  const effectivePanelSize = isOpen && mode === 'default' ? size : 0;
+  // Use clampValue(size) so the inset matches the CSS-clamped visual size even before
+  // the auto-shrink effect updates the size state.
+  const effectivePanelSize =
+    isOpen && mode === 'default' ? clampValue(size) : 0;
   const effectiveInsetSize = Math.round(
     effectivePanelSize +
       (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
