@@ -1,3 +1,4 @@
+import { useResizeObserver } from '@react-aria/utils';
 import {
   CSSProperties,
   FocusEvent,
@@ -104,6 +105,8 @@ export interface CubeLayoutProps
   contentPadding?: Styles['padding'];
   /** Enable transition animation for Inner content when panels open/close */
   hasTransition?: boolean;
+  /** Minimum size reserved for the content area between panels. Default: 320 */
+  minContentSize?: number;
   /** Styles for wrapper and Inner sub-element */
   styles?: Styles;
   children?: ReactNode;
@@ -139,6 +142,7 @@ function LayoutInner(
     template,
     contentPadding,
     hasTransition = false,
+    minContentSize,
     styles,
     children,
     style,
@@ -151,6 +155,19 @@ function LayoutInner(
   } = props;
 
   const combinedInnerRef = useCombinedRefs(innerRefProp);
+  const updateContainerSize = layoutActions?.updateContainerSize;
+
+  useResizeObserver({
+    ref: localRef,
+    onResize: useCallback(() => {
+      if (localRef.current) {
+        updateContainerSize?.(
+          localRef.current.offsetWidth,
+          localRef.current.offsetHeight,
+        );
+      }
+    }, [updateContainerSize]),
+  });
 
   // Extract outer wrapper styles and inner content styles
   const outerStyles = extractStyles(otherProps, OUTER_STYLES);
@@ -377,10 +394,13 @@ function LayoutInner(
  * Uses a two-element architecture (wrapper + content) to ensure content never overflows.
  */
 function Layout(props: CubeLayoutProps, ref: ForwardedRef<HTMLDivElement>) {
-  const { hasTransition } = props;
+  const { hasTransition, minContentSize } = props;
 
   return (
-    <LayoutProvider hasTransition={hasTransition}>
+    <LayoutProvider
+      hasTransition={hasTransition}
+      minContentSize={minContentSize}
+    >
       <LayoutInner {...props} forwardedRef={ref} />
     </LayoutProvider>
   );

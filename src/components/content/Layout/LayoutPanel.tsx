@@ -45,7 +45,7 @@ import {
   useLayoutRefsContext,
   useLayoutStateContext,
 } from './LayoutContext';
-import { clampSize } from './utils';
+import { clampSize, getOppositeSide, resolveCssSize } from './utils';
 
 // Resize handler dimensions
 const HANDLER_WIDTH = 9;
@@ -87,14 +87,14 @@ const PanelElement = tasty({
       'side=right': 'initial',
     },
 
-    // Size handling
+    // Size handling with CSS-level min/max clamping
     width: {
-      '': '$panel-size',
+      '': '$min-size $panel-size $max-size',
       'side=top | side=bottom': '100%',
     },
     height: {
       '': '100%',
-      'side=top | side=bottom': '$panel-size',
+      'side=top | side=bottom': '$min-size $panel-size $max-size',
     },
 
     // Visual styling
@@ -453,6 +453,27 @@ function LayoutPanel(
   const prevProvidedSizeRef = useRef(providedSize);
   const isHorizontal = side === 'left' || side === 'right';
 
+  // Natural boundary computation
+  const { containerWidth, containerHeight } = layoutState;
+  const { minContentSize } = layoutActions;
+  const containerDimension = isHorizontal ? containerWidth : containerHeight;
+  const oppositeSide = getOppositeSide(side);
+  const oppositePanelSize = layoutState.panelSizes[oppositeSide];
+  const ownInsetOffset = isResizable ? RESIZABLE_INSET_OFFSET : 0;
+  const naturalMax = useMemo(
+    () =>
+      containerDimension > 0
+        ? Math.max(
+            0,
+            containerDimension -
+              oppositePanelSize -
+              minContentSize -
+              ownInsetOffset,
+          )
+        : Infinity,
+    [containerDimension, oppositePanelSize, minContentSize, ownInsetOffset],
+  );
+
   // Panel open state
   const [internalIsOpen, setInternalIsOpen] = useState(defaultIsOpen);
   const isOpen = providedIsOpen ?? internalIsOpen;
@@ -496,10 +517,28 @@ function LayoutPanel(
     [extractedStyles, contentPadding, styles],
   );
 
-  // Clamp size to min/max constraints
+  // Resolve user's maxSize to pixels for JS-level clamping.
+  // String values (e.g. "50%") can only be resolved once we know the container size.
+  const resolvedMax = useMemo(() => {
+    if (typeof maxSize === 'number') return maxSize;
+    if (typeof maxSize === 'string' && containerDimension > 0) {
+      return resolveCssSize(maxSize, containerDimension);
+    }
+    return undefined;
+  }, [maxSize, containerDimension]);
+
+  // Effective max combines user's maxSize with natural boundary
+  const effectiveMax = useMemo(() => {
+    const values: number[] = [];
+    if (resolvedMax != null) values.push(resolvedMax);
+    if (Number.isFinite(naturalMax)) values.push(naturalMax);
+    return values.length > 0 ? Math.min(...values) : undefined;
+  }, [resolvedMax, naturalMax]);
+
+  // Clamp size to min/max constraints (including natural boundaries)
   const clampValue = useCallback(
-    (value: number) => clampSize(value, minSize, maxSize),
-    [minSize, maxSize],
+    (value: number) => clampSize(value, minSize, undefined, effectiveMax),
+    [minSize, effectiveMax],
   );
 
   const setContextDragging = layoutActions.setDragging;
@@ -557,9 +596,29 @@ function LayoutPanel(
     }
   }, [providedSize, isDragging, clampValue]);
 
+  // Auto-shrink: re-clamp when container resizes or opposite panel changes
+  useEffect(() => {
+    if (!isDragging && containerDimension > 0) {
+      setSize((prev) => {
+        const clamped = clampValue(prev);
+
+        if (clamped !== prev) {
+          onSizeChange?.(Math.round(clamped));
+          setStoredSize(Math.round(clamped));
+        }
+
+        return clamped;
+      });
+    }
+  }, [isDragging, clampValue, containerDimension]);
+
   // Register panel with layout context
   // Include handler outside portion (minus border overlap) for proper content inset
   // In sticky, overlay, and dialog modes, panel doesn't push content, so size is 0
+  // NOTE: We intentionally use `size` (not `clampValue(size)`) here to avoid a feedback
+  // loop. `clampValue` depends on the opposite panel's context size, so clamping here
+  // would create a period-2 oscillation through shared context. CSS --max-size handles
+  // visual clamping immediately; the auto-shrink effect converges `size` state.
   const effectivePanelSize = isOpen && mode === 'default' ? size : 0;
   const effectiveInsetSize = Math.round(
     effectivePanelSize +
@@ -661,18 +720,29 @@ function LayoutPanel(
     [side, isDragging, isHorizontal, hasTransition, isReady, mods],
   );
 
+  // Build --max-size CSS variable combining user maxSize and natural boundary
+  const maxSizeCss = useMemo(() => {
+    const parts: string[] = [];
+
+    if (maxSize != null) {
+      parts.push(typeof maxSize === 'number' ? `${maxSize}px` : maxSize);
+    }
+
+    if (containerDimension > 0 && Number.isFinite(naturalMax)) {
+      parts.push(`${naturalMax}px`);
+    }
+
+    if (parts.length === 0) return undefined;
+    return parts.length === 1 ? parts[0] : `min(${parts.join(', ')})`;
+  }, [maxSize, naturalMax, containerDimension]);
+
   const panelStyle = useMemo(
     () => ({
       '--panel-size': `${size}px`,
       '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
-      '--max-size':
-        maxSize != null
-          ? typeof maxSize === 'number'
-            ? `${maxSize}px`
-            : maxSize
-          : undefined,
+      '--max-size': maxSizeCss,
     }),
-    [size, minSize, maxSize],
+    [size, minSize, maxSizeCss],
   );
 
   // Combine refs for panel element

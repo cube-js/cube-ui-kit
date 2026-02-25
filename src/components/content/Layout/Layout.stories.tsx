@@ -1402,3 +1402,96 @@ export const OverflowControl: Story = {
     );
   },
 };
+
+/**
+ * Panels support CSS string values for `maxSize` like percentages.
+ * This example sets `maxSize="50%"` to limit the panel to half the layout width.
+ */
+export const ResizablePanelWithPercentMax: Story = {
+  render: function ResizablePanelWithPercentMaxStory() {
+    const [size, setSize] = useState(250);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Panel
+          isResizable
+          side="left"
+          size={size}
+          minSize={150}
+          maxSize="50%"
+          onSizeChange={setSize}
+        >
+          <Layout.PanelHeader title="Max 50%" />
+          <Layout.Content>
+            <Text>
+              This panel is limited to 50% of the layout width. Drag the edge to
+              resize (current: {size}px).
+            </Text>
+          </Layout.Content>
+        </Layout.Panel>
+        <Layout.Content>
+          <Text>Main content area — always at least 50% wide.</Text>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+/**
+ * When two resizable panels are on opposite sides, they enforce natural
+ * boundaries so they never overlap. A minimum content area (default 320px)
+ * is always reserved between them. Panels auto-shrink on container resize.
+ */
+export const NaturalBoundaries: Story = {
+  render: function NaturalBoundariesStory() {
+    const [leftSize, setLeftSize] = useState(300);
+    const [rightSize, setRightSize] = useState(300);
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Panel
+          isResizable
+          side="left"
+          size={leftSize}
+          minSize={150}
+          onSizeChange={setLeftSize}
+        >
+          <Layout.PanelHeader title="Left Panel" />
+          <Layout.Content>
+            <Text>Width: {leftSize}px</Text>
+            <Text preset="t3" color="#dark-02">
+              Try dragging — this panel cannot overlap the right panel, and at
+              least 320px is reserved for the content area.
+            </Text>
+          </Layout.Content>
+        </Layout.Panel>
+        <Layout.Panel
+          isResizable
+          side="right"
+          size={rightSize}
+          minSize={150}
+          onSizeChange={setRightSize}
+        >
+          <Layout.PanelHeader title="Right Panel" />
+          <Layout.Content>
+            <Text>Width: {rightSize}px</Text>
+            <Text preset="t3" color="#dark-02">
+              Both panels respect natural boundaries. Resize the browser window
+              to see them auto-shrink.
+            </Text>
+          </Layout.Content>
+        </Layout.Panel>
+        <Layout.Content>
+          <Card>
+            <Title level={5}>Content Area</Title>
+            <Text>
+              This area is guaranteed to be at least 320px wide (the default{' '}
+              <code>minContentSize</code>). Neither panel can grow beyond the
+              natural boundary.
+            </Text>
+          </Card>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
