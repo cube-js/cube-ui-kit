@@ -1,3 +1,4 @@
+import { IconArrowLeft } from '@tabler/icons-react';
 import {
   ForwardedRef,
   forwardRef,
@@ -10,6 +11,7 @@ import {
 
 import { SlashIcon } from '../../../icons/SlashIcon';
 import { tasty } from '../../../tasty';
+import { Button } from '../../actions/Button/Button';
 import { Link } from '../../actions/Link/Link';
 import { useAutoTooltip } from '../use-auto-tooltip';
 
@@ -29,14 +31,22 @@ const HeaderElement = tasty(LayoutContent, {
       $: '>',
       display: 'grid',
       gridTemplate: `
-        "breadcrumbs breadcrumbs breadcrumbs" auto
-        "title suffix extra" 1fr
-        "subtitle subtitle extra" auto
-        / max-content 1fr minmax(0, auto)
+        "breadcrumbs breadcrumbs breadcrumbs breadcrumbs" auto
+        "back title suffix extra" 1fr
+        ".. subtitle subtitle extra" auto
+        / auto max-content 1fr minmax(0, auto)
       `,
       gap: 0,
       placeContent: 'stretch',
       placeItems: 'center stretch',
+    },
+
+    Back: {
+      $: '> Inner >',
+      gridArea: 'back',
+      display: 'flex',
+      placeItems: 'center',
+      margin: '.5x right',
     },
 
     Breadcrumbs: {
@@ -111,6 +121,8 @@ export interface CubeLayoutHeaderProps extends CubeLayoutContentProps {
    * Uses Link component which integrates with the navigation provider.
    */
   breadcrumbs?: Array<[label: string, href: string]>;
+  /** Callback for the back button. When provided, a back arrow button is rendered to the left of the title. */
+  onBack?: () => void;
 }
 
 function LayoutHeader(
@@ -124,6 +136,7 @@ function LayoutHeader(
     extra,
     subtitle,
     breadcrumbs,
+    onBack,
     scrollbar = 'tiny',
     children,
     mods,
@@ -181,6 +194,16 @@ function LayoutHeader(
       scrollbar={scrollbar}
     >
       {renderBreadcrumbs()}
+      {onBack && (
+        <div data-element="Back">
+          <Button
+            type="neutral"
+            icon={<IconArrowLeft />}
+            aria-label="Go back"
+            onPress={onBack}
+          />
+        </div>
+      )}
       {renderWithTooltip(renderTitle, 'bottom')}
       {suffix && <div data-element="Suffix">{suffix}</div>}
       {extra && <div data-element="Extra">{extra}</div>}
