@@ -118,8 +118,10 @@ A semantic page header with title, breadcrumbs, subtitle, and action areas.
 | subtitle | `ReactNode` | - | Text below the title |
 | suffix | `ReactNode` | - | Content next to the title |
 | extra | `ReactNode` | - | Content on the right side |
+| onBack | `() => void` | - | Callback for the back button. When provided, a back arrow button appears to the left of the title. |
 
 **Sub-elements:**
+- `Back` - Back button container (visible when `onBack` is provided)
 - `Breadcrumbs` - Navigation path container
 - `Title` - Main heading element
 - `Suffix` - Content adjacent to title
@@ -427,6 +429,28 @@ A variant of Layout that enables CSS Grid for the content area.
   />
   <Layout.Content>
     <Text>Analytics content</Text>
+  </Layout.Content>
+</Layout>
+```
+
+### With Back Button
+
+<Story of={LayoutStories.WithBackButton} />
+
+```jsx
+<Layout height="100dvh">
+  <Layout.Header
+    title="Report Details"
+    onBack={() => navigate(-1)}
+    extra={
+      <Space>
+        <Button>Export</Button>
+        <Button type="primary">Edit</Button>
+      </Space>
+    }
+  />
+  <Layout.Content>
+    <Text>Page content with a back button in the header</Text>
   </Layout.Content>
 </Layout>
 ```

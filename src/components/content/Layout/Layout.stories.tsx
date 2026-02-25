@@ -180,6 +180,26 @@ export const WithBreadcrumbs: Story = {
   ),
 };
 
+export const WithBackButton: Story = {
+  render: () => (
+    <Layout height="100dvh">
+      <Layout.Header
+        title="Report Details"
+        extra={
+          <Space>
+            <Button>Export</Button>
+            <Button type="primary">Edit</Button>
+          </Space>
+        }
+        onBack={() => console.log('Back pressed')}
+      />
+      <Layout.Content>
+        <Text>Page content with a back button in the header</Text>
+      </Layout.Content>
+    </Layout>
+  ),
+};
+
 export const WithSidePanel: Story = {
   render: function WithSidePanelStory() {
     const [isPanelOpen, setIsPanelOpen] = useState(true);
