@@ -51,12 +51,16 @@ export interface LayoutActionsContextValue {
   setDragging: (isDragging: boolean) => void;
   /** Mark the layout as ready (after initial mount) */
   markReady: () => void;
+  /** Update the container dimensions (called from ResizeObserver) */
+  updateContainerSize: (width: number, height: number) => void;
   /** Register an overlay panel's dismiss callback. Returns unregister function. */
   registerOverlayPanel: (dismiss: OverlayDismissCallback) => () => void;
   /** Dismiss all overlay panels */
   dismissOverlayPanels: () => void;
   /** Whether transitions are enabled for panels (stable config value) */
   hasTransition: boolean;
+  /** Minimum size reserved for the content area between panels */
+  minContentSize: number;
 }
 
 /** State context - reactive state that triggers re-renders */
@@ -65,6 +69,8 @@ export interface LayoutStateContextValue {
   isDragging: boolean;
   isReady: boolean;
   hasOverlayPanels: boolean;
+  containerWidth: number;
+  containerHeight: number;
 }
 
 export const LayoutActionsContext =
@@ -108,11 +114,14 @@ export interface LayoutProviderProps {
   children: ReactNode;
   /** Whether transitions are enabled for panels */
   hasTransition?: boolean;
+  /** Minimum size reserved for the content area between panels. Default: 320 */
+  minContentSize?: number;
 }
 
 export function LayoutProvider({
   children,
   hasTransition = false,
+  minContentSize = 320,
 }: LayoutProviderProps) {
   const registeredPanels = useRef<Set<Side>>(new Set());
   const overlayPanelCallbacks = useRef<Set<OverlayDismissCallback>>(new Set());
@@ -134,6 +143,8 @@ export function LayoutProvider({
   const [isDragging, setIsDragging] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [hasOverlayPanels, setHasOverlayPanels] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
 
   const updatePanelSize = useEvent((side: Side, size: number) => {
     setPanelSizes((prev) => {
@@ -198,6 +209,11 @@ export function LayoutProvider({
     overlayPanelCallbacks.current.forEach((dismiss) => dismiss());
   });
 
+  const updateContainerSize = useEvent((width: number, height: number) => {
+    setContainerWidth((prev) => (prev === width ? prev : width));
+    setContainerHeight((prev) => (prev === height ? prev : height));
+  });
+
   // Actions context - stable because all callbacks use useEvent
   const actionsValue = useMemo(
     () => ({
@@ -206,12 +222,14 @@ export function LayoutProvider({
       updatePanelSize,
       setDragging,
       markReady,
+      updateContainerSize,
       hasTransition,
+      minContentSize,
       registerOverlayPanel,
       dismissOverlayPanels,
     }),
-    // Only hasTransition can change - all other values are stable useEvent callbacks
-    [hasTransition],
+    // Only hasTransition and minContentSize can change - all other values are stable useEvent callbacks
+    [hasTransition, minContentSize],
   );
 
   // State context - changes when state updates
@@ -221,8 +239,17 @@ export function LayoutProvider({
       isDragging,
       isReady,
       hasOverlayPanels,
+      containerWidth,
+      containerHeight,
     }),
-    [panelSizes, isDragging, isReady, hasOverlayPanels],
+    [
+      panelSizes,
+      isDragging,
+      isReady,
+      hasOverlayPanels,
+      containerWidth,
+      containerHeight,
+    ],
   );
 
   // Refs context - includes container ready state
