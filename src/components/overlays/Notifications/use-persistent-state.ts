@@ -33,6 +33,16 @@ export interface PersistentState {
    * instead of `addPersistentItem`.
    */
   saveDismissedPersistentId: (id: Key) => void;
+  /**
+   * Removes an id from the fully-dismissed set.
+   * Used to undo an `'action'` dismissal when the async action is cancelled.
+   */
+  undoFullyDismissedId: (id: Key) => void;
+  /**
+   * Removes an item from the persistent list without marking it as fully dismissed.
+   * Used to undo a `'close'` dismissal that moved the notification to persistent.
+   */
+  removePersistentItemSilently: (id: Key) => void;
 }
 
 // ─── Hook ────────────────────────────────────────────────────────────
@@ -126,6 +136,15 @@ export function usePersistentState(maxItems: number): PersistentState {
     saveDismissedId(id);
   });
 
+  const undoFullyDismissedId = useEvent((id: Key): void => {
+    fullyDismissedIdsRef.current.delete(String(id));
+  });
+
+  const removePersistentItemSilently = useEvent((id: Key): void => {
+    dismissedPersistentIdsRef.current!.delete(String(id));
+    setPersistentItems((prev) => prev.filter((i) => i.id !== id));
+  });
+
   return {
     persistentItems,
     addPersistentItem,
@@ -136,5 +155,7 @@ export function usePersistentState(maxItems: number): PersistentState {
     hasDismissedPersistentId,
     isFullyDismissedId,
     saveDismissedPersistentId,
+    undoFullyDismissedId,
+    removePersistentItemSilently,
   };
 }

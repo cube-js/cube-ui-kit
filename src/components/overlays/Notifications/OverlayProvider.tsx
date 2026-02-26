@@ -109,6 +109,7 @@ export function OverlayProvider({
               notification.finalizeNotificationRemoval
             }
             onNotificationDismiss={notification.removeNotification}
+            onNotificationRestore={notification.restoreNotification}
             onPauseChange={timers.handlePauseChange}
           />
         </PersistentNotificationsContext.Provider>

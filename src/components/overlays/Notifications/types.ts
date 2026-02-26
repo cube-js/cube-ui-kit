@@ -135,6 +135,8 @@ export interface InternalNotification extends OverlayNotificationOptions {
   createdAt: number;
   updatedAt: number;
   isExiting?: boolean;
+  /** Reason for the most recent dismiss, used to undo persistent side effects on restore. */
+  lastDismissReason?: DismissReason;
   ownerId?: string;
 }
 

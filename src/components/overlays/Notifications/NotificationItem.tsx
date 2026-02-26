@@ -62,11 +62,13 @@ const NotificationItemWrapper = tasty({
 export interface NotificationItemProps {
   notification: InternalNotification;
   onDismiss: (id: Key, reason: DismissReason) => void;
+  onRestore?: (id: Key) => void;
 }
 
 export function NotificationItem({
   notification,
   onDismiss,
+  onRestore,
 }: NotificationItemProps) {
   const {
     theme,
@@ -104,6 +106,7 @@ export function NotificationItem({
         isDismissible={isDismissible}
         notificationId={notificationId}
         onDismiss={onDismiss}
+        onRestore={onRestore}
       />
     </NotificationItemWrapper>
   );

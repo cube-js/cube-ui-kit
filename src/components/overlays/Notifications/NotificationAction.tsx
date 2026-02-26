@@ -29,6 +29,7 @@ export { NotificationActionInterceptorContext };
 
 interface NotificationDismissContextValue {
   dismiss: (reason: 'action' | 'close') => void;
+  restore: () => void;
 }
 
 const NotificationDismissContext =
@@ -37,19 +38,25 @@ const NotificationDismissContext =
 export interface NotificationDismissProviderProps {
   notificationId: Key;
   onDismiss: (id: Key, reason: 'action' | 'close') => void;
+  onRestore?: (id: Key) => void;
   children: ReactNode;
 }
 
 export function NotificationDismissProvider({
   notificationId,
   onDismiss,
+  onRestore,
   children,
 }: NotificationDismissProviderProps) {
   const dismiss = useEvent((reason: 'action' | 'close') => {
     onDismiss(notificationId, reason);
   });
 
-  const value = useMemo(() => ({ dismiss }), [dismiss]);
+  const restore = useEvent(() => {
+    onRestore?.(notificationId);
+  });
+
+  const value = useMemo(() => ({ dismiss, restore }), [dismiss, restore]);
 
   return (
     <NotificationDismissContext.Provider value={value}>
@@ -108,22 +115,24 @@ export function NotificationAction({
   const actionInterceptor = useContext(NotificationActionInterceptorContext);
 
   const handlePress = useEvent(async () => {
-    const result = await onPress?.();
-
-    if (result === false) {
-      return;
-    }
-
     actionInterceptor?.();
 
     if (closeOnPress || actionInterceptor) {
-      // isDismiss actions (dismiss button, Escape) use 'close' reason — the
-      // notification moves to the persistent list.
-      // Regular actions use 'action' reason — the notification is fully dismissed
-      // and won't reappear.
+      // Dismiss immediately so the notification hides before the async action
+      // completes (e.g. opening a confirmation dialog).
+      // isDismiss actions use 'close' reason — the notification moves to the
+      // persistent list. Regular actions use 'action' reason — the notification
+      // is fully dismissed and won't reappear.
       // When an actionInterceptor is present (persistent list), always dismiss
       // regardless of closeOnPress — all actions remove the item permanently.
       dismissCtx?.dismiss(isDismiss ? 'close' : 'action');
+    }
+
+    const result = await onPress?.();
+
+    if (result === false && (closeOnPress || actionInterceptor)) {
+      // The async action signalled cancellation — restore the notification.
+      dismissCtx?.restore();
     }
   });
 

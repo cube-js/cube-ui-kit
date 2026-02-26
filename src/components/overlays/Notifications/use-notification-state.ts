@@ -21,9 +21,11 @@ const MAX_NOTIFICATIONS = 5;
 export interface PersistentCallbacks {
   addPersistentItem: (item: PersistentNotificationItem) => void;
   removePersistentItem: (id: Key) => void;
+  removePersistentItemSilently: (id: Key) => void;
   hasDismissedPersistentId: (id: Key) => boolean;
   isFullyDismissedId: (id: Key) => boolean;
   saveDismissedPersistentId: (id: Key) => void;
+  undoFullyDismissedId: (id: Key) => void;
 }
 
 export interface NotificationState {
@@ -34,6 +36,7 @@ export interface NotificationState {
     ownerId?: string,
   ) => Key;
   removeNotification: (id: Key, reason?: DismissReason) => void;
+  restoreNotification: (id: Key) => void;
   updateNotification: (
     id: Key,
     options: Partial<OverlayNotificationOptions>,
@@ -161,11 +164,54 @@ export function useNotificationState(
 
       setNotifications((prev) =>
         prev.map((n) =>
-          matchesNotificationId(n, id) ? { ...n, isExiting: true } : n,
+          matchesNotificationId(n, id)
+            ? { ...n, isExiting: true, lastDismissReason: reason }
+            : n,
         ),
       );
     },
   );
+
+  // ─── Restore ──────────────────────────────────────────────────
+
+  const restoreNotification = useEvent((id: Key) => {
+    const notif = findNotification(notificationsRef.current, id);
+
+    if (!notif || !notif.isExiting) return;
+
+    // Undo persistent side effects based on how the notification was dismissed.
+    if (notif.persistent && notif.lastDismissReason) {
+      const persistentId = notif.id ?? notif.internalId;
+
+      if (
+        notif.lastDismissReason === 'close' ||
+        notif.lastDismissReason === 'timeout'
+      ) {
+        persistent.removePersistentItemSilently(persistentId);
+      } else if (notif.lastDismissReason === 'action') {
+        persistent.undoFullyDismissedId(persistentId);
+      }
+    }
+
+    // Restart the auto-dismiss timer.
+    const duration = getDuration(notif);
+
+    if (duration != null && duration > 0) {
+      timersRef.current?.startNotificationTimer(
+        notif.internalId,
+        notif.id ?? notif.internalId,
+        duration,
+      );
+    }
+
+    setNotifications((prev) =>
+      prev.map((n) =>
+        matchesNotificationId(n, id)
+          ? { ...n, isExiting: false, lastDismissReason: undefined }
+          : n,
+      ),
+    );
+  });
 
   // ─── Finalize ──────────────────────────────────────────────────
 
@@ -353,6 +399,7 @@ export function useNotificationState(
     notificationsRef,
     addNotification,
     removeNotification,
+    restoreNotification,
     updateNotification,
     finalizeNotificationRemoval,
     removeByOwner,

@@ -90,6 +90,7 @@ interface ActionsSectionProps {
   hasDismissContext: boolean;
   notificationId?: Key;
   onDismiss?: (id: Key, reason: DismissReason) => void;
+  onRestore?: (id: Key) => void;
 }
 
 /**
@@ -107,6 +108,7 @@ function ActionsSection({
   hasDismissContext,
   notificationId,
   onDismiss,
+  onRestore,
 }: ActionsSectionProps) {
   const actionsContent = (
     <Space placeSelf="end" placeContent="end" flexGrow={1}>
@@ -127,6 +129,7 @@ function ActionsSection({
         <NotificationDismissProvider
           notificationId={notificationId!}
           onDismiss={onDismiss!}
+          onRestore={onRestore}
         >
           {wrappedContent}
         </NotificationDismissProvider>
@@ -166,6 +169,8 @@ export interface NotificationCardProps {
   notificationId?: Key;
   /** Called when the notification is dismissed */
   onDismiss?: (id: Key, reason: DismissReason) => void;
+  /** Called when a dismissed notification should be restored (async action returned false) */
+  onRestore?: (id: Key) => void;
   /** Suffix content (e.g. timestamp) */
   suffix?: ReactNode;
 }
@@ -185,6 +190,7 @@ export function NotificationCard({
   elevated = true,
   notificationId,
   onDismiss,
+  onRestore,
   suffix,
 }: NotificationCardProps) {
   const icon = getThemeIcon(theme, providedIcon);
@@ -205,6 +211,7 @@ export function NotificationCard({
             hasDismissContext={hasDismissContext}
             notificationId={notificationId}
             onDismiss={onDismiss}
+            onRestore={onRestore}
           />
         )}
       </Flex>
