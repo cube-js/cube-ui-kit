@@ -1,5 +1,8 @@
 import { Key, useEffect, useRef } from 'react';
 
+import { useEvent } from '../../../_internal';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
+
 import { useToastContext } from './ToastProvider';
 
 import type {
@@ -66,6 +69,7 @@ export function useProgressToast(
   const isFirstRenderRef = useRef(true);
   const optionsRef = useRef(options);
   const hasBeenLoadingRef = useRef(false);
+  const hiddenByUserRef = useRef(false);
 
   // Track previous string values for re-show comparison
   const prevThemeRef = useRef<string | undefined>(undefined);
@@ -88,11 +92,21 @@ export function useProgressToast(
 
   // Extract values only when options are not empty
   const isLoading = isEmpty ? false : options.isLoading;
+  const isDismissible = isEmpty ? false : !!options.isDismissible;
   const currentTheme = isEmpty ? undefined : options.theme;
   const currentTitle = isEmpty ? undefined : getStringValue(options.title);
   const currentDescription = isEmpty
     ? undefined
     : getStringValue(options.description);
+
+  const handleHide = useEvent(() => {
+    if (toastIdRef.current != null) {
+      removeToast(toastIdRef.current);
+      toastIdRef.current = null;
+    }
+
+    hiddenByUserRef.current = true;
+  });
 
   useEffect(() => {
     const wasLoading = wasLoadingRef.current;
@@ -111,6 +125,7 @@ export function useProgressToast(
 
       // Reset loading gate so the next cycle requires isLoading again
       hasBeenLoadingRef.current = false;
+      hiddenByUserRef.current = false;
       wasLoadingRef.current = null;
       isFirstRenderRef.current = false;
       prevThemeRef.current = undefined;
@@ -120,7 +135,11 @@ export function useProgressToast(
     }
 
     // From here, we know options is a valid ProgressToastOptions
-    const { isLoading: currentIsLoading, ...currentToastData } = currentOptions;
+    const {
+      isLoading: currentIsLoading,
+      isDismissible: _isDismissible,
+      ...currentToastData
+    } = currentOptions;
 
     // Check if meaningful data changed (only string values)
     const themeChanged = currentTheme !== prevThemeRef.current;
@@ -129,14 +148,30 @@ export function useProgressToast(
       currentDescription !== prevDescriptionRef.current;
     const dataChanged = themeChanged || titleChanged || descriptionChanged;
 
+    const hideAction =
+      isDismissible && currentIsLoading ? (
+        <ItemAction type="secondary" onPress={handleHide}>
+          Hide
+        </ItemAction>
+      ) : null;
+
+    const mergedActions = hideAction ? (
+      <>
+        {currentToastData.actions}
+        {hideAction}
+      </>
+    ) : (
+      currentToastData.actions
+    );
+
     const toastData: ToastData = {
       title: undefined,
       description: undefined,
       theme: undefined,
       icon: undefined,
-      actions: undefined,
       itemProps: undefined,
       ...currentToastData,
+      actions: mergedActions,
       isLoading: currentIsLoading,
       duration: null,
     };
@@ -167,7 +202,9 @@ export function useProgressToast(
       hasBeenLoadingRef.current = true;
       clearHideTimer();
 
-      if (toastIdRef.current == null) {
+      if (hiddenByUserRef.current) {
+        // User dismissed the loading toast; don't re-show during this loading cycle.
+      } else if (toastIdRef.current == null) {
         // Create new toast
         showToast();
       } else if (dataChanged) {
@@ -176,6 +213,7 @@ export function useProgressToast(
       }
     } else if (wasLoading === true && !currentIsLoading) {
       // Transitioning from loading to not loading
+      hiddenByUserRef.current = false;
       clearHideTimer();
 
       if (currentTitle) {
@@ -215,12 +253,14 @@ export function useProgressToast(
   }, [
     isEmpty,
     isLoading,
+    isDismissible,
     currentTheme,
     currentTitle,
     currentDescription,
     addToast,
     removeToast,
     updateToast,
+    handleHide,
   ]);
 
   // Cleanup on unmount

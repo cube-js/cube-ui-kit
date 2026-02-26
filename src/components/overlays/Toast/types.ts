@@ -29,7 +29,8 @@ export interface ToastData {
 export interface ProgressToastOptions extends Omit<ToastData, 'duration'> {
   /** Whether the toast is in loading state */
   isLoading: boolean;
-  // Re-shows toast if theme/description/icon change by reference while not visible
+  /** When true, a "Hide" action is shown during loading so the user can dismiss the toast temporarily. */
+  isDismissible?: boolean;
 }
 
 /**

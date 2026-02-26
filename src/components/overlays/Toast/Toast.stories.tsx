@@ -216,6 +216,7 @@ export const ProgressStateToggle = () => {
     state === 'loading'
       ? {
           isLoading: true,
+          isDismissible: true,
           title: 'Processing...',
         }
       : state === 'success'
