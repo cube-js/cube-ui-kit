@@ -15,6 +15,8 @@ import type { OverlayTimers } from './use-overlay-timers';
 const DEFAULT_NOTIFICATION_DURATION = 3000;
 const DEFAULT_PERSISTENT_NOTIFICATION_DURATION = 5000;
 const MAX_NOTIFICATIONS = 5;
+const MAX_DISMISS_SNAPSHOTS = 50;
+const SNAPSHOT_TTL_MS = 5 * 60 * 1000;
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -148,6 +150,17 @@ export function useNotificationState(
         lastDismissReason: reason,
       });
 
+      // Prevent unbounded growth of dismiss snapshots.
+      while (dismissSnapshotsRef.current.size > MAX_DISMISS_SNAPSHOTS) {
+        const oldest = dismissSnapshotsRef.current.keys().next().value;
+
+        if (oldest != null) {
+          dismissSnapshotsRef.current.delete(oldest);
+        } else {
+          break;
+        }
+      }
+
       if (notif.persistent) {
         if (reason === 'close' || reason === 'timeout') {
           // Dismiss button, Escape, or auto-dismiss timeout — move to persistent list.
@@ -247,6 +260,17 @@ export function useNotificationState(
 
   const finalizeNotificationRemoval = useEvent((internalId: string) => {
     setNotifications((prev) => prev.filter((n) => n.internalId !== internalId));
+
+    // Deferred cleanup of the dismiss snapshot. Kept briefly so async action
+    // callbacks can still call restoreNotification after the exit animation.
+    setTimeout(() => {
+      for (const [key, snap] of dismissSnapshotsRef.current) {
+        if (snap.internalId === internalId) {
+          dismissSnapshotsRef.current.delete(key);
+          break;
+        }
+      }
+    }, SNAPSHOT_TTL_MS);
   });
 
   // ─── Add ────────────────────────────────────────────────────────
