@@ -92,7 +92,7 @@ export function useProgressToast(
 
   // Extract values only when options are not empty
   const isLoading = isEmpty ? false : options.isLoading;
-  const isDismissible = isEmpty ? false : !!options.isDismissible;
+  const isDismissable = isEmpty ? false : !!options.isDismissable;
   const currentTheme = isEmpty ? undefined : options.theme;
   const currentTitle = isEmpty ? undefined : getStringValue(options.title);
   const currentDescription = isEmpty
@@ -137,7 +137,7 @@ export function useProgressToast(
     // From here, we know options is a valid ProgressToastOptions
     const {
       isLoading: currentIsLoading,
-      isDismissible: _isDismissible,
+      isDismissable: _isDismissable,
       ...currentToastData
     } = currentOptions;
 
@@ -149,7 +149,7 @@ export function useProgressToast(
     const dataChanged = themeChanged || titleChanged || descriptionChanged;
 
     const hideAction =
-      isDismissible && currentIsLoading ? (
+      isDismissable && currentIsLoading ? (
         <ItemAction type="secondary" onPress={handleHide}>
           Hide
         </ItemAction>
@@ -253,7 +253,7 @@ export function useProgressToast(
   }, [
     isEmpty,
     isLoading,
-    isDismissible,
+    isDismissable,
     currentTheme,
     currentTitle,
     currentDescription,

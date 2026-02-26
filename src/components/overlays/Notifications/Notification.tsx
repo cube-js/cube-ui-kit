@@ -87,7 +87,7 @@ export function Notification(props: NotificationProps): null {
     props.description,
     props.icon,
     props.actions,
-    props.isDismissible,
+    props.isDismissable,
     props.persistent,
     props.duration,
   ]);

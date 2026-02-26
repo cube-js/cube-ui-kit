@@ -76,7 +76,7 @@ export function NotificationItem({
     description,
     icon,
     actions,
-    isDismissible = true,
+    isDismissable = true,
     id,
     internalId,
   } = notification;
@@ -84,7 +84,7 @@ export function NotificationItem({
   const notificationId = id ?? internalId;
 
   const handleKeyDown = useEvent((e: KeyboardEvent) => {
-    if (e.key === 'Escape' && isDismissible) {
+    if (e.key === 'Escape' && isDismissable) {
       e.stopPropagation();
       onDismiss(notificationId, 'close');
     }
@@ -103,7 +103,7 @@ export function NotificationItem({
         description={description}
         icon={icon}
         actions={actions}
-        isDismissible={isDismissible}
+        isDismissable={isDismissable}
         notificationId={notificationId}
         onDismiss={onDismiss}
         onRestore={onRestore}

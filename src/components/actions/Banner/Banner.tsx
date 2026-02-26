@@ -25,7 +25,7 @@ export type BannerProps = Omit<CubeItemProps, 'type' | 'size' | 'theme'> & {
    * Controls whether the banner can be dismissed by the user.
    * @default false
    */
-  isDismissible?: boolean;
+  isDismissable?: boolean;
   /**
    * Callback fired when the dismiss button is clicked.
    */
@@ -100,7 +100,7 @@ export function Banner(props: BannerProps) {
   const {
     theme = 'note',
     actions,
-    isDismissible = false,
+    isDismissable = false,
     onDismiss,
     children,
     icon,
@@ -113,7 +113,7 @@ export function Banner(props: BannerProps) {
 
   const defaultIcon = useMemo(() => DEFAULT_ICONS[theme], [theme]);
 
-  const hasActions = !!(actions || isDismissible);
+  const hasActions = !!(actions || isDismissable);
 
   return (
     <BannerElement
@@ -128,7 +128,7 @@ export function Banner(props: BannerProps) {
         hasActions ? (
           <>
             {actions}
-            {isDismissible && (
+            {isDismissable && (
               <Item.Action
                 icon={<IconX />}
                 tooltip="Hide banner"

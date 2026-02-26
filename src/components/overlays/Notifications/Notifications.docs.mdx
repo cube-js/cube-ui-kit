@@ -140,7 +140,7 @@ This works with both sync and async handlers. Returning `undefined` (the default
 
 #### Dismiss behavior
 
-By default, a "Dismiss" button is auto-appended to the right of the actions area (when `isDismissible` is `true`). To customize the dismiss label, add `isDismiss` to a `Notification.Action` — the default button is automatically suppressed via context detection (no extra prop needed).
+By default, a "Dismiss" button is auto-appended to the right of the actions area (when `isDismissable` is `true`). To customize the dismiss label, add `isDismiss` to a `Notification.Action` — the default button is automatically suppressed via context detection (no extra prop needed).
 
 When `actions` is omitted, only the default "Dismiss" button is shown.
 
@@ -382,12 +382,12 @@ Collapse is disabled when notifications are present, since notifications require
    });
    ```
 
-5. **Do**: When using `isDismissible: false`, always provide actions — the user needs a way to interact
+5. **Do**: When using `isDismissable: false`, always provide actions — the user needs a way to interact
    ```jsx
-   // isDismissible: false hides the default "Dismiss" button and Escape key,
+   // isDismissable: false hides the default "Dismiss" button and Escape key,
    // but actions with closeOnPress (default true) still close the notification.
    notify({
-     isDismissible: false,
+     isDismissable: false,
      duration: null,
      actions: (
        <>

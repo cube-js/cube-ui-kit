@@ -79,7 +79,7 @@ interface ActionsSectionProps {
   theme?: NotificationType;
   /**
    * Whether to show the auto-appended "Dismiss" button.
-   * Controlled by `isDismissible` on the notification.
+   * Controlled by `isDismissable` on the notification.
    *
    * When false, no default "Dismiss" button is rendered, but actions with
    * `closeOnPress` (default `true`) can still close the notification via
@@ -98,7 +98,7 @@ interface ActionsSectionProps {
  *
  * The dismiss provider is always rendered when `hasDismissContext` is true,
  * so any action with `closeOnPress` can close the notification — regardless
- * of `isDismissible`. The `showAutoDismiss` flag only controls the
+ * of `isDismissable`. The `showAutoDismiss` flag only controls the
  * auto-appended "Dismiss" button.
  */
 function ActionsSection({
@@ -162,7 +162,7 @@ export interface NotificationCardProps {
    * nothing, but actions with `closeOnPress` (default) can still close
    * the notification.
    */
-  isDismissible?: boolean;
+  isDismissable?: boolean;
   /** When false the card drops its shadow (e.g. inside a list). Default: true. */
   elevated?: boolean;
   /** Notification id */
@@ -186,7 +186,7 @@ export function NotificationCard({
   description,
   icon: providedIcon,
   actions,
-  isDismissible = true,
+  isDismissable = true,
   elevated = true,
   notificationId,
   onDismiss,
@@ -196,7 +196,7 @@ export function NotificationCard({
   const icon = getThemeIcon(theme, providedIcon);
 
   const hasDismissContext = notificationId != null && onDismiss != null;
-  const showAutoDismiss = isDismissible && hasDismissContext;
+  const showAutoDismiss = isDismissable && hasDismissContext;
   const hasActions = !!(actions || showAutoDismiss);
 
   const descriptionContent: ReactNode =

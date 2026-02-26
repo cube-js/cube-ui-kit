@@ -59,7 +59,7 @@ function mockNotification(
     internalId: 'mock-1',
     createdAt: Date.now(),
     updatedAt: Date.now(),
-    isDismissible: true,
+    isDismissable: true,
     actions: (
       <>
         <NotificationAction onPress={() => {}}>Open</NotificationAction>
@@ -324,7 +324,7 @@ export const CustomDismissAction = () => {
             theme: 'note',
             title: 'Cookie consent',
             description: 'We use cookies to improve your experience.',
-            isDismissible: false,
+            isDismissable: false,
             duration: null,
             actions: (
               <>
@@ -349,7 +349,7 @@ CustomDismissAction.parameters = {
   docs: {
     description: {
       story:
-        'Use `<Notification.Action isDismiss>` to provide a custom dismiss button label — the default "Dismiss" is automatically suppressed via context detection. When `isDismissible: false`, the notification has no dismiss mechanism — only explicit actions with `onPress` handlers.',
+        'Use `<Notification.Action isDismiss>` to provide a custom dismiss button label — the default "Dismiss" is automatically suppressed via context detection. When `isDismissable: false`, the notification has no dismiss mechanism — only explicit actions with `onPress` handlers.',
     },
   },
 };
