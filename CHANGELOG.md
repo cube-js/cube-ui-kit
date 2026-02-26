@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.118.0
+
+### Minor Changes
+
+- [#1056](https://github.com/cube-js/cube-ui-kit/pull/1056) [`fada43b6`](https://github.com/cube-js/cube-ui-kit/commit/fada43b6aa93232dc85af5e03a0c4737054b5683) Thanks [@tenphi](https://github.com/tenphi)! - Add `isDismissable` option to progress toasts. When enabled, a "Hide" action button appears during loading, allowing users to temporarily dismiss the toast. The toast will not re-appear during the same loading cycle after being dismissed.
+
+- [#1056](https://github.com/cube-js/cube-ui-kit/pull/1056) [`fada43b6`](https://github.com/cube-js/cube-ui-kit/commit/fada43b6aa93232dc85af5e03a0c4737054b5683) Thanks [@tenphi](https://github.com/tenphi)! - Rename `isDismissible` prop to `isDismissable` in Banner and Notification components for consistency with other components (Dialog, LayoutPanel, etc.). This is a breaking change - update your code to use `isDismissable` instead of `isDismissible`.
+
+- [#1056](https://github.com/cube-js/cube-ui-kit/pull/1056) [`fada43b6`](https://github.com/cube-js/cube-ui-kit/commit/fada43b6aa93232dc85af5e03a0c4737054b5683) Thanks [@tenphi](https://github.com/tenphi)! - Add notification restore functionality. When an async action returns `false`, dismissed notifications can now be restored automatically.
+
+### Patch Changes
+
+- [#1056](https://github.com/cube-js/cube-ui-kit/pull/1056) [`fada43b6`](https://github.com/cube-js/cube-ui-kit/commit/fada43b6aa93232dc85af5e03a0c4737054b5683) Thanks [@tenphi](https://github.com/tenphi)! - Improve progress toast updates. Progress toasts now update in-place instead of removing and re-adding, preventing unnecessary exit/enter animations when data changes.
+
 ## 0.117.0
 
 ### Minor Changes
