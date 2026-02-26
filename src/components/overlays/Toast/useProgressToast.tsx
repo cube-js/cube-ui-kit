@@ -1,8 +1,15 @@
 import { Key, useEffect, useRef } from 'react';
 
+import { useEvent } from '../../../_internal';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
+
 import { useToastContext } from './ToastProvider';
 
-import type { ProgressToastEmpty, ProgressToastOptions } from './types';
+import type {
+  ProgressToastEmpty,
+  ProgressToastOptions,
+  ToastData,
+} from './types';
 
 const RESULT_DURATION = 3000;
 
@@ -54,7 +61,7 @@ function getStringValue(value: unknown): string | undefined {
 export function useProgressToast(
   options?: ProgressToastOptions | ProgressToastEmpty,
 ): void {
-  const { addToast, removeToast } = useToastContext();
+  const { addToast, removeToast, updateToast } = useToastContext();
 
   const toastIdRef = useRef<Key | null>(null);
   const wasLoadingRef = useRef<boolean | null>(null);
@@ -62,6 +69,7 @@ export function useProgressToast(
   const isFirstRenderRef = useRef(true);
   const optionsRef = useRef(options);
   const hasBeenLoadingRef = useRef(false);
+  const hiddenByUserRef = useRef(false);
 
   // Track previous string values for re-show comparison
   const prevThemeRef = useRef<string | undefined>(undefined);
@@ -84,11 +92,21 @@ export function useProgressToast(
 
   // Extract values only when options are not empty
   const isLoading = isEmpty ? false : options.isLoading;
+  const isDismissable = isEmpty ? false : !!options.isDismissable;
   const currentTheme = isEmpty ? undefined : options.theme;
   const currentTitle = isEmpty ? undefined : getStringValue(options.title);
   const currentDescription = isEmpty
     ? undefined
     : getStringValue(options.description);
+
+  const handleHide = useEvent(() => {
+    if (toastIdRef.current != null) {
+      removeToast(toastIdRef.current);
+      toastIdRef.current = null;
+    }
+
+    hiddenByUserRef.current = true;
+  });
 
   useEffect(() => {
     const wasLoading = wasLoadingRef.current;
@@ -107,6 +125,7 @@ export function useProgressToast(
 
       // Reset loading gate so the next cycle requires isLoading again
       hasBeenLoadingRef.current = false;
+      hiddenByUserRef.current = false;
       wasLoadingRef.current = null;
       isFirstRenderRef.current = false;
       prevThemeRef.current = undefined;
@@ -116,7 +135,11 @@ export function useProgressToast(
     }
 
     // From here, we know options is a valid ProgressToastOptions
-    const { isLoading: currentIsLoading, ...currentToastData } = currentOptions;
+    const {
+      isLoading: currentIsLoading,
+      isDismissable: _isDismissable,
+      ...currentToastData
+    } = currentOptions;
 
     // Check if meaningful data changed (only string values)
     const themeChanged = currentTheme !== prevThemeRef.current;
@@ -125,30 +148,47 @@ export function useProgressToast(
       currentDescription !== prevDescriptionRef.current;
     const dataChanged = themeChanged || titleChanged || descriptionChanged;
 
-    // Helper to create a new toast (removes old one first if exists)
-    const showToast = () => {
-      // Remove existing toast if any
-      if (toastIdRef.current != null) {
-        removeToast(toastIdRef.current);
-      }
+    const hideAction =
+      isDismissable && currentIsLoading ? (
+        <ItemAction type="secondary" onPress={handleHide}>
+          Hide
+        </ItemAction>
+      ) : null;
 
-      // Create new toast with fresh data
-      // Icon auto-resolved by ToastItem based on theme/isLoading
-      toastIdRef.current = addToast(
-        {
-          ...currentToastData,
-          isLoading: currentIsLoading,
-          duration: null, // Persistent - we control removal
-        },
-        true, // isProgress = true
-      );
+    const mergedActions = hideAction ? (
+      <>
+        {currentToastData.actions}
+        {hideAction}
+      </>
+    ) : (
+      currentToastData.actions
+    );
+
+    const toastData: ToastData = {
+      title: undefined,
+      description: undefined,
+      theme: undefined,
+      icon: undefined,
+      itemProps: undefined,
+      ...currentToastData,
+      actions: mergedActions,
+      isLoading: currentIsLoading,
+      duration: null,
     };
 
-    // Helper to show toast and schedule removal
+    // Show a new toast or update an existing one in-place (no exit/enter animation).
+    const showToast = () => {
+      if (toastIdRef.current != null) {
+        updateToast(toastIdRef.current, toastData);
+      } else {
+        toastIdRef.current = addToast(toastData, true);
+      }
+    };
+
+    // Show/update toast and schedule removal after RESULT_DURATION.
     const showToastWithTimer = () => {
       showToast();
 
-      // Schedule removal after result duration
       hideTimerRef.current = setTimeout(() => {
         if (toastIdRef.current != null) {
           removeToast(toastIdRef.current);
@@ -162,7 +202,9 @@ export function useProgressToast(
       hasBeenLoadingRef.current = true;
       clearHideTimer();
 
-      if (toastIdRef.current == null) {
+      if (hiddenByUserRef.current) {
+        // User dismissed the loading toast; don't re-show during this loading cycle.
+      } else if (toastIdRef.current == null) {
         // Create new toast
         showToast();
       } else if (dataChanged) {
@@ -171,6 +213,7 @@ export function useProgressToast(
       }
     } else if (wasLoading === true && !currentIsLoading) {
       // Transitioning from loading to not loading
+      hiddenByUserRef.current = false;
       clearHideTimer();
 
       if (currentTitle) {
@@ -187,13 +230,14 @@ export function useProgressToast(
       !currentIsLoading &&
       !isFirstRender &&
       hasBeenLoadingRef.current &&
-      dataChanged
+      dataChanged &&
+      toastIdRef.current != null
     ) {
-      // Not loading, data changed after a loading cycle - update or re-show toast
+      // Not loading, data changed while toast is still visible — update it.
       if (currentTitle) {
         clearHideTimer();
         showToastWithTimer();
-      } else if (toastIdRef.current != null) {
+      } else {
         clearHideTimer();
         removeToast(toastIdRef.current);
         toastIdRef.current = null;
@@ -209,11 +253,14 @@ export function useProgressToast(
   }, [
     isEmpty,
     isLoading,
+    isDismissable,
     currentTheme,
     currentTitle,
     currentDescription,
     addToast,
     removeToast,
+    updateToast,
+    handleHide,
   ]);
 
   // Cleanup on unmount

@@ -45,7 +45,7 @@ export const Themes: StoryFn<BannerProps> = () => {
       <Banner theme="note" actions={<Banner.Action>Learn More</Banner.Action>}>
         Tip: Enable auto-scaling to handle traffic spikes automatically.
       </Banner>
-      <Banner isDismissible theme="success">
+      <Banner isDismissable theme="success">
         Deployment v2.4.1 is now live with improved query performance.
       </Banner>
     </Space>
@@ -104,10 +104,10 @@ export const Stacked: StoryFn<BannerProps> = () => {
       >
         Warning: You have exceeded 80% of your query limit.
       </Banner>
-      <Banner isDismissible theme="note" shape="sharp">
+      <Banner isDismissable theme="note" shape="sharp">
         New deployment features are available.
       </Banner>
-      <Banner isDismissible theme="success" shape="sharp">
+      <Banner isDismissable theme="success" shape="sharp">
         All systems operational.
       </Banner>
     </Flex>
@@ -119,7 +119,7 @@ CustomIcon.args = {
   children: 'You have new notifications.',
   theme: 'note',
   icon: <IconBell />,
-  isDismissible: true,
+  isDismissable: true,
 };
 
 /**

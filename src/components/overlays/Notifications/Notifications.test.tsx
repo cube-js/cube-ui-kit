@@ -44,7 +44,7 @@ function mockNotification(
     internalId: 'mock-1',
     createdAt: Date.now(),
     updatedAt: Date.now(),
-    isDismissible: true,
+    isDismissable: true,
     actions: <NotificationAction>OK</NotificationAction>,
     ...overrides,
   };
@@ -127,10 +127,10 @@ describe('NotificationItem', () => {
     expect(getByText('Test description')).toBeInTheDocument();
   });
 
-  it('should render Dismiss action when isDismissible', () => {
+  it('should render Dismiss action when isDismissable', () => {
     const { getByText } = render(
       <NotificationItem
-        notification={mockNotification({ isDismissible: true })}
+        notification={mockNotification({ isDismissable: true })}
         onDismiss={() => {}}
       />,
     );
@@ -138,10 +138,10 @@ describe('NotificationItem', () => {
     expect(getByText('Dismiss')).toBeInTheDocument();
   });
 
-  it('should not render Dismiss action when not isDismissible', () => {
+  it('should not render Dismiss action when not isDismissable', () => {
     const { queryByText } = render(
       <NotificationItem
-        notification={mockNotification({ isDismissible: false })}
+        notification={mockNotification({ isDismissable: false })}
         onDismiss={() => {}}
       />,
     );
@@ -153,7 +153,7 @@ describe('NotificationItem', () => {
     const { queryAllByText, getByText } = render(
       <NotificationItem
         notification={mockNotification({
-          isDismissible: true,
+          isDismissable: true,
           actions: (
             <>
               <NotificationAction isDismiss>Got it</NotificationAction>
@@ -175,7 +175,7 @@ describe('NotificationItem', () => {
     const { getByText } = render(
       <NotificationItem
         notification={mockNotification({
-          isDismissible: true,
+          isDismissable: true,
           actions: (
             <NotificationAction onPress={() => {}}>View</NotificationAction>
           ),
@@ -206,14 +206,14 @@ describe('NotificationItem', () => {
     expect(onDismiss).toHaveBeenCalledWith('test-1', 'close');
   });
 
-  it('should still close via action closeOnPress when isDismissible is false', async () => {
+  it('should still close via action closeOnPress when isDismissable is false', async () => {
     const onDismiss = vi.fn();
 
     const { getByText, queryByText } = render(
       <NotificationItem
         notification={mockNotification({
           id: 'not-dismissible',
-          isDismissible: false,
+          isDismissable: false,
           actions: (
             <>
               <NotificationAction onPress={() => {}}>Accept</NotificationAction>
@@ -522,7 +522,7 @@ describe('isDismiss context detection', () => {
     const { queryAllByText, getByText } = render(
       <NotificationItem
         notification={mockNotification({
-          isDismissible: true,
+          isDismissable: true,
           actions: (
             <>
               <NotificationAction isDismiss>Got it</NotificationAction>
@@ -544,7 +544,7 @@ describe('isDismiss context detection', () => {
     const { getByText } = render(
       <NotificationItem
         notification={mockNotification({
-          isDismissible: true,
+          isDismissable: true,
           actions: (
             <NotificationAction onPress={() => {}}>View</NotificationAction>
           ),
@@ -561,7 +561,7 @@ describe('isDismiss context detection', () => {
     const { getByText } = render(
       <NotificationItem
         notification={mockNotification({
-          isDismissible: true,
+          isDismissable: true,
           actions: undefined,
         })}
         onDismiss={() => {}}
@@ -1273,7 +1273,7 @@ describe('Keyboard navigation', () => {
       <NotificationItem
         notification={mockNotification({
           id: 'keyboard-test',
-          isDismissible: true,
+          isDismissable: true,
         })}
         onDismiss={onDismiss}
       />,
@@ -1291,14 +1291,14 @@ describe('Keyboard navigation', () => {
     expect(onDismiss).toHaveBeenCalledWith('keyboard-test', 'close');
   });
 
-  it('should not dismiss on Escape when not isDismissible', async () => {
+  it('should not dismiss on Escape when not isDismissable', async () => {
     const onDismiss = vi.fn();
 
     const { container } = render(
       <NotificationItem
         notification={mockNotification({
           id: 'no-dismiss',
-          isDismissible: false,
+          isDismissable: false,
         })}
         onDismiss={onDismiss}
       />,

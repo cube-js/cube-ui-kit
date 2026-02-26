@@ -15,15 +15,19 @@ import type { OverlayTimers } from './use-overlay-timers';
 const DEFAULT_NOTIFICATION_DURATION = 3000;
 const DEFAULT_PERSISTENT_NOTIFICATION_DURATION = 5000;
 const MAX_NOTIFICATIONS = 5;
+const MAX_DISMISS_SNAPSHOTS = 50;
+const SNAPSHOT_TTL_MS = 5 * 60 * 1000;
 
 // ─── Types ───────────────────────────────────────────────────────────
 
 export interface PersistentCallbacks {
   addPersistentItem: (item: PersistentNotificationItem) => void;
   removePersistentItem: (id: Key) => void;
+  removePersistentItemSilently: (id: Key) => void;
   hasDismissedPersistentId: (id: Key) => boolean;
   isFullyDismissedId: (id: Key) => boolean;
   saveDismissedPersistentId: (id: Key) => void;
+  undoFullyDismissedId: (id: Key) => void;
 }
 
 export interface NotificationState {
@@ -34,6 +38,7 @@ export interface NotificationState {
     ownerId?: string,
   ) => Key;
   removeNotification: (id: Key, reason?: DismissReason) => void;
+  restoreNotification: (id: Key) => void;
   updateNotification: (
     id: Key,
     options: Partial<OverlayNotificationOptions>,
@@ -82,6 +87,13 @@ export function useNotificationState(
   notificationsRef.current = notifications;
 
   const idCounter = useRef(0);
+
+  // Snapshots of dismissed notifications, keyed by notification id (string).
+  // Saved at dismiss time so restoreNotification can re-add the notification
+  // even after finalizeNotificationRemoval has removed it from state.
+  const dismissSnapshotsRef = useRef<Map<string, InternalNotification>>(
+    new Map(),
+  );
 
   // ─── Evict Helper ──────────────────────────────────────────────
 
@@ -132,6 +144,23 @@ export function useNotificationState(
 
       timersRef.current?.clearNotificationTimer(notif.internalId);
 
+      // Snapshot the notification for potential restore after finalization.
+      dismissSnapshotsRef.current.set(String(notif.id ?? notif.internalId), {
+        ...notif,
+        lastDismissReason: reason,
+      });
+
+      // Prevent unbounded growth of dismiss snapshots.
+      while (dismissSnapshotsRef.current.size > MAX_DISMISS_SNAPSHOTS) {
+        const oldest = dismissSnapshotsRef.current.keys().next().value;
+
+        if (oldest != null) {
+          dismissSnapshotsRef.current.delete(oldest);
+        } else {
+          break;
+        }
+      }
+
       if (notif.persistent) {
         if (reason === 'close' || reason === 'timeout') {
           // Dismiss button, Escape, or auto-dismiss timeout — move to persistent list.
@@ -161,16 +190,87 @@ export function useNotificationState(
 
       setNotifications((prev) =>
         prev.map((n) =>
-          matchesNotificationId(n, id) ? { ...n, isExiting: true } : n,
+          matchesNotificationId(n, id)
+            ? { ...n, isExiting: true, lastDismissReason: reason }
+            : n,
         ),
       );
     },
   );
 
+  // ─── Restore ──────────────────────────────────────────────────
+
+  const restoreNotification = useEvent((id: Key) => {
+    const idStr = String(id);
+    const snapshot = dismissSnapshotsRef.current.get(idStr);
+
+    if (!snapshot) return;
+
+    dismissSnapshotsRef.current.delete(idStr);
+
+    // Undo persistent side effects based on how the notification was dismissed.
+    if (snapshot.persistent && snapshot.lastDismissReason) {
+      const persistentId = snapshot.id ?? snapshot.internalId;
+
+      if (
+        snapshot.lastDismissReason === 'close' ||
+        snapshot.lastDismissReason === 'timeout'
+      ) {
+        persistent.removePersistentItemSilently(persistentId);
+      } else if (snapshot.lastDismissReason === 'action') {
+        persistent.undoFullyDismissedId(persistentId);
+      }
+    }
+
+    // Restart the auto-dismiss timer.
+    const duration = getDuration(snapshot);
+
+    if (duration != null && duration > 0) {
+      timersRef.current?.startNotificationTimer(
+        snapshot.internalId,
+        snapshot.id ?? snapshot.internalId,
+        duration,
+      );
+    }
+
+    const stillInState = findNotification(notificationsRef.current, id);
+
+    if (stillInState) {
+      // Exit animation hasn't completed yet — cancel it.
+      setNotifications((prev) =>
+        prev.map((n) =>
+          matchesNotificationId(n, id)
+            ? { ...n, isExiting: false, lastDismissReason: undefined }
+            : n,
+        ),
+      );
+    } else {
+      // Notification was already finalized (removed from state) — re-add it.
+      const restored: InternalNotification = {
+        ...snapshot,
+        isExiting: false,
+        lastDismissReason: undefined,
+      };
+
+      setNotifications((prev) => [...prev, restored]);
+    }
+  });
+
   // ─── Finalize ──────────────────────────────────────────────────
 
   const finalizeNotificationRemoval = useEvent((internalId: string) => {
     setNotifications((prev) => prev.filter((n) => n.internalId !== internalId));
+
+    // Deferred cleanup of the dismiss snapshot. Kept briefly so async action
+    // callbacks can still call restoreNotification after the exit animation.
+    setTimeout(() => {
+      for (const [key, snap] of dismissSnapshotsRef.current) {
+        if (snap.internalId === internalId) {
+          dismissSnapshotsRef.current.delete(key);
+          break;
+        }
+      }
+    }, SNAPSHOT_TTL_MS);
   });
 
   // ─── Add ────────────────────────────────────────────────────────
@@ -353,6 +453,7 @@ export function useNotificationState(
     notificationsRef,
     addNotification,
     removeNotification,
+    restoreNotification,
     updateNotification,
     finalizeNotificationRemoval,
     removeByOwner,

@@ -26,7 +26,7 @@ export interface OverlayNotificationOptions extends NotificationBaseOptions {
    * Action buttons rendered below the notification description.
    * A default "Dismiss" button is auto-appended unless any action has
    * `isDismiss` set (detected automatically via context).
-   * When omitted, only the default "Dismiss" button is shown (if `isDismissible`).
+   * When omitted, only the default "Dismiss" button is shown (if `isDismissable`).
    */
   actions?: ReactNode;
 
@@ -40,7 +40,7 @@ export interface OverlayNotificationOptions extends NotificationBaseOptions {
    *
    * Default: true
    */
-  isDismissible?: boolean;
+  isDismissable?: boolean;
 
   /**
    * Duration in ms before auto-dismiss.
@@ -135,6 +135,8 @@ export interface InternalNotification extends OverlayNotificationOptions {
   createdAt: number;
   updatedAt: number;
   isExiting?: boolean;
+  /** Reason for the most recent dismiss, used to undo persistent side effects on restore. */
+  lastDismissReason?: DismissReason;
   ownerId?: string;
 }
 

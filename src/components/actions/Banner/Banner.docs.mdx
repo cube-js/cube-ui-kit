@@ -94,7 +94,7 @@ Inline link styled with white color and underline. Use for links within the bann
 ### Dismissible Banner
 
 ```jsx
-<Banner theme="success" isDismissible onDismiss={() => console.log('Dismissed')}>
+<Banner theme="success" isDismissable onDismiss={() => console.log('Dismissed')}>
   Your deployment has been successfully updated.
 </Banner>
 ```
@@ -148,7 +148,7 @@ Use `shape="sharp"` when stacking multiple banners to remove gaps between them.
 ```jsx
 import { IconBell } from '@tabler/icons-react';
 
-<Banner theme="note" icon={<IconBell />} isDismissible>
+<Banner theme="note" icon={<IconBell />} isDismissable>
   You have new notifications.
 </Banner>
 ```

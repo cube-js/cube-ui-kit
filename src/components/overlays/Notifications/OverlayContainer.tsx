@@ -36,7 +36,7 @@ const OverlayContainerElement = tasty({
     top: '2x',
     left: '50%',
     transform: 'translateX(-50%)',
-    zIndex: 10000,
+    zIndex: 100,
     padding: '1x',
     height: '0',
     pointerEvents: 'none',
@@ -388,6 +388,7 @@ export interface OverlayContainerProps {
   onToastExitComplete: (internalId: string) => void;
   onNotificationExitComplete: (internalId: string) => void;
   onNotificationDismiss: (id: Key, reason: DismissReason) => void;
+  onNotificationRestore: (id: Key) => void;
   onPauseChange: (paused: boolean) => void;
 }
 
@@ -397,6 +398,7 @@ export function OverlayContainer({
   onToastExitComplete,
   onNotificationExitComplete,
   onNotificationDismiss,
+  onNotificationRestore,
   onPauseChange,
 }: OverlayContainerProps) {
   // Merge toasts and notifications into a single ordered list
@@ -548,6 +550,7 @@ export function OverlayContainer({
                     <NotificationItem
                       notification={item.data}
                       onDismiss={handleNotificationDismiss}
+                      onRestore={onNotificationRestore}
                     />
                   )}
                 </OverlayItemWrapper>

@@ -74,60 +74,6 @@ const STATIC_CSS = `
     }
   }
 
-  .cube-notification-container {
-    min-width: var(--min-dialog-size);
-    max-width: 340px;
-    width: calc(100vw - 32px);
-    position: fixed;
-    top: 32px;
-    right: 16px;
-    z-index: 999999;
-  }
-
-  .cube-notifications {
-    display: grid;
-    grid-auto-flow: row;
-    grid-template-columns: 1fr;
-  }
-
-  .cube-notification-enter {
-    opacity: 0;
-    max-height: 0px;
-    margin-bottom: 0px;
-    transform: translate(100%, 0);
-  }
-
-  .cube-notification-enter-active {
-    opacity: 1;
-    max-height: 56px;
-    margin-bottom: 8px;
-    transform: translate(0, 0);
-    transition: all 300ms ease-in;
-  }
-
-  .cube-notification-enter-active > * {
-    margin-bottom: 0px;
-  }
-
-  .cube-notification-exit {
-    opacity: 1;
-    margin-bottom: 8px;
-    max-height: 56px;
-    transform: translate(0, 0);
-  }
-
-  .cube-notification-exit-active {
-    opacity: 0;
-    max-height: 0px;
-    margin-bottom: 0px;
-    transform: translate(100%, 0);
-    transition: all 300ms ease-in;
-  }
-
-  .cube-notification-exit-active > * {
-    margin-bottom: 0px;
-  }
-
   b, strong {
     font-weight: var(--bold-font-weight, 700);
   }
