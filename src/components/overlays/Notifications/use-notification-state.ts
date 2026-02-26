@@ -86,6 +86,13 @@ export function useNotificationState(
 
   const idCounter = useRef(0);
 
+  // Snapshots of dismissed notifications, keyed by notification id (string).
+  // Saved at dismiss time so restoreNotification can re-add the notification
+  // even after finalizeNotificationRemoval has removed it from state.
+  const dismissSnapshotsRef = useRef<Map<string, InternalNotification>>(
+    new Map(),
+  );
+
   // ─── Evict Helper ──────────────────────────────────────────────
 
   /**
@@ -135,6 +142,12 @@ export function useNotificationState(
 
       timersRef.current?.clearNotificationTimer(notif.internalId);
 
+      // Snapshot the notification for potential restore after finalization.
+      dismissSnapshotsRef.current.set(String(notif.id ?? notif.internalId), {
+        ...notif,
+        lastDismissReason: reason,
+      });
+
       if (notif.persistent) {
         if (reason === 'close' || reason === 'timeout') {
           // Dismiss button, Escape, or auto-dismiss timeout — move to persistent list.
@@ -175,42 +188,59 @@ export function useNotificationState(
   // ─── Restore ──────────────────────────────────────────────────
 
   const restoreNotification = useEvent((id: Key) => {
-    const notif = findNotification(notificationsRef.current, id);
+    const idStr = String(id);
+    const snapshot = dismissSnapshotsRef.current.get(idStr);
 
-    if (!notif || !notif.isExiting) return;
+    if (!snapshot) return;
+
+    dismissSnapshotsRef.current.delete(idStr);
 
     // Undo persistent side effects based on how the notification was dismissed.
-    if (notif.persistent && notif.lastDismissReason) {
-      const persistentId = notif.id ?? notif.internalId;
+    if (snapshot.persistent && snapshot.lastDismissReason) {
+      const persistentId = snapshot.id ?? snapshot.internalId;
 
       if (
-        notif.lastDismissReason === 'close' ||
-        notif.lastDismissReason === 'timeout'
+        snapshot.lastDismissReason === 'close' ||
+        snapshot.lastDismissReason === 'timeout'
       ) {
         persistent.removePersistentItemSilently(persistentId);
-      } else if (notif.lastDismissReason === 'action') {
+      } else if (snapshot.lastDismissReason === 'action') {
         persistent.undoFullyDismissedId(persistentId);
       }
     }
 
     // Restart the auto-dismiss timer.
-    const duration = getDuration(notif);
+    const duration = getDuration(snapshot);
 
     if (duration != null && duration > 0) {
       timersRef.current?.startNotificationTimer(
-        notif.internalId,
-        notif.id ?? notif.internalId,
+        snapshot.internalId,
+        snapshot.id ?? snapshot.internalId,
         duration,
       );
     }
 
-    setNotifications((prev) =>
-      prev.map((n) =>
-        matchesNotificationId(n, id)
-          ? { ...n, isExiting: false, lastDismissReason: undefined }
-          : n,
-      ),
-    );
+    const stillInState = findNotification(notificationsRef.current, id);
+
+    if (stillInState) {
+      // Exit animation hasn't completed yet — cancel it.
+      setNotifications((prev) =>
+        prev.map((n) =>
+          matchesNotificationId(n, id)
+            ? { ...n, isExiting: false, lastDismissReason: undefined }
+            : n,
+        ),
+      );
+    } else {
+      // Notification was already finalized (removed from state) — re-add it.
+      const restored: InternalNotification = {
+        ...snapshot,
+        isExiting: false,
+        lastDismissReason: undefined,
+      };
+
+      setNotifications((prev) => [...prev, restored]);
+    }
   });
 
   // ─── Finalize ──────────────────────────────────────────────────
