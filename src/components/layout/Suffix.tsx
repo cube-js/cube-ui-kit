@@ -1,5 +1,3 @@
-import { CSSProperties, forwardRef, useEffect } from 'react';
-
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -8,7 +6,9 @@ import {
   filterBaseProps,
   parseStyle,
   tasty,
-} from '../../tasty';
+} from '@tenphi/tasty';
+import { CSSProperties, forwardRef, useEffect } from 'react';
+
 import { useCombinedRefs } from '../../utils/react';
 
 const SuffixElement = tasty({

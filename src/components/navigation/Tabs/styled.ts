@@ -1,4 +1,5 @@
-import { tasty } from '../../../tasty';
+import { tasty } from '@tenphi/tasty';
+
 import { Item } from '../../content/Item';
 
 // =============================================================================

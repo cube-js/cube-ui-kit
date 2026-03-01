@@ -1,12 +1,4 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { forwardRef } from 'react';
-
-import { useProviderProps } from '../../provider';
-import {
-  LabelPosition,
-  NecessityIndicator,
-  ValidationState,
-} from '../../shared/index';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -15,7 +7,15 @@ import {
   filterBaseProps,
   Styles,
   tasty,
-} from '../../tasty/index';
+} from '@tenphi/tasty';
+import { forwardRef } from 'react';
+
+import { useProviderProps } from '../../provider';
+import {
+  LabelPosition,
+  NecessityIndicator,
+  ValidationState,
+} from '../../shared/index';
 
 const REQUIRED_ICON = (
   <svg

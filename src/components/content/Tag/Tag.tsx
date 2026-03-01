@@ -1,8 +1,8 @@
+import { Styles, tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 import { ItemVariant } from 'src/data/item-themes';
 
 import { CloseIcon } from '../../../icons';
-import { Styles, tasty } from '../../../tasty';
 import { CubeItemProps, Item } from '../Item';
 
 const TagElement = tasty(Item, {

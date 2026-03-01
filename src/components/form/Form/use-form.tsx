@@ -1,6 +1,5 @@
+import { dotize } from '@tenphi/tasty';
 import { ReactNode, useRef, useState } from 'react';
-
-import { dotize } from '../../../tasty/index';
 
 import { CubeFieldData, FieldTypes, SetFieldsArrType } from './types';
 import { applyRules } from './validation';

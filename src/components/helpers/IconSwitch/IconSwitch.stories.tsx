@@ -1,3 +1,4 @@
+import { tasty } from '@tenphi/tasty';
 import { useState } from 'react';
 
 import { CheckIcon } from '../../../icons/CheckIcon';
@@ -6,7 +7,6 @@ import { DownIcon } from '../../../icons/DownIcon';
 import { PauseIcon } from '../../../icons/PauseIcon';
 import { PlayIcon } from '../../../icons/PlayIcon';
 import { UpIcon } from '../../../icons/UpIcon';
-import { tasty } from '../../../tasty';
 import { Button } from '../../actions/Button';
 
 import { IconSwitch } from './IconSwitch';

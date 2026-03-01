@@ -1,6 +1,6 @@
+import { tasty } from '@tenphi/tasty';
 import { useState } from 'react';
 
-import { tasty } from '../../../tasty';
 import { Button } from '../../actions/Button';
 import { Card } from '../../content/Card/Card';
 

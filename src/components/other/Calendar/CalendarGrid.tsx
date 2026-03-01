@@ -1,7 +1,6 @@
 import { getWeeksInMonth } from '@internationalized/date';
+import { tasty } from '@tenphi/tasty';
 import { useCalendarGrid, useLocale } from 'react-aria';
-
-import { tasty } from '../../../tasty';
 
 import { CalendarCell } from './CalendarCell';
 

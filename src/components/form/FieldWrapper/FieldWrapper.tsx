@@ -1,7 +1,7 @@
+import { tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
 import { InfoCircleIcon } from '../../../icons/index';
-import { tasty } from '../../../tasty/index';
 import { mergeProps, wrapNodeIfPlain } from '../../../utils/react/index';
 import { Item } from '../../content/Item';
 import { Text } from '../../content/Text';

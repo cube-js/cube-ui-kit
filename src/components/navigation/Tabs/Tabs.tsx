@@ -1,3 +1,4 @@
+import { extractStyles, mergeStyles, OUTER_STYLES } from '@tenphi/tasty';
 import {
   Children,
   ForwardedRef,
@@ -19,7 +20,6 @@ import {
 
 import { useEvent, useWarn } from '../../../_internal/hooks';
 import { DirectionIcon } from '../../../icons';
-import { extractStyles, mergeStyles, OUTER_STYLES } from '../../../tasty';
 import { mergeProps, useMergeStyles } from '../../../utils/react';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
 

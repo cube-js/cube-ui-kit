@@ -1,6 +1,5 @@
+import { tasty } from '@tenphi/tasty';
 import { memo } from 'react';
-
-import { tasty } from '../../../tasty';
 
 import { Cube } from './Cube';
 import { SpinsContainer } from './SpinsContainer';

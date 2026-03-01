@@ -1,6 +1,5 @@
+import { tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef } from 'react';
-
-import { tasty } from '../../../tasty';
 
 import { CubeLayoutContentProps, LayoutContent } from './LayoutContent';
 

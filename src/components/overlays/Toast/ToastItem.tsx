@@ -1,6 +1,6 @@
+import { tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode } from 'react';
 
-import { tasty } from '../../../tasty';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 
 import { getThemeIcon } from './useToast';

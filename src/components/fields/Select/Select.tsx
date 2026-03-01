@@ -1,4 +1,17 @@
 import { AriaLabelingProps, CollectionBase, DOMRef } from '@react-types/shared';
+import {
+  BASE_STYLES,
+  BasePropsWithoutChildren,
+  BaseStyleProps,
+  COLOR_STYLES,
+  ColorStyleProps,
+  extractStyles,
+  OUTER_STYLES,
+  OuterStyleProps,
+  Props,
+  Styles,
+  tasty,
+} from '@tenphi/tasty';
 import React, {
   cloneElement,
   ReactElement,
@@ -29,19 +42,6 @@ import { useEvent } from '../../../_internal';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/index';
-import {
-  BASE_STYLES,
-  BasePropsWithoutChildren,
-  BaseStyleProps,
-  COLOR_STYLES,
-  ColorStyleProps,
-  extractStyles,
-  OUTER_STYLES,
-  OuterStyleProps,
-  Props,
-  Styles,
-  tasty,
-} from '../../../tasty/index';
 import { chainRaf } from '../../../utils/raf';
 import { generateRandomId } from '../../../utils/random';
 import {

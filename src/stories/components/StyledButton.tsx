@@ -1,5 +1,6 @@
+import { tasty, useGlobalStyles } from '@tenphi/tasty';
+
 import { Button } from '../../components/actions';
-import { tasty, useGlobalStyles } from '../../tasty';
 
 export const StyledButton = tasty(Button, {
   styles: {

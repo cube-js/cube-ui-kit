@@ -1,3 +1,4 @@
+import { Styles, Tokens } from '@tenphi/tasty';
 import { RefObject, useMemo, useRef } from 'react';
 import {
   AriaSliderThumbOptions,
@@ -6,7 +7,6 @@ import {
   VisuallyHidden,
 } from 'react-aria';
 
-import { Styles, Tokens } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 
 import { SliderThumbElement } from './elements';

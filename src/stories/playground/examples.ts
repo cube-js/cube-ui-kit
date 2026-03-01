@@ -1,8 +1,9 @@
+import { Styles } from '@tenphi/tasty';
+
 import {
   DEFAULT_OUTLINE_STYLES,
   DEFAULT_PRIMARY_STYLES,
 } from '../../data/item-themes';
-import { Styles } from '../../tasty/styles/types';
 
 export interface PlaygroundExample {
   name: string;

@@ -1,8 +1,8 @@
+import { tasty } from '@tenphi/tasty';
 import copy from 'clipboard-copy';
 import { ReactNode, useMemo, useState } from 'react';
 
 import { CopyIcon, EyeIcon, EyeInvisibleIcon } from '../../../icons';
-import { tasty } from '../../../tasty';
 import { Action, Button } from '../../actions';
 import {
   CubePrismCodeProps,

@@ -1,5 +1,13 @@
 import { FocusableRef } from '@react-types/shared';
 import {
+  CONTAINER_STYLES,
+  extractStyles,
+  Mods,
+  Styles,
+  tasty,
+  TEXT_STYLES,
+} from '@tenphi/tasty';
+import {
   Children,
   forwardRef,
   HTMLAttributes,
@@ -52,14 +60,6 @@ import {
   WARNING_SECONDARY_STYLES,
 } from '../../../data/item-themes';
 import { LoadingIcon } from '../../../icons';
-import {
-  CONTAINER_STYLES,
-  extractStyles,
-  Mods,
-  Styles,
-  tasty,
-  TEXT_STYLES,
-} from '../../../tasty';
 import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import { DisplayTransition } from '../../helpers/DisplayTransition';

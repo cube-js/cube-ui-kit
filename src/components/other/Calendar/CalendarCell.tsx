@@ -1,7 +1,6 @@
+import { tasty } from '@tenphi/tasty';
 import { useRef } from 'react';
 import { useCalendarCell } from 'react-aria';
-
-import { tasty } from '../../../tasty';
 
 const CalendarCellElement = tasty({
   as: 'td',

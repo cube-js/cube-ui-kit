@@ -1,6 +1,6 @@
+import { tasty } from '@tenphi/tasty';
 import { Key, ReactNode, useContext, useRef } from 'react';
 
-import { tasty } from '../../../tasty';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { Block } from '../../Block';
 import { Item } from '../../content/Item/Item';

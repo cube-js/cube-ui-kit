@@ -1,9 +1,9 @@
+import { Styles } from '@tenphi/tasty';
 import { useCallback, useEffect, useMemo } from 'react';
 
 import { Button } from '../../components/actions/Button';
 import { Text } from '../../components/content/Text';
 import { Select } from '../../components/fields/Select';
-import { Styles } from '../../tasty/styles/types';
 import { useLocalStorage } from '../../utils/react';
 
 import { PLAYGROUND_EXAMPLES } from './examples';

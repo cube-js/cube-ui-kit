@@ -26,7 +26,7 @@ Everything is optional - you can create simplified components without all featur
 The `filterBaseProps` helper ensures only valid DOM properties are passed to elements, filtering out design system properties and unsupported event handlers.
 
 ```tsx
-import { filterBaseProps, AllBaseProps } from '../tasty';
+import { filterBaseProps, AllBaseProps } from '@tenphi/tasty';
 
 interface MyComponentProps extends AllBaseProps {
   customProp?: string;
@@ -59,7 +59,7 @@ import {
   TEXT_STYLES,
   TextStyleProps,
   extractStyles,
-} from '../tasty';
+} from '@tenphi/tasty';
 
 interface MyComponentProps 
   extends AllBaseProps,
@@ -175,7 +175,7 @@ function MyComponent(props) {
 Create dedicated style properties for styling inner elements independently. This approach gives more control and allows inner elements to have their own state.
 
 ```tsx
-import { Styles } from '../tasty';
+import { Styles } from '@tenphi/tasty';
 
 interface MyComponentProps extends AllBaseProps {
   styles?: Styles;
@@ -241,7 +241,7 @@ import {
   extractStyles,
   filterBaseProps,
   tasty,
-} from '../tasty';
+} from '@tenphi/tasty';
 
 const BlockElement = tasty({
   styles: {
@@ -289,7 +289,7 @@ import {
   tasty,
   TEXT_STYLES,
   TextStyleProps,
-} from '../tasty';
+} from '@tenphi/tasty';
 
 export interface CubeActionProps<T extends TagName = 'button'>
   extends Omit<AllBaseProps<T>, 'htmlType'>,

@@ -1,16 +1,6 @@
 import { createFocusManager } from '@react-aria/focus';
 import { useDOMRef } from '@react-spectrum/utils';
 import { DOMRef } from '@react-types/shared';
-import { forwardRef, ReactElement, useEffect, useMemo, useRef } from 'react';
-import {
-  AriaDialogProps,
-  DismissButton,
-  FocusScope,
-  useDialog,
-  useMessageFormatter,
-} from 'react-aria';
-
-import { CloseIcon } from '../../../icons';
 import {
   BASE_STYLES,
   BaseProps,
@@ -23,7 +13,17 @@ import {
   FLOW_STYLES,
   Styles,
   tasty,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef, ReactElement, useEffect, useMemo, useRef } from 'react';
+import {
+  AriaDialogProps,
+  DismissButton,
+  FocusScope,
+  useDialog,
+  useMessageFormatter,
+} from 'react-aria';
+
+import { CloseIcon } from '../../../icons';
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import { ItemButton } from '../../actions';
 import { useOpenTransitionContext } from '../Modal/OpenTransition';

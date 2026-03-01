@@ -1,6 +1,7 @@
 import { createCalendar } from '@internationalized/date';
 import { createDOMRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
+import { tasty } from '@tenphi/tasty';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import {
   AriaRangeCalendarProps,
@@ -12,7 +13,6 @@ import { useRangeCalendarState } from 'react-stately';
 
 import { LeftIcon, RightIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
-import { tasty } from '../../../tasty';
 import { Button } from '../../actions';
 import { Title } from '../../content/Title';
 import { Space } from '../../layout/Space';

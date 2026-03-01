@@ -1,9 +1,9 @@
+import { useGlobalStyles, useRawCSS } from '@tenphi/tasty';
 import { useMemo } from 'react';
 
-import { useGlobalStyles, useRawCSS } from '../tasty';
 import { TOKENS } from '../tokens';
 
-import type { Styles } from '../tasty';
+import type { Styles } from '@tenphi/tasty';
 
 interface GlobalStylesProps {
   bodyStyles?: { [key: string]: string };

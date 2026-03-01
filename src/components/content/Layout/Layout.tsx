@@ -1,5 +1,19 @@
 import { useResizeObserver } from '@react-aria/utils';
 import {
+  BaseProps,
+  BlockStyleProps,
+  ColorStyleProps,
+  extractStyles,
+  filterBaseProps,
+  FlowStyleProps,
+  INNER_STYLES,
+  mergeStyles,
+  OUTER_STYLES,
+  OuterStyleProps,
+  Styles,
+  tasty,
+} from '@tenphi/tasty';
+import {
   CSSProperties,
   FocusEvent,
   ForwardedRef,
@@ -14,21 +28,7 @@ import {
   useState,
 } from 'react';
 
-import {
-  BaseProps,
-  BlockStyleProps,
-  ColorStyleProps,
-  extractStyles,
-  filterBaseProps,
-  FlowStyleProps,
-  INNER_STYLES,
-  mergeStyles,
-  OUTER_STYLES,
-  OuterStyleProps,
-  Styles,
-  tasty,
-} from '../../../tasty';
-import { isDevEnv } from '../../../tasty/utils/is-dev-env';
+import { isDevEnv } from '../../../utils/is-dev-env';
 import { useCombinedRefs } from '../../../utils/react';
 import { Alert } from '../Alert';
 

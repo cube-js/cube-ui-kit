@@ -1,5 +1,3 @@
-import { ForwardedRef, forwardRef, memo, ReactElement } from 'react';
-
 import {
   BASE_STYLES,
   BaseProps,
@@ -10,7 +8,8 @@ import {
   OuterStyleProps,
   Styles,
   tasty,
-} from '../tasty';
+} from '@tenphi/tasty';
+import { ForwardedRef, forwardRef, memo, ReactElement } from 'react';
 
 const IconElement = tasty({
   as: 'span',

@@ -1,3 +1,4 @@
+import { renderStyles, tasty } from '@tenphi/tasty';
 import copy from 'clipboard-copy';
 import { useCallback, useMemo } from 'react';
 
@@ -6,9 +7,8 @@ import { Layout } from '../../components/content/Layout';
 import { PrismCode } from '../../components/content/PrismCode/PrismCode';
 import { useToast } from '../../components/overlays/Toast';
 import { CopyIcon } from '../../icons';
-import { tasty } from '../../tasty';
-import { renderStyles, StyleResult } from '../../tasty/pipeline';
-import { Styles } from '../../tasty/styles/types';
+
+import type { StyleResult, Styles } from '@tenphi/tasty';
 
 const OutputContent = tasty({
   styles: {

@@ -1,12 +1,4 @@
 import {
-  ForwardedRef,
-  forwardRef,
-  HTMLAttributes,
-  ReactNode,
-  useMemo,
-} from 'react';
-
-import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
@@ -15,7 +7,15 @@ import {
   mergeStyles,
   Styles,
   tasty,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import {
+  ForwardedRef,
+  forwardRef,
+  HTMLAttributes,
+  ReactNode,
+  useMemo,
+} from 'react';
+
 import { useCombinedRefs } from '../../../utils/react';
 
 import { LayoutContextReset } from './LayoutContext';

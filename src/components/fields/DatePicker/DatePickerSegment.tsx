@@ -1,8 +1,7 @@
+import { tasty } from '@tenphi/tasty';
 import { useRef } from 'react';
 import { DateValue, useDateSegment } from 'react-aria';
 import { DateFieldState, DateSegment } from 'react-stately';
-
-import { tasty } from '../../../tasty';
 
 import { DateFieldBase } from './types';
 

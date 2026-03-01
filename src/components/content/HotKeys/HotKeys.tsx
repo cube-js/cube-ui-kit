@@ -1,5 +1,3 @@
-import { forwardRef, Fragment } from 'react';
-
 import {
   BasePropsWithoutChildren,
   CONTAINER_STYLES,
@@ -7,7 +5,9 @@ import {
   extractStyles,
   filterBaseProps,
   tasty,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef, Fragment } from 'react';
+
 import { useKeySymbols } from '../../../utils/react/useKeySymbols';
 import { Space } from '../../layout/Space';
 import { Text } from '../Text';

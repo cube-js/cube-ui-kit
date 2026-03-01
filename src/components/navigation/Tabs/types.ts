@@ -1,5 +1,5 @@
+import type { BaseProps, OuterStyleProps, Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
-import type { BaseProps, OuterStyleProps, Styles } from '../../../tasty';
 import type { CubeItemActionProps } from '../../actions/ItemAction';
 import type { CubeMenuProps } from '../../actions/Menu';
 import type { CubeItemProps } from '../../content/Item';

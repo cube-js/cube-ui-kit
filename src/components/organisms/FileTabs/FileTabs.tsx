@@ -1,3 +1,4 @@
+import { Styles, tasty } from '@tenphi/tasty';
 import {
   createContext,
   ReactNode,
@@ -8,7 +9,6 @@ import {
 } from 'react';
 
 import { CloseIcon } from '../../../icons';
-import { Styles, tasty } from '../../../tasty';
 import { useLayoutEffect } from '../../../utils/react';
 import { Action, Button, CubeActionProps } from '../../actions';
 import { Block } from '../../Block';

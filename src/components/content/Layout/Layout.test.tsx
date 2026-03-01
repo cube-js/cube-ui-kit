@@ -1,7 +1,7 @@
+import { tasty } from '@tenphi/tasty';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { tasty } from '../../../tasty';
 import { Root } from '../../Root';
 
 import { GridLayout, Layout } from './index';

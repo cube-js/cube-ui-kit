@@ -1,16 +1,16 @@
-import copy from 'clipboard-copy';
-import { ForwardedRef, forwardRef, ReactNode, useState } from 'react';
-import { TextDropItem, useClipboard } from 'react-aria';
-
-import { useTimer } from '../../../_internal';
-import { CopyIcon } from '../../../icons';
 import {
   extractStyles,
   POSITION_STYLES,
   PositionStyleProps,
   Styles,
   tasty,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import copy from 'clipboard-copy';
+import { ForwardedRef, forwardRef, ReactNode, useState } from 'react';
+import { TextDropItem, useClipboard } from 'react-aria';
+
+import { useTimer } from '../../../_internal';
+import { CopyIcon } from '../../../icons';
 import { Button } from '../../actions';
 import { useToast } from '../../overlays/Toast';
 import { Card, CubeCardProps } from '../Card/Card';

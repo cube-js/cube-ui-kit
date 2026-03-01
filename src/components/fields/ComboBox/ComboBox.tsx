@@ -1,4 +1,16 @@
 import { FocusableRef, Key } from '@react-types/shared';
+import {
+  BASE_STYLES,
+  BasePropsWithoutChildren,
+  BaseStyleProps,
+  COLOR_STYLES,
+  ColorStyleProps,
+  extractStyles,
+  OUTER_STYLES,
+  OuterStyleProps,
+  Styles,
+  tasty,
+} from '@tenphi/tasty';
 import React, {
   cloneElement,
   ForwardedRef,
@@ -24,18 +36,6 @@ import { useEvent } from '../../../_internal';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
-import {
-  BASE_STYLES,
-  BasePropsWithoutChildren,
-  BaseStyleProps,
-  COLOR_STYLES,
-  ColorStyleProps,
-  extractStyles,
-  OUTER_STYLES,
-  OuterStyleProps,
-  Styles,
-  tasty,
-} from '../../../tasty';
 import { chainRaf } from '../../../utils/raf';
 import { generateRandomId } from '../../../utils/random';
 import {

@@ -1,8 +1,8 @@
 import { DOMRef, FocusableRef } from '@react-types/shared';
+import { BaseProps } from '@tenphi/tasty';
 import { ReactElement, RefObject } from 'react';
 
 import { FieldBaseProps, FormBaseProps } from '../../shared/index';
-import { BaseProps } from '../../tasty/index';
 import { mergeProps } from '../../utils/react/index';
 
 import { FieldWrapper } from './FieldWrapper/index';

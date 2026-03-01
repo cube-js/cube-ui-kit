@@ -8,7 +8,7 @@ import {
   OUTER_STYLES,
   POSITION_STYLES,
   TEXT_STYLES,
-} from '../../tasty';
+} from '@tenphi/tasty';
 
 const allStyles: string[] = Array.from(
   new Set([

@@ -1,4 +1,4 @@
-import { tasty } from '../../../tasty';
+import { tasty } from '@tenphi/tasty';
 
 export const SliderThumbElement = tasty({
   qa: 'SliderThumb',
