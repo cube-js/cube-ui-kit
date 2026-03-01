@@ -66,15 +66,19 @@ export default {
     '#shadow',
     '#minor',
     '#primary',
+    '#primary-text',
     '#disabled',
     '#disabled-text',
     '#disabled-bg',
+    '#disabled-opacity',
     '#scrollbar-thumb',
     '#scrollbar-outline',
     '#scrollbar-bg',
     '#scrollbar-corner',
     '#tabs-fade-left',
     '#tabs-fade-right',
+    '#slider-thumb',
+    '#slider-thumb-hovered',
 
     // Custom Property Tokens (from src/tokens/base.ts)
     '$tab-indicator-size',
@@ -197,5 +201,6 @@ export default {
     // Inline semantic styles
     'strong',
     'em',
+    'inline',
   ],
 };
