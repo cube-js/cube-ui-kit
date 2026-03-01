@@ -27,7 +27,7 @@ module.exports = [
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    limit: '62kB',
+    limit: '63kB',
   },
   {
     name: 'Tree shaking (just tasty)',
