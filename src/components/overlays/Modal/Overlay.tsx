@@ -1,8 +1,8 @@
+import { Props } from '@tenphi/tasty';
 import { forwardRef, useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { Provider, useProviderProps } from '../../../provider';
-import { Props } from '../../../tasty';
 
 import { OpenTransition } from './OpenTransition';
 import { WithCloseBehavior } from './types';

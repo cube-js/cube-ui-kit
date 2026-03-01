@@ -57,7 +57,7 @@ The Style Injector is the core engine behind Tasty's styling system, providing:
 Injects CSS rules and returns a className with dispose function.
 
 ```typescript
-import { inject } from '@cube-dev/ui-kit/tasty/injector';
+import { inject } from '@tenphi/tasty';
 
 // Component styling - generates tasty class names
 const result = inject([{
@@ -98,7 +98,7 @@ globalResult.dispose();
 Injects raw CSS text directly without parsing. This is a low-overhead method for injecting CSS that doesn't need tasty processing.
 
 ```typescript
-import { injectRawCSS } from '@cube-dev/ui-kit/tasty/injector';
+import { injectRawCSS } from '@tenphi/tasty';
 
 // Inject raw CSS
 const { dispose } = injectRawCSS(`
@@ -126,7 +126,7 @@ Supports two overloads:
 - **Factory function**: `useRawCSS(() => cssString, deps, options?)` - re-evaluates when deps change (like `useMemo`)
 
 ```tsx
-import { useRawCSS } from '@cube-dev/ui-kit/tasty';
+import { useRawCSS } from '@tenphi/tasty';
 
 // Static CSS
 function GlobalReset() {
@@ -155,7 +155,7 @@ function ThemeStyles({ theme }: { theme: 'dark' | 'light' }) {
 Creates an isolated injector instance with custom configuration.
 
 ```typescript
-import { createInjector } from '@cube-dev/ui-kit/tasty/injector';
+import { createInjector } from '@tenphi/tasty';
 
 // Create isolated instance for testing
 const testInjector = createInjector({
@@ -339,7 +339,7 @@ const shadowAnimation = keyframes({
 ### Server-Side Rendering
 
 ```typescript
-import { getCssText, getCssTextForNode } from '@cube-dev/ui-kit/tasty/injector';
+import { getCssText, getCssTextForNode } from '@tenphi/tasty';
 
 // Extract all CSS for SSR
 const cssText = getCssText();

@@ -1,9 +1,4 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import { forwardRef, useMemo, useRef } from 'react';
-import { useHover, useRadio } from 'react-aria';
-
-import { useProviderProps } from '../../../provider';
-import { FieldBaseProps } from '../../../shared';
 import {
   BaseProps,
   extractStyles,
@@ -11,7 +6,12 @@ import {
   OUTER_STYLES,
   OuterStyleProps,
   tasty,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef, useMemo, useRef } from 'react';
+import { useHover, useRadio } from 'react-aria';
+
+import { useProviderProps } from '../../../provider';
+import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { CubeItemProps, Item } from '../../content/Item/Item';

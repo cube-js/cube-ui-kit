@@ -1,7 +1,7 @@
+import { tasty } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
-import { tasty } from '../../../tasty';
-import { Styles } from '../../../tasty/styles/types';
+import type { Styles } from '@tenphi/tasty';
 
 const CardElement = tasty({
   qa: 'PlaygroundCard',

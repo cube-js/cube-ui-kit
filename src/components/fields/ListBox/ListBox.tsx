@@ -2,6 +2,16 @@ import { useHover } from '@react-aria/interactions';
 import { IconMinus } from '@tabler/icons-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
+  BASE_STYLES,
+  BasePropsWithoutChildren,
+  COLOR_STYLES,
+  extractStyles,
+  mergeStyles,
+  OUTER_STYLES,
+  Styles,
+  tasty,
+} from '@tenphi/tasty';
+import {
   CSSProperties,
   ForwardedRef,
   forwardRef,
@@ -28,16 +38,6 @@ import { useWarn } from '../../../_internal/hooks/use-warn';
 import { CheckIcon } from '../../../icons';
 import { Icon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
-import {
-  BASE_STYLES,
-  BasePropsWithoutChildren,
-  COLOR_STYLES,
-  extractStyles,
-  mergeStyles,
-  OUTER_STYLES,
-  Styles,
-  tasty,
-} from '../../../tasty';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';

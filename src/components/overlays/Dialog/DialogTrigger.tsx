@@ -1,5 +1,6 @@
 import { PressResponder } from '@react-aria/interactions';
 import { useMediaQuery } from '@react-spectrum/utils';
+import { Styles } from '@tenphi/tasty';
 import { Fragment, ReactElement, RefObject, useEffect, useRef } from 'react';
 import {
   OverlayTriggerProps,
@@ -10,7 +11,6 @@ import {
 } from 'react-aria';
 import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
 
-import { Styles } from '../../../tasty';
 import { useCombinedRefs } from '../../../utils/react/index';
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 

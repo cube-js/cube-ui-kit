@@ -1,6 +1,14 @@
 import { createDOMRef } from '@react-spectrum/utils';
 import { DOMRefValue } from '@react-types/shared';
 import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  Styles,
+  tasty,
+} from '@tenphi/tasty';
+import {
   ForwardedRef,
   forwardRef,
   useContext,
@@ -11,14 +19,6 @@ import {
 import { AriaTooltipProps, useTooltip } from 'react-aria';
 
 import { PlacementAxis } from '../../../shared';
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  extractStyles,
-  Styles,
-  tasty,
-} from '../../../tasty';
 import { mergeProps, mergeRefs, useLayoutEffect } from '../../../utils/react';
 
 import { TooltipContext } from './context';

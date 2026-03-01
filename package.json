@@ -15,22 +15,6 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    },
-    "./tasty/static": {
-      "import": "./dist/tasty/static/index.js",
-      "types": "./dist/tasty/static/index.d.ts"
-    },
-    "./tasty/zero": {
-      "import": "./dist/tasty/zero/index.js",
-      "types": "./dist/tasty/zero/index.d.ts"
-    },
-    "./tasty/zero/babel": {
-      "import": "./dist/tasty/zero/babel.js",
-      "types": "./dist/tasty/zero/babel.d.ts"
-    },
-    "./tasty/zero/next": {
-      "import": "./dist/tasty/zero/next.js",
-      "types": "./dist/tasty/zero/next.d.ts"
     }
   },
   "files": [
@@ -38,8 +22,7 @@
     "dist/**/*.d.ts",
     "dist/**/*.map",
     "dist/README.md",
-    "dist/CHANGELOG.md",
-    "dist/tasty.config.ts"
+    "dist/CHANGELOG.md"
   ],
   "scripts": {
     "start": "pnpm storybook",
@@ -77,8 +60,6 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "@babel/helper-plugin-utils": "^7.24.0",
-    "@babel/types": "^7.24.0",
     "@internationalized/date": "^3.10.1",
     "@react-aria/focus": "^3.21.3",
     "@react-aria/i18n": "^3.12.14",
@@ -91,6 +72,7 @@
     "@react-types/shared": "^3.32.1",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
+    "@tenphi/tasty": "^0.4.1",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",

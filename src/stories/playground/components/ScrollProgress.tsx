@@ -1,5 +1,4 @@
-import { tasty } from '../../../tasty';
-import { Styles } from '../../../tasty/styles/types';
+import { Styles, tasty } from '@tenphi/tasty';
 
 const ScrollProgressElement = tasty({
   qa: 'PlaygroundScrollProgress',

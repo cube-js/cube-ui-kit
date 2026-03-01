@@ -1,6 +1,3 @@
-import { forwardRef, HTMLAttributes, RefObject, useMemo } from 'react';
-import { OverlayProps } from 'react-aria';
-
 import {
   BASE_STYLES,
   COLOR_STYLES,
@@ -9,7 +6,10 @@ import {
   Styles,
   tasty,
   TEXT_STYLES,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef, HTMLAttributes, RefObject, useMemo } from 'react';
+import { OverlayProps } from 'react-aria';
+
 import { highlightText } from '../highlightText';
 import { CubeTextProps, Text, TEXT_PROP_MAP } from '../Text';
 import { AutoTooltipValue, useAutoTooltip } from '../use-auto-tooltip';

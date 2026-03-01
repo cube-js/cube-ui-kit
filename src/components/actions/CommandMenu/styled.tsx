@@ -1,4 +1,4 @@
-import { tasty } from '../../../tasty';
+import { tasty } from '@tenphi/tasty';
 
 export const StyledCommandMenu = tasty({
   qa: 'CommandMenu',
@@ -35,7 +35,7 @@ export const StyledSearchInput = tasty({
   qa: 'SearchInput',
   as: 'input',
   styles: {
-    recipe: 'reset input | input-autofill',
+    recipe: 'reset input / input-autofill',
     display: 'grid',
     width: '100%',
     color: '#dark',

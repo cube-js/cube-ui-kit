@@ -1,5 +1,6 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { DOMRef, FocusableRef } from '@react-types/shared';
+import { extractStyles, OUTER_STYLES, tasty } from '@tenphi/tasty';
 import {
   ForwardedRef,
   forwardRef,
@@ -11,7 +12,6 @@ import {
 import { useNumberFormatter, useSlider } from 'react-aria';
 import { useSliderState } from 'react-stately';
 
-import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';
 import { forwardRefWithGenerics, mergeProps } from '../../../utils/react';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';

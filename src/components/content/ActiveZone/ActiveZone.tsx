@@ -1,7 +1,4 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import { forwardRef, MouseEventHandler } from 'react';
-import { FocusableOptions, useFocusable, useHover } from 'react-aria';
-
 import {
   BaseProps,
   BaseStyleProps,
@@ -13,7 +10,10 @@ import {
   Styles,
   TEXT_STYLES,
   TextStyleProps,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef, MouseEventHandler } from 'react';
+import { FocusableOptions, useFocusable, useHover } from 'react-aria';
+
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 

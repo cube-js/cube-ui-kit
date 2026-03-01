@@ -1,12 +1,12 @@
-import { ReactNode } from 'react';
-import { AriaDialogProps } from 'react-aria';
-
 import {
   BaseProps,
   BaseStyleProps,
   BlockStyleProps,
   DimensionStyleProps,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import { ReactNode } from 'react';
+import { AriaDialogProps } from 'react-aria';
+
 import { CubeDialogContainerProps } from '../Dialog';
 
 import { CubeAlertDialogProps } from './AlertDialog';

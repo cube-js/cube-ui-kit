@@ -1,3 +1,4 @@
+import { BaseProps, tasty } from '@tenphi/tasty';
 import {
   isValidElement,
   ReactNode,
@@ -7,7 +8,6 @@ import {
   useState,
 } from 'react';
 
-import { BaseProps, tasty } from '../../../tasty';
 import { DisplayTransition } from '../DisplayTransition/DisplayTransition';
 
 export interface CubeIconSwitchProps extends BaseProps {

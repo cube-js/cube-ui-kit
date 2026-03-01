@@ -1,6 +1,6 @@
+import { BaseProps, Styles } from '@tenphi/tasty';
 import { diffLines } from 'diff';
 
-import { BaseProps, Styles } from '../../../tasty/index';
 import { PrismCode } from '../PrismCode/PrismCode';
 
 export interface CubePrismDiffCodeProps {

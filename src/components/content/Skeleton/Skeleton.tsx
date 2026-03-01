@@ -1,6 +1,6 @@
+import { BaseProps, ContainerStyleProps } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
-import { BaseProps, ContainerStyleProps } from '../../../tasty';
 import { Flow } from '../../layout/Flow';
 import { CubeGridProps, Grid } from '../../layout/Grid';
 import { Space } from '../../layout/Space';

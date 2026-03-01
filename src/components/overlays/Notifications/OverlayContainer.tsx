@@ -1,3 +1,4 @@
+import { tasty } from '@tenphi/tasty';
 import {
   FocusEvent,
   Key,
@@ -10,7 +11,6 @@ import {
 } from 'react';
 
 import { useEvent } from '../../../_internal';
-import { tasty } from '../../../tasty';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { Portal } from '../../portal';

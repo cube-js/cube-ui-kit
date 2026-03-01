@@ -1,3 +1,4 @@
+import { Styles, tasty } from '@tenphi/tasty';
 import {
   ForwardedRef,
   forwardRef,
@@ -5,8 +6,6 @@ import {
   ReactNode,
   RefAttributes,
 } from 'react';
-
-import { Styles, tasty } from '../../../tasty';
 
 import { CubeLayoutProps, Layout } from './Layout';
 import { LayoutBlock } from './LayoutBlock';

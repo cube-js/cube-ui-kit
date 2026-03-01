@@ -1,7 +1,4 @@
 import { FocusableRef } from '@react-types/shared';
-import { forwardRef } from 'react';
-import { AriaButtonProps } from 'react-aria';
-
 import {
   AllBaseProps,
   BaseStyleProps,
@@ -12,7 +9,10 @@ import {
   tasty,
   TEXT_STYLES,
   TextStyleProps,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef } from 'react';
+import { AriaButtonProps } from 'react-aria';
+
 import { NavigateArg, useAction } from '../use-action';
 
 export interface CubeActionProps<

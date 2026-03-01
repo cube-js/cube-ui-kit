@@ -1,5 +1,3 @@
-import { forwardRef, ReactNode } from 'react';
-
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -8,7 +6,8 @@ import {
   extractStyles,
   filterBaseProps,
   Styles,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef, ReactNode } from 'react';
 
 const DEFAULT_STYLES = {
   display: 'grid',

@@ -1,12 +1,12 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef, PressEvent } from '@react-types/shared';
+import { AllBaseProps, filterBaseProps, TagName } from '@tenphi/tasty';
 import { useContext } from 'react';
 import { AriaButtonProps, useButton, useHover } from 'react-aria';
 
 import { useEvent } from '../../_internal';
 import { UIKitContext } from '../../provider';
 import { useTracking } from '../../providers/TrackingProvider';
-import { AllBaseProps, filterBaseProps, TagName } from '../../tasty';
 import { mergeProps } from '../../utils/react';
 import { useFocus } from '../../utils/react/interactions';
 

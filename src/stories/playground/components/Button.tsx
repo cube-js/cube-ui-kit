@@ -1,8 +1,8 @@
+import { tasty } from '@tenphi/tasty';
 import { ReactNode, useRef } from 'react';
 import { useButton, useFocusRing, useHover } from 'react-aria';
 
-import { tasty } from '../../../tasty';
-import { Styles } from '../../../tasty/styles/types';
+import type { Styles } from '@tenphi/tasty';
 
 const ButtonElement = tasty({
   as: 'button',

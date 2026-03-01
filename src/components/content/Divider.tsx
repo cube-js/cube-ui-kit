@@ -1,6 +1,3 @@
-import { forwardRef, useRef } from 'react';
-import { useSeparator } from 'react-aria';
-
 import {
   BASE_STYLES,
   BaseProps,
@@ -9,7 +6,10 @@ import {
   OUTER_STYLES,
   OuterStyleProps,
   tasty,
-} from '../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef, useRef } from 'react';
+import { useSeparator } from 'react-aria';
+
 import { useCombinedRefs, useSlotProps } from '../../utils/react';
 
 const DividerElement = tasty({

@@ -2,7 +2,7 @@ export { chain } from './chain';
 export { forwardRefWithGenerics } from './forwardRefWithGenerics';
 export { isTextOnly } from './isTextOnly';
 export { mergeProps } from './mergeProps';
-export { modAttrs } from '../../tasty';
+export { modAttrs } from '@tenphi/tasty';
 export { useSlotProps, SlotProvider, ClearSlots } from './Slots';
 export { useLayoutEffect } from './useLayoutEffect';
 export { useCombinedRefs, mergeRefs } from './useCombinedRefs';

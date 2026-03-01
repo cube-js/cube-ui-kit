@@ -1,6 +1,5 @@
+import { tasty } from '@tenphi/tasty';
 import { memo, useEffect, useRef, useState } from 'react';
-
-import { tasty } from '../tasty/index';
 
 import { CubeIconProps } from './Icon';
 import { UpIcon } from './UpIcon';

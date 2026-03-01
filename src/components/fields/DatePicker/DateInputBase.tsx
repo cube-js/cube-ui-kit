@@ -1,8 +1,4 @@
 import { mergeRefs } from '@react-aria/utils';
-import React, { cloneElement, useRef } from 'react';
-import { useFocusRing } from 'react-aria';
-
-import { ValidationState } from '../../../shared';
 import {
   CONTAINER_STYLES,
   ContainerStyleProps,
@@ -10,7 +6,11 @@ import {
   Props,
   Styles,
   tasty,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import React, { cloneElement, useRef } from 'react';
+import { useFocusRing } from 'react-aria';
+
+import { ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';

@@ -1,5 +1,16 @@
 import { createFocusableRef } from '@react-spectrum/utils';
 import {
+  BaseProps,
+  BLOCK_STYLES,
+  BlockStyleProps,
+  extractStyles,
+  OUTER_STYLES,
+  OuterStyleProps,
+  Props,
+  Styles,
+  tasty,
+} from '@tenphi/tasty';
+import {
   cloneElement,
   forwardRef,
   ReactElement,
@@ -14,17 +25,6 @@ import { AriaNumberFieldProps, AriaTextFieldProps, useHover } from 'react-aria';
 import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
-import {
-  BaseProps,
-  BLOCK_STYLES,
-  BlockStyleProps,
-  extractStyles,
-  OUTER_STYLES,
-  OuterStyleProps,
-  Props,
-  Styles,
-  tasty,
-} from '../../../tasty';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
@@ -136,7 +136,7 @@ const InputWrapperElement = tasty({
 const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
-  recipe: 'reset input | input-autofill',
+  recipe: 'reset input / input-autofill',
   placeSelf: 'stretch',
   width: 'initial 100% 100%',
   transition: 'theme',

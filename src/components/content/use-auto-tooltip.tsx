@@ -1,3 +1,4 @@
+import { Props } from '@tenphi/tasty';
 import {
   HTMLAttributes,
   ReactNode,
@@ -10,7 +11,6 @@ import {
 } from 'react';
 import { OverlayProps } from 'react-aria';
 
-import { Props } from '../../tasty';
 import {
   CubeTooltipProviderProps,
   TooltipProvider,

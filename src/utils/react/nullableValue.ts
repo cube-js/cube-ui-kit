@@ -1,4 +1,4 @@
-import { Props } from '../../tasty';
+import { Props } from '@tenphi/tasty';
 
 export function castNullableStringValue<T>(props: T): T {
   return castNullableField(props, ['value', 'defaultValue'], 'string', (v) =>
