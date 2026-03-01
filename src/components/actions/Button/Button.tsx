@@ -184,7 +184,7 @@ const DEFAULT_ICON_STYLES: Styles = {
   transition: 'theme, width, height, translate',
 };
 
-export const DEFAULT_BUTTON_STYLES = {
+export const DEFAULT_BUTTON_STYLES: Styles = {
   recipe: 'reset button',
   display: 'inline-grid',
   flow: 'column dense',

@@ -1,5 +1,6 @@
 // eslint.config.js
 import js from '@eslint/js';
+import tastyPlugin from '@tenphi/eslint-plugin-tasty';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import parser from '@typescript-eslint/parser';
 import importPlugin from 'eslint-plugin-import';
@@ -12,6 +13,9 @@ import globals from 'globals';
 export default [
   // Base JS recommended rules
   js.configs.recommended,
+
+  // Tasty styling rules
+  tastyPlugin.configs.recommended,
 
   // Base configuration for all files
   {
