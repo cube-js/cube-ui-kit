@@ -45,8 +45,8 @@ importers:
         specifier: ^3.13.12
         version: 3.13.12(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tenphi/tasty':
-        specifier: ^0.4.1
-        version: 0.4.1(@babel/core@7.28.5)(react@19.1.1)
+        specifier: 0.5.0
+        version: 0.5.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(react@19.1.1)
       clipboard-copy:
         specifier: ^4.0.1
         version: 4.0.1
@@ -2905,14 +2905,20 @@ packages:
   '@tanstack/virtual-core@3.13.12':
     resolution: {integrity: sha512-1YBOJfRHV4sXUmWsFSf5rQor4Ss82G8dQWLRbnk3GA4jeP8hQt1hxXh0tmflpC0dz3VgEv/1+qwPyLeWkQuPFA==}
 
-  '@tenphi/tasty@0.4.1':
-    resolution: {integrity: sha512-6XD2Ydat2naTQb55CbkYLHxdIFeRFMfNTmM9hAORo1h4h1nupPup8b85htgZU+V3UZuTDF8NmrXuc3Tk/nQBfQ==}
+  '@tenphi/tasty@0.5.0':
+    resolution: {integrity: sha512-qelz2qstTaQbNS+gLqj7YI4+13ebzT8TNqfgdxQbtzk4lIkzb1e+0dv33RIkx7i6IPLOI5czDiGIuqzipCKVzg==}
     engines: {node: '>=20'}
     peerDependencies:
       '@babel/core': ^7.24.0
+      '@babel/helper-plugin-utils': ^7.24.0
+      '@babel/types': ^7.24.0
       react: ^18.0.0 || ^19.0.0
     peerDependenciesMeta:
       '@babel/core':
+        optional: true
+      '@babel/helper-plugin-utils':
+        optional: true
+      '@babel/types':
         optional: true
       react:
         optional: true
@@ -10407,14 +10413,13 @@ snapshots:
 
   '@tanstack/virtual-core@3.13.12': {}
 
-  '@tenphi/tasty@0.4.1(@babel/core@7.28.5)(react@19.1.1)':
+  '@tenphi/tasty@0.5.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(react@19.1.1)':
     dependencies:
-      '@babel/helper-plugin-utils': 7.25.7
-      '@babel/types': 7.29.0
       csstype: 3.1.2
-      react-is: 18.3.1
     optionalDependencies:
       '@babel/core': 7.28.5
+      '@babel/helper-plugin-utils': 7.25.7
+      '@babel/types': 7.29.0
       react: 19.1.1
 
   '@testing-library/dom@10.4.1':
