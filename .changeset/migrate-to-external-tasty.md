@@ -11,4 +11,5 @@ Migrate from internal tasty module to external `@tenphi/tasty` package.
 **Internal changes:**
 - Removed internal `src/tasty/` directory (~133 files)
 - All internal imports now use `@tenphi/tasty` package
+- Fixed module augmentations in `src/tasty-augment.d.ts` to target `@tenphi/tasty` instead of removed internal modules
 - Added `isDevEnv` utility to `src/utils/is-dev-env.ts`
