@@ -4,8 +4,6 @@ import {
   IconCircleXFilled,
   IconInfoCircleFilled,
 } from '@tabler/icons-react';
-import { ComponentType, forwardRef, ReactNode, useMemo } from 'react';
-
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -13,7 +11,9 @@ import {
   extractStyles,
   filterBaseProps,
   tasty,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import { ComponentType, forwardRef, ReactNode, useMemo } from 'react';
+
 import { mergeProps, wrapNodeIfPlain } from '../../../utils/react';
 import { Title } from '../Title';
 

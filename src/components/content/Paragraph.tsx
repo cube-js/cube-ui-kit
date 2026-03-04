@@ -1,12 +1,11 @@
-import { forwardRef } from 'react';
-
 import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
   Styles,
   TEXT_STYLES,
-} from '../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef } from 'react';
 
 import { CubeTextProps, Text } from './Text';
 

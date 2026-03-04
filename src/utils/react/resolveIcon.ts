@@ -1,6 +1,5 @@
+import { Mods } from '@tenphi/tasty';
 import { ReactNode } from 'react';
-
-import { Mods } from '../../tasty';
 
 /**
  * Function that receives mods (can be destructured) and returns an icon or true for empty slot.

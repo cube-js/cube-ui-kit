@@ -1,11 +1,4 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import { forwardRef, useRef } from 'react';
-import { AriaSwitchProps, useHover, useSwitch } from 'react-aria';
-import { useToggleState } from 'react-stately';
-
-import { LoadingIcon } from '../../../icons';
-import { useProviderProps } from '../../../provider';
-import { FieldBaseProps } from '../../../shared';
 import {
   BaseProps,
   BLOCK_STYLES,
@@ -15,7 +8,14 @@ import {
   OuterStyleProps,
   Styles,
   tasty,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef, useRef } from 'react';
+import { AriaSwitchProps, useHover, useSwitch } from 'react-aria';
+import { useToggleState } from 'react-stately';
+
+import { LoadingIcon } from '../../../icons';
+import { useProviderProps } from '../../../provider';
+import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import {

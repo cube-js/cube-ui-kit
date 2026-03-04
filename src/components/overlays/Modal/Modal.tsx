@@ -1,8 +1,8 @@
 import { useDOMRef } from '@react-spectrum/utils';
+import { BaseProps, Props, Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode } from 'react';
 import { useModal, useOverlay, usePreventScroll } from 'react-aria';
 
-import { BaseProps, Props, Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 
 import { Overlay } from './Overlay';

@@ -1,5 +1,6 @@
+import { BaseProps, ContainerStyleProps, TextStyleProps } from '@tenphi/tasty';
+
 import THEMES from '../../../data/themes';
-import { BaseProps, ContainerStyleProps, TextStyleProps } from '../../../tasty';
 
 export interface CubeAlertProps
   extends Omit<BaseProps, 'theme'>,

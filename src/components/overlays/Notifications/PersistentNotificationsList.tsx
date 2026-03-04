@@ -1,7 +1,7 @@
+import { tasty } from '@tenphi/tasty';
 import { Fragment, Key, useContext, useEffect, useRef, useState } from 'react';
 
 import { useEvent } from '../../../_internal';
-import { tasty } from '../../../tasty';
 import { Divider } from '../../content/Divider';
 import { Text } from '../../content/Text';
 

@@ -1,11 +1,12 @@
 import { json } from '@codemirror/lang-json';
+import { tasty } from '@tenphi/tasty';
 import CodeMirror from '@uiw/react-codemirror';
 import { parse } from 'best-effort-json-parser';
 import { useCallback, useRef, useState } from 'react';
 
 import { Layout } from '../../components/content/Layout';
-import { tasty } from '../../tasty';
-import { Styles } from '../../tasty/styles/types';
+
+import type { Styles } from '@tenphi/tasty';
 
 const ErrorDisplay = tasty({
   styles: {

@@ -1,3 +1,4 @@
+import { BaseProps, tasty } from '@tenphi/tasty';
 import {
   ComponentProps,
   forwardRef,
@@ -28,7 +29,6 @@ import {
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { BaseProps, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { useItemActionContext } from '../../actions/ItemActionContext';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';

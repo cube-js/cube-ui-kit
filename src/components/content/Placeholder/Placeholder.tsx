@@ -1,5 +1,3 @@
-import { forwardRef } from 'react';
-
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -9,7 +7,8 @@ import {
   keyframes,
   Styles,
   tasty,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef } from 'react';
 
 // Create the placeholder animation using keyframes helper
 const placeholderAnimation = keyframes({

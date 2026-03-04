@@ -1,6 +1,6 @@
 export {};
 
-declare module './tasty/styles/types' {
+declare module '@tenphi/tasty' {
   interface TastyNamedColors {
     purple: true;
     'purple-text': true;
@@ -70,9 +70,7 @@ declare module './tasty/styles/types' {
     tag: true;
     default: true;
   }
-}
 
-declare module './tasty/types' {
   interface TastyThemeNames {
     default: true;
     danger: true;

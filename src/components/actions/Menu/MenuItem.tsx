@@ -1,10 +1,10 @@
 import { Key, Node } from '@react-types/shared';
+import { Styles } from '@tenphi/tasty';
 import { KeyboardEvent, useContext, useRef } from 'react';
 import { FocusRing, useMenuItem } from 'react-aria';
 import { TreeState } from 'react-stately';
 
 import { RightIcon } from '../../../icons';
-import { Styles } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { filterCollectionItemProps } from '../../CollectionItem';
 import { Item } from '../../content/Item/Item';

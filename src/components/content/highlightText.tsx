@@ -1,6 +1,5 @@
+import { Styles } from '@tenphi/tasty';
 import { ReactNode } from 'react';
-
-import { Styles } from '../../tasty';
 
 import { Text } from './Text';
 

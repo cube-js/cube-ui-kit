@@ -1,6 +1,6 @@
+import { tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
-import { tasty } from '../../../tasty';
 import { useSlotProps } from '../../../utils/react';
 import { CubeSpaceProps, Space } from '../../layout/Space';
 

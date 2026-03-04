@@ -1,4 +1,14 @@
 import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  mergeStyles,
+  Styles,
+  tasty,
+} from '@tenphi/tasty';
+import {
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
@@ -15,16 +25,6 @@ import { useFocusRing, useHover, useMove } from 'react-aria';
 import { createPortal } from 'react-dom';
 
 import { useDebouncedValue } from '../../../_internal/hooks';
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  extractStyles,
-  filterBaseProps,
-  mergeStyles,
-  Styles,
-  tasty,
-} from '../../../tasty';
 import {
   mergeProps,
   useCombinedRefs,

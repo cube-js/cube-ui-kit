@@ -1,10 +1,12 @@
+import { tasty } from '@tenphi/tasty';
+
 import { Layout } from '../../components/content/Layout';
-import { tasty } from '../../tasty';
-import { Styles } from '../../tasty/styles/types';
 
 import { Button } from './components/Button';
 import { Card } from './components/Card';
 import { ScrollProgress } from './components/ScrollProgress';
+
+import type { Styles } from '@tenphi/tasty';
 
 const PreviewContent = tasty({
   styles: {

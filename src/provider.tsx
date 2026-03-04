@@ -1,3 +1,4 @@
+import { Props } from '@tenphi/tasty';
 import {
   createContext,
   ForwardedRef,
@@ -9,7 +10,6 @@ import {
 
 import { NavigationAdapter } from './providers/navigation.types';
 import { defaultNavigationAdapter } from './providers/navigationAdapter.default';
-import { Props } from './tasty';
 import { EventBusProvider } from './utils/react/useEventBus';
 
 export interface ProviderProps extends Props {

@@ -1,3 +1,4 @@
+import { Styles } from '@tenphi/tasty';
 import {
   isValidElement,
   ReactElement,
@@ -6,8 +7,6 @@ import {
   useEffect,
   useState,
 } from 'react';
-
-import { Styles } from '../../../tasty';
 
 import { CubeTooltipProps, Tooltip } from './Tooltip';
 import {

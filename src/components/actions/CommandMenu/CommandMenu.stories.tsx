@@ -10,11 +10,11 @@ import {
   IconReload,
   IconSelect,
 } from '@tabler/icons-react';
+import { tasty } from '@tenphi/tasty';
 import React, { useState } from 'react';
 import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
 import { EditIcon, TrashIcon } from '../../../icons';
-import { tasty } from '../../../tasty';
 import { Card } from '../../content/Card/Card';
 import { HotKeys } from '../../content/HotKeys';
 import { Paragraph } from '../../content/Paragraph';

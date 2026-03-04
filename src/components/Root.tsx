@@ -1,9 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
-import { ModalProvider } from 'react-aria';
-
-import { Provider } from '../provider';
-import { NavigationAdapter } from '../providers/navigation.types';
-import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 import {
   BASE_STYLES,
   BaseProps,
@@ -12,7 +6,13 @@ import {
   extractStyles,
   filterBaseProps,
   tasty,
-} from '../tasty';
+} from '@tenphi/tasty';
+import { useEffect, useRef, useState } from 'react';
+import { ModalProvider } from 'react-aria';
+
+import { Provider } from '../provider';
+import { NavigationAdapter } from '../providers/navigation.types';
+import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 import { EventBusProvider } from '../utils/react/useEventBus';
 import { VERSION } from '../version';
 

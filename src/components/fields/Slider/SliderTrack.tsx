@@ -1,6 +1,5 @@
+import { Styles } from '@tenphi/tasty';
 import { useMemo } from 'react';
-
-import { Styles } from '../../../tasty';
 
 import { SliderTrackContainerElement } from './elements';
 

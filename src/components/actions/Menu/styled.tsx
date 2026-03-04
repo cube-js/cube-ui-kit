@@ -1,5 +1,6 @@
+import { tasty } from '@tenphi/tasty';
+
 import { DEFAULT_NEUTRAL_STYLES } from '../../../data/item-themes';
-import { tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
 import { DEFAULT_BUTTON_STYLES } from '../Button/Button';
 

@@ -3,10 +3,10 @@ import { useTabPanel } from 'react-aria';
 
 import { TabPanelElement } from './styled';
 
+import type { Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type { AriaTabPanelProps } from 'react-aria';
 import type { TabListState } from 'react-stately';
-import type { Styles } from '../../../tasty';
 import type { CacheKeyValue, ParsedPanel, ParsedTab } from './types';
 
 // =============================================================================

@@ -1,6 +1,6 @@
+import { Styles } from '@tenphi/tasty';
 import { useMenuSection } from 'react-aria';
 
-import { Styles } from '../../../tasty';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 
 import { MenuItem, MenuItemProps } from './MenuItem';

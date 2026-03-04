@@ -1,6 +1,5 @@
+import { Props, Styles } from '@tenphi/tasty';
 import { ReactNode } from 'react';
-
-import { Props, Styles } from '../tasty';
 
 /** ValidationResult type for error message functions */
 export interface ValidationResult {

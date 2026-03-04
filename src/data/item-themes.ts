@@ -1,4 +1,4 @@
-import { Styles } from 'src/tasty';
+import type { Styles } from '@tenphi/tasty';
 
 export const VALIDATION_STYLES: Styles = {
   border: {

@@ -5,10 +5,10 @@ import {
   IconInfoCircle,
   IconX,
 } from '@tabler/icons-react';
+import { tasty } from '@tenphi/tasty';
 import { ReactNode, useMemo } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { tasty } from '../../../tasty';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 import { Button, CubeButtonProps } from '../Button/Button';
 import { CubeItemActionProps } from '../ItemAction/ItemAction';

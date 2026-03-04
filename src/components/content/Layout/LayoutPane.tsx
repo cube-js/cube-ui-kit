@@ -1,4 +1,15 @@
 import {
+  BaseProps,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  INNER_STYLES,
+  mergeStyles,
+  OUTER_STYLES,
+  Styles,
+  tasty,
+} from '@tenphi/tasty';
+import {
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
@@ -12,17 +23,6 @@ import {
 import { useFocusRing, useHover, useMove } from 'react-aria';
 
 import { useDebouncedValue } from '../../../_internal/hooks';
-import {
-  BaseProps,
-  ContainerStyleProps,
-  extractStyles,
-  filterBaseProps,
-  INNER_STYLES,
-  mergeStyles,
-  OUTER_STYLES,
-  Styles,
-  tasty,
-} from '../../../tasty';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 
 import { useTinyScrollbar } from './hooks/useTinyScrollbar';

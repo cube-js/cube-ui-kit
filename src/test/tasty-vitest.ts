@@ -1,6 +1,5 @@
+import { getCssTextForNode } from '@tenphi/tasty';
 import { expect } from 'vitest';
-
-import { getCssTextForNode } from '../tasty/injector';
 
 declare module 'vitest' {
   interface Assertion {

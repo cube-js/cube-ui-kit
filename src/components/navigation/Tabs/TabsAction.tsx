@@ -1,7 +1,7 @@
 import { FocusableRef } from '@react-types/shared';
+import { tasty } from '@tenphi/tasty';
 import { forwardRef, useMemo } from 'react';
 
-import { tasty } from '../../../tasty';
 import {
   CubeItemButtonProps,
   ItemButton,

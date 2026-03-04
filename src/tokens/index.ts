@@ -14,7 +14,7 @@
  * - Base: Core design system values
  */
 
-import { generateTypographyTokens } from '../tasty/utils/typography';
+import { generateTypographyTokens } from '@tenphi/tasty';
 
 import { BASE_TOKENS } from './base';
 import { COLOR_TOKENS } from './colors';
@@ -23,7 +23,7 @@ import { SHADOW_TOKENS } from './shadows';
 import { SIZE_NAME_TO_KEY, SIZE_TOKENS, SIZES } from './sizes';
 import { SPACE_TOKENS } from './spacing';
 
-import type { Styles } from '../tasty/styles/types';
+import type { Styles } from '@tenphi/tasty';
 import type { SizeKey, SizeName } from './sizes';
 
 /**
@@ -59,5 +59,4 @@ export { SPACE_TOKENS } from './spacing';
 export { SHADOW_TOKENS } from './shadows';
 export { LAYOUT_TOKENS } from './layout';
 export { BASE_TOKENS } from './base';
-export { TYPOGRAPHY_PRESETS } from './typography';
-export type { TypographyPreset } from './typography';
+// TypographyPreset and TYPOGRAPHY_PRESETS are re-exported from @tenphi/tasty

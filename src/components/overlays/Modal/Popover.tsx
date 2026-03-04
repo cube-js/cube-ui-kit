@@ -1,8 +1,8 @@
+import { BaseProps, tasty } from '@tenphi/tasty';
 import { forwardRef, HTMLAttributes, useEffect } from 'react';
 import { OverlayProps, useModal, useOverlay } from 'react-aria';
 
 import { PlacementAxis } from '../../../shared';
-import { BaseProps, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 
 import { Overlay } from './Overlay';

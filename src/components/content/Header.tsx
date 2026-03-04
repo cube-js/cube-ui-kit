@@ -1,5 +1,3 @@
-import { forwardRef } from 'react';
-
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -9,7 +7,9 @@ import {
   tasty,
   TEXT_STYLES,
   TextStyleProps,
-} from '../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef } from 'react';
+
 import { useSlotProps } from '../../utils/react';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];

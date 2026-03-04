@@ -1,6 +1,6 @@
+import { extractStyles, OUTER_STYLES, Styles, Tokens } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
-import { extractStyles, OUTER_STYLES, Styles, Tokens } from '../../../tasty';
 import { mergeProps } from '../../../utils/react/index';
 
 import { Gradation } from './Gradation';

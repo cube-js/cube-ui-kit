@@ -1,4 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
+import { Styles, tasty } from '@tenphi/tasty';
 import {
   CSSProperties,
   forwardRef,
@@ -10,7 +11,6 @@ import {
 } from 'react';
 import { useFocusWithin, useHover } from 'react-aria';
 
-import { Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { CubeItemProps, Item } from '../../content/Item';
 import { ItemBadge } from '../../content/ItemBadge';

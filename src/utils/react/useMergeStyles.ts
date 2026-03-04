@@ -1,6 +1,5 @@
+import { mergeStyles, Styles } from '@tenphi/tasty';
 import { useMemo } from 'react';
-
-import { mergeStyles, Styles } from '../../tasty';
 
 /**
  * Hook to merge base styles with sub-element style props.

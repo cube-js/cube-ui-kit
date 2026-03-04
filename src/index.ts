@@ -174,7 +174,7 @@ export {
 } from './components/overlays/AlertDialog';
 export type { CubeAlertDialogProps } from './components/overlays/AlertDialog';
 
-export * from './tasty';
+export * from '@tenphi/tasty';
 
 export const Typography = {
   Text: Text,
@@ -212,10 +212,9 @@ export type {
   Props,
   FlowStyleProps,
   ShortGridStyles,
-} from './tasty';
+} from '@tenphi/tasty';
 
 export * from './utils';
-export * from './tasty';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';
 export * from './components/overlays/Toast';

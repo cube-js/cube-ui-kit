@@ -1,4 +1,13 @@
 import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  Mods,
+  Props,
+  Styles,
+  tasty,
+} from '@tenphi/tasty';
+import {
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
@@ -66,15 +75,6 @@ import {
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  Mods,
-  Props,
-  Styles,
-  tasty,
-} from '../../../tasty';
 import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
 import { ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';

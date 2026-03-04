@@ -1,4 +1,4 @@
-import type { Styles } from '../tasty/styles/types';
+import type { Styles } from '@tenphi/tasty';
 
 /**
  * Spacing tokens using tasty multiplier syntax.

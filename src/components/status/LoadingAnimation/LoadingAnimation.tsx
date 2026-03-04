@@ -1,6 +1,6 @@
+import { tasty } from '@tenphi/tasty';
 import { CSSProperties } from 'react';
 
-import { tasty } from '../../../tasty';
 import { Block, CubeBlockProps } from '../../Block';
 
 const CUBE_IMAGE =

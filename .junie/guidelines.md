@@ -34,10 +34,8 @@ Specific test: `$ pnpm test -- {TestFileName}`
 
 # Stack
 
-- `tasty` style helper.
-  - `src/tasty` - sources
-  - `src/stories/Tasty.docs.mdx` - documentation
-  - `src/stories/Styles.docs.mdx` - custom tasty styles documentation
+- `tasty` style helper — external package `@tenphi/tasty`.
+  - Documentation: https://github.com/tenphi/tasty
   - `src/stories/CreateComponent.docs.mdx` - create components using tasty helper.
 - Storybook v8.6
 - React and React DOM v18

@@ -1,7 +1,7 @@
+import { tasty } from '@tenphi/tasty';
 import { Key, KeyboardEvent } from 'react';
 
 import { useEvent } from '../../../_internal';
-import { tasty } from '../../../tasty';
 
 import { NotificationCard } from './NotificationCard';
 

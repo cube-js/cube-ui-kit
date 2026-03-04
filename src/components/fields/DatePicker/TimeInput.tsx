@@ -1,4 +1,11 @@
 import { FocusableRef } from '@react-types/shared';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  Styles,
+} from '@tenphi/tasty';
 import { forwardRef, useRef } from 'react';
 import {
   AriaTimeFieldProps,
@@ -10,13 +17,6 @@ import { useTimeFieldState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps, ValidationState } from '../../../shared';
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  extractStyles,
-  Styles,
-} from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 

@@ -1,14 +1,4 @@
 import {
-  ForwardedRef,
-  forwardRef,
-  HTMLAttributes,
-  ReactNode,
-  useMemo,
-  useRef,
-} from 'react';
-import { useHover } from 'react-aria';
-
-import {
   BaseProps,
   ContainerStyleProps,
   extractStyles,
@@ -18,7 +8,17 @@ import {
   Mods,
   OUTER_STYLES,
   tasty,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import {
+  ForwardedRef,
+  forwardRef,
+  HTMLAttributes,
+  ReactNode,
+  useMemo,
+  useRef,
+} from 'react';
+import { useHover } from 'react-aria';
+
 import { useCombinedRefs } from '../../../utils/react';
 
 import { useTinyScrollbar } from './hooks/useTinyScrollbar';

@@ -1,9 +1,9 @@
+import { tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, RefObject, useRef } from 'react';
 import { AriaNumberFieldProps, useLocale, useNumberField } from 'react-aria';
 import { useNumberFieldState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
-import { tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import {
   castNullableNumberValue,

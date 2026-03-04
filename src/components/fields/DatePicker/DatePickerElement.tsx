@@ -1,4 +1,5 @@
-import { tasty } from '../../../tasty';
+import { tasty } from '@tenphi/tasty';
+
 import { Space } from '../../layout/Space';
 
 export const DatePickerElement = tasty(Space, {

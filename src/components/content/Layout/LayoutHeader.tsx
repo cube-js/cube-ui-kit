@@ -1,4 +1,5 @@
 import { IconArrowLeft } from '@tabler/icons-react';
+import { tasty } from '@tenphi/tasty';
 import {
   ForwardedRef,
   forwardRef,
@@ -10,7 +11,6 @@ import {
 } from 'react';
 
 import { SlashIcon } from '../../../icons/SlashIcon';
-import { tasty } from '../../../tasty';
 import { Button } from '../../actions/Button/Button';
 import { Link } from '../../actions/Link/Link';
 import { useAutoTooltip } from '../use-auto-tooltip';

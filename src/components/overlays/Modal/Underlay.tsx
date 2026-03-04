@@ -1,6 +1,5 @@
+import { tasty } from '@tenphi/tasty';
 import { forwardRef, HTMLAttributes, Ref } from 'react';
-
-import { tasty } from '../../../tasty';
 
 import { TransitionState } from './types';
 

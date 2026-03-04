@@ -1,5 +1,3 @@
-import { forwardRef } from 'react';
-
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -9,7 +7,9 @@ import {
   PositionStyleProps,
   tasty,
   TEXT_STYLES,
-} from '../../tasty';
+} from '@tenphi/tasty';
+import { forwardRef } from 'react';
+
 import { useSlotProps } from '../../utils/react';
 
 import { CubeTextProps, TEXT_PROP_MAP } from './Text';

@@ -1,13 +1,12 @@
-import { Highlight } from 'prism-react-renderer';
-import { forwardRef } from 'react';
-
 import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   Styles,
   tasty,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import { Highlight } from 'prism-react-renderer';
+import { forwardRef } from 'react';
 
 import { ensureYamlSqlExtensions, Prism } from './prismSetup';
 

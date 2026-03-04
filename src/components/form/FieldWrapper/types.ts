@@ -1,3 +1,4 @@
+import { Props, Styles } from '@tenphi/tasty';
 import { ReactElement, ReactNode } from 'react';
 
 import {
@@ -5,7 +6,6 @@ import {
   NecessityIndicator,
   ValidationState,
 } from '../../../shared/index';
-import { Props, Styles } from '../../../tasty/index';
 import { CubeLabelProps } from '../Label';
 
 // ADDING NEW PROPS TO THIS INTERFACE REQUIRES ADDING THEM TO createFieldWrapperPropsKeys FUNCTION

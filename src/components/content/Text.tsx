@@ -1,11 +1,4 @@
 import {
-  CSSProperties,
-  forwardRef,
-  ForwardRefExoticComponent,
-  RefAttributes,
-} from 'react';
-
-import {
   AllBaseProps,
   BASE_STYLES,
   BaseStyleProps,
@@ -18,7 +11,14 @@ import {
   tasty,
   TEXT_STYLES,
   TextStyleProps,
-} from '../../tasty';
+} from '@tenphi/tasty';
+import {
+  CSSProperties,
+  forwardRef,
+  ForwardRefExoticComponent,
+  RefAttributes,
+} from 'react';
+
 import { useSlotProps } from '../../utils/react';
 
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;

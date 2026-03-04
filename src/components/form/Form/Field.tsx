@@ -1,3 +1,4 @@
+import { Styles } from '@tenphi/tasty';
 import {
   Children,
   cloneElement,
@@ -9,7 +10,6 @@ import {
 } from 'react';
 
 import { FieldBaseProps, LabelPosition } from '../../../shared/index';
-import { Styles } from '../../../tasty/index';
 import { mergeProps } from '../../../utils/react/index';
 import { warn } from '../../../utils/warnings';
 import { FieldWrapper } from '../FieldWrapper/index';

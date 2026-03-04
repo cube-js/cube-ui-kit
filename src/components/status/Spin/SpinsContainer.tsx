@@ -1,6 +1,5 @@
+import { tasty } from '@tenphi/tasty';
 import { ReactNode } from 'react';
-
-import { tasty } from '../../../tasty';
 
 const SpinsContainerElement = tasty({
   role: 'presentation',

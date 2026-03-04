@@ -1,10 +1,6 @@
 import { useSyncRef } from '@react-aria/utils';
 import { useDOMRef } from '@react-spectrum/utils';
 import { DOMRef, FocusStrategy, ItemProps } from '@react-types/shared';
-import React, { ReactElement, ReactNode, useMemo } from 'react';
-import { AriaMenuProps, useMenu } from 'react-aria';
-import { Section as BaseSection, useTreeState } from 'react-stately';
-
 import {
   BasePropsWithoutChildren,
   CONTAINER_STYLES,
@@ -12,7 +8,11 @@ import {
   extractStyles,
   filterBaseProps,
   Styles,
-} from '../../../tasty';
+} from '@tenphi/tasty';
+import React, { ReactElement, ReactNode, useMemo } from 'react';
+import { AriaMenuProps, useMenu } from 'react-aria';
+import { Section as BaseSection, useTreeState } from 'react-stately';
+
 import { mergeProps } from '../../../utils/react';
 import { CollectionItem } from '../../CollectionItem';
 

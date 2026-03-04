@@ -1,6 +1,5 @@
+import { Styles, Tokens } from '@tenphi/tasty';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
-
-import { Styles, Tokens } from '../../../tasty';
 
 import { CubeSliderProps, Slider } from './Slider';
 

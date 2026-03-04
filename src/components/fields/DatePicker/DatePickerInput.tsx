@@ -1,4 +1,5 @@
 import { createCalendar } from '@internationalized/date';
+import { tasty } from '@tenphi/tasty';
 import { useRef } from 'react';
 import {
   AriaDatePickerProps,
@@ -9,7 +10,6 @@ import {
 } from 'react-aria';
 import { DateSegment, useDateFieldState } from 'react-stately';
 
-import { tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 
 import { DatePickerSegment } from './DatePickerSegment';

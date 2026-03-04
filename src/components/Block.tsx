@@ -1,5 +1,3 @@
-import { forwardRef } from 'react';
-
 import {
   AllBaseProps,
   CONTAINER_STYLES,
@@ -7,7 +5,8 @@ import {
   extractStyles,
   filterBaseProps,
   tasty,
-} from '../tasty';
+} from '@tenphi/tasty';
+import { forwardRef } from 'react';
 
 const BlockElement = tasty({
   styles: {

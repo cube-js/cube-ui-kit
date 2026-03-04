@@ -1,4 +1,5 @@
 import { useResizeObserver } from '@react-aria/utils';
+import { BasePropsWithoutChildren, Styles, tasty } from '@tenphi/tasty';
 import {
   ForwardedRef,
   forwardRef,
@@ -10,7 +11,6 @@ import {
 import { useHover, useMove } from 'react-aria';
 
 import { useDebouncedValue, useEvent } from '../../_internal/hooks';
-import { BasePropsWithoutChildren, Styles, tasty } from '../../tasty/index';
 import { mergeProps, useCombinedRefs } from '../../utils/react';
 
 import { CubePanelProps, Panel } from './Panel';

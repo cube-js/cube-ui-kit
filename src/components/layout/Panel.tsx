@@ -1,5 +1,3 @@
-import { ForwardedRef, forwardRef, ReactNode, useMemo } from 'react';
-
 import {
   BASE_STYLES,
   BaseProps,
@@ -13,7 +11,8 @@ import {
   OuterStyleProps,
   Styles,
   tasty,
-} from '../../tasty';
+} from '@tenphi/tasty';
+import { ForwardedRef, forwardRef, ReactNode, useMemo } from 'react';
 
 const PanelElement = tasty({
   as: 'section',
