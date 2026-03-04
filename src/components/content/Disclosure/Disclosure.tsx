@@ -417,6 +417,11 @@ const DisclosureContent = forwardRef<
         <ContentWrapperElement
           ref={transitionRef}
           mods={{ shown: isShown, phase }}
+          tokens={
+            transitionDuration != null
+              ? { '$disclosure-transition': `${transitionDuration}ms` }
+              : undefined
+          }
         >
           <ContentElement
             ref={mergeRefs(ref, panelRef)}
