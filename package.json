@@ -72,7 +72,7 @@
     "@react-types/shared": "^3.32.1",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
-    "@tenphi/tasty": "0.0.0-snapshot.1a41a6b",
+    "@tenphi/tasty": "0.5.4",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",
