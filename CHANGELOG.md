@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.119.1
+
+### Patch Changes
+
+- [#1061](https://github.com/cube-js/cube-ui-kit/pull/1061) [`e3b7999c`](https://github.com/cube-js/cube-ui-kit/commit/e3b7999c3bddfece0c2184f6e35d13db1bd38f4f) Thanks [@tenphi](https://github.com/tenphi)! - Fix Disclosure: pass `transitionDuration` as `$disclosure-transition` token so the height animation uses the same duration as the expand/collapse transition
+
 ## 0.119.0
 
 ### Minor Changes
