@@ -35,15 +35,23 @@ Inherits all styling from `Item`. See [Item documentation](/docs/content-item--d
 
 ## Variants
 
+### Sizes
+
+<Story of={ItemCardStories.Sizes} />
+
+- `medium` — Default size suitable for most use cases
+- `large` — Larger size for prominent notifications
+- `xlarge` — Extra large size for emphasized alerts
+
 ### Themes
 
-<Story of={ItemCardStories.Themes} />
+Use the `theme` prop to apply a semantic color scheme:
 
-- `default` - Standard card appearance
-- `success` - Green theme for positive outcomes
-- `danger` - Red theme for errors or destructive states
-- `warning` - Amber theme for caution
-- `note` - Violet theme for informational context
+- `default` — Standard card appearance
+- `success` — Green theme for positive outcomes
+- `danger` — Red theme for errors or destructive states
+- `warning` — Amber theme for caution
+- `note` — Violet theme for informational context
 
 ## Examples
 
@@ -70,8 +78,6 @@ Inherits all styling from `Item`. See [Item documentation](/docs/content-item--d
 ### With Actions
 
 Use `ItemCard.Action` to add inline action buttons such as dismiss or close.
-
-<Story of={ItemCardStories.WithActions} />
 
 ```jsx
 <ItemCard
