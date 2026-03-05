@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.120.0
+
+### Minor Changes
+
+- [#1063](https://github.com/cube-js/cube-ui-kit/pull/1063) [`0342a0f1`](https://github.com/cube-js/cube-ui-kit/commit/0342a0f1b358ab9f402cc8dadfe929998940a31b) Thanks [@tenphi](https://github.com/tenphi)! - Add `ItemCard` component — a convenience wrapper around `Item type="card"` that maps `title` to the card heading and `children` to the card body. Includes `ItemCard.Action` sub-component for inline actions.
+
 ## 0.119.1
 
 ### Patch Changes
