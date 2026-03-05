@@ -8,7 +8,7 @@ configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });
 
 // Load tasty debug utilities in local Storybook only (exclude Chromatic)
 if (!isChromatic() && import.meta.env.DEV) {
-  import('../src/tasty/debug').then(({ tastyDebug }) => {
+  import('@tenphi/tasty').then(({ tastyDebug }) => {
     try {
       tastyDebug.install();
     } catch (e) {

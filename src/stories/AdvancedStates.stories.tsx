@@ -895,6 +895,123 @@ Note: Requires browser support for CSS Container Style Queries.
 };
 
 // =============================================================================
+// Parent States (Data Attributes on Parent)
+// =============================================================================
+
+const ParentStateChild = tasty({
+  styles: {
+    padding: '3x',
+    radius: '2r',
+    fill: {
+      '': '#light',
+      '@parent(variant)': '#purple',
+      '@parent(variant=danger)': '#danger',
+      '@parent(variant=success)': '#success',
+    },
+    color: {
+      '': '#dark',
+      '@parent(variant)': '#white',
+    },
+    transition: 'fill 0.2s, color 0.2s',
+  },
+});
+
+const ParentWrapper = tasty({
+  styles: {
+    padding: '2x',
+    radius: '2r',
+    border: '1bw solid #border',
+  },
+});
+
+export const ParentStates: StoryObj = {
+  render: function ParentStatesRender() {
+    const [variant, setVariant] = useState<string | null>(null);
+
+    return (
+      <Flex flow="column" gap="4x">
+        <Text preset="t2">
+          Child styles based on parent element data attributes
+        </Text>
+
+        <Flex gap="2x">
+          <Button
+            type={variant === null ? 'primary' : 'outline'}
+            onPress={() => setVariant(null)}
+          >
+            No variant
+          </Button>
+          <Button
+            type={variant === 'default' ? 'primary' : 'outline'}
+            onPress={() => setVariant('default')}
+          >
+            data-variant (exists)
+          </Button>
+          <Button
+            type={variant === 'danger' ? 'primary' : 'outline'}
+            onPress={() => setVariant('danger')}
+          >
+            data-variant="danger"
+          </Button>
+          <Button
+            type={variant === 'success' ? 'primary' : 'outline'}
+            onPress={() => setVariant('success')}
+          >
+            data-variant="success"
+          </Button>
+        </Flex>
+
+        <ParentWrapper {...(variant ? { 'data-variant': variant } : undefined)}>
+          <ParentStateChild>
+            <Text>
+              {variant === null
+                ? 'No data-variant on parent (gray)'
+                : variant === 'danger'
+                  ? 'data-variant="danger" on parent (red)'
+                  : variant === 'success'
+                    ? 'data-variant="success" on parent (green)'
+                    : 'data-variant exists on parent (purple)'}
+            </Text>
+          </ParentStateChild>
+        </ParentWrapper>
+      </Flex>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+Use \`@parent()\` to style a child based on a parent element's data attributes.
+This is similar to container style queries (\`@($property)\`) but uses data attributes
+instead of CSS custom properties and does not require \`container-type\`.
+
+\`\`\`tsx
+const Child = tasty({
+  styles: {
+    fill: {
+      '': '#light',
+      '@parent(variant)': '#purple',          // data-variant exists
+      '@parent(variant=danger)': '#danger',   // data-variant="danger"
+      '@parent(variant=success)': '#success', // data-variant="success"
+    },
+  },
+});
+
+// Usage - set data attribute on a parent element
+<div data-variant="danger">
+  <Child>...</Child>
+</div>
+\`\`\`
+
+You can also use \`@parent(, >)\` to match only the direct parent,
+or combine with pseudo-classes like \`@parent(:hover)\`.
+        `,
+      },
+    },
+  },
+};
+
+// =============================================================================
 // Complex OR Conditions
 // =============================================================================
 
