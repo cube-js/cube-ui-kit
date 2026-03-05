@@ -20,6 +20,8 @@ export type { CubeItemProps } from './components/content/Item/Item';
 export { ItemBase } from './components/content/Item/Item';
 // @deprecated Use `CubeItemProps` instead
 export type { CubeItemBaseProps } from './components/content/Item/Item';
+export { ItemCard } from './components/content/ItemCard/ItemCard';
+export type { CubeItemCardProps } from './components/content/ItemCard/ItemCard';
 export { ItemBadge } from './components/content/ItemBadge/ItemBadge';
 export type { CubeItemBadgeProps } from './components/content/ItemBadge/ItemBadge';
 export { ActiveZone } from './components/content/ActiveZone/ActiveZone';

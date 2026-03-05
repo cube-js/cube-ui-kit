@@ -1,0 +1,130 @@
+import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import * as ItemCardStories from './ItemCard.stories';
+
+<Meta of={ItemCardStories} />
+
+# ItemCard
+
+A convenience wrapper around `Item type="card"` that provides a more natural card API by mapping `title` to the card heading and `children` to the card body.
+
+## When to Use
+
+- When displaying notification-style messages (success, error, warning, info)
+- For status banners or alert cards
+- When you need a card with a heading and body content
+
+## Component
+
+<Story of={ItemCardStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={ItemCardStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+
+### Styling Properties
+
+#### styles
+
+Inherits all styling from `Item`. See [Item documentation](/docs/content-item--docs) for sub-elements and modifiers.
+
+## Variants
+
+### Themes
+
+<Story of={ItemCardStories.Themes} />
+
+- `default` - Standard card appearance
+- `success` - Green theme for positive outcomes
+- `danger` - Red theme for errors or destructive states
+- `warning` - Amber theme for caution
+- `note` - Violet theme for informational context
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<ItemCard title="Info" icon={<IconInfoCircle />}>
+  This is the card body content.
+</ItemCard>
+```
+
+### Themed Cards
+
+```jsx
+<ItemCard title="Success" icon={<IconCheck />} theme="success">
+  Operation completed successfully.
+</ItemCard>
+
+<ItemCard title="Error" icon={<IconAlertTriangle />} theme="danger">
+  Something went wrong.
+</ItemCard>
+```
+
+### With Actions
+
+Use `ItemCard.Action` to add inline action buttons such as dismiss or close.
+
+<Story of={ItemCardStories.WithActions} />
+
+```jsx
+<ItemCard
+  title="Deployment Complete"
+  icon={<IconCheck />}
+  theme="success"
+  actions={<ItemCard.Action icon={<IconX />} aria-label="Dismiss" />}
+>
+  Your changes are now live in production.
+</ItemCard>
+```
+
+### Custom Heading Level
+
+The `level` prop controls the semantic HTML heading tag (h1-h6) for the title. Default is `level={3}` (h3).
+
+```jsx
+<ItemCard title="Important Section" icon={<IconInfoCircle />} level={2}>
+  This card's title renders as an h2 element.
+</ItemCard>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the component when focusable
+- `Space/Enter` - Activates the component when used as a button
+
+### Screen Reader Support
+
+- Title renders as a semantic heading (h1-h6) via the `level` prop for proper document structure
+- Inherits all accessibility features from `Item`
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+
+## Best Practices
+
+1. **Do**: Use meaningful titles and body content
+   ```jsx
+   <ItemCard title="Deployment Complete" icon={<IconCheck />} theme="success">
+     Your changes are now live in production.
+   </ItemCard>
+   ```
+
+2. **Don't**: Use without a title
+   ```jsx
+   {/* Prefer using Item type="card" directly if you only need a description */}
+   <ItemCard>Body only without a title</ItemCard>
+   ```
+
+## Related Components
+
+- [Item](/docs/content-item--docs) - The underlying component with full control over `type`, `children`, and `description`
