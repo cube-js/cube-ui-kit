@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.121.0
+
+### Minor Changes
+
+- [#1067](https://github.com/cube-js/cube-ui-kit/pull/1067) [`8af42c73`](https://github.com/cube-js/cube-ui-kit/commit/8af42c732511957f37bf89e725c0ed6c93c72a3b) Thanks [@tenphi](https://github.com/tenphi)! - **Button.Split:** New compound component for split-button patterns. Supports two modes: **custom** (arbitrary `<Button>` children with joined radius) and **strict** (declarative `actions` array with built-in dropdown menu, controlled/uncontrolled selection). `type`, `theme`, `size`, and `isDisabled` are inherited by child buttons via context.
+
+- [#1067](https://github.com/cube-js/cube-ui-kit/pull/1067) [`8af42c73`](https://github.com/cube-js/cube-ui-kit/commit/8af42c732511957f37bf89e725c0ed6c93c72a3b) Thanks [@tenphi](https://github.com/tenphi)! - **Tabs:** Added support for `icon`, `rightIcon`, `prefix`, `suffix`, `tooltip`, `isLoading`, and `loadingSlot` props on `Tabs.Tab`, inherited from the `Item` component. Tab icons are also shown in the TabPicker dropdown.
+
+### Patch Changes
+
+- [#1067](https://github.com/cube-js/cube-ui-kit/pull/1067) [`8af42c73`](https://github.com/cube-js/cube-ui-kit/commit/8af42c732511957f37bf89e725c0ed6c93c72a3b) Thanks [@tenphi](https://github.com/tenphi)! - **Button:** The dynamic `icon` callback now receives `pressed` in its mods argument. Use it to change the icon when the button is pressed (e.g., arrow up when menu is open, arrow down when closed).
+
+- [#1067](https://github.com/cube-js/cube-ui-kit/pull/1067) [`8af42c73`](https://github.com/cube-js/cube-ui-kit/commit/8af42c732511957f37bf89e725c0ed6c93c72a3b) Thanks [@tenphi](https://github.com/tenphi)! - **Disclosure:** Removed default white background (`fill`) from the disclosure root. The component is now transparent by default; use `styles` or `contentStyles` to add a background when needed.
+
 ## 0.120.1
 
 ### Patch Changes
