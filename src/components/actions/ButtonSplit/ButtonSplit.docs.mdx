@@ -47,12 +47,14 @@ These properties allow direct styling without using the `styles` prop: `width`, 
 
 Pass an `actions` array to automatically render an action button and a trigger button with a dropdown menu. The trigger displays a `DirectionIcon` pointing down.
 
+Each action object requires `key` and `label`, and inherits all other props from `Menu.Item` (`icon`, `rightIcon`, `description`, `descriptionPlacement`, `prefix`, `suffix`, `hotkeys`, `textValue`, `isDisabled`, `qa`, `styles`, etc.).
+
 ```jsx
 import { Button } from '@cube-dev/ui-kit';
 
 const actions = [
-  { key: 'deploy', label: 'Deploy', icon: <IconSend /> },
-  { key: 'deploy-staging', label: 'Deploy to Staging', icon: <IconSend /> },
+  { key: 'deploy', label: 'Deploy', icon: <IconSend />, hotkeys: 'Mod+D' },
+  { key: 'deploy-staging', label: 'Deploy to Staging', icon: <IconSend />, description: 'Preview environment' },
   { key: 'deploy-preview', label: 'Deploy Preview', icon: <IconPlayerPlay /> },
 ];
 

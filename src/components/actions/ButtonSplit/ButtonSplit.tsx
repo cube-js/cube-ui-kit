@@ -2,21 +2,24 @@ import { CONTAINER_STYLES, extractStyles, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode, useCallback, useMemo, useState } from 'react';
 
 import { DirectionIcon } from '../../../icons/DirectionIcon';
+import { mergeProps } from '../../../utils/react';
 import { Button } from '../Button/Button';
 import { Menu } from '../Menu/Menu';
 
 import { ButtonSplitContext } from './context';
 
 import type { BaseProps, ContainerStyleProps, Styles } from '@tenphi/tasty';
+import type { CubeCollectionItemProps } from '../../CollectionItem';
 import type { CubeButtonProps } from '../Button/Button';
 import type { CubeMenuProps } from '../Menu/Menu';
 
-export interface ButtonSplitAction {
+export interface ButtonSplitAction
+  extends Omit<
+    CubeCollectionItemProps<object>,
+    'children' | 'onAction' | 'wrapper'
+  > {
   key: string;
   label: ReactNode;
-  icon?: ReactNode;
-  description?: string;
-  isDisabled?: boolean;
 }
 
 export interface CubeButtonSplitProps extends BaseProps, ContainerStyleProps {
@@ -162,8 +165,7 @@ export const ButtonSplit = forwardRef<HTMLDivElement, CubeButtonSplitProps>(
                 size={size}
                 isDisabled={isDisabled}
                 icon={currentAction?.icon}
-                {...actionProps}
-                onPress={handleActionPress}
+                {...mergeProps(actionProps, { onPress: handleActionPress })}
               >
                 {currentAction?.label}
               </Button>
@@ -174,8 +176,10 @@ export const ButtonSplit = forwardRef<HTMLDivElement, CubeButtonSplitProps>(
                   size={size}
                   isDisabled={isDisabled}
                   aria-label="More options"
+                  icon={({ pressed }) => (
+                    <DirectionIcon to={pressed ? 'up' : 'down'} />
+                  )}
                   {...triggerProps}
-                  icon={<DirectionIcon to="down" />}
                 />
                 <Menu
                   selectionMode="single"
@@ -183,18 +187,15 @@ export const ButtonSplit = forwardRef<HTMLDivElement, CubeButtonSplitProps>(
                   onSelectionChange={handleSelectionChange}
                   {...menuProps}
                 >
-                  {actions.map((action) => (
+                  {actions.map(({ key, label, textValue, ...itemProps }) => (
                     <Menu.Item
-                      key={action.key}
+                      key={key}
                       textValue={
-                        typeof action.label === 'string'
-                          ? action.label
-                          : action.key
+                        textValue ?? (typeof label === 'string' ? label : key)
                       }
-                      icon={action.icon}
-                      isDisabled={action.isDisabled}
+                      {...itemProps}
                     >
-                      {action.label}
+                      {label}
                     </Menu.Item>
                   ))}
                 </Menu>
