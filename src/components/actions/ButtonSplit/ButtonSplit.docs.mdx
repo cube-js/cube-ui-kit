@@ -37,6 +37,10 @@ Customises the root wrapper element of the split button.
 
 These properties allow direct styling without using the `styles` prop: `width`, `height`.
 
+### Context Inheritance
+
+`type`, `theme`, `size`, and `isDisabled` set on `Button.Split` are inherited by all child `Button` components via context. Explicitly passed props on individual buttons always take precedence.
+
 ## Modes
 
 ### Strict Mode
@@ -61,8 +65,6 @@ const actions = [
 />
 ```
 
-<Story of={ButtonSplitStories.StrictUncontrolled} />
-
 #### Controlled
 
 Use `actionKey` and `onActionChange` for controlled state.
@@ -79,21 +81,23 @@ const [currentKey, setCurrentKey] = useState('deploy');
 />
 ```
 
-<Story of={ButtonSplitStories.StrictControlled} />
+<Story of={ButtonSplitStories.Controlled} />
 
 ### Custom Mode
 
-Pass `children` to render arbitrary buttons with split-group styling (joined radius, collapsed borders). Use `Menu.Trigger` and `Menu` for dropdown behavior.
+Pass `children` to render arbitrary buttons with split-group styling (joined radius, collapsed borders). Set `type` and `theme` on the wrapper -- child buttons inherit them via context.
 
 ```jsx
 import { Button, Menu } from '@cube-dev/ui-kit';
+import { DirectionIcon } from '@cube-dev/ui-kit';
 
-<Button.Split>
-  <Button type="primary" onPress={() => console.log('Save')}>
-    Save
-  </Button>
+<Button.Split type="primary">
+  <Button onPress={() => console.log('Save')}>Save</Button>
   <Menu.Trigger placement="bottom end">
-    <Button type="primary" aria-label="More save options" icon={true} />
+    <Button
+      aria-label="More save options"
+      icon={({ pressed }) => <DirectionIcon to={pressed ? 'up' : 'down'} />}
+    />
     <Menu onAction={(key) => console.log(key)}>
       <Menu.Item key="save-draft">Save as Draft</Menu.Item>
       <Menu.Item key="save-publish">Save & Publish</Menu.Item>
@@ -109,10 +113,10 @@ import { Button, Menu } from '@cube-dev/ui-kit';
 More than two buttons are supported. Middle buttons have no border radius.
 
 ```jsx
-<Button.Split>
-  <Button type="outline" icon={<IconPlus />}>Add</Button>
-  <Button type="outline" icon={<IconCopy />}>Copy</Button>
-  <Button type="outline" icon={<IconDownload />}>Export</Button>
+<Button.Split type="outline">
+  <Button icon={<IconPlus />}>Add</Button>
+  <Button icon={<IconCopy />}>Copy</Button>
+  <Button icon={<IconDownload />}>Export</Button>
 </Button.Split>
 ```
 
@@ -122,7 +126,7 @@ More than two buttons are supported. Middle buttons have no border radius.
 
 ### Variants
 
-Different types and themes can be applied in strict mode.
+Different types and themes can be applied. All child buttons inherit the styling.
 
 <Story of={ButtonSplitStories.Variants} />
 
@@ -136,7 +140,7 @@ Different types and themes can be applied in strict mode.
 
 ### Customizing Sub-Components
 
-Use `actionProps`, `triggerProps`, and `menuProps` to customise individual parts.
+Use `actionProps`, `triggerProps`, and `menuProps` to customise individual parts in strict mode.
 
 ```jsx
 <Button.Split
@@ -176,10 +180,10 @@ Use `actionProps`, `triggerProps`, and `menuProps` to customise individual parts
    <Button.Split actions={actions} defaultActionKey="deploy" type="primary" />
    ```
 
-2. **Do**: Use custom mode when you need full control over button content and behavior.
+2. **Do**: Set `type` and `theme` on the wrapper instead of repeating on each child.
    ```jsx
-   <Button.Split>
-     <Button>Primary</Button>
+   <Button.Split type="primary">
+     <Button>Save</Button>
      <Button icon={<DirectionIcon to="down" />} aria-label="Options" />
    </Button.Split>
    ```
@@ -190,7 +194,6 @@ Use `actionProps`, `triggerProps`, and `menuProps` to customise individual parts
 
 ## Suggested Improvements
 
-- Add `size` variants demo for strict mode across all sizes.
 - Support `isLoading` on the action button in strict mode.
 - Add keyboard shortcut display in menu items via `hotkeys` prop.
 
