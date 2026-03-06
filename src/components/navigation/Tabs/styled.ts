@@ -239,6 +239,15 @@ export const TabElement = tasty(Item, {
       'type=radio & selected & focused & focus-visible':
         '$item-shadow, inset 0 0 0 1bw #primary-text',
     },
+    placeContent: {
+      // extend
+      'type=radio': 'center',
+    },
+    gridTemplate: {
+      // extend
+      'type=radio':
+        '"icon prefix label suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
+    },
     '$selection-shadow': {
       '': 'inset 0 0 0 0 #primary',
       'type=file & selected': 'inset 0 (-1 * $tab-indicator-size) 0 0 #primary',

@@ -162,10 +162,16 @@ ButtonGroup.args = {
 };
 
 export const TabsGroup: StoryFn<CubeRadioGroupProps> = (args) => (
-  <Radio.Tabs defaultValue="yes" {...args}>
-    <Radio value="yes">Yes</Radio>
-    <Radio value="no">No</Radio>
-    <Radio value="maybe">Maybe</Radio>
+  <Radio.Tabs defaultValue="yes" width="280px" {...args}>
+    <Radio icon={<CheckIcon />} value="yes">
+      Yes
+    </Radio>
+    <Radio icon={<CloseIcon />} value="no">
+      No
+    </Radio>
+    <Radio icon={<ExclamationIcon />} value="maybe">
+      Maybe
+    </Radio>
   </Radio.Tabs>
 );
 

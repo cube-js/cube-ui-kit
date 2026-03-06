@@ -80,6 +80,7 @@ export function TabPicker({
       {tabs.map((tab) => (
         <FilterPicker.Item
           key={tab.key}
+          icon={tab.icon}
           textValue={
             typeof tab.title === 'string' ? tab.title : String(tab.key)
           }
