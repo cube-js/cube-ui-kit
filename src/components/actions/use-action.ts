@@ -376,6 +376,7 @@ export const useAction = function useAction(
       : {};
 
   return {
+    isPressed,
     actionProps: {
       mods: {
         hovered: isHovered && !isDisabled,

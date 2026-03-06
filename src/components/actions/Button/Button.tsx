@@ -66,6 +66,7 @@ import { DisplayTransition } from '../../helpers/DisplayTransition';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { CubeActionProps } from '../Action/Action';
+import { useButtonSplitContext } from '../ButtonSplit/context';
 import { useAction } from '../use-action';
 
 const BUTTON_SIZE_VALUES = [
@@ -79,6 +80,7 @@ const BUTTON_SIZE_VALUES = [
 
 /** Known modifiers for Button component */
 export type ButtonMods = Mods<{
+  pressed?: boolean;
   loading?: boolean;
   selected?: boolean;
   'has-icons'?: boolean;
@@ -222,6 +224,18 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   radius: {
     '': true,
     'type=link & !focused': 0,
+    '@parent(button-split, >) & !:last-child': '1r left',
+    '@parent(button-split, >) & !:first-child': '1r right',
+    '@parent(button-split, >) & !:first-child & !:last-child': 0,
+  },
+  margin: {
+    '': 0,
+    '@parent(button-split, >) & !:first-child & (type=secondary | type=outline | type=primary)':
+      '-1bw left',
+  },
+  zIndex: {
+    '@parent(button-split, >) & :hover': 1,
+    '@parent(button-split, >) & :focus-visible': 2,
   },
   transition: 'theme, grid-template, padding',
   verticalAlign: 'bottom',
@@ -364,12 +378,14 @@ export const Button = forwardRef(function Button(
   allProps: CubeButtonProps,
   ref: FocusableRef<HTMLElement>,
 ) {
+  const splitContext = useButtonSplitContext();
+
   let {
     type,
     size: sizeProp,
     label,
     children,
-    theme = 'default',
+    theme = splitContext?.theme ?? 'default',
     icon: iconProp,
     rightIcon: rightIconProp,
     mods,
@@ -379,20 +395,34 @@ export const Button = forwardRef(function Button(
     ...props
   } = allProps;
 
-  const size = sizeProp ?? (type === 'link' ? 'inline' : 'medium');
+  type = type ?? splitContext?.type;
+  const size =
+    sizeProp ?? splitContext?.size ?? (type === 'link' ? 'inline' : 'medium');
 
-  const isDisabled = props.isDisabled ?? props.isLoading;
+  const isDisabled =
+    props.isDisabled ?? props.isLoading ?? splitContext?.isDisabled;
   const isLoading = props.isLoading;
   const isSelected = props.isSelected;
+
+  const { actionProps, isPressed } = useAction(
+    { ...allProps, isDisabled, ...(label ? { label } : {}) },
+    ref,
+  );
+
+  const styles = extractStyles(props, STYLE_PROPS);
+  const isDisabledElement = actionProps.isDisabled;
+
+  delete actionProps.isDisabled;
 
   // Base mods for icon resolution (without icon-dependent mods)
   const baseMods = useMemo<ButtonMods>(
     () => ({
+      pressed: isPressed && !isDisabled,
       loading: isLoading,
       selected: isSelected,
       ...mods,
     }),
-    [isLoading, isSelected, mods],
+    [isPressed, isDisabled, isLoading, isSelected, mods],
   );
 
   // Resolve dynamic icon props
@@ -499,16 +529,6 @@ export const Button = forwardRef(function Button(
     ],
   );
 
-  const { actionProps } = useAction(
-    { ...allProps, isDisabled, mods: modifiers, ...(label ? { label } : {}) },
-    ref,
-  );
-
-  const styles = extractStyles(props, STYLE_PROPS);
-  const isDisabledElement = actionProps.isDisabled;
-
-  delete actionProps.isDisabled;
-
   const {
     labelProps: finalLabelProps,
     labelRef,
@@ -552,6 +572,7 @@ export const Button = forwardRef(function Button(
         download={download}
         {...mergeProps(actionProps, tooltipTriggerProps || {})}
         ref={handleRef}
+        mods={{ ...actionProps.mods, ...modifiers }}
         disabled={isDisabledElement}
         variant={`${theme}.${type ?? 'outline'}` as ButtonVariant}
         data-theme={theme}

@@ -66,7 +66,7 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     focused: '1bw #primary-text',
   },
   border: {
-    '': '#clear',
+    '': '#white.2',
     'pressed | focused': '#primary-text',
     disabled: '#clear',
   },
@@ -205,7 +205,7 @@ export const DANGER_PRIMARY_STYLES: Styles = {
     focused: '1bw #danger-text',
   },
   border: {
-    '': '#clear',
+    '': '#white.2',
     'pressed | focused': '#danger-text',
     disabled: '#clear',
   },
@@ -338,7 +338,7 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
     focused: '1bw #success-text',
   },
   border: {
-    '': '#clear',
+    '': '#white.2',
     'pressed | focused': '#success-text',
     disabled: '#clear',
   },
@@ -471,7 +471,7 @@ export const WARNING_PRIMARY_STYLES: Styles = {
     focused: '1bw #warning-text',
   },
   border: {
-    '': '#clear',
+    '': '#white.2',
     'pressed | focused': '#warning-text',
     disabled: '#clear',
   },
@@ -604,7 +604,7 @@ export const NOTE_PRIMARY_STYLES: Styles = {
     focused: '1bw #note-text',
   },
   border: {
-    '': '#clear',
+    '': '#white.2',
     'pressed | focused': '#note-text',
     disabled: '#clear',
   },

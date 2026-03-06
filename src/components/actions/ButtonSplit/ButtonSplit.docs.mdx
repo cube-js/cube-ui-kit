@@ -1,0 +1,201 @@
+import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import * as ButtonSplitStories from './ButtonSplit.stories';
+
+<Meta of={ButtonSplitStories} />
+
+# Button.Split
+
+A split button that groups a primary action with a dropdown trigger for secondary actions. Supports two modes: **custom** (arbitrary button children) and **strict** (declarative action list with built-in menu).
+
+## When to Use
+
+- Present a default action alongside alternative actions in a compact control
+- Allow users to switch between related operations (e.g., deploy targets, save modes)
+- Group two or more buttons visually as a single connected unit
+
+## Component
+
+<Story of={ButtonSplitStories.Default} />
+
+---
+
+## Properties
+
+<Controls />
+
+### Base Properties
+
+Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+
+### Styling Properties
+
+#### styles
+
+Customises the root wrapper element of the split button.
+
+### Style Properties
+
+These properties allow direct styling without using the `styles` prop: `width`, `height`.
+
+## Modes
+
+### Strict Mode
+
+Pass an `actions` array to automatically render an action button and a trigger button with a dropdown menu. The trigger displays a `DirectionIcon` pointing down.
+
+```jsx
+import { Button } from '@cube-dev/ui-kit';
+
+const actions = [
+  { key: 'deploy', label: 'Deploy', icon: <IconSend /> },
+  { key: 'deploy-staging', label: 'Deploy to Staging', icon: <IconSend /> },
+  { key: 'deploy-preview', label: 'Deploy Preview', icon: <IconPlayerPlay /> },
+];
+
+<Button.Split
+  actions={actions}
+  defaultActionKey="deploy"
+  type="primary"
+  onAction={(key) => console.log('Executed:', key)}
+  onActionChange={(key) => console.log('Switched to:', key)}
+/>
+```
+
+<Story of={ButtonSplitStories.StrictUncontrolled} />
+
+#### Controlled
+
+Use `actionKey` and `onActionChange` for controlled state.
+
+```jsx
+const [currentKey, setCurrentKey] = useState('deploy');
+
+<Button.Split
+  actions={actions}
+  actionKey={currentKey}
+  type="primary"
+  onAction={(key) => console.log('Executed:', key)}
+  onActionChange={setCurrentKey}
+/>
+```
+
+<Story of={ButtonSplitStories.StrictControlled} />
+
+### Custom Mode
+
+Pass `children` to render arbitrary buttons with split-group styling (joined radius, collapsed borders). Use `Menu.Trigger` and `Menu` for dropdown behavior.
+
+```jsx
+import { Button, Menu } from '@cube-dev/ui-kit';
+
+<Button.Split>
+  <Button type="primary" onPress={() => console.log('Save')}>
+    Save
+  </Button>
+  <Menu.Trigger placement="bottom end">
+    <Button type="primary" aria-label="More save options" icon={true} />
+    <Menu onAction={(key) => console.log(key)}>
+      <Menu.Item key="save-draft">Save as Draft</Menu.Item>
+      <Menu.Item key="save-publish">Save & Publish</Menu.Item>
+    </Menu>
+  </Menu.Trigger>
+</Button.Split>
+```
+
+<Story of={ButtonSplitStories.Custom} />
+
+### Multiple Buttons
+
+More than two buttons are supported. Middle buttons have no border radius.
+
+```jsx
+<Button.Split>
+  <Button type="outline" icon={<IconPlus />}>Add</Button>
+  <Button type="outline" icon={<IconCopy />}>Copy</Button>
+  <Button type="outline" icon={<IconDownload />}>Export</Button>
+</Button.Split>
+```
+
+<Story of={ButtonSplitStories.ThreeButtons} />
+
+## Examples
+
+### Variants
+
+Different types and themes can be applied in strict mode.
+
+<Story of={ButtonSplitStories.Variants} />
+
+```jsx
+<Button.Split actions={actions} defaultActionKey="copy" type="primary" />
+<Button.Split actions={actions} defaultActionKey="copy" type="secondary" />
+<Button.Split actions={actions} defaultActionKey="copy" type="outline" />
+<Button.Split actions={actions} defaultActionKey="copy" type="primary" theme="danger" />
+<Button.Split actions={actions} defaultActionKey="copy" type="primary" isDisabled />
+```
+
+### Customizing Sub-Components
+
+Use `actionProps`, `triggerProps`, and `menuProps` to customise individual parts.
+
+```jsx
+<Button.Split
+  actions={actions}
+  defaultActionKey="deploy"
+  type="primary"
+  actionProps={{ size: 'large' }}
+  triggerProps={{ 'aria-label': 'Select deploy target' }}
+  menuProps={{ placement: 'bottom start' }}
+/>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` -- Moves focus between the action button and the trigger button.
+- `Space` / `Enter` -- Activates the focused button. On the trigger, opens the dropdown menu.
+- `Arrow Down` -- When the menu is open, navigates menu items.
+- `Escape` -- Closes the dropdown menu and returns focus to the trigger.
+
+### Screen Reader Support
+
+- The action button announces its label.
+- The trigger button has `aria-label="More options"` by default (override via `triggerProps`).
+- The dropdown menu announces selection changes.
+
+### ARIA Properties
+
+- `aria-label` -- Provide on the trigger for context (e.g., "Select deploy target").
+- Menu items support `aria-disabled` via the `isDisabled` property on actions.
+
+## Best Practices
+
+1. **Do**: Use strict mode for standard action+trigger patterns.
+   ```jsx
+   <Button.Split actions={actions} defaultActionKey="deploy" type="primary" />
+   ```
+
+2. **Do**: Use custom mode when you need full control over button content and behavior.
+   ```jsx
+   <Button.Split>
+     <Button>Primary</Button>
+     <Button icon={<DirectionIcon to="down" />} aria-label="Options" />
+   </Button.Split>
+   ```
+
+3. **Don't**: Mix `actions` prop with `children`. Use one mode or the other.
+
+4. **Accessibility**: Always provide `aria-label` on icon-only trigger buttons.
+
+## Suggested Improvements
+
+- Add `size` variants demo for strict mode across all sizes.
+- Support `isLoading` on the action button in strict mode.
+- Add keyboard shortcut display in menu items via `hotkeys` prop.
+
+## Related Components
+
+- [Button](/docs/actions-button--docs) -- Standalone action button.
+- [Menu](/docs/actions-menu--docs) -- Dropdown menu for action lists.
+- [Button.Group](/docs/actions-buttongroup--docs) -- Layout wrapper for spacing multiple buttons.
