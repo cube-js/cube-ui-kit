@@ -70,6 +70,10 @@ const ItemBadgeElement = tasty({
   styles: {
     ...ITEM_ACTION_BASE_STYLES,
     cursor: 'default',
+    border: {
+      // extend
+      'type=primary': '#clear',
+    },
   },
   variants: {
     // Default theme
