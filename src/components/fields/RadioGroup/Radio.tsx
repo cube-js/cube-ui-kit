@@ -33,6 +33,9 @@ const RadioButtonElement = tasty(Item, {
     preset: 't3m',
     lineHeight: '1fs',
     flexGrow: 1,
+    gridTemplate:
+      '"icon prefix label suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
+    placeContent: 'center',
 
     Label: {
       placeSelf: {

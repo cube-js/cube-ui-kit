@@ -67,6 +67,12 @@ Disabled.args = { isDisabled: true };
 export const Small = Template.bind({});
 Small.args = { size: 'small' };
 
+export const TwelveHourCycle = Template.bind({});
+TwelveHourCycle.args = {
+  hourCycle: 12,
+  defaultValue: new Date('2023-10-04 14:30'),
+};
+
 export const WithLimitedRange = Template.bind({});
 WithLimitedRange.args = {
   minValue: parseAbsoluteDate('2023-10-04'),

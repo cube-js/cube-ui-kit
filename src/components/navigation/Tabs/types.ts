@@ -60,19 +60,11 @@ type OmittedItemProps =
   | 'size' // Tab has its own TabSize
   | 'theme' // Tabs have internal theming
   | 'shape' // Tabs have internal shape logic
-  | 'icon' // Tabs don't support icons
-  | 'rightIcon'
-  | 'prefix' // Tabs don't support prefix/suffix
-  | 'suffix'
   | 'description' // Tabs don't have descriptions
   | 'descriptionPlacement'
   | 'descriptionProps'
-  | 'tooltip' // Tabs don't typically use tooltips
-  | 'defaultTooltipPlacement'
-  | 'hotkeys' // Tabs don't use hotkeys
+  | 'hotkeys' // Tabs have their own keyboard navigation
   | 'keyboardShortcutProps'
-  | 'loadingSlot' // Tabs don't use loading state
-  | 'isLoading'
   | 'labelProps' // Tabs use title prop instead
   | 'labelRef'
   | 'level' // Tabs don't use heading levels
@@ -85,7 +77,9 @@ type OmittedItemProps =
   | 'preserveActionsSpace' // Set internally in TabButton
   | 'disableActionsFocus' // Not used in Tab
   | 'actions' // Tab has its own actions definition
-  | 'autoHideActions'; // Tab has its own autoHideActions
+  | 'autoHideActions' // Tab has its own autoHideActions
+  | 'insideWrapper' // Internal Item wrapper prop
+  | 'showActions'; // Internal Item wrapper prop
 
 /** Common styling props for tabs - inherits style props from CubeItemProps */
 export interface TabStyleProps extends Omit<CubeItemProps, OmittedItemProps> {
