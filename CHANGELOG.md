@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.120.1
+
+### Patch Changes
+
+- [#1065](https://github.com/cube-js/cube-ui-kit/pull/1065) [`55403a6f`](https://github.com/cube-js/cube-ui-kit/commit/55403a6f26950979aca19198fc6919dcdd0134d5) Thanks [@tenphi](https://github.com/tenphi)! - Tooltip: limit max width to viewport to prevent overflow on small screens
+
 ## 0.120.0
 
 ### Minor Changes
