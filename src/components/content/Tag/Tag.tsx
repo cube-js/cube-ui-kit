@@ -16,6 +16,10 @@ const TagElement = tasty(Item, {
       'size=small | size=medium': 't3',
       'size=large | size=xlarge': 't2',
     },
+    border: {
+      // extend
+      'type=primary': '#clear',
+    },
 
     '$min-inline-padding': '.5x',
 

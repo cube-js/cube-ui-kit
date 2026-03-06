@@ -28,6 +28,10 @@ const BadgeElement = tasty(Item, {
       'size=small | size=medium': 't3',
       'size=large | size=xlarge': 't2',
     },
+    border: {
+      // extend
+      'type=primary': '#clear',
+    },
 
     '$inline-padding': {
       '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
