@@ -25,18 +25,21 @@ A versatile action component that triggers commands and navigates users.
 
 - **`type`** `'primary' | 'secondary' | 'outline' | 'neutral' | 'clear' | 'link'` (default: `outline`) — Visual style variant of the button
 - **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `default`) — Semantic colour palette theme
-- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `medium`) — Button size
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Button size. Use `'inline'` for link-type buttons or a number/string for custom sizes (e.g. `64` or `'8x'`)
 - **`icon`** — Icon rendered before the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`
 - **`rightIcon`** — Icon rendered after the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`
-- **`children`** `string` — Button label or custom content
-- **`isLoading`** `boolean` (default: `false`) — Show loading spinner and disable interactions (default: false)
-- **`isSelected`** `boolean` (default: `false`) — Marks the button as pressed / selected (toggle) (default: false)
+- **`children`** `ReactNode` — Button label or custom content
+- **`label`** `string` — Accessible label for the button (used as `aria-label`)
+- **`tooltip`** `string | boolean | object` — Tooltip content. Use a string for simple text, `true` for auto tooltip on overflow, or an object with `{ title, auto, placement, ...tooltipProps }`
+- **`isLoading`** `boolean` (default: `false`) — Show loading spinner and disable interactions
+- **`isSelected`** `boolean` (default: `false`) — Marks the button as pressed / selected (toggle)
 - **`to`** `string` — Destination URL or route; prefix with `!` to open in new tab, `@` to bypass router
+- **`htmlType`** `'button' | 'submit' | 'reset'` — HTML button type attribute
 - **`onPress`** `function` — Callback fired when the button is activated by mouse, touch, or keyboard
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 
@@ -44,8 +47,10 @@ Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.
 
 Customises the root element of the component.
 
-Sub-elements:
-- `ButtonIcon` – wrapper around `icon` and `rightIcon`.
+**Sub-elements:**
+- `Icon` – wrapper around the leading icon
+- `RightIcon` – wrapper around the trailing icon
+- `Label` – the button text content
 
 ### Style Properties
 
@@ -55,16 +60,17 @@ These properties allow direct styling without using the `styles` prop: `width`, 
 
 The `mods` prop accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| hovered | `boolean` | Forces hover state. |
-| pressed | `boolean` | Forces pressed state. |
-| focused | `boolean` | Forces focus ring. |
-| disabled | `boolean` | Forces disabled appearance. |
-| loading | `boolean` | Displays loading spinner. |
-| selected | `boolean` | Displays selected state. |
-| has-icons | `boolean` | Indicates that the button contains at least one icon. |
-| single-icon | `boolean` | Icon-only button without text. |
+- **`hovered`** `boolean` — Forces hover state
+- **`pressed`** `boolean` — Forces pressed state
+- **`focused`** `boolean` — Forces focus ring
+- **`disabled`** `boolean` — Forces disabled appearance
+- **`loading`** `boolean` — Displays loading spinner
+- **`selected`** `boolean` — Displays selected state
+- **`has-icons`** `boolean` — Indicates that the button contains at least one icon
+- **`has-icon`** `boolean` — Indicates that the button has a leading icon
+- **`has-right-icon`** `boolean` — Indicates that the button has a trailing icon
+- **`single-icon`** `boolean` — Icon-only button without text
+- **`text-only`** `boolean` — Button has only text content, no icons
 
 ## Variants
 
@@ -93,6 +99,8 @@ The `mods` prop accepts the following modifiers you can override:
 - `medium` – Default height (32px).
 - `large` – Spacious height (40px).
 - `xlarge` – Extra spacious height (48px).
+- `inline` – Inline size for link-type buttons (no fixed height).
+- Custom values – Pass a number (pixels) or a string (e.g. `'8x'`) for custom sizing.
 
 ## Examples
 
@@ -149,6 +157,26 @@ import { IconPlus } from '@tabler/icons-react';
 <Button isLoading>Processing…</Button>
 ```
 
+### With Tooltip
+
+```jsx
+{/* Simple tooltip text */}
+<Button icon={<IconPlus />} tooltip="Add new item" aria-label="Add" />
+
+{/* Auto tooltip on overflow */}
+<Button tooltip={true} width="100px">This text will be truncated</Button>
+```
+
+### Custom Size
+
+```jsx
+{/* Using a number (pixels) */}
+<Button size={64}>Large Custom</Button>
+
+{/* Using a string multiplier */}
+<Button size="8x">8x Size</Button>
+```
+
 ## Accessibility
 
 ### Keyboard Navigation
@@ -181,9 +209,7 @@ import { IconPlus } from '@tabler/icons-react';
 
 ## Suggested Improvements
 
-- Add `autoFocus` support.
 - Provide `block` modifier to stretch the button 100% width.
-- Expose a `tooltip` helper for icon-only buttons.
 
 ## Related Components
 

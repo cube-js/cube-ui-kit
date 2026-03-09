@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import { Banner } from './Banner';
 import * as BannerStories from './Banner.stories';
 
@@ -23,11 +23,17 @@ Banner displays prominent messages and notifications to users. It supports diffe
 
 ### Properties
 
-<Controls of={BannerStories.Default} />
+- **`theme`** `'danger' | 'warning' | 'note' | 'success'` (default: `'note'`) — Visual theme of the banner with corresponding icon and colors
+- **`isDismissable`** `boolean` (default: `false`) — Whether the banner shows a dismiss button
+- **`onDismiss`** `() => void` — Callback fired when the dismiss button is clicked
+- **`icon`** `ReactNode` — Custom icon to display; defaults to a theme-appropriate icon
+- **`actions`** `ReactNode` — Action buttons displayed on the right side of the banner. Use `Banner.Action` for consistent styling
+- **`description`** `string` — Secondary text shown below the main content, truncated with ellipsis after two lines
+- **`shape`** `'sharp'` — Use `'sharp'` to remove rounded corners when stacking multiple banners
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 
@@ -43,9 +49,7 @@ Customizes the root element of the component.
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| theme | `'danger' \| 'warning' \| 'note' \| 'success'` | Visual theme of the banner |
+- **`theme`** `'danger' \| 'warning' \| 'note' \| 'success'` — Visual theme of the banner
 
 ## Variants
 

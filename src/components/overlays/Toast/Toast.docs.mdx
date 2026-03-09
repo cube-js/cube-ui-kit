@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { Toast, useToast, useProgressToast } from './index';
 import * as ToastStories from './Toast.stories';
 
@@ -23,11 +23,13 @@ Toast notifications provide brief, non-intrusive feedback to users about actions
 
 ### Properties
 
-<Controls of={ToastStories.Default} />
+- **`title`** `ReactNode` — Primary content of the toast
+- **`description`** `ReactNode` — Secondary content of the toast
+- **`theme`** `'default' | 'success' | 'danger' | 'warning' | 'note'` (default: `'default'`) — Visual theme of the toast
 
 ### Base Properties
 
-Supports [Base properties](/BaseProperties)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 

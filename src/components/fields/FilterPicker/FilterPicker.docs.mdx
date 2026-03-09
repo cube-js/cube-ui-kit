@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { FilterPicker } from './FilterPicker';
 import * as FilterPickerStories from './FilterPicker.stories';
 
@@ -25,11 +25,57 @@ A versatile selection component that combines a trigger button with a searchable
 
 ### Properties
 
-<Controls of={FilterPickerStories.Default} />
+- **`selectedKey`** `string` — The selected key in controlled mode
+- **`defaultSelectedKey`** `string` — The default selected key in uncontrolled mode
+- **`selectedKeys`** `string[] | 'all'` — The selected keys in controlled multiple mode. Use "all" to select all items or an array of keys.
+- **`defaultSelectedKeys`** `string[] | 'all'` — The default selected keys in uncontrolled multiple mode. Use "all" to select all items or an array of keys.
+- **`selectionMode`** `'single' | 'multiple'` (default: `single`) — Selection mode for the picker
+- **`allowsCustomValue`** `boolean` (default: `false`) — Whether to allow entering custom values that are not present in the predefined options
+- **`isClearable`** `boolean` (default: `false`) — Whether the filter picker is clearable using a clear button in the rightIcon slot
+- **`disallowEmptySelection`** `boolean` (default: `false`) — Whether to disallow empty selection
+- **`disabledKeys`** `Key[]` — Array of keys for disabled items
+- **`items`** `Iterable<T>` — Array of items to render when using the render function pattern for large datasets with dynamic content
+- **`placeholder`** `string` — Placeholder text when no selection is made
+- **`icon`** `ReactNode` — Icon to show in the trigger button
+- **`type`** `'outline' | 'clear' | 'primary' | 'secondary' | 'neutral'` (default: `outline`) — Button styling type
+- **`theme`** `'default' | 'special'` (default: `default`) — Button theme
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the picker component
+- **`searchPlaceholder`** `string` — Placeholder text in the search input
+- **`autoFocus`** `boolean` (default: `false`) — Whether the search input should have autofocus
+- **`emptyLabel`** `string` — Custom label to display when no results are found after filtering
+- **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function for determining if an option should be included in search results
+- **`header`** `ReactNode` — Custom header content
+- **`footer`** `ReactNode` — Custom footer content
+- **`renderSummary`** `((args: { selectedLabels, selectedKeys, selectionMode }) => ReactNode) | false` — Custom renderer for the summary shown inside the trigger when there is a selection
+- **`isCheckable`** `boolean` (default: `false`) — Whether to show checkboxes for multiple selection mode
+- **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
+- **`showSelectAll`** `boolean` (default: `false`) — Whether to show the "Select All" option in multiple selection mode
+- **`selectAllLabel`** `string` (default: `All`) — Label for the "Select All" option
+- **`isDisabled`** `boolean` (default: `false`) — Whether the picker is disabled
+- **`isLoading`** `boolean` (default: `false`) — Whether the picker is in loading state
+- **`isRequired`** `boolean` (default: `false`) — Whether the field is required
+- **`validationState`** `'valid' | 'invalid'` — Validation state of the picker
+- **`label`** `string` — Label text
+- **`description`** `string` — Field description
+- **`message`** `string` — Help or error message
+- **`listBoxStyles`** `Styles` — Custom styles for the dropdown list container within the popover
+- **`popoverStyles`** `Styles` — Custom styles for the popover dialog that contains the FilterListBox
+- **`triggerStyles`** `Styles` — Custom styles for the trigger button element
+- **`triggerTooltip`** `string | TooltipProps` — Tooltip for the trigger button (separate from field tooltip)
+- **`triggerDescription`** `string` — Description for the trigger button (separate from field description)
+- **`prefix`** `ReactNode` — Content to show before the trigger button text
+- **`suffix`** `ReactNode` — Content to show after the trigger button text
+- **`hotkeys`** `string` — Keyboard shortcut that triggers the picker when pressed
+- **`htmlType`** `'button' | 'submit' | 'reset'` (default: `button`) — HTML button type
+- **`headerStyles`** `Styles` — Custom styles for the header area when header prop is provided
+- **`footerStyles`** `Styles` — Custom styles for the footer area when footer prop is provided
+- **`onSelectionChange`** `(keys: Key | Key[] | 'all' | null) => void` — Callback when selection changes
+- **`onEscape`** `() => void` — Callback when Escape key is pressed
+- **`onOptionClick`** `(key: Key) => void` — Callback when an option is clicked (non-checkbox area)
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 
@@ -83,10 +129,8 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| `placeholder` | `boolean` | Applied when no selection is made |
-| `selected` | `boolean` | Applied when items are selected |
+- **`placeholder`** `boolean` — Applied when no selection is made
+- **`selected`** `boolean` — Applied when items are selected
 
 ## Sub-components
 
@@ -98,19 +142,17 @@ Individual items within the FilterPicker dropdown. Each item is rendered using [
 
 For detailed information about all available item properties, see [Item documentation](/docs/content-item--docs). Key properties include:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| key | `string \| number` | Unique identifier for the item (required) |
-| children | `ReactNode` | The main content/label for the option |
-| icon | `ReactNode` | Icon displayed before the content |
-| rightIcon | `ReactNode` | Icon displayed after the content |
-| description | `ReactNode` | Secondary text below the main content |
-| descriptionPlacement | `'inline' \| 'block'` | How the description is positioned |
-| prefix | `ReactNode` | Content before the main text |
-| suffix | `ReactNode` | Content after the main text |
-| tooltip | `string \| boolean \| object` | Tooltip configuration |
-| styles | `Styles` | Custom styling for the item |
-| qa | `string` | QA identifier for testing |
+- **`key`** `string \| number` — Unique identifier for the item (required)
+- **`children`** `ReactNode` — The main content/label for the option
+- **`icon`** `ReactNode` — Icon displayed before the content
+- **`rightIcon`** `ReactNode` — Icon displayed after the content
+- **`description`** `ReactNode` — Secondary text below the main content
+- **`descriptionPlacement`** `'inline' \| 'block'` — How the description is positioned
+- **`prefix`** `ReactNode` — Content before the main text
+- **`suffix`** `ReactNode` — Content after the main text
+- **`tooltip`** `string \| boolean \| object` — Tooltip configuration
+- **`styles`** `Styles` — Custom styling for the item
+- **`qa`** `string` — QA identifier for testing
 
 #### Example with Rich Items
 
@@ -139,10 +181,8 @@ For detailed information about all available item properties, see [Item document
 
 Groups related items together with an optional heading.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| title | `ReactNode` | - | Optional heading text for the section |
-| children | `FilterPicker.Item[]` | - | Collection of FilterPicker.Item components |
+- **`title`** `ReactNode` — Optional heading text for the section
+- **`children`** `FilterPicker.Item[]` — Collection of FilterPicker.Item components
 
 ## Content Patterns
 

@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import * as TagStories from './Tag.stories';
 
 <Meta of={TagStories} />
@@ -30,7 +30,14 @@ Tags are compact, inline elements used to label, categorize, or organize items. 
 
 ### Properties
 
-<Controls of={TagStories.Default} />
+- **`children`** `ReactNode` — Tag content
+- **`icon`** `ReactNode` — Icon to display before the tag content
+- **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special' | 'disabled'` (default: `default`) — Visual theme of the tag
+- **`type`** `string` — Deprecated: Use theme instead
+- **`size`** `string` (default: `inline`) — Size of the tag
+- **`isClosable`** `boolean` (default: `false`) — Whether the tag can be closed
+- **`onClose`** `() => void` — Handler called when close button is pressed
+- **`closeButtonStyles`** `Styles` — Custom styles for the close button
 
 ### Base Properties
 

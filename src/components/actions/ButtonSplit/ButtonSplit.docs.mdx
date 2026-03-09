@@ -1,4 +1,4 @@
-import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import * as ButtonSplitStories from './ButtonSplit.stories';
 
 <Meta of={ButtonSplitStories} />
@@ -21,11 +21,19 @@ A split button that groups a primary action with a dropdown trigger for secondar
 
 ## Properties
 
-<Controls />
+- **`actions`** `ButtonSplitAction[]` — Array of actions for strict mode. Each action requires `key` and `label`
+- **`actionKey`** `string` — Currently selected action key (controlled)
+- **`defaultActionKey`** `string` — Initially selected action key (uncontrolled)
+- **`onAction`** `(key: string) => void` — Called when the action button is pressed
+- **`onActionChange`** `(key: string) => void` — Called when the selected action changes via the menu
+- **`type`** `'primary' | 'secondary' | 'outline' | 'neutral' | 'clear'` (default: `'outline'`) — Button type (inherited by children via context)
+- **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `'default'`) — Button theme (inherited by children via context)
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `'medium'`) — Button size (inherited by children via context)
+- **`isDisabled`** `boolean` (default: `false`) — Disables all buttons (inherited via context)
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 

@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import * as TooltipStories from './Tooltip.stories';
 
 <Meta of={TooltipStories} />
@@ -31,11 +31,25 @@ The simplest way to add tooltips to your components. It combines `TooltipTrigger
 
 ### Properties
 
-<Controls of={TooltipStories.Default} />
+- **`title`** `ReactNode` — Content to display inside the tooltip
+- **`tooltipStyles`** `Styles` — Custom styles for the tooltip content container
+- **`width`** `string` — Width of the tooltip
+- **`placement`** `Placement` (default: `'top'`) — Position of the tooltip relative to its trigger. Options: `top`, `bottom`, `left`, `right`, `start`, `end`
+- **`delay`** `number` (default: `250`) — The delay time in ms for the tooltip to show up
+- **`closeDelay`** `number` (default: `500`) — The delay time in ms for the tooltip to close
+- **`offset`** `number` (default: `8`) — Distance between the tooltip and the trigger element
+- **`crossOffset`** `number` (default: `0`) — Cross-axis offset of the tooltip
+- **`isMaterial`** `boolean` — Enables material-style tooltip with auto pointer events
+- **`isLight`** `boolean` — Uses light color scheme for the tooltip
+- **`isDisabled`** `boolean` — Whether the tooltip is disabled
+- **`isOpen`** `boolean` — Controlled open state of the tooltip
+- **`defaultOpen`** `boolean` — Whether the tooltip is open by default (uncontrolled)
+- **`onOpenChange`** `(isOpen: boolean) => void` — Callback when the tooltip open state changes
+- **`trigger`** `'focus'` — When set, opens the tooltip only on focus instead of both focus and hover
 
 ### Base Properties
 
-Supports [Base properties](/docs/base-properties)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 
@@ -54,11 +68,9 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property on the tooltip accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| material | `boolean` | Enables material-style tooltip with pointer events |
-| light | `boolean` | Uses light color scheme instead of dark |
-| open | `boolean` | Indicates whether the tooltip is currently visible |
+- **`material`** `boolean` — Enables material-style tooltip with pointer events
+- **`light`** `boolean` — Uses light color scheme instead of dark
+- **`open`** `boolean` — Indicates whether the tooltip is currently visible
 
 ## TooltipTrigger
 
@@ -70,11 +82,24 @@ Lower-level component that wraps a trigger element and a `Tooltip`. Use this whe
 
 ### Properties
 
-<Controls of={TooltipStories.ViaProvider} />
+- **`placement`** `Placement` (default: `'top'`) — Position of the tooltip relative to its trigger. Options: `top`, `bottom`, `left`, `right`, `start`, `end`
+- **`delay`** `number` (default: `250`) — The delay time in ms for the tooltip to show up
+- **`closeDelay`** `number` (default: `500`) — The delay time in ms for the tooltip to close
+- **`offset`** `number` (default: `8`) — Distance between the tooltip and the trigger element
+- **`crossOffset`** `number` (default: `0`) — Cross-axis offset of the tooltip
+- **`isMaterial`** `boolean` — Enables material-style tooltip with auto pointer events
+- **`isLight`** `boolean` — Uses light color scheme for the tooltip
+- **`isDisabled`** `boolean` — Whether the tooltip is disabled
+- **`isOpen`** `boolean` — Controlled open state of the tooltip
+- **`defaultOpen`** `boolean` — Whether the tooltip is open by default (uncontrolled)
+- **`onOpenChange`** `(isOpen: boolean) => void` — Callback when the tooltip open state changes
+- **`trigger`** `'focus'` — When set, opens the tooltip only on focus instead of both focus and hover
+- **`activeWrap`** `boolean` — *(deprecated)* Whether the trigger should have an ActiveZone wrap. Use function-as-first-child pattern instead.
+- **`targetRef`** `RefObject<HTMLElement>` — External ref to use for the trigger element
 
 ### Base Properties
 
-Supports [Base properties](/docs/base-properties)
+Supports [Base properties](/docs/base-properties--docs)
 
 ## Tooltip
 
@@ -108,7 +133,7 @@ Specifies the width of the tooltip.
 
 ### Base Properties
 
-Supports [Base properties](/docs/base-properties)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 

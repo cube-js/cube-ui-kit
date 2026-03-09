@@ -1,4 +1,9 @@
-import { AriaLabelingProps, CollectionBase, DOMRef } from '@react-types/shared';
+import {
+  AriaLabelingProps,
+  CollectionBase,
+  DOMRef,
+  Key,
+} from '@react-types/shared';
 import {
   BASE_STYLES,
   BasePropsWithoutChildren,
@@ -168,7 +173,19 @@ export interface CubeSelectBaseProps<T>
     ColorStyleProps,
     Omit<FieldBaseProps, 'tooltip'>,
     CollectionBase<T>,
-    Omit<AriaSelectProps<T>, 'errorMessage'> {
+    Omit<
+      AriaSelectProps<T>,
+      | 'errorMessage'
+      | 'selectedKey'
+      | 'defaultSelectedKey'
+      | 'onSelectionChange'
+    > {
+  /** The currently selected key in the collection (controlled). */
+  selectedKey?: Key | null;
+  /** The initial selected key in the collection (uncontrolled). */
+  defaultSelectedKey?: Key;
+  /** Handler that is called when the selection changes. */
+  onSelectionChange?: (key: Key | null) => void;
   icon?: ReactElement;
   rightIcon?: ReactNode;
   prefix?: ReactNode;

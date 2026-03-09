@@ -31,26 +31,20 @@ function useDialogContainer<P, E = ComponentProps<typeof DialogContainer>>(
 
 ## Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `Component` | `ComponentType<P>` | **Required.** A React component that represents the dialog content. Must accept props of type P. |
-| `defaultContainerProps` | `ComponentProps<typeof DialogContainer>` | **Optional.** Default props to pass to the DialogContainer wrapper. |
+- **`Component`** `ComponentType<P>` — **Required.** A React component that represents the dialog content. Must accept props of type P.
+- **`defaultContainerProps`** `ComponentProps<typeof DialogContainer>` — **Optional.** Default props to pass to the DialogContainer wrapper.
 
 ## Return Value
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `open` | `(props: P, containerProps?: E) => void` | Function to open the dialog with provided component props and optional container props. |
-| `update` | `(props: P, containerProps?: E) => void` | Function to update dialog content while it's open. |
-| `close` | `() => void` | Function to close the dialog. |
-| `rendered` | `ReactElement \| null` | **Required.** JSX element that must be included in your component tree for the dialog to work. |
+- **`open`** `(props: P, containerProps?: E) => void` — Function to open the dialog with provided component props and optional container props.
+- **`update`** `(props: P, containerProps?: E) => void` — Function to update dialog content while it's open.
+- **`close`** `() => void` — Function to close the dialog.
+- **`rendered`** `ReactElement \| null` — **Required.** JSX element that must be included in your component tree for the dialog to work.
 
 ## Generic Type Parameters
 
-| Parameter | Description |
-|-----------|-------------|
-| `P` | The props type for your dialog component |
-| `E` | The container props type (defaults to `ComponentProps<typeof DialogContainer>`) |
+- **`P`** — The props type for your dialog component
+- **`E`** — The container props type (defaults to `ComponentProps<typeof DialogContainer>`)
 
 ## Examples
 

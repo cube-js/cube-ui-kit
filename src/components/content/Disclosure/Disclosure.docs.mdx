@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { Disclosure } from './Disclosure';
 import * as DisclosureStories from './Disclosure.stories';
 
@@ -24,11 +24,17 @@ An accessible collapsible container that reveals or hides additional content. Bu
 
 ### Properties
 
-<Controls of={DisclosureStories.SingleDisclosure} />
+- **`isExpanded`** `boolean` — Controls expanded state in controlled mode
+- **`defaultExpanded`** `boolean` (default: `false`) — Initial expanded state in uncontrolled mode
+- **`onExpandedChange`** `(isExpanded: boolean) => void` — Callback fired when expanded state changes
+- **`isDisabled`** `boolean` (default: `false`) — Disables trigger interactions and force-closes the content
+- **`shape`** `'default' | 'card' | 'sharp'` (default: `default`) — Visual shape variant: default (no styling), card (border/radius), sharp (radius 0)
+- **`transitionDuration`** `number` — Duration for DisplayTransition animation in milliseconds. When undefined, uses default CSS transition timing
+- **`children`** `ReactNode | ((state: DisclosureStateContext) => ReactNode)` — Disclosure.Trigger and Disclosure.Content components
 
 ### Base Properties
 
-Supports [Base properties](/BaseProperties)
+Supports [Base properties](/docs/base-properties--docs)
 
 ## Compound Components
 
@@ -76,18 +82,14 @@ Direct style application without using the `styles` prop: `width`, `height`, `pa
 
 The `mods` property accepts the following modifiers:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| `expanded` | `boolean` | True when the disclosure content is visible |
-| `disabled` | `boolean` | True when interactions are disabled |
-| `shape` | `string` | The current shape variant (`default`, `card`, `sharp`) |
+- **`expanded`** `boolean` — True when the disclosure content is visible
+- **`disabled`** `boolean` — True when interactions are disabled
+- **`shape`** `string` — The current shape variant (`default`, `card`, `sharp`)
 
 For `Disclosure.Content`, additional modifiers are available:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| `shown` | `boolean` | True when content is visible (controls height animation) |
-| `phase` | `string` | Transition phase (`enter`, `entered`, `exit`, `unmounted`) |
+- **`shown`** `boolean` — True when content is visible (controls height animation)
+- **`phase`** `string` — Transition phase (`enter`, `entered`, `exit`, `unmounted`)
 
 ## Variants
 

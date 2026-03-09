@@ -51,10 +51,8 @@ const items = [1, 2, 3]; // Don't do this!
 
 ## Item Requirements
 
-| Property | Required | Type | Purpose |
-|----------|----------|------|---------|
-| `id` or `key` | ✅ **Required** | `string \| number` | Unique identifier - **critical for selection callbacks** |
-| `textValue` | ⚠️ Recommended | `string` | For filtering & accessibility |
+- **`id` or `key`** `string | number` — Unique identifier - **critical for selection callbacks** (✅ Required)
+- **`textValue`** `string` — For filtering & accessibility (⚠️ Recommended)
 
 **Without `id`/`key`:** React Aria falls back to using order-based keys (e.g., `"0"`, `"1"`), which breaks selection functionality in select components as these values are meaningless for identifying specific items.
 
@@ -269,22 +267,18 @@ const items: User[] = [
 
 ## Quick Reference
 
-| Approach | Key Prop | Source |
-|----------|----------|--------|
-| Static JSX | ✅ Required | Hardcoded value |
-| Data-driven (`items`) | ✅ Required | Pass `item.key` or `item.id` |
-| Using `.map()` | ✅ Required | Pass `item.key` or `item.id` |
+- **Static JSX** — Key Prop: ✅ Required; Source: Hardcoded value
+- **Data-driven (`items`)** — Key Prop: ✅ Required; Source: Pass `item.key` or `item.id`
+- **Using `.map()`** — Key Prop: ✅ Required; Source: Pass `item.key` or `item.id`
 
-| Component | Selection | Search |
-|-----------|-----------|--------|
-| ListBox | Single/Multiple | ❌ |
-| FilterListBox | Single/Multiple | ✅ |
-| Select | Single | ❌ |
-| ComboBox | Single | ✅ |
-| FilterPicker | Single/Multiple | ✅ |
-| Picker | Single/Multiple | ❌ |
-| Menu | Single action | ❌ |
-| CommandMenu | Single action | ✅ |
+- **ListBox** — Selection: Single/Multiple; Search: ❌
+- **FilterListBox** — Selection: Single/Multiple; Search: ✅
+- **Select** — Selection: Single; Search: ❌
+- **ComboBox** — Selection: Single; Search: ✅
+- **FilterPicker** — Selection: Single/Multiple; Search: ✅
+- **Picker** — Selection: Single/Multiple; Search: ❌
+- **Menu** — Selection: Single action; Search: ❌
+- **CommandMenu** — Selection: Single action; Search: ✅
 
 ## Essential Rules
 

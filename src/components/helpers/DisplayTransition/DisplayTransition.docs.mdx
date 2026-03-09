@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import * as DisplayTransitionStories from './DisplayTransition.stories';
 
 <Meta of={DisplayTransitionStories} />
@@ -22,7 +22,16 @@ A headless helper component that manages enter and exit animation states for sho
 
 ### Properties
 
-<Controls of={DisplayTransitionStories.Default} />
+- **`isShown`** `boolean` — Desired visibility state (driver for the transition)
+- **`duration`** `number` — Transition duration in milliseconds. If `0`, transitions are instant. If `undefined`, uses native CSS transition events for timing.
+- **`animateOnMount`** `boolean` (default: `true`) — Whether to animate on first mount. Set to `false` to skip the initial enter animation
+- **`respectReducedMotion`** `boolean` (default: `true`) — Respect the user's `prefers-reduced-motion` setting by collapsing duration to 0
+- **`preserveContent`** `boolean` (default: `true`) — Preserve children content during exit transition. When true, uses stored children from when content was visible
+- **`exposeUnmounted`** `boolean` (default: `false`) — Keep calling children during the `unmounted` phase instead of returning `null`
+- **`onRest`** `(transition: 'enter' | 'exit') => void` — Fires after enter settles or after exit completes (unmount)
+- **`onPhaseChange`** `(phase: ReportedPhase) => void` — Fires when the transition phase changes
+- **`onToggle`** `(isShown: boolean) => void` — Fires when the derived `isShown` value changes
+- **`children`** `(props: { phase, isShown, ref }) => ReactNode` — Render prop receiving the current phase, visibility state, and a ref callback to bind to the transitioned element
 
 ### Base Properties
 
@@ -32,12 +41,10 @@ This is a headless component and does not support base properties.
 
 The component manages four distinct phases:
 
-| Phase | Description | isShown value |
-|-------|-------------|---------------|
-| `unmounted` | Content is not mounted | `false` |
-| `enter` | Content is mounting, enter animation should start | `false` |
-| `entered` | Enter animation complete, content is visible | `true` |
-| `exit` | Content is exiting, exit animation should start | `false` |
+- **`unmounted`** — Content is not mounted (isShown: `false`)
+- **`enter`** — Content is mounting, enter animation should start (isShown: `false`)
+- **`entered`** — Enter animation complete, content is visible (isShown: `true`)
+- **`exit`** — Content is exiting, exit animation should start (isShown: `false`)
 
 The render prop receives an object `{ phase, isShown }` where `isShown` is only `true` during the `entered` phase.
 

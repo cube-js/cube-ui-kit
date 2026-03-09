@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import * as IconSwitchStories from './IconSwitch.stories';
 
 <Meta of={IconSwitchStories} />
@@ -22,11 +22,13 @@ A helper component that cross-fades between icons when children change. It provi
 
 ### Properties
 
-<Controls of={IconSwitchStories.Default} />
+- **`children`** `ReactNode` — The icon to display
+- **`contentKey`** `string | number` — Override key for detecting icon changes. When this value changes, a cross-fade transition is triggered
+- **`noWrapper`** `boolean` — When true, renders without wrapper element, expecting parent to provide grid context
 
 ### Base Properties
 
-Supports [Base properties](/BaseProperties)
+Supports [Base properties](/docs/base-properties--docs)
 
 ## Examples
 

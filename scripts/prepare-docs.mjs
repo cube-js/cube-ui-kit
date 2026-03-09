@@ -49,7 +49,7 @@ function titleToStoryId(title) {
     title
       .toLowerCase()
       .replace(/[/.]/g, '-')
-      .replace(/\s+/g, '') +
+      .replace(/\s+/g, '-') +
     '--docs'
   );
 }
@@ -320,6 +320,24 @@ function fixTastyLinks(content, currentOutputPath) {
   return content;
 }
 
+/**
+ * Fix Base Properties links to point to docs/BaseProperties.md.
+ * Handles: /base-properties, /BaseProperties, /docs/base-properties, /docs/docs-base-properties--docs
+ */
+function fixBasePropertiesLinks(content, currentOutputPath) {
+  const currentDir = path.dirname(currentOutputPath);
+  const basePropsPath = path.join(DOCS_DIR, 'BaseProperties.md');
+  let rel = path.relative(currentDir, basePropsPath);
+  if (!rel.startsWith('.')) rel = './' + rel;
+
+  const replacer = `[Base properties](${rel})`;
+
+  return content.replace(
+    /\[Base properties\]\(\/(?:docs\/)?(?:base-properties|BaseProperties|base-properties--docs|docs-base-properties--docs)\)/gi,
+    replacer,
+  );
+}
+
 /* ── main ─────────────────────────────────────────────────────────────── */
 
 /**
@@ -408,6 +426,7 @@ for (const { docPath, outputPath, content } of allEntries) {
   );
   result = fixRelativeMdxLinks(result);
   result = fixTastyLinks(result, outputPath);
+  result = fixBasePropertiesLinks(result, outputPath);
 
   // Ensure trailing newline
   if (!result.endsWith('\n')) {

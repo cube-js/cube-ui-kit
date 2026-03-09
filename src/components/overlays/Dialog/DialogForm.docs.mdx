@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { DialogForm } from './DialogForm';
 import * as DialogFormStories from './DialogForm.stories';
 
@@ -25,18 +25,21 @@ DialogForm combines [Dialog](/docs/overlays-dialog--docs) and [Form](/docs/forms
 
 ### Properties
 
-<Controls of={DialogFormStories.Default} />
+- **`title`** `string` — The title of the dialog
+- **`danger`** `boolean` — Whether the submit button has a danger theme
+- **`submitProps`** `CubeButtonProps` — Properties for submit button (use `label` to change text)
+- **`cancelProps`** `CubeButtonProps` — Properties for cancel button (use `label` to change text)
+- **`preserve`** `boolean` (default: `false`) — Preserve form values after submission/dismissal
+- **`noActions`** `boolean` — Hide default action buttons to manually specify them
 
 ### DialogForm-specific Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `title` | `string` | The title of the dialog |
-| `danger` | `boolean` | Whether the submit button has a danger theme |
-| `submitProps` | `CubeButtonProps` | Properties for submit button (use `label` to change text) |
-| `cancelProps` | `CubeButtonProps` | Properties for cancel button (use `label` to change text) |
-| `preserve` | `boolean` | Preserve form values after submission/dismissal (default: false) |
-| `noActions` | `boolean` | Hide default action buttons to manually specify them |
+- **`title`** `string` — The title of the dialog
+- **`danger`** `boolean` — Whether the submit button has a danger theme
+- **`submitProps`** `CubeButtonProps` — Properties for submit button (use `label` to change text)
+- **`cancelProps`** `CubeButtonProps` — Properties for cancel button (use `label` to change text)
+- **`preserve`** `boolean` (default: `false`) — Preserve form values after submission/dismissal
+- **`noActions`** `boolean` — Hide default action buttons to manually specify them
 
 ### Inherited Properties
 
@@ -48,7 +51,7 @@ See the respective component documentation for complete property lists.
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
 
 ## Examples
 

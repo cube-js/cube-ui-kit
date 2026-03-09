@@ -1,4 +1,4 @@
-import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import * as ItemCardStories from './ItemCard.stories';
 
 <Meta of={ItemCardStories} />
@@ -21,11 +21,15 @@ A convenience wrapper around `Item type="card"` that provides a more natural car
 
 ### Properties
 
-<Controls of={ItemCardStories.Default} />
+- **`title`** `string` — Card heading
+- **`children`** `ReactNode` — Card body content
+- **`icon`** `ReactNode` — Icon rendered before the content
+- **`theme`** `string` (default: `default`) — Card theme
+- **`level`** `number` (default: `3`) — Heading level for the title (h1-h6)
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 

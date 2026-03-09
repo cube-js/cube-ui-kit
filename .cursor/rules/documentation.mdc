@@ -43,7 +43,7 @@ Brief description of what the component is and its primary purpose.
 
 ### Base Properties
 
-Supports [Base properties](/BaseProperties)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 
@@ -161,7 +161,7 @@ This component supports all [Field properties](/field-properties.md) when used w
 ### Properties
 
 - **Props List**: List all component-specific properties using the definition list format. Properties, types, defaults, and descriptions must match the `argTypes` defined in the corresponding `.stories.tsx` file. Format: `- **\`propName\`** \`type\` (default: \`value\`) — Description`
-- **Base Properties**: Link to `/base-properties.md` instead of listing (unless `qa` has special behavior)
+- **Base Properties**: Link to `/docs/base-properties--docs` instead of listing (unless `qa` has special behavior)
 - **Styling Properties**: Document `styles`/`*Styles` props. List sub-elements that can be overridden (check component's tasty styles)
 - **Style Properties**: List direct styling props (`width`, `height`, etc.) - see `src/tasty/styles/list.ts`
 - **React Aria Properties**: Document any React Aria properties that need extra clarification

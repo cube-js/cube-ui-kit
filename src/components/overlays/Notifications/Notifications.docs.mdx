@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import * as NotificationStories from './Notifications.stories';
 
 <Meta of={NotificationStories} />
@@ -23,7 +23,7 @@ Action-oriented overlay messages that support custom actions, a dismiss button, 
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 
@@ -109,12 +109,10 @@ import { Notification } from '@cube-dev/ui-kit';
 
 Action buttons inside notifications. Every action auto-dismisses the notification by default (`closeOnPress: true`).
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `onPress` | `() => void \| false \| Promise<void \| false>` | — | Called when the action is pressed. Return `false` to cancel the auto-dismiss. |
-| `closeOnPress` | `boolean` | `true` | Auto-dismiss the notification after press |
-| `isDismiss` | `boolean` | `false` | Marks this action as the dismiss button (see below) |
-| `isDisabled` | `boolean` | `false` | Disables the action |
+- **`onPress`** `() => void \| false \| Promise<void \| false>` — Called when the action is pressed. Return `false` to cancel the auto-dismiss.
+- **`closeOnPress`** `boolean` (default: `true`) — Auto-dismiss the notification after press
+- **`isDismiss`** `boolean` (default: `false`) — Marks this action as the dismiss button (see below)
+- **`isDisabled`** `boolean` (default: `false`) — Disables the action
 
 #### Cancelling dismiss
 
@@ -305,11 +303,9 @@ Maximum 5 notifications are visible at once. When a new notification arrives and
 
 ## Duration Defaults
 
-| Scenario | Default Duration |
-|----------|-----------------|
-| Non-persistent overlay | 3000ms |
-| Persistent overlay | 5000ms |
-| `duration: null` | No auto-dismiss |
+- **Non-persistent overlay** — 3000ms
+- **Persistent overlay** — 5000ms
+- **`duration: null`** — No auto-dismiss
 
 All timers pause when any item in the container receives hover or focus, ensuring actionable notifications remain reliably clickable.
 

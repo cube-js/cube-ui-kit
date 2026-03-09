@@ -72,9 +72,7 @@ Customizes the search input field specifically.
 
 The CommandMenu component supports the following modifiers:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| loading | `boolean` | Whether the command palette is in loading state |
+- **`loading`** `boolean` — Whether the command palette is in loading state
 
 ## Sub-components
 
@@ -84,27 +82,23 @@ Individual menu items within the CommandMenu. Each item is rendered using [Item]
 
 For detailed information about all available item properties, see the [Menu.Item documentation](/docs/actions-menu--docs#sub-components) which provides the complete API reference. Key properties include:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| key | `Key` | Unique identifier for the item (required) |
-| children | `ReactNode` | The main content/label for the menu item |
-| icon | `ReactNode` | Icon displayed before the content |
-| rightIcon | `ReactNode` | Icon displayed after the content |
-| description | `ReactNode` | Secondary text below the main content |
-| prefix | `ReactNode` | Content before the main text |
-| suffix | `ReactNode` | Content after the main text |
-| hotkeys | `string` | Keyboard shortcut that triggers this item |
-| tooltip | `string \| boolean \| object` | Tooltip configuration |
-| isDisabled | `boolean` | Whether the item is disabled |
-| onAction | `() => void` | Callback fired when item is activated |
+- **`key`** `Key` — Unique identifier for the item (required)
+- **`children`** `ReactNode` — The main content/label for the menu item
+- **`icon`** `ReactNode` — Icon displayed before the content
+- **`rightIcon`** `ReactNode` — Icon displayed after the content
+- **`description`** `ReactNode` — Secondary text below the main content
+- **`prefix`** `ReactNode` — Content before the main text
+- **`suffix`** `ReactNode` — Content after the main text
+- **`hotkeys`** `string` — Keyboard shortcut that triggers this item
+- **`tooltip`** `string | boolean | object` — Tooltip configuration
+- **`isDisabled`** `boolean` — Whether the item is disabled
+- **`onAction`** `() => void` — Callback fired when item is activated
 
 #### CommandMenu-specific Properties
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| keywords | `string[]` | - | Additional search terms for better discoverability |
-| forceMount | `boolean` | - | Whether to always show this item regardless of search filter |
-| textValue | `string` | - | Text value for search filtering (if different from children) |
+- **`keywords`** `string[]` — Additional search terms for better discoverability
+- **`forceMount`** `boolean` — Whether to always show this item regardless of search filter
+- **`textValue`** `string` — Text value for search filtering (if different from children)
 
 #### Example with Enhanced Search
 
@@ -134,10 +128,8 @@ For detailed information about all available item properties, see the [Menu.Item
 
 Groups related items together with an optional heading. Same as Menu.Section - see [Menu documentation](/docs/actions-menu--docs#sub-components) for full details.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| title | `ReactNode` | - | Optional heading text for the section |
-| children | `CommandMenu.Item[]` | - | Collection of CommandMenu.Item components |
+- **`title`** `ReactNode` — Optional heading text for the section
+- **`children`** `CommandMenu.Item[]` — Collection of CommandMenu.Item components
 
 ### CommandMenu.Trigger
 
