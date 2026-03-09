@@ -44,11 +44,11 @@
     "chromatic": "chromatic --only-changed",
     "build-static-docs": "npm run build-docs && node scripts/snapshot-docs.js",
     "size": "size-limit",
-    "prepare": "husky install",
+    "prepare": "husky install && git config blame.ignoreRevsFile .git-blame-ignore-revs",
     "clear": "pnpm clear:dist && rimraf ./storybook-docs ./storybook-static ./node_modules/.cache",
     "clear:dist": "rimraf ./dist",
     "release": "pnpm build && changeset publish --provenance",
-    "postinstall": "git config blame.ignoreRevsFile .git-blame-ignore-revs",
+    "postinstall": "mkdir -p docs && ln -sf ../node_modules/@tenphi/tasty/docs docs/tasty",
     "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix"
   },
   "keywords": [
@@ -72,7 +72,7 @@
     "@react-types/shared": "^3.32.1",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
-    "@tenphi/tasty": "0.0.0-snapshot.31f6dd6",
+    "@tenphi/tasty": "0.0.0-snapshot.ed55ce5",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",
