@@ -45,8 +45,8 @@ importers:
         specifier: ^3.13.12
         version: 3.13.12(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tenphi/tasty':
-        specifier: 0.0.0-snapshot.ed55ce5
-        version: 0.0.0-snapshot.ed55ce5(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(react@19.1.1)
+        specifier: 0.7.1
+        version: 0.7.1(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(react@19.1.1)
       clipboard-copy:
         specifier: ^4.0.1
         version: 4.0.1
@@ -155,7 +155,7 @@ importers:
         version: 10.2.3(esbuild@0.25.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(rollup@4.46.4)(storybook@10.2.3(@testing-library/dom@10.4.1)(prettier@3.2.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(typescript@5.6.3)(vite@7.1.3(@types/node@22.17.2)(terser@5.31.1))(webpack@5.76.1(@swc/core@1.3.36)(esbuild@0.25.9))
       '@tenphi/eslint-plugin-tasty':
         specifier: ^0.3.1
-        version: 0.3.1(@tenphi/tasty@0.0.0-snapshot.ed55ce5(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(react@19.1.1))(eslint@9.25.1)(typescript@5.6.3)
+        version: 0.3.1(@tenphi/tasty@0.7.1(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(react@19.1.1))(eslint@9.25.1)(typescript@5.6.3)
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
@@ -2901,8 +2901,8 @@ packages:
       '@tenphi/tasty':
         optional: true
 
-  '@tenphi/tasty@0.0.0-snapshot.ed55ce5':
-    resolution: {integrity: sha512-ZNreiTBF9pjuLnUwZ3jNlHpfDsmc8pqfJtJluwsPWqoi2xYqc2u22pXK6Ohi6Zt2HfxsoiimoS+8dFti+acUfw==}
+  '@tenphi/tasty@0.7.1':
+    resolution: {integrity: sha512-LcRMCCszjr0/Y5ljtb1KTRClq2g/TddY9aQx60E7ShxmYCr16cH/IORwLoI1Z5jVom0BuEeZV+urQusbX/7Ojw==}
     engines: {node: '>=20'}
     peerDependencies:
       '@babel/core': ^7.24.0
@@ -10408,17 +10408,17 @@ snapshots:
 
   '@tanstack/virtual-core@3.13.12': {}
 
-  '@tenphi/eslint-plugin-tasty@0.3.1(@tenphi/tasty@0.0.0-snapshot.ed55ce5(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(react@19.1.1))(eslint@9.25.1)(typescript@5.6.3)':
+  '@tenphi/eslint-plugin-tasty@0.3.1(@tenphi/tasty@0.7.1(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(react@19.1.1))(eslint@9.25.1)(typescript@5.6.3)':
     dependencies:
       '@typescript-eslint/utils': 8.56.1(eslint@9.25.1)(typescript@5.6.3)
       eslint: 9.25.1
     optionalDependencies:
-      '@tenphi/tasty': 0.0.0-snapshot.ed55ce5(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(react@19.1.1)
+      '@tenphi/tasty': 0.7.1(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(react@19.1.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  '@tenphi/tasty@0.0.0-snapshot.ed55ce5(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(react@19.1.1)':
+  '@tenphi/tasty@0.7.1(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(react@19.1.1)':
     dependencies:
       csstype: 3.1.2
     optionalDependencies:
