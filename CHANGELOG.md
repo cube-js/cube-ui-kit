@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.121.1
+
+### Patch Changes
+
+- [#1069](https://github.com/cube-js/cube-ui-kit/pull/1069) [`8d00caa9`](https://github.com/cube-js/cube-ui-kit/commit/8d00caa92275cee86e85ac4ce8661d396356a5c9) Thanks [@tenphi](https://github.com/tenphi)! - Update tasty to support infering property types.
+
 ## 0.121.0
 
 ### Minor Changes
