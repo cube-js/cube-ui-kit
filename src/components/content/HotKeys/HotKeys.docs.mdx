@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { HotKeys } from './HotKeys';
 import * as HotKeysStories from './HotKeys.stories';
 
@@ -24,7 +24,10 @@ A component that displays keyboard shortcuts in a visually appealing and accessi
 
 ### Properties
 
-<Controls of={HotKeysStories.Default} />
+- **`children`** `string` — Key combination string (e.g., "mod+k, ctrl+k")
+- **`type`** `'default' | 'primary' | 'inherit'` (default: `default`) — Visual appearance type: default (subtle), primary (high contrast), or inherit (adapts to parent color)
+- **`aria-label`** `string` — Accessible label for the keyboard shortcuts
+- **`aria-description`** `string` — Additional description for the keyboard shortcuts
 
 ### Base Properties
 

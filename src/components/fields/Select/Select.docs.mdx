@@ -1,4 +1,4 @@
-import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import * as SelectStories from './Select.stories';
 
 <Meta of={SelectStories} />
@@ -23,7 +23,50 @@ A select allows users to choose a single option from a list of predefined choice
 
 ### Properties
 
-<Controls of={SelectStories.Default} />
+- **`selectedKey`** `string` — The selected value in controlled mode
+- **`defaultSelectedKey`** `string` — The default selected value in uncontrolled mode
+- **`placeholder`** `string` — Placeholder text when no option is selected
+- **`icon`** `ReactElement` — Icon element rendered before the select value
+- **`prefix`** `ReactNode` — Content rendered before the select value
+- **`suffix`** `ReactNode` — Content rendered after the select value
+- **`suffixPosition`** `string` (default: `before`) — Position of suffix relative to validation icons
+- **`type`** `string` (default: `outline`) — Visual style variant of the select
+- **`theme`** `string` (default: `default`) — Theme variant affecting overall styling
+- **`size`** `string` (default: `medium`) — Size of the select component
+- **`direction`** `string` (default: `bottom`) — Preferred direction for the dropdown menu
+- **`isClearable`** `boolean` (default: `false`) — Whether the select is clearable using a clear button in the rightIcon slot
+- **`shouldFlip`** `boolean` (default: `true`) — Whether dropdown should flip to fit in viewport
+- **`overlayOffset`** `number` (default: `8`) — Distance between select and dropdown in pixels
+- **`isDisabled`** `boolean` (default: `false`) — Whether the select is disabled
+- **`isRequired`** `boolean` (default: `false`) — Whether user selection is required before form submission
+- **`isLoading`** `boolean` (default: `false`) — Show loading spinner and disable interactions
+- **`validationState`** `string` — Whether the select should display valid or invalid visual styling
+- **`autoFocus`** `boolean` (default: `false`) — Whether the element should receive focus on render
+- **`items`** `Iterable<T>` — Item objects used when rendering dynamic collections
+- **`disabledKeys`** `Iterable<Key>` — Keys of items that are disabled
+- **`children`** `ReactNode | (item: T) => ReactElement` — Static child items or render function for dynamic items
+- **`triggerRef`** `RefObject<HTMLButtonElement>` — Ref for the trigger button element
+- **`popoverRef`** `RefObject<HTMLInputElement>` — Ref for the popover overlay element
+- **`listBoxRef`** `RefObject<HTMLElement>` — Ref for the list box element
+- **`loadingIndicator`** `ReactNode` — Custom loading indicator element
+- **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the trigger button
+- **`styles`** `Styles` — Styles for the root wrapper element
+- **`inputStyles`** `Styles` — Styles for the input trigger element
+- **`listBoxStyles`** `Styles` — Styles for the dropdown list container
+- **`optionStyles`** `Styles` — Styles for individual option items
+- **`overlayStyles`** `Styles` — Styles for the dropdown overlay wrapper
+- **`wrapperStyles`** `Styles` — Styles for the outer wrapper element
+- **`triggerStyles`** `Styles` — Styles for the trigger button element
+- **`inputProps`** `Props` — Additional props for the input element
+- **`onSelectionChange`** `(key: Key) => void` — Callback fired when the selected option changes
+- **`onOpenChange`** `(isOpen: boolean) => void` — Callback fired when the dropdown opens or closes
+- **`onFocus`** `(e: FocusEvent) => void` — Callback fired when the select receives focus
+- **`onBlur`** `(e: FocusEvent) => void` — Callback fired when the select loses focus
+- **`onFocusChange`** `(isFocused: boolean) => void` — Callback fired when focus state changes
+- **`aria-label`** `string` — Accessible label when no visible label exists
+- **`aria-labelledby`** `string` — ID of element that labels the select
+- **`aria-describedby`** `string` — ID of element that describes the select
+- **`name`** `string` — The name of the input element for form submission
 
 #### Notable Properties
 
@@ -38,7 +81,7 @@ A select allows users to choose a single option from a list of predefined choice
 
 **triggerDescription** - Text description displayed within the trigger button. Different from field-level description provided by FieldWrapper.
 
-**descriptionPlacement** - Controls how description is positioned: `inline`, `block`, or `auto`.
+**descriptionPlacement** -  how description is positioned: `inline`, `block`, or `auto`.
 
 **overlayOffset** - Distance between the select trigger and dropdown in pixels (default: 8).
 

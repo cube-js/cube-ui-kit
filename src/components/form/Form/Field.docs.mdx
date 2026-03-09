@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { Badge } from 'storybook/internal/components';
 import * as FieldStories from './Field.stories';
 
@@ -22,7 +22,28 @@ The Field component is a **legacy wrapper** for form inputs that provides field-
 
 ### Properties
 
-<Controls of={FieldStories.Default} />
+- **`label`** `string` — Field label text
+- **`description`** `string` — Field description text
+- **`extra`** `string` — Additional information displayed below help text
+- **`tooltip`** `string` — Tooltip content for the field label
+- **`errorMessage`** `string` — Error message
+- **`name`** `string` — Field name for form data
+- **`defaultValue`** `string` — Default field value
+- **`rules`** — Validation rules array
+- **`labelPosition`** `'top' | 'side' | 'split'` (default: `top`) — Position of the field label
+- **`necessityIndicator`** `'icon' | 'label'` — Type of necessity indicator
+- **`necessityLabel`** `string` — Custom necessity label text
+- **`isRequired`** `boolean` (default: `false`) — Whether the field is required
+- **`isDisabled`** `boolean` (default: `false`) — Whether the field is disabled
+- **`isLoading`** `boolean` (default: `false`) — Whether the field is in loading state
+- **`isHidden`** `boolean` (default: `false`) — Whether the field is hidden
+- **`validationState`** `undefined | 'valid' | 'invalid'` — Validation state of the field
+- **`styles`** — Style map for the field wrapper
+- **`labelStyles`** — Style map for the field label
+- **`labelProps`** — Additional props for the label element
+- **`labelSuffix`** — Content to display after the label
+- **`form`** — Form instance
+- **`children`** — Field content (input component or function)
 
 ### Base Properties
 

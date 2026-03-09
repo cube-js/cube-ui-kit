@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { Switch } from './Switch';
 import * as SwitchStories from './Switch.stories.tsx';
 
@@ -24,7 +24,20 @@ A switch allows users to toggle between two states: on and off. It provides imme
 
 ### Properties
 
-<Controls of={SwitchStories.Default} />
+- **`children`** `string` — The content to display as the switch label
+- **`label`** `string` — External label for the switch
+- **`isSelected`** `boolean` (default: `false`) — Whether the switch is selected (controlled)
+- **`defaultSelected`** `boolean` (default: `false`) — Whether the switch is selected by default (uncontrolled)
+- **`isDisabled`** `boolean` (default: `false`) — Whether the switch is disabled
+- **`isReadOnly`** `boolean` (default: `false`) — Whether the switch can be focused but not changed
+- **`isRequired`** `boolean` (default: `false`) — Whether the switch must be toggled before form submission
+- **`isLoading`** `boolean` (default: `false`) — Show loading spinner and disable interactions
+- **`validationState`** `undefined | 'valid' | 'invalid'` — Whether the switch should display valid or invalid visual styling
+- **`autoFocus`** `boolean` (default: `false`) — Whether the element should receive focus on render
+- **`size`** `'small' | 'medium' | 'large'` (default: `large`) — Switch size
+- **`onChange`** — Callback fired when the switch value changes
+- **`onFocus`** — Callback fired when the switch receives focus
+- **`onBlur`** — Callback fired when the switch loses focus
 
 ### Base Properties
 

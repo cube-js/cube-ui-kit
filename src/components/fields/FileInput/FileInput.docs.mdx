@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { FileInput } from './FileInput';
 import * as FileInputStories from './FileInput.stories.tsx';
 
@@ -24,7 +24,20 @@ A file input component that allows users to select and upload files through a cu
 
 ### Properties
 
-<Controls of={FileInputStories.Default} />
+- **`placeholder`** `string` — Text displayed when no file is selected
+- **`buttonText`** `string` — Text displayed on the selection button
+- **`accept`** `string` — Comma-separated list of accepted file types
+- **`multiple`** `boolean` (default: `false`) — Whether multiple files can be selected
+- **`capture`** `undefined | 'user' | 'environment'` — Camera to use for file capture on mobile devices
+- **`type`** `'file' | 'text'` (default: `file`) — How to process the selected file(s)
+- **`isDisabled`** `boolean` (default: `false`) — Whether the file input is disabled
+- **`isReadOnly`** `boolean` (default: `false`) — Whether the file input can be focused but not changed
+- **`isRequired`** `boolean` (default: `false`) — Whether file selection is required before form submission
+- **`validationState`** `undefined | 'valid' | 'invalid'` — Whether the file input should display valid or invalid visual styling
+- **`autoFocus`** `boolean` (default: `false`) — Whether the element should receive focus on render
+- **`onChange`** `function` — Callback fired when files are selected
+- **`onBlur`** `function` — Callback fired when the file input loses focus
+- **`onFocus`** `function` — Callback fired when the file input receives focus
 
 ### Base Properties
 

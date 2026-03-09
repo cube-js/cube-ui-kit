@@ -1,4 +1,4 @@
-import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import { CommandMenu } from './CommandMenu';
 import * as CommandMenuStories from './CommandMenu.stories';
 
@@ -24,7 +24,21 @@ A searchable menu interface that combines the functionality of Menu and ListBox 
 
 ## Props
 
-<Controls of={CommandMenuStories.Default} />
+- **`searchPlaceholder`** (default: `Search commands...`) — Placeholder text for the search input
+- **`searchValue`** — The search value in controlled mode
+- **`onSearchChange`** `function` — Callback fired when search value changes
+- **`filter`** — Custom filter function for search
+- **`emptyLabel`** (default: `No commands found`) — Label to show when no results are found
+- **`searchInputStyles`** — Custom styles for the search input
+- **`isLoading`** (default: `false`) — Whether the command palette is loading
+- **`shouldFilter`** (default: `true`) — Whether to filter items based on search
+- **`autoFocus`** (default: `true`) — Whether to auto-focus the search input
+- **`onAction`** `function` — Callback fired when an item is selected
+- **`onSelectionChange`** `function` — Callback fired when selection changes
+- **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `none`) — Selection mode for the command palette
+- **`isDisabled`** — Whether the command palette is disabled
+- **`size`** `string` (default: `medium`) — Size of the command menu component
+- **`styles`** — Custom styles for the command palette container
 
 ## Styling
 

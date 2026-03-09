@@ -43,13 +43,13 @@
     "build-storybook": "STORYBOOK_MODE=stories storybook build --stats-json",
     "build-docs": "STORYBOOK_MODE=docs storybook build --docs -o storybook-docs",
     "chromatic": "chromatic --only-changed",
-    "build-static-docs": "npm run build-docs && node scripts/snapshot-docs.js",
     "size": "size-limit",
     "prepare": "husky install && git config blame.ignoreRevsFile .git-blame-ignore-revs",
     "clear": "pnpm clear:dist && rimraf ./storybook-docs ./storybook-static ./node_modules/.cache",
     "clear:dist": "rimraf ./dist",
+    "prepack": "node scripts/prepare-docs.mjs",
+    "postpack": "node scripts/cleanup-docs.mjs",
     "release": "pnpm build && changeset publish --provenance",
-    "postinstall": "mkdir -p docs && ln -sf ../node_modules/@tenphi/tasty/docs docs/tasty",
     "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix"
   },
   "keywords": [
@@ -97,6 +97,7 @@
     "@actions/exec": "^1.1.1",
     "@actions/github": "^6.0.0",
     "@babel/core": "^7.24.0",
+    "@babel/parser": "^7.29.0",
     "@changesets/changelog-github": "^0.4.4",
     "@changesets/cli": "^2.22.0",
     "@codemirror/lang-json": "^6.0.2",

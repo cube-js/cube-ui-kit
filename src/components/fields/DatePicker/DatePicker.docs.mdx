@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { DatePicker } from './DatePicker';
 import * as DatePickerStories from './DatePicker.stories.tsx';
 
@@ -24,7 +24,28 @@ A date picker combines a text input with a calendar interface, allowing users to
 
 ### Properties
 
-<Controls of={DatePickerStories.Default} />
+- **`label`** `string` — Label for the date picker
+- **`description`** `string` — Additional descriptive text
+- **`placeholder`** `string` — Placeholder text when no date is selected
+- **`value`** `DateValue` — The current date value (controlled)
+- **`defaultValue`** `DateValue` — The default date value (uncontrolled)
+- **`placeholderValue`** `DateValue` — Date used as placeholder when calendar opens
+- **`minValue`** `DateValue` — The minimum allowed date
+- **`maxValue`** `DateValue` — The maximum allowed date
+- **`granularity`** `'day' | 'hour' | 'minute' | 'second'` (default: `day`) — Determines the smallest selectable unit
+- **`size`** `'small' | 'medium' | 'large' | (string & {})` (default: `medium`) — DatePicker size
+- **`showMonthAndYearPickers`** `boolean` (default: `false`) — Whether to show month and year picker dropdowns
+- **`useLocale`** `boolean` (default: `false`) — Whether to use locale-specific date formatting
+- **`maxVisibleMonths`** `number` (default: `1`) — Maximum number of months to display in calendar
+- **`isDisabled`** `boolean` (default: `false`) — Whether the date picker is disabled
+- **`isReadOnly`** `boolean` (default: `false`) — Whether the date picker can be focused but not changed
+- **`isRequired`** `boolean` (default: `false`) — Whether date selection is required before form submission
+- **`validationState`** `ValidationState` — Whether the date picker should display valid or invalid visual styling
+- **`autoFocus`** `boolean` (default: `false`) — Whether the element should receive focus on render
+- **`onChange`** `(value: DateValue | null) => void` — Callback fired when the date value changes
+- **`onBlur`** `(e: FocusEvent) => void` — Callback fired when the date picker loses focus
+- **`onFocus`** `(e: FocusEvent) => void` — Callback fired when the date picker receives focus
+- **`onOpenChange`** `(isOpen: boolean) => void` — Callback fired when the calendar opens or closes
 
 ### Base Properties
 

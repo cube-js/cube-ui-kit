@@ -1,4 +1,4 @@
-import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import { Button } from './Button';
 import * as ButtonStories from './Button.stories';
 
@@ -23,7 +23,16 @@ A versatile action component that triggers commands and navigates users.
 
 ## Properties
 
-<Controls />
+- **`type`** `'primary' | 'secondary' | 'outline' | 'neutral' | 'clear' | 'link'` (default: `outline`) — Visual style variant of the button
+- **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `default`) — Semantic colour palette theme
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `medium`) — Button size
+- **`icon`** — Icon rendered before the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`
+- **`rightIcon`** — Icon rendered after the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`
+- **`children`** `string` — Button label or custom content
+- **`isLoading`** `boolean` (default: `false`) — Show loading spinner and disable interactions (default: false)
+- **`isSelected`** `boolean` (default: `false`) — Marks the button as pressed / selected (toggle) (default: false)
+- **`to`** `string` — Destination URL or route; prefix with `!` to open in new tab, `@` to bypass router
+- **`onPress`** `function` — Callback fired when the button is activated by mouse, touch, or keyboard
 
 ### Base Properties
 

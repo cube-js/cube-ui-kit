@@ -1,4 +1,4 @@
-import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import { TextInput } from './TextInput';
 import * as TextInputStories from './TextInput.stories';
 
@@ -24,7 +24,24 @@ A text input component that allows users to input custom text entries with a key
 
 ### Properties
 
-<Controls />
+- **`value`** `string` — The text value in controlled mode
+- **`defaultValue`** `string` — The default text value in uncontrolled mode
+- **`placeholder`** `string` — Placeholder text when input is empty
+- **`icon`** — Icon element rendered before the input
+- **`prefix`** — Input decoration before the main input
+- **`suffix`** — Input decoration after the main input
+- **`type`** `'text' | 'password' | 'email' | 'url' | 'tel' | 'search'` (default: `text`) — Input type
+- **`multiLine`** `boolean` (default: `false`) — Whether the input is multiline (textarea)
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
+- **`isDisabled`** `boolean` (default: `false`) — Whether the input is disabled
+- **`isReadOnly`** `boolean` (default: `false`) — Whether the input can be selected but not changed
+- **`isRequired`** `boolean` (default: `false`) — Whether user input is required before form submission
+- **`isLoading`** `boolean` (default: `false`) — Show loading spinner and disable interactions
+- **`validationState`** `undefined | 'valid' | 'invalid'` — Whether the input should display valid or invalid visual styling
+- **`autoFocus`** `boolean` (default: `false`) — Whether the element should receive focus on render
+- **`onChange`** `function` — Callback fired when the input value changes
+- **`onBlur`** `function` — Callback fired when the input loses focus
+- **`onFocus`** `function` — Callback fired when the input receives focus
 
 ### Base Properties
 

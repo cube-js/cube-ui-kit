@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { Checkbox } from './Checkbox';
 import * as CheckboxStories from './Checkbox.stories.tsx';
 
@@ -24,7 +24,20 @@ Checkboxes allow users to select multiple items from a list of individual items,
 
 ### Properties
 
-<Controls of={CheckboxStories.Default} />
+- **`children`** `string` — The content to display as the checkbox label
+- **`label`** `string` — External label for the checkbox
+- **`value`** `string` — Value for the checkbox when used in a group
+- **`isSelected`** `boolean` (default: `false`) — Whether the checkbox is selected (controlled)
+- **`defaultSelected`** `boolean` (default: `false`) — Whether the checkbox is selected by default (uncontrolled)
+- **`isIndeterminate`** `boolean` (default: `false`) — Whether the checkbox is in an indeterminate state
+- **`isDisabled`** `boolean` (default: `false`) — Whether the checkbox is disabled
+- **`isReadOnly`** `boolean` (default: `false`) — Whether the checkbox can be focused but not changed
+- **`isRequired`** `boolean` (default: `false`) — Whether the checkbox must be checked before form submission
+- **`validationState`** `undefined | 'valid' | 'invalid'` — Whether the checkbox should display valid or invalid visual styling
+- **`autoFocus`** `boolean` (default: `false`) — Whether the element should receive focus on render
+- **`onChange`** `function` — Callback fired when the checkbox value changes
+- **`onFocus`** `function` — Callback fired when the checkbox receives focus
+- **`onBlur`** `function` — Callback fired when the checkbox loses focus
 
 ### Base Properties
 

@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { Dialog } from './Dialog';
 import * as DialogStories from './Dialog.stories';
 
@@ -24,7 +24,16 @@ Dialogs are windows containing contextual information, tasks, or workflows that 
 
 ### Properties
 
-<Controls of={DialogStories.Default} />
+- **`children`** — Dialog content (Header, Content, Footer, etc.)
+- **`size`** `'small' | 'medium' | 'large' | 'S' | 'M' | 'L'` (default: `S`) — Dialog size
+- **`styles`** — Custom styles for the dialog root
+- **`closeButtonStyles`** — Custom styles for the close button
+- **`isDismissable`** `boolean` (default: `false`) — Whether the dialog is dismissable (shows close button, allows Escape key)
+- **`onDismiss`** `function` — Callback fired when the dialog is dismissed
+- **`closeIcon`** — Custom close icon element
+- **`role`** `'dialog' | 'alertdialog'` (default: `dialog`) — ARIA role for the dialog
+- **`onBlur`** `function` — Callback fired when the dialog loses focus
+- **`onFocus`** `function` — Callback fired when the dialog receives focus
 
 ### Base Properties
 

@@ -1,4 +1,4 @@
-import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import * as DialogContainerStories from './DialogContainer.stories';
 
 <Meta of={DialogContainerStories} />
@@ -23,7 +23,13 @@ A DialogContainer accepts a single Dialog as a child, and manages to show and hi
 
 ### Properties
 
-<Controls of={DialogContainerStories.Default} />
+- **`children`** — The Dialog to display, if any
+- **`type`** `'modal' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `modal`) — The type of Dialog that should be rendered
+- **`isDismissable`** `boolean` (default: `false`) — Whether the Dialog is dismissible
+- **`isKeyboardDismissDisabled`** `boolean` (default: `false`) — Whether pressing the escape key to close the dialog should be disabled
+- **`isOpen`** `boolean` — Whether the modal is open or not
+- **`onDismiss`** `function` — Handler called when the x button of a dismissible Dialog is clicked
+- **`hideOnClose`** `boolean` (default: `false`) — Whether the dialog should be hidden when closed
 
 ### Base Properties
 

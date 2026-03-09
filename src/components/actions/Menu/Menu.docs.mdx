@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { Menu } from './Menu';
 import * as MenuStories from './Menu.stories';
 
@@ -24,7 +24,30 @@ A versatile dropdown menu component that displays a list of actions or options. 
 
 ### Properties
 
-<Controls of={MenuStories.Default} />
+- **`children`** `ReactNode` — Menu items and sections as static children
+- **`items`** `Iterable<T>` — Item objects for dynamic collections
+- **`header`** `ReactNode` — Optional header content (deprecated)
+- **`footer`** `ReactNode` — Optional footer content
+- **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `none`) — Type of selection allowed in the menu
+- **`selectedKeys`** `Iterable<Key>` — Currently selected keys (controlled)
+- **`defaultSelectedKeys`** `Iterable<Key>` — Initially selected keys (uncontrolled)
+- **`disabledKeys`** `Iterable<Key>` — Keys of items that should appear disabled
+- **`autoFocus`** `boolean | FocusStrategy` (default: `false`) — Whether to auto-focus the menu when it opens
+- **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
+- **`size`** `'medium' | 'large'` (default: `medium`) — Size of the menu items
+- **`styles`** `Styles` — Custom styles for the menu container
+- **`itemStyles`** `Styles` — Custom styles for menu items
+- **`sectionStyles`** `Styles` — Custom styles for section containers
+- **`sectionHeadingStyles`** `Styles` — Custom styles for section headings
+- **`onAction`** `(key: Key) => void` — Handler called when an item is activated
+- **`onSelectionChange`** `(keys: Selection) => void` — Handler called when selection changes
+- **`onClose`** `() => void` — Handler called when menu should close
+- **`id`** `string` — Unique identifier for the menu
+- **`aria-label`** `string` — Accessibility label for the menu
+- **`aria-labelledby`** `string` — ID of element that labels the menu
+- **`width`** `string | number` — Width of the menu
+- **`height`** `string | number` — Height of the menu
+- **`qa`** `string` — Test identifier for the menu
 
 ### Base Properties
 
