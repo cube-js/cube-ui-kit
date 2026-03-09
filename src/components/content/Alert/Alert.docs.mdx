@@ -1,0 +1,40 @@
+# Alert
+
+An alert message with theme variants. Used for announcements, warnings, and informational messages.
+
+## When to Use
+
+- Form validation messages
+- Success/error/warning notifications
+- Informational banners
+
+## Properties
+
+- **`theme`** `'note' | 'success' | 'danger' | 'warning' | 'disabled'` (default: `'note'`) — Visual theme
+- **`type`** — Deprecated, use `theme` instead
+- **`shape`** `'card' | 'sharp'` (default: `'card'`) — `card` shows border radius and border; `sharp` removes both
+
+### Style Defaults
+
+- `display` — `block`
+- `flow` — `column`
+- `padding` — `1.5x`
+- `preset` — `t3`
+- `radius` — `1cr` (switches to `0` when `shape="sharp"`)
+- `color` — `#dark-02`
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties--docs).
+
+## Examples
+
+```jsx
+<Alert theme="note">Informational message</Alert>
+
+<Alert theme="success">Operation completed successfully</Alert>
+
+<Alert theme="danger">Something went wrong</Alert>
+
+<Alert theme="warning" shape="sharp">Warning with sharp corners</Alert>
+```

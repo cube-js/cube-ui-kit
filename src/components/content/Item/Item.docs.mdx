@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { Item } from './Item';
 import * as ItemStories from './Item.stories';
 
@@ -23,9 +23,33 @@ A foundational component that provides a standardized layout and styling for ite
 
 ## Properties
 
-<Controls of={ItemStories.Default} />
+- **`children`** `ReactNode` — The content inside the Item
+- **`icon`** — Icon rendered before the content. Can be: ReactNode, `"checkbox"`, `true` (empty slot), or function `({ selected, loading, ...mods }) => ReactNode | true`
+- **`rightIcon`** — Icon rendered after the content. Can be: ReactNode, `true` (empty slot), or function `({ selected, loading, ...mods }) => ReactNode | true`
+- **`prefix`** `ReactNode` — Element rendered before the content (after icon)
+- **`suffix`** `ReactNode` — Element rendered after the content (before rightIcon)
+- **`description`** `ReactNode` — Description text displayed with the item
+- **`descriptionPlacement`** `'inline' | 'block'` (default: `inline`) — How the description is positioned relative to the main content. Defaults to `'block'` for `type="card"` and `type="header"`
+- **`type`** `'item' | 'header' | 'primary' | 'secondary' | 'outline' | 'neutral' | 'clear' | 'link' | 'card'` (default: `item`) — Visual style variant
+- **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `default`) — Semantic colour palette theme
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Item size. Accepts custom number or string values
+- **`shape`** `'card' | 'button' | 'sharp' | 'pill'` (default: `button`) — Shape of the item border radius. Defaults to `'card'` for `type="card"`
+- **`isSelected`** `boolean` (default: `false`) — Marks the item as selected
+- **`isLoading`** `boolean` (default: `false`) — Show loading indicator and disable the item
+- **`loadingSlot`** `'auto' | 'icon' | 'rightIcon' | 'prefix' | 'suffix'` (default: `auto`) — Which slot the loading indicator replaces. `'auto'` prefers `icon` if present, then `rightIcon`, then falls back to `icon`
+- **`actions`** `ReactNode | true` — Inline action buttons displayed on the right side. Use `Item.Action` for consistent styling
+- **`autoHideActions`** `boolean` (default: `false`) — When true, actions are hidden by default and shown only on hover, focus, or focus-within
+- **`preserveActionsSpace`** `boolean` (default: `false`) — When true, preserves the actions width when hidden (only changes opacity). Only applies when `autoHideActions` is true
+- **`disableActionsFocus`** `boolean` (default: `true`) — When true, action buttons are not focusable via keyboard
+- **`hotkeys`** `string` — Keyboard shortcut displayed as a badge (e.g. `"cmd+s"`)
+- **`tooltip`** `string | boolean | object` (default: `true`) — Tooltip content. `true` enables auto tooltip on overflow, a string shows fixed tooltip text, an object supports advanced configuration `{ title, auto, placement, ...tooltipProps }`
+- **`highlight`** `string` — Text to highlight within the item label
+- **`highlightCaseSensitive`** `boolean` (default: `false`) — Whether highlight matching is case-sensitive
+- **`level`** `1 | 2 | 3 | 4 | 5 | 6` (default: `3`) — Heading level for the Label element when `type="header"` or `type="card"`. Changes the HTML tag to the corresponding heading (h1-h6)
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+### Base Properties
+
+Supports [Base properties](/docs/base-properties--docs)
 
 ## Styling
 
@@ -50,29 +74,27 @@ Direct style application without using the `styles` prop: `width`, `height`, `pa
 
 The `mods` property accepts the following modifiers:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| has-icon | `boolean` | Applied when icon prop is provided |
-| has-right-icon | `boolean` | Applied when rightIcon prop is provided |
-| has-prefix | `boolean` | Applied when prefix prop is provided |
-| has-suffix | `boolean` | Applied when suffix prop is provided |
-| has-label | `boolean` | Applied when children or labelProps are provided |
-| has-start-content | `boolean` | Applied when icon or prefix is present |
-| has-end-content | `boolean` | Applied when rightIcon, suffix, or actions are present |
-| has-description | `boolean` | Applied when description is provided |
-| has-description-block | `boolean` | Applied when description placement is "block" |
-| has-actions | `boolean` | Applied when actions prop is provided |
-| has-actions-content | `boolean` | Applied when actions have actual content (not just placeholder) |
-| auto-hide-actions | `boolean` | Applied when autoHideActions is true |
-| preserve-actions-space | `boolean` | Applied when preserveActionsSpace is true |
-| checkbox | `boolean` | Applied when using checkbox icon (icon="checkbox") |
-| selected | `boolean` | Applied when isSelected is true |
-| disabled | `boolean` | Applied when isDisabled is true or when loading |
-| loading | `boolean` | Applied when isLoading is true |
-| size | `string` | Applied based on size prop value (xsmall, small, medium, large, xlarge, inline) |
-| type | `string` | Applied based on type prop value (item, header, primary, secondary, outline, neutral, clear, link, card) |
-| theme | `string` | Applied based on theme prop value (default, danger, success, special, warning, note) |
-| shape | `string` | Applied based on shape prop value (card, button, sharp, pill) |
+- **`has-icon`** `boolean` — Applied when icon prop is provided
+- **`has-right-icon`** `boolean` — Applied when rightIcon prop is provided
+- **`has-prefix`** `boolean` — Applied when prefix prop is provided
+- **`has-suffix`** `boolean` — Applied when suffix prop is provided
+- **`has-label`** `boolean` — Applied when children or labelProps are provided
+- **`has-start-content`** `boolean` — Applied when icon or prefix is present
+- **`has-end-content`** `boolean` — Applied when rightIcon, suffix, or actions are present
+- **`has-description`** `boolean` — Applied when description is provided
+- **`description`** `'inline' | 'block' | 'none'` — Applied based on the resolved description placement
+- **`has-actions`** `boolean` — Applied when actions prop is provided
+- **`has-actions-content`** `boolean` — Applied when actions have actual content (not just placeholder)
+- **`auto-hide-actions`** `boolean` — Applied when autoHideActions is true
+- **`preserve-actions-space`** `boolean` — Applied when preserveActionsSpace is true
+- **`checkbox`** `boolean` — Applied when using checkbox icon (icon="checkbox")
+- **`selected`** `boolean` — Applied when isSelected is true
+- **`disabled`** `boolean` — Applied when isDisabled is true or when loading
+- **`loading`** `boolean` — Applied when isLoading is true
+- **`size`** `string` — Applied based on size prop value (xsmall, small, medium, large, xlarge, inline)
+- **`type`** `string` — Applied based on type prop value (item, header, primary, secondary, outline, neutral, clear, link, card)
+- **`theme`** `string` — Applied based on theme prop value (default, danger, success, special, warning, note)
+- **`shape`** `string` — Applied based on shape prop value (card, button, sharp, pill)
 
 ## Variants
 
@@ -479,13 +501,13 @@ By default, Item shows an auto tooltip when content overflows.
 - [ItemButton](/docs/actions-itembutton--docs) - Interactive button built on Item
 - [ItemAction](/docs/actions-itemaction--docs) - Action button component for inline actions (also available as `Item.Action`, `ItemButton.Action`, `Menu.Item.Action`, etc.)
 - [ItemBadge](/docs/content-itembadge--docs) - Badge component for displaying labels or counts (also available as `Item.Badge`)
-- [Select](/docs/fields-select--docs) - Dropdown selection component using Item
-- [ComboBox](/docs/fields-combobox--docs) - Searchable dropdown component using Item
-- [ListBox](/docs/fields-listbox--docs) - List selection component using Item
-- [FilterListBox](/docs/fields-filterlistbox--docs) - Filterable list component using Item
-- [FilterPicker](/docs/fields-filterpicker--docs) - Filter selection component using Item
+- [Select](/docs/forms-select--docs) - Dropdown selection component using Item
+- [ComboBox](/docs/forms-combobox--docs) - Searchable dropdown component using Item
+- [ListBox](/docs/forms-listbox--docs) - List selection component using Item
+- [FilterListBox](/docs/forms-filterlistbox--docs) - Filterable list component using Item
+- [FilterPicker](/docs/forms-filterpicker--docs) - Filter selection component using Item
 - [Menu](/docs/actions-menu--docs) - Context menu component using Item
 - [CommandMenu](/docs/actions-commandmenu--docs) - Command palette component using Item
 - [Button](/docs/actions-button--docs) - Traditional button component
 - [Link](/docs/navigation-link--docs) - Text link component
-- [Text](/docs/content-text--docs) - Typography component for simple text
+- [Text](/docs/generic-text--docs) - Typography component for simple text

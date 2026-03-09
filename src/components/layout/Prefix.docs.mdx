@@ -1,0 +1,37 @@
+# Prefix
+
+An absolutely positioned prefix slot, typically used inside input-like components to show icons or labels on the left.
+
+## When to Use
+
+- Input prefixes (icons, labels)
+- Left-aligned decorations in form fields
+
+## Properties
+
+- **`onWidthChange`** `Function` — Callback when prefix width changes (used for input padding calculation)
+- **`outerGap`** `CSSProperties['gap']` (default: `'1bw'`) — Gap between prefix and the component edge
+
+### Style Defaults
+
+- `position` — `absolute`
+- `display` — `grid`
+- `flow` — `column`
+- `gap` — `0`
+- `placeItems` — `center`
+- `color` — `#dark-02`
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties--docs).
+
+## Examples
+
+```jsx
+<Block position="relative">
+  <Prefix>
+    <Icon icon={IconSearch} />
+  </Prefix>
+  <TextInput placeholder="Search..." />
+</Block>
+```

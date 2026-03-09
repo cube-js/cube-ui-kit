@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { SearchInput } from './SearchInput';
 import * as SearchInputStories from './SearchInput.stories';
 
@@ -24,11 +24,25 @@ A search input provides a specialized text field for search functionality, featu
 
 ### Properties
 
-<Controls of={SearchInputStories.Default} />
+- **`value`** `string` — The search value in controlled mode
+- **`defaultValue`** `string` — The default search value in uncontrolled mode
+- **`placeholder`** `string` — Placeholder text when input is empty
+- **`suffix`** — Input decoration after the main input (before clear button)
+- **`isClearable`** `boolean` (default: `false`) — Whether the search input shows a clear button
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
+- **`onChange`** `function` — Callback fired when the search value changes
+- **`onSubmit`** `function` — Callback fired when search is submitted
+- **`onClear`** `function` — Callback fired when search is cleared
+- **`onBlur`** `function` — Callback fired when the input loses focus
+- **`onFocus`** `function` — Callback fired when the input receives focus
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -57,14 +71,12 @@ The SearchInput component supports all standard style properties:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| focused | `boolean` | Whether the input has focus |
-| disabled | `boolean` | Whether the search input is disabled |
-| invalid | `boolean` | Whether the search input has validation errors |
-| valid | `boolean` | Whether the search input is valid |
-| hovered | `boolean` | Whether the search input is being hovered |
-| inside-form | `boolean` | Whether the search input is inside a form field |
+- **`focused`** `boolean` — Whether the input has focus
+- **`disabled`** `boolean` — Whether the search input is disabled
+- **`invalid`** `boolean` — Whether the search input has validation errors
+- **`valid`** `boolean` — Whether the search input is valid
+- **`hovered`** `boolean` — Whether the search input is being hovered
+- **`inside-form`** `boolean` — Whether the search input is inside a form field
 
 ## Variants
 
@@ -203,7 +215,7 @@ const [searchValue, setSearchValue] = useState('');
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form.
 
 ## Suggested Improvements
 

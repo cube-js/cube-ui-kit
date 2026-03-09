@@ -180,14 +180,12 @@ The menu content and behavior are defined in `defaultMenuProps`, eliminating the
 
 ## Comparison with Related Hooks
 
-| Feature | `useAnchoredMenu` | `useContextMenu` |
-|---------|-------------------|------------------|
-| **Positioning** | Element-anchored | Cursor coordinates |
-| **Trigger** | Manual (programmatic) | Right-click (automatic) |
-| **Event Binding** | Manual event handling | Automatic `onContextMenu` |
-| **Use Cases** | Dropdown menus, action buttons | Context menus, right-click actions |
-| **Default Placement** | `"bottom start"` | `"bottom start"` |
-| **Setup Complexity** | Manual open calls | Minimal (auto-binding) |
+- **`Positioning`** — useAnchoredMenu: Element-anchored; useContextMenu: Cursor coordinates
+- **`Trigger`** — useAnchoredMenu: Manual (programmatic); useContextMenu: Right-click (automatic)
+- **`Event Binding`** — useAnchoredMenu: Manual event handling; useContextMenu: Automatic `onContextMenu`
+- **`Use Cases`** — useAnchoredMenu: Dropdown menus, action buttons; useContextMenu: Context menus, right-click actions
+- **`Default Placement`** — Both: `"bottom start"`
+- **`Setup Complexity`** — useAnchoredMenu: Manual open calls; useContextMenu: Minimal (auto-binding)
 
 ## Implementation Notes
 

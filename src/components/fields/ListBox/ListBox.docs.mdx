@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { ListBox } from './ListBox';
 import * as ListBoxStories from './ListBox.stories';
 
@@ -28,11 +28,38 @@ A versatile list selection component that allows users to select one or more ite
 
 ### Properties
 
-<Controls of={ListBoxStories.Default} />
+- **`selectedKey`** `string` — The selected key in controlled mode
+- **`defaultSelectedKey`** `string` — The default selected key in uncontrolled mode
+- **`selectedKeys`** `string[] | 'all'` — The selected keys in controlled multiple mode. Use "all" to select all items or an array of keys.
+- **`defaultSelectedKeys`** `string[] | 'all'` — The default selected keys in uncontrolled multiple mode. Use "all" to select all items or an array of keys.
+- **`selectionMode`** `'single' | 'multiple'` (default: `single`) — Selection mode
+- **`disallowEmptySelection`** `boolean` (default: `false`) — Whether to disallow empty selection
+- **`disabledKeys`** `Key[]` — Array of keys for disabled items
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — ListBox size
+- **`shape`** `'card' | 'plain' | 'popover'` (default: `card`) — Visual shape of the ListBox
+- **`filter`** `(nodes: Iterable<Node>) => Iterable<Node>` — Filter function for the list items
+- **`emptyLabel`** `ReactNode` (default: `No items`) — Label shown when no items are available
+- **`header`** `ReactNode` — Custom header content
+- **`footer`** `ReactNode` — Custom footer content
+- **`focusOnHover`** `boolean` (default: `true`) — Whether moving the pointer over an option will move DOM focus to that option
+- **`shouldUseVirtualFocus`** `boolean` (default: `false`) — Whether to use virtual focus instead of DOM focus
+- **`isCheckable`** `boolean` (default: `false`) — Whether to show checkboxes for multiple selection mode
+- **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
+- **`description`** `string` — Field description
+- **`message`** `string` — Help or error message
+- **`showSelectAll`** `boolean` (default: `false`) — Whether to show the "Select All" option in multiple selection mode
+- **`selectAllLabel`** `string` (default: `Select All`) — Label for the "Select All" option
+- **`onSelectionChange`** `(keys: Key | Key[] | 'all' | null) => void` — Callback when selection changes
+- **`onEscape`** `() => void` — Callback when Escape key is pressed
+- **`onOptionClick`** `(key: Key) => void` — Callback when an option is clicked (non-checkbox area)
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -82,15 +109,13 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| `invalid` | `boolean` | Applied when `validationState="invalid"` |
-| `valid` | `boolean` | Applied when `validationState="valid"` |
-| `disabled` | `boolean` | Applied when `isDisabled={true}` |
-| `focused` | `boolean` | Applied when the ListBox has focus |
-| `header` | `boolean` | Applied when header prop is provided or `showSelectAll={true}` |
-| `footer` | `boolean` | Applied when footer prop is provided |
-| `selectAll` | `boolean` | Applied when `showSelectAll={true}` in multiple selection mode |
+- **`invalid`** `boolean` — Applied when `validationState="invalid"`
+- **`valid`** `boolean` — Applied when `validationState="valid"`
+- **`disabled`** `boolean` — Applied when `isDisabled={true}`
+- **`focused`** `boolean` — Applied when the ListBox has focus
+- **`header`** `boolean` — Applied when header prop is provided or `showSelectAll={true}`
+- **`footer`** `boolean` — Applied when footer prop is provided
+- **`selectAll`** `boolean` — Applied when `showSelectAll={true}` in multiple selection mode
 
 ## Key Properties
 
@@ -184,21 +209,19 @@ Individual items within the ListBox. Each item is rendered using [Item](/docs/co
 
 ListBox.Item is built using [Item](/docs/content-item--docs), which provides rich layout and interaction capabilities. All Item properties are supported:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| key | `string \| number` | Unique identifier for the item (required) |
-| children | `ReactNode` | The main content/label for the option |
-| textValue | `string` | Text representation for complex JSX content (for screen readers and search) |
-| icon | `ReactNode` | Icon displayed before the content |
-| rightIcon | `ReactNode` | Icon displayed after the content |
-| description | `ReactNode` | Secondary text below the main content |
-| descriptionPlacement | `'inline' \| 'block'` | How the description is positioned (default: `'block'`) |
-| prefix | `ReactNode` | Content displayed at the start (before icon) |
-| suffix | `ReactNode` | Content displayed at the end (after content) |
-| hotkeys | `string` | Keyboard shortcut hint (e.g., `'ctrl+a'`) displayed as suffix |
-| tooltip | `string \| object` | Tooltip shown on hover. Object: `{ title, description, placement }` |
-| styles | `Styles` | Custom styling for the item |
-| qa | `string` | QA identifier for testing |
+- **`key`** `string \| number` — Unique identifier for the item (required)
+- **`children`** `ReactNode` — The main content/label for the option
+- **`textValue`** `string` — Text representation for complex JSX content (for screen readers and search)
+- **`icon`** `ReactNode` — Icon displayed before the content
+- **`rightIcon`** `ReactNode` — Icon displayed after the content
+- **`description`** `ReactNode` — Secondary text below the main content
+- **`descriptionPlacement`** `'inline' \| 'block'` (default: `'block'`) — How the description is positioned
+- **`prefix`** `ReactNode` — Content displayed at the start (before icon)
+- **`suffix`** `ReactNode` — Content displayed at the end (after content)
+- **`hotkeys`** `string` — Keyboard shortcut hint (e.g., `'ctrl+a'`) displayed as suffix
+- **`tooltip`** `string \| object` — Tooltip shown on hover. Object: `{ title, description, placement }`
+- **`styles`** `Styles` — Custom styling for the item
+- **`qa`** `string` — QA identifier for testing
 
 #### Example with Rich Items
 
@@ -227,10 +250,8 @@ ListBox.Item is built using [Item](/docs/content-item--docs), which provides ric
 
 Groups related items together with an optional heading.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| title | `ReactNode` | - | Optional heading text for the section |
-| children | `ListBox.Item[]` | - | Collection of ListBox.Item components |
+- **`title`** `ReactNode` — Optional heading text for the section
+- **`children`** `ListBox.Item[]` — Collection of ListBox.Item components
 
 ## Variants
 
@@ -686,7 +707,7 @@ const [selectedKey, setSelectedKey] = useState('apple');
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
 
 ```jsx
 <Form onSubmit={handleSubmit}>

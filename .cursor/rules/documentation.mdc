@@ -14,7 +14,7 @@ alwaysApply: false
 ## Documentation Structure
 
 ```mdx
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { ComponentName } from './ComponentName';
 import * as ComponentStories from './ComponentName.stories';
 
@@ -38,11 +38,18 @@ Brief description of what the component is and its primary purpose.
 
 ### Properties
 
-<Controls of={componentStories.Default} />
+- **`propName`** `type` (default: `value`) — Description of the property
+- **`anotherProp`** `boolean` (default: `false`) — Description of the property
 
 ### Base Properties
 
-Supports [Base properties](/BaseProperties)
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+[For input components only]
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -159,11 +166,11 @@ This component supports all [Field properties](/field-properties.md) when used w
 
 ### Properties
 
-- **Props List**: Use `<Controls of={componentStories.Default} />` - DO NOT manually list props if Controls is used
-- **Base Properties**: Link to `/base-properties.md` instead of listing (unless `qa` has special behavior)
+- **Props List**: List all component-specific properties using the definition list format. Properties, types, defaults, and descriptions must match the `argTypes` defined in the corresponding `.stories.tsx` file. Format: `- **\`propName\`** \`type\` (default: \`value\`) — Description`
+- **Base Properties**: Link to `/docs/base-properties--docs` instead of listing (unless `qa` has special behavior)
 - **Styling Properties**: Document `styles`/`*Styles` props. List sub-elements that can be overridden (check component's tasty styles)
 - **Style Properties**: List direct styling props (`width`, `height`, etc.) - see `src/tasty/styles/list.ts`
-- **React Aria Properties**: Only document if adding clarifications beyond what Controls shows
+- **React Aria Properties**: Document any React Aria properties that need extra clarification
 
 ### Examples
 
@@ -185,9 +192,13 @@ This component supports all [Field properties](/field-properties.md) when used w
 - Relevant ARIA properties
 - Accessible implementation guidance
 
+### Field Properties
+
+For input components: Add `Supports all [Field properties](/docs/field-properties--docs)` in the Properties section, right after Base Properties. Do NOT duplicate field-level props (`label`, `name`, `isRequired`, `isDisabled`, `isReadOnly`, `isLoading`, `validationState`, `autoFocus`, `tooltip`, `description`, `rules`, etc.) — they are documented on the Field Properties page.
+
 ### Form Integration
 
-For input components: "This component supports all [Field properties](/field-properties.md) when used within a Form."
+For input components: "This component supports all [Field properties](/docs/field-properties--docs) when used within a Form."
 
 ### File Naming
 
@@ -196,7 +207,7 @@ For input components: "This component supports all [Field properties](/field-pro
 ## Review Checklist
 
 - [ ] **JSX code snippets provided (not just stories)**
-- [ ] **No manual props list if using `<Controls />`**
+- [ ] **All component-specific properties explicitly listed**
 - [ ] Follows prescribed structure
 - [ ] Styling properties and sub-elements documented
 - [ ] Modifiers listed with descriptions

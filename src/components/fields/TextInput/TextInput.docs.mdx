@@ -1,4 +1,4 @@
-import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import { TextInput } from './TextInput';
 import * as TextInputStories from './TextInput.stories';
 
@@ -24,11 +24,32 @@ A text input component that allows users to input custom text entries with a key
 
 ### Properties
 
-<Controls />
+- **`value`** `string` — The text value in controlled mode
+- **`defaultValue`** `string` — The default text value in uncontrolled mode
+- **`placeholder`** `string` — Placeholder text when input is empty
+- **`icon`** — Icon element rendered before the input
+- **`prefix`** — Input decoration before the main input
+- **`suffix`** — Input decoration after the main input
+- **`suffixPosition`** `'before' | 'after'` (default: `before`) — Position of suffix relative to validation/loading state icons
+- **`type`** `'text' | 'password' | 'email' | 'url' | 'tel' | 'search'` (default: `text`) — Input type
+- **`multiLine`** `boolean` (default: `false`) — Whether the input is multiline (textarea)
+- **`rows`** `number` — Number of visible rows for multiline input
+- **`resize`** `string` — CSS resize value for multiline input (e.g. `'vertical'`, `'none'`)
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
+- **`autocomplete`** `string` — Browser autocomplete attribute value
+- **`maxLength`** `number` — Maximum number of characters allowed
+- **`minLength`** `number` — Minimum number of characters required
+- **`onChange`** `function` — Callback fired when the input value changes
+- **`onBlur`** `function` — Callback fired when the input loses focus
+- **`onFocus`** `function` — Callback fired when the input receives focus
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -48,9 +69,9 @@ Customizes the root element of the component.
 
 Customizes the input element itself.
 
-#### wrapperStyles
+#### wrapperProps
 
-Customizes the input wrapper container.
+Additional HTML props passed to the input wrapper container.
 
 ### Style Properties
 
@@ -62,15 +83,13 @@ The TextInput component supports all standard style properties:
 
 The `mods` prop accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| focused | `boolean` | Forces focus ring appearance. |
-| disabled | `boolean` | Forces disabled appearance. |
-| invalid | `boolean` | Forces invalid state styling. |
-| valid | `boolean` | Forces valid state styling. |
-| loading | `boolean` | Displays loading spinner. |
-| prefix | `boolean` | Indicates presence of prefix content. |
-| suffix | `boolean` | Indicates presence of suffix content. |
+- **`focused`** `boolean` — Forces focus ring appearance.
+- **`disabled`** `boolean` — Forces disabled appearance.
+- **`invalid`** `boolean` — Forces invalid state styling.
+- **`valid`** `boolean` — Forces valid state styling.
+- **`loading`** `boolean` — Displays loading spinner.
+- **`prefix`** `boolean` — Indicates presence of prefix content.
+- **`suffix`** `boolean` — Indicates presence of suffix content.
 
 ## Variants
 
@@ -178,12 +197,11 @@ import { IconMail } from '@tabler/icons-react';
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form.
 
 ## Suggested Improvements
 
-- Add `autoComplete` prop mapping for better browser integration
-- Provide `maxLength` indicator with character count
+- Provide `maxLength` indicator with visible character count
 - Support for input masks and formatting
 - Built-in debouncing for onChange events
 

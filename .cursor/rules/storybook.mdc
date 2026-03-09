@@ -10,11 +10,10 @@ alwaysApply: false
 - For interactive tests: `import { userEvent, within } from 'storybook/test';` (NOT from `@testing-library/react`)
 
 ### Documentation Files (.docs.mdx)
-- `import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';`
+- `import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';`
   - `Meta` - Define meta information with `<Meta of={StoriesImport} />`
   - `Canvas` - Display story with code panel
   - `Story` - Reference specific story with `<Story of={StoriesImport.StoryName} />`
-  - `Controls` - Display interactive controls table with `<Controls of={StoriesImport.StoryName} />`
   - `ArgTypes` - Display argument types documentation
   - `Source` - Show code examples
 - Import stories: `import * as ComponentStories from './Component.stories';`
@@ -108,7 +107,7 @@ export const Interactive: StoryObj = {
 ## MDX Documentation Structure
 
 ```mdx
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import * as ComponentStories from './Component.stories';
 
 <Meta of={ComponentStories} />
@@ -129,11 +128,18 @@ Component description
 
 ### Properties
 
-<Controls of={ComponentStories.Default} />
+- **`propName`** `type` (default: `value`) — Description of the property
+- **`anotherProp`** `boolean` (default: `false`) — Description of the property
 
 ### Base Properties
 
-Reference base properties support here.
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+[For input components only]
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ## Examples
 

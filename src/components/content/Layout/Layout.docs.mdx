@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { Layout, GridLayout } from './index';
 import * as LayoutStories from './Layout.stories';
 
@@ -23,7 +23,13 @@ A compound component system for building application shells with headers, footer
 
 ### Properties
 
-<Controls of={LayoutStories.Default} />
+- **`doNotOverflow`** `boolean` (default: `false`) — When true, applies `overflow: hidden` to the root element. By default, overflow is visible.
+- **`innerRef`** `ForwardedRef<HTMLDivElement>` — Ref for the inner content element
+- **`innerProps`** `HTMLAttributes<HTMLDivElement>` — Props to spread on the Inner sub-element
+- **`isGrid`** `boolean` — Enable grid display mode
+- **`columns`** `string` — Grid template columns (when `isGrid` is enabled)
+- **`rows`** `string` — Grid template rows (when `isGrid` is enabled)
+- **`template`** `string` — Grid template shorthand (when `isGrid` is enabled)
 
 ### Base Properties
 
@@ -42,29 +48,21 @@ Customizes the root Layout element.
 
 These properties allow direct style application: `width`, `height`, `padding`, `gap`, `fill`, `border`, `flow`.
 
-### Overflow Control
+### Style Defaults
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| doNotOverflow | `boolean` | `false` | When true, applies `overflow: hidden` to the root element. By default, overflow is visible. |
+- `position` — `relative`
+- `display` — `block`
+- `overflow` — `visible` (switches to `hidden` when `doNotOverflow`)
+- `flexGrow` — `1`
+- `placeSelf` — `stretch`
+- `$content-padding` — `1x` (inherited by all sub-components for consistent inner padding)
 
-### Inner Element Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| innerRef | `ForwardedRef<HTMLDivElement>` | Ref for the inner content element |
-| innerProps | `HTMLAttributes<HTMLDivElement>` | Props to spread on the Inner sub-element |
-
-### Grid Mode
-
-When `isGrid` is enabled, the inner content becomes a CSS grid:
-
-| Property | Type | Description |
-|----------|------|-------------|
-| isGrid | `boolean` | Enable grid display mode |
-| columns | `string` | Grid template columns |
-| rows | `string` | Grid template rows |
-| template | `string` | Grid template shorthand |
+**Inner element:**
+- `position` — `absolute`
+- `inset` — Adjusts based on registered panel sizes
+- `display` — `flex`
+- `flow` — `column`
+- `transition` — `inset` (only when `hasTransition` is enabled on panels)
 
 ---
 
@@ -84,9 +82,7 @@ A horizontal bar typically placed at the top for navigation and actions.
 </Layout.Toolbar>
 ```
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| children | `ReactNode` | - | Content split between left and right |
+- **`children`** `ReactNode` — Content split between left and right
 
 **Sub-elements:**
 - No sub-elements, styles apply to container
@@ -110,15 +106,13 @@ A semantic page header with title, breadcrumbs, subtitle, and action areas.
 />
 ```
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| title | `ReactNode` | - | Page/section title |
-| level | `1-6` | `3` | Heading level for accessibility |
-| breadcrumbs | `[label, href][]` | - | Navigation breadcrumbs |
-| subtitle | `ReactNode` | - | Text below the title |
-| suffix | `ReactNode` | - | Content next to the title |
-| extra | `ReactNode` | - | Content on the right side |
-| onBack | `() => void` | - | Callback for the back button. When provided, a back arrow button appears to the left of the title. |
+- **`title`** `ReactNode` — Page/section title
+- **`level`** `1-6` (default: `3`) — Heading level for accessibility
+- **`breadcrumbs`** `[label, href][]` — Navigation breadcrumbs
+- **`subtitle`** `ReactNode` — Text below the title
+- **`suffix`** `ReactNode` — Content next to the title
+- **`extra`** `ReactNode` — Content on the right side
+- **`onBack`** `() => void` — Callback for the back button. When provided, a back arrow button appears to the left of the title.
 
 **Sub-elements:**
 - `Back` - Back button container (visible when `onBack` is provided)
@@ -140,12 +134,10 @@ Scrollable content area with automatic overflow handling and custom scrollbar st
 </Layout.Content>
 ```
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| scrollbar | `'default' \| 'thin' \| 'tiny' \| 'none'` | `'thin'` | Scrollbar style |
-| children | `ReactNode` | - | Content to display |
-| innerRef | `ForwardedRef<HTMLDivElement>` | - | Ref for the inner content element |
-| innerProps | `HTMLAttributes<HTMLDivElement>` | - | Props to spread on the Inner sub-element |
+- **`scrollbar`** `'default' | 'thin' | 'tiny' | 'none'` (default: `'thin'`) — Scrollbar style
+- **`children`** `ReactNode` — Content to display
+- **`innerRef`** `ForwardedRef<HTMLDivElement>` — Ref for the inner content element
+- **`innerProps`** `HTMLAttributes<HTMLDivElement>` — Props to spread on the Inner sub-element
 
 **Scrollbar types:**
 - `default` - Browser default scrollbar
@@ -171,11 +163,9 @@ Horizontally centered content area with constrained width. Ideal for forms, arti
 </Layout.Container>
 ```
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| children | `ReactNode` | - | Content to display |
-| innerRef | `ForwardedRef<HTMLDivElement>` | - | Ref for the inner content element |
-| innerProps | `HTMLAttributes<HTMLDivElement>` | - | Props to spread on the Inner sub-element |
+- **`children`** `ReactNode` — Content to display
+- **`innerRef`** `ForwardedRef<HTMLDivElement>` — Ref for the inner content element
+- **`innerProps`** `HTMLAttributes<HTMLDivElement>` — Props to spread on the Inner sub-element
 
 **Width constraints:**
 - Minimum: `40x` (320px at default gap)
@@ -199,9 +189,7 @@ Centered content area for both horizontal and vertical alignment. Extends `Layou
 </Layout.Center>
 ```
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| children | `ReactNode` | - | Content to display |
+- **`children`** `ReactNode` — Content to display
 
 **Styling differences from Container:**
 - Content is centered both horizontally and vertically
@@ -226,10 +214,8 @@ Footer area with support for inverted content order (primary actions on right).
 </Layout.Footer>
 ```
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| invertOrder | `boolean` | `false` | Reverse child order (primary on right) |
-| children | `ReactNode` | - | Footer content |
+- **`invertOrder`** `boolean` (default: `false`) — Reverse child order (primary on right)
+- **`children`** `ReactNode` — Footer content
 
 ---
 
@@ -256,47 +242,42 @@ Collapsible side panel with resizing, transitions, and multiple rendering modes.
 </Layout.Panel>
 ```
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| side | `'left' \| 'right' \| 'top' \| 'bottom'` | `'left'` | Panel position |
-| mode | `'default' \| 'sticky' \| 'overlay' \| 'dialog'` | `'default'` | Panel rendering mode |
-| size | `number` | - | Controlled panel size (px) |
-| defaultSize | `number` | `280` | Initial uncontrolled size |
-| minSize | `number` | `200` | Minimum size constraint |
-| maxSize | `number` | - | Maximum size constraint |
-| isResizable | `boolean` | `false` | Enable drag-to-resize |
-| isOpen | `boolean` | - | Controlled open state |
-| defaultIsOpen | `boolean` | `true` | Initial open state |
-| onOpenChange | `(isOpen: boolean) => void` | - | Open state callback |
-| onSizeChange | `(size: number) => void` | - | Size change callback |
-| sizeStorageKey | `string` | - | localStorage key for persisting size |
-| hasTransition | `boolean` | `false` | Enable slide animation |
-| isDismissable | `boolean` | `true` | Allow dismissing overlay/dialog by click or Escape |
-| overlayStyles | `Styles` | - | Styles for the overlay backdrop in overlay mode |
-| isDialogOpen | `boolean` | - | Controlled dialog state (mode="dialog") |
-| defaultIsDialogOpen | `boolean` | `false` | Initial dialog state |
-| onDialogOpenChange | `(isOpen: boolean) => void` | - | Dialog state callback |
-| dialogProps | `CubeDialogContainerProps` | - | Props for dialog mode |
-| innerRef | `ForwardedRef<HTMLDivElement>` | - | Ref for the inner content element |
-| innerProps | `HTMLAttributes<HTMLDivElement>` | - | Props to spread on the Inner sub-element |
+- **`side`** `'left' | 'right' | 'top' | 'bottom'` (default: `'left'`) — Panel position
+- **`mode`** `'default' | 'sticky' | 'overlay' | 'dialog'` (default: `'default'`) — Panel rendering mode
+- **`size`** `number` — Controlled panel size (px)
+- **`defaultSize`** `number` (default: `280`) — Initial uncontrolled size
+- **`minSize`** `number` (default: `200`) — Minimum size constraint
+- **`maxSize`** `number` — Maximum size constraint
+- **`isResizable`** `boolean` (default: `false`) — Enable drag-to-resize
+- **`isOpen`** `boolean` — Controlled open state
+- **`defaultIsOpen`** `boolean` (default: `true`) — Initial open state
+- **`onOpenChange`** `(isOpen: boolean) => void` — Open state callback
+- **`onSizeChange`** `(size: number) => void` — Size change callback
+- **`sizeStorageKey`** `string` — localStorage key for persisting size
+- **`hasTransition`** `boolean` (default: `false`) — Enable slide animation
+- **`isDismissable`** `boolean` (default: `true`) — Allow dismissing overlay/dialog by click or Escape
+- **`overlayStyles`** `Styles` — Styles for the overlay backdrop in overlay mode
+- **`isDialogOpen`** `boolean` — Controlled dialog state (mode="dialog")
+- **`defaultIsDialogOpen`** `boolean` (default: `false`) — Initial dialog state
+- **`onDialogOpenChange`** `(isOpen: boolean) => void` — Dialog state callback
+- **`dialogProps`** `CubeDialogContainerProps` — Props for dialog mode
+- **`innerRef`** `ForwardedRef<HTMLDivElement>` — Ref for the inner content element
+- **`innerProps`** `HTMLAttributes<HTMLDivElement>` — Props to spread on the Inner sub-element
 
 **Panel Modes:**
 
-| Mode | Size Propagation | Overlay | Description |
-|------|-----------------|---------|-------------|
-| `default` | Yes | No | Standard panel that pushes content aside |
-| `sticky` | No | No | Panel floats over content without affecting layout |
-| `overlay` | Yes | Yes | Panel with dismissable backdrop overlay |
-| `dialog` | No | Via Dialog | Panel renders as a modal dialog |
+- `default` — Standard panel that pushes content aside (propagates size, no overlay)
+- `sticky` — Panel floats over content without affecting layout (no size propagation, no overlay)
+- `overlay` — Panel with dismissable backdrop overlay (propagates size, with overlay)
+- `dialog` — Panel renders as a modal dialog (no size propagation, overlay via Dialog)
 
 **Modifiers:**
-| Modifier | Type | Description |
-|----------|------|-------------|
-| side | `'left' \| 'right' \| 'top' \| 'bottom'` | Panel position |
-| drag | `boolean` | Currently being resized |
-| horizontal | `boolean` | Left or right panel |
-| has-transition | `boolean` | Transition enabled |
-| offscreen | `boolean` | Panel is collapsed |
+
+- `side` `'left' | 'right' | 'top' | 'bottom'` — Panel position
+- `drag` `boolean` — Currently being resized
+- `horizontal` `boolean` — Left or right panel
+- `has-transition` `boolean` — Transition enabled
+- `offscreen` `boolean` — Panel is collapsed
 
 ---
 
@@ -318,19 +299,17 @@ Resizable inline section within a layout. Unlike Layout.Panel (which is absolute
 </Layout.Pane>
 ```
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| resizeEdge | `'right' \| 'bottom'` | `'right'` | Edge where resize handler appears |
-| isResizable | `boolean` | `false` | Enable resize functionality |
-| size | `number \| string` | - | Controlled size (width for right edge, height for bottom edge) |
-| defaultSize | `number \| string` | `200` | Default size for uncontrolled state |
-| minSize | `number \| string` | - | Minimum size constraint |
-| maxSize | `number \| string` | - | Maximum size constraint |
-| onSizeChange | `(size: number) => void` | - | Size change callback |
-| scrollbar | `ScrollbarType` | `'thin'` | Scrollbar style |
-| children | `ReactNode` | - | Content to display |
-| innerRef | `ForwardedRef<HTMLDivElement>` | - | Ref for the inner content element |
-| innerProps | `HTMLAttributes<HTMLDivElement>` | - | Props to spread on the Inner sub-element |
+- **`resizeEdge`** `'right' | 'bottom'` (default: `'right'`) — Edge where resize handler appears
+- **`isResizable`** `boolean` (default: `false`) — Enable resize functionality
+- **`size`** `number | string` — Controlled size (width for right edge, height for bottom edge)
+- **`defaultSize`** `number | string` (default: `200`) — Default size for uncontrolled state
+- **`minSize`** `number | string` — Minimum size constraint
+- **`maxSize`** `number | string` — Maximum size constraint
+- **`onSizeChange`** `(size: number) => void` — Size change callback
+- **`scrollbar`** `ScrollbarType` (default: `'thin'`) — Scrollbar style
+- **`children`** `ReactNode` — Content to display
+- **`innerRef`** `ForwardedRef<HTMLDivElement>` — Ref for the inner content element
+- **`innerProps`** `HTMLAttributes<HTMLDivElement>` — Props to spread on the Inner sub-element
 
 **Sub-elements:**
 - `Inner` - Scrollable inner container
@@ -354,13 +333,11 @@ Header for panels with optional close button.
 />
 ```
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| title | `ReactNode` | - | Panel title |
-| level | `1-6` | `2` | Heading level |
-| isClosable | `boolean` | `false` | Show close button |
-| onClose | `() => void` | - | Close button handler |
-| actions | `ReactNode` | - | Custom actions (replaces close) |
+- **`title`** `ReactNode` — Panel title
+- **`level`** `1-6` (default: `2`) — Heading level
+- **`isClosable`** `boolean` (default: `false`) — Show close button
+- **`onClose`** `() => void` — Close button handler
+- **`actions`** `ReactNode` — Custom actions (replaces close)
 
 ---
 
@@ -383,12 +360,10 @@ A variant of Layout that enables CSS Grid for the content area.
 </GridLayout>
 ```
 
-| Property | Type | Description |
-|----------|------|-------------|
-| columns | `string` | Grid template columns |
-| rows | `string` | Grid template rows |
-| template | `string` | Grid template shorthand |
-| gap | `string` | Grid gap |
+- **`columns`** `string` — Grid template columns
+- **`rows`** `string` — Grid template rows
+- **`template`** `string` — Grid template shorthand
+- **`gap`** `string` — Grid gap
 
 ---
 
@@ -890,8 +865,7 @@ Panel transitions are disabled during drag operations and initial mount to preve
 
 ## Related
 
-- [Layout Guide](/docs/guides-layout-guide--docs) - Patterns and examples for building layouts
-- [Space](/docs/components-layout-space--docs) - For simpler flex layouts
-- [Dialog](/docs/components-overlays-dialog--docs) - For modal panels
-- [Item](/docs/components-content-item--docs) - Used by PanelHeader
+- [Layout Guide](/docs/guides-layout--docs) - Patterns and examples for building layouts
+- [Dialog](/docs/overlays-dialog--docs) - For modal panels
+- [Item](/docs/content-item--docs) - Used by PanelHeader
 

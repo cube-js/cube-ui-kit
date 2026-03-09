@@ -1,4 +1,4 @@
-import { Meta, Controls } from '@storybook/addon-docs/blocks';
+import { Meta } from '@storybook/addon-docs/blocks';
 import * as DialogTriggerStories from './DialogTrigger.stories';
 
 <Meta of={DialogTriggerStories} />
@@ -20,11 +20,29 @@ DialogTrigger serves as a wrapper around a Dialog and its associated trigger, li
 
 ### Properties
 
-<Controls of={DialogTriggerStories.Default} />
+- **`children`** — The Dialog and its trigger element
+- **`type`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `modal`) — The type of Dialog that should be rendered
+- **`mobileType`** `'modal' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel' | 'popover'` — The type of Dialog that should be rendered when on a mobile device
+- **`placement`** `'top' | 'bottom' | 'left' | 'right' | 'top start' | 'top end' | 'bottom start' | 'bottom end' | 'left top' | 'left bottom' | 'right top' | 'right bottom'` — The placement of the dialog relative to its trigger
+- **`hideArrow`** `boolean` (default: `false`) — Whether a popover type Dialog's arrow should be hidden
+- **`mobileViewport`** `number` (default: `700`) — The screen breakpoint for the mobile type
+- **`isDismissable`** `boolean` (default: `true`) — Whether a modal type Dialog should be dismissable
+- **`isKeyboardDismissDisabled`** `boolean` (default: `false`) — Whether pressing the escape key to close the dialog should be disabled
+- **`isOpen`** `boolean` — Whether the dialog is open (controlled)
+- **`defaultOpen`** `boolean` (default: `false`) — Whether the dialog is open by default (uncontrolled)
+- **`offset`** `number` (default: `8`) — The additional offset applied along the main axis
+- **`crossOffset`** `number` (default: `0`) — The additional offset applied along the cross axis
+- **`containerPadding`** `number` (default: `12`) — The padding between the edge of the overlay and the boundary
+- **`shouldFlip`** `boolean` (default: `true`) — Whether the overlay should flip positions when insufficient space
+- **`onOpenChange`** `function` — Callback fired when the dialog open state changes
+- **`onDismiss`** `function` — Callback fired when the dialog is dismissed
+- **`targetRef`** — The ref of the element the Dialog should visually attach itself to
+- **`styles`** — The style map for the overlay
+- **`shouldCloseOnInteractOutside`** — Function to determine if overlay should close on outside interaction
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 

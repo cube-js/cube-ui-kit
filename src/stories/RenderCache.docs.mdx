@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import * as RenderCacheStories from './RenderCache.stories';
 
 <Meta of={RenderCacheStories} />
@@ -22,7 +22,10 @@ RenderCache is a performance optimization component that caches rendered React e
 
 ### Properties
 
-<Controls of={RenderCacheStories.Default} />
+- **`items`** `T[]` — Array of items to render
+- **`renderKeys`** `Array<string | number>` — Array of keys that should trigger re-render. Only items with keys in this array will be re-rendered
+- **`getKey`** `(item: T) => string | number` — Function that extracts a unique key from each item
+- **`children`** `(item: T) => ReactElement` — Render function that takes an item and returns a React element
 
 ### Property Details
 

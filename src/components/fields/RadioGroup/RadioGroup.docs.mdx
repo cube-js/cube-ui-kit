@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { RadioGroup } from './RadioGroup';
 import * as RadioGroupStories from './RadioGroup.stories';
 
@@ -24,11 +24,24 @@ A radio group allows users to select exactly one option from a set of mutually e
 
 ### Properties
 
-<Controls of={RadioGroupStories.Default} />
+- **`children`** — Radio elements that define the available options
+- **`value`** `string` — The currently selected value (controlled)
+- **`defaultValue`** `string` — The default selected value (uncontrolled)
+- **`type`** `'radio' | 'button' | 'tabs'` (default: `radio`) — Visual type for all radios in the group (button/tabs default to horizontal)
+- **`orientation`** `undefined | 'vertical' | 'horizontal'` (default: `auto`) — Orientation of the radio group (auto-set based on type)
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `xsmall`) — Size for all radio buttons in the group
+- **`buttonType`** `'outline' | 'neutral' | 'primary' | 'clear'` — Button type for button-style radios (ignored in tabs mode). When set to "primary", selected buttons use primary style and non-selected use secondary
+- **`onChange`** `function` — Callback fired when the selected value changes
+- **`onBlur`** `function` — Callback fired when the radio group loses focus
+- **`onFocus`** `function` — Callback fired when the radio group receives focus
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -52,12 +65,10 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| horizontal | `boolean` | Whether the radio group is oriented horizontally |
-| tabs | `boolean` | Whether the radio group uses tabs styling |
-| inside-form | `boolean` | Whether the radio group is inside a form field |
-| side-label | `boolean` | Whether the label is positioned at the side |
+- **`horizontal`** `boolean` — Whether the radio group is oriented horizontally
+- **`tabs`** `boolean` — Whether the radio group uses tabs styling
+- **`inside-form`** `boolean` — Whether the radio group is inside a form field
+- **`side-label`** `boolean` — Whether the label is positioned at the side
 
 ## Variants
 
@@ -289,7 +300,7 @@ When using `type="button"`, you can customize the button appearance:
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form.
 
 ## Suggested Improvements
 

@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import { ItemButton } from './ItemButton';
 import * as ItemButtonStories from './ItemButton.stories';
 
@@ -24,11 +24,24 @@ An interactive button component built on top of `Item` that provides all the lay
 
 ### Properties
 
-<Controls of={ItemButtonStories.Default} />
+- **`type`** `'primary' | 'secondary' | 'outline' | 'neutral' | 'clear'` — Visual type/variant of the button
+- **`theme`** `'default' | 'danger' | 'success' | 'special'` — Color theme of the button
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `medium`) — Size of the button (does not support `'inline'`)
+- **`hotkeys`** `string` — Keyboard shortcut that triggers the button (e.g., `"cmd+s"`, `"ctrl+alt+d"`)
+- **`tooltip`** `boolean | string | object` — Tooltip configuration: string for simple text, `true` for auto overflow tooltips, or object for advanced config with optional `auto` property
+- **`isDisabled`** `boolean` — Whether the button is disabled
+- **`isSelected`** `boolean` — Whether the button shows as selected with checkbox
+- **`to`** `string` — URL for link behavior (makes button act as link)
+- **`htmlType`** `'button' | 'submit' | 'reset'` — HTML button type attribute
+- **`description`** `string` — Secondary text shown below the main content
+- **`isLoading`** `boolean` — Whether the button shows loading state with disabled interaction
+- **`loadingSlot`** `'auto' | 'icon' | 'rightIcon' | 'prefix' | 'suffix'` — Which slot to replace with loading icon (`auto` intelligently selects)
+- **`autoHideActions`** `boolean` — When true, actions are hidden by default and fade in on hover
+- **`onPress`** `(e: PressEvent) => void` — Callback fired when button is pressed
 
 ### Base Properties
 
-Supports [Base properties](/BaseProperties)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Item Properties
 
@@ -53,7 +66,7 @@ ItemButton inherits all properties from [Item](/docs/content-item--docs), includ
 - **Type**: `string`
 - **Description**: URL for link behavior - when provided, the button acts as a link
 
-#### buttonType
+#### htmlType
 - **Type**: `'button' | 'submit' | 'reset'`
 - **Description**: HTML button type attribute for form integration
 - **Default**: `'button'`
@@ -70,10 +83,8 @@ These properties allow direct style application without using the `styles` prop:
 
 Inherits all modifiers from [Item](/docs/content-item--docs) plus:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| disabled | `boolean` | Applied when the button is disabled |
-| pressed | `boolean` | Applied during button press interaction |
+- **`disabled`** `boolean` — Applied when the button is disabled
+- **`pressed`** `boolean` — Applied during button press interaction
 
 ## Variants
 
@@ -100,7 +111,6 @@ Inherits all modifiers from [Item](/docs/content-item--docs) plus:
 - `medium` - Default size for most use cases
 - `large` - Large size for prominent actions
 - `xlarge` - Extra large size for hero actions
-- `inline` - Inline size that adapts to content
 
 ## Examples
 
@@ -148,7 +158,7 @@ Inherits all modifiers from [Item](/docs/content-item--docs) plus:
 
 ```jsx
 <ItemButton 
-  buttonType="submit"
+  htmlType="submit"
   type="primary"
   icon={<IconCheck />}
 >
@@ -229,7 +239,7 @@ Actions automatically inherit the parent button's `type` prop and adjust their s
 
 3. **Do**: Use appropriate button types for forms
    ```jsx
-   <ItemButton buttonType="submit" type="primary">
+   <ItemButton htmlType="submit" type="primary">
      Submit Form
    </ItemButton>
    ```
@@ -291,15 +301,15 @@ Actions automatically inherit the parent button's `type` prop and adjust their s
 
 ## Integration with Forms
 
-ItemButton integrates seamlessly with forms when using the `buttonType` prop:
+ItemButton integrates seamlessly with forms when using the `htmlType` prop:
 
 ```jsx
 <form onSubmit={handleSubmit}>
   <TextInput name="email" label="Email" />
-  <ItemButton buttonType="submit" type="primary">
+  <ItemButton htmlType="submit" type="primary">
     Sign In
   </ItemButton>
-  <ItemButton buttonType="reset" type="outline">
+  <ItemButton htmlType="reset" type="outline">
     Clear Form
   </ItemButton>
 </form>

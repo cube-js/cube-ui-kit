@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { Badge } from 'storybook/internal/components';
 import * as FieldStories from './Field.stories';
 
@@ -22,11 +22,32 @@ The Field component is a **legacy wrapper** for form inputs that provides field-
 
 ### Properties
 
-<Controls of={FieldStories.Default} />
+- **`label`** `string` — Field label text
+- **`description`** `string` — Field description text
+- **`extra`** `string` — Additional information displayed below help text
+- **`tooltip`** `string` — Tooltip content for the field label
+- **`errorMessage`** `string` — Error message
+- **`name`** `string` — Field name for form data
+- **`defaultValue`** `string` — Default field value
+- **`rules`** — Validation rules array
+- **`labelPosition`** `'top' | 'side' | 'split'` (default: `top`) — Position of the field label
+- **`necessityIndicator`** `'icon' | 'label'` — Type of necessity indicator
+- **`necessityLabel`** `string` — Custom necessity label text
+- **`isRequired`** `boolean` (default: `false`) — Whether the field is required
+- **`isDisabled`** `boolean` (default: `false`) — Whether the field is disabled
+- **`isLoading`** `boolean` (default: `false`) — Whether the field is in loading state
+- **`isHidden`** `boolean` (default: `false`) — Whether the field is hidden
+- **`validationState`** `undefined | 'valid' | 'invalid'` — Validation state of the field
+- **`styles`** — Style map for the field wrapper
+- **`labelStyles`** — Style map for the field label
+- **`labelProps`** — Additional props for the label element
+- **`labelSuffix`** — Content to display after the label
+- **`form`** — Form instance
+- **`children`** — Field content (input component or function)
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 
@@ -50,43 +71,35 @@ These properties allow direct style application without using the `styles` prop:
 
 ### Field Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `name` | `string` | Field name for form data |
-| `label` | `ReactNode` | Field label text |
-| `description` | `ReactNode` | Field description text |
-| `extra` | `ReactNode` | Additional information displayed below help text |
-| `tooltip` | `ReactNode` | Tooltip content for the field label |
-| `message` | `ReactNode` | Error or help message |
-| `defaultValue` | `any` | Default field value |
-| `rules` | `ValidationRule[]` | Validation rules array |
+- **`name`** `string` — Field name for form data
+- **`label`** `ReactNode` — Field label text
+- **`description`** `ReactNode` — Field description text
+- **`extra`** `ReactNode` — Additional information displayed below help text
+- **`tooltip`** `ReactNode` — Tooltip content for the field label
+- **`message`** `ReactNode` — Error or help message
+- **`defaultValue`** `any` — Default field value
+- **`rules`** `ValidationRule[]` — Validation rules array
 
 ### Presentation Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `labelPosition` | `'top' \| 'side'` | Position of the field label |
-| `necessityIndicator` | `'icon' \| 'label'` | Type of necessity indicator |
-| `necessityLabel` | `string` | Custom necessity label text |
-| `labelProps` | `object` | Additional props for the label element |
-| `labelSuffix` | `ReactNode` | Content to display after the label |
+- **`labelPosition`** `'top' | 'side'` — Position of the field label
+- **`necessityIndicator`** `'icon' | 'label'` — Type of necessity indicator
+- **`necessityLabel`** `string` — Custom necessity label text
+- **`labelProps`** `object` — Additional props for the label element
+- **`labelSuffix`** `ReactNode` — Content to display after the label
 
 ### State Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `isRequired` | `boolean` | Whether the field is required |
-| `isDisabled` | `boolean` | Whether the field is disabled |
-| `isLoading` | `boolean` | Whether the field is in loading state |
-| `isHidden` | `boolean` | Whether the field is hidden |
-| `validationState` | `'valid' \| 'invalid'` | Validation state of the field |
+- **`isRequired`** `boolean` — Whether the field is required
+- **`isDisabled`** `boolean` — Whether the field is disabled
+- **`isLoading`** `boolean` — Whether the field is in loading state
+- **`isHidden`** `boolean` — Whether the field is hidden
+- **`validationState`** `'valid' | 'invalid'` — Validation state of the field
 
 ### Advanced Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `form` | `CubeFormInstance` | Form instance (automatically provided within Form) |
-| `children` | `ReactElement \| (form) => ReactElement` | Field content or render function |
+- **`form`** `CubeFormInstance` — Form instance (automatically provided within Form)
+- **`children`** `ReactElement | (form) => ReactElement` — Field content or render function
 
 ## Modern Usage (Recommended)
 

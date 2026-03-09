@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import * as BadgeStories from './Badge.stories';
 
 <Meta of={BadgeStories} />
@@ -30,7 +30,12 @@ Badges are small, circular indicators that display numerical counts or short sta
 
 ### Properties
 
-<Controls of={BadgeStories.Default} />
+- **`children`** `ReactNode` — Badge content (typically a number or short text)
+- **`icon`** `ReactNode` — Icon to display before the badge content
+- **`rightIcon`** `ReactNode` — Icon to display after the badge content
+- **`theme`** `'special' | 'danger' | 'success' | 'warning' | 'note' | 'disabled'` (default: `special`) — Visual theme of the badge
+- **`type`** `string` — Deprecated: Use theme instead
+- **`size`** `string` (default: `inline`) — Size of the badge
 
 ### Base Properties
 

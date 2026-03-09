@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { Picker } from './Picker';
 import * as PickerStories from './Picker.stories';
 
@@ -24,11 +24,51 @@ A versatile selection component that combines a trigger button with a dropdown l
 
 ### Properties
 
-<Controls of={PickerStories.SingleSelection} />
+- **`placeholder`** `string` — Placeholder text when no selection is made
+- **`description`** `string` — Description text displayed below the label
+- **`message`** `string` — Help or error message
+- **`selectionMode`** `'single' | 'multiple'` (default: `single`) — Selection mode for the picker
+- **`selectedKey`** `string` — The selected key in controlled single mode
+- **`defaultSelectedKey`** `string` — The default selected key in uncontrolled single mode
+- **`selectedKeys`** `string[] | 'all'` — The selected keys in controlled multiple mode
+- **`defaultSelectedKeys`** `string[] | 'all'` — The default selected keys in uncontrolled multiple mode
+- **`items`** `Iterable<T>` — Array of items for dynamic content with render function pattern
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the picker component
+- **`type`** `'outline' | 'clear' | 'primary' | 'secondary' | 'neutral'` (default: `outline`) — Trigger button styling type
+- **`theme`** `'default' | 'danger'` (default: `default`) — Trigger button color theme
+- **`icon`** `ReactNode` — Icon displayed in the trigger button
+- **`rightIcon`** `ReactNode` — Icon displayed on the right side of the trigger button
+- **`prefix`** `ReactNode` — Content before the trigger button text
+- **`suffix`** `ReactNode` — Content after the trigger button text
+- **`hotkeys`** `string` — Keyboard shortcut that triggers the picker when pressed
+- **`shape`** `'rectangle' | 'round'` — Shape of the trigger button
+- **`isCheckable`** `boolean` (default: `false`) — Whether to show checkboxes for multiple selection mode
+- **`showSelectAll`** `boolean` (default: `false`) — Whether to show "Select All" option in multiple selection mode
+- **`selectAllLabel`** `ReactNode` (default: `Select All`) — Label for the "Select All" option
+- **`disallowEmptySelection`** `boolean` (default: `false`) — Whether to disallow empty selection
+- **`disabledKeys`** `Key[]` — Array of keys for disabled items
+- **`isClearable`** `boolean` (default: `false`) — Whether the picker shows a clear button when a selection is made
+- **`onClear`** `() => void` — Callback called when the clear button is pressed
+- **`sortSelectedToTop`** `boolean` — Sort selected items to the top when the popover opens (only works with `items` prop)
+- **`renderSummary`** `((args: { selectedLabels, selectedKeys, selectionMode }) => ReactNode) | false` — Custom renderer for the summary shown inside the trigger
+- **`header`** `ReactNode` — Custom header content in the popover
+- **`footer`** `ReactNode` — Custom footer content in the popover
+- **`listBoxStyles`** `Styles` — Custom styles for the ListBox within the popover
+- **`popoverStyles`** `Styles` — Custom styles for the popover container
+- **`triggerStyles`** `Styles` — Custom styles for the trigger button
+- **`triggerTooltip`** `string | TooltipProps` — Tooltip for the trigger button (separate from field tooltip)
+- **`triggerDescription`** `string` — Description for the trigger button (separate from field description)
+- **`shouldFlip`** `boolean` — Whether to flip the popover placement when it overflows
+- **`containerPadding`** `number` — Minimum padding between the popover and viewport edges
+- **`onSelectionChange`** `(keys: Key | Key[] | 'all' | null) => void` — Callback when selection changes
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -86,10 +126,8 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| `placeholder` | `boolean` | Applied when no selection is made |
-| `selected` | `boolean` | Applied when items are selected |
+- **`placeholder`** `boolean` — Applied when no selection is made
+- **`selected`** `boolean` — Applied when items are selected
 
 ## Sub-components
 
@@ -101,21 +139,19 @@ Represents individual selectable items within the Picker dropdown. Each item is 
 
 See [Item documentation](/docs/content-item--docs) for the complete API. Common properties include:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `key` | `string \| number` | Unique identifier for the item (required) |
-| `children` | `ReactNode` | The main content/label for the item |
-| `textValue` | `string` | Accessible text for screen readers (required for complex content) |
-| `icon` | `ReactNode` | Icon displayed before the content |
-| `rightIcon` | `ReactNode` | Icon displayed after the content |
-| `description` | `ReactNode` | Secondary text below the main content |
-| `descriptionPlacement` | `'inline' \| 'block'` | How the description is positioned relative to content |
-| `prefix` | `ReactNode` | Content before the main text |
-| `suffix` | `ReactNode` | Content after the main text |
-| `isDisabled` | `boolean` | Whether the item is disabled |
-| `tooltip` | `string \| boolean \| TooltipProps` | Tooltip configuration |
-| `styles` | `Styles` | Custom styling for the item |
-| `qa` | `string` | QA identifier for testing |
+- **`key`** `string \| number` — Unique identifier for the item (required)
+- **`children`** `ReactNode` — The main content/label for the item
+- **`textValue`** `string` — Accessible text for screen readers (required for complex content)
+- **`icon`** `ReactNode` — Icon displayed before the content
+- **`rightIcon`** `ReactNode` — Icon displayed after the content
+- **`description`** `ReactNode` — Secondary text below the main content
+- **`descriptionPlacement`** `'inline' \| 'block'` — How the description is positioned relative to content
+- **`prefix`** `ReactNode` — Content before the main text
+- **`suffix`** `ReactNode` — Content after the main text
+- **`isDisabled`** `boolean` — Whether the item is disabled
+- **`tooltip`** `string \| boolean \| TooltipProps` — Tooltip configuration
+- **`styles`** `Styles` — Custom styling for the item
+- **`qa`** `string` — QA identifier for testing
 
 #### Examples with Rich Items
 
@@ -165,10 +201,8 @@ Groups related items together under an optional section heading. Sections provid
 
 #### Properties
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `title` | `ReactNode` | - | Section heading text (optional) |
-| `children` | `Picker.Item[]` | - | Collection of Picker.Item components (required) |
+- **`title`** `ReactNode` — Section heading text (optional)
+- **`children`** `Picker.Item[]` — Collection of Picker.Item components (required)
 
 #### Example
 
@@ -236,39 +270,31 @@ For large datasets or dynamic content, use the `items` prop with a render functi
 
 ### Selection Modes
 
-| Mode | Description | Use Case |
-|------|-------------|----------|
-| `single` | Select only one item at a time | Category selection, single choice questions |
-| `multiple` | Select multiple items with checkboxes | Tags, filters, permissions |
+- **`single`** — Select only one item at a time. Use case: Category selection, single choice questions
+- **`multiple`** — Select multiple items with checkboxes. Use case: Tags, filters, permissions
 
 ### Trigger Button Types
 
 The trigger button supports various visual styles via the `type` prop:
 
-| Type | Description | Use Case |
-|------|-------------|----------|
-| `outline` | Outlined button with border (default) | Standard form inputs |
-| `clear` | Transparent background | Toolbar actions, compact interfaces |
-| `primary` | Primary brand color | Emphasized selections |
-| `secondary` | Secondary color variant | Alternative emphasis |
-| `neutral` | Neutral color scheme | Subtle selections |
+- **`outline`** (default) — Outlined button with border. Use case: Standard form inputs
+- **`clear`** — Transparent background. Use case: Toolbar actions, compact interfaces
+- **`primary`** — Primary brand color. Use case: Emphasized selections
+- **`secondary`** — Secondary color variant. Use case: Alternative emphasis
+- **`neutral`** — Neutral color scheme. Use case: Subtle selections
 
 ### Trigger Button Themes
 
 Control the color scheme with the `theme` prop:
 
-| Theme | Description |
-|-------|-------------|
-| `default` | Standard theme (default) |
-| `danger` | Red/destructive color (also applied automatically when `validationState="invalid"`) |
+- **`default`** — Standard theme (default)
+- **`danger`** — Red/destructive color (also applied automatically when `validationState="invalid"`)
 
 ### Sizes
 
-| Size | Height | Use Case |
-|------|--------|----------|
-| `small` | ~28px | Dense interfaces, compact layouts |
-| `medium` | ~32px | Standard forms (default) |
-| `large` | ~40px | Emphasized selections, accessibility |
+- **`small`** — ~28px. Use case: Dense interfaces, compact layouts
+- **`medium`** — ~32px (default). Use case: Standard forms
+- **`large`** — ~40px. Use case: Emphasized selections, accessibility
 
 ## Examples
 
@@ -497,13 +523,11 @@ The Picker component is built with React Aria hooks and provides comprehensive a
 
 ### Keyboard Navigation
 
-| Key | Action |
-|-----|--------|
-| `Tab` | Moves focus to/from the trigger button |
-| `Space` or `Enter` | Opens the dropdown popover when focused on trigger |
-| `Arrow Up` or `Arrow Down` | Opens the popover when closed; navigates through items when open |
-| `Escape` | Closes the popover and returns focus to trigger |
-| `Space` or `Enter` | Selects the focused item (single mode closes popover automatically) |
+- **`Tab`** — Moves focus to/from the trigger button
+- **`Space`** or **`Enter`** — Opens the dropdown popover when focused on trigger
+- **`Arrow Up`** or **`Arrow Down`** — Opens the popover when closed; navigates through items when open
+- **`Escape`** — Closes the popover and returns focus to trigger
+- **`Space`** or **`Enter`** — Selects the focused item (single mode closes popover automatically)
 
 **In the popover:**
 - Arrow keys navigate through items
@@ -526,16 +550,14 @@ The Picker component is built with React Aria hooks and provides comprehensive a
 
 The component automatically manages ARIA attributes:
 
-| Attribute | Usage |
-|-----------|-------|
-| `aria-label` | Labels the trigger when no visible label exists |
-| `aria-labelledby` | Associates the label with the trigger |
-| `aria-expanded` | Indicates whether the popover is open (true/false) |
-| `aria-haspopup` | Indicates the button controls a listbox (listbox) |
-| `aria-describedby` | Associates help text and error messages |
-| `aria-invalid` | Indicates validation state (true when invalid) |
-| `aria-required` | Indicates required fields (true when required) |
-| `aria-disabled` | Indicates disabled state |
+- **`aria-label`** — Labels the trigger when no visible label exists
+- **`aria-labelledby`** — Associates the label with the trigger
+- **`aria-expanded`** — Indicates whether the popover is open (true/false)
+- **`aria-haspopup`** — Indicates the button controls a listbox (listbox)
+- **`aria-describedby`** — Associates help text and error messages
+- **`aria-invalid`** — Indicates validation state (true when invalid)
+- **`aria-required`** — Indicates required fields (true when required)
+- **`aria-disabled`** — Indicates disabled state
 
 ### Best Practices for Accessibility
 
@@ -661,7 +683,7 @@ The component automatically manages ARIA attributes:
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form context. The Picker automatically handles form validation, touched states, error messages, and integrates seamlessly with form submission.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form context. The Picker automatically handles form validation, touched states, error messages, and integrates seamlessly with form submission.
 
 ### Basic Form Integration
 
@@ -721,15 +743,13 @@ function MyForm() {
 
 ### Key Form Properties
 
-| Property | Description |
-|----------|-------------|
-| `name` | Field name in form data (required for form integration) |
-| `rules` | Validation rules array |
-| `defaultValue` | Initial value (use with uncontrolled forms) |
-| `value` | Controlled value (use with controlled forms) |
-| `isRequired` | Marks field as required and adds visual indicator |
-| `validationState` | Manual validation state control |
-| `message` | Error or help message |
+- **`name`** — Field name in form data (required for form integration)
+- **`rules`** — Validation rules array
+- **`defaultValue`** — Initial value (use with uncontrolled forms)
+- **`value`** — Controlled value (use with controlled forms)
+- **`isRequired`** — Marks field as required and adds visual indicator
+- **`validationState`** — Manual validation state control
+- **`message`** — Error or help message
 
 ## Advanced Features
 

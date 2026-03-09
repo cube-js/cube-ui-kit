@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { Switch } from './Switch';
 import * as SwitchStories from './Switch.stories.tsx';
 
@@ -24,11 +24,21 @@ A switch allows users to toggle between two states: on and off. It provides imme
 
 ### Properties
 
-<Controls of={SwitchStories.Default} />
+- **`children`** `string` — The content to display as the switch label
+- **`isSelected`** `boolean` (default: `false`) — Whether the switch is selected (controlled)
+- **`defaultSelected`** `boolean` (default: `false`) — Whether the switch is selected by default (uncontrolled)
+- **`size`** `'small' | 'medium' | 'large'` (default: `large`) — Switch size
+- **`onChange`** — Callback fired when the switch value changes
+- **`onFocus`** — Callback fired when the switch receives focus
+- **`onBlur`** — Callback fired when the switch loses focus
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -57,16 +67,14 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| checked | `boolean` | Whether the switch is in the "on" state |
-| disabled | `boolean` | Whether the switch is disabled |
-| invalid | `boolean` | Whether the switch has validation errors |
-| valid | `boolean` | Whether the switch is valid |
-| focused | `boolean` | Whether the switch has focus |
-| hovered | `boolean` | Whether the switch is being hovered |
-| side-label | `boolean` | Whether the label is positioned to the side |
-| inside-form | `boolean` | Whether the switch is inside a form field |
+- **`checked`** `boolean` — Whether the switch is in the "on" state
+- **`disabled`** `boolean` — Whether the switch is disabled
+- **`invalid`** `boolean` — Whether the switch has validation errors
+- **`valid`** `boolean` — Whether the switch is valid
+- **`focused`** `boolean` — Whether the switch has focus
+- **`hovered`** `boolean` — Whether the switch is being hovered
+- **`side-label`** `boolean` — Whether the label is positioned to the side
+- **`inside-form`** `boolean` — Whether the switch is inside a form field
 
 ## Variants
 
@@ -164,7 +172,7 @@ const [isEnabled, setIsEnabled] = useState(false);
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form.
 
 ## Suggested Improvements
 

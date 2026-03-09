@@ -1,4 +1,4 @@
-import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import * as SelectStories from './Select.stories';
 
 <Meta of={SelectStories} />
@@ -23,7 +23,46 @@ A select allows users to choose a single option from a list of predefined choice
 
 ### Properties
 
-<Controls of={SelectStories.Default} />
+- **`selectedKey`** `string` — The selected value in controlled mode
+- **`defaultSelectedKey`** `string` — The default selected value in uncontrolled mode
+- **`placeholder`** `string` — Placeholder text when no option is selected
+- **`icon`** `ReactElement` — Icon element rendered before the select value
+- **`rightIcon`** `ReactNode` — Icon element rendered after the select value (caret by default)
+- **`prefix`** `ReactNode` — Content rendered before the select value
+- **`suffix`** `ReactNode` — Content rendered after the select value
+- **`shape`** `'card' | 'button' | 'sharp' | 'pill'` (default: `button`) — Shape of the trigger border radius
+- **`suffixPosition`** `string` (default: `before`) — Position of suffix relative to validation icons
+- **`type`** `string` (default: `outline`) — Visual style variant of the select
+- **`theme`** `string` (default: `default`) — Theme variant affecting overall styling
+- **`size`** `string` (default: `medium`) — Size of the select component
+- **`direction`** `string` (default: `bottom`) — Preferred direction for the dropdown menu
+- **`isClearable`** `boolean` (default: `false`) — Whether the select is clearable using a clear button in the rightIcon slot
+- **`shouldFlip`** `boolean` (default: `true`) — Whether dropdown should flip to fit in viewport
+- **`overlayOffset`** `number` (default: `8`) — Distance between select and dropdown in pixels
+- **`items`** `Iterable<T>` — Item objects used when rendering dynamic collections
+- **`disabledKeys`** `Iterable<Key>` — Keys of items that are disabled
+- **`children`** `ReactNode | (item: T) => ReactElement` — Static child items or render function for dynamic items
+- **`triggerRef`** `RefObject<HTMLButtonElement>` — Ref for the trigger button element
+- **`popoverRef`** `RefObject<HTMLInputElement>` — Ref for the popover overlay element
+- **`listBoxRef`** `RefObject<HTMLElement>` — Ref for the list box element
+- **`loadingIndicator`** `ReactNode` — Custom loading indicator element
+- **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the trigger button
+- **`styles`** `Styles` — Styles for the root wrapper element
+- **`inputStyles`** `Styles` — Styles for the input trigger element
+- **`listBoxStyles`** `Styles` — Styles for the dropdown list container
+- **`optionStyles`** `Styles` — Styles for individual option items
+- **`overlayStyles`** `Styles` — Styles for the dropdown overlay wrapper
+- **`wrapperStyles`** `Styles` — Styles for the outer wrapper element
+- **`triggerStyles`** `Styles` — Styles for the trigger button element
+- **`inputProps`** `Props` — Additional props for the input element
+- **`onSelectionChange`** `(key: Key) => void` — Callback fired when the selected option changes
+- **`onOpenChange`** `(isOpen: boolean) => void` — Callback fired when the dropdown opens or closes
+- **`onFocus`** `(e: FocusEvent) => void` — Callback fired when the select receives focus
+- **`onBlur`** `(e: FocusEvent) => void` — Callback fired when the select loses focus
+- **`onFocusChange`** `(isFocused: boolean) => void` — Callback fired when focus state changes
+- **`aria-label`** `string` — Accessible label when no visible label exists
+- **`aria-labelledby`** `string` — ID of element that labels the select
+- **`aria-describedby`** `string` — ID of element that describes the select
 
 #### Notable Properties
 
@@ -38,7 +77,7 @@ A select allows users to choose a single option from a list of predefined choice
 
 **triggerDescription** - Text description displayed within the trigger button. Different from field-level description provided by FieldWrapper.
 
-**descriptionPlacement** - Controls how description is positioned: `inline`, `block`, or `auto`.
+**descriptionPlacement** - Controls how description is positioned: `inline` or `block`.
 
 **overlayOffset** - Distance between the select trigger and dropdown in pixels (default: 8).
 
@@ -50,7 +89,11 @@ A select allows users to choose a single option from a list of predefined choice
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -99,18 +142,15 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| opened | `boolean` | Whether the dropdown is open |
-| focused | `boolean` | Whether the select has focus |
-| disabled | `boolean` | Whether the select is disabled |
-| invalid | `boolean` | Whether the select has validation errors |
-| valid | `boolean` | Whether the select is valid |
-| placeholder | `boolean` | Whether showing placeholder text |
-| hovered | `boolean` | Whether the select is being hovered |
-| loading | `boolean` | Whether the select is in loading state |
-| prefix | `boolean` | Whether prefix content is present |
-| suffix | `boolean` | Whether suffix content is present |
+- `focused` `boolean` — Whether the select has focus
+- `disabled` `boolean` — Whether the select is disabled
+- `invalid` `boolean` — Whether the select has validation errors
+- `valid` `boolean` — Whether the select is valid
+- `placeholder` `boolean` — Whether showing placeholder text
+- `hovered` `boolean` — Whether the select is being hovered
+- `loading` `boolean` — Whether the select is in loading state
+- `prefix` `boolean` — Whether prefix content is present
+- `suffix` `boolean` — Whether suffix content is present
 
 ## Sub-components
 
@@ -122,19 +162,17 @@ Individual option items within the select dropdown. Each item is rendered using 
 
 For detailed information about all available item properties, see [Item documentation](/docs/content-item--docs). Key properties include:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| key | `string \| number` | Unique identifier for the item (required) |
-| children | `ReactNode` | The main content/label for the option |
-| icon | `ReactNode` | Icon displayed before the content |
-| rightIcon | `ReactNode` | Icon displayed after the content |
-| description | `ReactNode` | Secondary text below the main content |
-| descriptionPlacement | `'inline' \| 'block'` | How the description is positioned |
-| prefix | `ReactNode` | Content before the main text |
-| suffix | `ReactNode` | Content after the main text |
-| tooltip | `string \| boolean \| object` | Tooltip configuration |
-| styles | `Styles` | Custom styling for the item |
-| qa | `string` | QA identifier for testing |
+- **`key`** `string \| number` — Unique identifier for the item (required)
+- **`children`** `ReactNode` — The main content/label for the option
+- **`icon`** `ReactNode` — Icon displayed before the content
+- **`rightIcon`** `ReactNode` — Icon displayed after the content
+- **`description`** `ReactNode` — Secondary text below the main content
+- **`descriptionPlacement`** `'inline' \| 'block'` — How the description is positioned
+- **`prefix`** `ReactNode` — Content before the main text
+- **`suffix`** `ReactNode` — Content after the main text
+- **`tooltip`** `string \| boolean \| object` — Tooltip configuration
+- **`styles`** `Styles` — Custom styling for the item
+- **`qa`** `string` — QA identifier for testing
 
 #### Example with Rich Items
 
@@ -162,10 +200,8 @@ For detailed information about all available item properties, see [Item document
 
 Groups related options together with an optional heading.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| title | `ReactNode` | - | Optional heading text for the section |
-| children | `Select.Item[]` | - | Collection of Select.Item components |
+- **`title`** `ReactNode` — Optional heading text for the section
+- **`children`** `Select.Item[]` — Collection of Select.Item components
 
 ## Variants
 
@@ -540,7 +576,7 @@ const groups = [
 
 ## Integration with Forms
 
-This component supports all Field properties when used within a Form. It integrates seamlessly with the form validation system and supports both controlled and uncontrolled modes.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form. It integrates seamlessly with the form validation system and supports both controlled and uncontrolled modes.
 
 ```jsx
 <Form>

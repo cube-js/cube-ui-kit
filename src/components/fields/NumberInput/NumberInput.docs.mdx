@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { NumberInput } from './NumberInput';
 import * as NumberInputStories from './NumberInput.stories';
 
@@ -26,11 +26,27 @@ A number input component that allows users to enter numeric values and increment
 
 ### Properties
 
-<Controls />
+- **`value`** `number` — The numeric value in controlled mode
+- **`defaultValue`** `number` — The default numeric value in uncontrolled mode
+- **`placeholder`** `string` — Placeholder text when input is empty
+- **`prefix`** — Input decoration before the main input
+- **`suffix`** — Input decoration after the main input
+- **`hideStepper`** `boolean` (default: `false`) — Whether to hide the stepper buttons
+- **`minValue`** `number` — Minimum allowed value
+- **`maxValue`** `number` — Maximum allowed value
+- **`step`** `number` — Amount to increment or decrement the value
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
+- **`onChange`** `function` — Callback fired when the input value changes
+- **`onBlur`** `function` — Callback fired when the input loses focus
+- **`onFocus`** `function` — Callback fired when the input receives focus
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -64,15 +80,13 @@ The NumberInput component supports all standard style properties:
 
 The `mods` prop accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| focused | `boolean` | Forces focus ring appearance. |
-| disabled | `boolean` | Forces disabled appearance. |
-| invalid | `boolean` | Forces invalid state styling. |
-| valid | `boolean` | Forces valid state styling. |
-| loading | `boolean` | Displays loading spinner. |
-| prefix | `boolean` | Indicates presence of prefix content. |
-| suffix | `boolean` | Indicates presence of suffix content. |
+- **`focused`** `boolean` — Forces focus ring appearance.
+- **`disabled`** `boolean` — Forces disabled appearance.
+- **`invalid`** `boolean` — Forces invalid state styling.
+- **`valid`** `boolean` — Forces valid state styling.
+- **`loading`** `boolean` — Displays loading spinner.
+- **`prefix`** `boolean` — Indicates presence of prefix content.
+- **`suffix`** `boolean` — Indicates presence of suffix content.
 
 ## Variants
 
@@ -161,7 +175,7 @@ The `mods` prop accepts the following modifiers you can override:
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form.
 
 ## Suggested Improvements
 

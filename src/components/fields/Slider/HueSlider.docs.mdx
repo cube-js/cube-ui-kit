@@ -1,4 +1,4 @@
-import { Meta, Canvas, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
 import { Badge } from 'storybook/internal/components';
 import * as HueSliderStories from './HueSlider.stories';
 
@@ -24,11 +24,23 @@ The HueSlider component allows users to select a hue value (0-359 degrees) from 
 
 ### Properties
 
-<Controls of={HueSliderStories.Default} />
+- **`value`** `number` — The hue value in controlled mode (0-359)
+- **`defaultValue`** `number` (default: `0`) — The default hue value in uncontrolled mode (0-359)
+- **`orientation`** `'horizontal' | 'vertical'` (default: `horizontal`) — The orientation of the slider
+- **`showValueLabel`** `boolean` (default: `true`) — Whether to show the current value label
+- **`getValueLabel`** — Function to format the value label
+- **`onChange`** `function` — Callback fired when the hue value changes
+- **`onChangeEnd`** `function` — Callback fired when the slider interaction ends
+- **`labelPosition`** `'top' | 'side'` (default: `top`) — The position of the label relative to the input
+- **`styles`** `object` — Custom styles object for styling the component and sub-elements
 
 ### Base Properties
 
-Supports [Base properties](/docs/base-properties)
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -58,10 +70,8 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| horizontal | `boolean` | Whether the slider is horizontal (default) or vertical |
-| disabled | `boolean` | Whether the slider is disabled |
+- **`horizontal`** `boolean` — Whether the slider is horizontal (default) or vertical
+- **`disabled`** `boolean` — Whether the slider is disabled
 
 ## Examples
 
@@ -175,7 +185,7 @@ function ColorPicker() {
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/field-properties) when used within a Form.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form.
 
 ## Related Components
 

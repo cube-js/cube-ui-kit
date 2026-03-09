@@ -235,60 +235,48 @@ const [form] = Form.useForm(undefined, undefined, {
 
 ### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `isSubmitting` | `boolean` | Whether the form is currently being submitted |
-| `submitError` | `unknown` | Error from the last submission attempt |
-| `isTouched` | `boolean` | Whether any field has been interacted with |
-| `isDirty` | `boolean` | Whether any field value differs from initial values |
-| `isValid` | `boolean` | Whether all fields are validated and valid |
-| `isInvalid` | `boolean` | Whether any field is validated and invalid |
+- **`isSubmitting`** `boolean` — Whether the form is currently being submitted
+- **`submitError`** `unknown` — Error from the last submission attempt
+- **`isTouched`** `boolean` — Whether any field has been interacted with
+- **`isDirty`** `boolean` — Whether any field value differs from initial values
+- **`isValid`** `boolean` — Whether all fields are validated and valid
+- **`isInvalid`** `boolean` — Whether any field is validated and invalid
 
 ### Methods
 
 #### Field Value Management
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `getFieldValue` | `<Name>(name: Name) => T[Name]` | Get the value of a specific field |
-| `setFieldValue` | `<Name>(name: Name, value: T[Name], isTouched?, skipRender?) => void` | Set the value of a specific field |
-| `getFieldsValue` | `() => PartialString<T>` | Get all field values as a flat object |
-| `setFieldsValue` | `(newData: PartialString<T>, touched?, skipRender?) => void` | Set multiple field values |
-| `getFormData` | `() => T` | Get form data with dot notation converted to nested objects |
+- **`getFieldValue`** `<Name>(name: Name) => T[Name]` — Get the value of a specific field
+- **`setFieldValue`** `<Name>(name: Name, value: T[Name], isTouched?, skipRender?) => void` — Set the value of a specific field
+- **`getFieldsValue`** `() => PartialString<T>` — Get all field values as a flat object
+- **`setFieldsValue`** `(newData: PartialString<T>, touched?, skipRender?) => void` — Set multiple field values
+- **`getFormData`** `() => T` — Get form data with dot notation converted to nested objects
 
 #### Initial Values
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `setInitialFieldsValue` | `(values: PartialString<T>) => void` | Set initial values for fields |
-| `updateInitialFieldsValue` | `(values: FieldTypes) => void` | Update initial values (merge with existing) |
-| `resetFields` | `(names?: string[], skipRender?) => void` | Reset fields to initial values |
+- **`setInitialFieldsValue`** `(values: PartialString<T>) => void` — Set initial values for fields
+- **`updateInitialFieldsValue`** `(values: FieldTypes) => void` — Update initial values (merge with existing)
+- **`resetFields`** `(names?: string[], skipRender?) => void` — Reset fields to initial values
 
 #### Validation
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `validateField` | `<Name>(name: Name) => Promise<any>` | Validate a single field |
-| `validateFields` | `<Names>(names?: Names) => Promise<any>` | Validate multiple or all fields |
-| `isFieldValid` | `<Name>(name: Name) => boolean` | Check if a field is valid |
-| `isFieldInvalid` | `<Name>(name: Name) => boolean` | Check if a field is invalid |
-| `getFieldError` | `<Name>(name: Name) => ReactNode[]` | Get validation errors for a field |
-| `setFieldError` | `(name: string, error: ReactNode, skipRender?) => void` | Set a custom error for a field |
-| `resetFieldsValidation` | `(names?: string[], skipRender?) => void` | Clear validation errors |
+- **`validateField`** `<Name>(name: Name) => Promise<any>` — Validate a single field
+- **`validateFields`** `<Names>(names?: Names) => Promise<any>` — Validate multiple or all fields
+- **`isFieldValid`** `<Name>(name: Name) => boolean` — Check if a field is valid
+- **`isFieldInvalid`** `<Name>(name: Name) => boolean` — Check if a field is invalid
+- **`getFieldError`** `<Name>(name: Name) => ReactNode[]` — Get validation errors for a field
+- **`setFieldError`** `(name: string, error: ReactNode, skipRender?) => void` — Set a custom error for a field
+- **`resetFieldsValidation`** `(names?: string[], skipRender?) => void` — Clear validation errors
 
 #### State Checking
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `isFieldTouched` | `<Name>(name: Name) => boolean` | Check if a field has been interacted with |
-| `getFieldInstance` | `<Name>(name: Name) => TFormData[Name]` | Get the internal field instance |
+- **`isFieldTouched`** `<Name>(name: Name) => boolean` — Check if a field has been interacted with
+- **`getFieldInstance`** `<Name>(name: Name) => TFormData[Name]` — Get the internal field instance
 
 #### Submission
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `submit` | `() => Promise<void>` | Submit the form |
-| `setSubmitting` | `(isSubmitting: boolean) => void` | Set the submission state |
+- **`submit`** `() => Promise<void>` — Submit the form
+- **`setSubmitting`** `(isSubmitting: boolean) => void` — Set the submission state
 
 ## Type Definitions
 

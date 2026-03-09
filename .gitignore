@@ -15,6 +15,7 @@ stats.html
 yarn-error.log
 coverage
 size-limit-report/stats.json
-docs-static
 *.plan.md
 *.spec.md
+.docs-generated
+.docs-gitignore.bak

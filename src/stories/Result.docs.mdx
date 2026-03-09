@@ -1,5 +1,5 @@
 import { Meta } from '@storybook/addon-docs/blocks';
-import { Story, Canvas, Controls } from '@storybook/addon-docs/blocks';
+import { Story, Canvas } from '@storybook/addon-docs/blocks';
 import * as ResultStories from './Result.stories.tsx';
 
 import { baseProps } from './lists/baseProps';
@@ -63,9 +63,14 @@ Use when important operations need to inform the user to process the results and
   <Story of={ResultStories.Compact} />
 </Canvas>
 
-## API
+## Properties
 
-<Controls />
+- **`status`** `'success' | 'error' | 'info' | 'warning' | 404 | 403 | 500` (default: `'info'`) — Result status, determines the icon and color from ready-made templates
+- **`title`** `ReactNode` — The title of the result
+- **`subtitle`** `ReactNode` — Subtitle of the result component
+- **`icon`** `ReactNode` — Custom icon element. Don't use together with `status`
+- **`isCompact`** `boolean` — Whether the result component has a compact presentation
+- **`children`** `ReactNode` — Additional block content, e.g. a set of action buttons
 
 ## Differences from Ant Design
 

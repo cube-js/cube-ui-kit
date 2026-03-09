@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import { Tab, Tabs } from './Tabs';
 import * as TabsStories from './Tabs.stories';
 
@@ -24,11 +24,41 @@ An accessible tabbed interface for organizing content into multiple panels, show
 
 ### Properties
 
-<Controls of={TabsStories.Default} />
+- **`activeKey`** `Key` — Controlled active tab key
+- **`defaultActiveKey`** `Key` — Initial active tab key for uncontrolled mode
+- **`type`** `'default' | 'narrow' | 'file' | 'radio'` (default: `'default'`) — Visual style variant
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large'` (default: `'small'`) — Tab size
+- **`prerender`** `boolean` (default: `false`) — If true, all tab panels are rendered but hidden
+- **`keepMounted`** `boolean` (default: `false`) — If true, visited tab panels stay in DOM
+- **`label`** `string` (default: `'Tabs'`) — Accessible label for the tab list
+- **`prefix`** `ReactNode` — Content rendered before the tab list
+- **`suffix`** `ReactNode` — Content rendered after the tab list
+- **`onChange`** `(key: Key) => void` — Callback when active tab changes
+- **`onDelete`** `(key: Key) => void` — Callback when tab delete button is clicked. Presence enables delete buttons
+- **`isEditable`** `boolean` (default: `false`) — Whether tab titles can be inline-edited
+- **`onTitleChange`** `(key: Key, newTitle: string) => void` — Callback when a tab title is edited
+- **`autoHideActions`** `boolean` — Show tab actions only on hover
+- **`menu`** `ReactNode` — Menu items for all tabs (use `Menu.Item` children)
+- **`menuTriggerProps`** `Partial<CubeItemActionProps>` — Props for the menu trigger button
+- **`menuProps`** `Partial<CubeMenuProps>` — Props for the Menu component
+- **`contextMenu`** `boolean` (default: `false`) — Enable right-click context menu on tabs
+- **`onAction`** `(action: string, tabKey: string) => void` — Callback when a menu action is triggered
+- **`renderPanel`** `(key: string) => ReactNode` — Render function for lazy panel content
+- **`panelCacheKeys`** `Record<string, any>` — Cache keys for `renderPanel` content
+- **`isReorderable`** `boolean` (default: `false`) — Enable drag-and-drop tab reordering
+- **`keyOrder`** `string[]` — Controlled tab display order
+- **`onReorder`** `(newOrder: string[]) => void` — Callback when tabs are reordered
+- **`showTabPicker`** `boolean | 'auto'` (default: `false`) — Show dropdown tab picker
+- **`showScrollArrows`** `boolean | 'auto'` (default: `false`) — Show scroll navigation arrows
+- **`tabPickerPosition`** `'prefix' | 'suffix'` (default: `suffix`) — Position of the tab picker
+- **`scrollArrowsPosition`** `'prefix' | 'suffix'` (default: `suffix`) — Position of the scroll arrows
+- **`tabListStyles`** `Styles` — Custom styles for the tab list container
+- **`prefixStyles`** `Styles` — Custom styles for the prefix slot
+- **`suffixStyles`** `Styles` — Custom styles for the suffix slot
 
 ### Base Properties
 
-Supports [Base properties](/BaseProperties)
+Supports [Base properties](/docs/base-properties--docs)
 
 ### Styling Properties
 
@@ -53,29 +83,25 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| `type` | `'default' \| 'narrow' \| 'file' \| 'radio'` | Current tab type |
-| `deletable` | `boolean` | True when onDelete callback is provided |
-| `scrolling` | `boolean` | True when tabs are being scrolled |
-| `fade-left` | `boolean` | True when content is scrolled (left fade visible) |
-| `fade-right` | `boolean` | True when more content exists to the right |
-| `has-panels` | `boolean` | True when tabs have panel content |
+- **`type`** `'default' \| 'narrow' \| 'file' \| 'radio'` — Current tab type
+- **`deletable`** `boolean` — True when onDelete callback is provided
+- **`scrolling`** `boolean` — True when tabs are being scrolled
+- **`fade-left`** `boolean` — True when content is scrolled (left fade visible)
+- **`fade-right`** `boolean` — True when more content exists to the right
+- **`has-panels`** `boolean` — True when tabs have panel content
 
 For individual tabs:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| `type` | `'default' \| 'narrow' \| 'file' \| 'radio'` | Current tab type |
-| `active` | `boolean` | True when the tab is selected |
-| `deletable` | `boolean` | True when delete button is visible |
-| `disabled` | `boolean` | True when tab is disabled |
-| `editing` | `boolean` | True when tab title is being edited |
-| `hovered` | `boolean` | True when tab is hovered |
-| `focused` | `boolean` | True when tab has focus |
-| `focus-visible` | `boolean` | True when tab has keyboard focus |
-| `draggable` | `boolean` | True when tab can be dragged (reorderable) |
-| `dragging` | `boolean` | True when tab is being dragged |
+- **`type`** `'default' \| 'narrow' \| 'file' \| 'radio'` — Current tab type
+- **`active`** `boolean` — True when the tab is selected
+- **`deletable`** `boolean` — True when delete button is visible
+- **`disabled`** `boolean` — True when tab is disabled
+- **`editing`** `boolean` — True when tab title is being edited
+- **`hovered`** `boolean` — True when tab is hovered
+- **`focused`** `boolean` — True when tab has focus
+- **`focus-visible`** `boolean` — True when tab has keyboard focus
+- **`draggable`** `boolean` — True when tab can be dragged (reorderable)
+- **`dragging`** `boolean` — True when tab is being dragged
 
 ## Variants
 
@@ -153,12 +179,10 @@ Action button designed for the Tabs prefix/suffix slots. Styled with sharp edges
 </Tabs>
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `icon` | `ReactNode` | Icon to display in the action button |
-| `size` | `TabSize` | Override size (inherits from Tabs by default) |
-| `onPress` | `() => void` | Callback when the action is pressed |
-| `aria-label` | `string` | Accessible label for the button |
+- **`icon`** `ReactNode` — Icon to display in the action button
+- **`size`** `TabSize` — Override size (inherits from Tabs by default)
+- **`onPress`** `() => void` — Callback when the action is pressed
+- **`aria-label`** `string` — Accessible label for the button
 
 Inherits all props from `ItemButton` except `shape` (always sharp).
 
@@ -166,23 +190,21 @@ Inherits all props from `ItemButton` except `shape` (always sharp).
 
 Individual tabs accept these props in addition to style props:
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `title` | `ReactNode` | Content displayed in the tab button (required) |
-| `isDisabled` | `boolean` | Disables the tab |
-| `size` | `TabSize` | Override tab size for this tab |
-| `type` | `TabType` | Override tab type for this tab |
-| `actions` | `ReactNode` | Custom actions to render in the tab |
-| `autoHideActions` | `boolean` | Show actions only on hover (overrides Tabs-level) |
-| `isEditable` | `boolean` | Whether the tab title can be edited (overrides Tabs-level) |
-| `onTitleChange` | `(newTitle: string) => void` | Callback when title changes (overrides Tabs-level) |
-| `menu` | `ReactNode \| null` | Menu items for this tab (overrides Tabs-level, `null` disables) |
-| `menuTriggerProps` | `Partial<CubeItemActionProps>` | Props for menu trigger button |
-| `menuProps` | `Partial<CubeMenuProps>` | Props for Menu component |
-| `contextMenu` | `boolean` | Enable right-click context menu |
-| `onAction` | `(action: Key) => void` | Callback when menu action is triggered |
-| `prerender` | `boolean` | Override panel prerender behavior |
-| `keepMounted` | `boolean` | Override panel keepMounted behavior |
+- **`title`** `ReactNode` — Content displayed in the tab button (required)
+- **`isDisabled`** `boolean` — Disables the tab
+- **`size`** `TabSize` — Override tab size for this tab
+- **`type`** `TabType` — Override tab type for this tab
+- **`actions`** `ReactNode` — Custom actions to render in the tab
+- **`autoHideActions`** `boolean` — Show actions only on hover (overrides Tabs-level)
+- **`isEditable`** `boolean` — Whether the tab title can be edited (overrides Tabs-level)
+- **`onTitleChange`** `(newTitle: string) => void` — Callback when title changes (overrides Tabs-level)
+- **`menu`** `ReactNode \| null` — Menu items for this tab (overrides Tabs-level, `null` disables)
+- **`menuTriggerProps`** `Partial<CubeItemActionProps>` — Props for menu trigger button
+- **`menuProps`** `Partial<CubeMenuProps>` — Props for Menu component
+- **`contextMenu`** `boolean` — Enable right-click context menu
+- **`onAction`** `(action: Key) => void` — Callback when menu action is triggered
+- **`prerender`** `boolean` — Override panel prerender behavior
+- **`keepMounted`** `boolean` — Override panel keepMounted behavior
 
 ## Examples
 
@@ -599,11 +621,9 @@ Keep visited panels in the DOM to preserve their state.
 
 ## Panel Rendering Modes
 
-| Mode | Behavior |
-|------|----------|
-| **Default** | Panel renders only when active, unmounts when inactive |
-| **prerender** | All panels render on mount, inactive ones hidden via `display: none` |
-| **keepMounted** | Panel renders when first activated, stays mounted thereafter |
+- **Default** — Panel renders only when active, unmounts when inactive
+- **`prerender`** — All panels render on mount, inactive ones hidden via `display: none`
+- **`keepMounted`** — Panel renders when first activated, stays mounted thereafter
 
 Override per-tab/panel:
 

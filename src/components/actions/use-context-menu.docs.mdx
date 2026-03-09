@@ -152,14 +152,12 @@ function FileItem({ file }) {
 
 ## Comparison with Related Hooks
 
-| Feature | `useContextMenu` | `useAnchoredMenu` |
-|---------|------------------|-------------------|
-| **Positioning** | Cursor coordinates or element center | Element-anchored |
-| **Trigger** | Right-click (automatic) + programmatic | Manual (button click) |
-| **Event Binding** | Automatic `onContextMenu` | Manual event handling |
-| **Use Cases** | Context menus, right-click actions, toolbar dropdowns | Dropdown menus, action buttons |
-| **Default Placement** | `"bottom start"` | `"bottom start"` |
-| **Setup Complexity** | Minimal (auto-binding) | Manual event handling |
+- **`Positioning`** — useContextMenu: Cursor coordinates or element center; useAnchoredMenu: Element-anchored
+- **`Trigger`** — useContextMenu: Right-click (automatic) + programmatic; useAnchoredMenu: Manual (button click)
+- **`Event Binding`** — useContextMenu: Automatic `onContextMenu`; useAnchoredMenu: Manual event handling
+- **`Use Cases`** — useContextMenu: Context menus, right-click actions, toolbar dropdowns; useAnchoredMenu: Dropdown menus, action buttons
+- **`Default Placement`** — Both: `"bottom start"`
+- **`Setup Complexity`** — useContextMenu: Minimal (auto-binding); useAnchoredMenu: Manual event handling
 
 ## Implementation Notes
 

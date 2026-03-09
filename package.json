@@ -22,7 +22,8 @@
     "dist/**/*.d.ts",
     "dist/**/*.map",
     "dist/README.md",
-    "dist/CHANGELOG.md"
+    "dist/CHANGELOG.md",
+    "docs"
   ],
   "scripts": {
     "start": "pnpm storybook",
@@ -42,13 +43,13 @@
     "build-storybook": "STORYBOOK_MODE=stories storybook build --stats-json",
     "build-docs": "STORYBOOK_MODE=docs storybook build --docs -o storybook-docs",
     "chromatic": "chromatic --only-changed",
-    "build-static-docs": "npm run build-docs && node scripts/snapshot-docs.js",
     "size": "size-limit",
-    "prepare": "husky install",
+    "prepare": "husky install && git config blame.ignoreRevsFile .git-blame-ignore-revs",
     "clear": "pnpm clear:dist && rimraf ./storybook-docs ./storybook-static ./node_modules/.cache",
     "clear:dist": "rimraf ./dist",
+    "prepack": "node scripts/prepare-docs.mjs",
+    "postpack": "node scripts/cleanup-docs.mjs",
     "release": "pnpm build && changeset publish --provenance",
-    "postinstall": "git config blame.ignoreRevsFile .git-blame-ignore-revs",
     "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix"
   },
   "keywords": [
@@ -72,7 +73,7 @@
     "@react-types/shared": "^3.32.1",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
-    "@tenphi/tasty": "0.6.0",
+    "@tenphi/tasty": "0.7.1",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",
@@ -106,7 +107,6 @@
     "@size-limit/file": "^8.2.4",
     "@size-limit/webpack": "^8.2.4",
     "@size-limit/webpack-why": "^8.2.4",
-    "@sparticuz/chromium": "^137.0.1",
     "@statoscope/cli": "^5.20.1",
     "@storybook/addon-docs": "^10.2.3",
     "@storybook/addon-links": "^10.2.3",
@@ -147,8 +147,6 @@
     "lint-staged": "^10.0.0",
     "markdown-table": "^3.0.3",
     "npm-run-all": "^4.1.5",
-    "playwright": "^1.53.2",
-    "playwright-core": "^1.53.2",
     "prettier": "^3.2.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

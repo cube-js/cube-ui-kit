@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { TextItem } from './TextItem';
 import * as TextItemStories from './TextItem.stories';
 
@@ -23,11 +23,15 @@ A text component with built-in overflow handling and auto-tooltips. When text is
 
 ### Properties
 
-<Controls of={TextItemStories.Default} />
+- **`children`** `ReactNode` — Text content
+- **`highlight`** `string` — String to highlight within children
+- **`highlightCaseSensitive`** `boolean` (default: `false`) — Whether highlight matching is case-sensitive
+- **`tooltip`** `string | boolean | TooltipProviderProps` (default: `true`) — Tooltip configuration. Use true for auto tooltip on overflow, string for custom tooltip text.
+- **`tooltipPlacement`** `Placement` (default: `top`) — Default tooltip placement
 
 ### Base Properties
 
-Supports [Base properties](/docs/base-properties--docs) and all [Text](/docs/content-text--docs) properties including `preset`, `color`, `weight`, `transform`, `ellipsis`, `nowrap`.
+Supports [Base properties](/docs/base-properties--docs) and all [Text](/docs/generic-text--docs) properties including `preset`, `color`, `weight`, `transform`, `ellipsis`, `nowrap`.
 
 ### Styling Properties
 
@@ -233,7 +237,7 @@ const searchTerm = 'app';
 
 ## Related Components
 
-- [Text](/docs/content-text--docs) - Base text component without overflow handling
+- [Text](/docs/generic-text--docs) - Base text component without overflow handling
 - [Item](/docs/content-item--docs) - Interactive list item with similar overflow behavior
 - [TooltipProvider](/docs/overlays-tooltip--docs) - Standalone tooltip wrapper
 

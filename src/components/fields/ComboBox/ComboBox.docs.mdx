@@ -1,4 +1,4 @@
-import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import * as ComboBoxStories from './ComboBox.stories';
 
 <Meta of={ComboBoxStories} />
@@ -24,7 +24,37 @@ A combobox component that combines a text input with a dropdown list, allowing u
 
 ### Properties
 
-<Controls of={ComboBoxStories.Default} />
+- **`children`** `ReactNode` — ComboBox.Item elements that define the available options
+- **`placeholder`** `string` — Placeholder text when input is empty
+- **`icon`** `ReactNode` — Icon element rendered before the input
+- **`inputValue`** `string` — The current text value in controlled mode
+- **`defaultInputValue`** `string` — The default text value in uncontrolled mode
+- **`description`** `string` — Description text displayed below the input
+- **`message`** `string` — Message text displayed below the input (validation message)
+- **`selectedKey`** `string` — The currently selected key (controlled)
+- **`defaultSelectedKey`** `string` — The key of the initially selected item (uncontrolled)
+- **`allowsCustomValue`** `boolean` (default: `false`) — Whether the combo box allows custom values to be entered
+- **`shouldCommitOnBlur`** `boolean` (default: `true`) — Whether to commit custom value on blur in allowsCustomValue mode
+- **`clearOnBlur`** `boolean` (default: `false`) — Whether to clear selection and input on blur (only applies to non-custom-value mode)
+- **`isClearable`** `boolean` (default: `false`) — Whether the combo box is clearable using ESC keyboard button or clear button inside the input
+- **`sortSelectedToTop`** `boolean` (default: `true when items provided, false otherwise`) — Whether to sort selected item to the top when popover opens (only works with items prop)
+- **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — How the popover is triggered
+- **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function or false to disable filtering. If not provided, uses default contains filter
+- **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the trigger button
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — ComboBox size
+- **`necessityIndicator`** `'label' | 'icon'` — How the required state should be indicated
+- **`onSelectionChange`** `(key: Key | null) => void` — Callback fired when the selected option changes
+- **`onInputChange`** `(value: string) => void` — Callback fired when the input text changes
+- **`onOpenChange`** `(isOpen: boolean) => void` — Callback fired when the popover opens or closes
+- **`prefix`** `ReactNode` — Content rendered before the input
+- **`suffix`** `ReactNode` — Content rendered after the input
+- **`suffixPosition`** `'before' | 'after'` (default: `before`) — Position of suffix relative to validation/loading icons
+- **`onClear`** `() => void` — Callback fired when the clear action is triggered
+- **`direction`** `'top' | 'bottom'` (default: `bottom`) — Preferred direction for the dropdown
+- **`shouldFlip`** `boolean` (default: `true`) — Whether the dropdown should flip to fit in viewport
+- **`overlayOffset`** `number` (default: `8`) — Distance between input and dropdown in pixels
+- **`onFocus`** `() => void` — Callback fired when focus enters the ComboBox
+- **`onBlur`** `() => void` — Callback fired when focus leaves the ComboBox
 
 #### Notable Properties
 
@@ -47,7 +77,11 @@ A combobox component that combines a text input with a dropdown list, allowing u
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -102,16 +136,14 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| invalid | `boolean` | Applied when validation state is invalid |
-| valid | `boolean` | Applied when validation state is valid |
-| disabled | `boolean` | Applied when the combobox is disabled |
-| focused | `boolean` | Applied when the input has focus |
-| loading | `boolean` | Applied when the combobox is in loading state |
-| prefix | `boolean` | Applied when prefix content is present |
-| suffix | `boolean` | Applied when suffix content is present |
-| clearable | `boolean` | Applied when the clear button is visible |
+- **`invalid`** `boolean` — Applied when validation state is invalid
+- **`valid`** `boolean` — Applied when validation state is valid
+- **`disabled`** `boolean` — Applied when the combobox is disabled
+- **`focused`** `boolean` — Applied when the input has focus
+- **`loading`** `boolean` — Applied when the combobox is in loading state
+- **`prefix`** `boolean` — Applied when prefix content is present
+- **`suffix`** `boolean` — Applied when suffix content is present
+- **`clearable`** `boolean` — Applied when the clear button is visible
 
 ## Variants
 
@@ -636,7 +668,7 @@ const [selectedKey, setSelectedKey] = useState(null);
 
 ## Integration with Forms
 
-This component supports all Field properties when used within a Form. It integrates seamlessly with the form validation system and supports both controlled and uncontrolled modes.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form. It integrates seamlessly with the form validation system and supports both controlled and uncontrolled modes.
 
 ### Form Example
 
@@ -668,7 +700,7 @@ This component supports all Field properties when used within a Form. It integra
 
 ## Related Components
 
-- [Select](?path=/docs/forms-select--docs) - Use when you need a simple dropdown without filtering
-- [TextInput](?path=/docs/forms-textinput--docs) - Use for free-form text input without suggestions
-- [ListBox](?path=/docs/forms-listbox--docs) - The underlying list component used in ComboBox popover
-- [FilterPicker](?path=/docs/forms-filterpicker--docs) - Alternative with different interaction patterns
+- [Select](/docs/forms-select--docs) - Use when you need a simple dropdown without filtering
+- [TextInput](/docs/forms-textinput--docs) - Use for free-form text input without suggestions
+- [ListBox](/docs/forms-listbox--docs) - The underlying list component used in ComboBox popover
+- [FilterPicker](/docs/forms-filterpicker--docs) - Alternative with different interaction patterns

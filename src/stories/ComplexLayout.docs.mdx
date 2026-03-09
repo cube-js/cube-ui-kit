@@ -7,7 +7,7 @@ import * as ComplexLayoutStories from './ComplexLayout.stories';
 
 This guide covers how to create layouts using the `Layout` component and its sub-components.
 
-> **See also:** [Layout API Reference](/docs/components-content-layout--docs) for detailed props documentation.
+> **See also:** [Layout API Reference](/docs/content-layout--docs) for detailed props documentation.
 
 ## Introduction
 
@@ -214,12 +214,10 @@ Use `invertOrder` to place primary actions on the right.
 
 Panels support four rendering modes via the `mode` prop:
 
-| Mode | Content Push | Overlay | Description |
-|------|--------------|---------|-------------|
-| `default` | Yes | No | Standard panel, pushes content |
-| `sticky` | No | No | Floats over content |
-| `overlay` | Yes | Yes | With dismissable backdrop |
-| `dialog` | No | Dialog | Renders as modal dialog |
+- **`default`** — Standard panel, pushes content (Content Push: Yes, Overlay: No)
+- **`sticky`** — Floats over content (Content Push: No, Overlay: No)
+- **`overlay`** — With dismissable backdrop (Content Push: Yes, Overlay: Yes)
+- **`dialog`** — Renders as modal dialog (Content Push: No, Overlay: Dialog)
 
 ### Sticky Panel
 
@@ -321,12 +319,10 @@ Panels with `mode="dialog"` render as a modal dialog instead of inline.
 
 **Panel vs Pane:**
 
-| Feature | Panel | Pane |
-|---------|-------|------|
-| Position | Absolute (overlays layout) | Inline (participates in flex) |
-| Use case | Sidebars, drawers | Split views, code editors |
-| Content adjustment | Pushes content via insets | Takes space in flex container |
-| `resizeEdge` | Based on `side` prop | `"right"` or `"bottom"` |
+- **`Position`** — Panel: Absolute (overlays layout); Pane: Inline (participates in flex)
+- **`Use case`** — Panel: Sidebars, drawers; Pane: Split views, code editors
+- **`Content adjustment`** — Panel: Pushes content via insets; Pane: Takes space in flex container
+- **`resizeEdge`** — Panel: Based on `side` prop; Pane: `"right"` or `"bottom"`
 
 ## Advanced Patterns
 
@@ -415,13 +411,11 @@ Use `Layout.Center` for content that should be centered both horizontally and ve
 
 ### When to Use Container vs Center
 
-| Use Case | Component |
-|----------|-----------|
-| Article/documentation content | `Layout.Container` |
-| Forms with top-aligned content | `Layout.Container` |
-| Empty states | `Layout.Center` |
-| Loading/splash screens | `Layout.Center` |
-| Error pages | `Layout.Center` |
+- **Article/documentation content** — `Layout.Container`
+- **Forms with top-aligned content** — `Layout.Container`
+- **Empty states** — `Layout.Center`
+- **Loading/splash screens** — `Layout.Center`
+- **Error pages** — `Layout.Center`
 
 ## Using Space Component
 
@@ -443,31 +437,27 @@ Use `Layout.Center` for content that should be centered both horizontally and ve
 
 ### When to Use Space vs Layout.Flex
 
-| Use Case | Component |
-|----------|-----------|
-| Inline button groups | `Space` |
-| Quick horizontal/vertical arrangement | `Space` |
-| Scrollable flex container | `Layout.Flex` |
-| Part of Layout structure | `Layout.Flex` |
-| Standalone flex wrapper | `Space` |
+- **Inline button groups** — `Space`
+- **Quick horizontal/vertical arrangement** — `Space`
+- **Scrollable flex container** — `Layout.Flex`
+- **Part of Layout structure** — `Layout.Flex`
+- **Standalone flex wrapper** — `Space`
 
 ## Sub-Components Reference
 
-| Component | Purpose |
-|-----------|---------|
-| `Layout` | Root wrapper, provides context |
-| `Layout.Content` | Scrollable content area, fills available space |
-| `Layout.Container` | Horizontally centered content with constrained width |
-| `Layout.Center` | Centered content (both axes) with text-align center |
-| `Layout.Header` | Page header with title, breadcrumbs, actions |
-| `Layout.Footer` | Footer bar, typically for actions |
-| `Layout.Toolbar` | Horizontal bar with space-between layout |
-| `Layout.Panel` | Side panel with modes: default, sticky, overlay, dialog |
-| `Layout.PanelHeader` | Header for panels with close button |
-| `Layout.Pane` | Inline resizable section |
-| `Layout.Flex` | Scrollable flex container |
-| `Layout.Grid` | Scrollable grid container |
-| `Layout.Block` | Simple block container |
+- **`Layout`** — Root wrapper, provides context
+- **`Layout.Content`** — Scrollable content area, fills available space
+- **`Layout.Container`** — Horizontally centered content with constrained width
+- **`Layout.Center`** — Centered content (both axes) with text-align center
+- **`Layout.Header`** — Page header with title, breadcrumbs, actions
+- **`Layout.Footer`** — Footer bar, typically for actions
+- **`Layout.Toolbar`** — Horizontal bar with space-between layout
+- **`Layout.Panel`** — Side panel with modes: default, sticky, overlay, dialog
+- **`Layout.PanelHeader`** — Header for panels with close button
+- **`Layout.Pane`** — Inline resizable section
+- **`Layout.Flex`** — Scrollable flex container
+- **`Layout.Grid`** — Scrollable grid container
+- **`Layout.Block`** — Simple block container
 
 ## Common Props
 

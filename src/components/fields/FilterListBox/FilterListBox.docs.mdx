@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { FilterListBox } from './FilterListBox';
 import * as FilterListBoxStories from './FilterListBox.stories';
 
@@ -26,11 +26,38 @@ A searchable list selection component that combines a ListBox with an integrated
 
 ### Properties
 
-<Controls of={FilterListBoxStories.Default} />
+- **`selectedKey`** `string` — The selected key in controlled mode
+- **`defaultSelectedKey`** `string` — The default selected key in uncontrolled mode
+- **`selectedKeys`** `string[] | 'all'` — The selected keys in controlled multiple mode
+- **`defaultSelectedKeys`** `string[] | 'all'` — The default selected keys in uncontrolled multiple mode
+- **`selectionMode`** `'single' | 'multiple'` (default: `single`) — Selection mode
+- **`disallowEmptySelection`** `boolean` (default: `false`) — Whether to disallow empty selection
+- **`disabledKeys`** `Key[]` — Array of keys for disabled items
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — FilterListBox size
+- **`searchPlaceholder`** `string` (default: `Search...`) — Placeholder text in the search input
+- **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function or `false` to disable filtering
+- **`emptyLabel`** `ReactNode` (default: `No items` / `No results found`) — Label displayed when no items match
+- **`allowsCustomValue`** `boolean` (default: `false`) — Whether to allow custom values not in the options list
+- **`isCheckable`** `boolean` (default: `false`) — Whether to show checkboxes for multiple selection
+- **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
+- **`description`** `string` — Field description
+- **`header`** `ReactNode` — Custom header content
+- **`footer`** `ReactNode` — Custom footer content
+- **`showSelectAll`** `boolean` (default: `false`) — Whether to show "Select All" option in multiple mode
+- **`selectAllLabel`** `string` (default: `All`) — Label for the "Select All" option
+- **`searchValue`** `string` — Controlled search input value
+- **`onSearchChange`** `(value: string) => void` — Callback when search input changes
+- **`onSelectionChange`** `(keys: Key | Key[] | 'all' | null) => void` — Callback when selection changes
+- **`onEscape`** `() => void` — Callback when Escape key is pressed
+- **`onOptionClick`** `(key: Key) => void` — Callback when an option is clicked
 
 ### Base Properties
 
-Supports [Base properties](https://github.com/tenphi/tasty/blob/main/docs/tasty.md)
+Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -103,15 +130,13 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type | Description |
-|----------|------|-------------|
-| `invalid` | `boolean` | Applied when `validationState="invalid"` |
-| `valid` | `boolean` | Applied when `validationState="valid"` |
-| `disabled` | `boolean` | Applied when `isDisabled={true}` |
-| `focused` | `boolean` | Applied when the FilterListBox has focus |
-| `loading` | `boolean` | Applied when `isLoading={true}` |
-| `searchable` | `boolean` | Always true for FilterListBox |
-| `prefix` | `boolean` | Applied when loading icon is shown |
+- `invalid` `boolean` — Applied when `validationState="invalid"`
+- `valid` `boolean` — Applied when `validationState="valid"`
+- `disabled` `boolean` — Applied when `isDisabled={true}`
+- `focused` `boolean` — Applied when the FilterListBox has focus
+- `loading` `boolean` — Applied when `isLoading={true}`
+- `searchable` `boolean` — Always true for FilterListBox
+- `prefix` `boolean` — Applied when loading icon is shown
 
 ## Sub-components
 
@@ -123,24 +148,20 @@ Individual items within the FilterListBox. Each item is rendered using [Item](/d
 
 For detailed information about all available item properties, see [Item documentation](/docs/content-item--docs). Key properties include:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| key | `string \| number` | Unique identifier for the item (required) |
-| children | `ReactNode` | The main content/label for the option |
-| textValue | `string` | Searchable text value (use for complex content) |
-| description | `ReactNode` | Secondary text below the main content |
-| icon | `ReactNode` | Icon displayed before the content |
-| styles | `Styles` | Custom styling for the item |
-| qa | `string` | QA identifier for testing |
+- **`key`** `string \| number` — Unique identifier for the item (required)
+- **`children`** `ReactNode` — The main content/label for the option
+- **`textValue`** `string` — Searchable text value (use for complex content)
+- **`description`** `ReactNode` — Secondary text below the main content
+- **`icon`** `ReactNode` — Icon displayed before the content
+- **`styles`** `Styles` — Custom styling for the item
+- **`qa`** `string` — QA identifier for testing
 
 ### FilterListBox.Section
 
 Groups related items together with an optional heading.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| title | `ReactNode` | - | Optional heading text for the section |
-| children | `FilterListBox.Item[]` | - | Collection of FilterListBox.Item components |
+- **`title`** `ReactNode` — Optional heading text for the section
+- **`children`** `FilterListBox.Item[]` — Collection of FilterListBox.Item components
 
 ## Variants
 
@@ -488,7 +509,7 @@ Groups related items together with an optional heading.
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
 
 ```jsx
 <Form onSubmit={handleSubmit}>
