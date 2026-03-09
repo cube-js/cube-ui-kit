@@ -22,7 +22,8 @@
     "dist/**/*.d.ts",
     "dist/**/*.map",
     "dist/README.md",
-    "dist/CHANGELOG.md"
+    "dist/CHANGELOG.md",
+    "docs"
   ],
   "scripts": {
     "start": "pnpm storybook",
