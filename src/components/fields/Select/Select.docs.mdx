@@ -39,11 +39,6 @@ A select allows users to choose a single option from a list of predefined choice
 - **`isClearable`** `boolean` (default: `false`) — Whether the select is clearable using a clear button in the rightIcon slot
 - **`shouldFlip`** `boolean` (default: `true`) — Whether dropdown should flip to fit in viewport
 - **`overlayOffset`** `number` (default: `8`) — Distance between select and dropdown in pixels
-- **`isDisabled`** `boolean` (default: `false`) — Whether the select is disabled
-- **`isRequired`** `boolean` (default: `false`) — Whether user selection is required before form submission
-- **`isLoading`** `boolean` (default: `false`) — Show loading spinner and disable interactions
-- **`validationState`** `string` — Whether the select should display valid or invalid visual styling
-- **`autoFocus`** `boolean` (default: `false`) — Whether the element should receive focus on render
 - **`items`** `Iterable<T>` — Item objects used when rendering dynamic collections
 - **`disabledKeys`** `Iterable<Key>` — Keys of items that are disabled
 - **`children`** `ReactNode | (item: T) => ReactElement` — Static child items or render function for dynamic items
@@ -68,7 +63,6 @@ A select allows users to choose a single option from a list of predefined choice
 - **`aria-label`** `string` — Accessible label when no visible label exists
 - **`aria-labelledby`** `string` — ID of element that labels the select
 - **`aria-describedby`** `string` — ID of element that describes the select
-- **`name`** `string` — The name of the input element for form submission
 
 #### Notable Properties
 
@@ -96,6 +90,10 @@ A select allows users to choose a single option from a list of predefined choice
 ### Base Properties
 
 Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -578,7 +576,7 @@ const groups = [
 
 ## Integration with Forms
 
-This component supports all Field properties when used within a Form. It integrates seamlessly with the form validation system and supports both controlled and uncontrolled modes.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form. It integrates seamlessly with the form validation system and supports both controlled and uncontrolled modes.
 
 ```jsx
 <Form>

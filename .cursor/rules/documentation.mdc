@@ -45,6 +45,12 @@ Brief description of what the component is and its primary purpose.
 
 Supports [Base properties](/docs/base-properties--docs)
 
+### Field Properties
+
+[For input components only]
+
+Supports all [Field properties](/docs/field-properties--docs)
+
 ### Styling Properties
 
 #### styles
@@ -186,9 +192,13 @@ This component supports all [Field properties](/field-properties.md) when used w
 - Relevant ARIA properties
 - Accessible implementation guidance
 
+### Field Properties
+
+For input components: Add `Supports all [Field properties](/docs/field-properties--docs)` in the Properties section, right after Base Properties. Do NOT duplicate field-level props (`label`, `name`, `isRequired`, `isDisabled`, `isReadOnly`, `isLoading`, `validationState`, `autoFocus`, `tooltip`, `description`, `rules`, etc.) — they are documented on the Field Properties page.
+
 ### Form Integration
 
-For input components: "This component supports all [Field properties](/field-properties.md) when used within a Form."
+For input components: "This component supports all [Field properties](/docs/field-properties--docs) when used within a Form."
 
 ### File Naming
 

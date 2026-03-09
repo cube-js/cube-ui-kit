@@ -25,7 +25,6 @@ A versatile selection component that combines a trigger button with a dropdown l
 ### Properties
 
 - **`placeholder`** `string` — Placeholder text when no selection is made
-- **`label`** `string` — Label text for the picker field
 - **`description`** `string` — Description text displayed below the label
 - **`message`** `string` — Help or error message
 - **`selectionMode`** `'single' | 'multiple'` (default: `single`) — Selection mode for the picker
@@ -52,10 +51,6 @@ A versatile selection component that combines a trigger button with a dropdown l
 - **`onClear`** `() => void` — Callback called when the clear button is pressed
 - **`sortSelectedToTop`** `boolean` — Sort selected items to the top when the popover opens (only works with `items` prop)
 - **`renderSummary`** `((args: { selectedLabels, selectedKeys, selectionMode }) => ReactNode) | false` — Custom renderer for the summary shown inside the trigger
-- **`isDisabled`** `boolean` (default: `false`) — Whether the picker is disabled
-- **`isLoading`** `boolean` (default: `false`) — Whether the picker is in loading state
-- **`isRequired`** `boolean` (default: `false`) — Whether the field is required
-- **`validationState`** `'valid' | 'invalid'` — Validation state of the picker
 - **`header`** `ReactNode` — Custom header content in the popover
 - **`footer`** `ReactNode` — Custom footer content in the popover
 - **`listBoxStyles`** `Styles` — Custom styles for the ListBox within the popover
@@ -70,6 +65,10 @@ A versatile selection component that combines a trigger button with a dropdown l
 ### Base Properties
 
 Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -684,7 +683,7 @@ The component automatically manages ARIA attributes:
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form context. The Picker automatically handles form validation, touched states, error messages, and integrates seamlessly with form submission.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form context. The Picker automatically handles form validation, touched states, error messages, and integrates seamlessly with form submission.
 
 ### Basic Form Integration
 

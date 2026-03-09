@@ -25,15 +25,8 @@ A switch allows users to toggle between two states: on and off. It provides imme
 ### Properties
 
 - **`children`** `string` — The content to display as the switch label
-- **`label`** `string` — External label for the switch
 - **`isSelected`** `boolean` (default: `false`) — Whether the switch is selected (controlled)
 - **`defaultSelected`** `boolean` (default: `false`) — Whether the switch is selected by default (uncontrolled)
-- **`isDisabled`** `boolean` (default: `false`) — Whether the switch is disabled
-- **`isReadOnly`** `boolean` (default: `false`) — Whether the switch can be focused but not changed
-- **`isRequired`** `boolean` (default: `false`) — Whether the switch must be toggled before form submission
-- **`isLoading`** `boolean` (default: `false`) — Show loading spinner and disable interactions
-- **`validationState`** `undefined | 'valid' | 'invalid'` — Whether the switch should display valid or invalid visual styling
-- **`autoFocus`** `boolean` (default: `false`) — Whether the element should receive focus on render
 - **`size`** `'small' | 'medium' | 'large'` (default: `large`) — Switch size
 - **`onChange`** — Callback fired when the switch value changes
 - **`onFocus`** — Callback fired when the switch receives focus
@@ -42,6 +35,10 @@ A switch allows users to toggle between two states: on and off. It provides imme
 ### Base Properties
 
 Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -175,7 +172,7 @@ const [isEnabled, setIsEnabled] = useState(false);
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form.
 
 ## Suggested Improvements
 

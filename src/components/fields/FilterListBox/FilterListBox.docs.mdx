@@ -35,17 +35,11 @@ A searchable list selection component that combines a ListBox with an integrated
 - **`disabledKeys`** `Key[]` — Array of keys for disabled items
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — FilterListBox size
 - **`searchPlaceholder`** `string` (default: `Search...`) — Placeholder text in the search input
-- **`autoFocus`** `boolean` — Whether the search input should have autofocus
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function or `false` to disable filtering
 - **`emptyLabel`** `ReactNode` (default: `No items` / `No results found`) — Label displayed when no items match
 - **`allowsCustomValue`** `boolean` (default: `false`) — Whether to allow custom values not in the options list
 - **`isCheckable`** `boolean` (default: `false`) — Whether to show checkboxes for multiple selection
 - **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
-- **`isDisabled`** `boolean` (default: `false`) — Whether the FilterListBox is disabled
-- **`isLoading`** `boolean` (default: `false`) — Whether the FilterListBox is in loading state
-- **`isRequired`** `boolean` (default: `false`) — Whether selection is required
-- **`validationState`** `'valid' | 'invalid'` — Validation state
-- **`label`** `string` — Label text
 - **`description`** `string` — Field description
 - **`header`** `ReactNode` — Custom header content
 - **`footer`** `ReactNode` — Custom footer content
@@ -60,6 +54,10 @@ A searchable list selection component that combines a ListBox with an integrated
 ### Base Properties
 
 Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -511,7 +509,7 @@ Groups related items together with an optional heading.
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
 
 ```jsx
 <Form onSubmit={handleSubmit}>

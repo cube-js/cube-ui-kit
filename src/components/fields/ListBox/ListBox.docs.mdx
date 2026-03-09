@@ -45,10 +45,6 @@ A versatile list selection component that allows users to select one or more ite
 - **`shouldUseVirtualFocus`** `boolean` (default: `false`) — Whether to use virtual focus instead of DOM focus
 - **`isCheckable`** `boolean` (default: `false`) — Whether to show checkboxes for multiple selection mode
 - **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
-- **`isDisabled`** `boolean` (default: `false`) — Whether the ListBox is disabled
-- **`isRequired`** `boolean` (default: `false`) — Whether selection is required
-- **`validationState`** `'valid' | 'invalid'` — Validation state
-- **`label`** `string` — Label text
 - **`description`** `string` — Field description
 - **`message`** `string` — Help or error message
 - **`showSelectAll`** `boolean` (default: `false`) — Whether to show the "Select All" option in multiple selection mode
@@ -60,6 +56,10 @@ A versatile list selection component that allows users to select one or more ite
 ### Base Properties
 
 Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -707,7 +707,7 @@ const [selectedKey, setSelectedKey] = useState('apple');
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
 
 ```jsx
 <Form onSubmit={handleSubmit}>

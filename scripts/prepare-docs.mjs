@@ -338,6 +338,22 @@ function fixBasePropertiesLinks(content, currentOutputPath) {
   );
 }
 
+/**
+ * Fix Field Properties links to point to docs/FieldProperties.md.
+ * Handles: /docs/field-properties--docs, /field-properties
+ */
+function fixFieldPropertiesLinks(content, currentOutputPath) {
+  const currentDir = path.dirname(currentOutputPath);
+  const fieldPropsPath = path.join(DOCS_DIR, 'FieldProperties.md');
+  let rel = path.relative(currentDir, fieldPropsPath);
+  if (!rel.startsWith('.')) rel = './' + rel;
+
+  return content.replace(
+    /\[([Ff]ield properties)\]\(\/(?:docs\/)?(?:field-properties--docs|field-properties)\)/g,
+    (match, linkText) => `[${linkText}](${rel})`,
+  );
+}
+
 /* ── main ─────────────────────────────────────────────────────────────── */
 
 /**
@@ -427,6 +443,7 @@ for (const { docPath, outputPath, content } of allEntries) {
   result = fixRelativeMdxLinks(result);
   result = fixTastyLinks(result, outputPath);
   result = fixBasePropertiesLinks(result, outputPath);
+  result = fixFieldPropertiesLinks(result, outputPath);
 
   // Ensure trailing newline
   if (!result.endsWith('\n')) {

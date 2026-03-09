@@ -29,7 +29,6 @@ A combobox component that combines a text input with a dropdown list, allowing u
 - **`icon`** `ReactNode` — Icon element rendered before the input
 - **`inputValue`** `string` — The current text value in controlled mode
 - **`defaultInputValue`** `string` — The default text value in uncontrolled mode
-- **`label`** `string` — Label text for the combo box
 - **`description`** `string` — Description text displayed below the input
 - **`message`** `string` — Message text displayed below the input (validation message)
 - **`selectedKey`** `string` — The currently selected key (controlled)
@@ -40,15 +39,9 @@ A combobox component that combines a text input with a dropdown list, allowing u
 - **`isClearable`** `boolean` (default: `false`) — Whether the combo box is clearable using ESC keyboard button or clear button inside the input
 - **`sortSelectedToTop`** `boolean` (default: `true when items provided, false otherwise`) — Whether to sort selected item to the top when popover opens (only works with items prop)
 - **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — How the popover is triggered
-- **`isLoading`** `boolean` (default: `false`) — Whether the ComboBox is in a loading state
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function or false to disable filtering. If not provided, uses default contains filter
 - **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the trigger button
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — ComboBox size
-- **`isDisabled`** `boolean` (default: `false`) — Whether the input is disabled
-- **`isReadOnly`** `boolean` (default: `false`) — Whether the input can be selected but not changed
-- **`isRequired`** `boolean` (default: `false`) — Whether user input is required before form submission
-- **`validationState`** `'valid' | 'invalid'` — Whether the input should display valid or invalid visual styling
-- **`autoFocus`** `boolean` (default: `false`) — Whether the element should receive focus on render
 - **`necessityIndicator`** `'label' | 'icon'` — How the required state should be indicated
 - **`onSelectionChange`** `(key: Key | null) => void` — Callback fired when the selected option changes
 - **`onInputChange`** `(value: string) => void` — Callback fired when the input text changes
@@ -85,6 +78,10 @@ A combobox component that combines a text input with a dropdown list, allowing u
 ### Base Properties
 
 Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -671,7 +668,7 @@ const [selectedKey, setSelectedKey] = useState(null);
 
 ## Integration with Forms
 
-This component supports all Field properties when used within a Form. It integrates seamlessly with the form validation system and supports both controlled and uncontrolled modes.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form. It integrates seamlessly with the form validation system and supports both controlled and uncontrolled modes.
 
 ### Form Example
 

@@ -41,7 +41,6 @@ A versatile selection component that combines a trigger button with a searchable
 - **`theme`** `'default' | 'special'` (default: `default`) — Button theme
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the picker component
 - **`searchPlaceholder`** `string` — Placeholder text in the search input
-- **`autoFocus`** `boolean` (default: `false`) — Whether the search input should have autofocus
 - **`emptyLabel`** `string` — Custom label to display when no results are found after filtering
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function for determining if an option should be included in search results
 - **`header`** `ReactNode` — Custom header content
@@ -51,11 +50,6 @@ A versatile selection component that combines a trigger button with a searchable
 - **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
 - **`showSelectAll`** `boolean` (default: `false`) — Whether to show the "Select All" option in multiple selection mode
 - **`selectAllLabel`** `string` (default: `All`) — Label for the "Select All" option
-- **`isDisabled`** `boolean` (default: `false`) — Whether the picker is disabled
-- **`isLoading`** `boolean` (default: `false`) — Whether the picker is in loading state
-- **`isRequired`** `boolean` (default: `false`) — Whether the field is required
-- **`validationState`** `'valid' | 'invalid'` — Validation state of the picker
-- **`label`** `string` — Label text
 - **`description`** `string` — Field description
 - **`message`** `string` — Help or error message
 - **`listBoxStyles`** `Styles` — Custom styles for the dropdown list container within the popover
@@ -76,6 +70,10 @@ A versatile selection component that combines a trigger button with a searchable
 ### Base Properties
 
 Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -542,7 +540,7 @@ For large datasets or dynamic content, use the `items` prop with a render functi
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
 
 ```jsx
 <Form onSubmit={handleSubmit}>

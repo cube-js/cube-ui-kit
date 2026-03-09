@@ -135,6 +135,12 @@ Component description
 
 Supports [Base properties](/docs/base-properties--docs)
 
+### Field Properties
+
+[For input components only]
+
+Supports all [Field properties](/docs/field-properties--docs)
+
 ## Examples
 
 ### Example Section

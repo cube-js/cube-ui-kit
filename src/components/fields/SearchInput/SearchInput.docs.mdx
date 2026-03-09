@@ -30,11 +30,6 @@ A search input provides a specialized text field for search functionality, featu
 - **`suffix`** — Input decoration after the main input (before clear button)
 - **`isClearable`** `boolean` (default: `false`) — Whether the search input shows a clear button
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
-- **`isDisabled`** `boolean` (default: `false`) — Whether the input is disabled
-- **`isReadOnly`** `boolean` (default: `false`) — Whether the input can be selected but not changed
-- **`isRequired`** `boolean` (default: `false`) — Whether user input is required before form submission
-- **`validationState`** `undefined | 'valid' | 'invalid'` — Whether the input should display valid or invalid visual styling
-- **`autoFocus`** `boolean` (default: `false`) — Whether the element should receive focus on render
 - **`onChange`** `function` — Callback fired when the search value changes
 - **`onSubmit`** `function` — Callback fired when search is submitted
 - **`onClear`** `function` — Callback fired when search is cleared
@@ -44,6 +39,10 @@ A search input provides a specialized text field for search functionality, featu
 ### Base Properties
 
 Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -216,7 +215,7 @@ const [searchValue, setSearchValue] = useState('');
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form.
 
 ## Suggested Improvements
 

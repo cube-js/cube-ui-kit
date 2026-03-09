@@ -36,12 +36,6 @@ A number input component that allows users to enter numeric values and increment
 - **`maxValue`** `number` — Maximum allowed value
 - **`step`** `number` — Amount to increment or decrement the value
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
-- **`isDisabled`** `boolean` (default: `false`) — Whether the input is disabled
-- **`isReadOnly`** `boolean` (default: `false`) — Whether the input can be selected but not changed
-- **`isRequired`** `boolean` (default: `false`) — Whether user input is required before form submission
-- **`isLoading`** `boolean` (default: `false`) — Show loading spinner and disable interactions
-- **`validationState`** `undefined | 'valid' | 'invalid'` — Whether the input should display valid or invalid visual styling
-- **`autoFocus`** `boolean` (default: `false`) — Whether the element should receive focus on render
 - **`onChange`** `function` — Callback fired when the input value changes
 - **`onBlur`** `function` — Callback fired when the input loses focus
 - **`onFocus`** `function` — Callback fired when the input receives focus
@@ -49,6 +43,10 @@ A number input component that allows users to enter numeric values and increment
 ### Base Properties
 
 Supports [Base properties](/docs/base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/field-properties--docs)
 
 ### Styling Properties
 
@@ -177,7 +175,7 @@ The `mods` prop accepts the following modifiers you can override:
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+This component supports all [Field properties](/docs/field-properties--docs) when used within a Form.
 
 ## Suggested Improvements
 
