@@ -372,6 +372,17 @@ log(
 );
 log(`Mapped ${storyIdToOutputPath.size} storybook IDs`);
 
+// Hide docs/.gitignore so npm/pnpm doesn't exclude generated files from the tarball.
+// The backup lives outside docs/ so it never ends up in the tarball.
+const GITIGNORE_PATH = path.join(DOCS_DIR, '.gitignore');
+const GITIGNORE_BAK = path.join(DOCS_DIR, '..', '.docs-gitignore.bak');
+
+try {
+  await fs.rename(GITIGNORE_PATH, GITIGNORE_BAK);
+} catch {
+  // no .gitignore to hide
+}
+
 // Replace docs/tasty symlink with a real copy for publishing
 const TASTY_PATH = path.join(DOCS_DIR, 'tasty');
 
@@ -417,12 +428,9 @@ for (const { docPath, outputPath, content } of allEntries) {
   processed++;
 }
 
-// Write manifest for cleanup
+// Write manifest for cleanup (outside docs/ so it's never published)
 const generatedPaths = allEntries.map((e) => e.outputPath);
-await fs.writeFile(
-  path.join(DOCS_DIR, '.generated'),
-  generatedPaths.join('\n') + '\n',
-);
+await fs.writeFile('.docs-generated', generatedPaths.join('\n') + '\n');
 
 log(`Wrote ${processed} markdown files to ${DOCS_DIR}`);
 

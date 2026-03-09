@@ -17,3 +17,5 @@ coverage
 size-limit-report/stats.json
 *.plan.md
 *.spec.md
+.docs-generated
+.docs-gitignore.bak

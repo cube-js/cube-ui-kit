@@ -9,7 +9,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 const DOCS_DIR = 'docs';
-const MANIFEST = path.join(DOCS_DIR, '.generated');
+const MANIFEST = '.docs-generated';
+const GITIGNORE_PATH = path.join(DOCS_DIR, '.gitignore');
+const GITIGNORE_BAK = '.docs-gitignore.bak';
 const TASTY_PATH = path.join(DOCS_DIR, 'tasty');
 const TASTY_SYMLINK_TARGET = path.join('..', 'node_modules', '@tenphi', 'tasty', 'docs');
 
@@ -30,6 +32,13 @@ try {
   console.log(`[cleanup-docs] Removed ${files.length} generated files`);
 } catch {
   // No manifest means nothing to clean
+}
+
+// Restore docs/.gitignore
+try {
+  await fs.rename(GITIGNORE_BAK, GITIGNORE_PATH);
+} catch {
+  // no backup to restore
 }
 
 // Restore tasty symlink if it was replaced with a real copy
