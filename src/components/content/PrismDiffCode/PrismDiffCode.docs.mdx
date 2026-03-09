@@ -1,0 +1,29 @@
+# PrismDiffCode
+
+Displays a diff view of two code snippets with syntax highlighting. Highlights added and removed lines.
+
+## When to Use
+
+- Showing code changes
+- Before/after comparisons
+- Code review displays
+
+## Properties
+
+- **`original`** `string` (required) — Original code
+- **`modified`** `string` (required) — Modified code
+- **`language`** `string` — Syntax highlighting language
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties--docs).
+
+## Examples
+
+```jsx
+<PrismDiffCode
+  original="const x = 1;"
+  modified="const x = 2;"
+  language="javascript"
+/>
+```

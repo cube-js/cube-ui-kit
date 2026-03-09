@@ -1,0 +1,35 @@
+# Spin
+
+A loading spinner wrapper. Shows a spinner overlay when `spinning` is true, otherwise renders children normally.
+
+## When to Use
+
+- Loading states for buttons or sections
+- Blocking content while data loads
+- Inline loading indicators
+
+## Properties
+
+- **`spinning`** `boolean` (default: `true`) — Whether to show the spinner
+- **`size`** `'small' | 'default' | 'large'` (default: `'default'`) — Spinner size (small=24px, default=32px, large=48px)
+- **`styles`** `Styles` — Custom styles for the spinner container
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties--docs).
+
+## Examples
+
+```jsx
+<Spin>
+  <Button>Loading...</Button>
+</Spin>
+
+<Spin spinning={isLoading} size="large">
+  <Card>Content</Card>
+</Spin>
+
+<Spin spinning={false}>
+  <Text>Content is loaded</Text>
+</Spin>
+```

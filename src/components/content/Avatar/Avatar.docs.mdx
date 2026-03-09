@@ -1,0 +1,37 @@
+# Avatar
+
+A circular avatar for user profiles. Displays initials, icons, or images.
+
+## When to Use
+
+- User profile pictures
+- User lists and comments
+- Account indicators
+
+## Properties
+
+- **`size`** `string` (default: `'4x'`) — Avatar size (width and height)
+- **`icon`** `ReactNode` — Icon to display
+
+### Style Defaults
+
+- `display` — `grid`
+- `fill` — `#primary`
+- `color` — `#white`
+- `radius` — `round`
+- `placeContent` — `center`
+- `fontWeight` — `500`
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties--docs).
+
+## Examples
+
+```jsx
+<Avatar>JD</Avatar>
+
+<Avatar size="6x">AB</Avatar>
+
+<Avatar icon={<IconUser />} />
+```
