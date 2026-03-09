@@ -383,22 +383,13 @@ try {
   // no .gitignore to hide
 }
 
-// Replace docs/tasty symlink with a real copy for publishing
+// Copy tasty docs from node_modules (replacing symlink with real files for publishing)
 const TASTY_PATH = path.join(DOCS_DIR, 'tasty');
+const TASTY_SOURCE = path.join('node_modules', '@tenphi', 'tasty', 'docs');
 
-try {
-  const stat = await fs.lstat(TASTY_PATH);
-
-  if (stat.isSymbolicLink()) {
-    const rawTarget = await fs.readlink(TASTY_PATH);
-    const resolvedTarget = path.resolve(path.dirname(TASTY_PATH), rawTarget);
-    await fs.rm(TASTY_PATH);
-    await fs.cp(resolvedTarget, TASTY_PATH, { recursive: true });
-    log('Replaced tasty symlink with real copy');
-  }
-} catch {
-  // tasty dir/symlink doesn't exist — nothing to do
-}
+await fs.rm(TASTY_PATH, { recursive: true, force: true });
+await fs.cp(TASTY_SOURCE, TASTY_PATH, { recursive: true });
+log('Copied tasty docs from node_modules');
 
 // Clean output directory for components (stories go top-level alongside tasty/)
 await fs.rm(COMPONENT_OUT, { recursive: true, force: true });

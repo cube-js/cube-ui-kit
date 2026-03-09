@@ -41,15 +41,7 @@ try {
   // no backup to restore
 }
 
-// Restore tasty symlink if it was replaced with a real copy
-try {
-  const stat = await fs.lstat(TASTY_PATH);
-
-  if (stat.isDirectory() && !stat.isSymbolicLink()) {
-    await fs.rm(TASTY_PATH, { recursive: true });
-    await fs.symlink(TASTY_SYMLINK_TARGET, TASTY_PATH);
-    console.log('[cleanup-docs] Restored tasty symlink');
-  }
-} catch {
-  // Nothing to restore
-}
+// Restore tasty symlink
+await fs.rm(TASTY_PATH, { recursive: true, force: true });
+await fs.symlink(TASTY_SYMLINK_TARGET, TASTY_PATH);
+console.log('[cleanup-docs] Restored tasty symlink');
