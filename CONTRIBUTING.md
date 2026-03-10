@@ -1,67 +1,67 @@
-# Contribution guide
+# Contributing
 
-## Development Information
+## Requirements
 
-### Requirements
+- [Node.js](https://nodejs.org/) >= 22.14.0
+- [pnpm](https://pnpm.io/) >= 10
 
-- [Node LTS](https://nodejs.org/en/)
-- [YARN v1](https://classic.yarnpkg.com/lang/en/)
+## Getting Started
 
-### Commit Convention
+```bash
+pnpm install
+pnpm storybook   # starts Storybook on http://localhost:6060
+```
 
-Before you create a Pull Request, please check whether your commits comply with
-the commit conventions used in this repository.
+## Commit Convention
 
-When you create a commit, we kindly ask you to follow the convention
-`category: message` in your commit message while using one of
-the following categories:
+Follow the `category: message` format:
 
-- `feat/feature`: all changes that introduce completely new code or new
-  features
-- `fix`: changes that fix a bug (ideally, you will additionally reference an
-  issue if present)
-- `refactor`: any code-related change that is not a fix nor a feature
-- `docs`: changing existing or creating new documentation (i.e. README, docs for
-  usage of lib or CLI usage)
-- `build`: all changes regarding the build of the software, changes to
-  dependencies or the addition of new dependencies
-- `test`: all changes regarding tests (adding new tests or changing existing
-  ones)
-- `ci`: all changes regarding the configuration of continuous integration (i.e.
-  GitHub actions, ci system)
-- `chore`: all changes to the repository that do not fit into any of the above
-  categories
+| Category | Use for |
+|----------|---------|
+| `feat` | New features or components |
+| `fix` | Bug fixes (reference an issue when possible) |
+| `refactor` | Code changes that are neither a fix nor a feature |
+| `docs` | Documentation updates |
+| `build` | Build config or dependency changes |
+| `test` | Adding or updating tests |
+| `ci` | CI/CD configuration |
+| `chore` | Everything else (formatting, tooling, etc.) |
 
-If you are interested in the detailed specification, you can visit
-https://www.conventionalcommits.org/ or check out the
-[Angular Commit Message Guidelines](https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#-commit-message-guidelines).
+See the [Conventional Commits](https://www.conventionalcommits.org/) spec for details.
 
-### Steps to PR
+## Steps to PR
 
-1. Create a new branch out of the `main` branch. We follow the convention
-   `[type/(task-name | scope)]`. For example `fix/CUK-1` or `docs/menu-typo`. `type`
-   can be either `docs`, `fix`, `feat`, `build`, or any other conventional
-   commit type. `scope` is just a short id that describes the scope of work.
-2. Make and commit your changes following the
-   [commit convention](https://github.com/cube-js/cube-ui-kit/blob/main/CONTRIBUTING.md#commit-convention).
-   As you develop, you can run `pnpm build` and
-   `pnpm test` to make sure everything works as expected.
-3. Run `pnpm changeset` to create a detailed description of your changes. This
-   will be used to generate a changelog when we publish an update.
-   [Learn more about Changeset](https://github.com/atlassian/changesets/tree/master/packages/cli).
-   > You can make it earlier after you have created a PR.
-   > Click on a link in the Changeset's bot message
-   >  and write the changes you want to make. Then commit these changes.
+1. **Branch** off `main` using the convention `type/scope` — e.g. `fix/select-overflow`, `feat/date-range-picker`, `docs/menu-typo`.
 
-4. Also, if you provide `jsx` snippets to the changeset, please turn off the
-   live preview by doing the following at the beginning of the snippet:
-   ` ```jsx live=false`
+2. **Develop** your changes. Verify as you go:
 
-> If you made minor changes like CI config, prettier, etc, you can run
-> `pnpm changeset add --empty` to generate an empty changeset file to document
-> your changes.
+```bash
+pnpm build          # check the build
+pnpm test           # run unit tests (Vitest)
+pnpm fix            # lint + format
+```
 
-### Tests
+3. **Create a changeset** to describe your changes for the changelog:
 
-All commits that fix bugs or add features need a test.
-We use jest to write unit tests and storybook to make visual regression tests.
+```bash
+pnpm changeset
+```
+
+   [Learn more about Changesets.](https://github.com/atlassian/changesets/tree/master/packages/cli)
+
+   > For trivial changes (CI config, formatting, etc.) use `pnpm changeset add --empty`.
+   >
+   > If your changeset includes JSX snippets, disable live preview: `` ```jsx live=false ``
+
+4. **Push** and open a Pull Request against `main`.
+
+## Tests
+
+All bug fixes and new features should include tests. The project uses [Vitest](https://vitest.dev/) with [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) and [Chromatic](https://www.chromatic.com/) for visual regression.
+
+```bash
+pnpm test             # run all tests
+pnpm test -- Button   # run tests matching "Button"
+pnpm test -u          # update snapshots
+pnpm chromatic        # visual regression (requires token)
+```
