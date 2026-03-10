@@ -506,7 +506,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundExample[] = [
       border: true,
       preset: 't3',
       color: '#dark-02',
-      scrollbar: 'styled 1x #purple.40 #dark.04',
+      scrollbar: '#purple.40 #dark.04',
     },
   },
 ];
