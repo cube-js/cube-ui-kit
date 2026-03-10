@@ -1,7 +1,7 @@
 # Cube UI Kit
 
 [![npm version](https://img.shields.io/npm/v/@cube-dev/ui-kit.svg)](https://www.npmjs.com/package/@cube-dev/ui-kit)
-[![license](https://img.shields.io/npm/l/@cube-dev/ui-kit.svg)](https://github.com/cube-js/cube-ui-kit/blob/main/LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/cube-js/cube-ui-kit/blob/main/LICENSE)
 
 An open-source React component library that powers [Cube Cloud](https://cubecloud.dev) and other [Cube Dev](https://cube.dev) products. While built for Cube's own interfaces, it is a general-purpose kit you can use freely in any application where it fits your needs.
 
