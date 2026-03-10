@@ -5,6 +5,7 @@ import { Layout } from '../../components/content/Layout';
 import { Button } from './components/Button';
 import { Card } from './components/Card';
 import { ScrollProgress } from './components/ScrollProgress';
+import { StructuredCard } from './components/StructuredCard';
 
 import type { Styles } from '@tenphi/tasty';
 
@@ -54,7 +55,7 @@ const ButtonColumn = tasty({
 });
 
 export interface PlaygroundPreviewProps {
-  component: 'card' | 'button' | 'scroll-progress';
+  component: 'card' | 'button' | 'scroll-progress' | 'structured-card';
   styles: Styles;
 }
 
@@ -97,6 +98,9 @@ export function PlaygroundPreview({
       <Layout.Content padding={0}>
         <PreviewContent>
           {component === 'card' && <Card styles={styles} />}
+          {component === 'structured-card' && (
+            <StructuredCard styles={styles} />
+          )}
           {component === 'scroll-progress' && (
             <ScrollProgress styles={styles} />
           )}

@@ -7,7 +7,7 @@ import {
 
 export interface PlaygroundExample {
   name: string;
-  component: 'card' | 'button' | 'raw' | 'scroll-progress';
+  component: 'card' | 'button' | 'raw' | 'scroll-progress' | 'structured-card';
   styles: Styles;
 }
 
@@ -161,6 +161,139 @@ export const PLAYGROUND_EXAMPLES: PlaygroundExample[] = [
         display: 'block',
         padding: '2x',
       },
+    },
+  },
+  {
+    name: 'Card - Sub-elements',
+    component: 'structured-card',
+    styles: {
+      display: 'flex',
+      flow: 'column',
+      padding: '3x',
+      fill: '#white',
+      radius: '2r',
+      border: true,
+
+      Header: {
+        $: '>',
+        display: 'flex',
+        flow: 'column',
+        gap: '.5x',
+      },
+      Title: {
+        $: '>Header>',
+        preset: 'h5',
+      },
+      Subtitle: {
+        $: '>Header>',
+        preset: 't4',
+        color: '#dark-04',
+      },
+      Body: {
+        $: '>',
+        preset: 't3',
+        color: '#dark-02',
+        padding: '1.5x top',
+      },
+      Footer: {
+        $: '>',
+        display: 'flex',
+        gap: '1x',
+        padding: '1.5x top',
+        borderTop: true,
+        preset: 't4',
+        color: '#dark-03',
+      },
+    },
+  },
+  {
+    name: 'Card - Shimmer',
+    component: 'card',
+    styles: {
+      display: 'flex',
+      flow: 'column',
+      gap: '2x',
+      padding: '3x',
+      fill: '#dark.04',
+      radius: '2r',
+      overflow: 'hidden',
+      position: 'relative',
+      color: 'transparent',
+
+      '@keyframes': {
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
+
+      Shimmer: {
+        $: '::after',
+        content: '""',
+        position: 'absolute',
+        inset: true,
+        image: 'linear-gradient(90deg, transparent, #white.4, transparent)',
+        animation: 'shimmer 1.5s infinite',
+      },
+    },
+  },
+  {
+    name: 'Card - Shapes & Shadows',
+    component: 'card',
+    styles: {
+      display: 'flex',
+      flow: 'column',
+      gap: '2x',
+      padding: '4x',
+      fill: '#white',
+      radius: 'leaf',
+      border: true,
+      shadow: '0 2px 8px #dark.10, inset 0 1px 0 #white.50',
+    },
+  },
+  {
+    name: 'Raw - Grid Layout',
+    component: 'raw',
+    styles: {
+      display: 'grid',
+      gridColumns: '1fr 2fr 1fr',
+      gridRows: 'auto 1fr auto',
+      gridAreas:
+        '"header header header" "nav main aside" "footer footer footer"',
+      gap: '2x',
+      padding: '3x',
+      fill: '#white',
+      radius: '1r',
+      width: 'max 960px',
+      height: 'min 400px',
+    },
+  },
+  {
+    name: 'Raw - Directional Modifiers',
+    component: 'raw',
+    styles: {
+      display: 'flex',
+      flow: 'column',
+      padding: '2x, 3x left right',
+      border: '1bw #border, 2bw #purple bottom',
+      radius: '2r top',
+      fill: '#white',
+      margin: 'auto left right, 2x top bottom',
+      width: 'min 200px',
+    },
+  },
+  {
+    name: 'Raw - Text Truncation',
+    component: 'raw',
+    styles: {
+      display: 'block',
+      width: '200px 300px',
+      padding: '2x',
+      fill: '#white',
+      radius: '1r',
+      border: true,
+      preset: 't3',
+      textOverflow: 'ellipsis / 3',
     },
   },
 ];

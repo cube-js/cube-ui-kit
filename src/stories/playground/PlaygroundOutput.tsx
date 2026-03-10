@@ -8,7 +8,7 @@ import { PrismCode } from '../../components/content/PrismCode/PrismCode';
 import { useToast } from '../../components/overlays/Toast';
 import { CopyIcon } from '../../icons';
 
-import type { StyleResult, Styles } from '@tenphi/tasty';
+import type { KeyframesSteps, StyleResult, Styles } from '@tenphi/tasty';
 
 const OutputContent = tasty({
   styles: {
@@ -23,6 +23,30 @@ const OutputContent = tasty({
 
 export interface PlaygroundOutputProps {
   styles: Styles;
+}
+
+function formatKeyframes(keyframes: Record<string, KeyframesSteps>): string {
+  const blocks: string[] = [];
+
+  for (const [name, steps] of Object.entries(keyframes)) {
+    const stepLines: string[] = [];
+
+    for (const [step, value] of Object.entries(steps)) {
+      if (typeof value === 'string') {
+        stepLines.push(`  ${step} {\n    ${value};\n  }`);
+      } else {
+        const decls = Object.entries(value)
+          .map(([prop, val]) => `${prop}: ${val}`)
+          .join(';\n    ');
+
+        stepLines.push(`  ${step} {\n    ${decls};\n  }`);
+      }
+    }
+
+    blocks.push(`@keyframes ${name} {\n${stepLines.join('\n')}\n}`);
+  }
+
+  return blocks.join('\n\n');
 }
 
 function formatStyleResults(results: StyleResult[]): string {
@@ -85,9 +109,20 @@ export function PlaygroundOutput({ styles }: PlaygroundOutputProps) {
     }
 
     try {
-      // Use a demo selector for display purposes
+      const parts: string[] = [];
+
+      const keyframesDef = styles['@keyframes'] as
+        | Record<string, KeyframesSteps>
+        | undefined;
+
+      if (keyframesDef && typeof keyframesDef === 'object') {
+        parts.push(formatKeyframes(keyframesDef));
+      }
+
       const results = renderStyles(styles, '.demo');
-      return formatStyleResults(results as StyleResult[]);
+      parts.push(formatStyleResults(results as StyleResult[]));
+
+      return parts.filter(Boolean).join('\n\n');
     } catch (e) {
       return `/* Error generating CSS: ${(e as Error).message} */`;
     }
