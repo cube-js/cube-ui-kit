@@ -4,6 +4,7 @@ import { Layout } from '../../components/content/Layout';
 
 import { Button } from './components/Button';
 import { Card } from './components/Card';
+import { ListCard } from './components/ListCard';
 import { ScrollProgress } from './components/ScrollProgress';
 import { StructuredCard } from './components/StructuredCard';
 
@@ -55,7 +56,12 @@ const ButtonColumn = tasty({
 });
 
 export interface PlaygroundPreviewProps {
-  component: 'card' | 'button' | 'scroll-progress' | 'structured-card';
+  component:
+    | 'card'
+    | 'button'
+    | 'scroll-progress'
+    | 'structured-card'
+    | 'list-card';
   styles: Styles;
 }
 
@@ -101,6 +107,7 @@ export function PlaygroundPreview({
           {component === 'structured-card' && (
             <StructuredCard styles={styles} />
           )}
+          {component === 'list-card' && <ListCard styles={styles} />}
           {component === 'scroll-progress' && (
             <ScrollProgress styles={styles} />
           )}

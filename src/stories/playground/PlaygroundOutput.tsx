@@ -1,6 +1,6 @@
 import { renderStyles, tasty } from '@tenphi/tasty';
 import copy from 'clipboard-copy';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { Button } from '../../components/actions/Button';
 import { Layout } from '../../components/content/Layout';
@@ -23,6 +23,7 @@ const OutputContent = tasty({
 
 export interface PlaygroundOutputProps {
   styles: Styles;
+  resetKey?: number | string;
 }
 
 function formatKeyframes(keyframes: Record<string, KeyframesSteps>): string {
@@ -100,8 +101,13 @@ function formatStyleResults(results: StyleResult[]): string {
   return lines.join('\n\n');
 }
 
-export function PlaygroundOutput({ styles }: PlaygroundOutputProps) {
+export function PlaygroundOutput({ styles, resetKey }: PlaygroundOutputProps) {
   const toast = useToast();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo(0, 0);
+  }, [resetKey]);
 
   const cssOutput = useMemo(() => {
     if (!styles || Object.keys(styles).length === 0) {
@@ -146,7 +152,7 @@ export function PlaygroundOutput({ styles }: PlaygroundOutputProps) {
         />
       </Layout.Toolbar>
       <Layout.Content padding={0}>
-        <OutputContent>
+        <OutputContent ref={scrollRef}>
           <PrismCode code={cssOutput} language="css" />
         </OutputContent>
       </Layout.Content>
