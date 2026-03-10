@@ -10,7 +10,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
-  "packageManager": "pnpm@10.30.3",
+  "packageManager": "pnpm@10.32.0",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -73,7 +73,7 @@
     "@react-types/shared": "^3.32.1",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
-    "@tenphi/tasty": "0.7.1",
+    "@tenphi/tasty": "0.0.0-snapshot.443430d",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",
