@@ -1,7 +1,7 @@
 import { Paragraph } from '../components/content/Paragraph';
 
 export default {
-  title: 'Generic/Paragraph',
+  title: 'Content/Paragraph',
   component: Paragraph,
   argTypes: {
     italic: {

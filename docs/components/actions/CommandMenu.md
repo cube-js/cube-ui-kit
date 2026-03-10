@@ -1,0 +1,422 @@
+# CommandMenu
+
+A searchable menu interface that combines the functionality of Menu and ListBox components. It provides a command-line-like experience for users to quickly find and execute actions through a searchable interface.
+
+## When to use
+
+- **Quick action access**: Enable users to quickly find and execute commands or actions
+- **Large command sets**: When you have many available actions that benefit from search filtering
+- **Keyboard-first workflows**: For power users who prefer keyboard navigation
+- **Command-line interfaces**: When building developer tools or admin interfaces
+- **Global search**: As a global command palette accessible via keyboard shortcuts
+
+## Examples
+
+### Default Usage
+
+## Props
+
+- **`searchPlaceholder`** (default: `Search commands...`) — Placeholder text for the search input
+- **`searchValue`** — The search value in controlled mode
+- **`onSearchChange`** `function` — Callback fired when search value changes
+- **`filter`** — Custom filter function for search
+- **`emptyLabel`** (default: `No commands found`) — Label to show when no results are found
+- **`searchInputStyles`** — Custom styles for the search input
+- **`isLoading`** (default: `false`) — Whether the command palette is loading
+- **`shouldFilter`** (default: `true`) — Whether to filter items based on search
+- **`autoFocus`** (default: `true`) — Whether to auto-focus the search input
+- **`onAction`** `function` — Callback fired when an item is selected
+- **`onSelectionChange`** `function` — Callback fired when selection changes
+- **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `none`) — Selection mode for the command palette
+- **`isDisabled`** — Whether the command palette is disabled
+- **`size`** `string` (default: `medium`) — Size of the command menu component
+- **`styles`** — Custom styles for the command palette container
+
+## Styling
+
+### Style Props
+
+The CommandMenu component supports all standard style properties:
+
+- **Layout**: `width`, `height`, `padding`, `margin`
+- **Positioning**: `position`, `top`, `left`, `right`, `bottom`
+- **Flexbox**: `flex`, `alignSelf`, `justifySelf`
+- **Grid**: `gridArea`, `gridColumn`, `gridRow`
+- **Spacing**: `gap`, `rowGap`, `columnGap`
+- **Sizing**: `minWidth`, `maxWidth`, `minHeight`, `maxHeight`
+
+### Sub-elements
+
+The CommandMenu component has several sub-elements that can be styled:
+
+- `SearchWrapper` - Container for the search input area
+- `SearchInput` - The search input field specifically
+- `SearchIcon` - The search/loading icon
+- `LoadingWrapper` - Container for loading state
+- `EmptyState` - Container for empty state message
+- `MenuWrapper` - Container for the menu content
+
+#### searchInputStyles
+
+Customizes the search input field specifically.
+
+### Modifiers
+
+The CommandMenu component supports the following modifiers:
+
+- **`loading`** `boolean` — Whether the command palette is in loading state
+
+## Sub-components
+
+### CommandMenu.Item
+
+Individual menu items within the CommandMenu. Each item is rendered using [Item](../content/Item.md) and supports all Item properties for layout, icons, descriptions, and interactive features.
+
+For detailed information about all available item properties, see the [Menu.Item documentation](./Menu.md#sub-components) which provides the complete API reference. Key properties include:
+
+- **`key`** `Key` — Unique identifier for the item (required)
+- **`children`** `ReactNode` — The main content/label for the menu item
+- **`icon`** `ReactNode` — Icon displayed before the content
+- **`rightIcon`** `ReactNode` — Icon displayed after the content
+- **`description`** `ReactNode` — Secondary text below the main content
+- **`prefix`** `ReactNode` — Content before the main text
+- **`suffix`** `ReactNode` — Content after the main text
+- **`hotkeys`** `string` — Keyboard shortcut that triggers this item
+- **`tooltip`** `string | boolean | object` — Tooltip configuration
+- **`isDisabled`** `boolean` — Whether the item is disabled
+- **`onAction`** `() => void` — Callback fired when item is activated
+
+#### CommandMenu-specific Properties
+
+- **`keywords`** `string[]` — Additional search terms for better discoverability
+- **`forceMount`** `boolean` — Whether to always show this item regardless of search filter
+- **`textValue`** `string` — Text value for search filtering (if different from children)
+
+#### Example with Enhanced Search
+
+```jsx
+<CommandMenu searchPlaceholder="Search commands...">
+  <CommandMenu.Item 
+    key="save" 
+    icon={<IconSave />}
+    hotkeys="cmd+s"
+    keywords={["write", "disk", "persist"]}
+    description="Save the current document"
+  >
+    Save Document
+  </CommandMenu.Item>
+  <CommandMenu.Item 
+    key="help" 
+    icon={<IconHelp />}
+    forceMount={true}
+    description="Always visible help option"
+  >
+    Help & Support
+  </CommandMenu.Item>
+</CommandMenu>
+```
+
+### CommandMenu.Section
+
+Groups related items together with an optional heading. Same as Menu.Section - see [Menu documentation](./Menu.md#sub-components) for full details.
+
+- **`title`** `ReactNode` — Optional heading text for the section
+- **`children`** `CommandMenu.Item[]` — Collection of CommandMenu.Item components
+
+### CommandMenu.Trigger
+
+Alias for MenuTrigger component. See [Menu.Trigger documentation](./Menu.md#menu-trigger) for full API reference.
+
+## Accessibility
+
+### Keyboard Navigation
+
+The CommandMenu component provides comprehensive keyboard support:
+
+- **Search Input Focus**: The search input is automatically focused when the palette opens
+- **Arrow Keys**: Navigate through filtered options while keeping search input focused
+- **Enter**: Select the currently highlighted option
+- **Escape**: Clear search term or close the palette
+- **Tab**: Navigate between focusable elements
+
+### Screen Reader Support
+
+- Proper ARIA roles and labels for search and menu functionality
+- Live region announcements for state changes
+- Support for `aria-activedescendant` for virtual focus
+- Descriptive labels for loading and empty states
+
+### Focus Management
+
+- Search input maintains focus during keyboard navigation
+- Virtual focus pattern for menu items
+- Proper focus restoration when closing
+
+## Usage Patterns
+
+### Basic Usage
+
+```jsx
+<CommandMenu searchPlaceholder="Search commands...">
+  <Menu.Item key="copy">Copy</Menu.Item>
+  <Menu.Item key="paste">Paste</Menu.Item>
+  <Menu.Item key="cut">Cut</Menu.Item>
+</CommandMenu>
+```
+
+### With MenuTrigger
+
+```jsx
+<CommandMenu.Trigger>
+  <Button>Open Commands</Button>
+  <CommandMenu searchPlaceholder="Search commands...">
+    <Menu.Item key="copy">Copy</Menu.Item>
+    <Menu.Item key="paste">Paste</Menu.Item>
+  </CommandMenu>
+</CommandMenu.Trigger>
+```
+
+### With Sections and Keywords
+
+```jsx
+<CommandMenu searchPlaceholder="Search commands...">
+  <Menu.Section title="Edit">
+    <Menu.Item key="copy" keywords={["duplicate", "clone"]}>
+      Copy
+    </Menu.Item>
+    <Menu.Item key="paste" keywords={["insert"]}>
+      Paste
+    </Menu.Item>
+  </Menu.Section>
+  <Menu.Section title="View">
+    <Menu.Item key="zoom-in" keywords={["magnify", "enlarge"]}>
+      Zoom In
+    </Menu.Item>
+  </Menu.Section>
+</CommandMenu>
+```
+
+### Controlled Search
+
+```jsx
+const [searchValue, setSearchValue] = useState('');
+
+<CommandMenu
+  searchValue={searchValue}
+  onSearchChange={setSearchValue}
+  searchPlaceholder="Type to search..."
+>
+  <Menu.Item key="action1">Action 1</Menu.Item>
+  <Menu.Item key="action2">Action 2</Menu.Item>
+</CommandMenu>
+```
+
+### With Loading State
+
+```jsx
+<CommandMenu
+  isLoading={isLoading}
+  searchPlaceholder="Search commands..."
+>
+  {commands.map(command => (
+    <Menu.Item key={command.id}>
+      {command.name}
+    </Menu.Item>
+  ))}
+</CommandMenu>
+```
+
+### Custom Filtering
+
+```jsx
+<CommandMenu
+  filter={(textValue, inputValue) => {
+    // Custom fuzzy search logic
+    return textValue.toLowerCase().includes(inputValue.toLowerCase());
+  }}
+  searchPlaceholder="Fuzzy search..."
+>
+  <Menu.Item key="action1">Action 1</Menu.Item>
+  <Menu.Item key="action2">Action 2</Menu.Item>
+</CommandMenu>
+```
+
+### Force Mount Items
+
+```jsx
+<CommandMenu searchPlaceholder="Search commands...">
+  <Menu.Item key="help" forceMount>
+    Help (always visible)
+  </Menu.Item>
+  <Menu.Item key="copy">Copy</Menu.Item>
+  <Menu.Item key="paste">Paste</Menu.Item>
+</CommandMenu>
+```
+
+### With Selection
+
+```jsx
+const [selectedKeys, setSelectedKeys] = useState(['copy']);
+
+<CommandMenu
+  selectionMode="single"
+  selectedKeys={selectedKeys}
+  onSelectionChange={setSelectedKeys}
+  searchPlaceholder="Select commands..."
+>
+  <Menu.Item key="copy">Copy</Menu.Item>
+  <Menu.Item key="paste">Paste</Menu.Item>
+  <Menu.Item key="cut">Cut</Menu.Item>
+</CommandMenu>
+```
+
+### Multiple Selection
+
+```jsx
+const [selectedKeys, setSelectedKeys] = useState(['copy', 'paste']);
+
+<CommandMenu
+  selectionMode="multiple"
+  selectedKeys={selectedKeys}
+  onSelectionChange={setSelectedKeys}
+  searchPlaceholder="Select multiple commands..."
+>
+  <Menu.Item key="copy">Copy</Menu.Item>
+  <Menu.Item key="paste">Paste</Menu.Item>
+  <Menu.Item key="cut">Cut</Menu.Item>
+</CommandMenu>
+```
+
+### With DialogTrigger
+
+Use CommandMenu inside a Dialog with DialogTrigger for modal command palette functionality:
+
+```jsx
+<DialogTrigger>
+  <Button>Open Command Menu</Button>
+  <Dialog size="medium" isDismissable={false}>
+    <CommandMenu width="100%" height="max(40x, 90vh)" size="medium" searchPlaceholder="Search commands...">
+      <Menu.Item key="copy" description="Copy selected text" hotkeys="Ctrl+C">
+        Copy
+      </Menu.Item>
+      <Menu.Item key="paste" description="Paste from clipboard" hotkeys="Ctrl+V">
+        Paste
+      </Menu.Item>
+      <Menu.Item key="cut" description="Cut selected text" hotkeys="Ctrl+X">
+        Cut
+      </Menu.Item>
+    </CommandMenu>
+  </Dialog>
+</DialogTrigger>
+```
+
+### With useDialogContainer Hook
+
+For programmatic control over the command menu dialog:
+
+```jsx
+import { useDialogContainer } from '@cube-dev/ui-kit';
+
+function CommandMenuDialogContent({ onClose, ...args }) {
+  const handleAction = (key) => {
+    console.log('Action selected:', key);
+    onClose();
+  };
+
+  return (
+    <Dialog size="medium" isDismissable={false}>
+      <CommandMenu 
+        width="100%" 
+        height="max(40x, 90vh)" 
+        size="medium" 
+        onAction={handleAction}
+        {...args}
+      >
+        <Menu.Item key="copy" description="Copy selected text" hotkeys="Ctrl+C">
+          Copy
+        </Menu.Item>
+        <Menu.Item key="paste" description="Paste from clipboard" hotkeys="Ctrl+V">
+          Paste
+        </Menu.Item>
+        <Menu.Item key="cut" description="Cut selected text" hotkeys="Ctrl+X">
+          Cut
+        </Menu.Item>
+      </CommandMenu>
+    </Dialog>
+  );
+}
+
+function App() {
+  const dialog = useDialogContainer(CommandMenuDialogContent);
+
+  const handleOpenDialog = () => {
+    dialog.open({
+      searchPlaceholder: 'Search commands...',
+      autoFocus: true,
+      onClose: dialog.close,
+    });
+  };
+
+  return (
+    <div>
+      <Button onPress={handleOpenDialog}>Open Command Menu</Button>
+      {dialog.rendered}
+    </div>
+  );
+}
+```
+
+## Advanced Features
+
+### Enhanced Search
+
+The CommandMenu supports enhanced search capabilities:
+
+- **Keywords**: Items can include additional keywords for better discoverability
+- **Custom values**: Items can have custom search values separate from display text
+- **Force mount**: Certain items can always be visible regardless of search filter
+- **Custom filtering**: Override the default search algorithm with custom logic
+
+## Best Practices
+
+### Do's
+
+- **Provide clear placeholders**: Use descriptive placeholder text that indicates what users can search for
+- **Use keywords**: Add relevant keywords to items for better discoverability
+- **Group related commands**: Use sections to organize commands logically
+- **Handle loading states**: Show loading indicators for async operations
+- **Provide keyboard shortcuts**: Include hotkey hints in menu items when applicable
+
+### Don'ts
+
+- **Don't overload with options**: Too many commands can overwhelm users even with search
+- **Don't use for simple menus**: Use regular Menu component for small, static option sets
+- **Don't ignore empty states**: Always provide helpful empty state messages
+- **Don't disable search**: The search functionality is core to the component's purpose
+
+## Related Components
+
+- [Menu](./Menu.md) - For static menu options without search
+- [ListBox](../fields/ListBox.md) - For searchable selection lists
+- [Dialog](../overlays/Dialog.md) - For modal command palette usage
+- [MenuTrigger](./Menu.md) - For trigger-based command palette usage
+
+## Technical Notes
+
+### Performance
+
+- The component uses efficient filtering with React Stately's collection system
+- Search filtering is debounced to prevent excessive re-renders
+- Virtual focus is used to maintain performance with large option sets
+
+### Accessibility Compliance
+
+- Meets WCAG 2.1 AA standards for keyboard navigation
+- Supports screen readers with proper ARIA attributes
+- Implements virtual focus pattern for optimal accessibility
+
+### Browser Support
+
+- Modern browsers with ES2018+ support
+- Requires React 18+ for concurrent features
+- Uses React Aria for cross-browser accessibility

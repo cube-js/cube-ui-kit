@@ -1,0 +1,51 @@
+# AlertDialog
+
+A modal dialog for important messages that require user acknowledgment. Extends `Dialog` with predefined confirm/cancel actions. Not dismissable by default.
+
+## When to Use
+
+- Confirmation dialogs
+- Error or warning messages
+- Destructive action confirmations
+
+## Properties
+
+- **`title`** `string` — Dialog title
+- **`content`** `ReactNode` — Dialog body content
+- **`danger`** `boolean` — Applies danger styling for destructive actions
+- **`noActions`** `boolean` — Hide the action buttons entirely
+- **`actions`** `object` — Customize buttons:
+  - `confirm` — Confirm button props or `false` to hide (default: `{ label: 'Ok', type: 'primary' }`)
+  - `cancel` — Cancel button props or `true` to show (default: hidden, uses `{ label: 'Cancel' }`)
+  - `secondary` — Optional secondary button props
+
+### Base Properties
+
+Extends [Dialog](./Dialog.md) and supports [Base properties](../../BaseProperties.md).
+
+## Examples
+
+### Confirmation dialog
+
+```jsx
+<DialogTrigger>
+  <Button>Delete Item</Button>
+  <AlertDialog
+    title="Confirm Delete"
+    content="Are you sure you want to delete this item?"
+    actions={{
+      confirm: { label: 'Delete', type: 'danger' },
+      cancel: true,
+    }}
+  />
+</DialogTrigger>
+```
+
+### Info dialog (confirm only)
+
+```jsx
+<AlertDialog
+  title="Update Available"
+  content="A new version is available. Please refresh to update."
+/>
+```

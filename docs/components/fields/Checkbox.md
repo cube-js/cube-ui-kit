@@ -1,0 +1,176 @@
+# Checkbox
+
+Checkboxes allow users to select multiple items from a list of individual items, or to mark one individual item as selected. They provide a clear visual indication of selection state and support indeterminate states for partially selected groups.
+
+## When to Use
+
+- Allow users to select multiple options from a list
+- Enable/disable features or settings in forms
+- Mark individual items as complete or selected
+- Show indeterminate state when some items in a group are selected
+- Create "Select All" functionality for data tables or lists
+
+## Component
+
+---
+
+### Properties
+
+- **`children`** `string` — The content to display as the checkbox label
+- **`value`** `string` — Value for the checkbox when used in a group
+- **`isSelected`** `boolean` (default: `false`) — Whether the checkbox is selected (controlled)
+- **`defaultSelected`** `boolean` (default: `false`) — Whether the checkbox is selected by default (uncontrolled)
+- **`isIndeterminate`** `boolean` (default: `false`) — Whether the checkbox is in an indeterminate state
+- **`onChange`** `function` — Callback fired when the checkbox value changes
+- **`onFocus`** `function` — Callback fired when the checkbox receives focus
+- **`onBlur`** `function` — Callback fired when the checkbox loses focus
+
+### Base Properties
+
+Supports [Base properties](../../BaseProperties.md)
+
+### Field Properties
+
+Supports all [Field properties](../../FieldProperties.md)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root wrapper element of the component.
+
+#### inputStyles
+
+Customizes the checkbox input element specifically.
+
+### Style Properties
+
+The Checkbox component supports all standard style properties:
+
+`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+- **`checked`** `boolean` — Whether the checkbox is checked
+- **`indeterminate`** `boolean` — Whether the checkbox is in an indeterminate state
+- **`invalid`** `boolean` — Whether the checkbox has validation errors
+- **`valid`** `boolean` — Whether the checkbox is valid
+- **`disabled`** `boolean` — Whether the checkbox is disabled
+- **`hovered`** `boolean` — Whether the checkbox is being hovered
+- **`focused`** `boolean` — Whether the checkbox has focus
+- **`side-label`** `boolean` — Whether the label is positioned to the side
+- **`inside-form`** `boolean` — Whether the checkbox is inside a form field
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<Checkbox>Accept terms and conditions</Checkbox>
+```
+
+### With Default Selection
+
+```jsx
+<Checkbox defaultSelected={true}>
+  Subscribe to newsletter
+</Checkbox>
+```
+
+### Indeterminate State
+
+```jsx
+<Checkbox isIndeterminate={true}>
+  Select All Items
+</Checkbox>
+```
+
+### Disabled State
+
+```jsx
+<Checkbox isDisabled={true}>
+  Cannot be changed
+</Checkbox>
+```
+
+### With Validation
+
+```jsx
+<Checkbox validationState="invalid" isRequired>
+  Must accept to continue
+</Checkbox>
+```
+
+### In a Group
+
+```jsx
+<Checkbox.Group
+  label="Select preferences"
+  value={['email', 'sms']}
+  onChange={setPreferences}
+>
+  <Checkbox value="email">Email notifications</Checkbox>
+  <Checkbox value="sms">SMS notifications</Checkbox>
+  <Checkbox value="push">Push notifications</Checkbox>
+</Checkbox.Group>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the checkbox
+- `Space` - Toggles the checkbox state
+- `Enter` - Activates the checkbox (when inside a form)
+
+### Screen Reader Support
+
+- Component announces as "checkbox" to screen readers
+- State changes are announced (e.g., "checked", "unchecked", "indeterminate")
+- Required state is communicated when `isRequired` is true
+- Validation errors are announced when present
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-labelledby` - References external label elements
+- `aria-describedby` - References additional descriptive text
+- `aria-checked` - Indicates checkbox state (true, false, or mixed for indeterminate)
+- `aria-required` - Indicates if selection is required
+- `aria-invalid` - Indicates validation state
+
+## Best Practices
+
+1. **Do**: Provide clear, descriptive labels
+   ```jsx
+   <Checkbox>Enable two-factor authentication</Checkbox>
+   ```
+
+2. **Don't**: Use unclear or ambiguous text
+   ```jsx
+   <Checkbox>Enable</Checkbox> {/* What gets enabled? */}
+   ```
+
+3. **Accessibility**: Always provide meaningful labels for screen readers
+4. **Groups**: Use CheckboxGroup for related options to improve organization
+5. **Validation**: Provide clear error messages when validation fails
+6. **Indeterminate**: Use sparingly, typically only for "Select All" scenarios
+
+## Integration with Forms
+
+This component supports all [Field properties](../../FieldProperties.md) when used within a Form.
+
+## Suggested Improvements
+
+- Add support for custom icons for checked/unchecked states
+- Implement animation transitions for state changes
+- Add support for mixed checkbox groups with nested hierarchies
+- Consider adding size variants (small, medium, large)
+
+## Related Components
+
+- CheckboxGroup - For organizing multiple related checkboxes
+- [Switch](./Switch.md) - For binary on/off states
+- [RadioGroup](./RadioGroup.md) - For single selection from multiple options

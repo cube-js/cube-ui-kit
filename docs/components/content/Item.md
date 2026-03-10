@@ -1,0 +1,499 @@
+# Item
+
+A foundational component that provides a standardized layout and styling for item-like elements across the design system. Item offers a flexible grid-based structure with support for icons, labels, descriptions, prefixes, suffixes, and interactive features like hotkeys and tooltips.
+
+## When to Use
+
+- As a building block for other components that need item-like styling (Select options, Menu items, List items, etc.)
+- When creating custom interactive elements that need consistent spacing and alignment
+- For buttons or clickable elements that need to display structured content with icons and descriptions
+- When building components that need to support features like selection states, hotkeys, or overflow tooltips
+
+## Component
+
+---
+
+## Properties
+
+- **`children`** `ReactNode` — The content inside the Item
+- **`icon`** — Icon rendered before the content. Can be: ReactNode, `"checkbox"`, `true` (empty slot), or function `({ selected, loading, ...mods }) => ReactNode | true`
+- **`rightIcon`** — Icon rendered after the content. Can be: ReactNode, `true` (empty slot), or function `({ selected, loading, ...mods }) => ReactNode | true`
+- **`prefix`** `ReactNode` — Element rendered before the content (after icon)
+- **`suffix`** `ReactNode` — Element rendered after the content (before rightIcon)
+- **`description`** `ReactNode` — Description text displayed with the item
+- **`descriptionPlacement`** `'inline' | 'block'` (default: `inline`) — How the description is positioned relative to the main content. Defaults to `'block'` for `type="card"` and `type="header"`
+- **`type`** `'item' | 'header' | 'primary' | 'secondary' | 'outline' | 'neutral' | 'clear' | 'link' | 'card'` (default: `item`) — Visual style variant
+- **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `default`) — Semantic colour palette theme
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Item size. Accepts custom number or string values
+- **`shape`** `'card' | 'button' | 'sharp' | 'pill'` (default: `button`) — Shape of the item border radius. Defaults to `'card'` for `type="card"`
+- **`isSelected`** `boolean` (default: `false`) — Marks the item as selected
+- **`isLoading`** `boolean` (default: `false`) — Show loading indicator and disable the item
+- **`loadingSlot`** `'auto' | 'icon' | 'rightIcon' | 'prefix' | 'suffix'` (default: `auto`) — Which slot the loading indicator replaces. `'auto'` prefers `icon` if present, then `rightIcon`, then falls back to `icon`
+- **`actions`** `ReactNode | true` — Inline action buttons displayed on the right side. Use `Item.Action` for consistent styling
+- **`autoHideActions`** `boolean` (default: `false`) — When true, actions are hidden by default and shown only on hover, focus, or focus-within
+- **`preserveActionsSpace`** `boolean` (default: `false`) — When true, preserves the actions width when hidden (only changes opacity). Only applies when `autoHideActions` is true
+- **`disableActionsFocus`** `boolean` (default: `true`) — When true, action buttons are not focusable via keyboard
+- **`hotkeys`** `string` — Keyboard shortcut displayed as a badge (e.g. `"cmd+s"`)
+- **`tooltip`** `string | boolean | object` (default: `true`) — Tooltip content. `true` enables auto tooltip on overflow, a string shows fixed tooltip text, an object supports advanced configuration `{ title, auto, placement, ...tooltipProps }`
+- **`highlight`** `string` — Text to highlight within the item label
+- **`highlightCaseSensitive`** `boolean` (default: `false`) — Whether highlight matching is case-sensitive
+- **`level`** `1 | 2 | 3 | 4 | 5 | 6` (default: `3`) — Heading level for the Label element when `type="header"` or `type="card"`. Changes the HTML tag to the corresponding heading (h1-h6)
+
+### Base Properties
+
+Supports [Base properties](../../BaseProperties.md)
+
+## Styling
+
+### styles
+
+Customizes the root element of the component.
+
+**Sub-elements:**
+- `Icon` - The main icon displayed before the content
+- `RightIcon` - The icon displayed after the content
+- `Label` - The main text content area
+- `Description` - The secondary text below or inline with the main content
+- `Prefix` - Additional content displayed before the main content
+- `Suffix` - Additional content displayed after the main content
+- `Actions` - Container for inline action buttons displayed on the right side
+
+### Style Properties
+
+Direct style application without using the `styles` prop: `width`, `height`, `padding`, `paddingInline`, `paddingBlock`, `margin`, `inset`, `color`, `fill`, `fade`, `opacity`, `display`, `font`, `preset`, `hide`, `whiteSpace`, `position`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `gap`, `columnGap`, `rowGap`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`, `border`, `radius`, `shadow`, `overflow`, `scrollbar`, `outline`, `textAlign`, `reset`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `fontWeight`, `fontStyle`, `textTransform`.
+
+### Modifiers
+
+The `mods` property accepts the following modifiers:
+
+- **`has-icon`** `boolean` — Applied when icon prop is provided
+- **`has-right-icon`** `boolean` — Applied when rightIcon prop is provided
+- **`has-prefix`** `boolean` — Applied when prefix prop is provided
+- **`has-suffix`** `boolean` — Applied when suffix prop is provided
+- **`has-label`** `boolean` — Applied when children or labelProps are provided
+- **`has-start-content`** `boolean` — Applied when icon or prefix is present
+- **`has-end-content`** `boolean` — Applied when rightIcon, suffix, or actions are present
+- **`has-description`** `boolean` — Applied when description is provided
+- **`description`** `'inline' | 'block' | 'none'` — Applied based on the resolved description placement
+- **`has-actions`** `boolean` — Applied when actions prop is provided
+- **`has-actions-content`** `boolean` — Applied when actions have actual content (not just placeholder)
+- **`auto-hide-actions`** `boolean` — Applied when autoHideActions is true
+- **`preserve-actions-space`** `boolean` — Applied when preserveActionsSpace is true
+- **`checkbox`** `boolean` — Applied when using checkbox icon (icon="checkbox")
+- **`selected`** `boolean` — Applied when isSelected is true
+- **`disabled`** `boolean` — Applied when isDisabled is true or when loading
+- **`loading`** `boolean` — Applied when isLoading is true
+- **`size`** `string` — Applied based on size prop value (xsmall, small, medium, large, xlarge, inline)
+- **`type`** `string` — Applied based on type prop value (item, header, primary, secondary, outline, neutral, clear, link, card)
+- **`theme`** `string` — Applied based on theme prop value (default, danger, success, special, warning, note)
+- **`shape`** `string` — Applied based on shape prop value (card, button, sharp, pill)
+
+## Variants
+
+### Types
+
+- `item` - Default item appearance (no specific styling)
+- `header` - Header appearance for section headers (only supports `default` theme, defaults to `descriptionPlacement="block"`, uses semantic heading tags via `level` prop)
+- `primary` - Primary styled item with prominent appearance
+- `secondary` - Secondary styled item with moderate emphasis
+- `outline` - Item with border outline styling
+- `neutral` - Neutral colored item styling
+- `clear` - Transparent item with minimal styling
+- `link` - Link-styled item appearance (does not support icons or loading state)
+- `card` - Card appearance for notifications (supports `default`, `success`, `danger`, `warning`, `note` themes; defaults to `shape="card"`, `descriptionPlacement="block"`, uses semantic heading tags via `level` prop, and has `.5x` padding)
+
+### Themes
+
+- `default` - Standard appearance with default colors
+- `danger` - Red theme for destructive actions
+- `success` - Green theme for positive actions
+- `warning` - Yellow/amber theme for caution or attention
+- `note` - Violet theme for informational context
+- `special` - Special theme with unique styling (not available for `card` or `header` types)
+
+### Sizes
+
+- `xsmall` - Extra small size for compact interfaces
+- `small` - Small size for dense layouts
+- `medium` - Default size for most use cases
+- `large` - Large size for prominent items
+- `xlarge` - Extra large size for emphasized items
+- `inline` - Inline size that adapts to content
+
+### Shapes
+
+- `card` - Card shape with larger border radius (`1cr`) — default for `type="card"`
+- `button` - Button shape with default border radius (default for other types)
+- `sharp` - Sharp corners with no border radius (`0`)
+- `pill` - Pill shape with fully rounded ends (`round`)
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<Item>Simple item content</Item>
+```
+
+### With Icons
+
+```jsx
+{/* Standard icons */}
+<Item icon={<IconUser />} rightIcon={<IconSettings />}>
+  Item with icons
+</Item>
+
+{/* Empty slot (reserves space but shows nothing) */}
+<Item icon={true} rightIcon={true}>
+  Item with empty slots
+</Item>
+
+{/* Dynamic icon based on mods */}
+<Item 
+  icon={({ loading }) => loading ? <LoadingIcon /> : <IconUser />}
+  rightIcon={({ selected }) => selected ? <CheckIcon /> : <IconSettings />}
+>
+  Dynamic icons
+</Item>
+
+{/* Return true from function for empty slot */}
+<Item 
+  icon={({ selected }) => selected ? <CheckIcon /> : true}
+>
+  Conditional icon
+</Item>
+```
+
+### With Description
+
+The `descriptionPlacement` prop controls where the description appears. It defaults to `"inline"` for most types, but `"block"` for `type="card"` and `type="header"`:
+
+```jsx
+{/* Inline description (default for most types) */}
+<Item 
+  icon={<IconFile />}
+  description="Secondary description text"
+  descriptionPlacement="inline"
+>
+  Main item content
+</Item>
+
+{/* Block description */}
+<Item 
+  icon={<IconFile />}
+  description="Description appears below the label"
+  descriptionPlacement="block"
+>
+  Main item content
+</Item>
+```
+
+### With Hotkeys
+
+```jsx
+<Item 
+  as="button"
+  hotkeys="cmd+s"
+  onClick={() => console.log('Save triggered')}
+>
+  Save Document
+</Item>
+```
+
+### With Selection State
+
+```jsx
+<Item icon="checkbox" isSelected={true}>
+  Selected item with checkbox
+</Item>
+```
+
+### With Different Shapes
+
+### Header Type
+
+Use `type="header"` for section headers. Header items have larger text preset and default to block description placement:
+
+```jsx
+<Item type="header" icon={<IconFolder />}>
+  Section Header
+</Item>
+
+<Item type="header" icon={<IconFolder />} description="Section description">
+  Section Header with Description
+</Item>
+```
+
+### Card Type
+
+Use `type="card"` for notification-style items. Card items automatically use card shape, block description placement, and have `.5x` padding. They support `default`, `success`, `danger`, `warning`, and `note` themes.
+
+Like headers, card labels use semantic heading tags (h1-h6) controlled by the `level` prop (default: 3):
+
+```jsx
+<Item type="card" theme="default" icon={<IconInfo />} description="This is an informational message">
+  Info Card
+</Item>
+
+<Item type="card" theme="success" icon={<IconCheck />} description="Operation completed successfully">
+  Success Card
+</Item>
+
+<Item type="card" theme="danger" icon={<IconAlertTriangle />} description="Something went wrong">
+  Error Card
+</Item>
+
+<Item type="card" theme="warning" icon={<IconAlertTriangle />} description="Proceed with caution">
+  Warning Card
+</Item>
+
+<Item type="card" theme="note" icon={<IconNote />} description="Additional context or tips">
+  Note Card
+</Item>
+
+{/* Card with custom heading level */}
+<Item type="card" theme="default" level={2} icon={<IconInfo />} description="Important section">
+  Section Card (h2)
+</Item>
+```
+
+### With Loading State
+
+The `isLoading` prop displays a loading indicator and disables the item. The `loadingSlot` prop controls which slot the loading icon replaces:
+
+```jsx
+<Item 
+  icon={<IconSave />}
+  isLoading={true}
+  loadingSlot="icon"
+>
+  Saving...
+</Item>
+
+<Item 
+  icon={<IconFile />}
+  rightIcon={<IconDownload />}
+  isLoading={true}
+  loadingSlot="rightIcon"
+>
+  Downloading...
+</Item>
+```
+
+When `loadingSlot="auto"` (default), the loading icon intelligently selects the best slot: prefers `icon` if present, then `rightIcon`, or falls back to `icon`.
+
+### With Actions
+
+Item supports inline actions that appear on the right side. Use the `Item.Action` compound component for consistent styling:
+
+```jsx
+<Item 
+  icon={<IconFile />}
+  actions={
+    <>
+      <Item.Action icon={<IconEdit />} aria-label="Edit" onPress={handleEdit} />
+      <Item.Action icon={<IconTrash />} aria-label="Delete" onPress={handleDelete} />
+    </>
+  }
+>
+  Document with Actions
+</Item>
+```
+
+Actions automatically inherit the parent's `type`, `theme`, and `isDisabled` props and adjust their styling accordingly. When the parent Item is disabled, all actions are also disabled unless explicitly overridden with `isDisabled={false}`. The component reserves space for actions to prevent content overlap.
+
+By default, action buttons are focusable. Use `disableActionsFocus={true}` to prevent them from receiving keyboard focus.
+
+#### Show Actions on Hover
+
+Use `autoHideActions` to hide actions by default and reveal them on hover, focus, or focus-within:
+
+```jsx
+<Item 
+  icon={<IconFile />}
+  autoHideActions={true}
+  actions={
+    <>
+      <Item.Action icon={<IconEdit />} aria-label="Edit" onPress={handleEdit} />
+      <Item.Action icon={<IconTrash />} aria-label="Delete" onPress={handleDelete} />
+    </>
+  }
+>
+  Hover to show actions
+</Item>
+```
+
+This provides a cleaner interface while keeping actions easily accessible. By default, actions collapse to zero width when hidden.
+
+#### Preserve Actions Space
+
+Use `preserveActionsSpace` together with `autoHideActions` to keep the actions area visible (preserving its width) while only changing the opacity. This prevents content from shifting when actions appear:
+
+```jsx
+<Item 
+  icon={<IconFile />}
+  autoHideActions={true}
+  preserveActionsSpace={true}
+  actions={
+    <>
+      <Item.Action icon={<IconEdit />} aria-label="Edit" onPress={handleEdit} />
+      <Item.Action icon={<IconTrash />} aria-label="Delete" onPress={handleDelete} />
+    </>
+  }
+>
+  Actions fade in without shifting content
+</Item>
+```
+
+### With Tooltip
+
+By default, Item shows an auto tooltip when content overflows.
+
+**Type:** `string | boolean | object`
+
+**Values:**
+- `true` (default) - Shows tooltip with item content when text overflows
+- `false` - Disables tooltip entirely
+- `string` - Shows tooltip with the specified text (always visible, not auto)
+- `object` - Advanced configuration:
+  - `title?: string` - Custom tooltip text (when provided, always shows tooltip unless `auto: true`)
+  - `auto?: boolean` - Enable/disable auto overflow behavior (defaults to `true` when no `title` is provided)
+  - `placement?: string` - Tooltip position (top, bottom, left, right, etc.)
+  - Plus other [TooltipProvider props](../overlays/Tooltip.md)
+
+```jsx
+{/* Auto tooltip on overflow (default) */}
+<Item style={{ width: '200px' }}>
+  This is a very long text that will show a tooltip when overflowed
+</Item>
+
+{/* Disable tooltip */}
+<Item tooltip={false} style={{ width: '200px' }}>
+  This text will be truncated without a tooltip
+</Item>
+
+{/* Always show custom tooltip */}
+<Item tooltip={{ title: 'Custom tooltip text' }}>
+  Hover to see custom tooltip
+</Item>
+
+{/* Auto tooltip with custom placement */}
+<Item tooltip={{ placement: 'right' }} style={{ width: '200px' }}>
+  Long text with tooltip on the right when overflowed
+</Item>
+
+{/* Custom tooltip only on overflow */}
+<Item 
+  tooltip={{ title: 'Custom overflow tooltip', auto: true }}
+  style={{ width: '200px' }}
+>
+  This shows custom tooltip only when text overflows
+</Item>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the component when it's focusable
+- `Space/Enter` - Activates the component when used as a button
+- Custom hotkeys - Trigger component actions when hotkeys are specified
+
+### Screen Reader Support
+
+- Component announces its role based on the `as` prop (button, link, etc.)
+- Selection state is announced when `isSelected` is used
+- Disabled state is properly communicated
+- Tooltip content is accessible to screen readers
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-disabled` - Indicates disabled state
+- `aria-selected` - Indicates selection state when applicable
+- `tabIndex` - Controls focus behavior
+
+## Best Practices
+
+1. **Do**: Use clear, descriptive text for the main content
+   ```jsx
+   <Item icon={<IconUser />}>User Profile</Item>
+   ```
+
+2. **Do**: Use descriptions to provide additional context
+   ```jsx
+   <Item icon={<IconFile />} description="Last edited 2 hours ago">
+     Document.pdf
+   </Item>
+   ```
+
+3. **Do**: Use hotkeys for frequently accessed actions
+   ```jsx
+   <Item as="button" hotkeys="cmd+s" onPress={handleSave}>
+     Save Document
+   </Item>
+   ```
+
+4. **Do**: Use `Item.Action` for inline actions
+   ```jsx
+   <Item 
+     icon={<IconFile />}
+     actions={
+       <>
+         <Item.Action icon={<IconEdit />} aria-label="Edit" />
+         <Item.Action icon={<IconTrash />} aria-label="Delete" />
+       </>
+     }
+   >
+     File with Actions
+   </Item>
+   ```
+
+5. **Don't**: Add too many actions (limit to 2-3 for clarity)
+   ```jsx
+   {/* Avoid this - too many action buttons */}
+   <Item 
+     actions={
+       <>
+         <Item.Action icon={<IconEdit />} aria-label="Edit" />
+         <Item.Action icon={<IconCopy />} aria-label="Copy" />
+         <Item.Action icon={<IconShare />} aria-label="Share" />
+         <Item.Action icon={<IconTrash />} aria-label="Delete" />
+       </>
+     }
+   >
+     Item with too many actions
+   </Item>
+   ```
+
+6. **Don't**: Overcrowd the component with too many elements
+   ```jsx
+   {/* Avoid this - too many elements competing for attention */}
+   <Item 
+     icon={<IconA />} 
+     rightIcon={<IconB />} 
+     prefix="Pre" 
+     suffix="Suf"
+     description="Very long description with lots of details"
+   >
+     Complex item with everything
+   </Item>
+   ```
+
+7. **Accessibility**: Always ensure interactive items are focusable and have proper ARIA attributes, and provide `aria-label` for action buttons
+
+## Related Components
+
+- [ItemButton](../actions/ItemButton.md) - Interactive button built on Item
+- [ItemAction](../actions/ItemAction.md) - Action button component for inline actions (also available as `Item.Action`, `ItemButton.Action`, `Menu.Item.Action`, etc.)
+- [ItemBadge](./ItemBadge.md) - Badge component for displaying labels or counts (also available as `Item.Badge`)
+- [Select](../fields/Select.md) - Dropdown selection component using Item
+- [ComboBox](../fields/ComboBox.md) - Searchable dropdown component using Item
+- [ListBox](../fields/ListBox.md) - List selection component using Item
+- [FilterListBox](../fields/FilterListBox.md) - Filterable list component using Item
+- [FilterPicker](../fields/FilterPicker.md) - Filter selection component using Item
+- [Menu](../actions/Menu.md) - Context menu component using Item
+- [CommandMenu](../actions/CommandMenu.md) - Command palette component using Item
+- [Button](../actions/Button.md) - Traditional button component
+- [Link](../actions/Link.md) - Text link component
+- Text - Typography component for simple text

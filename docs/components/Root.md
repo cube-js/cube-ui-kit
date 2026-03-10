@@ -1,0 +1,50 @@
+# Root
+
+The root application wrapper. Provides theme context, global styles, portal container, modal/toast providers, and navigation. Wrap your app with `Root` at the top level.
+
+## When to Use
+
+- Top-level app component (required)
+- Provides context for modals, toasts, tooltips, and overlays
+- Theme and design token configuration
+
+## Properties
+
+- **`navigation`** `NavigationAdapter` — Custom navigation adapter for routing
+- **`tracking`** `TrackingProps` — Analytics/tracking event configuration
+- **`tokens`** `Record<string, string>` — Custom design tokens (CSS custom properties)
+- **`fonts`** `boolean` — Whether to load default fonts
+- **`font`** `string` — Custom font family name
+- **`monospaceFont`** `string` — Custom monospace font family name
+- **`fontDisplay`** `'auto' | 'block' | 'swap' | 'fallback' | 'optional'` (default: `'swap'`) — Font display strategy
+- **`bodyStyles`** `Record<string, string>` — Raw CSS styles applied to the `<body>`
+- **`publicUrl`** `string` — Public URL for font loading
+- **`cursorStrategy`** `'web' | 'native'` (default: `'web'`) — Cursor style for interactive elements (`web` uses pointer, `native` uses default)
+
+### Style Defaults
+
+- `display` — `contents`
+- `color` — `#dark-02`
+- `preset` — `t3`
+
+### Base Properties
+
+Supports [Base properties](../BaseProperties.md).
+
+## Examples
+
+```jsx
+<Root>
+  <App />
+</Root>
+```
+
+```jsx
+<Root
+  font="Inter"
+  navigation={routerAdapter}
+  tokens={{ '--gap': '8px', '--radius': '4px' }}
+>
+  <App />
+</Root>
+```

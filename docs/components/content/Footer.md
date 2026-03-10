@@ -1,0 +1,35 @@
+# Footer
+
+A footer section for page layouts. Designed to work with `Layout`.
+
+## When to Use
+
+- Page footers with links or copyright
+- Bottom bar of application layouts
+- Action bars at the bottom of modals or panels
+
+## Properties
+
+No component-specific props. Use style props directly.
+
+### Style Defaults
+
+- `display` — `block`
+- `flow` — `column`
+- `gridArea` — `footer`
+
+### Base Properties
+
+Supports [Base properties](../../BaseProperties.md).
+
+## Examples
+
+```jsx
+<Layout>
+  <Layout.Header>...</Layout.Header>
+  <Layout.Content>...</Layout.Content>
+  <Layout.Footer>
+    <Text.Minor>© 2024 Company</Text.Minor>
+  </Layout.Footer>
+</Layout>
+```

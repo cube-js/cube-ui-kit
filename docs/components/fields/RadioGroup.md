@@ -1,0 +1,310 @@
+# RadioGroup
+
+A radio group allows users to select exactly one option from a set of mutually exclusive choices. It provides clear visual indication of selection state and ensures only one option can be selected at a time.
+
+## When to Use
+
+- Allow users to select exactly one option from 2-7 choices
+- Present mutually exclusive options in forms
+- Create settings panels with single-choice preferences
+- Display filter options where only one can be active
+- Provide clear selection options in surveys or questionnaires
+
+## Component
+
+---
+
+### Properties
+
+- **`children`** — Radio elements that define the available options
+- **`value`** `string` — The currently selected value (controlled)
+- **`defaultValue`** `string` — The default selected value (uncontrolled)
+- **`type`** `'radio' | 'button' | 'tabs'` (default: `radio`) — Visual type for all radios in the group (button/tabs default to horizontal)
+- **`orientation`** `undefined | 'vertical' | 'horizontal'` (default: `auto`) — Orientation of the radio group (auto-set based on type)
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `xsmall`) — Size for all radio buttons in the group
+- **`buttonType`** `'outline' | 'neutral' | 'primary' | 'clear'` — Button type for button-style radios (ignored in tabs mode). When set to "primary", selected buttons use primary style and non-selected use secondary
+- **`onChange`** `function` — Callback fired when the selected value changes
+- **`onBlur`** `function` — Callback fired when the radio group loses focus
+- **`onFocus`** `function` — Callback fired when the radio group receives focus
+
+### Base Properties
+
+Supports [Base properties](../../BaseProperties.md)
+
+### Field Properties
+
+Supports all [Field properties](../../FieldProperties.md)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root wrapper element of the component.
+
+**Sub-elements:** None
+
+#### groupStyles
+
+Customizes the radio group container specifically.
+
+**Sub-elements:** None
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`.
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+- **`horizontal`** `boolean` — Whether the radio group is oriented horizontally
+- **`tabs`** `boolean` — Whether the radio group uses tabs styling
+- **`inside-form`** `boolean` — Whether the radio group is inside a form field
+- **`side-label`** `boolean` — Whether the label is positioned at the side
+
+## Variants
+
+### Type
+
+- `radio` - Traditional radio button appearance (default)
+- `button` - Button-style radio options with spacing
+- `tabs` - Connected tab-style buttons (compact, neutral styling)
+
+**Default Orientation:**
+- `radio` type: vertical
+- `button` and `tabs` types: horizontal
+
+### Orientation
+
+- `vertical` - Stack radio options vertically
+- `horizontal` - Arrange radio options horizontally
+
+The orientation is automatically set based on the `type`:
+- Traditional radios default to vertical
+- Button and tabs types default to horizontal for better UX
+
+### Size
+
+Controls the size of all radio buttons in the group:
+- `xsmall` - Extra small size
+- `small` - Small size
+- `medium` - Medium size (default)
+- `large` - Large size
+- `xlarge` - Extra large size
+
+**Size Mapping in Tabs Mode:**
+When `type="tabs"`, sizes are automatically mapped to maintain visual consistency:
+- `small` and `medium` → `xsmall`
+- `large` → `medium`
+- `xlarge` → `large`
+- `xsmall` remains `xsmall`
+
+This ensures tab groups remain compact and cohesive.
+
+### Button Type
+
+When using `type="button"`, you can customize the button appearance:
+- `outline` - Outlined buttons (default)
+- `neutral` - Neutral filled buttons
+- `primary` - Primary action buttons with smart styling: selected buttons use primary style, non-selected buttons automatically use secondary style
+- `clear` - Minimal buttons without background
+
+**Note:** 
+- The `buttonType` prop is ignored when `type="tabs"`. Tabs always use neutral styling for visual consistency.
+- The `secondary` type cannot be used directly. Use `primary` instead, which automatically applies secondary styling to non-selected buttons.
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<Radio.Group label="Select an option">
+  <Radio value="option1">Option 1</Radio>
+  <Radio value="option2">Option 2</Radio>
+  <Radio value="option3">Option 3</Radio>
+</Radio.Group>
+```
+
+### Horizontal Layout
+
+```jsx
+<Radio.Group label="Size" orientation="horizontal">
+  <Radio value="small">Small</Radio>
+  <Radio value="medium">Medium</Radio>
+  <Radio value="large">Large</Radio>
+</Radio.Group>
+```
+
+### Button Style
+
+```jsx
+<Radio.Group label="Priority" type="button">
+  <Radio value="low">Low</Radio>
+  <Radio value="medium">Medium</Radio>
+  <Radio value="high">High</Radio>
+</Radio.Group>
+```
+
+### Tabs Group
+
+```jsx
+<Radio.Tabs label="Status">
+  <Radio value="active">Active</Radio>
+  <Radio value="inactive">Inactive</Radio>
+  <Radio value="pending">Pending</Radio>
+</Radio.Tabs>
+```
+
+### Custom Button Type
+
+```jsx
+{/* Primary buttonType: selected uses primary, non-selected uses secondary */}
+<Radio.Group label="Action" type="button" buttonType="primary">
+  <Radio value="save">Save</Radio>
+  <Radio value="cancel">Cancel</Radio>
+</Radio.Group>
+```
+
+### Size Control
+
+```jsx
+<Radio.Group label="Choose size" type="button" size="large">
+  <Radio value="xs">XS</Radio>
+  <Radio value="s">S</Radio>
+  <Radio value="m">M</Radio>
+  <Radio value="l">L</Radio>
+  <Radio value="xl">XL</Radio>
+</Radio.Group>
+```
+
+### With Default Value
+
+```jsx
+<Radio.Group label="Theme" defaultValue="light">
+  <Radio value="light">Light</Radio>
+  <Radio value="dark">Dark</Radio>
+  <Radio value="auto">Auto</Radio>
+</Radio.Group>
+```
+
+### With Validation
+
+```jsx
+<Radio.Group
+  label="Required selection"
+  isRequired
+  isInvalid={true}
+  errorMessage="Please select an option"
+>
+  <Radio value="yes">Yes</Radio>
+  <Radio value="no">No</Radio>
+</Radio.Group>
+```
+
+### Disabled State
+
+```jsx
+<Radio.Group label="Disabled options" isDisabled>
+  <Radio value="option1">Cannot select</Radio>
+  <Radio value="option2">Cannot select</Radio>
+</Radio.Group>
+```
+
+### Individual Disabled Options
+
+```jsx
+<Radio.Group label="Mixed state">
+  <Radio value="available">Available</Radio>
+  <Radio value="limited">Limited</Radio>
+  <Radio value="unavailable" isDisabled>Unavailable</Radio>
+</Radio.Group>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the radio group (or first radio if none selected)
+- `Arrow Keys` - Navigate between radio options within the group
+- `Space` - Selects the focused radio option
+- `Shift + Tab` - Moves focus away from the radio group
+
+### Screen Reader Support
+
+- Component announces as "radio group" to screen readers
+- Current selection is announced when navigating
+- Required state and validation errors are communicated
+- Group label and individual radio labels are properly associated
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-labelledby` - References external label elements
+- `aria-describedby` - References additional descriptive text
+- `aria-required` - Indicates if selection is required
+- `aria-invalid` - Indicates validation state for the group
+- `role="radiogroup"` - Identifies the container as a radio group
+
+## Best Practices
+
+1. **Do**: Provide clear, descriptive labels for both group and options
+   ```jsx
+   <Radio.Group label="Preferred contact method">
+     <Radio value="email">Email</Radio>
+     <Radio value="phone">Phone</Radio>
+   </Radio.Group>
+   ```
+
+2. **Don't**: Use radio groups for more than 7 options
+   ```jsx
+   <Radio.Group label="Country"> {/* Use Select instead */}
+     {/* Too many options... */}
+   </Radio.Group>
+   ```
+
+3. **Visual Type**: Use `Radio.Tabs` for compact toolbars, `type="button"` for spaced selections, traditional radios for forms
+   ```jsx
+   {/* Good for compact toolbars */}
+   <Radio.Tabs label="View">
+     <Radio value="list">List</Radio>
+     <Radio value="grid">Grid</Radio>
+   </Radio.Tabs>
+   
+   {/* Good for button selections */}
+   <Radio.Group type="button" label="Priority">
+     <Radio value="low">Low</Radio>
+     <Radio value="high">High</Radio>
+   </Radio.Group>
+   
+   {/* Good for forms */}
+   <Radio.Group label="Gender">
+     <Radio value="male">Male</Radio>
+     <Radio value="female">Female</Radio>
+   </Radio.Group>
+   ```
+
+4. **Size**: Set size at the group level for consistency
+5. **Selection**: Always provide a default selection for required fields
+6. **Grouping**: Use meaningful group labels that describe the choice
+7. **Options**: Keep option labels concise and mutually exclusive
+8. **Layout**: Use horizontal layout only when space permits and options are short
+9. **Tabs Mode**: Use `Radio.Tabs` for compact, connected button groups in limited space
+
+## Integration with Forms
+
+This component supports all [Field properties](../../FieldProperties.md) when used within a Form.
+
+## Suggested Improvements
+
+- Add support for rich content in radio options (icons, descriptions)
+- Implement card-style radio buttons for complex options
+- Add support for custom radio button indicators
+- Consider adding image-based radio options
+- Implement grouped radio sections for complex forms
+
+## Related Components
+
+- [Checkbox](./Checkbox.md) - For multiple selection scenarios
+- CheckboxGroup - For selecting multiple related options
+- [Select](./Select.md) - For single selection from many options
+- [Switch](./Switch.md) - For binary on/off choices

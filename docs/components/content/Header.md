@@ -1,0 +1,35 @@
+# Header
+
+A header section for page layouts. Renders as `<header>` and is designed to work with `Layout`.
+
+## When to Use
+
+- Page headers with title and actions
+- Section headers in layouts
+- Top bar of application layouts
+
+## Properties
+
+No component-specific props. Use style props directly.
+
+### Style Defaults
+
+- `display` — `block`
+- `flow` — `column`
+- `gridArea` — `header`
+
+### Base Properties
+
+Supports [Base properties](../../BaseProperties.md).
+
+## Examples
+
+```jsx
+<Layout>
+  <Layout.Header>
+    <Title level={3}>Dashboard</Title>
+    <Button>Settings</Button>
+  </Layout.Header>
+  <Layout.Content>...</Layout.Content>
+</Layout>
+```

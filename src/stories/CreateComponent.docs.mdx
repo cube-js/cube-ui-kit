@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Guides/Create Component" />
+<Meta title="Getting Started/Create Component" />
 
 # Create Component
 
@@ -48,30 +48,73 @@ function MyComponent(props: MyComponentProps) {
 
 ### 2. Style Properties
 
-Style properties allow direct styling without using the `styles` prop. Use predefined style property sets from `/src/tasty/styles/list.ts`:
+Style properties allow consumers to apply layout and styling directly as component props. There are two approaches:
+
+**Approach A — `styleProps` on `tasty()`** (simpler, when rest props go directly to the tasty element):
+
+`styleProps` tells tasty which CSS properties the component accepts as typed React props. The component still needs to declare the matching TypeScript interfaces so consumers get autocomplete. This works when rest props are spread directly onto the tasty element.
+
+```tsx
+import { tasty, BaseProps, OUTER_STYLES, CONTAINER_STYLES } from '@tenphi/tasty';
+import type { OuterStyleProps, ContainerStyleProps } from '@tenphi/tasty';
+
+interface CubeMyComponentProps extends BaseProps, OuterStyleProps, ContainerStyleProps {
+  label?: string;
+  isDisabled?: boolean;
+}
+
+const MyElement = tasty({
+  qa: 'MyComponent',
+  styles: {
+    display: 'flex',
+    flow: 'column',
+    padding: '2x',
+    fill: '#surface',
+    radius: '1r',
+    border: {
+      '': '#border',
+      disabled: '#border.5',
+    },
+  },
+  styleProps: [...OUTER_STYLES, ...CONTAINER_STYLES],
+});
+
+function MyComponent({ label, isDisabled, ...props }: CubeMyComponentProps) {
+  return (
+    <MyElement {...props} mods={{ disabled: isDisabled }}>
+      {label}
+    </MyElement>
+  );
+}
+```
+
+**Approach B — `extractStyles` + `filterBaseProps`** (when you need to split props between multiple elements or add custom logic):
 
 ```tsx
 import {
   CONTAINER_STYLES,
   ContainerStyleProps,
-  BASE_STYLES,
-  BaseStyleProps,
   TEXT_STYLES,
   TextStyleProps,
   extractStyles,
+  filterBaseProps,
 } from '@tenphi/tasty';
 
 interface MyComponentProps 
   extends AllBaseProps,
-    ContainerStyleProps,  // All container styles
-    TextStyleProps {      // Text-specific styles
-  // Component-specific props
+    ContainerStyleProps,
+    TextStyleProps {
 }
 
 function MyComponent(props: MyComponentProps) {
   const styles = extractStyles(props, [...CONTAINER_STYLES, ...TEXT_STYLES]);
   
-  return <Element styles={styles} />;
+  return (
+    <Element
+      {...filterBaseProps(props, { eventProps: true })}
+      styles={styles}
+    />
+  );
 }
 ```
 
@@ -382,7 +425,7 @@ For input components that need to integrate with forms, see the [Field documenta
 
 ## Best Practices
 
-1. **Always support base properties**: Use `filterBaseProps` and extend `AllBaseProps`
+1. **Always support base properties**: Use `styleProps` (recommended) or `filterBaseProps`, and extend `AllBaseProps`
 
 2. **Provide appropriate style properties**: Choose the right combination of style property sets for your component's needs
 
@@ -395,6 +438,20 @@ For input components that need to integrate with forms, see the [Field documenta
 6. **Document sub-elements**: Clearly document what sub-elements are available for styling
 
 7. **Keep it simple when appropriate**: Not every component needs all features - use what makes sense for your use case
+
+8. **Use named React imports**: Import `useCallback`, `useState`, `forwardRef` etc. directly from `'react'` instead of using `React.useCallback(...)`.
+
+9. **Use `useEvent` for stable callbacks**: When a callback doesn't need to trigger re-renders, prefer `useEvent` from `src/_internal/hooks/use-event` for a stable identity that always calls the latest implementation:
+
+```tsx
+import { useEvent } from '../_internal/hooks/use-event';
+
+const handleClick = useEvent((e) => {
+  // always has latest closure, but stable identity
+});
+```
+
+10. **Use `variants` for theming, not sizing**: The `variants` option in `tasty()` defines mutually exclusive visual variations (e.g. `default`, `danger`, `outline`). CSS is only generated for variants actually rendered at runtime. Use modifiers for dimensions like `size`.
 
 ## Component Checklist
 

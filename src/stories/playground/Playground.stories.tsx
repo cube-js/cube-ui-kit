@@ -16,7 +16,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Key } from 'react';
 
 const meta: Meta = {
-  title: 'Guides/Playground',
+  title: 'Getting Started/Tasty Playground',
   tags: ['!autodocs'],
   parameters: {
     layout: 'fullscreen',

@@ -5,7 +5,7 @@ import { CubeTextProps, Text } from '../components/content/Text';
 import { baseProps } from './lists/baseProps';
 
 export default {
-  title: 'Generic/Text',
+  title: 'Content/Text',
   component: Text,
   parameters: {
     controls: {

@@ -1,0 +1,29 @@
+# Portal
+
+Renders children outside the current DOM hierarchy using React portals. By default, portals mount under the `Root` component's portal container.
+
+## When to Use
+
+- Modals and overlays
+- Tooltips and popovers
+- Content that should escape parent overflow/stacking context
+
+## Properties
+
+- **`root`** `RefObject<HTMLElement>` — Custom mount target ref (default: Root's portal container)
+- **`isDisabled`** `boolean` (default: `false`) — Disable portaling and render inline
+- **`onMount`** `() => void` — Callback when portal mounts
+
+## Examples
+
+```jsx
+<Portal>
+  <div>Rendered outside parent DOM</div>
+</Portal>
+```
+
+```jsx
+<Portal isDisabled={typeof window === 'undefined'}>
+  <Modal>Content</Modal>
+</Portal>
+```

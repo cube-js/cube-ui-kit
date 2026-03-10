@@ -1,0 +1,289 @@
+# Toast
+
+Toast notifications provide brief, non-intrusive feedback to users about actions or events. They appear at the top center of the viewport and automatically dismiss after a configurable duration.
+
+## When to Use
+
+- Provide feedback after user actions (e.g., "Copied to clipboard")
+- Show success/error/warning messages that don't require user action
+- Display progress states for ongoing operations
+- Communicate non-critical information that doesn't interrupt workflow
+
+## Component
+
+---
+
+### Properties
+
+- **`title`** `ReactNode` — Primary content of the toast
+- **`description`** `ReactNode` — Secondary content of the toast
+- **`theme`** `'default' | 'success' | 'danger' | 'warning' | 'note'` (default: `'default'`) — Visual theme of the toast
+
+### Base Properties
+
+Supports [Base properties](../../BaseProperties.md)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the toast. The toast uses the `Item` component with `type="card"` internally.
+
+**Sub-elements:**
+- `Label` - Primary content text
+- `Description` - Secondary content text
+- `Icon` - Icon container
+
+## Themes
+
+Available themes:
+
+- `default` - Standard appearance
+- `success` - Positive feedback (green)
+- `danger` - Error or destructive action (red)
+- `warning` - Caution or attention needed (yellow)
+- `note` - Informational (blue)
+
+## Examples
+
+### Using useToast Hook
+
+The primary way to show toasts programmatically:
+
+```jsx
+const toast = useToast();
+
+// String shorthand
+toast.success('Copied to clipboard');
+
+// Object with options
+toast.success({
+  title: 'Success',
+  description: 'File copied to clipboard',
+  icon: <CustomIcon />,
+  duration: 3000,
+});
+
+// Available methods
+toast();           // Default theme
+toast.success();   // Success theme
+toast.danger();    // Danger theme
+toast.warning();   // Warning theme
+toast.note();      // Note theme
+toast.remove(id);  // Remove a toast by id
+```
+
+### Declarative Toast Component
+
+Use the `<Toast>` component for toasts that should be visible while mounted:
+
+```jsx
+// Simple toast (visible while mounted)
+<Toast theme="success">Saved successfully</Toast>
+
+// With description
+<Toast title="Success" description="Changes saved" theme="success" />
+```
+
+### Progress Toast
+
+Use `useProgressToast` for operations that have loading, success, and error states. The hook manages the entire lifecycle of the toast automatically.
+
+#### How It Works
+
+The `useProgressToast` hook accepts an optional options object that controls the toast state. The toast only appears after `isLoading: true` is seen — non-loading initial states are silently ignored until a loading cycle occurs.
+
+```tsx
+interface ProgressToastOptions {
+  isLoading: boolean;      // Whether the operation is in progress
+  title?: ReactNode;       // Primary message
+  description?: ReactNode; // Secondary message
+  theme?: ToastType;       // 'default' | 'success' | 'danger' | 'warning' | 'note'
+  icon?: ReactNode;        // Custom icon (theme-based icons applied automatically when not loading)
+  id?: Key;                // For deduplication
+}
+
+// Or pass empty value to immediately dismiss any existing toast
+type ProgressToastEmpty = null | undefined | false | {};
+```
+
+#### State Transitions
+
+The hook requires a loading cycle (`isLoading: true`) before any toast becomes visible. If the initial state is not loading, no toast is shown until `isLoading: true` is passed. The hook handles three main scenarios:
+
+**1. Loading State** (`isLoading: true`) — triggers initial appearance
+- Toast appears immediately and persists until `isLoading` becomes `false`
+- No auto-dismiss timer while loading
+- This is the only state that can trigger the initial appearance of the toast
+
+**2. Result State** (`isLoading: false` with content)
+- Only shown after a prior loading state — ignored if loading was never seen
+- When transitioning from loading to not loading, the toast updates to show the result
+- Result toast auto-dismisses after 3 seconds
+- Theme-based icons are automatically applied (success checkmark, danger X, etc.)
+
+**3. Dismissed** (empty value, no argument, or no title when not loading)
+- Pass `null`, `undefined`, `false`, `{}`, or call with no argument to immediately remove any existing toast
+- Also resets the loading gate, so the next toast cycle requires `isLoading: true` again
+- Useful for conditional rendering or cleanup
+
+#### Basic Usage
+
+```jsx
+function SaveButton() {
+  const [status, setStatus] = useState('idle');
+  
+  useProgressToast(
+    status === 'saving'
+      ? { isLoading: true, title: 'Saving...' }
+      : status === 'success'
+        ? { isLoading: false, title: 'Saved!', theme: 'success' }
+        : status === 'error'
+          ? { isLoading: false, title: 'Failed to save', theme: 'danger' }
+          : null // idle state - no toast
+  );
+  
+  return <Button onPress={() => setStatus('saving')}>Save</Button>;
+}
+```
+
+#### With Error Handling
+
+```jsx
+function DataLoader() {
+  const { data, isLoading, error } = useQuery('data');
+  
+  useProgressToast(
+    isLoading
+      ? { isLoading: true, title: 'Loading data...' }
+      : error
+        ? { isLoading: false, title: 'Error', description: error.message, theme: 'danger' }
+        : { isLoading: false, title: 'Data loaded', theme: 'success' }
+  );
+  
+  return <div>{/* content */}</div>;
+}
+```
+
+#### Conditional Display
+
+Pass an empty value to prevent the toast from showing or to immediately remove an existing one:
+
+```jsx
+// Only show toast when needed
+useProgressToast(
+  shouldShowProgress 
+    ? { isLoading: true, title: 'Processing...' } 
+    : null
+);
+
+// All of these are equivalent "empty" values:
+useProgressToast(null);
+useProgressToast(undefined);
+useProgressToast(false);
+useProgressToast({});
+useProgressToast(); // no argument also works
+```
+
+#### Custom Icons
+
+When `isLoading` is `false`, the hook automatically applies theme-based icons. You can override this with a custom icon:
+
+```jsx
+useProgressToast({
+  isLoading: false,
+  title: 'Uploaded!',
+  theme: 'success',
+  icon: <IconCloudUpload />, // Custom icon instead of default checkmark
+});
+```
+
+#### Declarative Alternative
+
+For component-based usage, use `<Toast.Progress>`:
+
+```jsx
+<Toast.Progress
+  {...(isLoading
+    ? { isLoading: true, title: 'Saving...' }
+    : { isLoading: false, title: 'Saved!', theme: 'success' }
+  )}
+/>
+
+### Interactive Progress State Toggle
+
+<Story of={ToastStories.ProgressStateToggle} />
+
+### Deduplication
+
+Toasts with identical content are deduplicated. Clicking the same action multiple times will refresh the existing toast instead of creating duplicates:
+
+<Story of={ToastStories.Deduplication} />
+
+### Multiple Toasts
+
+Maximum 3 toasts are visible at once. When the limit is exceeded, the oldest toast is removed:
+
+<Story of={ToastStories.MultipleToasts} />
+
+## Toast Behavior
+
+### Positioning
+- Fixed at top center of the viewport
+- 16px from the top edge
+- Toasts stack vertically (newest at bottom)
+
+### Collapse on Hover
+- When hovering over toasts, they collapse to reveal content behind them
+- Only 8px of the newest toast remains visible
+- Moving the mouse away restores the full toast display
+
+### Auto-dismiss
+- Default duration: 5 seconds
+- Progress toasts remain visible while `isLoading` is true
+- Set `duration: null` for persistent toasts
+
+### Limits
+- Maximum 3 visible toasts
+- Progress toasts count toward the limit
+- At least 1 temporal toast is always allowed, even with 3 progress toasts
+
+## Accessibility
+
+### Keyboard Navigation
+
+- Toasts do not trap focus
+- Close button is keyboard accessible
+- Screen readers announce toast content
+
+### Screen Reader Support
+
+- Toasts are announced when they appear
+- Uses appropriate ARIA live regions for notifications
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label for close button
+
+## Best Practices
+
+1. **Do**: Use clear, concise messages
+
+   ```jsx
+   toast.success('Changes saved');
+   ```
+
+2. **Don't**: Use overly long or technical messages
+
+   ```jsx
+   toast.success('The database transaction completed successfully with no errors');
+   ```
+
+3. **Accessibility**: Keep toast messages brief and actionable
+
+4. **Performance**: Use deduplication for repeated actions to avoid toast spam
+
+## Related Components
+
+- [Item](/components/Item) - Base component used for toast rendering
+- [Alert](/components/Alert) - For persistent, inline feedback

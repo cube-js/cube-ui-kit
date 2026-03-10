@@ -1,0 +1,180 @@
+# NumberInput
+
+A number input component that allows users to enter numeric values and increment or decrement them using stepper buttons. Built with React Aria's `useNumberField` for accessibility and the Cube `tasty` style system for theming.
+
+## When to Use
+
+- Collect numeric input (quantities, prices, ages, etc.)
+- Allow users to increment/decrement values with stepper controls
+- Enforce min/max/step constraints on numbers
+- Build forms with validation and field decoration
+- Support both controlled and uncontrolled usage
+
+## Component
+
+---
+
+### Properties
+
+- **`value`** `number` — The numeric value in controlled mode
+- **`defaultValue`** `number` — The default numeric value in uncontrolled mode
+- **`placeholder`** `string` — Placeholder text when input is empty
+- **`prefix`** — Input decoration before the main input
+- **`suffix`** — Input decoration after the main input
+- **`hideStepper`** `boolean` (default: `false`) — Whether to hide the stepper buttons
+- **`minValue`** `number` — Minimum allowed value
+- **`maxValue`** `number` — Maximum allowed value
+- **`step`** `number` — Amount to increment or decrement the value
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
+- **`onChange`** `function` — Callback fired when the input value changes
+- **`onBlur`** `function` — Callback fired when the input loses focus
+- **`onFocus`** `function` — Callback fired when the input receives focus
+
+### Base Properties
+
+Supports [Base properties](../../BaseProperties.md)
+
+### Field Properties
+
+Supports all [Field properties](../../FieldProperties.md)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the component.
+
+**Sub-elements:**
+- `InputWrapper` – container around the input field
+- `Prefix` – wrapper around prefix content
+- `Suffix` – wrapper around suffix content
+- `State` – container for validation and loading icons
+- `InputIcon` – wrapper around the main icon
+- `ValidationIcon` – wrapper around validation state icons
+
+#### inputStyles
+
+Customizes the input element itself.
+
+#### wrapperStyles
+
+Customizes the input wrapper container.
+
+### Style Properties
+
+The NumberInput component supports all standard style properties:
+
+`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### Modifiers
+
+The `mods` prop accepts the following modifiers you can override:
+
+- **`focused`** `boolean` — Forces focus ring appearance.
+- **`disabled`** `boolean` — Forces disabled appearance.
+- **`invalid`** `boolean` — Forces invalid state styling.
+- **`valid`** `boolean` — Forces valid state styling.
+- **`loading`** `boolean` — Displays loading spinner.
+- **`prefix`** `boolean` — Indicates presence of prefix content.
+- **`suffix`** `boolean` — Indicates presence of suffix content.
+
+## Variants
+
+### Types
+
+- `number` – Standard number input (default)
+
+### Sizes
+
+- `small` – Compact height for dense interfaces
+- `medium` – Standard height for most use cases
+- `large` – Emphasized height for important inputs
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<NumberInput label="Quantity" placeholder="Enter a number" />
+```
+
+### With Stepper Hidden
+
+```jsx
+<NumberInput label="Amount" hideStepper />
+```
+
+### With Min/Max/Step
+
+```jsx
+<NumberInput label="Age" minValue={0} maxValue={120} step={1} />
+```
+
+### With Validation
+
+```jsx
+<NumberInput
+  label="Price"
+  validationState="invalid"
+  errorMessage="Price must be positive"
+/>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` – Moves focus to the input field
+- `Shift + Tab` – Moves focus away from the input
+- Arrow keys – Increment/decrement value
+- `Home`/`End` – Set to min/max value
+- Standard text editing shortcuts
+
+### Screen Reader Support
+
+- Announces role "spinbutton"
+- Announces label, description, and validation messages
+- Announces min/max/step constraints
+- State changes like "invalid" or "required" are announced
+- Loading state is announced to screen readers
+
+### ARIA Properties
+
+- `aria-label`, `aria-labelledby` – Accessible name for the input
+- `aria-describedby` – Links to description and error messages
+- `aria-invalid` – Managed automatically based on `validationState`
+- `aria-required` – Set when `isRequired` is true
+- Additional ARIA attributes supported by React Aria's `useNumberField`
+
+## Best Practices
+
+1. **Do**: Provide clear labels and helpful placeholder text
+   ```jsx
+   <NumberInput label="Quantity" placeholder="0" />
+   ```
+
+2. **Don't**: Use placeholder text as the only label
+   ```jsx
+   {/* Avoid this */}
+   <NumberInput placeholder="Enter a number" />
+   ```
+
+3. **Accessibility**: Always provide proper labels for screen readers
+4. **Validation**: Use `validationState` and `message` for user feedback
+5. **Performance**: Use `defaultValue` for uncontrolled inputs when possible
+
+## Integration with Forms
+
+This component supports all [Field properties](../../FieldProperties.md) when used within a Form.
+
+## Suggested Improvements
+
+- Add `autoComplete` prop mapping for better browser integration
+- Provide `maxValue`/`minValue` indicator with value range
+- Support for input masks and formatting
+- Built-in debouncing for onChange events
+
+## Related Components
+
+- [TextInput](./TextInput.md) – Single-line or multiline text input
+- [Slider](./Slider.md) – For selecting a value from a range

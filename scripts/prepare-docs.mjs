@@ -333,7 +333,7 @@ function fixBasePropertiesLinks(content, currentOutputPath) {
   const replacer = `[Base properties](${rel})`;
 
   return content.replace(
-    /\[Base properties\]\(\/(?:docs\/)?(?:base-properties|BaseProperties|base-properties--docs|docs-base-properties--docs)\)/gi,
+    /\[Base properties\]\(\/(?:docs\/)?(?:getting-started-base-properties--docs|base-properties|BaseProperties|base-properties--docs|docs-base-properties--docs)\)/gi,
     replacer,
   );
 }
@@ -349,7 +349,7 @@ function fixFieldPropertiesLinks(content, currentOutputPath) {
   if (!rel.startsWith('.')) rel = './' + rel;
 
   return content.replace(
-    /\[([Ff]ield properties)\]\(\/(?:docs\/)?(?:field-properties--docs|field-properties)\)/g,
+    /\[([Ff]ield properties)\]\(\/(?:docs\/)?(?:getting-started-field-properties--docs|field-properties--docs|field-properties)\)/g,
     (match, linkText) => `[${linkText}](${rel})`,
   );
 }

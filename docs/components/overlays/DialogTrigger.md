@@ -1,0 +1,191 @@
+# DialogTrigger
+
+DialogTrigger serves as a wrapper around a Dialog and its associated trigger, linking the Dialog's open state with the trigger's press state. Additionally, it allows you to customize the type and positioning of the Dialog.
+
+## When to Use
+
+- When you need to open a Dialog in response to user interaction with a trigger element
+- To display contextual information, forms, or workflows that require user attention
+- When you want to control the positioning and behavior of overlay content
+- For creating modal dialogs, popovers, trays, or fullscreen overlays
+
+## Component
+
+---
+
+### Properties
+
+- **`children`** — The Dialog and its trigger element
+- **`type`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `modal`) — The type of Dialog that should be rendered
+- **`mobileType`** `'modal' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel' | 'popover'` — The type of Dialog that should be rendered when on a mobile device
+- **`placement`** `'top' | 'bottom' | 'left' | 'right' | 'top start' | 'top end' | 'bottom start' | 'bottom end' | 'left top' | 'left bottom' | 'right top' | 'right bottom'` — The placement of the dialog relative to its trigger
+- **`hideArrow`** `boolean` (default: `false`) — Whether a popover type Dialog's arrow should be hidden
+- **`mobileViewport`** `number` (default: `700`) — The screen breakpoint for the mobile type
+- **`isDismissable`** `boolean` (default: `true`) — Whether a modal type Dialog should be dismissable
+- **`isKeyboardDismissDisabled`** `boolean` (default: `false`) — Whether pressing the escape key to close the dialog should be disabled
+- **`isOpen`** `boolean` — Whether the dialog is open (controlled)
+- **`defaultOpen`** `boolean` (default: `false`) — Whether the dialog is open by default (uncontrolled)
+- **`offset`** `number` (default: `8`) — The additional offset applied along the main axis
+- **`crossOffset`** `number` (default: `0`) — The additional offset applied along the cross axis
+- **`containerPadding`** `number` (default: `12`) — The padding between the edge of the overlay and the boundary
+- **`shouldFlip`** `boolean` (default: `true`) — Whether the overlay should flip positions when insufficient space
+- **`onOpenChange`** `function` — Callback fired when the dialog open state changes
+- **`onDismiss`** `function` — Callback fired when the dialog is dismissed
+- **`targetRef`** — The ref of the element the Dialog should visually attach itself to
+- **`styles`** — The style map for the overlay
+- **`shouldCloseOnInteractOutside`** — Function to determine if overlay should close on outside interaction
+
+### Base Properties
+
+Supports [Base properties](../../BaseProperties.md)
+
+### Styling Properties
+
+DialogTrigger has no styling capabilities.
+
+## Variants
+
+### Types
+
+- `modal` - Full modal dialog with backdrop (default)
+- `popover` - Positioned relative to trigger element
+- `tray` - Slides up from bottom on mobile
+- `fullscreen` - Takes up entire screen
+- `fullscreenTakeover` - Fullscreen without padding
+- `panel` - Side panel overlay
+
+### Mobile Types
+
+- `modal` - Mobile modal dialog
+- `tray` - Bottom tray on mobile
+- `fullscreen` - Mobile fullscreen
+- `fullscreenTakeover` - Mobile fullscreen takeover
+- `panel` - Mobile side panel
+- `popover` - Mobile popover (not recommended)
+
+## Examples
+
+### Basic Modal
+
+```jsx
+<DialogTrigger>
+  <Button>Open Dialog</Button>
+  <Dialog>
+    <Header>
+      <Title>Dialog Title</Title>
+    </Header>
+    <Content>
+      <Paragraph>Dialog content goes here.</Paragraph>
+    </Content>
+  </Dialog>
+</DialogTrigger>
+```
+
+### Popover Dialog
+
+```jsx
+<DialogTrigger type="popover" placement="bottom">
+  <Button>Show Popover</Button>
+  <Dialog>
+    <Content>
+      <Paragraph>Popover content</Paragraph>
+    </Content>
+  </Dialog>
+</DialogTrigger>
+```
+
+### With Close Function
+
+```jsx
+<DialogTrigger>
+  <Button>Open Dialog</Button>
+  {(close) => (
+    <Dialog>
+      <Header>
+        <Title>Confirm Action</Title>
+      </Header>
+      <Content>
+        <Paragraph>Are you sure you want to continue?</Paragraph>
+      </Content>
+      <Footer>
+        <Button onPress={close}>Cancel</Button>
+        <Button type="primary" onPress={close}>Confirm</Button>
+      </Footer>
+    </Dialog>
+  )}
+</DialogTrigger>
+```
+
+### Controlled State
+
+```jsx
+function ControlledDialog() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
+      <Button>Open Dialog</Button>
+      <Dialog>
+        <Content>
+          <Paragraph>Controlled dialog content</Paragraph>
+        </Content>
+      </Dialog>
+    </DialogTrigger>
+  );
+}
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Enter/Space` - Opens the dialog when trigger is focused
+- `Escape` - Closes the dialog (unless disabled)
+- `Tab` - Cycles through focusable elements within the dialog
+
+### Screen Reader Support
+
+- Dialog announces as "dialog" to screen readers
+- Focus is trapped within the dialog when open
+- Focus returns to trigger element when dialog closes
+- Proper ARIA attributes are applied automatically
+
+### ARIA Properties
+
+- `aria-haspopup` - Automatically applied to trigger element
+- `aria-expanded` - Indicates dialog open state
+- `aria-labelledby` - Links dialog to its title
+- `aria-describedby` - Links dialog to its description
+
+## Best Practices
+
+1. **Do**: Provide clear trigger labels
+   ```jsx
+   <DialogTrigger>
+     <Button>Edit Profile</Button>
+     <Dialog>...</Dialog>
+   </DialogTrigger>
+   ```
+
+2. **Don't**: Use vague trigger text
+   ```jsx
+   <DialogTrigger>
+     <Button>Click</Button>
+     <Dialog>...</Dialog>
+   </DialogTrigger>
+   ```
+
+3. **Focus Management**: Always ensure focus returns properly after dialog closes
+4. **Mobile Considerations**: Use appropriate mobile types for better UX
+5. **Dismissible**: Make modal dialogs dismissible unless absolutely necessary
+
+## Suggested Improvements
+
+- Enhancement 1: Add animation duration customization options
+- Enhancement 2: Support for multiple dialog instances
+- Enhancement 3: Improved positioning algorithms for complex layouts
+
+## Related Components
+
+- [Dialog](./Dialog.md) - The content component used within DialogTrigger
+- [Button](../actions/Button.md) - Common trigger element

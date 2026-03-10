@@ -1,0 +1,78 @@
+# Base Properties
+
+All UI Kit components support a common set of base properties from the `tasty` style system. These properties are passed through `filterBaseProps` and can be used for styling, accessibility, and testing.
+
+## Core Properties
+
+- **`qa`** `string` — Data attribute for e2e testing (`data-qa`)
+- **`qaVal`** `string` — Value for the qa attribute
+- **`style`** `CSSProperties` — Inline styles
+- **`styles`** `Styles` — Tasty styles object
+- **`css`** `string` — Raw CSS string
+- **`mods`** `Mods` — State modifiers for conditional styling
+- **`breakpoints`** — Responsive breakpoint configuration
+- **`hidden`** `boolean` — Hide the element
+- **`isHidden`** `boolean` — Hide the element
+- **`disabled`** `boolean` — Disabled state
+- **`element`** `string` — Override the rendered element name for sub-element targeting
+- **`block`** `boolean` — Display as block
+- **`inline`** `boolean` — Display as inline
+
+## Style Properties
+
+Style properties allow direct styling without using the `styles` prop. They are defined in `@tenphi/tasty` and exposed via `styleProps` on components.
+
+### BASE_STYLES
+
+`display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+
+### POSITION_STYLES
+
+`gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+
+### DIMENSION_STYLES
+
+`width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+
+### BLOCK_STYLES
+
+**Inner:** `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
+
+**Outer:** `border`, `radius`, `shadow`, `outline`
+
+### COLOR_STYLES
+
+`color`, `fill`, `fade`, `image`
+
+### TEXT_STYLES
+
+`textTransform`, `fontWeight`, `fontStyle`
+
+### FLOW_STYLES
+
+`flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### CONTAINER_STYLES
+
+Combination of BASE_STYLES, COLOR_STYLES, DIMENSION_STYLES, POSITION_STYLES, BLOCK_STYLES, and FLOW_STYLES.
+
+### OUTER_STYLES
+
+Position and dimension styles: POSITION_STYLES, DIMENSION_STYLES, BLOCK_OUTER_STYLES.
+
+## Usage
+
+```jsx
+<Button qa="submit-button" width="100%" padding="1x 2x">
+  Submit
+</Button>
+
+<Card mods={{ hovered: isHovered }} fill="#surface" radius="1r">
+  Content
+</Card>
+```
+
+## Related
+
+- [Tasty documentation](./tasty/usage.md) — Full styling system reference
+- [CreateComponent](./CreateComponent.md) — Building components with base properties

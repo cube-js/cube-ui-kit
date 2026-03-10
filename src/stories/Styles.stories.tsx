@@ -29,7 +29,7 @@ const InsetTemplate: StoryFn<CubeBlockProps> = ({ children, ...props }) => {
 };
 
 export default {
-  title: 'Generic/Styles',
+  title: 'Content/Styles',
   component: Block,
 };
 

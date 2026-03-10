@@ -1,0 +1,69 @@
+# ResizablePanel
+
+> **Deprecated**: Use [Layout](../content/Layout.md) with `Layout.Panel` (set `isResizable`) or `Layout.Pane` instead. Layout.Panel supports resizing, transitions, overlay modes, size persistence, and automatic content adjustment. Layout.Pane provides inline resizable sections within the normal flex/grid flow.
+
+A `Panel` with a draggable resize handle. Users can adjust the panel size by dragging the handle.
+
+## When to Use
+
+- Resizable sidebars or split views
+- Adjustable layout panels
+- User-customizable workspace layouts
+
+## Component
+
+---
+
+## Properties
+
+- **`direction`** `'top' | 'right' | 'bottom' | 'left'` (default: `'right'`) — Position of the resize handle
+- **`size`** `number` — Panel size in pixels. When provided, the component becomes controlled.
+- **`onSizeChange`** `(size: number) => void` — Callback when size changes via dragging
+- **`minSize`** `string | number` (default: `200`) — Minimum size constraint
+- **`maxSize`** `string | number` (default: `'min(50%, 400px)'` for uncontrolled) — Maximum size constraint
+- **`isDisabled`** `boolean` — Disable resizing
+- **`handlerStyles`** `Styles` — Custom styles for the resize handle
+
+### Base Properties
+
+Extends [Panel](#) and supports [Base properties](../../BaseProperties.md).
+
+## Examples
+
+### Resizable sidebar
+
+```jsx
+<Panel isFlex isStretched height="min 30x" fill="#white">
+  <ResizablePanel direction="right">
+    <Block padding="1x">Sidebar content</Block>
+  </ResizablePanel>
+  <Panel fill="#purple-04.10">Main content</Panel>
+</Panel>
+```
+
+### Controlled size
+
+```jsx
+function ControlledExample() {
+  const [size, setSize] = useState(200);
+
+  return (
+    <ResizablePanel
+      direction="right"
+      size={size}
+      onSizeChange={(s) => setSize(Math.min(500, Math.max(100, s)))}
+      fill="#light"
+    >
+      Sidebar
+    </ResizablePanel>
+  );
+}
+```
+
+### Disabled
+
+```jsx
+<ResizablePanel direction="right" isDisabled>
+  Non-resizable panel
+</ResizablePanel>
+```

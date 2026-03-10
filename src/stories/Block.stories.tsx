@@ -1,7 +1,7 @@
 import { Block } from '../components/Block';
 
 export default {
-  title: 'Generic/Block',
+  title: 'Content/Block',
   component: Block,
   argTypes: {
     shadow: {

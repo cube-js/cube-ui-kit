@@ -1,0 +1,169 @@
+# Switch
+
+A switch allows users to toggle between two states: on and off. It provides immediate feedback and is commonly used for enabling/disabling features, settings, or binary choices.
+
+## When to Use
+
+- Enable or disable features, settings, or options
+- Toggle between two mutually exclusive states
+- Control real-time changes that take effect immediately
+- Provide on/off controls in forms and preference panels
+- Create compact binary controls where space is limited
+
+## Component
+
+---
+
+### Properties
+
+- **`children`** `string` — The content to display as the switch label
+- **`isSelected`** `boolean` (default: `false`) — Whether the switch is selected (controlled)
+- **`defaultSelected`** `boolean` (default: `false`) — Whether the switch is selected by default (uncontrolled)
+- **`size`** `'small' | 'medium' | 'large'` (default: `large`) — Switch size
+- **`onChange`** — Callback fired when the switch value changes
+- **`onFocus`** — Callback fired when the switch receives focus
+- **`onBlur`** — Callback fired when the switch loses focus
+
+### Base Properties
+
+Supports [Base properties](../../BaseProperties.md)
+
+### Field Properties
+
+Supports all [Field properties](../../FieldProperties.md)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root wrapper element of the component.
+
+#### inputStyles
+
+Customizes the switch toggle element specifically.
+
+**Sub-elements:**
+- `Thumb` - The movable indicator inside the switch
+
+#### fieldStyles
+
+Customizes the field wrapper element when the switch is used with labels or validation.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+`margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+- **`checked`** `boolean` — Whether the switch is in the "on" state
+- **`disabled`** `boolean` — Whether the switch is disabled
+- **`invalid`** `boolean` — Whether the switch has validation errors
+- **`valid`** `boolean` — Whether the switch is valid
+- **`focused`** `boolean` — Whether the switch has focus
+- **`hovered`** `boolean` — Whether the switch is being hovered
+- **`side-label`** `boolean` — Whether the label is positioned to the side
+- **`inside-form`** `boolean` — Whether the switch is inside a form field
+
+## Variants
+
+### Sizes
+
+- `small` - Compact size for dense interfaces
+- `medium` - Standard size (default)
+- `large` - Larger size for emphasis
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<Switch>Enable notifications</Switch>
+```
+
+### With Default State
+
+### Controlled State
+
+```jsx
+const [isEnabled, setIsEnabled] = useState(false);
+
+<Switch
+  isSelected={isEnabled}
+  onChange={setIsEnabled}
+>
+  Feature enabled: {isEnabled ? 'On' : 'Off'}
+</Switch>
+```
+
+### All Sizes
+
+### With Validation
+
+### Disabled State
+
+### Loading State
+
+### All States Overview
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the switch
+- `Space` - Toggles the switch state
+- `Enter` - Toggles the switch state
+
+### Screen Reader Support
+
+- Component announces as "switch" to screen readers
+- Current state is announced (e.g., "on", "off")
+- State changes are immediately announced
+- Loading state is communicated when present
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-labelledby` - References external label elements
+- `aria-describedby` - References additional descriptive text
+- `aria-checked` - Indicates switch state (true/false)
+- `aria-required` - Indicates if toggling is required
+- `aria-invalid` - Indicates validation state
+
+## Best Practices
+
+1. **Do**: Use clear, descriptive labels that indicate what the switch controls
+   ```jsx
+   <Switch>Enable email notifications</Switch>
+   ```
+
+2. **Don't**: Use switches for actions that require additional steps
+   ```jsx
+   <Switch>Delete account</Switch> {/* Use Button instead */}
+   ```
+
+3. **Immediate Effect**: Use switches for settings that take effect immediately
+4. **State Clarity**: Make it clear what "on" and "off" states mean
+5. **Grouping**: Group related switches together in settings panels
+6. **Labels**: Always provide meaningful labels for screen readers
+
+## Integration with Forms
+
+This component supports all [Field properties](../../FieldProperties.md) when used within a Form.
+
+## Suggested Improvements
+
+- Add support for custom thumb icons or content
+- Implement animation customization options
+- Add support for intermediate/indeterminate states
+- Consider adding color customization for different switch types
+- Implement grouped switch controls for related settings
+
+## Related Components
+
+- [Checkbox](./Checkbox.md) - For selection that doesn't take immediate effect
+- [RadioGroup](./RadioGroup.md) - For selecting one option from multiple choices
+- [Button](../actions/Button.md) - For actions that require confirmation

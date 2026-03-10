@@ -24,27 +24,31 @@ if (isChromatic()) {
 
 export const parameters = {
   options: {
-    storySort: (a, b) => {
-      // Get story titles/kinds for comparison
-      const aTitle = a.title || a.kind || '';
-      const bTitle = b.title || b.kind || '';
-
-      // Check if either story is in the 'tasty' section
-      const aIsTasty =
-        aTitle.toLowerCase().includes('tasty') || aTitle.includes('guides');
-      const bIsTasty =
-        bTitle.toLowerCase().includes('tasty') || bTitle.includes('guides');
-
-      // Always put 'tasty' section at the top
-      if (aIsTasty && !bIsTasty) {
-        return -1;
-      }
-      if (bIsTasty && !aIsTasty) {
-        return 1;
-      }
-
-      // For all other stories, sort alphabetically
-      return aTitle.localeCompare(bTitle, undefined, { numeric: true });
+    storySort: {
+      order: [
+        'Getting Started',
+        [
+          'Overview',
+          'Usage',
+          'Create Component',
+          'Base Properties',
+          'Field Properties',
+          'Complex Layout',
+          'Advanced States',
+          'Playground',
+        ],
+        'Actions',
+        'Content',
+        'Forms',
+        'Helpers',
+        'Layout',
+        'Navigation',
+        'Overlays',
+        'Status',
+        'Components',
+        'Other',
+        '*',
+      ],
     },
   },
   docs: {},

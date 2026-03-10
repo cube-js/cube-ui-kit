@@ -68,11 +68,7 @@ Browse all components with live examples in the [Storybook](https://cube-ui-kit.
 
 ## Styling with Tasty
 
-Cube UI Kit uses [Tasty](https://github.com/tenphi/tasty) — a styling engine that generates conflict-free CSS using mutually exclusive selectors. Tasty documentation is included in this package under [`docs/tasty/`](./docs/tasty) and covers:
-
-- [Usage](./docs/tasty/usage.md) — component creation, state mappings, sub-elements, variants
-- [Configuration](./docs/tasty/configuration.md) — tokens, recipes, custom units, TypeScript extensions
-- [Style Properties](./docs/tasty/styles.md) — complete reference for all enhanced style properties
+Cube UI Kit uses [Tasty](https://github.com/tenphi/tasty) — a styling engine that generates conflict-free CSS using mutually exclusive selectors.
 
 Create custom styled components:
 

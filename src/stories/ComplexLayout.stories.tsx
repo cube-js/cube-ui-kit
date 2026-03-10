@@ -11,7 +11,7 @@ import { Space } from '../components/layout/Space';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Layout> = {
-  title: 'Guides/Layout',
+  title: 'Getting Started/Complex Layout',
   component: Layout,
   parameters: {
     layout: 'fullscreen',

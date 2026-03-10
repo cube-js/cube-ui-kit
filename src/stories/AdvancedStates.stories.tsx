@@ -23,7 +23,7 @@ setGlobalPredefinedStates({
 });
 
 const meta: Meta = {
-  title: 'Styling/Advanced States',
+  title: 'Getting Started/Advanced States',
   parameters: {
     docs: {
       description: {

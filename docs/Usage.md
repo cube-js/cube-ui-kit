@@ -1,0 +1,304 @@
+# Usage Guide
+
+This guide covers the design system foundations — tokens, presets, colors, units, and patterns — needed to build and maintain components in Cube UI Kit.
+
+For styling engine internals see the [Tasty documentation](./tasty/usage.md). Tasty docs are also bundled with this package in `docs/tasty/`:
+
+- **usage.md** — `tasty()` component creation, state mappings, sub-elements, variants, extending components, hooks.
+- **configuration.md** — `configure()` options: tokens, recipes, custom units, style handlers, TypeScript module augmentation.
+- **styles.md** — Complete reference for all enhanced style properties (`fill`, `flow`, `preset`, `border`, `radius`, `transition`, etc.).
+- **debug.md** — `tastyDebug` runtime API for inspecting injected CSS and troubleshooting.
+- **injector.md** — Low-level style injector: `inject()`, `injectGlobal()`, deduplication, SSR.
+- **tasty-static.md** — Zero-runtime `tastyStatic()`, Babel plugin, Next.js/Vite integration.
+
+## Units
+
+Tasty provides custom units that map to CSS custom properties defined on the Root component. Use these instead of raw pixel values to keep styling consistent.
+
+| Unit | CSS Variable | Example | Computed (defaults) |
+|------|-------------|---------|---------------------|
+| `x` | `var(--gap)` | `2x` → `calc(var(--gap) * 2)` | 16px |
+| `r` | `var(--radius)` | `1r` → `var(--radius)` | 6px |
+| `cr` | `var(--card-radius)` | `1cr` → `var(--card-radius)` | 10px |
+| `bw` | `var(--border-width)` | `1bw` → `var(--border-width)` | 1px |
+| `ow` | `var(--outline-width)` | `1ow` → `var(--outline-width)` | 3px |
+
+## Base Tokens
+
+These CSS custom properties are defined in `src/tokens/base.ts` and applied globally.
+
+| Token | Default | Description |
+|-------|---------|-------------|
+| `$gap` | `8px` | Base spacing unit (used with `x` multiplier) |
+| `$radius` | `6px` | Base border radius (used with `r` multiplier) |
+| `$border-width` | `1px` | Base border width (used with `bw` multiplier) |
+| `$outline-width` | `3px` | Focus outline width (used with `ow` multiplier) |
+| `$stroke-width` | `1.5` | Icon stroke width |
+| `$disabled-opacity` | `0.4` | Opacity for disabled elements |
+| `$transition` | `80ms` | Default transition duration |
+| `$disclosure-transition` | `120ms` | Disclosure animation duration |
+| `$tab-transition` | `120ms` | Tab animation duration |
+| `$fade-transition` | `200ms` | Fade animation duration |
+| `$large-radius` | `(1r + .5x)` | Larger radius for cards/dialogs |
+| `$card-radius` | `(1r + .5x)` | Card border radius |
+| `$min-dialog-size` | `min(288px, calc(100vw - 2*var(--gap)))` | Minimum dialog width |
+
+## Spacing Tokens
+
+Defined in `src/tokens/spacing.ts`. Values use the `x` unit.
+
+| Token | Value | Computed (gap=8px) |
+|-------|-------|-------------------|
+| `$space-xs` | `0.5x` | 4px |
+| `$space-sm` | `0.75x` | 6px |
+| `$space-md` | `1x` | 8px |
+| `$space-lg` | `1.5x` | 12px |
+| `$space-xl` | `2x` | 16px |
+
+## Size Tokens
+
+Defined in `src/tokens/sizes.ts`. Used for component heights and icon sizes.
+
+| Token | Value |
+|-------|-------|
+| `$size-xs` | `24px` |
+| `$size-sm` | `28px` |
+| `$size-md` | `32px` |
+| `$size-lg` | `40px` |
+| `$size-xl` | `48px` |
+
+## Shadow Tokens
+
+Defined in `src/tokens/shadows.ts`.
+
+| Token | Value |
+|-------|-------|
+| `$item-shadow` | `0 1bw 0.375x #dark.15` |
+| `$card-shadow` | `0 0.5x 2x #shadow` |
+| `$dialog-shadow` | `0 1x 4x #dark.15` |
+
+## Layout Tokens
+
+Defined in `src/tokens/layout.ts`.
+
+| Token | Value |
+|-------|-------|
+| `$max-content-width` | `1440px` |
+| `$topbar-height` | `48px` |
+| `$sidebar-width` | `200px` |
+
+## Color Tokens
+
+All color tokens use `#name` syntax in styles. Opacity variants use `#name.NN` (e.g. `#dark.06` for 6% opacity). Defined in `src/tokens/colors.ts`.
+
+### Base Colors
+
+| Token | Description |
+|-------|-------------|
+| `#white`, `#black`, `#clear` | Absolute white, black, and transparent |
+| `#text` | Default text color |
+| `#border` | Default border color |
+| `#placeholder` | Input placeholder text |
+| `#shadow` | Shadow color |
+| `#minor` | Secondary/muted text |
+| `#focus` | Focus ring color |
+| `#pink` | Accent pink |
+| `#light` | Light background |
+
+### Semantic Color Groups
+
+Each semantic group provides a base color and variants following the pattern: `#name`, `#name-text`, `#name-bg`, `#name-icon`, `#name-desaturated`, `#name-disabled`.
+
+| Group | Hue | Purpose |
+|-------|-----|---------|
+| `#primary` / `#purple` | 280.3° | Primary actions, brand color |
+| `#danger` | 23.1° | Errors, destructive actions |
+| `#success` | 156.9° | Success states, confirmations |
+| `#warning` | 84.3° | Warning states, caution |
+| `#note` | 302.3° | Informational notes |
+
+### Neutral Scales
+
+**Dark scale:** `#dark`, `#dark-01` through `#dark-05`, `#dark-bg` — six-step neutral scale from near-black to light gray.
+
+**Purple scale:** `#purple-01` through `#purple-04` — additional purple shades for gradients and accents.
+
+### Disabled Colors
+
+`#disabled`, `#disabled-text`, `#disabled-bg` — dedicated colors for disabled UI elements.
+
+## Typography Presets
+
+Use via the `preset` style property. Modifiers can be appended with a space: `'t1 strong'`, `'h2 italic'`.
+
+Defined in `src/tokens/typography.ts`.
+
+### Headings
+
+| Preset | Size | Line Height | Weight |
+|--------|------|-------------|--------|
+| `h1` | 36px | 44px | 600 |
+| `h2` | 24px | 32px | 600 |
+| `h3` | 20px | 28px | 600 |
+| `h4` | 18px | 24px | 600 |
+| `h5` | 16px | 22px | 600 |
+| `h6` | 14px | 20px | 600 |
+
+### Text
+
+| Preset | Size | Line Height | Weight | Notes |
+|--------|------|-------------|--------|-------|
+| `t1` | 18px | 24px | 400 | |
+| `t2` | 16px | 22px | 400 | |
+| `t2m` | 16px | 22px | 500 | Medium weight variant |
+| `t3` | 14px | 20px | 400 | Base text size |
+| `t3m` | 14px | 20px | 500 | Medium weight variant |
+| `t4` | 12px | 18px | 500 | Small text |
+| `t4m` | 12px | 18px | 600 | Small text, semi-bold |
+
+### Paragraph
+
+Paragraph presets have slightly increased line heights compared to text presets at the same size, optimized for multi-line reading.
+
+| Preset | Size | Line Height | Weight |
+|--------|------|-------------|--------|
+| `p1` | 18px | 28px | 400 |
+| `p2` | 16px | 24px | 400 |
+| `p3` | 14px | 22px | 400 |
+| `p4` | 12px | 20px | 500 |
+
+### Markdown / Prose
+
+Largest line heights, designed for long-form content blocks.
+
+| Preset | Size | Line Height | Weight |
+|--------|------|-------------|--------|
+| `m1` | 18px | 32px | 400 |
+| `m2` | 16px | 28px | 400 |
+| `m3` | 14px | 24px | 400 |
+
+### Special Presets
+
+| Preset | Description |
+|--------|-------------|
+| `c1` | 14px, weight 600, uppercase — section captions |
+| `c2` | 12px, weight 600, uppercase — small captions |
+| `tag` | 12px, weight 600 — tag/badge text |
+| `strong` | Inherits everything, applies bold weight |
+| `em` | Inherits everything, applies italic style |
+| `default` | Aliases `t3` values — the base text style |
+
+## Themes
+
+Component themes are set via the `theme` prop or `theme=name` modifier:
+
+| Theme | Purpose |
+|-------|---------|
+| `default` | Standard appearance |
+| `danger` | Destructive / error actions |
+| `special` | Highlighted / promoted actions |
+| `success` | Success / positive states |
+| `warning` | Warning / caution states |
+| `note` | Informational / note states |
+
+## Recipes
+
+Reusable style presets applied via the `recipe` style property. Defined in `src/components/Root.tsx`.
+
+| Recipe | Purpose |
+|--------|---------|
+| `reset` | Zero out margin, padding, border, outline; set `box-sizing: border-box` |
+| `button` | Base button appearance: no native styling, `touch-action: manipulation` |
+| `input` | Base input appearance: no native styling, inherit color |
+| `input-autofill` | Handle `:-webkit-autofill` styling |
+| `input-placeholder` | Placeholder text styling via `-webkit-text-fill-color` |
+| `input-search-cancel-button` | Hide native search cancel button |
+
+## Common Modifiers
+
+These are data-attribute modifiers used in component style maps (via the `mods` prop):
+
+| Modifier | Description |
+|----------|-------------|
+| `disabled` | Disabled state |
+| `hovered` | Hover state |
+| `focused` | Focus state |
+| `pressed` | Active/pressed state |
+| `selected` | Selected state |
+| `checked` | Checked state (checkbox, switch) |
+| `invalid` | Invalid validation state |
+| `valid` | Valid validation state |
+| `indeterminate` | Indeterminate state |
+| `collapsed` | Collapsed state |
+| `type=primary` | Primary variant |
+| `type=outline` | Outline variant |
+| `size=small` / `size=medium` / `size=large` | Size modifiers |
+
+## State Syntax
+
+In style value maps, keys define when styles apply. States can be combined with boolean logic:
+
+```jsx
+fill: {
+  '': '#surface',              // default
+  ':hover': '#surface-hover',  // pseudo-class
+  disabled: '#disabled-bg',    // data-attribute modifier
+  'type=danger': '#danger',    // data-attribute with value
+  '@media(w < 768px)': '...',  // media query
+  '@(panel, w >= 300px)': '...', // container query
+  'disabled & :hover': '...',  // combined with AND
+  'a | b': '...',              // combined with OR
+  '!disabled': '...',          // negated
+}
+```
+
+## Icons
+
+Icons live in `src/icons/`. Use existing icons when possible; otherwise use `@tabler/icons-react`.
+
+- **`<Icon>`** — wrapper component for sizing and coloring icons. Props: `size`, `stroke`, plus style props.
+- **`wrapIcon(name, icon)`** — creates a Cube icon component from a tabler icon.
+- Always wrap tabler icons with `<Icon>` for custom size/color. Never add props directly to tabler icons.
+- To add new icons run: `pnpm add-icons`
+
+## Form System
+
+### Form Component
+
+`<Form>` wraps a native `<form>` and provides validation context:
+
+```jsx
+const [form] = useForm();
+
+<Form form={form} onSubmit={(data) => save(data)}>
+  <TextInput name="email" label="Email" rules={[{ required: true }, { type: 'email' }]} />
+  <SubmitButton>Save</SubmitButton>
+</Form>
+```
+
+### useForm Hook
+
+Returns a `CubeFormInstance` with:
+
+- **Get/Set:** `getFieldValue`, `setFieldValue`, `getFieldsValue`, `setFieldsValue`, `getFormData`
+- **Validation:** `validateField`, `validateFields`, `resetFieldsValidation`
+- **State queries:** `isFieldValid`, `isFieldInvalid`, `isFieldTouched`, `isValid`, `isDirty`
+- **Errors:** `getFieldError`, `setFieldError`
+
+### Validation Rules
+
+Async rule-based system. Each rule is an object with one of these properties:
+
+| Rule | Description |
+|------|-------------|
+| `required` | Field must have a value |
+| `type` | Type check: `email`, `url`, `number`, `integer`, `date`, `hex`, etc. |
+| `pattern` | Regex pattern match |
+| `min` / `max` | Length or value constraints |
+| `enum` | List of allowed values |
+| `whitespace` | Must contain non-whitespace content |
+| `validator` | Custom async function: `(rule, value) => Promise<void>` |
+
+### Field Integration
+
+Fields with a `name` prop inside `<Form>` automatically register with the form instance — no `<Field>` wrapper needed. The `useFieldProps` hook handles this internally.

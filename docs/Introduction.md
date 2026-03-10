@@ -1,0 +1,122 @@
+# Welcome to Cube Cloud UI Kit
+
+A comprehensive React component library built for modern web applications with accessibility, theming, and developer experience at its core.
+
+## What is Cube UI Kit?
+
+Cube UI Kit is a complete design system that provides:
+- **Accessible Components** - Built with React Aria hooks for WCAG compliance
+- **Powerful Styling System** - The `tasty` style system for maintainable, theme-able components
+- **Form Management** - Integrated form handling with validation and state management
+- **Consistent Design** - Unified visual language across all components
+
+Browse example stories by navigating to them in the sidebar to see components in action.
+
+## Key Features
+
+### 🎨 Tasty Style System
+A declarative styling approach that makes it easy to create consistent, maintainable styles:
+- **State-based styling** - Bind styles to hover, focus, and custom modifiers
+- **Responsive design** - Use arrays for breakpoint-specific styles
+- **Token-based theming** - Built-in color tokens and semantic units
+- **Component variants** - Pre-defined style variations for different use cases
+
+### ♿ Accessibility First
+Every component is built with accessibility as a priority:
+- React Aria hooks provide keyboard navigation and screen reader support
+- ARIA attributes are automatically managed
+- Focus management follows best practices
+- High contrast and reduced motion support
+
+### 📝 Modern Form Handling
+Streamlined form development with built-in field support:
+- All input components have integrated field properties
+- Automatic validation and error handling
+- Form-level configuration inheritance
+- No wrapper components needed for most use cases
+
+## Getting Started
+
+### Basic Usage
+
+```jsx
+import { Button, TextInput, Form } from '@cube-dev/ui-kit';
+
+function MyApp() {
+  return (
+    <Form onSubmit={handleSubmit}>
+      <TextInput
+        name="email"
+        label="Email"
+        type="email"
+        isRequired
+      />
+      <Button type="primary">Submit</Button>
+    </Form>
+  );
+}
+```
+
+### Styling Components
+
+Use the `tasty` system for consistent styling:
+
+```jsx
+import { tasty, Button } from '@cube-dev/ui-kit';
+
+const CustomButton = tasty(Button, {
+  styles: {
+    padding: '2x 4x',
+    fill: {
+      '': '#purple',
+      hovered: '#purple.8',
+    },
+    color: '#white',
+  },
+});
+```
+
+## Core Concepts
+
+### Styling with Tasty
+
+The `tasty` style system provides a powerful, declarative way to style components:
+
+- **Custom Units** - Use semantic units like `2x` (gap), `1r` (radius), `#purple` (color tokens)
+- **State Bindings** - Style different states using modifiers like `hovered`, `focused`, `disabled`
+- **Responsive Arrays** - Define breakpoint-specific styles with arrays: `padding: ['4x', '2x', '1x']`
+- **Sub-element Styling** - Style internal component parts using element names
+
+### Form Integration
+
+All input components work seamlessly with the Form component:
+
+- **Built-in Field Support** - No wrapper components needed
+- **Automatic Validation** - Validation rules and error display
+- **Form-level Configuration** - Inherit settings like `labelPosition` and `validationState`
+- **Programmatic Control** - Use `Form.useForm()` for advanced form management
+
+### Component Architecture
+
+Components are designed with composition and reusability in mind:
+
+- **Base Properties** - Common props like `qa`, styling, and accessibility
+- **Style Properties** - Direct style application without the `styles` prop
+- **Modifiers** - Control component states through the `mods` prop
+- **Variants** - Pre-defined style themes and sizes
+
+## Documentation Structure
+
+Each component includes comprehensive documentation:
+
+- **Usage Examples** - Real-world implementation patterns
+- **Accessibility Guidelines** - Keyboard navigation and screen reader support
+- **Styling Reference** - Available sub-elements and modifiers
+- **Best Practices** - Recommended usage patterns and common pitfalls
+
+## Next Steps
+
+1. **Explore Components** - Browse the sidebar to see all available components
+2. **Learn Tasty** - Visit the [Tasty documentation](./tasty/usage.md) to master the styling system
+3. **Build Forms** - Check out [Form documentation](./components/form/Form.md) for form development patterns
+4. **Accessibility** - Review accessibility guidelines for inclusive design

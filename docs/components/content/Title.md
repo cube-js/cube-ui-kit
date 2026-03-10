@@ -1,0 +1,45 @@
+# Title
+
+A heading component for section titles. Renders as `h1`–`h6` based on the `level` prop.
+
+## When to Use
+
+- Page and section headings
+- Hierarchical content structure
+- Accessible heading levels for document outline
+
+## Properties
+
+- **`level`** `1 | 2 | 3 | 4 | 5 | 6` (default: `1`) — Heading level (maps to `h1`–`h6` tag and corresponding preset `h1`–`h6`)
+- **`ellipsis`** `boolean` — Truncate overflow with ellipsis
+- **`nowrap`** `boolean` — Prevent text wrapping
+
+### Style Defaults
+
+- `display` — `block`
+- `color` — `#dark`
+- `margin` — `0`
+- `gridArea` — `title`
+
+### Base Properties
+
+Supports [Base properties](../../BaseProperties.md).
+
+### Variants
+
+- `Title.Danger` — Error or destructive heading
+- `Title.Success` — Success or positive heading
+
+## Examples
+
+```jsx
+<Title level={1}>Page Title</Title>
+
+<Title level={2}>Section Heading</Title>
+
+<Title level={3} ellipsis>
+  Long heading that truncates
+</Title>
+
+<Title.Danger level={4}>Error State</Title.Danger>
+```
