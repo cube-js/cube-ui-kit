@@ -57,7 +57,8 @@ const ContentElement = tasty({
       },
       placeSelf: 'stretch',
       scrollbar: {
-        '': 'thin',
+        '': 'auto',
+        'scrollbar=thin': 'thin',
         'scrollbar=tiny | scrollbar=none': 'none',
       },
 

@@ -135,7 +135,7 @@ function PlaygroundComponent() {
           <PlaygroundPreview component={component} styles={styles} />
         ) : undefined
       }
-      output={<PlaygroundOutput styles={styles} />}
+      output={<PlaygroundOutput styles={styles} resetKey={exampleIndex} />}
     />
   );
 }
