@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.121.4
+
+### Patch Changes
+
+- [`2089380f`](https://github.com/cube-js/cube-ui-kit/commit/2089380fdd3dcfb77337546308e6d1b3a0f1117b) Thanks [@tenphi](https://github.com/tenphi)! - Fix `Form` component not passing `qa` prop to the root element.
+
 ## 0.121.3
 
 ### Patch Changes
