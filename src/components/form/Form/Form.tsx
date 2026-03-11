@@ -234,6 +234,7 @@ function Form<T extends FieldTypes>(
       {...filterBaseProps(otherProps, { propNames: formPropNames })}
       ref={domRef}
       noValidate
+      qa={qa}
       styles={styles}
       mods={{
         'has-sider': labelPosition === 'side',
