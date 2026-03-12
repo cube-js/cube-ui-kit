@@ -44,7 +44,7 @@
     "build-docs": "STORYBOOK_MODE=docs storybook build --docs -o storybook-docs",
     "chromatic": "chromatic --only-changed",
     "size": "size-limit",
-    "prepare": "husky install && git config blame.ignoreRevsFile .git-blame-ignore-revs",
+    "prepare": "husky install",
     "clear": "pnpm clear:dist && rimraf ./storybook-docs ./storybook-static ./node_modules/.cache",
     "clear:dist": "rimraf ./dist",
     "prepack": "node scripts/prepare-docs.mjs",
