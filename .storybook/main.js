@@ -28,14 +28,6 @@ const config = {
   addons: [
     '@storybook/addon-links',
     {
-      name: 'storybook-addon-turbo-build',
-      options: {
-        esbuildMinifyOptions: {
-          target: 'es2021',
-        },
-      },
-    },
-    {
       name: '@storybook/addon-docs',
       options: {
         mdxPluginOptions: {
