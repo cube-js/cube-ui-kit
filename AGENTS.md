@@ -77,6 +77,7 @@ ComponentName/
 | `pnpm size` | Check bundle size limits |
 | `pnpm chromatic` | Visual regression tests |
 | `pnpm add-icons` | Add new icons from tabler |
+| `pnpm audit-docs` | Audit component API ↔ docs ↔ argTypes sync. Uses TS Compiler API for full type resolution. Options: `--component=Name` (single component), `--fix-stories` (auto-add/remove argTypes in `.stories.tsx`), `--json`, `--verbose`, `--all-props` |
 
 ## Stack
 
