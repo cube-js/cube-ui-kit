@@ -766,7 +766,9 @@ async function main() {
   }
 
   if (jsonOutput) {
-    console.log(JSON.stringify(results, null, 2));
+    const replacer = (key, value) =>
+      value instanceof Map ? Object.fromEntries(value) : value;
+    console.log(JSON.stringify(results, replacer, 2));
   } else {
     const failed = results.filter((r) => !r.ok);
     const passed = results.filter((r) => r.ok);
