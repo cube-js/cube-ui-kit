@@ -40,14 +40,15 @@ const config = {
   ],
 
   viteFinal(config) {
-    const REACT_PLUGIN_NAMES = ['vite:react-babel', 'vite:react-refresh'];
+    const isReactPlugin = (/** @type {string} */ name) =>
+      name.startsWith('vite:react') || name.startsWith('@vitejs/plugin-react');
     const existingPlugins = (config.plugins ?? [])
       .flat()
       .filter(
         (p) =>
           p &&
           typeof p === 'object' &&
-          !REACT_PLUGIN_NAMES.includes(/** @type {any} */ (p).name),
+          !isReactPlugin(/** @type {any} */ (p).name ?? ''),
       );
 
     config.plugins = [...existingPlugins, react({ jsxRuntime: 'automatic' })];
