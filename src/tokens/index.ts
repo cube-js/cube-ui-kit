@@ -22,6 +22,7 @@ import { LAYOUT_TOKENS } from './layout';
 import { SHADOW_TOKENS } from './shadows';
 import { SIZE_NAME_TO_KEY, SIZE_TOKENS, SIZES } from './sizes';
 import { SPACE_TOKENS } from './spacing';
+import { TYPOGRAPHY_PRESETS } from './typography';
 
 import type { Styles } from '@tenphi/tasty';
 import type { SizeKey, SizeName } from './sizes';
@@ -47,7 +48,7 @@ export const TOKENS: Styles = {
   ...SIZE_TOKENS,
   ...SHADOW_TOKENS,
   ...LAYOUT_TOKENS,
-  ...generateTypographyTokens(),
+  ...generateTypographyTokens(TYPOGRAPHY_PRESETS),
   ...COLOR_TOKENS,
 };
 
@@ -59,4 +60,5 @@ export { SPACE_TOKENS } from './spacing';
 export { SHADOW_TOKENS } from './shadows';
 export { LAYOUT_TOKENS } from './layout';
 export { BASE_TOKENS } from './base';
-// TypographyPreset and TYPOGRAPHY_PRESETS are re-exported from @tenphi/tasty
+export { TYPOGRAPHY_PRESETS } from './typography';
+export type { TypographyPreset } from './typography';
