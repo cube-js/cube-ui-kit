@@ -59,6 +59,13 @@ export default {
       description: 'Button label or custom content',
     },
 
+    /* Tooltip */
+    tooltip: {
+      control: { type: 'text' },
+      description:
+        'Tooltip content. Use a string for simple text, `true` for auto tooltip on overflow, or an object with `{ title, auto, placement, ...tooltipProps }`',
+    },
+
     /* State */
     isLoading: {
       control: { type: 'boolean' },

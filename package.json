@@ -50,7 +50,8 @@
     "prepack": "node scripts/prepare-docs.mjs",
     "postpack": "node scripts/cleanup-docs.mjs",
     "release": "pnpm build && changeset publish --provenance",
-    "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix"
+    "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix",
+    "audit-docs": "node scripts/audit-docs.mjs"
   },
   "keywords": [
     "uikit"

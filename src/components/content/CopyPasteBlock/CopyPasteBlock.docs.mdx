@@ -14,6 +14,8 @@ A block that displays a value with copy-to-clipboard functionality. Supports pas
 - **`value`** `string` (default: `''`) — The value to display and copy
 - **`placeholder`** `ReactNode` — Placeholder when value is empty
 - **`size`** `'small' | 'medium' | 'large'` (default: `'medium'`) — Block size
+- **`onPaste`** `(text: string) => void | Promise<void | string>` — Callback when text is pasted into the block
+- **`onCopy`** `() => void` — Callback when the value is copied from the block
 
 ### Style Defaults
 

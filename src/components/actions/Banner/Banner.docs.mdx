@@ -27,9 +27,23 @@ Banner displays prominent messages and notifications to users. It supports diffe
 - **`isDismissable`** `boolean` (default: `false`) — Whether the banner shows a dismiss button
 - **`onDismiss`** `() => void` — Callback fired when the dismiss button is clicked
 - **`icon`** `ReactNode` — Custom icon to display; defaults to a theme-appropriate icon
+- **`rightIcon`** `ReactNode` — Icon displayed after the content
+- **`prefix`** `ReactNode` — Content rendered before the label
+- **`suffix`** `ReactNode` — Content rendered after the label
 - **`actions`** `ReactNode` — Action buttons displayed on the right side of the banner. Use `Banner.Action` for consistent styling
-- **`description`** `string` — Secondary text shown below the main content, truncated with ellipsis after two lines
-- **`shape`** `'sharp'` — Use `'sharp'` to remove rounded corners when stacking multiple banners
+- **`description`** `ReactNode` — Secondary text shown below the main content, truncated with ellipsis after two lines
+- **`tooltip`** `string | boolean | object` — Tooltip configuration
+- **`hotkeys`** `string` — Keyboard shortcut displayed and triggered
+- **`isDisabled`** `boolean` — Whether the banner is disabled
+- **`isSelected`** `boolean` (default: `false`) — Whether the banner shows as selected with a checkbox
+- **`isLoading`** `boolean` — Show loading state
+- **`autoHideActions`** `boolean` (default: `false`) — When true, actions are hidden by default and shown on hover or focus
+- **`preserveActionsSpace`** `boolean` (default: `false`) — Preserve the actions width when hidden (only changes opacity, not layout)
+- **`disableActionsFocus`** `boolean` (default: `false`) — Disable focus on action buttons by setting tabIndex to -1
+- **`level`** `1 | 2 | 3 | 4 | 5 | 6` (default: `3`) — Heading level for the label element when type is "header" or "card"
+- **`highlight`** `string` — String to highlight within children text
+- **`highlightCaseSensitive`** `boolean` (default: `false`) — Whether highlight matching is case-sensitive
+- **`shape`** `'card' | 'button' | 'sharp' | 'pill'` (default: `'button'`) — Shape of the banner's border radius. Use `'sharp'` to remove rounded corners when stacking multiple banners
 
 ### Base Properties
 

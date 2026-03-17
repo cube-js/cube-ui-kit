@@ -11,7 +11,23 @@ The TextInputMapper component allows users to create and manage key-value pairs 
 
 ## Properties
 
-<ArgTypes of={TextInputMapperStories} />
+- **`value`** `Record<string, string>` — The key-value pairs in controlled mode
+- **`onChange`** `(value: Record<string, string> | undefined) => void` — Callback fired when mappings change
+- **`actionLabel`** `string` (default: `'Mapping'`) — Label text for the add mapping button
+- **`KeyComponent`** `ComponentType` — Custom component for rendering key inputs
+- **`ValueComponent`** `ComponentType` — Custom component for rendering value inputs
+- **`keyProps`** `Partial<CubeTextInputMapperInputProps>` — Additional props passed to each key input
+- **`valueProps`** `Partial<CubeTextInputMapperInputProps>` — Additional props passed to each value input
+- **`allowsCustomValue`** `boolean` — Whether custom (free-form) values are allowed in combobox inputs
+- **`size`** `'small' | 'medium' | 'large'` (default: `'medium'`) — Size of the input fields and buttons
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/getting-started-field-properties--docs)
 
 ## Sub-elements
 

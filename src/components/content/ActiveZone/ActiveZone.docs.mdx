@@ -13,6 +13,12 @@ A focusable, clickable zone with hover and focus states. Used for making non-but
 - **`label`** `string` — Accessible label for screen readers
 - **`onClick`** `MouseEventHandler` — Click handler
 - **`isDisabled`** `boolean` — Disables interaction, reduces opacity
+- **`autoFocus`** `boolean` — Whether the element should receive focus on mount
+- **`excludeFromTabOrder`** `boolean` — Whether the element should be excluded from the tab order
+- **`onFocus`** `(e: FocusEvent) => void` — Handler called when the element receives focus
+- **`onBlur`** `(e: FocusEvent) => void` — Handler called when the element loses focus
+- **`onKeyDown`** `(e: KeyboardEvent) => void` — Handler called when a key is pressed
+- **`onKeyUp`** `(e: KeyboardEvent) => void` — Handler called when a key is released
 
 ### Style Defaults
 

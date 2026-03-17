@@ -280,14 +280,6 @@ const meta: Meta<typeof FilterPicker> = {
       control: { type: 'text' },
       description: 'Keyboard shortcut that triggers the picker when pressed',
     },
-    buttonType: {
-      control: 'radio',
-      options: ['button', 'submit', 'reset'],
-      description: 'HTML button type',
-      table: {
-        defaultValue: { summary: 'button' },
-      },
-    },
     headerStyles: {
       control: false,
       description:

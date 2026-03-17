@@ -21,11 +21,26 @@ A convenience wrapper around `Item type="card"` that provides a more natural car
 
 ### Properties
 
-- **`title`** `string` — Card heading
-- **`children`** `ReactNode` — Card body content
-- **`icon`** `ReactNode` — Icon rendered before the content
-- **`theme`** `string` (default: `default`) — Card theme
-- **`level`** `number` (default: `3`) — Heading level for the title (h1-h6)
+- **`title`** `ReactNode` — Card heading (mapped to Item's `children`)
+- **`children`** `ReactNode` — Card body content (mapped to Item's `description`)
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `medium`) — Size of the card
+- **`icon`** `ReactNode` — Icon displayed before the content
+- **`rightIcon`** `ReactNode` — Icon displayed after the content
+- **`prefix`** `ReactNode` — Content rendered before the label
+- **`suffix`** `ReactNode` — Content rendered after the label
+- **`tooltip`** `string | boolean | object` (default: `true`) — Tooltip configuration: string for text, `true` for auto overflow tooltips, or object for advanced config
+- **`hotkeys`** `string` — Keyboard shortcut displayed and triggered
+- **`isSelected`** `boolean` (default: `false`) — Whether the card shows as selected with a checkbox
+- **`isLoading`** `boolean` (default: `false`) — Show loading state, replacing an icon slot with a spinner
+- **`actions`** `ReactNode` — Inline action buttons displayed on the right side
+- **`autoHideActions`** `boolean` (default: `false`) — When true, actions are hidden by default and shown on hover or focus
+- **`preserveActionsSpace`** `boolean` (default: `false`) — Preserve the actions width when hidden (only changes opacity, not layout)
+- **`disableActionsFocus`** `boolean` (default: `false`) — Disable focus on action buttons by setting tabIndex to -1
+- **`level`** `1 | 2 | 3 | 4 | 5 | 6` (default: `3`) — Heading level for the card title
+- **`highlight`** `string` — String to highlight within children text
+- **`highlightCaseSensitive`** `boolean` (default: `false`) — Whether highlight matching is case-sensitive
+
+Inherits from [Item](/docs/content-item--docs) (with `type="card"`).
 
 ### Base Properties
 

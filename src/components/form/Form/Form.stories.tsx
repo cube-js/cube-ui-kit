@@ -61,13 +61,6 @@ const meta: Meta<typeof Form> = {
         defaultValue: { summary: true },
       },
     },
-    isRequired: {
-      control: { type: 'boolean' },
-      description: 'Whether fields are required by default',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
     necessityIndicator: {
       control: { type: 'radio' },
       options: ['icon', 'label'],

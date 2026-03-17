@@ -19,11 +19,6 @@ export default {
       control: { type: 'text' },
       description: 'Text displayed when no file is selected',
     },
-    buttonText: {
-      control: { type: 'text' },
-      description: 'Text displayed on the selection button',
-    },
-
     /* File Configuration */
     accept: {
       control: { type: 'text' },

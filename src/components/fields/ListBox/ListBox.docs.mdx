@@ -52,6 +52,8 @@ A versatile list selection component that allows users to select one or more ite
 - **`onSelectionChange`** `(keys: Key | Key[] | 'all' | null) => void` — Callback when selection changes
 - **`onEscape`** `() => void` — Callback when Escape key is pressed
 - **`onOptionClick`** `(key: Key) => void` — Callback when an option is clicked (non-checkbox area)
+- **`items`** `Iterable<T>` — Array of items for dynamic content with render function pattern
+- **`disableSelectionToggle`** `boolean` (default: `false`) — When true, clicking an already-selected item keeps it selected instead of toggling it off
 
 ### Base Properties
 

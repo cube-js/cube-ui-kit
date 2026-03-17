@@ -96,14 +96,6 @@ export default {
         defaultValue: { summary: 'medium' },
       },
     },
-    showMonthAndYearPickers: {
-      control: { type: 'boolean' },
-      description: 'Whether to show month and year picker dropdowns',
-      table: {
-        type: { summary: 'boolean' },
-        defaultValue: { summary: false },
-      },
-    },
     useLocale: {
       control: { type: 'boolean' },
       description: 'Whether to use locale-specific date formatting',

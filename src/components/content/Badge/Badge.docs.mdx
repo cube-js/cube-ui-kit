@@ -30,20 +30,31 @@ Badges are small, circular indicators that display numerical counts or short sta
 
 ### Properties
 
-- **`children`** `ReactNode` — Badge content (typically a number or short text)
-- **`icon`** `ReactNode` — Icon to display before the badge content
-- **`rightIcon`** `ReactNode` — Icon to display after the badge content
 - **`theme`** `'special' | 'danger' | 'success' | 'warning' | 'note' | 'disabled'` (default: `special`) — Visual theme of the badge
-- **`type`** `string` — Deprecated: Use theme instead
+- **`type`** `string` — Deprecated: Use `theme` instead
 - **`size`** `string` (default: `inline`) — Size of the badge
+- **`icon`** `ReactNode` — Icon displayed before the content
+- **`rightIcon`** `ReactNode` — Icon displayed after the content
+- **`prefix`** `ReactNode` — Content rendered before the label
+- **`suffix`** `ReactNode` — Content rendered after the label
+- **`description`** `ReactNode` — Secondary text below the main content
+- **`tooltip`** `string | boolean | object` (default: `true`) — Tooltip configuration: string for text, `true` for auto overflow tooltips, or object for advanced config
+- **`hotkeys`** `string` — Keyboard shortcut displayed and triggered
+- **`isSelected`** `boolean` (default: `false`) — Whether the badge shows as selected with a checkbox
+- **`isLoading`** `boolean` (default: `false`) — Show loading state, replacing an icon slot with a spinner
+- **`actions`** `ReactNode` — Inline action buttons displayed on the right side
+- **`autoHideActions`** `boolean` (default: `false`) — When true, actions are hidden by default and shown on hover or focus
+- **`preserveActionsSpace`** `boolean` (default: `false`) — Preserve the actions width when hidden (only changes opacity, not layout)
+- **`disableActionsFocus`** `boolean` (default: `false`) — Disable focus on action buttons by setting tabIndex to -1
+- **`level`** `1 | 2 | 3 | 4 | 5 | 6` (default: `3`) — Heading level for the label element when type is "header" or "card"
+- **`highlight`** `string` — String to highlight within children text
+- **`highlightCaseSensitive`** `boolean` (default: `false`) — Whether highlight matching is case-sensitive
+
+Inherits from [Item](/docs/content-item--docs).
 
 ### Base Properties
 
-Badge extends from `Item` component and supports all base design system properties including:
-- Layout props: `width`, `height`, `margin`, `padding`
-- Color props: `fill`, `color`, `border`
-- Typography props: `preset`, `fontSize`, `fontWeight`
-- Other Item props: `tooltip`, `isDisabled`, `qa`
+Supports [Base properties](/docs/getting-started-base-properties--docs)
 
 ## Examples
 

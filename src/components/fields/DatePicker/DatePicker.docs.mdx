@@ -24,8 +24,6 @@ A date picker combines a text input with a calendar interface, allowing users to
 
 ### Properties
 
-- **`description`** `string` — Additional descriptive text
-- **`placeholder`** `string` — Placeholder text when no date is selected
 - **`value`** `DateValue` — The current date value (controlled)
 - **`defaultValue`** `DateValue` — The default date value (uncontrolled)
 - **`placeholderValue`** `DateValue` — Date used as placeholder when calendar opens
@@ -33,9 +31,17 @@ A date picker combines a text input with a calendar interface, allowing users to
 - **`maxValue`** `DateValue` — The maximum allowed date
 - **`granularity`** `'day' | 'hour' | 'minute' | 'second'` (default: `day`) — Determines the smallest selectable unit
 - **`size`** `'small' | 'medium' | 'large' | (string & {})` (default: `medium`) — DatePicker size
-- **`showMonthAndYearPickers`** `boolean` (default: `false`) — Whether to show month and year picker dropdowns
 - **`useLocale`** `boolean` (default: `false`) — Whether to use locale-specific date formatting
 - **`maxVisibleMonths`** `number` (default: `1`) — Maximum number of months to display in calendar
+- **`shouldFlip`** `boolean` (default: `true`) — Whether the calendar popover should flip to fit in the viewport
+- **`isOpen`** `boolean` — Whether the calendar popover is open (controlled)
+- **`defaultOpen`** `boolean` — Whether the calendar popover is open by default (uncontrolled)
+- **`isDateUnavailable`** `(date: DateValue) => boolean` — Callback to mark specific dates as unavailable
+- **`hourCycle`** `12 | 24` (default: `24`) — Whether to display time in 12 or 24 hour format
+- **`hideTimeZone`** `boolean` (default: `true`) — Whether to hide the time zone abbreviation
+- **`shouldForceLeadingZeros`** `boolean` (default: `true`) — Whether to always show leading zeros in date/time fields
+- **`pageBehavior`** `'single' | 'visible'` — Controls how calendar pages change when navigating
+- **`firstDayOfWeek`** `'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'` — The first day of the week in the calendar
 - **`onChange`** `(value: DateValue | null) => void` — Callback fired when the date value changes
 - **`onBlur`** `(e: FocusEvent) => void` — Callback fired when the date picker loses focus
 - **`onFocus`** `(e: FocusEvent) => void` — Callback fired when the date picker receives focus
@@ -134,16 +140,6 @@ The `mods` property accepts the following modifiers you can override:
   label="Event datetime"
   granularity="minute"
   defaultValue={now(getLocalTimeZone())}
-/>
-```
-
-### Custom Format
-
-```jsx
-<DatePicker
-  label="Birth date"
-  showMonthAndYearPickers
-  maxValue={today(getLocalTimeZone())}
 />
 ```
 

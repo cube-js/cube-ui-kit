@@ -14,12 +14,15 @@ Lower-level component that wraps a trigger element and a `Tooltip`. Use when you
 - **`offset`** `number` (default: `8`) — Distance from trigger in pixels
 - **`crossOffset`** `number` (default: `0`) — Cross-axis offset in pixels
 - **`delay`** `number` (default: `250`) — Show delay in milliseconds
+- **`closeDelay`** `number` (default: `500`) — Close delay in milliseconds
 - **`isMaterial`** `boolean` — Material design style tooltip
 - **`isLight`** `boolean` — Light theme tooltip
 - **`isDisabled`** `boolean` — Disable the tooltip
 - **`isOpen`** `boolean` — Controlled open state
 - **`defaultOpen`** `boolean` — Initially open (uncontrolled)
 - **`onOpenChange`** `(isOpen: boolean) => void` — Callback when open state changes
+- **`trigger`** `'focus'` — When set, opens the tooltip only on focus instead of both focus and hover
+- **`shouldCloseOnPress`** `boolean` (default: `true`) — Whether the tooltip closes when the trigger is pressed
 
 ### Base Properties
 

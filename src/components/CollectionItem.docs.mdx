@@ -96,14 +96,32 @@ const items = [{
 
 ## Properties
 
-Extends all [Item component](/docs/content-item--docs) props:
+- **`icon`** `ReactNode | 'checkbox'` — Icon displayed before the content
+- **`rightIcon`** `ReactNode` — Icon displayed after the content
+- **`prefix`** `ReactNode` — Content rendered before the label
+- **`suffix`** `ReactNode` — Content rendered after the label
+- **`description`** `ReactNode` — Secondary text below the main content
+- **`tooltip`** `string | boolean | object` — Tooltip configuration
+- **`hotkeys`** `string` — Keyboard shortcut displayed and triggered
+- **`isSelected`** `boolean` — Whether the item shows as selected
+- **`isLoading`** `boolean` — Show loading state, replacing the icon slot with a spinner
+- **`actions`** `ReactNode` — Inline action buttons displayed on the right side
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline'` (default: `medium`) — Size of the item
+- **`autoHideActions`** `boolean` (default: `false`) — When true, actions are hidden by default and shown on hover or focus
+- **`preserveActionsSpace`** `boolean` (default: `false`) — Preserve the actions width when hidden (only changes opacity, not layout)
+- **`disableActionsFocus`** `boolean` (default: `false`) — Disable focus on action buttons by setting tabIndex to -1
+- **`level`** `1 | 2 | 3 | 4 | 5 | 6` (default: `3`) — Heading level for the label element when type is "header" or "card"
+- **`highlight`** `string` — String to highlight within children text
+- **`highlightCaseSensitive`** `boolean` (default: `false`) — Whether highlight matching is case-sensitive
+- **`textValue`** `string` — Text for filtering and accessibility
+- **`onAction`** `() => void` — Callback fired when the item is activated (Menu items)
+- **`wrapper`** `(item: ReactElement) => ReactElement` — Function to wrap the rendered item
 
-- `children` - Item content
-- `icon` / `rightIcon` - Icons
-- `prefix` / `suffix` - Additional content
-- `description` - Secondary text
-- `textValue` - Text for filtering/accessibility
-- `onAction` - Action handler (Menu items)
+Extends all [Item component](/docs/content-item--docs) props.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs).
 
 ## Examples
 

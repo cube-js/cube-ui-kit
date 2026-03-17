@@ -23,25 +23,27 @@ A text component with built-in overflow handling and auto-tooltips. When text is
 
 ### Properties
 
-- **`children`** `ReactNode` — Text content
-- **`highlight`** `string` — String to highlight within children
+- **`highlight`** `string` — String to highlight within children (only works when children is a plain string)
 - **`highlightCaseSensitive`** `boolean` (default: `false`) — Whether highlight matching is case-sensitive
-- **`tooltip`** `string | boolean | TooltipProviderProps` (default: `true`) — Tooltip configuration. Use true for auto tooltip on overflow, string for custom tooltip text.
+- **`highlightStyles`** `Styles` — Custom styles for highlighted text portions
+- **`tooltip`** `string | boolean | TooltipProviderProps` (default: `true`) — Tooltip configuration. `true` enables auto tooltip on overflow, a string shows fixed tooltip text, an object supports advanced configuration.
 - **`tooltipPlacement`** `Placement` (default: `top`) — Default tooltip placement
+- **`monospace`** `boolean` — Use monospace font
+- **`ellipsis`** `boolean` — Truncate overflow with ellipsis
+- **`nowrap`** `boolean` — Prevent text wrapping
+- **`italic`** `string` — Font style (e.g. `'italic'`)
+- **`weight`** `string | number` — Font weight
+- **`transform`** `string` — Text transform (e.g. `'uppercase'`, `'capitalize'`)
 
 ### Base Properties
 
-Supports [Base properties](/docs/getting-started-base-properties--docs) and all [Text](/docs/generic-text--docs) properties including `preset`, `color`, `weight`, `transform`, `ellipsis`, `nowrap`.
+Supports [Base properties](/docs/getting-started-base-properties--docs) and all [Text](/docs/generic-text--docs) style properties including `preset`, `color`.
 
 ### Styling Properties
 
 #### styles
 
 Customizes the root text element. Inherits all styling capabilities from the Text component.
-
-#### highlightStyles
-
-Customizes the appearance of highlighted text portions.
 
 ### Style Properties
 

@@ -274,13 +274,6 @@ export default {
         type: { summary: 'Styles' },
       },
     },
-    wrapperStyles: {
-      control: { type: 'object' },
-      description: 'Styles for the outer wrapper element',
-      table: {
-        type: { summary: 'Styles' },
-      },
-    },
     triggerStyles: {
       control: { type: 'object' },
       description: 'Styles for the trigger button element',
@@ -293,6 +286,15 @@ export default {
       description: 'Additional props for the input element',
       table: {
         type: { summary: 'Props' },
+      },
+    },
+
+    rightIcon: {
+      control: { type: null },
+      description:
+        'Icon element rendered after the select value (caret by default)',
+      table: {
+        type: { summary: 'ReactNode' },
       },
     },
 

@@ -31,23 +31,27 @@ DialogForm combines [Dialog](/docs/overlays-dialog--docs) and [Form](/docs/forms
 - **`cancelProps`** `CubeButtonProps` — Properties for cancel button (use `label` to change text)
 - **`preserve`** `boolean` (default: `false`) — Preserve form values after submission/dismissal
 - **`noActions`** `boolean` — Hide default action buttons to manually specify them
-
-### DialogForm-specific Properties
-
-- **`title`** `string` — The title of the dialog
-- **`danger`** `boolean` — Whether the submit button has a danger theme
-- **`submitProps`** `CubeButtonProps` — Properties for submit button (use `label` to change text)
-- **`cancelProps`** `CubeButtonProps` — Properties for cancel button (use `label` to change text)
-- **`preserve`** `boolean` (default: `false`) — Preserve form values after submission/dismissal
-- **`noActions`** `boolean` — Hide default action buttons to manually specify them
-
-### Inherited Properties
-
-DialogForm inherits all properties from:
-- **[Dialog](/docs/overlays-dialog--docs)**: `size`, `isDismissable`, `closeIcon`, styling properties, etc.
-- **[Form](/docs/forms-form--docs)**: `name`, `defaultValues`, `onSubmit`, `onSubmitFailed`, `onValuesChange`, `labelPosition`, `requiredMark`, validation properties, etc.
-
-See the respective component documentation for complete property lists.
+- **`size`** `'S' | 'M' | 'L' | 'small' | 'medium' | 'large'` — The size of the dialog
+- **`isDismissable`** `boolean` — Whether the dialog is dismissable
+- **`closeIcon`** `ReactElement` — Custom close icon element
+- **`closeButtonStyles`** `Styles` — Custom styles for the close button
+- **`name`** `string` — Form name
+- **`form`** `CubeFormInstance` — Form instance created by `useForm`
+- **`defaultValues`** `object` — Default field values
+- **`onSubmit`** `(data) => void | Promise` — Callback on form submit and success
+- **`onSubmitFailed`** `(error?) => void | Promise` — Callback on form submit and failure
+- **`onValuesChange`** `function` — Callback when any field value changes
+- **`orientation`** `'vertical' | 'horizontal'` — Layout orientation of the form
+- **`labelWidth`** `string` — The size of the side area with labels (only for `labelPosition="side"`)
+- **`labelPosition`** `'top' | 'side'` — Where to place labels relative to inputs
+- **`labelStyles`** `Styles` — Styles for the label
+- **`requiredMark`** `boolean` — Whether the field presents required mark
+- **`necessityIndicator`** `NecessityIndicator` — The type of necessity indicator
+- **`necessityLabel`** `ReactNode` — Custom necessity label
+- **`isReadOnly`** `boolean` — Whether the form is read only
+- **`validationState`** `ValidationState` — The validation state of the form
+- **`validateTrigger`** `ValidateTrigger` — On which event to perform validation
+- **`showValid`** `boolean` — Whether to show valid state
 
 ### Base Properties
 

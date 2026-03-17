@@ -40,7 +40,38 @@ The TextArea component is a multi-line text input that allows users to enter and
 
 ## Properties
 
-<ArgTypes of={TextAreaStories} />
+- **`autoSize`** `boolean` (default: `false`) — Whether the textarea should automatically resize based on content
+- **`maxRows`** `number` (default: `10`) — Maximum number of visible rows when `autoSize` is enabled
+- **`rows`** `number` (default: `3`) — Number of visible text rows
+- **`value`** `string` — The text value in controlled mode
+- **`defaultValue`** `string` — The default text value in uncontrolled mode
+- **`placeholder`** `string` — Placeholder text when input is empty
+- **`icon`** `ReactElement` — Icon element rendered before the input
+- **`prefix`** `ReactNode` — Input decoration before the main input
+- **`suffix`** `ReactNode` — Input decoration after the main input
+- **`suffixPosition`** `'before' | 'after'` (default: `'before'`) — Position of suffix relative to validation/loading state icons
+- **`resize`** `string` — CSS resize value (e.g. `'vertical'`, `'none'`)
+- **`size`** `'small' | 'medium' | 'large'` (default: `'medium'`) — Input size
+- **`autocomplete`** `string` — Browser autocomplete attribute value
+- **`maxLength`** `number` — Maximum number of characters allowed
+- **`minLength`** `number` — Minimum number of characters required
+- **`inputProps`** `Props` — Direct HTML props passed to the inner textarea element
+- **`wrapperProps`** `Props` — Additional HTML props passed to the input wrapper container
+- **`inputRef`** `RefObject<HTMLTextAreaElement>` — Ref to the inner textarea element
+- **`wrapperRef`** `RefObject<HTMLDivElement>` — Ref to the input wrapper container
+- **`loadingIndicator`** `ReactNode` — Custom loading indicator element
+- **`inputStyles`** `Styles` — Custom styles for the textarea element
+- **`onChange`** `function` — Callback fired when the input value changes
+- **`onBlur`** `function` — Callback fired when the input loses focus
+- **`onFocus`** `function` — Callback fired when the input receives focus
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/getting-started-field-properties--docs)
 
 ## Sub-elements
 
