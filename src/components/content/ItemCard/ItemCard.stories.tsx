@@ -49,6 +49,54 @@ const meta = {
       description: 'Heading level for the title (h1-h6)',
       table: { defaultValue: { summary: 3 } },
     },
+
+    size: {
+      options: ['xsmall', 'small', 'medium', 'large', 'xlarge'],
+      control: { type: 'radio' },
+      description: 'Size of the card',
+      table: {
+        defaultValue: { summary: 'medium' },
+        type: { summary: "'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'" },
+      },
+    },
+    prefix: {
+      control: { type: null },
+      description: 'Content rendered before the label',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    suffix: {
+      control: { type: null },
+      description: 'Content rendered after the label',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    tooltip: {
+      control: { type: 'radio' },
+      description:
+        'Tooltip configuration: string for text, `true` for auto overflow tooltips, or object for advanced config',
+      table: {
+        defaultValue: { summary: 'true' },
+        type: { summary: 'string | boolean | object' },
+      },
+    },
+    hotkeys: {
+      control: { type: 'text' },
+      description: 'Keyboard shortcut displayed and triggered',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    isLoading: {
+      control: 'boolean',
+      description: 'Show loading state, replacing an icon slot with a spinner',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: 'boolean' },
+      },
+    },
   },
 } satisfies Meta<typeof ItemCard>;
 

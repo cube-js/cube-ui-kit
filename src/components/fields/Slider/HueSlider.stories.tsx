@@ -90,6 +90,53 @@ export default {
       description:
         'Custom styles object for styling the component and sub-elements',
     },
+
+    gradation: {
+      control: { type: null },
+      description:
+        'Labels to display at gradation marks along the slider track',
+      table: {
+        type: { summary: 'string[]' },
+      },
+    },
+    formatOptions: {
+      control: { type: null },
+      description: 'Options for formatting the displayed value label',
+      table: {
+        type: { summary: 'Intl.NumberFormatOptions' },
+      },
+    },
+    inputWidth: {
+      control: { type: 'text' },
+      description: 'Width of the slider input area',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    inputStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    trackStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    thumbStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    thumbTokens: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
   args: {
     defaultValue: 180,

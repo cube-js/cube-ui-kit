@@ -71,6 +71,28 @@ const meta = {
       description: 'Disables all buttons (inherited via context)',
       table: { defaultValue: { summary: false } },
     },
+
+    actionProps: {
+      control: { type: null },
+      description: 'Additional props for the action button in strict mode',
+      table: {
+        type: { summary: 'Partial<CubeButtonProps>' },
+      },
+    },
+    triggerProps: {
+      control: { type: null },
+      description: 'Additional props for the trigger button in strict mode',
+      table: {
+        type: { summary: 'Partial<CubeButtonProps>' },
+      },
+    },
+    menuProps: {
+      control: { type: null },
+      description: 'Additional props for the dropdown menu in strict mode',
+      table: {
+        type: { summary: 'Partial<CubeMenuProps>' },
+      },
+    },
   },
 } satisfies Meta<typeof Button.Split>;
 

@@ -189,6 +189,98 @@ export default {
         type: { summary: '(isOpen: boolean) => void' },
       },
     },
+
+    shouldFlip: {
+      control: 'boolean',
+      description:
+        'Whether the calendar popover should flip to fit in the viewport',
+      table: {
+        defaultValue: { summary: 'true' },
+        type: { summary: 'boolean' },
+      },
+    },
+    isOpen: {
+      control: 'boolean',
+      description: 'Whether the calendar popover is open (controlled)',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
+    defaultOpen: {
+      control: 'boolean',
+      description:
+        'Whether the calendar popover is open by default (uncontrolled)',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
+    isDateUnavailable: {
+      control: { type: null },
+      description: 'Callback to mark specific dates as unavailable',
+      table: {
+        type: { summary: '(date: DateValue) => boolean' },
+      },
+    },
+    hourCycle: {
+      control: { type: null },
+      description: 'Whether to display time in 12 or 24 hour format',
+      table: {
+        defaultValue: { summary: '24' },
+        type: { summary: '12 | 24' },
+      },
+    },
+    hideTimeZone: {
+      control: 'boolean',
+      description: 'Whether to hide the time zone abbreviation',
+      table: {
+        defaultValue: { summary: 'true' },
+        type: { summary: 'boolean' },
+      },
+    },
+    shouldForceLeadingZeros: {
+      control: 'boolean',
+      description: 'Whether to always show leading zeros in date/time fields',
+      table: {
+        defaultValue: { summary: 'true' },
+        type: { summary: 'boolean' },
+      },
+    },
+    pageBehavior: {
+      options: ['single', 'visible'],
+      control: { type: 'radio' },
+      description: 'Controls how calendar pages change when navigating',
+      table: {
+        type: { summary: "'single' | 'visible'" },
+      },
+    },
+    firstDayOfWeek: {
+      options: ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'],
+      control: { type: 'radio' },
+      description: 'The first day of the week in the calendar',
+      table: {
+        type: {
+          summary: "'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'",
+        },
+      },
+    },
+    inputStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    wrapperStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    triggerStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 

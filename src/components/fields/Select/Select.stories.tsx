@@ -369,6 +369,52 @@ export default {
         type: { summary: 'string' },
       },
     },
+
+    triggerDescription: {
+      control: { type: null },
+      description:
+        'Description text displayed within the trigger button (different from field-level description)',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    hotkeys: {
+      control: { type: 'text' },
+      description: 'Keyboard shortcut that triggers the select when pressed',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    containerPadding: {
+      control: { type: 'number' },
+      description:
+        'Minimum padding in pixels between the popover and viewport edges',
+      table: {
+        defaultValue: { summary: '8' },
+        type: { summary: 'number' },
+      },
+    },
+    isOpen: {
+      control: 'boolean',
+      description: 'Whether the dropdown is open (controlled)',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
+    defaultOpen: {
+      control: 'boolean',
+      description: 'Whether the dropdown is open by default (uncontrolled)',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
+    selectionMode: {
+      control: { type: null },
+      description: 'Selection mode for the select',
+      table: {
+        type: { summary: "'single'" },
+      },
+    },
   },
 } as Meta<CubeSelectProps<any>>;
 

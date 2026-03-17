@@ -159,6 +159,92 @@ export default {
     styles: {
       description: 'Custom styles for the command palette container',
     },
+
+    selectedKeys: {
+      control: { type: null },
+      description: 'Currently selected keys (controlled)',
+      table: {
+        type: { summary: 'string[]' },
+      },
+    },
+    defaultSelectedKeys: {
+      control: { type: null },
+      description: 'Initially selected keys (uncontrolled)',
+      table: {
+        type: { summary: 'string[]' },
+      },
+    },
+    items: {
+      control: { type: null },
+      description:
+        'Collection of items for dynamic content with render function pattern',
+      table: {
+        type: { summary: 'Iterable<T>' },
+      },
+    },
+    disabledKeys: {
+      control: { type: null },
+      description: 'Keys of items that should be disabled',
+      table: {
+        type: { summary: 'Iterable<Key>' },
+      },
+    },
+    header: {
+      control: { type: null },
+      description: 'Optional header content above the search input',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    footer: {
+      control: { type: null },
+      description: 'Optional footer content below the menu',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    menuStyles: {
+      control: { type: null },
+      description: 'Custom styles for the menu list container',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    itemStyles: {
+      control: { type: null },
+      description: 'Custom styles for individual menu items',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    sectionStyles: {
+      control: { type: null },
+      description: 'Custom styles for section wrapper elements',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    sectionHeadingStyles: {
+      control: { type: null },
+      description: 'Custom styles for section heading elements',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    headerStyles: {
+      control: { type: null },
+      description: 'Custom styles for the header',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    footerStyles: {
+      control: { type: null },
+      description: 'Custom styles for the footer',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 

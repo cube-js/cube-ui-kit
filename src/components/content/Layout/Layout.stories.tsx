@@ -116,6 +116,16 @@ const meta: Meta<typeof Layout> = {
         type: { summary: 'Styles' },
       },
     },
+
+    minContentSize: {
+      control: { type: 'number' },
+      description:
+        'Minimum size in pixels reserved for the content area between panels',
+      table: {
+        defaultValue: { summary: '320' },
+        type: { summary: 'number' },
+      },
+    },
   },
 };
 

@@ -99,14 +99,6 @@ const meta: any = {
         defaultValue: { summary: false },
       },
     },
-    emptyLabel: {
-      control: { type: 'text' },
-      description:
-        'Custom label to display when no results are found after filtering',
-      table: {
-        defaultValue: { summary: 'No results found' },
-      },
-    },
     filter: {
       control: false,
       description:
@@ -218,6 +210,79 @@ const meta: any = {
       description: 'Label for the "Select All" option',
       table: {
         defaultValue: { summary: 'Select All' },
+      },
+    },
+
+    searchValue: {
+      control: { type: 'text' },
+      description: 'Controlled search input value',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    items: {
+      control: { type: null },
+      description:
+        'Array of items for dynamic content with render function pattern',
+      table: {
+        type: { summary: 'Iterable<T>' },
+      },
+    },
+    searchInputStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    listStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    optionStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    sectionStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    headingStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    listBoxStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    headerStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    footerStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+
+    emptyLabel: {
+      control: { type: null },
+      description: 'Label displayed when no items match',
+      table: {
+        defaultValue: { summary: 'No items' },
+        type: { summary: 'ReactNode' },
       },
     },
   },

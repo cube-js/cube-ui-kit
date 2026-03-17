@@ -192,6 +192,39 @@ export default {
       description:
         'Custom styles object for styling the component and sub-elements',
     },
+
+    suffixPosition: {
+      options: ['before', 'after'],
+      control: { type: 'radio' },
+      description:
+        'Position of suffix relative to validation/loading state icons',
+      table: {
+        defaultValue: { summary: "'before'" },
+        type: { summary: "'before' | 'after'" },
+      },
+    },
+    inputProps: {
+      control: { type: null },
+      description: 'Direct HTML props passed to the inner textarea element',
+      table: {
+        type: { summary: 'Props' },
+      },
+    },
+    wrapperProps: {
+      control: { type: null },
+      description:
+        'Additional HTML props passed to the input wrapper container',
+      table: {
+        type: { summary: 'Props' },
+      },
+    },
+    inputStyles: {
+      control: { type: null },
+      description: 'Custom styles for the textarea element',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 

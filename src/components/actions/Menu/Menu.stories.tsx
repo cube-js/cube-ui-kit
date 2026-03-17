@@ -245,6 +245,28 @@ export default {
         type: { summary: 'string' },
       },
     },
+
+    menuStyles: {
+      control: { type: null },
+      description: 'Custom styles for the inner menu list element',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    headerStyles: {
+      control: { type: null },
+      description: 'Custom styles for the header element',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    footerStyles: {
+      control: { type: null },
+      description: 'Custom styles for the footer element',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 

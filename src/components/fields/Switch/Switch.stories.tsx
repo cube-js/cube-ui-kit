@@ -103,6 +103,13 @@ export default {
       description: 'Callback fired when the switch loses focus',
       control: { type: null },
     },
+
+    inputStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 

@@ -136,6 +136,22 @@ const meta: Meta<typeof Form> = {
       description: 'Triggered when any field value changes',
       control: { type: null },
     },
+
+    labelStyles: {
+      control: { type: null },
+      description: 'Styles applied to field labels',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    necessityLabel: {
+      control: { type: null },
+      description:
+        'Custom label to replace the default necessity indicator text',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
   },
 };
 

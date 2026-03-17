@@ -304,6 +304,69 @@ const meta: Meta<typeof FilterPicker> = {
       action: 'option clicked',
       description: 'Callback when an option is clicked (non-checkbox area)',
     },
+
+    shouldFlip: {
+      control: 'boolean',
+      description: 'Whether to flip the popover placement when it overflows',
+      table: {
+        defaultValue: { summary: 'true' },
+        type: { summary: 'boolean' },
+      },
+    },
+    containerPadding: {
+      control: { type: 'number' },
+      description:
+        'Minimum padding in pixels between the popover and viewport edges',
+      table: {
+        defaultValue: { summary: '8' },
+        type: { summary: 'number' },
+      },
+    },
+    sortSelectedToTop: {
+      control: 'boolean',
+      description:
+        'Sort selected items to the top when the popover opens (only works with `items` prop, defaults to `true` when items are provided)',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
+    searchValue: {
+      control: { type: 'text' },
+      description: 'Controlled search input value',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    searchInputStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    listStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    optionStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    sectionStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    headingStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 

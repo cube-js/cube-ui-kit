@@ -99,6 +99,30 @@ export default {
       description: 'Callback fired when the file input receives focus',
       control: { type: null },
     },
+
+    size: {
+      options: ['small', 'default', 'large'],
+      control: { type: 'radio' },
+      description: 'The size of the input',
+      table: {
+        defaultValue: { summary: 'default' },
+        type: { summary: "'small' | 'default' | 'large'" },
+      },
+    },
+    inputStyles: {
+      control: { type: null },
+      description: 'Custom styles for the file input element',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    inputProps: {
+      control: { type: null },
+      description: 'Direct props passed to the native file input element',
+      table: {
+        type: { summary: 'Props' },
+      },
+    },
   },
 };
 

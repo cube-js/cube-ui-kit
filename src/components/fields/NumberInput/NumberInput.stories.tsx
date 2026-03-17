@@ -121,6 +121,71 @@ export default {
       description: 'Callback fired when the input receives focus',
       control: { type: null },
     },
+
+    icon: {
+      control: { type: null },
+      description: 'Icon element rendered before the input',
+      table: {
+        type: { summary: 'ReactElement' },
+      },
+    },
+    suffixPosition: {
+      options: ['before', 'after'],
+      control: { type: 'radio' },
+      description: 'Position of suffix relative to validation/loading icons',
+      table: {
+        defaultValue: { summary: 'before' },
+        type: { summary: "'before' | 'after'" },
+      },
+    },
+    formatOptions: {
+      control: { type: null },
+      description: 'Options for formatting the displayed number value',
+      table: {
+        type: { summary: 'Intl.NumberFormatOptions' },
+      },
+    },
+    isWheelDisabled: {
+      control: 'boolean',
+      description: 'Whether scrolling the mouse wheel changes the value',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
+    decrementAriaLabel: {
+      control: { type: 'text' },
+      description: 'Custom aria-label for the decrement button',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    incrementAriaLabel: {
+      control: { type: 'text' },
+      description: 'Custom aria-label for the increment button',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    inputProps: {
+      control: { type: null },
+      description: 'Direct props passed to the native input element',
+      table: {
+        type: { summary: 'Props' },
+      },
+    },
+    wrapperProps: {
+      control: { type: null },
+      description: 'Direct props passed to the input wrapper element',
+      table: {
+        type: { summary: 'Props' },
+      },
+    },
+    inputStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 

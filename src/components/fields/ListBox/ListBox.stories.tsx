@@ -193,6 +193,66 @@ const meta: any = {
         defaultValue: { summary: 'Select All' },
       },
     },
+
+    filter: {
+      control: { type: null },
+      description: 'Filter function for the list items',
+      table: {
+        type: { summary: '(nodes: Iterable<Node>) => Iterable<Node>' },
+      },
+    },
+    emptyLabel: {
+      control: { type: null },
+      description: 'Label shown when no items are available',
+      table: {
+        defaultValue: { summary: 'No items' },
+        type: { summary: 'ReactNode' },
+      },
+    },
+    items: {
+      control: { type: null },
+      description:
+        'Array of items for dynamic content with render function pattern',
+      table: {
+        type: { summary: 'Iterable<T>' },
+      },
+    },
+    listStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    optionStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    sectionStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    headingStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    headerStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    footerStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 

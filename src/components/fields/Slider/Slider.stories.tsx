@@ -173,6 +173,43 @@ export default {
       description:
         'Custom styles object for styling the component and sub-elements',
     },
+
+    inputWidth: {
+      control: { type: 'text' },
+      description: 'Width of the input area',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    trackStyles: {
+      control: { type: null },
+      description: 'Custom styles for the track element',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    thumbStyles: {
+      control: { type: null },
+      description: 'Custom styles for the thumb element',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    thumbTokens: {
+      control: { type: null },
+      description:
+        'Custom tokens for the thumb element (e.g., `#slider-thumb` for fill color)',
+      table: {
+        type: { summary: 'Tokens' },
+      },
+    },
+    inputStyles: {
+      control: { type: null },
+      description: 'Custom styles for the input element',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
   args: {
     defaultValue: 6,

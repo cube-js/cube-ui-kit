@@ -12,6 +12,7 @@
  *   --json              (machine-readable output)
  *   --verbose           (debug output)
  *   --all-props         (don't filter inherited props)
+ *   --fix-stories       (auto-update argTypes in .stories.tsx files)
  */
 
 import fs from 'node:fs/promises';
@@ -158,8 +159,12 @@ async function glob(dir, pattern) {
 
 /* ── MDX/Stories parsing ──────────────────────────────────────────────── */
 
+/**
+ * Returns { names: Set<string>, details: Map<string, { type, defaultValue, description }> }
+ */
 function extractPropsFromDocs(content) {
   const props = new Set();
+  const details = new Map();
   const lines = content.split('\n');
   const PROP_SECTIONS = /^#{2,3}\s+[\w-]*\s*Properties\s*$/;
   const STOP_H2 = /^##\s+(?!.*Properties)/;
@@ -182,9 +187,24 @@ function extractPropsFromDocs(content) {
     }
     if (!inPropSection) continue;
 
-    const bulletMatch = line.match(/^\s*-\s+\*\*`([^`]+)`\*\*/);
+    const bulletMatch = line.match(
+      /^\s*-\s+\*\*`([^`]+)`\*\*/,
+    );
     if (bulletMatch) {
-      props.add(bulletMatch[1]);
+      const name = bulletMatch[1];
+      const rest = line.slice(bulletMatch[0].length);
+
+      const typeMatch = rest.match(/^\s+`([^`]*)`/);
+      const type = typeMatch ? typeMatch[1] : '';
+
+      const defMatch = rest.match(/\(default:\s+`([^`]*)`/);
+      const defaultValue = defMatch ? defMatch[1] : '';
+
+      const descMatch = rest.match(/—\s*(.*)$/);
+      const description = descMatch ? descMatch[1].trim() : '';
+
+      props.add(name);
+      details.set(name, { type, defaultValue, description });
       continue;
     }
 
@@ -193,10 +213,11 @@ function extractPropsFromDocs(content) {
       const name = headingMatch[1];
       if (name !== 'styles' && (name.endsWith('Styles') || name.endsWith('Props') || name.endsWith('Tokens'))) {
         props.add(name);
+        details.set(name, { type: 'Styles', defaultValue: '', description: '' });
       }
     }
   }
-  return props;
+  return { names: props, details };
 }
 
 function extractArgTypesFromStories(content) {
@@ -313,6 +334,275 @@ function isFieldComponent(docPath) {
   return parts.some((p) => FIELD_COMPONENT_DIRS.has(p));
 }
 
+/* ── argType generation from docs ──────────────────────────────────────── */
+
+function inferControlType(typeStr) {
+  if (!typeStr) return '{ type: null }';
+  const t = typeStr.trim();
+  if (t === 'boolean') return "'boolean'";
+  if (t === 'string') return "{ type: 'text' }";
+  if (t === 'number') return "{ type: 'number' }";
+  if (t === 'ReactNode') return '{ type: null }';
+  if (t === 'Styles') return '{ type: null }';
+  if (/^function\b|=>/.test(t)) return '{ type: null }';
+  if (/^\(/.test(t)) return '{ type: null }';
+  if (/\|/.test(t)) {
+    const parts = t.split('|').map((s) => s.trim().replace(/^'|'$/g, ''));
+    const allStrings = parts.every((p) => !p.includes(' ') && p !== 'true' && p !== 'false' && !/^\d/.test(p));
+    if (allStrings && parts.length <= 8) return "{ type: 'radio' }";
+    return '{ type: null }';
+  }
+  return '{ type: null }';
+}
+
+function inferOptions(typeStr) {
+  if (!typeStr) return null;
+  if (!/\|/.test(typeStr)) return null;
+  const parts = typeStr.split('|').map((s) => s.trim());
+  const quoted = parts.filter((p) => /^'[^']+'$/.test(p));
+  if (quoted.length === parts.length && quoted.length >= 2) {
+    return quoted.map((p) => p.replace(/^'|'$/g, ''));
+  }
+  return null;
+}
+
+function isEventProp(name) {
+  return /^on[A-Z]/.test(name);
+}
+
+function generateArgTypeEntry(name, info) {
+  const lines = [];
+  const indent = '    ';
+
+  lines.push(`${indent}${name}: {`);
+
+  if (isEventProp(name)) {
+    const eventName = name.replace(/^on/, '').replace(/([A-Z])/g, (m, c, i) =>
+      i === 0 ? c.toLowerCase() : '-' + c.toLowerCase(),
+    );
+    lines.push(`${indent}  action: '${eventName}',`);
+  } else {
+    const control = inferControlType(info.type);
+    const options = inferOptions(info.type);
+    if (options) {
+      lines.push(`${indent}  options: [${options.map((o) => `'${o}'`).join(', ')}],`);
+    }
+    lines.push(`${indent}  control: ${control},`);
+  }
+
+  if (info.description) {
+    const escaped = info.description.replace(/'/g, "\\'");
+    lines.push(`${indent}  description: '${escaped}',`);
+  }
+
+  if (info.defaultValue || info.type) {
+    lines.push(`${indent}  table: {`);
+    if (info.defaultValue) {
+      const dv = info.defaultValue.replace(/'/g, "\\'");
+      lines.push(`${indent}    defaultValue: { summary: '${dv}' },`);
+    }
+    if (info.type) {
+      const escaped = info.type.replace(/'/g, "\\'");
+      lines.push(`${indent}    type: { summary: '${escaped}' },`);
+    }
+    lines.push(`${indent}  },`);
+  }
+
+  lines.push(`${indent}},`);
+  return lines.join('\n');
+}
+
+async function fixStoriesFiles(results, verbose) {
+  let totalAdded = 0;
+  let totalRemoved = 0;
+  let filesModified = 0;
+
+  for (const r of results) {
+    if (!r.storiesPath) continue;
+    const storiesExists = await fs.access(r.storiesPath).then(() => true).catch(() => false);
+    if (!storiesExists) continue;
+    if (!r.docsDetails) continue;
+
+    const toAdd = (r.inDocsNotArgTypes || []).filter((p) => r.docsDetails.has(p));
+    const toRemove = r.inArgTypesNotDocs || [];
+
+    if (toAdd.length === 0 && toRemove.length === 0) continue;
+
+    let content = await fs.readFile(r.storiesPath, 'utf8');
+    let modified = false;
+
+    if (toRemove.length > 0) {
+      for (const propName of toRemove) {
+        const removed = removeArgType(content, propName);
+        if (removed !== content) {
+          content = removed;
+          modified = true;
+          totalRemoved++;
+          if (verbose) console.log(`  [${r.component}] Removed argType: ${propName}`);
+        }
+      }
+    }
+
+    if (toAdd.length > 0) {
+      const argTypesIdx = content.indexOf('argTypes:');
+      if (argTypesIdx !== -1) {
+        const openBrace = content.indexOf('{', argTypesIdx);
+        if (openBrace !== -1) {
+          const entries = toAdd.map((name) => {
+            const info = r.docsDetails.get(name) || { type: '', defaultValue: '', description: '' };
+            return generateArgTypeEntry(name, info);
+          });
+
+          const insertPos = findArgTypesInsertPosition(content, openBrace);
+          const newBlock = '\n' + entries.join('\n') + '\n';
+          content = content.slice(0, insertPos) + newBlock + content.slice(insertPos);
+          modified = true;
+          totalAdded += toAdd.length;
+          if (verbose) {
+            for (const name of toAdd) {
+              console.log(`  [${r.component}] Added argType: ${name}`);
+            }
+          }
+        }
+      }
+    }
+
+    if (modified) {
+      await fs.writeFile(r.storiesPath, content, 'utf8');
+      filesModified++;
+      console.log(`  Updated: ${path.relative(ROOT, r.storiesPath)} (+${toAdd.length} -${toRemove.length})`);
+    }
+  }
+
+  if (filesModified > 0) {
+    console.log(`\n=== Stories fix summary ===`);
+    console.log(`Files modified: ${filesModified}`);
+    console.log(`ArgTypes added: ${totalAdded}`);
+    console.log(`ArgTypes removed: ${totalRemoved}\n`);
+  } else {
+    console.log('\nNo story files needed changes.\n');
+  }
+}
+
+function findArgTypesInsertPosition(content, openBrace) {
+  let depth = 1;
+  let i = openBrace + 1;
+  const len = content.length;
+
+  while (i < len && depth > 0) {
+    const c = content[i];
+    if (c === '/' && content[i + 1] === '*') {
+      i = content.indexOf('*/', i) + 2;
+      continue;
+    }
+    if (c === '/' && content[i + 1] === '/') {
+      i = content.indexOf('\n', i) + 1 || len;
+      continue;
+    }
+    if ((c === '"' || c === "'" || c === '`')) {
+      const q = c;
+      i++;
+      while (i < len && content[i] !== q) {
+        if (content[i] === '\\') i++;
+        i++;
+      }
+      i++;
+      continue;
+    }
+    if (c === '{') { depth++; i++; continue; }
+    if (c === '}') {
+      if (depth === 1) return i;
+      depth--;
+      i++;
+      continue;
+    }
+    i++;
+  }
+  return openBrace + 1;
+}
+
+function removeArgType(content, propName) {
+  const argTypesIdx = content.indexOf('argTypes:');
+  if (argTypesIdx === -1) return content;
+
+  const openBrace = content.indexOf('{', argTypesIdx);
+  if (openBrace === -1) return content;
+
+  let depth = 1;
+  let i = openBrace + 1;
+  const len = content.length;
+
+  while (i < len && depth > 0) {
+    const c = content[i];
+    if (c === '/' && content[i + 1] === '*') {
+      i = content.indexOf('*/', i) + 2;
+      continue;
+    }
+    if (c === '/' && content[i + 1] === '/') {
+      i = content.indexOf('\n', i) + 1 || len;
+      continue;
+    }
+    if ((c === '"' || c === "'" || c === '`')) {
+      const q = c;
+      i++;
+      while (i < len && content[i] !== q) {
+        if (content[i] === '\\') i++;
+        i++;
+      }
+      i++;
+      continue;
+    }
+    if (c === '{') { depth++; i++; continue; }
+    if (c === '}') { depth--; i++; continue; }
+
+    if (depth === 1 && /[a-zA-Z_$]/.test(c)) {
+      const keyStart = i;
+      while (i < len && /[a-zA-Z0-9_$]/.test(content[i])) i++;
+      const key = content.slice(keyStart, i);
+
+      if (key === propName) {
+        while (i < len && /\s/.test(content[i])) i++;
+        if (content[i] === ':') {
+          i++;
+          while (i < len && /\s/.test(content[i])) i++;
+          if (content[i] === '{') {
+            let d = 1;
+            i++;
+            while (i < len && d > 0) {
+              if (content[i] === '{') d++;
+              else if (content[i] === '}') d--;
+              else if ((content[i] === '"' || content[i] === "'" || content[i] === '`')) {
+                const q2 = content[i];
+                i++;
+                while (i < len && content[i] !== q2) {
+                  if (content[i] === '\\') i++;
+                  i++;
+                }
+              }
+              i++;
+            }
+          } else {
+            while (i < len && content[i] !== ',' && content[i] !== '}') i++;
+          }
+          if (content[i] === ',') i++;
+          while (i < len && content[i] === ' ') i++;
+          if (content[i] === '\n') i++;
+        }
+
+        let lineStart = keyStart;
+        while (lineStart > 0 && content[lineStart - 1] !== '\n') lineStart--;
+        if (content.slice(lineStart, keyStart).trim() === '') {
+          return content.slice(0, lineStart) + content.slice(i);
+        }
+        return content.slice(0, keyStart) + content.slice(i);
+      }
+      continue;
+    }
+    i++;
+  }
+  return content;
+}
+
 /* ── Main ─────────────────────────────────────────────────────────────── */
 
 async function main() {
@@ -321,6 +611,7 @@ async function main() {
   const jsonOutput = args.includes('--json');
   const verbose = args.includes('--verbose');
   const allProps = args.includes('--all-props');
+  const fixStories = args.includes('--fix-stories');
 
   const docFiles = await glob(COMPONENTS, /\.docs\.mdx$/);
   const docFilesFiltered = componentFilter
@@ -374,7 +665,7 @@ async function main() {
       fs.readFile(storiesPath, 'utf8').catch(() => ''),
     ]);
 
-    const docsProps = extractPropsFromDocs(docContent);
+    const { names: docsProps, details: docsDetails } = extractPropsFromDocs(docContent);
     const argTypes = extractArgTypesFromStories(storiesContent);
     const hasBaseRef = /Base properties/i.test(docContent);
     const hasFieldRef = /Field properties/i.test(docContent);
@@ -440,6 +731,7 @@ async function main() {
     results.push({
       component: componentName,
       docPath: relDoc,
+      storiesPath: path.resolve(ROOT, storiesPath),
       codePropsCount: codeProps.size,
       docsPropsCount: docsProps.size,
       argTypesCount: argTypes.size,
@@ -450,6 +742,7 @@ async function main() {
       inDocsNotCode,
       inArgTypesNotDocs,
       inDocsNotArgTypes,
+      docsDetails,
       issues,
       info,
       ok: issues.length === 0,
@@ -493,6 +786,10 @@ async function main() {
         console.log('');
       }
     }
+  }
+
+  if (fixStories) {
+    await fixStoriesFiles(results, verbose);
   }
 
   process.exit(hasErrors ? 1 : 0);

@@ -21,6 +21,15 @@ const meta = {
       control: 'text',
       description: 'Override key for detecting icon changes',
     },
+
+    noWrapper: {
+      control: 'boolean',
+      description:
+        'When true, renders without wrapper element, expecting parent to provide grid context',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
   },
 } satisfies Meta<typeof IconSwitch>;
 

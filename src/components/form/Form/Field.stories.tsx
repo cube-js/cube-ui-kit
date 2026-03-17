@@ -131,6 +131,14 @@ export default {
       control: { type: null },
       description: 'Field content (input component or function)',
     },
+
+    isReadOnly: {
+      control: 'boolean',
+      description: 'Whether the field is read-only',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
   },
 };
 

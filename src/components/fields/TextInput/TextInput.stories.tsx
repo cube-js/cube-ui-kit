@@ -126,6 +126,36 @@ export default {
       description: 'Callback fired when the input receives focus',
       control: { type: null },
     },
+
+    suffixPosition: {
+      options: ['before', 'after'],
+      control: { type: 'radio' },
+      description:
+        'Position of suffix relative to validation/loading state icons',
+      table: {
+        defaultValue: { summary: 'before' },
+        type: { summary: "'before' | 'after'" },
+      },
+    },
+    inputProps: {
+      control: { type: null },
+      description: 'Direct HTML props passed to the inner input element',
+      table: {
+        type: { summary: 'Props' },
+      },
+    },
+    inputStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    wrapperProps: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 

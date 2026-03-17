@@ -120,6 +120,13 @@ export default {
       description: 'Callback fired when the radio group receives focus',
       control: { type: null },
     },
+
+    groupStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 

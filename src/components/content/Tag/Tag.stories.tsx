@@ -91,6 +91,52 @@ const meta = {
         type: { summary: 'Styles' },
       },
     },
+
+    prefix: {
+      control: { type: null },
+      description: 'Content rendered before the label',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    suffix: {
+      control: { type: null },
+      description: 'Content rendered after the label',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    description: {
+      control: { type: null },
+      description: 'Secondary text below the main content',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    tooltip: {
+      control: { type: 'radio' },
+      description:
+        'Tooltip configuration: string for text, `true` for auto overflow tooltips, or object for advanced config',
+      table: {
+        defaultValue: { summary: 'true' },
+        type: { summary: 'string | boolean | object' },
+      },
+    },
+    hotkeys: {
+      control: { type: 'text' },
+      description: 'Keyboard shortcut displayed and triggered',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    isLoading: {
+      control: 'boolean',
+      description: 'Show loading state, replacing an icon slot with a spinner',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: 'boolean' },
+      },
+    },
   },
 } satisfies Meta<typeof Tag>;
 
