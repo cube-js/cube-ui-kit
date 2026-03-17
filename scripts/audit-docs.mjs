@@ -370,6 +370,11 @@ function isEventProp(name) {
   return /^on[A-Z]/.test(name);
 }
 
+function escapeSingleQuoted(value) {
+  // Escape backslashes first, then single quotes, for safe use in single-quoted JS strings
+  return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 function generateArgTypeEntry(name, info) {
   const lines = [];
   const indent = '    ';
@@ -391,18 +396,18 @@ function generateArgTypeEntry(name, info) {
   }
 
   if (info.description) {
-    const escaped = info.description.replace(/'/g, "\\'");
+    const escaped = escapeSingleQuoted(info.description);
     lines.push(`${indent}  description: '${escaped}',`);
   }
 
   if (info.defaultValue || info.type) {
     lines.push(`${indent}  table: {`);
     if (info.defaultValue) {
-      const dv = info.defaultValue.replace(/'/g, "\\'");
+      const dv = escapeSingleQuoted(info.defaultValue);
       lines.push(`${indent}    defaultValue: { summary: '${dv}' },`);
     }
     if (info.type) {
-      const escaped = info.type.replace(/'/g, "\\'");
+      const escaped = escapeSingleQuoted(info.type);
       lines.push(`${indent}    type: { summary: '${escaped}' },`);
     }
     lines.push(`${indent}  },`);
