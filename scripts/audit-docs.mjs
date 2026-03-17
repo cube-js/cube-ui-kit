@@ -169,7 +169,8 @@ async function glob(dir, pattern) {
 /* ── MDX/Stories parsing ──────────────────────────────────────────────── */
 
 /**
- * Returns { names: Set<string>, details: Map<string, { type, defaultValue, description }> }
+ * Returns { names: Set<string>, details: Map<string, { type: string, defaultValue: string, description: string }> }
+ * Note: `details` is converted to a plain object before storing in results (for JSON serialization).
  */
 function extractPropsFromDocs(content) {
   const props = new Set();
@@ -434,7 +435,7 @@ async function fixStoriesFiles(results, verbose) {
     if (!storiesExists) continue;
     if (!r.docsDetails) continue;
 
-    const toAdd = (r.inDocsNotArgTypes || []).filter((p) => r.docsDetails.has(p));
+    const toAdd = (r.inDocsNotArgTypes || []).filter((p) => p in r.docsDetails);
     const toRemove = r.inArgTypesNotDocs || [];
 
     if (toAdd.length === 0 && toRemove.length === 0) continue;
@@ -460,7 +461,7 @@ async function fixStoriesFiles(results, verbose) {
         const openBrace = content.indexOf('{', argTypesIdx);
         if (openBrace !== -1) {
           const entries = toAdd.map((name) => {
-            const info = r.docsDetails.get(name) || { type: '', defaultValue: '', description: '' };
+            const info = r.docsDetails[name] || { type: '', defaultValue: '', description: '' };
             return generateArgTypeEntry(name, info);
           });
 
@@ -757,7 +758,7 @@ async function main() {
       inDocsNotCode,
       inArgTypesNotDocs,
       inDocsNotArgTypes,
-      docsDetails,
+      docsDetails: Object.fromEntries(docsDetails),
       issues,
       info,
       ok: issues.length === 0,
