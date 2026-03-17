@@ -370,6 +370,10 @@ function isEventProp(name) {
   return /^on[A-Z]/.test(name);
 }
 
+function jsStringLiteral(value) {
+  return JSON.stringify(String(value));
+}
+
 function escapeSingleQuoted(value) {
   // Escape backslashes first, then single quotes, for safe use in single-quoted JS strings
   return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
@@ -391,19 +395,16 @@ function generateArgTypeEntry(name, info) {
     const options = inferOptions(info.type);
     if (options) {
       lines.push(`${indent}  options: [${options.map((o) => `'${o}'`).join(', ')}],`);
-    }
-    lines.push(`${indent}  control: ${control},`);
+    lines.push(`${indent}  description: ${jsStringLiteral(info.description)},`);
   }
 
   if (info.description) {
     const escaped = escapeSingleQuoted(info.description);
     lines.push(`${indent}  description: '${escaped}',`);
-  }
-
+      lines.push(`${indent}    defaultValue: { summary: ${jsStringLiteral(info.defaultValue)} },`);
   if (info.defaultValue || info.type) {
     lines.push(`${indent}  table: {`);
-    if (info.defaultValue) {
-      const dv = escapeSingleQuoted(info.defaultValue);
+      lines.push(`${indent}    type: { summary: ${jsStringLiteral(info.type)} },`);
       lines.push(`${indent}    defaultValue: { summary: '${dv}' },`);
     }
     if (info.type) {
