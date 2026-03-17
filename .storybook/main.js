@@ -14,27 +14,9 @@ const config = {
     options: {},
   },
 
-  features: {
-    postcss: false,
-    emotionAlias: false,
-    buildStoriesJson: true,
-    interactionsDebugger: true,
-    argTypeTargetsV7: false,
-    modernInlineRender: true,
-  },
-
   stories: ['../src/**/*.docs.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
 
   addons: [
-    '@storybook/addon-links',
-    {
-      name: 'storybook-addon-turbo-build',
-      options: {
-        esbuildMinifyOptions: {
-          target: 'es2021',
-        },
-      },
-    },
     {
       name: '@storybook/addon-docs',
       options: {
@@ -48,17 +30,24 @@ const config = {
   ],
 
   viteFinal(config) {
-    const REACT_PLUGIN_NAMES = ['vite:react-babel', 'vite:react-refresh'];
+    const isReactPlugin = (/** @type {string} */ name) =>
+      name.startsWith('vite:react') || name.startsWith('@vitejs/plugin-react');
     const existingPlugins = (config.plugins ?? [])
       .flat()
       .filter(
         (p) =>
           p &&
           typeof p === 'object' &&
-          !REACT_PLUGIN_NAMES.includes(/** @type {any} */ (p).name),
+          !isReactPlugin(/** @type {any} */ (p).name ?? ''),
       );
 
     config.plugins = [...existingPlugins, react({ jsxRuntime: 'automatic' })];
+
+    config.build ??= {};
+    config.build.rolldownOptions ??= {};
+    config.build.rolldownOptions.experimental = {
+      strictExecutionOrder: true,
+    };
 
     config.define = {
       ...config.define,

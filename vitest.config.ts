@@ -8,10 +8,8 @@ export default defineConfig({
   define: {
     __UIKIT_VERSION__: JSON.stringify(pkg.version),
   },
-  // Use esbuild's built-in JSX transform. For tests, Babel/Fast Refresh is
-  // irrelevant — esbuild handles react-jsx natively and is much faster.
-  esbuild: {
-    jsx: 'automatic',
+  oxc: {
+    jsx: { runtime: 'automatic' },
   },
   test: {
     environment: 'jsdom',
