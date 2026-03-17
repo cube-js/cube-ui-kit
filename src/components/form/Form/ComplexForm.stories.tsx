@@ -1,11 +1,9 @@
-import { linkTo } from '@storybook/addon-links';
 import { StoryFn } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 // import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { timeout } from '../../../utils/promise';
-import { Button } from '../../actions';
 import { Block } from '../../Block';
 import { Checkbox, CheckboxGroup } from '../../fields/Checkbox';
 import { ComboBox } from '../../fields/ComboBox';
@@ -352,14 +350,6 @@ const Template: StoryFn<typeof Form> = (args) => {
         </Space>
       </Form>
     </>
-  );
-};
-
-export const FormInsideDialog: StoryFn = () => {
-  return (
-    <Button onPress={linkTo('Overlays/DialogForm')}>
-      Moved to a Dialog Form Page
-    </Button>
   );
 };
 

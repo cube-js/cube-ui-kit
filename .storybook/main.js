@@ -14,19 +14,9 @@ const config = {
     options: {},
   },
 
-  features: {
-    postcss: false,
-    emotionAlias: false,
-    buildStoriesJson: true,
-    interactionsDebugger: true,
-    argTypeTargetsV7: false,
-    modernInlineRender: true,
-  },
-
   stories: ['../src/**/*.docs.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
 
   addons: [
-    '@storybook/addon-links',
     {
       name: '@storybook/addon-docs',
       options: {
