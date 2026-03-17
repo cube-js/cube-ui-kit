@@ -241,7 +241,8 @@ function extractArgTypesFromStories(content) {
   while (i < len && depth > 0) {
     const c = content[i];
     if (c === '/' && content[i + 1] === '*') {
-      i = content.indexOf('*/', i) + 2;
+      const end = content.indexOf('*/', i);
+      i = end === -1 ? len : end + 2;
       continue;
     }
     if (c === '/' && content[i + 1] === '/') {
@@ -502,7 +503,8 @@ function findArgTypesInsertPosition(content, openBrace) {
   while (i < len && depth > 0) {
     const c = content[i];
     if (c === '/' && content[i + 1] === '*') {
-      i = content.indexOf('*/', i) + 2;
+      const end = content.indexOf('*/', i);
+      i = end === -1 ? len : end + 2;
       continue;
     }
     if (c === '/' && content[i + 1] === '/') {
@@ -545,7 +547,8 @@ function removeArgType(content, propName) {
   while (i < len && depth > 0) {
     const c = content[i];
     if (c === '/' && content[i + 1] === '*') {
-      i = content.indexOf('*/', i) + 2;
+      const end = content.indexOf('*/', i);
+      i = end === -1 ? len : end + 2;
       continue;
     }
     if (c === '/' && content[i + 1] === '/') {
