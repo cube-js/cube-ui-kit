@@ -53,6 +53,12 @@ const config = {
 
     config.plugins = [...existingPlugins, react({ jsxRuntime: 'automatic' })];
 
+    config.build ??= {};
+    config.build.rolldownOptions ??= {};
+    config.build.rolldownOptions.experimental = {
+      strictExecutionOrder: true,
+    };
+
     config.define = {
       ...config.define,
       __UIKIT_VERSION__: JSON.stringify(pkg.version),
