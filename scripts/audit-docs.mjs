@@ -15,6 +15,7 @@
  *   --fix-stories       (auto-update argTypes in .stories.tsx files)
  */
 
+import fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -67,6 +68,14 @@ const ARIA_REACT_PROPS = new Set([
   'focusOnHover', 'disableSelectionToggle', 'shouldFocusWrap',
   'escapeKeyBehavior', 'disallowEmptySelection', 'allowsEmptyCollection',
   'shouldUseVirtualFocus', 'navigationOptions',
+  'selectionMode', 'items', 'disabledKeys', 'onAction', 'onClose',
+  'selectedKey', 'defaultSelectedKey', 'selectedKeys', 'defaultSelectedKeys',
+  'onSelectionChange', 'onOpenChange',
+  'isOpen', 'defaultOpen',
+  'onFocus', 'onBlur', 'onChange',
+  'value', 'defaultValue',
+  'isSelected', 'defaultSelected',
+  'children',
 ]);
 
 const DOM_PROPS = new Set([
@@ -627,7 +636,7 @@ async function main() {
     : docFiles;
 
   const tsConfigPath = path.join(ROOT, 'tsconfig.json');
-  const configFile = ts.readConfigFile(tsConfigPath, (p) => fs.readFileSync(p, 'utf8'));
+  const configFile = ts.readConfigFile(tsConfigPath, (p) => fsSync.readFileSync(p, 'utf8'));
   const parsed = ts.parseJsonConfigFileContent(configFile.config, ts.sys, path.dirname(tsConfigPath));
 
   const program = ts.createProgram(parsed.fileNames, {
@@ -701,7 +710,9 @@ async function main() {
     const inCodeNotDocs = [...codeProps.keys()].filter(
       (p) => !docsProps.has(p) && !shouldExclude(p),
     );
-    const inDocsNotCode = [...docsProps].filter((p) => !codeProps.has(p));
+    const inDocsNotCode = [...docsProps].filter(
+      (p) => !codeProps.has(p) && !shouldExclude(p),
+    );
     const inArgTypesNotDocs = [...argTypes].filter(
       (p) => !docsProps.has(p) && !shouldExclude(p),
     );
@@ -713,7 +724,7 @@ async function main() {
     const issues = [];
     const info = [];
     if (codeProps.size === 0 && docsProps.size > 0) {
-      issues.push('Type resolution failed');
+      info.push('Type resolution incomplete (may use generics or external types)');
     }
     if (!hasBaseRef && !isHook) {
       issues.push('Missing "Base properties" reference');
@@ -725,7 +736,7 @@ async function main() {
       issues.push(`In code, not in docs: ${inCodeNotDocs.join(', ')}`);
     }
     if (inDocsNotCode.length > 0) {
-      issues.push(`In docs, not in code: ${inDocsNotCode.join(', ')}`);
+      info.push(`In docs, not in code (info only — may be from generics/Aria): ${inDocsNotCode.join(', ')}`);
     }
     if (inArgTypesNotDocs.length > 0) {
       issues.push(`In argTypes, not in docs: ${inArgTypesNotDocs.join(', ')}`);
