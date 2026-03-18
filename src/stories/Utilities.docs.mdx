@@ -1,0 +1,187 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Getting Started/Utilities" />
+
+# Utilities
+
+Helper functions from `@tenphi/tasty` for building components with the style system.
+
+## extractStyles
+
+Splits component props into a style map and remaining props. Used in components that accept style properties as direct props (e.g. `width`, `fill`, `padding`).
+
+### Signature
+
+```ts
+function extractStyles(
+  props: Record<string, unknown>,
+  styleList?: readonly string[],
+  defaultStyles?: Styles,
+  propMap?: Record<string, string>,
+  ignoreList?: readonly string[],
+): Styles;
+```
+
+### Parameters
+
+- **`props`** — The component props object to extract styles from.
+- **`styleList`** — List of prop names to treat as style properties. Use predefined sets like `OUTER_STYLES`, `BLOCK_STYLES`, etc.
+- **`defaultStyles`** — Base style map to merge extracted styles into. Defaults to `{}`.
+- **`propMap`** — Optional alias map (`{ propName: 'styleName' }`) to rename props during extraction.
+- **`ignoreList`** — Props to skip. Pass `['styles']` to prevent merging the `styles` prop.
+
+### Behavior
+
+1. Starts with `defaultStyles` (if provided).
+2. Merges `props.styles` on top (unless `'styles'` is in `ignoreList`).
+3. Iterates over `props` — any prop whose name is in `styleList` is added to the result. Props override both `defaultStyles` and `props.styles`.
+4. Mutates nothing; returns a new object.
+
+### Predefined style lists
+
+| List | Contains |
+|------|----------|
+| `BASE_STYLES` | `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition` |
+| `POSITION_STYLES` | `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position` |
+| `DIMENSION_STYLES` | `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex` |
+| `BLOCK_INNER_STYLES` | `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign` |
+| `BLOCK_OUTER_STYLES` | `border`, `radius`, `shadow`, `outline` |
+| `BLOCK_STYLES` | `BLOCK_INNER_STYLES` + `BLOCK_OUTER_STYLES` |
+| `COLOR_STYLES` | `color`, `fill`, `fade`, `image` |
+| `TEXT_STYLES` | `textTransform`, `fontWeight`, `fontStyle` |
+| `FLOW_STYLES` | `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas` |
+| `OUTER_STYLES` | `POSITION_STYLES` + `DIMENSION_STYLES` + `BLOCK_OUTER_STYLES` |
+| `INNER_STYLES` | `BASE_STYLES` + `COLOR_STYLES` + `BLOCK_INNER_STYLES` + `FLOW_STYLES` |
+| `CONTAINER_STYLES` | `BASE_STYLES` + `COLOR_STYLES` + `DIMENSION_STYLES` + `POSITION_STYLES` + `BLOCK_STYLES` + `FLOW_STYLES` |
+
+### Choosing style lists for multi-element components
+
+In components with a **wrapper + inner element** structure (e.g. input fields), use `extractStyles` once with a combined list for the wrapper. Inner elements should receive styles only through dedicated props like `inputStyles` or `triggerStyles`.
+
+```tsx
+import {
+  BASE_STYLES, OUTER_STYLES, BLOCK_STYLES, COLOR_STYLES,
+  extractStyles,
+} from '@tenphi/tasty';
+
+const PROP_STYLES = [
+  ...BASE_STYLES,
+  ...OUTER_STYLES,
+  ...BLOCK_STYLES,
+  ...COLOR_STYLES,
+];
+
+function MyInput({ inputStyles, ...props }) {
+  // All style props go to the wrapper — never to the inner element
+  let styles = extractStyles(props, PROP_STYLES);
+
+  return (
+    <Wrapper styles={styles}>
+      <InnerInput styles={inputStyles} />
+    </Wrapper>
+  );
+}
+```
+
+Avoid calling `extractStyles` twice on the same props with overlapping lists — this causes styles like `border` and `radius` to be applied to both elements.
+
+### Single-element usage
+
+For simple components with one root element, extract everything in one call:
+
+```tsx
+import { CONTAINER_STYLES, extractStyles, filterBaseProps } from '@tenphi/tasty';
+
+function MyComponent(props) {
+  const styles = extractStyles(props, CONTAINER_STYLES);
+
+  return (
+    <Element {...filterBaseProps(props, { eventProps: true })} styles={styles} />
+  );
+}
+```
+
+### Using `defaultStyles`
+
+Pre-populate styles that can be overridden by props:
+
+```tsx
+const styles = extractStyles(props, OUTER_STYLES, {
+  width: '100%',
+  position: 'relative',
+});
+// If props.width is set, it overrides '100%'
+```
+
+### Using `ignoreList`
+
+Prevent `props.styles` from being merged (useful when `styles` is handled separately):
+
+```tsx
+const inputStyles = extractStyles(props, ['resize'], baseInputStyles, undefined, ['styles']);
+```
+
+---
+
+## filterBaseProps
+
+Filters a props object down to only DOM-safe properties. Use this when spreading props onto a rendered element to prevent React warnings about unknown DOM attributes and to stop style props from leaking to the DOM.
+
+### Signature
+
+```ts
+function filterBaseProps(
+  props: Record<string, unknown>,
+  opts?: {
+    propNames?: Set<string>;
+    eventProps?: boolean;
+  },
+): Record<string, unknown>;
+```
+
+### Parameters
+
+- **`props`** — The full component props object.
+- **`opts.eventProps`** — When `true`, passes through event handlers (`on*` props) except React Aria interaction props (`onPress`, `onHoverStart`, etc.).
+- **`opts.propNames`** — Additional prop names to allow through (as a `Set<string>`).
+
+### What passes through
+
+| Category | Examples |
+|----------|----------|
+| DOM ids | `id` |
+| Base props | `role`, `as`, `children`, `style`, `className`, `href`, `target`, `tabIndex`, `hidden`, `disabled` |
+| ARIA attributes | `aria-label`, `aria-describedby`, etc. |
+| Data attributes | `data-qa`, `data-testid`, etc. |
+| Event handlers (opt-in) | `onClick`, `onFocus`, `onKeyDown`, etc. (when `eventProps: true`) |
+| Custom (opt-in) | Any prop name added to `opts.propNames` |
+
+Style props (`width`, `fill`, `padding`, `border`, etc.), tasty-specific props (`mods`, `qa`, `styles`), and React Aria interaction props (`onPress`, `onHoverStart`, `onHoverEnd`, `onPressStart`, `onPressEnd`) are filtered out.
+
+### Usage
+
+Pair with `extractStyles` — extract styles first, then filter what goes to the DOM:
+
+```tsx
+import { CONTAINER_STYLES, extractStyles, filterBaseProps } from '@tenphi/tasty';
+
+function MyComponent(props) {
+  const styles = extractStyles(props, CONTAINER_STYLES);
+
+  return (
+    <Element
+      {...filterBaseProps(props, { eventProps: true })}
+      styles={styles}
+    />
+  );
+}
+```
+
+Allow specific custom props through:
+
+```tsx
+const domProps = filterBaseProps(props, {
+  eventProps: true,
+  propNames: new Set(['htmlType', 'form']),
+});
+```

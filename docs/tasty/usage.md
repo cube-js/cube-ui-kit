@@ -559,7 +559,7 @@ Each entry in `elements` can be a tag name string or a config object:
 ```jsx
 elements: {
   Title: 'h3',                          // shorthand: tag name only
-  Icon: { as: 'span', qa: 'card-icon' }, // full form: tag + QA attribute
+  Icon: { as: 'span', qa: 'CardIcon' }, // full form: tag + QA attribute
 }
 ```
 

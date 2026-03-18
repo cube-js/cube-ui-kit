@@ -64,7 +64,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 const MessageElement = tasty({
-  qa: 'Field_Message',
+  qa: 'FieldMessage',
   styles: {
     preset: 't4',
     color: {
@@ -79,7 +79,7 @@ const MessageElement = tasty({
 });
 
 const DescriptionElement = tasty({
-  qa: 'Field_Description',
+  qa: 'FieldDescription',
   styles: {
     preset: 't4',
     color: '#dark-03',

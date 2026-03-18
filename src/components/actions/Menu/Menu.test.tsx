@@ -622,12 +622,12 @@ describe('<Menu />', () => {
   // Custom props tests
   it('should apply custom qa prop', () => {
     const { container } = render(
-      <Menu id="test-menu" aria-label="Test menu" qa="custom-menu">
+      <Menu id="test-menu" aria-label="Test menu" qa="CustomMenu">
         {basicItems}
       </Menu>,
     );
 
-    const menuWrapper = container.querySelector('[data-qa="custom-menu"]');
+    const menuWrapper = container.querySelector('[data-qa="CustomMenu"]');
     expect(menuWrapper).toBeInTheDocument();
   });
 
@@ -1136,11 +1136,11 @@ describe('useAnchoredMenu', () => {
     };
 
     return (
-      <div ref={anchorRef} data-qa="container">
-        <button data-qa="trigger" onClick={handleClick}>
+      <div ref={anchorRef} data-qa="Container">
+        <button data-qa="Trigger" onClick={handleClick}>
           Open Menu
         </button>
-        <button data-qa="close-button" onClick={close}>
+        <button data-qa="CloseButton" onClick={close}>
           Close Menu
         </button>
         {rendered}
@@ -1189,7 +1189,7 @@ describe('useAnchoredMenu', () => {
       />,
     );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Initially, menu should not be visible
     expect(() => getByRole('menu')).toThrow();
@@ -1223,7 +1223,7 @@ describe('useAnchoredMenu', () => {
         />,
       );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Click trigger to open command menu
     await act(async () => {
@@ -1251,8 +1251,8 @@ describe('useAnchoredMenu', () => {
       />,
     );
 
-    const trigger = getByTestId('trigger');
-    const closeButton = getByTestId('close-button');
+    const trigger = getByTestId('Trigger');
+    const closeButton = getByTestId('CloseButton');
 
     // Open menu
     await act(async () => {
@@ -1283,7 +1283,7 @@ describe('useAnchoredMenu', () => {
       />,
     );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Open menu
     await act(async () => {
@@ -1310,7 +1310,7 @@ describe('useAnchoredMenu', () => {
       />,
     );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Open menu
     await act(async () => {
@@ -1338,7 +1338,7 @@ describe('useAnchoredMenu', () => {
       />,
     );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Open menu
     await act(async () => {
@@ -1362,15 +1362,15 @@ describe('useAnchoredMenu', () => {
       const { anchorRef, open, rendered } = useAnchoredMenu(TestMenuComponent);
 
       return (
-        <div ref={anchorRef} data-qa="container">
+        <div ref={anchorRef} data-qa="Container">
           <button
-            data-qa="trigger1"
+            data-qa="Trigger1"
             onClick={() => open({ onAction: onAction1 })}
           >
             Open Menu 1
           </button>
           <button
-            data-qa="trigger2"
+            data-qa="Trigger2"
             onClick={() => open({ onAction: onAction2 })}
           >
             Open Menu 2
@@ -1382,8 +1382,8 @@ describe('useAnchoredMenu', () => {
 
     const { getByTestId, getByText } = renderWithRoot(<MultiOpenWrapper />);
 
-    const trigger1 = getByTestId('trigger1');
-    const trigger2 = getByTestId('trigger2');
+    const trigger1 = getByTestId('Trigger1');
+    const trigger2 = getByTestId('Trigger2');
 
     // Open with first action handler
     await act(async () => {
@@ -1423,7 +1423,7 @@ describe('useAnchoredMenu', () => {
         />,
       );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Open command menu
     await act(async () => {
@@ -1455,8 +1455,8 @@ describe('useAnchoredMenu', () => {
       const { anchorRef, rendered } = useAnchoredMenu(TestMenuComponent);
 
       return (
-        <div ref={anchorRef} data-qa="container">
-          <div data-qa="anchor-test">Anchor element</div>
+        <div ref={anchorRef} data-qa="Container">
+          <div data-qa="AnchorTest">Anchor element</div>
           {rendered}
         </div>
       );
@@ -1464,13 +1464,13 @@ describe('useAnchoredMenu', () => {
 
     const { getByTestId, rerender } = renderWithRoot(<TestRefWrapper />);
 
-    const container = getByTestId('container');
+    const container = getByTestId('Container');
     const initialRef = container;
 
     // Rerender and check that the ref is maintained
     rerender(<TestRefWrapper />);
 
-    const containerAfterRerender = getByTestId('container');
+    const containerAfterRerender = getByTestId('Container');
     expect(containerAfterRerender).toBe(initialRef);
   });
 
@@ -1494,7 +1494,7 @@ describe('useAnchoredMenu', () => {
       />,
     );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Open menu
     await act(async () => {
@@ -1544,10 +1544,10 @@ describe('Menu synchronization with event bus', () => {
       ));
 
       return (
-        <div data-qa="container">
+        <div data-qa="Container">
           <div ref={anchorRef1}>
             <button
-              data-qa="trigger1"
+              data-qa="Trigger1"
               onClick={() => open1({ onAction: () => {} })}
             >
               Open Menu 1
@@ -1555,7 +1555,7 @@ describe('Menu synchronization with event bus', () => {
           </div>
           <div ref={anchorRef2}>
             <button
-              data-qa="trigger2"
+              data-qa="Trigger2"
               onClick={() => open2({ onAction: () => {} })}
             >
               Open Menu 2
@@ -1563,7 +1563,7 @@ describe('Menu synchronization with event bus', () => {
           </div>
           <div ref={anchorRef3}>
             <button
-              data-qa="trigger3"
+              data-qa="Trigger3"
               onClick={(e) => open3(e, { onAction: () => {} })}
             >
               Open Menu 3
@@ -1580,9 +1580,9 @@ describe('Menu synchronization with event bus', () => {
       <TestMenuSynchronization />,
     );
 
-    const trigger1 = getByTestId('trigger1');
-    const trigger2 = getByTestId('trigger2');
-    const trigger3 = getByTestId('trigger3');
+    const trigger1 = getByTestId('Trigger1');
+    const trigger2 = getByTestId('Trigger2');
+    const trigger3 = getByTestId('Trigger3');
 
     // Initially, no menus should be visible
     expect(queryAllByRole('menu')).toHaveLength(0);
@@ -1649,7 +1649,7 @@ describe('Menu synchronization with event bus', () => {
         <div>
           <div ref={anchorRef1}>
             <button
-              data-qa="rapid-trigger1"
+              data-qa="RapidTrigger1"
               onClick={() => open1({ onAction: () => {} })}
             >
               Rapid 1
@@ -1657,7 +1657,7 @@ describe('Menu synchronization with event bus', () => {
           </div>
           <div ref={anchorRef2}>
             <button
-              data-qa="rapid-trigger2"
+              data-qa="RapidTrigger2"
               onClick={() => open2({ onAction: () => {} })}
             >
               Rapid 2
@@ -1673,8 +1673,8 @@ describe('Menu synchronization with event bus', () => {
       <TestRapidMenuOpening />,
     );
 
-    const trigger1 = getByTestId('rapid-trigger1');
-    const trigger2 = getByTestId('rapid-trigger2');
+    const trigger1 = getByTestId('RapidTrigger1');
+    const trigger2 = getByTestId('RapidTrigger2');
 
     // Rapidly click between menus
     await act(async () => {

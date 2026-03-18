@@ -912,7 +912,7 @@ describe('<ComboBox />', () => {
 
   it('should have proper accessibility and QA attributes', async () => {
     const { getByRole, getByTestId, queryByRole } = renderWithRoot(
-      <ComboBox label="test" qa="my-combobox">
+      <ComboBox label="test" qa="MyCombobox">
         {items.map((item) => (
           <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
         ))}
@@ -922,7 +922,7 @@ describe('<ComboBox />', () => {
     const combobox = getByRole('combobox');
 
     // Check QA attribute
-    expect(getByTestId('my-combobox')).toBeInTheDocument();
+    expect(getByTestId('MyCombobox')).toBeInTheDocument();
 
     // Check initial ARIA attributes
     expect(combobox).toHaveAttribute('aria-expanded', 'false');

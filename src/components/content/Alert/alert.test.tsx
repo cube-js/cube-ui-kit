@@ -42,10 +42,10 @@ describe('<Alert /> component', () => {
 
   it('should add qa', () => {
     const { result } = renderHook(() =>
-      useAlert({ theme: 'danger', qa: 'test' }),
+      useAlert({ theme: 'danger', qa: 'Test' }),
     );
 
-    expect(result.current.filteredProps.qa).toBe('test');
+    expect(result.current.filteredProps.qa).toBe('Test');
   });
 
   it('should default to card shape', () => {

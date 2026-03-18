@@ -57,7 +57,7 @@ describe('CommandMenu', () => {
     const user = userEvent.setup();
 
     render(
-      <CommandMenu qa="test-menu">
+      <CommandMenu qa="TestMenu">
         {items.map((item) => (
           <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
@@ -81,7 +81,7 @@ describe('CommandMenu', () => {
     // First item should be virtually focused (aria-activedescendant)
     expect(searchInput).toHaveAttribute(
       'aria-activedescendant',
-      'test-menu-menu-option-1',
+      'TestMenu-menu-option-1',
     );
 
     // Press arrow down again - should move to second item
@@ -93,7 +93,7 @@ describe('CommandMenu', () => {
     // Second item should be virtually focused
     expect(searchInput).toHaveAttribute(
       'aria-activedescendant',
-      'test-menu-menu-option-2',
+      'TestMenu-menu-option-2',
     );
 
     // Press arrow up - should move back to first item
@@ -105,7 +105,7 @@ describe('CommandMenu', () => {
     // First item should be virtually focused again
     expect(searchInput).toHaveAttribute(
       'aria-activedescendant',
-      'test-menu-menu-option-1',
+      'TestMenu-menu-option-1',
     );
   });
 
@@ -113,7 +113,7 @@ describe('CommandMenu', () => {
     const user = userEvent.setup();
 
     render(
-      <CommandMenu qa="test-menu">
+      <CommandMenu qa="TestMenu">
         {items.map((item) => (
           <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
@@ -142,7 +142,7 @@ describe('CommandMenu', () => {
     // The filtered item should be virtually focused
     expect(searchInput).toHaveAttribute(
       'aria-activedescendant',
-      'test-menu-menu-option-1',
+      'TestMenu-menu-option-1',
     );
 
     // Clear and type "Save" to test navigation with different filter
@@ -163,7 +163,7 @@ describe('CommandMenu', () => {
     // The filtered item should be virtually focused
     expect(searchInput).toHaveAttribute(
       'aria-activedescendant',
-      'test-menu-menu-option-3',
+      'TestMenu-menu-option-3',
     );
 
     // Clear and type "a" to match multiple items ("Create file" and "Save document")
@@ -182,7 +182,7 @@ describe('CommandMenu', () => {
     // Second filtered item should be virtually focused
     expect(searchInput).toHaveAttribute(
       'aria-activedescendant',
-      'test-menu-menu-option-3',
+      'TestMenu-menu-option-3',
     );
 
     // Press arrow down again - should wrap to first filtered item ('Create file')
@@ -191,7 +191,7 @@ describe('CommandMenu', () => {
     // First filtered item should be virtually focused
     expect(searchInput).toHaveAttribute(
       'aria-activedescendant',
-      'test-menu-menu-option-1',
+      'TestMenu-menu-option-1',
     );
 
     // Press arrow up - should move to last filtered item ('Save document')
@@ -200,7 +200,7 @@ describe('CommandMenu', () => {
     // Last filtered item should be virtually focused
     expect(searchInput).toHaveAttribute(
       'aria-activedescendant',
-      'test-menu-menu-option-3',
+      'TestMenu-menu-option-3',
     );
   });
 
@@ -851,40 +851,40 @@ describe('CommandMenu', () => {
     it('should apply popover mod when used with MenuTrigger', () => {
       render(
         <MenuContext.Provider value={{ mods: { popover: true } }}>
-          <CommandMenu qa="test-command-menu">
+          <CommandMenu qa="TestCommandMenu">
             <CommandMenu.Item key="item1">Item 1</CommandMenu.Item>
             <CommandMenu.Item key="item2">Item 2</CommandMenu.Item>
           </CommandMenu>
         </MenuContext.Provider>,
       );
 
-      const commandMenu = screen.getByTestId('test-command-menu');
+      const commandMenu = screen.getByTestId('TestCommandMenu');
       expect(commandMenu).toHaveAttribute('data-popover');
     });
 
     it('should apply tray mod when used with MenuTrigger', () => {
       render(
         <MenuContext.Provider value={{ mods: { tray: true } }}>
-          <CommandMenu qa="test-command-menu">
+          <CommandMenu qa="TestCommandMenu">
             <CommandMenu.Item key="item1">Item 1</CommandMenu.Item>
             <CommandMenu.Item key="item2">Item 2</CommandMenu.Item>
           </CommandMenu>
         </MenuContext.Provider>,
       );
 
-      const commandMenu = screen.getByTestId('test-command-menu');
+      const commandMenu = screen.getByTestId('TestCommandMenu');
       expect(commandMenu).toHaveAttribute('data-tray');
     });
 
     it('should not apply any special mods when used standalone', () => {
       render(
-        <CommandMenu qa="test-command-menu">
+        <CommandMenu qa="TestCommandMenu">
           <CommandMenu.Item key="item1">Item 1</CommandMenu.Item>
           <CommandMenu.Item key="item2">Item 2</CommandMenu.Item>
         </CommandMenu>,
       );
 
-      const commandMenu = screen.getByTestId('test-command-menu');
+      const commandMenu = screen.getByTestId('TestCommandMenu');
       expect(commandMenu).not.toHaveAttribute('data-popover');
       expect(commandMenu).not.toHaveAttribute('data-tray');
     });

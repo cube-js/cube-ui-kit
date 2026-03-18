@@ -1,8 +1,12 @@
 import { createFocusableRef } from '@react-spectrum/utils';
 import {
+  BASE_STYLES,
   BaseProps,
+  BaseStyleProps,
   BLOCK_STYLES,
   BlockStyleProps,
+  COLOR_STYLES,
+  ColorStyleProps,
   extractStyles,
   OUTER_STYLES,
   OuterStyleProps,
@@ -133,7 +137,12 @@ const InputWrapperElement = tasty({
   styles: INPUT_WRAPPER_STYLES,
 });
 
-const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
+const PROP_STYLES = [
+  ...BASE_STYLES,
+  ...OUTER_STYLES,
+  ...BLOCK_STYLES,
+  ...COLOR_STYLES,
+];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
   recipe: 'reset input / input-autofill',
@@ -185,6 +194,8 @@ export interface CubeTextInputBaseProps
   extends BaseProps,
     OuterStyleProps,
     BlockStyleProps,
+    BaseStyleProps,
+    ColorStyleProps,
     Omit<AriaTextFieldProps, 'validate'>,
     FieldBaseProps {
   validate?: AriaTextFieldProps['validate'] | AriaNumberFieldProps['validate'];
@@ -263,19 +274,16 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     maxLength,
     minLength,
     form,
+    resize,
     ...otherProps
   } = props;
 
-  let styles = extractStyles(otherProps, OUTER_STYLES);
+  let styles = extractStyles(otherProps, PROP_STYLES);
   let type = otherProps.type;
 
-  inputStyles = extractStyles(
-    otherProps,
-    INPUT_STYLE_PROPS_LIST,
-    inputStyles,
-    undefined,
-    ['styles'],
-  );
+  if (resize) {
+    inputStyles = { ...inputStyles, resize };
+  }
 
   let ElementType: 'textarea' | 'input' = multiLine ? 'textarea' : 'input';
   let { isFocused, focusProps } = useFocus({ isDisabled });

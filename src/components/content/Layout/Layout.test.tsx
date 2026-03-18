@@ -14,7 +14,7 @@ describe('Layout', () => {
   it('renders Layout with children', () => {
     renderWithRoot(
       <Layout>
-        <div data-qa="child">Content</div>
+        <div data-qa="Child">Content</div>
       </Layout>,
     );
 

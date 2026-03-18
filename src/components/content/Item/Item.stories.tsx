@@ -1762,7 +1762,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
     <Space gap="1x" flow="column" placeItems="start">
       <Item
         {...args}
-        qa="hover-actions-item"
+        qa="HoverActionsItem"
         type="outline"
         icon={<IconUser />}
         autoHideActions={true}
@@ -2087,7 +2087,7 @@ const timeout = (ms: number) =>
 
 export const WithAutoTooltip: StoryFn<CubeItemProps> = () => (
   <Item
-    qa="auto-tooltip-item"
+    qa="AutoTooltipItem"
     icon={<IconUser />}
     style={{ width: '200px' }}
     tooltip={{ delay: 0 }}
@@ -2101,7 +2101,7 @@ WithAutoTooltip.play = async ({ canvasElement }) => {
 
   await timeout(250);
 
-  const item = await canvas.findByTestId('auto-tooltip-item');
+  const item = await canvas.findByTestId('AutoTooltipItem');
   // this is a weird hack that makes tooltip working properly on page load
   await userEvent.unhover(item);
   await userEvent.hover(item);
@@ -2125,7 +2125,7 @@ export const DynamicAutoTooltip: StoryFn<CubeItemProps> = () => {
   return (
     <div>
       <Item
-        qa="dynamic-tooltip-item"
+        qa="DynamicTooltipItem"
         icon={<IconUser />}
         style={{ width }}
         tooltip={{ delay: 0 }}
@@ -2133,7 +2133,7 @@ export const DynamicAutoTooltip: StoryFn<CubeItemProps> = () => {
         This is a very long label that will eventually overflow
       </Item>
       <Button
-        qa="resize-button"
+        qa="ResizeButton"
         onPress={() =>
           width === '400px' ? setWidth('150px') : setWidth('400px')
         }
@@ -2148,7 +2148,7 @@ export const DynamicAutoTooltip: StoryFn<CubeItemProps> = () => {
 //   const canvas = within(canvasElement);
 //   await timeout(250);
 
-//   const item = await canvas.findByTestId('dynamic-tooltip-item');
+//   const item = await canvas.findByTestId('DynamicTooltipItem');
 
 //   // Test 1: No tooltip when wide
 //   // this is a weird hack that makes tooltip working properly on page load
@@ -2159,7 +2159,7 @@ export const DynamicAutoTooltip: StoryFn<CubeItemProps> = () => {
 
 //   // Change width to trigger overflow
 //   await userEvent.unhover(item);
-//   const resizeButton = await canvas.findByTestId('resize-button');
+//   const resizeButton = await canvas.findByTestId('ResizeButton');
 //   await userEvent.click(resizeButton);
 //   // Unhover button after clicking to clear any hover state
 //   await userEvent.unhover(resizeButton);

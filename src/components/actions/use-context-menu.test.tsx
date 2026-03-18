@@ -81,10 +81,10 @@ describe('useContextMenu', () => {
     return (
       <div
         ref={targetRef as React.RefObject<HTMLDivElement>}
-        data-qa="container"
+        data-qa="Container"
       >
         <button
-          data-qa="trigger"
+          data-qa="Trigger"
           onClick={(e) => {
             if (onTriggerClick) {
               onTriggerClick();
@@ -94,11 +94,11 @@ describe('useContextMenu', () => {
         >
           Open Menu
         </button>
-        <button data-qa="close-button" onClick={close}>
+        <button data-qa="CloseButton" onClick={close}>
           Close Menu
         </button>
         <div
-          data-qa="content"
+          data-qa="Content"
           style={{ width: 200, height: 100, background: '#f0f0f0' }}
         >
           Right-click me for context menu
@@ -146,7 +146,7 @@ describe('useContextMenu', () => {
       />,
     );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Initially, menu should not be visible
     expect(() => getByRole('menu')).toThrow();
@@ -180,7 +180,7 @@ describe('useContextMenu', () => {
         />,
       );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Click trigger to open command menu
     await act(async () => {
@@ -208,8 +208,8 @@ describe('useContextMenu', () => {
       />,
     );
 
-    const trigger = getByTestId('trigger');
-    const closeButton = getByTestId('close-button');
+    const trigger = getByTestId('Trigger');
+    const closeButton = getByTestId('CloseButton');
 
     // Open menu
     await act(async () => {
@@ -240,7 +240,7 @@ describe('useContextMenu', () => {
       />,
     );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Open menu
     await act(async () => {
@@ -266,7 +266,7 @@ describe('useContextMenu', () => {
       />,
     );
 
-    const container = getByTestId('container');
+    const container = getByTestId('Container');
 
     // Initially, menu should not be visible
     expect(() => getByRole('menu')).toThrow();
@@ -299,7 +299,7 @@ describe('useContextMenu', () => {
       />,
     );
 
-    const container = getByTestId('container');
+    const container = getByTestId('Container');
 
     // Mock getBoundingClientRect to return a predictable rect
     const mockGetBoundingClientRect = vi.fn(() => ({
@@ -342,7 +342,7 @@ describe('useContextMenu', () => {
       />,
     );
 
-    const container = getByTestId('container');
+    const container = getByTestId('Container');
 
     // Mock getBoundingClientRect
     const mockGetBoundingClientRect = vi.fn(() => ({
@@ -386,7 +386,7 @@ describe('useContextMenu', () => {
       />,
     );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Open menu
     await act(async () => {
@@ -413,7 +413,7 @@ describe('useContextMenu', () => {
       />,
     );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Open menu
     await act(async () => {
@@ -446,11 +446,11 @@ describe('useContextMenu', () => {
       };
 
       return (
-        <div ref={targetRef} data-qa="container">
-          <button data-qa="trigger1" onClick={handleClick1}>
+        <div ref={targetRef} data-qa="Container">
+          <button data-qa="Trigger1" onClick={handleClick1}>
             Open Menu 1
           </button>
-          <button data-qa="trigger2" onClick={handleClick2}>
+          <button data-qa="Trigger2" onClick={handleClick2}>
             Open Menu 2
           </button>
           {rendered}
@@ -460,8 +460,8 @@ describe('useContextMenu', () => {
 
     const { getByTestId, getByText } = renderWithRoot(<MultiOpenWrapper />);
 
-    const trigger1 = getByTestId('trigger1');
-    const trigger2 = getByTestId('trigger2');
+    const trigger1 = getByTestId('Trigger1');
+    const trigger2 = getByTestId('Trigger2');
 
     // Open with first action handler
     await act(async () => {
@@ -501,7 +501,7 @@ describe('useContextMenu', () => {
         />,
       );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Open command menu
     await act(async () => {
@@ -534,8 +534,8 @@ describe('useContextMenu', () => {
         useContextMenu<HTMLDivElement>(TestMenuComponent);
 
       return (
-        <div ref={targetRef} data-qa="container">
-          <div data-qa="anchor-test">Anchor element</div>
+        <div ref={targetRef} data-qa="Container">
+          <div data-qa="AnchorTest">Anchor element</div>
           {rendered}
         </div>
       );
@@ -543,13 +543,13 @@ describe('useContextMenu', () => {
 
     const { getByTestId, rerender } = renderWithRoot(<TestRefWrapper />);
 
-    const container = getByTestId('container');
+    const container = getByTestId('Container');
     const initialRef = container;
 
     // Rerender and check that the ref is maintained
     rerender(<TestRefWrapper />);
 
-    const containerAfterRerender = getByTestId('container');
+    const containerAfterRerender = getByTestId('Container');
     expect(containerAfterRerender).toBe(initialRef);
   });
 
@@ -573,7 +573,7 @@ describe('useContextMenu', () => {
       />,
     );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Open menu
     await act(async () => {
@@ -616,7 +616,7 @@ describe('useContextMenu', () => {
       />,
     );
 
-    const container = getByTestId('container');
+    const container = getByTestId('Container');
 
     // Create a spy for preventDefault on the event
     const preventDefault = vi.fn();
@@ -649,7 +649,7 @@ describe('useContextMenu', () => {
       />,
     );
 
-    const container = getByTestId('container');
+    const container = getByTestId('Container');
 
     // Mock getBoundingClientRect
     const mockGetBoundingClientRect = vi.fn(() => ({
@@ -682,11 +682,11 @@ describe('useContextMenu', () => {
         useContextMenu<HTMLDivElement>(TestMenuComponent);
 
       return (
-        <div ref={targetRef} data-qa="container">
-          <button data-qa="trigger" onClick={(e) => open({}, undefined, e)}>
+        <div ref={targetRef} data-qa="Container">
+          <button data-qa="Trigger" onClick={(e) => open({}, undefined, e)}>
             {isOpen ? 'Close Menu' : 'Open Menu'}
           </button>
-          <button data-qa="close-button" onClick={close}>
+          <button data-qa="CloseButton" onClick={close}>
             Close
           </button>
           {rendered}
@@ -696,8 +696,8 @@ describe('useContextMenu', () => {
 
     const { getByTestId, getByText } = renderWithRoot(<TestIsOpenWrapper />);
 
-    const trigger = getByTestId('trigger');
-    const closeButton = getByTestId('close-button');
+    const trigger = getByTestId('Trigger');
+    const closeButton = getByTestId('CloseButton');
 
     // Initially closed
     expect(getByText('Open Menu')).toBeInTheDocument();
@@ -738,8 +738,8 @@ describe('useContextMenu', () => {
       };
 
       return (
-        <div ref={targetRef} data-qa="container" style={{ padding: '100px' }}>
-          <button data-qa="trigger" onClick={handleClick}>
+        <div ref={targetRef} data-qa="Container" style={{ padding: '100px' }}>
+          <button data-qa="Trigger" onClick={handleClick}>
             Open
           </button>
           {rendered}
@@ -751,7 +751,7 @@ describe('useContextMenu', () => {
       <TestPlacementWrapper placement="top start" />,
     );
 
-    const trigger = getByTestId('trigger');
+    const trigger = getByTestId('Trigger');
 
     // Open menu
     await act(async () => {
@@ -779,11 +779,11 @@ describe('useContextMenu', () => {
       );
 
       return (
-        <div ref={targetRef} data-qa="container" style={{ padding: '50px' }}>
-          <div data-qa="content">
+        <div ref={targetRef} data-qa="Container" style={{ padding: '50px' }}>
+          <div data-qa="Content">
             Right-click anywhere here for automatic context menu
           </div>
-          <div data-qa="status">Status: {isOpen ? 'Open' : 'Closed'}</div>
+          <div data-qa="Status">Status: {isOpen ? 'Open' : 'Closed'}</div>
           {rendered}
         </div>
       );
@@ -793,7 +793,7 @@ describe('useContextMenu', () => {
       <TestAutoContextWrapper />,
     );
 
-    const container = getByTestId('container');
+    const container = getByTestId('Container');
 
     // Initially, menu should not be visible
     expect(() => getByRole('menu')).toThrow();
@@ -842,8 +842,8 @@ describe('useContextMenu', () => {
       };
 
       return (
-        <div ref={targetRef} data-qa="container">
-          <button data-qa="manual-trigger" onClick={handleManualOpen}>
+        <div ref={targetRef} data-qa="Container">
+          <button data-qa="ManualTrigger" onClick={handleManualOpen}>
             Manual Open
           </button>
           {rendered}
@@ -853,7 +853,7 @@ describe('useContextMenu', () => {
 
     const { getByTestId, getByText } = renderWithRoot(<TestMergeWrapper />);
 
-    const manualTrigger = getByTestId('manual-trigger');
+    const manualTrigger = getByTestId('ManualTrigger');
 
     // Open with manual trigger (should use runtime props)
     await act(async () => {
@@ -870,7 +870,7 @@ describe('useContextMenu', () => {
     expect(defaultAction).not.toHaveBeenCalled();
 
     // Right-click should use default props
-    const container = getByTestId('container');
+    const container = getByTestId('Container');
     await act(async () => {
       fireEvent.contextMenu(container, {
         clientX: 100,
@@ -904,10 +904,10 @@ describe('useContextMenu', () => {
       return (
         <div
           ref={targetRef}
-          data-qa="container"
+          data-qa="Container"
           style={{ width: 200, height: 100, padding: '20px' }}
         >
-          <button data-qa="center-trigger" onClick={handleCenterOpen}>
+          <button data-qa="CenterTrigger" onClick={handleCenterOpen}>
             Open Centered
           </button>
           {rendered}
@@ -919,7 +919,7 @@ describe('useContextMenu', () => {
       <TestCenterWrapper />,
     );
 
-    const centerTrigger = getByTestId('center-trigger');
+    const centerTrigger = getByTestId('CenterTrigger');
 
     // Open without event (should center on element)
     await act(async () => {
@@ -934,7 +934,7 @@ describe('useContextMenu', () => {
     expect(getByText('Edit')).toBeInTheDocument();
 
     // Verify that invisible anchor is positioned (we can't easily verify exact center coordinates in tests)
-    const container = getByTestId('container');
+    const container = getByTestId('Container');
     const invisibleAnchor = container.querySelector(
       'span[style*="position: absolute"]',
     );

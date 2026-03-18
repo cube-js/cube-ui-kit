@@ -150,7 +150,6 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     isDisabled = false,
     children,
     label,
-    labelStyles,
     insideForm,
     isLoading,
     labelPosition,
@@ -162,11 +161,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
 
   const id = useId(props.id);
 
-  let styles = extractStyles(props, OUTER_STYLES);
-
-  inputStyles = extractStyles(props, BLOCK_STYLES, inputStyles, undefined, [
-    'styles',
-  ]);
+  let styles = extractStyles(props, [...OUTER_STYLES, ...BLOCK_STYLES]);
 
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });

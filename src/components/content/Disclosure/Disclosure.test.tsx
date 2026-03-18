@@ -20,27 +20,27 @@ describe('<Disclosure />', () => {
 
     it('should add data-qa attribute', () => {
       const { getByTestId } = renderWithRoot(
-        <Disclosure qa="test-disclosure">
+        <Disclosure qa="TestDisclosure">
           <Disclosure.Trigger>Toggle</Disclosure.Trigger>
           <Disclosure.Content>Content</Disclosure.Content>
         </Disclosure>,
       );
 
-      expect(getByTestId('test-disclosure')).toBeInTheDocument();
+      expect(getByTestId('TestDisclosure')).toBeInTheDocument();
     });
 
     it('should add data-qa to content', () => {
       const { container } = renderWithRoot(
         <Disclosure defaultExpanded>
           <Disclosure.Trigger>Toggle</Disclosure.Trigger>
-          <Disclosure.Content qa="disclosure-content">
+          <Disclosure.Content qa="DisclosureContent">
             Content
           </Disclosure.Content>
         </Disclosure>,
       );
 
       expect(
-        container.querySelector('[data-qa="disclosure-content"]'),
+        container.querySelector('[data-qa="DisclosureContent"]'),
       ).toBeInTheDocument();
     });
   });
@@ -453,10 +453,10 @@ describe('<Disclosure.Group />', () => {
 describe('Nested Disclosures', () => {
   it('should maintain independent state for nested disclosures', async () => {
     const { getAllByRole } = renderWithRoot(
-      <Disclosure defaultExpanded qa="outer">
+      <Disclosure defaultExpanded qa="Outer">
         <Disclosure.Trigger>Outer</Disclosure.Trigger>
         <Disclosure.Content>
-          <Disclosure qa="inner">
+          <Disclosure qa="Inner">
             <Disclosure.Trigger>Inner</Disclosure.Trigger>
             <Disclosure.Content>Inner Content</Disclosure.Content>
           </Disclosure>

@@ -28,26 +28,26 @@ describe('<Tabs />', () => {
 
     it('should add data-qa attribute', () => {
       const { getByTestId } = renderWithRoot(
-        <Tabs qa="test-tabs" defaultActiveKey="tab1">
+        <Tabs qa="TestTabs" defaultActiveKey="tab1">
           <Tab key="tab1" title="Tab 1">
             Content
           </Tab>
         </Tabs>,
       );
 
-      expect(getByTestId('test-tabs')).toBeInTheDocument();
+      expect(getByTestId('TestTabs')).toBeInTheDocument();
     });
 
     it('should add data-qa to individual tabs', () => {
       const { getByTestId } = renderWithRoot(
         <Tabs defaultActiveKey="tab1">
-          <Tab key="tab1" title="Tab 1" qa="custom-tab">
+          <Tab key="tab1" title="Tab 1" qa="CustomTab">
             Content
           </Tab>
         </Tabs>,
       );
 
-      expect(getByTestId('custom-tab')).toBeInTheDocument();
+      expect(getByTestId('CustomTab')).toBeInTheDocument();
     });
   });
 
