@@ -69,7 +69,10 @@ Customizes the [specific part] of the component.
 
 ### Style Properties
 
-These properties allow direct style application without using the `styles` prop: `width`, `height`.
+These properties allow direct style application without using the `styles` prop:
+
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 
 ### Modifiers
 
@@ -169,7 +172,7 @@ This component supports all [Field properties](/field-properties.md) when used w
 - **Props List**: List all component-specific properties using the definition list format. Properties, types, defaults, and descriptions must match the `argTypes` defined in the corresponding `.stories.tsx` file. Format: `- **\`propName\`** \`type\` (default: \`value\`) — Description`
 - **Base Properties**: Link to `/docs/getting-started-base-properties--docs` instead of listing (unless `qa` has special behavior)
 - **Styling Properties**: Document `styles`/`*Styles` props. List sub-elements that can be overridden (check component's tasty styles)
-- **Style Properties**: List direct styling props (`width`, `height`, etc.) - see `src/tasty/styles/list.ts`
+- **Style Properties**: Managed by `pnpm audit-docs --fix-docs`. Groups props by category (Base, Position, Dimension, Block, Color, Text, Flow, Other). Do not edit manually.
 - **React Aria Properties**: Document any React Aria properties that need extra clarification
 
 ### Examples
