@@ -121,6 +121,8 @@ const SwitchElement = tasty({
   },
 });
 
+const PROP_STYLES = [...OUTER_STYLES, ...BLOCK_STYLES];
+
 export interface CubeSwitchProps
   extends BaseProps,
     OuterStyleProps,
@@ -161,7 +163,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
 
   const id = useId(props.id);
 
-  let styles = extractStyles(props, [...OUTER_STYLES, ...BLOCK_STYLES]);
+  let styles = extractStyles(props, PROP_STYLES);
 
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
