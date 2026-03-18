@@ -1,5 +1,20 @@
 # @cube-dev/ui-kit
 
+## 0.121.6
+
+### Patch Changes
+
+- [#1082](https://github.com/cube-js/cube-ui-kit/pull/1082) [`523f74ea`](https://github.com/cube-js/cube-ui-kit/commit/523f74eaa523893b3c9e524a7d2f9a89714dc537) Thanks [@tenphi](https://github.com/tenphi)! - Fix style props like `width` being applied to inner `<input>` element instead of the wrapper in TextInput, NumberInput, SearchInput, PasswordInput, TextArea, and Switch components.
+
+- [`a86746f2`](https://github.com/cube-js/cube-ui-kit/commit/a86746f25df462ced0fa09e89adf386376d48591) Thanks [@tenphi](https://github.com/tenphi)! - Fix typography presets declaration.
+
+- [#1082](https://github.com/cube-js/cube-ui-kit/pull/1082) [`523f74ea`](https://github.com/cube-js/cube-ui-kit/commit/523f74eaa523893b3c9e524a7d2f9a89714dc537) Thanks [@tenphi](https://github.com/tenphi)! - Standardize default `qa` (data-qa) values to PascalCase. Update selectors if you rely on these:
+
+  - **FieldWrapper**: `Field_Message` → `FieldMessage`, `Field_Description` → `FieldDescription`
+  - **Result**: `Result_Container` → `ResultContainer`
+
+- [#1078](https://github.com/cube-js/cube-ui-kit/pull/1078) [`16ade014`](https://github.com/cube-js/cube-ui-kit/commit/16ade014d67749ca22ae97819d12442744ba4bdc) Thanks [@tenphi](https://github.com/tenphi)! - Upgrade to Vite 8 (Rolldown-powered), @vitejs/plugin-react v6, and Vitest 4.1. Remove unused storybook-addon-turbo-build. Migrate vitest config from deprecated esbuild option to oxc.
+
 ## 0.121.5
 
 ### Patch Changes
