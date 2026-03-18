@@ -270,7 +270,7 @@ describe('performClickHandler', () => {
   });
 
   const createMockEvent = (modifiers = {}) => ({
-    target: { getAttribute: vi.fn(() => 'test-qa') },
+    target: { getAttribute: vi.fn(() => 'TestQa') },
     preventDefault: vi.fn(),
     shiftKey: false,
     metaKey: false,
@@ -312,7 +312,7 @@ describe('performClickHandler', () => {
     expect(mockNavigate).toHaveBeenCalledWith(-1);
     expect(mockTracking.event).toHaveBeenCalledWith(
       'Link Press',
-      { qa: 'test-qa', delta: -1, type: 'router-history' },
+      { qa: 'TestQa', delta: -1, type: 'router-history' },
       evt.target,
     );
   });
@@ -340,7 +340,7 @@ describe('performClickHandler', () => {
     });
     expect(mockTracking.event).toHaveBeenCalledWith(
       'Link Press',
-      { qa: 'test-qa', href: '#section', type: 'hash', target: 'section' },
+      { qa: 'TestQa', href: '#section', type: 'hash', target: 'section' },
       evt.target,
     );
   });
@@ -359,7 +359,7 @@ describe('performClickHandler', () => {
 
     expect(mockTracking.event).toHaveBeenCalledWith(
       'Link Press',
-      { qa: 'test-qa', href: '/test', type: 'tab' },
+      { qa: 'TestQa', href: '/test', type: 'tab' },
       evt.target,
     );
   });
@@ -379,7 +379,7 @@ describe('performClickHandler', () => {
     expect(window.location.assign).toHaveBeenCalledWith('/logout');
     expect(mockTracking.event).toHaveBeenCalledWith(
       'Link Press',
-      { qa: 'test-qa', href: '/logout', type: 'native' },
+      { qa: 'TestQa', href: '/logout', type: 'native' },
       evt.target,
     );
   });
@@ -399,7 +399,7 @@ describe('performClickHandler', () => {
     expect(window.location.assign).toHaveBeenCalledWith('https://example.com');
     expect(mockTracking.event).toHaveBeenCalledWith(
       'Link Press',
-      { qa: 'test-qa', href: 'https://example.com', type: 'native' },
+      { qa: 'TestQa', href: 'https://example.com', type: 'native' },
       evt.target,
     );
   });
@@ -424,7 +424,7 @@ describe('performClickHandler', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/test', navigationOptions);
     expect(mockTracking.event).toHaveBeenCalledWith(
       'Link Press',
-      { qa: 'test-qa', href: '/test', type: 'router' },
+      { qa: 'TestQa', href: '/test', type: 'router' },
       evt.target,
     );
   });

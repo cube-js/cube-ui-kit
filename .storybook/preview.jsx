@@ -31,6 +31,7 @@ export const parameters = {
           'Overview',
           'Usage',
           'Create Component',
+          'Utilities',
           'Base Properties',
           'Field Properties',
           'Complex Layout',

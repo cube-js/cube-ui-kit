@@ -6,9 +6,9 @@ import { Button } from './Button';
 
 describe('<Button />', () => {
   it('should add data-qa', () => {
-    render(<Button data-qa="test">label</Button>);
+    render(<Button data-qa="Test">label</Button>);
 
-    expect(screen.getByTestId('test')).toBeInTheDocument();
+    expect(screen.getByTestId('Test')).toBeInTheDocument();
   });
 
   it('should have data-loading', () => {

@@ -60,7 +60,7 @@ type StatusIconMap = Record<
 >;
 
 const Container = tasty({
-  qa: 'Result_Container',
+  qa: 'ResultContainer',
   as: 'section',
   styles: {
     display: {

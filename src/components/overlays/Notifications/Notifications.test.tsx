@@ -596,9 +596,9 @@ describe('Persistent Notifications', () => {
           Add Stored
         </Button>
         <Button onPress={clear}>Clear All</Button>
-        <span data-qa="count">{count}</span>
+        <span data-qa="Count">{count}</span>
         {items.map((item) => (
-          <div key={String(item.id)} data-qa="persistent-item">
+          <div key={String(item.id)} data-qa="PersistentItem">
             {item.title}
             <button onClick={() => remove(item.id)}>Remove</button>
           </div>
@@ -698,9 +698,9 @@ describe('record() method', () => {
         >
           Record
         </Button>
-        <span data-qa="count">{count}</span>
+        <span data-qa="Count">{count}</span>
         {items.map((item) => (
-          <div key={String(item.id)} data-qa="recorded-item">
+          <div key={String(item.id)} data-qa="RecordedItem">
             {item.title}
           </div>
         ))}
@@ -771,7 +771,7 @@ describe('useNotificationsCount', () => {
           >
             Add
           </Button>
-          <span data-qa="counts">
+          <span data-qa="Counts">
             total:{total} unread:{unread}
           </span>
         </div>
@@ -818,7 +818,7 @@ describe('useNotificationsCount', () => {
               Add
             </Button>
             <Button onPress={() => setShowList(true)}>Show List</Button>
-            <span data-qa="counts">
+            <span data-qa="Counts">
               total:{total} unread:{unread}
             </span>
             {showList && <PersistentNotificationsList />}
@@ -878,7 +878,7 @@ describe('useNotificationsCount', () => {
               Add
             </Button>
             <Button onPress={() => setShowList(true)}>Show List</Button>
-            <span data-qa="counts">
+            <span data-qa="Counts">
               total:{total} unread:{unread}
             </span>
             {showList && <PersistentNotificationsList />}
@@ -1372,9 +1372,9 @@ describe('Persistent notification on timeout', () => {
           >
             Show
           </Button>
-          <span data-qa="persist-count">{count}</span>
+          <span data-qa="PersistCount">{count}</span>
           {items.map((item) => (
-            <div key={String(item.id)} data-qa="persist-item">
+            <div key={String(item.id)} data-qa="PersistItem">
               {item.title}
             </div>
           ))}
@@ -1521,7 +1521,7 @@ describe('maxPersistentNotifications cap', () => {
           >
             Add 5
           </Button>
-          <span data-qa="count">{count}</span>
+          <span data-qa="Count">{count}</span>
         </div>
       );
     }
@@ -1576,7 +1576,7 @@ describe('Stored notification handle dismiss', () => {
           >
             Dismiss Handle
           </Button>
-          <span data-qa="count">{count}</span>
+          <span data-qa="Count">{count}</span>
         </div>
       );
     }

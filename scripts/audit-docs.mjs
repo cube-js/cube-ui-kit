@@ -13,6 +13,7 @@
  *   --verbose           (debug output)
  *   --all-props         (don't filter inherited props)
  *   --fix-stories       (auto-update argTypes in .stories.tsx files)
+ *   --fix-docs          (auto-update ### Style Properties sections in .docs.mdx files)
  */
 
 import fsSync from 'node:fs';
@@ -20,12 +21,45 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  BASE_STYLES,
+  POSITION_STYLES,
+  DIMENSION_STYLES,
+  BLOCK_INNER_STYLES,
+  BLOCK_OUTER_STYLES,
+  BLOCK_STYLES,
+  COLOR_STYLES,
+  TEXT_STYLES,
+  FLOW_STYLES,
+  CONTAINER_STYLES,
+  OUTER_STYLES,
+  INNER_STYLES,
+} from '@tenphi/tasty';
 import ts from 'typescript';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'src');
 const COMPONENTS = path.join(SRC, 'components');
+
+/* ── Tasty style lists ────────────────────────────────────────────────── */
+
+const KNOWN_LISTS = {
+  BASE_STYLES, POSITION_STYLES, DIMENSION_STYLES,
+  BLOCK_INNER_STYLES, BLOCK_OUTER_STYLES, BLOCK_STYLES,
+  COLOR_STYLES, TEXT_STYLES, FLOW_STYLES,
+  CONTAINER_STYLES, OUTER_STYLES, INNER_STYLES,
+};
+
+const STYLE_CATEGORIES = [
+  { name: 'Base', list: BASE_STYLES },
+  { name: 'Position', list: POSITION_STYLES },
+  { name: 'Dimension', list: DIMENSION_STYLES },
+  { name: 'Block', list: [...BLOCK_OUTER_STYLES, ...BLOCK_INNER_STYLES] },
+  { name: 'Color', list: COLOR_STYLES },
+  { name: 'Text', list: TEXT_STYLES },
+  { name: 'Flow', list: FLOW_STYLES },
+];
 
 /* ── Prop classification ──────────────────────────────────────────────── */
 
@@ -617,6 +651,314 @@ function removeArgType(content, propName) {
   return content;
 }
 
+/* ── Style property detection from source ─────────────────────────────── */
+
+function resolveListIdentifier(name) {
+  if (KNOWN_LISTS[name]) return [...KNOWN_LISTS[name]];
+  return null;
+}
+
+function resolveArrayExpression(arrayContent, fileContent) {
+  const props = [];
+  const spreadPattern = /\.\.\.(\w+)/g;
+  const stringPattern = /'([^']+)'/g;
+
+  let m;
+  while ((m = spreadPattern.exec(arrayContent)) !== null) {
+    const listName = m[1];
+    const resolved = resolveListIdentifier(listName);
+    if (resolved) {
+      props.push(...resolved);
+    } else {
+      const localDef = resolveLocalConst(listName, fileContent);
+      if (localDef) props.push(...localDef);
+    }
+  }
+  while ((m = stringPattern.exec(arrayContent)) !== null) {
+    props.push(m[1]);
+  }
+  return props;
+}
+
+function resolveLocalConst(constName, fileContent) {
+  const assignRe = new RegExp(
+    `const\\s+${constName}\\s*=\\s*(\\w+_STYLES)\\s*;`,
+  );
+  const assignMatch = fileContent.match(assignRe);
+  if (assignMatch) {
+    return resolveListIdentifier(assignMatch[1]);
+  }
+
+  const arrayRe = new RegExp(
+    `const\\s+${constName}\\s*(?::\\s*[^=]+)?=\\s*\\[([^\\]]+)\\]`,
+  );
+  const arrayMatch = fileContent.match(arrayRe);
+  if (arrayMatch) {
+    return resolveArrayExpression(arrayMatch[1], fileContent);
+  }
+
+  return null;
+}
+
+function extractStylePropsFromFile(fileContent) {
+  const extractCallRe =
+    /extractStyles\(\s*\w+\s*,\s*(\[[\s\S]*?\]|\w+)/g;
+  let match;
+  while ((match = extractCallRe.exec(fileContent)) !== null) {
+    const arg = match[1];
+
+    if (arg.startsWith('[')) {
+      const props = resolveArrayExpression(arg, fileContent);
+      if (props.length > 0) return props;
+    } else {
+      const resolved = resolveListIdentifier(arg);
+      if (resolved) return resolved;
+
+      const localResolved = resolveLocalConst(arg, fileContent);
+      if (localResolved && localResolved.length > 0) return localResolved;
+    }
+  }
+  return null;
+}
+
+function resolveImportPaths(fileContent, fileDir) {
+  const paths = [];
+  const importRe = /import\s*\{([^}]*)\}\s*from\s*'([^']+)'/g;
+  let m;
+  while ((m = importRe.exec(fileContent)) !== null) {
+    const importedNames = m[1];
+    const importPath = m[2];
+    if (importPath.startsWith('.') && !importPath.includes('node_modules')) {
+      const hasBaseComponent = /\w+Base\b/.test(importedNames);
+      paths.push({
+        fullPath: path.resolve(fileDir, importPath),
+        priority: hasBaseComponent ? 0 : 1,
+      });
+    }
+  }
+  paths.sort((a, b) => a.priority - b.priority);
+  return paths.map((p) => p.fullPath);
+}
+
+async function readTsxFile(filePath) {
+  for (const ext of ['', '.tsx', '.ts', '/index.tsx', '/index.ts']) {
+    const p = filePath + ext;
+    try {
+      return { content: await fs.readFile(p, 'utf8'), path: p };
+    } catch { /* file not found, try next extension */ }
+  }
+  return null;
+}
+
+async function detectStyleProps(componentDir, componentName, verbose) {
+  const mainFile = path.join(componentDir, `${componentName}.tsx`);
+  let content;
+  try {
+    content = await fs.readFile(mainFile, 'utf8');
+  } catch {
+    return null;
+  }
+
+  let result = extractStylePropsFromFile(content);
+  if (result) return [...new Set(result)];
+
+  const entries = await fs.readdir(componentDir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isFile()) continue;
+    if (!entry.name.endsWith('.tsx') && !entry.name.endsWith('.ts')) continue;
+    if (entry.name === `${componentName}.tsx`) continue;
+    if (entry.name.endsWith('.stories.tsx') || entry.name.endsWith('.test.tsx') || entry.name.endsWith('.docs.mdx')) continue;
+
+    const filePath = path.join(componentDir, entry.name);
+    const fileContent = await fs.readFile(filePath, 'utf8');
+    result = extractStylePropsFromFile(fileContent);
+    if (result) {
+      if (verbose) console.log(`  [${componentName}] Found extractStyles in ${entry.name}`);
+      return [...new Set(result)];
+    }
+  }
+
+  const importPaths = resolveImportPaths(content, componentDir);
+  for (const importPath of importPaths) {
+    const file = await readTsxFile(importPath);
+    if (!file) continue;
+
+    result = extractStylePropsFromFile(file.content);
+    if (result) {
+      if (verbose) console.log(`  [${componentName}] Found extractStyles via import ${path.relative(ROOT, file.path)}`);
+      return [...new Set(result)];
+    }
+
+    const reExportRe = /export\s+\*\s+from\s+'([^']+)'/g;
+    let reMatch;
+    while ((reMatch = reExportRe.exec(file.content)) !== null) {
+      const reExportPath = path.resolve(path.dirname(file.path), reMatch[1]);
+      const reFile = await readTsxFile(reExportPath);
+      if (!reFile) continue;
+      result = extractStylePropsFromFile(reFile.content);
+      if (result) {
+        if (verbose) console.log(`  [${componentName}] Found extractStyles via re-export ${path.relative(ROOT, reFile.path)}`);
+        return [...new Set(result)];
+      }
+    }
+  }
+
+  return null;
+}
+
+/* ── Style Properties docs section parsing ────────────────────────────── */
+
+function extractStylePropsFromDocs(content) {
+  const lines = content.split('\n');
+  const props = new Set();
+  let inSection = false;
+
+  const SKIP_WORDS = new Set(['styles', 'prop', 'the', 'without', 'using', 'application']);
+
+  for (const line of lines) {
+    if (/^###\s+Style Properties\s*$/.test(line)) {
+      inSection = true;
+      continue;
+    }
+    if (inSection && /^#{2,3}\s+/.test(line)) {
+      break;
+    }
+    if (!inSection) continue;
+
+    const backtickRe = /`([a-zA-Z]+)`/g;
+    let m;
+    while ((m = backtickRe.exec(line)) !== null) {
+      const name = m[1];
+      if (SKIP_WORDS.has(name)) continue;
+      props.add(name);
+    }
+  }
+  return props;
+}
+
+/* ── Style Properties docs section generation ─────────────────────────── */
+
+function groupStyleProps(props) {
+  const propSet = new Set(props);
+  const groups = [];
+
+  for (const cat of STYLE_CATEGORIES) {
+    const matching = cat.list.filter((p) => propSet.has(p));
+    if (matching.length > 0) {
+      groups.push({ name: cat.name, props: matching });
+      for (const p of matching) propSet.delete(p);
+    }
+  }
+
+  if (propSet.size > 0) {
+    groups.push({ name: 'Other', props: [...propSet] });
+  }
+
+  return groups;
+}
+
+function generateStylePropsSection(props) {
+  const groups = groupStyleProps(props);
+  const lines = [
+    '### Style Properties',
+    '',
+    'These properties allow direct style application without using the `styles` prop:',
+    '',
+  ];
+
+  for (const group of groups) {
+    const formatted = group.props.map((p) => `\`${p}\``).join(', ');
+    lines.push(`- **${group.name}:** ${formatted}`);
+  }
+
+  return lines.join('\n');
+}
+
+/* ── Fix docs files ───────────────────────────────────────────────────── */
+
+function replaceSection(content, newSection) {
+  const lines = content.split('\n');
+  let sectionStart = -1;
+  let sectionEnd = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    if (/^### Style Properties\s*$/.test(lines[i])) {
+      sectionStart = i;
+      for (let j = i + 1; j < lines.length; j++) {
+        if (/^#{2,3}\s+/.test(lines[j])) {
+          sectionEnd = j;
+          break;
+        }
+      }
+      if (sectionEnd === -1) sectionEnd = lines.length;
+      break;
+    }
+  }
+
+  if (sectionStart === -1) return null;
+
+  const before = lines.slice(0, sectionStart);
+  const after = lines.slice(sectionEnd);
+  return [...before, newSection, '', ...after].join('\n');
+}
+
+async function fixDocFiles(results, verbose) {
+  let filesModified = 0;
+
+  for (const r of results) {
+    if (!r.expectedStyleProps || r.expectedStyleProps.length === 0) continue;
+
+    const docPath = path.resolve(ROOT, r.docPath);
+    let content;
+    try {
+      content = await fs.readFile(docPath, 'utf8');
+    } catch {
+      continue;
+    }
+
+    const newSection = generateStylePropsSection(r.expectedStyleProps);
+    let newContent = replaceSection(content, newSection);
+
+    if (!newContent) {
+      const insertPoints = [
+        /^### Modifiers\s*$/m,
+        /^## Variants\s*$/m,
+        /^## Examples\s*$/m,
+      ];
+
+      let inserted = false;
+      for (const re of insertPoints) {
+        const match = content.match(re);
+        if (match) {
+          const idx = match.index;
+          newContent = content.slice(0, idx) + newSection + '\n\n' + content.slice(idx);
+          inserted = true;
+          break;
+        }
+      }
+
+      if (!inserted) {
+        newContent = content + '\n\n' + newSection + '\n';
+      }
+    }
+
+    if (newContent !== content) {
+      await fs.writeFile(docPath, newContent, 'utf8');
+      filesModified++;
+      if (verbose) {
+        console.log(`  Updated style props: ${r.docPath}`);
+      }
+    }
+  }
+
+  if (filesModified > 0) {
+    console.log(`\n=== Docs fix summary ===`);
+    console.log(`Files modified: ${filesModified}\n`);
+  } else {
+    console.log('\nNo doc files needed style property changes.\n');
+  }
+}
+
 /* ── Main ─────────────────────────────────────────────────────────────── */
 
 async function main() {
@@ -626,6 +968,7 @@ async function main() {
   const verbose = args.includes('--verbose');
   const allProps = args.includes('--all-props');
   const fixStories = args.includes('--fix-stories');
+  const fixDocs = args.includes('--fix-docs');
 
   const docFiles = await glob(COMPONENTS, /\.docs\.mdx$/);
   const docFilesFiltered = componentFilter
@@ -744,6 +1087,26 @@ async function main() {
       info.push(`In docs, not in argTypes (info only): ${inDocsNotArgTypes.join(', ')}`);
     }
 
+    const expectedStyleProps = await detectStyleProps(dir, componentName, verbose && !!componentFilter);
+    const docsStyleProps = extractStylePropsFromDocs(docContent);
+    let stylePropsInCodeNotDocs = [];
+    let stylePropsInDocsNotCode = [];
+
+    if (expectedStyleProps && expectedStyleProps.length > 0) {
+      const expectedSet = new Set(expectedStyleProps);
+      stylePropsInCodeNotDocs = expectedStyleProps.filter((p) => !docsStyleProps.has(p));
+      stylePropsInDocsNotCode = [...docsStyleProps].filter((p) => !expectedSet.has(p));
+
+      if (stylePropsInCodeNotDocs.length > 0) {
+        issues.push(`Style props in code, not in docs: ${stylePropsInCodeNotDocs.join(', ')}`);
+      }
+      if (stylePropsInDocsNotCode.length > 0) {
+        issues.push(`Style props in docs, not in code: ${stylePropsInDocsNotCode.join(', ')}`);
+      }
+    } else if (docsStyleProps.size > 0) {
+      info.push('Style props listed in docs but detection failed (may need manual review)');
+    }
+
     results.push({
       component: componentName,
       docPath: relDoc,
@@ -758,6 +1121,9 @@ async function main() {
       inDocsNotCode,
       inArgTypesNotDocs,
       inDocsNotArgTypes,
+      expectedStyleProps,
+      stylePropsInCodeNotDocs,
+      stylePropsInDocsNotCode,
       docsDetails: Object.fromEntries(docsDetails),
       issues,
       info,
@@ -808,6 +1174,10 @@ async function main() {
 
   if (fixStories) {
     await fixStoriesFiles(results, verbose);
+  }
+
+  if (fixDocs) {
+    await fixDocFiles(results, verbose);
   }
 
   process.exit(hasErrors ? 1 : 0);
