@@ -27,6 +27,10 @@ An interactive button component built on top of `Item` that provides all the lay
 - **`type`** `'primary' | 'secondary' | 'outline' | 'neutral' | 'clear'` — Visual type/variant of the button
 - **`theme`** `'default' | 'danger' | 'success' | 'special'` — Color theme of the button
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `medium`) — Size of the button (does not support `'inline'`)
+- **`icon`** `ReactNode` — Icon displayed before the content
+- **`rightIcon`** `ReactNode` — Icon displayed after the content
+- **`prefix`** `ReactNode` — Content rendered before the label
+- **`suffix`** `ReactNode` — Content rendered after the label
 - **`hotkeys`** `string` — Keyboard shortcut that triggers the button (e.g., `"cmd+s"`, `"ctrl+alt+d"`)
 - **`tooltip`** `boolean | string | object` — Tooltip configuration: string for simple text, `true` for auto overflow tooltips, or object for advanced config with optional `auto` property
 - **`isDisabled`** `boolean` — Whether the button is disabled
@@ -35,49 +39,22 @@ An interactive button component built on top of `Item` that provides all the lay
 - **`htmlType`** `'button' | 'submit' | 'reset'` — HTML button type attribute
 - **`description`** `string` — Secondary text shown below the main content
 - **`isLoading`** `boolean` — Whether the button shows loading state with disabled interaction
-- **`loadingSlot`** `'auto' | 'icon' | 'rightIcon' | 'prefix' | 'suffix'` — Which slot to replace with loading icon (`auto` intelligently selects)
+- **`actions`** `ReactNode` — Inline action buttons displayed on the right side. Use `ItemButton.Action` for consistent styling. Actions automatically inherit the parent button's `type` prop
 - **`autoHideActions`** `boolean` — When true, actions are hidden by default and fade in on hover
+- **`preserveActionsSpace`** `boolean` (default: `false`) — Preserve the actions width when hidden (only changes opacity, not layout)
+- **`disableActionsFocus`** `boolean` (default: `false`) — Disable focus on action buttons by setting tabIndex to -1
+- **`level`** `1 | 2 | 3 | 4 | 5 | 6` (default: `3`) — Heading level for the label element when type is "header" or "card"
+- **`highlight`** `string` — String to highlight within children text
+- **`highlightCaseSensitive`** `boolean` (default: `false`) — Whether highlight matching is case-sensitive
+- **`shape`** `'card' | 'button' | 'sharp' | 'pill'` (default: `'button'`) — Shape of the button's border radius
+- **`wrapperStyles`** `Styles` — Custom styles for the outer wrapper element when actions are present
 - **`onPress`** `(e: PressEvent) => void` — Callback fired when button is pressed
+
+Inherits from [Item](/docs/content-item--docs).
 
 ### Base Properties
 
 Supports [Base properties](/docs/getting-started-base-properties--docs)
-
-### Item Properties
-
-ItemButton inherits all properties from [Item](/docs/content-item--docs), including:
-- Layout properties: `icon`, `rightIcon`, `prefix`, `suffix`, `description`, `descriptionPlacement`
-- Interactive properties: `hotkeys`, `tooltip`, `isSelected`
-- Styling properties: `size`, `type`, `theme`, `styles`
-
-### Content Properties
-
-#### actions
-- **Type**: `ReactNode`
-- **Description**: Inline action buttons displayed on the right side of the button. Use `ItemButton.Action` for consistent styling. Actions automatically inherit the parent button's `type` prop and the component reserves space to prevent content overlap.
-
-### Action Properties
-
-#### onPress
-- **Type**: `(e: PressEvent) => void`
-- **Description**: Callback fired when the button is pressed via mouse, keyboard, or touch
-
-#### to
-- **Type**: `string`
-- **Description**: URL for link behavior - when provided, the button acts as a link
-
-#### htmlType
-- **Type**: `'button' | 'submit' | 'reset'`
-- **Description**: HTML button type attribute for form integration
-- **Default**: `'button'`
-
-#### isDisabled
-- **Type**: `boolean`
-- **Description**: Whether the button is disabled and non-interactive
-
-### Style Properties
-
-These properties allow direct style application without using the `styles` prop: `width`, `height`, `padding`, `margin`, `color`, `fill`, `opacity`, `display`, `position`, `zIndex`, `gap`, `flow`, `placeItems`, `placeContent`, `alignItems`, `justifyContent`, `border`, `radius`, `shadow`, `overflow`.
 
 ### Modifiers
 

@@ -206,6 +206,121 @@ const meta = {
         'Callback fired when focus leaves the ComboBox wrapper element',
       control: { type: null },
     },
+
+    prefix: {
+      control: { type: null },
+      description: 'Content rendered before the input',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    suffix: {
+      control: { type: null },
+      description: 'Content rendered after the input',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    suffixPosition: {
+      options: ['before', 'after'],
+      control: { type: 'radio' },
+      description: 'Position of suffix relative to validation/loading icons',
+      table: {
+        defaultValue: { summary: 'before' },
+        type: { summary: "'before' | 'after'" },
+      },
+    },
+    direction: {
+      options: ['top', 'bottom'],
+      control: { type: 'radio' },
+      description: 'Preferred direction for the dropdown',
+      table: {
+        defaultValue: { summary: 'bottom' },
+        type: { summary: "'top' | 'bottom'" },
+      },
+    },
+    shouldFlip: {
+      control: 'boolean',
+      description: 'Whether the dropdown should flip to fit in viewport',
+      table: {
+        defaultValue: { summary: 'true' },
+        type: { summary: 'boolean' },
+      },
+    },
+    overlayOffset: {
+      control: { type: 'number' },
+      description: 'Distance between input and dropdown in pixels',
+      table: {
+        defaultValue: { summary: '8' },
+        type: { summary: 'number' },
+      },
+    },
+    items: {
+      control: { type: null },
+      description:
+        'Items for the listbox (alternative to children, enables data-driven mode)',
+      table: {
+        type: { summary: 'Iterable<T>' },
+      },
+    },
+    disabledKeys: {
+      control: { type: null },
+      description: 'Keys of disabled items that cannot be selected',
+      table: {
+        type: { summary: 'Iterable<Key>' },
+      },
+    },
+    containerPadding: {
+      control: { type: 'number' },
+      description:
+        'Minimum padding in pixels between the popover and viewport edges',
+      table: {
+        defaultValue: { summary: '8' },
+        type: { summary: 'number' },
+      },
+    },
+    inputStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    triggerStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    listBoxStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    overlayStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    optionStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    sectionStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    headingStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 } satisfies Meta<typeof ComboBox>;
 

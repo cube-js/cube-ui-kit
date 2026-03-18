@@ -52,9 +52,15 @@ A select allows users to choose a single option from a list of predefined choice
 - **`listBoxStyles`** `Styles` — Styles for the dropdown list container
 - **`optionStyles`** `Styles` — Styles for individual option items
 - **`overlayStyles`** `Styles` — Styles for the dropdown overlay wrapper
-- **`wrapperStyles`** `Styles` — Styles for the outer wrapper element
 - **`triggerStyles`** `Styles` — Styles for the trigger button element
 - **`inputProps`** `Props` — Additional props for the input element
+- **`triggerDescription`** `ReactNode` — Description text displayed within the trigger button (different from field-level description)
+- **`descriptionPlacement`** `'inline' | 'block'` — Controls how the trigger description is positioned
+- **`hotkeys`** `string` — Keyboard shortcut that triggers the select when pressed
+- **`containerPadding`** `number` (default: `8`) — Minimum padding in pixels between the popover and viewport edges
+- **`isOpen`** `boolean` — Whether the dropdown is open (controlled)
+- **`defaultOpen`** `boolean` — Whether the dropdown is open by default (uncontrolled)
+- **`selectionMode`** `'single'` — Selection mode for the select
 - **`onSelectionChange`** `(key: Key) => void` — Callback fired when the selected option changes
 - **`onOpenChange`** `(isOpen: boolean) => void` — Callback fired when the dropdown opens or closes
 - **`onFocus`** `(e: FocusEvent) => void` — Callback fired when the select receives focus

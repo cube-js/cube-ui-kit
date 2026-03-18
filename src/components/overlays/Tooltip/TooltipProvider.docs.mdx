@@ -11,11 +11,20 @@ A convenience wrapper that combines `TooltipTrigger` and `Tooltip` into a single
 ## Properties
 
 - **`title`** `ReactNode` — Tooltip content
-- **`tooltipStyles`** `Styles` — Custom styles for the tooltip
+- **`tooltipStyles`** `Styles` — Custom styles for the tooltip container
 - **`width`** `string` — Tooltip width
-- **`isDisabled`** `boolean` — Disable the tooltip
-
-Inherits all [TooltipTrigger](/docs/overlays-tooltip-trigger--docs) properties: `placement`, `offset`, `crossOffset`, `delay`, etc.
+- **`placement`** `Placement` (default: `'top'`) — Position of the tooltip relative to its trigger
+- **`offset`** `number` (default: `8`) — Distance between the tooltip and the trigger element
+- **`crossOffset`** `number` (default: `0`) — Cross-axis offset of the tooltip
+- **`delay`** `number` (default: `250`) — The delay time in ms for the tooltip to show up
+- **`closeDelay`** `number` (default: `500`) — The delay time in ms for the tooltip to close
+- **`isMaterial`** `boolean` — Enables material-style tooltip with auto pointer events
+- **`isLight`** `boolean` — Uses light color scheme for the tooltip
+- **`isOpen`** `boolean` — Controlled open state of the tooltip
+- **`defaultOpen`** `boolean` — Whether the tooltip is open by default (uncontrolled)
+- **`onOpenChange`** `(isOpen: boolean) => void` — Callback when the tooltip open state changes
+- **`trigger`** `'focus'` — When set, opens the tooltip only on focus instead of both focus and hover
+- **`shouldCloseOnPress`** `boolean` (default: `true`) — Whether the tooltip closes when the trigger is pressed
 
 ### Base Properties
 

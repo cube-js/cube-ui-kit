@@ -34,6 +34,8 @@ DialogTrigger serves as a wrapper around a Dialog and its associated trigger, li
 - **`crossOffset`** `number` (default: `0`) — The additional offset applied along the cross axis
 - **`containerPadding`** `number` (default: `12`) — The padding between the edge of the overlay and the boundary
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the overlay should flip positions when insufficient space
+- **`shouldUpdatePosition`** `boolean` — Whether the overlay position should update on scroll or resize
+- **`hideOnClose`** `boolean` — Whether to hide the overlay instead of unmounting on close
 - **`onOpenChange`** `function` — Callback fired when the dialog open state changes
 - **`onDismiss`** `function` — Callback fired when the dialog is dismissed
 - **`targetRef`** — The ref of the element the Dialog should visually attach itself to

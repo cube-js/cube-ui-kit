@@ -22,23 +22,39 @@ A searchable menu interface that combines the functionality of Menu and ListBox 
 
 <Story of={CommandMenuStories.Default} />
 
-## Props
+## Properties
 
-- **`searchPlaceholder`** (default: `Search commands...`) — Placeholder text for the search input
-- **`searchValue`** — The search value in controlled mode
-- **`onSearchChange`** `function` — Callback fired when search value changes
-- **`filter`** — Custom filter function for search
-- **`emptyLabel`** (default: `No commands found`) — Label to show when no results are found
-- **`searchInputStyles`** — Custom styles for the search input
-- **`isLoading`** (default: `false`) — Whether the command palette is loading
-- **`shouldFilter`** (default: `true`) — Whether to filter items based on search
-- **`autoFocus`** (default: `true`) — Whether to auto-focus the search input
-- **`onAction`** `function` — Callback fired when an item is selected
-- **`onSelectionChange`** `function` — Callback fired when selection changes
-- **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `none`) — Selection mode for the command palette
-- **`isDisabled`** — Whether the command palette is disabled
-- **`size`** `string` (default: `medium`) — Size of the command menu component
-- **`styles`** — Custom styles for the command palette container
+- **`searchPlaceholder`** `string` (default: `'Search commands...'`) — Placeholder text for the search input
+- **`searchValue`** `string` — The search value in controlled mode
+- **`onSearchChange`** `(value: string) => void` — Callback fired when search value changes
+- **`filter`** `(textValue: string, inputValue: string) => boolean` — Custom filter function for search
+- **`emptyLabel`** `ReactNode` (default: `'No commands found'`) — Label to show when no results are found
+- **`searchInputStyles`** `Styles` — Custom styles for the search input
+- **`isLoading`** `boolean` (default: `false`) — Whether the command menu is loading
+- **`shouldFilter`** `boolean` (default: `true`) — Whether to filter items based on search
+- **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'none'`) — Selection mode for the command menu
+- **`selectedKeys`** `string[]` — Currently selected keys (controlled)
+- **`defaultSelectedKeys`** `string[]` — Initially selected keys (uncontrolled)
+- **`onSelectionChange`** `(keys: string[]) => void` — Callback fired when selection changes
+- **`size`** `'medium' | 'large'` (default: `'medium'`) — Size of the command menu items
+- **`autoFocus`** `boolean | FocusStrategy` (default: `true`) — Whether to auto-focus the search input
+- **`items`** `Iterable<T>` — Collection of items for dynamic content with render function pattern
+- **`disabledKeys`** `Iterable<Key>` — Keys of items that should be disabled
+- **`onAction`** `(key: Key) => void` — Callback fired when an item is selected
+- **`isDisabled`** `boolean` — Whether the command menu is disabled
+- **`header`** `ReactNode` — Optional header content above the search input
+- **`footer`** `ReactNode` — Optional footer content below the menu
+- **`menuStyles`** `Styles` — Custom styles for the menu list container
+- **`itemStyles`** `Styles` — Custom styles for individual menu items
+- **`sectionStyles`** `Styles` — Custom styles for section wrapper elements
+- **`sectionHeadingStyles`** `Styles` — Custom styles for section heading elements
+- **`headerStyles`** `Styles` — Custom styles for the header
+- **`footerStyles`** `Styles` — Custom styles for the footer
+- **`styles`** `Styles` — Custom styles for the command menu container
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs).
 
 ## Styling
 

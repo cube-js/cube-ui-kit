@@ -27,9 +27,15 @@ A search input provides a specialized text field for search functionality, featu
 - **`value`** `string` — The search value in controlled mode
 - **`defaultValue`** `string` — The default search value in uncontrolled mode
 - **`placeholder`** `string` — Placeholder text when input is empty
+- **`icon`** `ReactElement` — Icon element rendered before the input (default: search icon)
+- **`prefix`** `ReactNode` — Content rendered before the input
 - **`suffix`** — Input decoration after the main input (before clear button)
+- **`suffixPosition`** `'before' | 'after'` (default: `after`) — Position of suffix relative to validation/loading state icons
 - **`isClearable`** `boolean` (default: `false`) — Whether the search input shows a clear button
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
+- **`autocomplete`** `string` — HTML autocomplete attribute for browser autofill behavior
+- **`inputProps`** `Props` — Direct props passed to the native input element
+- **`wrapperProps`** `Props` — Direct props passed to the input wrapper element
 - **`onChange`** `function` — Callback fired when the search value changes
 - **`onSubmit`** `function` — Callback fired when search is submitted
 - **`onClear`** `function` — Callback fired when search is cleared

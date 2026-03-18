@@ -174,6 +174,22 @@ export default {
       description:
         'Function to determine if overlay should close on outside interaction',
     },
+
+    shouldUpdatePosition: {
+      control: 'boolean',
+      description:
+        'Whether the overlay position should update on scroll or resize',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
+    hideOnClose: {
+      control: 'boolean',
+      description: 'Whether to hide the overlay instead of unmounting on close',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
   },
 };
 

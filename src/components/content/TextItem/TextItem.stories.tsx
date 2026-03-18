@@ -64,6 +64,49 @@ const meta = {
         defaultValue: { summary: 'top' },
       },
     },
+
+    monospace: {
+      control: 'boolean',
+      description: 'Use monospace font',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
+    ellipsis: {
+      control: 'boolean',
+      description: 'Truncate overflow with ellipsis',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
+    nowrap: {
+      control: 'boolean',
+      description: 'Prevent text wrapping',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
+    italic: {
+      control: { type: 'text' },
+      description: "Font style (e.g. `'italic'`)",
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    weight: {
+      control: { type: 'radio' },
+      description: 'Font weight',
+      table: {
+        type: { summary: 'string | number' },
+      },
+    },
+    transform: {
+      control: { type: 'text' },
+      description: "Text transform (e.g. `'uppercase'`, `'capitalize'`)",
+      table: {
+        type: { summary: 'string' },
+      },
+    },
   },
 } satisfies Meta<typeof TextItem>;
 

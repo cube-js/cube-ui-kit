@@ -12,11 +12,13 @@ A code block with copy-to-clipboard functionality and syntax highlighting. Exten
 
 - **`code`** `string` (default: `''`) — The code to display
 - **`language`** `string` (default: `'javascript'`) — Syntax highlighting language
-- **`title`** `string` (default: `'Code example'`) — Accessible title
-- **`prefix`** `string` (default: `''`) — Prefix text (e.g. `$`)
-- **`multiline`** `boolean` — Allow multiline display
-- **`nowrap`** `boolean` — Prevent line wrapping
-- **`showTooltip`** `boolean` (default: `false`) — Show tooltip on hover
+- **`title`** `string` (default: `'Code example'`) — Accessible title used in the copy toast message
+- **`prefix`** `string` (default: `''`) — Prefix for each line of code (e.g. `'$ '` for bash snippets)
+- **`nowrap`** `boolean` — Force single-line display even for multi-line code
+- **`serif`** `boolean` — Use serif (non-monospace) font for the code
+- **`hideText`** `string | string[] | boolean` — Hide sensitive text with bullet characters. `true` hides all text, a string hides that substring, an array hides multiple substrings. A toggle button appears to reveal hidden content.
+- **`actions`** `ReactNode` — Additional action buttons displayed alongside the copy button. Use `CopySnippet.Button` for consistent styling.
+- **`showTooltip`** `boolean` (default: `false`) — Show tooltip with the full content on hover
 
 ### Style Defaults
 

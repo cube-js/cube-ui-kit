@@ -61,6 +61,10 @@ A versatile selection component that combines a trigger button with a dropdown l
 - **`shouldFlip`** `boolean` — Whether to flip the popover placement when it overflows
 - **`containerPadding`** `number` — Minimum padding between the popover and viewport edges
 - **`onSelectionChange`** `(keys: Key | Key[] | 'all' | null) => void` — Callback when selection changes
+- **`onClear`** `() => void` — Callback called when the clear button is pressed
+- **`onOpenChange`** `(isOpen: boolean) => void` — Callback called when the popover open state changes
+- **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function for items. Pass `false` to disable filtering.
+- **`emptyLabel`** `ReactNode` — Content shown when no items match the filter or the collection is empty
 
 ### Base Properties
 
@@ -104,19 +108,29 @@ Customizes the popover Dialog that contains the ListBox. See [Dialog documentati
 **Sub-elements:**
 - None for Dialog in popover mode
 
+#### listStyles
+
+Customizes the list container element within the ListBox.
+
+#### optionStyles
+
+Customizes individual option elements within the ListBox.
+
+#### sectionStyles
+
+Customizes section wrapper elements within the ListBox.
+
+#### headingStyles
+
+Customizes section heading elements within the ListBox.
+
 #### headerStyles
 
 Customizes the header area when `header` prop is provided.
 
-**Sub-elements:**
-- None
-
 #### footerStyles
 
 Customizes the footer area when `footer` prop is provided.
-
-**Sub-elements:**
-- None
 
 ### Style Properties
 
@@ -552,12 +566,9 @@ The component automatically manages ARIA attributes:
 
 - **`aria-label`** — Labels the trigger when no visible label exists
 - **`aria-labelledby`** — Associates the label with the trigger
-- **`aria-expanded`** — Indicates whether the popover is open (true/false)
-- **`aria-haspopup`** — Indicates the button controls a listbox (listbox)
 - **`aria-describedby`** — Associates help text and error messages
-- **`aria-invalid`** — Indicates validation state (true when invalid)
-- **`aria-required`** — Indicates required fields (true when required)
-- **`aria-disabled`** — Indicates disabled state
+
+The following ARIA attributes are automatically managed by React Aria and do not need to be set manually: `aria-expanded`, `aria-haspopup`, `aria-invalid`, `aria-required`, `aria-disabled`.
 
 ### Best Practices for Accessibility
 

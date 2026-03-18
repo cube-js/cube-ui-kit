@@ -53,8 +53,12 @@ A combobox component that combines a text input with a dropdown list, allowing u
 - **`direction`** `'top' | 'bottom'` (default: `bottom`) — Preferred direction for the dropdown
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the dropdown should flip to fit in viewport
 - **`overlayOffset`** `number` (default: `8`) — Distance between input and dropdown in pixels
+- **`items`** `Iterable<T>` — Items for the listbox (alternative to children, enables data-driven mode)
+- **`disabledKeys`** `Iterable<Key>` — Keys of disabled items that cannot be selected
+- **`containerPadding`** `number` (default: `8`) — Minimum padding in pixels between the popover and viewport edges
 - **`onFocus`** `() => void` — Callback fired when focus enters the ComboBox
 - **`onBlur`** `() => void` — Callback fired when focus leaves the ComboBox
+- **`onKeyDown`** `(e: KeyboardEvent) => void` — Callback fired when a key is pressed on the input
 
 #### Notable Properties
 
@@ -103,10 +107,6 @@ Customizes the text input element where users type.
 #### triggerStyles
 
 Customizes the dropdown trigger button that opens/closes the popover.
-
-#### fieldStyles
-
-Customizes the field wrapper element that includes the label, description, message, and the entire input component.
 
 #### listBoxStyles
 

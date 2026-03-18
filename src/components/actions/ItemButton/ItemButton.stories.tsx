@@ -88,6 +88,36 @@ const meta: Meta<typeof ItemButton> = {
       action: 'pressed',
       description: 'Callback fired when button is pressed',
     },
+
+    icon: {
+      control: { type: null },
+      description: 'Icon displayed before the content',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    prefix: {
+      control: { type: null },
+      description: 'Content rendered before the label',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    suffix: {
+      control: { type: null },
+      description: 'Content rendered after the label',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    wrapperStyles: {
+      control: { type: null },
+      description:
+        'Custom styles for the outer wrapper element when actions are present',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 

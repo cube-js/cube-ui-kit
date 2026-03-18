@@ -50,6 +50,11 @@ A searchable list selection component that combines a ListBox with an integrated
 - **`onSelectionChange`** `(keys: Key | Key[] | 'all' | null) => void` — Callback when selection changes
 - **`onEscape`** `() => void` — Callback when Escape key is pressed
 - **`onOptionClick`** `(key: Key) => void` — Callback when an option is clicked
+- **`items`** `Iterable<T>` — Array of items for dynamic content with render function pattern
+- **`isLoading`** `boolean` (default: `false`) — Whether the FilterListBox is in a loading state (shows loading icon in search input)
+- **`autoFocus`** `boolean` — Whether the search input should have autofocus
+- **`customValueProps`** `Partial<CubeItemProps>` — Props to apply to existing custom values (already selected but not in predefined options)
+- **`newCustomValueProps`** `Partial<CubeItemProps>` — Props to apply to new custom values appearing in search results (merged with `customValueProps`)
 
 ### Base Properties
 
@@ -107,6 +112,10 @@ Customizes section heading elements.
 
 **Sub-elements:**
 - Same as ListBox component sub-elements
+
+#### listBoxStyles
+
+Customizes the inner ListBox component.
 
 #### headerStyles
 

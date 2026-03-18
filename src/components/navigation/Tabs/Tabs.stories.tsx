@@ -114,6 +114,127 @@ const meta = {
         type: { summary: '(key: Key) => void' },
       },
     },
+
+    isEditable: {
+      control: 'boolean',
+      description: 'Whether tab titles can be inline-edited',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: 'boolean' },
+      },
+    },
+    menu: {
+      control: { type: null },
+      description: 'Menu items for all tabs (use `Menu.Item` children)',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    menuTriggerProps: {
+      control: { type: null },
+      description: 'Props for the menu trigger button',
+      table: {
+        type: { summary: 'Partial<CubeItemActionProps>' },
+      },
+    },
+    menuProps: {
+      control: { type: null },
+      description: 'Props for the Menu component',
+      table: {
+        type: { summary: 'Partial<CubeMenuProps>' },
+      },
+    },
+    renderPanel: {
+      control: { type: null },
+      description: 'Render function for lazy panel content',
+      table: {
+        type: { summary: '(key: string) => ReactNode' },
+      },
+    },
+    panelCacheKeys: {
+      control: { type: null },
+      description: 'Cache keys for `renderPanel` content',
+      table: {
+        type: { summary: 'Record<string, any>' },
+      },
+    },
+    isReorderable: {
+      control: 'boolean',
+      description: 'Enable drag-and-drop tab reordering',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: 'boolean' },
+      },
+    },
+    keyOrder: {
+      control: { type: null },
+      description: 'Controlled tab display order',
+      table: {
+        type: { summary: 'string[]' },
+      },
+    },
+    showTabPicker: {
+      control: { type: 'radio' },
+      description: 'Show dropdown tab picker',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: "boolean | 'auto'" },
+      },
+    },
+    showScrollArrows: {
+      control: { type: 'radio' },
+      description: 'Show scroll navigation arrows',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: "boolean | 'auto'" },
+      },
+    },
+    tabPickerPosition: {
+      options: ['prefix', 'suffix'],
+      control: { type: 'radio' },
+      description: 'Position of the tab picker',
+      table: {
+        defaultValue: { summary: 'suffix' },
+        type: { summary: "'prefix' | 'suffix'" },
+      },
+    },
+    scrollArrowsPosition: {
+      options: ['prefix', 'suffix'],
+      control: { type: 'radio' },
+      description: 'Position of the scroll arrows',
+      table: {
+        defaultValue: { summary: 'suffix' },
+        type: { summary: "'prefix' | 'suffix'" },
+      },
+    },
+    tabListPadding: {
+      control: { type: 'text' },
+      description: 'Inline padding for the tab list container (e.g., `"2x"`)',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    tabListStyles: {
+      control: { type: null },
+      description: 'Custom styles for the tab list container',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    prefixStyles: {
+      control: { type: null },
+      description: 'Custom styles for the prefix slot',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    suffixStyles: {
+      control: { type: null },
+      description: 'Custom styles for the suffix slot',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 } satisfies Meta<typeof Tabs>;
 

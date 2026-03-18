@@ -31,6 +31,7 @@ A versatile action component that triggers commands and navigates users.
 - **`children`** `ReactNode` — Button label or custom content
 - **`label`** `string` — Accessible label for the button (used as `aria-label`)
 - **`tooltip`** `string | boolean | object` — Tooltip content. Use a string for simple text, `true` for auto tooltip on overflow, or an object with `{ title, auto, placement, ...tooltipProps }`
+- **`defaultTooltipPlacement`** `Placement` (default: `top`) — Default placement for the button's tooltip
 - **`isLoading`** `boolean` (default: `false`) — Show loading spinner and disable interactions
 - **`isSelected`** `boolean` (default: `false`) — Marks the button as pressed / selected (toggle)
 - **`to`** `string` — Destination URL or route; prefix with `!` to open in new tab, `@` to bypass router

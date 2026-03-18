@@ -36,6 +36,9 @@ A versatile dropdown menu component that displays a list of actions or options. 
 - **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
 - **`size`** `'medium' | 'large'` (default: `medium`) — Size of the menu items
 - **`styles`** `Styles` — Custom styles for the menu container
+- **`menuStyles`** `Styles` — Custom styles for the inner menu list element
+- **`headerStyles`** `Styles` — Custom styles for the header element
+- **`footerStyles`** `Styles` — Custom styles for the footer element
 - **`itemStyles`** `Styles` — Custom styles for menu items
 - **`sectionStyles`** `Styles` — Custom styles for section containers
 - **`sectionHeadingStyles`** `Styles` — Custom styles for section headings
@@ -110,8 +113,6 @@ The `mods` property accepts the following modifiers you can override:
 - **`selectedKeys`** `string[]` — Currently selected keys (controlled)
 - **`defaultSelectedKeys`** `string[]` — Initially selected keys (uncontrolled)
 - **`onSelectionChange`** `(keys: string[]) => void` — Handler for selection changes
-- **`selectionIcon`** `'checkbox' \| 'radio'` — Type of selection indicator
-
 ### State Properties
 
 - **`disabledKeys`** `Iterable<Key>` — Keys of disabled items
@@ -294,16 +295,6 @@ const items = [
       {item.label}
     </Menu.Item>
   )}
-</Menu>
-```
-
-### Selection with Custom Icons
-
-```jsx
-<Menu selectionMode="multiple" selectionIcon="checkbox">
-  <Menu.Item key="bold">Bold</Menu.Item>
-  <Menu.Item key="italic">Italic</Menu.Item>
-  <Menu.Item key="underline">Underline</Menu.Item>
 </Menu>
 ```
 

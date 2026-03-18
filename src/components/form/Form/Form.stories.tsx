@@ -61,13 +61,6 @@ const meta: Meta<typeof Form> = {
         defaultValue: { summary: true },
       },
     },
-    isRequired: {
-      control: { type: 'boolean' },
-      description: 'Whether fields are required by default',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
     necessityIndicator: {
       control: { type: 'radio' },
       options: ['icon', 'label'],
@@ -142,6 +135,22 @@ const meta: Meta<typeof Form> = {
       action: 'valuesChange',
       description: 'Triggered when any field value changes',
       control: { type: null },
+    },
+
+    labelStyles: {
+      control: { type: null },
+      description: 'Styles applied to field labels',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
+    necessityLabel: {
+      control: { type: null },
+      description:
+        'Custom label to replace the default necessity indicator text',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
     },
   },
 };

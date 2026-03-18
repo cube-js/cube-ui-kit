@@ -30,6 +30,23 @@ const meta = {
         'Preserve children content during exit transition. When true, uses stored children from when content was visible.',
       table: { defaultValue: { summary: 'true' } },
     },
+
+    isShown: {
+      control: 'boolean',
+      description: 'Desired visibility state (driver for the transition)',
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
+    exposeUnmounted: {
+      control: 'boolean',
+      description:
+        'Keep calling children during the `unmounted` phase instead of returning `null`',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: 'boolean' },
+      },
+    },
   },
 } satisfies Meta<typeof DisplayTransition>;
 

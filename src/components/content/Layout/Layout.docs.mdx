@@ -24,6 +24,9 @@ A compound component system for building application shells with headers, footer
 ### Properties
 
 - **`doNotOverflow`** `boolean` (default: `false`) — When true, applies `overflow: hidden` to the root element. By default, overflow is visible.
+- **`contentPadding`** `string` (default: `'1x'`) — Padding for content areas (`Layout.Content` components). Sets the `$content-padding` token inherited by sub-components.
+- **`hasTransition`** `boolean` (default: `false`) — Enable transition animation for the Inner content when panels open/close
+- **`minContentSize`** `number` (default: `320`) — Minimum size in pixels reserved for the content area between panels
 - **`innerRef`** `ForwardedRef<HTMLDivElement>` — Ref for the inner content element
 - **`innerProps`** `HTMLAttributes<HTMLDivElement>` — Props to spread on the Inner sub-element
 - **`isGrid`** `boolean` — Enable grid display mode

@@ -113,6 +113,52 @@ export default {
       description: 'Callback fired when the input receives focus',
       control: { type: null },
     },
+
+    icon: {
+      control: { type: null },
+      description:
+        'Icon element rendered before the input (default: search icon)',
+      table: {
+        type: { summary: 'ReactElement' },
+      },
+    },
+    prefix: {
+      control: { type: null },
+      description: 'Content rendered before the input',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
+    suffixPosition: {
+      options: ['before', 'after'],
+      control: { type: 'radio' },
+      description:
+        'Position of suffix relative to validation/loading state icons',
+      table: {
+        defaultValue: { summary: 'after' },
+        type: { summary: "'before' | 'after'" },
+      },
+    },
+    inputProps: {
+      control: { type: null },
+      description: 'Direct props passed to the native input element',
+      table: {
+        type: { summary: 'Props' },
+      },
+    },
+    wrapperProps: {
+      control: { type: null },
+      description: 'Direct props passed to the input wrapper element',
+      table: {
+        type: { summary: 'Props' },
+      },
+    },
+    inputStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 

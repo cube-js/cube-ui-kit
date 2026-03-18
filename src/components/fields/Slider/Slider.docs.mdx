@@ -36,7 +36,31 @@ The Slider component allows users to select a numeric value from a range by drag
 
 ## Properties
 
-<ArgTypes of={SliderStories} />
+- **`value`** `number` — The current value in controlled mode
+- **`defaultValue`** `number` — The default value in uncontrolled mode
+- **`minValue`** `number` (default: `0`) — The minimum allowed value
+- **`maxValue`** `number` (default: `100`) — The maximum allowed value
+- **`step`** `number` (default: `1`) — The step increment between values
+- **`orientation`** `'horizontal' | 'vertical'` (default: `'horizontal'`) — The orientation of the slider
+- **`gradation`** `string[]` — Labels for gradation marks along the track
+- **`showValueLabel`** `boolean` — Whether the value label is displayed (defaults to `true` when `label` is present)
+- **`getValueLabel`** `(value: number) => string` — Custom function to format the value label
+- **`formatOptions`** `Intl.NumberFormatOptions` — Number format options for the value label display
+- **`inputWidth`** `string` — Width of the input area
+- **`trackStyles`** `Styles` — Custom styles for the track element
+- **`thumbStyles`** `Styles` — Custom styles for the thumb element
+- **`thumbTokens`** `Tokens` — Custom tokens for the thumb element (e.g., `#slider-thumb` for fill color)
+- **`inputStyles`** `Styles` — Custom styles for the input element
+- **`onChange`** `(value: number) => void` — Callback fired when the value changes during drag
+- **`onChangeEnd`** `(value: number) => void` — Callback fired when the value changes on drag end
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/getting-started-field-properties--docs)
 
 ## Sub-elements
 

@@ -63,9 +63,16 @@ A versatile selection component that combines a trigger button with a searchable
 - **`htmlType`** `'button' | 'submit' | 'reset'` (default: `button`) — HTML button type
 - **`headerStyles`** `Styles` — Custom styles for the header area when header prop is provided
 - **`footerStyles`** `Styles` — Custom styles for the footer area when footer prop is provided
+- **`shouldFlip`** `boolean` (default: `true`) — Whether to flip the popover placement when it overflows
+- **`containerPadding`** `number` (default: `8`) — Minimum padding in pixels between the popover and viewport edges
+- **`sortSelectedToTop`** `boolean` — Sort selected items to the top when the popover opens (only works with `items` prop, defaults to `true` when items are provided)
+- **`searchValue`** `string` — Controlled search input value
+- **`onSearchChange`** `(value: string) => void` — Callback when search input value changes
 - **`onSelectionChange`** `(keys: Key | Key[] | 'all' | null) => void` — Callback when selection changes
 - **`onEscape`** `() => void` — Callback when Escape key is pressed
 - **`onOptionClick`** `(key: Key) => void` — Callback when an option is clicked (non-checkbox area)
+- **`onClear`** `() => void` — Callback called when the clear button is pressed
+- **`onOpenChange`** `(isOpen: boolean) => void` — Callback called when the popover open state changes
 
 ### Base Properties
 
@@ -105,19 +112,33 @@ Customizes the popover dialog that contains the FilterListBox.
 **Sub-elements:**
 - Same as Dialog component sub-elements
 
+#### searchInputStyles
+
+Customizes the search input field within the FilterListBox.
+
+#### listStyles
+
+Customizes the list container element within the FilterListBox.
+
+#### optionStyles
+
+Customizes individual option elements within the FilterListBox.
+
+#### sectionStyles
+
+Customizes section wrapper elements within the FilterListBox.
+
+#### headingStyles
+
+Customizes section heading elements within the FilterListBox.
+
 #### headerStyles
 
 Customizes the header area when header prop is provided.
 
-**Sub-elements:**
-- None - styles apply directly to the header container
-
 #### footerStyles
 
 Customizes the footer area when footer prop is provided.
-
-**Sub-elements:**
-- None - styles apply directly to the footer container
 
 ### Style Properties
 

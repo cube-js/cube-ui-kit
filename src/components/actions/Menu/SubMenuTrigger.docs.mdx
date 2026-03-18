@@ -14,11 +14,17 @@ Wraps a `Menu.Item` and a nested `Menu` to create hierarchical menus. Opens on h
 - **`offset`** `number` (default: `4`) — Distance from trigger in pixels
 - **`crossOffset`** `number` (default: `-5`) — Cross-axis offset in pixels
 - **`shouldFlip`** `boolean` (default: `true`) — Flip when overflowing viewport
+- **`containerPadding`** `number` — Minimum padding from viewport edges in pixels
 - **`isDisabled`** `boolean` — Disable the trigger
 - **`onAction`** `(key: Key) => void` — Callback when a sub-menu item is selected
+- **`children`** `[ReactNode, ReactElement]` — Exactly two children: first is the trigger element (usually `Menu.Item`), second is the nested `Menu`
 - **`autoFocus`** `boolean | 'first' | 'last'` (default: `'first'`) — Focus behavior when sub-menu opens
 
 Extends React Aria `AriaMenuTriggerProps`.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs).
 
 ## Examples
 

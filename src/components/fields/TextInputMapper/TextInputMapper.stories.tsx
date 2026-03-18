@@ -131,6 +131,16 @@ export default {
       control: { type: 'object' },
       description: 'Custom styles object for styling the component',
     },
+
+    size: {
+      options: ['small', 'medium', 'large'],
+      control: { type: 'radio' },
+      description: 'Size of the input fields and buttons',
+      table: {
+        defaultValue: { summary: "'medium'" },
+        type: { summary: "'small' | 'medium' | 'large'" },
+      },
+    },
   },
 };
 

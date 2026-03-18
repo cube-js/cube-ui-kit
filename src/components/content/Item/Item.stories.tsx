@@ -110,6 +110,31 @@ export default {
         defaultValue: { summary: 3 },
       },
     },
+
+    isLoading: {
+      control: 'boolean',
+      description: 'Show loading indicator and disable the item',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: 'boolean' },
+      },
+    },
+    hotkeys: {
+      control: { type: 'text' },
+      description: 'Keyboard shortcut displayed as a badge (e.g. `"cmd+s"`)',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    tooltip: {
+      control: { type: 'radio' },
+      description:
+        'Tooltip content. `true` enables auto tooltip on overflow, a string shows fixed tooltip text, an object supports advanced configuration `{ title, auto, placement, ...tooltipProps }`',
+      table: {
+        defaultValue: { summary: 'true' },
+        type: { summary: 'string | boolean | object' },
+      },
+    },
   },
 };
 

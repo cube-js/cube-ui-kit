@@ -101,6 +101,13 @@ export default {
       description: 'Callback fired when the checkbox loses focus',
       control: { type: null },
     },
+
+    inputStyles: {
+      control: { type: null },
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
   },
 };
 
