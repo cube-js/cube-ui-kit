@@ -10,6 +10,9 @@ export { toFlatTree } from './tree';
 // Warnings and deprecations (only propDeprecationWarning - warn and deprecationWarning conflict with tasty exports)
 export { propDeprecationWarning } from './warnings';
 
+// Style utilities
+export { extractStyles } from './styles';
+
 // Module utilities
 export { extractModule } from './modules';
 

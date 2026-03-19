@@ -1,7 +1,6 @@
 import {
   BaseProps,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   INNER_STYLES,
   mergeStyles,
@@ -20,6 +19,7 @@ import {
 import { useHover } from 'react-aria';
 
 import { useCombinedRefs } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 
 import { useTinyScrollbar } from './hooks/useTinyScrollbar';
 import { LayoutContextReset } from './LayoutContext';

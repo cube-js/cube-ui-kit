@@ -2,7 +2,6 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   mergeStyles,
   Styles,
@@ -17,6 +16,7 @@ import {
 } from 'react';
 
 import { useCombinedRefs } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 
 import { LayoutContextReset } from './LayoutContext';
 

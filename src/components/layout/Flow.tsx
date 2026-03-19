@@ -2,11 +2,12 @@ import {
   AllBaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   tasty,
 } from '@tenphi/tasty';
 import { forwardRef } from 'react';
+
+import { extractStyles } from '../../utils/styles';
 
 const FlowElement = tasty({
   styles: {

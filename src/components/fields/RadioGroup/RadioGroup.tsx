@@ -3,7 +3,6 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -18,6 +17,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { extractStyles } from '../../../utils/styles';
 import { CubeItemProps } from '../../content/Item/Item';
 import {
   FormContext,

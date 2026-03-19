@@ -1,7 +1,6 @@
 import {
   BaseProps,
   BasePropsWithoutChildren,
-  extractStyles,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -27,6 +26,7 @@ import {
 
 import { RightIcon } from '../../../icons';
 import { mergeRefs } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemButton } from '../../actions/ItemButton';
 import { DisplayTransition } from '../../helpers';
 

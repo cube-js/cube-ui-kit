@@ -5,7 +5,6 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   Styles,
 } from '@tenphi/tasty';
@@ -24,6 +23,7 @@ import { Item, Section, useTreeState } from 'react-stately';
 
 import { LoadingIcon } from '../../../icons';
 import { mergeProps } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useMenuContext } from '../Menu';
 import { CubeMenuProps } from '../Menu/Menu';

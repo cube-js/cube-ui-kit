@@ -8,13 +8,13 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   tasty,
 } from '@tenphi/tasty';
 import { ComponentType, forwardRef, ReactNode, useMemo } from 'react';
 
 import { mergeProps, wrapNodeIfPlain } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 import { Title } from '../Title';
 
 export interface CubeResultProps extends BaseProps, ContainerStyleProps {

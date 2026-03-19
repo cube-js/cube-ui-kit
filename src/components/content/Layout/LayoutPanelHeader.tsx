@@ -2,12 +2,12 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   tasty,
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode, useCallback } from 'react';
 
 import { CloseIcon } from '../../../icons/CloseIcon';
+import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction';
 import { useDialogContext } from '../../overlays/Dialog/context';
 import { CubeItemProps, Item } from '../Item/Item';

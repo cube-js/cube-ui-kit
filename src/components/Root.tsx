@@ -3,7 +3,6 @@ import {
   BaseProps,
   BLOCK_STYLES,
   configure,
-  extractStyles,
   filterBaseProps,
   tasty,
 } from '@tenphi/tasty';
@@ -14,6 +13,7 @@ import { Provider } from '../provider';
 import { NavigationAdapter } from '../providers/navigation.types';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 import { EventBusProvider } from '../utils/react/useEventBus';
+import { extractStyles } from '../utils/styles';
 import { VERSION } from '../version';
 
 import { GlobalStyles } from './GlobalStyles';

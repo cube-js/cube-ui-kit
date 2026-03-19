@@ -2,7 +2,6 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   PositionStyleProps,
   tasty,
@@ -11,6 +10,7 @@ import {
 import { forwardRef } from 'react';
 
 import { useSlotProps } from '../../utils/react';
+import { extractStyles } from '../../utils/styles';
 
 import { CubeTextProps, TEXT_PROP_MAP } from './Text';
 

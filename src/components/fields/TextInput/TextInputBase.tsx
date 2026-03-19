@@ -7,7 +7,6 @@ import {
   BlockStyleProps,
   COLOR_STYLES,
   ColorStyleProps,
-  extractStyles,
   OUTER_STYLES,
   OuterStyleProps,
   Props,
@@ -31,6 +30,7 @@ import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { extractStyles } from '../../../utils/styles';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';

@@ -3,7 +3,6 @@ import {
   BaseProps,
   BLOCK_STYLES,
   BlockStyleProps,
-  extractStyles,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -23,6 +22,7 @@ import {
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
 import { useId } from '../../../utils/react/useId';
+import { extractStyles } from '../../../utils/styles';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { HiddenInput } from '../../HiddenInput';

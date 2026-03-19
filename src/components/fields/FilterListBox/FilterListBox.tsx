@@ -2,7 +2,6 @@ import { Key } from '@react-types/shared';
 import {
   BASE_STYLES,
   COLOR_STYLES,
-  extractStyles,
   OUTER_STYLES,
   Styles,
   tasty,
@@ -30,6 +29,7 @@ import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { extractStyles } from '../../../utils/styles';
 import { StyledHeader } from '../../actions/Menu/styled';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';

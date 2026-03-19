@@ -5,7 +5,6 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   Element,
-  extractStyles,
   filterBaseProps,
   Styles,
   tasty,
@@ -28,6 +27,7 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { extractStyles } from '../../../utils/styles';
 import { Text } from '../../content/Text';
 import {
   INLINE_LABEL_STYLES,

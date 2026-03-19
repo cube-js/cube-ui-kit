@@ -2,7 +2,6 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   mergeStyles,
   Styles,
@@ -30,6 +29,7 @@ import {
   useCombinedRefs,
   useLocalStorage,
 } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { Dialog } from '../../overlays/Dialog';
 import {

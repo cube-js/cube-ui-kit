@@ -3,7 +3,6 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   Styles,
   tasty,
@@ -16,6 +15,7 @@ import {
   NecessityIndicator,
   ValidationState,
 } from '../../shared/index';
+import { extractStyles } from '../../utils/styles';
 
 const REQUIRED_ICON = (
   <svg

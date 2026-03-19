@@ -2,7 +2,6 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   tasty,
   TEXT_STYLES,
@@ -11,6 +10,7 @@ import {
 import { forwardRef } from 'react';
 
 import { useSlotProps } from '../../utils/react';
+import { extractStyles } from '../../utils/styles';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 

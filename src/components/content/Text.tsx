@@ -4,7 +4,6 @@ import {
   BaseStyleProps,
   COLOR_STYLES,
   ColorStyleProps,
-  extractStyles,
   filterBaseProps,
   StylePropValue,
   TagName,
@@ -20,6 +19,7 @@ import {
 } from 'react';
 
 import { useSlotProps } from '../../utils/react';
+import { extractStyles } from '../../utils/styles';
 
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;
 

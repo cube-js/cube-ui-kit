@@ -3,7 +3,6 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -20,6 +19,7 @@ import { useDatePickerState, useDateRangePickerState } from 'react-stately';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps, ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Calendar } from '../../other/Calendar/Calendar';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
