@@ -20,7 +20,7 @@ A code block with copy-to-clipboard functionality and syntax highlighting. Exten
 
 ### Style Defaults
 
-- `fill` — `#dark-bg`
+- `fill` — `#surface-2`
 - `border` — `0`
 - `radius` — `1r`
 - `padding` — `0`

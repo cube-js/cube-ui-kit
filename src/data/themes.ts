@@ -25,7 +25,7 @@ export default {
     border: '#note.20',
   },
   disabled: {
-    fill: '#dark-bg',
+    fill: '#surface-2',
     color: '#dark-03',
     border: '#dark.20',
   },
