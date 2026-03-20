@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.122.0
+
+### Minor Changes
+
+- [#1085](https://github.com/cube-js/cube-ui-kit/pull/1085) [`5d30524e`](https://github.com/cube-js/cube-ui-kit/commit/5d30524ec22db9e8d0ad86c33d67193d1a4413e1) Thanks [@tenphi](https://github.com/tenphi)! - Tabs: support `contextMenu="context-only"` — tab menu opens only via right-click and Shift+F10 (no ⋮ trigger); inline close remains available when `onDelete` is set alongside a non-empty `menu`. Adds exported `TabContextMenu` type.
+
 ## 0.121.7
 
 ### Patch Changes
