@@ -1,5 +1,4 @@
 import {
-  extractStyles,
   POSITION_STYLES,
   PositionStyleProps,
   Styles,
@@ -11,6 +10,7 @@ import { TextDropItem, useClipboard } from 'react-aria';
 
 import { useTimer } from '../../../_internal';
 import { CopyIcon } from '../../../icons';
+import { extractStyles } from '../../../utils/styles';
 import { Button } from '../../actions';
 import { useToast } from '../../overlays/Toast';
 import { Card, CubeCardProps } from '../Card/Card';

@@ -1,7 +1,6 @@
 import {
   BASE_STYLES,
   COLOR_STYLES,
-  extractStyles,
   filterBaseProps,
   Styles,
   tasty,
@@ -10,6 +9,7 @@ import {
 import { forwardRef, HTMLAttributes, RefObject, useMemo } from 'react';
 import { OverlayProps } from 'react-aria';
 
+import { extractStyles } from '../../../utils/styles';
 import { highlightText } from '../highlightText';
 import { CubeTextProps, Text, TEXT_PROP_MAP } from '../Text';
 import { AutoTooltipValue, useAutoTooltip } from '../use-auto-tooltip';

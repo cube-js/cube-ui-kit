@@ -3,11 +3,12 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   Element,
-  extractStyles,
   filterBaseProps,
   Styles,
 } from '@tenphi/tasty';
 import { forwardRef, ReactNode } from 'react';
+
+import { extractStyles } from '../../../utils/styles';
 
 const DEFAULT_STYLES = {
   display: 'grid',

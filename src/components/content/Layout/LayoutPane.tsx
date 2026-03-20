@@ -1,7 +1,6 @@
 import {
   BaseProps,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   INNER_STYLES,
   mergeStyles,
@@ -24,6 +23,7 @@ import { useFocusRing, useHover, useMove } from 'react-aria';
 
 import { useDebouncedValue } from '../../../_internal/hooks';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 
 import { useTinyScrollbar } from './hooks/useTinyScrollbar';
 import { ScrollbarType } from './LayoutContent';

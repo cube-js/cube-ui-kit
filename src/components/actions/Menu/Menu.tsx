@@ -5,7 +5,6 @@ import {
   BasePropsWithoutChildren,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   Styles,
 } from '@tenphi/tasty';
@@ -14,6 +13,7 @@ import { AriaMenuProps, useMenu } from 'react-aria';
 import { Section as BaseSection, useTreeState } from 'react-stately';
 
 import { mergeProps } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 import { CollectionItem } from '../../CollectionItem';
 
 import { useMenuContext } from './context';

@@ -4,7 +4,6 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   Styles,
   tasty,
@@ -23,6 +22,7 @@ import { Provider, useProviderProps } from '../../../provider';
 import { FormBaseProps } from '../../../shared/index';
 import { timeout } from '../../../utils/promise';
 import { useCombinedRefs } from '../../../utils/react/index';
+import { extractStyles } from '../../../utils/styles';
 
 import { FieldTypes } from './types';
 import { CubeFormData, CubeFormInstance, useForm } from './use-form';

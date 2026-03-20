@@ -5,7 +5,6 @@ import {
   BaseStyleProps,
   COLOR_STYLES,
   ColorStyleProps,
-  extractStyles,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -45,6 +44,7 @@ import {
 } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
+import { extractStyles } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DisplayTransition } from '../../helpers';

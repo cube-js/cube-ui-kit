@@ -1,7 +1,6 @@
 import { FocusableRef } from '@react-types/shared';
 import {
   CONTAINER_STYLES,
-  extractStyles,
   Mods,
   Styles,
   tasty,
@@ -61,6 +60,7 @@ import {
 } from '../../../data/item-themes';
 import { LoadingIcon } from '../../../icons';
 import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import { DisplayTransition } from '../../helpers/DisplayTransition';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';

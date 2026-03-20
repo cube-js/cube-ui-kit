@@ -4,7 +4,6 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   Styles,
 } from '@tenphi/tasty';
 import { forwardRef, useRef } from 'react';
@@ -19,6 +18,7 @@ import { useDateFieldState } from 'react-stately';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps, ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
 import { DateInputBase } from './DateInputBase';

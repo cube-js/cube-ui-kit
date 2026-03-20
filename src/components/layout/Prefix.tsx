@@ -2,7 +2,6 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   parseStyle,
   tasty,
@@ -10,6 +9,7 @@ import {
 import { CSSProperties, forwardRef } from 'react';
 
 import { useCombinedRefs, useLayoutEffect } from '../../utils/react';
+import { extractStyles } from '../../utils/styles';
 
 const PrefixElement = tasty({
   element: 'Prefix',

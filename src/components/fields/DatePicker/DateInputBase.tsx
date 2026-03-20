@@ -2,7 +2,6 @@ import { mergeRefs } from '@react-aria/utils';
 import {
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   Props,
   Styles,
   tasty,
@@ -12,6 +11,7 @@ import { useFocusRing } from 'react-aria';
 
 import { ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 import {

@@ -5,7 +5,6 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   Element,
-  extractStyles,
   filterBaseProps,
   Styles,
   TEXT_STYLES,
@@ -16,6 +15,7 @@ import { FocusableOptions, useFocusable, useHover } from 'react-aria';
 
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { extractStyles } from '../../../utils/styles';
 
 export interface CubeActiveZoneProps
   extends BaseProps,

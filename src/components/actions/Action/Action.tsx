@@ -4,7 +4,6 @@ import {
   BaseStyleProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   TagName,
   tasty,
   TEXT_STYLES,
@@ -13,6 +12,7 @@ import {
 import { forwardRef } from 'react';
 import { AriaButtonProps } from 'react-aria';
 
+import { extractStyles } from '../../../utils/styles';
 import { NavigateArg, useAction } from '../use-action';
 
 export interface CubeActionProps<

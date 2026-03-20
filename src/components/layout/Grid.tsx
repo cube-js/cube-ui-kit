@@ -2,12 +2,13 @@ import {
   AllBaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   ShortGridStyles,
   tasty,
 } from '@tenphi/tasty';
 import { forwardRef } from 'react';
+
+import { extractStyles } from '../../utils/styles';
 
 const GridElement = tasty({
   styles: {

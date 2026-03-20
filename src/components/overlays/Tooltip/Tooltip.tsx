@@ -4,7 +4,6 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -20,6 +19,7 @@ import { AriaTooltipProps, useTooltip } from 'react-aria';
 
 import { PlacementAxis } from '../../../shared';
 import { mergeProps, mergeRefs, useLayoutEffect } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 
 import { TooltipContext } from './context';
 

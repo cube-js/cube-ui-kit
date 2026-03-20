@@ -5,7 +5,6 @@ import {
   BASE_STYLES,
   BasePropsWithoutChildren,
   COLOR_STYLES,
-  extractStyles,
   mergeStyles,
   OUTER_STYLES,
   Styles,
@@ -41,6 +40,7 @@ import { useProviderProps } from '../../../provider';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { extractStyles } from '../../../utils/styles';
 // Import Menu styled components for header and footer
 import {
   StyledDivider,

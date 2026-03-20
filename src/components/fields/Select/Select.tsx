@@ -10,7 +10,6 @@ import {
   BaseStyleProps,
   COLOR_STYLES,
   ColorStyleProps,
-  extractStyles,
   OUTER_STYLES,
   OuterStyleProps,
   Props,
@@ -57,6 +56,7 @@ import {
 } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
+import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions';
 import {
   StyledDivider as ListDivider,

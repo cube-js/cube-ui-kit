@@ -1,7 +1,6 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import {
   BaseProps,
-  extractStyles,
   filterBaseProps,
   OUTER_STYLES,
   OuterStyleProps,
@@ -14,6 +13,7 @@ import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { extractStyles } from '../../../utils/styles';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 import { INLINE_LABEL_STYLES, useFieldProps, useFormProps } from '../../form';
 import { HiddenInput } from '../../HiddenInput';

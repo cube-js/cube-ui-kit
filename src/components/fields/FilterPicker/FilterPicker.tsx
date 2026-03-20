@@ -5,7 +5,6 @@ import {
   BaseStyleProps,
   COLOR_STYLES,
   ColorStyleProps,
-  extractStyles,
   filterBaseProps,
   OUTER_STYLES,
   OuterStyleProps,
@@ -34,6 +33,7 @@ import { useProviderProps } from '../../../provider';
 import { generateRandomId } from '../../../utils/random';
 import { mergeProps } from '../../../utils/react';
 import { useEventBus } from '../../../utils/react/useEventBus';
+import { extractStyles } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';

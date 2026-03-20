@@ -3,7 +3,6 @@ import {
   BaseProps,
   BlockStyleProps,
   ColorStyleProps,
-  extractStyles,
   filterBaseProps,
   FlowStyleProps,
   INNER_STYLES,
@@ -30,6 +29,7 @@ import {
 
 import { isDevEnv } from '../../../utils/is-dev-env';
 import { useCombinedRefs } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 import { Alert } from '../Alert';
 
 import {

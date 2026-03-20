@@ -4,7 +4,6 @@ import {
   BlockStyleProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   PositionStyleProps,
   Props,
   Styles,
@@ -23,6 +22,7 @@ import {
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { useCombinedRefs } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 import { Action } from '../../actions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 

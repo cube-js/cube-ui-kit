@@ -2,13 +2,13 @@ import {
   BasePropsWithoutChildren,
   CONTAINER_STYLES,
   ContainerStyleProps,
-  extractStyles,
   filterBaseProps,
   tasty,
 } from '@tenphi/tasty';
 import { forwardRef, Fragment } from 'react';
 
 import { useKeySymbols } from '../../../utils/react/useKeySymbols';
+import { extractStyles } from '../../../utils/styles';
 import { Space } from '../../layout/Space';
 import { Text } from '../Text';
 
