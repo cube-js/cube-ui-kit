@@ -60,6 +60,6 @@ export const BASE_TOKENS: Styles = {
   '$scrollbar-radius': '1.5r',
   '#scrollbar-thumb': '#text.5',
   '#scrollbar-outline': '#clear',
-  '#scrollbar-bg': '#dark-bg',
+  '#scrollbar-bg': '#surface-2',
   '#scrollbar-corner': '#clear',
 };

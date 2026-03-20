@@ -17,7 +17,7 @@ const OutputContent = tasty({
     overflow: 'auto',
     padding: '2x',
     margin: 0,
-    fill: '#dark-bg',
+    fill: '#surface-2',
   },
 });
 
