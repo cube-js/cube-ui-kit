@@ -406,17 +406,6 @@ log(
 );
 log(`Mapped ${storyIdToOutputPath.size} storybook IDs`);
 
-// Hide docs/.gitignore so npm/pnpm doesn't exclude generated files from the tarball.
-// The backup lives outside docs/ so it never ends up in the tarball.
-const GITIGNORE_PATH = path.join(DOCS_DIR, '.gitignore');
-const GITIGNORE_BAK = path.join(DOCS_DIR, '..', '.docs-gitignore.bak');
-
-try {
-  await fs.rename(GITIGNORE_PATH, GITIGNORE_BAK);
-} catch {
-  // no .gitignore to hide
-}
-
 // Copy tasty docs from node_modules (replacing symlink with real files for publishing)
 const TASTY_PATH = path.join(DOCS_DIR, 'tasty');
 const TASTY_SOURCE = path.join('node_modules', '@tenphi', 'tasty', 'docs');

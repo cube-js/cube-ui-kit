@@ -138,12 +138,38 @@ For individual tabs:
 
 ### Tab
 
-Individual tab definition with title and optional content.
+Each `Tab` renders an [Item](/docs/content-item--docs) internally, so it inherits most Item props — `icon`, `rightIcon`, `prefix`, `suffix`, `tooltip`, `isLoading`, `loadingSlot`, and all Item style props (like `width`, `fill`, `padding`, etc.). Props that don't apply to tabs (`description`, `hotkeys`, `theme`, `shape`, `variant`, `highlight`, etc.) are omitted.
 
 ```jsx
 <Tab key="unique-id" title="Tab Title">
   Panel content here
 </Tab>
+```
+
+#### Tab with icon
+
+<Story of={TabsStories.RadioType} />
+
+```jsx
+<Tabs type="radio" defaultActiveKey="daily">
+  <Tab key="daily" icon={<IconCalendar />} title="Daily" />
+  <Tab key="weekly" title="Weekly" />
+  <Tab key="monthly" title="Monthly" />
+</Tabs>
+```
+
+#### Tab with constrained width
+
+The `width` style prop (inherited from Item) is useful for file-style tabs where titles may be long.
+
+<Story of={TabsStories.WithEditableTabs} />
+
+```jsx
+<Tabs isEditable type="file" onTitleChange={handleTitleChange}>
+  <Tab key="tab1" title="A Very Long Document Name.tsx" width="max 30x">
+    Content
+  </Tab>
+</Tabs>
 ```
 
 ### Tabs.List
@@ -193,7 +219,9 @@ Inherits all props from `ItemButton` except `shape` (always sharp).
 
 ### Tab Props
 
-Individual tabs accept these props in addition to style props:
+`Tab` extends [Item](/docs/content-item--docs), so it accepts all Item props except those that don't apply to tabs (`description`, `hotkeys`, `theme`, `shape`, `variant`, `highlight`, `isSelected`, `htmlType`). This includes `icon`, `rightIcon`, `prefix`, `suffix`, `tooltip`, `isLoading`, `loadingSlot`, and all style props.
+
+In addition, Tab accepts these tab-specific props:
 
 - **`title`** `ReactNode` — Content displayed in the tab button (required)
 - **`isDisabled`** `boolean` — Disables the tab
