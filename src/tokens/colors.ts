@@ -90,10 +90,15 @@ export const COLOR_TOKENS: Styles = {
   '#dark-03': okhsl(PURPLE_HUE, 19, 49),
   '#dark-04': okhsl(PURPLE_HUE, 14, 67),
   '#dark-05': okhsl(PURPLE_HUE, 14, 86),
-  '#dark-bg': okhsl(PURPLE_HUE, 21, 98),
 
-  // Light
-  '#light': okhsl(PURPLE_HUE, 14, 97),
+  // Surfaces
+  '#surface': okhsl(PURPLE_HUE, 21, 100),
+  '#surface-2': okhsl(PURPLE_HUE, 21, 98),
+  '#surface-3': okhsl(PURPLE_HUE, 21, 96),
+
+  // Legacy
+  '#light': '#surface-3',
+  '#dark-bg': okhsl(PURPLE_HUE, 21, 98),
 
   // Black & White
   '#white': 'okhsl(0 0% 100%)',

@@ -16,7 +16,9 @@ declare module '@tenphi/tasty' {
     'dark-03': true;
     'dark-04': true;
     'dark-05': true;
-    'dark-bg': true;
+    surface: true;
+    'surface-2': true;
+    'surface-3': true;
     text: true;
     primary: true;
     disabled: true;

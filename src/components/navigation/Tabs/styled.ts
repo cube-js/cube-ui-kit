@@ -217,10 +217,10 @@ export const TabElement = tasty(Item, {
     fill: {
       '': '#clear',
       'hovered & !type=narrow': '#dark.03',
-      'type=file': '#light',
-      'type=file & hovered': '#light.5',
-      'type=radio & hovered': '#white.5',
-      '(type=file | type=radio) & selected': '#white',
+      'type=file': '#surface-3',
+      'type=file & hovered': '#surface-3.5',
+      'type=radio & hovered': '#surface.5',
+      '(type=file | type=radio) & selected': '#surface',
     },
     border: {
       '': '#clear',
