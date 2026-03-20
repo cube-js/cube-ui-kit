@@ -197,6 +197,12 @@ function TabsComponent(
   // =========================================================================
   // Tab Title Editing Hook
   // =========================================================================
+  const onTitleChangeRaf = useEvent((key: string, newTitle: string) => {
+    requestAnimationFrame(() => {
+      onTitleChange?.(key, newTitle);
+    });
+  });
+
   const {
     editingKey,
     editValue,
@@ -204,7 +210,10 @@ function TabsComponent(
     startEditing,
     cancelEditing,
     submitEditing,
-  } = useTabEditing({ onChange, onTitleChange });
+  } = useTabEditing({
+    onChange,
+    onTitleChange: onTitleChange ? onTitleChangeRaf : undefined,
+  });
 
   // =========================================================================
   // Parse children to extract tabs and explicit panels

@@ -786,7 +786,9 @@ describe('<Tabs />', () => {
         fireEvent.keyDown(input, { key: 'Enter' });
       });
 
-      expect(handleTitleChange).toHaveBeenCalledWith('tab1', 'New Title');
+      await waitFor(() => {
+        expect(handleTitleChange).toHaveBeenCalledWith('tab1', 'New Title');
+      });
     });
 
     it('should cancel editing when Escape is pressed', async () => {
@@ -883,7 +885,9 @@ describe('<Tabs />', () => {
         fireEvent.keyDown(input, { key: 'Enter' });
       });
 
-      expect(handleTitleChange).toHaveBeenCalledWith('tab1', 'Trimmed Title');
+      await waitFor(() => {
+        expect(handleTitleChange).toHaveBeenCalledWith('tab1', 'Trimmed Title');
+      });
     });
   });
 
