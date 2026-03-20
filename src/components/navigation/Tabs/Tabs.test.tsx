@@ -1,6 +1,7 @@
-import { fireEvent } from '@testing-library/react';
+import { fireEvent, within } from '@testing-library/react';
 
 import { act, renderWithRoot, userEvent, waitFor } from '../../../test';
+import { Menu } from '../../actions/Menu';
 
 import { Tab, Tabs } from './Tabs';
 
@@ -883,6 +884,113 @@ describe('<Tabs />', () => {
       });
 
       expect(handleTitleChange).toHaveBeenCalledWith('tab1', 'Trimmed Title');
+    });
+  });
+
+  describe('Context menu modes', () => {
+    const menu = (
+      <>
+        <Menu.Item key="rename">Rename</Menu.Item>
+      </>
+    );
+
+    /** Tab row renders actions outside Item; Item also has an empty Actions slot. */
+    function actionsContainerWithButtons(tab: HTMLElement) {
+      let node: HTMLElement | null = tab.parentElement;
+      while (node) {
+        for (const child of node.children) {
+          if (
+            child.getAttribute('data-element') === 'Actions' &&
+            child.querySelector('button')
+          ) {
+            return child as HTMLElement;
+          }
+        }
+        node = node.parentElement;
+      }
+      return null;
+    }
+
+    it('contextMenu true keeps overflow trigger and hides inline close when menu is non-empty', () => {
+      const onDelete = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Tabs
+          contextMenu
+          defaultActiveKey="tab1"
+          menu={menu}
+          onDelete={onDelete}
+        >
+          <Tab key="tab1" title="Tab 1">
+            Content
+          </Tab>
+        </Tabs>,
+      );
+
+      const actionsEl = actionsContainerWithButtons(
+        getByRole('tab', { name: 'Tab 1' }),
+      );
+      expect(actionsEl).toBeTruthy();
+      expect(
+        within(actionsEl!).queryByRole('button', {
+          name: 'Close',
+          hidden: true,
+        }),
+      ).not.toBeInTheDocument();
+      expect(within(actionsEl!).getAllByRole('button').length).toBeGreaterThan(
+        0,
+      );
+    });
+
+    it('contextMenu context-only shows inline close and no overflow trigger', () => {
+      const onDelete = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Tabs
+          defaultActiveKey="tab1"
+          contextMenu="context-only"
+          menu={menu}
+          onDelete={onDelete}
+        >
+          <Tab key="tab1" title="Tab 1">
+            Content
+          </Tab>
+        </Tabs>,
+      );
+
+      const actionsEl = actionsContainerWithButtons(
+        getByRole('tab', { name: 'Tab 1' }),
+      );
+      expect(actionsEl).toBeTruthy();
+      expect(
+        within(actionsEl!).getByRole('button', { name: 'Close' }),
+      ).toBeInTheDocument();
+      expect(within(actionsEl!).queryAllByRole('button')).toHaveLength(1);
+    });
+
+    it('contextMenu context-only with no menu behaves like false (inline close, no context menu)', () => {
+      const onDelete = vi.fn();
+      const { getByRole, container } = renderWithRoot(
+        <Tabs
+          defaultActiveKey="tab1"
+          contextMenu="context-only"
+          onDelete={onDelete}
+        >
+          <Tab key="tab1" title="Tab 1">
+            Content
+          </Tab>
+        </Tabs>,
+      );
+
+      const actionsEl = actionsContainerWithButtons(
+        getByRole('tab', { name: 'Tab 1' }),
+      );
+      expect(actionsEl).toBeTruthy();
+      expect(
+        within(actionsEl!).getByRole('button', { name: 'Close' }),
+      ).toBeInTheDocument();
+      expect(within(actionsEl!).queryAllByRole('button')).toHaveLength(1);
+      expect(
+        container.querySelector('[aria-label="Open context menu"]'),
+      ).not.toBeInTheDocument();
     });
   });
 });

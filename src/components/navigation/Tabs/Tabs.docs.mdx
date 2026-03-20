@@ -41,7 +41,7 @@ An accessible tabbed interface for organizing content into multiple panels, show
 - **`menu`** `ReactNode` — Menu items for all tabs (use `Menu.Item` children)
 - **`menuTriggerProps`** `Partial<CubeItemActionProps>` — Props for the menu trigger button
 - **`menuProps`** `Partial<CubeMenuProps>` — Props for the Menu component
-- **`contextMenu`** `boolean` (default: `false`) — Enable right-click context menu on tabs
+- **`contextMenu`** `boolean | 'context-only'` (default: `false`) — `false`: overflow trigger only; `true`: overflow + right-click; `'context-only'`: right-click only (inline close still shown when `onDelete` is set)
 - **`onAction`** `(action: string, tabKey: string) => void` — Callback when a menu action is triggered
 - **`renderPanel`** `(key: string) => ReactNode` — Render function for lazy panel content
 - **`panelCacheKeys`** `Record<string, any>` — Cache keys for `renderPanel` content
@@ -206,7 +206,7 @@ Individual tabs accept these props in addition to style props:
 - **`menu`** `ReactNode \| null` — Menu items for this tab (overrides Tabs-level, `null` disables)
 - **`menuTriggerProps`** `Partial<CubeItemActionProps>` — Props for menu trigger button
 - **`menuProps`** `Partial<CubeMenuProps>` — Props for Menu component
-- **`contextMenu`** `boolean` — Enable right-click context menu
+- **`contextMenu`** `boolean | 'context-only'` — Same as Tabs `contextMenu`
 - **`onAction`** `(action: Key) => void` — Callback when menu action is triggered
 - **`prerender`** `boolean` — Override panel prerender behavior
 - **`keepMounted`** `boolean` — Override panel keepMounted behavior
@@ -364,7 +364,7 @@ Combine editable tabs with a menu for rename, duplicate, and delete actions.
 
 ### Context Menu
 
-Enable right-click context menus with the `contextMenu` prop. Uses the same menu items.
+Enable right-click context menus with the `contextMenu` prop. Uses the same menu items as `menu`. With `contextMenu={true}`, the ⋮ overflow trigger stays visible. With `contextMenu="context-only"`, only right-click (and Shift+F10) opens the menu; the actions row behaves like tabs without an overflow menu (e.g. inline close when `onDelete` is set).
 
 <Story of={TabsStories.WithContextMenu} />
 
@@ -375,6 +375,23 @@ Enable right-click context menus with the `contextMenu` prop. Uses the same menu
     <>
       <Menu.Item key="rename">Rename</Menu.Item>
       <Menu.Item key="delete">Delete</Menu.Item>
+    </>
+  }
+>
+  <Tab key="tab1" title="Tab 1">Content</Tab>
+</Tabs>
+```
+
+<Story of={TabsStories.WithContextMenuOnly} />
+
+```jsx
+<Tabs
+  isEditable
+  contextMenu="context-only"
+  onDelete={handleClose}
+  menu={
+    <>
+      <Menu.Item key="rename">Rename</Menu.Item>
     </>
   }
 >
