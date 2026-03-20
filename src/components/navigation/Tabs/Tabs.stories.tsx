@@ -998,6 +998,68 @@ export const WithContextMenu: Story = {
 };
 
 /**
+ * Context-only menu — right-click / Shift+F10; no ⋮ trigger; inline close when onDelete
+ */
+export const WithContextMenuOnly: Story = {
+  render: function WithContextMenuOnlyRender(args) {
+    const [tabs, setTabs] = useState([
+      { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
+      { id: 'tab2', title: 'Tab 2', content: 'Content for Tab 2' },
+      { id: 'tab3', title: 'Tab 3', content: 'Content for Tab 3' },
+    ]);
+    const [activeKey, setActiveKey] = useState<string>('tab1');
+
+    const handleTitleChange = (key: Key, newTitle: string) => {
+      const tabId = String(key);
+      setTabs((prev) =>
+        prev.map((t) => (t.id === tabId ? { ...t, title: newTitle } : t)),
+      );
+    };
+
+    const handleDelete = (key: Key) => {
+      const tabId = String(key);
+      const newTabs = tabs.filter((t) => t.id !== tabId);
+      setTabs(newTabs);
+
+      if (activeKey === tabId && newTabs.length > 0) {
+        setActiveKey(newTabs[0].id);
+      }
+    };
+
+    return (
+      <Space flow="column" gap="2x">
+        <Paragraph>
+          File-style tabs: close button in the tab row, rename (and other items)
+          only in the menu. Open the menu via right-click or Shift+F10 — there
+          is no ⋮ overflow button.
+        </Paragraph>
+        <Tabs
+          {...args}
+          isEditable
+          contextMenu="context-only"
+          type="file"
+          activeKey={activeKey}
+          menu={
+            <>
+              <Menu.Item key="rename">Rename</Menu.Item>
+            </>
+          }
+          onChange={(key) => setActiveKey(String(key))}
+          onTitleChange={handleTitleChange}
+          onDelete={handleDelete}
+        >
+          {tabs.map((tab) => (
+            <Tab key={tab.id} title={tab.title}>
+              {tab.content}
+            </Tab>
+          ))}
+        </Tabs>
+      </Space>
+    );
+  },
+};
+
+/**
  * Per-tab menu override - demonstrates overriding or disabling menu per tab
  */
 export const WithPerTabMenuOverride: Story = {

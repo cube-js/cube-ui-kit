@@ -247,8 +247,13 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     tabData.contextMenu ?? parentContextMenu ?? false;
   const effectiveType = tabData.type ?? type ?? 'default';
 
-  // Delete button shown only if onDelete is set AND no menu
-  const showDeleteButton = isDeletable && isMenuEmpty(effectiveMenu);
+  const contextMenuEnabled =
+    effectiveContextMenu === true || effectiveContextMenu === 'context-only';
+  const contextMenuOnly = effectiveContextMenu === 'context-only';
+
+  // Inline close when no menu, or context-only (no overflow trigger)
+  const showDeleteButton =
+    isDeletable && (isMenuEmpty(effectiveMenu) || contextMenuOnly);
 
   // Process menu items for auto-labels and disabled states
   const processedMenu =
@@ -314,6 +319,22 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     parentOnAction?.(normalizedAction, itemKeyStr);
   });
 
+  const menuElement = processedMenu ? (
+    <Menu {...effectiveMenuProps} onAction={handleMenuAction}>
+      {processedMenu}
+    </Menu>
+  ) : null;
+
+  const contextMenu = useContextMenu<HTMLDivElement, CubeMenuProps<object>>(
+    Menu,
+    { placement: 'bottom start' },
+    {
+      ...effectiveMenuProps,
+      onAction: handleMenuAction,
+      children: processedMenu,
+    },
+  );
+
   // Keyboard handler for accessibility shortcuts (WAI-ARIA Tabs Pattern)
   const handleKeyDown = useEvent((e: KeyboardEvent) => {
     // Reset focus-visible suppression on any keyboard interaction
@@ -332,7 +353,11 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     if (e.key === 'F10' && e.shiftKey && processedMenu) {
       e.preventDefault();
       e.stopPropagation();
-      setIsMenuOpen(true);
+      if (contextMenuOnly) {
+        contextMenu.open();
+      } else {
+        setIsMenuOpen(true);
+      }
     }
 
     // Delete key for direct tab deletion (ARIA Tabs pattern optional feature)
@@ -381,35 +406,18 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     }
   }, [isActive]);
 
-  // Build menu element
-  const menuElement = processedMenu ? (
-    <Menu {...effectiveMenuProps} onAction={handleMenuAction}>
-      {processedMenu}
-    </Menu>
-  ) : null;
-
-  // Use the useContextMenu hook for context menu handling
-  const contextMenu = useContextMenu<HTMLDivElement, CubeMenuProps<object>>(
-    Menu,
-    { placement: 'bottom start' },
-    {
-      ...effectiveMenuProps,
-      onAction: handleMenuAction,
-      children: processedMenu,
-    },
-  );
-
-  // Build menu trigger action with controlled state for keyboard accessibility
-  const menuAction = menuElement ? (
-    <MenuTrigger isOpen={isMenuOpen} onOpenChange={setIsMenuOpen}>
-      <ItemAction
-        tabIndex={-1}
-        icon={<MoreIcon />}
-        {...effectiveMenuTriggerProps}
-      />
-      {menuElement}
-    </MenuTrigger>
-  ) : null;
+  // Overflow trigger (hidden in context-only mode)
+  const menuAction =
+    menuElement && !contextMenuOnly ? (
+      <MenuTrigger isOpen={isMenuOpen} onOpenChange={setIsMenuOpen}>
+        <ItemAction
+          tabIndex={-1}
+          icon={<MoreIcon />}
+          {...effectiveMenuTriggerProps}
+        />
+        {menuElement}
+      </MenuTrigger>
+    ) : null;
 
   // Build delete button (only shown when no menu)
   const deleteAction = showDeleteButton ? (
@@ -499,9 +507,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
 
   // Use the hook's targetRef when context menu is enabled
   const effectiveContainerRef =
-    effectiveContextMenu && processedMenu
-      ? contextMenu.targetRef
-      : containerRef;
+    contextMenuEnabled && processedMenu ? contextMenu.targetRef : containerRef;
 
   // ARIA: indicate popup menu presence
   const ariaProps = processedMenu ? { 'aria-haspopup': 'menu' as const } : {};
@@ -567,7 +573,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
           </ItemActionProvider>
         </div>
       )}
-      {effectiveContextMenu && processedMenu && contextMenu.rendered}
+      {contextMenuEnabled && processedMenu && contextMenu.rendered}
       {/* Drop indicator after the last tab */}
       {isDraggable && dropState && isLastTab && (
         <TabDropIndicator

@@ -29,6 +29,9 @@ export const RADIO_SIZE_MAP: Record<'medium' | 'large', TabSize> = {
   large: 'medium',
 };
 
+/** How the tab `menu` is exposed alongside or instead of the overflow trigger. */
+export type TabContextMenu = boolean | 'context-only';
+
 // =============================================================================
 // Shared Props Interfaces
 // =============================================================================
@@ -162,11 +165,15 @@ export interface CubeTabsProps
    */
   menuProps?: Partial<CubeMenuProps<object>>;
   /**
-   * Whether to show context menu on right-click for all tabs.
+   * Context menu / overflow behavior for tab `menu` items.
+   * - `false` (default) — overflow trigger only; no right-click menu
+   * - `true` — overflow trigger and right-click menu
+   * - `'context-only'` — right-click menu only; no overflow trigger. Inline close
+   *   (`onDelete`) shows even when `menu` is non-empty, like tabs without a menu.
    * Can be overridden per-tab via Tab's contextMenu prop.
    * @default false
    */
-  contextMenu?: boolean;
+  contextMenu?: TabContextMenu;
   /**
    * Callback when a menu action is triggered on any tab.
    * Called with the action key and the tab key.
@@ -281,11 +288,11 @@ export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {
    */
   menuProps?: Partial<CubeMenuProps<object>>;
   /**
-   * Whether to show context menu on right-click.
+   * Context menu / overflow behavior. Same values as Tabs `contextMenu`.
    * Uses the same menu items as `menu` prop.
    * @default false
    */
-  contextMenu?: boolean;
+  contextMenu?: TabContextMenu;
   /**
    * Callback when a menu action is triggered.
    * Called with the action key from Menu.Item.

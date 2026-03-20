@@ -4,6 +4,7 @@ export type {
   CubeTabProps,
   CubeTabPanelProps,
   CubeTabListProps,
+  TabContextMenu,
   TabType,
   TabSize,
   TabsActionPosition,

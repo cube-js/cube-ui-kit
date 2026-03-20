@@ -7,7 +7,7 @@ import type {
 } from 'react-stately';
 import type { CubeItemActionProps } from '../../actions/ItemAction';
 import type { CubeMenuProps } from '../../actions/Menu';
-import type { TabSize, TabType } from './types';
+import type { TabContextMenu, TabSize, TabType } from './types';
 
 // =============================================================================
 // Context Value Interface
@@ -31,7 +31,7 @@ export interface TabsContextValue {
   /** Parent-level menuProps default */
   menuProps?: Partial<CubeMenuProps<object>>;
   /** Parent-level contextMenu default */
-  contextMenu?: boolean;
+  contextMenu?: TabContextMenu;
   /** Callback when tab is deleted */
   onDelete?: (key: string) => void;
   /** Parent-level onAction callback */
