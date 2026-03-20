@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.123.0
+
+### Minor Changes
+
+- [#1087](https://github.com/cube-js/cube-ui-kit/pull/1087) [`b04bfde1`](https://github.com/cube-js/cube-ui-kit/commit/b04bfde1ead7158ad4ed58a8dccff662302e0c5b) Thanks [@tenphi](https://github.com/tenphi)! - Add `#surface`, `#surface-2`, and `#surface-3` for layered backgrounds. `#light` now aliases `#surface-3`. Defaults that used `#dark-bg` (CopySnippet, CopyPasteBlock, disabled theme sample, scrollbar track, Storybook playground) use `#surface-2`. File- and radio-style tab fills use the surface scale instead of `#light` / `#white`. Prefer `#surface-2` over legacy `#dark-bg`; TypeScript named-color augmentation lists the surface tokens and no longer includes `dark-bg`.
+
+### Patch Changes
+
+- [#1088](https://github.com/cube-js/cube-ui-kit/pull/1088) [`3d8e4181`](https://github.com/cube-js/cube-ui-kit/commit/3d8e41812ac9c3ea06d0481a080d17828d1d201e) Thanks [@tenphi](https://github.com/tenphi)! - Defer `Tabs` `onTitleChange` with `requestAnimationFrame` so controlled title updates apply after React has committed state.
+
 ## 0.122.0
 
 ### Minor Changes
