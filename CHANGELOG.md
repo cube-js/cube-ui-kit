@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.123.1
+
+### Patch Changes
+
+- [#1090](https://github.com/cube-js/cube-ui-kit/pull/1090) [`c4da7cec`](https://github.com/cube-js/cube-ui-kit/commit/c4da7cec7010df9aae7abba7c5840717ed0dd0a0) Thanks [@tenphi](https://github.com/tenphi)! - Update tasty with support of oklch input color values.
+
 ## 0.123.0
 
 ### Minor Changes
