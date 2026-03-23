@@ -174,32 +174,6 @@ export const StyledItem = tasty({
     gap: '.75x',
     outline: false,
 
-    // Sub-elements reused from MenuButton styles
-    ButtonIcon: {
-      display: 'grid',
-      fontSize: '$icon-size',
-      width: '$icon-size',
-      height: '$icon-size',
-      placeSelf: 'center',
-      placeItems: 'center',
-    },
-
-    '& [data-element="ButtonIcon"]:first-child:not(:last-child)': {
-      marginLeft: 0,
-    },
-
-    '& [data-element="ButtonIcon"]:last-child:not(:first-child)': {
-      marginRight: 0,
-    },
-
-    Postfix: {
-      color: {
-        '': '#dark-03',
-        pressed: '#dark-02',
-        disabled: '#dark-04',
-      },
-    },
-
     Description: {
       preset: 't4',
       color: '#dark-03',
