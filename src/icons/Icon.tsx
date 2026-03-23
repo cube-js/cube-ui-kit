@@ -27,7 +27,7 @@ const IconElement = tasty({
     '-webkit-font-smoothing': 'antialiased',
 
     Svg: {
-      $: '> svg',
+      $: 'svg',
       transition: 'all',
       width: 'min 1em',
       height: '1em 1em',
