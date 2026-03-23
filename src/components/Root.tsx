@@ -22,6 +22,7 @@ import { OverlayProvider } from './overlays/Notifications/OverlayProvider';
 import { PortalProvider } from './portal';
 
 configure({
+  colorSpace: 'rgb',
   units: {
     x: 'var(--gap)',
     r: 'var(--radius)',
