@@ -348,15 +348,11 @@ export class CubeFormInstance<
   }
 
   getValidFieldNames(): (keyof T & string)[] {
-    return this.getFieldNames().filter(
-      (name) => this.getFieldInstance(name)?.status === 'valid',
-    );
+    return this.getFieldNames().filter((name) => this.isFieldValid(name));
   }
 
   getInvalidFieldNames(): (keyof T & string)[] {
-    return this.getFieldNames().filter(
-      (name) => this.getFieldInstance(name)?.status === 'invalid',
-    );
+    return this.getFieldNames().filter((name) => this.isFieldInvalid(name));
   }
 
   get isTouched(): boolean {
@@ -372,7 +368,9 @@ export class CubeFormInstance<
    * IMPORTANT: This is not the same as `!isInvalid`, because it also checks if all fields are verified.
    */
   get isValid(): boolean {
-    return this.getValidFieldNames().length === this.getFieldNames().length;
+    return Object.values(this.fields).every(
+      (field) => field?.status === 'valid',
+    );
   }
 
   /**
@@ -381,7 +379,9 @@ export class CubeFormInstance<
    * one field is verified and invalid.
    */
   get isInvalid(): boolean {
-    return this.getInvalidFieldNames().length > 0;
+    return Object.values(this.fields).some(
+      (field) => field?.status === 'invalid',
+    );
   }
 
   getFieldError<Name extends keyof T & string>(name: Name): ReactNode[] {
