@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.124.0
+
+### Minor Changes
+
+- [#1093](https://github.com/cube-js/cube-ui-kit/pull/1093) [`c3530abe`](https://github.com/cube-js/cube-ui-kit/commit/c3530abe1e57751bb08f00ae2e9b3cfd06f66e14) Thanks [@tenphi](https://github.com/tenphi)! - Add `getFieldNames`, `isFieldDirty`, `getDirtyFieldNames`, `getValidFieldNames`, and `getInvalidFieldNames` methods to `CubeFormInstance`.
+
 ## 0.123.1
 
 ### Patch Changes
