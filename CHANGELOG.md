@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.124.1
+
+### Patch Changes
+
+- [#1096](https://github.com/cube-js/cube-ui-kit/pull/1096) [`6a286379`](https://github.com/cube-js/cube-ui-kit/commit/6a286379347665c7de452b27d1644bdc1a7172e0) Thanks [@tenphi](https://github.com/tenphi)! - Propagate mods to TextInputBase in TextArea.
+
+- [#1092](https://github.com/cube-js/cube-ui-kit/pull/1092) [`6afa2741`](https://github.com/cube-js/cube-ui-kit/commit/6afa2741b0d9287e427a6b7a4dc59bcb94d9a3fc) Thanks [@tenphi](https://github.com/tenphi)! - Refactor internal styled component sub-elements to use tasty `# @cube-dev/ui-kit selector syntax instead of raw CSS selectors (`'& svg'`, `'& code'`). Remove unused `Postfix`and`ButtonIcon`sub-element styles from`Menu` item styles.
+
 ## 0.124.0
 
 ### Minor Changes
