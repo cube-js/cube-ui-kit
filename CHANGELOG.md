@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.124.4
+
+### Patch Changes
+
+- [#1101](https://github.com/cube-js/cube-ui-kit/pull/1101) [`76e8365a`](https://github.com/cube-js/cube-ui-kit/commit/76e8365a0870f29804eb1aa9976728601597f9f7) Thanks [@tenphi](https://github.com/tenphi)! - Fixed tab indicator not appearing when Tabs is rendered inside a lazy-visibility container (e.g., Dialog, collapsed panel). A ResizeObserver now detects when the container transitions from zero to non-zero width and recalculates the indicator position.
+
 ## 0.124.3
 
 ### Patch Changes
