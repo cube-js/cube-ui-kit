@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.124.2
+
+### Patch Changes
+
+- [`ad603163`](https://github.com/cube-js/cube-ui-kit/commit/ad6031634a0c5041f1c200881de918cb33ad8411) Thanks [@tenphi](https://github.com/tenphi)! - Update tasty with support for different color spaces.
+
 ## 0.124.1
 
 ### Patch Changes
