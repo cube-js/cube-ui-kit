@@ -105,5 +105,32 @@ export function useTabIndicator(
     return () => window.removeEventListener('resize', handleResize);
   }, [enabled, updateIndicator]);
 
+  // Recalculate when container becomes visible (0 -> non-zero width)
+  useEffect(() => {
+    if (!enabled) return;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    let prevWidth = container.getBoundingClientRect().width;
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+
+      const newWidth = entry.contentRect.width;
+
+      if (prevWidth === 0 && newWidth > 0) {
+        updateIndicator();
+      }
+
+      prevWidth = newWidth;
+    });
+
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [enabled, updateIndicator]);
+
   return enabled ? style : null;
 }
