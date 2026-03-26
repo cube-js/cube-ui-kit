@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.124.3
+
+### Patch Changes
+
+- [#1099](https://github.com/cube-js/cube-ui-kit/pull/1099) [`35b5910c`](https://github.com/cube-js/cube-ui-kit/commit/35b5910c7066c5083b0106c672fbf181088b692b) Thanks [@tenphi](https://github.com/tenphi)! - Update tasty to fix color space definition.
+
 ## 0.124.2
 
 ### Patch Changes
