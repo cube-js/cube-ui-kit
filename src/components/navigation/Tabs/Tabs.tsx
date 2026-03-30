@@ -157,6 +157,7 @@ function TabsComponent(
     showScrollArrows = false,
     tabPickerPosition = 'suffix',
     scrollArrowsPosition = 'suffix',
+    hideTabListScroll = false,
     tabListPadding,
     tabListStyles,
     prefixStyles,
@@ -422,6 +423,7 @@ function TabsComponent(
   const isTinyScrollbar = type !== 'radio';
   const { handleHStyle, hasOverflowX, isScrolling, isAtStartX, isAtEndX } =
     useTinyScrollbar(scrollRef, isTinyScrollbar);
+  const showTinyScrollbar = isTinyScrollbar && !hideTabListScroll;
 
   const hasPanels = hasAnyContent || !!renderPanel;
 
@@ -576,12 +578,21 @@ function TabsComponent(
       type,
       size,
       deletable: !!onDelete,
-      scrolling: isScrolling,
+      scrolling: showTinyScrollbar && isScrolling,
       'fade-left': !isAtStartX,
       'fade-right': !isAtEndX,
       'has-panels': hasPanels,
     }),
-    [type, size, onDelete, isScrolling, isAtStartX, isAtEndX, hasPanels],
+    [
+      type,
+      size,
+      onDelete,
+      showTinyScrollbar,
+      isScrolling,
+      isAtStartX,
+      isAtEndX,
+      hasPanels,
+    ],
   );
 
   // =========================================================================
@@ -635,7 +646,7 @@ function TabsComponent(
         qa={qa}
         mods={mods}
         styles={combinedStyles}
-        style={handleHStyle}
+        style={showTinyScrollbar ? handleHStyle : undefined}
         data-size={size}
       >
         {prefix || prefixHasActions ? (
@@ -665,7 +676,9 @@ function TabsComponent(
               renderTabListContent(createContextValue())
             )}
           </div>
-          {isTinyScrollbar && hasOverflowX && <div data-element="ScrollbarH" />}
+          {showTinyScrollbar && hasOverflowX && (
+            <div data-element="ScrollbarH" />
+          )}
         </div>
         {suffix || suffixHasActions ? (
           <div data-element="Suffix">

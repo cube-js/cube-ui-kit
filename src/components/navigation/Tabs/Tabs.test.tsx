@@ -997,4 +997,80 @@ describe('<Tabs />', () => {
       ).not.toBeInTheDocument();
     });
   });
+
+  describe('hideTabListScroll', () => {
+    it('should not render ScrollbarH element when hideTabListScroll is true', () => {
+      const { container } = renderWithRoot(
+        <Tabs hideTabListScroll defaultActiveKey="tab1">
+          <Tab key="tab1" title="Tab 1">
+            Content 1
+          </Tab>
+          <Tab key="tab2" title="Tab 2">
+            Content 2
+          </Tab>
+        </Tabs>,
+      );
+
+      expect(
+        container.querySelector('[data-element="ScrollbarH"]'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should render ScrollbarH element when hideTabListScroll is false (default)', () => {
+      const { container } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1">
+          <Tab key="tab1" title="Tab 1">
+            Content 1
+          </Tab>
+          <Tab key="tab2" title="Tab 2">
+            Content 2
+          </Tab>
+        </Tabs>,
+      );
+
+      // ScrollbarH is only rendered when there is overflow, which doesn't
+      // happen in tests. Verify the Scroll wrapper is present (scrollbar
+      // would appear inside it when overflow occurs).
+      expect(
+        container.querySelector('[data-element="Scroll"]'),
+      ).toBeInTheDocument();
+    });
+
+    it('should still render tabs and content with hideTabListScroll', () => {
+      const { getByRole, getByText } = renderWithRoot(
+        <Tabs hideTabListScroll defaultActiveKey="tab1">
+          <Tab key="tab1" title="Tab 1">
+            Content 1
+          </Tab>
+          <Tab key="tab2" title="Tab 2">
+            Content 2
+          </Tab>
+        </Tabs>,
+      );
+
+      expect(getByRole('tablist')).toBeInTheDocument();
+      expect(getByRole('tab', { name: 'Tab 1' })).toBeInTheDocument();
+      expect(getByText('Content 1')).toBeInTheDocument();
+    });
+
+    it('should allow scroll arrows to render when hideTabListScroll is true and showScrollArrows is forced', () => {
+      const { getAllByRole } = renderWithRoot(
+        <Tabs hideTabListScroll showScrollArrows defaultActiveKey="tab1">
+          <Tab key="tab1" title="Tab 1">
+            Content 1
+          </Tab>
+        </Tabs>,
+      );
+
+      const scrollButtons = getAllByRole('button');
+      const arrowLabels = scrollButtons
+        .map((btn) => btn.getAttribute('aria-label'))
+        .filter(
+          (label) =>
+            label === 'Scroll tabs left' || label === 'Scroll tabs right',
+        );
+
+      expect(arrowLabels).toHaveLength(2);
+    });
+  });
 });
