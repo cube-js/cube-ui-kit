@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.125.0
+
+### Minor Changes
+
+- [#1103](https://github.com/cube-js/cube-ui-kit/pull/1103) [`f96c2caa`](https://github.com/cube-js/cube-ui-kit/commit/f96c2caaf79ed92854ce9786b33f55a5f17f69c4) Thanks [@tenphi](https://github.com/tenphi)! - `Tabs`: add `hideTabListScroll` prop to visually hide the custom horizontal scrollbar in the tab list and skip its tracking logic. Tab picker, scroll arrows, and fade indicators are unaffected.
+
 ## 0.124.4
 
 ### Patch Changes
