@@ -241,6 +241,13 @@ export interface CubeTabsProps
    */
   scrollArrowsPosition?: TabsActionPosition;
   /**
+   * Visually hide the custom horizontal scrollbar in the tab list
+   * and skip its tracking logic. Does not affect tab picker, scroll arrows,
+   * or fade indicators — only the tiny scrollbar visual.
+   * @default false
+   */
+  hideTabListScroll?: boolean;
+  /**
    * Inline padding for the tab list container.
    * Sets horizontal padding only (e.g., "2x" → padding: "0 2x").
    */

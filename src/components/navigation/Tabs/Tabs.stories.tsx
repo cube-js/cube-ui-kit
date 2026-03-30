@@ -207,6 +207,15 @@ const meta = {
         type: { summary: "'prefix' | 'suffix'" },
       },
     },
+    hideTabListScroll: {
+      control: 'boolean',
+      description:
+        'Visually hide the custom horizontal scrollbar and skip its tracking logic',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: 'boolean' },
+      },
+    },
     tabListPadding: {
       control: { type: 'text' },
       description: 'Inline padding for the tab list container (e.g., `"2x"`)',
@@ -1661,6 +1670,36 @@ export const ActionsInPrefix: Story = {
         tabPickerPosition="prefix"
         scrollArrowsPosition="prefix"
         type="file"
+        styles={{ width: '500px' }}
+      >
+        {tabs.map((tab) => (
+          <Tab key={tab.id} title={tab.title}>
+            <Paragraph>{tab.content}</Paragraph>
+          </Tab>
+        ))}
+      </Tabs>
+    );
+  },
+};
+
+/**
+ * Tabs with the custom scrollbar hidden via `hideTabListScroll`.
+ * Scroll arrows and tab picker remain functional.
+ */
+export const HiddenScrollbar: Story = {
+  render: function HiddenScrollbarRender(args) {
+    const tabs = Array.from({ length: 15 }, (_, i) => ({
+      id: `tab${i + 1}`,
+      title: `Tab ${i + 1}`,
+      content: `Content for Tab ${i + 1}`,
+    }));
+
+    return (
+      <Tabs
+        {...args}
+        hideTabListScroll
+        defaultActiveKey="tab1"
+        showScrollArrows="auto"
         styles={{ width: '500px' }}
       >
         {tabs.map((tab) => (
