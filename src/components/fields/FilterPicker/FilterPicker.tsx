@@ -437,6 +437,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // ---------------------------------------------------------------------------
 
   const handleOpenChange = useEvent((isOpen: boolean) => {
+    if (isOpen === isPopoverOpen) return;
+
     if (isOpen) {
       triggerWidthRef.current =
         triggerRef?.current?.UNSAFE_getDOMNode()?.offsetWidth;
