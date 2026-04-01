@@ -31,6 +31,7 @@ import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { generateRandomId } from '../../../utils/random';
 import { useEventBus } from '../../../utils/react/useEventBus';
+import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
@@ -51,23 +52,6 @@ interface ItemWithKey {
   textValue?: string;
   children?: ItemWithKey[];
   [key: string]: unknown;
-}
-
-/**
- * Pure function for deduplicating/toggling keys in a selection.
- * Hoisted to module scope to avoid re-creation on every render.
- */
-function processSelectionArray(iterable: Iterable<Key>): string[] {
-  const resultSet = new Set<string>();
-  for (const key of iterable) {
-    const nKey = String(key);
-    if (resultSet.has(nKey)) {
-      resultSet.delete(nKey);
-    } else {
-      resultSet.add(nKey);
-    }
-  }
-  return Array.from(resultSet);
 }
 
 export interface CubeFilterPickerProps<T>

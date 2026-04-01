@@ -31,6 +31,7 @@ import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { generateRandomId } from '../../../utils/random';
 import { useEventBus } from '../../../utils/react/useEventBus';
+import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
@@ -40,23 +41,6 @@ import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 
 import type { FieldBaseProps } from '../../../shared';
-
-/**
- * Pure function for deduplicating/toggling keys in a selection.
- * Hoisted to module scope to avoid re-creation on every render.
- */
-function processSelectionArray(iterable: Iterable<Key>): string[] {
-  const resultSet = new Set<string>();
-  for (const key of iterable) {
-    const nKey = String(key);
-    if (resultSet.has(nKey)) {
-      resultSet.delete(nKey);
-    } else {
-      resultSet.add(nKey);
-    }
-  }
-  return Array.from(resultSet);
-}
 
 export interface CubePickerProps<T>
   extends Omit<CubeListBoxProps<T>, 'size' | 'tooltip' | 'shape'>,
@@ -311,6 +295,29 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
   // Cache for sorted items array when using `items` prop
   const cachedItemsOrder = useRef<T[] | null>(null);
+
+  const latestSelectionRef = useRef<{
+    single: string | null;
+    multiple: string[];
+  }>({
+    single: effectiveSelectedKey != null ? String(effectiveSelectedKey) : null,
+    multiple:
+      selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
+        ? (effectiveSelectedKeys || []).map(String)
+        : [],
+  });
+
+  useEffect(() => {
+    latestSelectionRef.current = {
+      single:
+        effectiveSelectedKey != null ? String(effectiveSelectedKey) : null,
+      multiple:
+        selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
+          ? (effectiveSelectedKeys || []).map(String)
+          : [],
+    };
+  }, [effectiveSelectedKey, effectiveSelectedKeys, selectionMode]);
+
   const selectionWhenClosed = useRef<{
     single: string | null;
     multiple: string[];
@@ -451,14 +458,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     }
     setIsPopoverOpen(isOpen);
     if (!isOpen) {
-      selectionWhenClosed.current = {
-        single:
-          effectiveSelectedKey != null ? String(effectiveSelectedKey) : null,
-        multiple:
-          selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
-            ? (effectiveSelectedKeys || []).map(String)
-            : [],
-      };
+      selectionWhenClosed.current = { ...latestSelectionRef.current };
       cachedItemsOrder.current = null;
     }
     onOpenChange?.(isOpen);
@@ -651,6 +651,27 @@ export const Picker = forwardRef(function Picker<T extends object>(
         }
 
         setInternalSelectedKeys(normalized);
+      }
+    }
+
+    if (selectionMode === 'single') {
+      latestSelectionRef.current.single =
+        selection != null ? String(selection) : null;
+    } else {
+      if (selection === 'all') {
+        latestSelectionRef.current.multiple = [];
+      } else if (Array.isArray(selection)) {
+        latestSelectionRef.current.multiple = processSelectionArray(selection);
+      } else if (
+        selection &&
+        typeof selection === 'object' &&
+        selection instanceof Set
+      ) {
+        latestSelectionRef.current.multiple = processSelectionArray(
+          selection as Set<Key>,
+        );
+      } else {
+        latestSelectionRef.current.multiple = [];
       }
     }
 

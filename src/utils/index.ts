@@ -27,3 +27,6 @@ export { range } from './range';
 
 // ResizeSensor
 export { ResizeSensor } from './ResizeSensor';
+
+// Selection utilities
+export { processSelectionArray } from './selection';
