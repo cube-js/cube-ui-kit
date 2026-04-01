@@ -654,7 +654,8 @@ export const Picker = forwardRef(function Picker<T extends object>(
           // If no menu trigger was clicked, allow closing
           if (!menuTriggerEl) return true;
           // If the same trigger that opened this popover was clicked, allow closing (toggle)
-          if (menuTriggerEl === (triggerRef as any)?.current) return true;
+          if (menuTriggerEl === triggerRef?.current?.UNSAFE_getDOMNode())
+            return true;
           // Otherwise, don't close here. Let the event bus handle closing when the other opens.
           return false;
         }}

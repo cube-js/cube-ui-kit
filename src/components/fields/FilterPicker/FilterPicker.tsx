@@ -426,8 +426,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   }>({ single: null, multiple: [] });
 
   useEffect(() => {
-    selectionsWhenClosed.current = { ...latestSelectionRef.current };
-  }, []);
+    if (!isPopoverOpen) {
+      selectionsWhenClosed.current = {
+        single:
+          effectiveSelectedKey != null ? String(effectiveSelectedKey) : null,
+        multiple:
+          effectiveSelectedKeys === 'all'
+            ? 'all'
+            : (effectiveSelectedKeys ?? []).map(String),
+      };
+    }
+  }, [effectiveSelectedKey, effectiveSelectedKeys, isPopoverOpen]);
 
   // ---------------------------------------------------------------------------
   // Popover lifecycle — all effects moved out of the inline renderTrigger
@@ -524,6 +533,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const finalItems = useMemo(() => {
     if (!items) return items;
     if (!sortSelectedToTop) return items;
+    if (!isPopoverOpen) return items;
     if (cachedItemsOrder.current) return cachedItemsOrder.current;
 
     const selectedSet = new Set<string>();
@@ -780,7 +790,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         shouldCloseOnInteractOutside={(el) => {
           const menuTriggerEl = el.closest('[data-popover-trigger]');
           if (!menuTriggerEl) return true;
-          if (menuTriggerEl === (triggerRef as any)?.current) return true;
+          if (menuTriggerEl === triggerRef?.current?.UNSAFE_getDOMNode())
+            return true;
           return false;
         }}
         onOpenChange={handleOpenChange}
