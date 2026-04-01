@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.125.1
+
+### Patch Changes
+
+- [#1105](https://github.com/cube-js/cube-ui-kit/pull/1105) [`afa94839`](https://github.com/cube-js/cube-ui-kit/commit/afa9483985a1cece863478f460c1066c7f989005) Thanks [@tenphi](https://github.com/tenphi)! - Improve `FilterPicker` and `Picker` performance: fewer redundant re-renders, memoized label and key lookups, trigger width measured only when the popover opens, and a controlled popover state so the trigger subtree reconciles normally.
+
 ## 0.125.0
 
 ### Minor Changes
