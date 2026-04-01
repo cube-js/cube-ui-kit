@@ -17,7 +17,6 @@ import {
   MutableRefObject,
   ReactElement,
   ReactNode,
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -41,6 +40,23 @@ import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 
 import type { FieldBaseProps } from '../../../shared';
+
+/**
+ * Pure function for deduplicating/toggling keys in a selection.
+ * Hoisted to module scope to avoid re-creation on every render.
+ */
+function processSelectionArray(iterable: Iterable<Key>): string[] {
+  const resultSet = new Set<string>();
+  for (const key of iterable) {
+    const nKey = String(key);
+    if (resultSet.has(nKey)) {
+      resultSet.delete(nKey);
+    } else {
+      resultSet.add(nKey);
+    }
+  }
+  return Array.from(resultSet);
+}
 
 export interface CubePickerProps<T>
   extends Omit<CubeListBoxProps<T>, 'size' | 'tooltip' | 'shape'>,
@@ -267,9 +283,11 @@ export const Picker = forwardRef(function Picker<T extends object>(
     'all' | Key[]
   >(defaultSelectedKeys ?? []);
 
-  // Track popover open/close and capture children order for session
+  // Popover state — used as controlled prop for DialogTrigger
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const triggerRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
+  // Measured lazily on popover open instead of on every render
+  const triggerWidthRef = useRef<number | undefined>(undefined);
 
   const isControlledSingle = selectedKey !== undefined;
   const isControlledMultiple = selectedKeys !== undefined;
@@ -280,20 +298,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
   const effectiveSelectedKeys = isControlledMultiple
     ? selectedKeys
     : internalSelectedKeys;
-
-  // Given an iterable of keys (array or Set) toggle membership for duplicates
-  const processSelectionArray = (iterable: Iterable<Key>): string[] => {
-    const resultSet = new Set<string>();
-    for (const key of iterable) {
-      const nKey = String(key);
-      if (resultSet.has(nKey)) {
-        resultSet.delete(nKey); // toggle off if clicked twice
-      } else {
-        resultSet.add(nKey); // select
-      }
-    }
-    return Array.from(resultSet);
-  };
 
   // Ref to access internal ListBox state for collection API
   const internalListStateRef = useRef<ListState<T>>(null);
@@ -312,17 +316,20 @@ export const Picker = forwardRef(function Picker<T extends object>(
     multiple: string[];
   }>({ single: null, multiple: [] });
 
-  // Track if sortSelectedToTop was explicitly provided
   const sortSelectedToTopExplicit = sortSelectedToTop !== undefined;
-  // Default to true if items are provided, false otherwise
   const shouldSortSelectedToTop = sortSelectedToTop ?? (items ? true : false);
 
-  // Invalidate cache when items change
+  useWarn(sortSelectedToTopExplicit && shouldSortSelectedToTop && !items, {
+    key: ['picker-sort-selected-to-top-children'],
+    args: [
+      'Picker: sortSelectedToTop only works with the items prop. Sorting will be skipped when using JSX children.',
+    ],
+  });
+
   useEffect(() => {
     cachedItemsOrder.current = null;
   }, [items]);
 
-  // Capture selection when popover closes
   useEffect(() => {
     if (!isPopoverOpen) {
       selectionWhenClosed.current = {
@@ -333,54 +340,36 @@ export const Picker = forwardRef(function Picker<T extends object>(
             ? (effectiveSelectedKeys || []).map(String)
             : [],
       };
-      cachedItemsOrder.current = null;
     }
   }, [
-    isPopoverOpen,
     effectiveSelectedKey,
     effectiveSelectedKeys,
+    isPopoverOpen,
     selectionMode,
   ]);
 
-  // Call onOpenChange when popover state changes
-  useEffect(() => {
-    onOpenChange?.(isPopoverOpen);
-  }, [isPopoverOpen]);
-
-  // Sort items with selected on top if enabled
-  const getSortedItems = useCallback((): typeof items => {
+  const finalItems = useMemo(() => {
     if (!items || !shouldSortSelectedToTop) return items;
+    if (!isPopoverOpen) return items;
+    if (cachedItemsOrder.current) return cachedItemsOrder.current;
 
-    // Reuse cached order if available
-    if (cachedItemsOrder.current) {
-      return cachedItemsOrder.current;
-    }
-
-    // Warn if explicitly requested but JSX children used
-    if (sortSelectedToTopExplicit && !items) {
-      console.warn(
-        'Picker: sortSelectedToTop only works with the items prop. ' +
-          'Sorting will be skipped when using JSX children.',
-      );
-      return items;
-    }
-
-    const selectedKeys = new Set<string>();
+    const selectedKeySet = new Set<string>();
 
     if (selectionMode === 'multiple') {
-      // Don't sort when "all" is selected
       if (
         selectionWhenClosed.current.multiple.length === 0 ||
         effectiveSelectedKeys === 'all'
       ) {
         return items;
       }
-      selectionWhenClosed.current.multiple.forEach((k) => selectedKeys.add(k));
+      selectionWhenClosed.current.multiple.forEach((k) =>
+        selectedKeySet.add(k),
+      );
     } else if (selectionWhenClosed.current.single) {
-      selectedKeys.add(selectionWhenClosed.current.single);
+      selectedKeySet.add(selectionWhenClosed.current.single);
     }
 
-    if (selectedKeys.size === 0) return items;
+    if (selectedKeySet.size === 0) return items;
 
     const itemsArray = Array.isArray(items) ? items : Array.from(items);
     const selectedItems: T[] = [];
@@ -388,7 +377,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
     itemsArray.forEach((item) => {
       const key = (item as any)?.key ?? (item as any)?.id;
-      if (key != null && selectedKeys.has(String(key))) {
+      if (key != null && selectedKeySet.has(String(key))) {
         selectedItems.push(item);
       } else {
         unselectedItems.push(item);
@@ -397,21 +386,10 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
     const sorted = [...selectedItems, ...unselectedItems];
 
-    if (isPopoverOpen) {
-      cachedItemsOrder.current = sorted;
-    }
+    cachedItemsOrder.current = sorted;
 
     return sorted;
-  }, [
-    items,
-    shouldSortSelectedToTop,
-    sortSelectedToTopExplicit,
-    selectionMode,
-    effectiveSelectedKeys,
-    isPopoverOpen,
-  ]);
-
-  const finalItems = getSortedItems();
+  }, [items, shouldSortSelectedToTop, selectionMode, isPopoverOpen]);
 
   // Create local collection state for reading item data (labels, etc.)
   // This allows us to read item labels even before the popover opens
@@ -421,28 +399,13 @@ export const Picker = forwardRef(function Picker<T extends object>(
     selectionMode: 'none', // Don't manage selection in this state
   });
 
-  // Helper to get label from local collection
-  const getItemLabel = useCallback(
-    (key: Key): string => {
-      const item = localCollectionState?.collection?.getItem(key);
-      return item?.textValue || String(key);
-    },
-    [localCollectionState?.collection],
-  );
-
   const selectedLabels = useMemo(() => {
-    const keysToGet =
-      selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
-        ? effectiveSelectedKeys || []
-        : effectiveSelectedKey != null
-          ? [effectiveSelectedKey]
-          : [];
+    const collection = localCollectionState?.collection;
 
-    // Handle "all" selection
     if (selectionMode === 'multiple' && effectiveSelectedKeys === 'all') {
-      if (!localCollectionState?.collection) return [];
+      if (!collection) return [];
       const labels: string[] = [];
-      for (const item of localCollectionState.collection) {
+      for (const item of collection) {
         if (item.type === 'item') {
           labels.push(item.textValue || String(item.key));
         }
@@ -450,20 +413,125 @@ export const Picker = forwardRef(function Picker<T extends object>(
       return labels;
     }
 
-    // Get labels for selected keys
-    return keysToGet.map((key) => getItemLabel(key)).filter(Boolean);
+    const keysToGet =
+      selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
+        ? effectiveSelectedKeys || []
+        : effectiveSelectedKey != null
+          ? [effectiveSelectedKey]
+          : [];
+
+    return keysToGet
+      .map((key) => {
+        const item = collection?.getItem(key);
+        return item?.textValue || String(key);
+      })
+      .filter(Boolean);
   }, [
     selectionMode,
     effectiveSelectedKeys,
     effectiveSelectedKey,
-    getItemLabel,
     localCollectionState?.collection,
   ]);
 
   const hasSelection = selectedLabels.length > 0;
 
-  const renderTriggerContent = () => {
-    // When there is a selection and a custom summary renderer is provided – use it.
+  // ---------------------------------------------------------------------------
+  // Popover lifecycle — all effects moved out of the inline renderTrigger
+  // function so they have a stable component identity and don't tear
+  // down/setup on every parent re-render.
+  // DialogTrigger is controlled via isOpen/onOpenChange.
+  // ---------------------------------------------------------------------------
+
+  const handleOpenChange = useEvent((isOpen: boolean) => {
+    if (isOpen === isPopoverOpen) return;
+
+    if (isOpen) {
+      triggerWidthRef.current =
+        triggerRef?.current?.UNSAFE_getDOMNode()?.offsetWidth;
+    }
+    setIsPopoverOpen(isOpen);
+    if (!isOpen) {
+      selectionWhenClosed.current = {
+        single:
+          effectiveSelectedKey != null ? String(effectiveSelectedKey) : null,
+        multiple:
+          selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
+            ? (effectiveSelectedKeys || []).map(String)
+            : [],
+      };
+      cachedItemsOrder.current = null;
+    }
+    onOpenChange?.(isOpen);
+  });
+
+  // Close this picker when another menu opens (event bus)
+  useEffect(() => {
+    return on('popover:open', (data: { menuId: string }) => {
+      if (data.menuId !== pickerId && isPopoverOpen) {
+        handleOpenChange(false);
+      }
+    });
+  }, [on, pickerId, isPopoverOpen, handleOpenChange]);
+
+  // Emit event when this picker opens
+  useEffect(() => {
+    if (isPopoverOpen) {
+      emit('popover:open', { menuId: pickerId });
+    }
+  }, [isPopoverOpen, emit, pickerId]);
+
+  // Position update management
+  const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
+
+  useEffect(() => {
+    if (isPopoverOpen) {
+      setShouldUpdatePosition(true);
+      const timerId = window.setTimeout(
+        () => setShouldUpdatePosition(false),
+        160,
+      );
+      return () => window.clearTimeout(timerId);
+    } else {
+      setShouldUpdatePosition(true);
+    }
+  }, [isPopoverOpen]);
+
+  // Keyboard handler for arrow keys to open popover
+  const { keyboardProps } = useKeyboard({
+    onKeyDown: (e) => {
+      if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !isPopoverOpen) {
+        e.preventDefault();
+        handleOpenChange(true);
+      }
+    },
+  });
+
+  // Clear handler
+  const clearValue = useEvent(() => {
+    if (selectionMode === 'multiple') {
+      if (!isControlledMultiple) {
+        setInternalSelectedKeys([]);
+      }
+      onSelectionChange?.([]);
+    } else {
+      if (!isControlledSingle) {
+        setInternalSelectedKey(null);
+      }
+      onSelectionChange?.(null);
+    }
+
+    handleOpenChange(false);
+    triggerRef?.current?.focus?.();
+    onClear?.();
+
+    return false;
+  });
+
+  // ---------------------------------------------------------------------------
+  // Trigger content
+  // ---------------------------------------------------------------------------
+
+  const triggerContent = useMemo((): ReactNode => {
     if (typeof renderSummary === 'function') {
       if (selectionMode === 'single') {
         return renderSummary({
@@ -484,158 +552,124 @@ export const Picker = forwardRef(function Picker<T extends object>(
       return null;
     }
 
-    let content: ReactNode = '';
-
     if (!hasSelection) {
       return <Text.Placeholder>{placeholder}</Text.Placeholder>;
     } else if (selectionMode === 'single') {
-      content = selectedLabels[0];
+      return selectedLabels[0] || null;
     } else if (effectiveSelectedKeys === 'all') {
-      content = selectAllLabel;
+      return selectAllLabel;
     } else {
-      content = selectedLabels.join(', ');
+      return selectedLabels.join(', ') || null;
+    }
+  }, [
+    renderSummary,
+    selectionMode,
+    selectedLabels,
+    effectiveSelectedKey,
+    effectiveSelectedKeys,
+    hasSelection,
+    placeholder,
+    selectAllLabel,
+  ]);
+
+  const showClearButton =
+    isClearable && hasSelection && !isDisabled && !props.isReadOnly;
+
+  // Trigger element — plain JSX with no hooks.
+  const triggerElement = (
+    <ItemButton
+      ref={triggerRef as any}
+      data-popover-trigger
+      id={id}
+      qa={qa || 'PickerTrigger'}
+      type={type}
+      theme={validationState === 'invalid' ? 'danger' : theme}
+      size={size}
+      shape={shape}
+      isDisabled={isDisabled || isLoading}
+      data-input-type="picker"
+      mods={{
+        placeholder: !hasSelection,
+        ...externalMods,
+      }}
+      icon={icon}
+      rightIcon={
+        isLoading ? (
+          <LoadingIcon />
+        ) : rightIcon !== undefined ? (
+          rightIcon
+        ) : showClearButton ? (
+          <ItemAction
+            icon={<CloseIcon />}
+            size={size}
+            theme={validationState === 'invalid' ? 'danger' : undefined}
+            qa="PickerClearButton"
+            mods={{ pressed: false }}
+            onPress={clearValue}
+          />
+        ) : (
+          <DirectionIcon to={isPopoverOpen ? 'top' : 'bottom'} />
+        )
+      }
+      prefix={prefix}
+      suffix={suffix}
+      hotkeys={hotkeys}
+      tooltip={triggerTooltip}
+      description={triggerDescription}
+      descriptionPlacement={descriptionPlacement}
+      styles={triggerStyles}
+      {...keyboardProps}
+      aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
+    >
+      {triggerContent}
+    </ItemButton>
+  );
+
+  // ---------------------------------------------------------------------------
+  // Selection change handler
+  // ---------------------------------------------------------------------------
+
+  const handleSelectionChange = useEvent((selection: any) => {
+    if (selectionMode === 'single') {
+      if (!isControlledSingle) {
+        setInternalSelectedKey(selection as Key | null);
+      }
+    } else {
+      if (!isControlledMultiple) {
+        let normalized: 'all' | Key[] = selection;
+
+        if (selection === 'all') {
+          normalized = 'all';
+        } else if (Array.isArray(selection)) {
+          normalized = processSelectionArray(selection);
+        } else if (
+          selection &&
+          typeof selection === 'object' &&
+          selection instanceof Set
+        ) {
+          normalized = processSelectionArray(selection as Set<Key>);
+        }
+
+        setInternalSelectedKeys(normalized);
+      }
     }
 
-    if (!content) {
-      return null;
+    onSelectionChange?.(selection);
+
+    if (selectionMode === 'single') {
+      handleOpenChange(false);
     }
+  });
 
-    return content;
-  };
+  const handleEscape = useEvent(() => {
+    handleOpenChange(false);
+  });
 
-  const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
-
-  // Capture trigger width for overlay min-width
-  const triggerWidth = triggerRef?.current?.UNSAFE_getDOMNode()?.offsetWidth;
-
-  // The trigger is rendered as a function so we can access the dialog state
-  const renderTrigger = (state) => {
-    // Listen for other menus opening and close this one if needed
-    useEffect(() => {
-      const unsubscribe = on('popover:open', (data: { menuId: string }) => {
-        // If another menu is opening and this Picker is open, close this one
-        if (data.menuId !== pickerId && state.isOpen) {
-          state.close();
-        }
-      });
-
-      return unsubscribe;
-    }, [on, pickerId, state]);
-
-    // Emit event when this Picker opens
-    useEffect(() => {
-      if (state.isOpen) {
-        emit('popover:open', { menuId: pickerId });
-      }
-    }, [state.isOpen, emit, pickerId]);
-
-    // Track popover open/close state to control sorting
-    useEffect(() => {
-      if (state.isOpen !== isPopoverOpen) {
-        setIsPopoverOpen(state.isOpen);
-      }
-    }, [state.isOpen, isPopoverOpen]);
-
-    // Add keyboard support for arrow keys to open the popover
-    const { keyboardProps } = useKeyboard({
-      onKeyDown: (e) => {
-        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !state.isOpen) {
-          e.preventDefault();
-          state.open();
-        }
-      },
-    });
-
-    useEffect(() => {
-      // Allow initial positioning & flipping when opening, then lock placement after transition
-      // Popover transition is ~120ms, give it a bit more time to finalize placement
-      if (state.isOpen) {
-        setShouldUpdatePosition(true);
-        const id = window.setTimeout(() => setShouldUpdatePosition(false), 160);
-        return () => window.clearTimeout(id);
-      } else {
-        setShouldUpdatePosition(true);
-      }
-    }, [state.isOpen]);
-
-    // Clear button logic
-    let showClearButton =
-      isClearable && hasSelection && !isDisabled && !props.isReadOnly;
-
-    // Clear function
-    let clearValue = useEvent(() => {
-      if (selectionMode === 'multiple') {
-        if (!isControlledMultiple) {
-          setInternalSelectedKeys([]);
-        }
-        onSelectionChange?.([]);
-      } else {
-        if (!isControlledSingle) {
-          setInternalSelectedKey(null);
-        }
-        onSelectionChange?.(null);
-      }
-
-      if (state.isOpen) {
-        state.close();
-      }
-
-      triggerRef?.current?.focus?.();
-
-      onClear?.();
-
-      return false;
-    });
-
-    return (
-      <ItemButton
-        ref={triggerRef as any}
-        data-popover-trigger
-        id={id}
-        qa={qa || 'PickerTrigger'}
-        type={type}
-        theme={validationState === 'invalid' ? 'danger' : theme}
-        size={size}
-        shape={shape}
-        isDisabled={isDisabled || isLoading}
-        data-input-type="picker"
-        mods={{
-          placeholder: !hasSelection,
-          ...externalMods,
-        }}
-        icon={icon}
-        rightIcon={
-          isLoading ? (
-            <LoadingIcon />
-          ) : rightIcon !== undefined ? (
-            rightIcon
-          ) : showClearButton ? (
-            <ItemAction
-              icon={<CloseIcon />}
-              size={size}
-              theme={validationState === 'invalid' ? 'danger' : undefined}
-              qa="PickerClearButton"
-              mods={{ pressed: false }}
-              onPress={clearValue}
-            />
-          ) : (
-            <DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />
-          )
-        }
-        prefix={prefix}
-        suffix={suffix}
-        hotkeys={hotkeys}
-        tooltip={triggerTooltip}
-        description={triggerDescription}
-        descriptionPlacement={descriptionPlacement}
-        styles={triggerStyles}
-        {...keyboardProps}
-        aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
-      >
-        {renderTriggerContent()}
-      </ItemButton>
-    );
-  };
+  const handleOptionClick = useEvent((key: Key) => {
+    if ((selectionMode === 'multiple' && isCheckable) || key === '__ALL__') {
+      handleOpenChange(false);
+    }
+  });
 
   const pickerField = (
     <PickerWrapper
@@ -643,25 +677,24 @@ export const Picker = forwardRef(function Picker<T extends object>(
       {...filterBaseProps(otherProps, { eventProps: true })}
     >
       <DialogTrigger
+        isDismissable
         type="popover"
         placement="bottom start"
+        isOpen={isPopoverOpen}
         containerPadding={containerPadding}
         shouldUpdatePosition={shouldUpdatePosition}
         shouldFlip={shouldFlip && shouldUpdatePosition}
-        isDismissable={true}
         shouldCloseOnInteractOutside={(el) => {
           const menuTriggerEl = el.closest('[data-popover-trigger]');
-          // If no menu trigger was clicked, allow closing
           if (!menuTriggerEl) return true;
-          // If the same trigger that opened this popover was clicked, allow closing (toggle)
           if (menuTriggerEl === triggerRef?.current?.UNSAFE_getDOMNode())
             return true;
-          // Otherwise, don't close here. Let the event bus handle closing when the other opens.
           return false;
         }}
+        onOpenChange={handleOpenChange}
       >
-        {renderTrigger}
-        {(close) => (
+        {triggerElement}
+        {() => (
           <Dialog
             qa="PickerOverlay"
             display="grid"
@@ -672,8 +705,10 @@ export const Picker = forwardRef(function Picker<T extends object>(
               ...popoverStyles,
             }}
             style={
-              triggerWidth
-                ? ({ '--overlay-min-width': `${triggerWidth}px` } as any)
+              triggerWidthRef.current
+                ? ({
+                    '--overlay-min-width': `${triggerWidthRef.current}px`,
+                  } as any)
                 : undefined
             }
           >
@@ -681,7 +716,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
               <ListBox
                 autoFocus
                 items={items ? (finalItems as typeof props.items) : undefined}
-                // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
                 aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
                 selectedKey={
                   selectionMode === 'single' ? effectiveSelectedKey : undefined
@@ -716,55 +750,9 @@ export const Picker = forwardRef(function Picker<T extends object>(
                 footerStyles={footerStyles}
                 qa={`${props.qa || 'Picker'}ListBox`}
                 allValueProps={allValueProps}
-                onEscape={() => close()}
-                onOptionClick={(key) => {
-                  // For Picker, clicking the content area should close the popover
-                  // in multiple selection mode (single mode already closes via onSelectionChange)
-                  if (
-                    (selectionMode === 'multiple' && isCheckable) ||
-                    key === '__ALL__'
-                  ) {
-                    close();
-                  }
-                }}
-                onSelectionChange={(selection) => {
-                  // No need to change any flags - children order is cached
-
-                  // Update internal state if uncontrolled
-                  if (selectionMode === 'single') {
-                    if (!isControlledSingle) {
-                      setInternalSelectedKey(selection as Key | null);
-                    }
-                  } else {
-                    if (!isControlledMultiple) {
-                      let normalized: 'all' | Key[] = selection as
-                        | 'all'
-                        | Key[];
-
-                      if (selection === 'all') {
-                        normalized = 'all';
-                      } else if (Array.isArray(selection)) {
-                        normalized = processSelectionArray(selection);
-                      } else if (
-                        selection &&
-                        typeof selection === 'object' &&
-                        (selection as any) instanceof Set
-                      ) {
-                        normalized = processSelectionArray(
-                          selection as Set<Key>,
-                        );
-                      }
-
-                      setInternalSelectedKeys(normalized);
-                    }
-                  }
-
-                  onSelectionChange?.(selection);
-
-                  if (selectionMode === 'single') {
-                    close();
-                  }
-                }}
+                onEscape={handleEscape}
+                onOptionClick={handleOptionClick}
+                onSelectionChange={handleSelectionChange}
               >
                 {children as CollectionChildren<T>}
               </ListBox>
