@@ -63,6 +63,10 @@ declare module '@tenphi/tasty' {
     t3: true;
     t3m: true;
     t4: true;
+    t4m: true;
+    m1: true;
+    m2: true;
+    m3: true;
     p1: true;
     p2: true;
     p3: true;

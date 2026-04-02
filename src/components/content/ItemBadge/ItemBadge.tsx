@@ -1,4 +1,4 @@
-import { BaseProps, tasty } from '@tenphi/tasty';
+import { BaseProps, mergeStyles, tasty } from '@tenphi/tasty';
 import {
   ComponentProps,
   forwardRef,
@@ -67,14 +67,13 @@ type ItemBadgeVariant =
 
 const ItemBadgeElement = tasty({
   qa: 'ItemBadge',
-  styles: {
-    ...ITEM_ACTION_BASE_STYLES,
+  styles: mergeStyles(ITEM_ACTION_BASE_STYLES, {
     cursor: 'default',
     border: {
       // extend
       'type=primary': '#clear',
     },
-  },
+  }),
   variants: {
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,

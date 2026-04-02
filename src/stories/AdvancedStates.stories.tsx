@@ -736,7 +736,7 @@ export const SupportsQueries: StoryObj = {
             padding="2x"
             height={i % 3 === 0 ? '14x' : i % 3 === 1 ? '10x' : '18x'}
           >
-            <Text preset="t3 strong">Item {i + 1}</Text>
+            <Text preset="t3 / strong">Item {i + 1}</Text>
           </Block>
         ))}
       </SupportsQueryBox>

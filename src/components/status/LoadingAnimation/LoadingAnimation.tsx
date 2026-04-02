@@ -18,20 +18,25 @@ const CubeElement = tasty({
     height: '50%',
 
     animationName: {
+      '': 'none',
       'index=0': 'dice0',
       'index=1': 'dice1',
       'index=2': 'dice2',
     },
     animationDuration: {
+      '': '0s',
       'index=0 | index=1 | index=2': '2s',
     },
     animationIterationCount: {
+      '': 1,
       'index=0 | index=1 | index=2': 'infinite',
     },
     animationTimingFunction: {
+      '': 'ease',
       'index=0 | index=1 | index=2': 'ease',
     },
     zIndex: {
+      '': 0,
       'index=0 | index=1 | index=2': 0,
     },
 

@@ -1210,8 +1210,8 @@ export const OverlayPanel: Story = {
  * The overlay backdrop can be customized using the `overlayStyles` prop.
  * This example shows a darker overlay with custom fill color.
  */
-export const OverlayPanelCustomStyles: Story = {
-  render: function OverlayPanelCustomStylesStory() {
+export const OverlayPanelCustomStyling: Story = {
+  render: function OverlayPanelCustomStylingStory() {
     const [isPanelOpen, setIsPanelOpen] = useState(true);
 
     return (

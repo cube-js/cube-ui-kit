@@ -221,7 +221,7 @@ export const TooltipPlacements: Story = {
   ),
 };
 
-export const WithTextStyles: Story = {
+export const WithTextStyling: Story = {
   render: () => (
     <Space flow="column" gap="2x">
       <TextItem preset="h3">Heading style text item</TextItem>

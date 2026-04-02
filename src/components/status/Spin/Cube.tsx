@@ -23,6 +23,7 @@ const CubeElement = tasty({
     userSelect: 'none',
 
     animationName: {
+      '': 'none',
       'position=top': 'cube-spin-top',
       'position=right': 'cube-spin-right',
       'position=bottom': 'cube-spin-bottom',

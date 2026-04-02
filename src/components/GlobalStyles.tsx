@@ -23,7 +23,7 @@ interface GlobalStylesProps {
 const BODY_STYLES: Styles = {
   overscrollBehaviorY: 'none',
   fill: '#white',
-  fontFamily: 'var(--font)',
+  fontFamily: 'var(--font-sans)',
   '-webkit-font-smoothing': 'antialiased',
   '-moz-osx-font-smoothing': 'grayscale',
   margin: 0,
@@ -83,7 +83,7 @@ const STATIC_CSS = `
   }
 
   code {
-    font-family: var(--monospace-font);
+    font-family: var(--font-mono);
   }
 
   /* Prism Code */
@@ -91,7 +91,7 @@ const STATIC_CSS = `
   pre[class*="language-"] {
     color: var(--dark-color);
     background: none;
-    font-family: var(--monospace-font);
+    font-family: var(--font-mono);
     text-align: left;
     font-weight: normal;
     font-size: 14px;
@@ -276,8 +276,8 @@ export function GlobalStyles(props: GlobalStylesProps) {
     return `
   html {
     overscroll-behavior-y: none;
-    --font: ${fontValue}system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
-    --monospace-font: ${monospaceFontValue}ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --font-sans: ${fontValue}system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    --font-mono: ${monospaceFontValue}ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   }
 ${STATIC_CSS}`;
   }, [font, monospaceFont]);
