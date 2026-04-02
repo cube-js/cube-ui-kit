@@ -1,5 +1,18 @@
 # @cube-dev/ui-kit
 
+## 0.126.0
+
+### Minor Changes
+
+- [#1107](https://github.com/cube-js/cube-ui-kit/pull/1107) [`c5357a7f`](https://github.com/cube-js/cube-ui-kit/commit/c5357a7f52651cf6fc9fad99259f0ce94bb67b2a) Thanks [@tenphi](https://github.com/tenphi)! - Upgrade `@tenphi/tasty` from 0.15.3 to 1.1.0.
+
+  **Breaking changes:**
+
+  - Font CSS custom properties renamed: `--font` → `--font-sans`, `--monospace-font` → `--font-mono`
+  - Preset modifier syntax now uses `/` separator (e.g., `'t3 / strong'` instead of `'t3 strong'`)
+  - Removed standalone `strong` and `em` typography presets (use modifiers instead: `'inherit / bold'`, `'inherit / italic'`)
+  - The `1fs` unit is no longer supported; replaced with `1em`
+
 ## 0.125.1
 
 ### Patch Changes
