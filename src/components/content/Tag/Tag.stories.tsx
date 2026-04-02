@@ -228,7 +228,7 @@ export const Sizes: Story = {
   ),
 };
 
-export const CustomStyles: Story = {
+export const CustomStyling: Story = {
   args: {
     children: 'Custom Tag',
     styles: {

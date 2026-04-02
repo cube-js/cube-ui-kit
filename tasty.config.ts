@@ -159,7 +159,7 @@ export default {
    * These are defined in src/tokens/typography.ts.
    *
    * Note: Preset modifiers (strong, italic, icon, tight) are built-in
-   * and can be combined with any preset (e.g., 't1 strong', 'h2 italic').
+   * and can be combined with any preset using `/` separator (e.g., 't1 / strong', 'h2 / italic').
    */
   presets: [
     // Base text
@@ -201,8 +201,6 @@ export default {
     'tag',
 
     // Inline semantic styles
-    'strong',
-    'em',
     'inline',
   ],
 };

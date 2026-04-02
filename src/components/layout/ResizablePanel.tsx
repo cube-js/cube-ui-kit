@@ -59,6 +59,7 @@ const HandlerElement = tasty({
     },
     // Transform requires a separate visual size property to respect size boundaries
     transform: {
+      '': 'translate(0, 0)',
       '[data-direction="top"]':
         'translate(0, ($size-compensation - $visual-size))',
       '[data-direction="right"]':

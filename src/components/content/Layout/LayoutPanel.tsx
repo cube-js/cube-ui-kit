@@ -99,6 +99,7 @@ const PanelElement = tasty({
 
     // Visual styling
     border: {
+      '': false,
       'side=left': 'right',
       'side=right': 'left',
       'side=top': 'bottom',
@@ -163,6 +164,7 @@ const ResizeHandlerElement = tasty({
 
     // Offscreen transforms only (no centering needed with direct offset positioning)
     transform: {
+      '': 'translateX(0)',
       'offscreen & side=left': `translateX(calc(-1 * $panel-size - ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
       'offscreen & side=right': `translateX(calc($panel-size + ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,
       'offscreen & side=top': `translateY(calc(-1 * $panel-size - ${HANDLER_WIDTH - HANDLER_OFFSET}px))`,

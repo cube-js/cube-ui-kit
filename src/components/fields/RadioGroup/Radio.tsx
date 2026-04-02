@@ -31,7 +31,7 @@ const RadioButtonElement = tasty(Item, {
   as: 'label',
   styles: {
     preset: 't3m',
-    lineHeight: '1fs',
+    lineHeight: '1em',
     flexGrow: 1,
     gridTemplate:
       '"icon prefix label suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
@@ -87,6 +87,7 @@ const RadioNormalElement = tasty({
       disabled: '#dark.04',
     },
     color: {
+      '': '#clear',
       checked: '#primary',
       'invalid & checked': '#danger-text',
       'disabled | !checked': '#clear',

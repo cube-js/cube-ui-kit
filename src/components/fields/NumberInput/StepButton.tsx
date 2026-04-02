@@ -15,7 +15,7 @@ const StepButtonElement = tasty(Button, {
     },
     padding: 0,
 
-    '$icon-size': '1fs',
+    '$icon-size': '1em',
 
     Icon: {
       width: 'auto',

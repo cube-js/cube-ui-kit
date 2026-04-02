@@ -131,7 +131,7 @@ const StrongText = tasty(Text, {
 
 const EmphasisText = tasty(Text, {
   as: 'em',
-  preset: 'em',
+  preset: 'italic',
 });
 
 const PlaceholderText = tasty(Text, {

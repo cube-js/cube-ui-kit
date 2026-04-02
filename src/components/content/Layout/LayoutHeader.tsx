@@ -56,7 +56,7 @@ const HeaderElement = tasty(LayoutContent, {
       flow: 'row nowrap',
       placeItems: 'center start',
       gap: '1bw',
-      preset: 't3 strong',
+      preset: 't3 / strong',
       color: '#dark-02',
     },
 

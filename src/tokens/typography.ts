@@ -25,7 +25,6 @@ export interface TypographyPreset {
  * - `p1`-`p4`: Paragraph styles
  * - `c1`-`c2`: Caption/uppercase styles
  * - `tag`: Tag/badge typography
- * - `strong`, `em`: Inline semantic styles
  * - `default`: Base text style
  */
 export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
@@ -233,24 +232,6 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     fontWeight: '600',
     boldFontWeight: '700',
     iconSize: '16px',
-  },
-
-  // Inline semantic styles
-  strong: {
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-    letterSpacing: 'inherit',
-    fontFamily: 'inherit',
-    fontStyle: 'inherit',
-    fontWeight: 'var(--bold-font-weight, var(--default-bold-font-weight, 600))',
-  },
-  em: {
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-    letterSpacing: 'inherit',
-    fontFamily: 'inherit',
-    fontStyle: 'italic',
-    fontWeight: 'inherit',
   },
 
   // Default text style (references t3)
