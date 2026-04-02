@@ -144,6 +144,50 @@ export const WithSections: Story = {
   },
 };
 
+export const DynamicSections: Story = {
+  args: {
+    placeholder: 'Select a food',
+    label: 'Favorite Food',
+    selectionMode: 'single',
+  },
+  render: (args) => {
+    const categories = [
+      {
+        name: 'Fruits',
+        children: [
+          { key: 'apple', label: 'Apple' },
+          { key: 'banana', label: 'Banana' },
+          { key: 'orange', label: 'Orange' },
+        ],
+      },
+      {
+        name: 'Vegetables',
+        children: [
+          { key: 'carrot', label: 'Carrot' },
+          { key: 'broccoli', label: 'Broccoli' },
+          { key: 'spinach', label: 'Spinach' },
+        ],
+      },
+    ];
+
+    return (
+      <Picker {...args} items={categories}>
+        {(category: any) => (
+          <Picker.Section
+            key={category.name}
+            title={category.name}
+            items={category.children}
+          >
+            {(item: any) => (
+              <Picker.Item key={item.key}>{item.label}</Picker.Item>
+            )}
+          </Picker.Section>
+        )}
+      </Picker>
+    );
+  },
+};
+
 export const WithItemsArray: Story = {
   args: {
     placeholder: 'Select a fruit',

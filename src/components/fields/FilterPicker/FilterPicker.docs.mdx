@@ -242,6 +242,40 @@ For large datasets or dynamic content, use the `items` prop with a render functi
 </FilterPicker>
 ```
 
+### Dynamic Sections Pattern
+
+For hierarchical data with sections, use the `items` prop with nested render functions. Each section contains a `children` array of items.
+
+```jsx
+const categories = [
+  { name: 'Fruits', children: [
+    { key: 'apple', label: 'Apple' },
+    { key: 'banana', label: 'Banana' },
+  ]},
+  { name: 'Vegetables', children: [
+    { key: 'carrot', label: 'Carrot' },
+    { key: 'broccoli', label: 'Broccoli' },
+  ]},
+];
+
+<FilterPicker
+  label="Choose items"
+  placeholder="Choose items..."
+  searchPlaceholder="Search..."
+  items={categories}
+>
+  {(category) => (
+    <FilterPicker.Section key={category.name} title={category.name} items={category.children}>
+      {(item) => (
+        <FilterPicker.Item key={item.key} textValue={item.label}>
+          {item.label}
+        </FilterPicker.Item>
+      )}
+    </FilterPicker.Section>
+  )}
+</FilterPicker>
+```
+
 **Key Benefits:**
 - **Virtualization**: Automatically enabled for large lists without sections
 - **Performance**: Only renders visible items in the DOM

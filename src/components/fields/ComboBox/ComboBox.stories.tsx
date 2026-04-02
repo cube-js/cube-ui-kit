@@ -516,6 +516,43 @@ export const WithSections = () => (
   </ComboBox>
 );
 
+export const DynamicSections = () => {
+  const categories = [
+    {
+      name: 'Fruits',
+      children: [
+        { key: 'apple', label: 'Apple' },
+        { key: 'banana', label: 'Banana' },
+        { key: 'cherry', label: 'Cherry' },
+      ],
+    },
+    {
+      name: 'Vegetables',
+      children: [
+        { key: 'carrot', label: 'Carrot' },
+        { key: 'broccoli', label: 'Broccoli' },
+        { key: 'spinach', label: 'Spinach' },
+      ],
+    },
+  ];
+
+  return (
+    <ComboBox label="Food" placeholder="Select food..." items={categories}>
+      {(category: any) => (
+        <ComboBox.Section
+          key={category.name}
+          title={category.name}
+          items={category.children}
+        >
+          {(item: any) => (
+            <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>
+          )}
+        </ComboBox.Section>
+      )}
+    </ComboBox>
+  );
+};
+
 export const WithDisabledItems = () => (
   <ComboBox
     label="Fruit"

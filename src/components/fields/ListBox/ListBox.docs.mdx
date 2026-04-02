@@ -327,6 +327,33 @@ Groups related items together with an optional heading.
 </ListBox>
 ```
 
+### With Sections (Dynamic)
+
+<Story of={ListBoxStories.DynamicSections} />
+
+Sections and items can be defined dynamically using the `items` prop with a render function. Pass hierarchical data where each section contains a `children` array.
+
+```jsx
+const categories = [
+  { name: 'Fruits', children: [
+    { key: 'apple', label: 'Apple' },
+    { key: 'banana', label: 'Banana' },
+  ]},
+  { name: 'Vegetables', children: [
+    { key: 'carrot', label: 'Carrot' },
+    { key: 'broccoli', label: 'Broccoli' },
+  ]},
+];
+
+<ListBox label="Select food items" selectionMode="single" items={categories}>
+  {(category) => (
+    <ListBox.Section key={category.name} title={category.name} items={category.children}>
+      {(item) => <ListBox.Item key={item.key}>{item.label}</ListBox.Item>}
+    </ListBox.Section>
+  )}
+</ListBox>
+```
+
 ### Multiple Selection
 
 <Story of={ListBoxStories.MultipleSelection} />
@@ -736,15 +763,22 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 
 ### Virtualization
 
-ListBox automatically enables virtualization when:
-- No sections are present (sections disable virtualization)
-- Provides smooth scrolling even with large datasets
-- Only visible items are rendered in the DOM
-- Uses `@tanstack/react-virtual` for efficient rendering
-- Automatically measures item heights for consistent scrolling
-- Supports items with varying heights (descriptions, complex content)
+<Story of={ListBoxStories.VirtualizedList} />
 
-**Note**: Virtualization is transparent to the user - no configuration needed. It works automatically when you have a flat list without sections.
+For large datasets, use the `items` prop with a render function. This enables automatic virtualization — only visible items are rendered in the DOM, providing smooth scrolling even with thousands of items.
+
+```jsx
+const items = Array.from({ length: 1000 }, (_, i) => ({
+  key: `item-${i}`,
+  label: `Item ${i + 1}`,
+}));
+
+<ListBox label="Large Dataset" selectionMode="single" items={items}>
+  {(item) => <ListBox.Item key={item.key}>{item.label}</ListBox.Item>}
+</ListBox>
+```
+
+**Note**: Virtualization is disabled when sections are present. For very large datasets, prefer a flat list structure.
 
 ### Optimization Tips
 
