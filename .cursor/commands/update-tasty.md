@@ -27,7 +27,7 @@ pnpm install
 
 ### 4. Check for Dev Snapshot
 
-Determine whether the target version is a pre-release/snapshot by checking if its version string contains a hyphen (e.g. `2.0.0-snapshot.abc123`, `2.0.0-beta.1`). If it **is** a snapshot, skip steps 5–6 and go directly to step 7.
+Determine whether the target version is a pre-release/snapshot by checking if its version string contains a hyphen (e.g. `2.0.0-snapshot.abc123`, `2.0.0-beta.1`). If it **is** a snapshot, skip steps 5–6 (changelog and changelog-driven migration only) and go directly to step 7. **Do not** skip step 7: snapshot upgrades still need a full TypeScript compile check.
 
 ### 5. Read the Changelog
 
@@ -60,7 +60,11 @@ For each relevant breaking change or recommended migration in the changelog, sca
 
 If a migration requires widespread search-and-replace, use targeted search tools to find all occurrences before modifying.
 
-After applying migrations, verify that TypeScript still compiles:
+### 7. Verify TypeScript
+
+**Always run this step** after installing the new `@tenphi/tasty` version (whether or not steps 5–6 were skipped for a snapshot). Snapshot and pre-release builds are especially likely to surface type-breaking API changes.
+
+Verify that TypeScript compiles:
 
 ```
 pnpm tsc --noEmit 2>&1 | head -50
@@ -68,7 +72,7 @@ pnpm tsc --noEmit 2>&1 | head -50
 
 Fix any type errors introduced by the upgrade.
 
-### 7. Add Changeset
+### 8. Add Changeset
 
 Follow the `add-changeset` command conventions:
 
@@ -98,7 +102,7 @@ Update `@tenphi/tasty` to `X.Y.Z`.
 Migrated: brief description of what was changed in this codebase.
 ```
 
-### 8. Commit
+### 9. Commit
 
 Read the commit-changes rule. Create a single commit with a message like:
 
