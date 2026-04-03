@@ -7,22 +7,24 @@ This document is a comprehensive reference for AI agents maintaining or extendin
 ## Package Overview
 
 - **Package:** `@cube-dev/ui-kit`
-- **Repository:** https://github.com/cube-js/cube-ui-kit
-- **Storybook:** https://cube-ui-kit.vercel.app/
+- **Repository:** [https://github.com/cube-js/cube-ui-kit](https://github.com/cube-js/cube-ui-kit)
+- **Storybook:** [https://cube-ui-kit.vercel.app/](https://cube-ui-kit.vercel.app/)
 - **Styling engine:** [Tasty](https://github.com/tenphi/tasty) (`@tenphi/tasty`)
 
 ## Tasty Documentation
 
 Tasty documentation is bundled with this package in `docs/tasty/` (symlinked to `node_modules/@tenphi/tasty/docs` during development; copied at pack time by `scripts/prepare-docs.mjs`).
 
-| File | Description |
-|------|-------------|
-| [usage.md](./docs/tasty/usage.md) | Core API: `tasty()` component creation, state mappings, sub-elements (`data-element`), variants, extending components, and React hooks (`useStyles`, `useGlobalStyles`, `useRawCSS`). |
-| [configuration.md](./docs/tasty/configuration.md) | `configure()` options: tokens, recipes, custom units, style handlers, `@keyframes`, `@property`, parser cache, and TypeScript module augmentation. |
-| [styles.md](./docs/tasty/styles.md) | Complete reference for all enhanced style properties: `fill`, `flow`, `preset`, `border`, `radius`, `transition`, `scrollbar`, shorthand syntax, and recommended alternatives to raw CSS properties. |
-| [debug.md](./docs/tasty/debug.md) | `tastyDebug` runtime API: inspect injected CSS, view cache metrics, chunk breakdowns, and troubleshoot style issues. |
-| [injector.md](./docs/tasty/injector.md) | Low-level style injector: `inject()`, `injectGlobal()`, `injectRawCSS()`, `keyframes()`, hash deduplication, reference counting, SSR, and Shadow DOM support. |
-| [tasty-static.md](./docs/tasty/tasty-static.md) | Zero-runtime mode: `tastyStatic()`, Babel plugin setup, Next.js/Vite integration, and static extraction limitations. |
+
+| File                                              | Description                                                                                                                                                                                          |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [usage.md](./docs/tasty/usage.md)                 | Core API: `tasty()` component creation, state mappings, sub-elements (`data-element`), variants, extending components, and React hooks (`useStyles`, `useGlobalStyles`, `useRawCSS`).                |
+| [configuration.md](./docs/tasty/configuration.md) | `configure()` options: tokens, recipes, custom units, style handlers, `@keyframes`, `@property`, parser cache, and TypeScript module augmentation.                                                   |
+| [styles.md](./docs/tasty/styles.md)               | Complete reference for all enhanced style properties: `fill`, `flow`, `preset`, `border`, `radius`, `transition`, `scrollbar`, shorthand syntax, and recommended alternatives to raw CSS properties. |
+| [debug.md](./docs/tasty/debug.md)                 | `tastyDebug` runtime API: inspect injected CSS, view cache metrics, chunk breakdowns, and troubleshoot style issues.                                                                                 |
+| [injector.md](./docs/tasty/injector.md)           | Low-level style injector: `inject()`, `injectGlobal()`, `injectRawCSS()`, `keyframes()`, hash deduplication, reference counting, SSR, and Shadow DOM support.                                        |
+| [tasty-static.md](./docs/tasty/tasty-static.md)   | Zero-runtime mode: `tastyStatic()`, Babel plugin setup, Next.js/Vite integration, and static extraction limitations.                                                                                 |
+
 
 ## Project Structure
 
@@ -66,18 +68,20 @@ ComponentName/
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm storybook` | Start Storybook on port 6060 |
-| `pnpm build` | Build library (tsdown, unbundled ESM) |
-| `pnpm test` | Run all tests (Vitest) |
-| `pnpm test -- ComponentName` | Run tests matching a pattern |
-| `pnpm test -u -- ComponentName` | Update snapshots for a component |
-| `pnpm fix` | Lint + format (ESLint + Prettier) |
-| `pnpm size` | Check bundle size limits |
-| `pnpm chromatic` | Visual regression tests |
-| `pnpm add-icons` | Add new icons from tabler |
-| `pnpm audit-docs` | Audit component API ↔ docs ↔ argTypes sync. Uses TS Compiler API for full type resolution. Options: `--component=Name` (single component), `--fix-stories` (auto-add/remove argTypes in `.stories.tsx`), `--fix-docs` (auto-update `### Style Properties` sections in `.docs.mdx`), `--json`, `--verbose`, `--all-props`. **Run after changing a component's API or adding a new component.** |
+
+| Command                         | Description                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm storybook`                | Start Storybook on port 6060                                                                                                                                                                                                                                                                                                                                                                  |
+| `pnpm build`                    | Build library (tsdown, unbundled ESM)                                                                                                                                                                                                                                                                                                                                                         |
+| `pnpm test`                     | Run all tests (Vitest)                                                                                                                                                                                                                                                                                                                                                                        |
+| `pnpm test -- ComponentName`    | Run tests matching a pattern                                                                                                                                                                                                                                                                                                                                                                  |
+| `pnpm test -u -- ComponentName` | Update snapshots for a component                                                                                                                                                                                                                                                                                                                                                              |
+| `pnpm fix`                      | Lint + format (ESLint + Prettier)                                                                                                                                                                                                                                                                                                                                                             |
+| `pnpm size`                     | Check bundle size limits                                                                                                                                                                                                                                                                                                                                                                      |
+| `pnpm chromatic`                | Visual regression tests                                                                                                                                                                                                                                                                                                                                                                       |
+| `pnpm add-icons`                | Add new icons from tabler                                                                                                                                                                                                                                                                                                                                                                     |
+| `pnpm audit-docs`               | Audit component API ↔ docs ↔ argTypes sync. Uses TS Compiler API for full type resolution. Options: `--component=Name` (single component), `--fix-stories` (auto-add/remove argTypes in `.stories.tsx`), `--fix-docs` (auto-update `### Style Properties` sections in `.docs.mdx`), `--json`, `--verbose`, `--all-props`. **Run after changing a component's API or adding a new component.** |
+
 
 ## Stack
 
@@ -91,11 +95,11 @@ ComponentName/
 
 ## Creating Components
 
-The full guide for creating components — including style props (`styleProps` vs `extractStyles`), `filterBaseProps`, modifiers, sub-elements, React Aria integration, variants, `useEvent`, and complete examples — is maintained in **`src/stories/CreateComponent.docs.mdx`** (rendered in Storybook under **Getting Started / Create Component**).
+The full guide for creating components — including style props (`styleProps` vs `extractStyles`), `filterBaseProps`, modifiers, sub-elements, React Aria integration, variants, `useEvent`, and complete examples — is maintained in `**src/stories/CreateComponent.docs.mdx`** (rendered in Storybook under **Getting Started / Create Component**).
 
 ## Design System Reference
 
-The full reference for tokens, presets, colors, modifiers, state syntax, recipes, icons, and the form system is maintained in **`src/stories/Usage.docs.mdx`** (rendered in Storybook under **Getting Started / Usage**).
+The full reference for tokens, presets, colors, modifiers, state syntax, recipes, icons, and the form system is maintained in `**src/stories/Usage.docs.mdx`** (rendered in Storybook under **Getting Started / Usage**).
 
 Refer to that file for:
 
@@ -133,3 +137,4 @@ Refer to that file for:
 - **Barrel exports:** each category has `index.ts` files; everything re-exports through `src/index.ts`.
 - **Compound components:** `Object.assign(Button, { Group: ButtonGroup, Split: ButtonSplit })`.
 - **Tasty re-exports:** Only types are re-exported from `@tenphi/tasty`. Runtime imports (`tasty`, `extractStyles`, `filterBaseProps`) come directly from `@tenphi/tasty`.
+

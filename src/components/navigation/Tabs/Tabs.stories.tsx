@@ -388,6 +388,26 @@ export const RadioTypeWithPanels: Story = {
 };
 
 /**
+ * Radio type sizes — large (default, 40px total) and medium (32px total)
+ */
+export const RadioTypeSizes: Story = {
+  render: (args) => (
+    <Space flow="column" gap="2x">
+      <Tabs {...args} type="radio" size="large" defaultActiveKey="tab1">
+        <Tab key="tab1" title="Large (default)" />
+        <Tab key="tab2" title="Weekly" />
+        <Tab key="tab3" title="Monthly" />
+      </Tabs>
+      <Tabs {...args} type="radio" size="medium" defaultActiveKey="tab1">
+        <Tab key="tab1" title="Medium" />
+        <Tab key="tab2" title="Weekly" />
+        <Tab key="tab3" title="Monthly" />
+      </Tabs>
+    </Space>
+  ),
+};
+
+/**
  * Large size tabs for emphasis
  */
 export const LargeSize: Story = {

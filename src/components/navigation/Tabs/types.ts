@@ -22,7 +22,8 @@ export type TabSize = 'xsmall' | 'small' | 'medium' | 'large';
 
 /**
  * Size mapping for radio type tabs.
- * Radio type uses smaller sizes similar to RadioGroup tabs mode.
+ * API sizes mapped to Item button sizes:
+ * medium (default) -> xsmall (32px total), large -> medium (40px total).
  */
 export const RADIO_SIZE_MAP: Record<'medium' | 'large', TabSize> = {
   medium: 'xsmall',
@@ -88,7 +89,8 @@ type OmittedItemProps =
 export interface TabStyleProps extends Omit<CubeItemProps, OmittedItemProps> {
   /**
    * Tab size. Supports 'xsmall', 'small', 'medium', 'large'.
-   * Radio type only supports 'medium' | 'large' (mapped to smaller Item sizes).
+   * Radio type supports 'large' (default, 40px) and 'medium' (32px),
+   * mapped to Item button sizes medium (32px) and xsmall (24px).
    */
   size?: TabSize;
   /** Visual appearance type. */
@@ -123,7 +125,8 @@ export interface CubeTabsProps
   type?: TabType;
   /**
    * Tab size. Supports 'xsmall', 'small', 'medium', 'large'.
-   * Radio type only supports 'medium' | 'large' (mapped to smaller Item sizes).
+   * Radio type supports 'large' (default, 40px) and 'medium' (32px),
+   * mapped to Item button sizes medium (32px) and xsmall (24px).
    * @default 'medium'
    */
   size?: TabSize;
