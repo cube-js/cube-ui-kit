@@ -408,6 +408,57 @@ WithSections.args = {
   selectionMode: 'single',
 };
 
+export const DynamicSections: StoryObj<CubeListBoxProps<any>>['render'] = (
+  args,
+) => {
+  const categories = [
+    {
+      name: 'Fruits',
+      children: [
+        { key: 'apple', label: 'Apple' },
+        { key: 'banana', label: 'Banana' },
+        { key: 'cherry', label: 'Cherry' },
+      ],
+    },
+    {
+      name: 'Vegetables',
+      children: [
+        { key: 'carrot', label: 'Carrot' },
+        { key: 'broccoli', label: 'Broccoli' },
+        { key: 'spinach', label: 'Spinach' },
+      ],
+    },
+    {
+      name: 'Grains',
+      children: [
+        { key: 'rice', label: 'Rice' },
+        { key: 'oats', label: 'Oats' },
+        { key: 'barley', label: 'Barley' },
+      ],
+    },
+  ];
+
+  return (
+    <ListBox {...args} items={categories}>
+      {(category: any) => (
+        <ListBox.Section
+          key={category.name}
+          title={category.name}
+          items={category.children}
+        >
+          {(item: any) => (
+            <ListBox.Item key={item.key}>{item.label}</ListBox.Item>
+          )}
+        </ListBox.Section>
+      )}
+    </ListBox>
+  );
+};
+DynamicSections.args = {
+  label: 'Select food items',
+  selectionMode: 'single',
+};
+
 export const WithHeaderAndFooter: StoryObj<CubeListBoxProps<any>>['render'] = (
   args,
 ) => (

@@ -244,6 +244,33 @@ Groups related items together with an optional heading.
 </FilterListBox>
 ```
 
+### With Sections (Dynamic)
+
+<Story of={FilterListBoxStories.DynamicSections} />
+
+Sections and items can be defined dynamically using the `items` prop with a render function. Pass hierarchical data where each section contains a `children` array.
+
+```jsx
+const categories = [
+  { name: 'Fruits', children: [
+    { key: 'apple', label: 'Apple' },
+    { key: 'banana', label: 'Banana' },
+  ]},
+  { name: 'Vegetables', children: [
+    { key: 'carrot', label: 'Carrot' },
+    { key: 'broccoli', label: 'Broccoli' },
+  ]},
+];
+
+<FilterListBox label="Choose an ingredient" searchPlaceholder="Search ingredients..." items={categories}>
+  {(category) => (
+    <FilterListBox.Section key={category.name} title={category.name} items={category.children}>
+      {(item) => <FilterListBox.Item key={item.key}>{item.label}</FilterListBox.Item>}
+    </FilterListBox.Section>
+  )}
+</FilterListBox>
+```
+
 ### With Descriptions
 
 <Story of={FilterListBoxStories.WithDescriptions} />

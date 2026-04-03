@@ -686,6 +686,75 @@ export const WithSections: Story = {
   },
 };
 
+export const DynamicSections: Story = {
+  args: {
+    label: 'Organized by Sections',
+    placeholder: 'Choose items...',
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search ingredients...',
+    width: 'max 30x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => {
+    const categories = [
+      {
+        name: 'Fruits',
+        children: [
+          { key: 'apple', label: 'Apple' },
+          { key: 'banana', label: 'Banana' },
+          { key: 'cherry', label: 'Cherry' },
+        ],
+      },
+      {
+        name: 'Vegetables',
+        children: [
+          { key: 'carrot', label: 'Carrot' },
+          { key: 'broccoli', label: 'Broccoli' },
+          { key: 'spinach', label: 'Spinach' },
+        ],
+      },
+      {
+        name: 'Grains',
+        children: [
+          { key: 'rice', label: 'Rice' },
+          { key: 'oats', label: 'Oats' },
+          { key: 'barley', label: 'Barley' },
+        ],
+      },
+    ];
+
+    return (
+      <FilterPicker {...args} items={categories}>
+        {(category: any) => (
+          <FilterPicker.Section
+            key={category.name}
+            title={category.name}
+            items={category.children}
+          >
+            {(item: any) => (
+              <FilterPicker.Item key={item.key} textValue={item.label}>
+                {item.label}
+              </FilterPicker.Item>
+            )}
+          </FilterPicker.Section>
+        )}
+      </FilterPicker>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Sections and items can be defined dynamically using the `items` prop with a render function. Pass hierarchical data where each section contains a `children` array.',
+      },
+    },
+  },
+};
+
 export const CustomSummary: Story = {
   args: {
     label: 'Custom Summary Display',

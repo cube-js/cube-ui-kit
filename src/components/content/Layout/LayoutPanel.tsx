@@ -176,6 +176,10 @@ const ResizeHandlerElement = tasty({
       horizontal: 'col-resize',
       disabled: 'not-allowed',
     },
+    touchAction: {
+      '': 'none',
+      disabled: 'auto',
+    },
     padding: 0,
     outline: 0,
     boxSizing: 'border-box',

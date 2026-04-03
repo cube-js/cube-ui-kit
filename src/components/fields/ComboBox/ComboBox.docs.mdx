@@ -296,6 +296,33 @@ const [selectedKey, setSelectedKey] = useState(null);
 </ComboBox>
 ```
 
+### With Sections (Dynamic)
+
+<Story of={ComboBoxStories.DynamicSections} />
+
+Sections and items can be defined dynamically using the `items` prop with a render function. Pass hierarchical data where each section contains a `children` array.
+
+```jsx
+const categories = [
+  { name: 'Fruits', children: [
+    { key: 'apple', label: 'Apple' },
+    { key: 'banana', label: 'Banana' },
+  ]},
+  { name: 'Vegetables', children: [
+    { key: 'carrot', label: 'Carrot' },
+    { key: 'broccoli', label: 'Broccoli' },
+  ]},
+];
+
+<ComboBox label="Food" placeholder="Select food..." items={categories}>
+  {(category) => (
+    <ComboBox.Section key={category.name} title={category.name} items={category.children}>
+      {(item) => <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>}
+    </ComboBox.Section>
+  )}
+</ComboBox>
+```
+
 ### With Disabled Items
 
 <Story of={ComboBoxStories.WithDisabledItems} />
@@ -441,6 +468,8 @@ const fruits = [
 ### Virtualized List
 
 <Story of={ComboBoxStories.VirtualizedList} />
+
+For large datasets, use the `items` prop with a render function. This enables automatic virtualization — only visible items are rendered in the DOM, providing smooth scrolling even with thousands of items. Virtualization is disabled when sections are present.
 
 ```jsx
 const items = Array.from({ length: 1000 }, (_, i) => ({

@@ -533,6 +533,55 @@ WithSections.args = {
   searchPlaceholder: 'Search ingredients...',
 };
 
+export const DynamicSections: StoryFn<CubeFilterListBoxProps<any>> = (args) => {
+  const categories = [
+    {
+      name: 'Fruits',
+      children: [
+        { key: 'apple', label: 'Apple' },
+        { key: 'banana', label: 'Banana' },
+        { key: 'cherry', label: 'Cherry' },
+      ],
+    },
+    {
+      name: 'Vegetables',
+      children: [
+        { key: 'carrot', label: 'Carrot' },
+        { key: 'broccoli', label: 'Broccoli' },
+        { key: 'spinach', label: 'Spinach' },
+      ],
+    },
+    {
+      name: 'Herbs',
+      children: [
+        { key: 'basil', label: 'Basil' },
+        { key: 'cilantro', label: 'Cilantro' },
+        { key: 'parsley', label: 'Parsley' },
+      ],
+    },
+  ];
+
+  return (
+    <FilterListBox {...args} items={categories}>
+      {(category: any) => (
+        <FilterListBox.Section
+          key={category.name}
+          title={category.name}
+          items={category.children}
+        >
+          {(item: any) => (
+            <FilterListBox.Item key={item.key}>{item.label}</FilterListBox.Item>
+          )}
+        </FilterListBox.Section>
+      )}
+    </FilterListBox>
+  );
+};
+DynamicSections.args = {
+  label: 'Choose an ingredient',
+  searchPlaceholder: 'Search ingredients...',
+};
+
 export const WithSectionsAndDescriptions: StoryFn<
   CubeFilterListBoxProps<any>
 > = (args) => (
