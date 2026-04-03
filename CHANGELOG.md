@@ -1,5 +1,26 @@
 # @cube-dev/ui-kit
 
+## 0.126.1
+
+### Patch Changes
+
+- [#1109](https://github.com/cube-js/cube-ui-kit/pull/1109) [`fb2b3e6d`](https://github.com/cube-js/cube-ui-kit/commit/fb2b3e6df036c535dea789217d29cec5c876d7f4) Thanks [@tenphi](https://github.com/tenphi)! - Fix Layout.Panel resize handler not working properly on touch devices by adding `touch-action: none` to prevent browser scroll interference during drag
+
+- [#1110](https://github.com/cube-js/cube-ui-kit/pull/1110) [`a8f59f1f`](https://github.com/cube-js/cube-ui-kit/commit/a8f59f1f75e0184c7037b529536b5430415bbce5) Thanks [@tenphi](https://github.com/tenphi)! - fix(Tabs, RadioGroup): align radio/tabs size mapping
+
+  Both `Tabs type="radio"` and `Radio.Tabs` now use the same two API sizes with consistent Item button mappings:
+
+  - `large` (default): medium button (32px), 40px total
+  - `medium`: xsmall button (24px), 32px total
+
+- [#1113](https://github.com/cube-js/cube-ui-kit/pull/1113) [`e236b0cf`](https://github.com/cube-js/cube-ui-kit/commit/e236b0cf1b930041815868943cf237f83ba9240e) Thanks [@tenphi](https://github.com/tenphi)! - Update `@tenphi/tasty` to `1.2.0`.
+
+  - All style handlers now accept CSS-wide keywords (`initial`, `inherit`, `revert`, `unset`, `revert-layer`)
+  - New `longhand` modifier forces longhand CSS output for radius, padding, margin, scroll-margin, inset, and border
+  - Unified placement style handler with hierarchical priority (longhands override shorthands)
+  - New `scrollMargin` style with full directional support
+  - `radius` now supports `inherit` value
+
 ## 0.126.0
 
 ### Minor Changes
