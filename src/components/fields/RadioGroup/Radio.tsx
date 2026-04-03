@@ -213,18 +213,17 @@ function Radio(props: CubeRadioProps, ref) {
   // Determine effective size with priority: prop > context > default
   let effectiveSize: CubeItemProps['size'] = (size ??
     contextSize ??
-    (effectiveType === 'tabs' ? 'small' : 'medium')) as CubeItemProps['size'];
+    (effectiveType === 'tabs' ? 'large' : 'medium')) as CubeItemProps['size'];
 
-  // Apply size mapping for tabs mode button radios
+  // Apply size mapping for tabs mode button radios.
+  // Tabs mode supports 'medium' and 'large' (default) API sizes,
+  // mapped to smaller Item sizes: medium -> small, large -> medium.
   if (effectiveType === 'tabs' && isButton) {
-    if (effectiveSize === 'small' || effectiveSize === 'medium') {
-      effectiveSize = 'xsmall';
-    } else if (effectiveSize === 'large') {
+    if (effectiveSize === 'medium') {
+      effectiveSize = 'small';
+    } else {
       effectiveSize = 'medium';
-    } else if (effectiveSize === 'xlarge') {
-      effectiveSize = 'large';
     }
-    // 'xsmall' stays 'xsmall'
   }
 
   // Determine effective button type
