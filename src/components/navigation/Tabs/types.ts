@@ -22,9 +22,8 @@ export type TabSize = 'xsmall' | 'small' | 'medium' | 'large';
 
 /**
  * Size mapping for radio type tabs.
- * Radio type supports 'large' (default) and 'medium' API sizes,
- * mapped to Item button sizes: large -> medium (32px), medium -> xsmall (24px).
- * Total height includes container padding (2*4px): large=40px, medium=32px.
+ * API sizes mapped to Item button sizes:
+ * medium (default) -> xsmall (32px total), large -> medium (40px total).
  */
 export const RADIO_SIZE_MAP: Record<'medium' | 'large', TabSize> = {
   medium: 'xsmall',

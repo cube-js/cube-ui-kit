@@ -447,9 +447,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   }, [actions]);
 
   // Determine effective size
-  // For radio type, default to 'large' to match Radio.Tabs behavior (40px total)
-  const effectiveSize =
-    tabData.size ?? size ?? (effectiveType === 'radio' ? 'large' : 'medium');
+  const effectiveSize = tabData.size ?? size ?? 'medium';
   const itemSize =
     effectiveType === 'radio'
       ? RADIO_SIZE_MAP[effectiveSize === 'large' ? 'large' : 'medium']
