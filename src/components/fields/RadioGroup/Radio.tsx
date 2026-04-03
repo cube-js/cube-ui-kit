@@ -216,11 +216,12 @@ function Radio(props: CubeRadioProps, ref) {
     (effectiveType === 'tabs' ? 'large' : 'medium')) as CubeItemProps['size'];
 
   // Apply size mapping for tabs mode button radios.
-  // Tabs mode supports 'medium' and 'large' (default) API sizes,
-  // mapped to smaller Item sizes: medium -> small, large -> medium.
+  // Tabs mode supports 'large' (default) and 'medium' API sizes,
+  // mapped to Item button sizes: large -> medium (32px), medium -> xsmall (24px).
+  // Total height includes container padding (2*4px): large=40px, medium=32px.
   if (effectiveType === 'tabs' && isButton) {
     if (effectiveSize === 'medium') {
-      effectiveSize = 'small';
+      effectiveSize = 'xsmall';
     } else {
       effectiveSize = 'medium';
     }
