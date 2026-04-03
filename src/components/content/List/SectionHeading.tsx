@@ -11,6 +11,6 @@ export const SectionHeading = tasty(Space, {
     padding: '.5x 1x',
     height: '3x',
     placeContent: 'center space-between',
-    align: 'start',
+    placeItems: 'start',
   },
 });
