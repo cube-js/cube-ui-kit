@@ -189,7 +189,6 @@ export const StyledSectionHeading = tasty(Space, {
     preset: 'c2',
     height: '3x',
     placeContent: 'center space-between',
-    align: 'start',
     padding: {
       '': '.5x .75x',
       prefix: '0 .75x 0 .5x',
