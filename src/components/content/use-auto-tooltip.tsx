@@ -1,6 +1,7 @@
 import { Props } from '@tenphi/tasty';
 import {
   HTMLAttributes,
+  isValidElement,
   ReactNode,
   RefObject,
   useCallback,
@@ -16,10 +17,11 @@ import {
   TooltipProvider,
 } from '../overlays/Tooltip/TooltipProvider';
 
-export type AutoTooltipValue =
-  | string
-  | boolean
-  | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
+export type AutoTooltipConfig = Omit<CubeTooltipProviderProps, 'children'> & {
+  auto?: boolean;
+};
+
+export type AutoTooltipValue = ReactNode | boolean | AutoTooltipConfig;
 
 export interface UseAutoTooltipOptions {
   tooltip: AutoTooltipValue | undefined;
@@ -41,14 +43,18 @@ export function useAutoTooltip({
 
     // Boolean true enables auto overflow detection
     if (tooltip === true) return true;
-    if (typeof tooltip === 'object') {
-      // If title is provided and auto is explicitly true, enable auto overflow detection
-      if (tooltip.title) {
-        return tooltip.auto === true;
+
+    // ReactNode values (JSX elements) are explicit tooltips, not auto
+    if (isValidElement(tooltip)) return false;
+
+    if (typeof tooltip === 'object' && tooltip !== null) {
+      const config = tooltip as AutoTooltipConfig;
+
+      if (config.title) {
+        return config.auto === true;
       }
 
-      // If no title is provided, default to auto=true unless explicitly disabled
-      const autoValue = tooltip.auto !== undefined ? tooltip.auto : true;
+      const autoValue = config.auto !== undefined ? config.auto : true;
       return !!autoValue;
     }
     return false;
@@ -175,9 +181,18 @@ export function useAutoTooltip({
         }
       }
 
+      // ReactNode tooltip (JSX element/fragment) - use as title
+      if (isValidElement(tooltip)) {
+        return (
+          <TooltipProvider placement={defaultTooltipPlacement} title={tooltip}>
+            {(triggerProps, ref) => renderElement(triggerProps, ref)}
+          </TooltipProvider>
+        );
+      }
+
       // Object tooltip - advanced configuration
-      if (typeof tooltip === 'object') {
-        const { auto, ...tooltipProps } = tooltip;
+      if (typeof tooltip === 'object' && tooltip !== null) {
+        const { auto, ...tooltipProps } = tooltip as AutoTooltipConfig;
 
         // If title is provided and auto is not explicitly true, always show the tooltip
         if (tooltipProps.title && auto !== true) {

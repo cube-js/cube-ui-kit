@@ -61,10 +61,12 @@ import {
 import { LoadingIcon } from '../../../icons';
 import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
-import { useAutoTooltip } from '../../content/use-auto-tooltip';
+import {
+  AutoTooltipValue,
+  useAutoTooltip,
+} from '../../content/use-auto-tooltip';
 import { DisplayTransition } from '../../helpers/DisplayTransition';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
-import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { CubeActionProps } from '../Action/Action';
 import { useButtonSplitContext } from '../ButtonSplit/context';
 import { useAction } from '../use-action';
@@ -120,10 +122,7 @@ export interface CubeButtonProps extends CubeActionProps {
    * - true: auto tooltip on overflow (shows children as tooltip when truncated)
    * - object: advanced configuration with optional auto property
    */
-  tooltip?:
-    | string
-    | boolean
-    | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
+  tooltip?: AutoTooltipValue;
   /**
    * @private
    * Default tooltip placement for the button.
@@ -201,7 +200,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     '': 't3m',
     'size=xsmall': 't4',
     'size=xlarge': 't2m',
-    'type=link': 'strong',
+    'type=link': 'inherit / strong',
   },
   outlineOffset: 1,
   padding: {
