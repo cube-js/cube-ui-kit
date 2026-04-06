@@ -490,7 +490,7 @@ describe('Nested Disclosures', () => {
 
 describe('Content Preservation', () => {
   beforeEach(() => {
-    vi.useFakeTimers({ legacyFakeTimers: false });
+    vi.useFakeTimers();
   });
 
   afterEach(() => {

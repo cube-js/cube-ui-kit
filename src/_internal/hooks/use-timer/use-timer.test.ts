@@ -7,7 +7,7 @@ describe('useTimer', () => {
   const callback = vi.fn();
 
   beforeAll(() => {
-    vi.useFakeTimers('modern');
+    vi.useFakeTimers();
   });
 
   beforeEach(() => {
@@ -81,7 +81,7 @@ describe('useTimer', () => {
 
     expect(result.current.timer?.status).toBe('running');
 
-    rerender({ isDisabled: true });
+    rerender({ callback, delay: 10, isDisabled: true });
 
     vi.runAllTimers();
 

@@ -157,7 +157,7 @@ describe('<Tabs />', () => {
 
     it('should handle numeric activeKey (converted to string)', () => {
       const { getByRole, rerender } = renderWithRoot(
-        <Tabs activeKey={1}>
+        <Tabs activeKey={'1'}>
           <Tab key={1} title="Tab 1">
             Content 1
           </Tab>
@@ -173,7 +173,7 @@ describe('<Tabs />', () => {
       );
 
       rerender(
-        <Tabs activeKey={2}>
+        <Tabs activeKey={'2'}>
           <Tab key={1} title="Tab 1">
             Content 1
           </Tab>
@@ -191,7 +191,7 @@ describe('<Tabs />', () => {
 
     it('should handle numeric defaultActiveKey', () => {
       const { getByRole } = renderWithRoot(
-        <Tabs defaultActiveKey={2}>
+        <Tabs defaultActiveKey={'2'}>
           <Tab key={1} title="Tab 1">
             Content 1
           </Tab>
@@ -902,7 +902,7 @@ describe('<Tabs />', () => {
     function actionsContainerWithButtons(tab: HTMLElement) {
       let node: HTMLElement | null = tab.parentElement;
       while (node) {
-        for (const child of node.children) {
+        for (const child of Array.from(node.children)) {
           if (
             child.getAttribute('data-element') === 'Actions' &&
             child.querySelector('button')

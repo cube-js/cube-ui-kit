@@ -158,7 +158,7 @@ export const Themes: Story = {
       <Tag theme="success">Success</Tag>
       <Tag theme="danger">Danger</Tag>
       <Tag theme="special">Special</Tag>
-      <Tag theme="disabled">Disabled</Tag>
+      <Tag isDisabled>Disabled</Tag>
     </Space>
   ),
 };

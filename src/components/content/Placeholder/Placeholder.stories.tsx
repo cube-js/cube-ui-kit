@@ -2,6 +2,8 @@ import { baseProps } from '../../../stories/lists/baseProps';
 
 import { Placeholder } from './Placeholder';
 
+import type { StoryFn } from '@storybook/react-vite';
+
 export default {
   title: 'Content/Placeholder',
   component: Placeholder,
@@ -14,19 +16,19 @@ export default {
 
 const Template = (args) => <Placeholder {...args} />;
 
-export const Box = Template.bind({});
+export const Box: StoryFn = Template.bind({});
 Box.args = {};
 
-export const BigBox = Template.bind({});
+export const BigBox: StoryFn = Template.bind({});
 BigBox.args = {
   height: '6x',
 };
 
-export const Circle = Template.bind({});
+export const Circle: StoryFn = Template.bind({});
 Circle.args = {
   circle: true,
   size: '6x',
 };
 
-export const Static = Template.bind({});
+export const Static: StoryFn = Template.bind({});
 Static.args = { isStatic: true };

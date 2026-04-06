@@ -33,6 +33,8 @@ import { TimeInput } from './TimeInput';
 import { DateFieldBase } from './types';
 import { useFocusManagerRef } from './utils';
 
+import type { ReactElement, Ref } from 'react';
+
 const DateRangeDash = tasty({
   'aria-hidden': 'true',
   'data-qa': 'DateRangeDash',
@@ -203,7 +205,11 @@ function DateRangePicker<T extends DateValue>(
   });
 }
 
-const _DateRangePicker = forwardRef(DateRangePicker) as typeof DateRangePicker;
+const _DateRangePicker = forwardRef(DateRangePicker) as <
+  T extends DateValue = DateValue,
+>(
+  props: CubeDateRangePickerProps<T> & { ref?: Ref<HTMLElement> },
+) => ReactElement | null;
 
 (_DateRangePicker as any).displayName = 'DateRangePicker';
 

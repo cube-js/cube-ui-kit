@@ -542,7 +542,7 @@ function CommandMenu<T extends object>(
 
   return (
     <StyledCommandMenu
-      {...filterBaseProps(props)}
+      {...(filterBaseProps(props) as Record<string, unknown>)}
       ref={domRef}
       qa={qa || 'CommandMenu'}
       data-size={size}

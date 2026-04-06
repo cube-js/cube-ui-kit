@@ -2403,12 +2403,7 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
           <Space gap="1x" flow="row wrap" placeItems="start">
             {standardThemes.map((theme) => {
               const item = (
-                <Item
-                  {...args}
-                  type={type}
-                  theme={theme}
-                  {...(type !== 'link' && { icon: <IconUser /> })}
-                >
+                <Item {...args} type={type} theme={theme} icon={<IconUser />}>
                   {theme}
                 </Item>
               );

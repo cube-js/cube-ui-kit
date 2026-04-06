@@ -4,6 +4,8 @@ import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 
 import { ActiveZone } from './ActiveZone';
 
+import type { StoryFn } from '@storybook/react-vite';
+
 export default {
   title: 'Content/ActiveZone',
   component: ActiveZone,
@@ -25,12 +27,12 @@ const TooltipTemplate = ({ isDisabled, label }) => (
   </TooltipTrigger>
 );
 
-export const Default = Template.bind({});
+export const Default: StoryFn = Template.bind({});
 Default.args = {
   label: 'ActiveZone',
 };
 
-export const WithTooltip = TooltipTemplate.bind({});
+export const WithTooltip: StoryFn = TooltipTemplate.bind({});
 WithTooltip.args = {
   label: 'ActiveZone',
 };
