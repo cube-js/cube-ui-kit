@@ -45,8 +45,8 @@ importers:
         specifier: ^3.13.12
         version: 3.13.12(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tenphi/tasty':
-        specifier: 1.2.0
-        version: 1.2.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.1.1)
+        specifier: 0.0.0-snapshot.e8f14d4
+        version: 0.0.0-snapshot.e8f14d4(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.1.1)
       clipboard-copy:
         specifier: ^4.0.1
         version: 4.0.1
@@ -2873,8 +2873,8 @@ packages:
     peerDependencies:
       eslint: '>=8.0.0'
 
-  '@tenphi/tasty@1.2.0':
-    resolution: {integrity: sha512-31eXCtX8T3K9t8qEFxE94Kt0Zyu7a619+QhlfbSlxjtB2axytnppucQF/FVy5/wsXinQPoDjpGqyMnZU006caQ==}
+  '@tenphi/tasty@0.0.0-snapshot.e8f14d4':
+    resolution: {integrity: sha512-4XT/OY9qdO0oo2MKUG2zEpQVOZV+apZnjmP6+Ldtz3X+ctG0hfkE9T07I9U4ooXz8lb1pskzLAyv849dSLqQ/Q==}
     engines: {node: '>=20'}
     peerDependencies:
       '@babel/core': ^7.24.0
@@ -10431,7 +10431,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@tenphi/tasty@1.2.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.1.1)':
+  '@tenphi/tasty@0.0.0-snapshot.e8f14d4(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.1.1)':
     dependencies:
       csstype: 3.1.2
     optionalDependencies:
