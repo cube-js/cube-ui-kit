@@ -132,6 +132,7 @@ export interface CubeRadioProps
     AriaRadioProps,
     Omit<FieldBaseProps, 'tooltip'>,
     OuterStyleProps {
+  'aria-label'?: string;
   /* The visual type of the radio button */
   type?: 'button' | 'radio';
   buttonType?: Exclude<CubeItemProps['type'], 'secondary'>;
@@ -350,7 +351,7 @@ function Radio(props: CubeRadioProps, ref) {
         <RadioLabelElement
           mods={mods}
           styles={labelStyles}
-          {...filterBaseProps(labelProps)}
+          {...(labelProps ? filterBaseProps(labelProps) : undefined)}
         >
           {label}
         </RadioLabelElement>

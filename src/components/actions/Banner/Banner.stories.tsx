@@ -5,7 +5,7 @@ import { Space } from '../../layout/Space';
 
 import { Banner, BannerProps } from './Banner';
 
-import type { Meta, StoryFn } from '@storybook/react';
+import type { Meta, StoryFn } from '@storybook/react-vite';
 
 const meta = {
   title: 'Actions/Banner',

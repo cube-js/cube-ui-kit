@@ -12,7 +12,7 @@ import type { Styles } from '@tenphi/tasty';
  * @param ignoreList - Properties to skip during extraction.
  */
 export function extractStyles(
-  props: Record<string, unknown>,
+  props: object,
   styleList: readonly string[] = [],
   defaultStyles?: Styles,
   propMap?: Record<string, string>,
@@ -20,23 +20,24 @@ export function extractStyles(
 ): Styles {
   const ignoreSet = new Set(ignoreList);
   const styleSet = new Set(styleList);
+  const record = props as Record<string, unknown>;
 
   const styles: Styles = {
     ...defaultStyles,
     ...(!ignoreSet.has('styles') &&
-    props.styles &&
-    typeof props.styles === 'object'
-      ? (props.styles as Styles)
+    record.styles &&
+    typeof record.styles === 'object'
+      ? (record.styles as Styles)
       : undefined),
   };
 
-  for (const prop of Object.keys(props)) {
+  for (const prop of Object.keys(record)) {
     if (ignoreSet.has(prop)) continue;
 
     const styleName = propMap?.[prop] ?? prop;
 
     if (styleSet.has(styleName)) {
-      styles[styleName] = props[prop] as Styles[keyof Styles];
+      styles[styleName] = record[prop] as Styles[keyof Styles];
     }
   }
 

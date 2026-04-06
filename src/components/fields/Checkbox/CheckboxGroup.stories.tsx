@@ -3,6 +3,8 @@ import { baseProps } from '../../../stories/lists/baseProps';
 
 import { Checkbox } from './Checkbox';
 
+import type { StoryFn } from '@storybook/react-vite';
+
 export default {
   title: 'Forms/CheckboxGroup',
   component: Checkbox.Group,
@@ -28,11 +30,11 @@ const Template = (props) => (
   </Checkbox.Group>
 );
 
-export const Default = Template.bind({});
+export const Default: StoryFn = Template.bind({});
 Default.args = {};
 
-export const Invalid = Template.bind({});
+export const Invalid: StoryFn = Template.bind({});
 Invalid.args = { validationState: 'invalid' };
 
-export const WithLabel = Template.bind({});
+export const WithLabel: StoryFn = Template.bind({});
 WithLabel.args = { label: 'Checkbox Group', 'aria-label': undefined };

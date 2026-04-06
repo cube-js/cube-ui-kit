@@ -1323,8 +1323,7 @@ export const WithTooltips: Story = {
       <ListBox.Item
         key="import"
         tooltip={{
-          title: 'Import Project',
-          description: 'Import an existing project from file or URL',
+          title: 'Import an existing project from file or URL',
           placement: 'right',
         }}
         icon={<DatabaseIcon />}
@@ -1419,8 +1418,7 @@ export const TooltipsWithActions: Story = {
         <ListBox.Item
           key="restore"
           tooltip={{
-            title: 'Restore Database',
-            description:
+            title:
               'Restore database from a previous backup. This action cannot be undone.',
             placement: 'right',
           }}
@@ -1450,8 +1448,7 @@ export const TooltipsWithActions: Story = {
         <ListBox.Item
           key="permissions"
           tooltip={{
-            title: 'Manage Permissions',
-            description:
+            title:
               'Configure user roles and access permissions for different system areas',
             placement: 'right',
           }}

@@ -27,6 +27,8 @@ import { parseAbsoluteDate } from './parseDate';
 import { DEFAULT_DATE_PROPS } from './props';
 import { formatSegments, useFocusManagerRef } from './utils';
 
+import type { ReactElement, Ref } from 'react';
+
 export interface CubeDateInputProps<T extends DateValue = DateValue>
   extends Omit<AriaDateFieldProps<T>, 'errorMessage'>,
     BaseProps,
@@ -120,7 +122,9 @@ function DateInput<T extends DateValue>(
  * DateInputs allow users to enter and edit date and time values using a keyboard.
  * Each part of a date value is displayed in an individually editable segment.
  */
-const _DateInput = forwardRef(DateInput) as typeof DateInput;
+const _DateInput = forwardRef(DateInput) as <T extends DateValue = DateValue>(
+  props: CubeDateInputProps<T> & { ref?: Ref<HTMLElement> },
+) => ReactElement | null;
 
 (_DateInput as any).displayName = 'DateInput';
 

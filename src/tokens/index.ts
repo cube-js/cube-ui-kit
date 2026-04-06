@@ -61,4 +61,3 @@ export { SHADOW_TOKENS } from './shadows';
 export { LAYOUT_TOKENS } from './layout';
 export { BASE_TOKENS } from './base';
 export { TYPOGRAPHY_PRESETS } from './typography';
-export type { TypographyPreset } from './typography';

@@ -1,5 +1,7 @@
 import { Paragraph } from '../components/content/Paragraph';
 
+import type { StoryFn } from '@storybook/react-vite';
+
 export default {
   title: 'Content/Paragraph',
   component: Paragraph,
@@ -70,7 +72,7 @@ const Template = ({ label, ...args }) => (
   <Paragraph {...args}>{label}</Paragraph>
 );
 
-export const Default = Template.bind({});
+export const Default: StoryFn = Template.bind({});
 Default.args = {
   label: 'Paragraph content',
 };

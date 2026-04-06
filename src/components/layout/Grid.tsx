@@ -34,7 +34,10 @@ export const Grid = forwardRef(function Grid(props: CubeGridProps, ref) {
 
   return (
     <GridElement
-      {...filterBaseProps(props, { eventProps: true })}
+      {...(filterBaseProps(props, { eventProps: true }) as Record<
+        string,
+        unknown
+      >)}
       ref={ref}
       styles={styles}
     />

@@ -273,7 +273,7 @@ function Checkbox(
             valid: validationState === 'valid',
             disabled: isDisabled,
           }}
-          {...filterBaseProps(labelProps)}
+          {...(labelProps ? filterBaseProps(labelProps) : undefined)}
         >
           {label ?? children}
         </Element>

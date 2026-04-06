@@ -6,7 +6,7 @@ import { DisplayTransition } from './DisplayTransition';
 
 describe('DisplayTransition', () => {
   beforeEach(() => {
-    vi.useFakeTimers({ legacyFakeTimers: false });
+    vi.useFakeTimers();
   });
 
   afterEach(() => {

@@ -1,5 +1,7 @@
 import { Block } from '../components/Block';
 
+import type { StoryFn } from '@storybook/react-vite';
+
 export default {
   title: 'Content/Block',
   component: Block,
@@ -43,7 +45,7 @@ export default {
 
 const Template = ({ label, ...args }) => <Block {...args}>{label}</Block>;
 
-export const Default = Template.bind({});
+export const Default: StoryFn = Template.bind({});
 Default.args = {
   label: 'Block content',
   shadow: true,

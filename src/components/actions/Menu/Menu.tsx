@@ -232,7 +232,7 @@ function Menu<T extends object>(
       qa={qa}
       styles={styles}
       mods={wrapperMods}
-      {...filterBaseProps(completeProps)}
+      {...(filterBaseProps(completeProps) as Record<string, unknown>)}
     >
       {header ? (
         <StyledHeader data-size={size} styles={headerStyles}>

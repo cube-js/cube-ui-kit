@@ -695,7 +695,10 @@ export const Picker = forwardRef(function Picker<T extends object>(
   const pickerField = (
     <PickerWrapper
       styles={styles}
-      {...filterBaseProps(otherProps, { eventProps: true })}
+      {...(filterBaseProps(otherProps, { eventProps: true }) as Record<
+        string,
+        unknown
+      >)}
     >
       <DialogTrigger
         isDismissable
