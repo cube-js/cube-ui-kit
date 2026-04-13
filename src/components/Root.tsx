@@ -22,9 +22,6 @@ import { OverlayProvider } from './overlays/Notifications/OverlayProvider';
 import { PortalProvider } from './portal';
 
 configure({
-  gc: {
-    auto: true,
-  },
   colorSpace: 'rgb',
   units: {
     x: 'var(--gap)',
