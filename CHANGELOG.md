@@ -1,5 +1,27 @@
 # @cube-dev/ui-kit
 
+## 0.127.0
+
+### Minor Changes
+
+- [`f8ef25e7`](https://github.com/cube-js/cube-ui-kit/commit/f8ef25e7a1498bded3808ebb93c6526661434116) Thanks [@tenphi](https://github.com/tenphi)! - Update `@tenphi/tasty` to `1.4.2`.
+
+  - Hook-free `tasty()` components, enabling React Server Component compatibility.
+  - New `tokenProps` option for exposing token keys as top-level component props.
+  - Popularity-aware garbage collector for unused styles with `gc()`, `maybeGC()`, and `touch()` APIs.
+  - Internal properties now overridable via `configure({ properties })`.
+  - `filterBaseProps` is now generic — accepts strongly-typed props without casting.
+
+- [#1116](https://github.com/cube-js/cube-ui-kit/pull/1116) [`b37f92b4`](https://github.com/cube-js/cube-ui-kit/commit/b37f92b4db5b9e17fcaf21bb87fa98bdd45d204c) Thanks [@tenphi](https://github.com/tenphi)! - Update `@tenphi/tasty` to `2.0.1`.
+
+  - Unified hash-based class names across all rendering environments for stable cross-environment style deduplication.
+  - New `presets` and `globalStyles` options in `configure()`.
+  - Default `letterSpacing` in typography presets changed from `'0'` to `'normal'`.
+  - Simplified GC to touch-count-driven mechanism — no longer requires `auto: true` configuration.
+  - Fixed overlapping and duplicate CSS selectors produced by the condition simplifier.
+
+  Migrated: removed deprecated `gc: { auto: true }` from `configure()` call (GC now runs automatically).
+
 ## 0.126.1
 
 ### Patch Changes
