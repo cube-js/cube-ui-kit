@@ -1,6 +1,6 @@
 ---
-
-## "@cube-dev/ui-kit": minor
+"@cube-dev/ui-kit": minor
+---
 
 Update `@tenphi/tasty` to `1.4.2`.
 
