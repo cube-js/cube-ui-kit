@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.127.2
+
+### Patch Changes
+
+- [#1120](https://github.com/cube-js/cube-ui-kit/pull/1120) [`197db607`](https://github.com/cube-js/cube-ui-kit/commit/197db60739d6a335fdcb233a8a26daf0ce59964b) Thanks [@tenphi](https://github.com/tenphi)! - Fix placeholder color in input recipes to use `#placeholder` token consistently
+
 ## 0.127.1
 
 ### Patch Changes
