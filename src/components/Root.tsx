@@ -63,7 +63,6 @@ configure({
       '-webkit-text-fill-color': {
         '': 'currentColor',
         '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
-        ':placeholder-shown': '(#placeholder, currentColor)',
       },
       caretColor: {
         '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
