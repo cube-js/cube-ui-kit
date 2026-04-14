@@ -63,6 +63,7 @@ configure({
       '-webkit-text-fill-color': {
         '': 'currentColor',
         '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
+        ':placeholder-shown': '(#placeholder, currentColor)',
       },
       caretColor: {
         '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
@@ -80,8 +81,8 @@ configure({
       },
     },
     'input-placeholder': {
-      '-webkit-text-fill-color': 'var(--placeholder-color, initial)',
-      color: 'var(--placeholder-color, initial)',
+      '-webkit-text-fill-color': '#placeholder',
+      color: '#placeholder',
     },
     'input-search-cancel-button': {
       hide: true,

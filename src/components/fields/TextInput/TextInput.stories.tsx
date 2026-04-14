@@ -160,7 +160,11 @@ export default {
 };
 
 const Template: StoryFn<CubeTextInputProps> = (props) => (
-  <TextInput {...props} onChange={(query) => console.log('change', query)} />
+  <TextInput
+    placeholder="Placeholder"
+    {...props}
+    onChange={(query) => console.log('change', query)}
+  />
 );
 
 export const Default = Template.bind({});
