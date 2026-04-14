@@ -80,8 +80,8 @@ configure({
       },
     },
     'input-placeholder': {
-      '-webkit-text-fill-color': 'var(--placeholder-color, initial)',
-      color: 'var(--placeholder-color, initial)',
+      '-webkit-text-fill-color': '#placeholder',
+      color: '#placeholder',
     },
     'input-search-cancel-button': {
       hide: true,
