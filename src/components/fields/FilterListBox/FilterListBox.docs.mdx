@@ -52,6 +52,8 @@ A searchable list selection component that combines a ListBox with an integrated
 - **`onOptionClick`** `(key: Key) => void` — Callback when an option is clicked
 - **`items`** `Iterable<T>` — Array of items for dynamic content with render function pattern
 - **`isLoading`** `boolean` (default: `false`) — Whether the FilterListBox is in a loading state (shows loading icon in search input)
+- **`isLoadingItems`** `boolean` (default: `false`) — Whether the items are currently loading. Shows a loading disclaimer inside the popover. When `allowsCustomValue` is `false`, the search input is hidden and the disclaimer acts as the focus target; when `true`, the search input remains visible so custom values can still be typed, and the disclaimer is shown below it
+- **`loadingItemsLabel`** `ReactNode` (default: `Loading items...`) — Label displayed inside the loading disclaimer when `isLoadingItems` is `true`
 - **`autoFocus`** `boolean` — Whether the search input should have autofocus
 - **`customValueProps`** `Partial<CubeItemProps>` — Props to apply to existing custom values (already selected but not in predefined options)
 - **`newCustomValueProps`** `Partial<CubeItemProps>` — Props to apply to new custom values appearing in search results (merged with `customValueProps`)
@@ -150,7 +152,8 @@ The `mods` property accepts the following modifiers you can override:
 - `disabled` `boolean` — Applied when `isDisabled={true}`
 - `focused` `boolean` — Applied when the FilterListBox has focus
 - `loading` `boolean` — Applied when `isLoading={true}`
-- `searchable` `boolean` — Always true for FilterListBox
+- `loading-items` `boolean` — Applied when `isLoadingItems={true}`
+- `searchable` `boolean` — Applied when the search input is rendered (hidden when `isLoadingItems={true}` and `allowsCustomValue={false}`)
 - `prefix` `boolean` — Applied when loading icon is shown
 
 ## Sub-components
