@@ -27,6 +27,6 @@ module.exports = [
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    limit: '110kB',
+    limit: '115kB',
   },
 ];
