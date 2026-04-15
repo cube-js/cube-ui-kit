@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.127.3
+
+### Patch Changes
+
+- [#1122](https://github.com/cube-js/cube-ui-kit/pull/1122) [`6ae54b68`](https://github.com/cube-js/cube-ui-kit/commit/6ae54b686fef188acdf961846211bce8916df681) Thanks [@tenphi](https://github.com/tenphi)! - Update tasty to the latest.
+
 ## 0.127.2
 
 ### Patch Changes
