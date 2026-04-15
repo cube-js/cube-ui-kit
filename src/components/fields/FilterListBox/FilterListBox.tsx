@@ -953,13 +953,16 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }
   };
 
-  // Custom option click handler that ensures search input receives focus
+  // Custom option click handler that ensures the active focus target (search
+  // input, or the disclaimer when it replaces the search input) receives focus
+  // so subsequent keyboard navigation keeps working after a mouse click.
   const handleOptionClick = (key: Key) => {
-    // Focus the search input to enable keyboard navigation
     // Use setTimeout to ensure this happens after React state updates
     setTimeout(() => {
       if (searchInputRef.current) {
         searchInputRef.current.focus();
+      } else if (disclaimerRef.current) {
+        disclaimerRef.current.focus();
       }
     }, 0);
 
