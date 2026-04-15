@@ -150,7 +150,7 @@ gridRows: 'max-content max-content max-content 1sf'
 - **invalid/valid**: Validation state styling
 - **loading**: Loading state indication (`isLoading`)
 - **loading-items**: Items-loading state indication (`isLoadingItems`)
-- **searchable**: Applied when the search input is rendered
+- **searchable**: Always true for this component
 
 ## Performance Considerations
 

@@ -901,7 +901,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
       focused: isFocused,
       loading: !!isLoading,
       'loading-items': !!isLoadingItems,
-      searchable: showSearchInput,
+      // `searchable` marks this as a FilterListBox context (vs a bare ListBox)
+      // and tells inner components — notably ListBox — to drop their own
+      // borders. It must stay true even when the search input is hidden
+      // (e.g. isLoadingItems && !allowsCustomValue), otherwise ListBox would
+      // render a redundant inner border.
+      searchable: true,
       prefix: !!isLoading,
       ...externalMods,
     }),
@@ -912,7 +917,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
       isFocused,
       isLoading,
       isLoadingItems,
-      showSearchInput,
       externalMods,
     ],
   );
