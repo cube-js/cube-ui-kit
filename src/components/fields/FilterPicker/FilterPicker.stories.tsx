@@ -1171,6 +1171,11 @@ export const LoadingItemsState: Story = {
     searchPlaceholder: 'Search options...',
     width: '30x',
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
   render: (args) => (
     <FilterPicker {...args}>
       {fruits.slice(0, 2).map((fruit) => (
@@ -1199,6 +1204,11 @@ export const LoadingItemsWithCustomValue: Story = {
     selectionMode: 'multiple',
     searchPlaceholder: 'Search or type custom value...',
     width: '30x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
   },
   render: (args) => (
     <FilterPicker {...args}>
