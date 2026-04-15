@@ -265,6 +265,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onOptionClick,
     isClearable,
     isLoadingItems,
+    loadingItemsLabel,
     searchValue,
     onSearchChange,
     sortSelectedToTop: sortSelectedToTopProp,
@@ -841,6 +842,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 isDisabled={isDisabled}
                 isLoading={isLoading}
                 isLoadingItems={isLoadingItems}
+                loadingItemsLabel={loadingItemsLabel}
                 stateRef={listStateRef}
                 isCheckable={isCheckable}
                 mods={{
