@@ -1018,7 +1018,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }
     // Run only when we switch into a focusable-disclaimer state so we don't
     // steal focus on unrelated re-renders.
-     
   }, [disclaimerIsFocusable]);
 
   const loadingDisclaimer = showLoadingDisclaimer ? (
