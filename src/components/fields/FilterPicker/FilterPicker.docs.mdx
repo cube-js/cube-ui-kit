@@ -32,7 +32,7 @@ A versatile selection component that combines a trigger button with a searchable
 - **`selectionMode`** `'single' | 'multiple'` (default: `single`) — Selection mode for the picker
 - **`allowsCustomValue`** `boolean` (default: `false`) — Whether to allow entering custom values that are not present in the predefined options
 - **`isClearable`** `boolean` (default: `false`) — Whether the filter picker is clearable using a clear button in the rightIcon slot
-- **`isLoadingItems`** `boolean` (default: `false`) — Whether the items are currently loading. Unlike `isLoading`, this does NOT disable the trigger, so the popover can still be opened while items are being fetched. Shows a `LoadingIcon` in the trigger and a loading disclaimer inside the popover. When `allowsCustomValue` is `false`, the search input is hidden and only the disclaimer is shown; when `true`, the search input remains visible so users can still type and apply a custom value.
+- **`isLoadingItems`** `boolean` (default: `false`) — Whether items are currently loading. Shows a loading spinner in the search input suffix inside the popover. Unlike `isLoading`, does not disable the trigger.
 - **`disallowEmptySelection`** `boolean` (default: `false`) — Whether to disallow empty selection
 - **`disabledKeys`** `Key[]` — Array of keys for disabled items
 - **`items`** `Iterable<T>` — Array of items to render when using the render function pattern for large datasets with dynamic content
@@ -42,7 +42,7 @@ A versatile selection component that combines a trigger button with a searchable
 - **`theme`** `'default' | 'special'` (default: `default`) — Button theme
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the picker component
 - **`searchPlaceholder`** `string` — Placeholder text in the search input
-- **`emptyLabel`** `string` — Custom label to display when no results are found after filtering
+- **`emptyLabel`** `ReactNode` (default: context-aware: `No items` or `No results found`) — Label shown when the list is empty. When provided, overrides both defaults for any empty state
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function for determining if an option should be included in search results
 - **`header`** `ReactNode` — Custom header content
 - **`footer`** `ReactNode` — Custom footer content
@@ -484,7 +484,7 @@ const categories = [
 
 ### Loading Items
 
-Use `isLoadingItems` to indicate that items are currently being fetched. Unlike `isLoading`, the trigger stays enabled so users can still open the popover and interact with items that have already loaded.
+Use `isLoadingItems` to indicate that items are currently being fetched. Unlike `isLoading`, the trigger stays enabled so users can still open the popover and interact with items that have already loaded. A loading spinner appears in the search input suffix.
 
 <Story of={FilterPickerStories.LoadingItemsState} />
 
@@ -494,24 +494,6 @@ Use `isLoadingItems` to indicate that items are currently being fetched. Unlike 
   placeholder="Select a fruit..."
   isLoadingItems={true}
   selectionMode="multiple"
->
-  <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
-  <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
-</FilterPicker>
-```
-
-When `allowsCustomValue` is `true`, the search input remains visible so users can still type and apply a custom value while items are loading. The loading disclaimer is shown below the search input.
-
-<Story of={FilterPickerStories.LoadingItemsWithCustomValue} />
-
-```jsx
-<FilterPicker
-  label="Loading Items (Custom Value)"
-  placeholder="Type or pick a fruit..."
-  isLoadingItems={true}
-  allowsCustomValue={true}
-  selectionMode="multiple"
-  searchPlaceholder="Search or type custom value..."
 >
   <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
   <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
@@ -779,80 +761,61 @@ The clear button:
 - Calls the optional `onClear` callback
 - Is hidden when the picker is disabled or read-only
 
-### External Filtering
+### Server-Side / Dynamic Search
 
-<Story of={FilterPickerStories.ExternalFiltering} />
+<Story of={FilterPickerStories.AsyncSearch} />
 
-FilterPicker provides two approaches for implementing external filtering when you need to control the filtering logic outside the component:
-
-#### Approach 1: Disabled Internal Filtering
-
-Use `filter={false}` to disable internal filtering while providing pre-filtered items:
+When items come from a backend API, use `filter={false}` with controlled search to let the server handle filtering. Items are replaced when the response arrives, and `isLoadingItems` shows a subtle spinner in the search input while the fetch is in flight.
 
 ```jsx
-const [externalSearch, setExternalSearch] = useState('');
-
-const filteredFruits = useMemo(() => {
-  if (!externalSearch.trim()) return allFruits;
-  return allFruits.filter((fruit) =>
-    fruit.label.toLowerCase().includes(externalSearch.toLowerCase())
-  );
-}, [externalSearch]);
-
-<FilterPicker
-  label="Select Fruits"
-  placeholder="Choose fruits..."
-  selectionMode="multiple"
-  filter={false}
-  items={filteredFruits}
-  searchPlaceholder="Type to search..."
->
-  {(fruit) => (
-    <FilterPicker.Item key={fruit.key}>{fruit.label}</FilterPicker.Item>
-  )}
-</FilterPicker>
-```
-
-#### Approach 2: Controlled Search Input
-
-Use `searchValue` and `onSearchChange` for complete control over the search behavior:
-
-```jsx
+const [items, setItems] = useState(initialItems);
 const [searchValue, setSearchValue] = useState('');
+const [isLoadingItems, setIsLoadingItems] = useState(false);
 
-// Simulate debounced search
-const [processedSearch, setProcessedSearch] = useState('');
-useEffect(() => {
-  const timer = setTimeout(() => setProcessedSearch(searchValue), 300);
-  return () => clearTimeout(timer);
-}, [searchValue]);
-
-const filteredFruits = useMemo(() => {
-  if (!processedSearch.trim()) return allFruits;
-  return allFruits.filter((fruit) =>
-    fruit.label.toLowerCase().includes(processedSearch.toLowerCase())
-  );
-}, [processedSearch]);
+const handleSearchChange = useCallback((value) => {
+  setSearchValue(value);
+  setIsLoadingItems(true);
+  debouncedFetch(value)
+    .then(setItems)
+    .finally(() => setIsLoadingItems(false));
+}, []);
 
 <FilterPicker
-  label="Select Fruits"
-  placeholder="Choose fruits..."
-  selectionMode="multiple"
+  items={items}
   searchValue={searchValue}
+  onSearchChange={handleSearchChange}
   filter={false}
-  items={filteredFruits}
-  onSearchChange={setSearchValue}
+  sortSelectedToTop={false}
+  isLoadingItems={isLoadingItems}
+  placeholder="Search items..."
+  selectionMode="multiple"
+  onOpenChange={(isOpen) => {
+    if (!isOpen) {
+      setSearchValue('');
+      setItems(initialItems);
+    }
+  }}
 >
-  {(fruit) => (
-    <FilterPicker.Item key={fruit.key}>{fruit.label}</FilterPicker.Item>
+  {(item) => (
+    <FilterPicker.Item key={item.id} textValue={item.name}>
+      {item.name}
+    </FilterPicker.Item>
   )}
 </FilterPicker>
 ```
 
-**When to use each approach:**
-- **`filter={false}`**: Simpler approach when you just need to pre-filter items without controlling the search input itself. Good for server-side filtering or custom filter logic.
-- **Controlled Search**: Use when you need full control over the search input (debouncing, external UI sync, clearing from outside, or tracking search analytics).
-- **Combine Both**: You can use both together for maximum control - controlled search input with external filtering.
+**How it works:**
+- **`filter={false}`** disables client-side filtering so items are shown exactly as the server returns them
+- **`searchValue` + `onSearchChange`** give you control over the search input; debounce and fetch on your side
+- **`items`** is a reactive prop — replace it with server results and the list updates automatically
+- **`isLoadingItems`** shows a loading spinner in the search input suffix while fetching
+- **`sortSelectedToTop={false}`** is recommended when the server controls item order
+- **`emptyLabel`** can be used to customize the empty state message (e.g. `"Loading items..."` during initial load)
+- **Reset on close** — use `onOpenChange` to restore the initial item set and clear the search when the popover closes, ensuring the trigger label resolves correctly
+
+**Tips:**
+- Debouncing is the consumer's responsibility (300-500ms is typical)
+- During the debounce delay, old items remain visible — if you want instant client-side feedback while waiting, use a filter function instead of `false`
 
 ## Performance
 

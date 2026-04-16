@@ -127,11 +127,9 @@ export interface CubeFilterPickerProps<T>
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
   /**
-   * Whether the items are currently loading. Unlike `isLoading`, this does NOT
-   * disable the trigger, so the popover can still be opened while items are being
-   * fetched. Shows a `LoadingIcon` in the trigger and a loading disclaimer inside
-   * the popover. When `allowsCustomValue` is `false`, the search input is hidden
-   * and only the disclaimer is shown.
+   * Whether items are currently loading. Shows a loading spinner in the search
+   * input suffix inside the popover. Unlike `isLoading`, this does NOT disable
+   * the trigger.
    */
   isLoadingItems?: boolean;
   /**
@@ -265,7 +263,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onOptionClick,
     isClearable,
     isLoadingItems,
-    loadingItemsLabel,
     searchValue,
     onSearchChange,
     sortSelectedToTop: sortSelectedToTopProp,
@@ -660,7 +657,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       }}
       icon={icon}
       rightIcon={
-        isLoading || isLoadingItems ? (
+        isLoading ? (
           <LoadingIcon />
         ) : rightIcon !== undefined ? (
           rightIcon
@@ -842,7 +839,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 isDisabled={isDisabled}
                 isLoading={isLoading}
                 isLoadingItems={isLoadingItems}
-                loadingItemsLabel={loadingItemsLabel}
                 stateRef={listStateRef}
                 isCheckable={isCheckable}
                 mods={{

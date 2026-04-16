@@ -645,6 +645,27 @@ describe('<FilterListBox />', () => {
         container.querySelector('[data-element="InputIcon"]'),
       ).toBeInTheDocument();
     });
+
+    it('should show loading icon in suffix when isLoadingItems is true', () => {
+      const { container } = render(
+        <FilterListBox isLoadingItems label="Select a fruit">
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const wrapper = container.querySelector(
+        '[data-qa="FilterListBoxSearchWrapper"]',
+      );
+      expect(wrapper).toBeInTheDocument();
+      expect(wrapper).toHaveAttribute('data-suffix');
+
+      const suffix = wrapper?.querySelector('[data-element="Suffix"]');
+      expect(suffix).toBeInTheDocument();
+      expect(suffix?.parentElement).toBe(wrapper);
+
+      const loadingIcon = suffix?.querySelector('[data-qa="LoadingIcon"]');
+      expect(loadingIcon).toBeInTheDocument();
+    });
   });
 
   describe('Disabled state', () => {

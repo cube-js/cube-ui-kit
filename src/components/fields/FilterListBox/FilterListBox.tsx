@@ -48,7 +48,7 @@ const FilterListBoxWrapperElement = tasty({
     display: 'grid',
     flow: 'column',
     gridColumns: '1sf',
-    gridRows: 'max-content max-content max-content 1sf',
+    gridRows: 'max-content max-content 1sf',
     gap: 0,
     position: 'relative',
     radius: true,
@@ -95,6 +95,8 @@ const SearchInputElement = tasty({
     padding: {
       '': '.5x 1.5x',
       prefix: '0 1.5x 0 .5x',
+      suffix: '.5x .5x .5x 1.5x',
+      'prefix & suffix': '0 .5x 0 .5x',
     },
   },
 });
@@ -102,35 +104,6 @@ const SearchInputElement = tasty({
 const StyledHeaderWithoutBorder = tasty(StyledHeader, {
   styles: {
     border: false,
-  },
-});
-
-const LoadingDisclaimerElement = tasty({
-  qa: 'FilterListBoxLoadingDisclaimer',
-  styles: {
-    display: 'flex',
-    flow: 'row',
-    gap: '1x',
-    padding: '.75x 1.5x',
-    color: '#dark-03',
-    preset: 'p4',
-    placeItems: 'center start',
-    fill: '#clear',
-    border: 'bottom',
-    height: {
-      '': 'auto',
-      focusable: '($size + 1x)',
-    },
-    $size: {
-      '': '$size-md',
-      'size=small': '$size-sm',
-      'size=medium': '$size-md',
-      'size=large': '$size-lg',
-    },
-    outline: {
-      '': '#purple-03.0',
-      focused: '#purple-03',
-    },
   },
 });
 
@@ -146,25 +119,14 @@ export interface CubeFilterListBoxProps<T>
    * Pass `false` to disable internal filtering completely (useful for external filtering).
    */
   filter?: FilterFn | false;
-  /** Custom label to display when no results are found after filtering */
+  /** Label shown when the list is empty. When provided, overrides both the "No results found" and "No items" defaults. */
   emptyLabel?: ReactNode;
   /** Custom styles for the search input */
   searchInputStyles?: Styles;
   /** Whether the FilterListBox is in loading state (shows loading icon in search input) */
   isLoading?: boolean;
-  /**
-   * Whether the items are currently loading. Shows a "loading items" disclaimer
-   * inside the popover. When `allowsCustomValue` is `false`, the search input is
-   * hidden and the disclaimer acts as the focus target for keyboard navigation.
-   * When `allowsCustomValue` is `true`, the search input remains visible and the
-   * disclaimer is shown below it (so a custom value can still be typed and applied).
-   */
+  /** Whether items are currently loading. Shows a loading icon in the search input suffix. */
   isLoadingItems?: boolean;
-  /**
-   * Label displayed inside the loading disclaimer when `isLoadingItems` is `true`.
-   * @default "Loading items..."
-   */
-  loadingItemsLabel?: ReactNode;
   /** Ref for accessing the search input element */
   searchInputRef?: RefObject<HTMLInputElement | null>;
   /** Whether to allow entering custom values that are not present in the predefined options */
@@ -269,7 +231,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
     isDisabled,
     isLoading,
     isLoadingItems,
-    loadingItemsLabel = 'Loading items...',
     searchPlaceholder = 'Search...',
     autoFocus,
     filter,
@@ -483,9 +444,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
   // Create a filter function for collection nodes (similar to ComboBox pattern)
   const filterFn = useCallback(
     (nodes: Iterable<any>) => {
+      if (filter === false) return nodes;
+
       const term = searchValue.trim();
 
-      // Don't filter if no search term
       if (!term) {
         return nodes;
       }
@@ -513,7 +475,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         })
         .filter(Boolean);
     },
-    [searchValue, textFilterFn],
+    [filter, searchValue, textFilterFn],
   );
 
   // Handle custom values if allowed
@@ -890,9 +852,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
     },
   });
 
-  const showSearchInput = !isLoadingItems || allowsCustomValue;
-  const showLoadingDisclaimer = !!isLoadingItems;
-
   const mods = useMemo(
     () => ({
       invalid: isInvalid,
@@ -901,13 +860,9 @@ export const FilterListBox = forwardRef(function FilterListBox<
       focused: isFocused,
       loading: !!isLoading,
       'loading-items': !!isLoadingItems,
-      // `searchable` marks this as a FilterListBox context (vs a bare ListBox)
-      // and tells inner components — notably ListBox — to drop their own
-      // borders. It must stay true even when the search input is hidden
-      // (e.g. isLoadingItems && !allowsCustomValue), otherwise ListBox would
-      // render a redundant inner border.
       searchable: true,
       prefix: !!isLoading,
+      suffix: !!isLoadingItems,
       ...externalMods,
     }),
     [
@@ -953,16 +908,13 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }
   };
 
-  // Custom option click handler that ensures the active focus target (search
-  // input, or the disclaimer when it replaces the search input) receives focus
-  // so subsequent keyboard navigation keeps working after a mouse click.
+  // Custom option click handler that ensures search input receives focus
   const handleOptionClick = (key: Key) => {
+    // Focus the search input to enable keyboard navigation
     // Use setTimeout to ensure this happens after React state updates
     setTimeout(() => {
       if (searchInputRef.current) {
         searchInputRef.current.focus();
-      } else if (disclaimerRef.current) {
-        disclaimerRef.current.focus();
       }
     }, 0);
 
@@ -986,6 +938,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         qa={qa || 'FilterListBox'}
         id={id}
         data-prefix={isLoading ? '' : undefined}
+        data-suffix={isLoadingItems ? '' : undefined}
         type="search"
         placeholder={searchPlaceholder}
         value={searchValue}
@@ -1009,48 +962,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
         {...keyboardProps}
         {...modAttrs(mods)}
       />
+      {isLoadingItems && (
+        <div data-element="Suffix">
+          <LoadingIcon data-element="InputIcon" />
+        </div>
+      )}
     </SearchWrapperElement>
-  );
-
-  // When the search input is hidden (e.g. items are loading and custom values
-  // are not allowed), the disclaimer takes over the search input's role as the
-  // focus target so arrow-key navigation over the (possibly partial) list still
-  // works.
-  const disclaimerIsFocusable = showLoadingDisclaimer && !showSearchInput;
-  const disclaimerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (disclaimerIsFocusable && autoFocus) {
-      disclaimerRef.current?.focus();
-    }
-    // Run only when we switch into a focusable-disclaimer state so we don't
-    // steal focus on unrelated re-renders.
-  }, [disclaimerIsFocusable]);
-
-  const loadingDisclaimer = showLoadingDisclaimer ? (
-    <LoadingDisclaimerElement
-      ref={disclaimerRef}
-      data-size={size}
-      mods={{ focusable: disclaimerIsFocusable, ...mods }}
-      {...(disclaimerIsFocusable
-        ? {
-            tabIndex: 0,
-            role: 'combobox',
-            'aria-expanded': 'true',
-            'aria-haspopup': 'listbox',
-            'aria-activedescendant':
-              listStateRef.current?.selectionManager.focusedKey != null
-                ? `ListBoxItem-${listStateRef.current?.selectionManager.focusedKey}`
-                : undefined,
-            ...keyboardProps,
-          }
-        : {})}
-    >
-      <LoadingIcon />
-      <span>{loadingItemsLabel}</span>
-    </LoadingDisclaimerElement>
-  ) : (
-    <div role="presentation" />
   );
 
   const filterListBoxField = (
@@ -1068,8 +985,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       ) : (
         <div role="presentation" />
       )}
-      {showSearchInput ? searchInput : <div role="presentation" />}
-      {loadingDisclaimer}
+      {searchInput}
       <ListBox
         ref={listBoxRef}
         aria-label={innerAriaLabel}
@@ -1103,11 +1019,11 @@ export const FilterListBox = forwardRef(function FilterListBox<
         allValueProps={allValueProps}
         filter={filterFn}
         emptyLabel={
-          searchValue.trim()
-            ? emptyLabel !== undefined
-              ? emptyLabel
-              : 'No results found'
-            : 'No items'
+          emptyLabel !== undefined
+            ? emptyLabel
+            : searchValue.trim()
+              ? 'No results found'
+              : 'No items'
         }
         onSelectionChange={handleSelectionChange}
         onEscape={onEscape}
