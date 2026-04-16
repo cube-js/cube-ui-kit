@@ -216,6 +216,14 @@ const meta: Meta<typeof FilterPicker> = {
         defaultValue: { summary: false },
       },
     },
+    isLoadingItems: {
+      control: 'boolean',
+      description:
+        'Whether items are loading. Does NOT disable the trigger; shows a loading disclaimer inside the popover. With allowsCustomValue=true the search input stays visible; with allowsCustomValue=false the search input is hidden.',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
     isRequired: {
       control: { type: 'boolean' },
       description: 'Whether the field is required',
@@ -1149,6 +1157,73 @@ export const LoadingState: Story = {
       description: {
         story:
           'Show a loading spinner in the trigger button while data is being fetched.',
+      },
+    },
+  },
+};
+
+export const LoadingItemsState: Story = {
+  args: {
+    label: 'Loading Items',
+    placeholder: 'Select a fruit...',
+    isLoadingItems: true,
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search options...',
+    width: '30x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
+      {fruits.slice(0, 2).map((fruit) => (
+        <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+          {fruit.label}
+        </FilterPicker.Item>
+      ))}
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With `isLoadingItems={true}`, the trigger stays enabled and the popover can be opened. Since `allowsCustomValue` is `false`, the search input is hidden and a loading disclaimer is shown. Already-loaded items remain clickable.',
+      },
+    },
+  },
+};
+
+export const LoadingItemsWithCustomValue: Story = {
+  args: {
+    label: 'Loading Items (Custom Value)',
+    placeholder: 'Type or pick a fruit...',
+    isLoadingItems: true,
+    allowsCustomValue: true,
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search or type custom value...',
+    width: '30x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
+      {fruits.slice(0, 2).map((fruit) => (
+        <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+          {fruit.label}
+        </FilterPicker.Item>
+      ))}
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With `isLoadingItems={true}` and `allowsCustomValue={true}`, the search input remains visible so users can still type a custom value while items are loading. The loading disclaimer appears below the search input.',
       },
     },
   },

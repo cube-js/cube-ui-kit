@@ -59,6 +59,7 @@ FilterPicker (forwardRef)
 - **Checkbox Mode**: Optional checkboxes for clear multiple selection UX
 - **Click Behavior**: Differentiated click handling for checkbox vs content areas
 - **Loading States**: Button loading state integration
+- **Loading Items State**: `isLoadingItems` leaves the trigger enabled so the popover can be opened while items are being fetched. Shows a loading disclaimer inside the popover; hides the search input when `allowsCustomValue` is `false`, keeps it visible when `true` (so a custom value can still be typed and applied)
 - **Validation States**: Visual validation state feedback on trigger
 
 ## Component Props Interface

@@ -32,6 +32,7 @@ A versatile selection component that combines a trigger button with a searchable
 - **`selectionMode`** `'single' | 'multiple'` (default: `single`) — Selection mode for the picker
 - **`allowsCustomValue`** `boolean` (default: `false`) — Whether to allow entering custom values that are not present in the predefined options
 - **`isClearable`** `boolean` (default: `false`) — Whether the filter picker is clearable using a clear button in the rightIcon slot
+- **`isLoadingItems`** `boolean` (default: `false`) — Whether the items are currently loading. Unlike `isLoading`, this does NOT disable the trigger, so the popover can still be opened while items are being fetched. Shows a `LoadingIcon` in the trigger and a loading disclaimer inside the popover. When `allowsCustomValue` is `false`, the search input is hidden and only the disclaimer is shown; when `true`, the search input remains visible so users can still type and apply a custom value.
 - **`disallowEmptySelection`** `boolean` (default: `false`) — Whether to disallow empty selection
 - **`disabledKeys`** `Key[]` — Array of keys for disabled items
 - **`items`** `Iterable<T>` — Array of items to render when using the render function pattern for large datasets with dynamic content
@@ -478,6 +479,42 @@ const categories = [
 >
   <FilterPicker.Item key="existing1">Existing Option 1</FilterPicker.Item>
   <FilterPicker.Item key="existing2">Existing Option 2</FilterPicker.Item>
+</FilterPicker>
+```
+
+### Loading Items
+
+Use `isLoadingItems` to indicate that items are currently being fetched. Unlike `isLoading`, the trigger stays enabled so users can still open the popover and interact with items that have already loaded.
+
+<Story of={FilterPickerStories.LoadingItemsState} />
+
+```jsx
+<FilterPicker
+  label="Loading Items"
+  placeholder="Select a fruit..."
+  isLoadingItems={true}
+  selectionMode="multiple"
+>
+  <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
+  <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
+</FilterPicker>
+```
+
+When `allowsCustomValue` is `true`, the search input remains visible so users can still type and apply a custom value while items are loading. The loading disclaimer is shown below the search input.
+
+<Story of={FilterPickerStories.LoadingItemsWithCustomValue} />
+
+```jsx
+<FilterPicker
+  label="Loading Items (Custom Value)"
+  placeholder="Type or pick a fruit..."
+  isLoadingItems={true}
+  allowsCustomValue={true}
+  selectionMode="multiple"
+  searchPlaceholder="Search or type custom value..."
+>
+  <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
+  <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
 </FilterPicker>
 ```
 

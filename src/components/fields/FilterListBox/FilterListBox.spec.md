@@ -130,6 +130,7 @@ const mergedChildren = useMemo(() => {
 ### Loading States
 - **Global Loading**: `isLoading` prop shows loading spinner in search input
 - **Search Icon**: Alternates between search icon and loading spinner
+- **Loading Items**: `isLoadingItems` prop shows a loading disclaimer inside the popover. When `allowsCustomValue` is `false`, the search input is hidden and the disclaimer becomes the focus target for keyboard navigation; when `true`, the search input remains available so custom values can still be typed while the disclaimer is shown below it. The disclaimer label is customizable via `loadingItemsLabel`
 
 ## Styling System
 
@@ -140,14 +141,15 @@ const mergedChildren = useMemo(() => {
 
 ### Grid Layout
 ```css
-gridRows: 'max-content max-content 1sf'
-/* Header (optional) | Search Input | ListBox (flexible) */
+gridRows: 'max-content max-content max-content 1sf'
+/* Header (optional) | Search Input (optional) | Loading Disclaimer (optional) | ListBox (flexible) */
 ```
 
 ### Modifier States
 - **focused**: Search input has focus
 - **invalid/valid**: Validation state styling
-- **loading**: Loading state indication
+- **loading**: Loading state indication (`isLoading`)
+- **loading-items**: Items-loading state indication (`isLoadingItems`)
 - **searchable**: Always true for this component
 
 ## Performance Considerations
