@@ -2439,7 +2439,7 @@ export const AsyncSearch: Story = {
       <Space gap="2x" flow="column" placeItems="start" width="40x">
         <FilterPicker
           allowsCustomValue
-          label="Server-Side Search!"
+          label="Server-Side Search"
           placeholder="Select items..."
           selectionMode="multiple"
           searchPlaceholder="Search 500 items (1s server delay)..."
