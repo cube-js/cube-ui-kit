@@ -692,7 +692,8 @@ const handleSearchChange = useCallback((value) => {
 - **`filter={false}`** disables client-side filtering so items appear exactly as the server returns them
 - **`searchValue` + `onSearchChange`** give you control over the search input; debounce and fetch on your side
 - **`items`** is reactive — replace it with server results and the list updates automatically
-- **`isLoadingItems`** shows a loading spinner in the search input suffix while fetching
+- **`isLoadingItems`** shows a loading spinner in the search input suffix while fetching. While loading, stale items that do not text-match the current search are hidden client-side so the user only sees relevant suggestions
+- **Selected custom values** (with `allowsCustomValue` in multi-select) are filtered against the search input too, so they don't appear when they don't match
 - **`emptyLabel`** can be used to customize the empty state message (e.g. `"Loading items..."` during initial load)
 - Debouncing is the consumer's responsibility (300-500ms is typical)
 

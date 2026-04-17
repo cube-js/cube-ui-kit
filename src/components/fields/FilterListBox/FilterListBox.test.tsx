@@ -1213,6 +1213,299 @@ describe('<FilterListBox />', () => {
 
       expect(onSelectionChange).toHaveBeenCalledWith('mango');
     });
+
+    it('should hide non-matching stale items and focus the custom value while server fetch is in flight (filter=false + isLoadingItems)', async () => {
+      const staleItems = [
+        <FilterListBox.Item key="apple">Apple</FilterListBox.Item>,
+        <FilterListBox.Item key="banana">Banana</FilterListBox.Item>,
+      ];
+
+      const { rerender } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          searchValue=""
+          filter={false}
+          isLoadingItems={false}
+        >
+          {staleItems}
+        </FilterListBox>,
+      );
+
+      // Initially focus lands on the first real item.
+      let focused = document.querySelector('[role="option"][data-focused]');
+      expect(focused).toHaveTextContent('Apple');
+
+      // User types — parent triggers fetch and sets isLoadingItems=true while
+      // items are still stale. Stale non-matching items should be hidden and
+      // focus should move to the custom value so the user can press Enter
+      // to add it immediately.
+      rerender(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          searchValue="zzz"
+          filter={false}
+          isLoadingItems={true}
+        >
+          {staleItems}
+        </FilterListBox>,
+      );
+
+      const visibleOptions = Array.from(
+        document.querySelectorAll('[role="option"]'),
+      );
+      const visibleTexts = visibleOptions.map((o) => o.textContent);
+
+      // Stale items that don't match the search should be hidden.
+      expect(visibleTexts).not.toContain('Apple');
+      expect(visibleTexts).not.toContain('Banana');
+
+      focused = document.querySelector('[role="option"][data-focused]');
+      expect(focused).toHaveTextContent('zzz');
+    });
+
+    it('should keep matching stale items visible while server fetch is in flight (filter=false + isLoadingItems)', async () => {
+      const staleItems = [
+        <FilterListBox.Item key="apple">Apple</FilterListBox.Item>,
+        <FilterListBox.Item key="apricot">Apricot</FilterListBox.Item>,
+      ];
+
+      render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          searchValue="ap"
+          filter={false}
+          isLoadingItems={true}
+        >
+          {staleItems}
+        </FilterListBox>,
+      );
+
+      const visibleOptions = Array.from(
+        document.querySelectorAll('[role="option"]'),
+      );
+      const visibleTexts = visibleOptions.map((o) => o.textContent);
+
+      // Stale items that match the search should remain visible during
+      // loading so the user can still pick them.
+      expect(visibleTexts).toContain('Apple');
+      expect(visibleTexts).toContain('Apricot');
+    });
+
+    it('should keep focus on custom value when fetch returns no matches', async () => {
+      const { rerender } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          searchValue="zzz"
+          filter={false}
+          isLoadingItems={true}
+        >
+          {[<FilterListBox.Item key="apple">Apple</FilterListBox.Item>]}
+        </FilterListBox>,
+      );
+
+      let focused = document.querySelector('[role="option"][data-focused]');
+      expect(focused).toHaveTextContent('zzz');
+
+      // Fetch resolves with an empty list (no matches). isLoadingItems flips
+      // to false. View should not change — focus stays on the custom value.
+      rerender(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          searchValue="zzz"
+          filter={false}
+          isLoadingItems={false}
+        >
+          {[]}
+        </FilterListBox>,
+      );
+
+      focused = document.querySelector('[role="option"][data-focused]');
+      expect(focused).toHaveTextContent('zzz');
+    });
+
+    it('should move focus to custom value when client-side filter yields no matches', async () => {
+      // With client-side filtering, a non-matching search collapses the
+      // collection to just the custom value option, which receives focus
+      // naturally.
+      const { getByPlaceholderText } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+        >
+          <FilterListBox.Item key="apple">Apple</FilterListBox.Item>
+          <FilterListBox.Item key="banana">Banana</FilterListBox.Item>
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+      await act(async () => {
+        await userEvent.type(searchInput, 'zzz');
+      });
+
+      const focused = document.querySelector('[role="option"][data-focused]');
+      expect(focused).toHaveTextContent('zzz');
+    });
+
+    it('should move focus off custom value to first real item when items load asynchronously', async () => {
+      const { getByPlaceholderText, rerender } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          searchValue=""
+          filter={false}
+        >
+          {[]}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // User types "ban" while items list is empty — only custom value "ban"
+      // appears and receives virtual focus.
+      rerender(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          searchValue="ban"
+          filter={false}
+        >
+          {[]}
+        </FilterListBox>,
+      );
+
+      await act(async () => {
+        searchInput.focus();
+      });
+
+      // The custom value option is the only visible option and should be focused.
+      let focused = document.querySelector('[role="option"][data-focused]');
+      expect(focused).toHaveTextContent('ban');
+
+      // Server responds with matching items — real items should take focus
+      // instead of the bottom-of-list custom value suggestion.
+      rerender(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          searchValue="ban"
+          filter={false}
+        >
+          {[
+            <FilterListBox.Item key="banana">Banana</FilterListBox.Item>,
+            <FilterListBox.Item key="banana-bread">
+              Banana Bread
+            </FilterListBox.Item>,
+          ]}
+        </FilterListBox>,
+      );
+
+      focused = document.querySelector('[role="option"][data-focused]');
+      expect(focused).toHaveTextContent('Banana');
+      // The focused option must not be the raw "ban" custom value (its text
+      // would be exactly "ban", whereas a real item text includes "Banana").
+      expect(focused?.textContent).not.toBe('ban');
+    });
+
+    it('should hide previously selected custom values that do not match the search (filter=false)', async () => {
+      // Selected custom value "zetasdas" is locally injected by FilterListBox
+      // via customKeys. With `filter={false}`, parent items pass through
+      // unfiltered, but locally-injected custom selected values should still
+      // respect the search input for UI consistency.
+      const { rerender } = render(
+        <FilterListBox
+          label="Select items"
+          searchPlaceholder="Search..."
+          selectionMode="multiple"
+          allowsCustomValue={true}
+          selectedKeys={['zetasdas']}
+          searchValue=""
+          filter={false}
+          isLoadingItems={false}
+        >
+          {[<FilterListBox.Item key="apple">Apple</FilterListBox.Item>]}
+        </FilterListBox>,
+      );
+
+      // With empty search, the previously selected custom value is visible.
+      let visibleTexts = Array.from(
+        document.querySelectorAll('[role="option"]'),
+      ).map((o) => o.textContent);
+      expect(visibleTexts).toContain('zetasdas');
+
+      // User searches "prog" — server has not responded yet but for this test
+      // we simulate the post-load state. The custom selected "zetasdas"
+      // should be hidden because it doesn't match the search.
+      rerender(
+        <FilterListBox
+          label="Select items"
+          searchPlaceholder="Search..."
+          selectionMode="multiple"
+          allowsCustomValue={true}
+          selectedKeys={['zetasdas']}
+          searchValue="prog"
+          filter={false}
+          isLoadingItems={false}
+        >
+          {[]}
+        </FilterListBox>,
+      );
+
+      visibleTexts = Array.from(
+        document.querySelectorAll('[role="option"]'),
+      ).map((o) => o.textContent);
+      expect(visibleTexts).not.toContain('zetasdas');
+      // The new custom value option for the typed search should still appear.
+      expect(visibleTexts).toContain('prog');
+    });
+
+    it('should not render a section divider when no real items match and only the custom value remains (filter=false)', async () => {
+      // Selected custom value "zetads" exists but doesn't match "program".
+      // Parent items are empty. Only the new custom-value suggestion for
+      // "program" should render — no empty filtered-items section above it,
+      // and therefore no divider.
+      const { container } = render(
+        <FilterListBox
+          label="Select items"
+          searchPlaceholder="Search..."
+          selectionMode="multiple"
+          allowsCustomValue={true}
+          selectedKeys={['zetads']}
+          searchValue="program"
+          filter={false}
+          isLoadingItems={false}
+        >
+          {[]}
+        </FilterListBox>,
+      );
+
+      const visibleTexts = Array.from(
+        container.querySelectorAll('[role="option"]'),
+      ).map((o) => o.textContent);
+      expect(visibleTexts).toEqual(['program']);
+
+      // Only one section (the custom-value section) should be present. A
+      // divider is drawn between sections, so having a single section means
+      // no divider appears above the custom value.
+      const sections = container.querySelectorAll(
+        '[role="group"], [role="presentation"][data-section], [data-qa="Section"]',
+      );
+      // The combined count of any section-like wrappers should be at most 1.
+      expect(sections.length).toBeLessThanOrEqual(1);
+    });
   });
 
   describe('Virtualization', () => {

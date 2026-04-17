@@ -336,6 +336,15 @@ export const FilterListBox = forwardRef(function FilterListBox<
   // State to keep track of custom (user-entered) items that were selected.
   const [customKeys, setCustomKeys] = useState<Set<string>>(new Set());
 
+  // Controlled/uncontrolled search value pattern
+  const [internalSearchValue, setInternalSearchValue] = useState('');
+  const isSearchControlled = controlledSearchValue !== undefined;
+  const searchValue = isSearchControlled
+    ? controlledSearchValue
+    : internalSearchValue;
+
+  const { contains } = useFilter({ sensitivity: 'base' });
+
   // Initialize custom keys from current selection
   useEffect(() => {
     if (!allowsCustomValue) return;
@@ -363,12 +372,23 @@ export const FilterListBox = forwardRef(function FilterListBox<
   const mergedChildren: ReactNode = useMemo(() => {
     if (!children && customKeys.size === 0) return children;
 
+    // Selected custom values are injected by FilterListBox itself, not by the
+    // parent. They must respect the search input regardless of the `filter`
+    // prop — `filter={false}` only describes the parent's authority over its
+    // own items. Filter them with the user-provided filter (if any) or the
+    // default `contains`.
+    const term = searchValue.trim();
+    const localFilter: FilterFn =
+      typeof filter === 'function' ? filter : contains;
+
     // Build React elements for custom values (kept stable via their key).
-    const customArray = Array.from(customKeys).map((key) => (
-      <Item key={key} textValue={key} {...customValueProps}>
-        {key}
-      </Item>
-    ));
+    const customArray = Array.from(customKeys)
+      .filter((key) => !term || localFilter(key, term))
+      .map((key) => (
+        <Item key={key} textValue={key} {...customValueProps}>
+          {key}
+        </Item>
+      ));
 
     // Identify which custom keys are currently selected so we can promote them.
     const selectedKeysSet = new Set<string>();
@@ -407,19 +427,22 @@ export const FilterListBox = forwardRef(function FilterListBox<
     // Final order: selected custom items -> original array (already possibly
     // sorted by parent) -> unselected custom items.
     return [...selectedCustom, ...originalArray, ...unselectedCustom];
-  }, [children, customKeys, selectionMode, selectedKey, selectedKeys]);
+  }, [
+    children,
+    customKeys,
+    selectionMode,
+    selectedKey,
+    selectedKeys,
+    searchValue,
+    filter,
+    contains,
+    customValueProps,
+  ]);
 
   // Determine an aria-label for the internal ListBox to avoid React Aria warnings.
   const innerAriaLabel =
     (props as any)['aria-label'] ||
     (typeof label === 'string' ? label : undefined);
-
-  // Controlled/uncontrolled search value pattern
-  const [internalSearchValue, setInternalSearchValue] = useState('');
-  const isSearchControlled = controlledSearchValue !== undefined;
-  const searchValue = isSearchControlled
-    ? controlledSearchValue
-    : internalSearchValue;
 
   const handleSearchChange = useCallback(
     (value: string) => {
@@ -431,20 +454,26 @@ export const FilterListBox = forwardRef(function FilterListBox<
     [isSearchControlled, onSearchChange],
   );
 
-  const { contains } = useFilter({ sensitivity: 'base' });
-
   // Choose the text filter function: user-provided `filter` prop (if any),
   // or the default `contains` helper from `useFilter`.
-  // When filter={false}, disable filtering completely.
-  const textFilterFn = useMemo<FilterFn>(
-    () => (filter === false ? () => true : filter || contains),
-    [filter, contains],
-  );
+  // When `filter={false}`, the parent owns filtering — we normally pass items
+  // through unchanged. The exception is when `isLoadingItems` is `true`: a
+  // server fetch is in flight and currently visible items are stale, so we
+  // fall back to client-side `contains` to hide non-matching stale items
+  // until the new items arrive.
+  const textFilterFn = useMemo<FilterFn>(() => {
+    if (filter === false) {
+      return isLoadingItems ? contains : () => true;
+    }
+    return filter || contains;
+  }, [filter, contains, isLoadingItems]);
 
   // Create a filter function for collection nodes (similar to ComboBox pattern)
   const filterFn = useCallback(
     (nodes: Iterable<any>) => {
-      if (filter === false) return nodes;
+      // Server-side filtering with no fetch in flight — items are
+      // authoritative and shown as-is.
+      if (filter === false && !isLoadingItems) return nodes;
 
       const term = searchValue.trim();
 
@@ -475,7 +504,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         })
         .filter(Boolean);
     },
-    [filter, searchValue, textFilterFn],
+    [filter, searchValue, textFilterFn, isLoadingItems],
   );
 
   // Handle custom values if allowed
@@ -511,10 +540,20 @@ export const FilterListBox = forwardRef(function FilterListBox<
       return childrenToProcess;
     }
 
-    // Check if there are any items that will match the filter
+    // Check if there are any items that will match the filter.
     // This determines whether we need to visually separate the custom value
+    // from real items (i.e. render a divider between sections). When there
+    // are no visible items, we skip the section wrapper so no divider is
+    // drawn above a lone custom-value option.
+    //
+    // Selected custom values (from `customKeys`) are filtered by `localFilter`
+    // in `mergedChildren` regardless of `filter={false}`, so this check must
+    // use the same logic — otherwise we'd report "items visible" and draw a
+    // divider while the actual collection only contains the custom value.
+    const localFilter: FilterFn =
+      typeof filter === 'function' ? filter : contains;
+
     const hasVisibleFilteredItems = (() => {
-      // Check original collection items
       for (const item of localCollectionState.collection) {
         if (item.type === 'item') {
           const textValue = item.textValue || String(item.rendered || '');
@@ -531,9 +570,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
         }
       }
 
-      // Also check custom keys - they appear as items in mergedChildren
       for (const customKey of customKeys) {
-        if (textFilterFn(customKey, term)) {
+        if (localFilter(customKey, term)) {
           return true;
         }
       }
@@ -603,6 +641,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
     customValueProps,
     newCustomValueProps,
     textFilterFn,
+    filter,
+    contains,
   ]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
@@ -633,14 +673,42 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
     const { selectionManager, collection } = listState;
 
-    // Helper to collect visible item keys (supports sections)
-    // Collection is already filtered by React Stately via filterFn
-    const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
+    // Walk the collection and:
+    //   1. Collect visible item keys (supports sections).
+    //   2. Detect the synthetic "new custom value" option — the one generated
+    //      from the current search term when `allowsCustomValue` is true.
+    //
+    // The custom value is rendered in one of two layouts depending on whether
+    // any real item text-matches the search term (`hasVisibleFilteredItems`
+    // in `enhancedChildren`):
+    //   • Some items match → wrapped in a `__custom_value__` section
+    //     (`customValueHasMatches = true`)
+    //   • No items match    → appended at the top level with key === term
+    //     (`customValueHasMatches = false`)
+    //
+    // The layout itself is the signal we use to decide whether the custom
+    // value should be the focus target (no matches) or whether focus should
+    // move to a real item (matches present).
+    const term = searchValue.trim();
+    let newCustomValueKey: Key | null = null;
+    let customValueHasMatches = false;
+
+    const collectVisibleKeys = (
+      nodes: Iterable<any>,
+      out: Key[],
+      inCustomSection = false,
+    ) => {
       for (const node of nodes) {
         if (node.type === 'item') {
           out.push(node.key);
+          if (inCustomSection) {
+            newCustomValueKey = node.key;
+            customValueHasMatches = true;
+          }
         } else if (node.childNodes) {
-          collectVisibleKeys(node.childNodes, out);
+          const isCustomSection =
+            inCustomSection || node.key === '__custom_value__';
+          collectVisibleKeys(node.childNodes, out, isCustomSection);
         }
       }
     };
@@ -648,16 +716,49 @@ export const FilterListBox = forwardRef(function FilterListBox<
     const visibleKeys: Key[] = [];
     collectVisibleKeys(collection, visibleKeys);
 
+    // Detect the appended-at-top-level case (no items text-match). The custom
+    // option is added with key === trimmed search term and lives directly in
+    // the top-level collection (not nested in any section).
+    if (newCustomValueKey == null && allowsCustomValue && term) {
+      for (const node of collection) {
+        if (node.type === 'item' && String(node.key) === term) {
+          newCustomValueKey = node.key;
+          customValueHasMatches = false;
+          break;
+        }
+      }
+    }
+
     // If there are no visible items, reset the focused key so Enter won't select anything
     if (visibleKeys.length === 0) {
       selectionManager.setFocusedKey(null);
       return;
     }
 
-    // Early exit if the current focused key is still present in the visible items.
+    // The custom value should be the focus target when it exists and there
+    // are no real text-matches — the user's typed value is then the only
+    // actionable option. During an in-flight server fetch (`filter === false`
+    // + `isLoadingItems`) `textFilterFn` falls back to client-side `contains`
+    // so non-matching stale items are hidden, which keeps this signal honest.
+    const customValueShouldBeFocused =
+      newCustomValueKey != null && !customValueHasMatches;
+
+    // Decide whether the current focus is already on the right thing. If yes,
+    // don't disturb it. Otherwise fall through and re-pick a focus target.
     const currentFocused = selectionManager.focusedKey;
     if (currentFocused != null && visibleKeys.includes(currentFocused)) {
-      return;
+      const currentIsNewCustomValue =
+        newCustomValueKey != null && currentFocused === newCustomValueKey;
+      if (customValueShouldBeFocused) {
+        if (currentIsNewCustomValue) return;
+      } else if (newCustomValueKey != null) {
+        // Custom value exists but isn't the priority (matches available) —
+        // any non-custom focus is fine.
+        if (!currentIsNewCustomValue) return;
+      } else {
+        // No custom value involved at all.
+        return;
+      }
     }
 
     // Helper to find the first selected item that's visible
@@ -687,17 +788,20 @@ export const FilterListBox = forwardRef(function FilterListBox<
     // Determine which key to focus
     let keyToFocus: Key | null = null;
 
-    // If there's no focus yet (initial state), prioritize selected items
-    if (currentFocused == null) {
-      keyToFocus = findFirstVisibleSelectedKey();
+    if (customValueShouldBeFocused) {
+      // No real matches — promote the custom value over any selected/stale
+      // item so the user can press Enter to add the value they just typed.
+      keyToFocus = newCustomValueKey;
     } else {
-      // If current focused item was filtered out, try to focus another selected item
       keyToFocus = findFirstVisibleSelectedKey();
-    }
 
-    // Fallback to first visible item if no selected item found
-    if (keyToFocus == null) {
-      keyToFocus = visibleKeys[0];
+      // Fallback to first visible item if no selected item found. Prefer the
+      // first real (non-custom-value) item so focus doesn't land on the
+      // bottom-of-list custom-value suggestion when real items are available.
+      if (keyToFocus == null) {
+        const firstRealKey = visibleKeys.find((k) => k !== newCustomValueKey);
+        keyToFocus = firstRealKey ?? visibleKeys[0];
+      }
     }
 
     // Mark this focus change as keyboard navigation so ListBox will scroll to it
@@ -707,7 +811,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
     // Set focus to the determined key
     selectionManager.setFocusedKey(keyToFocus);
-  }, [searchValue, enhancedChildren, selectionMode, selectedKey, selectedKeys]);
+  }, [
+    searchValue,
+    enhancedChildren,
+    selectionMode,
+    selectedKey,
+    selectedKeys,
+    allowsCustomValue,
+  ]);
 
   // Keyboard navigation handler for search input
   const { keyboardProps } = useKeyboard({
