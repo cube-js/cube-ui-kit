@@ -36,7 +36,7 @@ A searchable list selection component that combines a ListBox with an integrated
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — FilterListBox size
 - **`searchPlaceholder`** `string` (default: `Search...`) — Placeholder text in the search input
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function or `false` to disable filtering
-- **`emptyLabel`** `ReactNode` (default: `No items` / `No results found`) — Label displayed when no items match
+- **`emptyLabel`** `ReactNode` (default: context-aware: `No items` or `No results found`) — Label shown when the list is empty. When provided, overrides both defaults for any empty state
 - **`allowsCustomValue`** `boolean` (default: `false`) — Whether to allow custom values not in the options list
 - **`isCheckable`** `boolean` (default: `false`) — Whether to show checkboxes for multiple selection
 - **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
@@ -52,8 +52,7 @@ A searchable list selection component that combines a ListBox with an integrated
 - **`onOptionClick`** `(key: Key) => void` — Callback when an option is clicked
 - **`items`** `Iterable<T>` — Array of items for dynamic content with render function pattern
 - **`isLoading`** `boolean` (default: `false`) — Whether the FilterListBox is in a loading state (shows loading icon in search input)
-- **`isLoadingItems`** `boolean` (default: `false`) — Whether the items are currently loading. Shows a loading disclaimer inside the popover. When `allowsCustomValue` is `false`, the search input is hidden and the disclaimer acts as the focus target; when `true`, the search input remains visible so custom values can still be typed, and the disclaimer is shown below it
-- **`loadingItemsLabel`** `ReactNode` (default: `Loading items...`) — Label displayed inside the loading disclaimer when `isLoadingItems` is `true`
+- **`isLoadingItems`** `boolean` (default: `false`) — Whether items are currently loading. Shows a loading icon in the search input suffix
 - **`autoFocus`** `boolean` — Whether the search input should have autofocus
 - **`customValueProps`** `Partial<CubeItemProps>` — Props to apply to existing custom values (already selected but not in predefined options)
 - **`newCustomValueProps`** `Partial<CubeItemProps>` — Props to apply to new custom values appearing in search results (merged with `customValueProps`)
@@ -659,36 +658,44 @@ Use `customValueProps` to style existing custom values and `newCustomValueProps`
 - `customValueProps` - Applied to custom values that are already selected
 - `newCustomValueProps` - Applied to new custom values appearing when typing in search (merged with `customValueProps`)
 
-### External Filtering
+### Server-Side / Dynamic Search
 
-For server-side filtering or complex custom logic, use `filter={false}` with controlled search:
+For server-side filtering, use `filter={false}` with controlled search and dynamic `items`. Items are replaced when the server responds, and `isLoadingItems` shows a subtle spinner in the search input while the fetch is in flight.
 
 ```jsx
+const [items, setItems] = useState(initialItems);
 const [searchValue, setSearchValue] = useState('');
-const [filteredItems, setFilteredItems] = useState(allItems);
+const [isLoadingItems, setIsLoadingItems] = useState(false);
 
-useEffect(() => {
-  // Your custom filtering logic (e.g., API call, complex algorithm)
-  const filtered = customFilterLogic(allItems, searchValue);
-  setFilteredItems(filtered);
-}, [searchValue, allItems]);
+const handleSearchChange = useCallback((value) => {
+  setSearchValue(value);
+  setIsLoadingItems(true);
+  debouncedFetch(value)
+    .then(setItems)
+    .finally(() => setIsLoadingItems(false));
+}, []);
 
 <FilterListBox
+  items={items}
   searchValue={searchValue}
-  onSearchChange={setSearchValue}
+  onSearchChange={handleSearchChange}
   filter={false}
+  isLoadingItems={isLoadingItems}
 >
-  {filteredItems.map(item => (
+  {(item) => (
     <FilterListBox.Item key={item.id}>{item.name}</FilterListBox.Item>
-  ))}
+  )}
 </FilterListBox>
 ```
 
-**When to use:**
-- Server-side filtering for large datasets
-- Complex custom search algorithms
-- Debounced API calls
-- Multi-field search logic
+**How it works:**
+- **`filter={false}`** disables client-side filtering so items appear exactly as the server returns them
+- **`searchValue` + `onSearchChange`** give you control over the search input; debounce and fetch on your side
+- **`items`** is reactive — replace it with server results and the list updates automatically
+- **`isLoadingItems`** shows a loading spinner in the search input suffix while fetching. While loading, stale items that do not text-match the current search are hidden client-side so the user only sees relevant suggestions
+- **Selected custom values** (with `allowsCustomValue` in multi-select) are filtered against the search input too, so they don't appear when they don't match
+- **`emptyLabel`** can be used to customize the empty state message (e.g. `"Loading items..."` during initial load)
+- Debouncing is the consumer's responsibility (300-500ms is typical)
 
 ### Escape Key Handling
 

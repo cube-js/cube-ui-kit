@@ -765,4 +765,38 @@ describe('<FilterPicker />', () => {
       expect(trigger).toHaveTextContent('Selected: Red Apple, Sweet Cherry');
     });
   });
+
+  describe('isLoadingItems', () => {
+    it('should show suffix spinner in popover search input when isLoadingItems is true', async () => {
+      const { getByRole, baseElement } = renderWithRoot(
+        <FilterPicker
+          isLoadingItems
+          label="Test"
+          placeholder="Pick..."
+          selectionMode="multiple"
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      // Open the popover
+      const trigger = getByRole('button');
+      await user.click(trigger);
+
+      // The popover renders in a portal, so search in baseElement
+      await waitFor(() => {
+        const searchWrapper = baseElement.querySelector(
+          '[data-qa="FilterListBoxSearchWrapper"]',
+        );
+        expect(searchWrapper).toBeInTheDocument();
+        expect(searchWrapper).toHaveAttribute('data-suffix');
+
+        const suffix = searchWrapper?.querySelector('[data-element="Suffix"]');
+        expect(suffix).toBeInTheDocument();
+
+        const icon = suffix?.querySelector('[data-qa="LoadingIcon"]');
+        expect(icon).toBeInTheDocument();
+      });
+    });
+  });
 });
