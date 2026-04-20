@@ -140,7 +140,18 @@ export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
     onCheck,
   } = opts;
 
-  const controlled = normalizeControlledChecked(checkedKeys);
+  /**
+   * Normalize the controlled `checkedKeys` prop into stable `Set` instances.
+   * Memoized on the `checkedKeys` reference so unrelated re-renders don't
+   * invalidate the derivation memo below — `normalizeControlledChecked`
+   * allocates fresh `Set`s each call, which would otherwise force
+   * `deriveCheckedState` to re-walk the entire tree on every render in
+   * controlled mode.
+   */
+  const controlled = useMemo(
+    () => normalizeControlledChecked(checkedKeys),
+    [checkedKeys],
+  );
   const isControlled = controlled != null;
   const wantsObjectShape = checkedKeys != null && !Array.isArray(checkedKeys);
 
