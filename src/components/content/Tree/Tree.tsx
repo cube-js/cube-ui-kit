@@ -199,15 +199,32 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
   const loadDataController = useLoadData({ nodesByKey, loadData });
 
   /**
+   * Tracks the previously-expanded set so we can diff against the next set
+   * inside `handleExpandedChange`. In controlled mode the parent owns the
+   * truth (read from `effectiveExpandedKeys`); in uncontrolled mode this
+   * ref is the only source for the previous state — `effectiveExpandedKeys`
+   * is `undefined` and would otherwise produce an empty `previous` set,
+   * mis-identifying every toggle.
+   */
+  const previousExpandedRef = useRef<Set<Key>>(
+    new Set<Key>(expandedKeys ?? defaultExpandedKeys ?? []),
+  );
+
+  /**
    * Translate Stately's `Set<Key>` callbacks into the public AntD-flavoured
    * `Key[]` shape and dispatch the per-key load.
    */
   const handleExpandedChange = useEvent((nextSet: Set<Key>) => {
     loadDataController.onExpandedChanged(nextSet);
 
+    const previous =
+      expandedKeys !== undefined
+        ? new Set<Key>(effectiveExpandedKeys ?? [])
+        : previousExpandedRef.current;
+    previousExpandedRef.current = new Set<Key>(nextSet);
+
     if (!onExpand) return;
     const nextArr: Key[] = Array.from(nextSet);
-    const previous = new Set<Key>(effectiveExpandedKeys ?? []);
 
     /**
      * Find the single key that toggled relative to the previous set.

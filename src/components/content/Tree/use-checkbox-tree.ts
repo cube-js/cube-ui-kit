@@ -145,7 +145,14 @@ export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
       };
     }
 
-    if (isControlled) {
+    /**
+     * If the consumer passed the object shape (`{ checked, halfChecked }`),
+     * they own the half-checked set and we use it as-is. With the array
+     * shape we still need to derive `halfChecked` ourselves — the consumer
+     * only provides `checked`, so parents should still light up
+     * indeterminate when only some descendants are checked.
+     */
+    if (isControlled && wantsObjectShape) {
       return {
         checkedSet: new Set(sourceChecked),
         halfCheckedSet: new Set(controlled!.halfChecked),
@@ -209,7 +216,15 @@ export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
     }
 
     return { checkedSet: checked, halfCheckedSet: half };
-  }, [isCheckable, isControlled, sourceChecked, controlled, treeData, index]);
+  }, [
+    isCheckable,
+    isControlled,
+    wantsObjectShape,
+    sourceChecked,
+    controlled,
+    treeData,
+    index,
+  ]);
 
   const toggle = useEvent((key: string) => {
     const node = index.byKey.get(key);

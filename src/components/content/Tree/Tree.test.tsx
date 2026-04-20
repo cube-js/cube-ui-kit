@@ -61,6 +61,40 @@ describe('<Tree />', () => {
     expect(info.node.key).toBe('fruits');
   });
 
+  it('reports the correct toggled node across multiple uncontrolled toggles', async () => {
+    const onExpand = vi.fn();
+    const { getAllByRole } = renderWithRoot(
+      <Tree
+        treeData={SAMPLE}
+        defaultExpandedKeys={['fruits']}
+        onExpand={onExpand}
+      />,
+    );
+
+    const rows = getAllByRole('row');
+    const fruitsToggle = rows[0].querySelector(
+      'button[data-element="Toggle"]',
+    ) as HTMLButtonElement;
+    const vegetablesToggle = rows[3].querySelector(
+      'button[data-element="Toggle"]',
+    ) as HTMLButtonElement;
+
+    await act(async () => await userEvent.click(vegetablesToggle));
+    let [, info] = onExpand.mock.calls[onExpand.mock.calls.length - 1];
+    expect(info.expanded).toBe(true);
+    expect(info.node.key).toBe('vegetables');
+
+    await act(async () => await userEvent.click(fruitsToggle));
+    [, info] = onExpand.mock.calls[onExpand.mock.calls.length - 1];
+    expect(info.expanded).toBe(false);
+    expect(info.node.key).toBe('fruits');
+
+    await act(async () => await userEvent.click(vegetablesToggle));
+    [, info] = onExpand.mock.calls[onExpand.mock.calls.length - 1];
+    expect(info.expanded).toBe(false);
+    expect(info.node.key).toBe('vegetables');
+  });
+
   describe('checkable mode', () => {
     it('renders checkboxes when isCheckable is true', () => {
       const { getAllByRole } = renderWithRoot(
