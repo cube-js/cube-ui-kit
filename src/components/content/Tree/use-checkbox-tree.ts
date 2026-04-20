@@ -223,7 +223,20 @@ export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
     const isCurrentlyChecked = checkedSet.has(key);
     const willCheck = !isCurrentlyChecked;
 
-    const next = new Set(sourceChecked);
+    /**
+     * Seed from the derived `checkedSet`, not `sourceChecked`. The
+     * source-of-truth set may only contain leaf keys (e.g. when
+     * `defaultCheckedKeys` is leaf-only, or a consumer in controlled-array
+     * mode passes only leaves). The ancestor walk below decides whether
+     * each ancestor is fully checked by inspecting its direct children
+     * via `next.has(ck)` — those children may themselves be inner nodes
+     * whose "fully checked" status only exists in the derived set. Seeding
+     * from `sourceChecked` causes a sibling subtree's parent key to be
+     * missing from `next`, which would incorrectly drop the grandparent
+     * from the stored state (the next render's `useMemo` self-corrects,
+     * but the intermediate stored value violates the cascade invariant).
+     */
+    const next = new Set(checkedSet);
 
     const apply = (n: CubeTreeNodeData, value: boolean) => {
       if (!isNodeEligible(n)) return;

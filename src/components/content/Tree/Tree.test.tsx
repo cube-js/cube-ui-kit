@@ -191,6 +191,76 @@ describe('<Tree />', () => {
       expect(arg).toHaveProperty('halfChecked');
     });
 
+    it('marks the grandparent fully checked when completing a sibling subtree (uncontrolled)', async () => {
+      // Three-level tree:
+      //   root → [groupA → [a1, a2], groupB → [b1, b2]]
+      // Default-checked: a1, a2, b1 (only leaves, like a typical consumer
+      // would persist). Toggling b1 → b2 → b1 → b2 (or just toggling b2)
+      // should leave `root` fully checked because every leaf is checked.
+      const data: CubeTreeNodeData[] = [
+        {
+          key: 'root',
+          title: 'Root',
+          children: [
+            {
+              key: 'groupA',
+              title: 'Group A',
+              children: [
+                { key: 'a1', title: 'A1' },
+                { key: 'a2', title: 'A2' },
+              ],
+            },
+            {
+              key: 'groupB',
+              title: 'Group B',
+              children: [
+                { key: 'b1', title: 'B1' },
+                { key: 'b2', title: 'B2' },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const onCheck = vi.fn();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={data}
+          defaultExpandedKeys={['root', 'groupA', 'groupB']}
+          defaultCheckedKeys={['a1', 'a2', 'b1']}
+          onCheck={onCheck}
+        />,
+      );
+
+      const checkboxes = getAllByRole('checkbox') as HTMLInputElement[];
+      // Order: root, groupA, a1, a2, groupB, b1, b2
+      const rootCheckbox = checkboxes[0];
+      const b2Checkbox = checkboxes[6];
+
+      expect(rootCheckbox).not.toBeChecked();
+      expect(b2Checkbox).not.toBeChecked();
+
+      await act(async () => await userEvent.click(b2Checkbox));
+
+      // Every leaf is now checked → the root checkbox must reflect that.
+      expect(b2Checkbox).toBeChecked();
+      expect(rootCheckbox).toBeChecked();
+
+      const [keys] = onCheck.mock.calls[onCheck.mock.calls.length - 1];
+      expect(keys).toEqual(
+        expect.arrayContaining([
+          'root',
+          'groupA',
+          'groupB',
+          'a1',
+          'a2',
+          'b1',
+          'b2',
+        ]),
+      );
+    });
+
     it('skips checkboxes for nodes with isCheckable={false}', () => {
       const data: CubeTreeNodeData[] = [
         {
