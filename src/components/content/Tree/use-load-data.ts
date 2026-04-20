@@ -10,6 +10,12 @@ export interface UseLoadDataOptions {
    */
   nodesByKey: Map<string, CubeTreeNodeData>;
   loadData?: (node: TreeLoadDataNode) => Promise<void>;
+  /**
+   * Keys that are expanded at mount time (controlled or default).
+   * Seeds `previousExpandedRef` so the first `onExpandedChanged` call
+   * doesn't misidentify them as user-triggered expansions.
+   */
+  initialExpandedKeys?: Iterable<string>;
 }
 
 export interface LoadDataController {
@@ -39,9 +45,9 @@ export interface LoadDataController {
  * `treeData` themselves (matching AntD's pattern).
  */
 export function useLoadData(opts: UseLoadDataOptions): LoadDataController {
-  const { nodesByKey, loadData } = opts;
+  const { nodesByKey, loadData, initialExpandedKeys } = opts;
   const [loadingKeys, setLoadingKeys] = useState<Set<string>>(() => new Set());
-  const previousExpandedRef = useRef<Set<string>>(new Set());
+  const previousExpandedRef = useRef<Set<string>>(new Set(initialExpandedKeys));
   const inFlightRef = useRef<Set<string>>(new Set());
 
   const onExpandedChanged = useCallback(

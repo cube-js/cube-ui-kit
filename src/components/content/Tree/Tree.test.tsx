@@ -1,5 +1,5 @@
 import userEvent from '@testing-library/user-event';
-import { useState } from 'react';
+import { createRef, useState } from 'react';
 
 import { act, renderWithRoot, waitFor } from '../../../test';
 
@@ -370,6 +370,41 @@ describe('<Tree />', () => {
 
       await waitFor(() => {
         expect(getByText('Apple')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('ref forwarding', () => {
+    it('populates the forwarded ref with the tree DOM element', () => {
+      // The internal `treeRef` (used by `useTree` for keyboard nav/focus)
+      // and the consumer's forwarded ref must both point at the same node.
+      const ref = createRef<HTMLDivElement>();
+      renderWithRoot(<Tree ref={ref} treeData={SAMPLE} />);
+      expect(ref.current).toBeInstanceOf(HTMLElement);
+      expect(ref.current?.getAttribute('role')).toBe('treegrid');
+    });
+
+    it('keeps keyboard navigation working when a ref is forwarded', async () => {
+      // Regression: previously `useTree` was wired to the internal ref
+      // while the DOM node received only the external ref, so keyboard
+      // handlers silently broke whenever a consumer forwarded a ref.
+      const user = userEvent.setup();
+      const ref = createRef<HTMLDivElement>();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          ref={ref}
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits', 'vegetables']}
+        />,
+      );
+
+      const rows = getAllByRole('row');
+      // Focus the tree — react-aria's `useTree` should now be able to
+      // route keyboard events because `treeRef.current` is set.
+      act(() => rows[0].focus());
+      await user.keyboard('{ArrowDown}');
+      await waitFor(() => {
+        expect(document.activeElement).toBe(rows[1]);
       });
     });
   });

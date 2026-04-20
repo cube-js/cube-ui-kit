@@ -4,7 +4,7 @@ import { useTree } from 'react-aria';
 import { Item, useTreeState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks';
-import { mergeProps } from '../../../utils/react';
+import { mergeProps, mergeRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 
 import { TreeElement } from './styled';
@@ -186,7 +186,11 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     onCheck,
   });
 
-  const loadDataController = useLoadData({ nodesByKey, loadData });
+  const loadDataController = useLoadData({
+    nodesByKey,
+    loadData,
+    initialExpandedKeys: effectiveExpandedKeys ?? effectiveDefaultExpandedKeys,
+  });
 
   /**
    * Tracks the previously-expanded set so we can diff against the next set
@@ -195,9 +199,15 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
    * ref is the only source for the previous state — `effectiveExpandedKeys`
    * is `undefined` and would otherwise produce an empty `previous` set,
    * mis-identifying every toggle.
+   *
+   * Must mirror what `useTreeState` was initialized with (the *effective*
+   * sets, which include `autoExpandParent` ancestors). Using the raw
+   * `defaultExpandedKeys` here would make the first toggle in uncontrolled
+   * mode diff against an undersized previous set, reporting auto-expanded
+   * ancestors as newly expanded.
    */
   const previousExpandedRef = useRef<Set<Key>>(
-    new Set<Key>(expandedKeys ?? defaultExpandedKeys ?? []),
+    new Set<Key>(effectiveExpandedKeys ?? effectiveDefaultExpandedKeys ?? []),
   );
 
   /**
@@ -394,14 +404,22 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     [height],
   );
 
+  /**
+   * Merge the consumer's forwarded ref with our internal `treeRef`. Both
+   * must point at the same DOM node: `useTree` reads `treeRef.current` for
+   * keyboard navigation/focus management, and consumers expect the
+   * forwarded `ref` to receive the element too.
+   */
+  const mergedRef = useMemo(() => mergeRefs(ref, treeRef), [ref]);
+
   const elementProps = mergeProps(gridProps, {
-    ref: ref ?? treeRef,
+    ref: mergedRef,
   });
 
   return (
     <TreeElement
       {...elementProps}
-      ref={ref ?? treeRef}
+      ref={mergedRef}
       qa={qa ?? 'Tree'}
       mods={mods}
       styles={baseStyles}

@@ -49,6 +49,60 @@ function isNodeEligible(node: CubeTreeNodeData | undefined): boolean {
   return true;
 }
 
+/**
+ * Recursively walk a subtree bottom-up, deriving which nodes are fully
+ * checked vs half-checked.  Mutates `checked` and `half` in place.
+ */
+function deriveCheckedState(
+  node: CubeTreeNodeData,
+  index: TreeIndex,
+  checked: Set<string>,
+  half: Set<string>,
+): { allChecked: boolean; anyChecked: boolean; anyEligible: boolean } {
+  const childKeys = index.childrenOf.get(node.key) ?? [];
+
+  if (childKeys.length === 0) {
+    const eligible = isNodeEligible(node);
+    const isChecked = checked.has(node.key);
+    return {
+      allChecked: !eligible || isChecked,
+      anyChecked: isChecked,
+      anyEligible: eligible,
+    };
+  }
+
+  let allChecked = true;
+  let anyChecked = false;
+  let anyEligible = false;
+
+  for (const childKey of childKeys) {
+    const child = index.byKey.get(childKey);
+    if (!child) continue;
+    const r = deriveCheckedState(child, index, checked, half);
+    if (r.anyEligible) anyEligible = true;
+    if (!r.allChecked) allChecked = false;
+    if (r.anyChecked) anyChecked = true;
+  }
+
+  const eligible = isNodeEligible(node);
+
+  if (anyEligible && allChecked) {
+    checked.add(node.key);
+    half.delete(node.key);
+  } else if (anyChecked) {
+    checked.delete(node.key);
+    half.add(node.key);
+  } else {
+    checked.delete(node.key);
+  }
+
+  return {
+    allChecked: !eligible ? allChecked : checked.has(node.key) && allChecked,
+    anyChecked: anyChecked || checked.has(node.key),
+    anyEligible: anyEligible || eligible,
+  };
+}
+
 function normalizeControlledChecked(
   controlled: UseCheckboxTreeOptions['checkedKeys'],
 ): { checked: Set<string>; halfChecked: Set<string> } | null {
@@ -136,57 +190,8 @@ export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
     const checked = new Set(sourceChecked);
     const half = new Set<string>();
 
-    const visit = (
-      node: CubeTreeNodeData,
-    ): { allChecked: boolean; anyChecked: boolean; anyEligible: boolean } => {
-      const childKeys = index.childrenOf.get(node.key) ?? [];
-
-      if (childKeys.length === 0) {
-        const eligible = isNodeEligible(node);
-        const isChecked = checked.has(node.key);
-        return {
-          allChecked: !eligible || isChecked,
-          anyChecked: isChecked,
-          anyEligible: eligible,
-        };
-      }
-
-      let allChecked = true;
-      let anyChecked = false;
-      let anyEligible = false;
-
-      for (const childKey of childKeys) {
-        const child = index.byKey.get(childKey);
-        if (!child) continue;
-        const r = visit(child);
-        if (r.anyEligible) anyEligible = true;
-        if (!r.allChecked) allChecked = false;
-        if (r.anyChecked) anyChecked = true;
-      }
-
-      const eligible = isNodeEligible(node);
-
-      if (anyEligible && allChecked) {
-        checked.add(node.key);
-        half.delete(node.key);
-      } else if (anyChecked || half.has(node.key)) {
-        checked.delete(node.key);
-        half.add(node.key);
-      } else {
-        checked.delete(node.key);
-      }
-
-      return {
-        allChecked: !eligible
-          ? allChecked
-          : checked.has(node.key) && allChecked,
-        anyChecked: anyChecked || checked.has(node.key),
-        anyEligible: anyEligible || eligible,
-      };
-    };
-
     for (const root of treeData) {
-      visit(root);
+      deriveCheckedState(root, index, checked, half);
     }
 
     return { checkedSet: checked, halfCheckedSet: half };
@@ -260,54 +265,9 @@ export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
       const finalChecked = new Set(next);
       const finalHalf = new Set<string>();
 
-      const recompute = (
-        n: CubeTreeNodeData,
-      ): {
-        allChecked: boolean;
-        anyChecked: boolean;
-        anyEligible: boolean;
-      } => {
-        const childKeys = index.childrenOf.get(n.key) ?? [];
-        if (childKeys.length === 0) {
-          const eligible = isNodeEligible(n);
-          const isChecked = finalChecked.has(n.key);
-          return {
-            allChecked: !eligible || isChecked,
-            anyChecked: isChecked,
-            anyEligible: eligible,
-          };
-        }
-        let allChecked = true;
-        let anyChecked = false;
-        let anyEligible = false;
-        for (const ck of childKeys) {
-          const child = index.byKey.get(ck);
-          if (!child) continue;
-          const r = recompute(child);
-          if (r.anyEligible) anyEligible = true;
-          if (!r.allChecked) allChecked = false;
-          if (r.anyChecked) anyChecked = true;
-        }
-        const eligible = isNodeEligible(n);
-        if (anyEligible && allChecked) {
-          finalChecked.add(n.key);
-          finalHalf.delete(n.key);
-        } else if (anyChecked) {
-          finalChecked.delete(n.key);
-          finalHalf.add(n.key);
-        } else {
-          finalChecked.delete(n.key);
-        }
-        return {
-          allChecked: !eligible
-            ? allChecked
-            : finalChecked.has(n.key) && allChecked,
-          anyChecked: anyChecked || finalChecked.has(n.key),
-          anyEligible: anyEligible || eligible,
-        };
-      };
-
-      for (const root of treeData) recompute(root);
+      for (const root of treeData) {
+        deriveCheckedState(root, index, finalChecked, finalHalf);
+      }
 
       const checkedArr = Array.from(finalChecked);
       const halfArr = Array.from(finalHalf);
