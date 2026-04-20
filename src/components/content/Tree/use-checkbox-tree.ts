@@ -3,10 +3,16 @@ import { useMemo, useState } from 'react';
 import { useEvent } from '../../../_internal/hooks';
 
 import type { Key } from '@react-types/shared';
+import type { TreeIndex } from './tree-index';
 import type { CubeTreeNodeData, TreeOnCheckInfo } from './types';
 
 export interface UseCheckboxTreeOptions {
   treeData: CubeTreeNodeData[];
+  /**
+   * Pre-built tree index, shared with `Tree.tsx` so that `treeData`
+   * is walked exactly once per change rather than once per consumer.
+   */
+  index: TreeIndex;
   isCheckable: boolean;
   defaultCheckedKeys?: string[];
   /** Either an array (AntD's default) or `{ checked, halfChecked }`. */
@@ -24,42 +30,6 @@ export interface CheckboxTree {
   halfCheckedSet: Set<string>;
   /** Toggle a key, propagating to descendants and updating ancestors. */
   toggle: (key: string) => void;
-}
-
-/**
- * Map of `key -> { node, parentKey, childKeys }` for fast cascading lookups.
- *
- * Built from the public `treeData` rather than from React Stately's
- * collection, because we need the consumer's original (controlled)
- * shape to derive parent/child relationships and to call back with the
- * actual `node` objects in `onCheck`'s `info`.
- */
-interface NodeIndex {
-  byKey: Map<string, CubeTreeNodeData>;
-  parentOf: Map<string, string | null>;
-  childrenOf: Map<string, string[]>;
-}
-
-function buildIndex(treeData: CubeTreeNodeData[]): NodeIndex {
-  const byKey = new Map<string, CubeTreeNodeData>();
-  const parentOf = new Map<string, string | null>();
-  const childrenOf = new Map<string, string[]>();
-
-  const visit = (nodes: CubeTreeNodeData[], parent: string | null) => {
-    for (const node of nodes) {
-      byKey.set(node.key, node);
-      parentOf.set(node.key, parent);
-      const childKeys = (node.children ?? []).map((c) => c.key);
-      childrenOf.set(node.key, childKeys);
-      if (node.children) {
-        visit(node.children, node.key);
-      }
-    }
-  };
-
-  visit(treeData, null);
-
-  return { byKey, parentOf, childrenOf };
 }
 
 /**
@@ -107,10 +77,14 @@ function normalizeControlledChecked(
  *   and recomputes ancestors *up* in a single pass.
  */
 export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
-  const { treeData, isCheckable, defaultCheckedKeys, checkedKeys, onCheck } =
-    opts;
-
-  const index = useMemo(() => buildIndex(treeData), [treeData]);
+  const {
+    treeData,
+    index,
+    isCheckable,
+    defaultCheckedKeys,
+    checkedKeys,
+    onCheck,
+  } = opts;
 
   const controlled = normalizeControlledChecked(checkedKeys);
   const isControlled = controlled != null;

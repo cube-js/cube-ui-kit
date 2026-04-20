@@ -356,5 +356,21 @@ describe('<Tree />', () => {
         expect(getByText('Apple')).toBeInTheDocument();
       });
     });
+
+    it('expands ancestors when autoExpandParent is true in uncontrolled mode', async () => {
+      // Same as above, but with `defaultExpandedKeys` (uncontrolled). The
+      // parent expansion must apply equally to the default keys.
+      const { getByText } = renderWithRoot(
+        <Tree
+          autoExpandParent
+          treeData={SAMPLE}
+          defaultExpandedKeys={['apple']}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(getByText('Apple')).toBeInTheDocument();
+      });
+    });
   });
 });

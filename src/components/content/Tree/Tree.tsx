@@ -8,6 +8,7 @@ import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 
 import { TreeElement } from './styled';
+import { buildTreeIndex } from './tree-index';
 import { TreeNode } from './TreeNode';
 import { useCheckboxTree } from './use-checkbox-tree';
 import { useLoadData } from './use-load-data';
@@ -50,21 +51,6 @@ function renderItem(node: CubeTreeNodeData): ReactElement {
   );
 }
 
-/** Walk the treeData and build a flat `key -> node` index. */
-function buildNodesByKey(
-  treeData: CubeTreeNodeData[],
-): Map<string, CubeTreeNodeData> {
-  const map = new Map<string, CubeTreeNodeData>();
-  const visit = (nodes: CubeTreeNodeData[]) => {
-    for (const node of nodes) {
-      map.set(node.key, node);
-      if (node.children) visit(node.children);
-    }
-  };
-  visit(treeData);
-  return map;
-}
-
 /** Walk the treeData and collect all keys whose `isDisabled === true`. */
 function collectDisabledKeys(
   treeData: CubeTreeNodeData[],
@@ -79,23 +65,6 @@ function collectDisabledKeys(
   };
   visit(treeData);
   return keys;
-}
-
-/**
- * Map `key -> parentKey` (used for `autoExpandParent`).
- */
-function buildParentOf(
-  treeData: CubeTreeNodeData[],
-): Map<string, string | null> {
-  const parentOf = new Map<string, string | null>();
-  const visit = (nodes: CubeTreeNodeData[], parent: string | null) => {
-    for (const node of nodes) {
-      parentOf.set(node.key, parent);
-      if (node.children) visit(node.children, node.key);
-    }
-  };
-  visit(treeData, null);
-  return parentOf;
 }
 
 /**
@@ -165,8 +134,14 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
 
   const treeRef = useRef<HTMLDivElement>(null);
 
-  const nodesByKey = useMemo(() => buildNodesByKey(treeData), [treeData]);
-  const parentOf = useMemo(() => buildParentOf(treeData), [treeData]);
+  /**
+   * Single tree walk that produces `byKey`, `parentOf`, and `childrenOf`.
+   * Shared with `useCheckboxTree` so a `treeData` change triggers exactly
+   * one walk (instead of three) for these three maps.
+   */
+  const treeIndex = useMemo(() => buildTreeIndex(treeData), [treeData]);
+  const nodesByKey = treeIndex.byKey;
+  const parentOf = treeIndex.parentOf;
 
   const disabledKeys = useMemo(
     () => collectDisabledKeys(treeData, isDisabled),
@@ -188,8 +163,23 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     [autoExpandParent, expandedKeys, parentOf],
   );
 
+  /**
+   * Mirror the same logic for the uncontrolled `defaultExpandedKeys`.
+   * `useTreeState` only reads it on mount, but we still need to expand
+   * ancestors so consumers passing a deep key (e.g. a search match) get
+   * the same behaviour as in the controlled mode.
+   */
+  const effectiveDefaultExpandedKeys = useMemo(
+    () =>
+      autoExpandParent
+        ? expandWithParents(defaultExpandedKeys, parentOf)
+        : defaultExpandedKeys,
+    [autoExpandParent, defaultExpandedKeys, parentOf],
+  );
+
   const checkbox = useCheckboxTree({
     treeData,
+    index: treeIndex,
     isCheckable,
     defaultCheckedKeys,
     checkedKeys,
@@ -317,7 +307,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
           ? handleSelectionChange
           : undefined,
       expandedKeys: effectiveExpandedKeys,
-      defaultExpandedKeys,
+      defaultExpandedKeys: effectiveDefaultExpandedKeys,
       onExpandedChange: handleExpandedChange,
       disabledKeys,
       disabledBehavior: 'all' as const,
@@ -332,7 +322,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       onSelect,
       handleSelectionChange,
       effectiveExpandedKeys,
-      defaultExpandedKeys,
+      effectiveDefaultExpandedKeys,
       handleExpandedChange,
       disabledKeys,
       treeData,
