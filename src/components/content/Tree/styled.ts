@@ -42,9 +42,7 @@ export const TreeElement = tasty({
  * `TreeRowItem` to compute its left padding.
  *
  * Has no visual styles of its own — the row's appearance lives on
- * the inner `TreeRowItem` (which extends `Item`). Hover, focus, and
- * focus-visible state set on this wrapper by React Aria are read by
- * `TreeRowItem` via `@parent(...)` selectors.
+ * the inner `TreeRowItem` (which extends `Item`).
  */
 export const TreeNodeRow = tasty({
   qa: 'TreeRow',
@@ -57,14 +55,17 @@ export const TreeNodeRow = tasty({
 
 /**
  * The visible row: an `Item` extension that owns layout (full-width,
- * tree indent) and the interaction styles. Hover/focus pulls from
- * the parent `TreeNodeRow` (`@parent(...)`) since the row is what
- * React Aria attaches `data-hovered` / `data-focused` /
- * `data-focus-visible` to.
+ * tree indent) only. Color treatment is delegated to the
+ * `default.item` variant (see `DEFAULT_ITEM_STYLES` in
+ * `data/item-themes.ts`) so the Tree row matches the canonical Item
+ * look out of the box. `hovered` / `focused` / `pressed` mods are
+ * propagated from `TreeNode` because react-aria's treegrid uses a
+ * roving-tabindex "virtual focus" model and never sets those data
+ * attributes itself.
  */
 export const TreeRowItem = tasty(Item, {
   qa: 'TreeItem',
-  type: 'neutral',
+  type: 'item',
   size: 'small',
   as: 'div',
   styles: {
@@ -82,25 +83,8 @@ export const TreeRowItem = tasty(Item, {
     '$tree-indent': '($tree-level, 0)',
     cursor: {
       '': 'pointer',
-      '@parent(disabled) | disabled': 'not-allowed',
+      disabled: 'not-allowed',
     },
-    fill: {
-      '': '#clear',
-      '@parent(hovered) | @parent(focused)': '#dark.04',
-      selected: '#primary.10',
-      'selected & (@parent(hovered) | @parent(focused))': '#primary.15',
-      disabled: '#clear',
-    },
-    color: {
-      '': '#dark',
-      '@parent(disabled) | disabled': '#dark-04',
-    },
-    outline: {
-      '': '#clear',
-      '@parent(focus-visible)': '#purple-03',
-    },
-    outlineOffset: 0,
-    transition: 'theme',
   },
 });
 

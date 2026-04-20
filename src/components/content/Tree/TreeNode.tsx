@@ -1,5 +1,5 @@
 import { memo, useMemo, useRef } from 'react';
-import { useTreeItem } from 'react-aria';
+import { useHover, useTreeItem } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { DirectionIcon, LoadingIcon } from '../../../icons';
@@ -70,7 +70,7 @@ function TreeNodeInner(props: TreeNodeProps) {
 
   const rowRef = useRef<HTMLDivElement>(null);
 
-  const { rowProps, gridCellProps, expandButtonProps } = useTreeItem(
+  const { rowProps, gridCellProps, expandButtonProps, isPressed } = useTreeItem(
     { node },
     state,
     rowRef,
@@ -78,6 +78,25 @@ function TreeNodeInner(props: TreeNodeProps) {
 
   const isDisabled = state.disabledKeys.has(node.key);
   const isSelected = state.selectionManager.isSelected(node.key);
+
+  /**
+   * `useTreeItem` doesn't track hover. The `Item` variant we extend
+   * (`default.item`) uses the `hovered` mod (compiled to
+   * `[data-hovered]`), so we run `useHover` ourselves and wire its
+   * `hoverProps` into the row.
+   */
+  const { hoverProps, isHovered } = useHover({ isDisabled });
+  /**
+   * React Aria uses a roving-tabindex "virtual focus" model for treegrid:
+   * only the row matching `selectionManager.focusedKey` is tabbable, and
+   * arrow-key navigation updates that key instead of moving DOM focus
+   * between every row. No `data-focused` / `:focus-visible` lands on the
+   * row, so we mirror the focused key as a `focused` mod on the item
+   * to make it stylable.
+   */
+  const isFocused =
+    state.selectionManager.isFocused &&
+    state.selectionManager.focusedKey === node.key;
   /**
    * `useTreeItem` reports `aria-expanded` only on rows that *can* expand
    * (i.e. have child nodes in the collection). For lazy rows with no
@@ -128,9 +147,22 @@ function TreeNodeInner(props: TreeNodeProps) {
       expanded: isExpanded,
       loading: isLoading,
       leaf: isLeaf,
+      focused: isFocused,
+      hovered: isHovered,
+      pressed: isPressed,
       'has-checkbox': isRowCheckable,
     }),
-    [isChecked, isIndeterminate, isExpanded, isLoading, isLeaf, isRowCheckable],
+    [
+      isChecked,
+      isIndeterminate,
+      isExpanded,
+      isLoading,
+      isLeaf,
+      isFocused,
+      isHovered,
+      isPressed,
+      isRowCheckable,
+    ],
   );
 
   /**
@@ -160,7 +192,7 @@ function TreeNodeInner(props: TreeNodeProps) {
         : 'false'
     : undefined;
 
-  const finalRowProps = mergeProps(rowProps, {
+  const finalRowProps = mergeProps(rowProps, hoverProps, {
     'aria-checked': ariaChecked as string | boolean | undefined,
   });
 
