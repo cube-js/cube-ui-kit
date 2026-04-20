@@ -306,6 +306,36 @@ describe('<Tree />', () => {
       expect(info.node).toBeDefined();
     });
 
+    it('emits only visible keys when selecting all in multiple mode', async () => {
+      const onSelect = vi.fn();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          selectionMode="multiple"
+          onSelect={onSelect}
+        />,
+      );
+
+      // Focus the tree, then trigger Ctrl+A to select all visible rows.
+      const rows = getAllByRole('row');
+      await act(async () => await userEvent.click(rows[0]));
+      onSelect.mockClear();
+      await act(async () => await userEvent.keyboard('{Control>}a{/Control}'));
+
+      expect(onSelect).toHaveBeenCalled();
+      const [keys, info] = onSelect.mock.calls[onSelect.mock.calls.length - 1];
+      // `vegetables` is collapsed, so its children must NOT be in the
+      // emitted selection — only the visible rows are.
+      expect(new Set(keys)).toEqual(
+        new Set(['fruits', 'apple', 'banana', 'vegetables']),
+      );
+      expect(keys).not.toContain('carrot');
+      expect(keys).not.toContain('potato');
+      expect(info.selectedNodes.map((n) => n.key)).not.toContain('carrot');
+      expect(info.selectedNodes.map((n) => n.key)).not.toContain('potato');
+    });
+
     it('does not call onSelect when selectionMode is "none"', async () => {
       const onSelect = vi.fn();
       const { getAllByRole } = renderWithRoot(

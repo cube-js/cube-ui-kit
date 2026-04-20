@@ -260,10 +260,24 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
 
   const handleSelectionChange = useEvent((selection: Selection) => {
     if (!onSelect) return;
-    const arr: Key[] =
-      selection === 'all'
-        ? Array.from(nodesByKey.keys())
-        : Array.from(selection);
+    let arr: Key[];
+    if (selection === 'all') {
+      /**
+       * `'all'` (e.g. Ctrl+A in `multiple` mode) means "every visible
+       * row". `nodesByKey` is the full `treeData` index and would leak
+       * keys hidden under collapsed parents — use the collection's
+       * `getKeys()` instead, which only walks expanded subtrees.
+       * Filter to `item` nodes so we don't emit synthetic collection
+       * entries (e.g. sections) as selected keys.
+       */
+      arr = [];
+      for (const key of state.collection.getKeys()) {
+        const node = state.collection.getItem(key);
+        if (node && node.type === 'item') arr.push(key);
+      }
+    } else {
+      arr = Array.from(selection);
+    }
     /**
      * Stately's `onSelectionChange` hands us the *next* selection only —
      * we don't get a "toggled key" diff for free. For `single` mode we
