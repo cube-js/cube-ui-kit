@@ -1,14 +1,21 @@
 import { memo, useMemo, useRef } from 'react';
-import { useButton, useTreeItem } from 'react-aria';
+import { useTreeItem } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { DirectionIcon, LoadingIcon } from '../../../icons';
 import { mergeProps } from '../../../utils/react';
 import { Checkbox } from '../../fields/Checkbox/Checkbox';
 
-import { TreeNodeRow } from './styled';
+import {
+  TreeNodeCheckboxWrapper,
+  TreeNodeRow,
+  TreeNodeToggle,
+  TreeNodeTogglePlaceholder,
+  TreeRowItem,
+} from './styled';
 
 import type { Node } from '@react-types/shared';
+import type { Styles } from '@tenphi/tasty';
 import type {
   CSSProperties,
   KeyboardEvent as ReactKeyboardEvent,
@@ -39,6 +46,9 @@ export interface TreeNodeProps {
 
   /** Toggle this row's checkbox (cascades). */
   onToggleChecked: (key: string) => void;
+
+  /** Styles applied to the visible row (`TreeRowItem`). */
+  rowStyles?: Styles;
 }
 
 const ROW_LEVEL_OFFSET = 0; // root nodes start at level 0
@@ -55,20 +65,15 @@ function TreeNodeInner(props: TreeNodeProps) {
     isLoading,
     isBlockNode,
     onToggleChecked,
+    rowStyles,
   } = props;
 
   const rowRef = useRef<HTMLDivElement>(null);
-  const toggleRef = useRef<HTMLButtonElement>(null);
 
   const { rowProps, gridCellProps, expandButtonProps } = useTreeItem(
     { node },
     state,
     rowRef,
-  );
-
-  const { buttonProps: nativeToggleButtonProps } = useButton(
-    expandButtonProps,
-    toggleRef,
   );
 
   const isDisabled = state.disabledKeys.has(node.key);
@@ -93,9 +98,8 @@ function TreeNodeInner(props: TreeNodeProps) {
     onToggleChecked(String(node.key));
   });
 
-  const mods = useMemo(
+  const rowMods = useMemo(
     () => ({
-      selected: isSelected,
       checked: isChecked,
       indeterminate: isIndeterminate,
       expanded: isExpanded,
@@ -106,7 +110,6 @@ function TreeNodeInner(props: TreeNodeProps) {
       'has-checkbox': isRowCheckable,
     }),
     [
-      isSelected,
       isChecked,
       isIndeterminate,
       isExpanded,
@@ -116,6 +119,18 @@ function TreeNodeInner(props: TreeNodeProps) {
       isBlockNode,
       isRowCheckable,
     ],
+  );
+
+  const itemMods = useMemo(
+    () => ({
+      checked: isChecked,
+      indeterminate: isIndeterminate,
+      expanded: isExpanded,
+      loading: isLoading,
+      leaf: isLeaf,
+      'has-checkbox': isRowCheckable,
+    }),
+    [isChecked, isIndeterminate, isExpanded, isLoading, isLeaf, isRowCheckable],
   );
 
   /**
@@ -149,50 +164,63 @@ function TreeNodeInner(props: TreeNodeProps) {
     'aria-checked': ariaChecked as string | boolean | undefined,
   });
 
+  /**
+   * Always render a toggle slot — even for leaf rows — so siblings
+   * at the same indent level visually align. Leaves get a
+   * non-interactive placeholder (a plain div) so user clicks can't
+   * trigger anything.
+   */
+  const toggleNode = isLeaf ? (
+    <TreeNodeTogglePlaceholder aria-hidden data-element="Toggle" />
+  ) : (
+    <TreeNodeToggle {...expandButtonProps} tabIndex={-1} data-element="Toggle">
+      {isLoading ? (
+        <LoadingIcon />
+      ) : (
+        <DirectionIcon to={isExpanded ? 'bottom' : 'right'} />
+      )}
+    </TreeNodeToggle>
+  );
+
+  const checkboxNode = isRowCheckable ? (
+    <TreeNodeCheckboxWrapper
+      data-element="Checkbox"
+      role="presentation"
+      onClick={handleCheckboxClick}
+      onKeyDown={handleCheckboxClick}
+    >
+      <Checkbox
+        isSelected={isChecked}
+        isIndeterminate={isIndeterminate}
+        isDisabled={isDisabled || data.isCheckboxDisabled}
+        aria-label={
+          typeof data.title === 'string' ? data.title : String(node.key)
+        }
+        // @ts-expect-error AriaCheckboxProps loses `onChange` where InputDOMProps overlaps (react-types).
+        onChange={handleCheckboxChange}
+      />
+    </TreeNodeCheckboxWrapper>
+  ) : null;
+
   return (
     <TreeNodeRow
       {...finalRowProps}
       ref={rowRef}
-      mods={mods}
+      mods={rowMods}
       style={levelStyle}
       data-element="Row"
       data-qa-key={String(node.key)}
     >
-      <div {...gridCellProps} data-element="Cell">
-        <button
-          {...nativeToggleButtonProps}
-          ref={toggleRef}
-          type="button"
-          tabIndex={-1}
-          data-element="Toggle"
-        >
-          {isLoading ? (
-            <LoadingIcon />
-          ) : (
-            <DirectionIcon to={isExpanded ? 'bottom' : 'right'} />
-          )}
-        </button>
-        {isRowCheckable ? (
-          <span
-            data-element="Checkbox"
-            role="presentation"
-            onClick={handleCheckboxClick}
-            onKeyDown={handleCheckboxClick}
-          >
-            <Checkbox
-              isSelected={isChecked}
-              isIndeterminate={isIndeterminate}
-              isDisabled={isDisabled || data.isCheckboxDisabled}
-              aria-label={
-                typeof data.title === 'string' ? data.title : String(node.key)
-              }
-              // @ts-expect-error AriaCheckboxProps loses `onChange` where InputDOMProps overlaps (react-types).
-              onChange={handleCheckboxChange}
-            />
-          </span>
-        ) : null}
-        <span data-element="Title">{data.title}</span>
-      </div>
+      <TreeRowItem
+        {...gridCellProps}
+        isSelected={isSelected}
+        mods={itemMods}
+        icon={toggleNode}
+        prefix={checkboxNode}
+        styles={rowStyles}
+      >
+        {data.title}
+      </TreeRowItem>
     </TreeNodeRow>
   );
 }

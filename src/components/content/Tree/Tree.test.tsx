@@ -1,0 +1,326 @@
+import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
+
+import { act, renderWithRoot, waitFor } from '../../../test';
+
+import { Tree } from './Tree';
+
+import type { CubeTreeNodeData, TreeLoadDataNode } from './types';
+
+const SAMPLE: CubeTreeNodeData[] = [
+  {
+    key: 'fruits',
+    title: 'Fruits',
+    children: [
+      { key: 'apple', title: 'Apple' },
+      { key: 'banana', title: 'Banana' },
+    ],
+  },
+  {
+    key: 'vegetables',
+    title: 'Vegetables',
+    children: [
+      { key: 'carrot', title: 'Carrot' },
+      { key: 'potato', title: 'Potato' },
+    ],
+  },
+];
+
+describe('<Tree />', () => {
+  it('renders the root nodes and respects defaultExpandedKeys', () => {
+    const { getByText, queryByText } = renderWithRoot(
+      <Tree treeData={SAMPLE} defaultExpandedKeys={['fruits']} />,
+    );
+
+    expect(getByText('Fruits')).toBeInTheDocument();
+    expect(getByText('Vegetables')).toBeInTheDocument();
+    expect(getByText('Apple')).toBeInTheDocument();
+    expect(getByText('Banana')).toBeInTheDocument();
+    expect(queryByText('Carrot')).not.toBeInTheDocument();
+  });
+
+  it('toggles expansion when clicking the expand button', async () => {
+    const onExpand = vi.fn();
+    const { getByText, queryByText, getAllByRole } = renderWithRoot(
+      <Tree treeData={SAMPLE} onExpand={onExpand} />,
+    );
+
+    expect(queryByText('Apple')).not.toBeInTheDocument();
+
+    const rows = getAllByRole('row');
+    const fruitsToggle = rows[0].querySelector(
+      'button[data-element="Toggle"]',
+    ) as HTMLButtonElement;
+    await act(async () => await userEvent.click(fruitsToggle));
+
+    expect(getByText('Apple')).toBeInTheDocument();
+    expect(onExpand).toHaveBeenCalled();
+    const [keys, info] = onExpand.mock.calls[0];
+    expect(keys).toContain('fruits');
+    expect(info.expanded).toBe(true);
+    expect(info.node.key).toBe('fruits');
+  });
+
+  describe('checkable mode', () => {
+    it('renders checkboxes when isCheckable is true', () => {
+      const { getAllByRole } = renderWithRoot(
+        <Tree isCheckable treeData={SAMPLE} defaultExpandedKeys={['fruits']} />,
+      );
+
+      // Root + 2 leaves of "fruits" + Vegetables = 4 visible rows
+      const checkboxes = getAllByRole('checkbox');
+      expect(checkboxes.length).toBeGreaterThanOrEqual(3);
+    });
+
+    it('cascades a parent check to all children (uncontrolled)', async () => {
+      const onCheck = vi.fn();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          onCheck={onCheck}
+        />,
+      );
+
+      const checkboxes = getAllByRole('checkbox') as HTMLInputElement[];
+      // first checkbox should be the "Fruits" parent
+      await act(async () => await userEvent.click(checkboxes[0]));
+
+      expect(onCheck).toHaveBeenCalled();
+      const [keys] = onCheck.mock.calls[onCheck.mock.calls.length - 1];
+      expect(keys).toEqual(
+        expect.arrayContaining(['fruits', 'apple', 'banana']),
+      );
+    });
+
+    it('emits halfChecked when only some children are checked', async () => {
+      const onCheck = vi.fn();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          onCheck={onCheck}
+        />,
+      );
+
+      const checkboxes = getAllByRole('checkbox') as HTMLInputElement[];
+      // checkboxes order: Fruits, Apple, Banana, Vegetables
+      await act(async () => await userEvent.click(checkboxes[1]));
+
+      const lastCall = onCheck.mock.calls[onCheck.mock.calls.length - 1];
+      const [, info] = lastCall;
+      expect(info.halfCheckedKeys).toContain('fruits');
+    });
+
+    it('respects controlled checkedKeys (array form)', async () => {
+      function Wrapper() {
+        const [keys, setKeys] = useState<string[]>([]);
+        return (
+          <Tree
+            isCheckable
+            treeData={SAMPLE}
+            defaultExpandedKeys={['fruits']}
+            checkedKeys={keys}
+            onCheck={(next) => setKeys(next as string[])}
+          />
+        );
+      }
+
+      const { getAllByRole } = renderWithRoot(<Wrapper />);
+
+      const checkboxes = getAllByRole('checkbox') as HTMLInputElement[];
+      await act(async () => await userEvent.click(checkboxes[1])); // Apple
+
+      // Apple was the second checkbox
+      expect(checkboxes[1]).toBeChecked();
+    });
+
+    it('returns object shape from onCheck when checkedKeys is an object', async () => {
+      const onCheck = vi.fn();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          checkedKeys={{ checked: [], halfChecked: [] }}
+          onCheck={onCheck}
+        />,
+      );
+
+      const checkboxes = getAllByRole('checkbox') as HTMLInputElement[];
+      await act(async () => await userEvent.click(checkboxes[1]));
+
+      const [arg] = onCheck.mock.calls[0];
+      expect(arg).toHaveProperty('checked');
+      expect(arg).toHaveProperty('halfChecked');
+    });
+
+    it('skips checkboxes for nodes with isCheckable={false}', () => {
+      const data: CubeTreeNodeData[] = [
+        {
+          key: 'a',
+          title: 'A',
+          isCheckable: false,
+        },
+        { key: 'b', title: 'B' },
+      ];
+      const { getAllByRole } = renderWithRoot(
+        <Tree isCheckable treeData={data} />,
+      );
+      // Only "B" should have a checkbox
+      expect(getAllByRole('checkbox').length).toBe(1);
+    });
+  });
+
+  describe('selection', () => {
+    it('does not render checkboxes when isCheckable is omitted', () => {
+      const { queryAllByRole } = renderWithRoot(
+        <Tree treeData={SAMPLE} defaultExpandedKeys={['fruits']} />,
+      );
+      expect(queryAllByRole('checkbox').length).toBe(0);
+    });
+
+    it('fires onSelect with the toggled key when clicking a row', async () => {
+      const onSelect = vi.fn();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          onSelect={onSelect}
+        />,
+      );
+
+      const rows = getAllByRole('row');
+      // Click on the title cell of "Apple"
+      await act(async () => await userEvent.click(rows[1]));
+
+      expect(onSelect).toHaveBeenCalled();
+      const [keys, info] = onSelect.mock.calls[0];
+      expect(keys.length).toBe(1);
+      expect(info.node).toBeDefined();
+    });
+
+    it('does not call onSelect when selectionMode is "none"', async () => {
+      const onSelect = vi.fn();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          selectionMode="none"
+          onSelect={onSelect}
+        />,
+      );
+
+      const rows = getAllByRole('row');
+      await act(async () => await userEvent.click(rows[1]));
+
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('disabled', () => {
+    it('marks all rows as disabled when isDisabled is true', () => {
+      const { getAllByRole } = renderWithRoot(
+        <Tree isDisabled treeData={SAMPLE} defaultExpandedKeys={['fruits']} />,
+      );
+
+      const rows = getAllByRole('row');
+      for (const row of rows) {
+        expect(row).toHaveAttribute('aria-disabled', 'true');
+      }
+    });
+
+    it('marks individual rows as disabled when node.isDisabled is true', () => {
+      const data: CubeTreeNodeData[] = [
+        { key: 'a', title: 'A', isDisabled: true },
+        { key: 'b', title: 'B' },
+      ];
+      const { getAllByRole } = renderWithRoot(<Tree treeData={data} />);
+
+      const rows = getAllByRole('row');
+      expect(rows[0]).toHaveAttribute('aria-disabled', 'true');
+      expect(rows[1]).not.toHaveAttribute('aria-disabled', 'true');
+    });
+  });
+
+  describe('loadData', () => {
+    it('fires loadData on first expansion of a non-leaf with no children', async () => {
+      const data: CubeTreeNodeData[] = [
+        { key: 'lazy', title: 'Lazy', isLeaf: false },
+      ];
+
+      let resolveLoad: (() => void) | null = null;
+      const loadData = vi.fn(
+        (_node: TreeLoadDataNode) =>
+          new Promise<void>((resolve) => {
+            resolveLoad = () => resolve();
+          }),
+      );
+
+      const { getAllByRole } = renderWithRoot(
+        <Tree treeData={data} loadData={loadData} />,
+      );
+
+      const toggle = getAllByRole('row')[0].querySelector(
+        'button[data-element="Toggle"]',
+      ) as HTMLButtonElement;
+      await act(async () => await userEvent.click(toggle));
+
+      expect(loadData).toHaveBeenCalledTimes(1);
+      expect(loadData.mock.calls[0][0].key).toBe('lazy');
+
+      await act(async () => {
+        resolveLoad?.();
+      });
+    });
+
+    it('does not fire loadData when isLeaf is true', async () => {
+      const data: CubeTreeNodeData[] = [
+        { key: 'leaf', title: 'Leaf', isLeaf: true },
+      ];
+      const loadData = vi.fn(() => Promise.resolve());
+      const { getAllByRole } = renderWithRoot(
+        <Tree treeData={data} loadData={loadData} />,
+      );
+      const row = getAllByRole('row')[0];
+      const toggle = row.querySelector(
+        'button[data-element="Toggle"]',
+      ) as HTMLButtonElement | null;
+      // Either no toggle, or clicking it does nothing
+      if (toggle) {
+        await act(async () => await userEvent.click(toggle));
+      }
+      expect(loadData).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('controlled expansion', () => {
+    it('honors a controlled expandedKeys array', async () => {
+      const { rerender, getByText, queryByText } = renderWithRoot(
+        <Tree treeData={SAMPLE} expandedKeys={[]} />,
+      );
+
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+
+      rerender(<Tree treeData={SAMPLE} expandedKeys={['fruits']} />);
+
+      await waitFor(() => {
+        expect(getByText('Apple')).toBeInTheDocument();
+      });
+    });
+
+    it('expands ancestors when autoExpandParent is true', async () => {
+      // "apple" lives under "fruits"; passing only the deep key with
+      // autoExpandParent should auto-expand the parent.
+      const { getByText } = renderWithRoot(
+        <Tree autoExpandParent treeData={SAMPLE} expandedKeys={['apple']} />,
+      );
+
+      await waitFor(() => {
+        expect(getByText('Apple')).toBeInTheDocument();
+      });
+    });
+  });
+});
