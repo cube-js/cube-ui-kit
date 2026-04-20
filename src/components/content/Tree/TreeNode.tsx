@@ -246,6 +246,7 @@ function TreeNodeInner(props: TreeNodeProps) {
       <TreeRowItem
         {...gridCellProps}
         isSelected={isSelected}
+        isDisabled={isDisabled}
         mods={itemMods}
         icon={toggleNode}
         prefix={checkboxNode}

@@ -366,21 +366,34 @@ export const LazyLoading: Story = {
 const AutoExpandParentRender = (args: CubeTreeProps) => {
   const [filter, setFilter] = useState('Tree');
 
-  const matchedKeys = useMemo(() => {
-    const out: string[] = [];
-    const walk = (nodes: CubeTreeNodeData[]) => {
+  const { treeData, matchedKeys } = useMemo(() => {
+    const query = filter.trim().toLowerCase();
+    if (!query) return { treeData: FILE_SYSTEM, matchedKeys: [] as string[] };
+
+    const matched: string[] = [];
+
+    const filterNodes = (nodes: CubeTreeNodeData[]): CubeTreeNodeData[] => {
+      const result: CubeTreeNodeData[] = [];
       for (const node of nodes) {
-        if (
+        const titleMatches =
           typeof node.title === 'string' &&
-          node.title.toLowerCase().includes(filter.toLowerCase())
-        ) {
-          out.push(node.key);
+          node.title.toLowerCase().includes(query);
+        const filteredChildren = node.children
+          ? filterNodes(node.children)
+          : undefined;
+
+        if (titleMatches || (filteredChildren && filteredChildren.length > 0)) {
+          if (titleMatches) matched.push(node.key);
+          result.push({
+            ...node,
+            children: filteredChildren,
+          });
         }
-        if (node.children) walk(node.children);
       }
+      return result;
     };
-    walk(FILE_SYSTEM);
-    return out;
+
+    return { treeData: filterNodes(FILE_SYSTEM), matchedKeys: matched };
   }, [filter]);
 
   return (
@@ -394,7 +407,7 @@ const AutoExpandParentRender = (args: CubeTreeProps) => {
       <Tree
         {...args}
         autoExpandParent
-        treeData={FILE_SYSTEM}
+        treeData={treeData}
         expandedKeys={matchedKeys}
       />
     </Flow>

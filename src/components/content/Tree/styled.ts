@@ -69,6 +69,13 @@ export const TreeRowItem = tasty(Item, {
   size: 'small',
   as: 'div',
   styles: {
+    /**
+     * `Item` is `inline-grid` by default, which leaves baseline
+     * descender space below the row inside the block-level
+     * `TreeNodeRow` and visually inflates the gap between rows
+     * past the intended `1bw`. Force block-level grid here.
+     */
+    display: 'grid',
     width: '100%',
     /**
      * Per-level indent. `$tree-indent` is a local token that reads
