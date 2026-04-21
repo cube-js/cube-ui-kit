@@ -447,6 +447,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     if (!isOpen) {
       selectionsWhenClosed.current = { ...latestSelectionRef.current };
       cachedItemsOrder.current = null;
+      onSearchChange?.('');
     }
     onOpenChange?.(isOpen);
   });
