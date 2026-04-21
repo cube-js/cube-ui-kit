@@ -1,0 +1,319 @@
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import { Tree } from './Tree';
+import * as TreeStories from './Tree.stories';
+
+<Meta of={TreeStories} />
+
+# Tree
+
+Tree displays hierarchical data as a list of nodes you can expand, collapse,
+select, and (optionally) check. Built on `useTree` and `useTreeState`
+(React Aria + React Stately) and styled with Tasty.
+
+The component's data shape (`treeData`) and the public callback shape are
+designed to be a near drop-in for AntD's `Tree` (modulo the `is*` boolean
+prop convention used across `@cube-dev/ui-kit`), so existing AntD `Tree`
+consumers can be migrated with minimal churn.
+
+## When to Use
+
+- Rendering hierarchical structures such as file systems, organizational
+  charts, navigation, or schema browsers.
+- Letting users select one or many nodes from a tree, with cascading
+  parent/child checkbox semantics.
+- Lazily loading children when a node is expanded the first time
+  (`loadData`).
+- Filtering with auto-expanded ancestors (`autoExpandParent`).
+
+## Component
+
+<Story of={TreeStories.Default} />
+
+---
+
+### Properties
+
+- **`treeData`** `CubeTreeNodeData[]` — Hierarchical data describing the
+  tree.
+- **`isCheckable`** `boolean` (default: `false`) — Render a checkbox in
+  front of every eligible row.
+- **`isSelectable`** `boolean` — Sugar for `selectionMode="none"` when
+  `false`. `selectionMode` wins when both are passed.
+- **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'single'`)
+  — Selection cardinality.
+- **`isDisabled`** `boolean` (default: `false`) — Disable the entire tree.
+- **`defaultExpandedKeys`** `string[]` — Default expanded keys
+  (uncontrolled).
+- **`expandedKeys`** `string[]` — Controlled expanded keys.
+- **`autoExpandParent`** `boolean` (default: `false`) — Auto-expand parents
+  of currently expanded keys. Useful for filtering.
+- **`defaultCheckedKeys`** `string[]` — Default checked keys (uncontrolled).
+- **`checkedKeys`** `string[] | { checked: string[]; halfChecked?: string[] }`
+  — Controlled checked keys. Pass the object form to receive the same
+  shape back from `onCheck`.
+- **`defaultSelectedKeys`** `string[]` — Default selected keys
+  (uncontrolled).
+- **`selectedKeys`** `string[]` — Controlled selected keys.
+- **`height`** `number` — Fixed height in pixels. When omitted, the tree
+  fills the available vertical space and scrolls internally.
+- **`loadData`** `(node: TreeLoadDataNode) => Promise<void>` — Async
+  loader called the first time a non-leaf node with no `children` is
+  expanded. The consumer is expected to merge new children into
+  `treeData` (typical AntD pattern).
+- **`onExpand`** `(expandedKeys: Key[], info: TreeOnExpandInfo) => void` —
+  Called when a node is expanded or collapsed.
+- **`onCheck`** `(checked: Key[] | { checked, halfChecked }, info: TreeOnCheckInfo) => void`
+  — Called when a node is checked or unchecked.
+- **`onSelect`** `(selectedKeys: Key[], info: TreeOnSelectInfo) => void` —
+  Called when row selection changes.
+- **`rowStyles`** `Styles` — Override styles for `[data-element="Row"]`.
+
+#### `CubeTreeNodeData`
+
+- **`key`** `string` — Unique identifier of the node.
+- **`title`** `ReactNode` — Visible label.
+- **`children`** `CubeTreeNodeData[]` — Children. Pass `undefined`
+  together with `isLeaf={false}` for lazy nodes.
+- **`isLeaf`** `boolean` — Force leaf rendering (no expand toggle, no
+  `loadData` call).
+- **`isDisabled`** `boolean` — Disable interactions on this row (focus /
+  select / expand / check).
+- **`isCheckboxDisabled`** `boolean` — Disable only the checkbox of this
+  row.
+- **`isCheckable`** `boolean` — Per-node override; `false` hides the
+  checkbox for this row even when the tree is `isCheckable`.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root `treegrid` element of the Tree.
+
+**Sub-elements:**
+
+- `Row` — A single tree row (also targetable via the dedicated
+  `rowStyles` prop).
+
+#### rowStyles
+
+Customizes `[data-element="Row"]`. Useful when you need to override row
+spacing, hover/selected colors, or cell layout without re-targeting via
+`styles`.
+
+**Sub-elements:**
+
+- `Toggle` — The expand/collapse button.
+- `Checkbox` — The checkbox slot (visible only when `isCheckable`).
+- `Title` — The title label.
+
+### Modifiers
+
+The following row-level modifiers are emitted automatically. They are
+useful when overriding `rowStyles`:
+
+| Modifier        | Type      | Description                                            |
+| --------------- | --------- | ------------------------------------------------------ |
+| `selected`      | `boolean` | Row is selected.                                       |
+| `checked`       | `boolean` | Row is fully checked.                                  |
+| `indeterminate` | `boolean` | Row is in the half-checked state.                      |
+| `expanded`      | `boolean` | Row is expanded.                                       |
+| `disabled`      | `boolean` | Row is disabled.                                       |
+| `loading`       | `boolean` | The row's children are being fetched via `loadData`.   |
+| `leaf`          | `boolean` | Row has no children.                                   |
+| `has-checkbox`  | `boolean` | Row renders a checkbox.                                |
+
+## Variants
+
+### Selection Modes
+
+- `none` — Row click does not select. Useful in pure-display or pure-
+  checkable trees.
+- `single` (default) — One row selected at a time.
+- `multiple` — Multi-select with keyboard modifiers and shift-range.
+
+## Examples
+
+### Basic Usage
+
+```jsx
+const data = [
+  { key: 'fruits', title: 'Fruits', children: [
+    { key: 'apple', title: 'Apple' },
+    { key: 'banana', title: 'Banana' },
+  ]},
+  { key: 'vegetables', title: 'Vegetables', children: [
+    { key: 'carrot', title: 'Carrot' },
+  ]},
+];
+
+<Tree treeData={data} defaultExpandedKeys={['fruits']} />;
+```
+
+### Checkable
+
+`isCheckable` enables AntD-style cascading parent ↔ child checkbox
+behavior: checking a parent checks all eligible descendants, and a
+parent flips into the indeterminate (half-checked) state when only some
+of its descendants are checked.
+
+```jsx
+<Tree
+  treeData={data}
+  isCheckable
+  selectionMode="none"
+  defaultCheckedKeys={['apple']}
+  onCheck={(keys, info) => {
+    console.log('checked', keys);
+    console.log('half-checked', info.halfCheckedKeys);
+  }}
+/>
+```
+
+<Story of={TreeStories.Checkable} />
+
+### Controlled Checked
+
+To match AntD's object-shape API, pass `checkedKeys` as
+`{ checked, halfChecked }`. `onCheck` returns the same shape.
+
+```jsx
+const [checkedKeys, setCheckedKeys] = useState({ checked: [], halfChecked: [] });
+
+<Tree
+  treeData={data}
+  isCheckable
+  checkedKeys={checkedKeys}
+  onCheck={(next) => setCheckedKeys(next)}
+/>
+```
+
+<Story of={TreeStories.ControlledChecked} />
+
+### Lazy Loading
+
+Set `isLeaf: false` and omit `children` on a node, then provide a
+`loadData` callback. The callback should merge new children into
+`treeData`. The row shows a spinner while in flight; subsequent expands
+of the same key won't refire `loadData`.
+
+```jsx
+const handleLoadData = (node) =>
+  fetch(`/api/children?key=${node.key}`)
+    .then((r) => r.json())
+    .then((children) => mergeIntoTreeData(node.key, children));
+
+<Tree treeData={data} loadData={handleLoadData} />
+```
+
+<Story of={TreeStories.LazyLoading} />
+
+### Auto-expand Parent (Filtering)
+
+Pass the matching keys via `expandedKeys` and set `autoExpandParent` to
+keep their ancestors expanded.
+
+```jsx
+<Tree
+  treeData={data}
+  expandedKeys={matchedKeys}
+  autoExpandParent
+/>
+```
+
+<Story of={TreeStories.AutoExpandParent} />
+
+### Per-node Disabling
+
+Disable the entire row, just the checkbox, or hide the checkbox via
+node-level flags.
+
+```jsx
+const data = [
+  { key: 'a', title: 'A', children: [
+    { key: 'a-1', title: 'A-1', isDisabled: true },
+    { key: 'a-2', title: 'A-2', isCheckboxDisabled: true },
+    { key: 'a-3', title: 'A-3', isCheckable: false },
+  ]},
+];
+
+<Tree treeData={data} isCheckable defaultExpandedKeys={['a']} />
+```
+
+<Story of={TreeStories.PerNodeDisable} />
+
+### Fixed Height
+
+```jsx
+<Tree treeData={data} height={300} />
+```
+
+<Story of={TreeStories.FixedHeight} />
+
+## Accessibility
+
+Tree implements the
+[`treegrid` ARIA pattern](https://www.w3.org/WAI/ARIA/apg/patterns/treegrid/)
+via `useTree` from React Aria.
+
+### Keyboard Navigation
+
+- `Tab` — Moves focus into / out of the tree (focus stays on the
+  currently active row inside).
+- `ArrowUp` / `ArrowDown` — Move focus to the previous / next visible row.
+- `ArrowRight` — Expand the focused row (or move to its first child if
+  already expanded).
+- `ArrowLeft` — Collapse the focused row (or move to its parent if
+  already collapsed).
+- `Home` / `End` — Move focus to the first / last visible row.
+- `Space` / `Enter` — Toggle selection on the focused row (in `single`
+  or `multiple` mode).
+
+### Screen Reader Support
+
+- Each row reports `aria-level`, `aria-posinset`, `aria-setsize`, and
+  `aria-expanded` so screen readers can announce the position and
+  expansion state.
+- When `isCheckable` is enabled, the row carries `aria-checked` (`true`,
+  `false`, or `mixed` for the indeterminate state).
+- Disabled rows expose `aria-disabled="true"`.
+
+### ARIA Properties
+
+- `aria-label` — Provide a label that describes the tree's contents
+  (defaults to `"Tree"`).
+
+## Best Practices
+
+1. **Do**: Provide stable, unique `key`s — they are used for selection,
+   expansion, checking, and lazy-load tracking.
+   ```jsx
+   <Tree treeData={data.map((node) => ({ ...node, key: node.id }))} />
+   ```
+2. **Don't**: Mutate `treeData` in place. Always return a new array
+   from `loadData`'s commit step so React Stately can rebuild the
+   collection.
+3. **Accessibility**: When using checkboxes for selection, set
+   `selectionMode="none"` so the row click doesn't compete with the
+   checkbox.
+4. **Performance**: For very large trees, prefer virtualization (planned;
+   see Suggested Improvements) or use `loadData` to defer subtree
+   construction.
+
+## Suggested Improvements
+
+- Built-in virtualization for very large trees (10k+ rows).
+- Drag-and-drop reordering, mirroring AntD's `draggable` API.
+- An `onRightClick`/context menu hook.
+- Reveal-on-mount: scroll the focused row into view when expanded
+  programmatically.
+- Optional inline title editing.
+
+## Related Components
+
+- [ListBox](/components/ListBox) — Flat list with single/multi selection.
+- [Menu](/components/Menu) — Hierarchical action lists in popovers.
+- [Tabs](/components/Tabs) — Switch between sibling content panels.

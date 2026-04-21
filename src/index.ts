@@ -76,6 +76,16 @@ export type {
   CubeDisclosureItemProps,
   DisclosureStateContext,
 } from './components/content/Disclosure';
+export { Tree } from './components/content/Tree';
+export type {
+  CubeTreeProps,
+  CubeTreeNodeData,
+  TreeOnCheckInfo,
+  TreeOnExpandInfo,
+  TreeOnSelectInfo,
+  TreeLoadDataNode,
+  TreeSelectionMode,
+} from './components/content/Tree';
 export { GridProvider } from './components/GridProvider';
 export type { CubeGridProviderProps } from './components/GridProvider';
 export { Content } from './components/content/Content';
