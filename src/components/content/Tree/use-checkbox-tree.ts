@@ -86,7 +86,11 @@ function deriveCheckedState(
 
   const eligible = isNodeEligible(node);
 
-  if (anyEligible && allChecked) {
+  if (!anyEligible) {
+    // No eligible descendants — this node behaves like a leaf for
+    // checking purposes: its own checked state stands as-is.
+    half.delete(node.key);
+  } else if (allChecked) {
     checked.add(node.key);
     half.delete(node.key);
   } else if (anyChecked) {
@@ -94,6 +98,7 @@ function deriveCheckedState(
     half.add(node.key);
   } else {
     checked.delete(node.key);
+    half.delete(node.key);
   }
 
   return {
