@@ -88,9 +88,6 @@ export interface CubeTreeProps extends BaseProps, OuterStyleProps {
   /** Selection cardinality. Defaults to `'single'`. */
   selectionMode?: TreeSelectionMode;
 
-  /** Stretch each row to the full width of the container. */
-  blockNode?: boolean;
-
   /** Disable the entire tree. */
   isDisabled?: boolean;
 
@@ -152,6 +149,9 @@ export interface CubeTreeProps extends BaseProps, OuterStyleProps {
 
   /** Override styles for `[data-element="Row"]` (per-row root). */
   rowStyles?: Styles;
+
+  /** Accessible label for the tree. Defaults to `"Tree"`. */
+  ariaLabel?: string;
 
   /** QA selector. */
   qa?: string;

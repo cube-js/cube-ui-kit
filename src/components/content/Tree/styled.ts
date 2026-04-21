@@ -11,8 +11,6 @@ import { Item } from '../Item';
  * Tree-wide modifiers (set on `TreeElement` itself):
  * - `has-height` — paired with `--tree-height` on inline `style`
  *   when the consumer passes a numeric `height` prop.
- * - `block-node` — propagated from the Tree-level `blockNode` prop
- *   to every row through the root state context.
  */
 export const TreeElement = tasty({
   qa: 'Tree',

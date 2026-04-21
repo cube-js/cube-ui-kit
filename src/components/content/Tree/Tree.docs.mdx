@@ -41,8 +41,6 @@ consumers can be migrated with minimal churn.
   `false`. `selectionMode` wins when both are passed.
 - **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'single'`)
   — Selection cardinality.
-- **`blockNode`** `boolean` (default: `false`) — Stretch each row to fill
-  the container width.
 - **`isDisabled`** `boolean` (default: `false`) — Disable the entire tree.
 - **`defaultExpandedKeys`** `string[]` — Default expanded keys
   (uncontrolled).
@@ -126,7 +124,6 @@ useful when overriding `rowStyles`:
 | `disabled`      | `boolean` | Row is disabled.                                       |
 | `loading`       | `boolean` | The row's children are being fetched via `loadData`.   |
 | `leaf`          | `boolean` | Row has no children.                                   |
-| `block-node`    | `boolean` | Tree is in `blockNode` mode.                           |
 | `has-checkbox`  | `boolean` | Row renders a checkbox.                                |
 
 ## Variants
@@ -228,14 +225,6 @@ keep their ancestors expanded.
 ```
 
 <Story of={TreeStories.AutoExpandParent} />
-
-### Block Node
-
-```jsx
-<Tree treeData={data} blockNode isCheckable />
-```
-
-<Story of={TreeStories.BlockNode} />
 
 ### Per-node Disabling
 

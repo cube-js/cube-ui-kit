@@ -138,14 +138,6 @@ const meta = {
     },
 
     /* Presentation */
-    blockNode: {
-      control: 'boolean',
-      description: 'Stretch each row to fill the container width',
-      table: {
-        defaultValue: { summary: 'false' },
-        type: { summary: 'boolean' },
-      },
-    },
     height: {
       control: 'number',
       description:
@@ -247,14 +239,6 @@ export const SelectionDisabled: Story = {
 export const Disabled: Story = {
   args: {
     isDisabled: true,
-  },
-};
-
-export const BlockNode: Story = {
-  args: {
-    blockNode: true,
-    isCheckable: true,
-    selectionMode: 'none',
   },
 };
 

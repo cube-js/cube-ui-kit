@@ -1,4 +1,6 @@
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+
+import { useEvent } from '../../../_internal/hooks';
 
 import type { Key } from '@react-types/shared';
 import type { CubeTreeNodeData, TreeLoadDataNode } from './types';
@@ -50,60 +52,57 @@ export function useLoadData(opts: UseLoadDataOptions): LoadDataController {
   const previousExpandedRef = useRef<Set<string>>(new Set(initialExpandedKeys));
   const inFlightRef = useRef<Set<string>>(new Set());
 
-  const onExpandedChanged = useCallback(
-    (expandedKeys: Iterable<Key>) => {
-      const next = new Set<string>();
-      for (const k of expandedKeys) next.add(String(k));
+  const onExpandedChanged = useEvent((expandedKeys: Iterable<Key>) => {
+    const next = new Set<string>();
+    for (const k of expandedKeys) next.add(String(k));
 
-      const prev = previousExpandedRef.current;
-      const newlyExpanded: string[] = [];
-      for (const k of next) {
-        if (!prev.has(k)) newlyExpanded.push(k);
-      }
-      previousExpandedRef.current = next;
+    const prev = previousExpandedRef.current;
+    const newlyExpanded: string[] = [];
+    for (const k of next) {
+      if (!prev.has(k)) newlyExpanded.push(k);
+    }
+    previousExpandedRef.current = next;
 
-      if (!loadData || newlyExpanded.length === 0) return;
+    if (!loadData || newlyExpanded.length === 0) return;
 
-      let added = false;
-      const toLoad: string[] = [];
-      for (const key of newlyExpanded) {
-        const node = nodesByKey.get(key);
-        if (!node) continue;
-        if (node.isLeaf) continue;
-        if (node.children && node.children.length > 0) continue;
-        if (inFlightRef.current.has(key)) continue;
-        inFlightRef.current.add(key);
-        toLoad.push(key);
-        added = true;
-      }
+    const toLoad: string[] = [];
+    for (const key of newlyExpanded) {
+      const node = nodesByKey.get(key);
+      if (!node) continue;
+      if (node.isLeaf) continue;
+      if (node.children && node.children.length > 0) continue;
+      if (inFlightRef.current.has(key)) continue;
+      inFlightRef.current.add(key);
+      toLoad.push(key);
+    }
 
-      if (!added) return;
+    if (toLoad.length === 0) return;
 
-      setLoadingKeys((current) => {
-        const updated = new Set(current);
-        for (const k of toLoad) updated.add(k);
-        return updated;
-      });
+    setLoadingKeys((current) => {
+      const updated = new Set(current);
+      for (const k of toLoad) updated.add(k);
+      return updated;
+    });
 
-      for (const key of toLoad) {
-        Promise.resolve(loadData({ key }))
-          .catch(() => {
-            // Allow consumers to re-trigger after a rejected load by
-            // letting the next expand event re-enter this branch.
-          })
-          .finally(() => {
-            inFlightRef.current.delete(key);
-            setLoadingKeys((current) => {
-              if (!current.has(key)) return current;
-              const updated = new Set(current);
-              updated.delete(key);
-              return updated;
-            });
+    for (const key of toLoad) {
+      const loadNode = nodesByKey.get(key);
+      Promise.resolve(loadData({ key, children: loadNode?.children }))
+        .catch((err) => {
+          if (process.env.NODE_ENV !== 'production') {
+            console.error(`[Tree] loadData failed for key "${key}":`, err);
+          }
+        })
+        .finally(() => {
+          inFlightRef.current.delete(key);
+          setLoadingKeys((current) => {
+            if (!current.has(key)) return current;
+            const updated = new Set(current);
+            updated.delete(key);
+            return updated;
           });
-      }
-    },
-    [loadData, nodesByKey],
-  );
+        });
+    }
+  });
 
   return { loadingKeys, onExpandedChanged };
 }

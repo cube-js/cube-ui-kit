@@ -16,14 +16,13 @@ import {
 
 import type { Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
-import type {
-  CSSProperties,
-  KeyboardEvent as ReactKeyboardEvent,
-  MouseEvent as ReactMouseEvent,
-  ReactNode,
-} from 'react';
+import type { CSSProperties, SyntheticEvent } from 'react';
 import type { TreeState } from 'react-stately';
 import type { CubeTreeNodeData } from './types';
+
+const stopPropagation = (e: SyntheticEvent) => {
+  e.stopPropagation();
+};
 
 export interface TreeNodeProps {
   node: Node<CubeTreeNodeData>;
@@ -41,8 +40,6 @@ export interface TreeNodeProps {
   isChecked: boolean;
   /** Whether `loadData` is currently fetching this row's children. */
   isLoading: boolean;
-  /** Whether the entire tree is `blockNode`. */
-  isBlockNode: boolean;
 
   /** Toggle this row's checkbox (cascades). */
   onToggleChecked: (key: string) => void;
@@ -50,8 +47,6 @@ export interface TreeNodeProps {
   /** Styles applied to the visible row (`TreeRowItem`). */
   rowStyles?: Styles;
 }
-
-const ROW_LEVEL_OFFSET = 0; // root nodes start at level 0
 
 function TreeNodeInner(props: TreeNodeProps) {
   const {
@@ -63,7 +58,6 @@ function TreeNodeInner(props: TreeNodeProps) {
     isIndeterminate,
     isChecked,
     isLoading,
-    isBlockNode,
     onToggleChecked,
     rowStyles,
   } = props;
@@ -79,112 +73,59 @@ function TreeNodeInner(props: TreeNodeProps) {
   const isDisabled = state.disabledKeys.has(node.key);
   const isSelected = state.selectionManager.isSelected(node.key);
 
-  /**
-   * `useTreeItem` doesn't track hover. The `Item` variant we extend
-   * (`default.item`) uses the `hovered` mod (compiled to
-   * `[data-hovered]`), so we run `useHover` ourselves and wire its
-   * `hoverProps` into the row.
-   */
+  // `useTreeItem` doesn't track hover; we need it for the `hovered` mod.
   const { hoverProps, isHovered } = useHover({ isDisabled });
-  /**
-   * React Aria uses a roving-tabindex "virtual focus" model for treegrid:
-   * only the row matching `selectionManager.focusedKey` is tabbable, and
-   * arrow-key navigation updates that key instead of moving DOM focus
-   * between every row. No `data-focused` / `:focus-visible` lands on the
-   * row, so we mirror the focused key as a `focused` mod on the item
-   * to make it stylable.
-   */
+  // React Aria's treegrid uses roving tabindex, so no `data-focused`
+  // attribute lands on the row — mirror it as a mod manually.
   const isFocused =
     state.selectionManager.isFocused &&
     state.selectionManager.focusedKey === node.key;
-  /**
-   * `useTreeItem` reports `aria-expanded` only on rows that *can* expand
-   * (i.e. have child nodes in the collection). For lazy rows with no
-   * children loaded yet but `isLeaf !== true`, we still want to render
-   * a toggle so the consumer can fire `loadData`.
-   */
+  // For lazy rows with no children yet, still render a toggle unless
+  // explicitly marked as leaf.
   const isLeaf =
     data.isLeaf === true || (data.isLeaf !== false && !node.hasChildNodes);
   const isRowCheckable = isCheckable && data.isCheckable !== false;
-
-  const handleCheckboxClick = useEvent(
-    (e: ReactMouseEvent | ReactKeyboardEvent) => {
-      e.stopPropagation();
-    },
-  );
 
   const handleCheckboxChange = useEvent(() => {
     onToggleChecked(String(node.key));
   });
 
-  const rowMods = useMemo(
+  const sharedMods = useMemo(
     () => ({
       checked: isChecked,
       indeterminate: isIndeterminate,
       expanded: isExpanded,
-      disabled: isDisabled,
       loading: isLoading,
       leaf: isLeaf,
-      'block-node': isBlockNode,
       'has-checkbox': isRowCheckable,
     }),
-    [
-      isChecked,
-      isIndeterminate,
-      isExpanded,
-      isDisabled,
-      isLoading,
-      isLeaf,
-      isBlockNode,
-      isRowCheckable,
-    ],
+    [isChecked, isIndeterminate, isExpanded, isLoading, isLeaf, isRowCheckable],
+  );
+
+  const rowMods = useMemo(
+    () => ({ ...sharedMods, disabled: isDisabled }),
+    [sharedMods, isDisabled],
   );
 
   const itemMods = useMemo(
     () => ({
-      checked: isChecked,
-      indeterminate: isIndeterminate,
-      expanded: isExpanded,
-      loading: isLoading,
-      leaf: isLeaf,
+      ...sharedMods,
       focused: isFocused,
       hovered: isHovered,
       pressed: isPressed,
-      'has-checkbox': isRowCheckable,
     }),
-    [
-      isChecked,
-      isIndeterminate,
-      isExpanded,
-      isLoading,
-      isLeaf,
-      isFocused,
-      isHovered,
-      isPressed,
-      isRowCheckable,
-    ],
+    [sharedMods, isFocused, isHovered, isPressed],
   );
 
-  /**
-   * Indent each row by its depth. `node.level` is 0-based at the root.
-   * Pushed down via a CSS custom property so the styled element can
-   * compute padding without re-extracting styles per row.
-   */
   const levelStyle = useMemo<CSSProperties>(
     () => ({
-      ['--tree-level' as keyof CSSProperties]: String(
-        (node.level ?? ROW_LEVEL_OFFSET) - ROW_LEVEL_OFFSET,
-      ),
+      ['--tree-level' as keyof CSSProperties]: String(node.level ?? 0),
     }),
     [node.level],
   );
 
-  /**
-   * `aria-checked` for treegrid rows that act as multi-state checkboxes.
-   * Only set when the tree is checkable, so we don't pollute the row
-   * with checkbox semantics in select-only mode.
-   */
-  const ariaChecked: ReactNode = isRowCheckable
+  // Only emit `aria-checked` when the tree is in checkable mode.
+  const ariaChecked: 'mixed' | 'true' | 'false' | undefined = isRowCheckable
     ? isIndeterminate
       ? 'mixed'
       : isChecked
@@ -193,15 +134,10 @@ function TreeNodeInner(props: TreeNodeProps) {
     : undefined;
 
   const finalRowProps = mergeProps(rowProps, hoverProps, {
-    'aria-checked': ariaChecked as string | boolean | undefined,
+    'aria-checked': ariaChecked,
   });
 
-  /**
-   * Always render a toggle slot — even for leaf rows — so siblings
-   * at the same indent level visually align. Leaves get a
-   * non-interactive placeholder (a plain div) so user clicks can't
-   * trigger anything.
-   */
+  // Leaf rows get a placeholder so sibling indents align.
   const toggleNode = isLeaf ? (
     <TreeNodeTogglePlaceholder aria-hidden data-element="Toggle" />
   ) : (
@@ -218,8 +154,8 @@ function TreeNodeInner(props: TreeNodeProps) {
     <TreeNodeCheckboxWrapper
       data-element="Checkbox"
       role="presentation"
-      onClick={handleCheckboxClick}
-      onKeyDown={handleCheckboxClick}
+      onClick={stopPropagation}
+      onKeyDown={stopPropagation}
     >
       <Checkbox
         isSelected={isChecked}
