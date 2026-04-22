@@ -1,5 +1,28 @@
 # @cube-dev/ui-kit
 
+## 0.129.0
+
+### Minor Changes
+
+- [#1127](https://github.com/cube-js/cube-ui-kit/pull/1127) [`4742b843`](https://github.com/cube-js/cube-ui-kit/commit/4742b843cd4fb15704bcabef85717e7ecedd5852) Thanks [@tenphi](https://github.com/tenphi)! - Add `Tree` component — a hierarchical tree view built on React Aria/Stately with an Ant Design–compatible API for easy migration.
+
+  - `treeData` accepts nested `{ key, title, children, isLeaf, isCheckable, isCheckboxDisabled }` nodes
+  - Optional checkbox column via `isCheckable` with cascading parent/child state and `halfChecked` keys in `onCheck` payload
+  - Controlled / uncontrolled `checkedKeys`, `expandedKeys`, and `selectedKeys` (single or multiple `selectionMode`)
+  - Async `loadData` with per-row loading indicator; auto-expands lazy nodes after load
+  - Per-node and per-tree `isDisabled`, `autoExpandParent`, custom `title` ReactNode
+  - `rowStyles` prop forwarded to each row's underlying `Item` for visual customization
+
+### Patch Changes
+
+- [#1129](https://github.com/cube-js/cube-ui-kit/pull/1129) [`6e74d310`](https://github.com/cube-js/cube-ui-kit/commit/6e74d310899a03b5f9c3a4be941380300a1865bc) Thanks [@tenphi](https://github.com/tenphi)! - FilterPicker: Clear search value when the popover closes
+
+- [#1127](https://github.com/cube-js/cube-ui-kit/pull/1127) [`4742b843`](https://github.com/cube-js/cube-ui-kit/commit/4742b843cd4fb15704bcabef85717e7ecedd5852) Thanks [@tenphi](https://github.com/tenphi)! - Update `@tenphi/tasty` to `2.1.1`.
+
+  - Fix `$: '> SubElementName'` selector affix when the trailing element name matches the sub-element key (avoids duplicate key injection; placeholder behavior is correct).
+
+  Migrated: `TreeNode` uses `@ts-expect-error` for `Checkbox` `onChange` (react-types / `AriaCheckboxProps`).
+
 ## 0.128.0
 
 ### Minor Changes
