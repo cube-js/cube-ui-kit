@@ -167,7 +167,8 @@ export const Dialog = forwardRef(function Dialog(
     return <DialogContent key="content" {...props} ref={ref} />;
   }, [props, ref]);
 
-  const shouldContainFocus = isEntered && context.type !== 'panel';
+  const shouldContainFocus =
+    isEntered && !!context.isOpen && context.type !== 'panel';
 
   return (
     // This component traps the focus inside the dialog and restores it on close.
