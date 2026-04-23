@@ -3,7 +3,7 @@ import { useHover, useTreeItem } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { DirectionIcon, LoadingIcon } from '../../../icons';
-import { mergeProps } from '../../../utils/react';
+import { mergeProps, mergeRefs } from '../../../utils/react';
 import { Checkbox } from '../../fields/Checkbox/Checkbox';
 
 import {
@@ -18,7 +18,7 @@ import type { Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
 import type { CSSProperties, KeyboardEvent, SyntheticEvent } from 'react';
 import type { TreeState } from 'react-stately';
-import type { CubeTreeNodeData } from './types';
+import type { CubeTreeNodeData, TreeItemProps, TreeNodeState } from './types';
 
 const stopPropagation = (e: SyntheticEvent) => {
   e.stopPropagation();
@@ -44,8 +44,20 @@ export interface TreeNodeProps {
   /** Toggle this row's checkbox (cascades). */
   onToggleChecked: (key: string) => void;
 
+  /** Per-node Item customization (static object or callback). */
+  itemProps?:
+    | TreeItemProps
+    | ((data: CubeTreeNodeData, state: TreeNodeState) => TreeItemProps);
+
   /** Styles applied to the visible row (`TreeRowItem`). */
   rowStyles?: Styles;
+
+  /** Inline style for virtualizer absolute positioning. */
+  virtualStyle?: CSSProperties;
+  /** Ref callback from `@tanstack/react-virtual` to measure row height. */
+  virtualRef?: (element: HTMLElement | null) => void;
+  /** Virtual index for `data-index` attribute. */
+  virtualIndex?: number;
 }
 
 function TreeNodeInner(props: TreeNodeProps) {
@@ -59,10 +71,18 @@ function TreeNodeInner(props: TreeNodeProps) {
     isChecked,
     isLoading,
     onToggleChecked,
+    itemProps,
     rowStyles,
+    virtualStyle,
+    virtualRef,
+    virtualIndex,
   } = props;
 
   const rowRef = useRef<HTMLDivElement>(null);
+  const combinedRef = useMemo(
+    () => (virtualRef ? mergeRefs(rowRef, virtualRef) : rowRef),
+    [virtualRef],
+  );
 
   const { rowProps, gridCellProps, expandButtonProps, isPressed } = useTreeItem(
     { node },
@@ -129,11 +149,12 @@ function TreeNodeInner(props: TreeNodeProps) {
     [sharedMods, isFocused, isHovered, isPressed],
   );
 
-  const levelStyle = useMemo<CSSProperties>(
+  const rowStyle = useMemo<CSSProperties>(
     () => ({
       ['--tree-level' as keyof CSSProperties]: String(node.level ?? 0),
+      ...virtualStyle,
     }),
-    [node.level],
+    [node.level, virtualStyle],
   );
 
   // Only emit `aria-checked` when the tree is in checkable mode.
@@ -183,22 +204,43 @@ function TreeNodeInner(props: TreeNodeProps) {
     </TreeNodeCheckboxWrapper>
   ) : null;
 
+  const nodeState: TreeNodeState = {
+    isExpanded,
+    isSelected,
+    isChecked,
+    isIndeterminate,
+    isLeaf,
+  };
+  const resolvedItemProps =
+    typeof itemProps === 'function' ? itemProps(data, nodeState) : itemProps;
+  const { prefix: userPrefix, ...restUserProps } = resolvedItemProps ?? {};
+
+  const composedPrefix =
+    checkboxNode || userPrefix ? (
+      <>
+        {checkboxNode}
+        {userPrefix}
+      </>
+    ) : null;
+
   return (
     <TreeNodeRow
       {...finalRowProps}
-      ref={rowRef}
+      ref={combinedRef}
       mods={rowMods}
-      style={levelStyle}
+      style={rowStyle}
       data-element="Row"
       data-qa-key={String(node.key)}
+      data-index={virtualIndex}
     >
       <TreeRowItem
         {...gridCellProps}
+        {...restUserProps}
         isSelected={isSelected}
         isDisabled={isDisabled}
         mods={itemMods}
         icon={toggleNode}
-        prefix={checkboxNode}
+        prefix={composedPrefix}
         styles={rowStyles}
       >
         {data.title}

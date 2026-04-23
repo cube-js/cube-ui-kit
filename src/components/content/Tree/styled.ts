@@ -84,7 +84,7 @@ export const TreeRowItem = tasty(Item, {
      * loses to it in the cascade when both are emitted from the same
      * declaration block.
      */
-    padding: 'left ($tree-indent * 1x)',
+    padding: 'left ($tree-indent * 1.5x)',
     '$tree-indent': '($tree-level, 0)',
     cursor: {
       '': 'pointer',

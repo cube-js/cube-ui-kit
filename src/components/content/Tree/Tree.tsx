@@ -1,5 +1,6 @@
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { OUTER_STYLES } from '@tenphi/tasty';
-import { forwardRef, useMemo, useRef } from 'react';
+import { forwardRef, useLayoutEffect, useMemo, useRef } from 'react';
 import { useTree } from 'react-aria';
 import { Item, useTreeState } from 'react-stately';
 
@@ -126,6 +127,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     onExpand,
     onCheck,
     onSelect,
+    itemProps,
     rowStyles,
     ariaLabel,
     qa,
@@ -330,15 +332,47 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     return out;
   }, [state.collection]);
 
-  const heightStyle = useMemo<CSSProperties | undefined>(
-    () =>
-      height != null
-        ? ({
-            ['--tree-height' as keyof CSSProperties]: `${height}px`,
-          } as CSSProperties)
-        : undefined,
-    [height],
-  );
+  const visibleNodesRef = useRef(visibleNodes);
+  visibleNodesRef.current = visibleNodes;
+
+  // ----- Virtualization -----
+  const rowVirtualizer = useVirtualizer({
+    count: visibleNodes.length,
+    getScrollElement: () => treeRef.current,
+    getItemKey: (index: number) => {
+      const node = visibleNodesRef.current[index];
+      return node?.key ?? index;
+    },
+    estimateSize: () => 29,
+    overscan: 10,
+  });
+
+  const containerStyle = useMemo<CSSProperties>(() => {
+    const style: CSSProperties = {
+      position: 'relative',
+      height: `${rowVirtualizer.getTotalSize()}px`,
+    };
+    if (height != null) {
+      (style as any)['--tree-height'] = `${height}px`;
+    }
+    return style;
+  }, [rowVirtualizer.getTotalSize(), height]);
+
+  // Keep focused node visible during keyboard navigation.
+  useLayoutEffect(() => {
+    const focusedKey = state.selectionManager.focusedKey;
+    if (focusedKey == null) return;
+
+    const scrollElement = treeRef.current;
+    if (!scrollElement) return;
+
+    const row = scrollElement.querySelector(
+      `[data-qa-key="${CSS.escape(String(focusedKey))}"]`,
+    ) as HTMLElement | null;
+    if (!row || typeof row.scrollIntoView !== 'function') return;
+
+    row.scrollIntoView({ block: 'nearest' });
+  }, [state.selectionManager.focusedKey]);
 
   const mods = useMemo(
     () => ({
@@ -360,9 +394,11 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       qa={qa ?? 'Tree'}
       mods={mods}
       styles={baseStyles}
-      style={heightStyle}
+      style={containerStyle}
     >
-      {visibleNodes.map((node) => {
+      {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+        const node = visibleNodes[virtualItem.index];
+        if (!node) return null;
         const keyStr = String(node.key);
         const data = nodesByKey.get(keyStr);
         if (!data) return null;
@@ -377,7 +413,17 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
             isChecked={checkbox.checkedSet.has(keyStr)}
             isIndeterminate={checkbox.halfCheckedSet.has(keyStr)}
             isLoading={loadDataController.loadingKeys.has(keyStr)}
+            itemProps={itemProps}
             rowStyles={rowStyles}
+            virtualStyle={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              transform: `translateY(${virtualItem.start}px)`,
+            }}
+            virtualRef={rowVirtualizer.measureElement}
+            virtualIndex={virtualItem.index}
             onToggleChecked={checkbox.toggle}
           />
         );

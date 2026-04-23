@@ -1,5 +1,9 @@
+import { IconEdit, IconFile, IconTrash } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 
+import { FolderIcon, FolderOpenIcon, Icon, MoreIcon } from '../../../icons';
+import { ItemAction } from '../../actions/ItemAction';
+import { Menu, MenuTrigger } from '../../actions/Menu';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { Text } from '../Text';
@@ -408,5 +412,53 @@ export const AutoExpandParent: Story = {
 export const Empty: Story = {
   args: {
     treeData: [],
+  },
+};
+
+const prefixIconStyles = { width: '($size - 2bw)' } as const;
+
+const WrappedFileIcon = () => (
+  <Icon styles={prefixIconStyles}>
+    <IconFile />
+  </Icon>
+);
+
+export const DirectoryTree: Story = {
+  args: {
+    selectionMode: 'none',
+    defaultExpandedKeys: ['src', 'src/components'],
+    styles: {
+      width: '200px',
+      border: true,
+      radius: '1cr',
+    },
+    itemProps: (data, { isExpanded }) => {
+      const isFolder = !!data.children;
+      return {
+        prefix: isFolder ? (
+          isExpanded ? (
+            <FolderOpenIcon styles={prefixIconStyles} />
+          ) : (
+            <FolderIcon styles={prefixIconStyles} />
+          )
+        ) : (
+          <WrappedFileIcon />
+        ),
+        actions: (
+          <MenuTrigger>
+            <ItemAction icon={<MoreIcon />} aria-label="Actions" />
+            <Menu>
+              <Menu.Item key="rename" icon={<IconEdit />}>
+                Rename
+              </Menu.Item>
+              <Menu.Item key="delete" icon={<IconTrash />}>
+                Delete
+              </Menu.Item>
+            </Menu>
+          </MenuTrigger>
+        ),
+        autoHideActions: true,
+      };
+    },
   },
 };

@@ -1,6 +1,7 @@
 import type { Key } from '@react-types/shared';
 import type { BaseProps, OuterStyleProps, Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
+import type { CubeItemProps } from '../Item/Item';
 
 /** Selection cardinality, mirroring React Aria/Stately's `selectionMode`. */
 export type TreeSelectionMode = 'none' | 'single' | 'multiple';
@@ -62,6 +63,34 @@ export interface TreeOnSelectInfo {
   /** All currently selected nodes (flat). */
   selectedNodes: CubeTreeNodeData[];
 }
+
+/** Current visual/interaction state of a tree node, passed as the second argument to `itemProps`. */
+export interface TreeNodeState {
+  isExpanded: boolean;
+  isSelected: boolean;
+  isChecked: boolean;
+  isIndeterminate: boolean;
+  isLeaf: boolean;
+}
+
+/** Props that can be customized per tree node via `itemProps`. */
+export type TreeItemProps = Partial<
+  Pick<
+    CubeItemProps,
+    | 'prefix'
+    | 'suffix'
+    | 'actions'
+    | 'autoHideActions'
+    | 'preserveActionsSpace'
+    | 'description'
+    | 'descriptionPlacement'
+    | 'rightIcon'
+    | 'tooltip'
+    | 'highlight'
+    | 'highlightCaseSensitive'
+    | 'highlightStyles'
+  >
+>;
 
 /** Argument shape for the `loadData` callback. */
 export interface TreeLoadDataNode {
@@ -146,6 +175,24 @@ export interface CubeTreeProps extends BaseProps, OuterStyleProps {
 
   /** Called when row selection changes. */
   onSelect?: (selectedKeys: Key[], info: TreeOnSelectInfo) => void;
+
+  /**
+   * Customize Item props per tree node.
+   *
+   * Accepts a static object (applied to every row) or a callback that
+   * receives the node data and returns props for that row.
+   *
+   * Supported props: `prefix`, `suffix`, `actions`, `autoHideActions`,
+   * `preserveActionsSpace`, `description`, `descriptionPlacement`,
+   * `rightIcon`, `tooltip`, `highlight`, `highlightCaseSensitive`,
+   * `highlightStyles`.
+   *
+   * The `icon` slot is reserved for the expand/collapse toggle.
+   * Use `prefix` for custom node icons.
+   */
+  itemProps?:
+    | TreeItemProps
+    | ((data: CubeTreeNodeData, state: TreeNodeState) => TreeItemProps);
 
   /** Override styles for `[data-element="Row"]` (per-row root). */
   rowStyles?: Styles;
