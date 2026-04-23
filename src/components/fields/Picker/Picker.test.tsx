@@ -1,7 +1,7 @@
 import { createRef } from 'react';
 
 import { Picker } from '../../../index';
-import { act, renderWithRoot, userEvent, within } from '../../../test';
+import { act, renderWithRoot, userEvent, waitFor, within } from '../../../test';
 
 vi.mock('../../../_internal/hooks/use-warn');
 
@@ -86,13 +86,10 @@ describe('<Picker />', () => {
         await userEvent.click(getByText('Apple'));
       });
 
-      // Wait a bit for the popover to close
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+      // Wait for the exit animation to complete
+      await waitFor(() => {
+        expect(queryByText('Banana')).not.toBeInTheDocument();
       });
-
-      // Verify popover closed (Banana option should not be visible)
-      expect(queryByText('Banana')).not.toBeInTheDocument();
     });
 
     it('should open and close popover when trigger is clicked', async () => {
@@ -120,12 +117,10 @@ describe('<Picker />', () => {
         await userEvent.click(trigger);
       });
 
-      // Wait for animation
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+      // Wait for exit animation to complete
+      await waitFor(() => {
+        expect(queryByText('Apple')).not.toBeInTheDocument();
       });
-
-      expect(queryByText('Apple')).not.toBeInTheDocument();
     });
 
     it('should display selected item in trigger for single selection', async () => {
@@ -278,6 +273,13 @@ describe('<Picker />', () => {
       // Close popover
       await act(async () => {
         await userEvent.click(trigger);
+      });
+
+      // Wait for exit animation to complete
+      await waitFor(() => {
+        expect(
+          document.querySelector('[role="listbox"]'),
+        ).not.toBeInTheDocument();
       });
 
       // Reopen popover - selected items should be sorted to top
@@ -609,13 +611,10 @@ describe('<Picker />', () => {
         await userEvent.click(appleOption);
       });
 
-      // For checkable items in multiple mode, content click should close the popover
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+      // Popover should be closed after exit animation
+      await waitFor(() => {
+        expect(queryByRole('listbox')).not.toBeInTheDocument();
       });
-
-      // Popover should be closed
-      expect(queryByRole('listbox')).not.toBeInTheDocument();
     });
   });
 
@@ -720,15 +719,12 @@ describe('<Picker />', () => {
         await userEvent.click(secondTrigger);
       });
 
-      // Wait for the events to propagate
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 200));
+      // Wait for exit animation on first picker to complete
+      await waitFor(() => {
+        const listboxes = getAllByRole('listbox');
+        expect(listboxes).toHaveLength(1);
       });
-
-      // There should be only one listbox visible
-      const listboxes = getAllByRole('listbox');
-      expect(listboxes).toHaveLength(1);
-    });
+    }, 10000);
   });
 
   describe('Form integration', () => {

@@ -40,6 +40,11 @@ function Overlay(props: CubeOverlayProps, ref) {
     hideOnClose = false,
   } = props;
   let [exited, setExited] = useState(!isOpen);
+
+  if (isOpen && exited) {
+    setExited(false);
+  }
+
   let { root } = useProviderProps({} as Props);
 
   let handlePhaseChange = useCallback(
@@ -83,9 +88,7 @@ function Overlay(props: CubeOverlayProps, ref) {
         duration={EXIT_DURATION}
         onPhaseChange={handlePhaseChange}
       >
-        {({ phase }) => {
-          const derivedIsOpen = phase === 'enter' || phase === 'entered';
-
+        {({ phase, isShown }) => {
           return (
             <OpenTransitionContext.Provider
               value={{ transitionState: phase as ReportedPhase }}
@@ -97,7 +100,7 @@ function Overlay(props: CubeOverlayProps, ref) {
                   cloneElement(
                     child as ReactElement,
                     {
-                      isOpen: derivedIsOpen,
+                      isOpen: isShown,
                       transitionState: phase,
                     } as any,
                   ),

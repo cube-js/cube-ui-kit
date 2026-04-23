@@ -88,6 +88,13 @@ export function DisplayTransition({
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
 
+  // Advance phase synchronously during render so the overlay element
+  // exists in the same commit. This lets useOverlayPosition (and similar
+  // hooks) find the element on their first layout-effect run.
+  if (targetShown && phase === 'unmounted') {
+    setPhase('enter');
+  }
+
   const onRestEvent = useEvent(onRest);
   const onPhaseChangeEvent = useEvent(onPhaseChange);
   const onToggleEvent = useEvent(onToggle);
