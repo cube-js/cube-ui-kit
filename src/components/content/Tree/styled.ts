@@ -29,8 +29,7 @@ export const TreeElement = tasty({
     color: '#dark',
     transition: 'theme',
     outline: 0,
-    gap: '1bw',
-    padding: '.5x',
+    padding: 0,
   },
 });
 
