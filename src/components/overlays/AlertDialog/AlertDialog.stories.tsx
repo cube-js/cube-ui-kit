@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 import { action } from 'storybook/actions';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
@@ -115,5 +115,7 @@ UsingApiWithCancel.play = async ({ canvasElement }) => {
   await expect(dialog).toBeInTheDocument();
   await userEvent.click(getByTestId('CancelToken'));
 
-  await expect(queryByRole('alertdialog')).not.toBeInTheDocument();
+  await waitFor(() =>
+    expect(queryByRole('alertdialog')).not.toBeInTheDocument(),
+  );
 };
