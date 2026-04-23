@@ -16,7 +16,7 @@ import {
 
 import type { Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
-import type { CSSProperties, SyntheticEvent } from 'react';
+import type { CSSProperties, KeyboardEvent, SyntheticEvent } from 'react';
 import type { TreeState } from 'react-stately';
 import type { CubeTreeNodeData } from './types';
 
@@ -90,6 +90,18 @@ function TreeNodeInner(props: TreeNodeProps) {
     onToggleChecked(String(node.key));
   });
 
+  const handleKeyDown = useEvent((e: KeyboardEvent) => {
+    if (
+      e.key === ' ' &&
+      isRowCheckable &&
+      !isDisabled &&
+      !data.isCheckboxDisabled
+    ) {
+      e.preventDefault();
+      onToggleChecked(String(node.key));
+    }
+  });
+
   const sharedMods = useMemo(
     () => ({
       checked: isChecked,
@@ -135,6 +147,7 @@ function TreeNodeInner(props: TreeNodeProps) {
 
   const finalRowProps = mergeProps(rowProps, hoverProps, {
     'aria-checked': ariaChecked,
+    onKeyDown: handleKeyDown,
   });
 
   // Leaf rows get a placeholder so sibling indents align.
