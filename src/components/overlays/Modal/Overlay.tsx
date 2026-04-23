@@ -1,19 +1,30 @@
 import { Props } from '@tenphi/tasty';
-import { forwardRef, useCallback, useState } from 'react';
+import {
+  Children,
+  cloneElement,
+  forwardRef,
+  ReactElement,
+  useCallback,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 
 import { Provider, useProviderProps } from '../../../provider';
+import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 
-import { OpenTransition } from './OpenTransition';
+import { OpenTransitionContext } from './OpenTransitionContext';
 import { WithCloseBehavior } from './types';
 
 import type { OverlayProps } from 'react-aria';
+import type { ReportedPhase } from '../../helpers/DisplayTransition/DisplayTransition';
 
 export interface CubeOverlayProps
   extends Omit<OverlayProps, 'container' | 'nodeRef'>,
     WithCloseBehavior {
   container?: HTMLElement | null;
 }
+
+const EXIT_DURATION = 350;
 
 function Overlay(props: CubeOverlayProps, ref) {
   let {
@@ -29,23 +40,40 @@ function Overlay(props: CubeOverlayProps, ref) {
     hideOnClose = false,
   } = props;
   let [exited, setExited] = useState(!isOpen);
+
+  if (isOpen && exited) {
+    setExited(false);
+  }
+
   let { root } = useProviderProps({} as Props);
 
-  let handleEntered = useCallback(() => {
-    setExited(false);
-    onEntered?.();
-  }, [onEntered]);
+  let handlePhaseChange = useCallback(
+    (phase: ReportedPhase) => {
+      switch (phase) {
+        case 'enter':
+          setExited(false);
+          onEnter?.();
+          onEntering?.();
+          break;
+        case 'entered':
+          onEntered?.();
+          break;
+        case 'exit':
+          onExit?.();
+          onExiting?.();
+          break;
+        case 'unmounted':
+          setExited(true);
+          onExited?.();
+          break;
+      }
+    },
+    [onEnter, onEntering, onEntered, onExit, onExiting, onExited],
+  );
 
-  let handleExited = useCallback(() => {
-    setExited(true);
-    onExited?.();
-  }, [onExited]);
-
-  // Don't un-render the overlay while it's transitioning out.
   let mountOverlay = isOpen || !exited;
 
   if (!mountOverlay) {
-    // Don't bother showing anything if we don't have to.
     if (!hideOnClose) {
       return null;
     }
@@ -53,18 +81,34 @@ function Overlay(props: CubeOverlayProps, ref) {
 
   let contents = (
     <Provider ref={ref}>
-      <OpenTransition
-        appear
-        in={isOpen}
-        onExit={onExit}
-        onExiting={onExiting}
-        onExited={handleExited}
-        onEnter={onEnter}
-        onEntering={onEntering}
-        onEntered={handleEntered}
+      <DisplayTransition
+        animateOnMount
+        isShown={!!isOpen}
+        exposeUnmounted={hideOnClose}
+        duration={EXIT_DURATION}
+        onPhaseChange={handlePhaseChange}
       >
-        {children}
-      </OpenTransition>
+        {({ phase, isShown }) => {
+          return (
+            <OpenTransitionContext.Provider
+              value={{ transitionState: phase as ReportedPhase }}
+            >
+              {Children.map(
+                children,
+                (child) =>
+                  child &&
+                  cloneElement(
+                    child as ReactElement,
+                    {
+                      isOpen: isShown,
+                      transitionState: phase,
+                    } as any,
+                  ),
+              )}
+            </OpenTransitionContext.Provider>
+          );
+        }}
+      </DisplayTransition>
     </Provider>
   );
 

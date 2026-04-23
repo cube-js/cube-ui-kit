@@ -2,7 +2,6 @@ import {
   ReactNode,
   RefCallback,
   useCallback,
-  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -11,7 +10,7 @@ import {
 const AUTO_FALLBACK_DURATION = 500;
 
 type Phase = 'enter' | 'entered' | 'exit-pending' | 'exit' | 'unmounted';
-type ReportedPhase = 'enter' | 'entered' | 'exit' | 'unmounted';
+export type ReportedPhase = 'enter' | 'entered' | 'exit' | 'unmounted';
 
 export type DisplayTransitionProps = {
   /** Desired visibility (driver). */
@@ -88,6 +87,13 @@ export function DisplayTransition({
   );
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
+
+  // Advance phase synchronously during render so the overlay element
+  // exists in the same commit. This lets useOverlayPosition (and similar
+  // hooks) find the element on their first layout-effect run.
+  if (targetShown && phase === 'unmounted') {
+    setPhase('enter');
+  }
 
   const onRestEvent = useEvent(onRest);
   const onPhaseChangeEvent = useEvent(onPhaseChange);
@@ -234,7 +240,9 @@ export function DisplayTransition({
       return;
     }
 
-    if (!elementRef.current) {
+    // Element ref is only required for native transition event detection (duration === undefined).
+    // When using explicit duration, setTimeout handles timing so no element is needed.
+    if (dur === undefined && !elementRef.current) {
       return;
     }
 
@@ -254,7 +262,7 @@ export function DisplayTransition({
     });
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     ++flowRef.current; // invalidate any pending work
     const current = phaseRef.current;
 

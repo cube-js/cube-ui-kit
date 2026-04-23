@@ -13,7 +13,7 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, ReactElement, useEffect, useMemo, useRef } from 'react';
+import { forwardRef, ReactElement, useEffect, useMemo } from 'react';
 import {
   AriaDialogProps,
   DismissButton,
@@ -26,7 +26,7 @@ import { CloseIcon } from '../../../icons';
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions';
-import { useOpenTransitionContext } from '../Modal/OpenTransition';
+import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 
 import { useDialogContext } from './context';
 
@@ -167,31 +167,8 @@ export const Dialog = forwardRef(function Dialog(
     return <DialogContent key="content" {...props} ref={ref} />;
   }, [props, ref]);
 
-  const shouldContainFocus = isEntered && context.type !== 'panel';
-
-  // Track the element that was focused before the dialog opened
-  // This handles hideOnClose case where FocusScope doesn't unmount
-  const previouslyFocusedRef = useRef<Element | null>(null);
-
-  // Capture the focused element when dialog opens
-  useEffect(() => {
-    if (context.isOpen) {
-      previouslyFocusedRef.current = document.activeElement;
-    }
-  }, [context.isOpen]);
-
-  // Restore focus when dialog closes (for hideOnClose case where component stays mounted)
-  useEffect(() => {
-    if (!context.isOpen && previouslyFocusedRef.current) {
-      const elementToFocus = previouslyFocusedRef.current as HTMLElement;
-
-      // Use setTimeout to ensure this runs after the close transition
-      setTimeout(() => {
-        elementToFocus?.focus?.();
-      });
-      previouslyFocusedRef.current = null;
-    }
-  }, [context.isOpen]);
+  const shouldContainFocus =
+    isEntered && !!context.isOpen && context.type !== 'panel';
 
   return (
     // This component traps the focus inside the dialog and restores it on close.

@@ -480,22 +480,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
     }
   }, [isPopoverOpen, emit, pickerId]);
 
-  // Position update management
-  const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
-
-  useEffect(() => {
-    if (isPopoverOpen) {
-      setShouldUpdatePosition(true);
-      const timerId = window.setTimeout(
-        () => setShouldUpdatePosition(false),
-        160,
-      );
-      return () => window.clearTimeout(timerId);
-    } else {
-      setShouldUpdatePosition(true);
-    }
-  }, [isPopoverOpen]);
-
   // Keyboard handler for arrow keys to open popover
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
@@ -706,8 +690,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
         placement="bottom start"
         isOpen={isPopoverOpen}
         containerPadding={containerPadding}
-        shouldUpdatePosition={shouldUpdatePosition}
-        shouldFlip={shouldFlip && shouldUpdatePosition}
+        shouldFlip={shouldFlip}
         shouldCloseOnInteractOutside={(el) => {
           const menuTriggerEl = el.closest('[data-popover-trigger]');
           if (!menuTriggerEl) return true;

@@ -176,6 +176,13 @@ describe('<FilterPicker />', () => {
       // Close popover
       await user.click(trigger);
 
+      // Wait for exit animation to complete
+      await waitFor(() => {
+        expect(
+          document.querySelector('[role="listbox"]'),
+        ).not.toBeInTheDocument();
+      });
+
       // Reopen popover - selected items should be sorted to top
       await user.click(trigger);
 
@@ -186,7 +193,7 @@ describe('<FilterPicker />', () => {
       expect(reorderedOptions[2]).toHaveTextContent('Apple');
       expect(reorderedOptions[3]).toHaveTextContent('Banana');
       expect(reorderedOptions[4]).toHaveTextContent('Date');
-    });
+    }, 10000);
 
     it('should sort selected items to top within their sections', async () => {
       const { getByRole, getByText } = renderWithRoot(
@@ -239,6 +246,13 @@ describe('<FilterPicker />', () => {
       // Step 3: Close popover
       await user.click(trigger);
 
+      // Wait for exit animation to complete
+      await waitFor(() => {
+        expect(
+          document.querySelector('[role="listbox"]'),
+        ).not.toBeInTheDocument();
+      });
+
       // Step 4: Reopen popover and verify sorting within sections
       await user.click(trigger);
 
@@ -258,7 +272,7 @@ describe('<FilterPicker />', () => {
       expect(vegetablesOptions[0]).toHaveTextContent('Spinach');
       expect(vegetablesOptions[1]).toHaveTextContent('Carrot');
       expect(vegetablesOptions[2]).toHaveTextContent('Broccoli');
-    });
+    }, 10000);
 
     it('should maintain sorting when items are deselected and popover reopens', async () => {
       const { getByRole, getByText } = renderWithRoot(
@@ -294,6 +308,11 @@ describe('<FilterPicker />', () => {
 
       // Close and reopen
       await user.click(trigger);
+      await waitFor(() => {
+        expect(
+          document.querySelector('[role="listbox"]'),
+        ).not.toBeInTheDocument();
+      });
       await user.click(trigger);
 
       // Verify selected items are now sorted to top
@@ -310,6 +329,11 @@ describe('<FilterPicker />', () => {
 
       // Close and reopen again
       await user.click(trigger);
+      await waitFor(() => {
+        expect(
+          document.querySelector('[role="listbox"]'),
+        ).not.toBeInTheDocument();
+      });
       await user.click(trigger);
 
       // Verify only Banana is now at the top
@@ -320,7 +344,7 @@ describe('<FilterPicker />', () => {
       expect(options[2]).toHaveTextContent('Cherry');
       expect(options[3]).toHaveTextContent('Date');
       expect(options[4]).toHaveTextContent('Elderberry');
-    });
+    }, 10000);
 
     it('should not reorder items when selecting additional items after reopening popover', async () => {
       const { getByRole, getByText } = renderWithRoot(
@@ -347,6 +371,11 @@ describe('<FilterPicker />', () => {
 
       // Step 2: Close and reopen to trigger sorting
       await user.click(trigger);
+      await waitFor(() => {
+        expect(
+          document.querySelector('[role="listbox"]'),
+        ).not.toBeInTheDocument();
+      });
       await user.click(trigger);
 
       // Step 3: Verify sorted order
@@ -369,7 +398,7 @@ describe('<FilterPicker />', () => {
       expect(options[2]).toHaveTextContent('Apple');
       expect(options[3]).toHaveTextContent('Banana');
       expect(options[4]).toHaveTextContent('Date');
-    });
+    }, 10000);
 
     it('should work correctly in single selection mode', async () => {
       const { getByRole, getByText, queryByRole } = renderWithRoot(

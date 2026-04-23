@@ -1,9 +1,10 @@
 import { ReactElement } from 'react';
 import { OverlayProps } from 'react-aria';
-import { TransitionStatus as ReactTransitionStatus } from 'react-transition-group';
+
+import { ReportedPhase } from '../../helpers/DisplayTransition/DisplayTransition';
 
 export type CloseBehavior = 'remove' | 'hide';
-export type TransitionStatus = ReactTransitionStatus;
+export type TransitionStatus = ReportedPhase;
 
 export interface WithCloseBehavior {
   hideOnClose?: boolean;
