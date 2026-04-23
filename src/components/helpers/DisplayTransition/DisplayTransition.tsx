@@ -2,7 +2,6 @@ import {
   ReactNode,
   RefCallback,
   useCallback,
-  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -11,7 +10,7 @@ import {
 const AUTO_FALLBACK_DURATION = 500;
 
 type Phase = 'enter' | 'entered' | 'exit-pending' | 'exit' | 'unmounted';
-type ReportedPhase = 'enter' | 'entered' | 'exit' | 'unmounted';
+export type ReportedPhase = 'enter' | 'entered' | 'exit' | 'unmounted';
 
 export type DisplayTransitionProps = {
   /** Desired visibility (driver). */
@@ -234,7 +233,9 @@ export function DisplayTransition({
       return;
     }
 
-    if (!elementRef.current) {
+    // Element ref is only required for native transition event detection (duration === undefined).
+    // When using explicit duration, setTimeout handles timing so no element is needed.
+    if (dur === undefined && !elementRef.current) {
       return;
     }
 
@@ -254,7 +255,7 @@ export function DisplayTransition({
     });
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     ++flowRef.current; // invalidate any pending work
     const current = phaseRef.current;
 

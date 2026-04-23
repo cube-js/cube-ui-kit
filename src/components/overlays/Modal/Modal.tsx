@@ -39,9 +39,9 @@ const ModalElement = tasty({
   styles: {
     display: {
       '': 'none',
-      'entering | entered': 'grid',
-      exiting: 'grid',
-      exited: 'none',
+      'enter | entered': 'grid',
+      exit: 'grid',
+      unmounted: 'none',
     },
     zIndex: 10,
     height: {
@@ -143,9 +143,9 @@ let ModalWrapper = forwardRef(function ModalWrapper(
         styles={styles}
         mods={{
           open: isOpen,
-          entering: transitionState === 'entering',
-          exiting: transitionState === 'exiting',
-          exited: transitionState === 'exited',
+          enter: transitionState === 'enter',
+          exit: transitionState === 'exit',
+          unmounted: transitionState === 'unmounted',
           entered: transitionState === 'entered',
         }}
         data-type={type}

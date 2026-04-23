@@ -1,5 +1,5 @@
 import { BaseProps, tasty } from '@tenphi/tasty';
-import { forwardRef, HTMLAttributes, useEffect } from 'react';
+import { forwardRef, HTMLAttributes } from 'react';
 import { OverlayProps, useModal, useOverlay } from 'react-aria';
 
 import { PlacementAxis } from '../../../shared';
@@ -13,9 +13,9 @@ const PopoverElement = tasty({
   styles: {
     display: {
       '': 'none',
-      'entering | entered': 'initial',
-      exiting: 'initial',
-      exited: 'none',
+      'enter | entered': 'initial',
+      exit: 'initial',
+      unmounted: 'none',
     },
     pointerEvents: 'auto',
     position: 'absolute',
@@ -50,7 +50,6 @@ export interface CubePopoverProps
   shouldCloseOnBlur?: boolean;
   isNonModal?: boolean;
   isDismissable?: boolean;
-  updatePosition?: () => void;
   shouldCloseOnInteractOutside?: (element: Element) => boolean;
 }
 
@@ -67,7 +66,6 @@ function Popover(props: CubePopoverProps, ref) {
     isKeyboardDismissDisabled,
     isNonModal,
     isDismissable = true,
-    updatePosition,
     shouldCloseOnInteractOutside,
     ...otherProps
   } = props;
@@ -85,7 +83,6 @@ function Popover(props: CubePopoverProps, ref) {
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         isNonModal={isNonModal}
         isDismissable={isDismissable}
-        updatePosition={updatePosition}
         shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
         onClose={onClose}
       >
@@ -111,7 +108,6 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
     isKeyboardDismissDisabled,
     isNonModal,
     isDismissable,
-    updatePosition,
     transitionState,
     shouldCloseOnInteractOutside,
     ...otherProps
@@ -125,12 +121,6 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
     isDisabled: isNonModal,
   });
 
-  useEffect(() => {
-    if (transitionState === 'entered') {
-      updatePosition?.();
-    }
-  }, [updatePosition, transitionState]);
-
   return (
     <PopoverElement
       qa={qa || 'Popover'}
@@ -139,9 +129,9 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
       styles={styles}
       mods={{
         open: isOpen,
-        entering: transitionState === 'entering',
-        exiting: transitionState === 'exiting',
-        exited: transitionState === 'exited',
+        enter: transitionState === 'enter',
+        exit: transitionState === 'exit',
+        unmounted: transitionState === 'unmounted',
         entered: transitionState === 'entered',
       }}
       data-placement={placement}

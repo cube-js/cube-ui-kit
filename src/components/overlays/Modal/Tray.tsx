@@ -28,9 +28,9 @@ const TrayElement = tasty({
   styles: {
     display: {
       '': 'none',
-      'entering | entered': 'initial',
-      exiting: 'initial',
-      exited: 'none',
+      'enter | entered': 'initial',
+      exit: 'initial',
+      unmounted: 'none',
     },
     zIndex: 10,
     height: 'max 90dvh',
@@ -132,9 +132,9 @@ let TrayWrapper = forwardRef(function TrayWrapper(
         styles={styles}
         mods={{
           open: isOpen,
-          entering: transitionState === 'entering',
-          exiting: transitionState === 'exiting',
-          exited: transitionState === 'exited',
+          enter: transitionState === 'enter',
+          exit: transitionState === 'exit',
+          unmounted: transitionState === 'unmounted',
           entered: transitionState === 'entered',
           'fixed-height': isFixedHeight,
         }}

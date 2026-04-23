@@ -277,7 +277,6 @@ function PopoverTrigger(allProps) {
       arrowProps={arrowProps}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       hideArrow={hideArrow}
-      updatePosition={updatePosition}
       shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
       onClose={onClose}
     >

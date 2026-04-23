@@ -35,7 +35,6 @@ import { useEvent } from '../../../_internal';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
-import { chainRaf } from '../../../utils/raf';
 import { generateRandomId } from '../../../utils/random';
 import {
   mergeProps,
@@ -851,11 +850,7 @@ function ComboBoxOverlay({
   size = 'medium',
 }: ComboBoxOverlayProps) {
   // Overlay positioning
-  const {
-    overlayProps: overlayPositionProps,
-    placement,
-    updatePosition,
-  } = useOverlayPosition({
+  const { overlayProps: overlayPositionProps, placement } = useOverlayPosition({
     targetRef: triggerRef as any,
     overlayRef: popoverRef as any,
     placement: `${direction} start` as any,
@@ -881,17 +876,6 @@ function ComboBoxOverlay({
     },
     popoverRef as any,
   );
-
-  // Update position when overlay opens or content changes
-  useLayoutEffect(() => {
-    if (isOpen && updatePosition) {
-      // Use triple RAF to ensure layout is complete before positioning
-      // This gives enough time for the DisplayTransition and content to render
-      return chainRaf(() => {
-        updatePosition();
-      }, 3);
-    }
-  }, [isOpen]);
 
   // Extract primary placement direction for consistent styling
   const placementDirection = placement?.split(' ')[0] || direction;

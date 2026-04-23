@@ -46,13 +46,11 @@ import { useEvent } from '../../../_internal';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/index';
-import { chainRaf } from '../../../utils/raf';
 import { generateRandomId } from '../../../utils/random';
 import {
   forwardRefWithGenerics,
   mergeProps,
   useCombinedRefs,
-  useLayoutEffect,
 } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
@@ -359,7 +357,7 @@ function Select<T extends object>(
     triggerRef,
   );
 
-  let { overlayProps, placement, updatePosition } = useOverlayPosition({
+  let { overlayProps, placement } = useOverlayPosition({
     targetRef: triggerRef,
     overlayRef: popoverRef,
     scrollRef: listBoxRef,
@@ -509,7 +507,6 @@ function Select<T extends object>(
         listBoxRef={listBoxRef}
         overlayProps={overlayProps}
         placement={placement}
-        updatePosition={updatePosition}
         state={state}
         listBoxStyles={listBoxStyles}
         overlayStyles={overlayStyles}
@@ -543,7 +540,6 @@ export function ListBoxPopup({
   overlayProps: parentOverlayProps,
   shouldUseVirtualFocus = false,
   placement,
-  updatePosition,
   minWidth,
   size = 'small',
   triggerRef,
@@ -553,17 +549,6 @@ export function ListBoxPopup({
   // For trigger+popover components, map 'small' size to 'medium' for list items
   // while preserving 'medium' and 'large' sizes
   const listItemSize = size === 'small' ? 'medium' : size;
-
-  // Update position when overlay opens
-  useLayoutEffect(() => {
-    if (state.isOpen && updatePosition) {
-      // Use triple RAF to ensure layout is complete before positioning
-      // This gives enough time for the DisplayTransition and content to render
-      return chainRaf(() => {
-        updatePosition();
-      }, 3);
-    }
-  }, [state.isOpen]);
 
   // Get props for the listbox
   let { listBoxProps } = useListBox(

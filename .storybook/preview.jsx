@@ -1,5 +1,4 @@
 import isChromatic from 'chromatic/isChromatic';
-import { config } from 'react-transition-group';
 import { configure } from 'storybook/test';
 
 import { Root } from '../src/components/Root';
@@ -15,11 +14,6 @@ if (!isChromatic() && import.meta.env.DEV) {
       console.warn('tastyDebug installation failed:', e);
     }
   });
-}
-
-if (isChromatic()) {
-  // disabling transitions
-  config.disabled = true;
 }
 
 export const parameters = {

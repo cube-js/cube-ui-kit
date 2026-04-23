@@ -2,7 +2,6 @@ import '@testing-library/jest-dom/vitest';
 import './tasty-vitest';
 
 import { configure } from '@testing-library/react';
-import { config } from 'react-transition-group';
 
 // Mock ResizeObserver for test environment
 global.ResizeObserver = class ResizeObserver {
@@ -10,8 +9,6 @@ global.ResizeObserver = class ResizeObserver {
   unobserve() {}
   disconnect() {}
 };
-
-config.disabled = true;
 
 configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 15000 });
 

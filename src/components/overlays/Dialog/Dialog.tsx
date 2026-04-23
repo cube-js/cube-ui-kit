@@ -26,7 +26,7 @@ import { CloseIcon } from '../../../icons';
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions';
-import { useOpenTransitionContext } from '../Modal/OpenTransition';
+import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 
 import { useDialogContext } from './context';
 
