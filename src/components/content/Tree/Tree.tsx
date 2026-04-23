@@ -5,6 +5,7 @@ import { useTree } from 'react-aria';
 import { Item, useTreeState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks';
+import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { mergeProps, mergeRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 
@@ -114,6 +115,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     isCheckable = false,
     isSelectable,
     selectionMode: selectionModeProp,
+    size = 'medium',
     isDisabled = false,
     defaultExpandedKeys,
     expandedKeys,
@@ -343,7 +345,8 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       const node = visibleNodesRef.current[index];
       return node?.key ?? index;
     },
-    estimateSize: () => 29,
+    estimateSize: () => SIZES[SIZE_NAME_TO_KEY[size]],
+    gap: 1,
     overscan: 10,
   });
 
@@ -413,6 +416,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
             isChecked={checkbox.checkedSet.has(keyStr)}
             isIndeterminate={checkbox.halfCheckedSet.has(keyStr)}
             isLoading={loadDataController.loadingKeys.has(keyStr)}
+            size={size}
             itemProps={itemProps}
             rowStyles={rowStyles}
             virtualStyle={{

@@ -64,7 +64,7 @@ export const TreeNodeRow = tasty({
 export const TreeRowItem = tasty(Item, {
   qa: 'TreeItem',
   type: 'item',
-  size: 'small',
+  size: 'medium',
   as: 'div',
   styles: {
     /**

@@ -1,6 +1,7 @@
 import type { Key } from '@react-types/shared';
 import type { BaseProps, OuterStyleProps, Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
+import type { SizeName } from '../../../tokens/sizes';
 import type { CubeItemProps } from '../Item/Item';
 
 /** Selection cardinality, mirroring React Aria/Stately's `selectionMode`. */
@@ -116,6 +117,9 @@ export interface CubeTreeProps extends BaseProps, OuterStyleProps {
 
   /** Selection cardinality. Defaults to `'single'`. */
   selectionMode?: TreeSelectionMode;
+
+  /** Row size. Defaults to `'medium'`. */
+  size?: SizeName;
 
   /** Disable the entire tree. */
   isDisabled?: boolean;

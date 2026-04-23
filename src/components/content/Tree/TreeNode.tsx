@@ -44,6 +44,9 @@ export interface TreeNodeProps {
   /** Toggle this row's checkbox (cascades). */
   onToggleChecked: (key: string) => void;
 
+  /** Row size passed to the underlying Item. */
+  size?: string;
+
   /** Per-node Item customization (static object or callback). */
   itemProps?:
     | TreeItemProps
@@ -71,6 +74,7 @@ function TreeNodeInner(props: TreeNodeProps) {
     isChecked,
     isLoading,
     onToggleChecked,
+    size,
     itemProps,
     rowStyles,
     virtualStyle,
@@ -236,6 +240,7 @@ function TreeNodeInner(props: TreeNodeProps) {
       <TreeRowItem
         {...gridCellProps}
         {...restUserProps}
+        size={size}
         isSelected={isSelected}
         isDisabled={isDisabled}
         mods={itemMods}
