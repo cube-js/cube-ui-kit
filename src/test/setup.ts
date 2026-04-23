@@ -21,22 +21,24 @@ global.IS_REACT_ACT_ENVIRONMENT = true;
 
 // Mock @tanstack/react-virtual for test environment
 vi.mock('@tanstack/react-virtual', () => ({
-  useVirtualizer: vi.fn().mockImplementation(({ count = 0 }) => ({
-    getVirtualItems: () =>
-      Array.from({ length: count }, (_, index) => ({
-        index,
-        key: index,
-        start: index * 40,
-        size: 40,
-      })),
-    getTotalSize: () => count * 40,
+  useVirtualizer: vi
+    .fn()
+    .mockImplementation(({ count = 0, getItemKey }: any) => ({
+      getVirtualItems: () =>
+        Array.from({ length: count }, (_, index) => ({
+          index,
+          key: typeof getItemKey === 'function' ? getItemKey(index) : index,
+          start: index * 40,
+          size: 40,
+        })),
+      getTotalSize: () => count * 40,
 
-    scrollToIndex: vi.fn(),
+      scrollToIndex: vi.fn(),
 
-    measure: vi.fn(),
+      measure: vi.fn(),
 
-    measureElement: vi.fn(),
-  })),
+      measureElement: vi.fn(),
+    })),
 }));
 
 // Suppress act() warnings from @testing-library/react-hooks

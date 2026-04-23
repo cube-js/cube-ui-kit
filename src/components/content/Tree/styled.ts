@@ -29,8 +29,7 @@ export const TreeElement = tasty({
     color: '#dark',
     transition: 'theme',
     outline: 0,
-    gap: '1bw',
-    padding: '.5x',
+    padding: 0,
   },
 });
 
@@ -64,7 +63,7 @@ export const TreeNodeRow = tasty({
 export const TreeRowItem = tasty(Item, {
   qa: 'TreeItem',
   type: 'item',
-  size: 'small',
+  size: 'medium',
   as: 'div',
   styles: {
     /**
@@ -84,7 +83,7 @@ export const TreeRowItem = tasty(Item, {
      * loses to it in the cascade when both are emitted from the same
      * declaration block.
      */
-    padding: 'left ($tree-indent * 1x)',
+    padding: 'left ($tree-indent * 1.5x)',
     '$tree-indent': '($tree-level, 0)',
     cursor: {
       '': 'pointer',
