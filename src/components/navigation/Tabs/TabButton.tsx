@@ -82,40 +82,58 @@ function processMenuItems(
   effectiveIsEditable: boolean,
   isDeletable: boolean,
 ): ReactNode {
-  return Children.toArray(children).map((child) => {
-    if (!isValidElement(child)) return child;
+  // Use Children.forEach instead of Children.toArray to avoid React prepending
+  // ".$" to element keys, which breaks selectedKeys matching in Menu.
+  const result: ReactNode[] = [];
+
+  Children.forEach(children, (child) => {
+    if (!isValidElement(child)) {
+      result.push(child);
+      return;
+    }
 
     const childKey = getRawKey(child);
     const childProps = child.props as MenuItemLikeProps;
 
     // Handle predefined action keys
     if (childKey === 'rename') {
-      return cloneElement(child as ReactElement<MenuItemLikeProps>, {
-        children: childProps.children ?? 'Rename',
-        isDisabled: childProps.isDisabled ?? !effectiveIsEditable,
-      });
+      result.push(
+        cloneElement(child as ReactElement<MenuItemLikeProps>, {
+          children: childProps.children ?? 'Rename',
+          isDisabled: childProps.isDisabled ?? !effectiveIsEditable,
+        }),
+      );
+      return;
     }
     if (childKey === 'delete') {
-      return cloneElement(child as ReactElement<MenuItemLikeProps>, {
-        children: childProps.children ?? 'Delete',
-        theme: childProps.theme ?? 'danger',
-        isDisabled: childProps.isDisabled ?? !isDeletable,
-      });
+      result.push(
+        cloneElement(child as ReactElement<MenuItemLikeProps>, {
+          children: childProps.children ?? 'Delete',
+          theme: childProps.theme ?? 'danger',
+          isDisabled: childProps.isDisabled ?? !isDeletable,
+        }),
+      );
+      return;
     }
 
     // Recursively process Menu.Section children
     if (childProps.children && typeof childProps.children !== 'string') {
-      return cloneElement(child as ReactElement<MenuItemLikeProps>, {
-        children: processMenuItems(
-          childProps.children,
-          effectiveIsEditable,
-          isDeletable,
-        ),
-      });
+      result.push(
+        cloneElement(child as ReactElement<MenuItemLikeProps>, {
+          children: processMenuItems(
+            childProps.children,
+            effectiveIsEditable,
+            isDeletable,
+          ),
+        }),
+      );
+      return;
     }
 
-    return child;
+    result.push(child);
   });
+
+  return result;
 }
 
 /**
