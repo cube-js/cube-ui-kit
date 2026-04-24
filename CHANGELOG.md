@@ -1,5 +1,33 @@
 # @cube-dev/ui-kit
 
+## 0.130.0
+
+### Minor Changes
+
+- [#1131](https://github.com/cube-js/cube-ui-kit/pull/1131) [`993fde86`](https://github.com/cube-js/cube-ui-kit/commit/993fde86bb6ce4f1022140bc3731a589efada1fd) Thanks [@tenphi](https://github.com/tenphi)! - Add `itemProps` prop to Tree for per-node customization of Item slots (prefix, actions, suffix, etc.) with access to node state (expanded, selected, checked)
+
+- [#1131](https://github.com/cube-js/cube-ui-kit/pull/1131) [`993fde86`](https://github.com/cube-js/cube-ui-kit/commit/993fde86bb6ce4f1022140bc3731a589efada1fd) Thanks [@tenphi](https://github.com/tenphi)! - Add `size` prop to Tree (`'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'`). Default row size changed from `small` to `medium`.
+
+- [#1131](https://github.com/cube-js/cube-ui-kit/pull/1131) [`993fde86`](https://github.com/cube-js/cube-ui-kit/commit/993fde86bb6ce4f1022140bc3731a589efada1fd) Thanks [@tenphi](https://github.com/tenphi)! - Add virtualization to the Tree component using `@tanstack/react-virtual` for efficient rendering of large trees
+
+### Patch Changes
+
+- [#1134](https://github.com/cube-js/cube-ui-kit/pull/1134) [`e9857f51`](https://github.com/cube-js/cube-ui-kit/commit/e9857f51ff2729565f86d8afe577ac8715c98366) Thanks [@tenphi](https://github.com/tenphi)! - Fix `Button` disabled state resolution in `Button.Split` context.
+
+  - Replace `??` chain with `||` so that `isLoading={false}` no longer blocks `splitContext.isDisabled` inheritance
+  - Ensure `splitContext.isDisabled` always wins over child props (a disabled split button should disable all children)
+  - Fix edge case where `isDisabled={false}` with `isLoading={true}` incorrectly resulted in a clickable loading button
+
+- [#1130](https://github.com/cube-js/cube-ui-kit/pull/1130) [`15badca8`](https://github.com/cube-js/cube-ui-kit/commit/15badca848185c2e6a3b0808152f452dd06dd8eb) Thanks [@tenphi](https://github.com/tenphi)! - Fix popover positioning and premature closing in ComboBox, FilterPicker, and Picker.
+
+  - Replace `react-transition-group` with `DisplayTransition` in the overlay system
+  - Fix timing bug where overlay element didn't exist when `useOverlayPosition` ran, causing a flash at wrong position
+  - Remove manual `updatePosition` workarounds (`chainRaf`) that were unreliable race-condition fixes
+  - Remove `shouldUpdatePosition` timer hack from FilterPicker and Picker
+  - Remove `react-transition-group` dependency
+
+- [#1133](https://github.com/cube-js/cube-ui-kit/pull/1133) [`6b660836`](https://github.com/cube-js/cube-ui-kit/commit/6b660836271e8b6440f02911ce7f5145695e8f39) Thanks [@tenphi](https://github.com/tenphi)! - Fix `selectedKeys` in `Tab.menuProps` not working without manual `.# @cube-dev/ui-kit prefix
+
 ## 0.129.0
 
 ### Minor Changes
