@@ -400,7 +400,7 @@ export const Button = forwardRef(function Button(
     sizeProp ?? splitContext?.size ?? (type === 'link' ? 'inline' : 'medium');
 
   const isDisabled =
-    props.isDisabled ?? props.isLoading ?? splitContext?.isDisabled;
+    splitContext?.isDisabled || props.isDisabled || props.isLoading;
   const isLoading = props.isLoading;
   const isSelected = props.isSelected;
 
