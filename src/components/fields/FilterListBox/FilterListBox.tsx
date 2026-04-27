@@ -275,6 +275,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
     searchValue: controlledSearchValue,
     onSearchChange,
     _internalCollection,
+    isReorderable = false,
+    onReorder,
     form,
     ...otherProps
   } = props;
@@ -1117,7 +1119,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         disallowEmptySelection={props.disallowEmptySelection}
         disabledKeys={props.disabledKeys}
         focusOnHover={focusOnHover}
-        shouldUseVirtualFocus={true}
+        shouldUseVirtualFocus={!(isReorderable && !searchValue.trim())}
         showSelectAll={showSelectAll}
         selectAllLabel={selectAllLabel}
         footer={footer}
@@ -1136,6 +1138,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
               ? 'No results found'
               : 'No items'
         }
+        isReorderable={isReorderable && !searchValue.trim()}
+        onReorder={onReorder}
         onSelectionChange={handleSelectionChange}
         onEscape={onEscape}
         onOptionClick={handleOptionClick}

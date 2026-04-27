@@ -21,6 +21,10 @@ export interface TabPickerProps {
   size?: TabSize;
   /** Type of the parent Tabs component (for border styling) */
   type?: TabType;
+  /** Enable drag-and-drop reordering of items in the picker dropdown */
+  isReorderable?: boolean;
+  /** Callback when items are reordered via drag-and-drop */
+  onReorder?: (newOrder: string[]) => void;
 }
 
 // =============================================================================
@@ -40,6 +44,8 @@ export function TabPicker({
   onDelete,
   size,
   type = 'default',
+  isReorderable,
+  onReorder,
 }: TabPickerProps) {
   const isDeletable = !!onDelete;
 
@@ -71,6 +77,8 @@ export function TabPicker({
       }}
       triggerStyles={{ border: 0 }}
       aria-label="Select tab"
+      isReorderable={isReorderable}
+      onReorder={onReorder}
       onSelectionChange={(key) => {
         if (key != null) {
           onSelect(String(key));

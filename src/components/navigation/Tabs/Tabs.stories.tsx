@@ -1731,3 +1731,68 @@ export const HiddenScrollbar: Story = {
     );
   },
 };
+
+/**
+ * Reorderable tabs with a tab picker dropdown that also supports reordering.
+ * When `isReorderable` and `showTabPicker` are both enabled, the tab picker
+ * dropdown items can be drag-and-dropped to reorder.
+ */
+export const ReorderableTabPicker: Story = {
+  render: function ReorderableTabPickerRender(args) {
+    const [keyOrder, setKeyOrder] = useState<Key[]>([
+      'overview',
+      'analytics',
+      'reports',
+      'settings',
+      'users',
+    ]);
+    const [activeKey, setActiveKey] = useState('overview');
+
+    return (
+      <Space gap="2x" flow="column" placeItems="start">
+        <Paragraph preset="t3">
+          Current order: {keyOrder.map(String).join(', ')}
+        </Paragraph>
+        <Tabs
+          {...args}
+          isReorderable
+          showTabPicker
+          type="file"
+          activeKey={activeKey}
+          keyOrder={keyOrder}
+          styles={{ width: '400px' }}
+          onDelete={(key) => {
+            setKeyOrder((prev) => prev.filter((k) => k !== key));
+
+            if (activeKey === key) {
+              const idx = keyOrder.indexOf(key);
+              const next = keyOrder[idx + 1] || keyOrder[idx - 1];
+
+              if (next) {
+                setActiveKey(String(next));
+              }
+            }
+          }}
+          onChange={(key) => setActiveKey(String(key))}
+          onReorder={(newOrder) => setKeyOrder(newOrder)}
+        >
+          <Tab key="overview" title="Overview">
+            <Paragraph>Overview content</Paragraph>
+          </Tab>
+          <Tab key="analytics" title="Analytics">
+            <Paragraph>Analytics content</Paragraph>
+          </Tab>
+          <Tab key="reports" title="Reports">
+            <Paragraph>Reports content</Paragraph>
+          </Tab>
+          <Tab key="settings" title="Settings">
+            <Paragraph>Settings content</Paragraph>
+          </Tab>
+          <Tab key="users" title="Users">
+            <Paragraph>Users content</Paragraph>
+          </Tab>
+        </Tabs>
+      </Space>
+    );
+  },
+};

@@ -66,6 +66,7 @@ export { FolderIcon } from './FolderIcon';
 export { FolderOpenFilledIcon } from './FolderOpenFilledIcon';
 export { FolderOpenIcon } from './FolderOpenIcon';
 export { ForwardIcon } from './ForwardIcon';
+export { GripVerticalIcon } from './GripVerticalIcon';
 export { HierarchyIcon } from './HierarchyIcon';
 export { HierarchyOpenIcon } from './HierarchyOpenIcon';
 export { InfoCircleIcon } from './InfoCircleIcon';

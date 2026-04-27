@@ -621,8 +621,10 @@ function TabsComponent(
       selectedKey={state.selectedKey}
       size={size}
       type={type}
+      isReorderable={isReorderable}
       onSelect={handleTabPickerSelect}
       onDelete={onDelete}
+      onReorder={onReorder}
     />
   ) : null;
 
