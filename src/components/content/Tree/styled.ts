@@ -30,7 +30,7 @@ export const TreeElement = tasty({
     transition: 'theme',
     outline: 0,
     padding: 0,
-    radius: { '': 0, 'shape=card': true },
+    radius: { '': 0, 'shape=card': '1cr' },
     border: { '': 0, 'shape=card': true },
   },
 });
