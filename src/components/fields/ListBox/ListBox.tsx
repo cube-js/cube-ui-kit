@@ -140,36 +140,29 @@ const ListBoxItem = tasty(Item, {
       ':last-of-type': '0',
       all: '.5x',
     },
-    display: 'grid',
-    position: 'relative',
-    paddingLeft: {
-      '': false,
-      draggable: '(1x + 14px)',
-    },
     opacity: {
       '': false,
       dragging: '.5',
     },
-  },
-});
-
-const DragHandleElement = tasty({
-  as: 'div',
-  styles: {
-    position: 'absolute',
-    left: '(.5x - 1bw)',
-    top: 0,
-    bottom: 0,
-    width: '(1x + 14px)',
-    display: 'grid',
-    placeItems: 'center',
-    color: '#dark-04',
-    opacity: {
-      '': '.4',
-      ':hover': '1',
+    Icon: {
+      cursor: {
+        '': false,
+        draggable: 'grab',
+      },
+      color: {
+        '': false,
+        draggable: '#dark-04',
+      },
+      opacity: {
+        '': false,
+        draggable: '.4',
+        'draggable & :hover': '1',
+      },
+      transition: {
+        '': false,
+        draggable: 'opacity',
+      },
     },
-    transition: 'opacity .15s',
-    cursor: 'grab',
   },
 });
 
@@ -1276,6 +1269,10 @@ function Option({
         selectionManager: state.selectionManager,
         isDragging: () => false,
         getKeysForDrag: () => new Set<Key>(),
+        draggedKey: null,
+        draggingKeys: new Set<Key>(),
+        getAllowedDropOperations: () => [],
+        preview: null,
         isDisabled: false,
         startDrag: () => {},
         endDrag: () => {},
@@ -1307,8 +1304,12 @@ function Option({
   // Filter out service props - all remaining props can be passed to Item
   const filteredItemProps = filterCollectionItemProps(item.props);
 
-  // Create checkbox icon for multiple selection mode
+  // Determine icon: drag handle > checkbox > user icon > default
   const effectiveIcon = useMemo(() => {
+    if (isDraggable && !filteredItemProps.icon) {
+      return <GripVerticalIcon size={14} />;
+    }
+
     if (
       !isCheckable ||
       state.selectionManager.selectionMode !== 'multiple' ||
@@ -1328,6 +1329,7 @@ function Option({
       validationState,
     });
   }, [
+    isDraggable,
     isCheckable,
     state.selectionManager.selectionMode,
     isSelected,
@@ -1450,11 +1452,6 @@ function Option({
         all: false, // This will be set to true for SelectAllOption
       }}
     >
-      {isDraggable && (
-        <DragHandleElement aria-hidden="true">
-          <GripVerticalIcon size={14} />
-        </DragHandleElement>
-      )}
       {item.rendered}
     </ListBoxItem>
   );
