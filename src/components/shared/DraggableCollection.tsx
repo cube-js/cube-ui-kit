@@ -117,9 +117,29 @@ export function DraggableCollection({
     [state.collection],
   );
 
+  // Proxy selectionManager to hide selection from react-aria's drag logic.
+  // Without this, react-aria drags ALL selected items when any selected item
+  // is grabbed (hardcoded in useDraggableCollectionState → internal getKeys).
+  // The proxy intercepts `selectedKeys` and `isSelected` so every item looks
+  // unselected for drag, while all other methods (isDisabled, setFocusedKey, …)
+  // delegate to the real manager. `bind(target)` preserves `this` for methods
+  // that live on the prototype chain.
+  const dragSelectionManager = useMemo(
+    () =>
+      new Proxy(state.selectionManager, {
+        get(target, prop) {
+          if (prop === 'selectedKeys') return new Set<Key>();
+          if (prop === 'isSelected') return () => false;
+          const value = Reflect.get(target, prop);
+          return typeof value === 'function' ? value.bind(target) : value;
+        },
+      }),
+    [state.selectionManager],
+  );
+
   const dragState = useDraggableCollectionState({
     collection: state.collection,
-    selectionManager: state.selectionManager,
+    selectionManager: dragSelectionManager,
     getItems,
     getAllowedDropOperations,
   });
