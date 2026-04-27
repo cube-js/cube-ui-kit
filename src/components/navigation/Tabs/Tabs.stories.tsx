@@ -1739,14 +1739,29 @@ export const HiddenScrollbar: Story = {
  */
 export const ReorderableTabPicker: Story = {
   render: function ReorderableTabPickerRender(args) {
-    const [keyOrder, setKeyOrder] = useState<Key[]>([
-      'overview',
-      'analytics',
-      'reports',
-      'settings',
-      'users',
+    const [tabs, setTabs] = useState([
+      { key: 'overview', title: 'Overview' },
+      { key: 'analytics', title: 'Analytics' },
+      { key: 'reports', title: 'Reports' },
+      { key: 'settings', title: 'Settings' },
+      { key: 'users', title: 'Users' },
     ]);
+    const [keyOrder, setKeyOrder] = useState<Key[]>(tabs.map((t) => t.key));
     const [activeKey, setActiveKey] = useState('overview');
+
+    const handleDelete = (key: string) => {
+      setTabs((prev) => prev.filter((t) => t.key !== key));
+      setKeyOrder((prev) => prev.filter((k) => k !== key));
+
+      if (activeKey === key) {
+        const idx = keyOrder.indexOf(key);
+        const next = keyOrder[idx + 1] || keyOrder[idx - 1];
+
+        if (next) {
+          setActiveKey(String(next));
+        }
+      }
+    };
 
     return (
       <Space gap="2x" flow="column" placeItems="start">
@@ -1761,36 +1776,15 @@ export const ReorderableTabPicker: Story = {
           activeKey={activeKey}
           keyOrder={keyOrder}
           styles={{ width: '400px' }}
-          onDelete={(key) => {
-            setKeyOrder((prev) => prev.filter((k) => k !== key));
-
-            if (activeKey === key) {
-              const idx = keyOrder.indexOf(key);
-              const next = keyOrder[idx + 1] || keyOrder[idx - 1];
-
-              if (next) {
-                setActiveKey(String(next));
-              }
-            }
-          }}
+          onDelete={handleDelete}
           onChange={(key) => setActiveKey(String(key))}
           onReorder={(newOrder) => setKeyOrder(newOrder)}
         >
-          <Tab key="overview" title="Overview">
-            <Paragraph>Overview content</Paragraph>
-          </Tab>
-          <Tab key="analytics" title="Analytics">
-            <Paragraph>Analytics content</Paragraph>
-          </Tab>
-          <Tab key="reports" title="Reports">
-            <Paragraph>Reports content</Paragraph>
-          </Tab>
-          <Tab key="settings" title="Settings">
-            <Paragraph>Settings content</Paragraph>
-          </Tab>
-          <Tab key="users" title="Users">
-            <Paragraph>Users content</Paragraph>
-          </Tab>
+          {tabs.map((tab) => (
+            <Tab key={tab.key} title={tab.title}>
+              <Paragraph>{tab.title} content</Paragraph>
+            </Tab>
+          ))}
         </Tabs>
       </Space>
     );

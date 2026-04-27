@@ -146,11 +146,6 @@ const ListBoxItem = tasty(Item, {
       '': false,
       draggable: '(1x + 14px)',
     },
-    cursor: {
-      '': false,
-      draggable: 'grab',
-      dragging: 'grabbing',
-    },
     opacity: {
       '': false,
       dragging: '.5',
@@ -1093,6 +1088,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       validationState={validationState}
                       focusOnHover={focusOnHover}
                       isCheckable={isCheckable}
+                      // We don't need to measure the element here, because the height is already set by the virtualizer
+                      // This is a workaround to avoid glitches when selecting/deselecting items
                       virtualRef={rowVirtualizer.measureElement as any}
                       virtualStyle={{
                         position: 'absolute',
@@ -1188,22 +1185,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   Section: typeof BaseSection;
 };
 
-interface OptionProps {
-  size?: 'small' | 'medium' | 'large';
-  item: any;
-  state: any;
-  styles?: Styles;
-  isParentDisabled?: boolean;
-  validationState?: any;
-  focusOnHover?: boolean;
-  isCheckable?: boolean;
-  onClick?: (key: Key) => void;
-  virtualStyle?: CSSProperties;
-  virtualRef?: (element: HTMLElement | null) => void;
-  virtualIndex?: number;
-  lastFocusSourceRef?: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
-}
-
 function Option({
   size = 'medium',
   item,
@@ -1218,8 +1199,27 @@ function Option({
   virtualRef,
   virtualIndex,
   lastFocusSourceRef,
-}: OptionProps) {
+}: {
+  size?: 'small' | 'medium' | 'large';
+  item: any;
+  state: any;
+  styles?: Styles;
+  isParentDisabled?: boolean;
+  validationState?: any;
+  focusOnHover?: boolean;
+  isCheckable?: boolean;
+  onClick?: (key: Key) => void;
+  /** Inline style applied when virtualized (absolute positioning etc.) */
+  virtualStyle?: CSSProperties;
+  /** Ref callback from react-virtual to measure row height */
+  virtualRef?: (element: HTMLElement | null) => void;
+  /** Virtual index from react-virtual for data-index attribute */
+  virtualIndex?: number;
+  /** Ref to track the source of focus changes */
+  lastFocusSourceRef?: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
+}) {
   const localRef = useRef<HTMLLIElement>(null);
+  // Merge local ref with react-virtual measure ref when provided
   const combinedRef = useCombinedRefs(localRef, virtualRef);
 
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
@@ -1240,8 +1240,10 @@ function Option({
     combinedRef,
   );
 
+  // Filter out service props - all remaining props can be passed to Item
   const filteredItemProps = filterCollectionItemProps(item.props);
 
+  // Create checkbox icon for multiple selection mode
   const effectiveIcon = useMemo(() => {
     if (
       !isCheckable ||
@@ -1290,16 +1292,21 @@ function Option({
     filteredItemProps.icon,
   ]);
 
+  // Custom click handler for the entire option
   const handleOptionClick = (e: MouseEvent) => {
+    // Mark focus changes from mouse clicks
     if (lastFocusSourceRef) {
       lastFocusSourceRef.current = 'mouse';
     }
 
+    // If there's an onOptionClick callback and this is checkable in multiple mode,
+    // we need to distinguish between checkbox and content clicks
     if (
       onOptionClick &&
       isCheckable &&
       state.selectionManager.selectionMode === 'multiple'
     ) {
+      // Check if the click target is within the checkbox area
       const clickTarget = e.target as HTMLElement;
       const checkboxElement = localRef.current?.querySelector(
         '[data-element="CheckboxWrapper"]',
@@ -1310,22 +1317,35 @@ function Option({
         (checkboxElement === clickTarget ||
           checkboxElement.contains(clickTarget))
       ) {
+        // Checkbox area clicked - only toggle, don't call onOptionClick
+        // Let React Aria handle the selection
         optionProps.onClick?.(e);
+        // Set focus to the clicked item
         state.selectionManager.setFocusedKey(item.key);
       } else {
+        // Content area clicked - toggle and trigger callback
+        // Let React Aria handle the selection first
         optionProps.onClick?.(e);
+        // Set focus to the clicked item
         state.selectionManager.setFocusedKey(item.key);
-        onOptionClick(item.key);
+        // Then call the callback (which will close the popover in FilterPicker)
+        if (onOptionClick) {
+          onOptionClick(item.key);
+        }
       }
     } else {
+      // Normal behavior - let React Aria handle it
       optionProps.onClick?.(e);
+      // Set focus to the clicked item
       state.selectionManager.setFocusedKey(item.key);
+      // Call onOptionClick if provided
       if (onOptionClick) {
         onOptionClick(item.key);
       }
     }
   };
 
+  // Filter out React Aria props that shouldn't reach the DOM
   const {
     onKeyDown,
     onKeyUp,
@@ -1373,7 +1393,7 @@ function Option({
         invalid: isSelected && validationState === 'invalid',
         checkable: isCheckable,
         hovered: isHovered,
-        all: false,
+        all: false, // This will be set to true for SelectAllOption
       }}
     >
       {item.rendered}
@@ -1384,11 +1404,6 @@ function Option({
 // =============================================================================
 // DraggableOption — Option with drag-and-drop support
 // =============================================================================
-
-interface DraggableOptionProps extends OptionProps {
-  dragState: DraggableCollectionState;
-  dropState: DroppableCollectionState;
-}
 
 function DraggableOption({
   size = 'medium',
@@ -1403,7 +1418,20 @@ function DraggableOption({
   lastFocusSourceRef,
   dragState,
   dropState,
-}: DraggableOptionProps) {
+}: {
+  size?: 'small' | 'medium' | 'large';
+  item: any;
+  state: any;
+  styles?: Styles;
+  isParentDisabled?: boolean;
+  validationState?: any;
+  focusOnHover?: boolean;
+  isCheckable?: boolean;
+  onClick?: (key: Key) => void;
+  lastFocusSourceRef?: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
+  dragState: DraggableCollectionState;
+  dropState: DroppableCollectionState;
+}) {
   const localRef = useRef<HTMLLIElement>(null);
 
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
