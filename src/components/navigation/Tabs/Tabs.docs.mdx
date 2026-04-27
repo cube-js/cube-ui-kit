@@ -47,6 +47,7 @@ An accessible tabbed interface for organizing content into multiple panels, show
 - **`renderPanel`** `(key: string) => ReactNode` — Render function for lazy panel content
 - **`panelCacheKeys`** `Record<string, any>` — Cache keys for `renderPanel` content
 - **`isReorderable`** `boolean` (default: `false`) — Enable drag-and-drop tab reordering
+- **`isPickerReorderable`** `boolean` (default: `false`) — Enable drag-and-drop reordering in the tab picker dropdown
 - **`keyOrder`** `string[]` — Controlled tab display order
 - **`onReorder`** `(newOrder: string[]) => void` — Callback when tabs are reordered
 - **`showTabPicker`** `boolean | 'auto'` (default: `false`) — Show dropdown tab picker
@@ -567,7 +568,7 @@ const [keyOrder, setKeyOrder] = useState(['tab1', 'tab2', 'tab3']);
 
 ### Reorderable Tab Picker
 
-When `isReorderable` and `showTabPicker` are both enabled, the tab picker dropdown also supports drag-and-drop reordering. Items in the dropdown display a grip handle and can be dragged to reorder. The same `onReorder` callback is shared between the horizontal tab bar and the vertical tab picker.
+Use `isPickerReorderable` to enable drag-and-drop reordering in the tab picker dropdown. This is controlled independently from `isReorderable` (horizontal tabs). Items in the dropdown display a grip handle and can be dragged to reorder. The same `onReorder` callback is shared between the horizontal tab bar and the vertical tab picker.
 
 <Story of={TabsStories.ReorderableTabPicker} />
 
@@ -576,6 +577,7 @@ const [keyOrder, setKeyOrder] = useState(['tab1', 'tab2', 'tab3']);
 
 <Tabs
   isReorderable
+  isPickerReorderable
   showTabPicker
   type="file"
   keyOrder={keyOrder}

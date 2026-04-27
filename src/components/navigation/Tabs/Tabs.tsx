@@ -151,6 +151,7 @@ function TabsComponent(
     renderPanel,
     panelCacheKeys,
     isReorderable = false,
+    isPickerReorderable,
     keyOrder,
     onReorder,
     showTabPicker = false,
@@ -621,7 +622,7 @@ function TabsComponent(
       selectedKey={state.selectedKey}
       size={size}
       type={type}
-      isReorderable={isReorderable}
+      isReorderable={isPickerReorderable}
       onSelect={handleTabPickerSelect}
       onDelete={onDelete}
       onReorder={onReorder}

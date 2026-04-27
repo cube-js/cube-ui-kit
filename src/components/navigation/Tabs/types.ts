@@ -205,6 +205,11 @@ export interface CubeTabsProps
    */
   isReorderable?: boolean;
   /**
+   * Enable drag-and-drop reordering in the tab picker dropdown.
+   * @default false
+   */
+  isPickerReorderable?: boolean;
+  /**
    * Controlled order of tab keys.
    * When provided, tabs are displayed in this order.
    */
