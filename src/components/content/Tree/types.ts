@@ -121,6 +121,17 @@ export interface CubeTreeProps extends BaseProps, OuterStyleProps {
   /** Row size. Defaults to `'medium'`. */
   size?: SizeName;
 
+  /**
+   * Visual shape of the tree container.
+   * - `default` — no border or radius
+   * - `card` — rounded corners with a border
+   * @default "default"
+   */
+  shape?: 'default' | 'card';
+
+  /** Padding (px) around the tree content. Applied via the virtualizer for vertical and CSS for horizontal. @default 4 */
+  containerPadding?: number;
+
   /** Disable the entire tree. */
   isDisabled?: boolean;
 

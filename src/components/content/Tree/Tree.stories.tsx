@@ -142,6 +142,23 @@ const meta = {
     },
 
     /* Presentation */
+    shape: {
+      control: 'radio',
+      options: ['default', 'card'],
+      description: 'Visual shape of the tree container',
+      table: {
+        defaultValue: { summary: 'default' },
+        type: { summary: "'default' | 'card'" },
+      },
+    },
+    containerPadding: {
+      control: 'number',
+      description: 'Padding (px) around the tree content',
+      table: {
+        defaultValue: { summary: '4' },
+        type: { summary: 'number' },
+      },
+    },
     height: {
       control: 'number',
       description:
@@ -409,6 +426,13 @@ export const AutoExpandParent: Story = {
   render: AutoExpandParentRender,
 };
 
+export const CardShape: Story = {
+  args: {
+    shape: 'card',
+    defaultExpandedKeys: ['src', 'src/components'],
+  },
+};
+
 export const Empty: Story = {
   args: {
     treeData: [],
@@ -426,11 +450,10 @@ const WrappedFileIcon = () => (
 export const DirectoryTree: Story = {
   args: {
     selectionMode: 'none',
+    shape: 'card',
     defaultExpandedKeys: ['src', 'src/components'],
     styles: {
       width: '200px',
-      border: true,
-      radius: '1cr',
     },
     itemProps: (data, { isExpanded }) => {
       const isFolder = !!data.children;
