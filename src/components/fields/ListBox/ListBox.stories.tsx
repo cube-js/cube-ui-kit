@@ -1,3 +1,4 @@
+import { Key } from '@react-types/shared';
 import { StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
@@ -1571,6 +1572,65 @@ export const DifferentShapes: Story = {
       description: {
         story:
           'The `shape` prop controls the visual styling of the ListBox. Use `card` for standalone use, `plain` for embedded use without decoration, and `popover` for use inside overlays where borders are handled by the container.',
+      },
+    },
+  },
+};
+
+/**
+ * ListBox with drag-and-drop reordering enabled.
+ * Items can be reordered by dragging the grip handle or pressing Alt+↑/↓.
+ */
+export const Reorderable: StoryObj = {
+  render: function ReorderableRender() {
+    const INITIAL_ITEMS = [
+      { key: 'revenue', label: 'Revenue' },
+      { key: 'orders', label: 'Orders' },
+      { key: 'customers', label: 'Customers' },
+      { key: 'avg-order', label: 'Avg Order Value' },
+      { key: 'conversion', label: 'Conversion Rate' },
+      { key: 'sessions', label: 'Sessions' },
+      { key: 'bounce-rate', label: 'Bounce Rate' },
+      { key: 'retention', label: 'Retention' },
+      { key: 'churn', label: 'Churn Rate' },
+      { key: 'ltv', label: 'Lifetime Value' },
+      { key: 'arpu', label: 'ARPU' },
+      { key: 'mrr', label: 'MRR' },
+    ];
+
+    const [keyOrder, setKeyOrder] = useState<Key[]>(
+      INITIAL_ITEMS.map((i) => i.key),
+    );
+
+    const orderedItems = [...INITIAL_ITEMS].sort(
+      (a, b) => keyOrder.indexOf(a.key) - keyOrder.indexOf(b.key),
+    );
+
+    return (
+      <Space gap="2x" flow="column" placeItems="start">
+        <ListBox
+          isReorderable
+          selectionMode="multiple"
+          defaultSelectedKeys={['revenue', 'orders']}
+          label="Metrics"
+          styles={{ width: '300px', maxHeight: '400px' }}
+          onReorder={(newOrder) => setKeyOrder(newOrder)}
+        >
+          {orderedItems.map((item) => (
+            <ListBox.Item key={item.key}>{item.label}</ListBox.Item>
+          ))}
+        </ListBox>
+        <Text preset="t4" color="#dark.60">
+          Current order: {keyOrder.map(String).join(', ')}
+        </Text>
+      </Space>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'ListBox with drag-and-drop reordering. Items can be reordered by dragging the grip handle or pressing Alt+↑/↓. Virtualization is automatically disabled when reordering is enabled.',
       },
     },
   },

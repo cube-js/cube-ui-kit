@@ -1,4 +1,10 @@
-import { ReactNode, RefObject, useCallback, useMemo } from 'react';
+import {
+  KeyboardEvent,
+  ReactNode,
+  RefObject,
+  useCallback,
+  useMemo,
+} from 'react';
 import {
   DragItem,
   DroppableCollectionReorderEvent,
@@ -34,6 +40,7 @@ export interface DraggableCollectionProps {
   orderedKeys: string[];
   orientation: 'horizontal' | 'vertical';
   onReorder?: (newOrder: string[]) => void;
+  /** Render function receiving drag/drop states and merged collection+keyboard props */
   children: (
     dragState: DraggableCollectionState,
     dropState: DroppableCollectionState,
@@ -156,5 +163,40 @@ export function DraggableCollection({
     listRef,
   );
 
-  return children(dragState, dropState, collectionProps);
+  // Alt+Arrow keyboard shortcut for reordering.
+  // Uses capture phase so we read focusedKey BEFORE react-aria moves focus.
+  const handleKeyDownCapture = useEvent((e: KeyboardEvent) => {
+    if (!e.altKey || !onReorder) return;
+
+    const moveKeys =
+      orientation === 'vertical'
+        ? { backward: 'ArrowUp', forward: 'ArrowDown' }
+        : { backward: 'ArrowLeft', forward: 'ArrowRight' };
+
+    const direction =
+      e.key === moveKeys.backward ? -1 : e.key === moveKeys.forward ? 1 : 0;
+
+    if (direction === 0) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const focusedKey = String(state.selectionManager.focusedKey);
+    const idx = orderedKeys.indexOf(focusedKey);
+
+    if (idx === -1) return;
+
+    const targetIdx = idx + direction;
+
+    if (targetIdx < 0 || targetIdx >= orderedKeys.length) return;
+
+    const newKeys = [...orderedKeys];
+    [newKeys[idx], newKeys[targetIdx]] = [newKeys[targetIdx], newKeys[idx]];
+    onReorder(newKeys);
+  });
+
+  return children(dragState, dropState, {
+    ...collectionProps,
+    onKeyDownCapture: handleKeyDownCapture,
+  });
 }

@@ -1736,17 +1736,29 @@ export const HiddenScrollbar: Story = {
  * Reorderable tabs with a tab picker dropdown that also supports reordering.
  * When `isReorderable` and `showTabPicker` are both enabled, the tab picker
  * dropdown items can be drag-and-dropped to reorder.
+ * Use Alt+Arrow keys to reorder via keyboard.
  */
 export const ReorderableTabPicker: Story = {
   render: function ReorderableTabPickerRender(args) {
-    const [tabs, setTabs] = useState([
+    const INITIAL_TABS = [
       { key: 'overview', title: 'Overview' },
       { key: 'analytics', title: 'Analytics' },
       { key: 'reports', title: 'Reports' },
       { key: 'settings', title: 'Settings' },
       { key: 'users', title: 'Users' },
-    ]);
-    const [keyOrder, setKeyOrder] = useState<Key[]>(tabs.map((t) => t.key));
+      { key: 'billing', title: 'Billing' },
+      { key: 'security', title: 'Security' },
+      { key: 'integrations', title: 'Integrations' },
+      { key: 'notifications', title: 'Notifications' },
+      { key: 'logs', title: 'Logs' },
+      { key: 'api-keys', title: 'API Keys' },
+      { key: 'webhooks', title: 'Webhooks' },
+    ];
+
+    const [tabs, setTabs] = useState(INITIAL_TABS);
+    const [keyOrder, setKeyOrder] = useState<Key[]>(
+      INITIAL_TABS.map((t) => t.key),
+    );
     const [activeKey, setActiveKey] = useState('overview');
 
     const handleDelete = (key: string) => {
@@ -1775,7 +1787,7 @@ export const ReorderableTabPicker: Story = {
           type="file"
           activeKey={activeKey}
           keyOrder={keyOrder}
-          styles={{ width: '400px' }}
+          styles={{ width: '500px' }}
           onDelete={handleDelete}
           onChange={(key) => setActiveKey(String(key))}
           onReorder={(newOrder) => setKeyOrder(newOrder)}

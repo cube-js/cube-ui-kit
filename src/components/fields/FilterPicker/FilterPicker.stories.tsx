@@ -23,6 +23,7 @@ import { Space } from '../../layout/Space';
 
 import { FilterPicker } from './FilterPicker';
 
+import type { Key } from '@react-types/shared';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof FilterPicker> = {
@@ -2473,6 +2474,67 @@ export const AsyncSearch: Story = {
       description: {
         story:
           'Demonstrates server-side search with a simulated 1-second backend delay. Uses `filter={false}` to disable client-side filtering, controlled `searchValue`/`onSearchChange` for the search input, and dynamically replaces `items` when the server responds. A loading spinner appears in the search input suffix via `isLoadingItems` while the fetch is in flight. Search input is debounced at 300ms with in-flight request cancellation.',
+      },
+    },
+  },
+};
+
+/**
+ * FilterPicker with drag-and-drop reordering enabled.
+ * Items can be reordered by dragging the grip handle or pressing Alt+↑/↓.
+ * Search still works — reordering is disabled while the search field has a value.
+ */
+export const Reorderable: StoryObj<typeof FilterPicker> = {
+  render: function ReorderableRender() {
+    const INITIAL_ITEMS = [
+      { key: 'revenue', label: 'Revenue' },
+      { key: 'orders', label: 'Orders' },
+      { key: 'customers', label: 'Customers' },
+      { key: 'avg-order', label: 'Avg Order Value' },
+      { key: 'conversion', label: 'Conversion Rate' },
+      { key: 'sessions', label: 'Sessions' },
+      { key: 'bounce-rate', label: 'Bounce Rate' },
+      { key: 'retention', label: 'Retention' },
+      { key: 'churn', label: 'Churn Rate' },
+      { key: 'ltv', label: 'Lifetime Value' },
+      { key: 'arpu', label: 'ARPU' },
+      { key: 'mrr', label: 'MRR' },
+    ];
+
+    const [keyOrder, setKeyOrder] = useState<Key[]>(
+      INITIAL_ITEMS.map((i) => i.key),
+    );
+
+    const orderedItems = [...INITIAL_ITEMS].sort(
+      (a, b) => keyOrder.indexOf(a.key) - keyOrder.indexOf(b.key),
+    );
+
+    return (
+      <Space gap="2x" flow="column" placeItems="start">
+        <FilterPicker
+          isReorderable
+          selectionMode="multiple"
+          defaultSelectedKeys={['revenue', 'orders', 'customers']}
+          label="Metrics"
+          onReorder={(newOrder) => setKeyOrder(newOrder)}
+        >
+          {orderedItems.map((item) => (
+            <FilterPicker.Item key={item.key} textValue={item.label}>
+              {item.label}
+            </FilterPicker.Item>
+          ))}
+        </FilterPicker>
+        <Text preset="t4" color="#dark.60">
+          Current order: {keyOrder.map(String).join(', ')}
+        </Text>
+      </Space>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates drag-and-drop reordering inside FilterPicker. Items can be reordered by dragging the grip handle or pressing Alt+↑/↓ on the keyboard. Search still works — reordering is temporarily disabled while a search value is present.',
       },
     },
   },
