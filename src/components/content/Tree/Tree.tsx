@@ -116,6 +116,8 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     isSelectable,
     selectionMode: selectionModeProp,
     size = 'medium',
+    shape = 'default',
+    containerPadding = 4,
     isDisabled = false,
     defaultExpandedKeys,
     expandedKeys,
@@ -348,6 +350,8 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     estimateSize: () => SIZES[SIZE_NAME_TO_KEY[size]],
     gap: 1,
     overscan: 10,
+    paddingStart: containerPadding,
+    paddingEnd: containerPadding,
   });
 
   const containerStyle = useMemo<CSSProperties>(() => {
@@ -380,8 +384,9 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
   const mods = useMemo(
     () => ({
       'has-height': height != null,
+      shape,
     }),
-    [height],
+    [height, shape],
   );
 
   // Both `useTree` and the consumer need the same DOM node.
@@ -422,8 +427,8 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
             virtualStyle={{
               position: 'absolute',
               top: 0,
-              left: 0,
-              right: 0,
+              left: containerPadding,
+              right: containerPadding,
               transform: `translateY(${virtualItem.start}px)`,
             }}
             virtualRef={rowVirtualizer.measureElement}
