@@ -140,18 +140,10 @@ const ListBoxItem = tasty(Item, {
       ':last-of-type': '0',
       all: '.5x',
     },
-    opacity: {
-      '': false,
-      dragging: '.5',
-    },
     Icon: {
       cursor: {
         '': false,
         draggable: 'grab',
-      },
-      color: {
-        '': false,
-        draggable: '#dark-04',
       },
       opacity: {
         '': false,
@@ -1432,6 +1424,7 @@ function Option({
       data-size={size}
       data-index={virtualIndex}
       size={size}
+      display={isDraggable ? 'grid' : undefined}
       isSelected={isSelected}
       isDisabled={isDisabled}
       icon={effectiveIcon}

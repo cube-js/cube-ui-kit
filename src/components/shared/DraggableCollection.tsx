@@ -3,6 +3,7 @@ import {
   ReactNode,
   RefObject,
   useCallback,
+  useEffect,
   useMemo,
 } from 'react';
 import {
@@ -182,6 +183,25 @@ export function DraggableCollection({
     dropState,
     listRef,
   );
+
+  // Force-cancel drag on Escape. Native HTML5 drag cancels visually, but some
+  // browsers (Safari) don't fire `dragend` synchronously, leaving react-aria's
+  // `isDragging` stale until a second keypress.
+  const isDragActive = dragState.draggingKeys.size > 0;
+
+  useEffect(() => {
+    if (!isDragActive) return;
+
+    const handleEscape = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        dragState.endDrag();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape, true);
+
+    return () => document.removeEventListener('keydown', handleEscape, true);
+  }, [isDragActive, dragState]);
 
   // Alt+Arrow keyboard shortcut for reordering.
   // Uses capture phase so we read focusedKey BEFORE react-aria moves focus.
