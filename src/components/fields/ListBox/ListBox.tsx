@@ -143,16 +143,13 @@ const ListBoxItem = tasty(Item, {
     },
     Icon: {
       cursor: {
-        '': false,
         draggable: 'grab',
       },
       opacity: {
-        '': false,
         draggable: '.4',
         'draggable & :hover': '1',
       },
       transition: {
-        '': false,
         draggable: 'opacity',
       },
     },
