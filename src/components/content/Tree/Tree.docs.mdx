@@ -1,4 +1,5 @@
-import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import { Canvas, Meta, Story } from '@storybook/addon-docs/blocks';
+
 import { Tree } from './Tree';
 import * as TreeStories from './Tree.stories';
 
@@ -66,6 +67,38 @@ consumers can be migrated with minimal churn.
   — Called when a node is checked or unchecked.
 - **`onSelect`** `(selectedKeys: Key[], info: TreeOnSelectInfo) => void` —
   Called when row selection changes.
+- **`expandOnFolderClick`** `boolean` (default: `false`) — When `true`,
+  activating a non-leaf row toggles its expansion instead of selecting
+  it. Activation happens on mouse click, `Enter`, or `Space` (in
+  checkable trees `Space` is reserved for the row checkbox; `Enter`
+  always expands). The chevron and keyboard navigation continue to
+  work independently. Useful for file-tree UX where only leaves are
+  meaningful selection targets.
+- **`menu`** `ReactNode | ((data, state) => ReactNode | null)` — Default
+  `Menu.Item` children rendered on every row that doesn't override via
+  `data.menu`. Returning `null` from the callback hides the menu for
+  that specific row.
+- **`contextMenu`** `boolean | 'context-only'` (default: `false`) — How
+  the row menu is exposed.
+
+  - `false` — no menu at all.
+  - `true` — render an overflow `⋮` trigger inside `actions` AND open
+    the same menu on right-click / Shift+F10.
+  - `'context-only'` — right-click / Shift+F10 only; no `⋮` trigger.
+
+  Per-node `data.contextMenu` wins when provided.
+
+- **`onAction`** `(action: string, key: Key) => void` — Called when a
+  menu action is triggered on any row. Receives the action key (with
+  React's `.$` prefix stripped) and the row key. Per-node
+  `data.onAction` is called first.
+- **`menuTriggerProps`** `Partial<CubeMenuTriggerProps>` — Forwarded to
+  every per-row `MenuTrigger`.
+- **`menuProps`** `Partial<CubeMenuProps<object>>` — Forwarded to every
+  per-row `Menu` (both the overflow `⋮` menu and the right-click context
+  menu). If you pass `onAction` here, it is **chained with** the
+  tree-level `onAction`/per-node `data.onAction` callbacks (it does not
+  override them) and receives the same normalized action key.
 - **`rowStyles`** `Styles` — Override styles for `[data-element="Row"]`.
 
 #### `CubeTreeNodeData`
@@ -82,6 +115,13 @@ consumers can be migrated with minimal churn.
   row.
 - **`isCheckable`** `boolean` — Per-node override; `false` hides the
   checkbox for this row even when the tree is `isCheckable`.
+- **`menu`** `ReactNode | null` — Per-node menu override. Wins over
+  the tree-level `menu`. Pass `null` to hide the menu for this row
+  when the tree provides a default.
+- **`contextMenu`** `boolean | 'context-only'` — Per-node override of
+  the tree-level `contextMenu`.
+- **`onAction`** `(action: string) => void` — Per-node action callback.
+  Called before the tree-level `onAction`.
 
 ### Base Properties
 
@@ -110,21 +150,30 @@ spacing, hover/selected colors, or cell layout without re-targeting via
 - `Checkbox` — The checkbox slot (visible only when `isCheckable`).
 - `Title` — The title label.
 
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`
+
 ### Modifiers
 
 The following row-level modifiers are emitted automatically. They are
 useful when overriding `rowStyles`:
 
-| Modifier        | Type      | Description                                            |
-| --------------- | --------- | ------------------------------------------------------ |
-| `selected`      | `boolean` | Row is selected.                                       |
-| `checked`       | `boolean` | Row is fully checked.                                  |
-| `indeterminate` | `boolean` | Row is in the half-checked state.                      |
-| `expanded`      | `boolean` | Row is expanded.                                       |
-| `disabled`      | `boolean` | Row is disabled.                                       |
-| `loading`       | `boolean` | The row's children are being fetched via `loadData`.   |
-| `leaf`          | `boolean` | Row has no children.                                   |
-| `has-checkbox`  | `boolean` | Row renders a checkbox.                                |
+| Modifier        | Type      | Description                                          |
+| --------------- | --------- | ---------------------------------------------------- |
+| `selected`      | `boolean` | Row is selected.                                     |
+| `checked`       | `boolean` | Row is fully checked.                                |
+| `indeterminate` | `boolean` | Row is in the half-checked state.                    |
+| `expanded`      | `boolean` | Row is expanded.                                     |
+| `disabled`      | `boolean` | Row is disabled.                                     |
+| `loading`       | `boolean` | The row's children are being fetched via `loadData`. |
+| `leaf`          | `boolean` | Row has no children.                                 |
+| `has-checkbox`  | `boolean` | Row renders a checkbox.                              |
+| `has-menu`      | `boolean` | Row resolves a non-empty menu.                       |
 
 ## Variants
 
@@ -141,13 +190,19 @@ useful when overriding `rowStyles`:
 
 ```jsx
 const data = [
-  { key: 'fruits', title: 'Fruits', children: [
-    { key: 'apple', title: 'Apple' },
-    { key: 'banana', title: 'Banana' },
-  ]},
-  { key: 'vegetables', title: 'Vegetables', children: [
-    { key: 'carrot', title: 'Carrot' },
-  ]},
+  {
+    key: 'fruits',
+    title: 'Fruits',
+    children: [
+      { key: 'apple', title: 'Apple' },
+      { key: 'banana', title: 'Banana' },
+    ],
+  },
+  {
+    key: 'vegetables',
+    title: 'Vegetables',
+    children: [{ key: 'carrot', title: 'Carrot' }],
+  },
 ];
 
 <Tree treeData={data} defaultExpandedKeys={['fruits']} />;
@@ -181,14 +236,17 @@ To match AntD's object-shape API, pass `checkedKeys` as
 `{ checked, halfChecked }`. `onCheck` returns the same shape.
 
 ```jsx
-const [checkedKeys, setCheckedKeys] = useState({ checked: [], halfChecked: [] });
+const [checkedKeys, setCheckedKeys] = useState({
+  checked: [],
+  halfChecked: [],
+});
 
 <Tree
   treeData={data}
   isCheckable
   checkedKeys={checkedKeys}
   onCheck={(next) => setCheckedKeys(next)}
-/>
+/>;
 ```
 
 <Story of={TreeStories.ControlledChecked} />
@@ -206,7 +264,7 @@ const handleLoadData = (node) =>
     .then((r) => r.json())
     .then((children) => mergeIntoTreeData(node.key, children));
 
-<Tree treeData={data} loadData={handleLoadData} />
+<Tree treeData={data} loadData={handleLoadData} />;
 ```
 
 <Story of={TreeStories.LazyLoading} />
@@ -217,11 +275,7 @@ Pass the matching keys via `expandedKeys` and set `autoExpandParent` to
 keep their ancestors expanded.
 
 ```jsx
-<Tree
-  treeData={data}
-  expandedKeys={matchedKeys}
-  autoExpandParent
-/>
+<Tree treeData={data} expandedKeys={matchedKeys} autoExpandParent />
 ```
 
 <Story of={TreeStories.AutoExpandParent} />
@@ -233,14 +287,18 @@ node-level flags.
 
 ```jsx
 const data = [
-  { key: 'a', title: 'A', children: [
-    { key: 'a-1', title: 'A-1', isDisabled: true },
-    { key: 'a-2', title: 'A-2', isCheckboxDisabled: true },
-    { key: 'a-3', title: 'A-3', isCheckable: false },
-  ]},
+  {
+    key: 'a',
+    title: 'A',
+    children: [
+      { key: 'a-1', title: 'A-1', isDisabled: true },
+      { key: 'a-2', title: 'A-2', isCheckboxDisabled: true },
+      { key: 'a-3', title: 'A-3', isCheckable: false },
+    ],
+  },
 ];
 
-<Tree treeData={data} isCheckable defaultExpandedKeys={['a']} />
+<Tree treeData={data} isCheckable defaultExpandedKeys={['a']} />;
 ```
 
 <Story of={TreeStories.PerNodeDisable} />
@@ -252,6 +310,66 @@ const data = [
 ```
 
 <Story of={TreeStories.FixedHeight} />
+
+### Per-row Menu (Overflow + Right-Click)
+
+Pass `menu` (a `ReactNode` of `Menu.Item`s, or a callback) plus
+`contextMenu={true}` to render a built-in `⋮` overflow trigger AND
+open the same menu on right-click / `Shift+F10`. Use
+`onAction(action, key)` at the tree level to handle actions, or
+`data.onAction` for per-node behavior.
+
+```jsx
+<Tree
+  treeData={data}
+  contextMenu
+  menu={
+    <>
+      <Menu.Item key="rename">Rename</Menu.Item>
+      <Menu.Item key="duplicate">Duplicate</Menu.Item>
+      <Menu.Item key="delete">Delete</Menu.Item>
+    </>
+  }
+  onAction={(action, key) => console.log(action, 'on', key)}
+/>
+```
+
+<Story of={TreeStories.WithContextMenu} />
+
+### Right-Click Only
+
+`contextMenu="context-only"` keeps the right-click / `Shift+F10`
+behavior but hides the `⋮` trigger — handy for clean file-tree UIs.
+
+<Story of={TreeStories.WithContextMenuOnly} />
+
+### Per-Node Menu Overrides
+
+Set `data.menu` to override the tree-level menu for a specific row,
+or `null` to hide it entirely. `data.contextMenu` and
+`data.onAction` follow the same per-row override pattern.
+
+<Story of={TreeStories.PerNodeMenu} />
+
+### Expand on Folder Click
+
+`expandOnFolderClick` makes folder rows toggle their expansion when
+activated instead of triggering selection. Leaves still select normally,
+which mirrors typical file-tree UX. Folder rows remain focusable for
+keyboard navigation, and the chevron toggle keeps working.
+
+Activation rules for folder rows:
+
+- Mouse click → expand / collapse.
+- `Enter` → expand / collapse (always, including in `isCheckable` trees).
+- `Space` → expand / collapse in non-checkable trees; in `isCheckable`
+  trees `Space` toggles the row's checkbox instead.
+
+```jsx
+<Tree treeData={data} expandOnFolderClick />
+```
+
+<Story of={TreeStories.ExpandOnFolderClick} />
 
 ## Accessibility
 
@@ -307,7 +425,6 @@ via `useTree` from React Aria.
 
 - Built-in virtualization for very large trees (10k+ rows).
 - Drag-and-drop reordering, mirroring AntD's `draggable` API.
-- An `onRightClick`/context menu hook.
 - Reveal-on-mount: scroll the focused row into view when expanded
   programmatically.
 - Optional inline title editing.
