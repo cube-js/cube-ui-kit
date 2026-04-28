@@ -30,6 +30,8 @@ export const TreeElement = tasty({
     transition: 'theme',
     outline: 0,
     padding: 0,
+    radius: { '': 0, 'shape=card': '1cr' },
+    border: { '': 0, 'shape=card': true },
   },
 });
 
@@ -45,7 +47,6 @@ export const TreeNodeRow = tasty({
   qa: 'TreeRow',
   styles: {
     display: 'block',
-    width: '100%',
     outline: 0,
   },
 });

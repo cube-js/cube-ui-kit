@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.131.0
+
+### Minor Changes
+
+- [#1136](https://github.com/cube-js/cube-ui-kit/pull/1136) [`ed5887be`](https://github.com/cube-js/cube-ui-kit/commit/ed5887bee8b6435ed8699ccb194e8862e3ca630b) Thanks [@tenphi](https://github.com/tenphi)! - Added `shape` prop to `Tree` with `default` and `card` values for controlling border and radius. Added `containerPadding` prop for adjustable padding around the tree content via virtualizer configuration.
+
 ## 0.130.0
 
 ### Minor Changes
