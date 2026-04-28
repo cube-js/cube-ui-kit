@@ -729,5 +729,62 @@ describe('<Tree />', () => {
       expect(onExpand).toHaveBeenCalled();
       expect(onSelect).not.toHaveBeenCalled();
     });
+
+    it('expands on Enter even when isCheckable is on (matches mouse-click behavior)', async () => {
+      const onSelect = vi.fn();
+      const onExpand = vi.fn();
+      const onCheck = vi.fn();
+      const { getByText, queryByText, getAllByRole } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          isCheckable
+          treeData={SAMPLE}
+          onSelect={onSelect}
+          onExpand={onExpand}
+          onCheck={onCheck}
+        />,
+      );
+
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+
+      const rows = getAllByRole('row');
+      await act(async () => {
+        rows[0].focus();
+        await userEvent.keyboard('{Enter}');
+      });
+
+      expect(getByText('Apple')).toBeInTheDocument();
+      expect(onExpand).toHaveBeenCalled();
+      expect(onSelect).not.toHaveBeenCalled();
+      // Enter must NOT toggle the checkbox — that's Space's job.
+      expect(onCheck).not.toHaveBeenCalled();
+    });
+
+    it('Space still toggles the checkbox in checkable trees, not folder expansion', async () => {
+      const onCheck = vi.fn();
+      const onExpand = vi.fn();
+      const onSelect = vi.fn();
+      const { queryByText, getAllByRole } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          isCheckable
+          treeData={SAMPLE}
+          onSelect={onSelect}
+          onExpand={onExpand}
+          onCheck={onCheck}
+        />,
+      );
+
+      const rows = getAllByRole('row');
+      await act(async () => {
+        rows[0].focus();
+        await userEvent.keyboard(' ');
+      });
+
+      expect(onCheck).toHaveBeenCalled();
+      expect(onExpand).not.toHaveBeenCalled();
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+    });
   });
 });

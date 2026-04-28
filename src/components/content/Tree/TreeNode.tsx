@@ -24,7 +24,6 @@ import type {
   KeyboardEvent,
   MouseEvent as ReactMouseEvent,
   ReactNode,
-  PointerEvent as ReactPointerEvent,
   Ref,
   SyntheticEvent,
 } from 'react';
@@ -233,12 +232,19 @@ function TreeNodeInner(props: TreeNodeProps) {
     state.selectionManager.setFocusedKey(node.key);
   });
 
-  const handleFolderRowPointerEvent = useEvent((e: ReactPointerEvent) => {
-    if (e.button !== 0) return;
-    // Stop usePress from latching its `isPressed` state — the row is
-    // not a press target anymore in this mode.
-    e.stopPropagation();
-  });
+  // Typed against the broader `MouseEvent` because both pointer and
+  // mouse handlers route here. React's `PointerEvent<T>` extends
+  // `MouseEvent<T>`, so via parameter contravariance this single
+  // function is assignable to both `PointerEventHandler<T>` and
+  // `MouseEventHandler<T>` slots without any casts.
+  const handleFolderRowPointerEvent = useEvent(
+    (e: ReactMouseEvent<HTMLDivElement>) => {
+      if (e.button !== 0) return;
+      // Stop usePress from latching its `isPressed` state — the row is
+      // not a press target anymore in this mode.
+      e.stopPropagation();
+    },
+  );
 
   // ---- Keyboard ------------------------------------------------------------
 
@@ -273,14 +279,17 @@ function TreeNodeInner(props: TreeNodeProps) {
       return true;
     }
 
-    // Enter/Space toggles expansion for folders in expandOnFolderClick
-    // mode (matches the row-click behavior). Must run BEFORE
-    // `useTreeItem`'s onKeyDown so react-aria doesn't also fire
-    // selection on the same keypress.
+    // Folder activation via keyboard in expandOnFolderClick mode.
+    // Must run BEFORE `useTreeItem`'s onKeyDown so react-aria doesn't
+    // also fire selection on the same keypress.
+    //   - Enter always expands (matches the row-click behavior, even
+    //     when the row is also checkable — Enter is not a checkbox key).
+    //   - Space only expands when the row is NOT checkable; in
+    //     checkable trees Space is reserved for the checkbox toggle
+    //     (handled by the earlier branch).
     if (
       shouldExpandOnRowClick &&
-      (e.key === 'Enter' || e.key === ' ') &&
-      !isRowCheckable
+      (e.key === 'Enter' || (e.key === ' ' && !isRowCheckable))
     ) {
       e.preventDefault();
       e.stopPropagation();
@@ -379,8 +388,8 @@ function TreeNodeInner(props: TreeNodeProps) {
         onClick: handleFolderRowClick,
         onPointerDown: handleFolderRowPointerEvent,
         onPointerUp: handleFolderRowPointerEvent,
-        onMouseDown: handleFolderRowPointerEvent as unknown as ReactMouseEvent,
-        onMouseUp: handleFolderRowPointerEvent as unknown as ReactMouseEvent,
+        onMouseDown: handleFolderRowPointerEvent,
+        onMouseUp: handleFolderRowPointerEvent,
       }
     : baseRowProps;
 
