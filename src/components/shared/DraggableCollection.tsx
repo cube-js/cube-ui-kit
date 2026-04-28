@@ -12,6 +12,7 @@ import {
   DroppableCollectionReorderEvent,
   ListDropTargetDelegate,
   ListKeyboardDelegate,
+  mergeProps,
   useDraggableCollection,
   useDroppableCollection,
 } from 'react-aria';
@@ -261,8 +262,9 @@ export function DraggableCollection({
     onReorder(newKeys);
   });
 
-  return children(dragState, dropState, {
-    ...collectionProps,
-    onKeyDownCapture: handleKeyDownCapture,
-  });
+  return children(
+    dragState,
+    dropState,
+    mergeProps(collectionProps, { onKeyDownCapture: handleKeyDownCapture }),
+  );
 }
