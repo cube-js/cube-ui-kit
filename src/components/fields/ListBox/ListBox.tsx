@@ -63,6 +63,7 @@ import {
 } from '../../CollectionItem';
 import { Item } from '../../content/Item/Item';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { createMockDragState } from '../../shared/DraggableCollection';
 
 import { DraggableListBox } from './DraggableListBox';
 
@@ -1255,20 +1256,7 @@ function Option({
   // useDraggableItem must be called unconditionally (Rules of Hooks).
   // When dragState is undefined, we pass a minimal mock state to satisfy the hook.
   const mockDragState = useMemo(
-    () =>
-      ({
-        collection: state.collection,
-        selectionManager: state.selectionManager,
-        isDragging: () => false,
-        getKeysForDrag: () => new Set<Key>(),
-        draggedKey: null,
-        draggingKeys: new Set<Key>(),
-        getAllowedDropOperations: () => [],
-        preview: null,
-        isDisabled: false,
-        startDrag: () => {},
-        endDrag: () => {},
-      }) as DraggableCollectionState,
+    () => createMockDragState(state.collection, state.selectionManager),
     [state.collection, state.selectionManager],
   );
 

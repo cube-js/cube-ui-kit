@@ -25,6 +25,7 @@ import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { CubeMenuProps, Menu, MenuTrigger } from '../../actions/Menu';
 import { useContextMenu } from '../../actions/use-context-menu';
+import { createMockDragState } from '../../shared/DraggableCollection';
 
 import { EditableTitle } from './EditableTitle';
 import { TabContainer, TabElement } from './styled';
@@ -211,20 +212,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   // useDraggableItem must be called unconditionally (Rules of Hooks)
   // When dragState is undefined, we pass a minimal mock state to satisfy the hook
   const mockDragState = useMemo(
-    () =>
-      ({
-        collection: state.collection,
-        selectionManager: state.selectionManager,
-        isDragging: () => false,
-        getKeysForDrag: () => new Set<Key>(),
-        draggedKey: null,
-        draggingKeys: new Set<Key>(),
-        getAllowedDropOperations: () => [],
-        preview: null,
-        isDisabled: false,
-        startDrag: () => {},
-        endDrag: () => {},
-      }) as DraggableCollectionState,
+    () => createMockDragState(state.collection, state.selectionManager),
     [state.collection, state.selectionManager],
   );
 

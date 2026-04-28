@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
 } from 'react';
 import {
   DragItem,
@@ -26,6 +27,29 @@ import { useEvent } from '../../_internal/hooks';
 import type { Collection, DropOperation, Key, Node } from '@react-types/shared';
 
 const getAllowedDropOperations = (): DropOperation[] => ['move'];
+
+/**
+ * Creates a no-op mock of DraggableCollectionState.
+ * Used to satisfy useDraggableItem when drag is disabled (Rules of Hooks).
+ */
+export function createMockDragState(
+  collection: Collection<Node<any>>,
+  selectionManager: Record<string, any>,
+): DraggableCollectionState {
+  return {
+    collection,
+    selectionManager,
+    isDragging: () => false,
+    getKeysForDrag: () => new Set<Key>(),
+    draggedKey: null,
+    draggingKeys: new Set<Key>(),
+    getAllowedDropOperations: () => [],
+    preview: null,
+    isDisabled: false,
+    startDrag: () => {},
+    endDrag: () => {},
+  } as DraggableCollectionState;
+}
 
 // =============================================================================
 // Types
@@ -188,20 +212,22 @@ export function DraggableCollection({
   // browsers (Safari) don't fire `dragend` synchronously, leaving react-aria's
   // `isDragging` stale until a second keypress.
   const isDragActive = dragState.draggingKeys.size > 0;
+  const endDragRef = useRef(dragState.endDrag);
+  endDragRef.current = dragState.endDrag;
 
   useEffect(() => {
     if (!isDragActive) return;
 
     const handleEscape = (e: globalThis.KeyboardEvent) => {
       if (e.key === 'Escape') {
-        dragState.endDrag();
+        endDragRef.current();
       }
     };
 
     document.addEventListener('keydown', handleEscape, true);
 
     return () => document.removeEventListener('keydown', handleEscape, true);
-  }, [isDragActive, dragState]);
+  }, [isDragActive]);
 
   // Alt+Arrow keyboard shortcut for reordering.
   // Uses capture phase so we read focusedKey BEFORE react-aria moves focus.
