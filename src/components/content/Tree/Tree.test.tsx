@@ -763,13 +763,11 @@ describe('<Tree />', () => {
     it('Space still toggles the checkbox in checkable trees, not folder expansion', async () => {
       const onCheck = vi.fn();
       const onExpand = vi.fn();
-      const onSelect = vi.fn();
       const { queryByText, getAllByRole } = renderWithRoot(
         <Tree
           expandOnFolderClick
           isCheckable
           treeData={SAMPLE}
-          onSelect={onSelect}
           onExpand={onExpand}
           onCheck={onCheck}
         />,
@@ -783,8 +781,126 @@ describe('<Tree />', () => {
 
       expect(onCheck).toHaveBeenCalled();
       expect(onExpand).not.toHaveBeenCalled();
-      expect(onSelect).not.toHaveBeenCalled();
       expect(queryByText('Apple')).not.toBeInTheDocument();
+    });
+
+    it('does not double-toggle when clicking the chevron', async () => {
+      const { getByText, queryByText, getAllByRole } = renderWithRoot(
+        <Tree expandOnFolderClick treeData={SAMPLE} />,
+      );
+
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+
+      const rows = getAllByRole('row');
+      const fruitsToggle = rows[0].querySelector(
+        'button[data-element="Toggle"]',
+      ) as HTMLButtonElement;
+      await act(async () => await userEvent.click(fruitsToggle));
+
+      // If the row's onClick also fired, the chevron would toggle the
+      // expansion twice (open → close) and Apple would NOT be visible.
+      expect(getByText('Apple')).toBeInTheDocument();
+    });
+
+    it('does not toggle expansion when clicking the overflow menu trigger', async () => {
+      const onExpand = vi.fn();
+      const TREE_MENU = (
+        <>
+          <Menu.Item key="delete">Delete</Menu.Item>
+        </>
+      );
+      const { queryByText, getAllByRole } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          contextMenu
+          treeData={SAMPLE}
+          menu={TREE_MENU}
+          onExpand={onExpand}
+        />,
+      );
+
+      const rows = getAllByRole('row');
+      const overflowTrigger = rows[0].querySelector(
+        '[aria-label="Actions"]',
+      ) as HTMLButtonElement;
+      expect(overflowTrigger).not.toBeNull();
+
+      await act(async () => await userEvent.click(overflowTrigger));
+
+      // The overflow trigger should open the menu, NOT expand the folder.
+      expect(onExpand).not.toHaveBeenCalled();
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+    });
+
+    it('does not toggle expansion when clicking inside the prefix slot', async () => {
+      // The `actions` slot already calls `e.stopPropagation()` for us
+      // (see `ACTIONS_EVENT_HANDLERS` in `Item.tsx`), but other slots
+      // — the user-supplied `prefix`, the row label, etc. — don't.
+      // A plain `<button>` rendered there must NOT bubble its click
+      // up into the row's expansion toggle.
+      const onPrefixClick = vi.fn();
+      const onExpand = vi.fn();
+      const { queryByText, container } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          treeData={SAMPLE}
+          itemProps={() => ({
+            prefix: (
+              <button
+                type="button"
+                data-testid="row-prefix-action"
+                onClick={onPrefixClick}
+              >
+                Custom
+              </button>
+            ),
+          })}
+          onExpand={onExpand}
+        />,
+      );
+
+      // Both rows get the prefix button — pick the first (Fruits).
+      const prefixButtons = container.querySelectorAll<HTMLButtonElement>(
+        '[data-testid="row-prefix-action"]',
+      );
+      expect(prefixButtons.length).toBeGreaterThan(0);
+      await act(async () => await userEvent.click(prefixButtons[0]));
+
+      expect(onPrefixClick).toHaveBeenCalledTimes(1);
+      // Row toggle MUST NOT fire — the click is for the inner control.
+      expect(onExpand).not.toHaveBeenCalled();
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Space chaining in checkable trees', () => {
+    it('toggles the checkbox AND selects the row in selectionMode=single', async () => {
+      const onCheck = vi.fn();
+      const onSelect = vi.fn();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          onCheck={onCheck}
+          onSelect={onSelect}
+        />,
+      );
+
+      // Apple (a leaf) is the second row when Fruits is expanded.
+      const rows = getAllByRole('row');
+      await act(async () => {
+        rows[1].focus();
+        await userEvent.keyboard(' ');
+      });
+
+      // Pre-Phase-1 behavior: react-aria's onKeyDown was chained via
+      // mergeProps, so Space toggled the checkbox AND selected the
+      // focused row. Both must continue to fire after the refactor.
+      expect(onCheck).toHaveBeenCalled();
+      expect(onSelect).toHaveBeenCalled();
+      const [keys] = onSelect.mock.calls[0];
+      expect(keys).toContain('apple');
     });
   });
 });

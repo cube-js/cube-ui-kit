@@ -39,6 +39,55 @@ const stopPropagation = (e: SyntheticEvent) => {
   e.stopPropagation();
 };
 
+/**
+ * CSS selector matching focusable / activatable descendants that
+ * should "absorb" a click so the parent row does not also react to
+ * it. Used by the `expandOnFolderClick` row click / pointer guards.
+ *
+ * Covers the standard interactive elements (`button`, `a`, form
+ * controls), explicit ARIA roles (`button`, `menuitem`, `checkbox`,
+ * `link`, `tab`, `option`, etc.), and react-aria's pressable marker.
+ */
+const INTERACTIVE_DESCENDANT_SELECTOR = [
+  'button',
+  'a[href]',
+  'input',
+  'textarea',
+  'select',
+  '[role="button"]',
+  '[role="menuitem"]',
+  '[role="menuitemcheckbox"]',
+  '[role="menuitemradio"]',
+  '[role="checkbox"]',
+  '[role="radio"]',
+  '[role="link"]',
+  '[role="tab"]',
+  '[role="option"]',
+  '[role="switch"]',
+  '[data-react-aria-pressable]',
+].join(',');
+
+/**
+ * Returns `true` when `target` is (or is contained within) an
+ * interactive element that lives BETWEEN `target` and `currentTarget`
+ * — i.e. something the user clearly intended to click instead of the
+ * row itself.
+ */
+function isInteractiveDescendant(
+  target: EventTarget | null,
+  currentTarget: EventTarget | null,
+): boolean {
+  if (!(target instanceof Element) || !(currentTarget instanceof Element)) {
+    return false;
+  }
+  const interactive = target.closest(INTERACTIVE_DESCENDANT_SELECTOR);
+  return (
+    !!interactive &&
+    interactive !== currentTarget &&
+    currentTarget.contains(interactive)
+  );
+}
+
 /** Check whether a `menu` ReactNode actually contains anything. */
 function isMenuEmpty(menu: ReactNode): boolean {
   if (menu === null || menu === undefined || menu === false) return true;
@@ -225,6 +274,16 @@ function TreeNodeInner(props: TreeNodeProps) {
     // Only intercept primary-button clicks; let right-click reach
     // `useContextMenu` (it listens for the `contextmenu` event).
     if (e.button !== 0) return;
+    // If the click originated inside an interactive descendant
+    // (chevron, checkbox, overflow trigger, user-supplied buttons in
+    // `prefix` / `actions`, etc.) DO NOT toggle the row. Most
+    // react-aria buttons stop propagation through `usePress` already,
+    // and the `actions` slot has its own propagation guard, but
+    // user-supplied controls in the `prefix` slot or any non-react-aria
+    // button do not — without this check they would expand/collapse
+    // the row as a side-effect of being clicked, and the chevron
+    // would visibly double-toggle.
+    if (isInteractiveDescendant(e.target, e.currentTarget)) return;
     e.preventDefault();
     e.stopPropagation();
     state.toggleKey(node.key);
@@ -240,6 +299,10 @@ function TreeNodeInner(props: TreeNodeProps) {
   const handleFolderRowPointerEvent = useEvent(
     (e: ReactMouseEvent<HTMLDivElement>) => {
       if (e.button !== 0) return;
+      // Skip when the event originated in an interactive descendant
+      // so the descendant's own usePress / press tracking is not
+      // disrupted by the row swallowing pointer propagation.
+      if (isInteractiveDescendant(e.target, e.currentTarget)) return;
       // Stop usePress from latching its `isPressed` state — the row is
       // not a press target anymore in this mode.
       e.stopPropagation();
@@ -252,9 +315,13 @@ function TreeNodeInner(props: TreeNodeProps) {
   // `useTreeItem` so we can short-circuit the default react-aria
   // behavior (which would otherwise trigger selection on Enter/Space).
   // Returns `true` when the event was handled and react-aria's keydown
-  // must NOT run.
+  // must NOT run; returns `false` to chain to react-aria's handler.
   const handleKeyDown = useEvent((e: KeyboardEvent) => {
-    // Space toggles the checkbox first when checkable.
+    // Space toggles the checkbox first when checkable. We DON'T claim
+    // the event (return `false`) so react-aria's onKeyDown still runs
+    // afterwards and the focused row also selects — matching the
+    // pre-refactor behavior when handlers were chained via
+    // `mergeProps`. `preventDefault` is kept to suppress page scroll.
     if (
       e.key === ' ' &&
       isRowCheckable &&
@@ -262,9 +329,8 @@ function TreeNodeInner(props: TreeNodeProps) {
       !data.isCheckboxDisabled
     ) {
       e.preventDefault();
-      e.stopPropagation();
       onToggleChecked(String(node.key));
-      return true;
+      return false;
     }
 
     // Shift+F10 opens the row menu (standard accessibility shortcut).

@@ -9,3 +9,5 @@ Activation rules:
 - Mouse click on a folder row → expand / collapse.
 - `Enter` on a folder row → expand / collapse (always, including in `isCheckable` trees, where it does NOT toggle the checkbox).
 - `Space` on a folder row → expand / collapse in non-checkable trees; in `isCheckable` trees `Space` is reserved for toggling the row's checkbox.
+
+Clicks that originate inside an interactive descendant of a folder row (chevron, checkbox, overflow `⋮` trigger, user-supplied buttons / links / inputs in the `prefix` and `actions` slots) no longer bubble up to the row's expand-on-click handler, so the chevron does not visibly double-toggle and inner controls do not have the side effect of expanding / collapsing the row.
