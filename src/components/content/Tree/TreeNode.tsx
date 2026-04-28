@@ -195,6 +195,10 @@ function TreeNodeInner(props: TreeNodeProps) {
       : actionStr;
     data.onAction?.(normalizedAction);
     treeOnAction?.(normalizedAction, node.key);
+    // Forward to the consumer-supplied `menuProps.onAction` so users
+    // who pass extra `Menu` props through `menuProps` still receive
+    // the action stream alongside the tree-level callback.
+    menuProps?.onAction?.(normalizedAction);
   });
 
   const rowContextMenu = useContextMenu<HTMLDivElement, CubeMenuProps<object>>(
@@ -238,6 +242,11 @@ function TreeNodeInner(props: TreeNodeProps) {
 
   // ---- Keyboard ------------------------------------------------------------
 
+  // Composed keydown handler. Runs BEFORE `rowProps.onKeyDown` from
+  // `useTreeItem` so we can short-circuit the default react-aria
+  // behavior (which would otherwise trigger selection on Enter/Space).
+  // Returns `true` when the event was handled and react-aria's keydown
+  // must NOT run.
   const handleKeyDown = useEvent((e: KeyboardEvent) => {
     // Space toggles the checkbox first when checkable.
     if (
@@ -247,8 +256,9 @@ function TreeNodeInner(props: TreeNodeProps) {
       !data.isCheckboxDisabled
     ) {
       e.preventDefault();
+      e.stopPropagation();
       onToggleChecked(String(node.key));
-      return;
+      return true;
     }
 
     // Shift+F10 opens the row menu (standard accessibility shortcut).
@@ -260,11 +270,13 @@ function TreeNodeInner(props: TreeNodeProps) {
       } else {
         setIsMenuOpen(true);
       }
-      return;
+      return true;
     }
 
-    // Enter/Space toggles expansion for folders in expandOnFolderClick mode
-    // (matches the row-click behavior).
+    // Enter/Space toggles expansion for folders in expandOnFolderClick
+    // mode (matches the row-click behavior). Must run BEFORE
+    // `useTreeItem`'s onKeyDown so react-aria doesn't also fire
+    // selection on the same keypress.
     if (
       shouldExpandOnRowClick &&
       (e.key === 'Enter' || e.key === ' ') &&
@@ -273,7 +285,21 @@ function TreeNodeInner(props: TreeNodeProps) {
       e.preventDefault();
       e.stopPropagation();
       state.toggleKey(node.key);
+      state.selectionManager.setFocused(true);
+      state.selectionManager.setFocusedKey(node.key);
+      return true;
     }
+
+    return false;
+  });
+
+  // Wrapper that delegates to react-aria's default keydown only when
+  // our handler did not claim the event. Replaces (rather than
+  // chains with) `rowProps.onKeyDown` so the order of handlers is
+  // strictly: our shortcuts → react-aria default.
+  const composedKeyDown = useEvent((e: KeyboardEvent<HTMLDivElement>) => {
+    if (handleKeyDown(e)) return;
+    rowProps.onKeyDown?.(e as unknown as globalThis.KeyboardEvent);
   });
 
   // ---- Mods ----------------------------------------------------------------
@@ -333,10 +359,15 @@ function TreeNodeInner(props: TreeNodeProps) {
 
   // ---- Compose row props ---------------------------------------------------
 
-  const baseRowProps = mergeProps(rowProps, hoverProps, {
+  // Merge react-aria + hover props but EXCLUDE `onKeyDown` from the
+  // chain — `composedKeyDown` already wraps `rowProps.onKeyDown` and
+  // must run first to short-circuit Enter/Space selection in
+  // `expandOnFolderClick` mode.
+  const baseRowProps = {
+    ...mergeProps(rowProps, hoverProps),
     'aria-checked': ariaChecked,
-    onKeyDown: handleKeyDown,
-  });
+    onKeyDown: composedKeyDown,
+  };
 
   // When `expandOnFolderClick` applies, replace the click + pointer
   // handlers so usePress (from `useSelectableItem`) doesn't trigger

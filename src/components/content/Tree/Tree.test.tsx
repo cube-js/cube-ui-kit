@@ -594,6 +594,53 @@ describe('<Tree />', () => {
 
       expect(onAction).toHaveBeenCalledWith('rename', 'fruits');
     });
+
+    it('forwards menu actions to a consumer-supplied `menuProps.onAction`', async () => {
+      const treeOnAction = vi.fn();
+      const menuOnAction = vi.fn();
+      const { getAllByLabelText, getByText } = renderWithRoot(
+        <Tree
+          contextMenu
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          menu={TREE_MENU}
+          menuProps={{ onAction: menuOnAction }}
+          onAction={treeOnAction}
+        />,
+      );
+
+      const triggers = getAllByLabelText('Actions');
+      await act(async () => await userEvent.click(triggers[0]));
+      await act(async () => await userEvent.click(getByText('Rename')));
+
+      expect(treeOnAction).toHaveBeenCalledWith('rename', 'fruits');
+      // Consumer's onAction must also fire with the same normalized key.
+      expect(menuOnAction).toHaveBeenCalledWith('rename');
+    });
+
+    it('forwards `menuProps.onAction` for the right-click context menu too', async () => {
+      const treeOnAction = vi.fn();
+      const menuOnAction = vi.fn();
+      const { getAllByRole, getByText } = renderWithRoot(
+        <Tree
+          contextMenu="context-only"
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          menu={TREE_MENU}
+          menuProps={{ onAction: menuOnAction }}
+          onAction={treeOnAction}
+        />,
+      );
+
+      const rows = getAllByRole('row');
+      await act(async () => {
+        await userEvent.pointer({ keys: '[MouseRight>]', target: rows[0] });
+      });
+      await act(async () => await userEvent.click(getByText('Delete')));
+
+      expect(treeOnAction).toHaveBeenCalledWith('delete', 'fruits');
+      expect(menuOnAction).toHaveBeenCalledWith('delete');
+    });
   });
 
   describe('expandOnFolderClick', () => {
@@ -631,6 +678,56 @@ describe('<Tree />', () => {
       expect(onSelect).toHaveBeenCalled();
       const [keys] = onSelect.mock.calls[0];
       expect(keys).toContain('apple');
+    });
+
+    it('toggles expansion via Enter without selecting the folder', async () => {
+      const onSelect = vi.fn();
+      const onExpand = vi.fn();
+      const { getByText, queryByText, getAllByRole } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          treeData={SAMPLE}
+          onSelect={onSelect}
+          onExpand={onExpand}
+        />,
+      );
+
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+
+      const rows = getAllByRole('row');
+      await act(async () => {
+        rows[0].focus();
+        await userEvent.keyboard('{Enter}');
+      });
+
+      expect(getByText('Apple')).toBeInTheDocument();
+      expect(onExpand).toHaveBeenCalled();
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('toggles expansion via Space without selecting the folder', async () => {
+      const onSelect = vi.fn();
+      const onExpand = vi.fn();
+      const { getByText, queryByText, getAllByRole } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          treeData={SAMPLE}
+          onSelect={onSelect}
+          onExpand={onExpand}
+        />,
+      );
+
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+
+      const rows = getAllByRole('row');
+      await act(async () => {
+        rows[0].focus();
+        await userEvent.keyboard(' ');
+      });
+
+      expect(getByText('Apple')).toBeInTheDocument();
+      expect(onExpand).toHaveBeenCalled();
+      expect(onSelect).not.toHaveBeenCalled();
     });
   });
 });

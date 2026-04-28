@@ -278,6 +278,13 @@ export interface CubeTreeProps extends BaseProps, OuterStyleProps {
   /** Forwarded to every per-row `MenuTrigger`. */
   menuTriggerProps?: Partial<CubeItemActionProps>;
 
-  /** Forwarded to every per-row `Menu`. */
+  /**
+   * Forwarded to every per-row `Menu` (both the overflow `⋮` menu and
+   * the right-click context menu).
+   *
+   * If `onAction` is provided here, it is **chained with** the
+   * tree-level `onAction` and per-node `data.onAction` (it does not
+   * override them) and receives the same normalized action key.
+   */
   menuProps?: Partial<CubeMenuProps<object>>;
 }
