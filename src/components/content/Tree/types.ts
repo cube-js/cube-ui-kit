@@ -2,10 +2,25 @@ import type { Key } from '@react-types/shared';
 import type { BaseProps, OuterStyleProps, Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type { SizeName } from '../../../tokens/sizes';
+import type { CubeItemActionProps } from '../../actions/ItemAction';
+import type { CubeMenuProps } from '../../actions/Menu';
 import type { CubeItemProps } from '../Item/Item';
 
 /** Selection cardinality, mirroring React Aria/Stately's `selectionMode`. */
 export type TreeSelectionMode = 'none' | 'single' | 'multiple';
+
+/**
+ * How the tree row `menu` is exposed.
+ *
+ * - `false` (default) — no menu at all.
+ * - `true` — render the overflow `⋮` trigger inside `actions` AND open
+ *   the same menu on right-click / Shift+F10.
+ * - `'context-only'` — right-click / Shift+F10 only; no `⋮` trigger.
+ *
+ * Mirrors `TabContextMenu` from `Tabs` so consumers see the same API
+ * across components.
+ */
+export type TreeContextMenu = boolean | 'context-only';
 
 /**
  * A single node in the `treeData` array.
@@ -33,6 +48,19 @@ export interface CubeTreeNodeData {
    * - `false`: hide the checkbox for this row even when the tree is `isCheckable`.
    */
   isCheckable?: boolean;
+  /**
+   * Per-node menu override (Menu.Item children). Wins over the
+   * tree-level `menu` prop. Pass `null` to disable the menu for this
+   * specific row when the tree provides a default `menu`.
+   */
+  menu?: ReactNode | null;
+  /** Per-node `contextMenu` override. */
+  contextMenu?: TreeContextMenu;
+  /**
+   * Per-node `onAction` override. Called before the tree-level
+   * `onAction` with the action key from `Menu.Item`.
+   */
+  onAction?: (action: string) => void;
 }
 
 /** Info passed as the second argument to `onCheck`. */
@@ -206,4 +234,50 @@ export interface CubeTreeProps extends BaseProps, OuterStyleProps {
 
   /** QA selector. */
   qa?: string;
+
+  /**
+   * When `true`, pressing a non-leaf row toggles its expansion
+   * instead of selecting it. Useful for file-tree UX where only
+   * leaves are selectable. Folder rows remain focusable for keyboard
+   * navigation, and the chevron toggle keeps working independently.
+   * @default false
+   */
+  expandOnFolderClick?: boolean;
+
+  /**
+   * Per-tree default menu items (Menu.Item children) shown on every
+   * row that doesn't override via `data.menu`.
+   *
+   * Accepts a static `ReactNode` (applied to every row) or a callback
+   * that receives the row data and the derived state and returns the
+   * menu content. Return `null` to hide the menu for that row.
+   */
+  menu?:
+    | ReactNode
+    | ((data: CubeTreeNodeData, state: TreeNodeState) => ReactNode | null);
+
+  /**
+   * Where the menu is exposed. Same semantics as `Tabs#contextMenu`:
+   * - `false` (default) — no menu at all.
+   * - `true` — render an overflow `⋮` trigger inside `actions` AND
+   *   open the same menu on right-click / Shift+F10.
+   * - `'context-only'` — right-click / Shift+F10 only; no `⋮` trigger.
+   *
+   * Per-node `data.contextMenu` wins when provided.
+   * @default false
+   */
+  contextMenu?: TreeContextMenu;
+
+  /**
+   * Called when a menu action is triggered on any row. Receives the
+   * action key (with the React `.$` prefix stripped) and the row key.
+   * Per-node `data.onAction` is called first.
+   */
+  onAction?: (action: string, key: Key) => void;
+
+  /** Forwarded to every per-row `MenuTrigger`. */
+  menuTriggerProps?: Partial<CubeItemActionProps>;
+
+  /** Forwarded to every per-row `Menu`. */
+  menuProps?: Partial<CubeMenuProps<object>>;
 }

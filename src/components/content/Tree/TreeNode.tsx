@@ -1,9 +1,12 @@
-import { memo, useMemo, useRef } from 'react';
+import { Children, memo, useMemo, useRef, useState } from 'react';
 import { useHover, useTreeItem } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
-import { DirectionIcon, LoadingIcon } from '../../../icons';
+import { DirectionIcon, LoadingIcon, MoreIcon } from '../../../icons';
 import { mergeProps, mergeRefs } from '../../../utils/react';
+import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
+import { CubeMenuProps, Menu, MenuTrigger } from '../../actions/Menu';
+import { useContextMenu } from '../../actions/use-context-menu';
 import { Checkbox } from '../../fields/Checkbox/Checkbox';
 
 import {
@@ -14,15 +17,34 @@ import {
   TreeRowItem,
 } from './styled';
 
-import type { Node } from '@react-types/shared';
+import type { Key, Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
-import type { CSSProperties, KeyboardEvent, SyntheticEvent } from 'react';
+import type {
+  CSSProperties,
+  KeyboardEvent,
+  MouseEvent as ReactMouseEvent,
+  ReactNode,
+  PointerEvent as ReactPointerEvent,
+  Ref,
+  SyntheticEvent,
+} from 'react';
 import type { TreeState } from 'react-stately';
-import type { CubeTreeNodeData, TreeItemProps, TreeNodeState } from './types';
+import type {
+  CubeTreeNodeData,
+  TreeContextMenu,
+  TreeItemProps,
+  TreeNodeState,
+} from './types';
 
 const stopPropagation = (e: SyntheticEvent) => {
   e.stopPropagation();
 };
+
+/** Check whether a `menu` ReactNode actually contains anything. */
+function isMenuEmpty(menu: ReactNode): boolean {
+  if (menu === null || menu === undefined || menu === false) return true;
+  return Children.toArray(menu).length === 0;
+}
 
 export interface TreeNodeProps {
   node: Node<CubeTreeNodeData>;
@@ -61,6 +83,25 @@ export interface TreeNodeProps {
   virtualRef?: (element: HTMLElement | null) => void;
   /** Virtual index for `data-index` attribute. */
   virtualIndex?: number;
+
+  /** Tree-wide menu default (resolved against `data.menu`). */
+  menu?:
+    | ReactNode
+    | ((data: CubeTreeNodeData, state: TreeNodeState) => ReactNode | null);
+  /** Tree-wide `contextMenu` default. */
+  contextMenu?: TreeContextMenu;
+  /** Tree-wide `onAction` callback. */
+  onAction?: (action: string, key: Key) => void;
+  /** Forwarded to every per-row `MenuTrigger`. */
+  menuTriggerProps?: Partial<CubeItemActionProps>;
+  /** Forwarded to every per-row `Menu`. */
+  menuProps?: Partial<CubeMenuProps<object>>;
+
+  /**
+   * When true, pressing a non-leaf row toggles its expansion instead
+   * of triggering selection.
+   */
+  expandOnFolderClick?: boolean;
 }
 
 function TreeNodeInner(props: TreeNodeProps) {
@@ -80,13 +121,15 @@ function TreeNodeInner(props: TreeNodeProps) {
     virtualStyle,
     virtualRef,
     virtualIndex,
+    menu: treeMenu,
+    contextMenu: treeContextMenu,
+    onAction: treeOnAction,
+    menuTriggerProps,
+    menuProps,
+    expandOnFolderClick,
   } = props;
 
   const rowRef = useRef<HTMLDivElement>(null);
-  const combinedRef = useMemo(
-    () => (virtualRef ? mergeRefs(rowRef, virtualRef) : rowRef),
-    [virtualRef],
-  );
 
   const { rowProps, gridCellProps, expandButtonProps, isPressed } = useTreeItem(
     { node },
@@ -110,11 +153,93 @@ function TreeNodeInner(props: TreeNodeProps) {
     data.isLeaf === true || (data.isLeaf !== false && !node.hasChildNodes);
   const isRowCheckable = isCheckable && data.isCheckable !== false;
 
+  const nodeState: TreeNodeState = {
+    isExpanded,
+    isSelected,
+    isChecked,
+    isIndeterminate,
+    isLeaf,
+  };
+
+  // ---- Menu resolution (per-node override > tree-level) --------------------
+
+  const effectiveMenuChildren: ReactNode =
+    data.menu === null
+      ? null
+      : data.menu !== undefined
+        ? data.menu
+        : typeof treeMenu === 'function'
+          ? treeMenu(data, nodeState)
+          : treeMenu ?? null;
+  const hasMenu = !isMenuEmpty(effectiveMenuChildren);
+
+  const effectiveContextMenu: TreeContextMenu =
+    data.contextMenu ?? treeContextMenu ?? false;
+  // The menu is exposed only when the consumer opts in via
+  // `contextMenu`. When `contextMenu` is `false` (default) we render
+  // nothing, even if `menu` is provided — this matches the plan and
+  // keeps default rows visually clean.
+  const menuExposed =
+    hasMenu &&
+    (effectiveContextMenu === true || effectiveContextMenu === 'context-only');
+  const contextMenuOnly = effectiveContextMenu === 'context-only';
+
+  // Controlled state for menu trigger (enables keyboard opening with Shift+F10)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleMenuAction = useEvent((action: Key) => {
+    // Strip the ".$" prefix that React adds via Children.toArray/map.
+    const actionStr = String(action);
+    const normalizedAction = actionStr.startsWith('.$')
+      ? actionStr.slice(2)
+      : actionStr;
+    data.onAction?.(normalizedAction);
+    treeOnAction?.(normalizedAction, node.key);
+  });
+
+  const rowContextMenu = useContextMenu<HTMLDivElement, CubeMenuProps<object>>(
+    Menu,
+    { placement: 'bottom start' },
+    {
+      ...menuProps,
+      onAction: handleMenuAction,
+      children: effectiveMenuChildren,
+    },
+  );
+
+  // ---- Checkbox ------------------------------------------------------------
+
   const handleCheckboxChange = useEvent(() => {
     onToggleChecked(String(node.key));
   });
 
+  // ---- Folder-click interception ------------------------------------------
+
+  const shouldExpandOnRowClick =
+    !!expandOnFolderClick && !isLeaf && !isDisabled;
+
+  const handleFolderRowClick = useEvent((e: ReactMouseEvent) => {
+    // Only intercept primary-button clicks; let right-click reach
+    // `useContextMenu` (it listens for the `contextmenu` event).
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    state.toggleKey(node.key);
+    state.selectionManager.setFocused(true);
+    state.selectionManager.setFocusedKey(node.key);
+  });
+
+  const handleFolderRowPointerEvent = useEvent((e: ReactPointerEvent) => {
+    if (e.button !== 0) return;
+    // Stop usePress from latching its `isPressed` state — the row is
+    // not a press target anymore in this mode.
+    e.stopPropagation();
+  });
+
+  // ---- Keyboard ------------------------------------------------------------
+
   const handleKeyDown = useEvent((e: KeyboardEvent) => {
+    // Space toggles the checkbox first when checkable.
     if (
       e.key === ' ' &&
       isRowCheckable &&
@@ -123,8 +248,35 @@ function TreeNodeInner(props: TreeNodeProps) {
     ) {
       e.preventDefault();
       onToggleChecked(String(node.key));
+      return;
+    }
+
+    // Shift+F10 opens the row menu (standard accessibility shortcut).
+    if (e.key === 'F10' && e.shiftKey && menuExposed) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (contextMenuOnly) {
+        rowContextMenu.open();
+      } else {
+        setIsMenuOpen(true);
+      }
+      return;
+    }
+
+    // Enter/Space toggles expansion for folders in expandOnFolderClick mode
+    // (matches the row-click behavior).
+    if (
+      shouldExpandOnRowClick &&
+      (e.key === 'Enter' || e.key === ' ') &&
+      !isRowCheckable
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      state.toggleKey(node.key);
     }
   });
+
+  // ---- Mods ----------------------------------------------------------------
 
   const sharedMods = useMemo(
     () => ({
@@ -134,8 +286,17 @@ function TreeNodeInner(props: TreeNodeProps) {
       loading: isLoading,
       leaf: isLeaf,
       'has-checkbox': isRowCheckable,
+      'has-menu': menuExposed,
     }),
-    [isChecked, isIndeterminate, isExpanded, isLoading, isLeaf, isRowCheckable],
+    [
+      isChecked,
+      isIndeterminate,
+      isExpanded,
+      isLoading,
+      isLeaf,
+      isRowCheckable,
+      menuExposed,
+    ],
   );
 
   const rowMods = useMemo(
@@ -170,10 +331,29 @@ function TreeNodeInner(props: TreeNodeProps) {
         : 'false'
     : undefined;
 
-  const finalRowProps = mergeProps(rowProps, hoverProps, {
+  // ---- Compose row props ---------------------------------------------------
+
+  const baseRowProps = mergeProps(rowProps, hoverProps, {
     'aria-checked': ariaChecked,
     onKeyDown: handleKeyDown,
   });
+
+  // When `expandOnFolderClick` applies, replace the click + pointer
+  // handlers so usePress (from `useSelectableItem`) doesn't trigger
+  // selection. We still want focus/keyboard nav, so we manually call
+  // `setFocusedKey` + `setFocused`.
+  const finalRowProps = shouldExpandOnRowClick
+    ? {
+        ...baseRowProps,
+        onClick: handleFolderRowClick,
+        onPointerDown: handleFolderRowPointerEvent,
+        onPointerUp: handleFolderRowPointerEvent,
+        onMouseDown: handleFolderRowPointerEvent as unknown as ReactMouseEvent,
+        onMouseUp: handleFolderRowPointerEvent as unknown as ReactMouseEvent,
+      }
+    : baseRowProps;
+
+  // ---- Toggle (chevron) and checkbox slots --------------------------------
 
   // Leaf rows get a placeholder so sibling indents align.
   const toggleNode = isLeaf ? (
@@ -208,16 +388,15 @@ function TreeNodeInner(props: TreeNodeProps) {
     </TreeNodeCheckboxWrapper>
   ) : null;
 
-  const nodeState: TreeNodeState = {
-    isExpanded,
-    isSelected,
-    isChecked,
-    isIndeterminate,
-    isLeaf,
-  };
+  // ---- Resolve user-supplied per-node Item props --------------------------
+
   const resolvedItemProps =
     typeof itemProps === 'function' ? itemProps(data, nodeState) : itemProps;
-  const { prefix: userPrefix, ...restUserProps } = resolvedItemProps ?? {};
+  const {
+    prefix: userPrefix,
+    actions: userActions,
+    ...restUserProps
+  } = resolvedItemProps ?? {};
 
   const composedPrefix =
     checkboxNode || userPrefix ? (
@@ -227,10 +406,47 @@ function TreeNodeInner(props: TreeNodeProps) {
       </>
     ) : null;
 
+  // ---- Built-in overflow `⋮` action ---------------------------------------
+
+  const menuAction =
+    menuExposed && !contextMenuOnly ? (
+      <MenuTrigger isOpen={isMenuOpen} onOpenChange={setIsMenuOpen}>
+        <ItemAction
+          tabIndex={-1}
+          icon={<MoreIcon />}
+          aria-label="Actions"
+          {...menuTriggerProps}
+        />
+        <Menu {...menuProps} onAction={handleMenuAction}>
+          {effectiveMenuChildren}
+        </Menu>
+      </MenuTrigger>
+    ) : null;
+
+  // Compose with user-supplied actions (user actions render first).
+  const composedActions =
+    userActions || menuAction ? (
+      <>
+        {userActions}
+        {menuAction}
+      </>
+    ) : undefined;
+
+  // ---- Refs / context-menu wiring -----------------------------------------
+
+  // When the context menu is enabled for this row, attach the hook's
+  // `targetRef` to the row so right-clicks land on the correct anchor.
+  const refs = useMemo(() => {
+    const list: Ref<HTMLDivElement>[] = [rowRef];
+    if (virtualRef) list.push(virtualRef);
+    if (menuExposed) list.push(rowContextMenu.targetRef);
+    return mergeRefs(...list);
+  }, [virtualRef, menuExposed, rowContextMenu.targetRef]);
+
   return (
     <TreeNodeRow
       {...finalRowProps}
-      ref={combinedRef}
+      ref={refs}
       mods={rowMods}
       style={rowStyle}
       data-element="Row"
@@ -246,10 +462,12 @@ function TreeNodeInner(props: TreeNodeProps) {
         mods={itemMods}
         icon={toggleNode}
         prefix={composedPrefix}
+        actions={composedActions}
         styles={rowStyles}
       >
         {data.title}
       </TreeRowItem>
+      {menuExposed && rowContextMenu.rendered}
     </TreeNodeRow>
   );
 }

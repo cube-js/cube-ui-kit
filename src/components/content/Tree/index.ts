@@ -7,4 +7,6 @@ export type {
   TreeOnSelectInfo,
   TreeLoadDataNode,
   TreeSelectionMode,
+  TreeContextMenu,
+  TreeNodeState,
 } from './types';

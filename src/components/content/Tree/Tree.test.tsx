@@ -2,6 +2,7 @@ import userEvent from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 
 import { act, renderWithRoot, waitFor } from '../../../test';
+import { Menu } from '../../actions/Menu';
 
 import { Tree } from './Tree';
 
@@ -506,6 +507,130 @@ describe('<Tree />', () => {
       await waitFor(() => {
         expect(document.activeElement).toBe(rows[1]);
       });
+    });
+  });
+
+  describe('per-row menu', () => {
+    const TREE_MENU = (
+      <>
+        <Menu.Item key="rename">Rename</Menu.Item>
+        <Menu.Item key="delete">Delete</Menu.Item>
+      </>
+    );
+
+    it('renders a `⋮` overflow trigger when contextMenu is `true`', () => {
+      const { getAllByLabelText } = renderWithRoot(
+        <Tree
+          contextMenu
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          menu={TREE_MENU}
+        />,
+      );
+
+      // 3 visible non-empty menus in expanded subtree (Fruits + Apple + Banana
+      // + Vegetables = 4 visible rows total).
+      const triggers = getAllByLabelText('Actions');
+      expect(triggers.length).toBe(4);
+    });
+
+    it('hides the `⋮` trigger when contextMenu is `"context-only"`', () => {
+      const { queryAllByLabelText } = renderWithRoot(
+        <Tree
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          menu={TREE_MENU}
+          contextMenu="context-only"
+        />,
+      );
+
+      expect(queryAllByLabelText('Actions').length).toBe(0);
+    });
+
+    it('does not render any menu when contextMenu is omitted', () => {
+      const { queryAllByLabelText } = renderWithRoot(
+        <Tree
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          menu={TREE_MENU}
+        />,
+      );
+
+      expect(queryAllByLabelText('Actions').length).toBe(0);
+    });
+
+    it('per-node `data.menu` overrides the tree-level menu', () => {
+      const data: CubeTreeNodeData[] = [
+        { key: 'a', title: 'A', menu: null },
+        { key: 'b', title: 'B' },
+      ];
+      const { queryAllByLabelText } = renderWithRoot(
+        <Tree contextMenu treeData={data} menu={TREE_MENU} />,
+      );
+
+      // Row "a" has `menu: null` → no overflow trigger.
+      // Row "b" inherits → has overflow trigger.
+      expect(queryAllByLabelText('Actions').length).toBe(1);
+    });
+
+    it('fires onAction with (action, key) when a menu item is selected', async () => {
+      const onAction = vi.fn();
+      const { getAllByLabelText, getByText } = renderWithRoot(
+        <Tree
+          contextMenu
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          menu={TREE_MENU}
+          onAction={onAction}
+        />,
+      );
+
+      // Open the first row's overflow menu (row "Fruits").
+      const triggers = getAllByLabelText('Actions');
+      await act(async () => await userEvent.click(triggers[0]));
+
+      // Click the "Rename" item.
+      await act(async () => await userEvent.click(getByText('Rename')));
+
+      expect(onAction).toHaveBeenCalledWith('rename', 'fruits');
+    });
+  });
+
+  describe('expandOnFolderClick', () => {
+    it('toggles expansion when a folder row is clicked', async () => {
+      const onSelect = vi.fn();
+      const { getByText, queryByText, getAllByRole } = renderWithRoot(
+        <Tree expandOnFolderClick treeData={SAMPLE} onSelect={onSelect} />,
+      );
+
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+
+      // Click the "Fruits" folder row body (not the chevron).
+      const rows = getAllByRole('row');
+      await act(async () => await userEvent.click(rows[0]));
+
+      expect(getByText('Apple')).toBeInTheDocument();
+      // Folder click should NOT trigger selection.
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('still selects leaves when expandOnFolderClick is on', async () => {
+      const onSelect = vi.fn();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          onSelect={onSelect}
+        />,
+      );
+
+      const rows = getAllByRole('row');
+      await act(async () => await userEvent.click(rows[1])); // Apple
+
+      expect(onSelect).toHaveBeenCalled();
+      const [keys] = onSelect.mock.calls[0];
+      expect(keys).toContain('apple');
     });
   });
 });

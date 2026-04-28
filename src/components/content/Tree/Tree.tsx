@@ -133,6 +133,12 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     rowStyles,
     ariaLabel,
     qa,
+    expandOnFolderClick = false,
+    menu: treeMenu,
+    contextMenu: treeContextMenu,
+    onAction: treeOnAction,
+    menuTriggerProps,
+    menuProps,
     ...otherProps
   } = props;
 
@@ -428,7 +434,13 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
             }}
             virtualRef={rowVirtualizer.measureElement}
             virtualIndex={virtualItem.index}
+            menu={treeMenu}
+            contextMenu={treeContextMenu}
+            menuTriggerProps={menuTriggerProps}
+            menuProps={menuProps}
+            expandOnFolderClick={expandOnFolderClick}
             onToggleChecked={checkbox.toggle}
+            onAction={treeOnAction}
           />
         );
       })}
