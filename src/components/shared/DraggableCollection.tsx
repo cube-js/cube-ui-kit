@@ -232,8 +232,20 @@ export function DraggableCollection({
 
   // Alt+Arrow keyboard shortcut for reordering.
   // Uses capture phase so we read focusedKey BEFORE react-aria moves focus.
+  // Skip when the event originates from a text input — Alt+Arrow is
+  // word-by-word cursor navigation on macOS.
   const handleKeyDownCapture = useEvent((e: KeyboardEvent) => {
     if (!e.altKey || !onReorder) return;
+
+    const target = e.target as HTMLElement;
+
+    if (
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target.isContentEditable
+    ) {
+      return;
+    }
 
     const moveKeys =
       orientation === 'vertical'
