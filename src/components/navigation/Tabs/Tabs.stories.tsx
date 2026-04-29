@@ -166,14 +166,6 @@ const meta = {
         type: { summary: 'boolean' },
       },
     },
-    isPickerReorderable: {
-      control: 'boolean',
-      description: 'Enable drag-and-drop reordering in the tab picker dropdown',
-      table: {
-        defaultValue: { summary: 'false' },
-        type: { summary: 'boolean' },
-      },
-    },
     keyOrder: {
       control: { type: null },
       description: 'Controlled tab display order',
@@ -1742,7 +1734,8 @@ export const HiddenScrollbar: Story = {
 
 /**
  * Reorderable tabs with a tab picker dropdown that also supports reordering.
- * Use `isPickerReorderable` to enable drag-and-drop in the tab picker dropdown independently.
+ * When `isReorderable` is enabled and a tab picker is shown, the picker dropdown
+ * automatically supports drag-and-drop reordering as well.
  * Use Alt+Arrow keys to reorder via keyboard.
  */
 export const ReorderableTabPicker: Story = {
@@ -1790,7 +1783,6 @@ export const ReorderableTabPicker: Story = {
         <Tabs
           {...args}
           isReorderable
-          isPickerReorderable
           showTabPicker
           type="file"
           activeKey={activeKey}
