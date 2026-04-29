@@ -221,7 +221,13 @@ export function DraggableCollection({
 
     const handleEscape = (e: globalThis.KeyboardEvent) => {
       if (e.key === 'Escape') {
-        endDragRef.current();
+        endDragRef.current({
+          type: 'cancel',
+          x: 0,
+          y: 0,
+          dropOperation: 'cancel',
+          isInternal: false,
+        });
       }
     };
 
