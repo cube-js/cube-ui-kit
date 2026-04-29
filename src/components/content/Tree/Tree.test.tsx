@@ -2,6 +2,7 @@ import userEvent from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 
 import { act, renderWithRoot, waitFor } from '../../../test';
+import { Menu } from '../../actions/Menu';
 
 import { Tree } from './Tree';
 
@@ -506,6 +507,400 @@ describe('<Tree />', () => {
       await waitFor(() => {
         expect(document.activeElement).toBe(rows[1]);
       });
+    });
+  });
+
+  describe('per-row menu', () => {
+    const TREE_MENU = (
+      <>
+        <Menu.Item key="rename">Rename</Menu.Item>
+        <Menu.Item key="delete">Delete</Menu.Item>
+      </>
+    );
+
+    it('renders a `⋮` overflow trigger when contextMenu is `true`', () => {
+      const { getAllByLabelText } = renderWithRoot(
+        <Tree
+          contextMenu
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          menu={TREE_MENU}
+        />,
+      );
+
+      // 3 visible non-empty menus in expanded subtree (Fruits + Apple + Banana
+      // + Vegetables = 4 visible rows total).
+      const triggers = getAllByLabelText('Actions');
+      expect(triggers.length).toBe(4);
+    });
+
+    it('hides the `⋮` trigger when contextMenu is `"context-only"`', () => {
+      const { queryAllByLabelText } = renderWithRoot(
+        <Tree
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          menu={TREE_MENU}
+          contextMenu="context-only"
+        />,
+      );
+
+      expect(queryAllByLabelText('Actions').length).toBe(0);
+    });
+
+    it('does not render any menu when contextMenu is omitted', () => {
+      const { queryAllByLabelText } = renderWithRoot(
+        <Tree
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          menu={TREE_MENU}
+        />,
+      );
+
+      expect(queryAllByLabelText('Actions').length).toBe(0);
+    });
+
+    it('per-node `data.menu` overrides the tree-level menu', () => {
+      const data: CubeTreeNodeData[] = [
+        { key: 'a', title: 'A', menu: null },
+        { key: 'b', title: 'B' },
+      ];
+      const { queryAllByLabelText } = renderWithRoot(
+        <Tree contextMenu treeData={data} menu={TREE_MENU} />,
+      );
+
+      // Row "a" has `menu: null` → no overflow trigger.
+      // Row "b" inherits → has overflow trigger.
+      expect(queryAllByLabelText('Actions').length).toBe(1);
+    });
+
+    it('fires onAction with (action, key) when a menu item is selected', async () => {
+      const onAction = vi.fn();
+      const { getAllByLabelText, getByText } = renderWithRoot(
+        <Tree
+          contextMenu
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          menu={TREE_MENU}
+          onAction={onAction}
+        />,
+      );
+
+      // Open the first row's overflow menu (row "Fruits").
+      const triggers = getAllByLabelText('Actions');
+      await act(async () => await userEvent.click(triggers[0]));
+
+      // Click the "Rename" item.
+      await act(async () => await userEvent.click(getByText('Rename')));
+
+      expect(onAction).toHaveBeenCalledWith('rename', 'fruits');
+    });
+
+    it('forwards menu actions to a consumer-supplied `menuProps.onAction`', async () => {
+      const treeOnAction = vi.fn();
+      const menuOnAction = vi.fn();
+      const { getAllByLabelText, getByText } = renderWithRoot(
+        <Tree
+          contextMenu
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          menu={TREE_MENU}
+          menuProps={{ onAction: menuOnAction }}
+          onAction={treeOnAction}
+        />,
+      );
+
+      const triggers = getAllByLabelText('Actions');
+      await act(async () => await userEvent.click(triggers[0]));
+      await act(async () => await userEvent.click(getByText('Rename')));
+
+      expect(treeOnAction).toHaveBeenCalledWith('rename', 'fruits');
+      // Consumer's onAction must also fire with the same normalized key.
+      expect(menuOnAction).toHaveBeenCalledWith('rename');
+    });
+
+    it('forwards `menuProps.onAction` for the right-click context menu too', async () => {
+      const treeOnAction = vi.fn();
+      const menuOnAction = vi.fn();
+      const { getAllByRole, getByText } = renderWithRoot(
+        <Tree
+          contextMenu="context-only"
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          menu={TREE_MENU}
+          menuProps={{ onAction: menuOnAction }}
+          onAction={treeOnAction}
+        />,
+      );
+
+      const rows = getAllByRole('row');
+      await act(async () => {
+        await userEvent.pointer({ keys: '[MouseRight>]', target: rows[0] });
+      });
+      await act(async () => await userEvent.click(getByText('Delete')));
+
+      expect(treeOnAction).toHaveBeenCalledWith('delete', 'fruits');
+      expect(menuOnAction).toHaveBeenCalledWith('delete');
+    });
+  });
+
+  describe('expandOnFolderClick', () => {
+    it('toggles expansion when a folder row is clicked', async () => {
+      const onSelect = vi.fn();
+      const { getByText, queryByText, getAllByRole } = renderWithRoot(
+        <Tree expandOnFolderClick treeData={SAMPLE} onSelect={onSelect} />,
+      );
+
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+
+      // Click the "Fruits" folder row body (not the chevron).
+      const rows = getAllByRole('row');
+      await act(async () => await userEvent.click(rows[0]));
+
+      expect(getByText('Apple')).toBeInTheDocument();
+      // Folder click should NOT trigger selection.
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('still selects leaves when expandOnFolderClick is on', async () => {
+      const onSelect = vi.fn();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          onSelect={onSelect}
+        />,
+      );
+
+      const rows = getAllByRole('row');
+      await act(async () => await userEvent.click(rows[1])); // Apple
+
+      expect(onSelect).toHaveBeenCalled();
+      const [keys] = onSelect.mock.calls[0];
+      expect(keys).toContain('apple');
+    });
+
+    it('toggles expansion via Enter without selecting the folder', async () => {
+      const onSelect = vi.fn();
+      const onExpand = vi.fn();
+      const { getByText, queryByText, getAllByRole } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          treeData={SAMPLE}
+          onSelect={onSelect}
+          onExpand={onExpand}
+        />,
+      );
+
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+
+      const rows = getAllByRole('row');
+      await act(async () => {
+        rows[0].focus();
+        await userEvent.keyboard('{Enter}');
+      });
+
+      expect(getByText('Apple')).toBeInTheDocument();
+      expect(onExpand).toHaveBeenCalled();
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('toggles expansion via Space without selecting the folder', async () => {
+      const onSelect = vi.fn();
+      const onExpand = vi.fn();
+      const { getByText, queryByText, getAllByRole } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          treeData={SAMPLE}
+          onSelect={onSelect}
+          onExpand={onExpand}
+        />,
+      );
+
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+
+      const rows = getAllByRole('row');
+      await act(async () => {
+        rows[0].focus();
+        await userEvent.keyboard(' ');
+      });
+
+      expect(getByText('Apple')).toBeInTheDocument();
+      expect(onExpand).toHaveBeenCalled();
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('expands on Enter even when isCheckable is on (matches mouse-click behavior)', async () => {
+      const onSelect = vi.fn();
+      const onExpand = vi.fn();
+      const onCheck = vi.fn();
+      const { getByText, queryByText, getAllByRole } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          isCheckable
+          treeData={SAMPLE}
+          onSelect={onSelect}
+          onExpand={onExpand}
+          onCheck={onCheck}
+        />,
+      );
+
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+
+      const rows = getAllByRole('row');
+      await act(async () => {
+        rows[0].focus();
+        await userEvent.keyboard('{Enter}');
+      });
+
+      expect(getByText('Apple')).toBeInTheDocument();
+      expect(onExpand).toHaveBeenCalled();
+      expect(onSelect).not.toHaveBeenCalled();
+      // Enter must NOT toggle the checkbox — that's Space's job.
+      expect(onCheck).not.toHaveBeenCalled();
+    });
+
+    it('Space still toggles the checkbox in checkable trees, not folder expansion', async () => {
+      const onCheck = vi.fn();
+      const onExpand = vi.fn();
+      const { queryByText, getAllByRole } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          isCheckable
+          treeData={SAMPLE}
+          onExpand={onExpand}
+          onCheck={onCheck}
+        />,
+      );
+
+      const rows = getAllByRole('row');
+      await act(async () => {
+        rows[0].focus();
+        await userEvent.keyboard(' ');
+      });
+
+      expect(onCheck).toHaveBeenCalled();
+      expect(onExpand).not.toHaveBeenCalled();
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+    });
+
+    it('does not double-toggle when clicking the chevron', async () => {
+      const { getByText, queryByText, getAllByRole } = renderWithRoot(
+        <Tree expandOnFolderClick treeData={SAMPLE} />,
+      );
+
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+
+      const rows = getAllByRole('row');
+      const fruitsToggle = rows[0].querySelector(
+        'button[data-element="Toggle"]',
+      ) as HTMLButtonElement;
+      await act(async () => await userEvent.click(fruitsToggle));
+
+      // If the row's onClick also fired, the chevron would toggle the
+      // expansion twice (open → close) and Apple would NOT be visible.
+      expect(getByText('Apple')).toBeInTheDocument();
+    });
+
+    it('does not toggle expansion when clicking the overflow menu trigger', async () => {
+      const onExpand = vi.fn();
+      const TREE_MENU = (
+        <>
+          <Menu.Item key="delete">Delete</Menu.Item>
+        </>
+      );
+      const { queryByText, getAllByRole } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          contextMenu
+          treeData={SAMPLE}
+          menu={TREE_MENU}
+          onExpand={onExpand}
+        />,
+      );
+
+      const rows = getAllByRole('row');
+      const overflowTrigger = rows[0].querySelector(
+        '[aria-label="Actions"]',
+      ) as HTMLButtonElement;
+      expect(overflowTrigger).not.toBeNull();
+
+      await act(async () => await userEvent.click(overflowTrigger));
+
+      // The overflow trigger should open the menu, NOT expand the folder.
+      expect(onExpand).not.toHaveBeenCalled();
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+    });
+
+    it('does not toggle expansion when clicking inside the prefix slot', async () => {
+      // The `actions` slot already calls `e.stopPropagation()` for us
+      // (see `ACTIONS_EVENT_HANDLERS` in `Item.tsx`), but other slots
+      // — the user-supplied `prefix`, the row label, etc. — don't.
+      // A plain `<button>` rendered there must NOT bubble its click
+      // up into the row's expansion toggle.
+      const onPrefixClick = vi.fn();
+      const onExpand = vi.fn();
+      const { queryByText, container } = renderWithRoot(
+        <Tree
+          expandOnFolderClick
+          treeData={SAMPLE}
+          itemProps={() => ({
+            prefix: (
+              <button
+                type="button"
+                data-testid="row-prefix-action"
+                onClick={onPrefixClick}
+              >
+                Custom
+              </button>
+            ),
+          })}
+          onExpand={onExpand}
+        />,
+      );
+
+      // Both rows get the prefix button — pick the first (Fruits).
+      const prefixButtons = container.querySelectorAll<HTMLButtonElement>(
+        '[data-testid="row-prefix-action"]',
+      );
+      expect(prefixButtons.length).toBeGreaterThan(0);
+      await act(async () => await userEvent.click(prefixButtons[0]));
+
+      expect(onPrefixClick).toHaveBeenCalledTimes(1);
+      // Row toggle MUST NOT fire — the click is for the inner control.
+      expect(onExpand).not.toHaveBeenCalled();
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Space chaining in checkable trees', () => {
+    it('toggles the checkbox AND selects the row in selectionMode=single', async () => {
+      const onCheck = vi.fn();
+      const onSelect = vi.fn();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          onCheck={onCheck}
+          onSelect={onSelect}
+        />,
+      );
+
+      // Apple (a leaf) is the second row when Fruits is expanded.
+      const rows = getAllByRole('row');
+      await act(async () => {
+        rows[1].focus();
+        await userEvent.keyboard(' ');
+      });
+
+      // Pre-Phase-1 behavior: react-aria's onKeyDown was chained via
+      // mergeProps, so Space toggled the checkbox AND selected the
+      // focused row. Both must continue to fire after the refactor.
+      expect(onCheck).toHaveBeenCalled();
+      expect(onSelect).toHaveBeenCalled();
+      const [keys] = onSelect.mock.calls[0];
+      expect(keys).toContain('apple');
     });
   });
 });

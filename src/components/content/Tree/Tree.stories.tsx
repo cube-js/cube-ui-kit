@@ -1,4 +1,4 @@
-import { IconEdit, IconFile, IconTrash } from '@tabler/icons-react';
+import { IconCopy, IconEdit, IconFile, IconTrash } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 
 import { FolderIcon, FolderOpenIcon, Icon, MoreIcon } from '../../../icons';
@@ -188,6 +188,56 @@ const meta = {
       table: {
         type: { summary: '(node: TreeLoadDataNode) => Promise<void>' },
       },
+    },
+    expandOnFolderClick: {
+      control: 'boolean',
+      description:
+        'Pressing a non-leaf row toggles its expansion instead of triggering selection',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: 'boolean' },
+      },
+    },
+
+    /* Per-row menu */
+    menu: {
+      control: { type: null },
+      description:
+        'Default `Menu.Item` children rendered on every row. Either a `ReactNode` or a callback `(data, state) => ReactNode | null`. Per-node `data.menu` wins.',
+      table: {
+        type: {
+          summary:
+            'ReactNode | ((data: CubeTreeNodeData, state: TreeNodeState) => ReactNode | null)',
+        },
+      },
+    },
+    contextMenu: {
+      control: 'inline-radio',
+      options: [false, true, 'context-only'],
+      description:
+        "How the row menu is exposed: `false` no menu, `true` ⋮ trigger + right-click, `'context-only'` right-click only.",
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: "boolean | 'context-only'" },
+      },
+    },
+    onAction: {
+      action: 'action',
+      description:
+        'Called when a menu action is triggered on any row. Receives `(action, key)`.',
+      table: {
+        type: { summary: '(action: string, key: Key) => void' },
+      },
+    },
+    menuTriggerProps: {
+      control: { type: null },
+      description: 'Forwarded to every per-row `MenuTrigger`',
+      table: { type: { summary: 'Partial<CubeMenuTriggerProps>' } },
+    },
+    menuProps: {
+      control: { type: null },
+      description: 'Forwarded to every per-row `Menu`',
+      table: { type: { summary: 'Partial<CubeMenuProps<object>>' } },
     },
 
     /* Events */
@@ -483,5 +533,87 @@ export const DirectoryTree: Story = {
         autoHideActions: true,
       };
     },
+  },
+};
+
+const sharedMenu = (
+  <>
+    <Menu.Item key="rename" icon={<IconEdit />}>
+      Rename
+    </Menu.Item>
+    <Menu.Item key="duplicate" icon={<IconCopy />}>
+      Duplicate
+    </Menu.Item>
+    <Menu.Item key="delete" icon={<IconTrash />}>
+      Delete
+    </Menu.Item>
+  </>
+);
+
+/**
+ * `menu` + `contextMenu={true}` adds a built-in `⋮` overflow trigger
+ * to every row. Right-clicking the row (or pressing Shift+F10) opens
+ * the same menu at the pointer position.
+ */
+export const WithContextMenu: Story = {
+  args: {
+    defaultExpandedKeys: ['src', 'src/components'],
+    menu: sharedMenu,
+    contextMenu: true,
+  },
+};
+
+/**
+ * `contextMenu="context-only"` hides the `⋮` trigger but keeps the
+ * right-click / Shift+F10 menu — useful for clean file-tree UIs.
+ */
+export const WithContextMenuOnly: Story = {
+  args: {
+    defaultExpandedKeys: ['src', 'src/components'],
+    menu: sharedMenu,
+    contextMenu: 'context-only',
+  },
+};
+
+/**
+ * Per-node `data.menu` wins over the tree-level `menu` callback. Pass
+ * `null` to disable the menu for a specific row.
+ */
+export const PerNodeMenu: Story = {
+  args: {
+    defaultExpandedKeys: ['root'],
+    contextMenu: true,
+    menu: sharedMenu,
+    treeData: [
+      {
+        key: 'root',
+        title: 'Root (uses tree-level menu)',
+        children: [
+          {
+            key: 'no-menu',
+            title: 'Has no menu',
+            menu: null,
+          },
+          {
+            key: 'custom',
+            title: 'Has custom menu (Open only)',
+            menu: <Menu.Item key="open">Open</Menu.Item>,
+          },
+        ],
+      },
+    ],
+  },
+};
+
+/**
+ * `expandOnFolderClick` makes folder rows toggle their expansion on
+ * click instead of selecting. Leaves still trigger selection. Useful
+ * for file-tree UX where only files are meaningful targets.
+ */
+export const ExpandOnFolderClick: Story = {
+  args: {
+    expandOnFolderClick: true,
+    defaultExpandedKeys: ['src'],
+    selectionMode: 'single',
   },
 };

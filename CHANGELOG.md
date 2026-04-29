@@ -1,5 +1,23 @@
 # @cube-dev/ui-kit
 
+## 0.132.0
+
+### Minor Changes
+
+- [#1138](https://github.com/cube-js/cube-ui-kit/pull/1138) [`61b2eb40`](https://github.com/cube-js/cube-ui-kit/commit/61b2eb4004324756b4bbb49f6808d4ad6c04b5d2) Thanks [@tenphi](https://github.com/tenphi)! - Add `expandOnFolderClick` prop to `Tree`. When enabled, activating a non-leaf row toggles its expansion instead of triggering selection — useful for file-tree UX where only leaves are meaningful selection targets. Leaves still select normally; the chevron toggle, keyboard navigation, and right-click context menu continue to work independently.
+
+  Activation rules:
+
+  - Mouse click on a folder row → expand / collapse.
+  - `Enter` on a folder row → expand / collapse (always, including in `isCheckable` trees, where it does NOT toggle the checkbox).
+  - `Space` on a folder row → expand / collapse in non-checkable trees; in `isCheckable` trees `Space` is reserved for toggling the row's checkbox.
+
+  Clicks that originate inside an interactive descendant of a folder row (chevron, checkbox, overflow `⋮` trigger, user-supplied buttons / links / inputs in the `prefix` and `actions` slots) no longer bubble up to the row's expand-on-click handler, so the chevron does not visibly double-toggle and inner controls do not have the side effect of expanding / collapsing the row.
+
+- [#1138](https://github.com/cube-js/cube-ui-kit/pull/1138) [`61b2eb40`](https://github.com/cube-js/cube-ui-kit/commit/61b2eb4004324756b4bbb49f6808d4ad6c04b5d2) Thanks [@tenphi](https://github.com/tenphi)! - Add `menu`, `contextMenu`, `onAction`, `menuTriggerProps`, and `menuProps` to `Tree`. The new props mirror the `Tabs` API: `contextMenu={true}` renders a built-in `⋮` overflow trigger AND opens the same menu on right-click / Shift+F10; `'context-only'` keeps the right-click menu but hides the overflow trigger. Per-node overrides (`data.menu`, `data.contextMenu`, `data.onAction`) take precedence over tree-level defaults. An `onAction` supplied via `menuProps` is chained with the tree-level / per-node `onAction` callbacks so consumer-supplied handlers also fire.
+
+  While re-wiring the row's `onKeyDown` for the menu / `expandOnFolderClick` shortcuts, the chained behavior of `Space` in `isCheckable` trees was preserved: pressing `Space` on a focused row toggles the row's checkbox AND continues to fire the tree's selection logic (matching the previous `mergeProps`-based chaining), so existing consumers see no change.
+
 ## 0.131.0
 
 ### Minor Changes
