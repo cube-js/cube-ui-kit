@@ -54,6 +54,8 @@ A versatile list selection component that allows users to select one or more ite
 - **`onOptionClick`** `(key: Key) => void` — Callback when an option is clicked (non-checkbox area)
 - **`items`** `Iterable<T>` — Array of items for dynamic content with render function pattern
 - **`disableSelectionToggle`** `boolean` (default: `false`) — When true, clicking an already-selected item keeps it selected instead of toggling it off
+- **`isReorderable`** `boolean` (default: `false`) — Enable drag-and-drop item reordering. Disables virtualization when active
+- **`onReorder`** `(newOrder: string[]) => void` — Callback when items are reordered via drag-and-drop or keyboard (Alt+Arrow)
 
 ### Base Properties
 
@@ -124,6 +126,8 @@ The `mods` property accepts the following modifiers you can override:
 - **`header`** `boolean` — Applied when header prop is provided or `showSelectAll={true}`
 - **`footer`** `boolean` — Applied when footer prop is provided
 - **`selectAll`** `boolean` — Applied when `showSelectAll={true}` in multiple selection mode
+- **`draggable`** `boolean` — Applied to options when `isReorderable={true}`
+- **`dragging`** `boolean` — Applied to the option currently being dragged
 
 ## Key Properties
 
@@ -648,6 +652,36 @@ const [selectedKey, setSelectedKey] = useState('apple');
 </Form>
 ```
 
+### Reorderable
+
+<Story of={ListBoxStories.Reorderable} />
+
+Enable drag-and-drop reordering with `isReorderable`. Items display a grip handle and can be dragged to new positions. Use `Alt+Arrow` keys to reorder via keyboard.
+
+```jsx
+const [keyOrder, setKeyOrder] = useState([
+  'revenue', 'orders', 'customers', 'sessions',
+]);
+
+<ListBox
+  isReorderable
+  selectionMode="multiple"
+  label="Metrics"
+  onReorder={(newOrder) => setKeyOrder(newOrder)}
+>
+  {keyOrder.map((key) => (
+    <ListBox.Item key={key}>{key}</ListBox.Item>
+  ))}
+</ListBox>
+```
+
+**Key features:**
+
+- **Drag-and-drop**: Reorder items by dragging the grip handle
+- **Keyboard reordering**: Use `Alt+ArrowUp` / `Alt+ArrowDown` to move the focused item
+- **Callback**: `onReorder` is called with the new key order after a drop or keyboard move
+- **Virtualization**: Automatically disabled when reordering is active
+
 ## Accessibility
 
 ### Keyboard Navigation
@@ -658,6 +692,7 @@ const [selectedKey, setSelectedKey] = useState('apple');
 - `Home/End` - Move to first/last option
 - `Page Up/Page Down` - Move up/down by multiple items
 - `Escape` - Deselect all items (if onEscape not provided)
+- `Alt+ArrowUp` / `Alt+ArrowDown` - Reorder the focused item (when `isReorderable`)
 
 ### Screen Reader Support
 

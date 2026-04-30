@@ -267,6 +267,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onSearchChange,
     sortSelectedToTop: sortSelectedToTopProp,
     onOpenChange,
+    isReorderable,
+    onReorder,
     form,
     ...otherProps
   } = props;
@@ -838,7 +840,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 allValueProps={allValueProps}
                 customValueProps={customValueProps}
                 newCustomValueProps={newCustomValueProps}
+                isReorderable={isReorderable}
                 onSearchChange={onSearchChange}
+                onReorder={onReorder}
                 onEscape={handleEscape}
                 onOptionClick={handleOptionClick}
                 onSelectionChange={handleSelectionChange}

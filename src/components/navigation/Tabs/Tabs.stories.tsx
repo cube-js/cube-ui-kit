@@ -1731,3 +1731,74 @@ export const HiddenScrollbar: Story = {
     );
   },
 };
+
+/**
+ * Reorderable tabs with a tab picker dropdown that also supports reordering.
+ * When `isReorderable` is enabled and a tab picker is shown, the picker dropdown
+ * automatically supports drag-and-drop reordering as well.
+ * Use Alt+Arrow keys to reorder via keyboard.
+ */
+export const ReorderableTabPicker: Story = {
+  render: function ReorderableTabPickerRender(args) {
+    const INITIAL_TABS = [
+      { key: 'overview', title: 'Overview' },
+      { key: 'analytics', title: 'Analytics' },
+      { key: 'reports', title: 'Reports' },
+      { key: 'settings', title: 'Settings' },
+      { key: 'users', title: 'Users' },
+      { key: 'billing', title: 'Billing' },
+      { key: 'security', title: 'Security' },
+      { key: 'integrations', title: 'Integrations' },
+      { key: 'notifications', title: 'Notifications' },
+      { key: 'logs', title: 'Logs' },
+      { key: 'api-keys', title: 'API Keys' },
+      { key: 'webhooks', title: 'Webhooks' },
+    ];
+
+    const [tabs, setTabs] = useState(INITIAL_TABS);
+    const [keyOrder, setKeyOrder] = useState<Key[]>(
+      INITIAL_TABS.map((t) => t.key),
+    );
+    const [activeKey, setActiveKey] = useState('overview');
+
+    const handleDelete = (key: string) => {
+      setTabs((prev) => prev.filter((t) => t.key !== key));
+      setKeyOrder((prev) => prev.filter((k) => k !== key));
+
+      if (activeKey === key) {
+        const idx = keyOrder.indexOf(key);
+        const next = keyOrder[idx + 1] || keyOrder[idx - 1];
+
+        if (next) {
+          setActiveKey(String(next));
+        }
+      }
+    };
+
+    return (
+      <Space gap="2x" flow="column" placeItems="start">
+        <Paragraph preset="t3">
+          Current order: {keyOrder.map(String).join(', ')}
+        </Paragraph>
+        <Tabs
+          {...args}
+          isReorderable
+          showTabPicker
+          type="file"
+          activeKey={activeKey}
+          keyOrder={keyOrder}
+          styles={{ width: '500px' }}
+          onDelete={handleDelete}
+          onChange={(key) => setActiveKey(String(key))}
+          onReorder={(newOrder) => setKeyOrder(newOrder)}
+        >
+          {tabs.map((tab) => (
+            <Tab key={tab.key} title={tab.title}>
+              <Paragraph>{tab.title} content</Paragraph>
+            </Tab>
+          ))}
+        </Tabs>
+      </Space>
+    );
+  },
+};

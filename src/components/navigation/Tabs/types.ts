@@ -201,6 +201,8 @@ export interface CubeTabsProps
   panelCacheKeys?: Record<string | number, CacheKeyValue>;
   /**
    * Enable drag-and-drop tab reordering.
+   * When a tab picker is shown (`showTabPicker`), reordering is automatically
+   * enabled in the picker dropdown as well.
    * @default false
    */
   isReorderable?: boolean;

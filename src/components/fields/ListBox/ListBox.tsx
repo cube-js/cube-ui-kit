@@ -26,15 +26,23 @@ import {
 } from 'react';
 import {
   AriaListBoxProps,
+  DropTarget,
+  useDraggableItem,
+  useDropIndicator,
   useKeyboard,
   useListBox,
   useListBoxSection,
   useOption,
 } from 'react-aria';
-import { Section as BaseSection, useListState } from 'react-stately';
+import {
+  Section as BaseSection,
+  DraggableCollectionState,
+  DroppableCollectionState,
+  useListState,
+} from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { CheckIcon } from '../../../icons';
+import { CheckIcon, GripVerticalIcon } from '../../../icons';
 import { Icon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens';
@@ -55,6 +63,9 @@ import {
 } from '../../CollectionItem';
 import { Item } from '../../content/Item/Item';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { createMockDragState } from '../../shared/DraggableCollection';
+
+import { DraggableListBox } from './DraggableListBox';
 
 import type { CollectionBase, Key } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
@@ -130,6 +141,44 @@ const ListBoxItem = tasty(Item, {
       ':last-of-type': '0',
       all: '.5x',
     },
+    Icon: {
+      cursor: {
+        draggable: 'grab',
+      },
+      opacity: {
+        draggable: '.4',
+        'draggable & :hover': '1',
+      },
+      transition: {
+        draggable: 'opacity',
+      },
+    },
+  },
+});
+
+// Horizontal drop indicator for DnD reordering
+const ListBoxDropIndicatorElement = tasty({
+  as: 'li',
+  styles: {
+    zIndex: 10,
+    position: 'relative',
+    pointerEvents: 'none',
+    height: 0,
+    opacity: {
+      '': 0,
+      'drop-target': 1,
+    },
+
+    Indicator: {
+      $: '>',
+      position: 'absolute',
+      left: '.5x',
+      right: '.5x',
+      top: '-1px',
+      height: '2px',
+      fill: '#primary',
+      radius: 'round',
+    },
   },
 });
 
@@ -201,6 +250,36 @@ const ListBoxCheckboxWrapper = tasty({
     placeSelf: 'stretch',
   },
 });
+
+function renderCheckboxIcon({
+  isSelected,
+  isDisabled,
+  isFocused,
+  isHovered,
+  validationState,
+}: {
+  isSelected: boolean;
+  isDisabled: boolean;
+  isFocused: boolean;
+  isHovered: boolean;
+  validationState?: string;
+}) {
+  const mods = {
+    selected: isSelected,
+    disabled: isDisabled,
+    focused: isFocused,
+    hovered: isHovered,
+    invalid: validationState === 'invalid',
+  };
+
+  return (
+    <ListBoxCheckboxWrapper data-element="CheckboxWrapper" mods={mods}>
+      <ListBoxCheckbox data-element="Checkbox" mods={mods}>
+        <CheckIcon size={12} stroke={3} />
+      </ListBoxCheckbox>
+    </ListBoxCheckboxWrapper>
+  );
+}
 
 export interface CubeListBoxProps<T>
   extends AriaListBoxProps<T>,
@@ -328,6 +407,19 @@ export interface CubeListBoxProps<T>
    * Defaults to 'card'.
    */
   shape?: 'card' | 'plain' | 'popover';
+
+  /**
+   * Enable drag-and-drop reordering of list items.
+   * When enabled, virtualization is disabled and each item gets a drag handle.
+   * @default false
+   */
+  isReorderable?: boolean;
+
+  /**
+   * Callback when items are reordered via drag-and-drop.
+   * Called with the new array of item keys in their new order.
+   */
+  onReorder?: (newOrder: string[]) => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -536,6 +628,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     filter,
     emptyLabel = 'No items',
     shape = 'card',
+    isReorderable = false,
+    onReorder,
     form,
     ...otherProps
   } = props;
@@ -748,24 +842,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   ref = useCombinedRefs(ref);
   listRef = useCombinedRefs(listRef);
 
-  const { listBoxProps } = useListBox(
-    {
-      ...props,
-      id: id,
-      'aria-label': props['aria-label'] || label?.toString(),
-      isDisabled,
-      isVirtualized: true,
-      shouldUseVirtualFocus: shouldUseVirtualFocus ?? false,
-      escapeKeyBehavior: onEscape ? 'none' : 'clearSelection',
-    },
-    listState,
-    listRef,
-  );
-
-  const { isFocused, focusProps } = useFocus({ isDisabled });
-  const isInvalid = validationState === 'invalid';
-
-  // ----- Virtualization logic -----
+  // ----- Collection and virtualization decision (must precede useListBox) -----
   const itemsArray = useMemo(
     () => [...listState.collection],
     [listState.collection],
@@ -776,7 +853,26 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     [itemsArray],
   );
 
-  const shouldVirtualize = !hasSections;
+  const shouldVirtualize = !hasSections && !isReorderable;
+
+  const { listBoxProps } = useListBox(
+    {
+      ...props,
+      id: id,
+      'aria-label': props['aria-label'] || label?.toString(),
+      isDisabled,
+      // Only disable isVirtualized for reorderable lists (DnD needs real DOM focus).
+      // Section-based lists keep isVirtualized: true to preserve ARIA attributes.
+      isVirtualized: !isReorderable,
+      shouldUseVirtualFocus: shouldUseVirtualFocus ?? false,
+      escapeKeyBehavior: onEscape ? 'none' : 'clearSelection',
+    },
+    listState,
+    listRef,
+  );
+
+  const { isFocused, focusProps } = useFocus({ isDisabled });
+  const isInvalid = validationState === 'invalid';
 
   // Use ref to ensure estimateSize always accesses current itemsArray
   const itemsArrayRef = useRef(itemsArray);
@@ -858,6 +954,17 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // preserved.
   const mergedListBoxProps = mergeProps(listBoxProps, keyboardProps);
 
+  // Ordered keys for DnD reordering
+  const orderedKeys = useMemo(() => {
+    if (!isReorderable) {
+      return [];
+    }
+
+    return itemsArray
+      .filter((i) => i.type === 'item')
+      .map((i) => String(i.key));
+  }, [isReorderable, itemsArray]);
+
   const mods = useMemo(
     () => ({
       invalid: isInvalid,
@@ -922,6 +1029,46 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
           <Item preset="t4" color="#dark-03" size={size} padding="(.5x - 1bw)">
             {emptyLabel}
           </Item>
+        ) : isReorderable ? (
+          <DraggableListBox
+            state={listState}
+            listRef={listRef}
+            orderedKeys={orderedKeys}
+            onReorder={onReorder}
+          >
+            {(dragState, dropState, collectionProps) => (
+              <ListElement
+                qa={qa || 'ListBox'}
+                {...mergeProps(mergedListBoxProps, collectionProps)}
+                ref={listRef}
+                styles={listStyles}
+                aria-disabled={isDisabled || undefined}
+                mods={{ sections: false }}
+                data-shape={shape}
+                data-input-type="listbox"
+              >
+                {itemsArray
+                  .filter((item) => item.type === 'item')
+                  .map((item) => (
+                    <Option
+                      key={item.key}
+                      size={size}
+                      item={item}
+                      state={listState}
+                      styles={optionStyles}
+                      isParentDisabled={isDisabled}
+                      validationState={validationState}
+                      focusOnHover={focusOnHover}
+                      isCheckable={isCheckable}
+                      lastFocusSourceRef={lastFocusSourceRef}
+                      dragState={dragState}
+                      dropState={dropState}
+                      onClick={onOptionClick}
+                    />
+                  ))}
+              </ListElement>
+            )}
+          </DraggableListBox>
         ) : (
           <ListElement
             qa={qa || 'ListBox'}
@@ -1067,6 +1214,8 @@ function Option({
   virtualRef,
   virtualIndex,
   lastFocusSourceRef,
+  dragState,
+  dropState,
 }: {
   size?: 'small' | 'medium' | 'large';
   item: any;
@@ -1085,6 +1234,10 @@ function Option({
   virtualIndex?: number;
   /** Ref to track the source of focus changes */
   lastFocusSourceRef?: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
+  /** Drag state from DraggableCollection. When provided, enables drag-and-drop. */
+  dragState?: DraggableCollectionState;
+  /** Drop state from DraggableCollection. When provided, renders drop indicators. */
+  dropState?: DroppableCollectionState;
 }) {
   const localRef = useRef<HTMLLIElement>(null);
   // Merge local ref with react-virtual measure ref when provided
@@ -1093,6 +1246,23 @@ function Option({
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
   const isFocused = state.selectionManager.focusedKey === item.key;
+
+  // Drag-and-drop support — only enable when both states are provided
+  const isDraggable = !!dragState && !!dropState;
+
+  // useDraggableItem must be called unconditionally (Rules of Hooks).
+  // When dragState is undefined, we pass a minimal mock state to satisfy the hook.
+  const mockDragState = useMemo(
+    () => createMockDragState(state.collection, state.selectionManager),
+    [state.collection, state.selectionManager],
+  );
+
+  const dragResult = useDraggableItem(
+    { key: item.key },
+    dragState ?? mockDragState,
+  );
+  const effectiveDragProps = isDraggable ? dragResult.dragProps : {};
+  const isDragging = isDraggable && dragResult.isDragging;
 
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
@@ -1111,8 +1281,12 @@ function Option({
   // Filter out service props - all remaining props can be passed to Item
   const filteredItemProps = filterCollectionItemProps(item.props);
 
-  // Create checkbox icon for multiple selection mode
+  // Determine icon: drag handle > checkbox > user icon > default
   const effectiveIcon = useMemo(() => {
+    if (isDraggable && !filteredItemProps.icon) {
+      return <GripVerticalIcon size={14} />;
+    }
+
     if (
       !isCheckable ||
       state.selectionManager.selectionMode !== 'multiple' ||
@@ -1124,32 +1298,15 @@ function Option({
       );
     }
 
-    return (
-      <ListBoxCheckboxWrapper
-        data-element="CheckboxWrapper"
-        mods={{
-          selected: isSelected,
-          disabled: isDisabled,
-          focused: isFocused,
-          hovered: isHovered,
-          invalid: validationState === 'invalid',
-        }}
-      >
-        <ListBoxCheckbox
-          data-element="Checkbox"
-          mods={{
-            selected: isSelected,
-            disabled: isDisabled,
-            focused: isFocused,
-            hovered: isHovered,
-            invalid: validationState === 'invalid',
-          }}
-        >
-          <CheckIcon size={12} stroke={3} />
-        </ListBoxCheckbox>
-      </ListBoxCheckboxWrapper>
-    );
+    return renderCheckboxIcon({
+      isSelected,
+      isDisabled,
+      isFocused,
+      isHovered,
+      validationState,
+    });
   }, [
+    isDraggable,
     isCheckable,
     state.selectionManager.selectionMode,
     isSelected,
@@ -1161,7 +1318,7 @@ function Option({
   ]);
 
   // Custom click handler for the entire option
-  const handleOptionClick = (e) => {
+  const handleOptionClick = (e: MouseEvent) => {
     // Mark focus changes from mouse clicks
     if (lastFocusSourceRef) {
       lastFocusSourceRef.current = 'mouse';
@@ -1227,25 +1384,32 @@ function Option({
   const theme =
     { valid: 'success', invalid: 'danger' }[validationState] || 'default';
 
-  return (
+  const listBoxItem = (
     <ListBoxItem
       ref={combinedRef}
       id={`ListBoxItem-${String(item.key)}`}
       data-key={String(item.key)}
-      {...mergeProps(filteredOptionProps, hoverProps, filteredItemProps, {
-        onClick: handleOptionClick,
-        onKeyDown,
-        onKeyUp,
-        tabIndex,
-        'aria-selected': ariaSelected,
-        'aria-disabled': ariaDisabled,
-        role,
-      })}
+      {...mergeProps(
+        filteredOptionProps,
+        hoverProps,
+        filteredItemProps,
+        {
+          onClick: handleOptionClick,
+          onKeyDown,
+          onKeyUp,
+          tabIndex,
+          'aria-selected': ariaSelected,
+          'aria-disabled': ariaDisabled,
+          role,
+        },
+        effectiveDragProps,
+      )}
       theme={theme}
       style={virtualStyle}
       data-size={size}
       data-index={virtualIndex}
       size={size}
+      display={isDraggable ? 'grid' : undefined}
       isSelected={isSelected}
       isDisabled={isDisabled}
       icon={effectiveIcon}
@@ -1257,6 +1421,8 @@ function Option({
         listboxitem: true,
         focused: isFocused,
         pressed: isPressed,
+        dragging: isDragging,
+        draggable: isDraggable,
         valid: isSelected && validationState === 'valid',
         invalid: isSelected && validationState === 'invalid',
         checkable: isCheckable,
@@ -1266,6 +1432,58 @@ function Option({
     >
       {item.rendered}
     </ListBoxItem>
+  );
+
+  if (!isDraggable || !dropState) {
+    return listBoxItem;
+  }
+
+  return (
+    <>
+      <ListBoxDropIndicator
+        target={{ type: 'item', key: item.key, dropPosition: 'before' }}
+        dropState={dropState}
+      />
+      {listBoxItem}
+      <ListBoxDropIndicator
+        target={{ type: 'item', key: item.key, dropPosition: 'after' }}
+        dropState={dropState}
+      />
+    </>
+  );
+}
+
+// =============================================================================
+// Drop Indicator for DnD reordering
+// =============================================================================
+
+function ListBoxDropIndicator({
+  target,
+  dropState,
+}: {
+  target: DropTarget;
+  dropState: DroppableCollectionState;
+}) {
+  const ref = useRef<HTMLLIElement>(null);
+  const { dropIndicatorProps, isHidden, isDropTarget } = useDropIndicator(
+    { target },
+    dropState,
+    ref,
+  );
+
+  if (isHidden) {
+    return null;
+  }
+
+  return (
+    <ListBoxDropIndicatorElement
+      ref={ref}
+      role="option"
+      {...dropIndicatorProps}
+      mods={{ 'drop-target': isDropTarget }}
+    >
+      <div data-element="Indicator" />
+    </ListBoxDropIndicatorElement>
   );
 }
 

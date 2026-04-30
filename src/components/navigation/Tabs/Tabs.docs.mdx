@@ -1,4 +1,5 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks';
+
 import { Tab, Tabs } from './Tabs';
 import * as TabsStories from './Tabs.stories';
 
@@ -45,7 +46,7 @@ An accessible tabbed interface for organizing content into multiple panels, show
 - **`onAction`** `(action: string, tabKey: string) => void` — Callback when a menu action is triggered
 - **`renderPanel`** `(key: string) => ReactNode` — Render function for lazy panel content
 - **`panelCacheKeys`** `Record<string, any>` — Cache keys for `renderPanel` content
-- **`isReorderable`** `boolean` (default: `false`) — Enable drag-and-drop tab reordering
+- **`isReorderable`** `boolean` (default: `false`) — Enable drag-and-drop tab reordering. When a tab picker is shown, reordering is automatically enabled in the picker dropdown as well
 - **`keyOrder`** `string[]` — Controlled tab display order
 - **`onReorder`** `(newOrder: string[]) => void` — Callback when tabs are reordered
 - **`showTabPicker`** `boolean | 'auto'` (default: `false`) — Show dropdown tab picker
@@ -189,9 +190,7 @@ Optional wrapper for tabs when using explicit panel placement.
 Explicit panel definition for advanced layout control.
 
 ```jsx
-<Tabs.Panel key="tab1">
-  Panel 1 content
-</Tabs.Panel>
+<Tabs.Panel key="tab1">Panel 1 content</Tabs.Panel>
 ```
 
 ### Tabs.Action
@@ -207,7 +206,9 @@ Action button designed for the Tabs prefix/suffix slots. Styled with sharp edges
     </>
   }
 >
-  <Tab key="tab1" title="Tab 1">Content</Tab>
+  <Tab key="tab1" title="Tab 1">
+    Content
+  </Tab>
 </Tabs>
 ```
 
@@ -265,9 +266,13 @@ Control the active tab externally with `activeKey` and `onChange`.
 const [activeKey, setActiveKey] = useState('tab1');
 
 <Tabs activeKey={activeKey} onChange={setActiveKey}>
-  <Tab key="tab1" title="Tab 1">Content 1</Tab>
-  <Tab key="tab2" title="Tab 2">Content 2</Tab>
-</Tabs>
+  <Tab key="tab1" title="Tab 1">
+    Content 1
+  </Tab>
+  <Tab key="tab2" title="Tab 2">
+    Content 2
+  </Tab>
+</Tabs>;
 ```
 
 ### Disabled Tab
@@ -276,7 +281,9 @@ const [activeKey, setActiveKey] = useState('tab1');
 
 ```jsx
 <Tabs defaultActiveKey="tab1">
-  <Tab key="tab1" title="Active Tab">Content</Tab>
+  <Tab key="tab1" title="Active Tab">
+    Content
+  </Tab>
   <Tab key="tab2" title="Disabled Tab" isDisabled>
     Inaccessible content
   </Tab>
@@ -295,8 +302,12 @@ Add buttons or other elements before or after the tab list.
   prefix={<Button size="small">Menu</Button>}
   suffix={<Button size="small">Add New</Button>}
 >
-  <Tab key="items" title="Items">Item list</Tab>
-  <Tab key="archived" title="Archived">Archived items</Tab>
+  <Tab key="items" title="Items">
+    Item list
+  </Tab>
+  <Tab key="archived" title="Archived">
+    Archived items
+  </Tab>
 </Tabs>
 ```
 
@@ -314,21 +325,17 @@ const [tabs, setTabs] = useState([
 
 <Tabs
   defaultActiveKey="tab1"
-  onDelete={(key) => setTabs(tabs.filter(t => t.key !== key))}
+  onDelete={(key) => setTabs(tabs.filter((t) => t.key !== key))}
   suffix={
-    <Tabs.Action
-      icon={<PlusIcon />}
-      aria-label="Add tab"
-      onPress={handleAdd}
-    />
+    <Tabs.Action icon={<PlusIcon />} aria-label="Add tab" onPress={handleAdd} />
   }
 >
-  {tabs.map(tab => (
+  {tabs.map((tab) => (
     <Tab key={tab.key} title={tab.title}>
       Content for {tab.title}
     </Tab>
   ))}
-</Tabs>
+</Tabs>;
 ```
 
 ### Tab Menus
@@ -351,7 +358,9 @@ Add dropdown menus to tabs using the `menu` prop. This replaces the need for man
     // 'delete' is handled automatically via onDelete
   }}
 >
-  <Tab key="tab1" title="Tab 1">Content</Tab>
+  <Tab key="tab1" title="Tab 1">
+    Content
+  </Tab>
 </Tabs>
 ```
 
@@ -387,7 +396,9 @@ Combine editable tabs with a menu for rename, duplicate, and delete actions.
     // 'delete' triggers onDelete automatically
   }}
 >
-  <Tab key="tab1" title="Tab 1">Content</Tab>
+  <Tab key="tab1" title="Tab 1">
+    Content
+  </Tab>
 </Tabs>
 ```
 
@@ -407,7 +418,9 @@ Enable right-click context menus with the `contextMenu` prop. Uses the same menu
     </>
   }
 >
-  <Tab key="tab1" title="Tab 1">Content</Tab>
+  <Tab key="tab1" title="Tab 1">
+    Content
+  </Tab>
 </Tabs>
 ```
 
@@ -424,7 +437,9 @@ Enable right-click context menus with the `contextMenu` prop. Uses the same menu
     </>
   }
 >
-  <Tab key="tab1" title="Tab 1">Content</Tab>
+  <Tab key="tab1" title="Tab 1">
+    Content
+  </Tab>
 </Tabs>
 ```
 
@@ -443,9 +458,11 @@ Override or disable menus on individual tabs.
     </>
   }
 >
-  <Tab key="tab1" title="Uses Default Menu">Content</Tab>
-  <Tab 
-    key="tab2" 
+  <Tab key="tab1" title="Uses Default Menu">
+    Content
+  </Tab>
+  <Tab
+    key="tab2"
     title="Custom Menu"
     menu={
       <>
@@ -455,7 +472,9 @@ Override or disable menus on individual tabs.
   >
     Content
   </Tab>
-  <Tab key="tab3" title="No Menu" menu={null}>Content</Tab>
+  <Tab key="tab3" title="No Menu" menu={null}>
+    Content
+  </Tab>
 </Tabs>
 ```
 
@@ -477,7 +496,9 @@ Use `Menu.Section` for organized menus.
     </>
   }
 >
-  <Tab key="tab1" title="Tab 1">Content</Tab>
+  <Tab key="tab1" title="Tab 1">
+    Content
+  </Tab>
 </Tabs>
 ```
 
@@ -495,10 +516,16 @@ const [keyOrder, setKeyOrder] = useState(['tab1', 'tab2', 'tab3']);
   keyOrder={keyOrder}
   onReorder={(newOrder) => setKeyOrder(newOrder)}
 >
-  <Tab key="tab1" title="Tab 1">Content 1</Tab>
-  <Tab key="tab2" title="Tab 2">Content 2</Tab>
-  <Tab key="tab3" title="Tab 3">Content 3</Tab>
-</Tabs>
+  <Tab key="tab1" title="Tab 1">
+    Content 1
+  </Tab>
+  <Tab key="tab2" title="Tab 2">
+    Content 2
+  </Tab>
+  <Tab key="tab3" title="Tab 3">
+    Content 3
+  </Tab>
+</Tabs>;
 ```
 
 **Key features:**
@@ -538,6 +565,34 @@ const [keyOrder, setKeyOrder] = useState(['tab1', 'tab2', 'tab3']);
 </Tabs>
 ```
 
+### Reorderable Tab Picker
+
+When `isReorderable` is enabled and a tab picker is shown, the picker dropdown automatically supports drag-and-drop reordering as well. Items in the dropdown display a grip handle and can be dragged to reorder. The same `onReorder` callback is shared between the horizontal tab bar and the vertical tab picker.
+
+<Story of={TabsStories.ReorderableTabPicker} />
+
+```jsx
+const [keyOrder, setKeyOrder] = useState(['tab1', 'tab2', 'tab3']);
+
+<Tabs
+  isReorderable
+  showTabPicker
+  type="file"
+  keyOrder={keyOrder}
+  onReorder={(newOrder) => setKeyOrder(newOrder)}
+>
+  <Tab key="tab1" title="Tab 1">
+    Content 1
+  </Tab>
+  <Tab key="tab2" title="Tab 2">
+    Content 2
+  </Tab>
+  <Tab key="tab3" title="Tab 3">
+    Content 3
+  </Tab>
+</Tabs>;
+```
+
 ### Scroll Arrows
 
 Add left/right navigation arrows to scroll overflowed tabs. Use `showScrollArrows` with `true`, `false`, or `'auto'` (shows only when tabs overflow).
@@ -550,7 +605,7 @@ Add left/right navigation arrows to scroll overflowed tabs. Use `showScrollArrow
   showScrollArrows="auto"
   styles={{ width: '500px' }}
 >
-  {tabs.map(tab => (
+  {tabs.map((tab) => (
     <Tab key={tab.id} title={tab.title}>
       {tab.content}
     </Tab>
@@ -569,7 +624,7 @@ Combine with `showTabPicker` for both scroll arrows and a dropdown picker:
   showTabPicker="auto"
   type="file"
 >
-  {tabs.map(tab => (
+  {tabs.map((tab) => (
     <Tab key={tab.id} title={tab.title}>
       {tab.content}
     </Tab>
@@ -593,7 +648,7 @@ By default, scroll arrows and the tab picker appear in the suffix (after the tab
   type="file"
   styles={{ width: '500px' }}
 >
-  {tabs.map(tab => (
+  {tabs.map((tab) => (
     <Tab key={tab.id} title={tab.title}>
       {tab.content}
     </Tab>
@@ -602,6 +657,7 @@ By default, scroll arrows and the tab picker appear in the suffix (after the tab
 ```
 
 When both are in the same slot:
+
 - In **prefix**: TabPicker appears first (left), then scroll arrows (right)
 - In **suffix**: Scroll arrows appear first (left), then TabPicker (right)
 
@@ -617,10 +673,14 @@ const [view, setView] = useState('overview');
 <Tabs activeKey={view} onChange={setView}>
   <Tab key="overview" title="Overview" />
   <Tab key="settings" title="Settings" />
-</Tabs>
+</Tabs>;
 
-{view === 'overview' && <OverviewPage />}
-{view === 'settings' && <SettingsPage />}
+{
+  view === 'overview' && <OverviewPage />;
+}
+{
+  view === 'settings' && <SettingsPage />;
+}
 ```
 
 ### Explicit Panels
@@ -648,8 +708,12 @@ Render all panels immediately but keep inactive ones hidden.
 
 ```jsx
 <Tabs defaultActiveKey="tab1" prerender>
-  <Tab key="tab1" title="Tab 1">Content 1</Tab>
-  <Tab key="tab2" title="Tab 2">Content 2</Tab>
+  <Tab key="tab1" title="Tab 1">
+    Content 1
+  </Tab>
+  <Tab key="tab2" title="Tab 2">
+    Content 2
+  </Tab>
 </Tabs>
 ```
 
@@ -680,8 +744,12 @@ Override per-tab/panel:
 
 ```jsx
 <Tabs prerender>
-  <Tab key="tab1" title="Prerendered">Always in DOM</Tab>
-  <Tab key="tab2" title="Lazy" prerender={false}>Lazy loaded</Tab>
+  <Tab key="tab1" title="Prerendered">
+    Always in DOM
+  </Tab>
+  <Tab key="tab2" title="Lazy" prerender={false}>
+    Lazy loaded
+  </Tab>
 </Tabs>
 ```
 
@@ -698,10 +766,14 @@ content is computed, while inactive tabs use cached content.
   defaultActiveKey="tab1"
   renderPanel={(key) => {
     switch (key) {
-      case 'tab1': return <ExpensiveChart data={chartData} />;
-      case 'tab2': return <LargeTable rows={tableRows} />;
-      case 'tab3': return <ComplexForm fields={formFields} />;
-      default: return null;
+      case 'tab1':
+        return <ExpensiveChart data={chartData} />;
+      case 'tab2':
+        return <LargeTable rows={tableRows} />;
+      case 'tab3':
+        return <ComplexForm fields={formFields} />;
+      default:
+        return null;
     }
   }}
 >
@@ -722,8 +794,8 @@ content is computed, while inactive tabs use cached content.
 <Tabs
   renderPanel={(key) => <Panel data={data[key]} />}
   panelCacheKeys={{
-    tab1: data.tab1.version,  // Cached, re-renders when version changes
-    tab2: data.tab2.version,  // Cached, re-renders when version changes
+    tab1: data.tab1.version, // Cached, re-renders when version changes
+    tab2: data.tab2.version, // Cached, re-renders when version changes
     // tab3 has no cache key - re-renders on every Tabs render
   }}
 >
@@ -732,6 +804,7 @@ content is computed, while inactive tabs use cached content.
 ```
 
 This approach is ideal for:
+
 - Tabs with complex visualizations or charts
 - Large data tables that are expensive to render
 - Forms with many fields
@@ -768,6 +841,7 @@ Tabs work seamlessly inside Layout components. When placed in a `Layout` or `Lay
 ```
 
 **How it works:**
+
 - The tab bar has fixed height and doesn't grow
 - Tab panels use `display: contents`, allowing children to participate in parent flex layout
 - Nested Layout components with `flexGrow: 1` (default) stretch to fill remaining space
@@ -784,6 +858,7 @@ Tabs work seamlessly inside Layout components. When placed in a `Layout` or `Lay
 - `Shift+F10` - Open tab menu (when menu is present)
 - `Delete` - Delete focused tab (when deletable)
 - `F2` - Start editing tab title (when editable)
+- `Alt+ArrowLeft` / `Alt+ArrowRight` - Reorder the focused tab (when `isReorderable`)
 
 ### Screen Reader Support
 
@@ -806,13 +881,17 @@ Tabs work seamlessly inside Layout components. When placed in a `Layout` or `Lay
 1. **Do**: Use clear, descriptive tab titles
 
    ```jsx
-   <Tab key="billing" title="Billing & Payments">...</Tab>
+   <Tab key="billing" title="Billing & Payments">
+     ...
+   </Tab>
    ```
 
 2. **Don't**: Use vague or single-letter titles
 
    ```jsx
-   <Tab key="b" title="B">...</Tab>
+   <Tab key="b" title="B">
+     ...
+   </Tab>
    ```
 
 3. **Do**: Provide meaningful accessible labels

@@ -74,6 +74,8 @@ A versatile selection component that combines a trigger button with a searchable
 - **`onOptionClick`** `(key: Key) => void` — Callback when an option is clicked (non-checkbox area)
 - **`onClear`** `() => void` — Callback called when the clear button is pressed
 - **`onOpenChange`** `(isOpen: boolean) => void` — Callback called when the popover open state changes
+- **`isReorderable`** `boolean` (default: `false`) — Enable drag-and-drop item reordering in the dropdown list
+- **`onReorder`** `(newOrder: string[]) => void` — Callback when items are reordered via drag-and-drop or keyboard (Alt+Arrow)
 
 ### Base Properties
 
@@ -533,6 +535,32 @@ Use `isLoadingItems` to indicate that items are currently being fetched. Unlike 
 </FilterPicker>
 ```
 
+### Reorderable
+
+<Story of={FilterPickerStories.Reorderable} />
+
+Enable drag-and-drop reordering inside the dropdown with `isReorderable`. Items display a grip handle and can be dragged to new positions. Use `Alt+Arrow` keys to reorder via keyboard.
+
+```jsx
+const [keyOrder, setKeyOrder] = useState([
+  'revenue', 'orders', 'customers', 'sessions',
+  'page-views', 'bounce-rate', 'conversion', 'aov',
+  'retention', 'churn', 'ltv', 'arpu',
+]);
+
+<FilterPicker
+  isReorderable
+  selectionMode="multiple"
+  defaultSelectedKeys={['revenue', 'orders', 'customers']}
+  label="Metrics"
+  onReorder={(newOrder) => setKeyOrder(newOrder)}
+>
+  {keyOrder.map((key) => (
+    <FilterPicker.Item key={key}>{key}</FilterPicker.Item>
+  ))}
+</FilterPicker>
+```
+
 ## Accessibility
 
 ### Keyboard Navigation
@@ -542,6 +570,7 @@ Use `isLoadingItems` to indicate that items are currently being fetched. Unlike 
 - `Arrow Up/Down` - Opens the popover (when closed) or navigates through options (when open)
 - `Escape` - Closes the popover or clears search
 - `Home/End` - Navigate to first/last option
+- `Alt+ArrowUp` / `Alt+ArrowDown` - Reorder the focused item (when `isReorderable`)
 
 ### Screen Reader Support
 
