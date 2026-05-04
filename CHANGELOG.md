@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.133.0
+
+### Minor Changes
+
+- [#1140](https://github.com/cube-js/cube-ui-kit/pull/1140) [`af1736db`](https://github.com/cube-js/cube-ui-kit/commit/af1736db1e0b6de77e77a0c25deefabe4c7e6d51) Thanks [@solarrust](https://github.com/solarrust)! - **Tabs**: reorderable tab picker — when `isReorderable` is enabled and a tab picker is shown, items in the picker dropdown can be reordered via drag-and-drop or `Alt+Arrow` keyboard shortcuts.
+
+- [#1142](https://github.com/cube-js/cube-ui-kit/pull/1142) [`fe05e4cd`](https://github.com/cube-js/cube-ui-kit/commit/fe05e4cdf5f49843427191018c57c3e8dbe41d06) Thanks [@tenphi](https://github.com/tenphi)! - **Tree**: revert `expandOnFolderClick`. Its row-level `stopPropagation()` on pointer/mouse events prevented document-level listeners from receiving them — most visibly, `Layout.Panel`'s resize (via React Aria's `useMove`) latched when the cursor released over a folder row in a `Tree` rendered inside a resizable panel. The default `treegrid` behavior (chevron expands, row activates selection) is unchanged.
+
+### Patch Changes
+
+- [#1142](https://github.com/cube-js/cube-ui-kit/pull/1142) [`fe05e4cd`](https://github.com/cube-js/cube-ui-kit/commit/fe05e4cdf5f49843427191018c57c3e8dbe41d06) Thanks [@tenphi](https://github.com/tenphi)! - **Tree**: fix virtualized scroll container growing past its fixed height. The previous structure made the outer `TreeElement` both a `display: flex` layout container and the `overflow: auto` scroll element, so the virtualizer's sizer (a flex child with `height: totalSize`) was squashed by `flex-shrink: 1` and the scroll area visibly grew as `@tanstack/react-virtual` re-measured rows during scroll. Scrolling now happens inside a dedicated block-level inner container, so the sizer's height is honored and the scroll viewport stays stable.
+
+  The forwarded `ref` now points at this inner scroll container so consumers can read/write `scrollTop` directly. The `role="treegrid"` element (used internally by `useTree`) is its parent.
+
 ## 0.132.0
 
 ### Minor Changes
