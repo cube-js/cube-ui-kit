@@ -359,16 +359,19 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     paddingEnd: containerPadding,
   });
 
-  const containerStyle = useMemo<CSSProperties>(() => {
-    const style: CSSProperties = {
+  const treeStyle = useMemo<CSSProperties | undefined>(() => {
+    if (height == null) return undefined;
+    return { ['--tree-height' as keyof CSSProperties]: `${height}px` };
+  }, [height]);
+
+  const sizerStyle = useMemo<CSSProperties>(
+    () => ({
       position: 'relative',
+      width: '100%',
       height: `${rowVirtualizer.getTotalSize()}px`,
-    };
-    if (height != null) {
-      (style as any)['--tree-height'] = `${height}px`;
-    }
-    return style;
-  }, [rowVirtualizer.getTotalSize(), height]);
+    }),
+    [rowVirtualizer.getTotalSize()],
+  );
 
   // Keep focused node visible during keyboard navigation.
   useLayoutEffect(() => {
@@ -407,46 +410,48 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       qa={qa ?? 'Tree'}
       mods={mods}
       styles={baseStyles}
-      style={containerStyle}
+      style={treeStyle}
     >
-      {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-        const node = visibleNodes[virtualItem.index];
-        if (!node) return null;
-        const keyStr = String(node.key);
-        const data = nodesByKey.get(keyStr);
-        if (!data) return null;
-        return (
-          <TreeNode
-            key={node.key}
-            node={node}
-            data={data}
-            state={state}
-            isCheckable={isCheckable}
-            isExpanded={state.expandedKeys.has(node.key)}
-            isChecked={checkbox.checkedSet.has(keyStr)}
-            isIndeterminate={checkbox.halfCheckedSet.has(keyStr)}
-            isLoading={loadDataController.loadingKeys.has(keyStr)}
-            size={size}
-            itemProps={itemProps}
-            rowStyles={rowStyles}
-            virtualStyle={{
-              position: 'absolute',
-              top: 0,
-              left: containerPadding,
-              right: containerPadding,
-              transform: `translateY(${virtualItem.start}px)`,
-            }}
-            virtualRef={rowVirtualizer.measureElement}
-            virtualIndex={virtualItem.index}
-            menu={treeMenu}
-            contextMenu={treeContextMenu}
-            menuTriggerProps={menuTriggerProps}
-            menuProps={menuProps}
-            onToggleChecked={checkbox.toggle}
-            onAction={treeOnAction}
-          />
-        );
-      })}
+      <div role="presentation" style={sizerStyle}>
+        {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+          const node = visibleNodes[virtualItem.index];
+          if (!node) return null;
+          const keyStr = String(node.key);
+          const data = nodesByKey.get(keyStr);
+          if (!data) return null;
+          return (
+            <TreeNode
+              key={node.key}
+              node={node}
+              data={data}
+              state={state}
+              isCheckable={isCheckable}
+              isExpanded={state.expandedKeys.has(node.key)}
+              isChecked={checkbox.checkedSet.has(keyStr)}
+              isIndeterminate={checkbox.halfCheckedSet.has(keyStr)}
+              isLoading={loadDataController.loadingKeys.has(keyStr)}
+              size={size}
+              itemProps={itemProps}
+              rowStyles={rowStyles}
+              virtualStyle={{
+                position: 'absolute',
+                top: 0,
+                left: containerPadding,
+                right: containerPadding,
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+              virtualRef={rowVirtualizer.measureElement}
+              virtualIndex={virtualItem.index}
+              menu={treeMenu}
+              contextMenu={treeContextMenu}
+              menuTriggerProps={menuTriggerProps}
+              menuProps={menuProps}
+              onToggleChecked={checkbox.toggle}
+              onAction={treeOnAction}
+            />
+          );
+        })}
+      </div>
     </TreeElement>
   );
 }
