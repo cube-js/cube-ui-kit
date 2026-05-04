@@ -16,14 +16,18 @@ This document is a comprehensive reference for AI agents maintaining or extendin
 Tasty documentation is bundled with this package in `docs/tasty/` (symlinked to `node_modules/@tenphi/tasty/docs` during development; copied at pack time by `scripts/prepare-docs.mjs`).
 
 
-| File                                              | Description                                                                                                                                                                                          |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [usage.md](./docs/tasty/usage.md)                 | Core API: `tasty()` component creation, state mappings, sub-elements (`data-element`), variants, extending components, and React hooks (`useStyles`, `useGlobalStyles`, `useRawCSS`).                |
-| [configuration.md](./docs/tasty/configuration.md) | `configure()` options: tokens, recipes, custom units, style handlers, `@keyframes`, `@property`, parser cache, and TypeScript module augmentation.                                                   |
-| [styles.md](./docs/tasty/styles.md)               | Complete reference for all enhanced style properties: `fill`, `flow`, `preset`, `border`, `radius`, `transition`, `scrollbar`, shorthand syntax, and recommended alternatives to raw CSS properties. |
-| [debug.md](./docs/tasty/debug.md)                 | `tastyDebug` runtime API: inspect injected CSS, view cache metrics, chunk breakdowns, and troubleshoot style issues.                                                                                 |
-| [injector.md](./docs/tasty/injector.md)           | Low-level style injector: `inject()`, `injectGlobal()`, `injectRawCSS()`, `keyframes()`, hash deduplication, reference counting, SSR, and Shadow DOM support.                                        |
-| [tasty-static.md](./docs/tasty/tasty-static.md)   | Zero-runtime mode: `tastyStatic()`, Babel plugin setup, Next.js/Vite integration, and static extraction limitations.                                                                                 |
+Only the docs relevant to authoring UI Kit components are listed here. Internal-only references (`pipeline.md`, `injector.md`), positioning material (`comparison.md`, `adoption.md`), and modes the UI Kit does not ship (`tasty-static.md`, `ssr.md`) are intentionally omitted; consult `docs/tasty/` directly if you need them.
+
+| File                                                  | Description                                                                                                                                                       |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [getting-started.md](./docs/tasty/getting-started.md) | Setup, prerequisites, first component, configuration scaffolding, and editor tooling.                                                                             |
+| [methodology.md](./docs/tasty/methodology.md)         | Recommended patterns for Tasty components: root + sub-elements model, `styleProps` as the public API, `styles` vs `style` props, wrapping, and anti-patterns.     |
+| [design-system.md](./docs/tasty/design-system.md)     | Building a design-system layer with Tasty: token vocabularies, state aliases, recipes, primitive layout components, and compound components with sub-elements.   |
+| [react-api.md](./docs/tasty/react-api.md)             | React API: `tasty()` factory, component creation, extending, `styleProps`, variants, sub-elements, and hooks (`useStyles`, `useGlobalStyles`, `useRawCSS`, etc.). |
+| [dsl.md](./docs/tasty/dsl.md)                         | Style DSL: state maps, color tokens, built-in units, replace tokens, recipes, extending/replacing semantics, advanced states (`@media`, `@parent`, `@root`).      |
+| [styles.md](./docs/tasty/styles.md)                   | Reference for enhanced style properties: `fill`, `flow`, `preset`, `border`, `radius`, `padding`, `margin`, `gap`, `shadow`, `outline`, `scrollbar`, etc.         |
+| [configuration.md](./docs/tasty/configuration.md)     | `configure()` options: tokens, recipes, custom units, custom functions, style handlers, plugins, and TypeScript module augmentation.                              |
+| [debug.md](./docs/tasty/debug.md)                     | `tastyDebug` runtime API: inspect injected CSS, view cache metrics, chunk breakdowns, and troubleshoot style issues during development.                           |
 
 
 ## Project Structure
