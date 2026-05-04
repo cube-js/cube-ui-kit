@@ -135,7 +135,6 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     rowStyles,
     ariaLabel,
     qa,
-    expandOnFolderClick = false,
     menu: treeMenu,
     contextMenu: treeContextMenu,
     onAction: treeOnAction,
@@ -443,7 +442,6 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
             contextMenu={treeContextMenu}
             menuTriggerProps={menuTriggerProps}
             menuProps={menuProps}
-            expandOnFolderClick={expandOnFolderClick}
             onToggleChecked={checkbox.toggle}
             onAction={treeOnAction}
           />
