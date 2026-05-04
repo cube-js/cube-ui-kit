@@ -476,13 +476,15 @@ describe('<Tree />', () => {
   });
 
   describe('ref forwarding', () => {
-    it('populates the forwarded ref with the tree DOM element', () => {
-      // The internal `treeRef` (used by `useTree` for keyboard nav/focus)
-      // and the consumer's forwarded ref must both point at the same node.
+    it('populates the forwarded ref with the inner scroll container', () => {
+      // The forwarded ref points at the inner scroll viewport so
+      // consumers can drive `scrollTop` directly. The role="treegrid"
+      // element (used by `useTree` internally) sits one level above.
       const ref = createRef<HTMLDivElement>();
       renderWithRoot(<Tree ref={ref} treeData={SAMPLE} />);
       expect(ref.current).toBeInstanceOf(HTMLElement);
-      expect(ref.current?.getAttribute('role')).toBe('treegrid');
+      expect(ref.current?.getAttribute('data-qa')).toBe('TreeScrollContainer');
+      expect(ref.current?.parentElement?.getAttribute('role')).toBe('treegrid');
     });
 
     it('keeps keyboard navigation working when a ref is forwarded', async () => {
