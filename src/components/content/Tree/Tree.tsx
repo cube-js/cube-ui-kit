@@ -6,10 +6,10 @@ import { Item, useTreeState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
-import { mergeProps, mergeRefs } from '../../../utils/react';
+import { mergeRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 
-import { TreeElement } from './styled';
+import { TreeElement, TreeScrollContainer } from './styled';
 import { buildTreeIndex } from './tree-index';
 import { TreeNode } from './TreeNode';
 import { useCheckboxTree } from './use-checkbox-tree';
@@ -135,7 +135,6 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     rowStyles,
     ariaLabel,
     qa,
-    expandOnFolderClick = false,
     menu: treeMenu,
     contextMenu: treeContextMenu,
     onAction: treeOnAction,
@@ -147,6 +146,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
   const baseStyles = extractStyles(otherProps, OUTER_STYLES);
 
   const treeRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const treeIndex = useMemo(() => buildTreeIndex(treeData), [treeData]);
   const nodesByKey = treeIndex.byKey;
@@ -348,7 +348,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
   // ----- Virtualization -----
   const rowVirtualizer = useVirtualizer({
     count: visibleNodes.length,
-    getScrollElement: () => treeRef.current,
+    getScrollElement: () => scrollRef.current,
     getItemKey: (index: number) => {
       const node = visibleNodesRef.current[index];
       return node?.key ?? index;
@@ -360,23 +360,26 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     paddingEnd: containerPadding,
   });
 
-  const containerStyle = useMemo<CSSProperties>(() => {
-    const style: CSSProperties = {
+  const treeStyle = useMemo<CSSProperties | undefined>(() => {
+    if (height == null) return undefined;
+    return { ['--tree-height' as keyof CSSProperties]: `${height}px` };
+  }, [height]);
+
+  const sizerStyle = useMemo<CSSProperties>(
+    () => ({
       position: 'relative',
+      width: '100%',
       height: `${rowVirtualizer.getTotalSize()}px`,
-    };
-    if (height != null) {
-      (style as any)['--tree-height'] = `${height}px`;
-    }
-    return style;
-  }, [rowVirtualizer.getTotalSize(), height]);
+    }),
+    [rowVirtualizer.getTotalSize()],
+  );
 
   // Keep focused node visible during keyboard navigation.
   useLayoutEffect(() => {
     const focusedKey = state.selectionManager.focusedKey;
     if (focusedKey == null) return;
 
-    const scrollElement = treeRef.current;
+    const scrollElement = scrollRef.current;
     if (!scrollElement) return;
 
     const row = scrollElement.querySelector(
@@ -395,60 +398,66 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     [height, shape],
   );
 
-  // Both `useTree` and the consumer need the same DOM node.
-  const mergedRef = useMemo(() => mergeRefs(ref, treeRef), [ref, treeRef]);
-
-  const elementProps = mergeProps(gridProps, {
-    ref: mergedRef,
-  });
+  // The forwarded ref points at the inner scroll container so
+  // consumers can drive `scrollTop` directly. `treeRef` (used by
+  // `useTree` for keyboard handling and as the role="treegrid"
+  // anchor) stays internal on `TreeElement`.
+  const mergedScrollRef = useMemo(
+    () => mergeRefs(ref, scrollRef),
+    [ref, scrollRef],
+  );
 
   return (
     <TreeElement
-      {...elementProps}
+      {...gridProps}
+      ref={treeRef}
       qa={qa ?? 'Tree'}
       mods={mods}
       styles={baseStyles}
-      style={containerStyle}
+      style={treeStyle}
     >
-      {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-        const node = visibleNodes[virtualItem.index];
-        if (!node) return null;
-        const keyStr = String(node.key);
-        const data = nodesByKey.get(keyStr);
-        if (!data) return null;
-        return (
-          <TreeNode
-            key={node.key}
-            node={node}
-            data={data}
-            state={state}
-            isCheckable={isCheckable}
-            isExpanded={state.expandedKeys.has(node.key)}
-            isChecked={checkbox.checkedSet.has(keyStr)}
-            isIndeterminate={checkbox.halfCheckedSet.has(keyStr)}
-            isLoading={loadDataController.loadingKeys.has(keyStr)}
-            size={size}
-            itemProps={itemProps}
-            rowStyles={rowStyles}
-            virtualStyle={{
-              position: 'absolute',
-              top: 0,
-              left: containerPadding,
-              right: containerPadding,
-              transform: `translateY(${virtualItem.start}px)`,
-            }}
-            virtualRef={rowVirtualizer.measureElement}
-            virtualIndex={virtualItem.index}
-            menu={treeMenu}
-            contextMenu={treeContextMenu}
-            menuTriggerProps={menuTriggerProps}
-            menuProps={menuProps}
-            expandOnFolderClick={expandOnFolderClick}
-            onToggleChecked={checkbox.toggle}
-            onAction={treeOnAction}
-          />
-        );
-      })}
+      <TreeScrollContainer ref={mergedScrollRef}>
+        <div role="presentation" style={sizerStyle}>
+          {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+            const node = visibleNodes[virtualItem.index];
+            if (!node) return null;
+            const keyStr = String(node.key);
+            const data = nodesByKey.get(keyStr);
+            if (!data) return null;
+            return (
+              <TreeNode
+                key={node.key}
+                node={node}
+                data={data}
+                state={state}
+                isCheckable={isCheckable}
+                isExpanded={state.expandedKeys.has(node.key)}
+                isChecked={checkbox.checkedSet.has(keyStr)}
+                isIndeterminate={checkbox.halfCheckedSet.has(keyStr)}
+                isLoading={loadDataController.loadingKeys.has(keyStr)}
+                size={size}
+                itemProps={itemProps}
+                rowStyles={rowStyles}
+                virtualStyle={{
+                  position: 'absolute',
+                  top: 0,
+                  left: containerPadding,
+                  right: containerPadding,
+                  transform: `translateY(${virtualItem.start}px)`,
+                }}
+                virtualRef={rowVirtualizer.measureElement}
+                virtualIndex={virtualItem.index}
+                menu={treeMenu}
+                contextMenu={treeContextMenu}
+                menuTriggerProps={menuTriggerProps}
+                menuProps={menuProps}
+                onToggleChecked={checkbox.toggle}
+                onAction={treeOnAction}
+              />
+            );
+          })}
+        </div>
+      </TreeScrollContainer>
     </TreeElement>
   );
 }

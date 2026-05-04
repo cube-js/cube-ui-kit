@@ -22,7 +22,6 @@ import type { Styles } from '@tenphi/tasty';
 import type {
   CSSProperties,
   KeyboardEvent,
-  MouseEvent as ReactMouseEvent,
   ReactNode,
   Ref,
   SyntheticEvent,
@@ -38,55 +37,6 @@ import type {
 const stopPropagation = (e: SyntheticEvent) => {
   e.stopPropagation();
 };
-
-/**
- * CSS selector matching focusable / activatable descendants that
- * should "absorb" a click so the parent row does not also react to
- * it. Used by the `expandOnFolderClick` row click / pointer guards.
- *
- * Covers the standard interactive elements (`button`, `a`, form
- * controls), explicit ARIA roles (`button`, `menuitem`, `checkbox`,
- * `link`, `tab`, `option`, etc.), and react-aria's pressable marker.
- */
-const INTERACTIVE_DESCENDANT_SELECTOR = [
-  'button',
-  'a[href]',
-  'input',
-  'textarea',
-  'select',
-  '[role="button"]',
-  '[role="menuitem"]',
-  '[role="menuitemcheckbox"]',
-  '[role="menuitemradio"]',
-  '[role="checkbox"]',
-  '[role="radio"]',
-  '[role="link"]',
-  '[role="tab"]',
-  '[role="option"]',
-  '[role="switch"]',
-  '[data-react-aria-pressable]',
-].join(',');
-
-/**
- * Returns `true` when `target` is (or is contained within) an
- * interactive element that lives BETWEEN `target` and `currentTarget`
- * — i.e. something the user clearly intended to click instead of the
- * row itself.
- */
-function isInteractiveDescendant(
-  target: EventTarget | null,
-  currentTarget: EventTarget | null,
-): boolean {
-  if (!(target instanceof Element) || !(currentTarget instanceof Element)) {
-    return false;
-  }
-  const interactive = target.closest(INTERACTIVE_DESCENDANT_SELECTOR);
-  return (
-    !!interactive &&
-    interactive !== currentTarget &&
-    currentTarget.contains(interactive)
-  );
-}
 
 /** Check whether a `menu` ReactNode actually contains anything. */
 function isMenuEmpty(menu: ReactNode): boolean {
@@ -144,12 +94,6 @@ export interface TreeNodeProps {
   menuTriggerProps?: Partial<CubeItemActionProps>;
   /** Forwarded to every per-row `Menu`. */
   menuProps?: Partial<CubeMenuProps<object>>;
-
-  /**
-   * When true, pressing a non-leaf row toggles its expansion instead
-   * of triggering selection.
-   */
-  expandOnFolderClick?: boolean;
 }
 
 function TreeNodeInner(props: TreeNodeProps) {
@@ -174,7 +118,6 @@ function TreeNodeInner(props: TreeNodeProps) {
     onAction: treeOnAction,
     menuTriggerProps,
     menuProps,
-    expandOnFolderClick,
   } = props;
 
   const rowRef = useRef<HTMLDivElement>(null);
@@ -265,57 +208,14 @@ function TreeNodeInner(props: TreeNodeProps) {
     onToggleChecked(String(node.key));
   });
 
-  // ---- Folder-click interception ------------------------------------------
-
-  const shouldExpandOnRowClick =
-    !!expandOnFolderClick && !isLeaf && !isDisabled;
-
-  const handleFolderRowClick = useEvent((e: ReactMouseEvent) => {
-    // Only intercept primary-button clicks; let right-click reach
-    // `useContextMenu` (it listens for the `contextmenu` event).
-    if (e.button !== 0) return;
-    // If the click originated inside an interactive descendant
-    // (chevron, checkbox, overflow trigger, user-supplied buttons in
-    // `prefix` / `actions`, etc.) DO NOT toggle the row. Most
-    // react-aria buttons stop propagation through `usePress` already,
-    // and the `actions` slot has its own propagation guard, but
-    // user-supplied controls in the `prefix` slot or any non-react-aria
-    // button do not — without this check they would expand/collapse
-    // the row as a side-effect of being clicked, and the chevron
-    // would visibly double-toggle.
-    if (isInteractiveDescendant(e.target, e.currentTarget)) return;
-    e.preventDefault();
-    e.stopPropagation();
-    state.toggleKey(node.key);
-    state.selectionManager.setFocused(true);
-    state.selectionManager.setFocusedKey(node.key);
-  });
-
-  // Typed against the broader `MouseEvent` because both pointer and
-  // mouse handlers route here. React's `PointerEvent<T>` extends
-  // `MouseEvent<T>`, so via parameter contravariance this single
-  // function is assignable to both `PointerEventHandler<T>` and
-  // `MouseEventHandler<T>` slots without any casts.
-  const handleFolderRowPointerEvent = useEvent(
-    (e: ReactMouseEvent<HTMLDivElement>) => {
-      if (e.button !== 0) return;
-      // Skip when the event originated in an interactive descendant
-      // so the descendant's own usePress / press tracking is not
-      // disrupted by the row swallowing pointer propagation.
-      if (isInteractiveDescendant(e.target, e.currentTarget)) return;
-      // Stop usePress from latching its `isPressed` state — the row is
-      // not a press target anymore in this mode.
-      e.stopPropagation();
-    },
-  );
-
   // ---- Keyboard ------------------------------------------------------------
 
   // Composed keydown handler. Runs BEFORE `rowProps.onKeyDown` from
   // `useTreeItem` so we can short-circuit the default react-aria
-  // behavior (which would otherwise trigger selection on Enter/Space).
-  // Returns `true` when the event was handled and react-aria's keydown
-  // must NOT run; returns `false` to chain to react-aria's handler.
+  // behavior for our own shortcuts (Shift+F10 menu open, Space
+  // checkbox toggle). Returns `true` when the event was handled and
+  // react-aria's keydown must NOT run; returns `false` to chain to
+  // react-aria's handler.
   const handleKeyDown = useEvent((e: KeyboardEvent) => {
     // Space toggles the checkbox first when checkable. We DON'T claim
     // the event (return `false`) so react-aria's onKeyDown still runs
@@ -342,26 +242,6 @@ function TreeNodeInner(props: TreeNodeProps) {
       } else {
         setIsMenuOpen(true);
       }
-      return true;
-    }
-
-    // Folder activation via keyboard in expandOnFolderClick mode.
-    // Must run BEFORE `useTreeItem`'s onKeyDown so react-aria doesn't
-    // also fire selection on the same keypress.
-    //   - Enter always expands (matches the row-click behavior, even
-    //     when the row is also checkable — Enter is not a checkbox key).
-    //   - Space only expands when the row is NOT checkable; in
-    //     checkable trees Space is reserved for the checkbox toggle
-    //     (handled by the earlier branch).
-    if (
-      shouldExpandOnRowClick &&
-      (e.key === 'Enter' || (e.key === ' ' && !isRowCheckable))
-    ) {
-      e.preventDefault();
-      e.stopPropagation();
-      state.toggleKey(node.key);
-      state.selectionManager.setFocused(true);
-      state.selectionManager.setFocusedKey(node.key);
       return true;
     }
 
@@ -436,28 +316,13 @@ function TreeNodeInner(props: TreeNodeProps) {
 
   // Merge react-aria + hover props but EXCLUDE `onKeyDown` from the
   // chain — `composedKeyDown` already wraps `rowProps.onKeyDown` and
-  // must run first to short-circuit Enter/Space selection in
-  // `expandOnFolderClick` mode.
-  const baseRowProps = {
+  // must run first so our Shift+F10 / Space-checkbox shortcuts can
+  // short-circuit the default react-aria behavior.
+  const finalRowProps = {
     ...mergeProps(rowProps, hoverProps),
     'aria-checked': ariaChecked,
     onKeyDown: composedKeyDown,
   };
-
-  // When `expandOnFolderClick` applies, replace the click + pointer
-  // handlers so usePress (from `useSelectableItem`) doesn't trigger
-  // selection. We still want focus/keyboard nav, so we manually call
-  // `setFocusedKey` + `setFocused`.
-  const finalRowProps = shouldExpandOnRowClick
-    ? {
-        ...baseRowProps,
-        onClick: handleFolderRowClick,
-        onPointerDown: handleFolderRowPointerEvent,
-        onPointerUp: handleFolderRowPointerEvent,
-        onMouseDown: handleFolderRowPointerEvent,
-        onMouseUp: handleFolderRowPointerEvent,
-      }
-    : baseRowProps;
 
   // ---- Toggle (chevron) and checkbox slots --------------------------------
 

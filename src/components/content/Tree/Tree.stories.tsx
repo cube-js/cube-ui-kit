@@ -189,15 +189,6 @@ const meta = {
         type: { summary: '(node: TreeLoadDataNode) => Promise<void>' },
       },
     },
-    expandOnFolderClick: {
-      control: 'boolean',
-      description:
-        'Pressing a non-leaf row toggles its expansion instead of triggering selection',
-      table: {
-        defaultValue: { summary: 'false' },
-        type: { summary: 'boolean' },
-      },
-    },
 
     /* Per-row menu */
     menu: {
@@ -602,18 +593,5 @@ export const PerNodeMenu: Story = {
         ],
       },
     ],
-  },
-};
-
-/**
- * `expandOnFolderClick` makes folder rows toggle their expansion on
- * click instead of selecting. Leaves still trigger selection. Useful
- * for file-tree UX where only files are meaningful targets.
- */
-export const ExpandOnFolderClick: Story = {
-  args: {
-    expandOnFolderClick: true,
-    defaultExpandedKeys: ['src'],
-    selectionMode: 'single',
   },
 };

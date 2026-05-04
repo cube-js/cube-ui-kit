@@ -67,13 +67,6 @@ consumers can be migrated with minimal churn.
   — Called when a node is checked or unchecked.
 - **`onSelect`** `(selectedKeys: Key[], info: TreeOnSelectInfo) => void` —
   Called when row selection changes.
-- **`expandOnFolderClick`** `boolean` (default: `false`) — When `true`,
-  activating a non-leaf row toggles its expansion instead of selecting
-  it. Activation happens on mouse click, `Enter`, or `Space` (in
-  checkable trees `Space` is reserved for the row checkbox; `Enter`
-  always expands). The chevron and keyboard navigation continue to
-  work independently. Useful for file-tree UX where only leaves are
-  meaningful selection targets.
 - **`menu`** `ReactNode | ((data, state) => ReactNode | null)` — Default
   `Menu.Item` children rendered on every row that doesn't override via
   `data.menu`. Returning `null` from the callback hides the menu for
@@ -350,26 +343,6 @@ or `null` to hide it entirely. `data.contextMenu` and
 `data.onAction` follow the same per-row override pattern.
 
 <Story of={TreeStories.PerNodeMenu} />
-
-### Expand on Folder Click
-
-`expandOnFolderClick` makes folder rows toggle their expansion when
-activated instead of triggering selection. Leaves still select normally,
-which mirrors typical file-tree UX. Folder rows remain focusable for
-keyboard navigation, and the chevron toggle keeps working.
-
-Activation rules for folder rows:
-
-- Mouse click → expand / collapse.
-- `Enter` → expand / collapse (always, including in `isCheckable` trees).
-- `Space` → expand / collapse in non-checkable trees; in `isCheckable`
-  trees `Space` toggles the row's checkbox instead.
-
-```jsx
-<Tree treeData={data} expandOnFolderClick />
-```
-
-<Story of={TreeStories.ExpandOnFolderClick} />
 
 ## Accessibility
 

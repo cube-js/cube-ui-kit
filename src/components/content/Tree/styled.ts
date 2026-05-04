@@ -7,6 +7,10 @@ import { Item } from '../Item';
  * Tree root.
  *
  * Renders as `role="treegrid"` (set on `gridProps` from `useTree`).
+ * This element is the outer flex layout container; scrolling is
+ * delegated to the inner `TreeScrollContainer` so the virtualized
+ * sizer (a flex item here would be squashed by `flex-shrink: 1`) is
+ * placed inside a normal block formatting context.
  *
  * Tree-wide modifiers (set on `TreeElement` itself):
  * - `has-height` — paired with `--tree-height` on inline `style`
@@ -23,8 +27,6 @@ export const TreeElement = tasty({
     flexShrink: { '': 1, 'has-height': 0 },
     flexBasis: { '': 0, 'has-height': 'auto' },
     minHeight: 0,
-    overflow: 'auto',
-    scrollbar: 'thin',
     fill: '#clear',
     color: '#dark',
     transition: 'theme',
@@ -32,6 +34,27 @@ export const TreeElement = tasty({
     padding: 0,
     radius: { '': 0, 'shape=card': '1cr' },
     border: { '': 0, 'shape=card': true },
+  },
+});
+
+/**
+ * Inner scroll viewport. Block-level on purpose — placing the
+ * virtualizer's sizer (`height: ${totalSize}px`) directly inside the
+ * flex `TreeElement` lets `flex-shrink: 1` collapse it, which makes
+ * the scroll area visibly grow as `@tanstack/react-virtual`
+ * re-measures rows during scroll.
+ */
+export const TreeScrollContainer = tasty({
+  qa: 'TreeScrollContainer',
+  styles: {
+    display: 'block',
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 'auto',
+    width: '0 100% initial',
+    height: 'min 0',
+    overflow: 'auto',
+    scrollbar: 'thin',
   },
 });
 

@@ -247,24 +247,6 @@ export interface CubeTreeProps extends BaseProps, OuterStyleProps {
   qa?: string;
 
   /**
-   * When `true`, activating a non-leaf row toggles its expansion
-   * instead of selecting it. Useful for file-tree UX where only
-   * leaves are selectable. Folder rows remain focusable for keyboard
-   * navigation, and the chevron toggle keeps working independently.
-   *
-   * Activation rules for folder rows:
-   *   - Mouse click → expand / collapse.
-   *   - `Enter` → expand / collapse (always, including in `isCheckable`
-   *     trees — `Enter` is not a checkbox key).
-   *   - `Space` → expand / collapse in non-checkable trees; in
-   *     `isCheckable` trees `Space` toggles the row's checkbox instead.
-   *
-   * Leaf rows are unaffected and continue to select normally.
-   * @default false
-   */
-  expandOnFolderClick?: boolean;
-
-  /**
    * Per-tree default menu items (Menu.Item children) shown on every
    * row that doesn't override via `data.menu`.
    *
