@@ -66,60 +66,65 @@ defaultTheme.colors({
   },
 
   // ---- Text on surfaces ----
-  // Each token uses a tiny relative `lightness` ('-1') purely as a *directional
-  // hint* to the contrast solver (search the darker branch in light mode → the
-  // lighter branch in dark mode, since the base inverts). The actual lightness
-  // is driven by the numeric `contrast` ratio below, so the perceived contrast
-  // is identical in light and dark schemes (no more "barely meets AAA in dark
-  // while light sits at ~13"). The HC pair `[normal, highContrast]` matches
-  // today's achieved-light-mode ratios, so visual parity is preserved while
-  // the dark scheme is brought up to the same level.
+  // The darkest text token uses an *absolute* lightness anchored at the very
+  // bottom of Glaze's lightness window (default `[10, 100]` for light /
+  // `[15, 95]` for dark). A contrast-driven `surface-text` would top out near
+  // L≈21 in light mode (because the solver only needs to *meet* the contrast
+  // floor, then stops), leaving it noticeably softer than the legacy `#dark`
+  // (OKHSL L=12). Setting `lightness: 2` (mode: 'auto', default) pins the
+  // light-mode resolved value to L≈11.8 — pixel-equivalent to the legacy
+  // `#dark` — and inverts in dark mode to L≈94 (cr≈13.7 vs the dark surface).
+  // High-contrast pushes it all the way to the absolute extremes (L=2 light /
+  // L=99 dark, cr≈20.8 / 20.5), unbounded by the normal lightness window.
+  //
+  // The softer variants below keep `lightness: '-1'` as a directional hint and
+  // a numeric `contrast` ratio. Values are tuned so light-mode lightness lands
+  // close to the legacy palette (`#dark-02` L=31, `#dark-03` L=49), so the
+  // visual look in light mode is preserved while dark mode gets the proper
+  // inverted ramp via the contrast solver.
   'surface-text': {
     base: 'surface',
-    lightness: '-1',
+    lightness: 2,
     saturation: 0.475,
-    contrast: [13, 17],
   },
   'surface-text-soft': {
     base: 'surface',
     lightness: '-1',
     saturation: 0.375,
-    contrast: [7, 9],
+    contrast: [9, 11],
     inherit: false,
   },
   'surface-text-soft-2': {
     base: 'surface',
     lightness: '-1',
     saturation: 0.24,
-    contrast: [3.9, 4.7],
+    contrast: [4.5, 5.5],
     inherit: false,
   },
   'surface-2-text': {
     base: 'surface-2',
-    lightness: '-1',
+    lightness: 2,
     saturation: 0.475,
-    contrast: [13, 17],
     inherit: false,
   },
   'surface-2-text-soft': {
     base: 'surface-2',
     lightness: '-1',
     saturation: 0.375,
-    contrast: [7, 9],
+    contrast: [9, 11],
     inherit: false,
   },
   'surface-3-text': {
     base: 'surface-3',
-    lightness: '-1',
+    lightness: 2,
     saturation: 0.475,
-    contrast: [13, 17],
     inherit: false,
   },
   'surface-3-text-soft': {
     base: 'surface-3',
     lightness: '-1',
     saturation: 0.375,
-    contrast: [7, 9],
+    contrast: [9, 11],
     inherit: false,
   },
 
