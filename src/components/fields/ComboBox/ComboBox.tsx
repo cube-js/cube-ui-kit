@@ -87,7 +87,7 @@ const ComboBoxOverlayElement = tasty({
     width: '$overlay-min-width max-content 50vw',
     height: 'initial max-content (50vh - 5x)',
     overflow: 'auto',
-    background: '#white',
+    fill: '#surface',
     radius: '1cr',
     shadow: true,
     padding: '0',

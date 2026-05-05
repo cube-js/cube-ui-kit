@@ -49,7 +49,7 @@ const RadioButtonElement = tasty(Item, {
 
 const TabRadioButtonSelectedElement = tasty(RadioButtonElement, {
   styles: {
-    fill: '#white',
+    fill: '#surface',
     shadow: '$item-shadow',
   },
 });
@@ -84,7 +84,7 @@ const RadioNormalElement = tasty({
     placeItems: 'center',
     radius: 'round',
     fill: {
-      '': '#white',
+      '': '#surface',
       disabled: '#dark.04',
     },
     color: {

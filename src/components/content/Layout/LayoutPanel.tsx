@@ -105,7 +105,7 @@ const PanelElement = tasty({
       'side=top': 'bottom',
       'side=bottom': 'top',
     },
-    fill: '#white',
+    fill: '#surface',
 
     // Transition styles - offscreen mod controls slide animation
     transform: {

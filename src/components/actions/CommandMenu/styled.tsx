@@ -15,7 +15,7 @@ export const StyledCommandMenu = tasty({
     },
     placeContent: 'stretch',
     placeItems: 'stretch',
-    fill: '#white',
+    fill: '#surface',
     border: '#border',
     radius: '(1cr + 1bw)',
     shadow: {

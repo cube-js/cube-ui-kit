@@ -71,10 +71,15 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     disabled: '#clear',
   },
   fill: {
-    '': '#white #primary',
-    hovered: '#white #primary-text',
-    pressed: '#white #primary',
-    disabled: '#white #primary-disabled',
+    '': '#surface #primary',
+    // `#primary-hover` (= fixed-mode `accent-surface-hover`, ~7–9 OKHSL pts
+    // darker than `#primary`) keeps hover *darker than default in BOTH light
+    // and dark schemes. Was `#primary-text`, which became `mode: 'auto'`
+    // after the accent-text refactor and inverts direction in dark mode
+    // (lighter than default), breaking the hover affordance.
+    hovered: '#surface #primary-hover',
+    pressed: '#surface #primary',
+    disabled: '#surface #primary-disabled',
   },
   color: {
     '': '#white',
@@ -83,20 +88,29 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
 } as const;
 
 export const DEFAULT_SECONDARY_STYLES: Styles = {
+  // Anchor every alpha tint to the *adaptive* `#primary-text` (mode 'auto')
+  // rather than the *fixed* `#primary` (mode 'fixed'). In dark mode the fixed
+  // brand-purple over a dark surface composites to a near-black tint and the
+  // border/fill lose all visible relationship to the page bg — both end up at
+  // CR ≈ 1.13–1.31 vs surface in dark vs ~1.13 in light. With `*-text` (which
+  // gets *brighter* in dark mode) the same alpha values give CR ≈ 1.55–1.82
+  // in dark with negligible shift in light (1.13 → 1.15). Pressed fill alpha
+  // is bumped from .10 → .22 to keep a visible press differential now that
+  // both default and pressed share the same anchor.
   border: {
-    '': '#primary.15',
-    pressed: '#primary.3',
+    '': '#primary-text.15',
+    pressed: '#primary-text.3',
     focused: '#primary-text',
     disabled: '#border',
   },
   fill: {
-    '': '#primary.10',
-    hovered: '#primary.16',
-    pressed: '#primary-text.10',
+    '': '#primary-text.10',
+    hovered: '#primary-text.16',
+    pressed: '#primary-text.22',
     disabled: '#dark.04',
   },
   color: {
-    '': '#primary',
+    '': '#primary-text',
     disabled: '#dark-04',
   },
 } as const;
@@ -109,12 +123,12 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
-    '': '#white #dark.0',
-    hovered: '#white #dark.03',
-    selected: '#white #dark.09',
-    'selected & hovered': '#white #dark.12',
-    pressed: '#white #dark.09',
-    disabled: '#white #dark.04',
+    '': '#surface #dark.0',
+    hovered: '#surface #dark.03',
+    selected: '#surface #dark.09',
+    'selected & hovered': '#surface #dark.12',
+    pressed: '#surface #dark.09',
+    disabled: '#surface #dark.04',
   },
   color: {
     '': '#dark-02',
@@ -210,9 +224,9 @@ export const DANGER_PRIMARY_STYLES: Styles = {
     disabled: '#clear',
   },
   fill: {
-    '': '#white #danger',
-    hovered: '#white #danger-text',
-    pressed: '#white #danger',
+    '': '#surface #danger',
+    hovered: '#surface #danger-hover',
+    pressed: '#surface #danger',
     disabled: '#danger-desaturated.6',
   },
   color: {
@@ -223,18 +237,18 @@ export const DANGER_PRIMARY_STYLES: Styles = {
 
 export const DANGER_SECONDARY_STYLES: Styles = {
   border: {
-    '': '#danger.15',
-    pressed: '#danger.3',
+    '': '#danger-text.15',
+    pressed: '#danger-text.3',
     focused: '#danger-text',
     disabled: '#border',
   },
   fill: {
-    '': '#danger.05',
-    'hovered & !pressed': '#danger.1',
+    '': '#danger-text.05',
+    'hovered & !pressed': '#danger-text.1',
     disabled: '#dark.04',
   },
   color: {
-    '': '#danger',
+    '': '#danger-text',
     disabled: '#dark-04',
   },
 } as const;
@@ -247,10 +261,10 @@ export const DANGER_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#white #danger.0',
-    hovered: '#white #danger.1',
-    'pressed | (selected & !hovered)': '#white #danger.05',
-    disabled: '#white #dark.04',
+    '': '#surface #danger.0',
+    hovered: '#surface #danger.1',
+    'pressed | (selected & !hovered)': '#surface #danger.05',
+    disabled: '#surface #dark.04',
   },
   color: {
     '': '#danger-text',
@@ -343,9 +357,9 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
     disabled: '#clear',
   },
   fill: {
-    '': '#white #success',
-    hovered: '#white #success-text',
-    pressed: '#white #success',
+    '': '#surface #success',
+    hovered: '#surface #success-hover',
+    pressed: '#surface #success',
     disabled: '#success-desaturated.6',
   },
   color: {
@@ -356,18 +370,18 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
 
 export const SUCCESS_SECONDARY_STYLES: Styles = {
   border: {
-    '': '#success.15',
-    pressed: '#success.3',
+    '': '#success-text.15',
+    pressed: '#success-text.3',
     focused: '#success-text',
     disabled: '#border',
   },
   fill: {
-    '': '#success.05',
-    'hovered & !pressed': '#success.1',
+    '': '#success-text.05',
+    'hovered & !pressed': '#success-text.1',
     disabled: '#dark.04',
   },
   color: {
-    '': '#success',
+    '': '#success-text',
     disabled: '#dark-04',
   },
 } as const;
@@ -380,10 +394,10 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#white #success.0',
-    hovered: '#white #success.1',
-    'pressed | (selected & !hovered)': '#white #success.05',
-    disabled: '#white #dark.04',
+    '': '#surface #success.0',
+    hovered: '#surface #success.1',
+    'pressed | (selected & !hovered)': '#surface #success.05',
+    disabled: '#surface #dark.04',
   },
   color: {
     '': '#success-text',
@@ -476,9 +490,9 @@ export const WARNING_PRIMARY_STYLES: Styles = {
     disabled: '#clear',
   },
   fill: {
-    '': '#white #warning',
-    hovered: '#white #warning-text',
-    pressed: '#white #warning',
+    '': '#surface #warning',
+    hovered: '#surface #warning-hover',
+    pressed: '#surface #warning',
     disabled: '#warning-desaturated.6',
   },
   color: {
@@ -489,14 +503,14 @@ export const WARNING_PRIMARY_STYLES: Styles = {
 
 export const WARNING_SECONDARY_STYLES: Styles = {
   border: {
-    '': '#warning.15',
-    pressed: '#warning.3',
+    '': '#warning-text.15',
+    pressed: '#warning-text.3',
     focused: '#warning-text',
     disabled: '#border',
   },
   fill: {
-    '': '#warning.05',
-    'hovered & !pressed': '#warning.1',
+    '': '#warning-text.05',
+    'hovered & !pressed': '#warning-text.1',
     disabled: '#dark.04',
   },
   color: {
@@ -513,10 +527,10 @@ export const WARNING_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#white #warning.0',
-    hovered: '#white #warning.1',
-    'pressed | (selected & !hovered)': '#white #warning.05',
-    disabled: '#white #dark.04',
+    '': '#surface #warning.0',
+    hovered: '#surface #warning.1',
+    'pressed | (selected & !hovered)': '#surface #warning.05',
+    disabled: '#surface #dark.04',
   },
   color: {
     '': '#warning-text',
@@ -609,9 +623,9 @@ export const NOTE_PRIMARY_STYLES: Styles = {
     disabled: '#clear',
   },
   fill: {
-    '': '#white #note',
-    hovered: '#white #note-text',
-    pressed: '#white #note',
+    '': '#surface #note',
+    hovered: '#surface #note-hover',
+    pressed: '#surface #note',
     disabled: '#note-desaturated.6',
   },
   color: {
@@ -622,14 +636,14 @@ export const NOTE_PRIMARY_STYLES: Styles = {
 
 export const NOTE_SECONDARY_STYLES: Styles = {
   border: {
-    '': '#note.15',
-    pressed: '#note.3',
+    '': '#note-text.15',
+    pressed: '#note-text.3',
     focused: '#note-text',
     disabled: '#border',
   },
   fill: {
-    '': '#note.05',
-    'hovered & !pressed': '#note.1',
+    '': '#note-text.05',
+    'hovered & !pressed': '#note-text.1',
     disabled: '#dark.04',
   },
   color: {
@@ -646,10 +660,10 @@ export const NOTE_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#white #note.0',
-    hovered: '#white #note.1',
-    'pressed | (selected & !hovered)': '#white #note.05',
-    disabled: '#white #dark.04',
+    '': '#surface #note.0',
+    hovered: '#surface #note.1',
+    'pressed | (selected & !hovered)': '#surface #note.05',
+    disabled: '#surface #dark.04',
   },
   color: {
     '': '#note-text',
@@ -743,7 +757,7 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
   },
   fill: {
     '': '#white #primary',
-    hovered: '#white #primary-text',
+    hovered: '#white #primary-hover',
     pressed: '#white #primary',
     disabled: '#primary-disabled.5',
   },

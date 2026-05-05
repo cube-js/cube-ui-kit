@@ -77,9 +77,9 @@ const CheckboxElement = tasty({
     placeItems: 'center',
     radius: '.5r',
     fill: {
-      '': '#white',
+      '': '#surface',
       'checked | indeterminate': '#primary',
-      'invalid & !checked': '#white',
+      'invalid & !checked': '#surface',
       'invalid & checked': '#danger',
       disabled: '#dark.12',
     },

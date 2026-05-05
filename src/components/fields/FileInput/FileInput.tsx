@@ -39,7 +39,7 @@ const FileInputElement = tasty(Action, {
     flow: 'row',
     placeItems: 'center start',
     fill: {
-      '': '#white',
+      '': '#surface',
       'drag-hover': '#primary.16',
       ':hover': '#primary.08',
       disabled: '#dark.04',

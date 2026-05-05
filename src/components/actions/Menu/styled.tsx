@@ -9,7 +9,7 @@ export const StyledMenuWrapper = tasty({
   styles: {
     display: 'grid',
     gridRows: 'max-content 1sf max-content',
-    fill: '#white',
+    fill: '#surface',
     margin: 0,
     padding: 0,
     border: true,
@@ -125,7 +125,7 @@ export const StyledSection = tasty({
     margin: '0',
     padding: '0',
     listStyle: 'none',
-    fill: '#white',
+    fill: '#surface',
   },
 });
 

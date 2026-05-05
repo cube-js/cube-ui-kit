@@ -7,6 +7,7 @@ import {
 } from '@tabler/icons-react';
 import { useState } from 'react';
 
+import { withDarkScheme } from '../../../stories/decorators/withColorScheme';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
 
@@ -300,6 +301,18 @@ Default.args = {
 
 export const DefaultStates = ThemeStatesTemplate.bind({});
 DefaultStates.args = {};
+
+export const DarkDefaultStates = ThemeStatesTemplate.bind({});
+DarkDefaultStates.args = {};
+DarkDefaultStates.decorators = [withDarkScheme];
+DarkDefaultStates.parameters = {
+  docs: {
+    description: {
+      story:
+        'Same matrix as `DefaultStates`, rendered with the dark color scheme forced via `data-schema="dark"` on `<html>`. Uses the `withDarkScheme` Storybook decorator from `src/stories/decorators/withColorScheme.tsx`.',
+    },
+  },
+};
 
 export const DangerStates = ThemeStatesTemplate.bind({});
 DangerStates.args = {

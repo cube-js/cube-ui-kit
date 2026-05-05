@@ -393,7 +393,7 @@ export const AllPanelSides: Story = {
       padding="1x"
       fill="#border"
     >
-      <Layout fill="#white" contentPadding="2x">
+      <Layout fill="#surface" contentPadding="2x">
         <Layout.Panel
           isResizable
           side="left"
@@ -411,7 +411,7 @@ export const AllPanelSides: Story = {
         </Layout.Content>
       </Layout>
 
-      <Layout fill="#white">
+      <Layout fill="#surface">
         <Layout.Panel
           isResizable
           side="right"
@@ -429,7 +429,7 @@ export const AllPanelSides: Story = {
         </Layout.Content>
       </Layout>
 
-      <Layout fill="#white">
+      <Layout fill="#surface">
         <Layout.Panel
           isResizable
           side="top"
@@ -447,7 +447,7 @@ export const AllPanelSides: Story = {
         </Layout.Content>
       </Layout>
 
-      <Layout fill="#white">
+      <Layout fill="#surface">
         <Layout.Panel
           isResizable
           side="bottom"
@@ -881,7 +881,7 @@ export const VerticalResizablePanes: Story = {
             </Text>
           </Layout.Pane>
 
-          <Layout.Content fill="#white" flexShrink={0}>
+          <Layout.Content fill="#surface" flexShrink={0}>
             <Title level={5}>Bottom Content</Title>
             <Text>This area fills the remaining vertical space.</Text>
           </Layout.Content>
@@ -1381,7 +1381,7 @@ export const OverflowControl: Story = {
         <Layout
           height="100%"
           width="300px"
-          fill="#white"
+          fill="#surface"
           doNotOverflow={doNotOverflow}
         >
           <Layout.Toolbar>

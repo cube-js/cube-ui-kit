@@ -28,13 +28,18 @@ export type { AriaTooltipProps };
 const TooltipElement = tasty({
   styles: {
     display: 'block',
+    // Tooltip surface intentionally stays scheme-invariant: the default
+    // (dark) and `light` variants look the same in light, dark, and
+    // high-contrast schemes. `#surface-inverse` is the fixed-mode "always
+    // dark" surface from `src/tokens/palette.ts`; `#white` is tasty's
+    // built-in fixed white.
     fill: {
-      '': '#dark.85',
+      '': '#surface-inverse.85',
       light: '#white',
     },
     color: {
       '': '#white',
-      light: '#dark-02',
+      light: '#surface-inverse',
     },
     width: 'initial min(36x, (100dvw - 4x)) max-content',
     radius: true,
@@ -48,7 +53,7 @@ const TooltipElement = tasty({
     },
     filter: {
       '': false,
-      light: 'drop-shadow(0 0 1px #dark.2)',
+      light: 'drop-shadow(0 0 1px #surface-inverse.2)',
     },
     transition:
       'translate $transition ease-out, scale $transition ease-out, theme $transition ease-out',
@@ -88,7 +93,7 @@ const TooltipTipElement = tasty({
     height: '1px',
     border: '.5x #clear',
     borderTop: {
-      '': '.5x solid #dark.85',
+      '': '.5x solid #surface-inverse.85',
       light: '.5x solid #white',
     },
     borderBottom: '0',

@@ -42,7 +42,7 @@ const DialogElement = tasty({
   styles: {
     display: 'flex',
     flow: 'column',
-    fill: '#white',
+    fill: '#surface',
     pointerEvents: 'auto',
     outline: 0,
     position: {

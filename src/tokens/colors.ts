@@ -1,173 +1,115 @@
+import { PALETTE_TOKENS } from './palette';
+
 import type { Styles } from '@tenphi/tasty';
 
-// ============================================================================
-// Color Constants (OKHSL)
-// ============================================================================
+/**
+ * Color tokens with `#` prefix for tasty color definitions.
+ *
+ * The base values come from the Glaze-generated palette (`palette.ts`):
+ * `#surface`, `#surface-text*`, `#border`, `#focus`, `#disabled`, `#pink`,
+ * `#shadow-*`, `#overlay`, the unprefixed `#accent-*` family, and the per-theme
+ * `#primary-*` / `#purple-*` / `#success-*` / `#danger-*` / `#warning-*` /
+ * `#note-*` families.
+ *
+ * Each Glaze token is a state map (`{ '': '...', '@dark': '...', '@hc': '...' }`),
+ * giving us light, dark, and high-contrast variants for free. The `@dark` /
+ * `@hc` predefined states are wired up globally in `src/components/Root.tsx`.
+ *
+ * The aliases below preserve backward compatibility with every legacy
+ * `#name` used across components, stories, and tests. Each alias resolves
+ * to a current Glaze token via tasty's `#token` reference syntax.
+ */
 
-// Hue values (degrees)
-export const PINK_HUE = 5.0;
-export const PURPLE_HUE = 280.3;
-export const DANGER_HUE = 23.1;
-export const SUCCESS_HUE = 156.9;
-export const WARNING_HUE = 84.3;
-export const NOTE_HUE = 302.3;
+const LEGACY_ALIASES: Styles = {
+  // ---- Neutral text scale (legacy `#dark*`) ----
+  '#text': '#surface-text-soft',
+  '#dark': '#surface-text',
+  '#dark-01': '#surface-text',
+  '#dark-02': '#surface-text-soft',
+  '#dark-03': '#surface-text-soft-2',
+  '#dark-04': '#placeholder',
+  '#dark-05': '#border',
 
-// Saturation values (%)
-export const MAIN_SATURATION = 80;
-export const BG_SATURATION = 60;
-export const ICON_SATURATION = 75;
+  // ---- Misc neutral ----
+  '#minor': '#surface-text-soft.65',
+  '#shadow': '#shadow-md',
+  '#light': '#surface-3',
+  '#dark-bg': '#surface-2',
+  '#clear': 'transparent',
 
-// Lightness values (%)
-export const MAIN_LIGHTNESS = 52;
-export const TEXT_LIGHTNESS = 45;
-export const BG_LIGHTNESS = 97;
-export const ICON_LIGHTNESS = 60;
+  // Pink: independent hue, scheme-static (no Glaze adaptation).
+  '#pink': 'okhsl(5 100% 67%)',
 
-// Disabled state values (60% white + 40% main color in okhsl)
-// Saturation: 0.6 * 0 + 0.4 * MAIN_SATURATION = 32
-// Lightness: 0.6 * 100 + 0.4 * MAIN_LIGHTNESS = 80.8
-export const DISABLED_SATURATION = 32;
-export const DISABLED_LIGHTNESS = 80.8;
+  // ---- Disabled state aliases ----
+  '#disabled-text': '#disabled',
+  '#disabled-bg': '#surface-2',
 
-// ============================================================================
-// Helper function
-// ============================================================================
+  // ---- Primary / Purple legacy ----
+  '#primary': '#primary-accent-surface',
+  '#primary-text': '#primary-accent-text',
+  '#primary-bg': '#primary-surface',
+  '#primary-icon': '#primary-accent-icon',
+  '#primary-hover': '#primary-accent-surface-hover',
+  '#primary-desaturated': '#primary-accent-surface-2',
+  '#primary-disabled': '#disabled',
 
-/** Generate an OKHSL color string */
-const okhsl = (h: number, s: number, l: number): string =>
-  `okhsl(${h} ${s}% ${l}%)`;
+  '#purple': '#purple-accent-surface',
+  '#purple-text': '#purple-accent-text',
+  '#purple-bg': '#purple-surface',
+  '#purple-icon': '#purple-accent-icon',
+  '#purple-hover': '#purple-accent-surface-hover',
+  '#purple-disabled': '#disabled',
 
-// ============================================================================
-// Color Tokens
-// ============================================================================
+  // Purple scale (gradient/accent shades) — mapped to the accent-surface ramp.
+  '#purple-01': '#purple-accent-surface',
+  '#purple-02': '#purple-accent-surface-2',
+  '#purple-03': '#purple-accent-surface-3',
+  '#purple-04': '#purple-surface',
+
+  // ---- Danger ----
+  '#danger': '#danger-accent-surface',
+  '#danger-text': '#danger-accent-text',
+  '#danger-bg': '#danger-surface',
+  '#danger-icon': '#danger-accent-icon',
+  '#danger-hover': '#danger-accent-surface-hover',
+  '#danger-desaturated': '#danger-accent-surface-2',
+  '#danger-disabled': '#disabled',
+
+  // ---- Success ----
+  '#success': '#success-accent-surface',
+  '#success-text': '#success-accent-text',
+  '#success-bg': '#success-surface',
+  '#success-icon': '#success-accent-icon',
+  '#success-hover': '#success-accent-surface-hover',
+  '#success-desaturated': '#success-accent-surface-2',
+  '#success-disabled': '#disabled',
+
+  // ---- Warning ----
+  '#warning': '#warning-accent-surface',
+  '#warning-text': '#warning-accent-text',
+  '#warning-bg': '#warning-surface',
+  '#warning-icon': '#warning-accent-icon',
+  '#warning-hover': '#warning-accent-surface-hover',
+  '#warning-desaturated': '#warning-accent-surface-2',
+  '#warning-disabled': '#disabled',
+
+  // ---- Note ----
+  '#note': '#note-accent-surface',
+  '#note-text': '#note-accent-text',
+  '#note-bg': '#note-surface',
+  '#note-icon': '#note-accent-icon',
+  '#note-hover': '#note-accent-surface-hover',
+  '#note-desaturated': '#note-accent-surface-2',
+  '#note-disabled': '#disabled',
+};
 
 /**
- * Color tokens with # prefix for tasty color definitions.
- * The tasty system automatically generates {name}-color-rgb variants.
- * Colors are defined in OKHSL format for perceptually uniform color manipulation.
+ * Combined color token map: Glaze-generated palette + legacy aliases.
+ *
+ * `#white` and `#black` are intentionally omitted — they are built-in
+ * tasty named colors and resolve automatically.
  */
 export const COLOR_TOKENS: Styles = {
-  // Base colors - Pink
-  '#pink': okhsl(PINK_HUE, 100, 67),
-
-  // Primary colors (semantic aliases)
-  '#primary': okhsl(PURPLE_HUE, MAIN_SATURATION, MAIN_LIGHTNESS),
-  '#primary-text': okhsl(PURPLE_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
-  '#primary-bg': okhsl(PURPLE_HUE, BG_SATURATION, BG_LIGHTNESS),
-  '#primary-icon': okhsl(PURPLE_HUE, ICON_SATURATION, ICON_LIGHTNESS),
-  '#primary-desaturated': okhsl(
-    PURPLE_HUE,
-    DISABLED_SATURATION,
-    MAIN_LIGHTNESS,
-  ),
-  '#primary-disabled': okhsl(
-    PURPLE_HUE,
-    DISABLED_SATURATION,
-    DISABLED_LIGHTNESS,
-  ),
-
-  // Base colors - Purple (legacy aliases for backward compatibility)
-  '#purple': '#primary',
-  '#purple-text': '#primary-text',
-  '#purple-bg': '#primary-bg',
-  '#purple-icon': '#primary-icon',
-  '#purple-disabled': '#primary-disabled',
-  '#purple-01': okhsl(PURPLE_HUE, 100, 58),
-  '#purple-02': okhsl(PURPLE_HUE, 100, 66),
-  '#purple-03': okhsl(PURPLE_HUE, 100, 74),
-  '#purple-04': okhsl(PURPLE_HUE, 100, 83),
-
-  // Focus
-  '#focus': okhsl(PURPLE_HUE, 69, 71),
-
-  // Text
-  '#text': okhsl(PURPLE_HUE, 30, 31),
-
-  // Dark
-  '#dark': okhsl(PURPLE_HUE, 38, 12),
-  '#dark-01': okhsl(PURPLE_HUE, 38, 12),
-  '#dark-02': okhsl(PURPLE_HUE, 30, 31),
-  '#dark-03': okhsl(PURPLE_HUE, 19, 49),
-  '#dark-04': okhsl(PURPLE_HUE, 14, 67),
-  '#dark-05': okhsl(PURPLE_HUE, 14, 86),
-
-  // Surfaces
-  '#surface': okhsl(PURPLE_HUE, 21, 100),
-  '#surface-2': okhsl(PURPLE_HUE, 21, 98),
-  '#surface-3': okhsl(PURPLE_HUE, 21, 96),
-
-  // Legacy
-  '#light': '#surface-3',
-  '#dark-bg': okhsl(PURPLE_HUE, 21, 98),
-
-  // Black & White
-  '#white': 'okhsl(0 0% 100%)',
-  '#black': 'okhsl(0 0% 0%)',
-
-  // Danger (red)
-  '#danger': okhsl(DANGER_HUE, MAIN_SATURATION, MAIN_LIGHTNESS),
-  '#danger-text': okhsl(DANGER_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
-  '#danger-bg': okhsl(DANGER_HUE, BG_SATURATION, BG_LIGHTNESS),
-  '#danger-icon': okhsl(DANGER_HUE, ICON_SATURATION, ICON_LIGHTNESS),
-  '#danger-desaturated': okhsl(DANGER_HUE, DISABLED_SATURATION, MAIN_LIGHTNESS),
-  '#danger-disabled': okhsl(
-    DANGER_HUE,
-    DISABLED_SATURATION,
-    DISABLED_LIGHTNESS,
-  ),
-
-  // Success (green)
-  '#success': okhsl(SUCCESS_HUE, MAIN_SATURATION, MAIN_LIGHTNESS),
-  '#success-text': okhsl(SUCCESS_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
-  '#success-bg': okhsl(SUCCESS_HUE, BG_SATURATION, BG_LIGHTNESS),
-  '#success-icon': okhsl(SUCCESS_HUE, ICON_SATURATION, ICON_LIGHTNESS),
-  '#success-desaturated': okhsl(
-    SUCCESS_HUE,
-    DISABLED_SATURATION,
-    MAIN_LIGHTNESS,
-  ),
-  '#success-disabled': okhsl(
-    SUCCESS_HUE,
-    DISABLED_SATURATION,
-    DISABLED_LIGHTNESS,
-  ),
-
-  // Warning (yellow/amber)
-  '#warning': okhsl(WARNING_HUE, MAIN_SATURATION, MAIN_LIGHTNESS),
-  '#warning-text': okhsl(WARNING_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
-  '#warning-bg': okhsl(WARNING_HUE, BG_SATURATION, BG_LIGHTNESS),
-  '#warning-icon': okhsl(WARNING_HUE, ICON_SATURATION, ICON_LIGHTNESS),
-  '#warning-desaturated': okhsl(
-    WARNING_HUE,
-    DISABLED_SATURATION,
-    MAIN_LIGHTNESS,
-  ),
-  '#warning-disabled': okhsl(
-    WARNING_HUE,
-    DISABLED_SATURATION,
-    DISABLED_LIGHTNESS,
-  ),
-
-  // Note (violet)
-  '#note': okhsl(NOTE_HUE, MAIN_SATURATION, MAIN_LIGHTNESS),
-  '#note-text': okhsl(NOTE_HUE, MAIN_SATURATION, TEXT_LIGHTNESS),
-  '#note-bg': okhsl(NOTE_HUE, BG_SATURATION, BG_LIGHTNESS),
-  '#note-icon': okhsl(NOTE_HUE, ICON_SATURATION, ICON_LIGHTNESS),
-  '#note-desaturated': okhsl(NOTE_HUE, DISABLED_SATURATION, MAIN_LIGHTNESS),
-  '#note-disabled': okhsl(NOTE_HUE, DISABLED_SATURATION, DISABLED_LIGHTNESS),
-
-  // Border
-  '#border': okhsl(PURPLE_HUE, 13, 90),
-
-  '#placeholder': '#dark-04',
-
-  // Semantic colors
-  '#clear': 'transparent',
-  '#shadow': '#dark.06',
-  '#minor': '#dark.65',
-
-  // Disabled state colors
-  '#disabled': '#dark-01.25',
-  '#disabled-text': '#dark-01.25',
-  '#disabled-bg': '#dark-05.2',
+  ...PALETTE_TOKENS,
+  ...LEGACY_ALIASES,
 };

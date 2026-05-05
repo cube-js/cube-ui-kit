@@ -4,6 +4,7 @@ import {
   BLOCK_STYLES,
   configure,
   filterBaseProps,
+  setGlobalPredefinedStates,
   tasty,
 } from '@tenphi/tasty';
 import { useEffect, useRef, useState } from 'react';
@@ -14,12 +15,24 @@ import { NavigationAdapter } from '../providers/navigation.types';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 import { EventBusProvider } from '../utils/react/useEventBus';
 import { extractStyles } from '../utils/styles';
-import { VERSION } from '../version';
+import { TASTY_VERSION, VERSION } from '../version';
 
 import { GlobalStyles } from './GlobalStyles';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
 import { OverlayProvider } from './overlays/Notifications/OverlayProvider';
 import { PortalProvider } from './portal';
+
+// Color-scheme aliases for the Glaze-generated palette (see `src/tokens/palette.ts`).
+// Attribute opt-in wins over system preference:
+//   <html data-schema="dark">    → forces dark scheme
+//   <html data-contrast="high">  → forces high-contrast scheme
+// Otherwise falls back to the user's `prefers-color-scheme` / `prefers-contrast`.
+setGlobalPredefinedStates({
+  '@dark':
+    '@root(schema=dark) | (!@root(schema) & @media(prefers-color-scheme: dark))',
+  '@hc':
+    '@root(contrast=high) | (!@root(contrast) & @media(prefers-contrast: more))',
+});
 
 configure({
   colorSpace: 'rgb',
@@ -153,7 +166,8 @@ export function Root(allProps: CubeRootProps) {
       <TrackingProvider event={tracking?.event}>
         <RootElement
           ref={ref}
-          data-tasty={VERSION}
+          data-uikit={VERSION}
+          data-tasty={TASTY_VERSION}
           data-font-display={fontDisplay}
           {...filterBaseProps(props, { eventProps: true })}
           styles={styles}

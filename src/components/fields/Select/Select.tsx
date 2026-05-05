@@ -80,7 +80,7 @@ const SelectWrapperElement = tasty({
     position: 'relative',
     radius: true,
     fill: {
-      '': '#white',
+      '': '#surface',
       disabled: '#dark.04',
       'theme=special': '#clear',
     },
@@ -133,7 +133,7 @@ const OverlayElement = tasty({
     gridRows: '1sf',
     height: 'initial max-content (50vh - 5x)',
     overflow: 'auto',
-    background: '#white',
+    fill: '#surface',
     radius: '1cr',
     shadow: true,
     padding: '.5x',

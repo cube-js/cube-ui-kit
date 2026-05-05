@@ -30,7 +30,6 @@ export const parameters = {
           'Field Properties',
           'Complex Layout',
           'Advanced States',
-          'Playground',
         ],
         'Actions',
         'Content',
@@ -47,11 +46,13 @@ export const parameters = {
     },
   },
   docs: {},
+  // Storybook's `addon-backgrounds` injects `.sb-show-main { background: … !important }`
+  // when an option is selected, which overrides the body's `#surface` fill from
+  // `src/components/GlobalStyles.tsx`. Disable it globally so the body's
+  // scheme-aware Glaze background shows through (dark/light). Stories can still
+  // override via `parameters.backgrounds = { disable: false, … }`.
   backgrounds: {
-    options: {
-      transparent: { name: 'transparent', value: 'transparent' },
-      gray: { name: 'gray', value: 'rgba(243,243,250, 1)' },
-    },
+    disabled: true,
   },
   actions: {
     // Disable only while the test runner is active
@@ -67,9 +68,3 @@ export const decorators = [
   ),
 ];
 export const tags = ['autodocs'];
-
-export const initialGlobals = {
-  backgrounds: {
-    value: 'transparent',
-  },
-};
