@@ -51,8 +51,12 @@ export const parameters = {
   // `src/components/GlobalStyles.tsx`. Disable it globally so the body's
   // scheme-aware Glaze background shows through (dark/light). Stories can still
   // override via `parameters.backgrounds = { disable: false, … }`.
+  // NOTE: the addon's parameter is `disable` (not `disabled`) — the latter is
+  // silently ignored, leaving the addon active and its toolbar still able to
+  // inject a !important background. See:
+  //   https://github.com/storybookjs/storybook/blob/v10.3.4/docs/_snippets/addon-backgrounds-disabled.md
   backgrounds: {
-    disabled: true,
+    disable: true,
   },
   actions: {
     // Disable only while the test runner is active
