@@ -374,21 +374,69 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     [rowVirtualizer.getTotalSize()],
   );
 
-  // Keep focused node visible during keyboard navigation.
+  /**
+   * Each scroll effect tracks its own "last scrolled" target instead
+   * of sharing one ref. A shared ref creates a feedback loop: keyboard
+   * nav updates the focused-key ref to the new row, and any subsequent
+   * `visibleNodes` change OR `selectedKeys` array-identity change
+   * (very common — `selectedKeys={[value]}` allocates a fresh array
+   * every parent render) re-runs the selectedKeys effect, which sees
+   * the ref no longer matches `selectedKeys[0]` and yanks the viewport
+   * back to the selected row. Two refs let each effect dedupe against
+   * its own intent only; the cost is at most one duplicate
+   * `scrollToIndex` call when click updates focus and selection in the
+   * same render (idempotent — both target the same index).
+   */
+  const lastFocusedScrollRef = useRef<Key | null>(null);
+  const lastSelectedScrollRef = useRef<string | null>(null);
+
+  /**
+   * Keep the focused row visible during keyboard navigation.
+   *
+   * Uses `rowVirtualizer.scrollToIndex` (instead of
+   * `querySelector + scrollIntoView`) so the scroll lands even when the
+   * target row is outside the virtualizer's currently rendered window.
+   * `align: 'auto'` only scrolls when needed, matching the prior
+   * `scrollIntoView({ block: 'nearest' })` behavior.
+   */
   useLayoutEffect(() => {
     const focusedKey = state.selectionManager.focusedKey;
     if (focusedKey == null) return;
+    if (lastFocusedScrollRef.current === focusedKey) return;
 
-    const scrollElement = scrollRef.current;
-    if (!scrollElement) return;
+    const index = visibleNodesRef.current.findIndex(
+      (n) => n.key === focusedKey,
+    );
+    if (index < 0) return;
 
-    const row = scrollElement.querySelector(
-      `[data-qa-key="${CSS.escape(String(focusedKey))}"]`,
-    ) as HTMLElement | null;
-    if (!row || typeof row.scrollIntoView !== 'function') return;
+    rowVirtualizer.scrollToIndex(index, { align: 'auto' });
+    lastFocusedScrollRef.current = focusedKey;
+  }, [state.selectionManager.focusedKey, rowVirtualizer]);
 
-    row.scrollIntoView({ block: 'nearest' });
-  }, [state.selectionManager.focusedKey]);
+  /**
+   * Scroll into view when controlled `selectedKeys` changes externally.
+   *
+   * Selection-manager `focusedKey` only updates on explicit user
+   * interaction (click / keyboard) — it does NOT track controlled
+   * `selectedKeys` prop changes. So when a parent updates the prop
+   * (e.g. opening a file from elsewhere), we need a separate effect
+   * to bring the row into view.
+   *
+   * Re-runs on `visibleNodes` so we retry once parents are expanded
+   * (the row is invisible to the virtualizer until then).
+   */
+  useLayoutEffect(() => {
+    if (selectedKeys == null) return;
+    const target = selectedKeys[0];
+    if (target == null) return;
+    if (lastSelectedScrollRef.current === target) return;
+
+    const index = visibleNodes.findIndex((n) => String(n.key) === target);
+    if (index < 0) return;
+
+    rowVirtualizer.scrollToIndex(index, { align: 'auto' });
+    lastSelectedScrollRef.current = target;
+  }, [selectedKeys, visibleNodes, rowVirtualizer]);
 
   const mods = useMemo(
     () => ({
