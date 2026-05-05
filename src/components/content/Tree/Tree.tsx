@@ -375,13 +375,20 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
   );
 
   /**
-   * Track which key we last asked the virtualizer to scroll to. Both
-   * scroll effects (`focusedKey` for keyboard nav and the
-   * controlled-`selectedKeys` effect below) write to the same ref so
-   * we don't fire two `scrollToIndex` calls back-to-back when a click
-   * updates focus and selection in the same render.
+   * Each scroll effect tracks its own "last scrolled" target instead
+   * of sharing one ref. A shared ref creates a feedback loop: keyboard
+   * nav updates the focused-key ref to the new row, and any subsequent
+   * `visibleNodes` change OR `selectedKeys` array-identity change
+   * (very common — `selectedKeys={[value]}` allocates a fresh array
+   * every parent render) re-runs the selectedKeys effect, which sees
+   * the ref no longer matches `selectedKeys[0]` and yanks the viewport
+   * back to the selected row. Two refs let each effect dedupe against
+   * its own intent only; the cost is at most one duplicate
+   * `scrollToIndex` call when click updates focus and selection in the
+   * same render (idempotent — both target the same index).
    */
-  const lastScrolledKeyRef = useRef<Key | null>(null);
+  const lastFocusedScrollRef = useRef<Key | null>(null);
+  const lastSelectedScrollRef = useRef<string | null>(null);
 
   /**
    * Keep the focused row visible during keyboard navigation.
@@ -395,7 +402,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
   useLayoutEffect(() => {
     const focusedKey = state.selectionManager.focusedKey;
     if (focusedKey == null) return;
-    if (lastScrolledKeyRef.current === focusedKey) return;
+    if (lastFocusedScrollRef.current === focusedKey) return;
 
     const index = visibleNodesRef.current.findIndex(
       (n) => n.key === focusedKey,
@@ -403,7 +410,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     if (index < 0) return;
 
     rowVirtualizer.scrollToIndex(index, { align: 'auto' });
-    lastScrolledKeyRef.current = focusedKey;
+    lastFocusedScrollRef.current = focusedKey;
   }, [state.selectionManager.focusedKey, rowVirtualizer]);
 
   /**
@@ -422,13 +429,13 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     if (selectedKeys == null) return;
     const target = selectedKeys[0];
     if (target == null) return;
-    if (lastScrolledKeyRef.current === target) return;
+    if (lastSelectedScrollRef.current === target) return;
 
     const index = visibleNodes.findIndex((n) => String(n.key) === target);
     if (index < 0) return;
 
     rowVirtualizer.scrollToIndex(index, { align: 'auto' });
-    lastScrolledKeyRef.current = target;
+    lastSelectedScrollRef.current = target;
   }, [selectedKeys, visibleNodes, rowVirtualizer]);
 
   const mods = useMemo(

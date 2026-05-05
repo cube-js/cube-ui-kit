@@ -781,6 +781,59 @@ describe('<Tree />', () => {
         expect(indices).toContain(1);
       });
     });
+
+    it('does not yank the viewport back to selectedKeys after keyboard nav', async () => {
+      // Regression: a single shared "last scrolled" ref between the
+      // focused-key and selectedKeys effects caused them to fight.
+      // After keyboard nav moved focus to row N, the focus effect would
+      // overwrite the ref. The very next parent re-render (e.g. one
+      // that allocates a fresh `selectedKeys={[value]}` array) would
+      // re-run the selectedKeys effect, see the ref no longer matches
+      // its own target, and yank the viewport back.
+      const user = userEvent.setup();
+      function Harness({ selected }: { selected: string }) {
+        return (
+          <Tree
+            treeData={SAMPLE}
+            defaultExpandedKeys={['fruits', 'vegetables']}
+            // Each render creates a fresh array reference — exactly
+            // the pattern that triggered the bug.
+            selectedKeys={[selected]}
+          />
+        );
+      }
+
+      const { getAllByRole, rerender } = renderWithRoot(
+        <Harness selected="apple" />,
+      );
+
+      // Move keyboard focus from apple (row 1) down to banana (row 2).
+      const rows = getAllByRole('row');
+      act(() => rows[1].focus());
+      await user.keyboard('{ArrowDown}');
+      await waitFor(() => {
+        expect(document.activeElement).toBe(rows[2]);
+      });
+
+      // Drop pre-banana scroll calls so we only assert what happens AFTER
+      // keyboard nav settles.
+      scrollToIndexCalls.length = 0;
+
+      // Force a parent re-render with the SAME selected value but a new
+      // array identity (the realistic trigger). Without the fix, the
+      // selectedKeys effect would re-run and call scrollToIndex(1) for
+      // 'apple', moving the viewport off banana.
+      rerender(<Harness selected="apple" />);
+
+      // Give effects a chance to fire.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const indices = scrollToIndexCalls.map(([i]) => i);
+      // No scroll back to apple's index (1). Effect 1 already wrote to
+      // its own ref for banana, and effect 2's ref still says apple,
+      // so it bails.
+      expect(indices).not.toContain(1);
+    });
   });
 
   describe('Space chaining in checkable trees', () => {
