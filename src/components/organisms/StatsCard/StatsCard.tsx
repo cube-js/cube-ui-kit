@@ -17,7 +17,7 @@ export function StatsCard({ title, value, suffix, ...props }: CubeStatsCard) {
       placeContent="space-between"
       gap="1x"
       border={false}
-      shadow="0 2px 6px #dark.10"
+      shadow="$shadow"
       padding="2.5x"
       {...props}
     >

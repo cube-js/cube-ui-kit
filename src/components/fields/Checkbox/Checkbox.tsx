@@ -83,9 +83,14 @@ const CheckboxElement = tasty({
       'invalid & checked': '#danger',
       disabled: '#dark.12',
     },
+    // The check / minus icon is always rendered inside the box, so the
+    // default color must be transparent when the checkbox is neither
+    // checked nor indeterminate — otherwise the white stroke shows through
+    // the dark `#surface` fill in dark schemes (it used to be hidden
+    // accidentally by the legacy white-on-white `fill: '#white'`).
     color: {
-      '': '#white',
-      'disabled & !checked & !indeterminate': '#clear',
+      '': '#clear',
+      'checked | indeterminate': '#white',
     },
     border: {
       '': '#dark.30',
