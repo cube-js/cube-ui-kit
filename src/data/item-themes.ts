@@ -263,9 +263,15 @@ export const DANGER_SECONDARY_STYLES: Styles = {
 } as const;
 
 export const DANGER_OUTLINE_STYLES: Styles = {
+  // Border anchors to the *adaptive* `#danger-text` (mode 'auto') so the
+  // outline stays visible on dark surfaces. The fixed `#danger` brand at
+  // .15/.3 alpha composites near-invisibly in dark mode (cr≈1.27–1.55 vs
+  // the dark surface) because the brand color and the dark surface have
+  // similar lightness; `#danger-text` brightens in dark mode and pushes the
+  // composite up to cr≈1.90–2.88. Same rationale as `DANGER_SECONDARY_STYLES.border`.
   border: {
-    '': '#danger.15',
-    pressed: '#danger.3',
+    '': '#danger-text.15',
+    pressed: '#danger-text.3',
     focused: '#danger-text',
     disabled: '#border',
   },
@@ -399,9 +405,10 @@ export const SUCCESS_SECONDARY_STYLES: Styles = {
 } as const;
 
 export const SUCCESS_OUTLINE_STYLES: Styles = {
+  // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
   border: {
-    '': '#success.15',
-    pressed: '#success.3',
+    '': '#success-text.15',
+    pressed: '#success-text.3',
     focused: '#success-text',
     disabled: '#border',
   },
@@ -534,9 +541,10 @@ export const WARNING_SECONDARY_STYLES: Styles = {
 } as const;
 
 export const WARNING_OUTLINE_STYLES: Styles = {
+  // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
   border: {
-    '': '#warning.15',
-    pressed: '#warning.3',
+    '': '#warning-text.15',
+    pressed: '#warning-text.3',
     focused: '#warning-text',
     disabled: '#border',
   },
@@ -669,9 +677,10 @@ export const NOTE_SECONDARY_STYLES: Styles = {
 } as const;
 
 export const NOTE_OUTLINE_STYLES: Styles = {
+  // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
   border: {
-    '': '#note.15',
-    pressed: '#note.3',
+    '': '#note-text.15',
+    pressed: '#note-text.3',
     focused: '#note-text',
     disabled: '#border',
   },

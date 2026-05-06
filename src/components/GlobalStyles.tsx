@@ -48,7 +48,7 @@ const STATIC_CSS = `
     font-weight: var(--c2-font-weight);
     font-size: var(--c2-font-size);
     border: var(--border-width) solid var(--dark-04-color);
-    background-color: white;
+    background-color: var(--surface-color);
     color: var(--dark-color);
     border-radius: var(--radius);
     padding: 0 var(--outline-width);
