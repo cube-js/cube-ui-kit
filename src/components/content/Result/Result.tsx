@@ -111,6 +111,7 @@ const Container = tasty({
       placeItems: 'inherit',
       gap: '1x',
       placeSelf: 'center',
+      textWrap: 'balance',
     },
   },
 });
