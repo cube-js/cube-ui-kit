@@ -62,7 +62,7 @@ export const StyledSearchInput = tasty({
     },
 
     Placeholder: {
-      $: '::placeholder',
+      $: '&::placeholder',
       recipe: 'input-placeholder',
     },
     '&::-webkit-search-cancel-button': {

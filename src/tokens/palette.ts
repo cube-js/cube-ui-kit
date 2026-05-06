@@ -152,6 +152,35 @@ defaultTheme.colors({
     saturation: 0.4,
     inherit: false,
   },
+  // Disabled fill chip + text — both adaptive (mode 'auto') and
+  // *contrast-driven* against `surface` so the disabled state has the same
+  // perceived intensity in light and dark schemes.
+  //
+  // The previous design relied on `#dark.04` (alpha tint) for the chip and
+  // `#dark-04` (= `#placeholder`) for text. Because `#dark` is `#surface-text`
+  // (anchored to absolute L=2 → flips to L=94 in dark), the resulting
+  // composite was much more contrasting in dark mode (chip cr=1.04 → 1.51,
+  // text cr=2.21 → 2.75 vs the chip), and combined with `color: '#white'` on
+  // PRIMARY-type buttons text-on-chip jumped from cr=1.6 (washed) to cr=6.5
+  // (fully readable) — the dark disabled state stopped looking disabled.
+  //
+  // With these contrast-driven tokens both schemes resolve to the same
+  // ratios (chip ~1.4, text ~2.0 vs surface, text-on-chip ~1.4) so the
+  // disabled appearance is identical in light, dark, and high-contrast.
+  'disabled-bg': {
+    base: 'surface',
+    lightness: '-1',
+    saturation: 0.3,
+    contrast: [1.4, 1.5],
+    inherit: false,
+  },
+  'disabled-text': {
+    base: 'surface',
+    lightness: '-1',
+    saturation: 0.3,
+    contrast: [1.95, 2.1],
+    inherit: false,
+  },
 
   // Fixed-mode "always dark" surface for elements that intentionally stay
   // inverted regardless of scheme (tooltips, code blocks, popovers with their

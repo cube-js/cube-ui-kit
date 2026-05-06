@@ -41,8 +41,10 @@ const LEGACY_ALIASES: Styles = {
   '#pink': 'okhsl(5 100% 67%)',
 
   // ---- Disabled state aliases ----
-  '#disabled-text': '#disabled',
-  '#disabled-bg': '#surface-2',
+  // `#disabled-bg` and `#disabled-text` are emitted directly by the Glaze
+  // palette (`palette.ts`) as scheme-symmetric, contrast-driven tokens — no
+  // alias needed here. `#disabled` stays as a brand-tinted backwards-compat
+  // anchor for the per-theme `#<theme>-disabled` aliases below.
 
   // ---- Primary / Purple legacy ----
   '#primary': '#primary-accent-surface',

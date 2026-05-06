@@ -405,7 +405,7 @@ const CombinedStatesBox = tasty({
     color: {
       '': '#dark',
       ':hover': '#white',
-      '[disabled]': '#dark-04',
+      '[disabled]': '#disabled-text',
     },
     cursor: {
       '': 'pointer',

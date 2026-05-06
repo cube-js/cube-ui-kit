@@ -85,7 +85,7 @@ const RadioNormalElement = tasty({
     radius: 'round',
     fill: {
       '': '#surface',
-      disabled: '#dark.04',
+      disabled: '#disabled-bg',
     },
     color: {
       '': '#clear',

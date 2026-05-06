@@ -64,7 +64,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   placeItems: 'stretch',
   fill: {
     '': '#surface',
-    disabled: '#dark.04',
+    disabled: '#disabled-bg',
   },
   border: {
     '': true,
@@ -164,7 +164,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   userSelect: 'auto',
 
   Placeholder: {
-    $: '::placeholder',
+    $: '&::placeholder',
     recipe: 'input-placeholder',
   },
   '&::-webkit-search-cancel-button': {

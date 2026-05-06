@@ -81,14 +81,14 @@ const SelectWrapperElement = tasty({
     radius: true,
     fill: {
       '': '#surface',
-      disabled: '#dark.04',
+      disabled: '#disabled-bg',
       'theme=special': '#clear',
     },
     color: {
       '': '#dark.85',
       focused: '#dark.85',
       invalid: '#danger-text',
-      disabled: '#dark.30',
+      disabled: '#disabled-text',
     },
   },
 });

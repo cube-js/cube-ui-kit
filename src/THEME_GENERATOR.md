@@ -556,7 +556,7 @@ fill: {
   '': '#primary.10',         // 10% opacity of the primary token
   hovered: '#primary.16',    // 16% opacity
   pressed: '#primary-text.10',
-  disabled: '#dark.04',
+  disabled: '#disabled-bg',  // dedicated symmetric disabled chip
 }
 ```
 
