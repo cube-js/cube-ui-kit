@@ -47,6 +47,7 @@ const LEGACY_ALIASES: Styles = {
   // ---- Primary / Purple legacy ----
   '#primary': '#primary-accent-surface',
   '#primary-text': '#primary-accent-text',
+  '#primary-text-soft': '#primary-accent-text-soft',
   '#primary-bg': '#primary-surface',
   '#primary-icon': '#primary-accent-icon',
   '#primary-hover': '#primary-accent-surface-hover',
@@ -55,6 +56,7 @@ const LEGACY_ALIASES: Styles = {
 
   '#purple': '#purple-accent-surface',
   '#purple-text': '#purple-accent-text',
+  '#purple-text-soft': '#purple-accent-text-soft',
   '#purple-bg': '#purple-surface',
   '#purple-icon': '#purple-accent-icon',
   '#purple-hover': '#purple-accent-surface-hover',
@@ -69,6 +71,7 @@ const LEGACY_ALIASES: Styles = {
   // ---- Danger ----
   '#danger': '#danger-accent-surface',
   '#danger-text': '#danger-accent-text',
+  '#danger-text-soft': '#danger-accent-text-soft',
   '#danger-bg': '#danger-surface',
   '#danger-icon': '#danger-accent-icon',
   '#danger-hover': '#danger-accent-surface-hover',
@@ -78,6 +81,7 @@ const LEGACY_ALIASES: Styles = {
   // ---- Success ----
   '#success': '#success-accent-surface',
   '#success-text': '#success-accent-text',
+  '#success-text-soft': '#success-accent-text-soft',
   '#success-bg': '#success-surface',
   '#success-icon': '#success-accent-icon',
   '#success-hover': '#success-accent-surface-hover',
@@ -87,6 +91,7 @@ const LEGACY_ALIASES: Styles = {
   // ---- Warning ----
   '#warning': '#warning-accent-surface',
   '#warning-text': '#warning-accent-text',
+  '#warning-text-soft': '#warning-accent-text-soft',
   '#warning-bg': '#warning-surface',
   '#warning-icon': '#warning-accent-icon',
   '#warning-hover': '#warning-accent-surface-hover',
@@ -96,6 +101,7 @@ const LEGACY_ALIASES: Styles = {
   // ---- Note ----
   '#note': '#note-accent-surface',
   '#note-text': '#note-accent-text',
+  '#note-text-soft': '#note-accent-text-soft',
   '#note-bg': '#note-surface',
   '#note-icon': '#note-accent-icon',
   '#note-hover': '#note-accent-surface-hover',

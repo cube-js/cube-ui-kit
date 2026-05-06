@@ -1,11 +1,43 @@
+import { DocsContainer } from '@storybook/addon-docs/blocks';
 import isChromatic from 'chromatic/isChromatic';
+import { useEffect, useState } from 'react';
 import { DARK_MODE_EVENT_NAME } from 'storybook-dark-mode';
 import { addons } from 'storybook/preview-api';
 import { configure } from 'storybook/test';
-import { themes } from 'storybook/theming';
+import { create, themes } from 'storybook/theming';
 
 import { Root } from '../src/components/Root';
 import { setToolbarScheme } from '../src/stories/decorators/colorSchemeBridge';
+
+// Brand both Storybook themes (manager chrome, sidebar selection, toolbar
+// active tab, etc.) with the design system's primary purple — the same color
+// the `#primary` token resolves to in `src/tokens/palette.ts`.
+//
+// `colorSecondary` drives the selected-story highlight in the sidebar and the
+// "15" count badge on docs panel tabs. `bar*Color` overrides are required
+// because both `themes.light` and `themes.dark` hardcode their own blue
+// values (`#0063D6` / `#479DFF`) which would otherwise win over the
+// `colorSecondary` fallback the `create()` builder applies.
+const PRIMARY = 'rgb(98, 96, 206)';
+
+const brandedThemeVars = {
+  colorPrimary: PRIMARY,
+  colorSecondary: PRIMARY,
+  barSelectedColor: PRIMARY,
+  barHoverColor: PRIMARY,
+};
+
+const lightTheme = create({
+  ...themes.light,
+  base: 'light',
+  ...brandedThemeVars,
+});
+
+const darkTheme = create({
+  ...themes.dark,
+  base: 'dark',
+  ...brandedThemeVars,
+});
 
 configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });
 
@@ -18,6 +50,36 @@ if (typeof document !== 'undefined') {
     setToolbarScheme(isDark ? 'dark' : 'light');
   });
 }
+
+// `storybook-dark-mode` themes only the toolbar/manager — the docs page chrome
+// (background, prose, code blocks, etc.) is rendered by `DocsContainer` and
+// keeps its own `theme` prop. This wrapper subscribes to the same channel
+// event the addon emits and re-renders the container with the matching
+// Storybook theme so docs pages flip alongside stories.
+const ThemedDocsContainer = ({ children, ...props }) => {
+  const [isDark, setIsDark] = useState(
+    () =>
+      typeof document !== 'undefined' &&
+      document.documentElement.getAttribute('data-schema') === 'dark',
+  );
+
+  useEffect(() => {
+    const channel = addons.getChannel();
+    const handler = (next) => setIsDark(Boolean(next));
+
+    channel.on(DARK_MODE_EVENT_NAME, handler);
+
+    return () => {
+      channel.off(DARK_MODE_EVENT_NAME, handler);
+    };
+  }, []);
+
+  return (
+    <DocsContainer {...props} theme={isDark ? darkTheme : lightTheme}>
+      {children}
+    </DocsContainer>
+  );
+};
 
 // Load tasty debug utilities in local Storybook only (exclude Chromatic)
 if (!isChromatic() && import.meta.env.DEV) {
@@ -59,15 +121,17 @@ export const parameters = {
       ],
     },
   },
-  docs: {},
+  docs: {
+    container: ThemedDocsContainer,
+  },
   // `storybook-dark-mode` configuration. No `current` so the addon resolves
   // OS `prefers-color-scheme` on first load. `stylePreview: false` keeps the
   // addon from also injecting dark/light classes on the preview body — the
   // `data-schema` attribute set by `colorSchemeBridge` is the only signal
   // we care about (see `src/components/Root.tsx` and `src/tokens/palette.ts`).
   darkMode: {
-    dark: { ...themes.dark },
-    light: { ...themes.light },
+    dark: darkTheme,
+    light: lightTheme,
     stylePreview: false,
   },
   // Storybook's `addon-backgrounds` injects `.sb-show-main { background: … !important }`

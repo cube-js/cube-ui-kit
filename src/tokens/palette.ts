@@ -222,6 +222,19 @@ defaultTheme.colors({
     saturation: 1,
     contrast: [6.4, 10],
   },
+  // Softer adaptive companion to `accent-text` for "secondary" foregrounds
+  // (LINK base color, subdued labels, etc.). Same anchor + saturation as
+  // `accent-text` but a relaxed AA-only contrast floor (4.5/7) so it sits
+  // visibly less prominent than the main brand text. Critically, it stays
+  // `mode: 'auto'` (default) — unlike the fixed `accent-surface` brand color,
+  // which would collapse to cr≈3 against the dark surface and break AA. The
+  // adaptive lightness keeps cr≥4.5 in BOTH light and dark schemes.
+  'accent-text-soft': {
+    base: 'surface',
+    lightness: '-1',
+    saturation: 1,
+    contrast: [4.5, 7],
+  },
   'accent-icon': {
     base: 'surface',
     lightness: '-1',

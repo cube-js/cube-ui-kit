@@ -88,15 +88,17 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
 } as const;
 
 export const DEFAULT_SECONDARY_STYLES: Styles = {
-  // Anchor every alpha tint to the *adaptive* `#primary-text` (mode 'auto')
-  // rather than the *fixed* `#primary` (mode 'fixed'). In dark mode the fixed
-  // brand-purple over a dark surface composites to a near-black tint and the
-  // border/fill lose all visible relationship to the page bg — both end up at
-  // CR ≈ 1.13–1.31 vs surface in dark vs ~1.13 in light. With `*-text` (which
-  // gets *brighter* in dark mode) the same alpha values give CR ≈ 1.55–1.82
-  // in dark with negligible shift in light (1.13 → 1.15). Pressed fill alpha
-  // is bumped from .10 → .22 to keep a visible press differential now that
-  // both default and pressed share the same anchor.
+  // BORDER anchors to the *adaptive* `#primary-text` (mode 'auto') so the
+  // outline stays visible in BOTH schemes (CR ≈ 1.55–1.82 vs surface in dark
+  // vs ~1.13 with the fixed brand). FILL must NOT use `#primary-text` though:
+  // in dark mode the overlay drifts the bg toward the same lightness as the
+  // text, collapsing label↔bg contrast below AA (cr=4.42@α.10 → 3.04@α.22).
+  // Anchoring the fill to the *fixed* `#primary` brand keeps the bg darker
+  // than the bright dark-mode text and restores AA: cr=6.52 light / 5.95 dark
+  // at α.10, 6.19 / 5.41 at α.16. Pressed fill is intentionally absent — the
+  // darker `pressed` border is the visible press signal (matches BEFORE), so
+  // pressed-only falls back to default fill and pressed-hovered falls back to
+  // hovered fill.
   border: {
     '': '#primary-text.15',
     pressed: '#primary-text.3',
@@ -104,9 +106,8 @@ export const DEFAULT_SECONDARY_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#primary-text.10',
-    hovered: '#primary-text.16',
-    pressed: '#primary-text.22',
+    '': '#primary.10',
+    'hovered & !pressed': '#primary.16',
     disabled: '#dark.04',
   },
   color: {
@@ -179,6 +180,11 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
 } as const;
 
 export const DEFAULT_LINK_STYLES: Styles = {
+  // Default sits at the *softer* AA-floor variant (`#primary-text-soft`,
+  // mode 'auto', cr=4.5) and intensifies on hover to the AAA-ish
+  // `#primary-text` (cr=6.4). Critically, the soft variant is also
+  // adaptive — using the fixed brand `#primary` instead would collapse to
+  // cr≈3 against the dark surface and break AA.
   outline: {
     '': '0 #primary-text.0',
     focused: '1bw #primary-text',
@@ -188,8 +194,8 @@ export const DEFAULT_LINK_STYLES: Styles = {
     '': '#clear',
   },
   color: {
-    '': '#primary-text',
-    'hovered & !pressed': '#primary',
+    '': '#primary-text-soft',
+    'hovered & !pressed': '#primary-text',
     disabled: '#dark-04',
   },
 } as const;
@@ -236,6 +242,9 @@ export const DANGER_PRIMARY_STYLES: Styles = {
 } as const;
 
 export const DANGER_SECONDARY_STYLES: Styles = {
+  // Fill anchors to the *fixed* `#danger` brand (not adaptive `#danger-text`)
+  // so the overlay stays darker than the bright dark-mode label text and AA
+  // contrast holds. Border keeps `#danger-text` for visibility in both schemes.
   border: {
     '': '#danger-text.15',
     pressed: '#danger-text.3',
@@ -243,8 +252,8 @@ export const DANGER_SECONDARY_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#danger-text.05',
-    'hovered & !pressed': '#danger-text.1',
+    '': '#danger.05',
+    'hovered & !pressed': '#danger.1',
     disabled: '#dark.04',
   },
   color: {
@@ -312,6 +321,7 @@ export const DANGER_CLEAR_STYLES: Styles = {
 } as const;
 
 export const DANGER_LINK_STYLES: Styles = {
+  // See DEFAULT_LINK_STYLES for the soft→strong rationale.
   outline: {
     '': '0 #danger-text.0',
     focused: '1bw #danger-text',
@@ -321,8 +331,8 @@ export const DANGER_LINK_STYLES: Styles = {
     '': '#clear',
   },
   color: {
-    '': '#danger-text',
-    'hovered & !pressed': '#danger',
+    '': '#danger-text-soft',
+    'hovered & !pressed': '#danger-text',
     disabled: '#dark-04',
   },
 } as const;
@@ -369,6 +379,8 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
 } as const;
 
 export const SUCCESS_SECONDARY_STYLES: Styles = {
+  // See DANGER_SECONDARY_STYLES for the fill-anchor rationale (`#X` not
+  // `#X-text` so dark-mode label↔bg contrast stays AA).
   border: {
     '': '#success-text.15',
     pressed: '#success-text.3',
@@ -376,8 +388,8 @@ export const SUCCESS_SECONDARY_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#success-text.05',
-    'hovered & !pressed': '#success-text.1',
+    '': '#success.05',
+    'hovered & !pressed': '#success.1',
     disabled: '#dark.04',
   },
   color: {
@@ -445,6 +457,7 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
 } as const;
 
 export const SUCCESS_LINK_STYLES: Styles = {
+  // See DEFAULT_LINK_STYLES for the soft→strong rationale.
   outline: {
     '': '0 #success-text.0',
     focused: '1bw #success-text',
@@ -454,8 +467,8 @@ export const SUCCESS_LINK_STYLES: Styles = {
     '': '#clear',
   },
   color: {
-    '': '#success-text',
-    'hovered & !pressed': '#success',
+    '': '#success-text-soft',
+    'hovered & !pressed': '#success-text',
     disabled: '#dark-04',
   },
 } as const;
@@ -502,6 +515,7 @@ export const WARNING_PRIMARY_STYLES: Styles = {
 } as const;
 
 export const WARNING_SECONDARY_STYLES: Styles = {
+  // See DANGER_SECONDARY_STYLES for the fill-anchor rationale.
   border: {
     '': '#warning-text.15',
     pressed: '#warning-text.3',
@@ -509,8 +523,8 @@ export const WARNING_SECONDARY_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#warning-text.05',
-    'hovered & !pressed': '#warning-text.1',
+    '': '#warning.05',
+    'hovered & !pressed': '#warning.1',
     disabled: '#dark.04',
   },
   color: {
@@ -578,6 +592,7 @@ export const WARNING_CLEAR_STYLES: Styles = {
 } as const;
 
 export const WARNING_LINK_STYLES: Styles = {
+  // See DEFAULT_LINK_STYLES for the soft→strong rationale.
   outline: {
     '': '0 #warning-text.0',
     focused: '1bw #warning-text',
@@ -587,8 +602,8 @@ export const WARNING_LINK_STYLES: Styles = {
     '': '#clear',
   },
   color: {
-    '': '#warning-text',
-    'hovered & !pressed': '#warning',
+    '': '#warning-text-soft',
+    'hovered & !pressed': '#warning-text',
     disabled: '#dark-04',
   },
 } as const;
@@ -635,6 +650,7 @@ export const NOTE_PRIMARY_STYLES: Styles = {
 } as const;
 
 export const NOTE_SECONDARY_STYLES: Styles = {
+  // See DANGER_SECONDARY_STYLES for the fill-anchor rationale.
   border: {
     '': '#note-text.15',
     pressed: '#note-text.3',
@@ -642,8 +658,8 @@ export const NOTE_SECONDARY_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#note-text.05',
-    'hovered & !pressed': '#note-text.1',
+    '': '#note.05',
+    'hovered & !pressed': '#note.1',
     disabled: '#dark.04',
   },
   color: {
@@ -711,6 +727,7 @@ export const NOTE_CLEAR_STYLES: Styles = {
 } as const;
 
 export const NOTE_LINK_STYLES: Styles = {
+  // See DEFAULT_LINK_STYLES for the soft→strong rationale.
   outline: {
     '': '0 #note-text.0',
     focused: '1bw #note-text',
@@ -720,8 +737,8 @@ export const NOTE_LINK_STYLES: Styles = {
     '': '#clear',
   },
   color: {
-    '': '#note-text',
-    'hovered & !pressed': '#note',
+    '': '#note-text-soft',
+    'hovered & !pressed': '#note-text',
     disabled: '#dark-04',
   },
 } as const;

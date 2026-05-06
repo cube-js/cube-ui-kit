@@ -39,12 +39,14 @@ export default {
     '#accent-surface-hover',
     '#accent-surface-text',
     '#accent-text',
+    '#accent-text-soft',
     '#accent-icon',
 
     // ---- Glaze: per-theme primary / purple (purple is alias of primary) ----
     '#primary',
     '#primary-bg',
     '#primary-text',
+    '#primary-text-soft',
     '#primary-icon',
     '#primary-hover',
     '#primary-disabled',
@@ -57,10 +59,12 @@ export default {
     '#primary-accent-surface-hover',
     '#primary-accent-surface-text',
     '#primary-accent-text',
+    '#primary-accent-text-soft',
     '#primary-accent-icon',
     '#purple',
     '#purple-bg',
     '#purple-text',
+    '#purple-text-soft',
     '#purple-icon',
     '#purple-hover',
     '#purple-disabled',
@@ -72,12 +76,14 @@ export default {
     '#purple-accent-surface-hover',
     '#purple-accent-surface-text',
     '#purple-accent-text',
+    '#purple-accent-text-soft',
     '#purple-accent-icon',
 
     // ---- Glaze: per-theme danger ----
     '#danger',
     '#danger-bg',
     '#danger-text',
+    '#danger-text-soft',
     '#danger-icon',
     '#danger-hover',
     '#danger-disabled',
@@ -90,12 +96,14 @@ export default {
     '#danger-accent-surface-hover',
     '#danger-accent-surface-text',
     '#danger-accent-text',
+    '#danger-accent-text-soft',
     '#danger-accent-icon',
 
     // ---- Glaze: per-theme success ----
     '#success',
     '#success-bg',
     '#success-text',
+    '#success-text-soft',
     '#success-icon',
     '#success-hover',
     '#success-disabled',
@@ -108,12 +116,14 @@ export default {
     '#success-accent-surface-hover',
     '#success-accent-surface-text',
     '#success-accent-text',
+    '#success-accent-text-soft',
     '#success-accent-icon',
 
     // ---- Glaze: per-theme warning ----
     '#warning',
     '#warning-bg',
     '#warning-text',
+    '#warning-text-soft',
     '#warning-icon',
     '#warning-hover',
     '#warning-disabled',
@@ -126,12 +136,14 @@ export default {
     '#warning-accent-surface-hover',
     '#warning-accent-surface-text',
     '#warning-accent-text',
+    '#warning-accent-text-soft',
     '#warning-accent-icon',
 
     // ---- Glaze: per-theme note ----
     '#note',
     '#note-bg',
     '#note-text',
+    '#note-text-soft',
     '#note-icon',
     '#note-hover',
     '#note-disabled',
@@ -144,6 +156,7 @@ export default {
     '#note-accent-surface-hover',
     '#note-accent-surface-text',
     '#note-accent-text',
+    '#note-accent-text-soft',
     '#note-accent-icon',
 
     // ---- Glaze: PrismCode syntax palette ----

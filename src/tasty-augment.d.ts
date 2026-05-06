@@ -26,6 +26,7 @@ declare module '@tenphi/tasty' {
     'accent-surface-3': true;
     'accent-surface-text': true;
     'accent-text': true;
+    'accent-text-soft': true;
     'accent-icon': true;
     // Note: `accent-surface-hover` (and its per-theme `<theme>-accent-surface-hover`
     // variants + `<theme>-hover` aliases) are intentionally omitted from this
@@ -66,6 +67,7 @@ declare module '@tenphi/tasty' {
     text: true;
     primary: true;
     'primary-text': true;
+    'primary-text-soft': true;
     'primary-icon': true;
     'primary-bg': true;
     disabled: true;
@@ -74,18 +76,22 @@ declare module '@tenphi/tasty' {
     danger: true;
     'danger-bg': true;
     'danger-text': true;
+    'danger-text-soft': true;
     'danger-icon': true;
     success: true;
     'success-bg': true;
     'success-text': true;
+    'success-text-soft': true;
     'success-icon': true;
     warning: true;
     'warning-bg': true;
     'warning-text': true;
+    'warning-text-soft': true;
     'warning-icon': true;
     note: true;
     'note-bg': true;
     'note-text': true;
+    'note-text-soft': true;
     'note-icon': true;
     white: true;
     light: true;

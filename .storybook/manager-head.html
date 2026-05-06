@@ -4,3 +4,21 @@
   href="/favicon-%STORYBOOK_MODE%-%NODE_ENV%.svg"
   type="image/svg+xml"
 />
+<!--
+  Storybook 10 hardcodes `darken(0.18, colorSecondary)` for the selected
+  sidebar item background in dark mode (see `.sidebar-item[data-selected]`
+  in `node_modules/storybook/dist/manager/runtime.js`), which can't be
+  reached through `ThemeVars`. Override here so the dark-mode highlight
+  matches the brand purple set in `.storybook/preview.jsx` (`PRIMARY`).
+
+  `!important` is required because emotion appends its rules to <head>
+  AFTER this static <style>, so a same-specificity selector would lose the
+  cascade despite being intentionally more semantic.
+-->
+<style>
+  .sidebar-item[data-selected='true'],
+  .sidebar-item[data-selected='true']:hover,
+  .sidebar-item[data-selected='true']:focus {
+    background: rgb(98, 96, 206) !important;
+  }
+</style>
