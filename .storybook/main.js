@@ -30,6 +30,7 @@ const config = {
         },
       },
     },
+    'storybook-dark-mode',
   ],
 
   viteFinal(config) {

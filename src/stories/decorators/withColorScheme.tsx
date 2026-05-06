@@ -1,5 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 
+import { setSchemeOverride } from './colorSchemeBridge';
+
 import type { ReactElement } from 'react';
 
 /**
@@ -36,7 +38,7 @@ export interface WithColorSchemeOptions {
 
 /**
  * Storybook decorator that switches a story into a different color scheme by
- * setting `data-schema` / `data-contrast` attributes on `<html>` (the same
+ * driving the `data-schema` / `data-contrast` attributes on `<html>` (the same
  * attributes the global `@dark` / `@hc` predefined states resolve against —
  * see `src/components/Root.tsx`).
  *
@@ -44,9 +46,14 @@ export interface WithColorSchemeOptions {
  * so flipping `data-schema` is enough to repaint the whole story canvas — no
  * extra wrappers needed.
  *
- * Implemented as a synchronous DOM mutation in `useLayoutEffect`, so the
- * scheme switches before paint (no flash). Any pre-existing attribute values
- * are restored when the story unmounts.
+ * `data-schema` writes go through `colorSchemeBridge` so the per-story
+ * override always wins over the `storybook-dark-mode` toolbar (which writes
+ * the same attribute via the channel listener in `.storybook/preview.jsx`).
+ * `data-contrast` is unmanaged by the addon and stays a direct DOM write.
+ *
+ * Implemented synchronously in `useLayoutEffect`, so the scheme switches
+ * before paint (no flash). The bridge restores the toolbar value on unmount,
+ * and `data-contrast` restores its prior literal value.
  *
  * @example
  *   export const DarkVariant = MyTemplate.bind({});
@@ -58,23 +65,17 @@ export const withColorScheme = (
   const { scheme, contrast } = options;
 
   const ColorSchemeDecorator: StoryDecorator = (Story) => {
-    const previousRef = useRef<{
-      schema: string | null;
-      contrast: string | null;
-    }>({ schema: null, contrast: null });
+    const previousContrastRef = useRef<string | null>(null);
 
     useLayoutEffect(() => {
       const html = document.documentElement;
 
-      previousRef.current = {
-        schema: html.getAttribute('data-schema'),
-        contrast: html.getAttribute('data-contrast'),
-      };
+      previousContrastRef.current = html.getAttribute('data-contrast');
 
       if (scheme === 'auto') {
-        html.removeAttribute('data-schema');
+        setSchemeOverride(null);
       } else if (scheme) {
-        html.setAttribute('data-schema', scheme);
+        setSchemeOverride(scheme);
       }
 
       if (contrast === 'auto') {
@@ -87,18 +88,18 @@ export const withColorScheme = (
       }
 
       return () => {
-        const prev = previousRef.current;
-
-        if (prev.schema === null) {
-          html.removeAttribute('data-schema');
-        } else {
-          html.setAttribute('data-schema', prev.schema);
+        if (scheme) {
+          setSchemeOverride(null);
         }
 
-        if (prev.contrast === null) {
-          html.removeAttribute('data-contrast');
-        } else {
-          html.setAttribute('data-contrast', prev.contrast);
+        if (contrast) {
+          const prev = previousContrastRef.current;
+
+          if (prev === null) {
+            html.removeAttribute('data-contrast');
+          } else {
+            html.setAttribute('data-contrast', prev);
+          }
         }
       };
     }, []);
