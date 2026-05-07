@@ -52,7 +52,7 @@ export const SliderTrackContainerElement = tasty({
     radius: true,
 
     Fill: {
-      $: '::before',
+      $: '$::before',
       content: '""',
       display: 'block',
       position: 'absolute',
