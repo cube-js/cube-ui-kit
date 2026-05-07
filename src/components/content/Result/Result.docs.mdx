@@ -1,3 +1,10 @@
+import { Canvas, Meta, Story } from '@storybook/addon-docs/blocks';
+
+import { Result } from './Result';
+import * as ResultStories from './Result.stories';
+
+<Meta of={ResultStories} />
+
 # Result
 
 An empty state or result display with icon, title, and optional content. Supports status presets with built-in icons.
@@ -9,14 +16,21 @@ An empty state or result display with icon, title, and optional content. Support
 - 404, 403, 500 error pages
 - Informational messages
 
-## Properties
+## Component
+
+<Story of={ResultStories.Success} />
+
+---
+
+### Properties
 
 - **`status`** `'success' | 'error' | 'info' | 'warning' | 404 | 403 | 500` (default: `'info'`) — Predefined status with corresponding icon
 - **`title`** `ReactNode` — Main title text
-- **`subtitle`** `ReactNode` — Secondary text below title
-- **`subTitle`** `ReactNode` — Deprecated: Use `subtitle` instead
+- **`subtitle`** `ReactNode` — Secondary text below the title
+- **`subTitle`** `ReactNode` — Deprecated: use `subtitle` instead
 - **`icon`** `ReactNode` — Custom icon (overrides status icon)
-- **`isCompact`** `boolean` — Compact horizontal layout
+- **`isCompact`** `boolean` (default: `false`) — Compact horizontal layout
+- **`children`** `ReactNode` — Additional block content, e.g. a set of action buttons
 
 ### Style Defaults
 
@@ -27,6 +41,7 @@ An empty state or result display with icon, title, and optional content. Support
 - `gap` — `3x` (switches to `2x 1x` when `isCompact`)
 - `padding` — `6x 4x` (switches to `0` when `isCompact`)
 - `textAlign` — `center` (switches to `left` when `isCompact`)
+- `width` — `max 80ch` (caps the readable line length; override via the `width` prop)
 
 ### Base Properties
 
@@ -45,14 +60,60 @@ These properties allow direct style application without using the `styles` prop:
 
 ## Examples
 
-```jsx
-<Result status="success" title="Saved" subtitle="Your changes have been saved." />
+### Info
 
-<Result status="error" title="Something went wrong" subtitle="Please try again." />
+<Canvas>
+  <Story of={ResultStories.Info} />
+</Canvas>
 
-<Result status={404} title="Page not found" />
+### Warning
 
-<Result status="info" title="No items" subtitle="Add your first item to get started.">
-  <Button>Add Item</Button>
-</Result>
-```
+<Canvas>
+  <Story of={ResultStories.Warning} />
+</Canvas>
+
+### Error
+
+<Canvas>
+  <Story of={ResultStories.Error} />
+</Canvas>
+
+### Custom Icon
+
+<Canvas>
+  <Story of={ResultStories.CustomIcon} />
+</Canvas>
+
+### Custom Title
+
+<Canvas>
+  <Story of={ResultStories.CustomTitle} />
+</Canvas>
+
+### Compact
+
+<Canvas>
+  <Story of={ResultStories.Compact} />
+</Canvas>
+
+### Width Limit
+
+The default `width: max 80ch` keeps long copy in a comfortable reading column even inside a much wider parent. Override the cap by passing your own `width`.
+
+<Canvas>
+  <Story of={ResultStories.WidthLimit} />
+</Canvas>
+
+<Canvas>
+  <Story of={ResultStories.CustomWidth} />
+</Canvas>
+
+## Differences from Ant Design
+
+| There are differences | Ant Design property | Cube UIKit property |
+| :-------------------: | :-----------------: | :-----------------: |
+|          No           |      `status`       |      `status`       |
+|          No           |       `title`       |       `title`       |
+|          Yes          |     `subTitle`      |     `subtitle`      |
+|          No           |       `icon`        |       `icon`        |
+|          Yes          |       `extra`       |     `children`      |

@@ -89,6 +89,7 @@ const Container = tasty({
       '': 'center',
       compact: 'left',
     },
+    width: 'max 80ch',
     '--icon-size': '6x',
 
     Icon: {
