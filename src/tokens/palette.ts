@@ -371,7 +371,7 @@ defaultTheme.colors({
 
 /** Override `surface` per colored theme so the banner bg is visibly tinted. */
 const TINTED_SURFACE_OVERRIDE: ColorMap = {
-  surface: { lightness: 97, saturation: 0.75 },
+  surface: { lightness: 97, saturation: 0.2 },
 };
 
 const primaryTheme = defaultTheme.extend({
