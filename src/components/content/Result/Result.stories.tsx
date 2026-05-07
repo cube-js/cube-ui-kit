@@ -3,6 +3,7 @@ import { IconBulb, IconLock } from '@tabler/icons-react';
 import { Icon } from '../../../icons/Icon';
 import { Button } from '../../actions/Button';
 import { Space } from '../../layout/Space';
+import { Layout } from '../Layout';
 import { Text } from '../Text';
 import { Title } from '../Title';
 
@@ -142,9 +143,7 @@ Compact.args = {
 };
 
 export const WidthLimit: StoryFn<CubeResultProps> = (args) => (
-  <div style={{ width: '100%', minHeight: 320, border: '1px dashed #ccc' }}>
-    <Result {...args} />
-  </div>
+  <Result {...args} />
 );
 WidthLimit.args = {
   status: 'info',
