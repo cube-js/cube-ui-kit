@@ -90,6 +90,10 @@ const Container = tasty({
       compact: 'left',
     },
     width: 'max 80ch',
+    margin: {
+      '': '0 auto',
+      compact: '0',
+    },
     '--icon-size': '6x',
 
     Icon: {
