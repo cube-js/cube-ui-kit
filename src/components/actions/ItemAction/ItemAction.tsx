@@ -9,7 +9,6 @@ import {
   useMemo,
 } from 'react';
 
-import { brandTastyComponent } from '../../../_internal/utils/brand-tasty-component';
 import {
   DANGER_CLEAR_STYLES,
   DANGER_NEUTRAL_STYLES,
@@ -348,7 +347,5 @@ export const ItemAction = forwardRef(function ItemAction(
 
   return renderButton();
 });
-
-brandTastyComponent(ItemAction);
 
 export type { CubeItemActionProps as ItemActionProps };

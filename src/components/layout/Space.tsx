@@ -7,7 +7,6 @@ import {
 } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
-import { brandTastyComponent } from '../../_internal/utils/brand-tasty-component';
 import { extractStyles } from '../../utils/styles';
 
 const SpaceElement = tasty({
@@ -48,5 +47,3 @@ export const Space = forwardRef(function Space(props: CubeSpaceProps, ref) {
     />
   );
 });
-
-brandTastyComponent(Space);

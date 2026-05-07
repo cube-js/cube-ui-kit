@@ -10,7 +10,6 @@ import { forwardRef } from 'react';
 import { AriaRadioGroupProps, useRadioGroup } from 'react-aria';
 import { useRadioGroupState } from 'react-stately';
 
-import { brandTastyComponent } from '../../../_internal/utils/brand-tasty-component';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
@@ -175,7 +174,5 @@ const _RadioGroup = forwardRef(RadioGroup);
 
 (_RadioGroup as any).cubeInputType = 'RadioGroup';
 _RadioGroup.displayName = 'RadioGroup';
-
-brandTastyComponent(_RadioGroup);
 
 export { _RadioGroup as RadioGroup };

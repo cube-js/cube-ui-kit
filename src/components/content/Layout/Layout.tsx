@@ -27,7 +27,6 @@ import {
   useState,
 } from 'react';
 
-import { brandTastyComponent } from '../../../_internal/utils/brand-tasty-component';
 import { isDevEnv } from '../../../utils/is-dev-env';
 import { useCombinedRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
@@ -410,7 +409,5 @@ function Layout(props: CubeLayoutProps, ref: ForwardedRef<HTMLDivElement>) {
 const _Layout = forwardRef(Layout);
 
 _Layout.displayName = 'Layout';
-
-brandTastyComponent(_Layout);
 
 export { _Layout as Layout };

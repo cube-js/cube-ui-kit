@@ -24,7 +24,6 @@ import { useFocusRing, useHover, useMove } from 'react-aria';
 import { createPortal } from 'react-dom';
 
 import { useDebouncedValue } from '../../../_internal/hooks';
-import { brandTastyComponent } from '../../../_internal/utils/brand-tasty-component';
 import {
   mergeProps,
   useCombinedRefs,
@@ -868,7 +867,5 @@ function LayoutPanel(
 const _LayoutPanel = forwardRef(LayoutPanel);
 
 _LayoutPanel.displayName = 'Layout.Panel';
-
-brandTastyComponent(_LayoutPanel);
 
 export { _LayoutPanel as LayoutPanel };

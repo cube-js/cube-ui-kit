@@ -7,7 +7,6 @@ import {
 } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
-import { brandTastyComponent } from '../../../_internal/utils/brand-tasty-component';
 import { extractStyles } from '../../../utils/styles';
 
 const CardElement = tasty({
@@ -39,5 +38,3 @@ export const Card = forwardRef(function Card(props: CubeCardProps, ref) {
     />
   );
 });
-
-brandTastyComponent(Card);

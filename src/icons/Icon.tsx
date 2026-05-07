@@ -11,8 +11,6 @@ import {
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, memo, ReactElement } from 'react';
 
-import { brandTastyComponent } from '../_internal/utils/brand-tasty-component';
-
 const IconElement = tasty({
   as: 'span',
   styles: {
@@ -74,5 +72,3 @@ export const Icon = memo(
     return <IconElement ref={ref} qa="Icon" {...rest} styles={styles} />;
   }),
 );
-
-brandTastyComponent(Icon);

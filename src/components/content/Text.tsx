@@ -18,7 +18,6 @@ import {
   RefAttributes,
 } from 'react';
 
-import { brandTastyComponent } from '../../_internal/utils/brand-tasty-component';
 import { useSlotProps } from '../../utils/react';
 import { extractStyles } from '../../utils/styles';
 
@@ -105,8 +104,6 @@ const Text = forwardRef(function CubeText(allProps: CubeTextProps, ref) {
     />
   );
 });
-
-brandTastyComponent(Text);
 
 const MinorText = tasty(Text, {
   styles: {

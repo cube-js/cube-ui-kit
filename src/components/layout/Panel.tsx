@@ -14,8 +14,6 @@ import {
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode, useMemo } from 'react';
 
-import { brandTastyComponent } from '../../_internal/utils/brand-tasty-component';
-
 const PanelElement = tasty({
   as: 'section',
   qa: 'Panel',
@@ -175,7 +173,5 @@ function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
 const _Panel = forwardRef(Panel);
 
 _Panel.displayName = 'Panel';
-
-brandTastyComponent(_Panel);
 
 export { _Panel as Panel };

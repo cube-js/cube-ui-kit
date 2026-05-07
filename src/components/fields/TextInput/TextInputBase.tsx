@@ -25,7 +25,6 @@ import {
 } from 'react';
 import { AriaNumberFieldProps, AriaTextFieldProps, useHover } from 'react-aria';
 
-import { brandTastyComponent } from '../../../_internal/utils/brand-tasty-component';
 import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
@@ -418,8 +417,6 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
 }
 
 const TextInputBase = forwardRef(_TextInputBase);
-
-brandTastyComponent(TextInputBase);
 
 export { TextInputBase };
 export type { AriaTextFieldProps };
