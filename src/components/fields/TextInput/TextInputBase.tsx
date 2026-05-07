@@ -164,7 +164,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   userSelect: 'auto',
 
   Placeholder: {
-    $: '$::placeholder',
+    $: '&::placeholder',
     recipe: 'input-placeholder',
   },
   '&::-webkit-search-cancel-button': {
