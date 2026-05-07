@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.135.0
+
+### Minor Changes
+
+- [#1148](https://github.com/cube-js/cube-ui-kit/pull/1148) [`ce0c49e4`](https://github.com/cube-js/cube-ui-kit/commit/ce0c49e41eed505c333fce737b8c6fe07a6a8718) Thanks [@tenphi](https://github.com/tenphi)! - `Layout.Center` now accepts an `isGoldenRatio` prop. When enabled, the content is positioned slightly above the geometric center using the golden ratio (~38.2% empty space above, ~61.8% below) for a more aesthetically pleasing placement. The behavior only applies while the content fits inside the container; otherwise default centering and scrolling are preserved.
+
+### Patch Changes
+
+- [#1149](https://github.com/cube-js/cube-ui-kit/pull/1149) [`e5f47ee8`](https://github.com/cube-js/cube-ui-kit/commit/e5f47ee87dbbb8d96707d1ba1e86332e972893f6) Thanks [@tenphi](https://github.com/tenphi)! - `TextInput` and other inputs that consume the `input-autofill` recipe now correctly suppress Chrome's autofill background and `appearance: menulist-button` when a suggestion is selected or previewed. The `@autofill` alias was extended (via `:is()` so unsupported pseudo-classes are gracefully ignored in Firefox / Safari instead of invalidating the whole rule) to cover `:autofill`, `:-internal-autofill-selected`, and `:-internal-autofill-previewed` in addition to `:-webkit-autofill`, and the inset background now uses the `#surface` token instead of a hard-coded white.
+
+- [#1148](https://github.com/cube-js/cube-ui-kit/pull/1148) [`ce0c49e4`](https://github.com/cube-js/cube-ui-kit/commit/ce0c49e41eed505c333fce737b8c6fe07a6a8718) Thanks [@tenphi](https://github.com/tenphi)! - `Result` now sets a default `width: max 80ch` and centers itself horizontally (`margin: 0 auto`) in non-compact mode, capping the component at a comfortable reading width (~80 characters) on wide screens. Pass a `width` or `margin` prop to override.
+
+- [#1146](https://github.com/cube-js/cube-ui-kit/pull/1146) [`ee4eeb13`](https://github.com/cube-js/cube-ui-kit/commit/ee4eeb1309d132ca9c32f77ca05c426a58fc6a01) Thanks [@tenphi](https://github.com/tenphi)! - `Result` now applies `text-wrap: balance` to the title and subtitle so multi-line headings break into more even-length lines.
+
+- [#1148](https://github.com/cube-js/cube-ui-kit/pull/1148) [`ce0c49e4`](https://github.com/cube-js/cube-ui-kit/commit/ce0c49e41eed505c333fce737b8c6fe07a6a8718) Thanks [@tenphi](https://github.com/tenphi)! - Sub-element pseudo selectors now use Tasty’s `&::…` form (e.g. placeholders, track fill `::before`) so styles resolve reliably on `TextInput`, `CommandMenu` search input, and `Slider`.
+
 ## 0.134.0
 
 ### Minor Changes
