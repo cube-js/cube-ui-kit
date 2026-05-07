@@ -234,7 +234,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundExample[] = [
       },
 
       Shimmer: {
-        $: '::after',
+        $: '&::after',
         content: '""',
         position: 'absolute',
         inset: true,

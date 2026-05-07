@@ -1367,6 +1367,42 @@ export const Center: Story = {
 };
 
 /**
+ * `Layout.Center` with `isGoldenRatio` shifts the content slightly above the
+ * geometric center: ~38.2% of the empty space sits above the content and
+ * ~61.8% below, following the golden ratio. The placement only kicks in while
+ * the content fits inside the container; otherwise the regular centering and
+ * scrolling behavior is preserved.
+ */
+export const CenterGoldenRatio: Story = {
+  render: () => (
+    <Layout flow="row" height="400px" fill="#dark.04" gap="1bw">
+      <Layout.Center width="50%" gap="1x" fill="#white">
+        <Title level={5} color="#dark-03">
+          Default centering
+        </Title>
+        <Title level={3}>!Welcome!</Title>
+        <Text>Content is placed at the geometric center.</Text>
+        <Space>
+          <Button>Learn More</Button>
+          <Button type="primary">Get Started</Button>
+        </Space>
+      </Layout.Center>
+      <Layout.Center isGoldenRatio width="50%" gap="1x" fill="#white">
+        <Title level={5} color="#dark-03">
+          isGoldenRatio
+        </Title>
+        <Title level={3}>!Welcome!</Title>
+        <Text>Content sits slightly above the center (~38.2% / 61.8%).</Text>
+        <Space>
+          <Button>Learn More</Button>
+          <Button type="primary">Get Started</Button>
+        </Space>
+      </Layout.Center>
+    </Layout>
+  ),
+};
+
+/**
  * The `doNotOverflow` prop controls the overflow behavior of the Layout root element.
  * By default, overflow is visible. When `doNotOverflow` is true, overflow is hidden.
  *
