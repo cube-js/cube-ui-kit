@@ -1,5 +1,7 @@
 import { ReactElement } from 'react';
 
+import { brandTastyComponent } from '../_internal/utils/brand-tasty-component';
+
 import { CubeIconProps, Icon } from './Icon';
 
 export function wrapIcon(name: string, icon: ReactElement) {
@@ -13,6 +15,8 @@ export function wrapIcon(name: string, icon: ReactElement) {
   }
 
   IconWrapper.displayName = name;
+
+  brandTastyComponent(IconWrapper);
 
   return IconWrapper;
 }

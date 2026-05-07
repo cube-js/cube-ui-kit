@@ -2,6 +2,7 @@ import { Styles, tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 import { ItemVariant } from 'src/data/item-themes';
 
+import { brandTastyComponent } from '../../../_internal/utils/brand-tasty-component';
 import { CloseIcon } from '../../../icons';
 import { CubeItemProps, Item } from '../Item';
 
@@ -83,5 +84,7 @@ function Tag(allProps: CubeTagProps, ref) {
 const _Tag = forwardRef(Tag);
 
 _Tag.displayName = 'Tag';
+
+brandTastyComponent(_Tag);
 
 export { _Tag as Tag };

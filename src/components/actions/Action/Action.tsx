@@ -12,6 +12,7 @@ import {
 import { forwardRef } from 'react';
 import { AriaButtonProps } from 'react-aria';
 
+import { brandTastyComponent } from '../../../_internal/utils/brand-tasty-component';
 import { extractStyles } from '../../../utils/styles';
 import { NavigateArg, useAction } from '../use-action';
 
@@ -70,3 +71,5 @@ export const Action = forwardRef(function Action(
     />
   );
 });
+
+brandTastyComponent(Action);

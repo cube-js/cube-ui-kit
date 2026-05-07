@@ -20,6 +20,7 @@ import { OverlayProps } from 'react-aria';
 
 import { useIsFirstRender } from '../../../_internal/hooks/use-is-first-render';
 import { useWarn } from '../../../_internal/hooks/use-warn';
+import { brandTastyComponent } from '../../../_internal/utils/brand-tasty-component';
 import {
   DANGER_CLEAR_STYLES,
   DANGER_LINK_STYLES,
@@ -621,3 +622,5 @@ export const Button = forwardRef(function Button(
 
   return renderWithTooltip(renderButtonElement, defaultTooltipPlacement);
 });
+
+brandTastyComponent(Button);

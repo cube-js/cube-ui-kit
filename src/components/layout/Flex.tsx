@@ -7,6 +7,7 @@ import {
 } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
+import { brandTastyComponent } from '../../_internal/utils/brand-tasty-component';
 import { extractStyles } from '../../utils/styles';
 
 const FlexElement = tasty({
@@ -29,3 +30,5 @@ export const Flex = forwardRef(function Flex(props: CubeFlexProps, ref) {
     />
   );
 });
+
+brandTastyComponent(Flex);

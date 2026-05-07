@@ -23,6 +23,7 @@ import { OverlayProps } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
+import { brandTastyComponent } from '../../../_internal/utils/brand-tasty-component';
 import {
   DANGER_CARD_STYLES,
   DANGER_CLEAR_STYLES,
@@ -1026,6 +1027,8 @@ const _Item = Object.assign(forwardRef(Item), {
   Action: ItemAction,
   Badge: ItemBadge,
 });
+
+brandTastyComponent(_Item);
 
 export { _Item as Item };
 

@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { useFocusWithin, useHover } from 'react-aria';
 
+import { brandTastyComponent } from '../../../_internal/utils/brand-tasty-component';
 import { mergeProps } from '../../../utils/react';
 import { CubeItemProps, Item } from '../../content/Item';
 import { ItemBadge } from '../../content/ItemBadge';
@@ -269,6 +270,8 @@ const _ItemButton = Object.assign(ItemButton, {
   Action: ItemAction,
   Badge: ItemBadge,
 });
+
+brandTastyComponent(_ItemButton);
 
 export { _ItemButton as ItemButton };
 export type {

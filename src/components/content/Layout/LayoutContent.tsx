@@ -18,6 +18,7 @@ import {
 } from 'react';
 import { useHover } from 'react-aria';
 
+import { brandTastyComponent } from '../../../_internal/utils/brand-tasty-component';
 import { useCombinedRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 
@@ -194,5 +195,7 @@ function LayoutContent(
 const _LayoutContent = forwardRef(LayoutContent);
 
 _LayoutContent.displayName = 'Layout.Content';
+
+brandTastyComponent(_LayoutContent);
 
 export { _LayoutContent as LayoutContent };
