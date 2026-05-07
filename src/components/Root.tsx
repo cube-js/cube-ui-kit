@@ -59,7 +59,11 @@ configure({
       fill: '#clear',
     },
     'input-autofill': {
-      '@autofill': ':-webkit-autofill',
+      '@autofill':
+        ':-webkit-autofill | :autofill | :-internal-autofill-selected | :-internal-autofill-previewed',
+      appearance: {
+        '@autofill | (@autofill & :hover) | (@autofill & :focus)': 'none',
+      },
       '-webkit-text-fill-color': {
         '': 'currentColor',
         '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
@@ -69,7 +73,7 @@ configure({
       },
       shadow: {
         '@autofill | (@autofill & :hover) | (@autofill & :focus)':
-          '0 0 0 9999rem rgb(255 255 255) inset',
+          '0 0 0 9999rem #surface inset',
       },
       preset: {
         '@autofill | (@autofill & :hover) | (@autofill & :focus)': 'inherit',
