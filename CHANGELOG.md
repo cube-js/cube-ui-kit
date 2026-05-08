@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.135.1
+
+### Patch Changes
+
+- [`a7917a28`](https://github.com/cube-js/cube-ui-kit/commit/a7917a28c44e9932ebf483fe38132dc5b7f25bef) Thanks [@tenphi](https://github.com/tenphi)! - Simplified the `input-autofill` recipe's `@autofill` alias to `:-webkit-autofill | :autofill`. Coverage is unchanged in practice (the dropped Chromium-internal pseudo-classes were redundant on top of `:-webkit-autofill`), and the resulting selector list avoids the `:is()` wrapper, fixing rendering in environments where `:is()` interacted poorly with the autofill rule.
+
 ## 0.135.0
 
 ### Minor Changes
