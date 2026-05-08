@@ -89,6 +89,11 @@ const Container = tasty({
       '': 'center',
       compact: 'left',
     },
+    width: 'max 80ch',
+    margin: {
+      '': '0 auto',
+      compact: '0',
+    },
     '--icon-size': '6x',
 
     Icon: {
@@ -111,6 +116,7 @@ const Container = tasty({
       placeItems: 'inherit',
       gap: '1x',
       placeSelf: 'center',
+      textWrap: 'balance',
     },
   },
 });

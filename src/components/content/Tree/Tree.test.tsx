@@ -1,3 +1,4 @@
+import { useVirtualizer } from '@tanstack/react-virtual';
 import userEvent from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 
@@ -7,6 +8,39 @@ import { Menu } from '../../actions/Menu';
 import { Tree } from './Tree';
 
 import type { CubeTreeNodeData, TreeLoadDataNode } from './types';
+
+/**
+ * Capture every `scrollToIndex` call across every virtualizer instance.
+ *
+ * The global setup mock creates a fresh `vi.fn()` per render, so a
+ * naive "latest" ref would lose calls when re-renders (e.g. selection
+ * changes triggering Tree re-renders) replace the mock between the
+ * effect's call and the test's assertion. We share one accumulator
+ * across all virtualizer instances instead.
+ */
+const scrollToIndexCalls: Array<[number, unknown]> = [];
+const installVirtualizerSpy = () => {
+  scrollToIndexCalls.length = 0;
+  (useVirtualizer as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+    ({ count = 0, getItemKey }: any) => {
+      return {
+        getVirtualItems: () =>
+          Array.from({ length: count }, (_, index) => ({
+            index,
+            key: typeof getItemKey === 'function' ? getItemKey(index) : index,
+            start: index * 40,
+            size: 40,
+          })),
+        getTotalSize: () => count * 40,
+        scrollToIndex: (index: number, options?: unknown) => {
+          scrollToIndexCalls.push([index, options]);
+        },
+        measure: vi.fn(),
+        measureElement: vi.fn(),
+      };
+    },
+  );
+};
 
 const SAMPLE: CubeTreeNodeData[] = [
   {
@@ -642,6 +676,163 @@ describe('<Tree />', () => {
 
       expect(treeOnAction).toHaveBeenCalledWith('delete', 'fruits');
       expect(menuOnAction).toHaveBeenCalledWith('delete');
+    });
+  });
+
+  describe('scroll-into-view via virtualizer', () => {
+    beforeEach(() => {
+      installVirtualizerSpy();
+    });
+
+    it('scrolls focused row into view via the virtualizer (not querySelector)', async () => {
+      // Regression: the previous implementation used
+      // `querySelector + scrollIntoView`, which silently no-ops when the
+      // target row is outside the virtualizer's rendered window.
+      const user = userEvent.setup();
+      const { getAllByRole } = renderWithRoot(
+        <Tree
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits', 'vegetables']}
+        />,
+      );
+
+      const rows = getAllByRole('row');
+      act(() => rows[0].focus());
+
+      await user.keyboard('{ArrowDown}');
+      await waitFor(() => {
+        expect(document.activeElement).toBe(rows[1]);
+      });
+
+      // After ArrowDown moves focus to row 1 ('apple'), the focused-key
+      // effect should drive the virtualizer to index 1 with align:auto.
+      const indices = scrollToIndexCalls.map(([i]) => i);
+      expect(indices).toContain(1);
+      const aliasedCall = scrollToIndexCalls.find(([i]) => i === 1);
+      expect(aliasedCall?.[1]).toMatchObject({ align: 'auto' });
+    });
+
+    it('scrolls when controlled selectedKeys changes externally', async () => {
+      // The selection manager's `focusedKey` only updates on user
+      // interaction, so a parent flipping `selectedKeys` programmatically
+      // must trigger a separate scroll path. Without this, opening a
+      // file from outside the tree would not bring its row into view.
+      function Harness({ selected }: { selected: string }) {
+        return (
+          <Tree
+            treeData={SAMPLE}
+            defaultExpandedKeys={['fruits', 'vegetables']}
+            selectedKeys={[selected]}
+          />
+        );
+      }
+
+      const { rerender } = renderWithRoot(<Harness selected="apple" />);
+
+      // Reset so we only assert the *next* programmatic update triggers
+      // a scroll (initial mount may have already scrolled to 'apple').
+      scrollToIndexCalls.length = 0;
+
+      rerender(<Harness selected="potato" />);
+
+      await waitFor(() => {
+        // 'potato' is the last visible row when both folders are
+        // expanded: fruits(0), apple(1), banana(2), vegetables(3),
+        // carrot(4), potato(5).
+        const indices = scrollToIndexCalls.map(([i]) => i);
+        expect(indices).toContain(5);
+      });
+    });
+
+    it('does not scroll for selectedKeys whose parents are still collapsed', async () => {
+      // Until parents expand, the row is not in `visibleNodes`, so
+      // `findIndex` returns -1 and we should *not* call scrollToIndex
+      // with a bogus value. The scroll fires once expansion brings the
+      // row into the visible set.
+      function Harness({
+        selected,
+        expanded,
+      }: {
+        selected: string;
+        expanded: string[];
+      }) {
+        return (
+          <Tree
+            treeData={SAMPLE}
+            expandedKeys={expanded}
+            selectedKeys={[selected]}
+          />
+        );
+      }
+
+      const { rerender } = renderWithRoot(
+        <Harness selected="apple" expanded={[]} />,
+      );
+
+      // 'apple' hidden under collapsed 'fruits' — no scroll target yet.
+      // Reset to filter out any incidental calls during initial mount.
+      scrollToIndexCalls.length = 0;
+
+      // Expand parent — now 'apple' is at index 1 and the effect retries.
+      rerender(<Harness selected="apple" expanded={['fruits']} />);
+
+      await waitFor(() => {
+        const indices = scrollToIndexCalls.map(([i]) => i);
+        expect(indices).toContain(1);
+      });
+    });
+
+    it('does not yank the viewport back to selectedKeys after keyboard nav', async () => {
+      // Regression: a single shared "last scrolled" ref between the
+      // focused-key and selectedKeys effects caused them to fight.
+      // After keyboard nav moved focus to row N, the focus effect would
+      // overwrite the ref. The very next parent re-render (e.g. one
+      // that allocates a fresh `selectedKeys={[value]}` array) would
+      // re-run the selectedKeys effect, see the ref no longer matches
+      // its own target, and yank the viewport back.
+      const user = userEvent.setup();
+      function Harness({ selected }: { selected: string }) {
+        return (
+          <Tree
+            treeData={SAMPLE}
+            defaultExpandedKeys={['fruits', 'vegetables']}
+            // Each render creates a fresh array reference — exactly
+            // the pattern that triggered the bug.
+            selectedKeys={[selected]}
+          />
+        );
+      }
+
+      const { getAllByRole, rerender } = renderWithRoot(
+        <Harness selected="apple" />,
+      );
+
+      // Move keyboard focus from apple (row 1) down to banana (row 2).
+      const rows = getAllByRole('row');
+      act(() => rows[1].focus());
+      await user.keyboard('{ArrowDown}');
+      await waitFor(() => {
+        expect(document.activeElement).toBe(rows[2]);
+      });
+
+      // Drop pre-banana scroll calls so we only assert what happens AFTER
+      // keyboard nav settles.
+      scrollToIndexCalls.length = 0;
+
+      // Force a parent re-render with the SAME selected value but a new
+      // array identity (the realistic trigger). Without the fix, the
+      // selectedKeys effect would re-run and call scrollToIndex(1) for
+      // 'apple', moving the viewport off banana.
+      rerender(<Harness selected="apple" />);
+
+      // Give effects a chance to fire.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const indices = scrollToIndexCalls.map(([i]) => i);
+      // No scroll back to apple's index (1). Effect 1 already wrote to
+      // its own ref for banana, and effect 2's ref still says apple,
+      // so it bails.
+      expect(indices).not.toContain(1);
     });
   });
 

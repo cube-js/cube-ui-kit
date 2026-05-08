@@ -17,17 +17,46 @@ const CenterElement = tasty(LayoutContainer, {
   },
 });
 
-export interface CubeLayoutCenterProps extends CubeLayoutContainerProps {}
+const GoldenRatioSpacerElement = tasty({
+  'aria-hidden': 'true',
+  qa: 'LayoutCenterGoldenRatioSpacer',
+  styles: {
+    flexGrow: {
+      '': 0.382,
+      'position=bottom': 0.618,
+    },
+    flexShrink: 1,
+    flexBasis: 0,
+    minHeight: 0,
+    pointerEvents: 'none',
+  },
+});
+
+export interface CubeLayoutCenterProps extends CubeLayoutContainerProps {
+  /**
+   * Position content slightly above the visual center using the golden ratio
+   * (~38.2% empty space above, ~61.8% below) for a more aesthetically pleasing
+   * placement. Only takes effect while the content is smaller than the
+   * container; once the content overflows, layout falls back to the default
+   * centered behavior.
+   * @default false
+   */
+  isGoldenRatio?: boolean;
+}
 
 function LayoutCenter(
   props: CubeLayoutCenterProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const { children, ...otherProps } = props;
+  const { children, isGoldenRatio, ...otherProps } = props;
 
   return (
     <CenterElement {...otherProps} ref={ref}>
+      {isGoldenRatio && <GoldenRatioSpacerElement mods={{ position: 'top' }} />}
       {children}
+      {isGoldenRatio && (
+        <GoldenRatioSpacerElement mods={{ position: 'bottom' }} />
+      )}
     </CenterElement>
   );
 }
