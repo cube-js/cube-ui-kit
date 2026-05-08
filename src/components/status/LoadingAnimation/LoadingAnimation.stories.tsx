@@ -1,5 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 
+import { withDarkScheme } from '../../../stories/decorators/withColorScheme';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 import {
@@ -27,3 +28,7 @@ export const Large = Template.bind({});
 Large.args = {
   size: 'large',
 };
+
+export const DarkScheme = Template.bind({});
+DarkScheme.args = {};
+DarkScheme.decorators = [withDarkScheme];

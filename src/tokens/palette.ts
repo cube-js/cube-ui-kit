@@ -338,6 +338,29 @@ defaultTheme.colors({
     inherit: false,
   },
 
+  // ---- Loading-animation cube faces ----
+  'loading-face-1': {
+    base: 'surface',
+    lightness: 98,
+    saturation: 0.3,
+    contrast: [1.04, 1.5],
+    inherit: false,
+  },
+  'loading-face-2': {
+    base: 'surface',
+    lightness: 91,
+    saturation: 0.62,
+    contrast: [1.24, 2.5],
+    inherit: false,
+  },
+  'loading-face-3': {
+    base: 'surface',
+    lightness: 79,
+    saturation: 0.66,
+    contrast: [1.75, 4],
+    inherit: false,
+  },
+
   // ---- Shadows (default-only) ----
   'shadow-sm': {
     type: 'shadow',

@@ -168,6 +168,11 @@ export default {
     '#code-function',
     '#code-attribute',
 
+    // ---- Glaze: LoadingAnimation cube faces (opaque) ----
+    '#loading-face-1',
+    '#loading-face-2',
+    '#loading-face-3',
+
     // ---- Glaze: shadows / overlays / focus / placeholder ----
     '#shadow-sm',
     '#shadow-md',
