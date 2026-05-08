@@ -191,6 +191,7 @@ const ItemButton = forwardRef(function ItemButton(
       showActions={shouldShowActions}
       actions={actions ? true : undefined}
       {...(mergeProps(rest, actionProps) as any)}
+      data-popover-dismiss=""
       htmlType={actionProps.type}
       type={type}
       theme={theme}

@@ -179,7 +179,19 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
       if (!stateIsOpenRef.current) return false;
 
       const menuTriggerEl = el.closest('[data-popover-trigger]');
-      if (!menuTriggerEl) return true;
+      if (!menuTriggerEl) {
+        // Plain interactive controls (Button, ItemButton) opt in via
+        // `data-popover-dismiss`. We schedule the close via setTimeout(0) so
+        // it lands AFTER the click event finishes — the button's onPress
+        // fires first, then the popover closes. Without this, useOverlay
+        // would stopPropagation() the click and the user would need a
+        // second click to actually press the button.
+        if (el.closest('[data-popover-dismiss]')) {
+          setTimeout(() => state.close(), 0);
+          return false;
+        }
+        return true;
+      }
       if (
         isDummy &&
         (menuTriggerEl === menuTriggerRef.current ||
@@ -190,7 +202,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
       if (menuTriggerEl === menuTriggerRef.current) return true;
       return false;
     },
-    [isDummy, menuTriggerRef],
+    [isDummy, menuTriggerRef, state],
   );
 
   let overlay;

@@ -578,6 +578,7 @@ export const Button = forwardRef(function Button(
         data-theme={theme}
         data-type={type ?? 'outline'}
         data-size={size}
+        data-popover-dismiss=""
         styles={styles}
         tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
       >
