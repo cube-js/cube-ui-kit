@@ -30,7 +30,7 @@ import { useWarn } from '../../../_internal/hooks/use-warn';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { generateRandomId } from '../../../utils/random';
-import { useEventBus } from '../../../utils/react/useEventBus';
+import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
@@ -280,8 +280,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   const filterPickerId = useMemo(() => generateRandomId(), []);
 
-  const { emit, on } = useEventBus();
-
   useWarn(isCheckable === false && selectionMode === 'single', {
     key: ['filterpicker-checkable-single-mode'],
     args: [
@@ -454,21 +452,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onOpenChange?.(isOpen);
   });
 
-  // Close this picker when another menu opens (event bus)
-  useEffect(() => {
-    return on('popover:open', (data: { menuId: string }) => {
-      if (data.menuId !== filterPickerId && isPopoverOpen) {
-        handleOpenChange(false);
-      }
-    });
-  }, [on, filterPickerId, isPopoverOpen, handleOpenChange]);
-
-  // Emit event when this picker opens
-  useEffect(() => {
-    if (isPopoverOpen) {
-      emit('popover:open', { menuId: filterPickerId });
-    }
-  }, [isPopoverOpen, emit, filterPickerId]);
+  usePopoverSync({
+    menuId: filterPickerId,
+    isOpen: isPopoverOpen,
+    onClose: () => handleOpenChange(false),
+  });
 
   // Keyboard handler for arrow keys to open popover
   const { keyboardProps } = useKeyboard({

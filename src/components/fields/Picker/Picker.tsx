@@ -30,7 +30,7 @@ import { useWarn } from '../../../_internal/hooks/use-warn';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { generateRandomId } from '../../../utils/random';
-import { useEventBus } from '../../../utils/react/useEventBus';
+import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
@@ -248,9 +248,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
   // Generate a unique ID for this Picker instance
   const pickerId = useMemo(() => generateRandomId(), []);
 
-  // Get event bus for menu synchronization
-  const { emit, on } = useEventBus();
-
   // Warn if isCheckable is false in single selection mode
   useWarn(isCheckable === false && selectionMode === 'single', {
     key: ['picker-checkable-single-mode'],
@@ -464,21 +461,11 @@ export const Picker = forwardRef(function Picker<T extends object>(
     onOpenChange?.(isOpen);
   });
 
-  // Close this picker when another menu opens (event bus)
-  useEffect(() => {
-    return on('popover:open', (data: { menuId: string }) => {
-      if (data.menuId !== pickerId && isPopoverOpen) {
-        handleOpenChange(false);
-      }
-    });
-  }, [on, pickerId, isPopoverOpen, handleOpenChange]);
-
-  // Emit event when this picker opens
-  useEffect(() => {
-    if (isPopoverOpen) {
-      emit('popover:open', { menuId: pickerId });
-    }
-  }, [isPopoverOpen, emit, pickerId]);
+  usePopoverSync({
+    menuId: pickerId,
+    isOpen: isPopoverOpen,
+    onClose: () => handleOpenChange(false),
+  });
 
   // Keyboard handler for arrow keys to open popover
   const { keyboardProps } = useKeyboard({

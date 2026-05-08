@@ -14,7 +14,7 @@ import { VisuallyHidden } from 'react-aria';
 import { useEvent } from '../../_internal';
 import { generateRandomId } from '../../utils/random';
 import { mergeProps } from '../../utils/react';
-import { useEventBus } from '../../utils/react/useEventBus';
+import { usePopoverSync } from '../../utils/react/usePopoverSync';
 
 import { MenuTrigger } from './Menu';
 
@@ -83,41 +83,11 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   // Generate a unique ID for this menu instance
   const menuId = useMemo(() => generateRandomId(), []);
 
-  // Get event bus for menu synchronization
-  const { emit, on } = useEventBus();
-
-  // Read isOpen through a ref so the listener subscription stays stable across
-  // open/close transitions. With isOpen in the deps the listener was being
-  // resubscribed mid-flight during rapid trigger switching, which let the
-  // wrong menu win the race.
-  const isOpenRef = useRef(isOpen);
-  useEffect(() => {
-    isOpenRef.current = isOpen;
-  }, [isOpen]);
-
-  // Listen for other menus opening and close this one if needed
-  useEffect(() => {
-    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
-      if (data.menuId !== menuId && isOpenRef.current) {
-        setIsOpen(false);
-      }
-    });
-
-    return unsubscribe;
-  }, [on, menuId]);
-
-  // Emit event only on the false -> true transition. A re-render where isOpen
-  // is still true must not re-emit (otherwise it could trigger the listener
-  // above on a peer that just opened in the same render flush).
-  const wasOpenForEmitRef = useRef(false);
-  useEffect(() => {
-    if (isOpen && !wasOpenForEmitRef.current) {
-      wasOpenForEmitRef.current = true;
-      emit('popover:open', { menuId });
-    } else if (!isOpen) {
-      wasOpenForEmitRef.current = false;
-    }
-  }, [isOpen, emit, menuId]);
+  usePopoverSync({
+    menuId,
+    isOpen,
+    onClose: () => setIsOpen(false),
+  });
 
   function setupCheck() {
     if (!setupRef.current) {

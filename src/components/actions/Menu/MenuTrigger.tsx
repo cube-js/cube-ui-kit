@@ -22,7 +22,7 @@ import { MenuTriggerState, useMenuTriggerState } from 'react-stately';
 
 import { generateRandomId } from '../../../utils/random';
 import { SlotProvider } from '../../../utils/react';
-import { useEventBus } from '../../../utils/react/useEventBus';
+import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { Popover, Tray } from '../../overlays/Modal';
 
 import { MenuContext, MenuContextValue } from './context';
@@ -68,9 +68,6 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
   // Generate a unique ID for this menu instance
   const menuId = useMemo(() => generateRandomId(), []);
 
-  // Get event bus for menu synchronization
-  const { emit, on } = useEventBus();
-
   if (!Array.isArray(children) || children.length > 2) {
     throw new Error('MenuTrigger must have exactly 2 children');
   }
@@ -78,24 +75,12 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
   let [menuTrigger, menu] = children;
   const state: MenuTriggerState = useMenuTriggerState(props);
 
-  // Listen for other menus opening and close this one if needed
-  useEffect(() => {
-    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
-      // If another menu is opening and this menu is open, close this one
-      if (data.menuId !== menuId && state.isOpen && !isDummy) {
-        state.close();
-      }
-    });
-
-    return unsubscribe;
-  }, [on, menuId, state]);
-
-  // Emit event when this menu opens
-  useEffect(() => {
-    if (state.isOpen && !isDummy) {
-      emit('popover:open', { menuId });
-    }
-  }, [state.isOpen, emit, menuId, isDummy]);
+  usePopoverSync({
+    menuId,
+    isOpen: state.isOpen,
+    onClose: () => state.close(),
+    enabled: !isDummy,
+  });
 
   // Restore focus manually when the menu closes
   useEffect(() => {

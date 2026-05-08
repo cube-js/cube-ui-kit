@@ -53,7 +53,7 @@ import {
   useCombinedRefs,
 } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
-import { useEventBus } from '../../../utils/react/useEventBus';
+import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions';
 import {
@@ -317,27 +317,11 @@ function Select<T extends object>(
   // Generate a unique ID for this select instance
   const selectId = useMemo(() => generateRandomId(), []);
 
-  // Get event bus for menu synchronization
-  const { emit, on } = useEventBus();
-
-  // Listen for other menus opening and close this one if needed
-  useEffect(() => {
-    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
-      // If another menu is opening and this select is open, close this one
-      if (data.menuId !== selectId && state.isOpen) {
-        state.close();
-      }
-    });
-
-    return unsubscribe;
-  }, [on, selectId, state]);
-
-  // Emit event when this select opens
-  useEffect(() => {
-    if (state.isOpen) {
-      emit('popover:open', { menuId: selectId });
-    }
-  }, [state.isOpen, emit, selectId]);
+  usePopoverSync({
+    menuId: selectId,
+    isOpen: state.isOpen,
+    onClose: () => state.close(),
+  });
 
   // Call onOpenChange when open state changes
   useEffect(() => {
