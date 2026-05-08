@@ -59,8 +59,7 @@ configure({
       fill: '#clear',
     },
     'input-autofill': {
-      '@autofill':
-        ':is(:-webkit-autofill, :autofill, :-internal-autofill-selected, :-internal-autofill-previewed)',
+      '@autofill': ':-webkit-autofill | :autofill',
       appearance: {
         '@autofill | (@autofill & :hover) | (@autofill & :focus)': 'none',
       },
