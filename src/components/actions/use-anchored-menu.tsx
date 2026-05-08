@@ -86,22 +86,36 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   // Get event bus for menu synchronization
   const { emit, on } = useEventBus();
 
+  // Read isOpen through a ref so the listener subscription stays stable across
+  // open/close transitions. With isOpen in the deps the listener was being
+  // resubscribed mid-flight during rapid trigger switching, which let the
+  // wrong menu win the race.
+  const isOpenRef = useRef(isOpen);
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
   // Listen for other menus opening and close this one if needed
   useEffect(() => {
     const unsubscribe = on('popover:open', (data: { menuId: string }) => {
-      // If another menu is opening and this menu is open, close this one
-      if (data.menuId !== menuId && isOpen) {
+      if (data.menuId !== menuId && isOpenRef.current) {
         setIsOpen(false);
       }
     });
 
     return unsubscribe;
-  }, [on, menuId, isOpen]);
+  }, [on, menuId]);
 
-  // Emit event when this menu opens
+  // Emit event only on the false -> true transition. A re-render where isOpen
+  // is still true must not re-emit (otherwise it could trigger the listener
+  // above on a peer that just opened in the same render flush).
+  const wasOpenForEmitRef = useRef(false);
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !wasOpenForEmitRef.current) {
+      wasOpenForEmitRef.current = true;
       emit('popover:open', { menuId });
+    } else if (!isOpen) {
+      wasOpenForEmitRef.current = false;
     }
   }, [isOpen, emit, menuId]);
 

@@ -96,6 +96,21 @@ export function useContextMenu<
   const invisibleAnchorRef = useRef<HTMLSpanElement>(null);
   const setupRef = useRef(false);
 
+  // Mark the container as a popover trigger so that other open menus' close-on-
+  // outside predicates treat clicks inside it (including programmatic
+  // open buttons rendered alongside a context-menu target) as a legitimate
+  // trigger interaction instead of a generic outside click. This mirrors the
+  // pattern in `useAnchoredMenu`.
+  useEffect(() => {
+    const el = targetRef.current;
+    if (el) {
+      el.dataset.popoverTrigger = '';
+      return () => {
+        delete el.dataset.popoverTrigger;
+      };
+    }
+  }, []);
+
   // Generate a unique ID for this menu instance
   const menuId = useMemo(() => generateRandomId(), []);
 

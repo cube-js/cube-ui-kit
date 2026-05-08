@@ -5,6 +5,7 @@ import {
   forwardRef,
   Fragment,
   ReactElement,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -38,6 +39,13 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
 
     closeOnSelect?: boolean;
     isDummy?: boolean;
+    /**
+     * Overlay variant to use on mobile screens. Defaults to `'popover'`, which
+     * keeps the desktop overlay even on small viewports. Pass `'tray'` to opt
+     * into the bottom-sheet `Tray` overlay on mobile (the previous implicit
+     * default). Mirrors the `mobileType` API on `DialogTrigger`.
+     */
+    mobileType?: 'popover' | 'tray';
   };
 
 function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
@@ -54,6 +62,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     trigger = 'press',
     isDisabled,
     isDummy,
+    mobileType = 'popover',
   } = props;
 
   // Generate a unique ID for this menu instance
@@ -113,14 +122,19 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
 
   let initialPlacement: Placement = props.placement ?? 'bottom start';
 
-  const isMobile = useIsMobileDevice();
+  // Tray rendering is now opt-in via `mobileType="tray"` (matches DialogTrigger).
+  // Without that opt-in, MenuTrigger always renders a Popover so that environments
+  // like jsdom (where `window.screen.width === 0` makes useIsMobileDevice() true)
+  // don't accidentally swap in the tray overlay.
+  const isMobileDevice = useIsMobileDevice();
+  const isTray = mobileType === 'tray' && isMobileDevice;
   const { overlayProps: positionProps, placement } = useOverlayPosition({
     targetRef: menuTriggerRef,
     overlayRef: menuPopoverRef,
     scrollRef: menuRef,
     placement: initialPlacement,
     shouldFlip: shouldFlip,
-    isOpen: state.isOpen && !isMobile,
+    isOpen: state.isOpen && !isTray,
     onClose: state.close,
     containerPadding: props.containerPadding,
     offset: props.offset ?? 8,
@@ -133,15 +147,15 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     onClose: state.close,
     closeOnSelect,
     autoFocus: (state.focusStrategy as any) ?? 'first',
-    style: isMobile
+    style: isTray
       ? {
           width: '100%',
           maxHeight: 'inherit',
         }
       : undefined,
     mods: {
-      popover: !isMobile,
-      tray: isMobile,
+      popover: !isTray,
+      tray: isTray,
     },
     isClosing: !state.isOpen,
   } as MenuContextValue;
@@ -154,11 +168,54 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     </>
   );
 
-  // On small screen devices, the menu is rendered in a tray, otherwise a popover.
+  // Shared between the Popover and Tray branches so both react-aria `useOverlay`
+  // calls see the same predicate. Without this, the Tray branch falls back to
+  // unconditional dismiss-on-outside-interaction, which `useOverlay` translates
+  // into stopPropagation/preventDefault in the capture phase — that swallows
+  // clicks on sibling triggers (see Menu rapid-open test).
+  //
+  // We capture `state.isOpen` via a ref so the callback identity stays stable
+  // across re-renders (it's passed to react-aria `useOverlay` whose listener
+  // setup keys off the ref equality). The ref is read at click time so a menu
+  // that is logically closed (`state.close()` already ran) but still mounted
+  // inside the `Popover` exit transition does not block sibling-trigger clicks.
+  const stateIsOpenRef = useRef(state.isOpen);
+  useEffect(() => {
+    stateIsOpenRef.current = state.isOpen;
+  }, [state.isOpen]);
+  const shouldCloseOnInteractOutside = useCallback(
+    (el: Element) => {
+      // While `Popover` is animating out, useOverlay's `useInteractOutside`
+      // capture-phase listener is still attached (jsdom 29+ uses
+      // pointerdown/click capture). Without this guard, clicks on a sibling
+      // trigger get stopPropagation()'d during the 350ms exit window and the
+      // sibling's `onClick` never runs — breaking rapid-open and "open menu
+      // again with new props" flows.
+      if (!stateIsOpenRef.current) return false;
+
+      const menuTriggerEl = el.closest('[data-popover-trigger]');
+      if (!menuTriggerEl) return true;
+      if (
+        isDummy &&
+        (menuTriggerEl === menuTriggerRef.current ||
+          menuTriggerRef.current?.contains(el))
+      ) {
+        return true;
+      }
+      if (menuTriggerEl === menuTriggerRef.current) return true;
+      return false;
+    },
+    [isDummy, menuTriggerRef],
+  );
+
   let overlay;
-  if (isMobile) {
+  if (isTray) {
     overlay = (
-      <Tray isOpen={state.isOpen} onClose={state.close}>
+      <Tray
+        isOpen={state.isOpen}
+        shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
+        onClose={state.close}
+      >
         {contents}
       </Tray>
     );
@@ -171,24 +228,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
         isOpen={state.isOpen}
         style={positionProps.style}
         placement={placement}
-        shouldCloseOnInteractOutside={(el) => {
-          const menuTriggerEl = el.closest('[data-popover-trigger]');
-          // If no menu trigger was clicked, allow closing
-          if (!menuTriggerEl) return true;
-          // For dummy triggers (like useAnchoredMenu), check if the clicked element
-          // is the target element or its descendant
-          if (
-            isDummy &&
-            (menuTriggerEl === menuTriggerRef.current ||
-              menuTriggerRef.current?.contains(el))
-          ) {
-            return true;
-          }
-          // If the same trigger that opened this menu was clicked, allow closing
-          if (menuTriggerEl === menuTriggerRef.current) return true;
-          // Otherwise, don't close (let event mechanism handle it)
-          return false;
-        }}
+        shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
         onClose={state.close}
       >
         {contents}
