@@ -19,9 +19,10 @@ import {
 } from 'react-aria';
 import { MenuTriggerState, useMenuTriggerState } from 'react-stately';
 
+import { useEvent } from '../../../_internal';
 import { generateRandomId } from '../../../utils/random';
 import { SlotProvider } from '../../../utils/react';
-import { useEventBus } from '../../../utils/react/useEventBus';
+import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { Popover, Tray } from '../../overlays/Modal';
 
 import { MenuContext, MenuContextValue } from './context';
@@ -38,6 +39,13 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
 
     closeOnSelect?: boolean;
     isDummy?: boolean;
+    /**
+     * Overlay variant to use on mobile screens. Defaults to `'popover'`, which
+     * keeps the desktop overlay even on small viewports. Pass `'tray'` to opt
+     * into the bottom-sheet `Tray` overlay on mobile (the previous implicit
+     * default). Mirrors the `mobileType` API on `DialogTrigger`.
+     */
+    mobileType?: 'popover' | 'tray';
   };
 
 function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
@@ -54,13 +62,11 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     trigger = 'press',
     isDisabled,
     isDummy,
+    mobileType = 'popover',
   } = props;
 
   // Generate a unique ID for this menu instance
   const menuId = useMemo(() => generateRandomId(), []);
-
-  // Get event bus for menu synchronization
-  const { emit, on } = useEventBus();
 
   if (!Array.isArray(children) || children.length > 2) {
     throw new Error('MenuTrigger must have exactly 2 children');
@@ -69,24 +75,12 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
   let [menuTrigger, menu] = children;
   const state: MenuTriggerState = useMenuTriggerState(props);
 
-  // Listen for other menus opening and close this one if needed
-  useEffect(() => {
-    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
-      // If another menu is opening and this menu is open, close this one
-      if (data.menuId !== menuId && state.isOpen && !isDummy) {
-        state.close();
-      }
-    });
-
-    return unsubscribe;
-  }, [on, menuId, state]);
-
-  // Emit event when this menu opens
-  useEffect(() => {
-    if (state.isOpen && !isDummy) {
-      emit('popover:open', { menuId });
-    }
-  }, [state.isOpen, emit, menuId, isDummy]);
+  usePopoverSync({
+    menuId,
+    isOpen: state.isOpen,
+    onClose: () => state.close(),
+    enabled: !isDummy,
+  });
 
   // Restore focus manually when the menu closes
   useEffect(() => {
@@ -113,14 +107,19 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
 
   let initialPlacement: Placement = props.placement ?? 'bottom start';
 
-  const isMobile = useIsMobileDevice();
+  // Tray rendering is now opt-in via `mobileType="tray"` (matches DialogTrigger).
+  // Without that opt-in, MenuTrigger always renders a Popover so that environments
+  // like jsdom (where `window.screen.width === 0` makes useIsMobileDevice() true)
+  // don't accidentally swap in the tray overlay.
+  const isMobileDevice = useIsMobileDevice();
+  const isTray = mobileType === 'tray' && isMobileDevice;
   const { overlayProps: positionProps, placement } = useOverlayPosition({
     targetRef: menuTriggerRef,
     overlayRef: menuPopoverRef,
     scrollRef: menuRef,
     placement: initialPlacement,
     shouldFlip: shouldFlip,
-    isOpen: state.isOpen && !isMobile,
+    isOpen: state.isOpen && !isTray,
     onClose: state.close,
     containerPadding: props.containerPadding,
     offset: props.offset ?? 8,
@@ -133,15 +132,15 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     onClose: state.close,
     closeOnSelect,
     autoFocus: (state.focusStrategy as any) ?? 'first',
-    style: isMobile
+    style: isTray
       ? {
           width: '100%',
           maxHeight: 'inherit',
         }
       : undefined,
     mods: {
-      popover: !isMobile,
-      tray: isMobile,
+      popover: !isTray,
+      tray: isTray,
     },
     isClosing: !state.isOpen,
   } as MenuContextValue;
@@ -154,11 +153,62 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     </>
   );
 
-  // On small screen devices, the menu is rendered in a tray, otherwise a popover.
+  // Shared between the Popover and Tray branches so both react-aria
+  // `useOverlay` calls see the same predicate. Without this, the Tray branch
+  // falls back to unconditional dismiss-on-outside-interaction, which
+  // `useOverlay` translates into stopPropagation/preventDefault in the
+  // capture phase — that swallows clicks on sibling triggers (see Menu
+  // rapid-open test).
+  //
+  // `useEvent` gives us a single stable callback reference for the lifetime
+  // of the component while always reading the latest closure values. This
+  // matters because `useMenuTriggerState` returns a fresh `state` object on
+  // every render, so a vanilla `useCallback([..., state])` would produce a
+  // new function every render and defeat any stability guarantees consumers
+  // rely on.
+  const shouldCloseOnInteractOutside = useEvent((el: Element) => {
+    // While `Popover` is animating out, `useInteractOutside`'s capture-phase
+    // listener is still attached (jsdom 29+ uses pointerdown/click capture).
+    // The animation lasts ~350ms; without this guard, clicks on a sibling
+    // trigger during the exit window get stopPropagation()'d and the
+    // sibling's `onClick` never runs — breaking rapid-open and "open menu
+    // again with new props" flows. Reading `state.isOpen` directly is safe
+    // because `useEvent` always sees the latest closure.
+    if (!state.isOpen) return false;
+
+    const menuTriggerEl = el.closest('[data-popover-trigger]');
+    if (!menuTriggerEl) {
+      // Plain interactive controls (Button, ItemButton) opt in via
+      // `data-popover-dismiss`. We schedule the close via setTimeout(0) so
+      // it lands AFTER the click event finishes — the button's onPress
+      // fires first, then the popover closes. Without this, useOverlay
+      // would stopPropagation() the click and the user would need a second
+      // click to actually press the button.
+      if (el.closest('[data-popover-dismiss]')) {
+        setTimeout(() => state.close(), 0);
+        return false;
+      }
+      return true;
+    }
+    if (
+      isDummy &&
+      (menuTriggerEl === menuTriggerRef.current ||
+        menuTriggerRef.current?.contains(el))
+    ) {
+      return true;
+    }
+    if (menuTriggerEl === menuTriggerRef.current) return true;
+    return false;
+  });
+
   let overlay;
-  if (isMobile) {
+  if (isTray) {
     overlay = (
-      <Tray isOpen={state.isOpen} onClose={state.close}>
+      <Tray
+        isOpen={state.isOpen}
+        shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
+        onClose={state.close}
+      >
         {contents}
       </Tray>
     );
@@ -171,24 +221,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
         isOpen={state.isOpen}
         style={positionProps.style}
         placement={placement}
-        shouldCloseOnInteractOutside={(el) => {
-          const menuTriggerEl = el.closest('[data-popover-trigger]');
-          // If no menu trigger was clicked, allow closing
-          if (!menuTriggerEl) return true;
-          // For dummy triggers (like useAnchoredMenu), check if the clicked element
-          // is the target element or its descendant
-          if (
-            isDummy &&
-            (menuTriggerEl === menuTriggerRef.current ||
-              menuTriggerRef.current?.contains(el))
-          ) {
-            return true;
-          }
-          // If the same trigger that opened this menu was clicked, allow closing
-          if (menuTriggerEl === menuTriggerRef.current) return true;
-          // Otherwise, don't close (let event mechanism handle it)
-          return false;
-        }}
+        shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
         onClose={state.close}
       >
         {contents}

@@ -42,7 +42,7 @@ import {
   useLayoutEffect,
 } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
-import { useEventBus } from '../../../utils/react/useEventBus';
+import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
@@ -279,9 +279,6 @@ function useComboBoxState({
   defaultInputValue,
   comboBoxId,
 }: UseComboBoxStateProps): UseComboBoxStateReturn {
-  // Get event bus for menu synchronization
-  const { emit, on } = useEventBus();
-
   // Internal state for uncontrolled mode
   const [internalSelectedKey, setInternalSelectedKey] = useState<Key | null>(
     defaultSelectedKey ?? null,
@@ -303,23 +300,11 @@ function useComboBoxState({
   // Popover state
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-  // Listen for other menus opening and close this one if needed
-  useEffect(() => {
-    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
-      if (data.menuId !== comboBoxId && isPopoverOpen) {
-        setIsPopoverOpen(false);
-      }
-    });
-
-    return unsubscribe;
-  }, [on, comboBoxId, isPopoverOpen]);
-
-  // Emit event when this combobox opens
-  useEffect(() => {
-    if (isPopoverOpen) {
-      emit('popover:open', { menuId: comboBoxId });
-    }
-  }, [isPopoverOpen, emit, comboBoxId]);
+  usePopoverSync({
+    menuId: comboBoxId,
+    isOpen: isPopoverOpen,
+    onClose: () => setIsPopoverOpen(false),
+  });
 
   return {
     effectiveSelectedKey,
@@ -869,7 +854,17 @@ function ComboBoxOverlay({
       isDismissable: true,
       shouldCloseOnInteractOutside: (el) => {
         const menuTriggerEl = el.closest('[data-popover-trigger]');
-        if (!menuTriggerEl) return true;
+        if (!menuTriggerEl) {
+          // Plain interactive controls (Button, ItemButton) opt in via
+          // `data-popover-dismiss` to dismiss us without losing their click
+          // to useOverlay's stopPropagation. Schedule the close after the
+          // click finishes so the button's onPress runs first.
+          if (el.closest('[data-popover-dismiss]')) {
+            setTimeout(onClose, 0);
+            return false;
+          }
+          return true;
+        }
         if (menuTriggerEl === triggerRef?.current) return true;
         return false;
       },

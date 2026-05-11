@@ -14,7 +14,7 @@ import { VisuallyHidden } from 'react-aria';
 import { useEvent } from '../../_internal';
 import { generateRandomId } from '../../utils/random';
 import { mergeProps } from '../../utils/react';
-import { useEventBus } from '../../utils/react/useEventBus';
+import { usePopoverSync } from '../../utils/react/usePopoverSync';
 
 import { MenuTrigger } from './Menu';
 
@@ -83,27 +83,11 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   // Generate a unique ID for this menu instance
   const menuId = useMemo(() => generateRandomId(), []);
 
-  // Get event bus for menu synchronization
-  const { emit, on } = useEventBus();
-
-  // Listen for other menus opening and close this one if needed
-  useEffect(() => {
-    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
-      // If another menu is opening and this menu is open, close this one
-      if (data.menuId !== menuId && isOpen) {
-        setIsOpen(false);
-      }
-    });
-
-    return unsubscribe;
-  }, [on, menuId, isOpen]);
-
-  // Emit event when this menu opens
-  useEffect(() => {
-    if (isOpen) {
-      emit('popover:open', { menuId });
-    }
-  }, [isOpen, emit, menuId]);
+  usePopoverSync({
+    menuId,
+    isOpen,
+    onClose: () => setIsOpen(false),
+  });
 
   function setupCheck() {
     if (!setupRef.current) {

@@ -1534,7 +1534,7 @@ describe('Menu synchronization with event bus', () => {
       ));
 
       const {
-        anchorRef: anchorRef3,
+        targetRef: anchorRef3,
         open: open3,
         rendered: rendered3,
       } = useContextMenu(({ onAction }) => (

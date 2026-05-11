@@ -57,6 +57,13 @@ export interface CubeTrayProps extends OverlayProps, WithCloseBehavior {
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
   defaultOpen?: boolean;
+  /**
+   * Predicate that decides whether the overlay should close in response to an
+   * interaction outside of it. When the function returns `false`, react-aria's
+   * `useOverlay` no longer calls `stopPropagation`/`preventDefault` on the
+   * outside event, which lets sibling triggers receive the click.
+   */
+  shouldCloseOnInteractOutside?: (element: Element) => boolean;
 }
 
 interface CubeTrayWrapperProps extends CubeTrayProps, TransitionState {
@@ -72,12 +79,13 @@ function Tray(props: CubeTrayProps, ref) {
     isFixedHeight,
     isNonModal,
     styles,
+    shouldCloseOnInteractOutside,
     ...otherProps
   } = props;
   let domRef = useDOMRef(ref);
 
   let { overlayProps, underlayProps } = useOverlay(
-    { ...props, isDismissable: true },
+    { ...props, isDismissable: true, shouldCloseOnInteractOutside },
     domRef,
   );
 

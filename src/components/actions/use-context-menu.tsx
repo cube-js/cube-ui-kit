@@ -16,7 +16,7 @@ import { VisuallyHidden } from 'react-aria';
 import { useEvent } from '../../_internal';
 import { generateRandomId } from '../../utils/random';
 import { mergeProps } from '../../utils/react';
-import { useEventBus } from '../../utils/react/useEventBus';
+import { usePopoverSync } from '../../utils/react/usePopoverSync';
 
 import { MenuTrigger } from './Menu';
 
@@ -96,31 +96,32 @@ export function useContextMenu<
   const invisibleAnchorRef = useRef<HTMLSpanElement>(null);
   const setupRef = useRef(false);
 
+  // Mark the container as a popover trigger so that other open menus' close-on-
+  // outside predicates treat clicks inside it (including programmatic
+  // open buttons rendered alongside a context-menu target) as a legitimate
+  // trigger interaction instead of a generic outside click. This mirrors the
+  // pattern in `useAnchoredMenu`.
+  useEffect(() => {
+    const el = targetRef.current;
+    if (el) {
+      el.dataset.popoverTrigger = '';
+      return () => {
+        delete el.dataset.popoverTrigger;
+      };
+    }
+  }, []);
+
   // Generate a unique ID for this menu instance
   const menuId = useMemo(() => generateRandomId(), []);
 
-  // Get event bus for menu synchronization
-  const { emit, on } = useEventBus();
-
-  // Listen for other menus opening and close this one if needed
-  useEffect(() => {
-    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
-      // If another menu is opening and this menu is open, close this one
-      if (data.menuId !== menuId && isOpen) {
-        setIsOpen(false);
-        setAnchorPosition(null);
-      }
-    });
-
-    return unsubscribe;
-  }, [on, menuId, isOpen]);
-
-  // Emit event when this menu opens
-  useEffect(() => {
-    if (isOpen) {
-      emit('popover:open', { menuId });
-    }
-  }, [isOpen, emit, menuId]);
+  usePopoverSync({
+    menuId,
+    isOpen,
+    onClose: () => {
+      setIsOpen(false);
+      setAnchorPosition(null);
+    },
+  });
 
   function setupCheck() {
     if (!setupRef.current) {

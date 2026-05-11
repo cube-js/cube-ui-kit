@@ -53,7 +53,7 @@ import {
   useCombinedRefs,
 } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
-import { useEventBus } from '../../../utils/react/useEventBus';
+import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions';
 import {
@@ -317,27 +317,11 @@ function Select<T extends object>(
   // Generate a unique ID for this select instance
   const selectId = useMemo(() => generateRandomId(), []);
 
-  // Get event bus for menu synchronization
-  const { emit, on } = useEventBus();
-
-  // Listen for other menus opening and close this one if needed
-  useEffect(() => {
-    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
-      // If another menu is opening and this select is open, close this one
-      if (data.menuId !== selectId && state.isOpen) {
-        state.close();
-      }
-    });
-
-    return unsubscribe;
-  }, [on, selectId, state]);
-
-  // Emit event when this select opens
-  useEffect(() => {
-    if (state.isOpen) {
-      emit('popover:open', { menuId: selectId });
-    }
-  }, [state.isOpen, emit, selectId]);
+  usePopoverSync({
+    menuId: selectId,
+    isOpen: state.isOpen,
+    onClose: () => state.close(),
+  });
 
   // Call onOpenChange when open state changes
   useEffect(() => {
@@ -571,8 +555,17 @@ export function ListBoxPopup({
       isDismissable: true,
       shouldCloseOnInteractOutside: (el) => {
         const menuTriggerEl = el.closest('[data-popover-trigger]');
-        // If no menu trigger was clicked, allow closing
-        if (!menuTriggerEl) return true;
+        if (!menuTriggerEl) {
+          // Plain interactive controls (Button, ItemButton) opt in via
+          // `data-popover-dismiss` to dismiss us without losing their click
+          // to useOverlay's stopPropagation. Schedule the close after the
+          // click finishes so the button's onPress runs first.
+          if (el.closest('[data-popover-dismiss]')) {
+            setTimeout(() => state.close(), 0);
+            return false;
+          }
+          return true;
+        }
         // If the same trigger that opened this select was clicked, allow closing
         if (menuTriggerEl === triggerRef?.current) return true;
         // Otherwise, don't close (let event mechanism handle it)
