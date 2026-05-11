@@ -247,13 +247,8 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
       jsdom:
-<<<<<<< HEAD
-        specifier: ^20.0.3
-        version: 20.0.3
-=======
         specifier: ^29.1.1
         version: 29.1.1
->>>>>>> origin
       lint-staged:
         specifier: ^10.0.0
         version: 10.0.0
@@ -2789,13 +2784,6 @@ packages:
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
 
-<<<<<<< HEAD
-  '@tootallnate/once@2.0.1':
-    resolution: {integrity: sha512-HqmEUIGRJ5fSXchkVgR5F7qn48bDBzv0kWj/Kfu5e6uci4UlEeng4331LnBkWffb++Ei3FOVLxo8JJWMFBDMeQ==}
-    engines: {node: '>= 10'}
-
-=======
->>>>>>> origin
   '@tsconfig/node10@1.0.9':
     resolution: {integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA==}
 
@@ -3260,26 +3248,10 @@ packages:
     resolution: {integrity: sha512-k+iyHEuPgSw6SbuDpGQM+06HQUa04DZ3o+F6CSzXMvvI5KMvnaEqXe+YVe555R9nn6GPt404fos4wcgpw12SDA==}
     engines: {node: '>=0.4.0'}
 
-<<<<<<< HEAD
   acorn@8.16.0:
     resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
     engines: {node: '>=0.4.0'}
     hasBin: true
-
-  agent-base@6.0.2:
-    resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
-    engines: {node: '>= 6.0.0'}
-=======
-  acorn@8.14.1:
-    resolution: {integrity: sha512-OvQ/2pUDKmgfCg++xsTX1wGxfTaszcHVcTctW4UJB4hibJx2HXxxO5UmVgyjMa+ZDsiaf5wWLXYpRWMmBI0QHg==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
-
-  acorn@8.15.0:
-    resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
->>>>>>> origin
 
   ajv-keywords@3.5.2:
     resolution: {integrity: sha512-5p6WTN0DdTGVQk6VjcEju19IgaHudalcfabD7yhDGeA6bcQnmL+CpveLJq/3hvfwd1aof6L386Ougkx6RfyMIQ==}
@@ -4366,16 +4338,6 @@ packages:
     resolution: {integrity: sha512-TMKDUnIte6bfb5nWv7V/caI169OHgvwjb7V4WkeUvbQQdjr5rWKqHFiKWb/fcOwB+CzBT+qbWjvj+DVwRskpIg==}
     engines: {node: '>=14'}
 
-<<<<<<< HEAD
-  form-data@4.0.5:
-    resolution: {integrity: sha512-8RipRLol37bNs2bhoV67fiTEvdTrbMUYcFTiy3+wuuOnUog2QBHCZWXDRijWQfAkhBj2Uf5UnVaiWwA5vdd82w==}
-    engines: {node: '>= 6'}
-=======
-  foreground-child@3.3.1:
-    resolution: {integrity: sha512-gIXjKqtFuWEgzFRJA9WCQeSJLZDjgJUOMCMzxtvFq/37KojM1BFGufqsCy0r4qSQmYLsZYMeyRqzIWOMup03sw==}
-    engines: {node: '>=14'}
->>>>>>> origin
-
   fs-extra@11.1.1:
     resolution: {integrity: sha512-MGIE4HOvQCeUCzmlHs0vXpih4ysz4wg9qiSAu6cd42lVwPbTM1TjV7RusoyQqMmk/95gdQZX72u+YW+c3eEpFQ==}
     engines: {node: '>=14.14'}
@@ -5213,13 +5175,11 @@ packages:
   mdast-util-to-string@4.0.0:
     resolution: {integrity: sha512-0H44vDimn51F0YwvxSJSm0eCDOJTRlmN0R1yBh4HLj9wiV1Dn0QoXGbvFAWj2hSItVTlCmBF1hqKlIyUBVFLPg==}
 
-<<<<<<< HEAD
-  memoizerific@1.11.3:
-    resolution: {integrity: sha512-/EuHYwAPdLtXwAwSZkh/Gutery6pD2KYd44oQLhAvQp/50mpyduZh8Q7PYHXTCJ+wuXxt7oij2LXyIJOOYFPog==}
-=======
   mdn-data@2.27.1:
     resolution: {integrity: sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==}
->>>>>>> origin
+
+  memoizerific@1.11.3:
+    resolution: {integrity: sha512-/EuHYwAPdLtXwAwSZkh/Gutery6pD2KYd44oQLhAvQp/50mpyduZh8Q7PYHXTCJ+wuXxt7oij2LXyIJOOYFPog==}
 
   memorystream@0.3.1:
     resolution: {integrity: sha512-S3UwM3yj5mtUSEfP41UZmt/0SCoVYUcU1rkXv+BQ5Ig8ndL4sPoJNBUJERafdPb5jjHJGuMgytgKvKIf58XNBw==}
@@ -5715,7 +5675,6 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
-
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   quansync@1.0.0:
@@ -6923,8 +6882,6 @@ packages:
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
-
-publishDirectory: dist
 
 snapshots:
 
@@ -10185,11 +10142,6 @@ snapshots:
     dependencies:
       '@testing-library/dom': 10.4.1
 
-<<<<<<< HEAD
-  '@tootallnate/once@2.0.1': {}
-
-=======
->>>>>>> origin
   '@tsconfig/node10@1.0.9': {}
 
   '@tsconfig/node12@1.0.11': {}
@@ -10772,18 +10724,7 @@ snapshots:
       jsonparse: 1.3.1
       through: 2.3.8
 
-<<<<<<< HEAD
-  abab@2.0.6: {}
-
-  acorn-globals@7.0.1:
-    dependencies:
-      acorn: 8.16.0
-      acorn-walk: 8.2.0
-
   acorn-import-assertions@1.9.0(acorn@8.16.0):
-=======
-  acorn-import-assertions@1.9.0(acorn@8.14.1):
->>>>>>> origin
     dependencies:
       acorn: 8.16.0
 
@@ -10793,19 +10734,7 @@ snapshots:
 
   acorn-walk@8.2.0: {}
 
-<<<<<<< HEAD
   acorn@8.16.0: {}
-
-  agent-base@6.0.2:
-    dependencies:
-      debug: 4.4.3
-    transitivePeerDependencies:
-      - supports-color
-=======
-  acorn@8.14.1: {}
-
-  acorn@8.15.0: {}
->>>>>>> origin
 
   ajv-keywords@3.5.2(ajv@6.12.6):
     dependencies:
@@ -10969,11 +10898,6 @@ snapshots:
       estree-walker: 3.0.3
       js-tokens: 10.0.0
 
-<<<<<<< HEAD
-  asynckit@0.4.0: {}
-
-=======
->>>>>>> origin
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.0.0
@@ -11261,13 +11185,6 @@ snapshots:
 
   color-name@1.1.4: {}
 
-<<<<<<< HEAD
-  combined-stream@1.0.8:
-    dependencies:
-      delayed-stream: 1.0.0
-
-=======
->>>>>>> origin
   commander@2.20.3: {}
 
   commander@4.1.1: {}
@@ -11365,24 +11282,12 @@ snapshots:
 
   crypt@0.0.2: {}
 
-<<<<<<< HEAD
-  css.escape@1.5.1: {}
-
-  cssom@0.3.8: {}
-
-  cssom@0.5.0: {}
-
-  cssstyle@2.3.0:
-    dependencies:
-      cssom: 0.3.8
-=======
   css-tree@3.2.1:
     dependencies:
       mdn-data: 2.27.1
       source-map-js: 1.2.1
 
   css.escape@1.5.1: {}
->>>>>>> origin
 
   csstype@3.1.2: {}
 
@@ -11405,16 +11310,10 @@ snapshots:
 
   data-urls@7.0.0:
     dependencies:
-<<<<<<< HEAD
-      abab: 2.0.6
-      whatwg-mimetype: 3.0.0
-      whatwg-url: 11.0.0
-=======
       whatwg-mimetype: 5.0.0
       whatwg-url: 16.0.1
     transitivePeerDependencies:
       - '@noble/hashes'
->>>>>>> origin
 
   data-view-buffer@1.0.2:
     dependencies:
@@ -11498,11 +11397,6 @@ snapshots:
 
   defu@6.1.4: {}
 
-<<<<<<< HEAD
-  delayed-stream@1.0.0: {}
-
-=======
->>>>>>> origin
   deprecation@2.3.1: {}
 
   dequal@2.0.3: {}
@@ -11537,13 +11431,6 @@ snapshots:
 
   dom-accessibility-api@0.6.3: {}
 
-<<<<<<< HEAD
-  domexception@4.0.0:
-    dependencies:
-      webidl-conversions: 7.0.0
-
-=======
->>>>>>> origin
   dot-prop@5.3.0:
     dependencies:
       is-obj: 2.0.0
@@ -11587,11 +11474,7 @@ snapshots:
     dependencies:
       ansi-colors: 4.1.3
 
-<<<<<<< HEAD
-  entities@6.0.1: {}
-=======
   entities@8.0.0: {}
->>>>>>> origin
 
   error-ex@1.3.2:
     dependencies:
@@ -11736,17 +11619,6 @@ snapshots:
 
   escape-string-regexp@5.0.0: {}
 
-<<<<<<< HEAD
-  escodegen@2.1.0:
-    dependencies:
-      esprima: 4.0.1
-      estraverse: 5.3.0
-      esutils: 2.0.3
-    optionalDependencies:
-      source-map: 0.6.1
-
-=======
->>>>>>> origin
   eslint-config-prettier@10.1.2(eslint@9.25.1(jiti@2.6.1)):
     dependencies:
       eslint: 9.25.1(jiti@2.6.1)
@@ -12154,21 +12026,6 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-<<<<<<< HEAD
-  form-data@4.0.5:
-    dependencies:
-      asynckit: 0.4.0
-      combined-stream: 1.0.8
-      es-set-tostringtag: 2.1.0
-      hasown: 2.0.2
-      mime-types: 2.1.35
-=======
-  foreground-child@3.3.1:
-    dependencies:
-      cross-spawn: 7.0.6
-      signal-exit: 4.1.0
->>>>>>> origin
-
   fs-extra@11.1.1:
     dependencies:
       graceful-fs: 4.2.11
@@ -12354,34 +12211,12 @@ snapshots:
 
   html-encoding-sniffer@6.0.0:
     dependencies:
-<<<<<<< HEAD
-      whatwg-encoding: 2.0.0
-
-  html-escaper@2.0.2: {}
-
-  http-proxy-agent@5.0.0:
-    dependencies:
-      '@tootallnate/once': 2.0.1
-      agent-base: 6.0.2
-      debug: 4.4.3
-    transitivePeerDependencies:
-      - supports-color
-
-  https-proxy-agent@5.0.1:
-    dependencies:
-      agent-base: 6.0.2
-      debug: 4.4.3
-    transitivePeerDependencies:
-      - supports-color
-
-=======
       '@exodus/bytes': 1.15.0
     transitivePeerDependencies:
       - '@noble/hashes'
 
   html-escaper@2.0.2: {}
 
->>>>>>> origin
   human-id@1.0.2: {}
 
   human-signals@1.1.1: {}
@@ -12394,13 +12229,6 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
-<<<<<<< HEAD
-  iconv-lite@0.6.3:
-    dependencies:
-      safer-buffer: 2.1.2
-
-=======
->>>>>>> origin
   ignore@5.3.2: {}
 
   import-fresh@3.3.0:
@@ -12678,13 +12506,7 @@ snapshots:
       whatwg-url: 16.0.1
       xml-name-validator: 5.0.0
     transitivePeerDependencies:
-<<<<<<< HEAD
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-=======
       - '@noble/hashes'
->>>>>>> origin
 
   jsesc@0.5.0: {}
 
@@ -13074,13 +12896,11 @@ snapshots:
     dependencies:
       '@types/mdast': 4.0.3
 
-<<<<<<< HEAD
+  mdn-data@2.27.1: {}
+
   memoizerific@1.11.3:
     dependencies:
       map-or-similar: 1.5.0
-=======
-  mdn-data@2.27.1: {}
->>>>>>> origin
 
   memorystream@0.3.1: {}
 
@@ -13418,11 +13238,6 @@ snapshots:
 
   number-is-nan@1.0.1: {}
 
-<<<<<<< HEAD
-  nwsapi@2.2.23: {}
-
-=======
->>>>>>> origin
   object-assign@4.1.1: {}
 
   object-inspect@1.13.4: {}
@@ -13559,11 +13374,7 @@ snapshots:
 
   parse5@8.0.1:
     dependencies:
-<<<<<<< HEAD
-      entities: 6.0.1
-=======
       entities: 8.0.0
->>>>>>> origin
 
   path-exists@4.0.0: {}
 
@@ -13662,13 +13473,6 @@ snapshots:
 
   pseudomap@1.0.2: {}
 
-<<<<<<< HEAD
-  psl@1.15.0:
-    dependencies:
-      punycode: 2.3.1
-
-=======
->>>>>>> origin
   pump@3.0.0:
     dependencies:
       end-of-stream: 1.4.4
@@ -13682,11 +13486,6 @@ snapshots:
 
   quansync@1.0.0: {}
 
-<<<<<<< HEAD
-  querystringify@2.2.0: {}
-
-=======
->>>>>>> origin
   queue-microtask@1.2.3: {}
 
   quick-lru@4.0.1: {}
@@ -13974,11 +13773,6 @@ snapshots:
 
   require-main-filename@2.0.0: {}
 
-<<<<<<< HEAD
-  requires-port@1.0.0: {}
-
-=======
->>>>>>> origin
   resolve-from@4.0.0: {}
 
   resolve-from@5.0.0: {}
@@ -14526,24 +14320,13 @@ snapshots:
 
   tough-cookie@6.0.1:
     dependencies:
-<<<<<<< HEAD
-      psl: 1.15.0
-      punycode: 2.3.0
-      universalify: 0.2.0
-      url-parse: 1.5.10
-=======
       tldts: 7.0.30
->>>>>>> origin
 
   tr46@0.0.3: {}
 
   tr46@6.0.0:
     dependencies:
-<<<<<<< HEAD
-      punycode: 2.3.0
-=======
       punycode: 2.3.1
->>>>>>> origin
 
   tree-kill@1.2.2: {}
 
@@ -14760,11 +14543,6 @@ snapshots:
 
   universalify@0.1.2: {}
 
-<<<<<<< HEAD
-  universalify@0.2.0: {}
-
-=======
->>>>>>> origin
   universalify@2.0.0: {}
 
   unplugin@2.3.10:
@@ -14788,14 +14566,6 @@ snapshots:
     dependencies:
       punycode: 2.3.0
 
-<<<<<<< HEAD
-  url-parse@1.5.10:
-    dependencies:
-      querystringify: 2.2.0
-      requires-port: 1.0.0
-
-=======
->>>>>>> origin
   use-callback-ref@1.3.3(@types/react@19.1.10)(react@19.1.1):
     dependencies:
       react: 19.1.1
@@ -14889,11 +14659,7 @@ snapshots:
 
   w3c-xmlserializer@5.0.0:
     dependencies:
-<<<<<<< HEAD
-      xml-name-validator: 4.0.0
-=======
       xml-name-validator: 5.0.0
->>>>>>> origin
 
   watchpack@2.4.0:
     dependencies:
@@ -14906,11 +14672,7 @@ snapshots:
 
   webidl-conversions@3.0.1: {}
 
-<<<<<<< HEAD
-  webidl-conversions@7.0.0: {}
-=======
   webidl-conversions@8.0.1: {}
->>>>>>> origin
 
   webpack-sources@3.2.3: {}
 
@@ -14947,18 +14709,6 @@ snapshots:
       - esbuild
       - uglify-js
 
-<<<<<<< HEAD
-  whatwg-encoding@2.0.0:
-    dependencies:
-      iconv-lite: 0.6.3
-
-  whatwg-mimetype@3.0.0: {}
-
-  whatwg-url@11.0.0:
-    dependencies:
-      tr46: 3.0.0
-      webidl-conversions: 7.0.0
-=======
   whatwg-mimetype@5.0.0: {}
 
   whatwg-url@16.0.1:
@@ -14968,7 +14718,6 @@ snapshots:
       webidl-conversions: 8.0.1
     transitivePeerDependencies:
       - '@noble/hashes'
->>>>>>> origin
 
   whatwg-url@5.0.0:
     dependencies:
@@ -15067,11 +14816,7 @@ snapshots:
     dependencies:
       is-wsl: 3.1.1
 
-<<<<<<< HEAD
-  xml-name-validator@4.0.0: {}
-=======
   xml-name-validator@5.0.0: {}
->>>>>>> origin
 
   xmlchars@2.2.0: {}
 
