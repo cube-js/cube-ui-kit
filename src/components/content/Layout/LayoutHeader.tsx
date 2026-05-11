@@ -57,6 +57,7 @@ const HeaderElement = tasty(LayoutContent, {
       placeItems: 'center start',
       gap: '1bw',
       preset: 't3 / strong',
+      lineHeight: '1em',
       color: '#dark-02',
     },
 
@@ -72,6 +73,7 @@ const HeaderElement = tasty(LayoutContent, {
         'level=5': 'h5',
         'level=6': 'h6',
       },
+      lineHeight: '1em',
       color: '#dark',
       margin: 0,
       overflow: 'hidden',
