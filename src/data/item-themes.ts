@@ -832,10 +832,10 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
-    '': '#dark #white.0',
-    hovered: '#dark #white.18',
-    'pressed | (selected & !hovered)': '#dark #white.12',
-    disabled: '#dark #white.12',
+    '': '#fixed-dark #white.0',
+    hovered: '#fixed-dark #white.18',
+    'pressed | (selected & !hovered)': '#fixed-dark #white.12',
+    disabled: '#fixed-dark #white.12',
   },
   color: {
     '': '#white',
@@ -876,9 +876,9 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
     disabled: '#white.12',
   },
   color: {
-    '': '#primary-text',
+    '': '#fixed-primary-text',
     hovered: '#primary',
-    'pressed & hovered': '#primary-text',
+    'pressed & hovered': '#fixed-primary-text',
     disabled: '#white.4',
   },
 } as const;

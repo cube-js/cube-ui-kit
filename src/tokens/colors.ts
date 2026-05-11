@@ -30,6 +30,28 @@ const LEGACY_ALIASES: Styles = {
   '#dark-04': '#placeholder',
   '#dark-05': '#border',
 
+  // Fixed-mode counterpart to `#dark`. Resolves to the same L≈12 surface
+  // but uses Glaze `mode: 'fixed'` so it does NOT invert in dark schemes.
+  // Use this whenever the design intentionally pins a dark color regardless
+  // of scheme — the canonical case being the `special` item theme, which
+  // pairs `#fixed-dark` with the (also-fixed) built-in `#white` on a known
+  // always-dark surface. Using `#dark` there would resolve to near-white in
+  // dark mode and the element would disappear into its background.
+  '#fixed-dark': '#surface-inverse',
+
+  // Fixed-mode counterpart to `#primary-text`. `#primary-text` is anchored
+  // to `surface` with `mode: 'auto'`, so it flips to a *light* purple in
+  // dark schemes (correct on body content, which also inverts). When the
+  // local fill is a fixed color instead — built-in `#white` in
+  // `SPECIAL_CLEAR_STYLES`, where the special theme assumes an always-white
+  // button surface — the adaptive text loses contrast (light purple on
+  // white) in dark mode. `#fixed-primary-text` points at
+  // `#primary-accent-surface-hover` (`mode: 'fixed'`, cr 6–8.5 vs the fixed
+  // accent-surface-text white), which is the only existing fixed-mode
+  // accent shade whose contrast band overlaps `accent-text`'s cr 6.4–10 —
+  // so the light-mode look is preserved while dark mode stays readable.
+  '#fixed-primary-text': '#primary-accent-surface-hover',
+
   // ---- Misc neutral ----
   '#minor': '#surface-text-soft.65',
   '#shadow': '#shadow-md',
