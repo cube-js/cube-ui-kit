@@ -73,7 +73,9 @@ const HeaderElement = tasty(LayoutContent, {
         'level=5': 'h5',
         'level=6': 'h6',
       },
-      lineHeight: '1em',
+      lineHeight: {
+        hasBreadcrumbs: '1em',
+      },
       color: '#dark',
       margin: 0,
       overflow: 'hidden',
@@ -192,7 +194,7 @@ function LayoutHeader(
     <HeaderElement
       {...otherProps}
       ref={ref}
-      mods={{ ...mods, level }}
+      mods={{ ...mods, level, hasBreadcrumbs }}
       scrollbar={scrollbar}
     >
       {renderBreadcrumbs()}

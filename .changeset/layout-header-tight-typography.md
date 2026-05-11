@@ -2,4 +2,4 @@
 '@cube-dev/ui-kit': patch
 ---
 
-**Fix:** `Layout.Header` now sets `line-height: 1em` on both the breadcrumbs and the title. The headings' default leading no longer overlaps the adjacent grid rows, so long titles fit cleanly under breadcrumbs and the header collapses to its actual ink height.
+**Fix:** `Layout.Header` now sets `line-height: 1em` on the breadcrumbs row, and on the title only when breadcrumbs are present. The headings' default leading no longer overlaps the breadcrumbs row, so long titles fit cleanly beneath breadcrumbs while keeping the natural line-height when breadcrumbs are absent.
