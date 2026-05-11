@@ -5,7 +5,6 @@ import {
   forwardRef,
   Fragment,
   ReactElement,
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -20,6 +19,7 @@ import {
 } from 'react-aria';
 import { MenuTriggerState, useMenuTriggerState } from 'react-stately';
 
+import { useEvent } from '../../../_internal';
 import { generateRandomId } from '../../../utils/random';
 import { SlotProvider } from '../../../utils/react';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
@@ -153,57 +153,53 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     </>
   );
 
-  // Shared between the Popover and Tray branches so both react-aria `useOverlay`
-  // calls see the same predicate. Without this, the Tray branch falls back to
-  // unconditional dismiss-on-outside-interaction, which `useOverlay` translates
-  // into stopPropagation/preventDefault in the capture phase — that swallows
-  // clicks on sibling triggers (see Menu rapid-open test).
+  // Shared between the Popover and Tray branches so both react-aria
+  // `useOverlay` calls see the same predicate. Without this, the Tray branch
+  // falls back to unconditional dismiss-on-outside-interaction, which
+  // `useOverlay` translates into stopPropagation/preventDefault in the
+  // capture phase — that swallows clicks on sibling triggers (see Menu
+  // rapid-open test).
   //
-  // We capture `state.isOpen` via a ref so the callback identity stays stable
-  // across re-renders (it's passed to react-aria `useOverlay` whose listener
-  // setup keys off the ref equality). The ref is read at click time so a menu
-  // that is logically closed (`state.close()` already ran) but still mounted
-  // inside the `Popover` exit transition does not block sibling-trigger clicks.
-  const stateIsOpenRef = useRef(state.isOpen);
-  useEffect(() => {
-    stateIsOpenRef.current = state.isOpen;
-  }, [state.isOpen]);
-  const shouldCloseOnInteractOutside = useCallback(
-    (el: Element) => {
-      // While `Popover` is animating out, useOverlay's `useInteractOutside`
-      // capture-phase listener is still attached (jsdom 29+ uses
-      // pointerdown/click capture). Without this guard, clicks on a sibling
-      // trigger get stopPropagation()'d during the 350ms exit window and the
-      // sibling's `onClick` never runs — breaking rapid-open and "open menu
-      // again with new props" flows.
-      if (!stateIsOpenRef.current) return false;
+  // `useEvent` gives us a single stable callback reference for the lifetime
+  // of the component while always reading the latest closure values. This
+  // matters because `useMenuTriggerState` returns a fresh `state` object on
+  // every render, so a vanilla `useCallback([..., state])` would produce a
+  // new function every render and defeat any stability guarantees consumers
+  // rely on.
+  const shouldCloseOnInteractOutside = useEvent((el: Element) => {
+    // While `Popover` is animating out, `useInteractOutside`'s capture-phase
+    // listener is still attached (jsdom 29+ uses pointerdown/click capture).
+    // The animation lasts ~350ms; without this guard, clicks on a sibling
+    // trigger during the exit window get stopPropagation()'d and the
+    // sibling's `onClick` never runs — breaking rapid-open and "open menu
+    // again with new props" flows. Reading `state.isOpen` directly is safe
+    // because `useEvent` always sees the latest closure.
+    if (!state.isOpen) return false;
 
-      const menuTriggerEl = el.closest('[data-popover-trigger]');
-      if (!menuTriggerEl) {
-        // Plain interactive controls (Button, ItemButton) opt in via
-        // `data-popover-dismiss`. We schedule the close via setTimeout(0) so
-        // it lands AFTER the click event finishes — the button's onPress
-        // fires first, then the popover closes. Without this, useOverlay
-        // would stopPropagation() the click and the user would need a
-        // second click to actually press the button.
-        if (el.closest('[data-popover-dismiss]')) {
-          setTimeout(() => state.close(), 0);
-          return false;
-        }
-        return true;
+    const menuTriggerEl = el.closest('[data-popover-trigger]');
+    if (!menuTriggerEl) {
+      // Plain interactive controls (Button, ItemButton) opt in via
+      // `data-popover-dismiss`. We schedule the close via setTimeout(0) so
+      // it lands AFTER the click event finishes — the button's onPress
+      // fires first, then the popover closes. Without this, useOverlay
+      // would stopPropagation() the click and the user would need a second
+      // click to actually press the button.
+      if (el.closest('[data-popover-dismiss]')) {
+        setTimeout(() => state.close(), 0);
+        return false;
       }
-      if (
-        isDummy &&
-        (menuTriggerEl === menuTriggerRef.current ||
-          menuTriggerRef.current?.contains(el))
-      ) {
-        return true;
-      }
-      if (menuTriggerEl === menuTriggerRef.current) return true;
-      return false;
-    },
-    [isDummy, menuTriggerRef, state],
-  );
+      return true;
+    }
+    if (
+      isDummy &&
+      (menuTriggerEl === menuTriggerRef.current ||
+        menuTriggerRef.current?.contains(el))
+    ) {
+      return true;
+    }
+    if (menuTriggerEl === menuTriggerRef.current) return true;
+    return false;
+  });
 
   let overlay;
   if (isTray) {
