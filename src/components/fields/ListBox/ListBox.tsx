@@ -1317,21 +1317,26 @@ function Option({
     filteredItemProps.icon,
   ]);
 
-  // Custom click handler for the entire option
-  const handleOptionClick = (e: MouseEvent) => {
-    // Mark focus changes from mouse clicks
+  // Side-effects layered on top of React Aria's own onClick. The underlying
+  // React Aria onClick is already chained via mergeProps below, so this handler
+  // must NOT call optionProps.onClick again — re-invoking it would trigger
+  // usePress's virtual-click branch and double-fire onPress (and toggle
+  // selection twice in multiple mode).
+  const handleOptionExtras = (e: MouseEvent) => {
     if (lastFocusSourceRef) {
       lastFocusSourceRef.current = 'mouse';
     }
 
-    // If there's an onOptionClick callback and this is checkable in multiple mode,
-    // we need to distinguish between checkbox and content clicks
-    if (
-      onOptionClick &&
-      isCheckable &&
-      state.selectionManager.selectionMode === 'multiple'
-    ) {
-      // Check if the click target is within the checkbox area
+    state.selectionManager.setFocusedKey(item.key);
+
+    if (!onOptionClick) {
+      return;
+    }
+
+    // In checkable multiple mode, suppress the callback when the click landed
+    // inside the checkbox wrapper — that area is reserved for toggle-only
+    // behaviour (React Aria still handles the toggle via the chained onClick).
+    if (isCheckable && state.selectionManager.selectionMode === 'multiple') {
       const clickTarget = e.target as HTMLElement;
       const checkboxElement = localRef.current?.querySelector(
         '[data-element="CheckboxWrapper"]',
@@ -1342,32 +1347,11 @@ function Option({
         (checkboxElement === clickTarget ||
           checkboxElement.contains(clickTarget))
       ) {
-        // Checkbox area clicked - only toggle, don't call onOptionClick
-        // Let React Aria handle the selection
-        optionProps.onClick?.(e);
-        // Set focus to the clicked item
-        state.selectionManager.setFocusedKey(item.key);
-      } else {
-        // Content area clicked - toggle and trigger callback
-        // Let React Aria handle the selection first
-        optionProps.onClick?.(e);
-        // Set focus to the clicked item
-        state.selectionManager.setFocusedKey(item.key);
-        // Then call the callback (which will close the popover in FilterPicker)
-        if (onOptionClick) {
-          onOptionClick(item.key);
-        }
-      }
-    } else {
-      // Normal behavior - let React Aria handle it
-      optionProps.onClick?.(e);
-      // Set focus to the clicked item
-      state.selectionManager.setFocusedKey(item.key);
-      // Call onOptionClick if provided
-      if (onOptionClick) {
-        onOptionClick(item.key);
+        return;
       }
     }
+
+    onOptionClick(item.key);
   };
 
   // Filter out React Aria props that shouldn't reach the DOM
@@ -1394,7 +1378,7 @@ function Option({
         hoverProps,
         filteredItemProps,
         {
-          onClick: handleOptionClick,
+          onClick: handleOptionExtras,
           onKeyDown,
           onKeyUp,
           tabIndex,
