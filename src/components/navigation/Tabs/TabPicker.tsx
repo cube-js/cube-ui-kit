@@ -97,7 +97,6 @@ export function TabPicker({
             isDeletable ? (
               <ItemAction
                 icon={<CloseIcon />}
-                theme="danger"
                 aria-label="Close"
                 onPress={() => {
                   onDelete(tab.key);
