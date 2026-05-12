@@ -1584,10 +1584,10 @@ export const DifferentShapes: Story = {
 export const Reorderable: StoryObj = {
   render: function ReorderableRender() {
     const INITIAL_ITEMS = [
-      { key: 'revenue', label: 'Revenue' },
-      { key: 'orders', label: 'Orders' },
-      { key: 'customers', label: 'Customers' },
-      { key: 'avg-order', label: 'Avg Order Value' },
+      { key: 'revenue', label: 'Revenue', icon: <DatabaseIcon /> },
+      { key: 'orders', label: 'Orders', icon: <FilterIcon /> },
+      { key: 'customers', label: 'Customers', icon: <UserIcon /> },
+      { key: 'avg-order', label: 'Avg Order Value', icon: <SettingsIcon /> },
       { key: 'conversion', label: 'Conversion Rate' },
       { key: 'sessions', label: 'Sessions' },
       { key: 'bounce-rate', label: 'Bounce Rate' },
@@ -1617,7 +1617,12 @@ export const Reorderable: StoryObj = {
           onReorder={(newOrder) => setKeyOrder(newOrder)}
         >
           {orderedItems.map((item) => (
-            <ListBox.Item key={item.key}>{item.label}</ListBox.Item>
+            <ListBox.Item
+              key={item.key}
+              icon={'icon' in item ? item.icon : undefined}
+            >
+              {item.label}
+            </ListBox.Item>
           ))}
         </ListBox>
         <Text preset="t4" color="#dark.60">
