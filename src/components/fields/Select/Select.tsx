@@ -104,6 +104,12 @@ export const ListBoxElement = tasty({
     padding: '0',
     listStyle: 'none',
     scrollbar: 'styled',
+    // The listbox is programmatically focused when the popover opens
+    // (so keyboard nav works immediately) but it should never display a
+    // focus ring — only the focused option does. Without this, the
+    // browser draws its native outline around the whole listbox when
+    // it receives focus.
+    outline: 0,
   },
 });
 
