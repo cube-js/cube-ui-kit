@@ -1,7 +1,8 @@
 import { createRef } from 'react';
 
-import { FilterPicker } from '../../../index';
+import { Dialog, DialogTrigger, FilterPicker } from '../../../index';
 import { renderWithRoot, userEvent, waitFor, within } from '../../../test';
+import { Button } from '../../actions';
 
 vi.mock('../../../_internal/hooks/use-warn');
 
@@ -792,6 +793,68 @@ describe('<FilterPicker />', () => {
 
       const trigger = getByRole('button');
       expect(trigger).toHaveTextContent('Selected: Red Apple, Sweet Cherry');
+    });
+  });
+
+  describe('Inside a Dialog (focus management)', () => {
+    it('should auto-focus the search input when popover opens inside a Dialog', async () => {
+      const { getByRole, getByText, getByPlaceholderText } = renderWithRoot(
+        <DialogTrigger isDismissable={false}>
+          <Button>Open Dialog</Button>
+          {() => (
+            <Dialog qa="OuterDialog" isDismissable={false}>
+              <FilterPicker
+                label="Pick a fruit"
+                placeholder="Choose..."
+                selectionMode="single"
+              >
+                {basicItems}
+              </FilterPicker>
+            </Dialog>
+          )}
+        </DialogTrigger>,
+      );
+
+      // Open the outer modal Dialog
+      await user.click(getByRole('button'));
+
+      // Wait until the outer Dialog is fully entered. The Dialog's FocusScope
+      // only contains focus once the open transition has completed.
+      const dialog = await waitFor(() => getByRole('dialog'));
+
+      await waitFor(() => {
+        expect(dialog).toBeInTheDocument();
+      });
+
+      // Wait an extra bit so the outer Dialog reaches the 'entered' phase
+      // (DisplayTransition uses double-RAF + duration). 400ms is enough for
+      // the 350ms exit duration constant to fully complete.
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      const trigger = getByText('Choose...');
+
+      // Open the FilterPicker popover by clicking its trigger
+      await user.click(trigger);
+
+      // Wait for the popover to appear in the DOM
+      await waitFor(() => {
+        expect(getByPlaceholderText('Search...')).toBeInTheDocument();
+      });
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // The popover's search input must be auto-focused so the user can
+      // immediately filter. Without the fix, the outer Dialog's FocusScope
+      // intercepts the search input's native `autoFocus` (because it fires
+      // before the popover's FocusScope is registered in react-aria's focus
+      // scope tree). useDialog then focuses the popover Dialog SECTION
+      // element instead of the search input.
+      await waitFor(
+        () => {
+          expect(searchInput).toHaveFocus();
+        },
+        { timeout: 1500 },
+      );
     });
   });
 
