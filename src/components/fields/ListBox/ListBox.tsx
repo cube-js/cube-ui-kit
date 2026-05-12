@@ -146,8 +146,8 @@ const ListBoxItem = tasty(Item, {
         draggable: 'grab',
       },
       opacity: {
-        draggable: '.4',
-        'draggable & :hover': '1',
+        gripIcon: '.4',
+        'gripIcon & hovered': '1',
       },
       transition: {
         draggable: 'opacity',
@@ -1283,8 +1283,10 @@ function Option({
 
   // Determine icon: drag handle > checkbox > user icon > default
   const effectiveIcon = useMemo(() => {
-    if (isDraggable && !filteredItemProps.icon) {
-      return <GripVerticalIcon size={14} />;
+    if (isDraggable) {
+      if (!filteredItemProps.icon || isHovered) {
+        return <GripVerticalIcon size={14} />;
+      }
     }
 
     if (
@@ -1407,6 +1409,7 @@ function Option({
         pressed: isPressed,
         dragging: isDragging,
         draggable: isDraggable,
+        gripIcon: isDraggable && (!filteredItemProps.icon || isHovered),
         valid: isSelected && validationState === 'valid',
         invalid: isSelected && validationState === 'invalid',
         checkable: isCheckable,

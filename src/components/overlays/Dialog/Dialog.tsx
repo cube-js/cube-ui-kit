@@ -215,28 +215,42 @@ const DialogContent = forwardRef(function DialogContent(
     dismissButton = <DismissButton onDismiss={onDismiss} />;
   }
 
-  // Focus the first focusable element in the dialog when it opens
+  // Focus the first focusable element in the dialog when it opens.
+  //
+  // We also re-run the priority focus logic when the dialog <section>
+  // itself is the active element. This recovers from a race that occurs
+  // when a popover-based component (FilterPicker, Picker, Select, …) opens
+  // inside another contained Dialog: React's native `autoFocus` on the
+  // inner control fires during the mutation phase, before the popover's
+  // FocusScope registers in react-aria's focus-scope tree, so the outer
+  // FocusScope yanks focus back. useDialog then defaults focus to the
+  // dialog <section>; without re-promoting it here, the priority element
+  // (e.g. the search input) is never focused.
   useEffect(() => {
     if (contextProps.isOpen) {
       setTimeout(() => {
-        if (
-          domRef.current &&
-          !domRef.current.contains(document.activeElement)
-        ) {
-          // Priority 1: autofocus input or primary button
-          const priorityElement = domRef.current.querySelector(
-            'input[data-autofocus], button[type="submit"], button[data-type="primary"]',
-          ) as HTMLElement | null;
+        if (!domRef.current) return;
 
-          if (priorityElement) {
-            priorityElement.focus();
-          } else {
-            // Fallback: focus first tabbable element, or dialog itself
-            const focusManager = createFocusManager(domRef);
+        const activeElement = document.activeElement;
+        const isFocusOutsideDialog = !domRef.current.contains(activeElement);
+        const isFocusOnDialogShell = activeElement === domRef.current;
 
-            if (!focusManager.focusFirst({ tabbable: true })) {
-              domRef.current.focus();
-            }
+        // Priority 1: autofocus input or primary button
+        const priorityElement = domRef.current.querySelector(
+          'input[data-autofocus], button[type="submit"], button[data-type="primary"]',
+        ) as HTMLElement | null;
+
+        if (priorityElement && (isFocusOutsideDialog || isFocusOnDialogShell)) {
+          priorityElement.focus();
+          return;
+        }
+
+        if (isFocusOutsideDialog) {
+          // Fallback: focus first tabbable element, or dialog itself
+          const focusManager = createFocusManager(domRef);
+
+          if (!focusManager.focusFirst({ tabbable: true })) {
+            domRef.current.focus();
           }
         }
       });

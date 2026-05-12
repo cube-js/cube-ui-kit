@@ -2,7 +2,13 @@ import { IconCalendar } from '@tabler/icons-react';
 import { Key, RefObject, useRef, useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
-import { PlusIcon } from '../../../icons';
+import {
+  DatabaseIcon,
+  FilterIcon,
+  PlusIcon,
+  SettingsIcon,
+  UserIcon,
+} from '../../../icons';
 import { Button } from '../../actions/Button';
 import { Menu } from '../../actions/Menu';
 import { Layout } from '../../content/Layout';
@@ -1741,10 +1747,10 @@ export const HiddenScrollbar: Story = {
 export const ReorderableTabPicker: Story = {
   render: function ReorderableTabPickerRender(args) {
     const INITIAL_TABS = [
-      { key: 'overview', title: 'Overview' },
-      { key: 'analytics', title: 'Analytics' },
-      { key: 'reports', title: 'Reports' },
-      { key: 'settings', title: 'Settings' },
+      { key: 'overview', title: 'Overview', icon: <DatabaseIcon /> },
+      { key: 'analytics', title: 'Analytics', icon: <FilterIcon /> },
+      { key: 'reports', title: 'Reports', icon: <UserIcon /> },
+      { key: 'settings', title: 'Settings', icon: <SettingsIcon /> },
       { key: 'users', title: 'Users' },
       { key: 'billing', title: 'Billing' },
       { key: 'security', title: 'Security' },
@@ -1793,7 +1799,11 @@ export const ReorderableTabPicker: Story = {
           onReorder={(newOrder) => setKeyOrder(newOrder)}
         >
           {tabs.map((tab) => (
-            <Tab key={tab.key} title={tab.title}>
+            <Tab
+              key={tab.key}
+              title={tab.title}
+              icon={'icon' in tab ? tab.icon : undefined}
+            >
               <Paragraph>{tab.title} content</Paragraph>
             </Tab>
           ))}

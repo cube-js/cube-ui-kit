@@ -15,6 +15,7 @@ import {
 } from '../../../test';
 import { EventBusProvider } from '../../../utils/react/useEventBus';
 import { Select } from '../../fields';
+import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { Button } from '../Button';
 import { CommandMenu } from '../CommandMenu';
 import { useAnchoredMenu } from '../use-anchored-menu';
@@ -1721,6 +1722,95 @@ describe('Menu synchronization with event bus', () => {
     // Verify it's the second menu (last opened)
     const menus = getAllByRole('menu');
     expect(menus[0]).toHaveTextContent('Menu 2');
+  });
+});
+
+describe('Menu inside a contained Dialog (focus management)', () => {
+  it('should focus the first menu item when MenuTrigger opens inside a popover Dialog', async () => {
+    const user = userEvent.setup({ delay: null });
+
+    const { getByRole, findByRole } = renderWithRoot(
+      <DialogTrigger isDismissable={false} type="popover">
+        <Button>Open Popover</Button>
+        <Dialog isDismissable={false}>
+          <MenuTrigger>
+            <Button>Menu</Button>
+            <Menu>
+              <Menu.Item key="copy">Copy</Menu.Item>
+              <Menu.Item key="cut">Cut</Menu.Item>
+              <Menu.Item key="paste">Paste</Menu.Item>
+            </Menu>
+          </MenuTrigger>
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    // Open the outer popover Dialog
+    await user.click(getByRole('button', { name: 'Open Popover' }));
+
+    // Wait for the outer Dialog's FocusScope to become contained.
+    await findByRole('dialog');
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    // Open the Menu
+    await user.click(getByRole('button', { name: 'Menu' }));
+
+    const menu = await findByRole('menu');
+    expect(menu).toBeInTheDocument();
+
+    // The first menu item must receive focus, not the trigger button.
+    // Without an inner FocusScope around the Menu, the outer Dialog's
+    // FocusScope rejects the menu-item focus event (the item is in a
+    // portal, with no registered child scope) and yanks focus back to
+    // the menu trigger.
+    await waitFor(
+      () => {
+        const firstItem = menu.querySelector('[role="menuitem"]');
+        expect(firstItem).toHaveFocus();
+      },
+      { timeout: 1500 },
+    );
+  });
+
+  it('should focus the listbox when Select opens inside a popover Dialog', async () => {
+    const user = userEvent.setup({ delay: null });
+
+    const { getByRole, findByRole } = renderWithRoot(
+      <DialogTrigger isDismissable={false} type="popover">
+        <Button>Open Popover</Button>
+        <Dialog isDismissable={false}>
+          <Select placeholder="Choose option" aria-label="Choose option">
+            <Select.Item key="option1">Option 1</Select.Item>
+            <Select.Item key="option2">Option 2</Select.Item>
+            <Select.Item key="option3">Option 3</Select.Item>
+          </Select>
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    await user.click(getByRole('button', { name: 'Open Popover' }));
+
+    await findByRole('dialog');
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    await user.click(getByRole('button', { name: /Choose option/ }));
+
+    const listbox = await findByRole('listbox');
+    expect(listbox).toBeInTheDocument();
+
+    // The Select listbox must receive focus (so keyboard nav works), not
+    // the trigger button. Select's `ListBoxPopup` is mounted from initial
+    // render (always-on, not gated on isOpen), so react-aria's
+    // useSelectableCollection autoFocus is consumed once on mount when
+    // the listbox is not yet in the DOM. The fix is to add `autoFocus`
+    // to Select's inner FocusScope so it explicitly focuses the listbox
+    // each time the popover opens.
+    await waitFor(
+      () => {
+        expect(listbox).toHaveFocus();
+      },
+      { timeout: 1500 },
+    );
   });
 });
 
