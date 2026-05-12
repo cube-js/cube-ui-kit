@@ -104,6 +104,12 @@ export const ListBoxElement = tasty({
     padding: '0',
     listStyle: 'none',
     scrollbar: 'styled',
+    // The listbox is programmatically focused when the popover opens
+    // (so keyboard nav works immediately) but it should never display a
+    // focus ring — only the focused option does. Without this, the
+    // browser draws its native outline around the whole listbox when
+    // it receives focus.
+    outline: 0,
   },
 });
 
@@ -582,6 +588,20 @@ export function ListBoxPopup({
   // trigger when the popup is closed. In addition, add hidden
   // <DismissButton> components at the start and end of the list
   // to allow screen reader users to dismiss the popup easily.
+  //
+  // `autoFocus` is required because `ListBoxPopup` is rendered
+  // unconditionally (not gated on `state.isOpen`), so by the time the
+  // popover actually opens, react-aria's `useSelectableCollection`
+  // autoFocus has already been consumed (its useRef captures the
+  // initial value on mount, when the listbox isn't in the DOM yet).
+  // Setting `autoFocus` on the FocusScope itself runs each time the
+  // FocusScope mounts (every time the popover opens, since the inner
+  // tree is unmounted between opens) and explicitly focuses the
+  // first tabbable element (the listbox). This also registers the
+  // FocusScope as the active scope, so an outer contained Dialog
+  // FocusScope (e.g. a popover Dialog wrapping the Select) correctly
+  // recognises focus moving into the Select popover and doesn't yank
+  // it back to the trigger.
   return (
     <Portal>
       <DisplayTransition isShown={state.isOpen && !isDisabled}>
@@ -604,7 +624,7 @@ export function ListBoxPopup({
                 '--overlay-min-width': minWidth ? `${minWidth}px` : 'initial',
               }}
             >
-              <FocusScope restoreFocus>
+              <FocusScope autoFocus restoreFocus>
                 <DismissButton onDismiss={() => state.close()} />
                 {(() => {
                   const renderedItems: React.ReactNode[] = [];

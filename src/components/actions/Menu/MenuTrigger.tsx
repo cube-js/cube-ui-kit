@@ -12,6 +12,7 @@ import {
 import {
   AriaMenuTriggerProps,
   DismissButton,
+  FocusScope,
   Placement,
   PositionProps,
   useMenuTrigger,
@@ -145,12 +146,18 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     isClosing: !state.isOpen,
   } as MenuContextValue;
 
+  // Wrap in a FocusScope so the menu popover registers as a child of any
+  // outer contained FocusScope (e.g. a parent Dialog/Popover). Without this,
+  // when the menu opens inside an outer contained FocusScope, the outer
+  // scope rejects focus moving into the menu items (which live in a portal
+  // and would otherwise belong to no scope) and yanks focus back to the
+  // menu trigger.
   const contents = (
-    <>
+    <FocusScope restoreFocus>
       <DismissButton onDismiss={state.close} />
       {menu}
       <DismissButton onDismiss={state.close} />
-    </>
+    </FocusScope>
   );
 
   // Shared between the Popover and Tray branches so both react-aria
