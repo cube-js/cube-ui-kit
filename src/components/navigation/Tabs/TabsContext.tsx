@@ -44,10 +44,6 @@ export interface TabsContextValue {
   // Editing callbacks
   /** Current tab being edited (null if none) */
   editingKey: string | null;
-  /** Current edit value */
-  editValue: string;
-  /** Set the edit value */
-  setEditValue: (value: string) => void;
   /** Start editing a tab */
   startEditing: (key: string, currentTitle: string) => void;
   /** Submit the current edit */

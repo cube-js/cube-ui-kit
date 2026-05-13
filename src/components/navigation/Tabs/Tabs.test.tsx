@@ -749,7 +749,6 @@ describe('<Tabs />', () => {
 
       await user.dblClick(titleSpan!);
 
-      // Wait for edit mode (uses chainRaf internally)
       await waitFor(() => {
         expect(getByRole('textbox')).toBeInTheDocument();
       });
