@@ -170,8 +170,8 @@ defaultTheme.colors({
   'disabled-bg': {
     base: 'surface',
     lightness: '-1',
-    saturation: 0.3,
-    contrast: [1.4, 1.5],
+    saturation: 0.2,
+    contrast: [1.2, 1.3],
     inherit: false,
   },
   'disabled-text': {
