@@ -4,17 +4,23 @@
 // components don't need a refactor):
 //
 //   - `fill`   — Alert background. For `special` it is also reused by Badge
-//                as the badge fill (saturated brand). For colored themes it
-//                is a light tinted banner surface (`#<theme>-surface`), and
-//                Badge falls back to `color` for the saturated chip.
+//                as the badge fill (saturated brand). For the four colored
+//                themes it is a light tinted banner surface
+//                (`#<theme>-surface`), and Badge falls back to `color` for
+//                the saturated chip.
 //   - `color`  — For non-`special`, non-`disabled` themes, this is the
-//                **saturated brand color** that Badge uses as its fill
-//                (matching the legacy `#<theme>-text` value, which mapped to
-//                `#<theme>-accent-text`). Restoring this is what fixes the
-//                near-black badges that appeared after the glaze migration
-//                — the migration had set this to `#<theme>-surface-text`
-//                (the deep readable-text color anchored at L≈2), which is
-//                correct as Alert text but wrong as a Badge fill.
+//                **saturated brand fill** Badge renders with white text on
+//                top. We use `#<theme>-accent-surface` (fixed mode) which is
+//                anchored to the fixed-white `#<theme>-accent-surface-text`
+//                with `contrast: [4.5, 7]`, so white-text-on-fill is
+//                guaranteed WCAG AA (4.5) / AAA (7) in every scheme — the
+//                same brand-pill design `special` uses. (Pre-glaze this slot
+//                resolved to `#<theme>-accent-text`, which is anchored to
+//                surface with mode 'auto' for "readable text on surface" —
+//                wrong contrast model for a badge with white text on top.
+//                The glaze migration replaced it with `#<theme>-surface-text`
+//                — the deep L≈2 banner-text color — which made every colored
+//                badge render near-black; this restores the proper pairing.)
 //                For `disabled`, this is the soft text color used by Alert
 //                as the disabled label and by Badge as the disabled chip.
 //   - `border` — Subtle brand-tinted border for both Alert and Badge.
@@ -26,22 +32,22 @@ export default {
   },
   success: {
     fill: '#success-surface',
-    color: '#success-accent-text',
+    color: '#success-accent-surface',
     border: '#success-accent-surface.20',
   },
   danger: {
     fill: '#danger-surface',
-    color: '#danger-accent-text',
+    color: '#danger-accent-surface',
     border: '#danger-accent-surface.20',
   },
   warning: {
     fill: '#warning-surface',
-    color: '#warning-accent-text',
+    color: '#warning-accent-surface',
     border: '#warning-accent-surface.20',
   },
   note: {
     fill: '#note-surface',
-    color: '#note-accent-text',
+    color: '#note-accent-surface',
     border: '#note-accent-surface.20',
   },
   disabled: {
