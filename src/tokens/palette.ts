@@ -51,17 +51,17 @@ const defaultTheme = glaze(PURPLE_HUE, SEED_SATURATION);
 
 defaultTheme.colors({
   // ---- Surfaces (neutral, very low saturation) ----
-  surface: { lightness: 100, saturation: 0.12 },
+  surface: { lightness: 100, saturation: 0.11 },
   'surface-2': {
     base: 'surface',
     lightness: '-2',
-    saturation: 0.16,
+    saturation: 0.15,
     inherit: false,
   },
   'surface-3': {
     base: 'surface',
     lightness: '-4',
-    saturation: 0.2,
+    saturation: 0.19,
     inherit: false,
   },
 
