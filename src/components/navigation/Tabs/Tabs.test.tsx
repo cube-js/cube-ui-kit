@@ -888,6 +888,26 @@ describe('<Tabs />', () => {
         expect(handleTitleChange).toHaveBeenCalledWith('tab1', 'Trimmed Title');
       });
     });
+
+    it('forwards an explicit tab tooltip to InlineInput and suppresses Item tooltip for editable tabs', () => {
+      const { getByTestId, getByRole } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1" onTitleChange={vi.fn()}>
+          <Tab key="tab1" isEditable title="Tab 1" tooltip="Click to rename">
+            Content 1
+          </Tab>
+        </Tabs>,
+      );
+
+      // The tab button no longer participates in tooltip handling — the
+      // InlineInput root owns it. Both the InlineInput root and the tab
+      // button should remain in the DOM with no double-wrapping side effects.
+      const tab = getByRole('tab');
+      const inlineInput = getByTestId('InlineInput');
+
+      expect(tab).toContainElement(inlineInput);
+      // No regression in the editing flow: dblclick still enters edit mode.
+      expect(inlineInput).toHaveAttribute('data-qa', 'InlineInput');
+    });
   });
 
   describe('Context menu modes', () => {

@@ -158,6 +158,24 @@ const meta = {
         type: { summary: 'Styles' },
       },
     },
+    tooltip: {
+      control: 'boolean',
+      description:
+        'Tooltip behaviour. `true` (default) shows the full value when the text is truncated. `false` disables the tooltip. A string always shows that text. Full object config is also accepted.',
+      table: {
+        defaultValue: { summary: 'true' },
+        type: { summary: 'boolean | string | AutoTooltipValue' },
+      },
+    },
+    tooltipPlacement: {
+      control: 'select',
+      options: ['top', 'bottom', 'left', 'right'],
+      description: 'Default tooltip placement.',
+      table: {
+        defaultValue: { summary: 'top' },
+        type: { summary: "'top' | 'bottom' | 'left' | 'right' | ..." },
+      },
+    },
   },
 } satisfies Meta<typeof InlineInput>;
 
@@ -265,4 +283,22 @@ export const AllowEmpty: Story = {
     allowEmpty: true,
     placeholder: 'Empty allowed',
   },
+};
+
+export const Overflow: Story = {
+  args: {
+    defaultValue:
+      'A very long inline value that does not fit in the container and gets truncated with an ellipsis',
+  },
+  render: (args) => (
+    <div
+      style={{
+        width: 200,
+        padding: 8,
+        border: '1px dashed #ccc',
+      }}
+    >
+      <InlineInput {...args} />
+    </div>
+  ),
 };

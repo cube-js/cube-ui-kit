@@ -45,6 +45,8 @@ Unlike `TextInput`, `InlineInput` is intentionally **not** a form field. It mana
 - **`isReadOnly`** `boolean` (default: `false`) — When `true`, edit mode cannot be entered, but the display reads as enabled.
 - **`placeholder`** `string` — Placeholder text shown in the input when the draft is empty.
 - **`renderDisplay`** `(value: string) => ReactNode` — Custom render for display (non-editing) mode.
+- **`tooltip`** `boolean | string | AutoTooltipValue` (default: `true`) — Tooltip behaviour for the display value. `true` enables auto-tooltip on overflow (showing the full text when truncated). A string always shows that text. `false` disables the tooltip. Suppressed automatically while editing and when `renderDisplay` is used.
+- **`tooltipPlacement`** `'top' | 'bottom' | 'left' | 'right' | ...` (default: `'top'`) — Default tooltip placement.
 - **`inputStyles`** `Styles` — Convenience prop for styling the `Input` sub-element.
 
 ### Base Properties
@@ -210,6 +212,27 @@ By default, submitting an empty value cancels. Set `allowEmpty` to keep the empt
 <InlineInput defaultValue="You can't edit me" isDisabled />
 <InlineInput defaultValue="Read-only value" isReadOnly />
 ```
+
+### Overflow & Tooltip
+
+When the value is wider than its container, the display text is truncated with an ellipsis. The full value is shown as a tooltip on hover/focus — no extra props required.
+
+<Story of={InlineInputStories.Overflow} />
+
+```jsx
+<div style={{ width: 200 }}>
+  <InlineInput defaultValue="A very long inline value that gets truncated…" />
+</div>
+```
+
+To always show a custom tooltip (regardless of overflow), pass a string. To disable the tooltip entirely, pass `false`:
+
+```jsx
+<InlineInput defaultValue="Hover me" tooltip="Click to rename" />
+<InlineInput defaultValue="No tooltip" tooltip={false} />
+```
+
+The truncation behaviour is automatically disabled while editing so the input is never visually clipped while the user types.
 
 ## Accessibility
 

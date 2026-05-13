@@ -20,13 +20,21 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FocusScope, useFocusWithin } from 'react-aria';
+import { FocusScope, OverlayProps, useFocusWithin } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
+import { AutoTooltipValue, useAutoTooltip } from '../use-auto-tooltip';
 
-import type { ChangeEvent, KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import type {
+  ChangeEvent,
+  HTMLAttributes,
+  KeyboardEvent,
+  MouseEvent,
+  ReactNode,
+  RefObject,
+} from 'react';
 
 // =============================================================================
 // Types
@@ -91,6 +99,19 @@ export interface CubeInlineInputProps
   /** ARIA labelledby for the input. */
   'aria-labelledby'?: string;
 
+  /**
+   * Tooltip behaviour for the display value:
+   * - `true` (default): auto-tooltip — show the full value when the text is truncated.
+   * - `false`: never show a tooltip.
+   * - `string`: always show this tooltip text.
+   * - object: full `TooltipProvider` configuration (with optional `auto`).
+   *
+   * The tooltip is automatically suppressed while editing and when `renderDisplay` is used.
+   */
+  tooltip?: AutoTooltipValue;
+  /** Default tooltip placement. @default 'top' */
+  tooltipPlacement?: OverlayProps['placement'];
+
   /** Convenience prop for styling the `Input` sub-element. Merged into `styles.Input`. */
   inputStyles?: Styles;
 }
@@ -113,9 +134,13 @@ export interface CubeInlineInputRef {
 const InlineInputRoot = tasty({
   as: 'span',
   styles: {
-    display: 'inline-flex',
+    display: 'inline-block',
     verticalAlign: 'baseline',
     position: 'relative',
+    maxWidth: '100%',
+    whiteSpace: { '': 'nowrap', editing: 'normal' },
+    overflow: { '': 'hidden', editing: 'visible' },
+    textOverflow: 'ellipsis',
     color: 'inherit',
     preset: 'inherit',
     cursor: {
@@ -187,6 +212,8 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       isReadOnly = false,
       placeholder,
       renderDisplay,
+      tooltip = true,
+      tooltipPlacement = 'top',
       'aria-label': ariaLabel,
       'aria-labelledby': ariaLabelledby,
       qa,
@@ -464,42 +491,66 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
 
     const baseProps = filterBaseProps(otherProps, { eventProps: true });
 
-    return (
-      <InlineInputRoot
-        ref={rootRef}
-        qa={qa ?? 'InlineInput'}
-        qaVal={qaVal}
-        mods={mods}
-        tokens={tokens}
-        styles={extractedStyles}
-        {...mergeProps(baseProps, focusWithinProps, {
-          onDoubleClick: isEditing ? undefined : handleDblClick,
-          onClick: isEditing ? undefined : handleClick,
-        })}
-      >
-        {isEditing ? (
-          <FocusScope autoFocus restoreFocus={false} contain={false}>
-            <span ref={measureRef} data-element="Measure" aria-hidden="true">
-              {draft || placeholder || ' '}
-            </span>
-            <input
-              ref={inputRef}
-              data-element="Input"
-              type="text"
-              value={draft}
-              placeholder={placeholder}
-              disabled={isDisabled}
-              readOnly={isReadOnly}
-              aria-label={ariaLabel}
-              aria-labelledby={ariaLabelledby}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-            />
-          </FocusScope>
-        ) : (
-          displayContent
-        )}
-      </InlineInputRoot>
-    );
+    // Overflow detection / auto-tooltip. Suppressed while editing (the input
+    // owns the visible text and isn't truncated), and when the consumer
+    // provides `renderDisplay` (they own the display story and should attach
+    // their own tooltip if needed).
+    const { labelRef: tooltipLabelRef, renderWithTooltip } = useAutoTooltip({
+      tooltip: isEditing || renderDisplay ? false : tooltip,
+      children: displayedValue,
+    });
+
+    const renderRoot = (
+      triggerProps?: HTMLAttributes<HTMLElement>,
+      tooltipRef?: RefObject<HTMLElement>,
+    ) => {
+      const handleRootRef = (element: HTMLSpanElement | null) => {
+        rootRef.current = element;
+        if (tooltipRef) {
+          (tooltipRef as { current: HTMLElement | null }).current = element;
+        }
+        tooltipLabelRef(element);
+      };
+
+      return (
+        <InlineInputRoot
+          ref={handleRootRef}
+          qa={qa ?? 'InlineInput'}
+          qaVal={qaVal}
+          mods={mods}
+          tokens={tokens}
+          styles={extractedStyles}
+          {...mergeProps(baseProps, focusWithinProps, triggerProps ?? {}, {
+            onDoubleClick: isEditing ? undefined : handleDblClick,
+            onClick: isEditing ? undefined : handleClick,
+          })}
+        >
+          {isEditing ? (
+            <FocusScope autoFocus restoreFocus={false} contain={false}>
+              <span ref={measureRef} data-element="Measure" aria-hidden="true">
+                {draft || placeholder || ' '}
+              </span>
+              <input
+                ref={inputRef}
+                data-element="Input"
+                type="text"
+                value={draft}
+                placeholder={placeholder}
+                disabled={isDisabled}
+                readOnly={isReadOnly}
+                aria-label={ariaLabel}
+                aria-labelledby={ariaLabelledby}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+              />
+            </FocusScope>
+          ) : (
+            displayContent
+          )}
+        </InlineInputRoot>
+      );
+    };
+
+    return renderWithTooltip(renderRoot, tooltipPlacement);
   },
 );

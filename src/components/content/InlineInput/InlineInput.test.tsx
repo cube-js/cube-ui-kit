@@ -574,4 +574,93 @@ describe('<InlineInput />', () => {
       expect(document.activeElement).toBe(input);
     });
   });
+
+  describe('Overflow & Tooltip', () => {
+    it('renders the value untouched with tooltip={false}', () => {
+      const { getByText, queryByRole } = renderWithRoot(
+        <InlineInput defaultValue="Hello" tooltip={false} />,
+      );
+
+      expect(getByText('Hello')).toBeInTheDocument();
+      expect(queryByRole('tooltip')).not.toBeInTheDocument();
+    });
+
+    it('renders an explicit string tooltip wrapper without crashing', () => {
+      const { getByText } = renderWithRoot(
+        <InlineInput defaultValue="Hello" tooltip="Click to edit" />,
+      );
+
+      expect(getByText('Hello')).toBeInTheDocument();
+    });
+
+    it('shows the tooltip on hover when an explicit string tooltip is provided', async () => {
+      const user = userEvent.setup();
+      const { getByText, findByRole } = renderWithRoot(
+        <InlineInput defaultValue="Hello" tooltip="Click to edit" />,
+      );
+
+      await user.hover(getByText('Hello'));
+
+      const tooltip = await findByRole('tooltip');
+      expect(tooltip).toHaveTextContent('Click to edit');
+    });
+
+    it('does not show a tooltip while editing', async () => {
+      const user = userEvent.setup();
+      const { getByText, getByRole, queryByRole } = renderWithRoot(
+        <InlineInput defaultValue="Hello" tooltip="Click to edit" />,
+      );
+
+      await user.dblClick(getByText('Hello'));
+      const input = getByRole('textbox');
+      await user.hover(input);
+
+      expect(queryByRole('tooltip')).not.toBeInTheDocument();
+    });
+
+    it('suppresses auto-tooltip when renderDisplay is provided', async () => {
+      const user = userEvent.setup();
+      const { getByText, queryByRole } = renderWithRoot(
+        <InlineInput
+          defaultValue="raw"
+          renderDisplay={(v) => <strong>{v}</strong>}
+        />,
+      );
+
+      await user.hover(getByText('raw'));
+
+      expect(queryByRole('tooltip')).not.toBeInTheDocument();
+    });
+
+    it('renders truncation styles in display mode', () => {
+      const { getByTestId } = renderWithRoot(
+        <InlineInput defaultValue="X" qa="II" />,
+      );
+
+      const root = getByTestId('II');
+      const styles = getComputedStyle(root);
+
+      // tasty injects CSS rules; jsdom resolves them via document stylesheets.
+      expect(styles.textOverflow).toBe('ellipsis');
+      expect(styles.whiteSpace).toBe('nowrap');
+      expect(styles.overflow).toBe('hidden');
+    });
+
+    it('toggles the editing modifier so the truncation rules can be relaxed', () => {
+      const { getByTestId } = renderWithRoot(
+        <InlineInput
+          isEditing
+          defaultValue="X"
+          qa="II"
+          onEditingChange={() => {}}
+        />,
+      );
+
+      // jsdom does not fully evaluate the conditional `editing` CSS overrides,
+      // so we check the modifier is set — the actual `overflow: visible /
+      // white-space: normal` rules are visible in the Storybook snapshot and
+      // the integration `Tabs` tests verify editing-mode behaviour end-to-end.
+      expect(getByTestId('II')).toHaveAttribute('data-editing');
+    });
+  });
 });

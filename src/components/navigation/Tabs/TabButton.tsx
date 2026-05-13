@@ -478,33 +478,6 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   const effectiveAutoHideActions =
     tabData.autoHideActions ?? parentAutoHideActions;
 
-  // Render title with editing support if editable
-  // Override InlineInput's default `cursor: text` hover hint — in Tabs the
-  // title sits inside a clickable tab, so a text caret cursor is misleading.
-  //
-  // When the title is a plain string we let InlineInput render it directly,
-  // which lets the optimistic display kick in (avoids flicker if the parent's
-  // `onTitleChange` updates the source asynchronously, e.g. inside a RAF).
-  // For ReactNode titles (icons, badges, ...), preserve the original node.
-  const renderTitleDisplay =
-    typeof tabData.title === 'string' ? undefined : () => tabData.title;
-  const titleContent = effectiveIsEditable ? (
-    <InlineInput
-      ref={inlineInputRef}
-      value={titleString}
-      isEditing={isEditing}
-      isDisabled={isDisabled}
-      aria-label="Edit tab title"
-      styles={INLINE_INPUT_STYLES}
-      renderDisplay={renderTitleDisplay}
-      onEditingChange={handleEditingChange}
-      onSubmit={handleSubmitEditing}
-      onCancel={handleCancelEditing}
-    />
-  ) : (
-    tabData.title
-  );
-
   // Extract tab-specific props and pass through the rest (style props) to the Item
   const {
     title: _title,
@@ -524,11 +497,44 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     menuProps: _menuProps,
     contextMenu: _contextMenu,
     onAction: _onAction,
+    tooltip: tabTooltip,
     qa,
     qaVal,
     styles,
     ...itemStyleProps
   } = tabData;
+
+  // Render title with editing support if editable
+  // Override InlineInput's default `cursor: text` hover hint — in Tabs the
+  // title sits inside a clickable tab, so a text caret cursor is misleading.
+  //
+  // When the title is a plain string we let InlineInput render it directly,
+  // which lets the optimistic display kick in (avoids flicker if the parent's
+  // `onTitleChange` updates the source asynchronously, e.g. inside a RAF).
+  // For ReactNode titles (icons, badges, ...), preserve the original node.
+  //
+  // For editable tabs, route the tab's `tooltip` prop through InlineInput so
+  // it owns the truncation + tooltip behaviour (and we pass `tooltip={false}`
+  // to `TabElement` below to avoid double tooltips).
+  const renderTitleDisplay =
+    typeof tabData.title === 'string' ? undefined : () => tabData.title;
+  const titleContent = effectiveIsEditable ? (
+    <InlineInput
+      ref={inlineInputRef}
+      value={titleString}
+      isEditing={isEditing}
+      isDisabled={isDisabled}
+      aria-label="Edit tab title"
+      styles={INLINE_INPUT_STYLES}
+      renderDisplay={renderTitleDisplay}
+      tooltip={tabTooltip ?? true}
+      onEditingChange={handleEditingChange}
+      onSubmit={handleSubmitEditing}
+      onCancel={handleCancelEditing}
+    />
+  ) : (
+    tabData.title
+  );
 
   // Use the hook's targetRef when context menu is enabled
   const effectiveContainerRef =
@@ -579,6 +585,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
         type={itemType}
         shape={itemShape}
         actions={actions ? true : undefined}
+        tooltip={effectiveIsEditable ? false : tabTooltip}
       >
         {titleContent}
       </TabElement>
