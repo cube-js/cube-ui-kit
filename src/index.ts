@@ -26,6 +26,12 @@ export { ItemBadge } from './components/content/ItemBadge/ItemBadge';
 export type { CubeItemBadgeProps } from './components/content/ItemBadge/ItemBadge';
 export { ActiveZone } from './components/content/ActiveZone/ActiveZone';
 export type { CubeActiveZoneProps } from './components/content/ActiveZone/ActiveZone';
+export { InlineInput } from './components/content/InlineInput';
+export type {
+  CubeInlineInputProps,
+  CubeInlineInputRef,
+  CubeInlineInputEditTrigger,
+} from './components/content/InlineInput';
 export * from './components/content/CopySnippet';
 export * from './components/content/CopyPasteBlock';
 export { Grid } from './components/layout/Grid';

@@ -204,17 +204,11 @@ function TabsComponent(
     });
   });
 
-  const {
-    editingKey,
-    editValue,
-    setEditValue,
-    startEditing,
-    cancelEditing,
-    submitEditing,
-  } = useTabEditing({
-    onChange,
-    onTitleChange: onTitleChange ? onTitleChangeRaf : undefined,
-  });
+  const { editingKey, startEditing, cancelEditing, submitEditing } =
+    useTabEditing({
+      onChange,
+      onTitleChange: onTitleChange ? onTitleChangeRaf : undefined,
+    });
 
   // =========================================================================
   // Parse children to extract tabs and explicit panels
@@ -495,8 +489,6 @@ function TabsComponent(
       onDelete,
       onAction: parentOnAction,
       editingKey,
-      editValue,
-      setEditValue,
       startEditing,
       submitEditing,
       cancelEditing,
@@ -514,8 +506,6 @@ function TabsComponent(
       onDelete,
       parentOnAction,
       editingKey,
-      editValue,
-      setEditValue,
       startEditing,
       submitEditing,
       cancelEditing,

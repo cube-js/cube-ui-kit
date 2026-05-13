@@ -395,33 +395,3 @@ export const TabPanelElement = tasty({
     },
   },
 });
-
-// =============================================================================
-// Editable Title Input
-// =============================================================================
-
-export const EditableTitleInputElement = tasty({
-  as: 'input',
-  styles: {
-    border: 0,
-    padding: 0,
-    margin: 0,
-    fill: 'transparent',
-    outline: 0,
-    preset: 'inherit',
-    color: 'inherit',
-    width: 'initial $input-width 100%',
-  },
-});
-
-export const HiddenMeasure = tasty({
-  styles: {
-    position: 'absolute',
-    visibility: 'hidden',
-    whiteSpace: 'pre',
-    font: 'inherit',
-    pointerEvents: 'none',
-    height: 0,
-    overflow: 'hidden',
-  },
-});
