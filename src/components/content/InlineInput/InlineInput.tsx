@@ -168,8 +168,8 @@ const InlineInputRoot = tasty({
     // `focused` mod). Outline doesn't take layout space and respects rounded
     // corners via `outlineOffset`.
     outline: {
-      '': '1bw #focus.0',
-      focused: '1bw #focus',
+      '': '1bw #primary.0',
+      focused: '1bw #primary',
     },
     outlineOffset: 1,
     radius: {
