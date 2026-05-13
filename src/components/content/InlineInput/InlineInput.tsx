@@ -20,7 +20,12 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FocusScope, OverlayProps, useFocusWithin } from 'react-aria';
+import {
+  FocusScope,
+  OverlayProps,
+  useFocusRing,
+  useFocusWithin,
+} from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { mergeProps } from '../../../utils/react';
@@ -158,6 +163,20 @@ const InlineInputRoot = tasty({
       '': 'inherit',
       'editable & !editing': 'text',
     },
+    // Keyboard focus ring (only when the display element is keyboard-focusable,
+    // which is gated by `keyboardActivation` on the React side via the
+    // `focused` mod). Outline doesn't take layout space and respects rounded
+    // corners via `outlineOffset`.
+    outline: {
+      '': '1bw #focus.0',
+      focused: '1bw #focus',
+    },
+    outlineOffset: 1,
+    radius: {
+      '': 0,
+      focused: true,
+    },
+    transition: 'theme',
 
     Input: {
       recipe: 'reset input / input-autofill',
@@ -404,6 +423,12 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       setDraft(e.target.value);
     });
 
+    // Keyboard focus ring on the root. Only fires when the span itself is
+    // keyboard-focused (i.e. `wantsKeyboard` made it tabbable) — clicking
+    // does not trigger focus-visible, and once edit mode starts focus moves
+    // to the inner input, so the ring vanishes naturally.
+    const { isFocusVisible, focusProps: focusRingProps } = useFocusRing();
+
     const { focusWithinProps } = useFocusWithin({
       isDisabled: !isEditing,
       onBlurWithin: () => {
@@ -455,10 +480,18 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
 
     const isEditable = editTrigger !== 'none' && !isDisabled && !isReadOnly;
 
+    // `focused` is the keyboard-focus ring state. We gate it on `isEditable`
+    // and `!isEditing` so the ring never shows on a non-editable display
+    // (e.g. inside Tabs with `keyboardActivation={false}` — the span isn't
+    // focusable there, but we belt-and-braces it anyway) or while editing
+    // (focus is on the inner input).
+    const showFocusRing = isFocusVisible && isEditable && !isEditing;
+
     const mods = useMemo(
       () => ({
         editing: isEditing,
         editable: isEditable,
+        focused: showFocusRing,
         disabled: isDisabled,
         'read-only': isReadOnly,
         empty: !displayedValue,
@@ -467,6 +500,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       [
         isEditing,
         isEditable,
+        showFocusRing,
         isDisabled,
         isReadOnly,
         displayedValue,
@@ -567,12 +601,21 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
           mods={mods}
           tokens={tokens}
           styles={extractedStyles}
-          {...mergeProps(baseProps, focusWithinProps, triggerProps ?? {}, {
-            onDoubleClick: wantsDblClick ? handleDblClick : undefined,
-            onClick: wantsClick ? handleClick : undefined,
-            onKeyDown: wantsKeyboard ? handleRootKeyDown : undefined,
-            ...a11yProps,
-          })}
+          {...mergeProps(
+            baseProps,
+            focusWithinProps,
+            // Only listen to focus events when the span is actually
+            // keyboard-focusable — otherwise spurious focus events from
+            // descendants or programmatic focus could light up the ring.
+            wantsKeyboard ? focusRingProps : {},
+            triggerProps ?? {},
+            {
+              onDoubleClick: wantsDblClick ? handleDblClick : undefined,
+              onClick: wantsClick ? handleClick : undefined,
+              onKeyDown: wantsKeyboard ? handleRootKeyDown : undefined,
+              ...a11yProps,
+            },
+          )}
         >
           {isEditing ? (
             <FocusScope autoFocus restoreFocus={false} contain={false}>

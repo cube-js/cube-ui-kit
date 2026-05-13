@@ -767,6 +767,28 @@ describe('<InlineInput />', () => {
       expect(getByRole('textbox')).toBeInTheDocument();
     });
 
+    it('does not mark the display as focused without keyboard interaction', () => {
+      const { getByTestId } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" />,
+      );
+
+      // Initially no keyboard focus → no `focused` modifier on the root.
+      expect(getByTestId('II')).not.toHaveAttribute('data-focused');
+    });
+
+    it('does not expose the focused modifier when keyboardActivation is off', async () => {
+      const user = userEvent.setup();
+      const { getByTestId } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" keyboardActivation={false} />,
+      );
+
+      // Even if the user Tabs through the page, the inline-input span isn't
+      // a tab stop and shouldn't pick up `focused`. We simulate Tab to make
+      // global focus-visible state true, then assert the span stays clean.
+      await user.tab();
+      expect(getByTestId('II')).not.toHaveAttribute('data-focused');
+    });
+
     it('marks the display with aria-disabled / aria-readonly when applicable', () => {
       const { getByTestId, rerender } = renderWithRoot(
         <InlineInput isDisabled defaultValue="Hello" qa="II" />,

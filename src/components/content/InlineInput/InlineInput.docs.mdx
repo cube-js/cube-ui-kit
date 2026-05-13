@@ -92,13 +92,14 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property is automatically populated. Consumers can target these in their own `styles`:
 
-| Modifier   | Type      | Description                                                          |
-| ---------- | --------- | -------------------------------------------------------------------- |
-| editing    | `boolean` | Currently in edit mode                                               |
-| editable   | `boolean` | `editTrigger` is `dblclick` or `click` and not disabled/read-only    |
-| disabled   | `boolean` | `isDisabled` is `true`                                               |
-| read-only  | `boolean` | `isReadOnly` is `true`                                               |
-| empty      | `boolean` | The committed value is empty                                         |
+| Modifier   | Type      | Description                                                                |
+| ---------- | --------- | -------------------------------------------------------------------------- |
+| editing    | `boolean` | Currently in edit mode                                                     |
+| editable   | `boolean` | `editTrigger` is `dblclick` or `click` and not disabled/read-only          |
+| focused    | `boolean` | Display element is keyboard-focused (`isFocusVisible`) and editable        |
+| disabled   | `boolean` | `isDisabled` is `true`                                                     |
+| read-only  | `boolean` | `isReadOnly` is `true`                                                     |
+| empty      | `boolean` | The committed value is empty                                               |
 
 ## Examples
 
@@ -237,11 +238,11 @@ The truncation behaviour is automatically disabled while editing so the input is
 
 ### Keyboard Activation
 
-By default the display element is keyboard-focusable (`tabIndex=0`, `role="button"`, `aria-roledescription="editable text"`). Pressing `Enter`, `F2` or `Space` enters edit mode without requiring a pointer.
+By default the display element is keyboard-focusable (`tabIndex=0`, `role="button"`, `aria-roledescription="editable text"`). Pressing `Enter`, `F2` or `Space` enters edit mode without requiring a pointer. A keyboard focus ring (`#focus` token, rounded) is shown only when the element receives keyboard focus — clicks never trigger the ring.
 
 <Story of={InlineInputStories.KeyboardActivation} />
 
-When `InlineInput` is embedded in a host that already owns keyboard activation (e.g. `Tabs` — each tab is a `<button>` that listens for `F2` itself), pass `keyboardActivation={false}` to avoid creating a nested tab stop inside the host. The imperative `ref.startEditing()` always works regardless of this setting.
+When `InlineInput` is embedded in a host that already owns keyboard activation (e.g. `Tabs` — each tab is a `<button>` that listens for `F2` itself), pass `keyboardActivation={false}` to avoid creating a nested tab stop inside the host. The imperative `ref.startEditing()` always works regardless of this setting, and the focus ring is suppressed in this mode (the host's focus ring is the one users see).
 
 ```jsx
 <InlineInput defaultValue="Press Enter to edit" />

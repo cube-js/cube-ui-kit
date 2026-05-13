@@ -300,9 +300,9 @@ export const KeyboardActivation: Story = {
   },
   render: (args) => (
     <p>
-      Use <kbd>Tab</kbd> to move focus to the value, then press <kbd>Enter</kbd>
-      , <kbd>F2</kbd> or <kbd>Space</kbd> to enter edit mode. Press{' '}
-      <kbd>Esc</kbd> to cancel.
+      Use <kbd>Tab</kbd> to move focus to the value (a keyboard focus ring will
+      appear), then press <kbd>Enter</kbd>, <kbd>F2</kbd> or <kbd>Space</kbd> to
+      enter edit mode. Press <kbd>Esc</kbd> to cancel.
       <br />
       <br />
       <InlineInput {...args} />
