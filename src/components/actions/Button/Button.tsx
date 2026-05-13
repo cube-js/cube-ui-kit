@@ -238,7 +238,10 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     '@parent(button-split, >) & :focus-visible': 2,
   },
   transition: 'theme, grid-template, padding',
-  verticalAlign: 'bottom',
+  verticalAlign: {
+    '': 'bottom',
+    'type=link': 'baseline',
+  },
 
   $size: {
     '': '$size-md',

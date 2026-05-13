@@ -1,4 +1,5 @@
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Alert } from '../../content/Alert';
 
 import { Link } from './Link';
 
@@ -34,3 +35,12 @@ export const Default: StoryFn = Template.bind({});
 Default.args = {
   label: 'Link',
 };
+
+// Verifies the inline `Link` baseline-aligns with surrounding text
+// (Button.tsx → `verticalAlign: { '': 'bottom', 'type=link': 'baseline' }`).
+export const InlineInsideAlert: StoryFn = () => (
+  <Alert theme="note">
+    Some text. See <Link to="!https://example.com">the documentation</Link> for
+    details.
+  </Alert>
+);
