@@ -1,7 +1,5 @@
 import { useCallback, useState } from 'react';
 
-import { chainRaf } from '../../../utils/raf';
-
 // =============================================================================
 // Types
 // =============================================================================
@@ -16,12 +14,8 @@ export interface UseTabEditingOptions {
 export interface UseTabEditingResult {
   /** Currently editing tab key (null if not editing) */
   editingKey: string | null;
-  /** Current edit input value */
-  editValue: string;
-  /** Set the edit value */
-  setEditValue: (value: string) => void;
-  /** Start editing a tab with the given title */
-  startEditing: (key: string, currentTitle: string) => void;
+  /** Start editing the given tab. The `currentTitle` argument is kept for API compatibility but is no longer used internally — `InlineInput` manages the draft. */
+  startEditing: (key: string, currentTitle?: string) => void;
   /** Submit the current edit */
   submitEditing: (
     key: string,
@@ -40,33 +34,29 @@ export interface UseTabEditingResult {
  * Hook to manage tab title editing state.
  *
  * Provides state and callbacks for inline title editing with support for:
- * - Starting edit mode (selecting the tab and focusing input)
+ * - Starting edit mode (selecting the tab)
  * - Submitting changes (with tab-level or parent-level callback)
  * - Canceling edits
+ *
+ * The draft value is managed inside `InlineInput`; this hook only tracks
+ * which tab (if any) is currently editing.
  */
 export function useTabEditing({
   onChange,
   onTitleChange,
 }: UseTabEditingOptions = {}): UseTabEditingResult {
   const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState('');
 
   const startEditing = useCallback(
-    (key: string, currentTitle: string) => {
-      // Also select the tab being edited
+    (key: string) => {
       onChange?.(key);
-      // Use chainRaf to ensure DOM is ready before entering edit mode
-      chainRaf(() => {
-        setEditingKey(key);
-        setEditValue(currentTitle);
-      }, 2);
+      setEditingKey(key);
     },
     [onChange],
   );
 
   const cancelEditing = useCallback(() => {
     setEditingKey(null);
-    setEditValue('');
   }, []);
 
   const submitEditing = useCallback(
@@ -87,15 +77,12 @@ export function useTabEditing({
       }
 
       setEditingKey(null);
-      setEditValue('');
     },
     [onTitleChange],
   );
 
   return {
     editingKey,
-    editValue,
-    setEditValue,
     startEditing,
     cancelEditing,
     submitEditing,

@@ -74,21 +74,20 @@ configure({
     'input-autofill': {
       '@autofill': ':-webkit-autofill | :autofill',
       appearance: {
-        '@autofill | (@autofill & :hover) | (@autofill & :focus)': 'none',
+        '@autofill': 'none',
       },
       '-webkit-text-fill-color': {
         '': 'currentColor',
-        '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
+        '@autofill': '#primary',
       },
       caretColor: {
-        '@autofill | (@autofill & :hover) | (@autofill & :focus)': '#primary',
+        '@autofill': '#primary',
       },
       shadow: {
-        '@autofill | (@autofill & :hover) | (@autofill & :focus)':
-          '0 0 0 9999rem #surface inset',
+        '@autofill': '0 0 0 9999rem #surface inset',
       },
       preset: {
-        '@autofill | (@autofill & :hover) | (@autofill & :focus)': 'inherit',
+        '@autofill': 'inherit',
       },
       '-webkit-opacity': {
         '': false,

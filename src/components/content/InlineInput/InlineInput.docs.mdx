@@ -1,0 +1,303 @@
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import * as InlineInputStories from './InlineInput.stories';
+
+<Meta of={InlineInputStories} />
+
+# InlineInput
+
+Inline editable text. Displays a value as inline content and swaps to an auto-sizing text input when entering edit mode. Designed to drop into any text context (tab title, heading, paragraph, table cell) without style customization — typography, color, and font family all inherit from the parent.
+
+Unlike `TextInput`, `InlineInput` is intentionally **not** a form field. It manages its own commit lifecycle (`onSubmit` / `onCancel`) rather than participating in form validation.
+
+## When to Use
+
+- **Renameable items**: Tab titles, file names, board columns, list items
+- **Edit-in-place fields**: Inline document titles, profile names, project labels
+- **Lightweight string edits**: Cases where launching a modal or full form would be heavy
+
+## When Not to Use
+
+- **Form fields**: Use `TextInput` (with `<Form>` + `Field`) for inputs that need validation rules
+- **Multi-line text**: Single-line only in this version (multiline planned)
+- **Complex inputs**: Use a proper input component when you need masks, prefixes/suffixes, or rich validation
+
+## Component
+
+<Story of={InlineInputStories.Default} />
+
+---
+
+### Properties
+
+- **`value`** `string` — Controlled value. When provided, the component is controlled.
+- **`defaultValue`** `string` — Initial value for uncontrolled usage.
+- **`onChange`** `(value: string) => void` — Fires on commit **only when the value actually changed**. Use this to update external state (controlled pattern).
+- **`isEditing`** `boolean` — Controlled editing state. When provided, the editing state is controlled.
+- **`defaultIsEditing`** `boolean` (default: `false`) — Default editing state for uncontrolled usage.
+- **`onEditingChange`** `(isEditing: boolean) => void` — Called when editing mode starts or ends.
+- **`onSubmit`** `(value: string) => void` — Fires every commit (Enter / submit-on-blur / `ref.stopEditing(true)`), even when the value did not change. Use for side effects (analytics, save toasts).
+- **`onCancel`** `() => void` — Called when editing is cancelled (Escape or empty submit when `allowEmpty` is `false`).
+- **`editTrigger`** `'dblclick' | 'click' | 'none'` (default: `dblclick`) — How edit mode is activated from the display element. Programmatic entry via `ref.startEditing()` works regardless.
+- **`submitOnBlur`** `boolean` (default: `true`) — Whether to submit when focus leaves the input.
+- **`trimOnSubmit`** `boolean` (default: `true`) — Whether to trim the value on submit.
+- **`allowEmpty`** `boolean` (default: `false`) — When `false`, submitting an empty/whitespace value cancels instead.
+- **`isDisabled`** `boolean` (default: `false`) — When `true`, edit mode cannot be entered (programmatically or otherwise).
+- **`isReadOnly`** `boolean` (default: `false`) — When `true`, edit mode cannot be entered, but the display reads as enabled.
+- **`placeholder`** `string` — Placeholder text shown in the input when the draft is empty.
+- **`renderDisplay`** `(value: string) => ReactNode` — Custom render for display (non-editing) mode.
+- **`inputStyles`** `Styles` — Convenience prop for styling the `Input` sub-element.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs).
+
+### Imperative Ref
+
+The component exposes a ref with these methods:
+
+- **`startEditing()`** — Programmatically enter edit mode. Always works regardless of `editTrigger`; blocked only by `isDisabled` / `isReadOnly`.
+- **`stopEditing(submit?: boolean)`** — Programmatically exit edit mode. `submit=true` (default) commits, `submit=false` cancels.
+- **`focus()`** — Focus the underlying element (input when editing, root span otherwise).
+- **`getValue()`** — Get the current committed value.
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the component.
+
+**Sub-elements:**
+
+- `Input` — The text input rendered in edit mode
+- `Placeholder` — The placeholder text rendered in display mode when the value is empty
+- `Measure` — The hidden text used to auto-size the input (rarely targeted)
+
+#### inputStyles
+
+Convenience prop equivalent to `styles={{ Input: { ... } }}`.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
+- **Color:** `color`, `fill`, `fade`, `image`
+
+### Modifiers
+
+The `mods` property is automatically populated. Consumers can target these in their own `styles`:
+
+| Modifier   | Type      | Description                                                          |
+| ---------- | --------- | -------------------------------------------------------------------- |
+| editing    | `boolean` | Currently in edit mode                                               |
+| editable   | `boolean` | `editTrigger` is `dblclick` or `click` and not disabled/read-only    |
+| disabled   | `boolean` | `isDisabled` is `true`                                               |
+| read-only  | `boolean` | `isReadOnly` is `true`                                               |
+| empty      | `boolean` | The committed value is empty                                         |
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<InlineInput defaultValue="Edit me" />
+```
+
+### Single-click Trigger
+
+Enter edit mode on a single click instead of double-click:
+
+<Story of={InlineInputStories.SingleClickTrigger} />
+
+```jsx
+<InlineInput defaultValue="Click me to edit" editTrigger="click" />
+```
+
+### Manual / Programmatic Trigger
+
+When `editTrigger` is `none`, the display element is inert. Use the imperative ref to enter edit mode:
+
+<Story of={InlineInputStories.ManualTrigger} />
+
+```jsx
+const ref = useRef<CubeInlineInputRef>(null);
+
+<>
+  <InlineInput ref={ref} editTrigger="none" defaultValue="Use the button" />
+  <Button onPress={() => ref.current?.startEditing()}>Rename</Button>
+</>
+```
+
+### Controlled Value
+
+Track the value externally:
+
+<Story of={InlineInputStories.Controlled} />
+
+```jsx
+const [value, setValue] = useState('Controlled value');
+
+<InlineInput value={value} onChange={setValue} />
+```
+
+### Controlled Editing State
+
+Drive the editing state from outside (e.g. from a "Rename" button in a parent menu):
+
+<Story of={InlineInputStories.ControlledEditing} />
+
+```jsx
+const [editing, setEditing] = useState(false);
+
+<InlineInput
+  isEditing={editing}
+  onEditingChange={setEditing}
+  defaultValue="Controlled isEditing"
+  editTrigger="none"
+/>
+```
+
+### Inside a Heading
+
+The component inherits all typography from its parent:
+
+<Story of={InlineInputStories.InHeading} />
+
+```jsx
+<Title level={2}>
+  <InlineInput defaultValue="Editable heading" />
+</Title>
+```
+
+### Inline in Paragraph
+
+Sits naturally inside text flow:
+
+<Story of={InlineInputStories.InParagraph} />
+
+```jsx
+<p>
+  Hello, my name is <InlineInput defaultValue="John Doe" /> and I love editing
+  text in place.
+</p>
+```
+
+### Placeholder for Empty Values
+
+<Story of={InlineInputStories.Placeholder} />
+
+```jsx
+<InlineInput defaultValue="" placeholder="Untitled" />
+```
+
+### Allow Empty Values
+
+By default, submitting an empty value cancels. Set `allowEmpty` to keep the empty value:
+
+<Story of={InlineInputStories.AllowEmpty} />
+
+```jsx
+<InlineInput defaultValue="Clearable" allowEmpty placeholder="Empty allowed" />
+```
+
+### Disabled / Read-only
+
+<Story of={InlineInputStories.Disabled} />
+
+```jsx
+<InlineInput defaultValue="You can't edit me" isDisabled />
+<InlineInput defaultValue="Read-only value" isReadOnly />
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Enter` — Commit the current draft
+- `Escape` — Cancel and revert to the previous value
+- `Tab` / focus loss — Commits when `submitOnBlur` is `true` (default), otherwise no-op
+- Arrow keys, Space, Delete, Backspace — Work normally inside the input and do not bubble to the host
+
+### ARIA Properties
+
+- **`aria-label`** — Provide a label when the input has no visible label associated. Recommended in all cases.
+- **`aria-labelledby`** — Reference the id of a visible label element.
+
+### Focus Management
+
+When entering edit mode, focus is taken explicitly by a `FocusScope` with `autoFocus`. This makes the transition deterministic even when triggered from a closing menu (which would otherwise restore focus to the menu trigger). The text content is selected automatically.
+
+When leaving edit mode, focus is not restored automatically — the host is responsible for moving focus back to a meaningful element (e.g. the parent button or row).
+
+## Best Practices
+
+1. **Do**: Always provide an `aria-label` or `aria-labelledby` for screen reader users.
+
+   ```jsx
+   <InlineInput defaultValue="My document" aria-label="Document name" />
+   ```
+
+2. **Do**: Use `editTrigger="dblclick"` for items that are also clickable for selection (the default).
+
+3. **Don't**: Use `InlineInput` as a form field. Use `TextInput` inside a `<Form>` for that.
+
+4. **Don't**: Rely on `onChange` for keystroke-by-keystroke updates — it fires only on commit. Use `isEditing` + `onEditingChange` if you need to observe the editing lifecycle.
+
+### onChange vs onSubmit
+
+These look similar but fire under different conditions. Pick the one that matches your intent:
+
+| Event       | Fires when                                                                | Typical use                              |
+| ----------- | ------------------------------------------------------------------------- | ---------------------------------------- |
+| `onChange`  | The committed value is **different** from the previous value             | Updating state (controlled pattern)      |
+| `onSubmit`  | The user commits (Enter / blur / `ref.stopEditing(true)`) — always fires | Side effects (server save, toasts)       |
+| `onCancel`  | Escape, empty submit (when `allowEmpty=false`), or `ref.stopEditing(false)` | Reverting UI, cleanup                    |
+
+### Optimistic Display
+
+When the component is **controlled** and the parent updates `value` asynchronously, the component shows the just-committed value optimistically until the parent's `value` catches up. This prevents a flicker back to the old value between commit and re-render.
+
+### Async Save & Rollback
+
+`onSubmit` may return a `Promise`. The component does not block the UI on the promise, but it watches the outcome:
+
+- **Promise resolves** — the parent is expected to have updated `value` (or chose not to). Optimistic display clears when `value` next changes.
+- **Promise rejects** — the component treats this as a save failure and **automatically reverts** the optimistic display back to the actual `value` prop. Stale optimistic state never lingers.
+
+A typical async-save pattern:
+
+```jsx
+<InlineInput
+  value={title}
+  onSubmit={async (next) => {
+    await saveToServer(next);  // throws on failure
+    setTitle(next);            // only on success
+  }}
+/>
+```
+
+If `saveToServer` throws, `InlineInput` reverts to `title` automatically. If you want to show a toast on failure, wrap inside `onSubmit` and re-throw to keep the rollback:
+
+```jsx
+<InlineInput
+  value={title}
+  onSubmit={async (next) => {
+    try {
+      await saveToServer(next);
+      setTitle(next);
+    } catch (err) {
+      showToast('Save failed');
+      throw err;
+    }
+  }}
+/>
+```
+
+If the user starts a new edit before a pending promise settles, the older promise's outcome is ignored (no late rollback can clobber the newer commit).
+
+## Related Components
+
+- [TextInput](/docs/forms-textinput--docs) — Full form-aware text input
+- [Tabs](/docs/navigation-tabs--docs) — Uses `InlineInput` internally for editable tab titles

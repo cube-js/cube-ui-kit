@@ -25,9 +25,12 @@ import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { CubeMenuProps, Menu, MenuTrigger } from '../../actions/Menu';
 import { useContextMenu } from '../../actions/use-context-menu';
+import {
+  CubeInlineInputRef,
+  InlineInput,
+} from '../../content/InlineInput/InlineInput';
 import { createMockDragState } from '../../shared/DraggableCollection';
 
-import { EditableTitle } from './EditableTitle';
 import { TabContainer, TabElement } from './styled';
 import { TabDropIndicator } from './TabDropIndicator';
 import { useTabsContext } from './TabsContext';
@@ -53,6 +56,10 @@ const ACTIONS_EVENT_HANDLERS = {
     }
   },
 };
+
+// Inherit the tab button's pointer cursor — InlineInput's default `cursor: text`
+// hover hint is misleading inside a clickable tab.
+const INLINE_INPUT_STYLES = { cursor: 'inherit' } as const;
 
 // =============================================================================
 // Menu Processing Utilities
@@ -191,8 +198,6 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     dragState,
     dropState,
     editingKey,
-    editValue,
-    setEditValue,
     startEditing,
     submitEditing,
     cancelEditing,
@@ -201,6 +206,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   const ref = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
+  const inlineInputRef = useRef<CubeInlineInputRef>(null);
   const { tabProps } = useTab({ key: item.key }, state, ref);
 
   // Measure actions width for proper space allocation in Item
@@ -277,35 +283,32 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     onDelete?.(itemKeyStr);
   });
 
+  const titleString =
+    typeof tabData.title === 'string' ? tabData.title : itemKeyStr;
+
   const handleStartEditing = useEvent(() => {
     if (!effectiveIsEditable || isDisabled) return;
-
-    const titleText =
-      typeof tabData.title === 'string' ? tabData.title : itemKeyStr;
-
-    startEditing(itemKeyStr, titleText);
+    startEditing(itemKeyStr, titleString);
   });
 
-  const handleSubmitEditing = useEvent(() => {
-    submitEditing(itemKeyStr, editValue, tabData.onTitleChange);
+  const handleSubmitEditing = useEvent((newTitle: string) => {
+    submitEditing(itemKeyStr, newTitle, tabData.onTitleChange);
     // Suppress focus-visible and restore focus to the tab button after editing
     setSuppressFocusVisible(true);
-    requestAnimationFrame(() => {
-      ref.current?.focus();
-    });
+    ref.current?.focus();
   });
 
   const handleCancelEditing = useEvent(() => {
     cancelEditing();
     // Suppress focus-visible and restore focus to the tab button after editing
     setSuppressFocusVisible(true);
-    requestAnimationFrame(() => {
-      ref.current?.focus();
-    });
+    ref.current?.focus();
   });
 
-  const handleEditValueChange = useEvent((value: string) => {
-    setEditValue(value);
+  const handleEditingChange = useEvent((editing: boolean) => {
+    if (editing && !isEditing) {
+      handleStartEditing();
+    }
   });
 
   // Handle menu actions - predefined actions first, then callbacks
@@ -318,7 +321,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
 
     // Handle predefined actions first (only if requirements are met)
     if (normalizedAction === 'rename' && effectiveIsEditable) {
-      handleStartEditing();
+      inlineInputRef.current?.startEditing();
     }
     if (normalizedAction === 'delete' && isDeletable) {
       onDelete?.(itemKeyStr);
@@ -356,7 +359,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     if (e.key === 'F2' && effectiveIsEditable && !isDisabled) {
       e.preventDefault();
       e.stopPropagation();
-      handleStartEditing();
+      inlineInputRef.current?.startEditing();
     }
 
     // Shift+F10 opens the menu (standard context menu shortcut)
@@ -476,13 +479,25 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     tabData.autoHideActions ?? parentAutoHideActions;
 
   // Render title with editing support if editable
+  // Override InlineInput's default `cursor: text` hover hint — in Tabs the
+  // title sits inside a clickable tab, so a text caret cursor is misleading.
+  //
+  // When the title is a plain string we let InlineInput render it directly,
+  // which lets the optimistic display kick in (avoids flicker if the parent's
+  // `onTitleChange` updates the source asynchronously, e.g. inside a RAF).
+  // For ReactNode titles (icons, badges, ...), preserve the original node.
+  const renderTitleDisplay =
+    typeof tabData.title === 'string' ? undefined : () => tabData.title;
   const titleContent = effectiveIsEditable ? (
-    <EditableTitle
-      title={tabData.title}
+    <InlineInput
+      ref={inlineInputRef}
+      value={titleString}
       isEditing={isEditing}
-      editValue={isEditing ? editValue : ''}
-      onEditValueChange={handleEditValueChange}
-      onStartEditing={handleStartEditing}
+      isDisabled={isDisabled}
+      aria-label="Edit tab title"
+      styles={INLINE_INPUT_STYLES}
+      renderDisplay={renderTitleDisplay}
+      onEditingChange={handleEditingChange}
       onSubmit={handleSubmitEditing}
       onCancel={handleCancelEditing}
     />
