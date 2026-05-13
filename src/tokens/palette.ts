@@ -179,7 +179,7 @@ defaultTheme.colors({
     base: 'surface',
     lightness: '-1',
     saturation: 0.2,
-    contrast: [1.2, 1.3],
+    contrast: [1.1, 1.2],
     inherit: false,
   },
   'disabled-surface-text': {
