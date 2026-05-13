@@ -41,6 +41,8 @@ export default {
     '#accent-text',
     '#accent-text-soft',
     '#accent-icon',
+    '#accent-disabled-surface',
+    '#accent-disabled-surface-text',
 
     // ---- Glaze: per-theme primary / purple (purple is alias of primary) ----
     '#primary',
@@ -61,6 +63,8 @@ export default {
     '#primary-accent-text',
     '#primary-accent-text-soft',
     '#primary-accent-icon',
+    '#primary-accent-disabled-surface',
+    '#primary-accent-disabled-surface-text',
     '#purple',
     '#purple-bg',
     '#purple-text',
@@ -78,6 +82,8 @@ export default {
     '#purple-accent-text',
     '#purple-accent-text-soft',
     '#purple-accent-icon',
+    '#purple-accent-disabled-surface',
+    '#purple-accent-disabled-surface-text',
 
     // ---- Glaze: per-theme danger ----
     '#danger',
@@ -98,6 +104,8 @@ export default {
     '#danger-accent-text',
     '#danger-accent-text-soft',
     '#danger-accent-icon',
+    '#danger-accent-disabled-surface',
+    '#danger-accent-disabled-surface-text',
 
     // ---- Glaze: per-theme success ----
     '#success',
@@ -118,6 +126,8 @@ export default {
     '#success-accent-text',
     '#success-accent-text-soft',
     '#success-accent-icon',
+    '#success-accent-disabled-surface',
+    '#success-accent-disabled-surface-text',
 
     // ---- Glaze: per-theme warning ----
     '#warning',
@@ -138,6 +148,8 @@ export default {
     '#warning-accent-text',
     '#warning-accent-text-soft',
     '#warning-accent-icon',
+    '#warning-accent-disabled-surface',
+    '#warning-accent-disabled-surface-text',
 
     // ---- Glaze: per-theme note ----
     '#note',
@@ -158,6 +170,8 @@ export default {
     '#note-accent-text',
     '#note-accent-text-soft',
     '#note-accent-icon',
+    '#note-accent-disabled-surface',
+    '#note-accent-disabled-surface-text',
 
     // ---- Glaze: PrismCode syntax palette ----
     '#code-comment',
@@ -201,8 +215,8 @@ export default {
     '#shadow',
     '#minor',
     '#disabled',
-    '#disabled-text',
-    '#disabled-bg',
+    '#disabled-surface-text',
+    '#disabled-surface',
     '#disabled-opacity',
 
     // ---- Component-local custom tokens ----

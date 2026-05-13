@@ -261,7 +261,7 @@ const ResizeHandlerElement = tasty({
       fill: {
         '': '#dark-03',
         'hovered | drag | focused': '#primary-text',
-        disabled: '#disabled-text',
+        disabled: '#disabled-surface-text',
       },
     },
   },

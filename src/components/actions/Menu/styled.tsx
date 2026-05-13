@@ -166,7 +166,7 @@ export const StyledItem = tasty({
     color: {
       '': '#dark-02',
       'selected | pressed': '#dark',
-      disabled: '#disabled-text',
+      disabled: '#disabled-surface-text',
     },
     cursor: {
       '': 'default',

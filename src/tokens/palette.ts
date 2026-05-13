@@ -167,18 +167,26 @@ defaultTheme.colors({
   // With these contrast-driven tokens both schemes resolve to the same
   // ratios (chip ~1.4, text ~2.0 vs surface, text-on-chip ~1.4) so the
   // disabled appearance is identical in light, dark, and high-contrast.
-  'disabled-bg': {
+  //
+  // These two tokens are NEUTRAL — the chip has very low saturation and is
+  // used by non-PRIMARY-style disabled states (secondary / outline / neutral
+  // / clear / link / item). PRIMARY-style buttons (solid brand fill, white
+  // label) use `accent-disabled-surface` + `accent-disabled-surface-text`
+  // instead so the disabled chip stays brand-tinted per theme. Both tokens
+  // therefore stay default-only (`inherit: false`) — the colored themes get
+  // their own brand-tinted disabled chip via the inherited accent variants.
+  'disabled-surface': {
     base: 'surface',
     lightness: '-1',
     saturation: 0.2,
     contrast: [1.2, 1.3],
     inherit: false,
   },
-  'disabled-text': {
+  'disabled-surface-text': {
     base: 'surface',
     lightness: '-1',
     saturation: 0.3,
-    contrast: [1.95, 2.1],
+    contrast: [2, 2.5],
     inherit: false,
   },
 
@@ -269,6 +277,30 @@ defaultTheme.colors({
     lightness: '-1',
     saturation: 0.9375,
     contrast: [3.2, 5],
+  },
+
+  // Brand-tinted disabled chip + label for PRIMARY-style buttons (solid brand
+  // fill, white text). Mirrors the shape of the neutral `disabled-surface` /
+  // `disabled-surface-text` pair (`mode: 'auto'`, contrast-driven against
+  // `surface`) so the disabled state is scheme-symmetric — chip cr ≈ 1.4 vs
+  // surface, label cr ≈ 2.8–3.2 vs surface (≈ 2.1 text-on-chip) in BOTH
+  // light and dark. Saturation is bumped up so the chip reads as a *muted
+  // brand* color rather than a fully neutral grey, preserving the brand
+  // identity even in the disabled state. Inherited per theme, so each colored
+  // theme automatically emits `<theme>-accent-disabled-surface` and
+  // `<theme>-accent-disabled-surface-text` (e.g. `#danger-accent-disabled-surface`).
+  'accent-disabled-surface': {
+    base: 'surface',
+    lightness: '-1',
+    saturation: 0.5,
+    contrast: [1.4, 1.3],
+  },
+  'accent-disabled-surface-text': {
+    base: 'accent-disabled-surface',
+    lightness: '+1',
+    saturation: 0.4,
+    contrast: 1.51,
+    mode: 'fixed',
   },
 
   // ---- Code syntax highlighting (PrismCode) ----

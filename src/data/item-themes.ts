@@ -79,18 +79,19 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     // (lighter than default), breaking the hover affordance.
     hovered: '#surface #primary-hover',
     pressed: '#surface #primary',
-    // The disabled chip + text use the new scheme-symmetric `#disabled-bg`
-    // and `#disabled-text` Glaze tokens so the disabled look is identical in
-    // light and dark schemes (chip cr ≈ 1.4, text cr ≈ 1.4 vs chip in BOTH).
-    // The previous `#surface #primary-disabled` (= `#disabled` chip) +
-    // fixed `#white` text gave cr=1.6 / 6.5 text-on-chip across schemes —
-    // dark mode stopped looking disabled because the bright `#white` text
-    // popped against the more-contrasty dark chip.
-    disabled: '#disabled-bg',
+    // Brand-tinted, scheme-symmetric disabled pair from the accent system
+    // (`#primary-accent-disabled-surface` chip cr ≈ 1.4 vs surface, label
+    // `#primary-accent-disabled-surface-text` cr ≈ 2.8–3.2 vs surface) so
+    // the disabled state looks identical in light and dark while still
+    // reading as a *muted brand* color. Replaces the old `#primary-disabled`
+    // (= bright fixed `#disabled`) + fixed `#white` text combo, which
+    // inverted contrast in dark mode (text-on-chip cr 6.5 → label popped
+    // and no longer looked disabled).
+    disabled: '#primary-accent-disabled-surface',
   },
   color: {
     '': '#white',
-    disabled: '#disabled-text',
+    disabled: '#primary-accent-disabled-surface-text',
   },
 } as const;
 
@@ -115,11 +116,11 @@ export const DEFAULT_SECONDARY_STYLES: Styles = {
   fill: {
     '': '#primary.10',
     'hovered & !pressed': '#primary.16',
-    disabled: '#disabled-bg',
+    disabled: '#disabled-surface',
   },
   color: {
     '': '#primary-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -136,13 +137,13 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
     selected: '#surface #dark.09',
     'selected & hovered': '#surface #dark.12',
     pressed: '#surface #dark.09',
-    disabled: '#disabled-bg',
+    disabled: '#disabled-surface',
   },
   color: {
     '': '#dark-02',
     hovered: '#dark-02',
     'pressed | (selected & !hovered)': '#dark',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -164,7 +165,7 @@ export const DEFAULT_NEUTRAL_STYLES: Styles = {
     '': '#dark-02',
     hovered: '#dark-02',
     pressed: '#dark',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -182,7 +183,7 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
   },
   color: {
     '': '#primary-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -203,7 +204,7 @@ export const DEFAULT_LINK_STYLES: Styles = {
   color: {
     '': '#primary-text-soft',
     'hovered & !pressed': '#primary-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -221,7 +222,7 @@ export const DEFAULT_ITEM_STYLES: Styles = {
     '': '#dark-02',
     hovered: '#dark-02',
     pressed: '#dark',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -241,14 +242,15 @@ export const DANGER_PRIMARY_STYLES: Styles = {
     hovered: '#surface #danger-hover',
     pressed: '#surface #danger',
     // See `DEFAULT_PRIMARY_STYLES.fill.disabled` for the rationale —
-    // `#disabled-bg` + `#disabled-text` keep the disabled chip identical
-    // across schemes, replacing the old `#danger-desaturated.6` chip + fixed
+    // `#danger-accent-disabled-surface` + `#danger-accent-disabled-surface-text`
+    // keep the disabled chip identical across schemes and brand-tinted with
+    // the danger hue, replacing the old `#danger-desaturated.6` chip + fixed
     // `#white.6` text combo (which inverted contrast in dark mode).
-    disabled: '#disabled-bg',
+    disabled: '#danger-accent-disabled-surface',
   },
   color: {
     '': '#white',
-    disabled: '#disabled-text',
+    disabled: '#danger-accent-disabled-surface-text',
   },
 } as const;
 
@@ -265,11 +267,11 @@ export const DANGER_SECONDARY_STYLES: Styles = {
   fill: {
     '': '#danger.05',
     'hovered & !pressed': '#danger.1',
-    disabled: '#disabled-bg',
+    disabled: '#disabled-surface',
   },
   color: {
     '': '#danger-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -290,11 +292,11 @@ export const DANGER_OUTLINE_STYLES: Styles = {
     '': '#surface #danger.0',
     hovered: '#surface #danger.1',
     'pressed | (selected & !hovered)': '#surface #danger.05',
-    disabled: '#disabled-bg',
+    disabled: '#disabled-surface',
   },
   color: {
     '': '#danger-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -311,7 +313,7 @@ export const DANGER_NEUTRAL_STYLES: Styles = {
   color: {
     '': '#dark-02',
     'pressed | (selected & !hovered)': '#danger-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -350,7 +352,7 @@ export const DANGER_LINK_STYLES: Styles = {
   color: {
     '': '#danger-text-soft',
     'hovered & !pressed': '#danger-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -387,12 +389,13 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
     '': '#surface #success',
     hovered: '#surface #success-hover',
     pressed: '#surface #success',
-    // See `DEFAULT_PRIMARY_STYLES.fill.disabled` for rationale.
-    disabled: '#disabled-bg',
+    // See `DEFAULT_PRIMARY_STYLES.fill.disabled` for rationale (brand-tinted,
+    // scheme-symmetric chip + higher-contrast disabled label).
+    disabled: '#success-accent-disabled-surface',
   },
   color: {
     '': '#white',
-    disabled: '#disabled-text',
+    disabled: '#success-accent-disabled-surface-text',
   },
 } as const;
 
@@ -408,11 +411,11 @@ export const SUCCESS_SECONDARY_STYLES: Styles = {
   fill: {
     '': '#success.05',
     'hovered & !pressed': '#success.1',
-    disabled: '#disabled-bg',
+    disabled: '#disabled-surface',
   },
   color: {
     '': '#success-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -428,11 +431,11 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
     '': '#surface #success.0',
     hovered: '#surface #success.1',
     'pressed | (selected & !hovered)': '#surface #success.05',
-    disabled: '#disabled-bg',
+    disabled: '#disabled-surface',
   },
   color: {
     '': '#success-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -449,7 +452,7 @@ export const SUCCESS_NEUTRAL_STYLES: Styles = {
   color: {
     '': '#dark-02',
     'pressed | (selected & !hovered)': '#success-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -488,7 +491,7 @@ export const SUCCESS_LINK_STYLES: Styles = {
   color: {
     '': '#success-text-soft',
     'hovered & !pressed': '#success-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -525,12 +528,13 @@ export const WARNING_PRIMARY_STYLES: Styles = {
     '': '#surface #warning',
     hovered: '#surface #warning-hover',
     pressed: '#surface #warning',
-    // See `DEFAULT_PRIMARY_STYLES.fill.disabled` for rationale.
-    disabled: '#disabled-bg',
+    // See `DEFAULT_PRIMARY_STYLES.fill.disabled` for rationale (brand-tinted,
+    // scheme-symmetric chip + higher-contrast disabled label).
+    disabled: '#warning-accent-disabled-surface',
   },
   color: {
     '': '#white',
-    disabled: '#disabled-text',
+    disabled: '#warning-accent-disabled-surface-text',
   },
 } as const;
 
@@ -545,11 +549,11 @@ export const WARNING_SECONDARY_STYLES: Styles = {
   fill: {
     '': '#warning.05',
     'hovered & !pressed': '#warning.1',
-    disabled: '#disabled-bg',
+    disabled: '#disabled-surface',
   },
   color: {
     '': '#warning-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -565,11 +569,11 @@ export const WARNING_OUTLINE_STYLES: Styles = {
     '': '#surface #warning.0',
     hovered: '#surface #warning.1',
     'pressed | (selected & !hovered)': '#surface #warning.05',
-    disabled: '#disabled-bg',
+    disabled: '#disabled-surface',
   },
   color: {
     '': '#warning-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -586,7 +590,7 @@ export const WARNING_NEUTRAL_STYLES: Styles = {
   color: {
     '': '#dark-02',
     'pressed | (selected & !hovered)': '#warning-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -625,7 +629,7 @@ export const WARNING_LINK_STYLES: Styles = {
   color: {
     '': '#warning-text-soft',
     'hovered & !pressed': '#warning-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -662,12 +666,13 @@ export const NOTE_PRIMARY_STYLES: Styles = {
     '': '#surface #note',
     hovered: '#surface #note-hover',
     pressed: '#surface #note',
-    // See `DEFAULT_PRIMARY_STYLES.fill.disabled` for rationale.
-    disabled: '#disabled-bg',
+    // See `DEFAULT_PRIMARY_STYLES.fill.disabled` for rationale (brand-tinted,
+    // scheme-symmetric chip + higher-contrast disabled label).
+    disabled: '#note-accent-disabled-surface',
   },
   color: {
     '': '#white',
-    disabled: '#disabled-text',
+    disabled: '#note-accent-disabled-surface-text',
   },
 } as const;
 
@@ -682,11 +687,11 @@ export const NOTE_SECONDARY_STYLES: Styles = {
   fill: {
     '': '#note.05',
     'hovered & !pressed': '#note.1',
-    disabled: '#disabled-bg',
+    disabled: '#disabled-surface',
   },
   color: {
     '': '#note-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -702,11 +707,11 @@ export const NOTE_OUTLINE_STYLES: Styles = {
     '': '#surface #note.0',
     hovered: '#surface #note.1',
     'pressed | (selected & !hovered)': '#surface #note.05',
-    disabled: '#disabled-bg',
+    disabled: '#disabled-surface',
   },
   color: {
     '': '#note-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -723,7 +728,7 @@ export const NOTE_NEUTRAL_STYLES: Styles = {
   color: {
     '': '#dark-02',
     'pressed | (selected & !hovered)': '#note-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -762,7 +767,7 @@ export const NOTE_LINK_STYLES: Styles = {
   color: {
     '': '#note-text-soft',
     'hovered & !pressed': '#note-text',
-    disabled: '#disabled-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 

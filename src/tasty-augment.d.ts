@@ -28,6 +28,8 @@ declare module '@tenphi/tasty' {
     'accent-text': true;
     'accent-text-soft': true;
     'accent-icon': true;
+    'accent-disabled-surface': true;
+    'accent-disabled-surface-text': true;
     // Note: `accent-surface-hover` (and its per-theme `<theme>-accent-surface-hover`
     // variants + `<theme>-hover` aliases) are intentionally omitted from this
     // type list to stay under TS7056. They resolve at runtime and still
@@ -71,8 +73,8 @@ declare module '@tenphi/tasty' {
     'primary-icon': true;
     'primary-bg': true;
     disabled: true;
-    'disabled-bg': true;
-    'disabled-text': true;
+    'disabled-surface': true;
+    'disabled-surface-text': true;
     danger: true;
     'danger-bg': true;
     'danger-text': true;

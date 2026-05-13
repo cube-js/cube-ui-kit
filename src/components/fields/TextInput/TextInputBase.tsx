@@ -64,7 +64,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   placeItems: 'stretch',
   fill: {
     '': '#surface',
-    disabled: '#disabled-bg',
+    disabled: '#disabled-surface',
   },
   border: {
     '': true,
