@@ -788,6 +788,38 @@ describe('<InlineInput />', () => {
       expect(getByTestId('II')).not.toHaveAttribute('data-focused');
     });
 
+    it('clears the focus ring when keyboard-initiated edit mode ends', async () => {
+      // Regression test: when entering edit mode via the keyboard, the
+      // display span loses focus to the inner input. If `useFocusRing`'s
+      // focus listeners are detached at that moment, the hook keeps
+      // `isFocused` stale at `true`, and the ring stays on after editing
+      // ends. We assert that the `focused` modifier clears on the next
+      // display render.
+      const user = userEvent.setup();
+      const { getByTestId, getByRole } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" />,
+      );
+
+      const root = getByTestId('II');
+
+      // Tab to the span → ring on.
+      await user.tab();
+      expect(root).toHaveAttribute('data-focused');
+
+      // Enter edit mode via keyboard → focus moves to input.
+      await act(async () => {
+        fireEvent.keyDown(root, { key: 'Enter' });
+      });
+      const input = getByRole('textbox');
+      expect(document.activeElement).toBe(input);
+
+      // Cancel editing → span returns to display mode without a stale ring.
+      await act(async () => {
+        fireEvent.keyDown(input, { key: 'Escape' });
+      });
+      expect(getByTestId('II')).not.toHaveAttribute('data-focused');
+    });
+
     it('marks the display with aria-disabled / aria-readonly when applicable', () => {
       const { getByTestId, rerender } = renderWithRoot(
         <InlineInput isDisabled defaultValue="Hello" qa="II" />,

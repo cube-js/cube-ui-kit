@@ -627,10 +627,16 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
           {...mergeProps(
             baseProps,
             focusWithinProps,
-            // Only listen to focus events when the span is actually
-            // keyboard-focusable — otherwise spurious focus events from
-            // descendants or programmatic focus could light up the ring.
-            wantsKeyboard ? focusRingProps : {},
+            // Always attach focusRingProps so the hook sees the blur event
+            // when focus moves into the inner input on edit-mode entry. If
+            // we only attached them while `wantsKeyboard` is true, the hook
+            // would miss the blur (since `wantsKeyboard` flips to false the
+            // moment editing starts), leaving `isFocused` stale and the
+            // ring stuck on after editing ends. `useFocusRing` filters
+            // bubbled focus from descendants internally (`target ===
+            // currentTarget`), so spreading these on a non-focusable span
+            // is a no-op.
+            focusRingProps,
             triggerProps ?? {},
             {
               onDoubleClick: wantsDblClick ? handleDblClick : undefined,
