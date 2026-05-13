@@ -229,6 +229,16 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     // re-entry happens before they settle.
     const submitTokenRef = useRef(0);
 
+    // Synchronous mirror of `isEditing`. We need this because cancel/commit
+    // call user callbacks (`onCancel`/`onSubmit`) that may synchronously
+    // re-focus another element — that causes a synchronous blur on the
+    // input which would otherwise re-enter `commit` via `onBlurWithin` (the
+    // state update from `setIsEditing(false)` isn't committed yet, so the
+    // closure still sees `isEditing === true`).
+    const isEditingRef = useRef(isEditing);
+
+    isEditingRef.current = isEditing;
+
     // Clear the optimistic value once `value` catches up or changes externally.
     useEffect(() => {
       setOptimisticValue(null);
@@ -239,6 +249,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       // Invalidate any in-flight onSubmit promise — its outcome no longer
       // matters because the user is about to commit a new value anyway.
       submitTokenRef.current += 1;
+      isEditingRef.current = true;
       // Start from the actual prop value, not optimistic — gives the user a
       // way to recover if a previous commit was rejected by the parent.
       setOptimisticValue(null);
@@ -247,9 +258,14 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     });
 
     const commit = useEvent((rawValue: string) => {
+      // Re-entry guard. `onSubmit`/`onCancel` may synchronously refocus and
+      // trigger another blur-driven commit before the state update lands.
+      if (!isEditingRef.current) return;
+
       const next = trimOnSubmit ? rawValue.trim() : rawValue;
 
       if (!next && !allowEmpty) {
+        isEditingRef.current = false;
         setIsEditing(false);
         onCancel?.();
 
@@ -262,6 +278,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
         // Show the new value optimistically until the parent re-renders.
         setOptimisticValue(next);
       }
+      isEditingRef.current = false;
       setValue(next);
       setIsEditing(false);
 
@@ -286,6 +303,8 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     });
 
     const cancel = useEvent(() => {
+      if (!isEditingRef.current) return;
+      isEditingRef.current = false;
       setIsEditing(false);
       onCancel?.();
     });
