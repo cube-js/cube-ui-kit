@@ -33,6 +33,19 @@ describe('<InlineInput />', () => {
 
       expect(getByText('>>raw<<')).toBeInTheDocument();
     });
+
+    it('renders the placeholder in display mode when the value is empty', async () => {
+      const user = userEvent.setup();
+      const { getByText, getByRole } = renderWithRoot(
+        <InlineInput defaultValue="" placeholder="Untitled" />,
+      );
+
+      const placeholder = getByText('Untitled');
+      expect(placeholder).toBeInTheDocument();
+
+      await user.dblClick(placeholder);
+      expect(getByRole('textbox')).toBeInTheDocument();
+    });
   });
 
   describe('Activation: dblclick (default)', () => {

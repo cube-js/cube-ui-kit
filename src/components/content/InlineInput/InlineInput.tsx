@@ -142,6 +142,11 @@ const InlineInputRoot = tasty({
       height: 0,
       overflow: 'hidden',
     },
+
+    Placeholder: {
+      recipe: 'input-placeholder',
+      preset: 'inherit',
+    },
   },
 });
 
@@ -425,9 +430,18 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       [customTokens, inputWidth],
     );
 
+    // In display mode, render the placeholder when the value is empty so the
+    // component remains visible / clickable. Consumers using `renderDisplay`
+    // take full control and are responsible for handling empty values
+    // themselves.
     const displayContent = renderDisplay
       ? renderDisplay(displayedValue)
-      : displayedValue;
+      : displayedValue ||
+        (placeholder ? (
+          <span data-element="Placeholder">{placeholder}</span>
+        ) : (
+          ''
+        ));
 
     const baseProps = filterBaseProps(otherProps, { eventProps: true });
 
