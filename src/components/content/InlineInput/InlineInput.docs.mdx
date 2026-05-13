@@ -38,6 +38,7 @@ Unlike `TextInput`, `InlineInput` is intentionally **not** a form field. It mana
 - **`onSubmit`** `(value: string) => void` — Fires every commit (Enter / submit-on-blur / `ref.stopEditing(true)`), even when the value did not change. Use for side effects (analytics, save toasts).
 - **`onCancel`** `() => void` — Called when editing is cancelled (Escape or empty submit when `allowEmpty` is `false`).
 - **`editTrigger`** `'dblclick' | 'click' | 'none'` (default: `dblclick`) — How edit mode is activated from the display element. Programmatic entry via `ref.startEditing()` works regardless.
+- **`keyboardActivation`** `boolean` (default: `true`) — When `true`, the display element is keyboard-focusable (`tabIndex=0`, `role="button"`) and responds to `Enter`, `F2` and `Space` to enter edit mode. Set to `false` when the host already owns keyboard activation (e.g. an editable tab inside a `<button>`) — exposing the display as a separate tab stop would otherwise nest focus inside the host.
 - **`submitOnBlur`** `boolean` (default: `true`) — Whether to submit when focus leaves the input.
 - **`trimOnSubmit`** `boolean` (default: `true`) — Whether to trim the value on submit.
 - **`allowEmpty`** `boolean` (default: `false`) — When `false`, submitting an empty/whitespace value cancels instead.
@@ -45,6 +46,8 @@ Unlike `TextInput`, `InlineInput` is intentionally **not** a form field. It mana
 - **`isReadOnly`** `boolean` (default: `false`) — When `true`, edit mode cannot be entered, but the display reads as enabled.
 - **`placeholder`** `string` — Placeholder text shown in the input when the draft is empty.
 - **`renderDisplay`** `(value: string) => ReactNode` — Custom render for display (non-editing) mode.
+- **`tooltip`** `boolean | string | AutoTooltipValue` (default: `true`) — Tooltip behaviour for the display value. `true` enables auto-tooltip on overflow (showing the full text when truncated). A string always shows that text. `false` disables the tooltip. Suppressed automatically while editing and when `renderDisplay` is used.
+- **`tooltipPlacement`** `'top' | 'bottom' | 'left' | 'right' | ...` (default: `'top'`) — Default tooltip placement.
 - **`inputStyles`** `Styles` — Convenience prop for styling the `Input` sub-element.
 
 ### Base Properties
@@ -64,10 +67,11 @@ The component exposes a ref with these methods:
 
 #### styles
 
-Customizes the root element of the component.
+Customizes the root element of the component. The root is `inline-flex` with `align-items: baseline` so it integrates cleanly into any inline text context (tabs, headings, paragraphs) without shifting surrounding text. Truncation lives on the inner `Display` sub-element so the root's baseline is not perturbed.
 
 **Sub-elements:**
 
+- `Display` — The block-level wrapper that holds the value in display mode and applies `overflow: hidden` / `text-overflow: ellipsis` for truncation
 - `Input` — The text input rendered in edit mode
 - `Placeholder` — The placeholder text rendered in display mode when the value is empty
 - `Measure` — The hidden text used to auto-size the input (rarely targeted)
@@ -89,13 +93,14 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property is automatically populated. Consumers can target these in their own `styles`:
 
-| Modifier   | Type      | Description                                                          |
-| ---------- | --------- | -------------------------------------------------------------------- |
-| editing    | `boolean` | Currently in edit mode                                               |
-| editable   | `boolean` | `editTrigger` is `dblclick` or `click` and not disabled/read-only    |
-| disabled   | `boolean` | `isDisabled` is `true`                                               |
-| read-only  | `boolean` | `isReadOnly` is `true`                                               |
-| empty      | `boolean` | The committed value is empty                                         |
+| Modifier   | Type      | Description                                                                |
+| ---------- | --------- | -------------------------------------------------------------------------- |
+| editing    | `boolean` | Currently in edit mode                                                     |
+| editable   | `boolean` | `editTrigger` is `dblclick` or `click` and not disabled/read-only          |
+| focused    | `boolean` | Display element is keyboard-focused (`isFocusVisible`) and editable        |
+| disabled   | `boolean` | `isDisabled` is `true`                                                     |
+| read-only  | `boolean` | `isReadOnly` is `true`                                                     |
+| empty      | `boolean` | The committed value is empty                                               |
 
 ## Examples
 
@@ -211,9 +216,51 @@ By default, submitting an empty value cancels. Set `allowEmpty` to keep the empt
 <InlineInput defaultValue="Read-only value" isReadOnly />
 ```
 
+### Overflow & Tooltip
+
+When the value is wider than its container, the display text is truncated with an ellipsis. The full value is shown as a tooltip on hover/focus — no extra props required.
+
+<Story of={InlineInputStories.Overflow} />
+
+```jsx
+<div style={{ width: 200 }}>
+  <InlineInput defaultValue="A very long inline value that gets truncated…" />
+</div>
+```
+
+To always show a custom tooltip (regardless of overflow), pass a string. To disable the tooltip entirely, pass `false`:
+
+```jsx
+<InlineInput defaultValue="Hover me" tooltip="Click to rename" />
+<InlineInput defaultValue="No tooltip" tooltip={false} />
+```
+
+The truncation behaviour is automatically disabled while editing so the input is never visually clipped while the user types.
+
+### Keyboard Activation
+
+By default the display element is keyboard-focusable (`tabIndex=0`, `role="button"`, `aria-roledescription="editable text"`). Pressing `Enter`, `F2` or `Space` enters edit mode without requiring a pointer. A keyboard focus ring (`#primary` token, rounded) is shown only when the element receives keyboard focus — clicks never trigger the ring.
+
+<Story of={InlineInputStories.KeyboardActivation} />
+
+When `InlineInput` is embedded in a host that already owns keyboard activation (e.g. `Tabs` — each tab is a `<button>` that listens for `F2` itself), pass `keyboardActivation={false}` to avoid creating a nested tab stop inside the host. The imperative `ref.startEditing()` always works regardless of this setting, and the focus ring is suppressed in this mode (the host's focus ring is the one users see).
+
+```jsx
+<InlineInput defaultValue="Press Enter to edit" />
+
+<InlineInput keyboardActivation={false} defaultValue="Host owns the keyboard" />
+```
+
 ## Accessibility
 
 ### Keyboard Navigation
+
+**Display mode** (when `keyboardActivation` is `true`):
+
+- `Tab` — Moves focus to the value
+- `Enter`, `F2`, `Space` — Enter edit mode
+
+**Edit mode**:
 
 - `Enter` — Commit the current draft
 - `Escape` — Cancel and revert to the previous value
@@ -222,8 +269,10 @@ By default, submitting an empty value cancels. Set `allowEmpty` to keep the empt
 
 ### ARIA Properties
 
-- **`aria-label`** — Provide a label when the input has no visible label associated. Recommended in all cases.
-- **`aria-labelledby`** — Reference the id of a visible label element.
+- The display element receives `role="button"` and `aria-roledescription="editable text"` when keyboard-focusable, so screen readers announce that the value can be activated for editing.
+- **`aria-label`** — Provide a label when the value alone doesn't convey purpose. Forwarded to both the display element (when focusable) and the inner input. Recommended in all cases.
+- **`aria-labelledby`** — Reference the id of a visible label element. Forwarded the same way.
+- **`aria-disabled`** / **`aria-readonly`** — Set automatically from `isDisabled` / `isReadOnly`.
 
 ### Focus Management
 

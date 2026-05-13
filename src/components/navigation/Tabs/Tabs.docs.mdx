@@ -376,6 +376,8 @@ Add dropdown menus to tabs using the `menu` prop. This replaces the need for man
 
 Combine editable tabs with a menu for rename, duplicate, and delete actions. The inline editing UI is provided by [InlineInput](/docs/content-inlineinput--docs), which can also be used standalone elsewhere.
 
+> For editable tabs the `tooltip` prop is rendered by `InlineInput` rather than by the surrounding tab button. This keeps the tooltip in sync with the editing UI (and avoids a double tooltip) — the trigger area is the title content, not the entire tab button. Long titles also get an automatic ellipsis + overflow tooltip without any extra configuration.
+
 <Story of={TabsStories.WithEditableTabs} />
 
 ```jsx

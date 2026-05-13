@@ -20,13 +20,26 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FocusScope, useFocusWithin } from 'react-aria';
+import {
+  FocusScope,
+  OverlayProps,
+  useFocusRing,
+  useFocusWithin,
+} from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
+import { AutoTooltipValue, useAutoTooltip } from '../use-auto-tooltip';
 
-import type { ChangeEvent, KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import type {
+  ChangeEvent,
+  HTMLAttributes,
+  KeyboardEvent,
+  MouseEvent,
+  ReactNode,
+  RefObject,
+} from 'react';
 
 // =============================================================================
 // Types
@@ -71,6 +84,17 @@ export interface CubeInlineInputProps
 
   /** How edit mode is activated from the display element. Default: `'dblclick'`. */
   editTrigger?: CubeInlineInputEditTrigger;
+  /**
+   * When true (default) the display element is keyboard-focusable and
+   * responds to `Enter`, `F2` and `Space` by entering edit mode. Set to
+   * `false` when a host (e.g. an editable tab inside a button) already
+   * routes keyboard activation through `ref.startEditing()` — exposing the
+   * display element as a separate tab stop would create a nested keyboard
+   * focus inside the host.
+   *
+   * @default true
+   */
+  keyboardActivation?: boolean;
   /** Whether to submit when focus leaves the input. Default: `true`. */
   submitOnBlur?: boolean;
   /** Whether to trim the value on submit. Default: `true`. */
@@ -90,6 +114,19 @@ export interface CubeInlineInputProps
   'aria-label'?: string;
   /** ARIA labelledby for the input. */
   'aria-labelledby'?: string;
+
+  /**
+   * Tooltip behaviour for the display value:
+   * - `true` (default): auto-tooltip — show the full value when the text is truncated.
+   * - `false`: never show a tooltip.
+   * - `string`: always show this tooltip text.
+   * - object: full `TooltipProvider` configuration (with optional `auto`).
+   *
+   * The tooltip is automatically suppressed while editing and when `renderDisplay` is used.
+   */
+  tooltip?: AutoTooltipValue;
+  /** Default tooltip placement. @default 'top' */
+  tooltipPlacement?: OverlayProps['placement'];
 
   /** Convenience prop for styling the `Input` sub-element. Merged into `styles.Input`. */
   inputStyles?: Styles;
@@ -113,14 +150,49 @@ export interface CubeInlineInputRef {
 const InlineInputRoot = tasty({
   as: 'span',
   styles: {
+    // `inline-flex` with `alignItems: baseline` is used (instead of
+    // `inline-block` + `overflow: hidden`) so the container's baseline comes
+    // from the first flex item's content baseline. With `inline-block` +
+    // `overflow: hidden`, the CSS spec forces the baseline to the bottom
+    // margin edge, which visibly shifts the text upward inside surrounding
+    // line boxes (notably inside Tabs' centered `Item.Label`).
     display: 'inline-flex',
+    alignItems: 'baseline',
     verticalAlign: 'baseline',
     position: 'relative',
+    maxWidth: '100%',
     color: 'inherit',
     preset: 'inherit',
     cursor: {
       '': 'inherit',
       'editable & !editing': 'text',
+    },
+    // Keyboard focus ring (only when the display element is keyboard-focusable,
+    // which is gated by `keyboardActivation` on the React side via the
+    // `focused` mod). Outline doesn't take layout space and respects rounded
+    // corners via `outlineOffset`.
+    outline: {
+      '': '1bw #primary.0',
+      focused: '1bw #primary',
+    },
+    outlineOffset: 1,
+    radius: {
+      '': 0,
+      focused: true,
+    },
+    transition: 'theme',
+
+    // Display flex item: owns the truncation (`overflow: hidden` here is a
+    // block-level rule that does *not* alter the parent's baseline, unlike
+    // an `inline-block` overflow rule).
+    Display: {
+      display: 'block',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      maxWidth: '100%',
+      preset: 'inherit',
+      color: 'inherit',
     },
 
     Input: {
@@ -180,6 +252,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       onSubmit,
       onCancel,
       editTrigger = 'dblclick',
+      keyboardActivation = true,
       submitOnBlur = true,
       trimOnSubmit = true,
       allowEmpty = false,
@@ -187,6 +260,8 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       isReadOnly = false,
       placeholder,
       renderDisplay,
+      tooltip = true,
+      tooltipPlacement = 'top',
       'aria-label': ariaLabel,
       'aria-labelledby': ariaLabelledby,
       qa,
@@ -235,9 +310,14 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     // input which would otherwise re-enter `commit` via `onBlurWithin` (the
     // state update from `setIsEditing(false)` isn't committed yet, so the
     // closure still sees `isEditing === true`).
+    //
+    // The ref is kept in sync via `useLayoutEffect` so concurrent renders
+    // that get thrown away don't leak a stale value into the next commit.
     const isEditingRef = useRef(isEditing);
 
-    isEditingRef.current = isEditing;
+    useLayoutEffect(() => {
+      isEditingRef.current = isEditing;
+    }, [isEditing]);
 
     // Clear the optimistic value once `value` catches up or changes externally.
     useEffect(() => {
@@ -360,6 +440,12 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       setDraft(e.target.value);
     });
 
+    // Keyboard focus ring on the root. Only fires when the span itself is
+    // keyboard-focused (i.e. `wantsKeyboard` made it tabbable) — clicking
+    // does not trigger focus-visible, and once edit mode starts focus moves
+    // to the inner input, so the ring vanishes naturally.
+    const { isFocusVisible, focusProps: focusRingProps } = useFocusRing();
+
     const { focusWithinProps } = useFocusWithin({
       isDisabled: !isEditing,
       onBlurWithin: () => {
@@ -369,17 +455,26 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     });
 
     const handleDblClick = useEvent((e: MouseEvent) => {
-      if (editTrigger !== 'dblclick') return;
       e.preventDefault();
       e.stopPropagation();
       enterEditing();
     });
 
     const handleClick = useEvent((e: MouseEvent) => {
-      if (editTrigger !== 'click') return;
       e.preventDefault();
       e.stopPropagation();
       enterEditing();
+    });
+
+    // Keyboard activation from the display element (standalone usage).
+    // Hosts that own keyboard handling themselves should pass
+    // `keyboardActivation={false}` (see `TabButton` for an example).
+    const handleRootKeyDown = useEvent((e: KeyboardEvent<HTMLSpanElement>) => {
+      if (e.key === 'Enter' || e.key === 'F2' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        enterEditing();
+      }
     });
 
     useImperativeHandle(
@@ -387,25 +482,33 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       () => ({
         startEditing: () => enterEditing(),
         stopEditing: (submit = true) => {
-          if (!isEditing) return;
+          if (!isEditingRef.current) return;
           if (submit) commit(draft);
           else cancel();
         },
         focus: () => {
-          if (isEditing) inputRef.current?.focus();
+          if (isEditingRef.current) inputRef.current?.focus();
           else rootRef.current?.focus();
         },
         getValue: () => displayedValue,
       }),
-      [enterEditing, commit, cancel, draft, displayedValue, isEditing],
+      [enterEditing, commit, cancel, draft, displayedValue],
     );
 
     const isEditable = editTrigger !== 'none' && !isDisabled && !isReadOnly;
+
+    // `focused` is the keyboard-focus ring state. We gate it on `isEditable`
+    // and `!isEditing` so the ring never shows on a non-editable display
+    // (e.g. inside Tabs with `keyboardActivation={false}` — the span isn't
+    // focusable there, but we belt-and-braces it anyway) or while editing
+    // (focus is on the inner input).
+    const showFocusRing = isFocusVisible && isEditable && !isEditing;
 
     const mods = useMemo(
       () => ({
         editing: isEditing,
         editable: isEditable,
+        focused: showFocusRing,
         disabled: isDisabled,
         'read-only': isReadOnly,
         empty: !displayedValue,
@@ -414,6 +517,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       [
         isEditing,
         isEditable,
+        showFocusRing,
         isDisabled,
         isReadOnly,
         displayedValue,
@@ -464,42 +568,112 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
 
     const baseProps = filterBaseProps(otherProps, { eventProps: true });
 
-    return (
-      <InlineInputRoot
-        ref={rootRef}
-        qa={qa ?? 'InlineInput'}
-        qaVal={qaVal}
-        mods={mods}
-        tokens={tokens}
-        styles={extractedStyles}
-        {...mergeProps(baseProps, focusWithinProps, {
-          onDoubleClick: isEditing ? undefined : handleDblClick,
-          onClick: isEditing ? undefined : handleClick,
-        })}
-      >
-        {isEditing ? (
-          <FocusScope autoFocus restoreFocus={false} contain={false}>
-            <span ref={measureRef} data-element="Measure" aria-hidden="true">
-              {draft || placeholder || ' '}
+    // Overflow detection / auto-tooltip. Suppressed while editing (the input
+    // owns the visible text and isn't truncated), and when the consumer
+    // provides `renderDisplay` (they own the display story and should attach
+    // their own tooltip if needed).
+    const { labelRef: tooltipLabelRef, renderWithTooltip } = useAutoTooltip({
+      tooltip: isEditing || renderDisplay ? false : tooltip,
+      children: displayedValue,
+    });
+
+    // Wire pointer/keyboard activators only when relevant. Hosts that drive
+    // editing through `ref.startEditing()` keep all of these `undefined` so
+    // they don't intercept their own keyboard / focus story.
+    const wantsClick = !isEditing && isEditable && editTrigger === 'click';
+    const wantsDblClick =
+      !isEditing && isEditable && editTrigger === 'dblclick';
+    const wantsKeyboard = !isEditing && isEditable && keyboardActivation;
+
+    const renderRoot = (
+      triggerProps?: HTMLAttributes<HTMLElement>,
+      tooltipRef?: RefObject<HTMLElement>,
+    ) => {
+      const handleRootRef = (element: HTMLSpanElement | null) => {
+        rootRef.current = element;
+        if (tooltipRef) {
+          (tooltipRef as { current: HTMLElement | null }).current = element;
+        }
+      };
+
+      // Overflow detection has to look at the truncating element, which is now
+      // the inner `Display` (the root is `inline-flex` and doesn't clip). The
+      // tooltip still anchors to the root via `tooltipRef` above.
+      const handleDisplayRef = (element: HTMLSpanElement | null) => {
+        tooltipLabelRef(element);
+      };
+
+      const a11yProps: HTMLAttributes<HTMLElement> = {};
+
+      if (wantsKeyboard) {
+        a11yProps.tabIndex = 0;
+        a11yProps.role = 'button';
+        a11yProps['aria-roledescription'] = 'editable text';
+        if (ariaLabel) a11yProps['aria-label'] = ariaLabel;
+        if (ariaLabelledby) a11yProps['aria-labelledby'] = ariaLabelledby;
+      }
+
+      if (isDisabled) a11yProps['aria-disabled'] = true;
+      if (isReadOnly) a11yProps['aria-readonly'] = true;
+
+      return (
+        <InlineInputRoot
+          ref={handleRootRef}
+          qa={qa ?? 'InlineInput'}
+          qaVal={qaVal}
+          mods={mods}
+          tokens={tokens}
+          styles={extractedStyles}
+          {...mergeProps(
+            baseProps,
+            focusWithinProps,
+            // Always attach focusRingProps so the hook sees the blur event
+            // when focus moves into the inner input on edit-mode entry. If
+            // we only attached them while `wantsKeyboard` is true, the hook
+            // would miss the blur (since `wantsKeyboard` flips to false the
+            // moment editing starts), leaving `isFocused` stale and the
+            // ring stuck on after editing ends. `useFocusRing` filters
+            // bubbled focus from descendants internally (`target ===
+            // currentTarget`), so spreading these on a non-focusable span
+            // is a no-op.
+            focusRingProps,
+            triggerProps ?? {},
+            {
+              onDoubleClick: wantsDblClick ? handleDblClick : undefined,
+              onClick: wantsClick ? handleClick : undefined,
+              onKeyDown: wantsKeyboard ? handleRootKeyDown : undefined,
+              ...a11yProps,
+            },
+          )}
+        >
+          {isEditing ? (
+            <FocusScope autoFocus restoreFocus={false} contain={false}>
+              <span ref={measureRef} data-element="Measure" aria-hidden="true">
+                {draft || placeholder || ' '}
+              </span>
+              <input
+                ref={inputRef}
+                data-element="Input"
+                type="text"
+                value={draft}
+                placeholder={placeholder}
+                disabled={isDisabled}
+                readOnly={isReadOnly}
+                aria-label={ariaLabel}
+                aria-labelledby={ariaLabelledby}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+              />
+            </FocusScope>
+          ) : (
+            <span ref={handleDisplayRef} data-element="Display">
+              {displayContent}
             </span>
-            <input
-              ref={inputRef}
-              data-element="Input"
-              type="text"
-              value={draft}
-              placeholder={placeholder}
-              disabled={isDisabled}
-              readOnly={isReadOnly}
-              aria-label={ariaLabel}
-              aria-labelledby={ariaLabelledby}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-            />
-          </FocusScope>
-        ) : (
-          displayContent
-        )}
-      </InlineInputRoot>
-    );
+          )}
+        </InlineInputRoot>
+      );
+    };
+
+    return renderWithTooltip(renderRoot, tooltipPlacement);
   },
 );

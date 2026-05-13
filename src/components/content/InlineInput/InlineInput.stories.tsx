@@ -50,6 +50,15 @@ const meta = {
         type: { summary: "'dblclick' | 'click' | 'none'" },
       },
     },
+    keyboardActivation: {
+      control: 'boolean',
+      description:
+        'When true (default) the display element is keyboard-focusable and responds to Enter / F2 / Space. Hosts that own keyboard handling (e.g. editable tabs) should pass `false`.',
+      table: {
+        defaultValue: { summary: 'true' },
+        type: { summary: 'boolean' },
+      },
+    },
     submitOnBlur: {
       control: 'boolean',
       description: 'Whether to submit when focus leaves the input.',
@@ -156,6 +165,24 @@ const meta = {
       description: 'Convenience prop for styling the Input sub-element.',
       table: {
         type: { summary: 'Styles' },
+      },
+    },
+    tooltip: {
+      control: 'boolean',
+      description:
+        'Tooltip behaviour. `true` (default) shows the full value when the text is truncated. `false` disables the tooltip. A string always shows that text. Full object config is also accepted.',
+      table: {
+        defaultValue: { summary: 'true' },
+        type: { summary: 'boolean | string | AutoTooltipValue' },
+      },
+    },
+    tooltipPlacement: {
+      control: 'select',
+      options: ['top', 'bottom', 'left', 'right'],
+      description: 'Default tooltip placement.',
+      table: {
+        defaultValue: { summary: 'top' },
+        type: { summary: "'top' | 'bottom' | 'left' | 'right' | ..." },
       },
     },
   },
@@ -265,4 +292,38 @@ export const AllowEmpty: Story = {
     allowEmpty: true,
     placeholder: 'Empty allowed',
   },
+};
+
+export const KeyboardActivation: Story = {
+  args: {
+    defaultValue: 'Tab to me, press Enter',
+  },
+  render: (args) => (
+    <p>
+      Use <kbd>Tab</kbd> to move focus to the value (a keyboard focus ring will
+      appear), then press <kbd>Enter</kbd>, <kbd>F2</kbd> or <kbd>Space</kbd> to
+      enter edit mode. Press <kbd>Esc</kbd> to cancel.
+      <br />
+      <br />
+      <InlineInput {...args} />
+    </p>
+  ),
+};
+
+export const Overflow: Story = {
+  args: {
+    defaultValue:
+      'A very long inline value that does not fit in the container and gets truncated with an ellipsis',
+  },
+  render: (args) => (
+    <div
+      style={{
+        width: 200,
+        padding: 8,
+        border: '1px dashed #ccc',
+      }}
+    >
+      <InlineInput {...args} />
+    </div>
+  ),
 };
