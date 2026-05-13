@@ -38,6 +38,7 @@ Unlike `TextInput`, `InlineInput` is intentionally **not** a form field. It mana
 - **`onSubmit`** `(value: string) => void` — Fires every commit (Enter / submit-on-blur / `ref.stopEditing(true)`), even when the value did not change. Use for side effects (analytics, save toasts).
 - **`onCancel`** `() => void` — Called when editing is cancelled (Escape or empty submit when `allowEmpty` is `false`).
 - **`editTrigger`** `'dblclick' | 'click' | 'none'` (default: `dblclick`) — How edit mode is activated from the display element. Programmatic entry via `ref.startEditing()` works regardless.
+- **`keyboardActivation`** `boolean` (default: `true`) — When `true`, the display element is keyboard-focusable (`tabIndex=0`, `role="button"`) and responds to `Enter`, `F2` and `Space` to enter edit mode. Set to `false` when the host already owns keyboard activation (e.g. an editable tab inside a `<button>`) — exposing the display as a separate tab stop would otherwise nest focus inside the host.
 - **`submitOnBlur`** `boolean` (default: `true`) — Whether to submit when focus leaves the input.
 - **`trimOnSubmit`** `boolean` (default: `true`) — Whether to trim the value on submit.
 - **`allowEmpty`** `boolean` (default: `false`) — When `false`, submitting an empty/whitespace value cancels instead.
@@ -234,9 +235,30 @@ To always show a custom tooltip (regardless of overflow), pass a string. To disa
 
 The truncation behaviour is automatically disabled while editing so the input is never visually clipped while the user types.
 
+### Keyboard Activation
+
+By default the display element is keyboard-focusable (`tabIndex=0`, `role="button"`, `aria-roledescription="editable text"`). Pressing `Enter`, `F2` or `Space` enters edit mode without requiring a pointer.
+
+<Story of={InlineInputStories.KeyboardActivation} />
+
+When `InlineInput` is embedded in a host that already owns keyboard activation (e.g. `Tabs` — each tab is a `<button>` that listens for `F2` itself), pass `keyboardActivation={false}` to avoid creating a nested tab stop inside the host. The imperative `ref.startEditing()` always works regardless of this setting.
+
+```jsx
+<InlineInput defaultValue="Press Enter to edit" />
+
+<InlineInput keyboardActivation={false} defaultValue="Host owns the keyboard" />
+```
+
 ## Accessibility
 
 ### Keyboard Navigation
+
+**Display mode** (when `keyboardActivation` is `true`):
+
+- `Tab` — Moves focus to the value
+- `Enter`, `F2`, `Space` — Enter edit mode
+
+**Edit mode**:
 
 - `Enter` — Commit the current draft
 - `Escape` — Cancel and revert to the previous value
@@ -245,8 +267,10 @@ The truncation behaviour is automatically disabled while editing so the input is
 
 ### ARIA Properties
 
-- **`aria-label`** — Provide a label when the input has no visible label associated. Recommended in all cases.
-- **`aria-labelledby`** — Reference the id of a visible label element.
+- The display element receives `role="button"` and `aria-roledescription="editable text"` when keyboard-focusable, so screen readers announce that the value can be activated for editing.
+- **`aria-label`** — Provide a label when the value alone doesn't convey purpose. Forwarded to both the display element (when focusable) and the inner input. Recommended in all cases.
+- **`aria-labelledby`** — Reference the id of a visible label element. Forwarded the same way.
+- **`aria-disabled`** / **`aria-readonly`** — Set automatically from `isDisabled` / `isReadOnly`.
 
 ### Focus Management
 

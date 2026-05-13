@@ -50,6 +50,15 @@ const meta = {
         type: { summary: "'dblclick' | 'click' | 'none'" },
       },
     },
+    keyboardActivation: {
+      control: 'boolean',
+      description:
+        'When true (default) the display element is keyboard-focusable and responds to Enter / F2 / Space. Hosts that own keyboard handling (e.g. editable tabs) should pass `false`.',
+      table: {
+        defaultValue: { summary: 'true' },
+        type: { summary: 'boolean' },
+      },
+    },
     submitOnBlur: {
       control: 'boolean',
       description: 'Whether to submit when focus leaves the input.',
@@ -283,6 +292,22 @@ export const AllowEmpty: Story = {
     allowEmpty: true,
     placeholder: 'Empty allowed',
   },
+};
+
+export const KeyboardActivation: Story = {
+  args: {
+    defaultValue: 'Tab to me, press Enter',
+  },
+  render: (args) => (
+    <p>
+      Use <kbd>Tab</kbd> to move focus to the value, then press <kbd>Enter</kbd>
+      , <kbd>F2</kbd> or <kbd>Space</kbd> to enter edit mode. Press{' '}
+      <kbd>Esc</kbd> to cancel.
+      <br />
+      <br />
+      <InlineInput {...args} />
+    </p>
+  ),
 };
 
 export const Overflow: Story = {

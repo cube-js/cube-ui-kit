@@ -79,6 +79,17 @@ export interface CubeInlineInputProps
 
   /** How edit mode is activated from the display element. Default: `'dblclick'`. */
   editTrigger?: CubeInlineInputEditTrigger;
+  /**
+   * When true (default) the display element is keyboard-focusable and
+   * responds to `Enter`, `F2` and `Space` by entering edit mode. Set to
+   * `false` when a host (e.g. an editable tab inside a button) already
+   * routes keyboard activation through `ref.startEditing()` — exposing the
+   * display element as a separate tab stop would create a nested keyboard
+   * focus inside the host.
+   *
+   * @default true
+   */
+  keyboardActivation?: boolean;
   /** Whether to submit when focus leaves the input. Default: `true`. */
   submitOnBlur?: boolean;
   /** Whether to trim the value on submit. Default: `true`. */
@@ -205,6 +216,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       onSubmit,
       onCancel,
       editTrigger = 'dblclick',
+      keyboardActivation = true,
       submitOnBlur = true,
       trimOnSubmit = true,
       allowEmpty = false,
@@ -262,9 +274,14 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     // input which would otherwise re-enter `commit` via `onBlurWithin` (the
     // state update from `setIsEditing(false)` isn't committed yet, so the
     // closure still sees `isEditing === true`).
+    //
+    // The ref is kept in sync via `useLayoutEffect` so concurrent renders
+    // that get thrown away don't leak a stale value into the next commit.
     const isEditingRef = useRef(isEditing);
 
-    isEditingRef.current = isEditing;
+    useLayoutEffect(() => {
+      isEditingRef.current = isEditing;
+    }, [isEditing]);
 
     // Clear the optimistic value once `value` catches up or changes externally.
     useEffect(() => {
@@ -396,17 +413,26 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     });
 
     const handleDblClick = useEvent((e: MouseEvent) => {
-      if (editTrigger !== 'dblclick') return;
       e.preventDefault();
       e.stopPropagation();
       enterEditing();
     });
 
     const handleClick = useEvent((e: MouseEvent) => {
-      if (editTrigger !== 'click') return;
       e.preventDefault();
       e.stopPropagation();
       enterEditing();
+    });
+
+    // Keyboard activation from the display element (standalone usage).
+    // Hosts that own keyboard handling themselves should pass
+    // `keyboardActivation={false}` (see `TabButton` for an example).
+    const handleRootKeyDown = useEvent((e: KeyboardEvent<HTMLSpanElement>) => {
+      if (e.key === 'Enter' || e.key === 'F2' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        enterEditing();
+      }
     });
 
     useImperativeHandle(
@@ -414,17 +440,17 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       () => ({
         startEditing: () => enterEditing(),
         stopEditing: (submit = true) => {
-          if (!isEditing) return;
+          if (!isEditingRef.current) return;
           if (submit) commit(draft);
           else cancel();
         },
         focus: () => {
-          if (isEditing) inputRef.current?.focus();
+          if (isEditingRef.current) inputRef.current?.focus();
           else rootRef.current?.focus();
         },
         getValue: () => displayedValue,
       }),
-      [enterEditing, commit, cancel, draft, displayedValue, isEditing],
+      [enterEditing, commit, cancel, draft, displayedValue],
     );
 
     const isEditable = editTrigger !== 'none' && !isDisabled && !isReadOnly;
@@ -500,6 +526,14 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       children: displayedValue,
     });
 
+    // Wire pointer/keyboard activators only when relevant. Hosts that drive
+    // editing through `ref.startEditing()` keep all of these `undefined` so
+    // they don't intercept their own keyboard / focus story.
+    const wantsClick = !isEditing && isEditable && editTrigger === 'click';
+    const wantsDblClick =
+      !isEditing && isEditable && editTrigger === 'dblclick';
+    const wantsKeyboard = !isEditing && isEditable && keyboardActivation;
+
     const renderRoot = (
       triggerProps?: HTMLAttributes<HTMLElement>,
       tooltipRef?: RefObject<HTMLElement>,
@@ -512,6 +546,19 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
         tooltipLabelRef(element);
       };
 
+      const a11yProps: HTMLAttributes<HTMLElement> = {};
+
+      if (wantsKeyboard) {
+        a11yProps.tabIndex = 0;
+        a11yProps.role = 'button';
+        a11yProps['aria-roledescription'] = 'editable text';
+        if (ariaLabel) a11yProps['aria-label'] = ariaLabel;
+        if (ariaLabelledby) a11yProps['aria-labelledby'] = ariaLabelledby;
+      }
+
+      if (isDisabled) a11yProps['aria-disabled'] = true;
+      if (isReadOnly) a11yProps['aria-readonly'] = true;
+
       return (
         <InlineInputRoot
           ref={handleRootRef}
@@ -521,8 +568,10 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
           tokens={tokens}
           styles={extractedStyles}
           {...mergeProps(baseProps, focusWithinProps, triggerProps ?? {}, {
-            onDoubleClick: isEditing ? undefined : handleDblClick,
-            onClick: isEditing ? undefined : handleClick,
+            onDoubleClick: wantsDblClick ? handleDblClick : undefined,
+            onClick: wantsClick ? handleClick : undefined,
+            onKeyDown: wantsKeyboard ? handleRootKeyDown : undefined,
+            ...a11yProps,
           })}
         >
           {isEditing ? (

@@ -524,6 +524,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
       value={titleString}
       isEditing={isEditing}
       isDisabled={isDisabled}
+      keyboardActivation={false}
       aria-label="Edit tab title"
       styles={INLINE_INPUT_STYLES}
       renderDisplay={renderTitleDisplay}

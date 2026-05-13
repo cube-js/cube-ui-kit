@@ -663,4 +663,172 @@ describe('<InlineInput />', () => {
       expect(getByTestId('II')).toHaveAttribute('data-editing');
     });
   });
+
+  describe('Keyboard activation', () => {
+    it('exposes the display element as a button-role tab stop by default', () => {
+      const { getByTestId } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" />,
+      );
+
+      const root = getByTestId('II');
+      expect(root).toHaveAttribute('tabindex', '0');
+      expect(root).toHaveAttribute('role', 'button');
+      expect(root).toHaveAttribute('aria-roledescription', 'editable text');
+    });
+
+    it('forwards aria-label / aria-labelledby to the focusable display element', () => {
+      const { getByTestId } = renderWithRoot(
+        <InlineInput
+          defaultValue="Hello"
+          qa="II"
+          aria-label="Tab title"
+          aria-labelledby="lbl"
+        />,
+      );
+
+      const root = getByTestId('II');
+      expect(root).toHaveAttribute('aria-label', 'Tab title');
+      expect(root).toHaveAttribute('aria-labelledby', 'lbl');
+    });
+
+    it.each([
+      ['Enter', 'Enter'],
+      ['F2', 'F2'],
+      ['Space', ' '],
+    ])('enters edit mode on %s', async (_label, key) => {
+      const { getByTestId, getByRole } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" />,
+      );
+
+      const root = getByTestId('II');
+      await act(async () => {
+        fireEvent.keyDown(root, { key });
+      });
+
+      expect(getByRole('textbox')).toBeInTheDocument();
+    });
+
+    it('drops the tab stop and role while editing', async () => {
+      const user = userEvent.setup();
+      const { getByText, getByTestId } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" />,
+      );
+
+      await user.dblClick(getByText('Hello'));
+
+      const root = getByTestId('II');
+      expect(root).not.toHaveAttribute('tabindex');
+      expect(root).not.toHaveAttribute('role');
+    });
+
+    it('does not expose a tab stop with keyboardActivation={false}', () => {
+      const { getByTestId } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" keyboardActivation={false} />,
+      );
+
+      const root = getByTestId('II');
+      expect(root).not.toHaveAttribute('tabindex');
+      expect(root).not.toHaveAttribute('role');
+    });
+
+    it('ignores Enter/F2 on the display when keyboardActivation is off', async () => {
+      const { getByTestId, queryByRole } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" keyboardActivation={false} />,
+      );
+
+      const root = getByTestId('II');
+      await act(async () => {
+        fireEvent.keyDown(root, { key: 'Enter' });
+        fireEvent.keyDown(root, { key: 'F2' });
+      });
+
+      expect(queryByRole('textbox')).not.toBeInTheDocument();
+    });
+
+    it('drops the tab stop in editTrigger="none" but still honours ref.startEditing()', () => {
+      const ref = createRef<CubeInlineInputRef>();
+      const { getByTestId, getByRole } = renderWithRoot(
+        <InlineInput
+          ref={ref}
+          defaultValue="Hello"
+          qa="II"
+          editTrigger="none"
+        />,
+      );
+
+      const root = getByTestId('II');
+      expect(root).not.toHaveAttribute('tabindex');
+      expect(root).not.toHaveAttribute('role');
+
+      act(() => {
+        ref.current?.startEditing();
+      });
+
+      expect(getByRole('textbox')).toBeInTheDocument();
+    });
+
+    it('marks the display with aria-disabled / aria-readonly when applicable', () => {
+      const { getByTestId, rerender } = renderWithRoot(
+        <InlineInput isDisabled defaultValue="Hello" qa="II" />,
+      );
+
+      let root = getByTestId('II');
+      expect(root).toHaveAttribute('aria-disabled', 'true');
+
+      rerender(<InlineInput isReadOnly defaultValue="Hello" qa="II" />);
+      root = getByTestId('II');
+      expect(root).toHaveAttribute('aria-readonly', 'true');
+    });
+  });
+
+  describe('Imperative ref: stopEditing()', () => {
+    it('is a no-op when called while not editing', () => {
+      const ref = createRef<CubeInlineInputRef>();
+      const handleSubmit = vi.fn();
+      const handleCancel = vi.fn();
+
+      renderWithRoot(
+        <InlineInput
+          ref={ref}
+          defaultValue="Hello"
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+        />,
+      );
+
+      act(() => {
+        ref.current?.stopEditing(true);
+        ref.current?.stopEditing(false);
+      });
+
+      expect(handleSubmit).not.toHaveBeenCalled();
+      expect(handleCancel).not.toHaveBeenCalled();
+    });
+
+    it('commits and cancels exactly once even when called twice in a row', async () => {
+      const ref = createRef<CubeInlineInputRef>();
+      const handleSubmit = vi.fn();
+      const handleCancel = vi.fn();
+      const user = userEvent.setup();
+
+      const { getByText } = renderWithRoot(
+        <InlineInput
+          ref={ref}
+          defaultValue="Hello"
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+        />,
+      );
+
+      await user.dblClick(getByText('Hello'));
+
+      act(() => {
+        ref.current?.stopEditing(true);
+        ref.current?.stopEditing(true);
+      });
+
+      expect(handleSubmit).toHaveBeenCalledTimes(1);
+      expect(handleCancel).not.toHaveBeenCalled();
+    });
+  });
 });
