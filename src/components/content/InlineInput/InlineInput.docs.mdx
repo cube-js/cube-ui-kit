@@ -67,10 +67,11 @@ The component exposes a ref with these methods:
 
 #### styles
 
-Customizes the root element of the component.
+Customizes the root element of the component. The root is `inline-flex` with `align-items: baseline` so it integrates cleanly into any inline text context (tabs, headings, paragraphs) without shifting surrounding text. Truncation lives on the inner `Display` sub-element so the root's baseline is not perturbed.
 
 **Sub-elements:**
 
+- `Display` — The block-level wrapper that holds the value in display mode and applies `overflow: hidden` / `text-overflow: ellipsis` for truncation
 - `Input` — The text input rendered in edit mode
 - `Placeholder` — The placeholder text rendered in display mode when the value is empty
 - `Measure` — The hidden text used to auto-size the input (rarely targeted)

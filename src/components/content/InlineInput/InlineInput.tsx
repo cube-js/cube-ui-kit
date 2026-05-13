@@ -150,13 +150,17 @@ export interface CubeInlineInputRef {
 const InlineInputRoot = tasty({
   as: 'span',
   styles: {
-    display: 'inline-block',
+    // `inline-flex` with `alignItems: baseline` is used (instead of
+    // `inline-block` + `overflow: hidden`) so the container's baseline comes
+    // from the first flex item's content baseline. With `inline-block` +
+    // `overflow: hidden`, the CSS spec forces the baseline to the bottom
+    // margin edge, which visibly shifts the text upward inside surrounding
+    // line boxes (notably inside Tabs' centered `Item.Label`).
+    display: 'inline-flex',
+    alignItems: 'baseline',
     verticalAlign: 'baseline',
     position: 'relative',
     maxWidth: '100%',
-    whiteSpace: { '': 'nowrap', editing: 'normal' },
-    overflow: { '': 'hidden', editing: 'visible' },
-    textOverflow: 'ellipsis',
     color: 'inherit',
     preset: 'inherit',
     cursor: {
@@ -177,6 +181,19 @@ const InlineInputRoot = tasty({
       focused: true,
     },
     transition: 'theme',
+
+    // Display flex item: owns the truncation (`overflow: hidden` here is a
+    // block-level rule that does *not* alter the parent's baseline, unlike
+    // an `inline-block` overflow rule).
+    Display: {
+      display: 'block',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      maxWidth: '100%',
+      preset: 'inherit',
+      color: 'inherit',
+    },
 
     Input: {
       recipe: 'reset input / input-autofill',
@@ -577,6 +594,12 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
         if (tooltipRef) {
           (tooltipRef as { current: HTMLElement | null }).current = element;
         }
+      };
+
+      // Overflow detection has to look at the truncating element, which is now
+      // the inner `Display` (the root is `inline-flex` and doesn't clip). The
+      // tooltip still anchors to the root via `tooltipRef` above.
+      const handleDisplayRef = (element: HTMLSpanElement | null) => {
         tooltipLabelRef(element);
       };
 
@@ -637,7 +660,9 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
               />
             </FocusScope>
           ) : (
-            displayContent
+            <span ref={handleDisplayRef} data-element="Display">
+              {displayContent}
+            </span>
           )}
         </InlineInputRoot>
       );

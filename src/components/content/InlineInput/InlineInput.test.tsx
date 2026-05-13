@@ -632,21 +632,21 @@ describe('<InlineInput />', () => {
       expect(queryByRole('tooltip')).not.toBeInTheDocument();
     });
 
-    it('renders truncation styles in display mode', () => {
+    it('renders the inner display wrapper that owns truncation', () => {
       const { getByTestId } = renderWithRoot(
         <InlineInput defaultValue="X" qa="II" />,
       );
 
+      // The truncation lives on the inner `Display` element now (so the
+      // `inline-flex` root keeps a proper baseline). We just verify the
+      // wrapper exists in display mode and exposes the value.
       const root = getByTestId('II');
-      const styles = getComputedStyle(root);
-
-      // tasty injects CSS rules; jsdom resolves them via document stylesheets.
-      expect(styles.textOverflow).toBe('ellipsis');
-      expect(styles.whiteSpace).toBe('nowrap');
-      expect(styles.overflow).toBe('hidden');
+      const display = root.querySelector('[data-element="Display"]');
+      expect(display).not.toBeNull();
+      expect(display).toHaveTextContent('X');
     });
 
-    it('toggles the editing modifier so the truncation rules can be relaxed', () => {
+    it('hides the display wrapper while editing', () => {
       const { getByTestId } = renderWithRoot(
         <InlineInput
           isEditing
@@ -656,11 +656,10 @@ describe('<InlineInput />', () => {
         />,
       );
 
-      // jsdom does not fully evaluate the conditional `editing` CSS overrides,
-      // so we check the modifier is set — the actual `overflow: visible /
-      // white-space: normal` rules are visible in the Storybook snapshot and
-      // the integration `Tabs` tests verify editing-mode behaviour end-to-end.
-      expect(getByTestId('II')).toHaveAttribute('data-editing');
+      const root = getByTestId('II');
+      expect(root).toHaveAttribute('data-editing');
+      expect(root.querySelector('[data-element="Display"]')).toBeNull();
+      expect(root.querySelector('[data-element="Input"]')).not.toBeNull();
     });
   });
 
