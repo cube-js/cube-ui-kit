@@ -534,6 +534,38 @@ describe('<InlineInput />', () => {
     });
   });
 
+  describe('isStyled', () => {
+    it('exposes the styled modifier on the root when isStyled is true', () => {
+      const { getByTestId, rerender } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" />,
+      );
+
+      const root = getByTestId('II');
+      expect(root).not.toHaveAttribute('data-styled');
+
+      rerender(<InlineInput isStyled defaultValue="Hello" qa="II" />);
+      expect(getByTestId('II')).toHaveAttribute('data-styled');
+    });
+
+    it('still enters edit mode and submits when styled', async () => {
+      const user = userEvent.setup();
+      const handleSubmit = vi.fn();
+      const { getByText, getByRole } = renderWithRoot(
+        <InlineInput isStyled defaultValue="Hello" onSubmit={handleSubmit} />,
+      );
+
+      await user.dblClick(getByText('Hello'));
+
+      const input = getByRole('textbox') as HTMLInputElement;
+      await act(async () => {
+        fireEvent.change(input, { target: { value: 'World' } });
+        fireEvent.keyDown(input, { key: 'Enter' });
+      });
+
+      expect(handleSubmit).toHaveBeenCalledWith('World');
+    });
+  });
+
   describe('Modifiers / styling', () => {
     it('exposes editing modifier in edit mode', () => {
       const { getByTestId, rerender } = renderWithRoot(
@@ -786,6 +818,39 @@ describe('<InlineInput />', () => {
       // global focus-visible state true, then assert the span stays clean.
       await user.tab();
       expect(getByTestId('II')).not.toHaveAttribute('data-focused');
+    });
+
+    it('marks the root as focused while editing, regardless of activation', async () => {
+      const user = userEvent.setup();
+      const { getByText, getByTestId } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" />,
+      );
+
+      const root = getByTestId('II');
+      expect(root).not.toHaveAttribute('data-focused');
+
+      // Mouse-driven activation should still mark the root as focused while
+      // editing — the input is focused inside.
+      await user.dblClick(getByText('Hello'));
+      expect(root).toHaveAttribute('data-editing');
+      expect(root).toHaveAttribute('data-focused');
+    });
+
+    it('suppresses the focus ring entirely when keyboardActivation is false (host owns focus)', async () => {
+      // Hosts like `Tabs` already render their own focus ring around the
+      // surrounding control. We must not draw a second ring on top while the
+      // user is editing the inline value.
+      const user = userEvent.setup();
+      const { getByText, getByTestId } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" keyboardActivation={false} />,
+      );
+
+      const root = getByTestId('II');
+      expect(root).not.toHaveAttribute('data-focused');
+
+      await user.dblClick(getByText('Hello'));
+      expect(root).toHaveAttribute('data-editing');
+      expect(root).not.toHaveAttribute('data-focused');
     });
 
     it('clears the focus ring when keyboard-initiated edit mode ends', async () => {

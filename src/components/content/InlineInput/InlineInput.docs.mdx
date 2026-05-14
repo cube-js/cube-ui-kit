@@ -44,6 +44,7 @@ Unlike `TextInput`, `InlineInput` is intentionally **not** a form field. It mana
 - **`allowEmpty`** `boolean` (default: `false`) — When `false`, submitting an empty/whitespace value cancels instead.
 - **`isDisabled`** `boolean` (default: `false`) — When `true`, edit mode cannot be entered (programmatically or otherwise).
 - **`isReadOnly`** `boolean` (default: `false`) — When `true`, edit mode cannot be entered, but the display reads as enabled.
+- **`isStyled`** `boolean` (default: `false`) — When `true`, applies a styled wrapper (border, surface fill, padding, fixed height) so the component visually matches a `TextInput`. Useful when swapping a field component (e.g. `Select`) for an `InlineInput` to rename / edit the current value without a visual jump.
 - **`placeholder`** `string` — Placeholder text shown in the input when the draft is empty.
 - **`renderDisplay`** `(value: string) => ReactNode` — Custom render for display (non-editing) mode.
 - **`tooltip`** `boolean | string | AutoTooltipValue` (default: `true`) — Tooltip behaviour for the display value. `true` enables auto-tooltip on overflow (showing the full text when truncated). A string always shows that text. `false` disables the tooltip. Suppressed automatically while editing and when `renderDisplay` is used.
@@ -93,14 +94,15 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property is automatically populated. Consumers can target these in their own `styles`:
 
-| Modifier   | Type      | Description                                                                |
-| ---------- | --------- | -------------------------------------------------------------------------- |
-| editing    | `boolean` | Currently in edit mode                                                     |
-| editable   | `boolean` | `editTrigger` is `dblclick` or `click` and not disabled/read-only          |
-| focused    | `boolean` | Display element is keyboard-focused (`isFocusVisible`) and editable        |
-| disabled   | `boolean` | `isDisabled` is `true`                                                     |
-| read-only  | `boolean` | `isReadOnly` is `true`                                                     |
-| empty      | `boolean` | The committed value is empty                                               |
+| Modifier   | Type      | Description                                                                       |
+| ---------- | --------- | --------------------------------------------------------------------------------- |
+| editing    | `boolean` | Currently in edit mode                                                            |
+| editable   | `boolean` | `editTrigger` is `dblclick` or `click` and not disabled/read-only                 |
+| focused    | `boolean` | The component is focused — keyboard-focused on the display, **or** while editing. Always `false` when `keyboardActivation={false}` (the host owns the focus indication). |
+| disabled   | `boolean` | `isDisabled` is `true`                                                            |
+| read-only  | `boolean` | `isReadOnly` is `true`                                                            |
+| styled     | `boolean` | `isStyled` is `true`                                                              |
+| empty      | `boolean` | The committed value is empty                                                      |
 
 ## Examples
 
@@ -216,6 +218,22 @@ By default, submitting an empty value cancels. Set `allowEmpty` to keep the empt
 <InlineInput defaultValue="Read-only value" isReadOnly />
 ```
 
+### Styled (TextInput Look)
+
+Set `isStyled` to apply a styled wrapper (border, surface fill, padding, fixed height) that visually matches a `TextInput`. Use this when you need to swap a field component (e.g. `Select`) for an `InlineInput` to rename / edit the current value without a visual jump:
+
+<Story of={InlineInputStories.Styled} />
+
+```jsx
+<InlineInput isStyled width="200px" defaultValue="Click to rename" />
+```
+
+### Swap Select with Rename
+
+A common pattern: a `Select` is replaced by a styled `InlineInput` when the user triggers a "Rename" action. The styled wrapper preserves the visual dimensions of the `Select` so the swap is seamless.
+
+<Story of={InlineInputStories.SwapSelectWithRename} />
+
 ### Overflow & Tooltip
 
 When the value is wider than its container, the display text is truncated with an ellipsis. The full value is shown as a tooltip on hover/focus — no extra props required.
@@ -243,7 +261,7 @@ By default the display element is keyboard-focusable (`tabIndex=0`, `role="butto
 
 <Story of={InlineInputStories.KeyboardActivation} />
 
-When `InlineInput` is embedded in a host that already owns keyboard activation (e.g. `Tabs` — each tab is a `<button>` that listens for `F2` itself), pass `keyboardActivation={false}` to avoid creating a nested tab stop inside the host. The imperative `ref.startEditing()` always works regardless of this setting, and the focus ring is suppressed in this mode (the host's focus ring is the one users see).
+When `InlineInput` is embedded in a host that already owns keyboard activation (e.g. `Tabs` — each tab is a `<button>` that listens for `F2` itself), pass `keyboardActivation={false}` to avoid creating a nested tab stop inside the host. The imperative `ref.startEditing()` always works regardless of this setting, and the focus ring is fully suppressed in this mode — **both in display and edit mode** — so the host's focus ring is the only one users see.
 
 ```jsx
 <InlineInput defaultValue="Press Enter to edit" />

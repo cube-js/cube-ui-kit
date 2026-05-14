@@ -106,6 +106,16 @@ export interface CubeInlineInputProps
   /** When true, edit mode cannot be entered, but the display reads as enabled. */
   isReadOnly?: boolean;
 
+  /**
+   * When true, applies a styled wrapper to the component (border, fill, padding,
+   * fixed height) so it visually matches a `TextInput`. Useful when swapping a
+   * field component (e.g. `Select`) for an `InlineInput` to rename / edit the
+   * current value without a visual jump.
+   *
+   * @default false
+   */
+  isStyled?: boolean;
+
   /** Placeholder text shown in the input when the draft is empty. */
   placeholder?: string;
   /** Custom render for display (non-editing) mode. Receives the currently-displayed value (including optimistic). */
@@ -157,28 +167,66 @@ const InlineInputRoot = tasty({
     // margin edge, which visibly shifts the text upward inside surrounding
     // line boxes (notably inside Tabs' centered `Item.Label`).
     display: 'inline-flex',
-    alignItems: 'baseline',
-    verticalAlign: 'baseline',
+    alignItems: {
+      '': 'baseline',
+      styled: 'center',
+    },
+    verticalAlign: {
+      '': 'baseline',
+      styled: 'middle',
+    },
     position: 'relative',
     maxWidth: '100%',
-    color: 'inherit',
-    preset: 'inherit',
+    boxSizing: 'border-box',
+    color: {
+      '': 'inherit',
+      styled: '#dark-02',
+      'styled & disabled': '#dark.30',
+    },
+    preset: {
+      '': 'inherit',
+      styled: 't3',
+    },
     cursor: {
       '': 'inherit',
       'editable & !editing': 'text',
     },
-    // Keyboard focus ring (only when the display element is keyboard-focusable,
-    // which is gated by `keyboardActivation` on the React side via the
-    // `focused` mod). Outline doesn't take layout space and respects rounded
-    // corners via `outlineOffset`.
+    fill: {
+      '': 'transparent',
+      styled: '#surface',
+      'styled & disabled': '#disabled-surface',
+    },
+    border: {
+      '': false,
+      styled: true,
+      'styled & focused': '#primary-text',
+      'styled & disabled': true,
+    },
+    // Focus ring. Shown when the display element is keyboard-focused
+    // (driven on the React side by `isFocusVisible`) and *always* while
+    // editing — so swapping into the input always presents a clear focus
+    // indicator regardless of how the user activated it (click vs keyboard).
+    // In `styled` mode the border colour transition is enough to indicate
+    // focus (matching `TextInput`'s visual), so the outline is suppressed.
+    // Outline doesn't take layout space and respects rounded corners via
+    // `outlineOffset`.
     outline: {
       '': '1bw #primary.0',
-      focused: '1bw #primary',
+      'focused & !styled': '1bw #primary',
     },
     outlineOffset: 1,
     radius: {
       '': 0,
       focused: true,
+      styled: true,
+    },
+    padding: {
+      '': 0,
+      styled: '(.75x - 1bw) (1x - 1bw)',
+    },
+    height: {
+      '': 'auto',
+      styled: '$size-md',
     },
     transition: 'theme',
 
@@ -200,8 +248,18 @@ const InlineInputRoot = tasty({
       preset: 'inherit',
       color: 'inherit',
       fill: 'transparent',
-      width: 'initial $input-width 100%',
-      minWidth: '1em',
+      textAlign: 'left',
+      // In `styled` mode the wrapper has a fixed size and we want the input
+      // to fill it (matches `TextInput`). In the default inline mode the
+      // input auto-sizes to its content via `$input-width`.
+      width: {
+        '': 'initial $input-width 100%',
+        styled: '100%',
+      },
+      minWidth: {
+        '': '1em',
+        styled: 0,
+      },
       '&::placeholder': { recipe: 'input-placeholder' },
     },
 
@@ -258,6 +316,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       allowEmpty = false,
       isDisabled = false,
       isReadOnly = false,
+      isStyled = false,
       placeholder,
       renderDisplay,
       tooltip = true,
@@ -497,12 +556,22 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
 
     const isEditable = editTrigger !== 'none' && !isDisabled && !isReadOnly;
 
-    // `focused` is the keyboard-focus ring state. We gate it on `isEditable`
-    // and `!isEditing` so the ring never shows on a non-editable display
-    // (e.g. inside Tabs with `keyboardActivation={false}` — the span isn't
-    // focusable there, but we belt-and-braces it anyway) or while editing
-    // (focus is on the inner input).
-    const showFocusRing = isFocusVisible && isEditable && !isEditing;
+    // `focused` controls the visible focus indicator on the root.
+    //
+    // While editing, the inner `<input>` always has focus (FocusScope
+    // `autoFocus`), so we show the focus indicator on the root regardless
+    // of how the user activated edit mode (click vs keyboard).
+    //
+    // In display mode, we keep the original behaviour: only show the
+    // indicator on keyboard focus (focus-visible), and only when the display
+    // element is actually focusable (i.e. `isEditable`).
+    //
+    // When `keyboardActivation` is `false` the host (e.g. `Tabs`) owns the
+    // entire focus story for this control, so we suppress the focus ring
+    // entirely — including while editing — to avoid drawing a redundant
+    // indicator on top of the host's own focus ring.
+    const showFocusRing =
+      keyboardActivation && (isEditing || (isFocusVisible && isEditable));
 
     const mods = useMemo(
       () => ({
@@ -511,6 +580,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
         focused: showFocusRing,
         disabled: isDisabled,
         'read-only': isReadOnly,
+        styled: isStyled,
         empty: !displayedValue,
         ...customMods,
       }),
@@ -520,6 +590,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
         showFocusRing,
         isDisabled,
         isReadOnly,
+        isStyled,
         displayedValue,
         customMods,
       ],
