@@ -365,7 +365,7 @@ const ItemElement = tasty({
       '': '#dark-02',
       hovered: '#dark-02',
       pressed: '#dark',
-      disabled: '#dark-04',
+      disabled: '#disabled-surface-text',
     },
     preset: {
       '': 't3',

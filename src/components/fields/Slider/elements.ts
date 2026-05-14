@@ -11,7 +11,7 @@ export const SliderThumbElement = tasty({
       '': '(#slider-thumb, #primary)',
       hovered: '(#slider-thumb-hovered, #primary-text)',
       dragged: '(#slider-thumb, #primary)',
-      disabled: '#dark-04',
+      disabled: '#disabled-surface-text',
     },
     cursor: '$pointer',
     outline: {
@@ -64,7 +64,7 @@ export const SliderTrackContainerElement = tasty({
       },
       fill: {
         '': '#primary',
-        disabled: '#dark-04',
+        disabled: '#disabled-surface-text',
       },
       width: {
         '': 'auto',

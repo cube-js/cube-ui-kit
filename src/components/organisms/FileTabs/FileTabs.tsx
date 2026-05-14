@@ -95,7 +95,7 @@ const TabElement = tasty(Action, {
     fill: {
       '': '#dark.04',
       hovered: '#dark.08',
-      'disabled, disabled & hover': '#white',
+      'disabled, disabled & hover': '#surface',
     },
     color: {
       '': '#dark-02',

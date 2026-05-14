@@ -80,15 +80,15 @@ const SelectWrapperElement = tasty({
     position: 'relative',
     radius: true,
     fill: {
-      '': '#white',
-      disabled: '#dark.04',
+      '': '#surface',
+      disabled: '#disabled-surface',
       'theme=special': '#clear',
     },
     color: {
       '': '#dark.85',
       focused: '#dark.85',
       invalid: '#danger-text',
-      disabled: '#dark.30',
+      disabled: '#disabled-surface-text',
     },
   },
 });
@@ -139,7 +139,7 @@ const OverlayElement = tasty({
     gridRows: '1sf',
     height: 'initial max-content (50vh - 5x)',
     overflow: 'auto',
-    background: '#white',
+    fill: '#surface',
     radius: '1cr',
     shadow: true,
     padding: '.5x',

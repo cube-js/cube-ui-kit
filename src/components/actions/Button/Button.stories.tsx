@@ -283,7 +283,7 @@ const ThemeStatesTemplate: StoryFn<CubeButtonProps> = ({ theme }) => {
       flow="column"
       gap="3x"
       padding={isSpecial ? '2x' : undefined}
-      fill={isSpecial ? '#dark' : undefined}
+      fill={isSpecial ? '#black' : undefined}
       radius="1x"
     >
       {BUTTON_TYPES.map((type) => (

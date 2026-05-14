@@ -153,7 +153,7 @@ const HandlerElement = tasty({
       fill: {
         '': '#dark-03',
         'hovered | drag': '#dark-02',
-        disabled: '#dark-04',
+        disabled: '#disabled-surface-text',
       },
     },
   },

@@ -1,7 +1,57 @@
 export {};
 
+// Keep this interface lean. Each entry contributes ~112 template-literal
+// strings to `ColorValue` (one per opacity step), so a large `TastyNamedColors`
+// makes TypeScript's serialized ColorValue type explode (TS7056). Per-theme
+// accent variants like `success-accent-surface-2` are intentionally omitted —
+// they're typically read from a theme dispatch table and still type-check via
+// the `(string & {})` fallback in tasty's `ColorValue`.
 declare module '@tenphi/tasty' {
   interface TastyNamedColors {
+    // ---- Glaze: neutral palette (default theme, unprefixed) ----
+    surface: true;
+    'surface-2': true;
+    'surface-3': true;
+    'surface-text': true;
+    'surface-text-soft': true;
+    'surface-text-soft-2': true;
+    'surface-2-text': true;
+    'surface-2-text-soft': true;
+    'surface-3-text': true;
+    'surface-3-text-soft': true;
+
+    // ---- Glaze: accent system (default theme, unprefixed) ----
+    'accent-surface': true;
+    'accent-surface-2': true;
+    'accent-surface-3': true;
+    'accent-surface-text': true;
+    'accent-text': true;
+    'accent-text-soft': true;
+    'accent-icon': true;
+    'accent-disabled-surface': true;
+    'accent-disabled-surface-text': true;
+    // Note: `accent-surface-hover` (and its per-theme `<theme>-accent-surface-hover`
+    // variants + `<theme>-hover` aliases) are intentionally omitted from this
+    // type list to stay under TS7056. They resolve at runtime and still
+    // type-check via tasty's `(string & {})` fallback in `ColorValue`.
+
+    // ---- Other primitives ----
+    placeholder: true;
+    focus: true;
+    overlay: true;
+    'surface-inverse': true;
+    'shadow-sm': true;
+    'shadow-md': true;
+    'shadow-lg': true;
+
+    // Per-theme prefixed tokens (e.g. `success-surface`, `success-accent-surface`,
+    // `success-accent-text`, etc.) are intentionally NOT enumerated here. They
+    // would explode the serialized `ColorValue` union (TS7056) and are typically
+    // referenced from theme dispatch tables (`src/data/themes.ts`) rather than
+    // typed by hand. They still resolve via the `(string & {})` fallback in
+    // tasty's `ColorValue`.
+
+    // ---- Legacy aliases (resolved via #token references in src/tokens/colors.ts) ----
     purple: true;
     'purple-text': true;
     'purple-icon': true;
@@ -16,25 +66,34 @@ declare module '@tenphi/tasty' {
     'dark-03': true;
     'dark-04': true;
     'dark-05': true;
-    surface: true;
-    'surface-2': true;
-    'surface-3': true;
     text: true;
     primary: true;
+    'primary-text': true;
+    'primary-text-soft': true;
+    'primary-icon': true;
+    'primary-bg': true;
     disabled: true;
-    'disabled-bg': true;
-    'disabled-text': true;
+    'disabled-surface': true;
+    'disabled-surface-text': true;
     danger: true;
     'danger-bg': true;
     'danger-text': true;
+    'danger-text-soft': true;
     'danger-icon': true;
     success: true;
     'success-bg': true;
     'success-text': true;
+    'success-text-soft': true;
     'success-icon': true;
+    warning: true;
+    'warning-bg': true;
+    'warning-text': true;
+    'warning-text-soft': true;
+    'warning-icon': true;
     note: true;
     'note-bg': true;
     'note-text': true;
+    'note-text-soft': true;
     'note-icon': true;
     white: true;
     light: true;

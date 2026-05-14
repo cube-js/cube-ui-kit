@@ -11,7 +11,7 @@ export default {
 } as Meta<CubeResizablePanelProps>;
 
 const TemplateRight: StoryFn<CubeResizablePanelProps> = (args) => (
-  <Panel isFlex isStretched height="min 30x" fill="#white">
+  <Panel isFlex isStretched height="min 30x" fill="#surface">
     <ResizablePanel {...args} />
     <Panel fill="#purple-04.10"></Panel>
   </Panel>
@@ -19,7 +19,7 @@ const TemplateRight: StoryFn<CubeResizablePanelProps> = (args) => (
 
 const TemplateLeft: StoryFn<CubeResizablePanelProps> = (args) => {
   return (
-    <Panel isFlex isStretched height="min 30x" fill="#white">
+    <Panel isFlex isStretched height="min 30x" fill="#surface">
       <Panel fill="#purple-04.10"></Panel>
       <ResizablePanel {...args} />
     </Panel>
@@ -27,7 +27,7 @@ const TemplateLeft: StoryFn<CubeResizablePanelProps> = (args) => {
 };
 
 const TemplateBottom: StoryFn<CubeResizablePanelProps> = (args) => (
-  <Panel isFlex isStretched flow="column" fill="#white">
+  <Panel isFlex isStretched flow="column" fill="#surface">
     <ResizablePanel {...args} />
     <Panel fill="#purple-04.10"></Panel>
   </Panel>
@@ -35,7 +35,7 @@ const TemplateBottom: StoryFn<CubeResizablePanelProps> = (args) => (
 
 const TemplateTop: StoryFn<CubeResizablePanelProps> = (args) => {
   return (
-    <Panel isFlex isStretched flow="column" fill="#white">
+    <Panel isFlex isStretched flow="column" fill="#surface">
       <Panel fill="#purple-04.10"></Panel>
       <ResizablePanel {...args} />
     </Panel>
@@ -57,14 +57,14 @@ const TemplateControllable: StoryFn<CubeResizablePanelProps> = (args) => {
 };
 
 const GridTemplate: StoryFn<CubeResizablePanelProps> = (args) => (
-  <Panel isStretched height="min 30x" fill="#white" gridColumns="auto 1fr">
+  <Panel isStretched height="min 30x" fill="#surface" gridColumns="auto 1fr">
     <ResizablePanel size={300} {...args} />
     <Panel fill="#purple-04.10"></Panel>
   </Panel>
 );
 
 const TemplateDisabled: StoryFn<CubeResizablePanelProps> = (args) => (
-  <Panel isFlex isStretched height="min 30x" fill="#white">
+  <Panel isFlex isStretched height="min 30x" fill="#surface">
     <ResizablePanel {...args} />
     <Panel fill="#purple-04.10"></Panel>
   </Panel>

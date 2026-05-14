@@ -28,13 +28,26 @@ export type { AriaTooltipProps };
 const TooltipElement = tasty({
   styles: {
     display: 'block',
+    // The DEFAULT (dark) tooltip is intentionally scheme-invariant:
+    // `#surface-inverse.85` + `#white` keep it the "always dark" tooltip in
+    // light, dark, and high-contrast schemes — matching the legacy `#dark.85`
+    // + `#white` design.
+    //
+    // The `light` variant uses the adaptive surface tokens (`#surface` +
+    // `#surface-text-soft`) so it follows the page scheme. This restores the
+    // softer legacy `#dark-02` look in light mode (cr≈9.2) and stays AA-safe
+    // in dark mode (the previous fixed `#surface-inverse` was much darker
+    // than the legacy `#dark-02`, and pairing the fixed `#white` fill with
+    // the adaptive `#surface-text-soft` text — the LEGACY_ALIASES port of
+    // `#dark-02` — would collapse to cr≈1.8 in dark schemes; using `#surface`
+    // for the fill keeps both ends of the pair adapting together).
     fill: {
-      '': '#dark.85',
-      light: '#white',
+      '': '#surface-inverse.85',
+      light: '#surface',
     },
     color: {
       '': '#white',
-      light: '#dark-02',
+      light: '#surface-text-soft',
     },
     width: 'initial min(36x, (100dvw - 4x)) max-content',
     radius: true,
@@ -48,7 +61,7 @@ const TooltipElement = tasty({
     },
     filter: {
       '': false,
-      light: 'drop-shadow(0 0 1px #dark.2)',
+      light: 'drop-shadow(0 0 1px #surface-text-soft.2)',
     },
     transition:
       'translate $transition ease-out, scale $transition ease-out, theme $transition ease-out',
@@ -88,8 +101,8 @@ const TooltipTipElement = tasty({
     height: '1px',
     border: '.5x #clear',
     borderTop: {
-      '': '.5x solid #dark.85',
-      light: '.5x solid #white',
+      '': '.5x solid #surface-inverse.85',
+      light: '.5x solid #surface',
     },
     borderBottom: '0',
     top: {

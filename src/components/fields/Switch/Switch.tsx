@@ -51,7 +51,7 @@ const SwitchElement = tasty({
     placeSelf: 'center',
     radius: 'round',
     fill: {
-      '': '#white',
+      '': '#surface',
       checked: '#primary',
       disabled: '#border.5',
       'disabled & checked': '#border',

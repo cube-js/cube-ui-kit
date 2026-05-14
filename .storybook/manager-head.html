@@ -4,3 +4,38 @@
   href="/favicon-%STORYBOOK_MODE%-%NODE_ENV%.svg"
   type="image/svg+xml"
 />
+<!--
+  Storybook 10 hardcodes `darken(0.18, colorSecondary)` for the selected
+  sidebar item background AND the inline context-menu trigger ("..." button)
+  inside it in dark mode (see `.sidebar-item[data-selected]` and the
+  `[data-selected="true"] &` rule on `StyledButton` in
+  `node_modules/storybook/dist/manager/runtime.js`). Neither can be reached
+  through `ThemeVars`. Override here so both match the brand purple set
+  in `.storybook/preview.jsx` (`PRIMARY`).
+
+  The trigger also paints a `box-shadow` of the same color so it blends
+  into the highlight bar — both must be flipped together, otherwise a
+  ring of the original blue stays visible around the button.
+
+  `!important` is required because emotion appends its rules to <head>
+  AFTER this static <style>, so a same-specificity selector would lose the
+  cascade despite being intentionally more semantic.
+-->
+<style>
+  .sidebar-item[data-selected='true'],
+  .sidebar-item[data-selected='true']:hover,
+  .sidebar-item[data-selected='true']:focus {
+    background: rgb(98, 96, 206) !important;
+  }
+  /*
+    The selected sidebar item only contains a single <a>/<button> for the
+    node label and the floating context-menu trigger button — targeting
+    `button` here is safe and keeps us decoupled from emotion class hashes.
+  */
+  .sidebar-item[data-selected='true'] button,
+  .sidebar-item[data-selected='true'] button:hover,
+  .sidebar-item[data-selected='true'] button:focus {
+    background: rgb(98, 96, 206) !important;
+    box-shadow: 0 0 5px 5px rgb(98, 96, 206) !important;
+  }
+</style>

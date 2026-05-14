@@ -195,6 +195,7 @@ export {
 export type { CubeAlertDialogProps } from './components/overlays/AlertDialog';
 
 export * from '@tenphi/tasty';
+export * from '@tenphi/glaze';
 
 export const Typography = {
   Text: Text,

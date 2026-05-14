@@ -33,7 +33,7 @@ export const TabsElement = tasty({
     },
     fill: {
       '': '#clear',
-      'type=radio': '#dark.06',
+      'type=radio': '#surface-3',
     },
     flexShrink: 0,
     flexGrow: 0,
@@ -212,7 +212,7 @@ export const TabElement = tasty(Item, {
       '': '#dark-02',
       'type=narrow & (hovered & !selected)': '#primary-text',
       '(type=default | type=narrow) & selected': '#primary-text',
-      disabled: '#dark-04',
+      disabled: '#disabled-surface-text',
     },
     fill: {
       '': '#clear',

@@ -9,7 +9,7 @@ export const StyledMenuWrapper = tasty({
   styles: {
     display: 'grid',
     gridRows: 'max-content 1sf max-content',
-    fill: '#white',
+    fill: '#surface',
     margin: 0,
     padding: 0,
     border: true,
@@ -20,7 +20,13 @@ export const StyledMenuWrapper = tasty({
     },
     shadow: {
       '': '',
-      'popover | tray': '0px 5px 15px #dark.05',
+      // Use the design-system `$shadow` token (resolves to
+      // `0 .5x 2x #shadow-md`) so the popover shadow follows the
+      // scheme-aware Glaze `#shadow-md` color. The previous literal
+      // `0px 5px 15px #dark.05` baked in `#dark` (now aliased to the
+      // adaptive `#surface-text`) which inverts to a *light* shadow on
+      // dark surfaces.
+      'popover | tray': '$shadow',
     },
     height: {
       '': 'initial',
@@ -125,7 +131,7 @@ export const StyledSection = tasty({
     margin: '0',
     padding: '0',
     listStyle: 'none',
-    fill: '#white',
+    fill: '#surface',
   },
 });
 
@@ -160,7 +166,7 @@ export const StyledItem = tasty({
     color: {
       '': '#dark-02',
       'selected | pressed': '#dark',
-      disabled: '#dark-04',
+      disabled: '#disabled-surface-text',
     },
     cursor: {
       '': 'default',

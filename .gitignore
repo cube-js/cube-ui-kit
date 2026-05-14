@@ -20,3 +20,5 @@ size-limit-report/stats.json
 .docs-generated
 docs/*
 !docs/tasty
+scratch
+

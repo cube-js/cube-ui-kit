@@ -24,6 +24,27 @@ Syntax-highlighted code block using Prism. Supports multiple languages.
 
 Supports [Base properties](/docs/getting-started-base-properties--docs).
 
+## Theme
+
+Syntax colors are driven by a dedicated, scheme-aware palette of `code-*`
+tokens. Each token uses a different hue so token classes stay visually
+separable, and every token meets at least **WCAG AA (4.5:1)** contrast
+against `#surface` in light, dark, and high-contrast schemes (AAA in HC).
+
+| Token                | Hue            | Used for                                                       |
+| -------------------- | -------------- | -------------------------------------------------------------- |
+| `#code-comment`      | gray           | comments, prolog, doctype, cdata                               |
+| `#code-punctuation`  | muted pink     | operators, punctuation                                         |
+| `#code-keyword`      | pink           | keywords, booleans, constants, atrules (`font-weight: 500`)    |
+| `#code-string`       | primary purple | strings, characters, attribute values, URLs                    |
+| `#code-number`       | green          | numbers, numeric entities                                      |
+| `#code-function`     | pink           | functions, class names, regex, variables                       |
+| `#code-attribute`    | cyan           | tags, attribute names, properties, selectors, built-ins, keys  |
+
+Diff insertion (`+`) and deletion (`-`) intentionally re-use the existing
+`#success-*` / `#danger-*` ramps — both the line background tint and the
+foreground color adapt to the active scheme.
+
 ## Examples
 
 ```jsx

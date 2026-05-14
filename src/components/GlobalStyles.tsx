@@ -18,17 +18,20 @@ interface GlobalStylesProps {
 
 /**
  * Body styles applied via useGlobalStyles.
- * These use tasty syntax and get processed correctly.
+ *
+ * `fill` and `color` use scheme-aware Glaze tokens so the whole page flips
+ * automatically when `<html data-schema="dark">` (or `prefers-color-scheme: dark`)
+ * is active — see `src/tokens/palette.ts` and `src/components/Root.tsx`.
  */
 const BODY_STYLES: Styles = {
   overscrollBehaviorY: 'none',
-  fill: '#white',
+  fill: '#surface',
   fontFamily: 'var(--font-sans)',
   '-webkit-font-smoothing': 'antialiased',
   '-moz-osx-font-smoothing': 'grayscale',
   margin: 0,
   padding: 0,
-  color: '#dark-02',
+  color: '#surface-text-soft',
   preset: 't3',
   letterSpacing: '0.02em',
 };
@@ -45,7 +48,7 @@ const STATIC_CSS = `
     font-weight: var(--c2-font-weight);
     font-size: var(--c2-font-size);
     border: var(--border-width) solid var(--dark-04-color);
-    background-color: white;
+    background-color: var(--surface-color);
     color: var(--dark-color);
     border-radius: var(--radius);
     padding: 0 var(--outline-width);
@@ -86,10 +89,19 @@ const STATIC_CSS = `
     font-family: var(--font-mono);
   }
 
-  /* Prism Code */
+  /*
+   * Prism syntax highlighting.
+   *
+   * All token colors come from the scheme-aware Glaze \`code-*\` palette
+   * (defined in src/tokens/palette.ts). Each \`code-*\` token has \`mode: 'auto'\`
+   * with a numeric contrast floor of 4.5 against \`#surface\` so every token
+   * reads at WCAG AA in light AND dark schemes (AAA in high-contrast).
+   * Diff insertion / deletion re-use the adaptive \`success-*\` and \`danger-*\`
+   * ramps for both the line bg and the token color.
+   */
   code[class*="language-"],
   pre[class*="language-"] {
-    color: var(--dark-color);
+    color: var(--surface-text-color);
     background: none;
     font-family: var(--font-mono);
     text-align: left;
@@ -148,87 +160,86 @@ const STATIC_CSS = `
     white-space: normal;
   }
 
+  /* Diff (re-uses success/danger ramps; both bg and text adapt to scheme) */
   .token.inserted-sign {
-    background-color: #e6ffed;
-    color: #30A666;
+    background-color: var(--success-bg-color);
+    color: var(--success-text-color);
   }
 
   .token.inserted {
-    color: #30A666;
+    color: var(--success-text-color);
   }
 
   .token.deleted-sign {
-    background-color: #ffeef0;
-    color: var(--danger-color);
+    background-color: var(--danger-bg-color);
+    color: var(--danger-text-color);
   }
 
   .token.deleted {
-    color: var(--pink-color);
+    color: var(--danger-text-color);
   }
 
+  /* Comments — subdued gray-ish, AA floor */
   .token.comment,
   .token.prolog,
   .token.doctype,
   .token.cdata {
-    color: var(--dark-03-color);
+    color: var(--code-comment-color);
   }
 
-  .token.tag,
+  /* Operators / punctuation — subdued purple, AA floor */
   .token.operator,
   .token.punctuation {
-    color: #993388;
+    color: var(--code-punctuation-color);
   }
 
   .namespace {
     opacity: .7;
   }
 
-  .token.property,
+  /* Keywords / language constructs — violet */
   .token.boolean,
   .token.constant,
-  .token.symbol,
-  .token.key,
-  .token.keyword {
-    color: var(--pink-color);
-  }
-
-  .token.entity,
-  .token.number {
-    color: #30A666;
-  }
-
-  .token.selector,
-  .token.attr-name,
-  .token.string,
-  .token.char,
-  .token.builtin {
-    color: var(--primary-text-color);
-  }
-
-  .token.url,
-  .language-css .token.string,
-  .style .token.string {
-    color: var(--dark-color);
-  }
-
-  .token.attr-value {
-    color: var(--dark-color);
-  }
-
-  .token.atrule,
-  .token.keyword {
+  .token.keyword,
+  .token.atrule {
+    color: var(--code-keyword-color);
     font-weight: 500;
   }
 
-  .token.function,
-  .token.class-name {
-    color: var(--pink-color);
+  /* Numbers / numeric entities — orange */
+  .token.entity,
+  .token.number {
+    color: var(--code-number-color);
   }
 
+  /* Strings / character literals / URLs — green */
+  .token.string,
+  .token.char,
+  .token.attr-value,
+  .token.url,
+  .language-css .token.string,
+  .style .token.string {
+    color: var(--code-string-color);
+  }
+
+  /* Names: functions, class names, regex, variables — pink/coral */
+  .token.function,
+  .token.class-name,
   .token.regex,
   .token.important,
   .token.variable {
-    color: var(--pink-color);
+    color: var(--code-function-color);
+  }
+
+  /* Attributes / properties / tags / selectors / built-ins — cyan */
+  .token.tag,
+  .token.attr-name,
+  .token.property,
+  .token.symbol,
+  .token.key,
+  .token.builtin,
+  .token.selector {
+    color: var(--code-attribute-color);
   }
 
   .token.important,

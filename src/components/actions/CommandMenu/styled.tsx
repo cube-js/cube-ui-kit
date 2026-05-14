@@ -15,12 +15,15 @@ export const StyledCommandMenu = tasty({
     },
     placeContent: 'stretch',
     placeItems: 'stretch',
-    fill: '#white',
+    fill: '#surface',
     border: '#border',
     radius: '(1cr + 1bw)',
     shadow: {
       '': false,
-      'popover | tray': '0px 5px 15px #dark.05',
+      // Same as Menu (`src/components/actions/Menu/styled.tsx`) — use the
+      // `$shadow` token instead of a literal `#dark.05` shadow so the
+      // popover shadow stays a true *dark* shadow in dark mode.
+      'popover | tray': '$shadow',
     },
     overflow: 'hidden',
     height: {

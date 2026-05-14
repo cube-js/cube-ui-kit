@@ -105,7 +105,7 @@ const PanelElement = tasty({
       'side=top': 'bottom',
       'side=bottom': 'top',
     },
-    fill: '#white',
+    fill: '#surface',
 
     // Transition styles - offscreen mod controls slide animation
     transform: {
@@ -261,7 +261,7 @@ const ResizeHandlerElement = tasty({
       fill: {
         '': '#dark-03',
         'hovered | drag | focused': '#primary-text',
-        disabled: '#dark-04',
+        disabled: '#disabled-surface-text',
       },
     },
   },

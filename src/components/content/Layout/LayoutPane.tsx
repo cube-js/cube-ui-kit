@@ -208,7 +208,7 @@ const PaneElement = tasty({
       fill: {
         '': '#dark-03',
         'handlerHovered | drag | focused': '#primary-text',
-        disabled: '#dark-04',
+        disabled: '#disabled-surface-text',
       },
     },
   },

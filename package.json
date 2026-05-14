@@ -10,7 +10,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
-  "packageManager": "pnpm@10.32.0",
+  "packageManager": "pnpm@11.0.8",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -74,7 +74,8 @@
     "@react-types/shared": "^3.32.1",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
-    "@tenphi/tasty": "2.1.1",
+    "@tenphi/glaze": "0.11.0",
+    "@tenphi/tasty": "2.6.0",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",
@@ -108,8 +109,8 @@
     "@size-limit/webpack": "^8.2.4",
     "@size-limit/webpack-why": "^8.2.4",
     "@statoscope/cli": "^5.20.1",
-    "@storybook/addon-docs": "^10.2.3",
-    "@storybook/react-vite": "^10.2.3",
+    "@storybook/addon-docs": "^10.3.6",
+    "@storybook/react-vite": "^10.3.6",
     "@tenphi/eslint-plugin-tasty": "^0.6.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.7.0",
@@ -139,7 +140,7 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-storybook": "^10.2.3",
+    "eslint-plugin-storybook": "^10.3.6",
     "globals": "^16.0.0",
     "husky": "^6.0.0",
     "jsdom": "^29.1.1",
@@ -155,7 +156,8 @@
     "rimraf": "^6.0.1",
     "serve-handler": "^6.1.6",
     "size-limit": "^8.2.6",
-    "storybook": "^10.2.3",
+    "storybook": "^10.3.6",
+    "storybook-dark-mode": "^5.0.0",
     "tsdown": "^0.20.3",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.31.0",
@@ -170,6 +172,6 @@
   "license": "MIT",
   "engines": {
     "node": ">=22.14.0",
-    "pnpm": "^10.0.0"
+    "pnpm": "^11.0.0"
   }
 }

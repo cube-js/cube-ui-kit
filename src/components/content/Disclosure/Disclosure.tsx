@@ -173,7 +173,7 @@ const DisclosureRoot = tasty({
     },
     fill: {
       '': false,
-      'shape=card': '#white',
+      'shape=card': '#surface',
     },
   },
 });
