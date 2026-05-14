@@ -222,15 +222,15 @@ const ListBoxCheckbox = tasty({
       'selected | indeterminate | hovered | focused': 1,
     },
     fill: {
-      '': '#white',
-      'selected | indeterminate': '#primary-text',
-      'invalid & !(selected | indeterminate)': '#white',
+      '': '#surface',
+      'selected | indeterminate': '#primary',
+      'invalid & !(selected | indeterminate)': '#surface',
       'invalid & (selected | indeterminate)': '#danger',
       disabled: '#dark.12',
     },
     color: {
-      '': '#white',
-      'disabled & !selected': '#clear',
+      '': '#clear',
+      'selected | indeterminate': '#white',
     },
     border: {
       '': '#dark.30',
