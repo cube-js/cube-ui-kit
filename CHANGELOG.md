@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.138.2
+
+### Patch Changes
+
+- [`3ae5eb54`](https://github.com/cube-js/cube-ui-kit/commit/3ae5eb54e53b45f49082316175efb6b4141688a0) Thanks [@tenphi](https://github.com/tenphi)! - Replace native HTML elements (`div`, `span`, `p`, `h1`–`h6`, `ul`/`li`, `strong`, `b`, `em`, `code`, `kbd`, `input`, `button`, `a`) with UI Kit components and replace hardcoded colors/pixel values with design tokens and Tasty units across all Storybook stories.
+
 ## 0.138.1
 
 ### Patch Changes
