@@ -14,7 +14,6 @@ import { Menu } from '../../actions/Menu';
 import { Layout } from '../../content/Layout';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
-import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 
 import { Tab, Tabs } from './Tabs';
@@ -1212,7 +1211,7 @@ function RenderCountPanel({
   const count = countsRef.current[tabKey];
 
   return (
-    <Flow qa={`panel-${tabKey}`} gap="1x">
+    <Space qa={`panel-${tabKey}`} flow="column" gap="1x">
       <Text.Strong>
         {tabKey.charAt(0).toUpperCase() + tabKey.slice(1)} Content
       </Text.Strong>
@@ -1228,7 +1227,7 @@ function RenderCountPanel({
         {tabKey === 'tab3' &&
           'Switch between tabs to see the caching in action.'}
       </Paragraph>
-    </Flow>
+    </Space>
   );
 }
 
@@ -1357,32 +1356,32 @@ export const LazyRenderingWithKeepMounted: Story = {
           switch (key) {
             case 'tab1':
               return (
-                <Flow gap="1x">
+                <Space flow="column" gap="1x">
                   <Text.Strong>Dashboard</Text.Strong>
                   <Paragraph>
                     Your main dashboard with charts and statistics.
                   </Paragraph>
-                </Flow>
+                </Space>
               );
             case 'tab2':
               return (
-                <Flow gap="1x">
+                <Space flow="column" gap="1x">
                   <Text.Strong>Settings</Text.Strong>
                   <Paragraph>
                     Configure your preferences here. State is preserved when
                     switching tabs.
                   </Paragraph>
-                </Flow>
+                </Space>
               );
             case 'tab3':
               return (
-                <Flow gap="1x">
+                <Space flow="column" gap="1x">
                   <Text.Strong>Reports</Text.Strong>
                   <Paragraph>
                     Generate and view reports. Complex data tables would load
                     lazily.
                   </Paragraph>
-                </Flow>
+                </Space>
               );
             default:
               return null;

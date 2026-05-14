@@ -1269,7 +1269,7 @@ DescriptionWithTypes.parameters = {
 export const DescriptionWithComplexContent: StoryFn<CubeItemProps> = (args) => (
   <Flow gap="2x">
     <Title level={5}>Inline Description with All Elements</Title>
-    <Flow gap="1x">
+    <Space flow="column" gap="1x" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1313,10 +1313,10 @@ export const DescriptionWithComplexContent: StoryFn<CubeItemProps> = (args) => (
       >
         All Elements
       </Item>
-    </Flow>
+    </Space>
 
     <Title level={5}>Block Description with All Elements</Title>
-    <Flow gap="1x">
+    <Space flow="column" gap="1x" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1360,10 +1360,10 @@ export const DescriptionWithComplexContent: StoryFn<CubeItemProps> = (args) => (
       >
         All Elements
       </Item>
-    </Flow>
+    </Space>
 
     <Title level={5}>Description with Actions</Title>
-    <Flow gap="1x">
+    <Space flow="column" gap="1x" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1394,7 +1394,7 @@ export const DescriptionWithComplexContent: StoryFn<CubeItemProps> = (args) => (
       >
         User Record
       </Item>
-    </Flow>
+    </Space>
   </Flow>
 );
 

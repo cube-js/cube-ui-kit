@@ -280,7 +280,7 @@ export const InsideItemButton: Story = {
     <Flow gap="2x" width="max 600px">
       <Flow gap="1x">
         <Title level={4}>Icon Only Actions</Title>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <ItemButton
             type="outline"
             icon={<IconFile />}
@@ -306,12 +306,12 @@ export const InsideItemButton: Story = {
           >
             Report.xlsx
           </ItemButton>
-        </Flow>
+        </Space>
       </Flow>
 
       <Flow gap="1x">
         <Title level={4}>With Labels</Title>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <ItemButton
             type="outline"
             icon={<IconFile />}
@@ -324,7 +324,7 @@ export const InsideItemButton: Story = {
           >
             Document.pdf
           </ItemButton>
-        </Flow>
+        </Space>
       </Flow>
 
       <Flow gap="1x">
@@ -332,7 +332,7 @@ export const InsideItemButton: Story = {
         <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           Actions automatically inherit type and theme from parent ItemButton
         </Paragraph>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <ItemButton
             type="primary"
             theme="default"
@@ -359,7 +359,7 @@ export const InsideItemButton: Story = {
           >
             Danger Button
           </ItemButton>
-        </Flow>
+        </Space>
       </Flow>
 
       <Flow gap="1x">
@@ -367,7 +367,7 @@ export const InsideItemButton: Story = {
         <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           Actions can override inherited type/theme
         </Paragraph>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <ItemButton
             type="outline"
             icon={<IconFile />}
@@ -401,12 +401,12 @@ export const InsideItemButton: Story = {
           >
             Item with Mixed Actions
           </ItemButton>
-        </Flow>
+        </Space>
       </Flow>
 
       <Flow gap="1x">
         <Title level={4}>With Different Sizes</Title>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <ItemButton
             type="outline"
             size="small"
@@ -446,7 +446,7 @@ export const InsideItemButton: Story = {
           >
             Large Button
           </ItemButton>
-        </Flow>
+        </Space>
       </Flow>
 
       <Flow gap="1x">
@@ -454,7 +454,7 @@ export const InsideItemButton: Story = {
         <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           Actions can appear only on hover
         </Paragraph>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <ItemButton
             autoHideActions
             type="outline"
@@ -483,7 +483,7 @@ export const InsideItemButton: Story = {
           >
             Long Item Name with Hover Actions
           </ItemButton>
-        </Flow>
+        </Space>
       </Flow>
     </Flow>
   ),
@@ -511,7 +511,7 @@ export const InsideItem: Story = {
     <Flow gap="2x" width="max 600px">
       <Flow gap="1x">
         <Title level={4}>Basic Usage</Title>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <Item
             type="item"
             icon={<IconFile />}
@@ -537,12 +537,12 @@ export const InsideItem: Story = {
           >
             Report.xlsx
           </Item>
-        </Flow>
+        </Space>
       </Flow>
 
       <Flow gap="1x">
         <Title level={4}>Different Item Types</Title>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <Item
             type="primary"
             icon={<IconFile />}
@@ -579,12 +579,12 @@ export const InsideItem: Story = {
           >
             Neutral Item
           </Item>
-        </Flow>
+        </Space>
       </Flow>
 
       <Flow gap="1x">
         <Title level={4}>With Description</Title>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <Item
             type="item"
             icon={<IconFile />}
@@ -613,12 +613,12 @@ export const InsideItem: Story = {
           >
             Report.xlsx
           </Item>
-        </Flow>
+        </Space>
       </Flow>
 
       <Flow gap="1x">
         <Title level={4}>Theme Inheritance</Title>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <Item
             type="item"
             theme="danger"
@@ -645,12 +645,12 @@ export const InsideItem: Story = {
           >
             Success Theme Item
           </Item>
-        </Flow>
+        </Space>
       </Flow>
 
       <Flow gap="1x">
         <Title level={4}>Mixed Action Types</Title>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <Item
             type="item"
             icon={<IconFile />}
@@ -669,12 +669,12 @@ export const InsideItem: Story = {
           >
             Item with Multiple Actions
           </Item>
-        </Flow>
+        </Space>
       </Flow>
 
       <Flow gap="1x">
         <Title level={4}>With Loading States</Title>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <Item
             type="item"
             icon={<IconFile />}
@@ -687,7 +687,7 @@ export const InsideItem: Story = {
           >
             Item with Loading Action
           </Item>
-        </Flow>
+        </Space>
       </Flow>
 
       <Flow gap="1x">
@@ -696,7 +696,7 @@ export const InsideItem: Story = {
           Actions inherit disabled state from parent Item. Use isDisabled=false
           to keep action enabled.
         </Paragraph>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <Item
             isDisabled
             type="item"
@@ -727,12 +727,12 @@ export const InsideItem: Story = {
           >
             Disabled Item (delete action enabled)
           </Item>
-        </Flow>
+        </Space>
       </Flow>
 
       <Flow gap="1x">
         <Title level={4}>Truncated Content</Title>
-        <Flow gap="1x" placeItems="start">
+        <Space flow="column" gap="1x" placeItems="start">
           <Item
             type="item"
             icon={<IconFile />}
@@ -747,7 +747,7 @@ export const InsideItem: Story = {
           >
             Very Long Item Name That Should Truncate With Actions
           </Item>
-        </Flow>
+        </Space>
       </Flow>
     </Flow>
   ),
@@ -768,7 +768,7 @@ export const InteractiveExample: Story = {
       <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
         Click on the action buttons to see the interactions
       </Paragraph>
-      <Flow gap="1x" placeItems="start">
+      <Space flow="column" gap="1x" placeItems="start">
         <ItemButton
           type="outline"
           icon={<IconFile />}
@@ -850,7 +850,7 @@ export const InteractiveExample: Story = {
         >
           Presentation.pptx (hover to see actions)
         </ItemButton>
-      </Flow>
+      </Space>
     </Flow>
   ),
   parameters: {

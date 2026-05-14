@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
+import { Space } from '../../layout/Space';
 
 import { CubeTextAreaProps, TextArea } from './TextArea';
 
@@ -277,7 +278,7 @@ export const ControlledAutoSize = () => {
   const [value, setValue] = useState('Line 1');
 
   return (
-    <>
+    <Space flow="column" gap="1x" placeItems="start">
       <TextArea
         autoSize
         label="Controlled AutoSize TextArea"
@@ -287,15 +288,10 @@ export const ControlledAutoSize = () => {
         description="Height adjusts when value changes programmatically"
         onChange={setValue}
       />
-      <Button
-        margin="1x 0 0 0"
-        onPress={() => setValue('Line 1\nLine 2\nLine 3\nLine 4')}
-      >
+      <Button onPress={() => setValue('Line 1\nLine 2\nLine 3\nLine 4')}>
         Add lines programmatically
       </Button>
-      <Button margin="1x 0 0 0" onPress={() => setValue('Line 1')}>
-        Reset to single line
-      </Button>
-    </>
+      <Button onPress={() => setValue('Line 1')}>Reset to single line</Button>
+    </Space>
   );
 };

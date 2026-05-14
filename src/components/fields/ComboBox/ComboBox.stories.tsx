@@ -6,6 +6,7 @@ import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Flow } from '../../layout/Flow';
+import { Space } from '../../layout/Space';
 
 import { ComboBox, CubeComboBoxProps } from './ComboBox';
 
@@ -416,7 +417,7 @@ export const AllowsCustomValue = () => {
         <ComboBox.Item key="angular">Angular</ComboBox.Item>
         <ComboBox.Item key="svelte">Svelte</ComboBox.Item>
       </ComboBox>
-      <Flow gap="1x">
+      <Space flow="column" gap="1x">
         <Text>
           Input value: <Text.Strong>{inputValue || 'none'}</Text.Strong>
         </Text>
@@ -428,7 +429,7 @@ export const AllowsCustomValue = () => {
           Type text and press Enter or blur to commit. Select from list to
           commit immediately.
         </Paragraph>
-      </Flow>
+      </Space>
     </Flow>
   );
 };
@@ -492,7 +493,7 @@ export const ClearOnBlur = () => {
         <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
         <ComboBox.Item key="date">Date</ComboBox.Item>
       </ComboBox>
-      <Flow gap="1x">
+      <Space flow="column" gap="1x">
         <Text>
           Selected: <Text.Strong>{selectedKey || 'none'}</Text.Strong>
         </Text>
@@ -501,7 +502,7 @@ export const ClearOnBlur = () => {
           focus. This is useful for search-like scenarios where you want to
           reset after each interaction.
         </Paragraph>
-      </Flow>
+      </Space>
     </Flow>
   );
 };
@@ -837,7 +838,7 @@ export const IndependentControls = () => {
         <ComboBox.Item key="date">Date</ComboBox.Item>
         <ComboBox.Item key="elderberry">Elderberry</ComboBox.Item>
       </ComboBox>
-      <Flow gap="1x">
+      <Space flow="column" gap="1x">
         <Text>
           Input value: <Text.Strong>{inputValue || 'empty'}</Text.Strong>
         </Text>
@@ -848,7 +849,7 @@ export const IndependentControls = () => {
           inputValue and selectedKey are independent. Typing updates input and
           clears selection. Selecting from list updates both.
         </Paragraph>
-      </Flow>
+      </Space>
     </Flow>
   );
 };
@@ -877,7 +878,7 @@ export const AllowsCustomValueNoCommitOnBlur = () => {
         <ComboBox.Item key="angular">Angular</ComboBox.Item>
         <ComboBox.Item key="svelte">Svelte</ComboBox.Item>
       </ComboBox>
-      <Flow gap="1x">
+      <Space flow="column" gap="1x">
         <Text>
           Input value: <Text.Strong>{inputValue || 'none'}</Text.Strong>
         </Text>
@@ -889,7 +890,7 @@ export const AllowsCustomValueNoCommitOnBlur = () => {
           With shouldCommitOnBlur=false, custom values only commit on Enter key,
           not on blur.
         </Paragraph>
-      </Flow>
+      </Space>
     </Flow>
   );
 };
