@@ -1646,7 +1646,7 @@ export const ControlledExample = () => {
       </FilterPicker>
 
       <Text>
-        Selected: <strong>{selectedKey || 'None'}</strong>
+        Selected: <Text.Strong>{selectedKey || 'None'}</Text.Strong>
       </Text>
 
       <Space gap="1x" flow="row">
@@ -1696,9 +1696,9 @@ export const MultipleControlledExample = () => {
 
       <Text>
         Selected:{' '}
-        <strong>
+        <Text.Strong>
           {selectedKeys.length ? selectedKeys.join(', ') : 'None'}
-        </strong>
+        </Text.Strong>
       </Text>
 
       <Space gap="1x" flow="row">
@@ -2311,9 +2311,9 @@ export const MultipleControlled: Story = {
 
         <Text>
           Selected:{' '}
-          <strong>
+          <Text.Strong>
             {selectedKeys.length ? selectedKeys.join(', ') : 'None'}
-          </strong>
+          </Text.Strong>
         </Text>
 
         <Space gap="1x" flow="row">

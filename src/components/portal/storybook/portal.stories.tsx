@@ -1,6 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 import { useRef } from 'react';
 
+import { Block } from '../../Block';
 import { Portal } from '../Portal';
 import { PortalProps } from '../types';
 
@@ -30,9 +31,9 @@ export const CustomRoot: StoryFn<PortalProps> = (args) => {
       <Portal {...args} root={rootRef}>
         Portal's content
       </Portal>
-      <div ref={rootRef}>
+      <Block ref={rootRef}>
         Using custom portal root content should be there {' -> '}
-      </div>
+      </Block>
       By default, Portal content should be there {' -> '}
     </>
   );

@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.138.1
+
+### Patch Changes
+
+- [#1165](https://github.com/cube-js/cube-ui-kit/pull/1165) [`f1bfd1f7`](https://github.com/cube-js/cube-ui-kit/commit/f1bfd1f7a6b08862e4a6d0acd001800f7e8ba897) Thanks [@tenphi](https://github.com/tenphi)! - `ListBox`: fix checkbox colors in `isCheckable` mode so the unchecked background adapts to dark mode and the selected state uses the proper accent surface color, matching `Checkbox`.
+
 ## 0.138.0
 
 ### Minor Changes

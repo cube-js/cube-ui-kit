@@ -546,7 +546,7 @@ export const WithIconsAndDescriptions: StoryObj<
     <Select.Item
       key="red"
       description="Hot and strong"
-      prefix={<span>🔥</span>}
+      prefix={<Text>🔥</Text>}
     >
       Red
     </Select.Item>
@@ -560,7 +560,7 @@ export const WithIconsAndDescriptions: StoryObj<
     <Select.Item
       key="blue"
       description="Cold and deep"
-      rightIcon={<span>→</span>}
+      rightIcon={<Text>→</Text>}
     >
       Blue
     </Select.Item>

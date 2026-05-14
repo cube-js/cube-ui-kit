@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { FolderIcon, FolderOpenIcon, Icon, MoreIcon } from '../../../icons';
 import { ItemAction } from '../../actions/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
+import { SearchInput } from '../../fields/SearchInput';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { Text } from '../Text';
@@ -444,12 +445,7 @@ const AutoExpandParentRender = (args: CubeTreeProps) => {
 
   return (
     <Flow gap="2x">
-      <input
-        value={filter}
-        placeholder="Filter…"
-        style={{ padding: 8, border: '1px solid #ccc', borderRadius: 4 }}
-        onChange={(e) => setFilter(e.target.value)}
-      />
+      <SearchInput value={filter} placeholder="Filter…" onChange={setFilter} />
       <Tree
         {...args}
         autoExpandParent

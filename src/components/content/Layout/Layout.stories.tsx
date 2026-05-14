@@ -318,12 +318,12 @@ export const ScrollableContent: Story = {
       <Layout.Header title="Scrollable Content" />
       <Layout.Content scrollbar="thin">
         {Array.from({ length: 20 }, (_, i) => (
-          <div key={i} style={{ padding: '8px' }}>
+          <Block key={i} padding="1x">
             <Text>
               Line {i + 1}: Lorem ipsum dolor sit amet, consectetur adipiscing
               elit.
             </Text>
-          </div>
+          </Block>
         ))}
       </Layout.Content>
     </Layout>
@@ -336,12 +336,12 @@ export const TinyScrollbar: Story = {
       <Layout.Header title="Tiny Scrollbar" />
       <Layout.Content scrollbar="tiny">
         {Array.from({ length: 20 }, (_, i) => (
-          <div key={i} style={{ padding: '8px' }}>
+          <Block key={i} padding="1x">
             <Text>
               Line {i + 1}: Hover over the content to see the scrollbar
               indicator.
             </Text>
-          </div>
+          </Block>
         ))}
       </Layout.Content>
     </Layout>
@@ -953,8 +953,8 @@ export const PanelAsDialog: Story = {
             Click the button above to open the panel as a dialog overlay.
           </Text>
           <Text preset="t3" color="#dark-02">
-            The panel uses <code>isDialog=true</code> to render inside a
-            DialogContainer instead of being positioned absolutely within the
+            The panel uses <Text monospace>isDialog=true</Text> to render inside
+            a DialogContainer instead of being positioned absolutely within the
             Layout.
           </Text>
         </Layout.Content>
@@ -1122,8 +1122,8 @@ export const StickyPanel: Story = {
           </Card>
           <Card>
             <Text preset="t3" color="#dark-02">
-              Use <code>mode=&quot;sticky&quot;</code> for panels that should
-              overlay content temporarily without affecting layout.
+              Use <Text monospace>mode=&quot;sticky&quot;</Text> for panels that
+              should overlay content temporarily without affecting layout.
             </Text>
           </Card>
         </Layout.Content>
@@ -1195,9 +1195,9 @@ export const OverlayPanel: Story = {
           </Card>
           <Card>
             <Text preset="t3" color="#dark-02">
-              Use <code>mode=&quot;overlay&quot;</code> for panels that need
-              user attention and should visually separate from background
-              content.
+              Use <Text monospace>mode=&quot;overlay&quot;</Text> for panels
+              that need user attention and should visually separate from
+              background content.
             </Text>
           </Card>
         </Layout.Content>
@@ -1233,10 +1233,10 @@ export const OverlayPanelCustomStyling: Story = {
           <Layout.Content>
             <Text>
               This overlay uses a darker backdrop with{' '}
-              <code>
+              <Text monospace>
                 overlayStyles=&#123;&#123; fill: &apos;#dark.5&apos;
                 &#125;&#125;
-              </code>
+              </Text>
             </Text>
           </Layout.Content>
         </Layout.Panel>
@@ -1250,8 +1250,8 @@ export const OverlayPanelCustomStyling: Story = {
         <Layout.Content>
           <Card>
             <Text>
-              The <code>overlayStyles</code> prop accepts any valid tasty
-              styles.
+              The <Text monospace>overlayStyles</Text> prop accepts any valid
+              tasty styles.
             </Text>
           </Card>
         </Layout.Content>
@@ -1307,8 +1307,8 @@ export const OverlayPanelNotDismissable: Story = {
         <Layout.Content>
           <Card>
             <Text>
-              Set <code>isDismissable=&#123;false&#125;</code> when the panel
-              requires explicit user action to close.
+              Set <Text monospace>isDismissable=&#123;false&#125;</Text> when
+              the panel requires explicit user action to close.
             </Text>
           </Card>
         </Layout.Content>
@@ -1425,7 +1425,8 @@ export const OverflowControl: Story = {
               {doNotOverflow ? 'Allow Overflow' : 'Prevent Overflow'}
             </Button>
             <Text>
-              doNotOverflow: <b>{doNotOverflow ? 'true' : 'false'}</b>
+              doNotOverflow:{' '}
+              <Text.Strong>{doNotOverflow ? 'true' : 'false'}</Text.Strong>
             </Text>
           </Layout.Toolbar>
           <Block
@@ -1532,8 +1533,8 @@ export const NaturalBoundaries: Story = {
             <Title level={5}>Content Area</Title>
             <Text>
               This area is guaranteed to be at least 320px wide (the default{' '}
-              <code>minContentSize</code>). Neither panel can grow beyond the
-              natural boundary.
+              <Text monospace>minContentSize</Text>). Neither panel can grow
+              beyond the natural boundary.
             </Text>
           </Card>
         </Layout.Content>

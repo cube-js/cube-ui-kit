@@ -1,5 +1,9 @@
 import { StoryFn } from '@storybook/react-vite';
 
+import { Block } from '../../Block';
+import { Flow } from '../../layout/Flow';
+import { Text } from '../Text';
+
 import { CubeHotKeysProps, HotKeys } from './HotKeys';
 
 export default {
@@ -132,9 +136,9 @@ WithCustomStyles.args = {
 };
 
 export const Primary: StoryFn<CubeHotKeysProps> = (args) => (
-  <div style={{ padding: '16px', background: '#1a1a1a', borderRadius: '8px' }}>
+  <Block padding="2x" fill="#surface-inverse" radius="1r">
     <HotKeys {...args} />
-  </div>
+  </Block>
 );
 Primary.args = {
   children: 'mod+k',
@@ -150,36 +154,36 @@ Inherit.args = {
 };
 
 export const InheritInContext: StoryFn<CubeHotKeysProps> = () => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-    <div style={{ color: '#2563eb' }}>
-      <span>Press </span>
+  <Flow gap="2x">
+    <Block color="#purple-text">
+      <Text>Press </Text>
       <HotKeys type="inherit" aria-label="Search">
         mod+k
       </HotKeys>
-      <span> to search (blue context)</span>
-    </div>
-    <div style={{ color: '#dc2626' }}>
-      <span>Press </span>
+      <Text> to search (blue context)</Text>
+    </Block>
+    <Block color="#danger-text">
+      <Text>Press </Text>
       <HotKeys type="inherit" aria-label="Delete">
         delete
       </HotKeys>
-      <span> to delete (red context)</span>
-    </div>
-    <div style={{ color: '#16a34a' }}>
-      <span>Press </span>
+      <Text> to delete (red context)</Text>
+    </Block>
+    <Block color="#success-text">
+      <Text>Press </Text>
       <HotKeys type="inherit" aria-label="Save">
         mod+s
       </HotKeys>
-      <span> to save (green context)</span>
-    </div>
-    <div style={{ color: '#9333ea' }}>
-      <span>Press </span>
+      <Text> to save (green context)</Text>
+    </Block>
+    <Block color="#purple-text">
+      <Text>Press </Text>
       <HotKeys type="inherit" aria-label="Command palette">
         mod+shift+p
       </HotKeys>
-      <span> for commands (purple context)</span>
-    </div>
-  </div>
+      <Text> for commands (purple context)</Text>
+    </Block>
+  </Flow>
 );
 InheritInContext.parameters = {
   docs: {

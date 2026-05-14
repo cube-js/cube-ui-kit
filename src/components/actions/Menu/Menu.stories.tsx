@@ -26,6 +26,7 @@ import {
 } from '../../../icons';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Block } from '../../Block';
 import { Alert } from '../../content/Alert';
 import { Card } from '../../content/Card/Card';
 import { Paragraph } from '../../content/Paragraph';
@@ -440,7 +441,7 @@ InsideModal.play = async ({ canvasElement }) => {
 
 export const Sections = (props) => {
   return (
-    <div style={{ padding: '20px', width: '340px' }}>
+    <Block padding="2.5x" width="340px">
       <Menu id="menu-search" {...props}>
         <Menu.Section key="line-items" title="Line Items">
           <Menu.Item key="created">Created At</Menu.Item>
@@ -456,13 +457,13 @@ export const Sections = (props) => {
           <Menu.Item key="completed">Completed At</Menu.Item>
         </Menu.Section>
       </Menu>
-    </div>
+    </Block>
   );
 };
 
 export const StyledSectionsAndItems = (props) => {
   return (
-    <div style={{ padding: '20px', width: '340px' }}>
+    <Block padding="2.5x" width="340px">
       <Menu id="menu-search" {...props}>
         <Menu.Section key="line-items" title="Line Items">
           <Menu.Item key="created">Created At</Menu.Item>
@@ -474,7 +475,7 @@ export const StyledSectionsAndItems = (props) => {
           <Menu.Item key="completed">Completed At</Menu.Item>
         </Menu.Section>
       </Menu>
-    </div>
+    </Block>
   );
 };
 StyledSectionsAndItems.args = {
@@ -605,7 +606,7 @@ export const MenuSelectableRadio = (props) => {
 
 export const PaymentDetails = (props) => {
   return (
-    <div style={{ padding: '20px', width: '340px' }}>
+    <Block padding="2.5x" width="340px">
       <Menu id="menu" {...props} header="Payment Details">
         <Menu.Item key="red" suffix="March, 2022">
           Invoice #16C7B3AE-000113-000113
@@ -620,13 +621,13 @@ export const PaymentDetails = (props) => {
           #16C7B3AE
         </Menu.Item>
       </Menu>
-    </div>
+    </Block>
   );
 };
 
 export const ItemCustomIcons = (props) => {
   return (
-    <div style={{ padding: '20px', width: '380px' }}>
+    <Block padding="2.5x" width="380px">
       <Menu id="menu" {...props} header="Custom Icons">
         <Menu.Item
           key="red"
@@ -673,7 +674,7 @@ export const ItemCustomIcons = (props) => {
           #16C7B3AE
         </Menu.Item>
       </Menu>
-    </div>
+    </Block>
   );
 };
 
@@ -684,7 +685,7 @@ export const ItemWithTooltip = (props) => {
   };
 
   return (
-    <div style={{ padding: '20px', width: '340px' }}>
+    <Block padding="2.5x" width="340px">
       <Menu
         id="menu"
         {...props}
@@ -719,7 +720,7 @@ export const ItemWithTooltip = (props) => {
           #2563EB
         </Menu.Item>
       </Menu>
-    </div>
+    </Block>
   );
 };
 
@@ -730,7 +731,7 @@ export const SectionsWithTooltips = (props) => {
   };
 
   return (
-    <div style={{ padding: '20px', width: '380px' }}>
+    <Block padding="2.5x" width="380px">
       <Menu
         id="menu"
         {...props}
@@ -803,7 +804,7 @@ export const SectionsWithTooltips = (props) => {
           </Menu.Item>
         </Menu.Section>
       </Menu>
-    </div>
+    </Block>
   );
 };
 
@@ -866,7 +867,7 @@ WithTriggerState.play = async ({ canvasElement, viewMode }) => {
 
 export const ItemsWithDescriptions = (props) => {
   return (
-    <div style={{ padding: '20px', width: '340px' }}>
+    <Block padding="2.5x" width="340px">
       <Menu id="menu" {...props} header="Items with descriptions">
         <Menu.Item key="1" description="Additional item details here">
           First item
@@ -876,7 +877,7 @@ export const ItemsWithDescriptions = (props) => {
         </Menu.Item>
         <Menu.Item key="3">Item without description</Menu.Item>
       </Menu>
-    </div>
+    </Block>
   );
 };
 
@@ -889,19 +890,19 @@ export const DynamicCollection = (props) => {
   ];
 
   return (
-    <div style={{ padding: '20px', width: '340px' }}>
+    <Block padding="2.5x" width="340px">
       <Menu id="menu" {...props} items={items} header="Dynamic Collection">
         {(item) => (
           <Menu.Item
             key={item.id}
-            icon={<span style={{ fontSize: '16px' }}>{item.icon}</span>}
+            icon={<Text styles={{ fontSize: '16px' }}>{item.icon}</Text>}
             hotkeys={item.shortcut}
           >
             {item.label}
           </Menu.Item>
         )}
       </Menu>
-    </div>
+    </Block>
   );
 };
 
@@ -928,7 +929,7 @@ export const DynamicCollectionWithSections = (props) => {
   ];
 
   return (
-    <div style={{ padding: '20px', width: '340px' }}>
+    <Block padding="2.5x" width="340px">
       <Menu id="menu" {...props} items={sections} header="Dynamic Collection">
         {(section) => (
           <Menu.Section
@@ -939,7 +940,7 @@ export const DynamicCollectionWithSections = (props) => {
             {(item) => (
               <Menu.Item
                 key={item.id}
-                icon={<span style={{ fontSize: '16px' }}>{item.icon}</span>}
+                icon={<Text styles={{ fontSize: '16px' }}>{item.icon}</Text>}
                 hotkeys={item.shortcut}
               >
                 {item.label}
@@ -948,7 +949,7 @@ export const DynamicCollectionWithSections = (props) => {
           </Menu.Section>
         )}
       </Menu>
-    </div>
+    </Block>
   );
 };
 
@@ -1308,11 +1309,13 @@ export const TabWithMultipleTriggers = () => {
         relative to a tab button:
       </Paragraph>
 
-      <ul>
-        <li>Click "Open file" to open the tab (do nothing in our example)</li>
-        <li>Click the dots button to open the actions menu</li>
-        <li>Right-click the tab to also open the actions menu</li>
-      </ul>
+      <Flow as="ul" gap="0.5x">
+        <Block as="li">
+          Click "Open file" to open the tab (do nothing in our example)
+        </Block>
+        <Block as="li">Click the dots button to open the actions menu</Block>
+        <Block as="li">Right-click the tab to also open the actions menu</Block>
+      </Flow>
 
       <Flex
         ref={menu.anchorRef}
@@ -1791,27 +1794,28 @@ export const SubMenuCustomization = () => {
       <Alert type="info" title="SubMenu Features">
         <Flow gap="1x">
           <Text>
-            • <strong>Keyboard Navigation:</strong> Use arrow keys to navigate
-            between menus
+            • <Text.Strong>Keyboard Navigation:</Text.Strong> Use arrow keys to
+            navigate between menus
           </Text>
           <Text>
-            • <strong>Auto-open:</strong> Right arrow or Enter opens submenus
+            • <Text.Strong>Auto-open:</Text.Strong> Right arrow or Enter opens
+            submenus
           </Text>
           <Text>
-            • <strong>Auto-close:</strong> Left arrow or Esc closes current
-            submenu
+            • <Text.Strong>Auto-close:</Text.Strong> Left arrow or Esc closes
+            current submenu
           </Text>
           <Text>
-            • <strong>Visual Indicator:</strong> Chevron (›) automatically added
-            to submenu triggers
+            • <Text.Strong>Visual Indicator:</Text.Strong> Chevron (›)
+            automatically added to submenu triggers
           </Text>
           <Text>
-            • <strong>Unlimited Nesting:</strong> Create as many levels as
-            needed
+            • <Text.Strong>Unlimited Nesting:</Text.Strong> Create as many
+            levels as needed
           </Text>
           <Text>
-            • <strong>Custom Positioning:</strong> Control placement, offset,
-            and flip behavior
+            • <Text.Strong>Custom Positioning:</Text.Strong> Control placement,
+            offset, and flip behavior
           </Text>
         </Flow>
       </Alert>
@@ -1821,7 +1825,7 @@ export const SubMenuCustomization = () => {
 
 export const WithHeaderAndFooter = (props) => {
   return (
-    <div style={{ padding: '20px', width: '340px' }}>
+    <Block padding="2.5x" width="340px">
       <Menu
         id="menu-header-footer"
         {...props}
@@ -1843,7 +1847,7 @@ export const WithHeaderAndFooter = (props) => {
           Fourth Item
         </Menu.Item>
       </Menu>
-    </div>
+    </Block>
   );
 };
 
@@ -1944,7 +1948,7 @@ export const ComprehensivePopoverSynchronization = () => {
         </MenuTrigger>
 
         {/* Anchored Menu */}
-        <div ref={anchorRef1}>
+        <Block ref={anchorRef1}>
           {rendered1}
           <Button
             size="small"
@@ -1952,13 +1956,13 @@ export const ComprehensivePopoverSynchronization = () => {
           >
             Anchored Menu
           </Button>
-        </div>
+        </Block>
 
         {/* Context Menu */}
-        <div ref={targetRef2}>
+        <Block ref={targetRef2}>
           {rendered2}
           <Button size="small">Context Menu (Right-click)</Button>
-        </div>
+        </Block>
 
         {/* Select */}
         <Select placeholder="Select" defaultSelectedKey="option1" size="small">
@@ -2000,7 +2004,7 @@ export const ItemsWithActions = (props) => {
   };
 
   return (
-    <div style={{ padding: '20px', width: '190px' }}>
+    <Block padding="2.5x" width="190px">
       <Menu id="menu-with-actions" {...props} onAction={handleAction}>
         <Menu.Item
           key="file1"
@@ -2071,7 +2075,7 @@ export const ItemsWithActions = (props) => {
           Item without actions
         </Menu.Item>
       </Menu>
-    </div>
+    </Block>
   );
 };
 

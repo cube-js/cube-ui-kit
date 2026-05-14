@@ -981,7 +981,7 @@ export const ControlledExample: StoryFn<CubeFilterListBoxProps<any>> = () => {
       </FilterListBox>
 
       <Text>
-        Selected: <strong>{selectedKey || 'None'}</strong>
+        Selected: <Text.Strong>{selectedKey || 'None'}</Text.Strong>
       </Text>
 
       <Space gap="1x" flow="row">
@@ -1032,9 +1032,9 @@ export const MultipleControlledExample: StoryFn<
 
       <Text>
         Selected:{' '}
-        <strong>
+        <Text.Strong>
           {selectedKeys.length ? selectedKeys.join(', ') : 'None'}
-        </strong>
+        </Text.Strong>
       </Text>
 
       <Space gap="1x" flow="row">
@@ -1291,10 +1291,10 @@ export const EscapeKeyHandling: StoryFn<CubeFilterListBoxProps<any>> = () => {
       </FilterListBox>
 
       <Text>
-        Selected: <strong>{selectedKey || 'None'}</strong>
+        Selected: <Text.Strong>{selectedKey || 'None'}</Text.Strong>
       </Text>
       <Text>
-        Escape key pressed: <strong>{escapeCount} times</strong>
+        Escape key pressed: <Text.Strong>{escapeCount} times</Text.Strong>
       </Text>
       <Text preset="t4" color="#dark.60">
         Focus the search input and press Escape to trigger custom handling
@@ -1354,9 +1354,9 @@ export const VirtualizedList: StoryFn<CubeFilterListBoxProps<any>> = (args) => {
 
       <Text>
         Selected:{' '}
-        <strong>
+        <Text.Strong>
           {selectedKeys.length} / {items.length} items
-        </strong>
+        </Text.Strong>
         {selectedKeys.length > 0 &&
           ` (${selectedKeys.slice(0, 3).join(', ')}${selectedKeys.length > 3 ? '...' : ''})`}
       </Text>
@@ -1435,7 +1435,7 @@ export const CustomValueProps: Story = {
         </FilterListBox>
 
         <Text>
-          Selected: <strong>{selectedKeys.join(', ')}</strong>
+          Selected: <Text.Strong>{selectedKeys.join(', ')}</Text.Strong>
         </Text>
       </Space>
     );
@@ -1489,7 +1489,7 @@ export const NewCustomValueProps: Story = {
         </FilterListBox>
 
         <Text>
-          Selected: <strong>{selectedKeys.join(', ')}</strong>
+          Selected: <Text.Strong>{selectedKeys.join(', ')}</Text.Strong>
         </Text>
 
         <Text preset="t4" color="#dark.60">

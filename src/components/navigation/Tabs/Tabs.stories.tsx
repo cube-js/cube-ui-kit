@@ -13,6 +13,8 @@ import { Button } from '../../actions/Button';
 import { Menu } from '../../actions/Menu';
 import { Layout } from '../../content/Layout';
 import { Paragraph } from '../../content/Paragraph';
+import { Text } from '../../content/Text';
+import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 
 import { Tab, Tabs } from './Tabs';
@@ -592,7 +594,7 @@ export const NavigationOnly: Story = {
         </Tabs>
 
         <Paragraph>
-          Current view: <strong>{activeTab}</strong>
+          Current view: <Text.Strong>{activeTab}</Text.Strong>
         </Paragraph>
       </Space>
     );
@@ -1210,23 +1212,23 @@ function RenderCountPanel({
   const count = countsRef.current[tabKey];
 
   return (
-    <div data-qa={`panel-${tabKey}`}>
-      <strong>
+    <Flow qa={`panel-${tabKey}`} gap="1x">
+      <Text.Strong>
         {tabKey.charAt(0).toUpperCase() + tabKey.slice(1)} Content
-      </strong>
-      <p data-qa={`render-count-${tabKey}`}>
-        This panel has been rendered <strong>{count}</strong> time
+      </Text.Strong>
+      <Paragraph qa={`render-count-${tabKey}`}>
+        This panel has been rendered <Text.Strong>{count}</Text.Strong> time
         {count !== 1 ? 's' : ''}.
-      </p>
-      <p>
+      </Paragraph>
+      <Paragraph>
         {tabKey === 'tab1' &&
           'The active tab always gets fresh content on each render.'}
         {tabKey === 'tab2' &&
           'Inactive tabs use cached content - no re-render!'}
         {tabKey === 'tab3' &&
           'Switch between tabs to see the caching in action.'}
-      </p>
-    </div>
+      </Paragraph>
+    </Flow>
   );
 }
 
@@ -1251,9 +1253,11 @@ export const LazyRenderingWithRenderPanel: Story = {
     return (
       <Space gap="2x" flow="column">
         <Paragraph>
-          This example demonstrates lazy rendering with <code>renderPanel</code>{' '}
-          and <code>panelCacheKeys</code>. Each panel shows how many times it
-          has been rendered. With caching enabled, each tab renders only once!
+          This example demonstrates lazy rendering with{' '}
+          <Text monospace>renderPanel</Text> and{' '}
+          <Text monospace>panelCacheKeys</Text>. Each panel shows how many times
+          it has been rendered. With caching enabled, each tab renders only
+          once!
         </Paragraph>
 
         <Tabs
@@ -1353,30 +1357,32 @@ export const LazyRenderingWithKeepMounted: Story = {
           switch (key) {
             case 'tab1':
               return (
-                <div>
-                  <strong>Dashboard</strong>
-                  <p>Your main dashboard with charts and statistics.</p>
-                </div>
+                <Flow gap="1x">
+                  <Text.Strong>Dashboard</Text.Strong>
+                  <Paragraph>
+                    Your main dashboard with charts and statistics.
+                  </Paragraph>
+                </Flow>
               );
             case 'tab2':
               return (
-                <div>
-                  <strong>Settings</strong>
-                  <p>
+                <Flow gap="1x">
+                  <Text.Strong>Settings</Text.Strong>
+                  <Paragraph>
                     Configure your preferences here. State is preserved when
                     switching tabs.
-                  </p>
-                </div>
+                  </Paragraph>
+                </Flow>
               );
             case 'tab3':
               return (
-                <div>
-                  <strong>Reports</strong>
-                  <p>
+                <Flow gap="1x">
+                  <Text.Strong>Reports</Text.Strong>
+                  <Paragraph>
                     Generate and view reports. Complex data tables would load
                     lazily.
-                  </p>
-                </div>
+                  </Paragraph>
+                </Flow>
               );
             default:
               return null;

@@ -10,6 +10,9 @@ import {
 import { userEvent, within } from 'storybook/test';
 
 import { Item } from '../../content/Item';
+import { Paragraph } from '../../content/Paragraph';
+import { Title } from '../../content/Title';
+import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { ItemButton } from '../ItemButton';
 
@@ -141,143 +144,143 @@ export const LabelOnly: Story = {
 
 export const Types: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <div>
-        <h4>Primary</h4>
+    <Flow gap="2x">
+      <Flow gap="1x">
+        <Title level={4}>Primary</Title>
         <Space>
           <ItemAction type="primary" icon={<IconEdit />} tooltip="Edit" />
           <ItemAction type="primary" icon={<IconCopy />} tooltip="Copy" />
           <ItemAction type="primary" icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-      <div>
-        <h4>Secondary</h4>
+      </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Secondary</Title>
         <Space>
           <ItemAction type="secondary" icon={<IconEdit />} tooltip="Edit" />
           <ItemAction type="secondary" icon={<IconCopy />} tooltip="Copy" />
           <ItemAction type="secondary" icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-      <div>
-        <h4>Neutral</h4>
+      </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Neutral</Title>
         <Space>
           <ItemAction type="neutral" icon={<IconEdit />} tooltip="Edit" />
           <ItemAction type="neutral" icon={<IconCopy />} tooltip="Copy" />
           <ItemAction type="neutral" icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-      <div>
-        <h4>Clear</h4>
+      </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Clear</Title>
         <Space>
           <ItemAction type="clear" icon={<IconEdit />} tooltip="Edit" />
           <ItemAction type="clear" icon={<IconCopy />} tooltip="Copy" />
           <ItemAction type="clear" icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-    </div>
+      </Flow>
+    </Flow>
   ),
 };
 
 export const Themes: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <div>
-        <h4>Default Theme</h4>
+    <Flow gap="2x">
+      <Flow gap="1x">
+        <Title level={4}>Default Theme</Title>
         <Space>
           <ItemAction theme="default" icon={<IconEdit />} tooltip="Edit" />
           <ItemAction theme="default" icon={<IconCopy />} tooltip="Copy" />
           <ItemAction theme="default" icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-      <div>
-        <h4>Danger Theme</h4>
+      </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Danger Theme</Title>
         <Space>
           <ItemAction theme="danger" icon={<IconEdit />} tooltip="Edit" />
           <ItemAction theme="danger" icon={<IconCopy />} tooltip="Copy" />
           <ItemAction theme="danger" icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-      <div>
-        <h4>Success Theme</h4>
+      </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Success Theme</Title>
         <Space>
           <ItemAction theme="success" icon={<IconEdit />} tooltip="Edit" />
           <ItemAction theme="success" icon={<IconCopy />} tooltip="Copy" />
           <ItemAction theme="success" icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-      <div>
-        <h4>Warning Theme</h4>
+      </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Warning Theme</Title>
         <Space>
           <ItemAction theme="warning" icon={<IconEdit />} tooltip="Edit" />
           <ItemAction theme="warning" icon={<IconCopy />} tooltip="Copy" />
           <ItemAction theme="warning" icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-      <div>
-        <h4>Note Theme</h4>
+      </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Note Theme</Title>
         <Space>
           <ItemAction theme="note" icon={<IconEdit />} tooltip="Edit" />
           <ItemAction theme="note" icon={<IconCopy />} tooltip="Copy" />
           <ItemAction theme="note" icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-      <div>
-        <h4>Special Theme</h4>
+      </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Special Theme</Title>
         <Space fill="#dark" padding="2x" radius="1x">
           <ItemAction theme="special" icon={<IconEdit />} tooltip="Edit" />
           <ItemAction theme="special" icon={<IconCopy />} tooltip="Copy" />
           <ItemAction theme="special" icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-    </div>
+      </Flow>
+    </Flow>
   ),
 };
 
 export const States: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <div>
-        <h4>Normal</h4>
+    <Flow gap="2x">
+      <Flow gap="1x">
+        <Title level={4}>Normal</Title>
         <Space>
           <ItemAction icon={<IconEdit />} tooltip="Edit" />
           <ItemAction icon={<IconCopy />} tooltip="Copy" />
           <ItemAction icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-      <div>
-        <h4>Disabled</h4>
+      </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Disabled</Title>
         <Space>
           <ItemAction isDisabled icon={<IconEdit />} tooltip="Edit" />
           <ItemAction isDisabled icon={<IconCopy />} tooltip="Copy" />
           <ItemAction isDisabled icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-      <div>
-        <h4>Loading</h4>
+      </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Loading</Title>
         <Space>
           <ItemAction isLoading icon={<IconEdit />} tooltip="Edit" />
           <ItemAction isLoading icon={<IconCopy />} tooltip="Copy" />
           <ItemAction isLoading icon={<IconTrash />} tooltip="Delete" />
         </Space>
-      </div>
-      <div>
-        <h4>Selected</h4>
+      </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Selected</Title>
         <Space>
           <ItemAction isSelected icon="checkbox" tooltip="Select" />
           <ItemAction icon="checkbox" tooltip="Select" isSelected={false} />
           <ItemAction isSelected icon={<IconStar />} tooltip="Favorite" />
         </Space>
-      </div>
-    </div>
+      </Flow>
+    </Flow>
   ),
 };
 
 export const InsideItemButton: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
-      <div>
-        <h4>Icon Only Actions</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+    <Flow gap="2x" width="max 600px">
+      <Flow gap="1x">
+        <Title level={4}>Icon Only Actions</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             type="outline"
             icon={<IconFile />}
@@ -303,12 +306,12 @@ export const InsideItemButton: Story = {
           >
             Report.xlsx
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Labels</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>With Labels</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             type="outline"
             icon={<IconFile />}
@@ -321,15 +324,15 @@ export const InsideItemButton: Story = {
           >
             Document.pdf
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Context Inheritance</h4>
-        <p style={{ fontSize: 14, color: '#666', marginBottom: 16 }}>
+      <Flow gap="1x">
+        <Title level={4}>Context Inheritance</Title>
+        <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           Actions automatically inherit type and theme from parent ItemButton
-        </p>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+        </Paragraph>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             type="primary"
             theme="default"
@@ -356,15 +359,15 @@ export const InsideItemButton: Story = {
           >
             Danger Button
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Override Context</h4>
-        <p style={{ fontSize: 14, color: '#666', marginBottom: 16 }}>
+      <Flow gap="1x">
+        <Title level={4}>Override Context</Title>
+        <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           Actions can override inherited type/theme
-        </p>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+        </Paragraph>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             type="outline"
             icon={<IconFile />}
@@ -398,12 +401,12 @@ export const InsideItemButton: Story = {
           >
             Item with Mixed Actions
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Different Sizes</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>With Different Sizes</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             type="outline"
             size="small"
@@ -443,15 +446,15 @@ export const InsideItemButton: Story = {
           >
             Large Button
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Hover Behavior</h4>
-        <p style={{ fontSize: 14, color: '#666', marginBottom: 16 }}>
+      <Flow gap="1x">
+        <Title level={4}>Hover Behavior</Title>
+        <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           Actions can appear only on hover
-        </p>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+        </Paragraph>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             autoHideActions
             type="outline"
@@ -480,9 +483,9 @@ export const InsideItemButton: Story = {
           >
             Long Item Name with Hover Actions
           </ItemButton>
-        </div>
-      </div>
-    </div>
+        </Flow>
+      </Flow>
+    </Flow>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -505,10 +508,10 @@ export const InsideItemButton: Story = {
 
 export const InsideItem: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
-      <div>
-        <h4>Basic Usage</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+    <Flow gap="2x" width="max 600px">
+      <Flow gap="1x">
+        <Title level={4}>Basic Usage</Title>
+        <Flow gap="1x" placeItems="start">
           <Item
             type="item"
             icon={<IconFile />}
@@ -534,12 +537,12 @@ export const InsideItem: Story = {
           >
             Report.xlsx
           </Item>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Different Item Types</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Different Item Types</Title>
+        <Flow gap="1x" placeItems="start">
           <Item
             type="primary"
             icon={<IconFile />}
@@ -576,12 +579,12 @@ export const InsideItem: Story = {
           >
             Neutral Item
           </Item>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Description</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>With Description</Title>
+        <Flow gap="1x" placeItems="start">
           <Item
             type="item"
             icon={<IconFile />}
@@ -610,12 +613,12 @@ export const InsideItem: Story = {
           >
             Report.xlsx
           </Item>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Theme Inheritance</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Theme Inheritance</Title>
+        <Flow gap="1x" placeItems="start">
           <Item
             type="item"
             theme="danger"
@@ -642,12 +645,12 @@ export const InsideItem: Story = {
           >
             Success Theme Item
           </Item>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Mixed Action Types</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Mixed Action Types</Title>
+        <Flow gap="1x" placeItems="start">
           <Item
             type="item"
             icon={<IconFile />}
@@ -666,12 +669,12 @@ export const InsideItem: Story = {
           >
             Item with Multiple Actions
           </Item>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Loading States</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>With Loading States</Title>
+        <Flow gap="1x" placeItems="start">
           <Item
             type="item"
             icon={<IconFile />}
@@ -684,16 +687,16 @@ export const InsideItem: Story = {
           >
             Item with Loading Action
           </Item>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Disabled State Inheritance</h4>
-        <p style={{ fontSize: 14, color: '#666', marginBottom: 8 }}>
+      <Flow gap="1x">
+        <Title level={4}>Disabled State Inheritance</Title>
+        <Paragraph preset="t4" color="#dark-03" margin="0 0 1x 0">
           Actions inherit disabled state from parent Item. Use isDisabled=false
           to keep action enabled.
-        </p>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+        </Paragraph>
+        <Flow gap="1x" placeItems="start">
           <Item
             isDisabled
             type="item"
@@ -724,12 +727,12 @@ export const InsideItem: Story = {
           >
             Disabled Item (delete action enabled)
           </Item>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Truncated Content</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Truncated Content</Title>
+        <Flow gap="1x" placeItems="start">
           <Item
             type="item"
             icon={<IconFile />}
@@ -744,9 +747,9 @@ export const InsideItem: Story = {
           >
             Very Long Item Name That Should Truncate With Actions
           </Item>
-        </div>
-      </div>
-    </div>
+        </Flow>
+      </Flow>
+    </Flow>
   ),
   parameters: {
     docs: {
@@ -760,12 +763,12 @@ export const InsideItem: Story = {
 
 export const InteractiveExample: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
-      <h4>Interactive File List</h4>
-      <p style={{ fontSize: 14, color: '#666', marginBottom: 16 }}>
+    <Flow gap="2x" width="max 600px">
+      <Title level={4}>Interactive File List</Title>
+      <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
         Click on the action buttons to see the interactions
-      </p>
-      <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      </Paragraph>
+      <Flow gap="1x" placeItems="start">
         <ItemButton
           type="outline"
           icon={<IconFile />}
@@ -847,8 +850,8 @@ export const InteractiveExample: Story = {
         >
           Presentation.pptx (hover to see actions)
         </ItemButton>
-      </div>
-    </div>
+      </Flow>
+    </Flow>
   ),
   parameters: {
     docs: {

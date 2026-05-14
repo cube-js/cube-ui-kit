@@ -5,6 +5,7 @@ import {
   Button,
   Flex,
   Layout,
+  Link,
   setGlobalPredefinedStates,
   tasty,
   Text,
@@ -347,7 +348,8 @@ export const RootStates: StoryObj = {
             {isCompact ? 'Disable' : 'Enable'} Compact Mode
           </Button>
           <Text preset="t3" color="#dark-03">
-            Sets <code>data-mode="compact"</code> on <code>&lt;html&gt;</code>
+            Sets <Text monospace>data-mode="compact"</Text> on{' '}
+            <Text monospace>&lt;html&gt;</Text>
           </Text>
         </Flex>
 
@@ -716,14 +718,14 @@ export const SupportsQueries: StoryObj = {
           styles={{ gridColumn: '1 / -1' }}
         >
           <Text>
-            Uses <code>@supports(display: grid-lanes)</code> and sets{' '}
-            <code>display: grid-lanes</code> when supported.
+            Uses <Text monospace>@supports(display: grid-lanes)</Text> and sets{' '}
+            <Text monospace>display: grid-lanes</Text> when supported.
           </Text>
           <Text preset="c1" color="#white.80">
             See:{' '}
-            <a href="https://css-tricks.com/masonry-layout-is-now-grid-lanes/">
+            <Link to="https://css-tricks.com/masonry-layout-is-now-grid-lanes/">
               CSS-Tricks article
-            </a>
+            </Link>
           </Text>
         </Block>
 
@@ -741,7 +743,8 @@ export const SupportsQueries: StoryObj = {
         ))}
       </SupportsQueryBox>
       <Text preset="c1" color="#warning">
-        Tip: selector support checks use <code>@supports($, :has(*))</code>.
+        Tip: selector support checks use{' '}
+        <Text monospace>@supports($, :has(*))</Text>.
       </Text>
     </Flex>
   ),

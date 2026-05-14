@@ -3,6 +3,9 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
+import { Block } from '../../Block';
+import { Paragraph } from '../../content/Paragraph';
+import { Text } from '../../content/Text';
 
 import { Tooltip } from './Tooltip';
 import { CubeTooltipProviderProps, TooltipProvider } from './TooltipProvider';
@@ -98,30 +101,28 @@ Light.args = { isLight: true };
 Light.play = Default.play;
 
 const FunctionPatternTemplate: Story<CubeTooltipProviderProps> = (args) => (
-  <div style={{ padding: '20px' }}>
-    <p>This should show a div with tooltip below:</p>
+  <Block padding="2.5x">
+    <Paragraph>This should show a div with tooltip below:</Paragraph>
     <TooltipProvider title="Tooltip with function pattern" {...args}>
       {(triggerProps, ref) => (
-        <div
+        <Block
           ref={ref as any}
           {...triggerProps}
-          style={{
-            padding: '8px 16px',
-            border: '2px solid #007acc',
-            borderRadius: '4px',
-            cursor: '$pointer',
-            display: 'inline-block',
-            backgroundColor: '#f0f8ff',
-            color: '#333',
-            fontWeight: 'bold',
-          }}
+          display="inline-block"
+          padding="1x 2x"
+          border="2bw solid #purple"
+          radius="0.5r"
+          cursor="pointer"
+          fill="#purple.10"
+          color="#dark"
+          styles={{ fontWeight: 'bold' }}
         >
           Hover over this non-focusable element
-        </div>
+        </Block>
       )}
     </TooltipProvider>
-    <p>The div should be visible above this text.</p>
-  </div>
+    <Paragraph>The div should be visible above this text.</Paragraph>
+  </Block>
 );
 
 export const FunctionPattern: typeof FunctionPatternTemplate =
@@ -143,28 +144,26 @@ FunctionPattern.play = async ({ canvasElement }) => {
 const DirectFunctionPatternTemplate: Story<CubeTooltipTriggerProps> = (
   args,
 ) => (
-  <div style={{ padding: '20px' }}>
-    <p>Direct TooltipTrigger with function pattern:</p>
+  <Block padding="2.5x">
+    <Paragraph>Direct TooltipTrigger with function pattern:</Paragraph>
     <TooltipTrigger {...args}>
       {(triggerProps, ref) => (
-        <span
+        <Text
           ref={ref as any}
           {...triggerProps}
-          style={{
-            padding: '4px 8px',
-            border: '1px solid #ff6b6b',
-            borderRadius: '4px',
-            cursor: '$pointer',
-            display: 'inline-block',
-            backgroundColor: '#ffe0e0',
-          }}
+          display="inline-block"
+          padding="0.5x 1x"
+          border="1bw solid #danger"
+          radius="0.5r"
+          cursor="pointer"
+          fill="#danger.10"
         >
           Direct function trigger
-        </span>
+        </Text>
       )}
       <Tooltip>Direct tooltip content</Tooltip>
     </TooltipTrigger>
-  </div>
+  </Block>
 );
 
 export const DirectFunctionPattern: typeof DirectFunctionPatternTemplate =

@@ -1,6 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Flex } from '../../layout/Flex';
 
 import { Checkbox, CubeCheckboxProps } from './Checkbox';
 
@@ -150,7 +151,7 @@ Disabled.args = {
 
 // Stories showing both checked and unchecked states for visual testing
 const MultiStateTemplate: StoryFn<CubeCheckboxProps> = (props) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+  <Flex flow="column" gap="2x">
     <Checkbox
       {...props}
       isSelected={false}
@@ -165,7 +166,7 @@ const MultiStateTemplate: StoryFn<CubeCheckboxProps> = (props) => (
     >
       {props.children} (checked)
     </Checkbox>
-  </div>
+  </Flex>
 );
 
 export const AllStates = MultiStateTemplate.bind({});
@@ -187,7 +188,7 @@ AllStatesInvalid.args = {
 };
 
 const IndeterminateMultiStateTemplate: StoryFn<CubeCheckboxProps> = (props) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+  <Flex flow="column" gap="2x">
     <Checkbox
       {...props}
       isSelected={false}
@@ -209,7 +210,7 @@ const IndeterminateMultiStateTemplate: StoryFn<CubeCheckboxProps> = (props) => (
     >
       {props.children} (checked)
     </Checkbox>
-  </div>
+  </Flex>
 );
 
 export const AllStatesWithIndeterminate = IndeterminateMultiStateTemplate.bind(

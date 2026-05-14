@@ -2,6 +2,7 @@ import { Meta, StoryObj } from '@storybook/react-vite';
 
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { KeyIcon } from '../../../icons/KeyIcon';
+import { Space } from '../../layout/Space';
 import { Item } from '../Item';
 
 import { ItemBadge } from './ItemBadge';
@@ -34,23 +35,23 @@ export const WithLabel: Story = {
 
 export const Types: Story = {
   render: () => (
-    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+    <Space gap="1x" placeItems="center">
       <ItemBadge icon={<KeyIcon />} type="primary" tooltip="Primary" />
       <ItemBadge icon={<KeyIcon />} type="secondary" tooltip="Secondary" />
       <ItemBadge icon={<KeyIcon />} type="neutral" tooltip="Neutral" />
       <ItemBadge icon={<KeyIcon />} type="clear" tooltip="Clear" />
-    </div>
+    </Space>
   ),
 };
 
 export const Themes: Story = {
   render: () => (
-    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+    <Space gap="1x" placeItems="center">
       <ItemBadge icon={<KeyIcon />} theme="default" tooltip="Default" />
       <ItemBadge icon={<KeyIcon />} theme="danger" tooltip="Danger" />
       <ItemBadge icon={<KeyIcon />} theme="success" tooltip="Success" />
       <ItemBadge icon={<KeyIcon />} theme="special" tooltip="Special" />
-    </div>
+    </Space>
   ),
 };
 

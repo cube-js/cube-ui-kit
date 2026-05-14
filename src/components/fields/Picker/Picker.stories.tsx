@@ -1,6 +1,9 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
+import { Text } from '../../content/Text';
+import { Flex } from '../../layout/Flex';
+
 import { Picker } from './Picker';
 
 const meta = {
@@ -49,7 +52,7 @@ export const MultipleSelection: Story = {
 
 export const IsClearable: Story = {
   render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Flex flow="column" gap="2x">
       <Picker
         placeholder="Select a fruit"
         label="Single Selection (Clearable)"
@@ -73,7 +76,7 @@ export const IsClearable: Story = {
           <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
         ))}
       </Picker>
-    </div>
+    </Flex>
   ),
 };
 
@@ -204,7 +207,7 @@ export const Controlled = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Flex flow="column" gap="2x">
       <Picker
         placeholder="Select a fruit"
         label="Favorite Fruit"
@@ -216,8 +219,8 @@ export const Controlled = () => {
           <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
         ))}
       </Picker>
-      <div>Selected: {selectedKey || 'None'}</div>
-    </div>
+      <Text>Selected: {selectedKey || 'None'}</Text>
+    </Flex>
   );
 };
 
@@ -225,7 +228,7 @@ export const ControlledMultiple = () => {
   const [selectedKeys, setSelectedKeys] = useState<string[]>(['apple']);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Flex flow="column" gap="2x">
       <Picker
         placeholder="Select fruits"
         label="Favorite Fruits"
@@ -244,14 +247,14 @@ export const ControlledMultiple = () => {
       >
         {(fruit) => <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>}
       </Picker>
-      <div>Selected: {selectedKeys.join(', ') || 'None'}</div>
-    </div>
+      <Text>Selected: {selectedKeys.join(', ') || 'None'}</Text>
+    </Flex>
   );
 };
 
 export const DifferentSizes: Story = {
   render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Flex flow="column" gap="2x">
       <Picker
         placeholder="Select a fruit"
         label="Small Picker"
@@ -282,7 +285,7 @@ export const DifferentSizes: Story = {
           <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
         ))}
       </Picker>
-    </div>
+    </Flex>
   ),
 };
 
