@@ -559,13 +559,19 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     // `focused` controls the visible focus indicator on the root.
     //
     // While editing, the inner `<input>` always has focus (FocusScope
-    // `autoFocus`), so we always show the focus indicator on the root —
-    // regardless of how the user activated edit mode (click vs keyboard).
+    // `autoFocus`), so we show the focus indicator on the root regardless
+    // of how the user activated edit mode (click vs keyboard).
     //
     // In display mode, we keep the original behaviour: only show the
     // indicator on keyboard focus (focus-visible), and only when the display
     // element is actually focusable (i.e. `isEditable`).
-    const showFocusRing = isEditing || (isFocusVisible && isEditable);
+    //
+    // When `keyboardActivation` is `false` the host (e.g. `Tabs`) owns the
+    // entire focus story for this control, so we suppress the focus ring
+    // entirely — including while editing — to avoid drawing a redundant
+    // indicator on top of the host's own focus ring.
+    const showFocusRing =
+      keyboardActivation && (isEditing || (isFocusVisible && isEditable));
 
     const mods = useMemo(
       () => ({

@@ -836,6 +836,23 @@ describe('<InlineInput />', () => {
       expect(root).toHaveAttribute('data-focused');
     });
 
+    it('suppresses the focus ring entirely when keyboardActivation is false (host owns focus)', async () => {
+      // Hosts like `Tabs` already render their own focus ring around the
+      // surrounding control. We must not draw a second ring on top while the
+      // user is editing the inline value.
+      const user = userEvent.setup();
+      const { getByText, getByTestId } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" keyboardActivation={false} />,
+      );
+
+      const root = getByTestId('II');
+      expect(root).not.toHaveAttribute('data-focused');
+
+      await user.dblClick(getByText('Hello'));
+      expect(root).toHaveAttribute('data-editing');
+      expect(root).not.toHaveAttribute('data-focused');
+    });
+
     it('clears the focus ring when keyboard-initiated edit mode ends', async () => {
       // Regression test: when entering edit mode via the keyboard, the
       // display span loses focus to the inner input. If `useFocusRing`'s

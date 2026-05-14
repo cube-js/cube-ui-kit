@@ -98,7 +98,7 @@ The `mods` property is automatically populated. Consumers can target these in th
 | ---------- | --------- | --------------------------------------------------------------------------------- |
 | editing    | `boolean` | Currently in edit mode                                                            |
 | editable   | `boolean` | `editTrigger` is `dblclick` or `click` and not disabled/read-only                 |
-| focused    | `boolean` | The component is focused — keyboard-focused on the display, **or** while editing |
+| focused    | `boolean` | The component is focused — keyboard-focused on the display, **or** while editing. Always `false` when `keyboardActivation={false}` (the host owns the focus indication). |
 | disabled   | `boolean` | `isDisabled` is `true`                                                            |
 | read-only  | `boolean` | `isReadOnly` is `true`                                                            |
 | styled     | `boolean` | `isStyled` is `true`                                                              |
@@ -261,7 +261,7 @@ By default the display element is keyboard-focusable (`tabIndex=0`, `role="butto
 
 <Story of={InlineInputStories.KeyboardActivation} />
 
-When `InlineInput` is embedded in a host that already owns keyboard activation (e.g. `Tabs` — each tab is a `<button>` that listens for `F2` itself), pass `keyboardActivation={false}` to avoid creating a nested tab stop inside the host. The imperative `ref.startEditing()` always works regardless of this setting, and the focus ring is suppressed in this mode (the host's focus ring is the one users see).
+When `InlineInput` is embedded in a host that already owns keyboard activation (e.g. `Tabs` — each tab is a `<button>` that listens for `F2` itself), pass `keyboardActivation={false}` to avoid creating a nested tab stop inside the host. The imperative `ref.startEditing()` always works regardless of this setting, and the focus ring is fully suppressed in this mode — **both in display and edit mode** — so the host's focus ring is the only one users see.
 
 ```jsx
 <InlineInput defaultValue="Press Enter to edit" />
