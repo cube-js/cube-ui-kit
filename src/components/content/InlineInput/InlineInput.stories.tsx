@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 
 import { Button } from '../../actions/Button/Button';
+import { Select } from '../../fields/Select/Select';
+import { Flex } from '../../layout/Flex';
 import { Title } from '../Title';
 
 import { CubeInlineInputRef, InlineInput } from './InlineInput';
@@ -114,6 +116,15 @@ const meta = {
     isReadOnly: {
       control: 'boolean',
       description: 'When true, edit mode cannot be entered.',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: 'boolean' },
+      },
+    },
+    isStyled: {
+      control: 'boolean',
+      description:
+        'When true, applies a styled wrapper (border, fill, padding, fixed height) so the component visually matches a TextInput.',
       table: {
         defaultValue: { summary: 'false' },
         type: { summary: 'boolean' },
@@ -308,6 +319,88 @@ export const KeyboardActivation: Story = {
       <InlineInput {...args} />
     </p>
   ),
+};
+
+export const Styled: Story = {
+  args: {
+    isStyled: true,
+    defaultValue: 'Click to rename',
+    width: '200px',
+  },
+  render: (args) => <InlineInput {...args} />,
+};
+
+export const SwapSelectWithRename: Story = {
+  args: {
+    isStyled: true,
+  },
+  render: function SwapSelectWithRenameStory(args) {
+    const OPTIONS = [
+      { key: 'draft', label: 'Draft' },
+      { key: 'published', label: 'Published' },
+      { key: 'archived', label: 'Archived' },
+    ];
+
+    const [selectedKey, setSelectedKey] = useState<string>('draft');
+    const [isRenaming, setIsRenaming] = useState(false);
+    const inputRef = useRef<CubeInlineInputRef>(null);
+
+    const selected = OPTIONS.find((o) => o.key === selectedKey);
+
+    const handleRename = () => {
+      setIsRenaming(true);
+      // Focus the input once it mounts.
+      requestAnimationFrame(() => {
+        inputRef.current?.startEditing();
+      });
+    };
+
+    const handleSubmit = (next: string) => {
+      const trimmed = next.trim();
+
+      if (!trimmed) return;
+
+      const idx = OPTIONS.findIndex((o) => o.key === selectedKey);
+
+      if (idx !== -1) OPTIONS[idx].label = trimmed;
+      setIsRenaming(false);
+    };
+
+    return (
+      <Flex gap="1x" placeItems="center">
+        {isRenaming ? (
+          <InlineInput
+            {...args}
+            ref={inputRef}
+            isStyled
+            width="200px"
+            defaultValue={selected?.label ?? ''}
+            editTrigger="none"
+            placeholder="New name"
+            aria-label="Rename option"
+            onSubmit={handleSubmit}
+            onCancel={() => setIsRenaming(false)}
+          />
+        ) : (
+          <Select
+            width="200px"
+            aria-label="Status"
+            selectedKey={selectedKey}
+            onSelectionChange={(key) => setSelectedKey(String(key))}
+          >
+            {OPTIONS.map((o) => (
+              <Select.Item key={o.key}>{o.label}</Select.Item>
+            ))}
+          </Select>
+        )}
+        <Button
+          onPress={isRenaming ? () => setIsRenaming(false) : handleRename}
+        >
+          {isRenaming ? 'Cancel' : 'Rename'}
+        </Button>
+      </Flex>
+    );
+  },
 };
 
 export const Overflow: Story = {
