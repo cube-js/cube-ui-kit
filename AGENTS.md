@@ -142,3 +142,22 @@ Refer to that file for:
 - **Compound components:** `Object.assign(Button, { Group: ButtonGroup, Split: ButtonSplit })`.
 - **Tasty re-exports:** Only types are re-exported from `@tenphi/tasty`. Runtime imports (`tasty`, `extractStyles`, `filterBaseProps`) come directly from `@tenphi/tasty`.
 
+## Cursor Cloud specific instructions
+
+### Environment
+
+- **Node.js** >= 22.14.0 and **pnpm** 10.32.0 are pre-installed.
+- After `pnpm install`, run `pnpm rebuild esbuild` — pnpm blocks esbuild's postinstall by default, but Vite (used by Storybook) requires the native esbuild binary.
+
+### Running services
+
+- **Storybook dev server**: `pnpm storybook` (port 6060). Note: Vite's unbundled dev mode generates hundreds of parallel module requests on first load, which may trigger `ERR_INSUFFICIENT_RESOURCES` in Chrome in resource-constrained VMs. If you need to visually verify components via `computerUse`, build a static Storybook (`pnpm build-storybook`) and serve it (`npx serve storybook-static -l 6060`) instead.
+- **Tests**: `pnpm test` (Vitest, single run) or `pnpm test-watch` (watch mode).
+- **Lint**: `pnpm fix` (ESLint + Prettier, auto-fix mode).
+- **Build**: `pnpm build` (tsdown, unbundled ESM output in `dist/`).
+
+### Key gotchas
+
+- Husky hooks are installed via `prepare` script during `pnpm install`. Pre-push hook runs `pnpm test`; pre-commit runs `pnpm lint-staged`. To skip hooks on commits use `git commit --no-verify`.
+- No external services (databases, Docker, APIs) are needed — this is a pure frontend component library.
+
