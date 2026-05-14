@@ -18,6 +18,7 @@ import { Badge } from '../../content/Badge/Badge';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
 import { Form } from '../../form/Form';
+import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
@@ -747,7 +748,7 @@ export const ControlledExample: StoryObj<
       </ListBox>
 
       <Text>
-        Selected: <strong>{selectedKey || 'None'}</strong>
+        Selected: <Text.Strong>{selectedKey || 'None'}</Text.Strong>
       </Text>
 
       <Space gap="1x" flow="row">
@@ -796,9 +797,9 @@ export const MultipleControlledExample: StoryObj<
 
       <Text>
         Selected:{' '}
-        <strong>
+        <Text.Strong>
           {selectedKeys.length ? selectedKeys.join(', ') : 'None'}
-        </strong>
+        </Text.Strong>
       </Text>
 
       <Space gap="1x" flow="row">
@@ -885,7 +886,7 @@ export const InPopover: StoryObj<CubeListBoxProps<any>>['render'] = () => {
   return (
     <Space gap="2x" flow="column" placeItems="start">
       <Text>
-        Selected technology: <strong>{selectedKey || 'None'}</strong>
+        Selected technology: <Text.Strong>{selectedKey || 'None'}</Text.Strong>
       </Text>
 
       <DialogTrigger type="popover" placement="bottom start">
@@ -1036,7 +1037,7 @@ export const VirtualizedList: StoryObj<CubeListBoxProps<any>>['render'] = (
       </ListBox>
 
       <Text>
-        Selected: <strong>{selected || 'None'}</strong>
+        Selected: <Text.Strong>{selected || 'None'}</Text.Strong>
       </Text>
     </Space>
   );
@@ -1089,7 +1090,7 @@ export const WithIcons: Story = {
 export const FocusBehavior: Story = {
   render: (args) => (
     <Space gap="3x" flow="column">
-      <div>
+      <Flow gap="1x">
         <Text preset="t3" weight="600">
           Standard Focus (focusOnHover=true)
         </Text>
@@ -1102,9 +1103,9 @@ export const FocusBehavior: Story = {
             <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
           ))}
         </ListBox>
-      </div>
+      </Flow>
 
-      <div>
+      <Flow gap="1x">
         <Text preset="t3" weight="600">
           No Focus on Hover (focusOnHover=false)
         </Text>
@@ -1117,7 +1118,7 @@ export const FocusBehavior: Story = {
             <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
           ))}
         </ListBox>
-      </div>
+      </Flow>
     </Space>
   ),
   args: {
@@ -1157,10 +1158,10 @@ export const EscapeKeyHandling: StoryObj<
       </ListBox>
 
       <Text>
-        Selected: <strong>{selectedKey || 'None'}</strong>
+        Selected: <Text.Strong>{selectedKey || 'None'}</Text.Strong>
       </Text>
       <Text>
-        Escape key pressed: <strong>{escapeCount} times</strong>
+        Escape key pressed: <Text.Strong>{escapeCount} times</Text.Strong>
       </Text>
       <Text preset="t4" color="#dark.60">
         Focus the ListBox and press Escape to trigger custom handling
@@ -1231,8 +1232,9 @@ export const WithHotkeys: Story = {
   render: (args) => (
     <Space gap="2x" flow="column">
       <Text>
-        Try pressing <strong>Ctrl+1</strong>, <strong>Ctrl+2</strong>, or{' '}
-        <strong>Ctrl+3</strong> to select options via hotkeys
+        Try pressing <Text.Strong>Ctrl+1</Text.Strong>,{' '}
+        <Text.Strong>Ctrl+2</Text.Strong>, or <Text.Strong>Ctrl+3</Text.Strong>{' '}
+        to select options via hotkeys
       </Text>
       <ListBox {...args}>
         <ListBox.Item key="new" hotkeys="ctrl+1">

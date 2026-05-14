@@ -15,11 +15,13 @@ import React, { useState } from 'react';
 import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
 import { EditIcon, TrashIcon } from '../../../icons';
+import { Block } from '../../Block';
 import { Card } from '../../content/Card/Card';
 import { HotKeys } from '../../content/HotKeys';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
+import { Flex } from '../../layout/Flex';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import {
@@ -627,10 +629,10 @@ export const ControlledSearch: StoryFn<CubeCommandMenuProps<any>> = (args) => {
   const [searchValue, setSearchValue] = useState('');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div>
-        <strong>Current search:</strong> "{searchValue}"
-      </div>
+    <Flex flow="column" gap="2x">
+      <Text>
+        <Text.Strong>Current search:</Text.Strong> "{searchValue}"
+      </Text>
       <CommandMenu
         width="20x 50x"
         {...args}
@@ -648,7 +650,7 @@ export const ControlledSearch: StoryFn<CubeCommandMenuProps<any>> = (args) => {
           </CommandMenu.Item>
         ))}
       </CommandMenu>
-    </div>
+    </Flex>
   );
 };
 
@@ -785,10 +787,10 @@ export const MultipleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
   const [selectedKeys, setSelectedKeys] = useState<string[]>(['copy', 'cut']);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div>
-        <strong>Selected:</strong> {selectedKeys.join(', ') || 'None'}
-      </div>
+    <Flex flow="column" gap="2x">
+      <Text>
+        <Text.Strong>Selected:</Text.Strong> {selectedKeys.join(', ') || 'None'}
+      </Text>
       <CommandMenu
         width="20x 50x"
         {...args}
@@ -807,7 +809,7 @@ export const MultipleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
           </CommandMenu.Item>
         ))}
       </CommandMenu>
-    </div>
+    </Flex>
   );
 };
 
@@ -820,10 +822,10 @@ export const SingleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div>
-        <strong>Selected:</strong> {selectedKey || 'None'}
-      </div>
+    <Flex flow="column" gap="2x">
+      <Text>
+        <Text.Strong>Selected:</Text.Strong> {selectedKey || 'None'}
+      </Text>
       <CommandMenu
         width="20x 50x"
         {...args}
@@ -844,7 +846,7 @@ export const SingleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
           </CommandMenu.Item>
         ))}
       </CommandMenu>
-    </div>
+    </Flex>
   );
 };
 
@@ -896,37 +898,28 @@ export const HotkeyTesting: StoryFn<CubeCommandMenuProps<any>> = (args) => {
   };
 
   return (
-    <div>
-      <div
-        style={{
-          marginBottom: '16px',
-          padding: '8px',
-          backgroundColor: '#f5f5f5',
-          borderRadius: '4px',
-        }}
-      >
-        <strong>Hotkey Test Instructions:</strong>
-        <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-          <li>Try pressing Ctrl+C (Copy)</li>
-          <li>Try pressing Ctrl+V (Paste)</li>
-          <li>Try pressing Ctrl+X (Cut)</li>
-          <li>Try pressing Ctrl+Z (Undo)</li>
-        </ul>
+    <Block>
+      <Block margin="0 0 2x 0" padding="1x" fill="#surface-2" radius="0.5x">
+        <Text.Strong>Hotkey Test Instructions:</Text.Strong>
+        <Flow as="ul" gap="0.5x" margin="1x 0" padding="0 0 0 2.5x">
+          <Block as="li">Try pressing Ctrl+C (Copy)</Block>
+          <Block as="li">Try pressing Ctrl+V (Paste)</Block>
+          <Block as="li">Try pressing Ctrl+X (Cut)</Block>
+          <Block as="li">Try pressing Ctrl+Z (Undo)</Block>
+        </Flow>
         {lastAction && (
-          <div
-            style={{
-              marginTop: '8px',
-              padding: '8px',
-              backgroundColor: '#d4edda',
-              color: '#155724',
-              borderRadius: '4px',
-              border: '1px solid #c3e6cb',
-            }}
+          <Block
+            margin="1x 0 0 0"
+            padding="1x"
+            fill="#success-bg"
+            color="#success-text"
+            radius="0.5x"
+            border="#success"
           >
             {lastAction}
-          </div>
+          </Block>
         )}
-      </div>
+      </Block>
 
       <CommandMenu {...args} onAction={handleAction}>
         {basicCommands.map((command) => (
@@ -940,7 +933,7 @@ export const HotkeyTesting: StoryFn<CubeCommandMenuProps<any>> = (args) => {
           </CommandMenu.Item>
         ))}
       </CommandMenu>
-    </div>
+    </Block>
   );
 };
 
@@ -1138,10 +1131,10 @@ export const WithDialogContainer: StoryFn<CubeCommandMenuProps<any>> = (
   };
 
   return (
-    <div>
+    <Block>
       <Button onPress={handleOpenDialog}>Open Command Menu (Hook)</Button>
       {dialog.rendered}
-    </div>
+    </Block>
   );
 };
 
@@ -1281,27 +1274,30 @@ export const WithContextMenu = () => {
       onAction={onAction}
       {...props}
     >
-      <Menu.Item key="copy" icon={<span style={{ fontSize: '16px' }}>📋</span>}>
+      <Menu.Item
+        key="copy"
+        icon={<Text styles={{ fontSize: '16px' }}>📋</Text>}
+      >
         Copy
       </Menu.Item>
       <Menu.Item
         key="paste"
-        icon={<span style={{ fontSize: '16px' }}>📄</span>}
+        icon={<Text styles={{ fontSize: '16px' }}>📄</Text>}
       >
         Paste
       </Menu.Item>
-      <Menu.Item key="cut" icon={<span style={{ fontSize: '16px' }}>✂️</span>}>
+      <Menu.Item key="cut" icon={<Text styles={{ fontSize: '16px' }}>✂️</Text>}>
         Cut
       </Menu.Item>
       <Menu.Item
         key="delete"
-        icon={<span style={{ fontSize: '16px' }}>🗑️</span>}
+        icon={<Text styles={{ fontSize: '16px' }}>🗑️</Text>}
       >
         Delete
       </Menu.Item>
       <Menu.Item
         key="rename"
-        icon={<span style={{ fontSize: '16px' }}>✏️</span>}
+        icon={<Text styles={{ fontSize: '16px' }}>✏️</Text>}
       >
         Rename
       </Menu.Item>

@@ -5,6 +5,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { timeout } from '../../../utils/promise';
 import { Block } from '../../Block';
+import { Text } from '../../content/Text';
 import { Checkbox, CheckboxGroup } from '../../fields/Checkbox';
 import { ComboBox } from '../../fields/ComboBox';
 import { DateInput, parseAbsoluteDate } from '../../fields/DatePicker';
@@ -141,7 +142,8 @@ const AsyncValidationTemplate: StoryFn<typeof Form> = (args) => {
                 ? Promise.resolve()
                 : Promise.reject(
                     <>
-                      This field should be <b>at least 8 symbols</b> long
+                      This field should be{' '}
+                      <Text.Strong>at least 8 symbols</Text.Strong> long
                     </>,
                   );
             },
@@ -183,7 +185,8 @@ const ComplexErrorTemplate: StoryFn<typeof Form> = (args) => {
                 ? Promise.resolve()
                 : Promise.reject(
                     <>
-                      This field should be <b>at least 8 symbols</b> long
+                      This field should be{' '}
+                      <Text.Strong>at least 8 symbols</Text.Strong> long
                     </>,
                   );
             },

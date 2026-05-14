@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Button } from '../../actions/Button';
 import { Card } from '../../content/Card/Card';
+import { Text } from '../../content/Text';
 
 import { DisplayTransition } from './DisplayTransition';
 
@@ -104,7 +105,7 @@ export const Default: Story = {
               }}
               width="300px"
             >
-              <strong>Animated Card</strong>
+              <Text.Strong>Animated Card</Text.Strong>
               <br />
               Phase: {phase}
               <br />
@@ -149,7 +150,7 @@ export const SlowTransition: Story = {
               width="300px"
               style={{ '--transition': '.5s' }}
             >
-              <strong>Animated Card (Slow)</strong>
+              <Text.Strong>Animated Card (Slow)</Text.Strong>
               <br />
               Phase: {phase}
               <br />
@@ -202,7 +203,7 @@ export const NoMountAnimation: Story = {
               }}
               width="300px"
             >
-              <strong>Card (no mount animation)</strong>
+              <Text.Strong>Card (no mount animation)</Text.Strong>
               <br />
               Phase: {phase}
               <br />
@@ -245,13 +246,13 @@ export const NativeEventDetection: Story = {
               }}
               width="300px"
             >
-              <strong>Native Event Detection</strong>
+              <Text.Strong>Native Event Detection</Text.Strong>
               <br />
               Phase: {phase}
               <br />
               Is Shown: {isShownNow ? 'Yes' : 'No'}
               <br />
-              <em>Duration auto-detected from CSS</em>
+              <Text.Emphasis>Duration auto-detected from CSS</Text.Emphasis>
             </AnimatedCard>
           )}
         </DisplayTransition>
@@ -298,17 +299,17 @@ export const PreserveContent: Story = {
               }}
               width="300px"
             >
-              <strong>Preserve Content Demo</strong>
+              <Text.Strong>Preserve Content Demo</Text.Strong>
               <br />
               Content: {content}
               <br />
               Phase: {phase}
               <br />
-              <em>
+              <Text.Emphasis>
                 {args.preserveContent
                   ? 'Content preserved during exit'
                   : 'Content updates during exit'}
-              </em>
+              </Text.Emphasis>
             </AnimatedCard>
           )}
         </DisplayTransition>

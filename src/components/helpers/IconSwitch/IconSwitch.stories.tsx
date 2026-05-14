@@ -8,6 +8,7 @@ import { PauseIcon } from '../../../icons/PauseIcon';
 import { PlayIcon } from '../../../icons/PlayIcon';
 import { UpIcon } from '../../../icons/UpIcon';
 import { Button } from '../../actions/Button';
+import { Text } from '../../content/Text';
 
 import { IconSwitch } from './IconSwitch';
 
@@ -76,7 +77,7 @@ export const Default: Story = {
         </Button>
 
         <IconContainer>
-          <span>Current state: {isExpanded ? 'Expanded' : 'Collapsed'}</span>
+          <Text>Current state: {isExpanded ? 'Expanded' : 'Collapsed'}</Text>
           <IconBox>
             <IconSwitch contentKey={isExpanded ? 'up' : 'down'}>
               {isExpanded ? <UpIcon /> : <DownIcon />}
@@ -99,7 +100,7 @@ export const PlayPause: Story = {
         </Button>
 
         <IconContainer>
-          <span>Status: {isPlaying ? 'Playing' : 'Paused'}</span>
+          <Text>Status: {isPlaying ? 'Playing' : 'Paused'}</Text>
           <IconBox>
             <IconSwitch contentKey={isPlaying ? 'pause' : 'play'}>
               {isPlaying ? <PauseIcon /> : <PlayIcon />}
@@ -145,7 +146,7 @@ export const MultipleStates: Story = {
         </IconContainer>
 
         <IconContainer>
-          <span>Current state: {state}</span>
+          <Text>Current state: {state}</Text>
           <IconBox>
             <IconSwitch contentKey={state}>{icons[state]}</IconSwitch>
           </IconBox>
@@ -167,7 +168,7 @@ export const RapidToggle: Story = {
         </Button>
 
         <IconContainer>
-          <span>Count: {count}</span>
+          <Text>Count: {count}</Text>
           <IconBox>
             <IconSwitch contentKey={count}>{icons[count % 4]}</IconSwitch>
           </IconBox>
@@ -188,7 +189,7 @@ export const Nullish: Story = {
         </Button>
 
         <IconContainer>
-          <span>Icon is {shown ? 'shown' : 'hidden'}</span>
+          <Text>Icon is {shown ? 'shown' : 'hidden'}</Text>
           <IconBox>
             {/* Intentionally constant key: IconSwitch should still animate icon ↔ nullish */}
             <IconSwitch contentKey="constant">
@@ -228,9 +229,9 @@ export const NoWrapperWithKeyChange: Story = {
         </Button>
 
         <IconContainer>
-          <span>
+          <Text>
             isLoading: {String(isLoading)}, iconKey: {iconKey}
-          </span>
+          </Text>
           <IconSlotContainer>
             {/* Exact same usage as Button: noWrapper + contentKey changes */}
             <IconSwitch noWrapper contentKey={iconKey}>

@@ -2,6 +2,10 @@ import { useMemo, useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Paragraph } from '../../content/Paragraph';
+import { Text } from '../../content/Text';
+import { Flex } from '../../layout/Flex';
+import { Flow } from '../../layout/Flow';
 
 import { ComboBox, CubeComboBoxProps } from './ComboBox';
 
@@ -370,7 +374,7 @@ export const Controlled = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>('apple');
 
   return (
-    <div>
+    <Flow gap="2x">
       <ComboBox
         label="Controlled Fruit"
         placeholder="Select a fruit..."
@@ -382,10 +386,10 @@ export const Controlled = () => {
         <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
         <ComboBox.Item key="date">Date</ComboBox.Item>
       </ComboBox>
-      <div style={{ marginTop: '16px' }}>
-        Selected: <strong>{selectedKey || 'none'}</strong>
-      </div>
-    </div>
+      <Text>
+        Selected: <Text.Strong>{selectedKey || 'none'}</Text.Strong>
+      </Text>
+    </Flow>
   );
 };
 
@@ -394,7 +398,7 @@ export const AllowsCustomValue = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   return (
-    <div>
+    <Flow gap="2x">
       <ComboBox
         allowsCustomValue
         label="Tags"
@@ -412,19 +416,20 @@ export const AllowsCustomValue = () => {
         <ComboBox.Item key="angular">Angular</ComboBox.Item>
         <ComboBox.Item key="svelte">Svelte</ComboBox.Item>
       </ComboBox>
-      <div style={{ marginTop: '16px' }}>
-        <div>
-          Input value: <strong>{inputValue || 'none'}</strong>
-        </div>
-        <div>
-          Selected (committed): <strong>{selectedKey || 'none'}</strong>
-        </div>
-        <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+      <Flow gap="1x">
+        <Text>
+          Input value: <Text.Strong>{inputValue || 'none'}</Text.Strong>
+        </Text>
+        <Text>
+          Selected (committed):{' '}
+          <Text.Strong>{selectedKey || 'none'}</Text.Strong>
+        </Text>
+        <Paragraph preset="t4" color="#dark-03" margin="1x 0 0 0">
           Type text and press Enter or blur to commit. Select from list to
           commit immediately.
-        </div>
-      </div>
-    </div>
+        </Paragraph>
+      </Flow>
+    </Flow>
   );
 };
 
@@ -433,7 +438,7 @@ export const AllowsCustomValueNoItems: StoryObj<typeof ComboBox> = {
     const [inputValue, setInputValue] = useState('');
 
     return (
-      <div>
+      <Flow gap="2x">
         <ComboBox
           isLoading
           allowsCustomValue
@@ -442,10 +447,10 @@ export const AllowsCustomValueNoItems: StoryObj<typeof ComboBox> = {
           inputValue={inputValue}
           onInputChange={setInputValue}
         />
-        <div style={{ marginTop: '16px' }}>
-          Value: <strong>{inputValue || 'none'}</strong>
-        </div>
-      </div>
+        <Text>
+          Value: <Text.Strong>{inputValue || 'none'}</Text.Strong>
+        </Text>
+      </Flow>
     );
   },
   play: async ({ canvasElement }) => {
@@ -474,7 +479,7 @@ export const ClearOnBlur = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   return (
-    <div>
+    <Flow gap="2x">
       <ComboBox
         clearOnBlur
         label="Fruit"
@@ -487,17 +492,17 @@ export const ClearOnBlur = () => {
         <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
         <ComboBox.Item key="date">Date</ComboBox.Item>
       </ComboBox>
-      <div style={{ marginTop: '16px' }}>
-        <div>
-          Selected: <strong>{selectedKey || 'none'}</strong>
-        </div>
-        <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+      <Flow gap="1x">
+        <Text>
+          Selected: <Text.Strong>{selectedKey || 'none'}</Text.Strong>
+        </Text>
+        <Paragraph preset="t4" color="#dark-03" margin="1x 0 0 0">
           With clearOnBlur, selection and input are cleared when the input loses
           focus. This is useful for search-like scenarios where you want to
           reset after each interaction.
-        </div>
-      </div>
-    </div>
+        </Paragraph>
+      </Flow>
+    </Flow>
   );
 };
 
@@ -589,7 +594,7 @@ export const Disabled = () => (
 );
 
 export const ValidationStates = () => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+  <Flex flow="column" gap="2x">
     <ComboBox
       label="Valid"
       validationState="valid"
@@ -610,11 +615,11 @@ export const ValidationStates = () => (
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
       <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
     </ComboBox>
-  </div>
+  </Flex>
 );
 
 export const PopoverTriggers = () => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+  <Flex flow="column" gap="2x">
     <ComboBox label="Trigger on Input (default)" popoverTrigger="input">
       <ComboBox.Item key="apple">Apple</ComboBox.Item>
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
@@ -630,11 +635,11 @@ export const PopoverTriggers = () => (
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
       <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
     </ComboBox>
-  </div>
+  </Flex>
 );
 
 export const Sizes = () => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+  <Flex flow="column" gap="2x">
     <ComboBox label="Small" size="small" placeholder="Small size">
       <ComboBox.Item key="apple">Apple</ComboBox.Item>
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
@@ -650,7 +655,7 @@ export const Sizes = () => (
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
       <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
     </ComboBox>
-  </div>
+  </Flex>
 );
 
 export const WithItemsArray = () => {
@@ -695,7 +700,7 @@ export const SortSelectedToTop = () => {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Flex flow="column" gap="2x">
       <ComboBox<Fruit>
         label="With sorting (default)"
         placeholder="Select a fruit..."
@@ -713,11 +718,11 @@ export const SortSelectedToTop = () => {
       >
         {(item) => <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>}
       </ComboBox>
-      <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+      <Paragraph preset="t4" color="#dark-03" margin="1x 0 0 0">
         Open both dropdowns. The first one shows "Grape" at the top (default
         behavior with items prop). The second one keeps the original order.
-      </div>
-    </div>
+      </Paragraph>
+    </Flex>
   );
 };
 
@@ -817,7 +822,7 @@ export const IndependentControls = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   return (
-    <div>
+    <Flow gap="2x">
       <ComboBox
         label="Fruit"
         placeholder="Type to filter..."
@@ -832,19 +837,19 @@ export const IndependentControls = () => {
         <ComboBox.Item key="date">Date</ComboBox.Item>
         <ComboBox.Item key="elderberry">Elderberry</ComboBox.Item>
       </ComboBox>
-      <div style={{ marginTop: '16px' }}>
-        <div>
-          Input value: <strong>{inputValue || 'empty'}</strong>
-        </div>
-        <div>
-          Selected key: <strong>{selectedKey || 'none'}</strong>
-        </div>
-        <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+      <Flow gap="1x">
+        <Text>
+          Input value: <Text.Strong>{inputValue || 'empty'}</Text.Strong>
+        </Text>
+        <Text>
+          Selected key: <Text.Strong>{selectedKey || 'none'}</Text.Strong>
+        </Text>
+        <Paragraph preset="t4" color="#dark-03" margin="1x 0 0 0">
           inputValue and selectedKey are independent. Typing updates input and
           clears selection. Selecting from list updates both.
-        </div>
-      </div>
-    </div>
+        </Paragraph>
+      </Flow>
+    </Flow>
   );
 };
 
@@ -853,7 +858,7 @@ export const AllowsCustomValueNoCommitOnBlur = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   return (
-    <div>
+    <Flow gap="2x">
       <ComboBox
         allowsCustomValue
         shouldCommitOnBlur={false}
@@ -872,25 +877,26 @@ export const AllowsCustomValueNoCommitOnBlur = () => {
         <ComboBox.Item key="angular">Angular</ComboBox.Item>
         <ComboBox.Item key="svelte">Svelte</ComboBox.Item>
       </ComboBox>
-      <div style={{ marginTop: '16px' }}>
-        <div>
-          Input value: <strong>{inputValue || 'none'}</strong>
-        </div>
-        <div>
-          Selected (committed): <strong>{selectedKey || 'none'}</strong>
-        </div>
-        <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+      <Flow gap="1x">
+        <Text>
+          Input value: <Text.Strong>{inputValue || 'none'}</Text.Strong>
+        </Text>
+        <Text>
+          Selected (committed):{' '}
+          <Text.Strong>{selectedKey || 'none'}</Text.Strong>
+        </Text>
+        <Paragraph preset="t4" color="#dark-03" margin="1x 0 0 0">
           With shouldCommitOnBlur=false, custom values only commit on Enter key,
           not on blur.
-        </div>
-      </div>
-    </div>
+        </Paragraph>
+      </Flow>
+    </Flow>
   );
 };
 
 export const ShowAllOnNoResults: StoryObj<typeof ComboBox> = {
   render: () => (
-    <div>
+    <Flow gap="1x">
       <ComboBox
         label="Search Fruits"
         placeholder="Type 'xyz' to see behavior..."
@@ -901,11 +907,11 @@ export const ShowAllOnNoResults: StoryObj<typeof ComboBox> = {
         <ComboBox.Item key="date">Date</ComboBox.Item>
         <ComboBox.Item key="elderberry">Elderberry</ComboBox.Item>
       </ComboBox>
-      <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+      <Paragraph preset="t4" color="#dark-03" margin="1x 0 0 0">
         Type text that matches no items (e.g., "xyz"), then click the dropdown
         arrow or press Down/Up to see all options.
-      </div>
-    </div>
+      </Paragraph>
+    </Flow>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -938,12 +944,12 @@ export const VirtualizedList = () => {
   }));
 
   return (
-    <div>
-      <div style={{ marginBottom: '16px', fontSize: '14px', color: '#666' }}>
+    <Flow gap="2x">
+      <Paragraph preset="t4" color="#dark-03">
         Large list with {items.length} items. Virtualization is automatically
         enabled in the ListBox. Type to filter or scroll through the dropdown to
         test performance.
-      </div>
+      </Paragraph>
       <ComboBox<Item>
         label="Virtualized List"
         placeholder="Search from 1000 items..."
@@ -953,9 +959,9 @@ export const VirtualizedList = () => {
       >
         {(item) => <ComboBox.Item key={item.key}>{item.name}</ComboBox.Item>}
       </ComboBox>
-      <div style={{ marginTop: '16px' }}>
-        Selected: <strong>{selected || 'None'}</strong>
-      </div>
-    </div>
+      <Text>
+        Selected: <Text.Strong>{selected || 'None'}</Text.Strong>
+      </Text>
+    </Flow>
   );
 };

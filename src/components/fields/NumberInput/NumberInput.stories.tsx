@@ -2,6 +2,7 @@ import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Text } from '../../content/Text';
 
 import { NumberInput } from './NumberInput';
 
@@ -211,12 +212,12 @@ Disabled.args = {
 
 export const WithSuffixBefore = Template.bind({});
 WithSuffixBefore.args = {
-  suffix: <div>suffix</div>,
+  suffix: <Text>suffix</Text>,
   suffixPosition: 'before',
 };
 
 export const WithSuffixAfter = Template.bind({});
 WithSuffixAfter.args = {
-  suffix: <div>suffix</div>,
+  suffix: <Text>suffix</Text>,
   suffixPosition: 'after',
 };

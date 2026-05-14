@@ -1,5 +1,6 @@
 import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
+import { Text } from '../Text';
 
 import { TextItem } from './TextItem';
 
@@ -140,18 +141,18 @@ export const WithHighlight: Story = {
 export const HighlightCaseSensitive: Story = {
   render: () => (
     <Space flow="column" gap="2x">
-      <div>
-        <strong>Case-insensitive (default):</strong>
+      <Block>
+        <Text.Strong>Case-insensitive (default):</Text.Strong>
         <TextItem highlight="text">
           TEXT and text and Text are all highlighted
         </TextItem>
-      </div>
-      <div>
-        <strong>Case-sensitive:</strong>
+      </Block>
+      <Block>
+        <Text.Strong>Case-sensitive:</Text.Strong>
         <TextItem highlightCaseSensitive highlight="text">
           TEXT and text and Text - only lowercase is highlighted
         </TextItem>
-      </div>
+      </Block>
     </Space>
   ),
 };

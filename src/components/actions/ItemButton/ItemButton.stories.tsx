@@ -7,6 +7,10 @@ import {
 import { userEvent, within } from 'storybook/test';
 
 import { timeout } from '../../../utils/promise';
+import { Paragraph } from '../../content/Paragraph';
+import { Title } from '../../content/Title';
+import { Flow } from '../../layout/Flow';
+import { Grid } from '../../layout/Grid';
 import { ItemAction } from '../ItemAction';
 
 import { ItemButton } from './ItemButton';
@@ -148,7 +152,7 @@ export const AsLink: Story = {
 
 export const Variants: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 8 }}>
+    <Flow gap="1x">
       <ItemButton {...args} type="primary">
         Primary
       </ItemButton>
@@ -167,19 +171,19 @@ export const Variants: Story = {
       <ItemButton {...args} type="link">
         Link
       </ItemButton>
-    </div>
+    </Flow>
   ),
 };
 
 export const WithHotkeys: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
-      <div>
-        <h4>Buttons with Keyboard Shortcuts</h4>
-        <p style={{ fontSize: 14, color: '#666', marginBottom: 16 }}>
+    <Flow gap="2x" width="max 600px">
+      <Flow gap="1x">
+        <Title level={4}>Buttons with Keyboard Shortcuts</Title>
+        <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           Try pressing the keyboard shortcuts to trigger the buttons:
-        </p>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+        </Paragraph>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             hotkeys="cmd+s"
@@ -213,16 +217,16 @@ export const WithHotkeys: Story = {
           >
             Cancel
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Custom Suffix</h4>
-        <p style={{ fontSize: 14, color: '#666', marginBottom: 16 }}>
+      <Flow gap="1x">
+        <Title level={4}>With Custom Suffix</Title>
+        <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           When a custom suffix is provided, hotkeys are still functional but the
           shortcut hint is not shown:
-        </p>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+        </Paragraph>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             hotkeys="cmd+d"
@@ -231,12 +235,12 @@ export const WithHotkeys: Story = {
           >
             Download
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Different Hotkey Formats</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Different Hotkey Formats</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             hotkeys="ctrl+alt+d"
@@ -260,9 +264,9 @@ export const WithHotkeys: Story = {
           >
             Submit
           </ItemButton>
-        </div>
-      </div>
-    </div>
+        </Flow>
+      </Flow>
+    </Flow>
   ),
   parameters: {
     docs: {
@@ -276,10 +280,10 @@ export const WithHotkeys: Story = {
 
 export const WithCheckbox: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <div>
-        <h4>Selected Items (Checkbox Visible)</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+    <Flow gap="2x">
+      <Flow gap="1x">
+        <Title level={4}>Selected Items (Checkbox Visible)</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton {...args} isSelected={true}>
             Selected item with checkbox
           </ItemButton>
@@ -289,12 +293,12 @@ export const WithCheckbox: Story = {
           <ItemButton {...args} isSelected={true} type="outline">
             Outline selected button
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Non-Selected Items (Checkbox Hidden)</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Non-Selected Items (Checkbox Hidden)</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton {...args} isSelected={false}>
             Non-selected item with hidden checkbox
           </ItemButton>
@@ -304,12 +308,12 @@ export const WithCheckbox: Story = {
           <ItemButton {...args} isSelected={false} type="outline">
             Outline non-selected button
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Mixed Selection States</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Mixed Selection States</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton {...args} isSelected={true} type="primary">
             Selected Item 1
           </ItemButton>
@@ -319,12 +323,12 @@ export const WithCheckbox: Story = {
           <ItemButton {...args} isSelected={true} type="primary">
             Selected Item 3
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Comparison: Checkbox vs Regular Icon</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Comparison: Checkbox vs Regular Icon</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton {...args} isSelected={true}>
             With checkbox (selected)
           </ItemButton>
@@ -334,9 +338,9 @@ export const WithCheckbox: Story = {
           <ItemButton {...args} icon={<IconFile />}>
             With regular icon
           </ItemButton>
-        </div>
-      </div>
-    </div>
+        </Flow>
+      </Flow>
+    </Flow>
   ),
   parameters: {
     docs: {
@@ -354,10 +358,10 @@ export const WithLoading: Story = {
     const { isDisabled: _, ...cleanArgs } = args;
 
     return (
-      <div style={{ display: 'grid', gap: 16 }}>
-        <div>
-          <h4>Loading States with Auto Slot Selection</h4>
-          <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="2x">
+        <Flow gap="1x">
+          <Title level={4}>Loading States with Auto Slot Selection</Title>
+          <Flow gap="1x" placeItems="start">
             <ItemButton {...cleanArgs} isLoading={false} icon={<IconFile />}>
               Normal state
             </ItemButton>
@@ -374,12 +378,12 @@ export const WithLoading: Story = {
             <ItemButton {...cleanArgs} isLoading={true} prefix="$" suffix=".00">
               Loading (auto - no icons, fallback to icon)
             </ItemButton>
-          </div>
-        </div>
+          </Flow>
+        </Flow>
 
-        <div>
-          <h4>Loading with Different Types</h4>
-          <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+        <Flow gap="1x">
+          <Title level={4}>Loading with Different Types</Title>
+          <Flow gap="1x" placeItems="start">
             <ItemButton
               {...cleanArgs}
               type="primary"
@@ -404,12 +408,12 @@ export const WithLoading: Story = {
             >
               Outline Loading
             </ItemButton>
-          </div>
-        </div>
+          </Flow>
+        </Flow>
 
-        <div>
-          <h4>Explicit Loading Slots</h4>
-          <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+        <Flow gap="1x">
+          <Title level={4}>Explicit Loading Slots</Title>
+          <Flow gap="1x" placeItems="start">
             <ItemButton
               {...cleanArgs}
               isLoading={true}
@@ -437,16 +441,16 @@ export const WithLoading: Story = {
             >
               Loading in suffix slot
             </ItemButton>
-          </div>
-        </div>
+          </Flow>
+        </Flow>
 
-        <div>
-          <h4>Loading Behavior</h4>
-          <p style={{ fontSize: 14, color: '#666', marginBottom: 16 }}>
+        <Flow gap="1x">
+          <Title level={4}>Loading Behavior</Title>
+          <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
             Loading buttons are automatically disabled and cannot be interacted
             with:
-          </p>
-          <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          </Paragraph>
+          <Flow gap="1x" placeItems="start">
             <ItemButton
               {...cleanArgs}
               isLoading={true}
@@ -463,9 +467,9 @@ export const WithLoading: Story = {
             >
               Normal button (clickable)
             </ItemButton>
-          </div>
-        </div>
-      </div>
+          </Flow>
+        </Flow>
+      </Flow>
     );
   },
   parameters: {
@@ -480,15 +484,15 @@ export const WithLoading: Story = {
 
 export const AutoTooltipOnOverflow: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <div>
-        <h4>Auto Tooltip with tooltip=true</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+    <Flow gap="2x">
+      <Flow gap="1x">
+        <Title level={4}>Auto Tooltip with tooltip=true</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             tooltip={true}
             icon={<IconFile />}
-            style={{ width: '200px' }}
+            width="200px"
           >
             This text is long enough to overflow and trigger auto tooltip
           </ItemButton>
@@ -496,21 +500,21 @@ export const AutoTooltipOnOverflow: Story = {
             {...args}
             tooltip={true}
             icon={<IconExternalLink />}
-            style={{ width: '200px' }}
+            width="200px"
           >
             Short text
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Auto Tooltip with Configuration Object</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Auto Tooltip with Configuration Object</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             tooltip={{ auto: true, placement: 'top' }}
             icon={<IconFile />}
-            style={{ width: '180px' }}
+            width="180px"
           >
             Long text with custom placement that will show tooltip on top
           </ItemButton>
@@ -518,21 +522,21 @@ export const AutoTooltipOnOverflow: Story = {
             {...args}
             tooltip={{ auto: true, placement: 'bottom', delay: 500 }}
             icon={<IconExternalLink />}
-            style={{ width: '180px' }}
+            width="180px"
           >
             Text with custom delay and bottom placement
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Auto vs Explicit Tooltip</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Auto vs Explicit Tooltip</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             tooltip={{ title: 'Custom tooltip text', auto: true }}
             icon={<IconFile />}
-            style={{ width: '150px' }}
+            width="150px"
           >
             Explicit title takes priority over auto
           </ItemButton>
@@ -540,21 +544,21 @@ export const AutoTooltipOnOverflow: Story = {
             {...args}
             tooltip={{ auto: true }}
             icon={<IconExternalLink />}
-            style={{ width: '150px' }}
+            width="150px"
           >
             Auto tooltip shows this text when overflowed
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>No Tooltip When Not Overflowed</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>No Tooltip When Not Overflowed</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             tooltip={true}
             icon={<IconFile />}
-            style={{ width: '300px' }}
+            width="300px"
           >
             Short text (no tooltip)
           </ItemButton>
@@ -562,22 +566,22 @@ export const AutoTooltipOnOverflow: Story = {
             {...args}
             tooltip={{ auto: true, placement: 'top' }}
             icon={<IconExternalLink />}
-            style={{ width: '400px' }}
+            width="400px"
           >
             Normal length text (no tooltip)
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Auto Tooltip with Different Button Types</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Auto Tooltip with Different Button Types</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             tooltip={true}
             type="primary"
             icon={<IconFile />}
-            style={{ width: '140px' }}
+            width="140px"
           >
             Primary button with overflow
           </ItemButton>
@@ -586,7 +590,7 @@ export const AutoTooltipOnOverflow: Story = {
             tooltip={true}
             type="outline"
             icon={<IconExternalLink />}
-            style={{ width: '140px' }}
+            width="140px"
           >
             Outline button with overflow
           </ItemButton>
@@ -595,22 +599,22 @@ export const AutoTooltipOnOverflow: Story = {
             tooltip={true}
             type="clear"
             icon={<IconFile />}
-            style={{ width: '140px' }}
+            width="140px"
           >
             Clear button with overflow
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Auto Tooltip with Hotkeys</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Auto Tooltip with Hotkeys</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             tooltip={{ auto: true, placement: 'top' }}
             hotkeys="cmd+s"
             icon={<IconFile />}
-            style={{ width: '160px' }}
+            width="160px"
             onPress={() => alert('Save action triggered!')}
           >
             Save with very long descriptive name
@@ -621,14 +625,14 @@ export const AutoTooltipOnOverflow: Story = {
             hotkeys="cmd+o"
             type="primary"
             icon={<IconExternalLink />}
-            style={{ width: '160px' }}
+            width="160px"
             onPress={() => alert('Open action triggered!')}
           >
             Open document with long name
           </ItemButton>
-        </div>
-      </div>
-    </div>
+        </Flow>
+      </Flow>
+    </Flow>
   ),
   parameters: {
     docs: {
@@ -642,10 +646,10 @@ export const AutoTooltipOnOverflow: Story = {
 
 export const WithActionsLayouts: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
-      <div>
-        <h4>Different Sizes</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+    <Flow gap="2x" width="max 600px">
+      <Flow gap="1x">
+        <Title level={4}>Different Sizes</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -716,12 +720,12 @@ export const WithActionsLayouts: Story = {
           >
             XLarge Size
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Only Actions</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Only Actions</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -747,12 +751,12 @@ export const WithActionsLayouts: Story = {
           >
             Very long item name that should truncate properly with actions
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Left Icon</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>With Left Icon</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -780,12 +784,12 @@ export const WithActionsLayouts: Story = {
           >
             Very long item name with icon that should truncate properly
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Prefix</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>With Prefix</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -813,12 +817,12 @@ export const WithActionsLayouts: Story = {
           >
             Very long item name with prefix that should truncate properly
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Left Icon and Prefix</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>With Left Icon and Prefix</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -848,12 +852,12 @@ export const WithActionsLayouts: Story = {
           >
             Very long item name with icon and prefix that should truncate
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Inline Description</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>With Inline Description</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -883,12 +887,12 @@ export const WithActionsLayouts: Story = {
           >
             Very long item name with inline description that should truncate
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Inline Description and Left Icon</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>With Inline Description and Left Icon</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -920,12 +924,12 @@ export const WithActionsLayouts: Story = {
           >
             Very long item name with icon and inline description
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Block Description</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>With Block Description</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -955,12 +959,12 @@ export const WithActionsLayouts: Story = {
           >
             Very long item name with block description that should truncate
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Block Description and Left Icon</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>With Block Description and Left Icon</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -992,9 +996,9 @@ export const WithActionsLayouts: Story = {
           >
             Very long item name with icon and block description
           </ItemButton>
-        </div>
-      </div>
-    </div>
+        </Flow>
+      </Flow>
+    </Flow>
   ),
   parameters: {
     docs: {
@@ -1008,10 +1012,10 @@ export const WithActionsLayouts: Story = {
 
 export const WithHighlight: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
-      <div>
-        <h4>Basic Highlight</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+    <Flow gap="2x" width="max 600px">
+      <Flow gap="1x">
+        <Title level={4}>Basic Highlight</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton {...args} icon={<IconFile />} highlight="file">
             File management options
           </ItemButton>
@@ -1023,12 +1027,12 @@ export const WithHighlight: Story = {
           >
             Edit document settings
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Case Sensitivity</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Case Sensitivity</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1046,12 +1050,12 @@ export const WithHighlight: Story = {
           >
             Case-sensitive: FILE matches, file does not
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Multiple Matches</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Multiple Matches</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1060,12 +1064,12 @@ export const WithHighlight: Story = {
           >
             The quick brown fox jumps over the lazy dog
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>With Custom Highlight Styles</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>With Custom Highlight Styles</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1075,12 +1079,12 @@ export const WithHighlight: Story = {
           >
             Item with custom highlight style
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Combined with Other Features</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Combined with Other Features</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1106,9 +1110,9 @@ export const WithHighlight: Story = {
           >
             Item with actions and highlight
           </ItemButton>
-        </div>
-      </div>
-    </div>
+        </Flow>
+      </Flow>
+    </Flow>
   ),
   parameters: {
     docs: {
@@ -1122,15 +1126,13 @@ export const WithHighlight: Story = {
 
 export const WithActionsHoverBehavior: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
-      <div>
-        <h4>Only Actions</h4>
-        <p style={{ fontSize: 14, color: '#666', marginBottom: 16 }}>
+    <Flow gap="2x" width="max 600px">
+      <Flow gap="1x">
+        <Title level={4}>Only Actions</Title>
+        <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           Hover over the buttons to see the difference in action visibility
-        </p>
-        <div
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}
-        >
+        </Paragraph>
+        <Grid columns="1fr 1fr" gap="1x">
           <ItemButton
             {...args}
             type="outline"
@@ -1159,14 +1161,12 @@ export const WithActionsHoverBehavior: Story = {
           >
             Long item name with hover actions
           </ItemButton>
-        </div>
-      </div>
+        </Grid>
+      </Flow>
 
-      <div>
-        <h4>With Left Icon</h4>
-        <div
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}
-        >
+      <Flow gap="1x">
+        <Title level={4}>With Left Icon</Title>
+        <Grid columns="1fr 1fr" gap="1x">
           <ItemButton
             {...args}
             type="outline"
@@ -1197,14 +1197,12 @@ export const WithActionsHoverBehavior: Story = {
           >
             Long item name with icon and hover actions
           </ItemButton>
-        </div>
-      </div>
+        </Grid>
+      </Flow>
 
-      <div>
-        <h4>With Left Icon and Inline Description</h4>
-        <div
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}
-        >
+      <Flow gap="1x">
+        <Title level={4}>With Left Icon and Inline Description</Title>
+        <Grid columns="1fr 1fr" gap="1x">
           <ItemButton
             {...args}
             type="outline"
@@ -1239,14 +1237,12 @@ export const WithActionsHoverBehavior: Story = {
           >
             Long item name with icon and inline description
           </ItemButton>
-        </div>
-      </div>
+        </Grid>
+      </Flow>
 
-      <div>
-        <h4>With Left Icon and Block Description</h4>
-        <div
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}
-        >
+      <Flow gap="1x">
+        <Title level={4}>With Left Icon and Block Description</Title>
+        <Grid columns="1fr 1fr" gap="1x">
           <ItemButton
             {...args}
             type="outline"
@@ -1281,9 +1277,9 @@ export const WithActionsHoverBehavior: Story = {
           >
             Long item name with icon and block description
           </ItemButton>
-        </div>
-      </div>
-    </div>
+        </Grid>
+      </Flow>
+    </Flow>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -1307,22 +1303,22 @@ export const WithActionsHoverBehavior: Story = {
 
 export const Disabled: Story = {
   render: (args) => (
-    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
-      <div>
-        <h4>Basic Disabled Buttons</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+    <Flow gap="2x" width="max 600px">
+      <Flow gap="1x">
+        <Title level={4}>Basic Disabled Buttons</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton {...args} isDisabled={true}>
             Disabled button
           </ItemButton>
           <ItemButton {...args} isDisabled={false}>
             Enabled button
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Disabled with Icons</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Disabled with Icons</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton {...args} isDisabled={true} icon={<IconFile />}>
             Disabled with icon
           </ItemButton>
@@ -1334,12 +1330,12 @@ export const Disabled: Story = {
           >
             Disabled with both icons
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Disabled Across Different Types</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Disabled Across Different Types</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="primary"
@@ -1380,12 +1376,12 @@ export const Disabled: Story = {
           >
             Disabled clear
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Disabled Across Different Sizes</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Disabled Across Different Sizes</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             size="xsmall"
@@ -1426,12 +1422,12 @@ export const Disabled: Story = {
           >
             Disabled xlarge
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Disabled with Description</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Disabled with Description</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1452,12 +1448,12 @@ export const Disabled: Story = {
           >
             Disabled with block description
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Disabled with Actions</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Disabled with Actions</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1472,12 +1468,12 @@ export const Disabled: Story = {
           >
             Disabled with actions
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Disabled with Hotkeys</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Disabled with Hotkeys</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             isDisabled={true}
@@ -1487,12 +1483,12 @@ export const Disabled: Story = {
           >
             Disabled with hotkeys (won't work)
           </ItemButton>
-        </div>
-      </div>
+        </Flow>
+      </Flow>
 
-      <div>
-        <h4>Comparison: Enabled vs Disabled</h4>
-        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+      <Flow gap="1x">
+        <Title level={4}>Comparison: Enabled vs Disabled</Title>
+        <Flow gap="1x" placeItems="start">
           <ItemButton
             {...args}
             type="primary"
@@ -1525,9 +1521,9 @@ export const Disabled: Story = {
           >
             Disabled outline button
           </ItemButton>
-        </div>
-      </div>
-    </div>
+        </Flow>
+      </Flow>
+    </Flow>
   ),
   parameters: {
     docs: {

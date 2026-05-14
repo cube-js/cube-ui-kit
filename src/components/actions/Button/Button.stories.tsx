@@ -8,6 +8,7 @@ import {
 import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Text } from '../../content/Text';
 import { Space } from '../../layout/Space';
 
 import { Button, CubeButtonProps } from './Button';
@@ -182,17 +183,17 @@ const TypeStatesRow = ({
   theme?: CubeButtonProps['theme'];
 }) => (
   <Space flow="column">
-    <span
-      style={{
-        fontSize: 12,
+    <Text
+      styles={{
+        fontSize: '12px',
         fontWeight: 600,
         textTransform: 'uppercase',
         opacity: 0.6,
-        color: theme === 'special' ? '#fff' : undefined,
+        color: theme === 'special' ? '#white' : undefined,
       }}
     >
       {type}
-    </span>
+    </Text>
     <Space>
       <Button
         type={type}

@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
+import { Block } from '../../Block';
 import { Content } from '../../content/Content';
 import { Footer } from '../../content/Footer';
 import { Header } from '../../content/Header';
@@ -81,7 +82,7 @@ const Template: StoryFn<CubeDialogContainerProps> = (props) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div>
+    <Block>
       <Button onPress={() => setIsOpen(true)}>Open Dialog</Button>
       <DialogContainer
         {...props}
@@ -108,7 +109,7 @@ const Template: StoryFn<CubeDialogContainerProps> = (props) => {
           </Footer>
         </Dialog>
       </DialogContainer>
-    </div>
+    </Block>
   );
 };
 

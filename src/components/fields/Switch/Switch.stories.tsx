@@ -1,6 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Flex } from '../../layout/Flex';
 
 import { CubeSwitchProps, Switch } from './Switch';
 
@@ -152,7 +153,7 @@ WithLabel.args = {
 
 // Stories showing all sizes for visual comparison
 const SizesTemplate: StoryFn<CubeSwitchProps> = (props) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+  <Flex flow="column" gap="2x">
     <Switch {...props} size="small">
       Small switch
     </Switch>
@@ -162,7 +163,7 @@ const SizesTemplate: StoryFn<CubeSwitchProps> = (props) => (
     <Switch {...props} size="large">
       Large switch
     </Switch>
-  </div>
+  </Flex>
 );
 
 export const Sizes = SizesTemplate.bind({});
@@ -170,14 +171,14 @@ Sizes.args = {};
 
 // Stories showing both selected and unselected states for visual testing
 const MultiStateTemplate: StoryFn<CubeSwitchProps> = (props) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+  <Flex flow="column" gap="2x">
     <Switch {...props} isSelected={false}>
       {props.children} (unselected)
     </Switch>
     <Switch {...props} isSelected={true}>
       {props.children} (selected)
     </Switch>
-  </div>
+  </Flex>
 );
 
 export const AllStates = MultiStateTemplate.bind({});

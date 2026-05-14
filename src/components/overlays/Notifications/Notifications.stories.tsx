@@ -572,7 +572,8 @@ export const UnreadCountBadge = () => {
         {total > 0 && <Button onPress={clear}>Clear All ({total})</Button>}
       </Space>
       <Text>
-        Total: <strong>{total}</strong> · Unread: <strong>{unread}</strong>
+        Total: <Text.Strong>{total}</Text.Strong> · Unread:{' '}
+        <Text.Strong>{unread}</Text.Strong>
       </Text>
       {showList && (
         <PersistentNotificationsList

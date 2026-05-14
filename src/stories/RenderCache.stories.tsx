@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
 import { Block } from '../components/Block';
+import { Text } from '../components/content/Text';
 import { Radio } from '../components/fields/RadioGroup/Radio';
 import { Flow } from '../components/layout/Flow';
 import { Space } from '../components/layout/Space';
@@ -94,10 +95,10 @@ export const Default: Story = {
           fill="#purple.10"
           border="1px solid #purple"
         >
-          <strong>How it works:</strong> Only the selected item re-renders when
-          you switch tabs. Other items show their cached render count. This
-          demonstrates how RenderCache optimizes performance by avoiding
-          unnecessary re-renders.
+          <Text.Strong>How it works:</Text.Strong> Only the selected item
+          re-renders when you switch tabs. Other items show their cached render
+          count. This demonstrates how RenderCache optimizes performance by
+          avoiding unnecessary re-renders.
         </Block>
       </Flow>
     );

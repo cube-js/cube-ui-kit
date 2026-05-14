@@ -5,6 +5,7 @@ import { Switch } from '../../fields/Switch';
 import { Space } from '../../layout/Space';
 import { Divider } from '../Divider';
 import { Paragraph } from '../Paragraph';
+import { Text } from '../Text';
 
 import { Disclosure } from './Disclosure';
 
@@ -434,7 +435,7 @@ export const ContentPreservation: Story = {
       <Space flow="column" gap="4x">
         <Space flow="column" gap="2x">
           <Paragraph>
-            <strong>Case 1: Standard Trigger</strong>
+            <Text.Strong>Case 1: Standard Trigger</Text.Strong>
           </Paragraph>
           <Disclosure
             {...args}
@@ -463,7 +464,7 @@ export const ContentPreservation: Story = {
 
         <Space flow="column" gap="2x">
           <Paragraph>
-            <strong>Case 2: Custom Trigger (Function Syntax)</strong>
+            <Text.Strong>Case 2: Custom Trigger (Function Syntax)</Text.Strong>
           </Paragraph>
           <Disclosure
             {...args}

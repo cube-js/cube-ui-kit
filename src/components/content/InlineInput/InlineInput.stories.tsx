@@ -1,6 +1,10 @@
 import { useRef, useState } from 'react';
 
 import { Button } from '../../actions/Button/Button';
+import { Block } from '../../Block';
+import { Flex } from '../../layout/Flex';
+import { HotKeys } from '../HotKeys/HotKeys';
+import { Paragraph } from '../Paragraph';
 import { Title } from '../Title';
 
 import { CubeInlineInputRef, InlineInput } from './InlineInput';
@@ -209,10 +213,10 @@ export const ManualTrigger: Story = {
     const ref = useRef<CubeInlineInputRef>(null);
 
     return (
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+      <Flex gap="1.5x" placeItems="center">
         <InlineInput ref={ref} {...args} />
         <Button onPress={() => ref.current?.startEditing()}>Rename</Button>
-      </div>
+      </Flex>
     );
   },
 };
@@ -233,7 +237,7 @@ export const ControlledEditing: Story = {
     const [editing, setEditing] = useState(false);
 
     return (
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+      <Flex gap="1.5x" placeItems="center">
         <InlineInput
           {...args}
           isEditing={editing}
@@ -243,7 +247,7 @@ export const ControlledEditing: Story = {
         <Button onPress={() => setEditing((p) => !p)}>
           {editing ? 'Stop editing' : 'Start editing'}
         </Button>
-      </div>
+      </Flex>
     );
   },
 };
@@ -258,10 +262,10 @@ export const InHeading: Story = {
 
 export const InParagraph: Story = {
   render: (args) => (
-    <p>
+    <Paragraph>
       Hello, my name is <InlineInput {...args} defaultValue="John Doe" /> and I
       love editing text in place.
-    </p>
+    </Paragraph>
   ),
 };
 
@@ -299,14 +303,15 @@ export const KeyboardActivation: Story = {
     defaultValue: 'Tab to me, press Enter',
   },
   render: (args) => (
-    <p>
-      Use <kbd>Tab</kbd> to move focus to the value (a keyboard focus ring will
-      appear), then press <kbd>Enter</kbd>, <kbd>F2</kbd> or <kbd>Space</kbd> to
-      enter edit mode. Press <kbd>Esc</kbd> to cancel.
+    <Paragraph>
+      Use <HotKeys>Tab</HotKeys> to move focus to the value (a keyboard focus
+      ring will appear), then press <HotKeys>Enter</HotKeys>,{' '}
+      <HotKeys>F2</HotKeys> or <HotKeys>Space</HotKeys> to enter edit mode.
+      Press <HotKeys>Esc</HotKeys> to cancel.
       <br />
       <br />
       <InlineInput {...args} />
-    </p>
+    </Paragraph>
   ),
 };
 
@@ -316,14 +321,8 @@ export const Overflow: Story = {
       'A very long inline value that does not fit in the container and gets truncated with an ellipsis',
   },
   render: (args) => (
-    <div
-      style={{
-        width: 200,
-        padding: 8,
-        border: '1px dashed #ccc',
-      }}
-    >
+    <Block width="200px" padding="1x" border="1bw dashed #border">
       <InlineInput {...args} />
-    </div>
+    </Block>
   ),
 };

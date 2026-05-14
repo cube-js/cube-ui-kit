@@ -1463,7 +1463,7 @@ export const DescriptionOverflow: StoryFn<CubeItemProps> = (args) => (
 
     <Title level={5}>Comparison: Inline vs Block with Long Text</Title>
     <Space gap="2x" flow="column" placeItems="start">
-      <div>
+      <Block>
         <Item
           {...args}
           styles={{ width: '350px' }}
@@ -1474,8 +1474,8 @@ export const DescriptionOverflow: StoryFn<CubeItemProps> = (args) => (
         >
           Inline Example
         </Item>
-      </div>
-      <div>
+      </Block>
+      <Block>
         <Item
           {...args}
           styles={{ width: '350px' }}
@@ -1486,7 +1486,7 @@ export const DescriptionOverflow: StoryFn<CubeItemProps> = (args) => (
         >
           Block Example
         </Item>
-      </div>
+      </Block>
     </Space>
   </Space>
 );
@@ -2123,7 +2123,7 @@ export const DynamicAutoTooltip: StoryFn<CubeItemProps> = () => {
   const [width, setWidth] = useState('400px');
 
   return (
-    <div>
+    <Block>
       <Item
         qa="DynamicTooltipItem"
         icon={<IconUser />}
@@ -2140,7 +2140,7 @@ export const DynamicAutoTooltip: StoryFn<CubeItemProps> = () => {
       >
         Resize
       </Button>
-    </div>
+    </Block>
   );
 };
 
