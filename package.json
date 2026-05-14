@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.138.0",
+  "version": "0.138.1",
   "type": "module",
   "description": "UIKit for Cube Projects",
   "repository": {
@@ -10,7 +10,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
-  "packageManager": "pnpm@11.0.8",
+  "packageManager": "pnpm@10.32.0",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -75,7 +75,7 @@
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
     "@tenphi/glaze": "0.11.0",
-    "@tenphi/tasty": "2.6.0",
+    "@tenphi/tasty": "2.6.1",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",
@@ -172,6 +172,6 @@
   "license": "MIT",
   "engines": {
     "node": ">=22.14.0",
-    "pnpm": "^11.0.0"
+    "pnpm": "^10.0.0"
   }
 }
