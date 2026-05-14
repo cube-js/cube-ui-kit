@@ -827,7 +827,7 @@ export const RenderSummaryBehavior: Story = {
           1. renderSummary={'{false}'} (Icon-only triggers)
         </Title>
         <Space gap="2x" flow="row" placeItems="start">
-          <Flow gap="1x">
+          <Space flow="column" gap="1x">
             <Text preset="t4" weight="600">
               No Selection
             </Text>
@@ -845,9 +845,9 @@ export const RenderSummaryBehavior: Story = {
                 </FilterPicker.Item>
               ))}
             </FilterPicker>
-          </Flow>
+          </Space>
 
-          <Flow gap="1x">
+          <Space flow="column" gap="1x">
             <Text preset="t4" weight="600">
               With Selection
             </Text>
@@ -866,7 +866,7 @@ export const RenderSummaryBehavior: Story = {
                 </FilterPicker.Item>
               ))}
             </FilterPicker>
-          </Flow>
+          </Space>
         </Space>
         <Text preset="t4" color="#dark.60">
           ✓ Both triggers show only the icon, no text regardless of selection
@@ -876,7 +876,7 @@ export const RenderSummaryBehavior: Story = {
       <Space gap="2x" flow="column" placeItems="start">
         <Title preset="h6">2. Custom renderSummary returning null</Title>
         <Space gap="2x" flow="row" placeItems="start">
-          <Flow gap="1x">
+          <Space flow="column" gap="1x">
             <Text preset="t4" weight="600">
               No Selection
             </Text>
@@ -892,9 +892,9 @@ export const RenderSummaryBehavior: Story = {
                 </FilterPicker.Item>
               ))}
             </FilterPicker>
-          </Flow>
+          </Space>
 
-          <Flow gap="1x">
+          <Space flow="column" gap="1x">
             <Text preset="t4" weight="600">
               With Selection
             </Text>
@@ -911,7 +911,7 @@ export const RenderSummaryBehavior: Story = {
                 </FilterPicker.Item>
               ))}
             </FilterPicker>
-          </Flow>
+          </Space>
         </Space>
         <Text preset="t4" color="#dark.60">
           ✓ Both triggers show the placeholder when custom renderer returns null
@@ -921,7 +921,7 @@ export const RenderSummaryBehavior: Story = {
       <Space gap="2x" flow="column" placeItems="start">
         <Title preset="h6">3. Custom renderSummary with custom text</Title>
         <Space gap="2x" flow="row" placeItems="start">
-          <Flow gap="1x">
+          <Space flow="column" gap="1x">
             <Text preset="t4" weight="600">
               No Selection
             </Text>
@@ -940,9 +940,9 @@ export const RenderSummaryBehavior: Story = {
                 </FilterPicker.Item>
               ))}
             </FilterPicker>
-          </Flow>
+          </Space>
 
-          <Flow gap="1x">
+          <Space flow="column" gap="1x">
             <Text preset="t4" weight="600">
               With Selection
             </Text>
@@ -962,7 +962,7 @@ export const RenderSummaryBehavior: Story = {
                 </FilterPicker.Item>
               ))}
             </FilterPicker>
-          </Flow>
+          </Space>
         </Space>
         <Text preset="t4" color="#dark.60">
           ✓ Custom text is shown in both cases based on selection state
@@ -972,7 +972,7 @@ export const RenderSummaryBehavior: Story = {
       <Space gap="2x" flow="column" placeItems="start">
         <Title preset="h6">4. Custom renderSummary with JSX</Title>
         <Space gap="2x" flow="row" placeItems="start">
-          <Flow gap="1x">
+          <Space flow="column" gap="1x">
             <Text preset="t4" weight="600">
               No Selection
             </Text>
@@ -997,9 +997,9 @@ export const RenderSummaryBehavior: Story = {
                 </FilterPicker.Item>
               ))}
             </FilterPicker>
-          </Flow>
+          </Space>
 
-          <Flow gap="1x">
+          <Space flow="column" gap="1x">
             <Text preset="t4" weight="600">
               With Selection
             </Text>
@@ -1025,7 +1025,7 @@ export const RenderSummaryBehavior: Story = {
                 </FilterPicker.Item>
               ))}
             </FilterPicker>
-          </Flow>
+          </Space>
         </Space>
         <Text preset="t4" color="#dark.60">
           ✓ Complex JSX renders correctly in both cases

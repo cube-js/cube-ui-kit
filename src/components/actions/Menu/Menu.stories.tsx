@@ -1421,7 +1421,7 @@ export const MenuSynchronization = () => {
         closes any other open menu.
       </Paragraph>
 
-      <Flow gap="3x" flexDirection="row">
+      <Space flow="row" gap="3x">
         <Card border padding="3x" margin="0 0 3x 0">
           <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
             Regular MenuTrigger
@@ -1474,10 +1474,10 @@ export const MenuSynchronization = () => {
             Right-click to open context menu
           </Paragraph>
         </Card>
-      </Flow>
+      </Space>
 
       <Alert type="info" title="Try it out">
-        <Flow gap="1x">
+        <Space flow="column" gap="1x">
           <Text>1. Open any menu by clicking a button</Text>
           <Text>
             2. Try opening another menu - the first one will automatically close
@@ -1486,7 +1486,7 @@ export const MenuSynchronization = () => {
             3. Right-click on the context menu card for a context menu
           </Text>
           <Text>4. Notice how only one menu can be open at any time</Text>
-        </Flow>
+        </Space>
       </Alert>
     </Flow>
   );
@@ -1690,7 +1690,7 @@ export const SubMenuCustomization = () => {
         placement, offset, and autoFocus behavior.
       </Paragraph>
 
-      <Flow gap="3x" flexDirection="row" flexWrap="wrap">
+      <Space flow="row wrap" gap="3x">
         {/* Default placement */}
         <Card border padding="3x" minWidth="250px">
           <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
@@ -1789,10 +1789,10 @@ export const SubMenuCustomization = () => {
             </Menu>
           </MenuTrigger>
         </Card>
-      </Flow>
+      </Space>
 
       <Alert type="info" title="SubMenu Features">
-        <Flow gap="1x">
+        <Space flow="column" gap="1x">
           <Text>
             • <Text.Strong>Keyboard Navigation:</Text.Strong> Use arrow keys to
             navigate between menus
@@ -1817,7 +1817,7 @@ export const SubMenuCustomization = () => {
             • <Text.Strong>Custom Positioning:</Text.Strong> Control placement,
             offset, and flip behavior
           </Text>
-        </Flow>
+        </Space>
       </Alert>
     </Flow>
   );

@@ -18,7 +18,6 @@ import { Badge } from '../../content/Badge/Badge';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
 import { Form } from '../../form/Form';
-import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
@@ -1090,7 +1089,7 @@ export const WithIcons: Story = {
 export const FocusBehavior: Story = {
   render: (args) => (
     <Space gap="3x" flow="column">
-      <Flow gap="1x">
+      <Space flow="column" gap="1x">
         <Text preset="t3" weight="600">
           Standard Focus (focusOnHover=true)
         </Text>
@@ -1103,9 +1102,9 @@ export const FocusBehavior: Story = {
             <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
           ))}
         </ListBox>
-      </Flow>
+      </Space>
 
-      <Flow gap="1x">
+      <Space flow="column" gap="1x">
         <Text preset="t3" weight="600">
           No Focus on Hover (focusOnHover=false)
         </Text>
@@ -1118,7 +1117,7 @@ export const FocusBehavior: Story = {
             <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
           ))}
         </ListBox>
-      </Flow>
+      </Space>
     </Space>
   ),
   args: {
