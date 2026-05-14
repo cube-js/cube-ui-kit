@@ -335,17 +335,16 @@ export const SwapSelectWithRename: Story = {
     isStyled: true,
   },
   render: function SwapSelectWithRenameStory(args) {
-    const OPTIONS = [
+    const [options, setOptions] = useState([
       { key: 'draft', label: 'Draft' },
       { key: 'published', label: 'Published' },
       { key: 'archived', label: 'Archived' },
-    ];
-
+    ]);
     const [selectedKey, setSelectedKey] = useState<string>('draft');
     const [isRenaming, setIsRenaming] = useState(false);
     const inputRef = useRef<CubeInlineInputRef>(null);
 
-    const selected = OPTIONS.find((o) => o.key === selectedKey);
+    const selected = options.find((o) => o.key === selectedKey);
 
     const handleRename = () => {
       setIsRenaming(true);
@@ -358,11 +357,14 @@ export const SwapSelectWithRename: Story = {
     const handleSubmit = (next: string) => {
       const trimmed = next.trim();
 
-      if (!trimmed) return;
+      if (trimmed) {
+        setOptions((prev) =>
+          prev.map((o) =>
+            o.key === selectedKey ? { ...o, label: trimmed } : o,
+          ),
+        );
+      }
 
-      const idx = OPTIONS.findIndex((o) => o.key === selectedKey);
-
-      if (idx !== -1) OPTIONS[idx].label = trimmed;
       setIsRenaming(false);
     };
 
@@ -388,7 +390,7 @@ export const SwapSelectWithRename: Story = {
             selectedKey={selectedKey}
             onSelectionChange={(key) => setSelectedKey(String(key))}
           >
-            {OPTIONS.map((o) => (
+            {options.map((o) => (
               <Select.Item key={o.key}>{o.label}</Select.Item>
             ))}
           </Select>
