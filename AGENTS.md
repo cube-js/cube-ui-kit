@@ -30,6 +30,19 @@ Only the docs relevant to authoring UI Kit components are listed here. Internal-
 | [debug.md](./docs/tasty/debug.md)                     | `tastyDebug` runtime API: inspect injected CSS, view cache metrics, chunk breakdowns, and troubleshoot style issues during development.                           |
 
 
+## Glaze Documentation
+
+Glaze documentation is bundled with this package in `docs/glaze/` (symlinked to `node_modules/@tenphi/glaze/docs` during development; copied at pack time by `scripts/prepare-docs.mjs`).
+
+`@tenphi/glaze` is the OKHSL-based palette engine that powers `src/tokens/palette.ts`. Refer to these docs when working on color tokens, theme generation, or contrast tuning.
+
+| File                                            | Description                                                                                                                              |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| [methodology.md](./docs/glaze/methodology.md)   | Practical guide for designing a Glaze palette: default-neutral + sibling-theme model, hue/saturation choices, state ramps, and recipes.  |
+| [api.md](./docs/glaze/api.md)                   | API reference: `glaze()`, `glaze.palette()`, `glaze.from()`, `glaze.fromHex()`, theme methods (`extend`, `colors`, `toTokens`), options. |
+| [migration.md](./docs/glaze/migration.md)       | Integration guide: exporting tokens, prefix mapping, migrating off legacy color systems without breaking dark-mode wiring.               |
+
+
 ## Project Structure
 
 ```
