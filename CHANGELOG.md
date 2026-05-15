@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.138.3
+
+### Patch Changes
+
+- [#1169](https://github.com/cube-js/cube-ui-kit/pull/1169) [`5434b4ef`](https://github.com/cube-js/cube-ui-kit/commit/5434b4ef8c16ed40e5fe4810e2f2ccfecb4bea3e) Thanks [@tenphi](https://github.com/tenphi)! - **Menu sub-menus**: a single outside click now closes the entire menu hierarchy. Previously, with one or more nested `Menu.SubMenuTrigger`s open, only the deepest sub-menu closed on the first outside click — the parent menu and intermediate sub-menus stayed open until additional clicks. React Aria's `useOverlay` invokes `onClose` only for the topmost overlay in its `visibleOverlays` stack, so the fix lives in `SubMenuTrigger`: the nested `Popover` now receives a `shouldCloseOnInteractOutside` predicate (mirroring `MenuTrigger`'s) that schedules the parent's `onClose` via `setTimeout(0)`. The existing `parentContext.isClosing` cascade then collapses every level. `usePopoverSync`'s peer-coordination semantics (closing siblings when one popover opens) are unchanged. Existing close paths — Escape, `DismissButton`, item selection — are untouched and continue to behave as before.
+
 ## 0.138.2
 
 ### Patch Changes
