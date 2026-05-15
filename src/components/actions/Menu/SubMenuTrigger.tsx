@@ -17,6 +17,7 @@ import {
 } from 'react-aria';
 import { useMenuTriggerState } from 'react-stately';
 
+import { useEvent } from '../../../_internal';
 import { generateRandomId } from '../../../utils/random';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { Popover } from '../../overlays/Modal';
@@ -313,6 +314,43 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
     };
   };
 
+  // Outside-click handling for the nested submenu Popover.
+  //
+  // React Aria's `useOverlay` keeps a module-level `visibleOverlays` stack and
+  // only invokes `onClose` for the topmost overlay (`onHide` gates on the
+  // stack tail). With root + N nested submenus open, a single outside click
+  // would otherwise only close the deepest submenu. Scheduling
+  // `parentContext.onClose()` here propagates the close upward; the existing
+  // `parentContext.isClosing` cascade (see `nestedMenuContext.isClosing` and
+  // the Popover's `isOpen={!parentContext.isClosing}`) collapses every
+  // intermediate submenu visually.
+  //
+  // Mirrors `MenuTrigger`'s predicate so clicks on `[data-popover-trigger]`
+  // and `[data-popover-dismiss]` elements behave consistently across nesting
+  // levels.
+  const shouldCloseOnInteractOutside = useEvent((el: Element) => {
+    if (!state.isOpen) return false;
+
+    const menuTriggerEl = el.closest('[data-popover-trigger]');
+    if (!menuTriggerEl) {
+      if (el.closest('[data-popover-dismiss]')) {
+        // Let the button's onPress fire first, then collapse the chain.
+        setTimeout(() => parentContext.onClose?.(), 0);
+        return false;
+      }
+      // True outside click: schedule parent close so the entire hierarchy
+      // cascades. `useOverlay`'s own `onHide` will close this submenu via the
+      // topmost-overlay rule.
+      setTimeout(() => parentContext.onClose?.(), 0);
+      return true;
+    }
+    // Click landed on a popover trigger (parent menu item, sibling submenu
+    // trigger, or a different menu's button). Don't close ourselves here —
+    // either the trigger handles it or `usePopoverSync` closes us via
+    // `popover:open`.
+    return false;
+  });
+
   // Provide context to the trigger element (already rendered MenuItem)
   const triggerContextValue = useMemo(
     () => ({
@@ -358,6 +396,7 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
           isOpen={!parentContext.isClosing}
           style={positionProps.style}
           placement={placement as Placement}
+          shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
           onClose={state.close}
           // Spread any additional overlay props
           {...overlayProps}
