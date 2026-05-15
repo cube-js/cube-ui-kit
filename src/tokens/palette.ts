@@ -293,7 +293,7 @@ defaultTheme.colors({
     base: 'surface',
     lightness: '-1',
     saturation: 0.5,
-    contrast: [1.4, 1.3],
+    contrast: [1.4, 1.5],
   },
   'accent-disabled-surface-text': {
     base: 'accent-disabled-surface',
@@ -506,7 +506,7 @@ specialTheme.colors({
     base: 'surface',
     lightness: '+1',
     saturation: 0.5,
-    contrast: [1.4, 1.3],
+    contrast: [1.4, 1.5],
     mode: 'fixed',
   },
   'accent-disabled-surface-text': {
