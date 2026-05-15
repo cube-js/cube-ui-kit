@@ -321,6 +321,28 @@ function fixTastyLinks(content, currentOutputPath) {
 }
 
 /**
+ * Convert glaze GitHub URLs to local docs/glaze/ paths.
+ *   https://github.com/tenphi/glaze/blob/main/docs/X.md -> {rel}/glaze/X.md
+ *
+ * Glaze's published docs/ folder doesn't include a README/index page, so the
+ * bare repo URL (https://github.com/tenphi/glaze) is intentionally left
+ * untouched and resolves to GitHub.
+ */
+function fixGlazeLinks(content, currentOutputPath) {
+  const currentDir = path.dirname(currentOutputPath);
+  const glazeDir = path.join(DOCS_DIR, 'glaze');
+
+  return content.replace(
+    /\[([^\]]*)\]\(https:\/\/github\.com\/tenphi\/glaze\/blob\/main\/docs\/([^)]+)\)/g,
+    (match, linkText, docFile) => {
+      let rel = path.relative(currentDir, path.join(glazeDir, docFile));
+      if (!rel.startsWith('.')) rel = './' + rel;
+      return `[${linkText}](${rel})`;
+    },
+  );
+}
+
+/**
  * Fix Base Properties links to point to docs/BaseProperties.md.
  * Handles: /base-properties, /BaseProperties, /docs/base-properties, /docs/docs-base-properties--docs
  */
@@ -406,13 +428,18 @@ log(
 );
 log(`Mapped ${storyIdToOutputPath.size} storybook IDs`);
 
-// Copy tasty docs from node_modules (replacing symlink with real files for publishing)
-const TASTY_PATH = path.join(DOCS_DIR, 'tasty');
-const TASTY_SOURCE = path.join('node_modules', '@tenphi', 'tasty', 'docs');
+// Copy vendored docs from node_modules (replacing symlinks with real files for publishing)
+const VENDORED_DOCS = [
+  { name: 'tasty', source: path.join('node_modules', '@tenphi', 'tasty', 'docs') },
+  { name: 'glaze', source: path.join('node_modules', '@tenphi', 'glaze', 'docs') },
+];
 
-await fs.rm(TASTY_PATH, { recursive: true, force: true });
-await fs.cp(TASTY_SOURCE, TASTY_PATH, { recursive: true });
-log('Copied tasty docs from node_modules');
+for (const { name, source } of VENDORED_DOCS) {
+  const target = path.join(DOCS_DIR, name);
+  await fs.rm(target, { recursive: true, force: true });
+  await fs.cp(source, target, { recursive: true });
+  log(`Copied ${name} docs from node_modules`);
+}
 
 // Clean output directory for components (stories go top-level alongside tasty/)
 await fs.rm(COMPONENT_OUT, { recursive: true, force: true });
@@ -431,6 +458,7 @@ for (const { docPath, outputPath, content } of allEntries) {
   );
   result = fixRelativeMdxLinks(result);
   result = fixTastyLinks(result, outputPath);
+  result = fixGlazeLinks(result, outputPath);
   result = fixBasePropertiesLinks(result, outputPath);
   result = fixFieldPropertiesLinks(result, outputPath);
 

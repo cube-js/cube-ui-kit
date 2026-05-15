@@ -293,7 +293,7 @@ defaultTheme.colors({
     base: 'surface',
     lightness: '-1',
     saturation: 0.5,
-    contrast: [1.4, 1.3],
+    contrast: [1.4, 1.5],
   },
   'accent-disabled-surface-text': {
     base: 'accent-disabled-surface',
@@ -450,6 +450,75 @@ const noteTheme = defaultTheme.extend({
 });
 
 // ============================================================================
+// Special theme (fixed-mode, NOT inherited from defaultTheme)
+// ============================================================================
+
+/**
+ * Standalone theme for `special`-variant components (hero CTAs, banners, etc.)
+ * that intentionally sit on a dark surface regardless of the active scheme.
+ *
+ * Every token here is `mode: 'fixed'` so the resolved value is identical in
+ * light, dark, and high-contrast. The shape is purpose-built (not a full
+ * mirror of `defaultTheme`) — only what `SPECIAL_*_STYLES` in
+ * `src/data/item-themes.ts` consumes is emitted.
+ *
+ * Token rundown:
+ *   - `surface` — dark L≈12 backdrop (same value as `#surface-inverse`).
+ *   - `accent-fill` / `accent-fill-hover` — brand-purple PRIMARY fill +
+ *     darker hover shade. Same anchor/contrast as `#primary-accent-surface*`
+ *     so values match today's `#primary` / `#primary-hover`.
+ *   - `accent-fill-text` — fixed white (= built-in `#white`), exposed for
+ *     explicit references.
+ *   - `accent-text` — dark-purple foreground readable on white. Used as
+ *     CLEAR-variant text on the always-white pill, and as the
+ *     pressed/focused border on the brand-purple primary fill. Matches the
+ *     legacy `#fixed-primary-text` alias (= `#primary-accent-surface-hover`).
+ *   - `accent-disabled-surface` / `accent-disabled-surface-text` —
+ *     brand-tinted disabled chip + label, contrast-driven against the fixed
+ *     dark `surface` so the disabled state is scheme-symmetric.
+ */
+const specialTheme = glaze(PURPLE_HUE, SEED_SATURATION);
+
+specialTheme.colors({
+  surface: { lightness: 12, saturation: 0.475, mode: 'fixed' },
+
+  'accent-fill-text': { lightness: 100, mode: 'fixed' },
+  'accent-fill': {
+    base: 'accent-fill-text',
+    lightness: '-1',
+    contrast: [4.5, 7],
+    mode: 'fixed',
+  },
+  'accent-fill-hover': {
+    base: 'accent-fill-text',
+    lightness: '-1',
+    contrast: [6, 8.5],
+    mode: 'fixed',
+  },
+  'accent-text': {
+    base: 'accent-fill-text',
+    lightness: '-1',
+    contrast: [6, 8.5],
+    mode: 'fixed',
+  },
+
+  'accent-disabled-surface': {
+    base: 'surface',
+    lightness: '+1',
+    saturation: 0.5,
+    contrast: [1.4, 1.5],
+    mode: 'fixed',
+  },
+  'accent-disabled-surface-text': {
+    base: 'accent-disabled-surface',
+    lightness: '+1',
+    saturation: 0.4,
+    contrast: 1.51,
+    mode: 'fixed',
+  },
+});
+
+// ============================================================================
 // Palette composition
 // ============================================================================
 
@@ -471,6 +540,7 @@ const palette = glaze.palette({
   danger: dangerTheme,
   warning: warningTheme,
   note: noteTheme,
+  special: specialTheme,
 });
 
 // ============================================================================
@@ -495,6 +565,7 @@ export const PALETTE_TOKENS: Styles = palette.tasty({
     danger: 'danger-',
     warning: 'warning-',
     note: 'note-',
+    special: 'special-',
   },
 }) as Styles;
 
@@ -506,5 +577,6 @@ export {
   dangerTheme,
   warningTheme,
   noteTheme,
+  specialTheme,
   palette,
 };
