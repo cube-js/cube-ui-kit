@@ -904,5 +904,87 @@ describe('<SubMenuTrigger />', () => {
         { timeout: 1500 },
       );
     });
+
+    it('should close every nested submenu and the root on a single outside click', async () => {
+      const deeplyNestedExample = (
+        <EventBusProvider>
+          <div>
+            <button data-qa="OutsideTarget">Outside</button>
+            <MenuTrigger>
+              <Button>Open Menu</Button>
+              <Menu width="220px">
+                <Menu.SubMenuTrigger>
+                  <Menu.Item key="file">File</Menu.Item>
+                  <Menu>
+                    <Menu.SubMenuTrigger>
+                      <Menu.Item key="export">Export</Menu.Item>
+                      <Menu>
+                        <Menu.SubMenuTrigger>
+                          <Menu.Item key="advanced">Advanced</Menu.Item>
+                          <Menu>
+                            <Menu.Item key="custom">Custom Format</Menu.Item>
+                          </Menu>
+                        </Menu.SubMenuTrigger>
+                      </Menu>
+                    </Menu.SubMenuTrigger>
+                  </Menu>
+                </Menu.SubMenuTrigger>
+              </Menu>
+            </MenuTrigger>
+          </div>
+        </EventBusProvider>
+      );
+
+      const { getByText, queryByText, getByTestId } =
+        renderWithRoot(deeplyNestedExample);
+
+      // Open root menu
+      await userEvent.click(getByText('Open Menu'));
+
+      await waitFor(() => {
+        expect(getByText('File')).toBeInTheDocument();
+      });
+
+      // Open first-level submenu
+      await userEvent.hover(getByText('File'));
+      await waitFor(
+        () => {
+          expect(getByText('Export')).toBeInTheDocument();
+        },
+        { timeout: 2000 },
+      );
+
+      // Open second-level submenu
+      await userEvent.hover(getByText('Export'));
+      await waitFor(
+        () => {
+          expect(getByText('Advanced')).toBeInTheDocument();
+        },
+        { timeout: 2000 },
+      );
+
+      // Open third-level submenu
+      await userEvent.hover(getByText('Advanced'));
+      await waitFor(
+        () => {
+          expect(getByText('Custom Format')).toBeInTheDocument();
+        },
+        { timeout: 2000 },
+      );
+
+      // Single outside click should collapse the entire chain
+      await userEvent.click(getByTestId('OutsideTarget'));
+
+      await waitFor(
+        () => {
+          // Every level — root + 3 nested submenus — must be gone
+          expect(queryByText('File')).not.toBeInTheDocument();
+          expect(queryByText('Export')).not.toBeInTheDocument();
+          expect(queryByText('Advanced')).not.toBeInTheDocument();
+          expect(queryByText('Custom Format')).not.toBeInTheDocument();
+        },
+        { timeout: 2000 },
+      );
+    });
   });
 });
