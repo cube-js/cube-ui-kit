@@ -790,25 +790,32 @@ export const NOTE_ITEM_STYLES: Styles = {
 } as const;
 
 // ---------- SPECIAL THEME ----------
+// Every color here resolves to a fixed-mode value (built-in `#white`, the
+// standalone `#special-*` theme in `src/tokens/palette.ts`, or `#clear`).
+// `mode: 'fixed'` makes the resolved OKHSL identical in light, dark, and
+// high-contrast, so the special theme renders the same regardless of scheme.
+// The only intentionally adaptive colors are `VALIDATION_STYLES.border`
+// (`#danger-text` / `#success-text`) — validation state is allowed to follow
+// the active scheme.
 export const SPECIAL_PRIMARY_STYLES: Styles = {
   outline: {
     '': '0 #white.0',
     focused: '1bw #white',
   },
   border: {
-    '': '#clear',
-    'pressed | focused': '#purple-text',
+    '': '#white.2',
+    'pressed | focused': '#white.4',
     disabled: '#clear',
   },
   fill: {
-    '': '#white #primary',
-    hovered: '#white #primary-hover',
-    pressed: '#white #primary',
-    disabled: '#primary-disabled.5',
+    '': '#white #special-accent-fill',
+    hovered: '#white #special-accent-fill-hover',
+    pressed: '#white #special-accent-fill',
+    disabled: '#special-accent-disabled-surface',
   },
   color: {
     '': '#white',
-    disabled: '#white.4',
+    disabled: '#special-accent-disabled-surface-text',
   },
 } as const;
 
@@ -837,10 +844,10 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
-    '': '#fixed-dark #white.0',
-    hovered: '#fixed-dark #white.18',
-    'pressed | (selected & !hovered)': '#fixed-dark #white.12',
-    disabled: '#fixed-dark #white.12',
+    '': '#special-surface #white.0',
+    hovered: '#special-surface #white.18',
+    'pressed | (selected & !hovered)': '#special-surface #white.12',
+    disabled: '#white.12',
   },
   color: {
     '': '#white',
@@ -881,9 +888,10 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
     disabled: '#white.12',
   },
   color: {
-    '': '#fixed-primary-text',
-    hovered: '#primary',
-    'pressed & hovered': '#fixed-primary-text',
+    // Dark-purple text on the always-white pill, fixed in all schemes.
+    '': '#special-accent-text',
+    hovered: '#special-accent-fill',
+    'pressed & hovered': '#special-accent-text',
     disabled: '#white.4',
   },
 } as const;
