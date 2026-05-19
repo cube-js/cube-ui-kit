@@ -100,6 +100,18 @@ ComponentName/
 | `pnpm audit-docs`               | Audit component API ↔ docs ↔ argTypes sync. Uses TS Compiler API for full type resolution. Options: `--component=Name` (single component), `--fix-stories` (auto-add/remove argTypes in `.stories.tsx`), `--fix-docs` (auto-update `### Style Properties` sections in `.docs.mdx`), `--json`, `--verbose`, `--all-props`. **Run after changing a component's API or adding a new component.** |
 
 
+## Environment & Local Development
+
+- **Required runtimes:** Node.js `>=22.14.0` and pnpm `^10` (`packageManager` is pinned to `pnpm@10.32.0` in `package.json`).
+- **Install step for Storybook/Vite:** after `pnpm install`, run `pnpm rebuild esbuild` because `pnpm-workspace.yaml` blocks `esbuild` postinstall by default.
+- **Storybook (dev):** `pnpm storybook` (port `6060`).
+- **Storybook (static fallback):** if Vite dev mode overloads constrained environments, run `pnpm build-storybook`, then serve `storybook-static` (for example `npx serve storybook-static -l 6060`) when visual verification is needed.
+- **Tests:** `pnpm test` (single run) or `pnpm test-watch`.
+- **Linting:** `pnpm lint` (check) and `pnpm fix` (auto-fix).
+- **Build:** `pnpm build` (tsdown, unbundled ESM output in `dist/`).
+- **Git hooks:** Husky installs via `prepare`; `pre-commit` runs `pnpm lint-staged`, and `pre-push` runs `pnpm test`. Skip hooks only when explicitly intended (`--no-verify` or `HUSKY=0`).
+- **External dependencies:** no databases, Docker services, or external APIs are required for normal local development.
+
 ## Stack
 
 - **Styling:** `@tenphi/tasty` — declarative token-aware CSS-in-JS

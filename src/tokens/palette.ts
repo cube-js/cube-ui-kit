@@ -64,6 +64,12 @@ defaultTheme.colors({
     saturation: 0.19,
     inherit: false,
   },
+  'surface-4': {
+    base: 'surface',
+    lightness: '-6',
+    saturation: 0.23,
+    inherit: false,
+  },
 
   // ---- Text on surfaces ----
   // The darkest text token uses an *absolute* lightness anchored at the very

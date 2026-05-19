@@ -23,6 +23,7 @@ export default {
     '#surface',
     '#surface-2',
     '#surface-3',
+    '#surface-4',
     '#surface-inverse',
     '#surface-text',
     '#surface-text-soft',

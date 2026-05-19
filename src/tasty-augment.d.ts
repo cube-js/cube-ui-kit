@@ -12,6 +12,7 @@ declare module '@tenphi/tasty' {
     surface: true;
     'surface-2': true;
     'surface-3': true;
+    'surface-4': true;
     'surface-text': true;
     'surface-text-soft': true;
     'surface-text-soft-2': true;
