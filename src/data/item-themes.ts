@@ -132,6 +132,21 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
   },
 } as const;
 
+// Identical to DEFAULT_OUTLINE_STYLES but uses `#surface-3` as the fill base,
+// designed to sit on `#surface-2` containers without blending in.
+export const DEFAULT_OUTLINE_2_STYLES: Styles = {
+  ...DEFAULT_OUTLINE_STYLES,
+  fill: {
+    '': '#surface-3 #dark.0',
+    hovered: '#surface-3 #dark.03',
+    pressed: '#surface-3 #dark.09',
+    selected: '#primary.09',
+    'selected & (hovered | focused)': '#primary.12',
+    'selected & pressed': '#primary.15',
+    disabled: '#disabled-surface',
+  },
+} as const;
+
 export const DEFAULT_CLEAR_STYLES: Styles = {
   // Non-selected = old NEUTRAL: transparent / dark-tinted neutral look.
   // Selected = old CLEAR: brand-tinted overlay over the surface.
@@ -255,6 +270,18 @@ export const DANGER_OUTLINE_STYLES: Styles = {
   },
 } as const;
 
+export const DANGER_OUTLINE_2_STYLES: Styles = {
+  ...DANGER_OUTLINE_STYLES,
+  fill: {
+    '': '#surface-3 #danger.0',
+    hovered: '#surface-3 #danger.1',
+    pressed: '#surface-3 #danger.05',
+    selected: '#danger.05',
+    'selected & hovered & !pressed': '#danger.1',
+    disabled: '#disabled-surface',
+  },
+} as const;
+
 export const DANGER_CLEAR_STYLES: Styles = {
   // Non-selected = old DANGER NEUTRAL: dark-tinted overlay; pressed switches
   // text to `#danger-text` (matches old neutral).
@@ -361,6 +388,18 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
   color: {
     '': '#success-text',
     disabled: '#disabled-surface-text',
+  },
+} as const;
+
+export const SUCCESS_OUTLINE_2_STYLES: Styles = {
+  ...SUCCESS_OUTLINE_STYLES,
+  fill: {
+    '': '#surface-3 #success.0',
+    hovered: '#surface-3 #success.1',
+    pressed: '#surface-3 #success.05',
+    selected: '#success.05',
+    'selected & hovered & !pressed': '#success.1',
+    disabled: '#disabled-surface',
   },
 } as const;
 
@@ -471,6 +510,18 @@ export const WARNING_OUTLINE_STYLES: Styles = {
   },
 } as const;
 
+export const WARNING_OUTLINE_2_STYLES: Styles = {
+  ...WARNING_OUTLINE_STYLES,
+  fill: {
+    '': '#surface-3 #warning.0',
+    hovered: '#surface-3 #warning.1',
+    pressed: '#surface-3 #warning.05',
+    selected: '#warning.05',
+    'selected & hovered & !pressed': '#warning.1',
+    disabled: '#disabled-surface',
+  },
+} as const;
+
 export const WARNING_CLEAR_STYLES: Styles = {
   // Non-selected = old WARNING NEUTRAL; selected = old WARNING CLEAR.
   border: {
@@ -575,6 +626,18 @@ export const NOTE_OUTLINE_STYLES: Styles = {
   color: {
     '': '#note-text',
     disabled: '#disabled-surface-text',
+  },
+} as const;
+
+export const NOTE_OUTLINE_2_STYLES: Styles = {
+  ...NOTE_OUTLINE_STYLES,
+  fill: {
+    '': '#surface-3 #note.0',
+    hovered: '#surface-3 #note.1',
+    pressed: '#surface-3 #note.05',
+    selected: '#note.05',
+    'selected & hovered & !pressed': '#note.1',
+    disabled: '#disabled-surface',
   },
 } as const;
 
@@ -786,30 +849,35 @@ export const NOTE_CARD_STYLES: Styles = {
 export type ItemVariant =
   | 'default.primary'
   | 'default.outline'
+  | 'default.outline-2'
   | 'default.clear'
   | 'default.link'
   | 'default.item'
   | 'default.card'
   | 'danger.primary'
   | 'danger.outline'
+  | 'danger.outline-2'
   | 'danger.clear'
   | 'danger.link'
   | 'danger.item'
   | 'danger.card'
   | 'success.primary'
   | 'success.outline'
+  | 'success.outline-2'
   | 'success.clear'
   | 'success.link'
   | 'success.item'
   | 'success.card'
   | 'warning.primary'
   | 'warning.outline'
+  | 'warning.outline-2'
   | 'warning.clear'
   | 'warning.link'
   | 'warning.item'
   | 'warning.card'
   | 'note.primary'
   | 'note.outline'
+  | 'note.outline-2'
   | 'note.clear'
   | 'note.link'
   | 'note.item'

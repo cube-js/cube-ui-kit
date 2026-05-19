@@ -23,14 +23,17 @@ import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
   DANGER_CLEAR_STYLES,
   DANGER_LINK_STYLES,
+  DANGER_OUTLINE_2_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
   DEFAULT_CLEAR_STYLES,
   DEFAULT_LINK_STYLES,
+  DEFAULT_OUTLINE_2_STYLES,
   DEFAULT_OUTLINE_STYLES,
   DEFAULT_PRIMARY_STYLES,
   NOTE_CLEAR_STYLES,
   NOTE_LINK_STYLES,
+  NOTE_OUTLINE_2_STYLES,
   NOTE_OUTLINE_STYLES,
   NOTE_PRIMARY_STYLES,
   SPECIAL_CLEAR_STYLES,
@@ -39,10 +42,12 @@ import {
   SPECIAL_PRIMARY_STYLES,
   SUCCESS_CLEAR_STYLES,
   SUCCESS_LINK_STYLES,
+  SUCCESS_OUTLINE_2_STYLES,
   SUCCESS_OUTLINE_STYLES,
   SUCCESS_PRIMARY_STYLES,
   WARNING_CLEAR_STYLES,
   WARNING_LINK_STYLES,
+  WARNING_OUTLINE_2_STYLES,
   WARNING_OUTLINE_STYLES,
   WARNING_PRIMARY_STYLES,
 } from '../../../data/item-themes';
@@ -84,7 +89,14 @@ export interface CubeButtonProps extends CubeActionProps {
   rightIcon?: DynamicIcon<ButtonMods>;
   isLoading?: boolean;
   isSelected?: boolean;
-  type?: 'primary' | 'danger' | 'link' | 'clear' | 'outline' | (string & {});
+  type?:
+    | 'primary'
+    | 'danger'
+    | 'link'
+    | 'clear'
+    | 'outline'
+    | 'outline-2'
+    | (string & {});
   size?:
     | 'xsmall'
     | 'small'
@@ -115,22 +127,27 @@ export interface CubeButtonProps extends CubeActionProps {
 export type ButtonVariant =
   | 'default.primary'
   | 'default.outline'
+  | 'default.outline-2'
   | 'default.clear'
   | 'default.link'
   | 'danger.primary'
   | 'danger.outline'
+  | 'danger.outline-2'
   | 'danger.clear'
   | 'danger.link'
   | 'success.primary'
   | 'success.outline'
+  | 'success.outline-2'
   | 'success.clear'
   | 'success.link'
   | 'warning.primary'
   | 'warning.outline'
+  | 'warning.outline-2'
   | 'warning.clear'
   | 'warning.link'
   | 'note.primary'
   | 'note.outline'
+  | 'note.outline-2'
   | 'note.clear'
   | 'note.link'
   | 'special.primary'
@@ -198,7 +215,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   },
   margin: {
     '': 0,
-    '@parent(button-split, >) & !:first-child & (type=outline | type=primary)':
+    '@parent(button-split, >) & !:first-child & (type=outline | type=outline-2 | type=primary)':
       '-1bw left',
   },
   zIndex: {
@@ -295,30 +312,35 @@ const ButtonElement = tasty({
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
+    'default.outline-2': DEFAULT_OUTLINE_2_STYLES,
     'default.clear': DEFAULT_CLEAR_STYLES,
     'default.link': DEFAULT_LINK_STYLES,
 
     // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
     'danger.outline': DANGER_OUTLINE_STYLES,
+    'danger.outline-2': DANGER_OUTLINE_2_STYLES,
     'danger.clear': DANGER_CLEAR_STYLES,
     'danger.link': DANGER_LINK_STYLES,
 
     // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
     'success.outline': SUCCESS_OUTLINE_STYLES,
+    'success.outline-2': SUCCESS_OUTLINE_2_STYLES,
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
 
     // Warning theme
     'warning.primary': WARNING_PRIMARY_STYLES,
     'warning.outline': WARNING_OUTLINE_STYLES,
+    'warning.outline-2': WARNING_OUTLINE_2_STYLES,
     'warning.clear': WARNING_CLEAR_STYLES,
     'warning.link': WARNING_LINK_STYLES,
 
     // Note theme
     'note.primary': NOTE_PRIMARY_STYLES,
     'note.outline': NOTE_OUTLINE_STYLES,
+    'note.outline-2': NOTE_OUTLINE_2_STYLES,
     'note.clear': NOTE_CLEAR_STYLES,
     'note.link': NOTE_LINK_STYLES,
 
@@ -523,6 +545,12 @@ export const Button = forwardRef(function Button(
     const sizeTokenValue =
       typeof size === 'number' ? `${size}px` : isCustomSize ? size : undefined;
 
+    // The `special` theme has no `outline-2` variant (it paints over
+    // `#special-surface`, not `#surface-2`/`#surface-3`); fall back to
+    // `outline` so the button still renders.
+    const effectiveType =
+      theme === 'special' && type === 'outline-2' ? 'outline' : type;
+
     return (
       <ButtonElement
         download={download}
@@ -530,9 +558,9 @@ export const Button = forwardRef(function Button(
         ref={handleRef}
         mods={{ ...actionProps.mods, ...modifiers }}
         disabled={isDisabledElement}
-        variant={`${theme}.${type ?? 'outline'}` as ButtonVariant}
+        variant={`${theme}.${effectiveType ?? 'outline'}` as ButtonVariant}
         data-theme={theme}
-        data-type={type ?? 'outline'}
+        data-type={effectiveType ?? 'outline'}
         data-size={size}
         data-popover-dismiss=""
         styles={styles}

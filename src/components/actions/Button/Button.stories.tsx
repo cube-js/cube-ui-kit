@@ -20,7 +20,7 @@ export default {
   argTypes: {
     /* Visual presentation */
     type: {
-      options: ['primary', 'outline', 'clear', 'link'],
+      options: ['primary', 'outline', 'outline-2', 'clear', 'link'],
       control: { type: 'radio' },
       description: 'Visual style variant of the button',
       table: {
@@ -164,9 +164,19 @@ const TemplateSizesOnlyIcon: StoryFn<CubeButtonProps> = ({
   </Space>
 );
 
-const BUTTON_TYPES = ['primary', 'outline', 'clear', 'link'] as const;
+const BUTTON_TYPES = [
+  'primary',
+  'outline',
+  'outline-2',
+  'clear',
+  'link',
+] as const;
 
-const SELECTED_TYPES: string[] = ['outline', 'clear'];
+const SELECTED_TYPES: string[] = ['outline', 'outline-2', 'clear'];
+
+// Types that ship a `#surface-2`-friendly fill base (`outline-2` paints over
+// `#surface-3` so it stands out from a `#surface-2` container).
+const SURFACE_2_TYPES: string[] = ['outline-2'];
 
 const BASE_MODS = {
   hovered: false,
@@ -300,6 +310,12 @@ const TypeStatesRow = ({
 const ThemeStatesTemplate: StoryFn<CubeButtonProps> = ({ theme }) => {
   const isSpecial = theme === 'special';
 
+  // `outline-2` paints over the default surface ladder (`#surface-3`) and has
+  // no counterpart in the special theme, which paints over `#special-surface`.
+  const visibleTypes = isSpecial
+    ? BUTTON_TYPES.filter((type) => type !== 'outline-2')
+    : BUTTON_TYPES;
+
   return (
     <Space
       flow="column"
@@ -308,9 +324,21 @@ const ThemeStatesTemplate: StoryFn<CubeButtonProps> = ({ theme }) => {
       fill={isSpecial ? '#black' : undefined}
       radius="1x"
     >
-      {BUTTON_TYPES.map((type) => (
-        <TypeStatesRow key={type} type={type} theme={theme} />
-      ))}
+      {visibleTypes.map((type) =>
+        SURFACE_2_TYPES.includes(type) ? (
+          <Space
+            key={type}
+            flow="column"
+            fill="#surface-2"
+            padding="1.5x"
+            radius="1x"
+          >
+            <TypeStatesRow type={type} theme={theme} />
+          </Space>
+        ) : (
+          <TypeStatesRow key={type} type={type} theme={theme} />
+        ),
+      )}
     </Space>
   );
 };
