@@ -23,7 +23,7 @@ A versatile action component that triggers commands and navigates users.
 
 ## Properties
 
-- **`type`** `'primary' | 'outline' | 'clear' | 'link'` (default: `outline`) — Visual style variant of the button
+- **`type`** `'primary' | 'outline' | 'outline-2' | 'clear' | 'link'` (default: `outline`) — Visual style variant of the button (`outline-2` is identical to `outline` but uses `#surface-3` as the base fill; not available for the `special` theme)
 - **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `default`) — Semantic colour palette theme
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Button size. Use `'inline'` for link-type buttons or a number/string for custom sizes (e.g. `64` or `'8x'`)
 - **`icon`** — Icon rendered before the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`

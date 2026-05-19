@@ -28,12 +28,14 @@ import {
   DANGER_CLEAR_STYLES,
   DANGER_ITEM_STYLES,
   DANGER_LINK_STYLES,
+  DANGER_OUTLINE_2_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
   DEFAULT_CARD_STYLES,
   DEFAULT_CLEAR_STYLES,
   DEFAULT_ITEM_STYLES,
   DEFAULT_LINK_STYLES,
+  DEFAULT_OUTLINE_2_STYLES,
   DEFAULT_OUTLINE_STYLES,
   DEFAULT_PRIMARY_STYLES,
   ItemVariant,
@@ -41,6 +43,7 @@ import {
   NOTE_CLEAR_STYLES,
   NOTE_ITEM_STYLES,
   NOTE_LINK_STYLES,
+  NOTE_OUTLINE_2_STYLES,
   NOTE_OUTLINE_STYLES,
   NOTE_PRIMARY_STYLES,
   SPECIAL_CLEAR_STYLES,
@@ -52,12 +55,14 @@ import {
   SUCCESS_CLEAR_STYLES,
   SUCCESS_ITEM_STYLES,
   SUCCESS_LINK_STYLES,
+  SUCCESS_OUTLINE_2_STYLES,
   SUCCESS_OUTLINE_STYLES,
   SUCCESS_PRIMARY_STYLES,
   WARNING_CARD_STYLES,
   WARNING_CLEAR_STYLES,
   WARNING_ITEM_STYLES,
   WARNING_LINK_STYLES,
+  WARNING_OUTLINE_2_STYLES,
   WARNING_OUTLINE_STYLES,
   WARNING_PRIMARY_STYLES,
 } from '../../../data/item-themes';
@@ -165,6 +170,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'header'
     | 'primary'
     | 'outline'
+    | 'outline-2'
     | 'clear'
     | 'link'
     | 'card'
@@ -541,6 +547,7 @@ const ItemElement = tasty({
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
+    'default.outline-2': DEFAULT_OUTLINE_2_STYLES,
     'default.clear': DEFAULT_CLEAR_STYLES,
     'default.link': DEFAULT_LINK_STYLES,
     'default.item': DEFAULT_ITEM_STYLES,
@@ -548,6 +555,7 @@ const ItemElement = tasty({
     // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
     'danger.outline': DANGER_OUTLINE_STYLES,
+    'danger.outline-2': DANGER_OUTLINE_2_STYLES,
     'danger.clear': DANGER_CLEAR_STYLES,
     'danger.link': DANGER_LINK_STYLES,
     'danger.item': DANGER_ITEM_STYLES,
@@ -555,6 +563,7 @@ const ItemElement = tasty({
     // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
     'success.outline': SUCCESS_OUTLINE_STYLES,
+    'success.outline-2': SUCCESS_OUTLINE_2_STYLES,
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
     'success.item': SUCCESS_ITEM_STYLES,
@@ -562,6 +571,7 @@ const ItemElement = tasty({
     // Warning theme
     'warning.primary': WARNING_PRIMARY_STYLES,
     'warning.outline': WARNING_OUTLINE_STYLES,
+    'warning.outline-2': WARNING_OUTLINE_2_STYLES,
     'warning.clear': WARNING_CLEAR_STYLES,
     'warning.link': WARNING_LINK_STYLES,
     'warning.item': WARNING_ITEM_STYLES,
@@ -569,6 +579,7 @@ const ItemElement = tasty({
     // Note theme
     'note.primary': NOTE_PRIMARY_STYLES,
     'note.outline': NOTE_OUTLINE_STYLES,
+    'note.outline-2': NOTE_OUTLINE_2_STYLES,
     'note.clear': NOTE_CLEAR_STYLES,
     'note.link': NOTE_LINK_STYLES,
     'note.item': NOTE_ITEM_STYLES,
@@ -919,12 +930,18 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       }
     };
 
+    // The `special` theme has no `outline-2` variant (it paints over
+    // `#special-surface`, not `#surface-2`/`#surface-3`); fall back to
+    // `outline` so the item still renders.
+    const effectiveType =
+      theme === 'special' && type === 'outline-2' ? 'outline' : type;
+
     return (
       <ItemElement
         ref={handleRef}
         variant={
-          theme && type
-            ? (`${type === 'header' ? 'default' : theme}.${type === 'header' ? 'item' : type}` as ItemVariant)
+          theme && effectiveType
+            ? (`${effectiveType === 'header' ? 'default' : theme}.${effectiveType === 'header' ? 'item' : effectiveType}` as ItemVariant)
             : undefined
         }
         disabled={finalIsDisabled}

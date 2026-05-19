@@ -37,7 +37,10 @@ const RadioButtonElement = tasty(Item, {
     gridTemplate:
       '"icon prefix label suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
     placeContent: 'center',
-    shadow: '$item-shadow',
+    shadow: {
+      '': false,
+      'tabs & selected': '$item-shadow',
+    },
     fill: {
       'selected & tabs': '#surface',
     },
@@ -88,6 +91,7 @@ const RadioWrapperElement = tasty({
     flow: 'column',
     preset: 'default',
     width: 'min-content',
+    radius: true,
     margin: {
       '': '1x right',
       button: '0',
@@ -97,6 +101,10 @@ const RadioWrapperElement = tasty({
       checked: 1,
     },
     flexGrow: 1,
+    outline: {
+      '': '1bw #primary-text.0 / 1bw',
+      ':focus-within': '1bw #primary-text / 1bw',
+    },
   },
 });
 

@@ -171,11 +171,6 @@ export const Variants: Story = {
             defaultActionKey="copy"
             type="outline"
           />
-          <Button.Split
-            actions={actions}
-            defaultActionKey="copy"
-            type="outline"
-          />
         </Space>
         <Space gap="2x">
           <Button.Split

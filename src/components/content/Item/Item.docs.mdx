@@ -30,7 +30,7 @@ A foundational component that provides a standardized layout and styling for ite
 - **`suffix`** `ReactNode` — Element rendered after the content (before rightIcon)
 - **`description`** `ReactNode` — Description text displayed with the item
 - **`descriptionPlacement`** `'inline' | 'block'` (default: `inline`) — How the description is positioned relative to the main content. Defaults to `'block'` for `type="card"` and `type="header"`
-- **`type`** `'item' | 'header' | 'primary' | 'outline' | 'clear' | 'link' | 'card'` (default: `item`) — Visual style variant
+- **`type`** `'item' | 'header' | 'primary' | 'outline' | 'outline-2' | 'clear' | 'link' | 'card'` (default: `item`) — Visual style variant
 - **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `default`) — Semantic colour palette theme
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Item size. Accepts custom number or string values
 - **`shape`** `'card' | 'button' | 'sharp' | 'pill'` (default: `button`) — Shape of the item border radius. Defaults to `'card'` for `type="card"`
@@ -92,7 +92,7 @@ The `mods` property accepts the following modifiers:
 - **`disabled`** `boolean` — Applied when isDisabled is true or when loading
 - **`loading`** `boolean` — Applied when isLoading is true
 - **`size`** `string` — Applied based on size prop value (xsmall, small, medium, large, xlarge, inline)
-- **`type`** `string` — Applied based on type prop value (item, header, primary, outline, clear, link, card)
+- **`type`** `string` — Applied based on type prop value (item, header, primary, outline, outline-2, clear, link, card)
 - **`theme`** `string` — Applied based on theme prop value (default, danger, success, special, warning, note)
 - **`shape`** `string` — Applied based on shape prop value (card, button, sharp, pill)
 
@@ -104,6 +104,7 @@ The `mods` property accepts the following modifiers:
 - `header` - Header appearance for section headers (only supports `default` theme, defaults to `descriptionPlacement="block"`, uses semantic heading tags via `level` prop)
 - `primary` - Primary styled item with prominent appearance
 - `outline` - Item with border outline styling; `isSelected` adds brand-tinted fill
+- `outline-2` - Same as `outline` but uses `#surface-3` as the base fill, designed to sit on `#surface-2` containers without blending in (not available for the `special` theme)
 - `clear` - Transparent item with minimal styling; `isSelected` adds brand-tinted fill
 - `link` - Link-styled item appearance (does not support icons or loading state)
 - `card` - Card appearance for notifications (supports `default`, `success`, `danger`, `warning`, `note` themes; defaults to `shape="card"`, `descriptionPlacement="block"`, uses semantic heading tags via `level` prop, and has `.5x` padding)

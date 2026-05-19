@@ -282,16 +282,6 @@ export const CustomButtonTypes: StoryFn<CubeRadioGroupProps> = () => (
       <Radio value="no">No</Radio>
       <Radio value="maybe">Maybe</Radio>
     </Radio.Group>
-    <Radio.Group
-      type="button"
-      buttonType="clear"
-      defaultValue="yes"
-      label="Clear"
-    >
-      <Radio value="yes">Yes</Radio>
-      <Radio value="no">No</Radio>
-      <Radio value="maybe">Maybe</Radio>
-    </Radio.Group>
   </>
 );
 

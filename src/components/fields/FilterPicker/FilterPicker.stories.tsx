@@ -1447,7 +1447,7 @@ export const DifferentTypes: Story = {
         ))}
       </FilterPicker>
 
-      <FilterPicker {...args} type="primary" placeholder="Primary">
+      <FilterPicker {...args} type="outline-2" placeholder="Outline 2">
         {fruits.slice(0, 3).map((fruit) => (
           <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
             {fruit.label}
@@ -1455,7 +1455,7 @@ export const DifferentTypes: Story = {
         ))}
       </FilterPicker>
 
-      <FilterPicker {...args} type="outline" placeholder="Outline">
+      <FilterPicker {...args} type="primary" placeholder="Primary">
         {fruits.slice(0, 3).map((fruit) => (
           <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
             {fruit.label}
