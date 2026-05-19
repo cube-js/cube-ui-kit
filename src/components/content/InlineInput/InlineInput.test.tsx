@@ -532,6 +532,117 @@ describe('<InlineInput />', () => {
 
       expect(ref.current?.getValue()).toBe('hello');
     });
+
+    // Regression: clicking "Rename" inside a closing Menu popover used to
+    // unmount the input because the popover's `<FocusScope restoreFocus>`
+    // synchronously yanked focus back to its trigger, which in turn fired
+    // `submitOnBlur` and committed-out of editing. After a programmatic
+    // `startEditing()`, an immediate blur must NOT commit; instead, the
+    // input is re-focused. Once the user actually types, the guard clears.
+    describe('startEditing() blur-side grace period', () => {
+      it('does not commit when the input blurs immediately after a programmatic startEditing()', async () => {
+        const ref = createRef<CubeInlineInputRef>();
+        const handleSubmit = vi.fn();
+        const { getByRole, queryByRole } = renderWithRoot(
+          <>
+            <button data-qa="OtherButton">Other</button>
+            <InlineInput ref={ref} defaultValue="X" onSubmit={handleSubmit} />
+          </>,
+        );
+
+        act(() => {
+          ref.current?.startEditing();
+        });
+
+        const input = getByRole('textbox') as HTMLInputElement;
+        expect(document.activeElement).toBe(input);
+
+        // Simulate the closing-overlay focus theft: move focus elsewhere
+        // immediately after `startEditing()`. With the guard, `submitOnBlur`
+        // should NOT commit and the input should remain mounted.
+        const otherButton = document.querySelector(
+          '[data-qa="OtherButton"]',
+        ) as HTMLButtonElement;
+        act(() => {
+          otherButton.focus();
+        });
+
+        await act(async () => {
+          // Let the deferred re-focus rAF run.
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+        });
+
+        expect(handleSubmit).not.toHaveBeenCalled();
+        expect(queryByRole('textbox')).toBeInTheDocument();
+      });
+
+      it('commits a blur that fires after the user has typed', () => {
+        const ref = createRef<CubeInlineInputRef>();
+        const handleSubmit = vi.fn();
+        const { getByRole } = renderWithRoot(
+          <>
+            <button data-qa="OtherButton">Other</button>
+            <InlineInput ref={ref} defaultValue="X" onSubmit={handleSubmit} />
+          </>,
+        );
+
+        act(() => {
+          ref.current?.startEditing();
+        });
+
+        const input = getByRole('textbox') as HTMLInputElement;
+        // User interacts → guard is cleared.
+        act(() => {
+          fireEvent.change(input, { target: { value: 'Y' } });
+        });
+
+        const otherButton = document.querySelector(
+          '[data-qa="OtherButton"]',
+        ) as HTMLButtonElement;
+        act(() => {
+          otherButton.focus();
+        });
+
+        expect(handleSubmit).toHaveBeenCalledWith('Y');
+      });
+
+      it('commits a blur once the grace window has passed', () => {
+        vi.useFakeTimers();
+        try {
+          const ref = createRef<CubeInlineInputRef>();
+          const handleSubmit = vi.fn();
+          const { getByRole } = renderWithRoot(
+            <>
+              <button data-qa="OtherButton">Other</button>
+              <InlineInput ref={ref} defaultValue="X" onSubmit={handleSubmit} />
+            </>,
+          );
+
+          act(() => {
+            ref.current?.startEditing();
+          });
+
+          // Advance past the 500ms grace window so a blur commits normally.
+          act(() => {
+            vi.advanceTimersByTime(600);
+          });
+
+          const input = getByRole('textbox') as HTMLInputElement;
+          expect(document.activeElement).toBe(input);
+
+          const otherButton = document.querySelector(
+            '[data-qa="OtherButton"]',
+          ) as HTMLButtonElement;
+          act(() => {
+            otherButton.focus();
+          });
+
+          expect(handleSubmit).toHaveBeenCalledWith('X');
+        } finally {
+          vi.useRealTimers();
+        }
+      });
+    });
   });
 
   describe('isStyled', () => {
