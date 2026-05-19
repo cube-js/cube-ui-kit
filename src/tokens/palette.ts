@@ -66,7 +66,7 @@ defaultTheme.colors({
   },
   'surface-4': {
     base: 'surface',
-    lightness: 94,
+    lightness: '-6',
     saturation: 0.23,
     inherit: false,
   },
