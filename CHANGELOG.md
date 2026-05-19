@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.138.6
+
+### Patch Changes
+
+- [#1177](https://github.com/cube-js/cube-ui-kit/pull/1177) [`bf362325`](https://github.com/cube-js/cube-ui-kit/commit/bf3623250190e80c856a4a4aaf9eb914acf561e7) Thanks [@tenphi](https://github.com/tenphi)! - Use `#surface-2` instead of `#surface` as the base fill for outline item actions and buttons across default, danger, success, warning, and note themes.
+
+  This gives outline controls a slightly elevated background on surface-level containers.
+
 ## 0.138.5
 
 ### Patch Changes
