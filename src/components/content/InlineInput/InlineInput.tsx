@@ -282,6 +282,12 @@ const InlineInputRoot = tasty({
 
 const STYLE_PROPS = [...BLOCK_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
+// Grace window after a programmatic `startEditing()` during which a blur
+// (typically a closing overlay's focus restoration) re-focuses the input
+// rather than committing. ~500ms covers the Menu/Popover EXIT_DURATION
+// (350ms in `Overlay.tsx`) with margin.
+const PROGRAMMATIC_EDIT_BLUR_GRACE_MS = 500;
+
 // =============================================================================
 // Component
 // =============================================================================
@@ -363,6 +369,19 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     // re-entry happens before they settle.
     const submitTokenRef = useRef(0);
 
+    // Timestamp of the most recent programmatic `startEditing()` call (via
+    // the imperative ref). Used to defeat a focus-theft race where a closing
+    // overlay's `<FocusScope restoreFocus>` yanks focus back to its trigger
+    // immediately after a consumer called `startEditing()` from inside the
+    // overlay's `onAction` (e.g. a Tabs menu "Rename" item). Without this
+    // guard the resulting blur would fire `submitOnBlur` and unmount the
+    // input the user just opened.
+    //
+    // Cleared on first user interaction inside the input (`handleInputChange`
+    // / `handleKeyDown`) and on leaving editing mode, so any later blur
+    // commits normally.
+    const programmaticEditStartRef = useRef<number | null>(null);
+
     // Synchronous mirror of `isEditing`. We need this because cancel/commit
     // call user callbacks (`onCancel`/`onSubmit`) that may synchronously
     // re-focus another element — that causes a synchronous blur on the
@@ -405,6 +424,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
 
       if (!next && !allowEmpty) {
         isEditingRef.current = false;
+        programmaticEditStartRef.current = null;
         setIsEditing(false);
         onCancel?.();
 
@@ -418,6 +438,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
         setOptimisticValue(next);
       }
       isEditingRef.current = false;
+      programmaticEditStartRef.current = null;
       setValue(next);
       setIsEditing(false);
 
@@ -444,6 +465,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     const cancel = useEvent(() => {
       if (!isEditingRef.current) return;
       isEditingRef.current = false;
+      programmaticEditStartRef.current = null;
       setIsEditing(false);
       onCancel?.();
     });
@@ -469,6 +491,10 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     }, [isEditing, draft, placeholder]);
 
     const handleKeyDown = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
+      // User is interacting with the input — drop the post-`startEditing()`
+      // blur guard so a subsequent click-away commits normally.
+      programmaticEditStartRef.current = null;
+
       if (e.key === 'Enter') {
         e.preventDefault();
         commit(draft);
@@ -496,6 +522,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     });
 
     const handleInputChange = useEvent((e: ChangeEvent<HTMLInputElement>) => {
+      programmaticEditStartRef.current = null;
       setDraft(e.target.value);
     });
 
@@ -509,6 +536,31 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       isDisabled: !isEditing,
       onBlurWithin: () => {
         if (!submitOnBlur) return;
+
+        // Grace-period guard against focus theft right after a programmatic
+        // `startEditing()` — e.g. a `<FocusScope restoreFocus>` inside a
+        // closing Menu popover yanking focus back to its trigger after the
+        // consumer activated rename from `onAction`. Re-focus the input on
+        // the next frame so the focus-stealing element finishes its own
+        // handler first, then we steal focus back. The guard is cleared on
+        // the first real user interaction with the input (keydown / input
+        // change) so subsequent click-aways commit normally.
+        const startedAt = programmaticEditStartRef.current;
+        if (
+          startedAt != null &&
+          Date.now() - startedAt < PROGRAMMATIC_EDIT_BLUR_GRACE_MS &&
+          isEditingRef.current
+        ) {
+          requestAnimationFrame(() => {
+            if (isEditingRef.current) {
+              inputRef.current?.focus();
+              inputRef.current?.select();
+            }
+          });
+
+          return;
+        }
+
         commit(draft);
       },
     });
@@ -539,7 +591,16 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     useImperativeHandle(
       ref,
       () => ({
-        startEditing: () => enterEditing(),
+        startEditing: () => {
+          // Arm the grace-period blur guard for the imperative path only.
+          // Pointer-triggered entries (dblclick / click) don't suffer from
+          // the closing-overlay focus-theft race that motivates this guard.
+          const wasEditing = isEditingRef.current;
+          enterEditing();
+          if (!wasEditing && isEditingRef.current) {
+            programmaticEditStartRef.current = Date.now();
+          }
+        },
         stopEditing: (submit = true) => {
           if (!isEditingRef.current) return;
           if (submit) commit(draft);
