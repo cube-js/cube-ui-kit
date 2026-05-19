@@ -471,7 +471,7 @@ PopoverWithMenuAndSelect.args = {};
 PopoverWithMenuAndSelect.play = async ({ canvasElement, viewMode }) => {
   if (viewMode === 'docs') return;
 
-  const { findByRole, getByRole } = within(canvasElement);
+  const { findByRole, getByRole, queryByRole } = within(canvasElement);
 
   // Open the popover
   await userEvent.click(await findByRole('button', { name: 'Open Popover' }));
@@ -490,6 +490,8 @@ PopoverWithMenuAndSelect.play = async ({ canvasElement, viewMode }) => {
 
   // Click somewhere else to close menu, then test Select
   await userEvent.click(dialog);
+  await waitFor(() => expect(queryByRole('menu')).not.toBeInTheDocument());
+  await timeout(500);
 
   // Test Select trigger
   const selectButton = getByRole('button', { name: 'Choose option' });
@@ -498,4 +500,8 @@ PopoverWithMenuAndSelect.play = async ({ canvasElement, viewMode }) => {
   // Check if select listbox opens
   const listbox = await findByRole('listbox');
   await expect(listbox).toBeInTheDocument();
+
+  // Leave the select open, but wait for positioning and transition styles to settle
+  // before Chromatic takes the snapshot.
+  await timeout(500);
 };
