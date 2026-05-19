@@ -63,7 +63,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   gridRows: '1sf',
   placeItems: 'stretch',
   fill: {
-    '': '#surface-2',
+    '': '#surface',
     disabled: '#disabled-surface',
   },
   border: {
