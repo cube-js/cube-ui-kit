@@ -37,6 +37,13 @@ const RadioButtonElement = tasty(Item, {
     gridTemplate:
       '"icon prefix label suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
     placeContent: 'center',
+    shadow: '$item-shadow',
+    fill: {
+      'selected & tabs': '#surface',
+    },
+    color: {
+      'selected & tabs': '#dark',
+    },
 
     // Mirror the ButtonSplit grouping: the corner radius is shared so the
     // first/last items keep only their outer-side radius and middle items go
@@ -48,16 +55,16 @@ const RadioButtonElement = tasty(Item, {
     // still so they always read on top of the selected highlight.
     radius: {
       '': true,
-      '!:last-child': '1r left',
-      '!:first-child': '1r right',
-      '!:first-child & !:last-child': 0,
+      '!tabs & !:last-child': '1r left',
+      '!tabs & !:first-child': '1r right',
+      '!tabs & !:first-child & !:last-child': 0,
     },
     margin: {
       '': 0,
-      '!:first-child': '-1bw left',
+      '!tabs & !:first-child': '-1bw left',
     },
     zIndex: {
-      selected: 1,
+      '!tabs & selected': 1,
     },
 
     Label: {
@@ -66,14 +73,6 @@ const RadioButtonElement = tasty(Item, {
         '!has-prefix & !has-suffix & !has-icon & !has-right-icon': 'center',
       },
     },
-  },
-});
-
-const TabRadioButtonSelectedElement = tasty(RadioButtonElement, {
-  styles: {
-    fill: '#surface',
-    shadow: '$item-shadow',
-    color: '#dark',
   },
 });
 
@@ -320,13 +319,8 @@ function Radio(props: CubeRadioProps, ref) {
 
   // Render button type using Item
   if (isButton) {
-    const ButtonElement =
-      isRadioSelected && contextType === 'tabs'
-        ? TabRadioButtonSelectedElement
-        : RadioButtonElement;
-
     return (
-      <ButtonElement
+      <RadioButtonElement
         ref={domRef}
         type={effectiveButtonType}
         theme={isInvalid ? 'danger' : 'default'}
@@ -354,7 +348,7 @@ function Radio(props: CubeRadioProps, ref) {
           mods={{ button: isButton, disabled: isRadioDisabled }}
         />
         {label}
-      </ButtonElement>
+      </RadioButtonElement>
     );
   }
 
