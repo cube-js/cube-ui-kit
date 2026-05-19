@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.138.5
+
+### Patch Changes
+
+- [#1176](https://github.com/cube-js/cube-ui-kit/pull/1176) [`80a44921`](https://github.com/cube-js/cube-ui-kit/commit/80a449217e1b44350a50e05990ab1b0c3c7e524c) Thanks [@tenphi](https://github.com/tenphi)! - `Tabs`: keep the inline rename input mounted when triggered from the tab menu. Previously the Menu popover's `<FocusScope restoreFocus>` would yank focus back to the trigger as soon as the menu started closing, fire `InlineInput`'s `submitOnBlur`, and unmount the input the user just opened — so clicking "Rename" appeared to do nothing.
+
+  `InlineInput` now ignores blurs that happen within ~500ms of a programmatic `startEditing()` call (cleared on the first user keystroke). `TabButton` also retries focusing the input across the menu's exit transition as a belt-and-suspenders defense.
+
+- [#1174](https://github.com/cube-js/cube-ui-kit/pull/1174) [`6aa0a511`](https://github.com/cube-js/cube-ui-kit/commit/6aa0a511f37131d26b38c702603c13c264e9d7b0) Thanks [@tenphi](https://github.com/tenphi)! - Add a new `#surface-4` neutral token and use it as the container background for radio-style tabs.
+
+  This updates both `Tabs` and `RadioGroup` tabs mode to the new surface depth and registers the token in type and editor token metadata.
+
 ## 0.138.4
 
 ### Patch Changes
