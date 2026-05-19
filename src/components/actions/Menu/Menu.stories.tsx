@@ -1470,7 +1470,7 @@ export const MenuSynchronization = () => {
           <Button
             data-popover-trigger
             size="small"
-            theme={isOpen1 ? 'accent' : 'secondary'}
+            type={isOpen1 ? 'primary' : 'outline'}
             onPress={() => open1({ onAction: handleAction })}
           >
             Edit Menu {isOpen1 ? '(Open)' : ''}

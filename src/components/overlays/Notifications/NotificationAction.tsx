@@ -94,7 +94,7 @@ export const DismissActionDetectedContext = createContext<ReturnType<
  * - An action with no `onPress` and `closeOnPress: true` acts as a dismiss-only action.
  * - `isDismiss` — marks this action as the dismiss button; when present, the default
  *   "Dismiss" button is auto-suppressed via context detection.
- * - Type (primary/secondary/etc.) is set automatically via ItemActionProvider context.
+ * - Type (primary/outline/clear/etc.) is set automatically via ItemActionProvider context.
  */
 export function NotificationAction({
   children,

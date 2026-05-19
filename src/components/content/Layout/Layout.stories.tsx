@@ -1024,14 +1024,14 @@ export const ResponsivePanelToDialog: Story = {
         <Layout.Toolbar>
           <Space>
             <Button
-              type={isMobileMode ? 'primary' : 'neutral'}
+              type={isMobileMode ? 'primary' : 'clear'}
               icon={!isPanelOpen ? <IconFilter /> : <IconFilterFilled />}
               onPress={() => setIsPanelOpen(!isPanelOpen)}
             />
             <Title level={4}>Product Catalog</Title>
           </Space>
           <Button
-            type={isMobileMode ? 'primary' : 'neutral'}
+            type={isMobileMode ? 'primary' : 'clear'}
             onPress={() => setIsMobileMode(!isMobileMode)}
           >
             {isMobileMode ? '📱 Mobile' : '🖥️ Desktop'}

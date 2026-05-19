@@ -110,7 +110,7 @@ const meta: Meta<typeof FilterPicker> = {
     },
     type: {
       control: 'radio',
-      options: ['outline', 'clear', 'primary', 'secondary', 'neutral'],
+      options: ['outline', 'outline-2', 'clear', 'primary'],
       description: 'Button styling type',
       table: {
         defaultValue: { summary: 'outline' },
@@ -982,7 +982,7 @@ export const RenderSummaryBehavior: Story = {
                 const count = selectedKeys?.length ?? 0;
                 return (
                   <Space gap="0.5x" flow="row" placeItems="center">
-                    <Badge type={count > 0 ? 'success' : 'neutral'}>
+                    <Badge type={count > 0 ? 'success' : 'disabled'}>
                       {count}
                     </Badge>
                     <Text>filters</Text>
@@ -1009,7 +1009,7 @@ export const RenderSummaryBehavior: Story = {
                 const count = selectedKeys?.length ?? 0;
                 return (
                   <Space gap="0.5x" flow="row" placeItems="center">
-                    <Badge type={count > 0 ? 'success' : 'neutral'}>
+                    <Badge type={count > 0 ? 'success' : 'disabled'}>
                       {count}
                     </Badge>
                     <Text>filters</Text>
@@ -1476,7 +1476,7 @@ export const DifferentTypes: Story = {
     docs: {
       description: {
         story:
-          'Use different button types to match your interface design: `outline`, `primary`, `secondary`, `clear`, and `neutral`.',
+          'Use different button types to match your interface design: `outline`, `outline-2`, `clear`, and `primary`.',
       },
     },
   },

@@ -229,7 +229,7 @@ function Radio(props: CubeRadioProps, ref) {
   let effectiveButtonType: string;
   // When buttonType is 'primary', non-selected radios use 'outline' with a
   // visual-only `selected` mod (mods.selected=true) to render the brand-tinted
-  // secondary look — this is the only place mods.selected intentionally
+  // outline+selected look — this is the only place mods.selected intentionally
   // decouples from the aria/isSelected state.
   let forceSelectedMod = false;
   if (effectiveType === 'tabs') {

@@ -67,10 +67,10 @@ export default {
       },
     },
     buttonType: {
-      options: ['outline', 'neutral', 'primary', 'clear'],
+      options: ['outline', 'clear', 'primary'],
       control: { type: 'radio' },
       description:
-        'Button type for button-style radios (ignored in tabs mode). When set to "primary", selected buttons use primary style and non-selected use secondary',
+        'Button type for button-style radios (ignored in tabs mode). When set to "primary", selected buttons use primary style and non-selected use outline',
     },
 
     /* State */
@@ -256,7 +256,7 @@ export const CustomButtonTypes: StoryFn<CubeRadioGroupProps> = () => (
       type="button"
       buttonType="primary"
       defaultValue="yes"
-      label="Primary (selected: primary, non-selected: secondary)"
+      label="Primary (selected: primary, non-selected: outline)"
     >
       <Radio value="yes">Yes</Radio>
       <Radio value="no">No</Radio>
@@ -274,9 +274,9 @@ export const CustomButtonTypes: StoryFn<CubeRadioGroupProps> = () => (
     </Radio.Group>
     <Radio.Group
       type="button"
-      buttonType="neutral"
+      buttonType="clear"
       defaultValue="yes"
-      label="Neutral"
+      label="Clear"
     >
       <Radio value="yes">Yes</Radio>
       <Radio value="no">No</Radio>
