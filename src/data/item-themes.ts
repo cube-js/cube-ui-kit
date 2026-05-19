@@ -98,18 +98,20 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
 export const DEFAULT_OUTLINE_STYLES: Styles = {
   // Non-selected = old OUTLINE: neutral border + surface fill.
   // Selected (= old SECONDARY): brand-tinted fill + brand border.
-  // Selected BORDER anchors to the *adaptive* `#primary-text` (mode 'auto')
-  // so it stays visible in BOTH schemes (CR ≈ 1.55–1.82 vs surface in dark
-  // vs ~1.13 with the fixed brand). Selected FILL must NOT use
-  // `#primary-text`: in dark mode the overlay drifts the bg toward the same
-  // lightness as the text, collapsing label↔bg contrast below AA
-  // (cr=4.42@α.10 → 3.04@α.22). Anchoring the fill to the *fixed* `#primary`
-  // brand keeps the bg darker than the bright dark-mode text and restores AA:
-  // cr=6.52 light / 5.95 dark at α.10, 6.19 / 5.41 at α.16.
+  // Selected BORDER uses the OPAQUE `#primary-border` token (the neutral
+  // `border` ramp re-resolved at `saturation: 0.5` per primary-theme — see
+  // `TINTED_SURFACE_OVERRIDE` in `palette.ts`). It replaces the previous
+  // alpha-blended `#primary-text.15` so adjacent borders in grouped layouts
+  // (e.g. `RadioGroup type="button"`) don't double up at their overlap into
+  // a darker stripe. Selected FILL must NOT use `#primary-text`: in dark mode
+  // the overlay drifts the bg toward the same lightness as the text,
+  // collapsing label↔bg contrast below AA (cr=4.42@α.10 → 3.04@α.22).
+  // Anchoring the fill to the *fixed* `#primary` brand keeps the bg darker
+  // than the bright dark-mode text and restores AA: cr=6.52 light / 5.95 dark
+  // at α.10, 6.19 / 5.41 at α.16.
   border: {
     '': true,
-    selected: '#primary-text.15',
-    'selected & pressed': '#primary-text.3',
+    selected: '#primary-border',
     focused: '#primary-text',
     disabled: '#border',
     ...(VALIDATION_STYLES.border as Record<string, string>),
@@ -120,7 +122,7 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
     pressed: '#surface-2 #dark.09',
     selected: '#primary.09',
     'selected & (hovered | focused)': '#primary.12',
-    'selected & pressed': '#primary.15',
+    'selected & pressed': '#primary.18',
     disabled: '#disabled-surface',
   },
   color: {
@@ -244,15 +246,13 @@ export const DANGER_PRIMARY_STYLES: Styles = {
 
 export const DANGER_OUTLINE_STYLES: Styles = {
   // Non-selected = old DANGER OUTLINE; selected = old DANGER SECONDARY.
-  // Border anchors to the *adaptive* `#danger-text` (mode 'auto') so the
-  // outline stays visible on dark surfaces. The fixed `#danger` brand at
-  // .15/.3 alpha composites near-invisibly in dark mode (cr≈1.27–1.55 vs
-  // the dark surface) because the brand color and the dark surface have
-  // similar lightness; `#danger-text` brightens in dark mode and pushes the
-  // composite up to cr≈1.90–2.88.
+  // Border uses the OPAQUE `#danger-border` token (the neutral `border` ramp
+  // re-resolved at `saturation: 0.5` per danger-theme — see
+  // `TINTED_SURFACE_OVERRIDE` in `palette.ts`). It replaces the previous
+  // alpha-blended `#danger-text.15` so adjacent borders in grouped layouts
+  // don't double up at their overlap into a darker stripe.
   border: {
-    '': '#danger-text.15',
-    pressed: '#danger-text.3',
+    '': '#danger-border',
     focused: '#danger-text',
     disabled: '#border',
   },
@@ -372,8 +372,7 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
   // Non-selected = old SUCCESS OUTLINE; selected = old SUCCESS SECONDARY.
   // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
   border: {
-    '': '#success-text.15',
-    pressed: '#success-text.3',
+    '': '#success-border',
     focused: '#success-text',
     disabled: '#border',
   },
@@ -491,8 +490,7 @@ export const WARNING_OUTLINE_STYLES: Styles = {
   // Non-selected = old WARNING OUTLINE; selected = old WARNING SECONDARY.
   // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
   border: {
-    '': '#warning-text.15',
-    pressed: '#warning-text.3',
+    '': '#warning-border',
     focused: '#warning-text',
     disabled: '#border',
   },
@@ -610,8 +608,7 @@ export const NOTE_OUTLINE_STYLES: Styles = {
   // Non-selected = old NOTE OUTLINE; selected = old NOTE SECONDARY.
   // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
   border: {
-    '': '#note-text.15',
-    pressed: '#note-text.3',
+    '': '#note-border',
     focused: '#note-text',
     disabled: '#border',
   },

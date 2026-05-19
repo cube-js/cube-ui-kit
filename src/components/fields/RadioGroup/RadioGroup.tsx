@@ -72,6 +72,7 @@ const RadioGroupElement = tasty({
     flexShrink: 0,
     gap: {
       '': '1x',
+      button: 0,
       tabs: '.5x',
     },
     whiteSpace: 'nowrap',
@@ -128,10 +129,12 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
       qa={qa || 'RadioGroup'}
       styles={styles}
       data-input-type="radiogroup"
+      data-radio-button-group={type === 'button' ? '' : undefined}
       mods={{
         horizontal: orientation === 'horizontal',
         'inside-form': insideForm,
         'side-label': labelPosition === 'side',
+        button: type === 'button',
         tabs: type === 'tabs',
       }}
     >

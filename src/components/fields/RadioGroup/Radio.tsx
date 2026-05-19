@@ -38,6 +38,28 @@ const RadioButtonElement = tasty(Item, {
       '"icon prefix label suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
     placeContent: 'center',
 
+    // Mirror the ButtonSplit grouping: the corner radius is shared so the
+    // first/last items keep only their outer-side radius and middle items go
+    // square; a -1bw left margin overlaps adjacent borders into a single
+    // continuous edge. The selected button is bumped above its siblings so its
+    // brand-tinted border is visible from all four sides — without the bump
+    // the right edge of an adjacent sibling would paint over the selected
+    // button's left edge (and vice-versa). Hover / focus-visible bump higher
+    // still so they always read on top of the selected highlight.
+    radius: {
+      '': true,
+      '!:last-child': '1r left',
+      '!:first-child': '1r right',
+      '!:first-child & !:last-child': 0,
+    },
+    margin: {
+      '': 0,
+      '!:first-child': '-1bw left',
+    },
+    zIndex: {
+      selected: 1,
+    },
+
     Label: {
       placeSelf: {
         '': 'center start',
@@ -51,6 +73,7 @@ const TabRadioButtonSelectedElement = tasty(RadioButtonElement, {
   styles: {
     fill: '#surface',
     shadow: '$item-shadow',
+    color: '#dark',
   },
 });
 

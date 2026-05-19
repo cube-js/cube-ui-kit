@@ -139,7 +139,6 @@ defaultTheme.colors({
     base: 'surface',
     lightness: ['-10', '-20'],
     saturation: 0.175,
-    inherit: false,
   },
   placeholder: {
     base: 'surface',
@@ -430,9 +429,22 @@ defaultTheme.colors({
 // Colored themes
 // ============================================================================
 
-/** Override `surface` per colored theme so the banner bg is visibly tinted. */
+/**
+ * Per-colored-theme overrides on top of `defaultTheme`:
+ *   - `surface` — bumped saturation so the banner bg is visibly tinted.
+ *   - `border`  — bumped saturation so OUTLINE-variant borders pick up the
+ *     theme hue (used by `#<theme>-border` in `item-themes.ts`). Mirrors the
+ *     default-theme `border` shape (`base: 'surface'`, lightness window) but
+ *     with higher saturation. Glaze's `extend({ colors })` redefines each
+ *     listed color from scratch, so we restate the full definition here.
+ */
 const TINTED_SURFACE_OVERRIDE: ColorMap = {
   surface: { lightness: 96, saturation: 0.8 },
+  border: {
+    base: 'surface',
+    lightness: ['-10', '-20'],
+    saturation: 0.5,
+  },
 };
 
 const primaryTheme = defaultTheme.extend({
