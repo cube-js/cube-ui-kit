@@ -132,11 +132,11 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
-    '': '#surface #dark.0',
-    hovered: '#surface #dark.03',
-    selected: '#surface #dark.09',
-    'selected & hovered': '#surface #dark.12',
-    pressed: '#surface #dark.09',
+    '': '#surface-2 #dark.0',
+    hovered: '#surface-2 #dark.03',
+    selected: '#surface-2 #dark.09',
+    'selected & hovered': '#surface-2 #dark.12',
+    pressed: '#surface-2 #dark.09',
     disabled: '#disabled-surface',
   },
   color: {
@@ -289,9 +289,9 @@ export const DANGER_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#surface #danger.0',
-    hovered: '#surface #danger.1',
-    'pressed | (selected & !hovered)': '#surface #danger.05',
+    '': '#surface-2 #danger.0',
+    hovered: '#surface-2 #danger.1',
+    'pressed | (selected & !hovered)': '#surface-2 #danger.05',
     disabled: '#disabled-surface',
   },
   color: {
@@ -428,9 +428,9 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#surface #success.0',
-    hovered: '#surface #success.1',
-    'pressed | (selected & !hovered)': '#surface #success.05',
+    '': '#surface-2 #success.0',
+    hovered: '#surface-2 #success.1',
+    'pressed | (selected & !hovered)': '#surface-2 #success.05',
     disabled: '#disabled-surface',
   },
   color: {
@@ -566,9 +566,9 @@ export const WARNING_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#surface #warning.0',
-    hovered: '#surface #warning.1',
-    'pressed | (selected & !hovered)': '#surface #warning.05',
+    '': '#surface-2 #warning.0',
+    hovered: '#surface-2 #warning.1',
+    'pressed | (selected & !hovered)': '#surface-2 #warning.05',
     disabled: '#disabled-surface',
   },
   color: {
@@ -704,9 +704,9 @@ export const NOTE_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#surface #note.0',
-    hovered: '#surface #note.1',
-    'pressed | (selected & !hovered)': '#surface #note.05',
+    '': '#surface-2 #note.0',
+    hovered: '#surface-2 #note.1',
+    'pressed | (selected & !hovered)': '#surface-2 #note.05',
     disabled: '#disabled-surface',
   },
   color: {
