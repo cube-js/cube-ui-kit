@@ -520,8 +520,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
       : effectiveSize;
 
   // Determine Item type prop
-  const itemType =
-    effectiveType === 'default' ? (isActive ? 'clear' : 'neutral') : 'neutral';
+  const itemType = 'clear';
 
   // Determine shape - file type uses sharp edges
   const isFileType = effectiveType === 'file';

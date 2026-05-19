@@ -137,7 +137,12 @@ export function NotificationAction({
   });
 
   return (
-    <ItemAction type="secondary" isDisabled={isDisabled} onPress={handlePress}>
+    <ItemAction
+      isSelected
+      type="outline"
+      isDisabled={isDisabled}
+      onPress={handlePress}
+    >
       {children}
     </ItemAction>
   );

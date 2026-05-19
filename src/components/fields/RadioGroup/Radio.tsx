@@ -135,7 +135,7 @@ export interface CubeRadioProps
   'aria-label'?: string;
   /* The visual type of the radio button */
   type?: 'button' | 'radio';
-  buttonType?: Exclude<CubeItemProps['type'], 'secondary'>;
+  buttonType?: CubeItemProps['type'];
   value?: string;
   /* Whether the radio is invalid */
   isInvalid?: boolean;
@@ -225,16 +225,24 @@ function Radio(props: CubeRadioProps, ref) {
   }
 
   // Determine effective button type
-  // In tabs mode, always use 'neutral' and ignore buttonType prop
-  let effectiveButtonType;
+  // In tabs mode, always use 'clear' and ignore buttonType prop.
+  let effectiveButtonType: string;
+  // When buttonType is 'primary', non-selected radios use 'outline' with a
+  // visual-only `selected` mod (mods.selected=true) to render the brand-tinted
+  // secondary look — this is the only place mods.selected intentionally
+  // decouples from the aria/isSelected state.
+  let forceSelectedMod = false;
   if (effectiveType === 'tabs') {
-    effectiveButtonType = 'neutral'; // Force neutral for tabs, ignore buttonType
+    effectiveButtonType = 'clear';
   } else {
     const baseButtonType = buttonType ?? contextButtonType ?? 'outline';
-    // When buttonType is 'primary', use 'secondary' for non-selected and 'primary' for selected
     if (baseButtonType === 'primary') {
-      effectiveButtonType =
-        state.selectedValue === props.value ? 'primary' : 'secondary';
+      if (state.selectedValue === props.value) {
+        effectiveButtonType = 'primary';
+      } else {
+        effectiveButtonType = 'outline';
+        forceSelectedMod = true;
+      }
     } else {
       effectiveButtonType = baseButtonType;
     }
@@ -309,7 +317,7 @@ function Radio(props: CubeRadioProps, ref) {
         hotkeys={hotkeys}
         isSelected={isRadioSelected}
         isDisabled={isRadioDisabled}
-        mods={mods}
+        mods={{ ...mods, ...(forceSelectedMod ? { selected: true } : {}) }}
         styles={styles}
         {...mergeProps(hoverProps, focusProps)}
       >

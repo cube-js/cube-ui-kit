@@ -59,8 +59,8 @@ Use `Layout.Panel` for side navigation. Panels are absolutely positioned and aut
   <Layout.Panel side="left" size={200} isOpen={isOpen}> {/* absolute left, pushes content via insets */}
     <Layout.PanelHeader isClosable title="Menu" onClose={() => setIsOpen(false)} />
     <Layout.Content padding=".5x" gap="1bw"> {/* flex column ↓, scrollable */}
-      <ItemButton type="neutral">Dashboard</ItemButton>
-      <ItemButton type="neutral">Settings</ItemButton>
+      <ItemButton type="clear">Dashboard</ItemButton>
+      <ItemButton type="clear">Settings</ItemButton>
     </Layout.Content>
   </Layout.Panel>
   <Layout.Toolbar>                   {/* flex row →, single item aligns left */}

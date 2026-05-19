@@ -27,7 +27,7 @@ const meta: Meta<typeof ItemButton> = {
   argTypes: {
     type: {
       control: 'select',
-      options: ['primary', 'secondary', 'outline', 'neutral', 'clear'],
+      options: ['primary', 'outline', 'clear'],
       description: 'Visual type/variant of the button',
     },
     theme: {
@@ -56,7 +56,8 @@ const meta: Meta<typeof ItemButton> = {
     },
     isSelected: {
       control: 'boolean',
-      description: 'Whether the button shows as selected with checkbox',
+      description:
+        'Whether the button shows as selected (pairs with `icon="checkmark"`)',
     },
     to: {
       control: 'text',
@@ -151,26 +152,75 @@ export const AsLink: Story = {
   },
 };
 
-export const Variants: Story = {
+export const States: Story = {
   render: (args) => (
     <Space flow="column" gap="1x" placeItems="start">
-      <ItemButton {...args} type="primary">
-        Primary
+      <ItemButton
+        {...args}
+        mods={{ hovered: false, pressed: false, focused: false }}
+      >
+        Default
       </ItemButton>
-      <ItemButton {...args} type="secondary">
-        Secondary
+      <ItemButton
+        {...args}
+        mods={{ hovered: true, pressed: false, focused: false }}
+      >
+        Hovered
       </ItemButton>
-      <ItemButton {...args} type="outline">
-        Outline
+      <ItemButton
+        {...args}
+        mods={{ hovered: false, pressed: true, focused: false }}
+      >
+        Pressed
       </ItemButton>
-      <ItemButton {...args} type="neutral">
-        Neutral
+      <ItemButton
+        {...args}
+        mods={{ hovered: true, pressed: true, focused: false }}
+      >
+        Pressed&Hovered
       </ItemButton>
-      <ItemButton {...args} type="clear">
-        Clear
+      <ItemButton
+        {...args}
+        mods={{ hovered: false, pressed: false, focused: true }}
+      >
+        Focused
       </ItemButton>
-      <ItemButton {...args} type="link">
-        Link
+      <ItemButton
+        {...args}
+        isSelected
+        mods={{ hovered: false, pressed: false, focused: false }}
+      >
+        Selected
+      </ItemButton>
+      <ItemButton
+        {...args}
+        isSelected
+        mods={{ hovered: true, pressed: false, focused: false }}
+      >
+        Selected & Hovered
+      </ItemButton>
+      <ItemButton
+        {...args}
+        isSelected
+        mods={{ hovered: false, pressed: true, focused: false }}
+      >
+        Selected & Pressed
+      </ItemButton>
+      <ItemButton
+        {...args}
+        isSelected
+        mods={{ hovered: false, pressed: false, focused: true }}
+      >
+        Selected & Focused
+      </ItemButton>
+      <ItemButton {...args} isLoading>
+        Loading
+      </ItemButton>
+      <ItemButton {...args} isDisabled>
+        Disabled
+      </ItemButton>
+      <ItemButton {...args} isSelected isDisabled>
+        Selected & Disabled
       </ItemButton>
     </Space>
   ),
@@ -252,7 +302,7 @@ export const WithHotkeys: Story = {
           <ItemButton
             {...args}
             hotkeys="f1"
-            type="secondary"
+            type="outline"
             onPress={() => alert('Function key triggered!')}
           >
             Help
@@ -280,13 +330,16 @@ export const WithHotkeys: Story = {
 };
 
 export const WithCheckbox: Story = {
+  args: {
+    icon: 'checkmark',
+  },
   render: (args) => (
     <Flow gap="2x">
       <Flow gap="1x">
-        <Title level={4}>Selected Items (Checkbox Visible)</Title>
+        <Title level={4}>Selected Items (Checkmark Visible)</Title>
         <Space flow="column" gap="1x" placeItems="start">
           <ItemButton {...args} isSelected={true}>
-            Selected item with checkbox
+            Selected item with checkmark
           </ItemButton>
           <ItemButton {...args} isSelected={true} type="primary">
             Primary selected button
@@ -298,10 +351,10 @@ export const WithCheckbox: Story = {
       </Flow>
 
       <Flow gap="1x">
-        <Title level={4}>Non-Selected Items (Checkbox Hidden)</Title>
+        <Title level={4}>Non-Selected Items (Checkmark Hidden)</Title>
         <Space flow="column" gap="1x" placeItems="start">
           <ItemButton {...args} isSelected={false}>
-            Non-selected item with hidden checkbox
+            Non-selected item with hidden checkmark
           </ItemButton>
           <ItemButton {...args} isSelected={false} type="primary">
             Primary non-selected button
@@ -328,13 +381,13 @@ export const WithCheckbox: Story = {
       </Flow>
 
       <Flow gap="1x">
-        <Title level={4}>Comparison: Checkbox vs Regular Icon</Title>
+        <Title level={4}>Comparison: Checkmark vs Regular Icon</Title>
         <Space flow="column" gap="1x" placeItems="start">
           <ItemButton {...args} isSelected={true}>
-            With checkbox (selected)
+            With checkmark (selected)
           </ItemButton>
           <ItemButton {...args} isSelected={false}>
-            With checkbox (not selected)
+            With checkmark (not selected)
           </ItemButton>
           <ItemButton {...args} icon={<IconFile />}>
             With regular icon
@@ -347,7 +400,7 @@ export const WithCheckbox: Story = {
     docs: {
       description: {
         story:
-          'Demonstrates the checkbox functionality in ItemButton when `isSelected` prop is provided. When `isSelected` is `true`, the checkbox is visible (opacity 1, hover opacity 0.8). When `isSelected` is `false`, the checkbox is invisible (opacity 0, hover opacity 0.4). The checkbox replaces the `icon` prop when `isSelected` is provided, inherited from the Item component.',
+          'Demonstrates the checkmark functionality in ItemButton when `icon="checkmark"` is used together with `isSelected`. When `isSelected` is `true`, the checkmark is visible (opacity 1, hover opacity 0.8). When `isSelected` is `false`, the checkmark is invisible (opacity 0, hover opacity 0.4). The checkmark renders via the `icon` prop with the special value `"checkmark"`, inherited from the Item component.',
       },
     },
   },
@@ -395,11 +448,12 @@ export const WithLoading: Story = {
             </ItemButton>
             <ItemButton
               {...cleanArgs}
-              type="secondary"
+              isSelected
+              type="outline"
               isLoading={true}
               icon={<IconFile />}
             >
-              Secondary Loading
+              Outline Selected Loading
             </ItemButton>
             <ItemButton
               {...cleanArgs}
@@ -1347,14 +1401,6 @@ export const Disabled: Story = {
           </ItemButton>
           <ItemButton
             {...args}
-            type="secondary"
-            isDisabled={true}
-            icon={<IconFile />}
-          >
-            Disabled secondary
-          </ItemButton>
-          <ItemButton
-            {...args}
             type="outline"
             isDisabled={true}
             icon={<IconFile />}
@@ -1363,11 +1409,12 @@ export const Disabled: Story = {
           </ItemButton>
           <ItemButton
             {...args}
-            type="neutral"
+            isSelected
+            type="outline"
             isDisabled={true}
             icon={<IconFile />}
           >
-            Disabled neutral
+            Disabled outline (selected)
           </ItemButton>
           <ItemButton
             {...args}

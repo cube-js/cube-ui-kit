@@ -30,7 +30,7 @@ A radio group allows users to select exactly one option from a set of mutually e
 - **`type`** `'radio' | 'button' | 'tabs'` (default: `radio`) — Visual type for all radios in the group (button/tabs default to horizontal)
 - **`orientation`** `undefined | 'vertical' | 'horizontal'` (default: `auto`) — Orientation of the radio group (auto-set based on type)
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `xsmall`) — Size for all radio buttons in the group
-- **`buttonType`** `'outline' | 'neutral' | 'primary' | 'clear'` — Button type for button-style radios (ignored in tabs mode). When set to "primary", selected buttons use primary style and non-selected use secondary
+- **`buttonType`** `'outline' | 'clear' | 'primary'` — Button type for button-style radios (ignored in tabs mode). When set to "primary", selected buttons use primary style and non-selected use outline with brand tint
 - **`onChange`** `function` — Callback fired when the selected value changes
 - **`onBlur`** `function` — Callback fired when the radio group loses focus
 - **`onFocus`** `function` — Callback fired when the radio group receives focus
@@ -83,7 +83,7 @@ The `mods` property accepts the following modifiers you can override:
 
 - `radio` - Traditional radio button appearance (default)
 - `button` - Button-style radio options with spacing
-- `tabs` - Connected tab-style buttons (compact, neutral styling)
+- `tabs` - Connected tab-style buttons (compact, clear styling)
 
 **Default Orientation:**
 - `radio` type: vertical
@@ -119,14 +119,12 @@ This ensures tab groups remain compact and cohesive.
 ### Button Type
 
 When using `type="button"`, you can customize the button appearance:
-- `outline` - Outlined buttons (default)
-- `neutral` - Neutral filled buttons
-- `primary` - Primary action buttons with smart styling: selected buttons use primary style, non-selected buttons automatically use secondary style
-- `clear` - Minimal buttons without background
+- `outline` - Outlined buttons (default); `isSelected` state adds brand-tinted fill
+- `clear` - Minimal buttons without background; `isSelected` state adds brand-tinted fill
+- `primary` - Primary action buttons with smart styling: selected buttons use primary style, non-selected buttons use outline with brand tint
 
 **Note:** 
-- The `buttonType` prop is ignored when `type="tabs"`. Tabs always use neutral styling for visual consistency.
-- The `secondary` type cannot be used directly. Use `primary` instead, which automatically applies secondary styling to non-selected buttons.
+- The `buttonType` prop is ignored when `type="tabs"`. Tabs always use `clear` styling for visual consistency.
 
 ## Examples
 
@@ -173,7 +171,7 @@ When using `type="button"`, you can customize the button appearance:
 ### Custom Button Type
 
 ```jsx
-{/* Primary buttonType: selected uses primary, non-selected uses secondary */}
+{/* Primary buttonType: selected uses primary, non-selected uses outline with brand tint */}
 <Radio.Group label="Action" type="button" buttonType="primary">
   <Radio value="save">Save</Radio>
   <Radio value="cancel">Cancel</Radio>

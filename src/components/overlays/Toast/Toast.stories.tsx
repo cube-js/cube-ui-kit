@@ -351,7 +351,11 @@ export const ProgressToastWithAction = () => {
           title: 'Deploying...',
           theme: 'note',
           actions: (
-            <Item.Action type="secondary" onPress={() => setIsLoading(false)}>
+            <Item.Action
+              isSelected
+              type="outline"
+              onPress={() => setIsLoading(false)}
+            >
               Cancel
             </Item.Action>
           ),

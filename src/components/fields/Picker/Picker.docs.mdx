@@ -34,7 +34,7 @@ A versatile selection component that combines a trigger button with a dropdown l
 - **`defaultSelectedKeys`** `string[] | 'all'` — The default selected keys in uncontrolled multiple mode
 - **`items`** `Iterable<T>` — Array of items for dynamic content with render function pattern
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the picker component
-- **`type`** `'outline' | 'clear' | 'primary' | 'secondary' | 'neutral'` (default: `outline`) — Trigger button styling type
+- **`type`** `'outline' | 'clear' | 'primary'` (default: `outline`) — Trigger button styling type
 - **`theme`** `'default' | 'danger'` (default: `default`) — Trigger button color theme
 - **`icon`** `ReactNode` — Icon displayed in the trigger button
 - **`rightIcon`** `ReactNode` — Icon displayed on the right side of the trigger button
@@ -297,11 +297,9 @@ For large datasets or dynamic content, use the `items` prop with a render functi
 
 The trigger button supports various visual styles via the `type` prop:
 
-- **`outline`** (default) — Outlined button with border. Use case: Standard form inputs
-- **`clear`** — Transparent background. Use case: Toolbar actions, compact interfaces
+- **`outline`** (default) — Outlined button with border. Use case: Standard form inputs. `isSelected` adds brand-tinted fill.
+- **`clear`** — Transparent background. Use case: Toolbar actions, compact interfaces. `isSelected` adds brand-tinted fill.
 - **`primary`** — Primary brand color. Use case: Emphasized selections
-- **`secondary`** — Secondary color variant. Use case: Alternative emphasis
-- **`neutral`** — Neutral color scheme. Use case: Subtle selections
 
 ### Trigger Button Themes
 

@@ -339,7 +339,7 @@ export const MultipleSelection: Story = {
       {permissions.map((permission) => (
         <ListBox.Item
           key={permission.key}
-          icon="checkbox"
+          icon="checkmark"
           description={permission.description}
         >
           {permission.label}
@@ -647,7 +647,7 @@ export const WithTextValue: Story = {
       >
         <Space gap="1x" flow="column">
           <Text weight="600">Basic Plan</Text>
-          <Badge type="neutral">Free</Badge>
+          <Badge type="disabled">Free</Badge>
         </Space>
       </ListBox.Item>
       <ListBox.Item

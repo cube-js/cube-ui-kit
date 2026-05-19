@@ -39,7 +39,7 @@ export default {
     icon: {
       control: { type: null },
       description:
-        'Icon rendered before the content. Can be: ReactNode, `"checkbox"`, `true` (empty slot), or function `({ selected, loading, ...mods }) => ReactNode | true`',
+        'Icon rendered before the content. Can be: ReactNode, `"checkmark"`, `true` (empty slot), or function `({ selected, loading, ...mods }) => ReactNode | true`',
     },
     rightIcon: {
       control: { type: null },
@@ -443,10 +443,10 @@ ExtraWidth.parameters = {
 
 export const WithCheckbox: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
-    <Title level={5}>Selected Items (Checkbox Visible)</Title>
+    <Title level={5}>Selected Items (Checkmark Visible)</Title>
     <Space gap="1x" flow="column" placeItems="start">
       <Item {...args} isSelected={true}>
-        Selected item with checkbox
+        Selected item with checkmark
       </Item>
       <Item {...args} isSelected={true} size="small">
         Small selected item
@@ -456,10 +456,10 @@ export const WithCheckbox: StoryFn<CubeItemProps> = (args) => (
       </Item>
     </Space>
 
-    <Title level={5}>Non-Selected Items (Checkbox Hidden)</Title>
+    <Title level={5}>Non-Selected Items (Checkmark Hidden)</Title>
     <Space gap="1x" flow="column" placeItems="start">
       <Item {...args} isSelected={false}>
-        Non-selected item with hidden checkbox
+        Non-selected item with hidden checkmark
       </Item>
       <Item {...args} isSelected={false} size="small">
         Small non-selected item
@@ -482,13 +482,13 @@ export const WithCheckbox: StoryFn<CubeItemProps> = (args) => (
       </Item>
     </Space>
 
-    <Title level={5}>Comparison: Checkbox vs Regular Icon</Title>
+    <Title level={5}>Comparison: Checkmark vs Regular Icon</Title>
     <Space gap="1x" flow="column" placeItems="start">
       <Item {...args} isSelected={true}>
-        With checkbox (selected)
+        With checkmark (selected)
       </Item>
       <Item {...args} isSelected={false}>
-        With checkbox (not selected)
+        With checkmark (not selected)
       </Item>
       <Item {...args} icon={<IconUser />}>
         With regular icon
@@ -498,6 +498,7 @@ export const WithCheckbox: StoryFn<CubeItemProps> = (args) => (
 );
 
 WithCheckbox.args = {
+  icon: 'checkmark',
   width: '300px',
 };
 
@@ -505,7 +506,7 @@ WithCheckbox.parameters = {
   docs: {
     description: {
       story:
-        'Demonstrates the checkbox functionality when `isSelected` prop is provided. When `isSelected` is `true`, the checkbox is visible (opacity 1, hover opacity 0.8). When `isSelected` is `false`, the checkbox is invisible (opacity 0, hover opacity 0.4). The checkbox replaces the `icon` prop when `isSelected` is provided.',
+        'Demonstrates the checkmark functionality when `icon="checkmark"` is used together with `isSelected`. When `isSelected` is `true`, the checkmark is visible (opacity 1, hover opacity 0.8). When `isSelected` is `false`, the checkmark is invisible (opacity 0, hover opacity 0.4).',
     },
   },
 };
@@ -735,7 +736,7 @@ export const CombinedFeatures: StoryFn<CubeItemProps> = (args) => (
       </Item>
     </Space>
 
-    <Title level={5}>With Checkbox Selection</Title>
+    <Title level={5}>With Checkmark Selection</Title>
     <Space gap="1x" flow="column" placeItems="start">
       <Item
         {...args}
@@ -768,13 +769,14 @@ export const CombinedFeatures: StoryFn<CubeItemProps> = (args) => (
     <Title level={5}>Complete Configuration</Title>
     <Item
       {...args}
+      isSelected
       hotkeys="cmd+shift+s"
       tooltip={{
         title: 'Save document with special options (Cmd+Shift+S)',
         placement: 'bottom',
         activeWrap: true,
       }}
-      type="secondary"
+      type="outline"
       as="button"
       icon={<IconCoin />}
       rightIcon={<IconSettings />}
@@ -796,7 +798,7 @@ CombinedFeatures.parameters = {
   docs: {
     description: {
       story:
-        'Demonstrates the combination of hotkeys, tooltips, icons, checkboxes, and other Item features working together. This shows the full potential of the enhanced Item component.',
+        'Demonstrates the combination of hotkeys, tooltips, icons, checkmarks, and other Item features working together. This shows the full potential of the enhanced Item component.',
     },
   },
 };
@@ -894,8 +896,14 @@ export const WithLoading: StoryFn<CubeItemProps> = (args) => (
       <Item {...args} type="primary" isLoading={true} icon={<IconUser />}>
         Primary type
       </Item>
-      <Item {...args} type="secondary" isLoading={true} icon={<IconUser />}>
-        Secondary type
+      <Item
+        {...args}
+        isSelected
+        type="outline"
+        isLoading={true}
+        icon={<IconUser />}
+      >
+        Outline (selected) type
       </Item>
     </Space>
   </Space>
@@ -1166,15 +1174,6 @@ export const DescriptionWithTypes: StoryFn<CubeItemProps> = (args) => (
       </Item>
       <Item
         {...args}
-        type="secondary"
-        icon={<IconUser />}
-        description="Secondary type"
-        descriptionPlacement="inline"
-      >
-        Secondary Type
-      </Item>
-      <Item
-        {...args}
         type="outline"
         icon={<IconUser />}
         description="Outline type"
@@ -1184,12 +1183,13 @@ export const DescriptionWithTypes: StoryFn<CubeItemProps> = (args) => (
       </Item>
       <Item
         {...args}
-        type="neutral"
+        isSelected
+        type="outline"
         icon={<IconUser />}
-        description="Neutral type"
+        description="Outline (selected) type"
         descriptionPlacement="inline"
       >
-        Neutral Type
+        Outline (selected) Type
       </Item>
       <Item
         {...args}
@@ -1233,12 +1233,13 @@ export const DescriptionWithTypes: StoryFn<CubeItemProps> = (args) => (
       </Item>
       <Item
         {...args}
-        type="secondary"
+        isSelected
+        type="outline"
         icon={<IconUser />}
-        description="Secondary type with block description"
+        description="Outline (selected) type with block description"
         descriptionPlacement="block"
       >
-        Secondary Type
+        Outline (selected) Type
       </Item>
       <Item
         {...args}
@@ -1635,7 +1636,8 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
       </Item>
       <Item
         {...args}
-        type="secondary"
+        isSelected
+        type="outline"
         icon={<IconUser />}
         actions={
           <>
@@ -1644,7 +1646,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
           </>
         }
       >
-        Secondary type
+        Outline (selected) type
       </Item>
       <Item
         {...args}
@@ -2360,14 +2362,7 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
   // - title: only 'default'
   // - card: 'default', 'success', 'danger', 'warning', 'note'
   // - all other types: 'default', 'success', 'danger', 'warning', 'note', 'special'
-  const standardTypes = [
-    'item',
-    'primary',
-    'secondary',
-    'outline',
-    'neutral',
-    'clear',
-  ] as const;
+  const standardTypes = ['item', 'primary', 'outline', 'clear'] as const;
   const standardThemes = [
     'default',
     'danger',
@@ -2452,7 +2447,7 @@ TypesAndThemes.parameters = {
   docs: {
     description: {
       story:
-        'Showcases all valid type and theme combinations. Valid combinations: `title` type only supports `default` theme; `card` type supports `default`, `success`, `danger`, `warning`, and `note` themes; all other types (`item`, `primary`, `secondary`, `outline`, `neutral`, `clear`, `link`) support `default`, `success`, `danger`, `warning`, `note`, and `special` themes. The `link` type does not support icons or loading state (`isLoading`). Using an invalid type+theme combination, icons with `link` type, or `isLoading` with `link` type will trigger a console warning.',
+        'Showcases all valid type and theme combinations. Valid combinations: `title` type only supports `default` theme; `card` type supports `default`, `success`, `danger`, `warning`, and `note` themes; all other types (`item`, `primary`, `outline`, `clear`, `link`) support `default`, `success`, `danger`, `warning`, `note`, and `special` themes. The `link` type does not support icons or loading state (`isLoading`). Using an invalid type+theme combination, icons with `link` type, or `isLoading` with `link` type will trigger a console warning.',
     },
   },
 };
@@ -2522,14 +2517,17 @@ export const Disabled: StoryFn<CubeItemProps> = (args) => (
       <Item {...args} type="primary" isDisabled={true} icon={<IconUser />}>
         Disabled primary
       </Item>
-      <Item {...args} type="secondary" isDisabled={true} icon={<IconUser />}>
-        Disabled secondary
-      </Item>
       <Item {...args} type="outline" isDisabled={true} icon={<IconUser />}>
         Disabled outline
       </Item>
-      <Item {...args} type="neutral" isDisabled={true} icon={<IconUser />}>
-        Disabled neutral
+      <Item
+        {...args}
+        isSelected
+        type="outline"
+        isDisabled={true}
+        icon={<IconUser />}
+      >
+        Disabled outline (selected)
       </Item>
       <Item {...args} type="clear" isDisabled={true} icon={<IconUser />}>
         Disabled clear

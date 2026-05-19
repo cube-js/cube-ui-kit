@@ -52,9 +52,9 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
     width: '($action-size - 2bw) ($action-size - 2bw)',
     opacity: {
       '': 1,
-      'checkbox & selected': 1,
-      'checkbox & !selected': 0,
-      'checkbox & !selected & hovered': 0.4,
+      'checkmark & selected': 1,
+      'checkmark & !selected': 0,
+      'checkmark & !selected & hovered': 0.4,
     },
   },
 } as const;
@@ -95,94 +95,85 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
   },
 } as const;
 
-export const DEFAULT_SECONDARY_STYLES: Styles = {
-  // BORDER anchors to the *adaptive* `#primary-text` (mode 'auto') so the
-  // outline stays visible in BOTH schemes (CR ≈ 1.55–1.82 vs surface in dark
-  // vs ~1.13 with the fixed brand). FILL must NOT use `#primary-text` though:
-  // in dark mode the overlay drifts the bg toward the same lightness as the
-  // text, collapsing label↔bg contrast below AA (cr=4.42@α.10 → 3.04@α.22).
-  // Anchoring the fill to the *fixed* `#primary` brand keeps the bg darker
-  // than the bright dark-mode text and restores AA: cr=6.52 light / 5.95 dark
-  // at α.10, 6.19 / 5.41 at α.16. Pressed fill is intentionally absent — the
-  // darker `pressed` border is the visible press signal (matches BEFORE), so
-  // pressed-only falls back to default fill and pressed-hovered falls back to
-  // hovered fill.
-  border: {
-    '': '#primary-text.15',
-    pressed: '#primary-text.3',
-    focused: '#primary-text',
-    disabled: '#border',
-  },
-  fill: {
-    '': '#primary.10',
-    'hovered & !pressed': '#primary.16',
-    disabled: '#disabled-surface',
-  },
-  color: {
-    '': '#primary-text',
-    disabled: '#disabled-surface-text',
-  },
-} as const;
-
 export const DEFAULT_OUTLINE_STYLES: Styles = {
+  // Non-selected = old OUTLINE: neutral border + surface fill.
+  // Selected (= old SECONDARY): brand-tinted fill + brand border.
+  // Selected BORDER anchors to the *adaptive* `#primary-text` (mode 'auto')
+  // so it stays visible in BOTH schemes (CR ≈ 1.55–1.82 vs surface in dark
+  // vs ~1.13 with the fixed brand). Selected FILL must NOT use
+  // `#primary-text`: in dark mode the overlay drifts the bg toward the same
+  // lightness as the text, collapsing label↔bg contrast below AA
+  // (cr=4.42@α.10 → 3.04@α.22). Anchoring the fill to the *fixed* `#primary`
+  // brand keeps the bg darker than the bright dark-mode text and restores AA:
+  // cr=6.52 light / 5.95 dark at α.10, 6.19 / 5.41 at α.16.
   border: {
     '': true,
+    selected: '#primary-text.15',
+    'selected & pressed': '#primary-text.3',
     focused: '#primary-text',
-    disabled: true,
+    disabled: '#border',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
     '': '#surface-2 #dark.0',
     hovered: '#surface-2 #dark.03',
-    selected: '#surface-2 #dark.09',
-    'selected & hovered': '#surface-2 #dark.12',
     pressed: '#surface-2 #dark.09',
+    selected: '#primary.09',
+    'selected & (hovered | focused)': '#primary.12',
+    'selected & pressed': '#primary.15',
     disabled: '#disabled-surface',
   },
   color: {
     '': '#dark-02',
     hovered: '#dark-02',
-    'pressed | (selected & !hovered)': '#dark',
-    disabled: '#disabled-surface-text',
-  },
-} as const;
-
-export const DEFAULT_NEUTRAL_STYLES: Styles = {
-  border: {
-    '': '#clear',
-    focused: '#primary-text',
-    ...(VALIDATION_STYLES.border as Record<string, string>),
-  },
-  fill: {
-    '': '#dark.0',
-    hovered: '#dark.03',
-    selected: '#dark.09',
-    'selected & hovered': '#dark.12',
-    pressed: '#dark.09',
-    disabled: '#clear',
-  },
-  color: {
-    '': '#dark-02',
-    hovered: '#dark-02',
     pressed: '#dark',
+    selected: '#primary-text',
     disabled: '#disabled-surface-text',
   },
 } as const;
 
 export const DEFAULT_CLEAR_STYLES: Styles = {
+  // Non-selected = old NEUTRAL: transparent / dark-tinted neutral look.
+  // Selected = old CLEAR: brand-tinted overlay over the surface.
   border: {
     '': '#clear',
-    pressed: '#primary-text.10',
+    'selected & pressed': '#primary-text.10',
     focused: '#primary-text',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
-    '': '#primary.0',
-    hovered: '#primary.16',
-    'pressed | (selected & !hovered)': '#primary.10',
+    '': '#dark.0',
+    'hovered | focused': '#dark.04',
+    pressed: '#dark.06',
+    selected: '#primary.0',
+    'selected & (hovered | focused)': '#primary.09',
+    'selected & pressed': '#primary.12',
+    disabled: '#clear',
   },
   color: {
-    '': '#primary-text',
+    '': '#dark-02',
+    hovered: '#dark-02',
+    'pressed & !selected': '#dark',
+    selected: '#primary-text',
+    disabled: '#disabled-surface-text',
+  },
+} as const;
+
+export const DEFAULT_ITEM_STYLES: Styles = {
+  border: '#clear',
+  fill: {
+    '': '#dark.0',
+    'hovered | focused': '#dark.04',
+    pressed: '#dark.06',
+    selected: '#dark.09',
+    'selected & (hovered | focused)': '#dark.15',
+    'selected & pressed': '#dark.12',
+    disabled: '#clear',
+  },
+  color: {
+    '': '#dark-02',
+    hovered: '#dark-02',
+    selected: '#dark',
     disabled: '#disabled-surface-text',
   },
 } as const;
@@ -204,24 +195,6 @@ export const DEFAULT_LINK_STYLES: Styles = {
   color: {
     '': '#primary-text-soft',
     'hovered & !pressed': '#primary-text',
-    disabled: '#disabled-surface-text',
-  },
-} as const;
-
-export const DEFAULT_ITEM_STYLES: Styles = {
-  border: '#clear',
-  fill: {
-    '': '#dark.0',
-    'hovered | focused': '#dark.03',
-    selected: '#dark.09',
-    'selected & (hovered | focused)': '#dark.12',
-    pressed: '#dark.09',
-    disabled: '#clear',
-  },
-  color: {
-    '': '#dark-02',
-    hovered: '#dark-02',
-    pressed: '#dark',
     disabled: '#disabled-surface-text',
   },
 } as const;
@@ -254,34 +227,14 @@ export const DANGER_PRIMARY_STYLES: Styles = {
   },
 } as const;
 
-export const DANGER_SECONDARY_STYLES: Styles = {
-  // Fill anchors to the *fixed* `#danger` brand (not adaptive `#danger-text`)
-  // so the overlay stays darker than the bright dark-mode label text and AA
-  // contrast holds. Border keeps `#danger-text` for visibility in both schemes.
-  border: {
-    '': '#danger-text.15',
-    pressed: '#danger-text.3',
-    focused: '#danger-text',
-    disabled: '#border',
-  },
-  fill: {
-    '': '#danger.05',
-    'hovered & !pressed': '#danger.1',
-    disabled: '#disabled-surface',
-  },
-  color: {
-    '': '#danger-text',
-    disabled: '#disabled-surface-text',
-  },
-} as const;
-
 export const DANGER_OUTLINE_STYLES: Styles = {
+  // Non-selected = old DANGER OUTLINE; selected = old DANGER SECONDARY.
   // Border anchors to the *adaptive* `#danger-text` (mode 'auto') so the
   // outline stays visible on dark surfaces. The fixed `#danger` brand at
   // .15/.3 alpha composites near-invisibly in dark mode (cr≈1.27–1.55 vs
   // the dark surface) because the brand color and the dark surface have
   // similar lightness; `#danger-text` brightens in dark mode and pushes the
-  // composite up to cr≈1.90–2.88. Same rationale as `DANGER_SECONDARY_STYLES.border`.
+  // composite up to cr≈1.90–2.88.
   border: {
     '': '#danger-text.15',
     pressed: '#danger-text.3',
@@ -291,7 +244,9 @@ export const DANGER_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#surface-2 #danger.0',
     hovered: '#surface-2 #danger.1',
-    'pressed | (selected & !hovered)': '#surface-2 #danger.05',
+    pressed: '#surface-2 #danger.05',
+    selected: '#danger.05',
+    'selected & hovered & !pressed': '#danger.1',
     disabled: '#disabled-surface',
   },
   color: {
@@ -300,42 +255,29 @@ export const DANGER_OUTLINE_STYLES: Styles = {
   },
 } as const;
 
-export const DANGER_NEUTRAL_STYLES: Styles = {
+export const DANGER_CLEAR_STYLES: Styles = {
+  // Non-selected = old DANGER NEUTRAL: dark-tinted overlay; pressed switches
+  // text to `#danger-text` (matches old neutral).
+  // Selected = old DANGER CLEAR: danger-text-tinted overlay.
   border: {
     '': '#clear',
+    'selected & pressed': '#danger.05',
     focused: '#danger-text',
   },
   fill: {
     '': '#dark.0',
     hovered: '#dark.04',
-    'pressed | (selected & !hovered)': '#dark.05',
-  },
-  color: {
-    '': '#dark-02',
-    'pressed | (selected & !hovered)': '#danger-text',
-    disabled: '#disabled-surface-text',
-  },
-} as const;
-
-export const DANGER_CLEAR_STYLES: Styles = {
-  border: {
-    '': '#clear',
-    pressed: '#danger.05',
-    focused: '#danger-text',
-  },
-  fill: {
-    '': '#danger-text.0',
-    hovered: '#danger-text.03',
-    selected: '#danger-text.09',
-    'selected & hovered': '#danger-text.12',
-    pressed: '#danger-text.09',
+    pressed: '#dark.05',
+    selected: '#danger-text.0',
+    'selected & hovered': '#danger-text.03',
+    'selected & pressed': '#danger-text.09',
     disabled: '#clear',
   },
   color: {
-    '': '#danger-text',
-    hovered: '#danger-text',
+    '': '#dark-02',
     pressed: '#danger-text',
-    disabled: '#danger-text.4',
+    selected: '#danger-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -399,27 +341,8 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
   },
 } as const;
 
-export const SUCCESS_SECONDARY_STYLES: Styles = {
-  // See DANGER_SECONDARY_STYLES for the fill-anchor rationale (`#X` not
-  // `#X-text` so dark-mode label↔bg contrast stays AA).
-  border: {
-    '': '#success-text.15',
-    pressed: '#success-text.3',
-    focused: '#success-text',
-    disabled: '#border',
-  },
-  fill: {
-    '': '#success.05',
-    'hovered & !pressed': '#success.1',
-    disabled: '#disabled-surface',
-  },
-  color: {
-    '': '#success-text',
-    disabled: '#disabled-surface-text',
-  },
-} as const;
-
 export const SUCCESS_OUTLINE_STYLES: Styles = {
+  // Non-selected = old SUCCESS OUTLINE; selected = old SUCCESS SECONDARY.
   // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
   border: {
     '': '#success-text.15',
@@ -430,7 +353,9 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#surface-2 #success.0',
     hovered: '#surface-2 #success.1',
-    'pressed | (selected & !hovered)': '#surface-2 #success.05',
+    pressed: '#surface-2 #success.05',
+    selected: '#success.05',
+    'selected & hovered & !pressed': '#success.1',
     disabled: '#disabled-surface',
   },
   color: {
@@ -439,42 +364,27 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
   },
 } as const;
 
-export const SUCCESS_NEUTRAL_STYLES: Styles = {
+export const SUCCESS_CLEAR_STYLES: Styles = {
+  // Non-selected = old SUCCESS NEUTRAL; selected = old SUCCESS CLEAR.
   border: {
     '': '#clear',
+    'selected & pressed': '#success.05',
     focused: '#success-text',
   },
   fill: {
     '': '#dark.0',
     hovered: '#dark.04',
-    'pressed | (selected & !hovered)': '#dark.05',
-  },
-  color: {
-    '': '#dark-02',
-    'pressed | (selected & !hovered)': '#success-text',
-    disabled: '#disabled-surface-text',
-  },
-} as const;
-
-export const SUCCESS_CLEAR_STYLES: Styles = {
-  border: {
-    '': '#clear',
-    pressed: '#success.05',
-    focused: '#success-text',
-  },
-  fill: {
-    '': '#success-text.0',
-    hovered: '#success-text.03',
-    selected: '#success-text.09',
-    'selected & hovered': '#success-text.12',
-    pressed: '#success-text.09',
+    pressed: '#dark.05',
+    selected: '#success-text.0',
+    'selected & hovered': '#success-text.03',
+    'selected & pressed': '#success-text.09',
     disabled: '#clear',
   },
   color: {
-    '': '#success-text',
-    hovered: '#success-text',
+    '': '#dark-02',
     pressed: '#success-text',
-    disabled: '#success-text.4',
+    selected: '#success-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -538,26 +448,8 @@ export const WARNING_PRIMARY_STYLES: Styles = {
   },
 } as const;
 
-export const WARNING_SECONDARY_STYLES: Styles = {
-  // See DANGER_SECONDARY_STYLES for the fill-anchor rationale.
-  border: {
-    '': '#warning-text.15',
-    pressed: '#warning-text.3',
-    focused: '#warning-text',
-    disabled: '#border',
-  },
-  fill: {
-    '': '#warning.05',
-    'hovered & !pressed': '#warning.1',
-    disabled: '#disabled-surface',
-  },
-  color: {
-    '': '#warning-text',
-    disabled: '#disabled-surface-text',
-  },
-} as const;
-
 export const WARNING_OUTLINE_STYLES: Styles = {
+  // Non-selected = old WARNING OUTLINE; selected = old WARNING SECONDARY.
   // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
   border: {
     '': '#warning-text.15',
@@ -568,7 +460,9 @@ export const WARNING_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#surface-2 #warning.0',
     hovered: '#surface-2 #warning.1',
-    'pressed | (selected & !hovered)': '#surface-2 #warning.05',
+    pressed: '#surface-2 #warning.05',
+    selected: '#warning.05',
+    'selected & hovered & !pressed': '#warning.1',
     disabled: '#disabled-surface',
   },
   color: {
@@ -577,42 +471,27 @@ export const WARNING_OUTLINE_STYLES: Styles = {
   },
 } as const;
 
-export const WARNING_NEUTRAL_STYLES: Styles = {
+export const WARNING_CLEAR_STYLES: Styles = {
+  // Non-selected = old WARNING NEUTRAL; selected = old WARNING CLEAR.
   border: {
     '': '#clear',
+    'selected & pressed': '#warning.05',
     focused: '#warning-text',
   },
   fill: {
     '': '#dark.0',
     hovered: '#dark.04',
-    'pressed | (selected & !hovered)': '#dark.05',
-  },
-  color: {
-    '': '#dark-02',
-    'pressed | (selected & !hovered)': '#warning-text',
-    disabled: '#disabled-surface-text',
-  },
-} as const;
-
-export const WARNING_CLEAR_STYLES: Styles = {
-  border: {
-    '': '#clear',
-    pressed: '#warning.05',
-    focused: '#warning-text',
-  },
-  fill: {
-    '': '#warning-text.0',
-    hovered: '#warning-text.03',
-    selected: '#warning-text.09',
-    'selected & hovered': '#warning-text.12',
-    pressed: '#warning-text.09',
+    pressed: '#dark.05',
+    selected: '#warning-text.0',
+    'selected & hovered': '#warning-text.03',
+    'selected & pressed': '#warning-text.09',
     disabled: '#clear',
   },
   color: {
-    '': '#warning-text',
-    hovered: '#warning-text',
+    '': '#dark-02',
     pressed: '#warning-text',
-    disabled: '#warning-text.4',
+    selected: '#warning-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -676,26 +555,8 @@ export const NOTE_PRIMARY_STYLES: Styles = {
   },
 } as const;
 
-export const NOTE_SECONDARY_STYLES: Styles = {
-  // See DANGER_SECONDARY_STYLES for the fill-anchor rationale.
-  border: {
-    '': '#note-text.15',
-    pressed: '#note-text.3',
-    focused: '#note-text',
-    disabled: '#border',
-  },
-  fill: {
-    '': '#note.05',
-    'hovered & !pressed': '#note.1',
-    disabled: '#disabled-surface',
-  },
-  color: {
-    '': '#note-text',
-    disabled: '#disabled-surface-text',
-  },
-} as const;
-
 export const NOTE_OUTLINE_STYLES: Styles = {
+  // Non-selected = old NOTE OUTLINE; selected = old NOTE SECONDARY.
   // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
   border: {
     '': '#note-text.15',
@@ -706,7 +567,9 @@ export const NOTE_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#surface-2 #note.0',
     hovered: '#surface-2 #note.1',
-    'pressed | (selected & !hovered)': '#surface-2 #note.05',
+    pressed: '#surface-2 #note.05',
+    selected: '#note.05',
+    'selected & hovered & !pressed': '#note.1',
     disabled: '#disabled-surface',
   },
   color: {
@@ -715,42 +578,27 @@ export const NOTE_OUTLINE_STYLES: Styles = {
   },
 } as const;
 
-export const NOTE_NEUTRAL_STYLES: Styles = {
+export const NOTE_CLEAR_STYLES: Styles = {
+  // Non-selected = old NOTE NEUTRAL; selected = old NOTE CLEAR.
   border: {
     '': '#clear',
+    'selected & pressed': '#note.05',
     focused: '#note-text',
   },
   fill: {
     '': '#dark.0',
     hovered: '#dark.04',
-    'pressed | (selected & !hovered)': '#dark.05',
-  },
-  color: {
-    '': '#dark-02',
-    'pressed | (selected & !hovered)': '#note-text',
-    disabled: '#disabled-surface-text',
-  },
-} as const;
-
-export const NOTE_CLEAR_STYLES: Styles = {
-  border: {
-    '': '#clear',
-    pressed: '#note.05',
-    focused: '#note-text',
-  },
-  fill: {
-    '': '#note-text.0',
-    hovered: '#note-text.03',
-    selected: '#note-text.09',
-    'selected & hovered': '#note-text.12',
-    pressed: '#note-text.09',
+    pressed: '#dark.05',
+    selected: '#note-text.0',
+    'selected & hovered': '#note-text.03',
+    'selected & pressed': '#note-text.09',
     disabled: '#clear',
   },
   color: {
-    '': '#note-text',
-    hovered: '#note-text',
+    '': '#dark-02',
     pressed: '#note-text',
-    disabled: '#note-text.4',
+    selected: '#note-text',
+    disabled: '#disabled-surface-text',
   },
 } as const;
 
@@ -819,52 +667,22 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
   },
 } as const;
 
-export const SPECIAL_SECONDARY_STYLES: Styles = {
-  border: {
-    '': '#white.3',
-    pressed: '#white.4',
-    focused: '#white',
-  },
-  fill: {
-    '': '#white.12',
-    'hovered & !pressed': '#white.18',
-    disabled: '#white.12',
-  },
-  color: {
-    '': '#white',
-    disabled: '#white.4',
-  },
-} as const;
-
 export const SPECIAL_OUTLINE_STYLES: Styles = {
+  // Non-selected = old SPECIAL OUTLINE; selected = old SPECIAL SECONDARY.
   border: {
     '': '#white.3',
     pressed: '#white.12',
+    'selected & pressed': '#white.4',
     focused: '#white',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
     '': '#special-surface #white.0',
     hovered: '#special-surface #white.18',
-    'pressed | (selected & !hovered)': '#special-surface #white.12',
+    pressed: '#special-surface #white.12',
+    selected: '#white.12',
+    'selected & hovered & !pressed': '#white.18',
     disabled: '#white.12',
-  },
-  color: {
-    '': '#white',
-    disabled: '#white.4',
-  },
-} as const;
-
-export const SPECIAL_NEUTRAL_STYLES: Styles = {
-  border: {
-    '': '#clear',
-    focused: '#white',
-    ...(VALIDATION_STYLES.border as Record<string, string>),
-  },
-  fill: {
-    '': '#white.0',
-    hovered: '#white.12',
-    'pressed | (selected & !hovered)': '#white.18',
   },
   color: {
     '': '#white',
@@ -873,25 +691,32 @@ export const SPECIAL_NEUTRAL_STYLES: Styles = {
 } as const;
 
 export const SPECIAL_CLEAR_STYLES: Styles = {
+  // Non-selected = old SPECIAL NEUTRAL: transparent / dark-tinted.
+  // Selected = old SPECIAL CLEAR: solid white fill with dark accent text.
   outline: {
-    focused: '1bw #white',
+    'selected & focused': '1bw #white',
   },
   border: {
     '': '#clear',
-    'pressed | focused': '#white',
-    disabled: '#white.3',
+    focused: '#white',
+    'selected & pressed': '#white',
+    'selected & disabled': '#white.3',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
-    '': '#white',
-    'hovered & !pressed': '#white.94',
-    disabled: '#white.12',
+    '': '#white.0',
+    hovered: '#white.12',
+    pressed: '#white.18',
+    selected: '#white',
+    'selected & hovered & !pressed': '#white.94',
+    disabled: '#white.0',
+    'selected & disabled': '#white.12',
   },
   color: {
-    // Dark-purple text on the always-white pill, fixed in all schemes.
-    '': '#special-accent-text',
-    hovered: '#special-accent-fill',
-    'pressed & hovered': '#special-accent-text',
+    '': '#white',
+    selected: '#special-accent-text',
+    'selected & hovered': '#special-accent-fill',
+    'selected & hovered & pressed': '#special-accent-text',
     disabled: '#white.4',
   },
 } as const;
@@ -960,49 +785,37 @@ export const NOTE_CARD_STYLES: Styles = {
 
 export type ItemVariant =
   | 'default.primary'
-  | 'default.secondary'
   | 'default.outline'
-  | 'default.neutral'
   | 'default.clear'
   | 'default.link'
   | 'default.item'
   | 'default.card'
   | 'danger.primary'
-  | 'danger.secondary'
   | 'danger.outline'
-  | 'danger.neutral'
   | 'danger.clear'
   | 'danger.link'
   | 'danger.item'
   | 'danger.card'
   | 'success.primary'
-  | 'success.secondary'
   | 'success.outline'
-  | 'success.neutral'
   | 'success.clear'
   | 'success.link'
   | 'success.item'
   | 'success.card'
   | 'warning.primary'
-  | 'warning.secondary'
   | 'warning.outline'
-  | 'warning.neutral'
   | 'warning.clear'
   | 'warning.link'
   | 'warning.item'
   | 'warning.card'
   | 'note.primary'
-  | 'note.secondary'
   | 'note.outline'
-  | 'note.neutral'
   | 'note.clear'
   | 'note.link'
   | 'note.item'
   | 'note.card'
   | 'special.primary'
-  | 'special.secondary'
   | 'special.outline'
-  | 'special.neutral'
   | 'special.clear'
   | 'special.link'
   | 'special.item';

@@ -58,7 +58,7 @@ function PasswordInput(
     <>
       {suffix}
       <ItemAction
-        type="neutral"
+        type="clear"
         tooltip="Toggle masking"
         icon={type === 'password' ? <EyeInvisibleIcon /> : <EyeIcon />}
         onPress={toggleType}

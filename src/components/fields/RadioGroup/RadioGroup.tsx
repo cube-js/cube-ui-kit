@@ -42,8 +42,8 @@ export interface CubeRadioGroupProps
   isInvalid?: boolean;
   /* Size for all radio buttons in the group */
   size?: Omit<CubeItemProps['size'], 'inline'>;
-  /* Button type for all button-style radios (ignored in tabs mode). When set to 'primary', selected buttons use 'primary' and non-selected use 'secondary' */
-  buttonType?: Exclude<CubeItemProps['type'], 'secondary'>;
+  /* Button type for all button-style radios (ignored in tabs mode). When set to 'primary', selected buttons use 'primary' and non-selected use 'outline' with isSelected appearance */
+  buttonType?: CubeItemProps['type'];
   /* Visual type for all radios in the group: radio (default), button, or tabs */
   type?: 'radio' | 'button' | 'tabs';
 }

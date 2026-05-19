@@ -5,7 +5,7 @@ import { Button } from '../../actions';
 
 const StepButtonElement = tasty(Button, {
   preventDefault: true,
-  type: 'neutral',
+  type: 'clear',
   styles: {
     width: '2.5x',
     height: 'auto',
@@ -31,7 +31,7 @@ export function StepButton(props) {
   return (
     <StepButtonElement
       preventDefault
-      type="neutral"
+      type="clear"
       mods={{
         up: props.direction === 'up',
         down: props.direction === 'down',

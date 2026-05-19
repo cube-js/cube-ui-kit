@@ -26,7 +26,7 @@ A split button that groups a primary action with a dropdown trigger for secondar
 - **`defaultActionKey`** `string` — Initially selected action key (uncontrolled)
 - **`onAction`** `(key: string) => void` — Called when the action button is pressed
 - **`onActionChange`** `(key: string) => void` — Called when the selected action changes via the menu
-- **`type`** `'primary' | 'secondary' | 'outline' | 'neutral' | 'clear'` (default: `'outline'`) — Button type (inherited by children via context)
+- **`type`** `'primary' | 'outline' | 'clear'` (default: `'outline'`) — Button type (inherited by children via context)
 - **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `'default'`) — Button theme (inherited by children via context)
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `'medium'`) — Button size (inherited by children via context)
 - **`isDisabled`** `boolean` (default: `false`) — Disables all buttons (inherited via context)
@@ -152,7 +152,7 @@ Different types and themes can be applied. All child buttons inherit the styling
 
 ```jsx
 <Button.Split actions={actions} defaultActionKey="copy" type="primary" />
-<Button.Split actions={actions} defaultActionKey="copy" type="secondary" />
+<Button.Split actions={actions} defaultActionKey="copy" type="outline" />
 <Button.Split actions={actions} defaultActionKey="copy" type="outline" />
 <Button.Split actions={actions} defaultActionKey="copy" type="primary" theme="danger" />
 <Button.Split actions={actions} defaultActionKey="copy" type="primary" isDisabled />

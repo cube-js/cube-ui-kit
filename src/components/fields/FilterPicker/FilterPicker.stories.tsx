@@ -1455,7 +1455,7 @@ export const DifferentTypes: Story = {
         ))}
       </FilterPicker>
 
-      <FilterPicker {...args} type="secondary" placeholder="Secondary">
+      <FilterPicker {...args} type="outline" placeholder="Outline">
         {fruits.slice(0, 3).map((fruit) => (
           <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
             {fruit.label}
@@ -1592,7 +1592,7 @@ export const WithTextValue: Story = {
       >
         <Space gap="1x" flow="row" placeItems="center">
           <Text weight="600">Basic Plan</Text>
-          <Badge type="neutral">Free</Badge>
+          <Badge type="disabled">Free</Badge>
         </Space>
       </FilterPicker.Item>
       <FilterPicker.Item
@@ -1793,7 +1793,7 @@ export const ComplexExample: Story = {
           <Space gap="1x" flow="row" placeItems="center">
             <FilterIcon />
             <Title level={6}>Filter Options</Title>
-            <Badge type="neutral">24 available</Badge>
+            <Badge type="disabled">24 available</Badge>
           </Space>
           <Space gap="1x" flow="row">
             <Button

@@ -30,7 +30,7 @@ const meta: Meta<typeof ItemAction> = {
     /* Content */
     icon: {
       control: { type: null },
-      description: 'Icon element or "checkbox" for selection indicator',
+      description: 'Icon element or "checkmark" for selection indicator',
     },
     children: {
       control: { type: 'text' },
@@ -45,11 +45,11 @@ const meta: Meta<typeof ItemAction> = {
     /* Presentation */
     type: {
       control: 'select',
-      options: ['primary', 'secondary', 'neutral', 'clear'],
+      options: ['primary', 'outline', 'clear'],
       description:
         'Visual type/variant of the action button (inherits from context when inside ItemButton/Item)',
       table: {
-        defaultValue: { summary: 'neutral' },
+        defaultValue: { summary: 'clear' },
       },
     },
     theme: {
@@ -72,7 +72,7 @@ const meta: Meta<typeof ItemAction> = {
     },
     isSelected: {
       control: 'boolean',
-      description: 'Shows as selected (works with checkbox icon)',
+      description: 'Shows as selected (works with checkmark icon)',
       table: {
         defaultValue: { summary: false },
       },
@@ -154,27 +154,65 @@ export const Types: Story = {
         </Space>
       </Flow>
       <Flow gap="1x">
-        <Title level={4}>Secondary</Title>
+        <Title level={4}>Outline (unselected)</Title>
         <Space>
-          <ItemAction type="secondary" icon={<IconEdit />} tooltip="Edit" />
-          <ItemAction type="secondary" icon={<IconCopy />} tooltip="Copy" />
-          <ItemAction type="secondary" icon={<IconTrash />} tooltip="Delete" />
+          <ItemAction type="outline" icon={<IconEdit />} tooltip="Edit" />
+          <ItemAction type="outline" icon={<IconCopy />} tooltip="Copy" />
+          <ItemAction type="outline" icon={<IconTrash />} tooltip="Delete" />
         </Space>
       </Flow>
       <Flow gap="1x">
-        <Title level={4}>Neutral</Title>
+        <Title level={4}>Outline (selected)</Title>
         <Space>
-          <ItemAction type="neutral" icon={<IconEdit />} tooltip="Edit" />
-          <ItemAction type="neutral" icon={<IconCopy />} tooltip="Copy" />
-          <ItemAction type="neutral" icon={<IconTrash />} tooltip="Delete" />
+          <ItemAction
+            isSelected
+            type="outline"
+            icon={<IconEdit />}
+            tooltip="Edit"
+          />
+          <ItemAction
+            isSelected
+            type="outline"
+            icon={<IconCopy />}
+            tooltip="Copy"
+          />
+          <ItemAction
+            isSelected
+            type="outline"
+            icon={<IconTrash />}
+            tooltip="Delete"
+          />
         </Space>
       </Flow>
       <Flow gap="1x">
-        <Title level={4}>Clear</Title>
+        <Title level={4}>Clear (unselected)</Title>
         <Space>
           <ItemAction type="clear" icon={<IconEdit />} tooltip="Edit" />
           <ItemAction type="clear" icon={<IconCopy />} tooltip="Copy" />
           <ItemAction type="clear" icon={<IconTrash />} tooltip="Delete" />
+        </Space>
+      </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Clear (selected)</Title>
+        <Space>
+          <ItemAction
+            isSelected
+            type="clear"
+            icon={<IconEdit />}
+            tooltip="Edit"
+          />
+          <ItemAction
+            isSelected
+            type="clear"
+            icon={<IconCopy />}
+            tooltip="Copy"
+          />
+          <ItemAction
+            isSelected
+            type="clear"
+            icon={<IconTrash />}
+            tooltip="Delete"
+          />
         </Space>
       </Flow>
     </Flow>
@@ -266,8 +304,8 @@ export const States: Story = {
       <Flow gap="1x">
         <Title level={4}>Selected</Title>
         <Space>
-          <ItemAction isSelected icon="checkbox" tooltip="Select" />
-          <ItemAction icon="checkbox" tooltip="Select" isSelected={false} />
+          <ItemAction isSelected icon="checkmark" tooltip="Select" />
+          <ItemAction icon="checkmark" tooltip="Select" isSelected={false} />
           <ItemAction isSelected icon={<IconStar />} tooltip="Favorite" />
         </Space>
       </Flow>
@@ -568,7 +606,7 @@ export const InsideItem: Story = {
             Outline Item
           </Item>
           <Item
-            type="neutral"
+            type="clear"
             icon={<IconFile />}
             actions={
               <>
@@ -577,7 +615,7 @@ export const InsideItem: Story = {
               </>
             }
           >
-            Neutral Item
+            Clear Item
           </Item>
         </Space>
       </Flow>

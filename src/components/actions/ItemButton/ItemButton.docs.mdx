@@ -24,7 +24,7 @@ An interactive button component built on top of `Item` that provides all the lay
 
 ### Properties
 
-- **`type`** `'primary' | 'secondary' | 'outline' | 'neutral' | 'clear'` — Visual type/variant of the button
+- **`type`** `'primary' | 'outline' | 'clear'` — Visual type/variant of the button
 - **`theme`** `'default' | 'danger' | 'success' | 'special'` — Color theme of the button
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `medium`) — Size of the button (does not support `'inline'`)
 - **`icon`** `ReactNode` — Icon displayed before the content
@@ -34,7 +34,7 @@ An interactive button component built on top of `Item` that provides all the lay
 - **`hotkeys`** `string` — Keyboard shortcut that triggers the button (e.g., `"cmd+s"`, `"ctrl+alt+d"`)
 - **`tooltip`** `boolean | string | object` — Tooltip configuration: string for simple text, `true` for auto overflow tooltips, or object for advanced config with optional `auto` property
 - **`isDisabled`** `boolean` — Whether the button is disabled
-- **`isSelected`** `boolean` — Whether the button shows as selected with checkbox
+- **`isSelected`** `boolean` — Whether the button shows as selected with a checkmark (pairs with `icon="checkmark"`)
 - **`to`** `string` — URL for link behavior (makes button act as link)
 - **`htmlType`** `'button' | 'submit' | 'reset'` — HTML button type attribute
 - **`description`** `string` — Secondary text shown below the main content
@@ -68,10 +68,8 @@ Inherits all modifiers from [Item](/docs/content-item--docs) plus:
 ### Types
 
 - `primary` - Primary button with prominent styling for main actions
-- `secondary` - Secondary button with moderate emphasis
-- `outline` - Button with border outline and transparent background
-- `neutral` - Neutral styled button for subtle actions
-- `clear` - Transparent button with minimal visual weight
+- `outline` - Button with border outline; `isSelected` adds brand-tinted fill
+- `clear` - Transparent button with minimal visual weight; `isSelected` adds brand-tinted fill
 - `link` - Link-styled button that looks like a text link
 
 ### Themes

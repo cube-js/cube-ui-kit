@@ -8,7 +8,7 @@ import {
 import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Text } from '../../content/Text';
+import { Title } from '../../content/Title';
 import { Space } from '../../layout/Space';
 
 import { Button, CubeButtonProps } from './Button';
@@ -20,7 +20,7 @@ export default {
   argTypes: {
     /* Visual presentation */
     type: {
-      options: ['primary', 'secondary', 'outline', 'neutral', 'clear', 'link'],
+      options: ['primary', 'outline', 'clear', 'link'],
       control: { type: 'radio' },
       description: 'Visual style variant of the button',
       table: {
@@ -164,16 +164,17 @@ const TemplateSizesOnlyIcon: StoryFn<CubeButtonProps> = ({
   </Space>
 );
 
-const BUTTON_TYPES = [
-  'primary',
-  'secondary',
-  'outline',
-  'neutral',
-  'clear',
-  'link',
-] as const;
+const BUTTON_TYPES = ['primary', 'outline', 'clear', 'link'] as const;
 
-const SELECTED_TYPES: string[] = ['outline', 'neutral', 'clear'];
+const SELECTED_TYPES: string[] = ['outline', 'clear'];
+
+const BASE_MODS = {
+  hovered: false,
+  pressed: false,
+  focused: false,
+  disabled: false,
+  selected: false,
+};
 
 const TypeStatesRow = ({
   type,
@@ -181,100 +182,120 @@ const TypeStatesRow = ({
 }: {
   type: CubeButtonProps['type'];
   theme?: CubeButtonProps['theme'];
-}) => (
-  <Space flow="column">
-    <Text
-      styles={{
-        fontSize: '12px',
-        fontWeight: 600,
-        textTransform: 'uppercase',
-        opacity: 0.6,
-        color: theme === 'special' ? '#white' : undefined,
-      }}
-    >
-      {type}
-    </Text>
-    <Space>
-      <Button
-        type={type}
-        theme={theme}
-        mods={{
-          hovered: false,
-          pressed: false,
-          focused: false,
-          disabled: false,
-        }}
-      >
-        Default
-      </Button>
-      <Button
-        type={type}
-        theme={theme}
-        mods={{
-          hovered: true,
-          pressed: false,
-          focused: false,
-          disabled: false,
-        }}
-      >
-        Hovered
-      </Button>
-      <Button
-        type={type}
-        theme={theme}
-        mods={{
-          hovered: false,
-          pressed: true,
-          focused: false,
-          disabled: false,
-        }}
-      >
-        Pressed
-      </Button>
-      <Button
-        type={type}
-        theme={theme}
-        mods={{ hovered: true, pressed: true, focused: false, disabled: false }}
-      >
-        Pressed & Hovered
-      </Button>
-      <Button
-        type={type}
-        theme={theme}
-        mods={{
-          hovered: false,
-          pressed: false,
-          focused: true,
-          disabled: false,
-        }}
-      >
-        Focused
-      </Button>
-      <Button
-        isDisabled
-        type={type}
-        theme={theme}
-        mods={{ hovered: false, pressed: false, focused: false }}
-      >
-        Disabled
-      </Button>
-      {SELECTED_TYPES.includes(type!) ? (
+}) => {
+  const hasSelected = SELECTED_TYPES.includes(type!);
+  const titleColor = theme === 'special' ? '#white' : undefined;
+  return (
+    <Space flow="column">
+      <Title level={6} color={titleColor}>
+        {type}
+      </Title>
+      <Space>
+        <Button type={type} theme={theme} mods={BASE_MODS}>
+          Default
+        </Button>
         <Button
           type={type}
           theme={theme}
-          mods={{
-            pressed: false,
-            focused: false,
-            disabled: false,
-            selected: true,
-          }}
+          mods={{ ...BASE_MODS, hovered: true }}
         >
-          Selected
+          Hovered
         </Button>
-      ) : null}
+        <Button
+          type={type}
+          theme={theme}
+          mods={{ ...BASE_MODS, pressed: true }}
+        >
+          Pressed
+        </Button>
+        <Button
+          type={type}
+          theme={theme}
+          mods={{ ...BASE_MODS, hovered: true, pressed: true }}
+        >
+          Pressed&Hovered
+        </Button>
+        <Button
+          type={type}
+          theme={theme}
+          mods={{ ...BASE_MODS, focused: true }}
+        >
+          Focused
+        </Button>
+        <Button
+          isDisabled
+          type={type}
+          theme={theme}
+          mods={{ hovered: false, pressed: false, focused: false }}
+        >
+          Disabled
+        </Button>
+      </Space>
+      {hasSelected && (
+        <>
+          <Title level={6} color={titleColor}>
+            {type} + selected
+          </Title>
+          <Space>
+            <Button
+              type={type}
+              theme={theme}
+              mods={{ ...BASE_MODS, selected: true }}
+            >
+              Default
+            </Button>
+            <Button
+              type={type}
+              theme={theme}
+              mods={{ ...BASE_MODS, selected: true, hovered: true }}
+            >
+              Hovered
+            </Button>
+            <Button
+              type={type}
+              theme={theme}
+              mods={{ ...BASE_MODS, selected: true, pressed: true }}
+            >
+              Pressed
+            </Button>
+            <Button
+              type={type}
+              theme={theme}
+              mods={{
+                ...BASE_MODS,
+                selected: true,
+                hovered: true,
+                pressed: true,
+              }}
+            >
+              Pressed&Hovered
+            </Button>
+            <Button
+              type={type}
+              theme={theme}
+              mods={{ ...BASE_MODS, selected: true, focused: true }}
+            >
+              Focused
+            </Button>
+            <Button
+              isDisabled
+              type={type}
+              theme={theme}
+              mods={{
+                selected: true,
+                hovered: false,
+                pressed: false,
+                focused: false,
+              }}
+            >
+              Disabled
+            </Button>
+          </Space>
+        </>
+      )}
     </Space>
-  </Space>
-);
+  );
+};
 
 const ThemeStatesTemplate: StoryFn<CubeButtonProps> = ({ theme }) => {
   const isSpecial = theme === 'special';

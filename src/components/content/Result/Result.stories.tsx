@@ -66,7 +66,7 @@ Success.args = {
   children: (
     <Space>
       <Button type="primary">Go Console</Button>
-      <Button type="secondary">Buy Again</Button>
+      <Button type="outline">Buy Again</Button>
     </Space>
   ),
 };
@@ -94,7 +94,7 @@ Error.args = {
   children: (
     <Space>
       <Button type="primary">Go Console</Button>
-      <Button type="secondary">Buy Again</Button>
+      <Button type="outline">Buy Again</Button>
     </Space>
   ),
 };
@@ -108,7 +108,7 @@ CustomIcon.args = {
       <IconLock />
     </Icon>
   ),
-  children: <Button type="secondary">Request</Button>,
+  children: <Button type="outline">Request</Button>,
 };
 
 export const CustomTitle = Template.bind({});
@@ -137,7 +137,7 @@ Compact.args = {
   children: (
     <Space>
       <Button type="primary">Go Console</Button>
-      <Button type="secondary">Buy Again</Button>
+      <Button type="outline">Buy Again</Button>
     </Space>
   ),
 };

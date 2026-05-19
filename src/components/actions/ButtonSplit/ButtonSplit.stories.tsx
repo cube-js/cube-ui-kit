@@ -47,7 +47,7 @@ const meta = {
 
     /* Presentation */
     type: {
-      options: ['primary', 'secondary', 'outline', 'neutral', 'clear'],
+      options: ['primary', 'outline', 'clear'],
       control: { type: 'radio' },
       description: 'Button type (inherited by children via context)',
       table: { defaultValue: { summary: 'outline' } },
@@ -169,7 +169,7 @@ export const Variants: Story = {
           <Button.Split
             actions={actions}
             defaultActionKey="copy"
-            type="secondary"
+            type="outline"
           />
           <Button.Split
             actions={actions}

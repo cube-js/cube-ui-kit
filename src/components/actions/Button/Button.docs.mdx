@@ -23,7 +23,7 @@ A versatile action component that triggers commands and navigates users.
 
 ## Properties
 
-- **`type`** `'primary' | 'secondary' | 'outline' | 'neutral' | 'clear' | 'link'` (default: `outline`) — Visual style variant of the button
+- **`type`** `'primary' | 'outline' | 'clear' | 'link'` (default: `outline`) — Visual style variant of the button
 - **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `default`) — Semantic colour palette theme
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Button size. Use `'inline'` for link-type buttons or a number/string for custom sizes (e.g. `64` or `'8x'`)
 - **`icon`** — Icon rendered before the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`
@@ -86,10 +86,8 @@ The `mods` prop accepts the following modifiers you can override:
 ### Types. `type` prop
 
 - `primary` – Emphasised call-to-action.
-- `secondary` – Less emphasised, alternative action.
-- `outline` – Transparent background with border.
-- `neutral` – Minimal style that blends with surroundings.
-- `clear` – Text-only variant without background and border.
+- `outline` – Border with transparent background; `isSelected` adds brand-tinted fill.
+- `clear` – No border, transparent background; `isSelected` adds brand-tinted fill.
 - `link` – Styled as a textual link.
 
 ### Themes. `theme` prop

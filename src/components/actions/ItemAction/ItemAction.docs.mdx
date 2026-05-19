@@ -21,11 +21,11 @@ A compact action button designed for use inside `Item`, `ItemButton`, and `ItemC
 
 ## Properties
 
-- **`icon`** `ReactNode | 'checkbox'` — Icon element or `'checkbox'` for a selection indicator
-- **`type`** `'primary' | 'secondary' | 'outline' | 'neutral' | 'clear'` (default: `'neutral'`) — Visual type. Inherits from parent context.
+- **`icon`** `ReactNode | 'checkmark'` — Icon element or `'checkmark'` for a selection indicator
+- **`type`** `'primary' | 'outline' | 'clear'` (default: `'clear'`) — Visual type. Inherits from parent context.
 - **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `'default'`) — Color theme. Inherits from parent context.
 - **`isLoading`** `boolean` (default: `false`) — Shows loading spinner
-- **`isSelected`** `boolean` (default: `false`) — Selected state (works with `icon="checkbox"`)
+- **`isSelected`** `boolean` (default: `false`) — Selected state (works with `icon="checkmark"`)
 - **`isDisabled`** `boolean` (default: `false`) — Disables the action. Inherits from parent; use `isDisabled={false}` to override.
 - **`tooltip`** `string | object` — Tooltip content (shown for icon-only buttons)
 - **`onPress`** `() => void` — Press event handler
@@ -43,10 +43,10 @@ Supports [Base properties](/docs/getting-started-base-properties--docs).
 <ItemAction icon={<IconTrash />} tooltip="Delete" theme="danger" />
 ```
 
-### Checkbox action
+### Checkmark action
 
 ```jsx
-<ItemAction icon="checkbox" isSelected={isChecked} onPress={toggle} />
+<ItemAction icon="checkmark" isSelected={isChecked} onPress={toggle} />
 ```
 
 ### Inside ItemButton

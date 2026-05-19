@@ -36,10 +36,8 @@ export function ItemActionProvider({
           type === 'outline' ||
           type === 'header' ||
           type === 'card'
-            ? 'neutral'
-            : type === 'secondary'
-              ? 'clear'
-              : type,
+            ? 'clear'
+            : type,
         theme,
         disableActionsFocus,
         isDisabled,
