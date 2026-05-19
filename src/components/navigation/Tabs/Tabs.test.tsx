@@ -966,6 +966,54 @@ describe('<Tabs />', () => {
       expect(queryByRole('textbox')).toBeInTheDocument();
       expect(handleTitleChange).not.toHaveBeenCalled();
     });
+
+    // Regression: with `contextMenu="context-only"` and no delete handler
+    // / custom actions, the `TabContainer` ref is replaced by the context
+    // menu's target ref and the `Actions` element is never rendered — so
+    // both `containerRef` and `actionsRef` are null. The TabButton refocus
+    // pass must still be able to locate the editing input (via the tab
+    // button ref, which is always wired up).
+    it('also mounts the rename input in context-only mode with no actions', async () => {
+      const handleTitleChange = vi.fn();
+      const { findByRole, getByRole, queryByRole } = renderWithRoot(
+        <Tabs
+          isEditable
+          contextMenu="context-only"
+          defaultActiveKey="tab1"
+          menu={<Menu.Item key="rename">Rename</Menu.Item>}
+          onTitleChange={handleTitleChange}
+        >
+          <Tab key="tab1" title="Tab 1">
+            Content 1
+          </Tab>
+        </Tabs>,
+      );
+
+      const tab = getByRole('tab', { name: 'Tab 1' });
+
+      // Open the context menu via right-click and select Rename.
+      await act(async () => {
+        fireEvent.contextMenu(tab);
+      });
+      const renameItem = await findByRole('menuitem', { name: 'Rename' });
+      await act(async () => {
+        fireEvent.click(renameItem);
+      });
+
+      await waitFor(() => {
+        expect(queryByRole('textbox')).toBeInTheDocument();
+      });
+
+      // Let the TabButton refocus pass run (rAF). With the fix, this finds
+      // the editing input via the tab button ref even though both
+      // `containerRef` and `actionsRef` are null in this configuration.
+      await act(async () => {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      });
+
+      expect(queryByRole('textbox')).toBeInTheDocument();
+      expect(handleTitleChange).not.toHaveBeenCalled();
+    });
   });
 
   describe('Context menu modes', () => {

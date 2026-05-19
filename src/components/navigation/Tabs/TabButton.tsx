@@ -328,9 +328,13 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     let cancelled = false;
     const timers: number[] = [];
 
+    // Query the editing input via the tab button `ref` — that's always
+    // wired up regardless of context-menu mode. `containerRef` is shadowed
+    // by `contextMenu.targetRef` when context menu is enabled, and
+    // `actionsRef` may never attach (e.g. `contextMenu="context-only"` with
+    // no delete button and no custom actions).
     const findEditingInput = (): HTMLInputElement | null =>
-      (containerRef.current?.querySelector(renameInputSelector) ??
-        actionsRef.current?.parentElement?.querySelector(renameInputSelector) ??
+      (ref.current?.querySelector(renameInputSelector) ??
         null) as HTMLInputElement | null;
 
     const tick = () => {
