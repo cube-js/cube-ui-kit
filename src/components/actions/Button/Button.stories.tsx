@@ -333,7 +333,7 @@ const ThemeStatesTemplate: StoryFn<CubeButtonProps> = ({ theme }) => {
             padding="1.5x"
             radius="1x"
           >
-            <TypeStatesRow type={type} theme={theme} />
+            <TypeStatesRow key={type} type={type} theme={theme} />
           </Space>
         ) : (
           <TypeStatesRow key={type} type={type} theme={theme} />
