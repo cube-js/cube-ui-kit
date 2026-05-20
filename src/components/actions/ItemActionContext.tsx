@@ -34,6 +34,7 @@ export function ItemActionProvider({
         type:
           type === 'item' ||
           type === 'outline' ||
+          type === 'outline-2' ||
           type === 'header' ||
           type === 'card'
             ? 'clear'
