@@ -103,7 +103,7 @@ const RadioWrapperElement = tasty({
     flexGrow: 1,
     outline: {
       '': '1bw #primary-text.0 / 1bw',
-      ':focus-within': '1bw #primary-text / 1bw',
+      focused: '1bw #primary-text / 1bw',
     },
   },
 });

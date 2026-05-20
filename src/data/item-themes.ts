@@ -166,7 +166,6 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
   // Selected = old CLEAR: brand-tinted overlay over the surface.
   border: {
     '': 'transparent',
-    'selected & pressed': '#primary-accent-text.10',
     focused: '#primary-accent-text',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
@@ -174,9 +173,9 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
     '': '#surface-text.0',
     'hovered | focused': '#surface-text.04',
     pressed: '#surface-text.06',
-    selected: '#primary-accent-surface.0',
-    'selected & (hovered | focused)': '#primary-accent-surface.09',
-    'selected & pressed': '#primary-accent-surface.12',
+    selected: '#primary-accent-surface.09',
+    'selected & (hovered | focused)': '#primary-accent-surface.12',
+    'selected & pressed': '#primary-accent-surface.18',
     disabled: 'transparent',
   },
   color: {
@@ -269,14 +268,16 @@ export const DANGER_OUTLINE_STYLES: Styles = {
   },
   fill: {
     '': '#surface-2 #danger-accent-surface.0',
-    hovered: '#surface-2 #danger-accent-surface.1',
-    pressed: '#surface-2 #danger-accent-surface.05',
-    selected: '#surface-2 #danger-accent-surface.05',
-    'selected & hovered & !pressed': '#surface-2 #danger-accent-surface.1',
+    hovered: '#surface-2 #danger-accent-surface.03',
+    pressed: '#surface-2 #danger-accent-surface.09',
+    selected: '#surface-2 #danger-accent-surface.09',
+    'selected & (hovered | focused)': '#surface-2 #danger-accent-surface.12',
+    'selected & pressed': '#surface-2 #danger-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
   },
   color: {
-    '': '#danger-accent-text',
+    '': '#danger-accent-text-soft',
+    selected: '#danger-accent-text',
     disabled: '#disabled-surface-text',
   },
 } as const;
@@ -285,10 +286,11 @@ export const DANGER_OUTLINE_2_STYLES: Styles = {
   ...DANGER_OUTLINE_STYLES,
   fill: {
     '': '#surface-3 #danger-accent-surface.0',
-    hovered: '#surface-3 #danger-accent-surface.1',
-    pressed: '#surface-3 #danger-accent-surface.05',
-    selected: '#surface-3 #danger-accent-surface.05',
-    'selected & hovered & !pressed': '#surface-3 #danger-accent-surface.1',
+    hovered: '#surface-3 #danger-accent-surface.03',
+    pressed: '#surface-3 #danger-accent-surface.09',
+    selected: '#surface-3 #danger-accent-surface.09',
+    'selected & (hovered | focused)': '#surface-3 #danger-accent-surface.12',
+    'selected & pressed': '#surface-3 #danger-accent-surface.18',
     disabled: '#surface-3 #disabled-surface',
   },
 } as const;
@@ -299,21 +301,19 @@ export const DANGER_CLEAR_STYLES: Styles = {
   // Selected = old DANGER CLEAR: danger-text-tinted overlay.
   border: {
     '': 'transparent',
-    'selected & pressed': '#danger-accent-surface.05',
     focused: '#danger-accent-text',
   },
   fill: {
     '': '#surface-text.0',
-    hovered: '#surface-text.04',
-    pressed: '#surface-text.05',
-    selected: '#danger-accent-text.0',
-    'selected & hovered': '#danger-accent-text.03',
-    'selected & pressed': '#danger-accent-text.09',
+    'hovered | focused': '#surface-text.04',
+    pressed: '#surface-text.06',
+    selected: '#danger-accent-text.09',
+    'selected & (hovered | focused)': '#danger-accent-text.12',
+    'selected & pressed': '#danger-accent-text.18',
     disabled: 'transparent',
   },
   color: {
-    '': '#surface-text-soft',
-    pressed: '#danger-accent-text',
+    '': '#danger-accent-text-soft',
     selected: '#danger-accent-text',
     disabled: '#disabled-surface-text',
   },
@@ -389,14 +389,16 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
   },
   fill: {
     '': '#surface-2 #success-accent-surface.0',
-    hovered: '#surface-2 #success-accent-surface.1',
-    pressed: '#surface-2 #success-accent-surface.05',
-    selected: '#surface-2 #success-accent-surface.05',
-    'selected & hovered & !pressed': '#surface-2 #success-accent-surface.1',
+    hovered: '#surface-2 #success-accent-surface.03',
+    pressed: '#surface-2 #success-accent-surface.09',
+    selected: '#surface-2 #success-accent-surface.09',
+    'selected & (hovered | focused)': '#surface-2 #success-accent-surface.12',
+    'selected & pressed': '#surface-2 #success-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
   },
   color: {
-    '': '#success-accent-text',
+    '': '#success-accent-text-soft',
+    selected: '#success-accent-text',
     disabled: '#disabled-surface-text',
   },
 } as const;
@@ -405,10 +407,11 @@ export const SUCCESS_OUTLINE_2_STYLES: Styles = {
   ...SUCCESS_OUTLINE_STYLES,
   fill: {
     '': '#surface-3 #success-accent-surface.0',
-    hovered: '#surface-3 #success-accent-surface.1',
-    pressed: '#surface-3 #success-accent-surface.05',
-    selected: '#surface-3 #success-accent-surface.05',
-    'selected & hovered & !pressed': '#surface-3 #success-accent-surface.1',
+    hovered: '#surface-3 #success-accent-surface.03',
+    pressed: '#surface-3 #success-accent-surface.09',
+    selected: '#surface-3 #success-accent-surface.09',
+    'selected & (hovered | focused)': '#surface-3 #success-accent-surface.12',
+    'selected & pressed': '#surface-3 #success-accent-surface.18',
     disabled: '#surface-3 #disabled-surface',
   },
 } as const;
@@ -417,21 +420,19 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
   // Non-selected = old SUCCESS NEUTRAL; selected = old SUCCESS CLEAR.
   border: {
     '': 'transparent',
-    'selected & pressed': '#success-accent-surface.05',
     focused: '#success-accent-text',
   },
   fill: {
     '': '#surface-text.0',
-    hovered: '#surface-text.04',
-    pressed: '#surface-text.05',
-    selected: '#success-accent-text.0',
-    'selected & hovered': '#success-accent-text.03',
-    'selected & pressed': '#success-accent-text.09',
+    'hovered | focused': '#surface-text.04',
+    pressed: '#surface-text.06',
+    selected: '#success-accent-text.09',
+    'selected & (hovered | focused)': '#success-accent-text.12',
+    'selected & pressed': '#success-accent-text.18',
     disabled: 'transparent',
   },
   color: {
-    '': '#surface-text-soft',
-    pressed: '#success-accent-text',
+    '': '#success-accent-text-soft',
     selected: '#success-accent-text',
     disabled: '#disabled-surface-text',
   },
@@ -507,14 +508,16 @@ export const WARNING_OUTLINE_STYLES: Styles = {
   },
   fill: {
     '': '#surface-2 #warning-accent-surface.0',
-    hovered: '#surface-2 #warning-accent-surface.1',
-    pressed: '#surface-2 #warning-accent-surface.05',
-    selected: '#surface-2 #warning-accent-surface.05',
-    'selected & hovered & !pressed': '#surface-2 #warning-accent-surface.1',
+    hovered: '#surface-2 #warning-accent-surface.03',
+    pressed: '#surface-2 #warning-accent-surface.09',
+    selected: '#surface-2 #warning-accent-surface.09',
+    'selected & (hovered | focused)': '#surface-2 #warning-accent-surface.12',
+    'selected & pressed': '#surface-2 #warning-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
   },
   color: {
-    '': '#warning-accent-text',
+    '': '#warning-accent-text-soft',
+    selected: '#warning-accent-text',
     disabled: '#disabled-surface-text',
   },
 } as const;
@@ -523,10 +526,11 @@ export const WARNING_OUTLINE_2_STYLES: Styles = {
   ...WARNING_OUTLINE_STYLES,
   fill: {
     '': '#surface-3 #warning-accent-surface.0',
-    hovered: '#surface-3 #warning-accent-surface.1',
-    pressed: '#surface-3 #warning-accent-surface.05',
-    selected: '#surface-3 #warning-accent-surface.05',
-    'selected & hovered & !pressed': '#surface-3 #warning-accent-surface.1',
+    hovered: '#surface-3 #warning-accent-surface.03',
+    pressed: '#surface-3 #warning-accent-surface.09',
+    selected: '#surface-3 #warning-accent-surface.09',
+    'selected & (hovered | focused)': '#surface-3 #warning-accent-surface.12',
+    'selected & pressed': '#surface-3 #warning-accent-surface.18',
     disabled: '#surface-3 #disabled-surface',
   },
 } as const;
@@ -535,21 +539,19 @@ export const WARNING_CLEAR_STYLES: Styles = {
   // Non-selected = old WARNING NEUTRAL; selected = old WARNING CLEAR.
   border: {
     '': 'transparent',
-    'selected & pressed': '#warning-accent-surface.05',
     focused: '#warning-accent-text',
   },
   fill: {
     '': '#surface-text.0',
-    hovered: '#surface-text.04',
-    pressed: '#surface-text.05',
-    selected: '#warning-accent-text.0',
-    'selected & hovered': '#warning-accent-text.03',
-    'selected & pressed': '#warning-accent-text.09',
+    'hovered | focused': '#surface-text.04',
+    pressed: '#surface-text.06',
+    selected: '#warning-accent-text.09',
+    'selected & (hovered | focused)': '#warning-accent-text.12',
+    'selected & pressed': '#warning-accent-text.18',
     disabled: 'transparent',
   },
   color: {
-    '': '#surface-text-soft',
-    pressed: '#warning-accent-text',
+    '': '#warning-accent-text-soft',
     selected: '#warning-accent-text',
     disabled: '#disabled-surface-text',
   },
@@ -625,14 +627,16 @@ export const NOTE_OUTLINE_STYLES: Styles = {
   },
   fill: {
     '': '#surface-2 #note-accent-surface.0',
-    hovered: '#surface-2 #note-accent-surface.1',
-    pressed: '#surface-2 #note-accent-surface.05',
-    selected: '#surface-2 #note-accent-surface.05',
-    'selected & hovered & !pressed': '#surface-2 #note-accent-surface.1',
+    hovered: '#surface-2 #note-accent-surface.03',
+    pressed: '#surface-2 #note-accent-surface.09',
+    selected: '#surface-2 #note-accent-surface.09',
+    'selected & (hovered | focused)': '#surface-2 #note-accent-surface.12',
+    'selected & pressed': '#surface-2 #note-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
   },
   color: {
-    '': '#note-accent-text',
+    '': '#note-accent-text-soft',
+    selected: '#note-accent-text',
     disabled: '#disabled-surface-text',
   },
 } as const;
@@ -641,10 +645,11 @@ export const NOTE_OUTLINE_2_STYLES: Styles = {
   ...NOTE_OUTLINE_STYLES,
   fill: {
     '': '#surface-3 #note-accent-surface.0',
-    hovered: '#surface-3 #note-accent-surface.1',
-    pressed: '#surface-3 #note-accent-surface.05',
-    selected: '#surface-3 #note-accent-surface.05',
-    'selected & hovered & !pressed': '#surface-3 #note-accent-surface.1',
+    hovered: '#surface-3 #note-accent-surface.03',
+    pressed: '#surface-3 #note-accent-surface.09',
+    selected: '#surface-3 #note-accent-surface.09',
+    'selected & (hovered | focused)': '#surface-3 #note-accent-surface.12',
+    'selected & pressed': '#surface-3 #note-accent-surface.18',
     disabled: '#surface-3 #disabled-surface',
   },
 } as const;
@@ -653,21 +658,19 @@ export const NOTE_CLEAR_STYLES: Styles = {
   // Non-selected = old NOTE NEUTRAL; selected = old NOTE CLEAR.
   border: {
     '': 'transparent',
-    'selected & pressed': '#note-accent-surface.05',
     focused: '#note-accent-text',
   },
   fill: {
     '': '#surface-text.0',
-    hovered: '#surface-text.04',
-    pressed: '#surface-text.05',
-    selected: '#note-accent-text.0',
-    'selected & hovered': '#note-accent-text.03',
-    'selected & pressed': '#note-accent-text.09',
+    'hovered | focused': '#surface-text.04',
+    pressed: '#surface-text.06',
+    selected: '#note-accent-text.09',
+    'selected & (hovered | focused)': '#note-accent-text.12',
+    'selected & pressed': '#note-accent-text.18',
     disabled: 'transparent',
   },
   color: {
-    '': '#surface-text-soft',
-    pressed: '#note-accent-text',
+    '': '#note-accent-text-soft',
     selected: '#note-accent-text',
     disabled: '#disabled-surface-text',
   },
@@ -719,7 +722,7 @@ export const NOTE_ITEM_STYLES: Styles = {
 export const SPECIAL_PRIMARY_STYLES: Styles = {
   outline: {
     '': '0 #white.0',
-    focused: '1bw #white',
+    focused: '1bw #primary-accent-text',
   },
   border: {
     '': '#white.2',
@@ -740,54 +743,93 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
 
 export const SPECIAL_OUTLINE_STYLES: Styles = {
   // Non-selected = old SPECIAL OUTLINE; selected = old SPECIAL SECONDARY.
+  // Special is anchored on `#special-surface` (a fixed dark-purple base), so
+  // contrast is added by *whitening* the overlay rather than darkening it.
+  // The same default → hover → pressed monotonic-contrast pattern as the
+  // light themes is preserved, just with white-alpha steps that are tuned
+  // to read against the dark base.
+  //
+  // IMPORTANT: every alpha step within a single state-map must be a unique
+  // value string. Tasty's `mergeEntriesByValue` pass coalesces entries that
+  // share a serialized value into a single OR-condition entry whose priority
+  // is the *max* of the merged group. If `hovered` and `disabled` were both
+  // `#white.12`, the merged entry would sit at the higher priority and
+  // negate against the `selected & (hovered | focused)` rule below, making
+  // the latter resolve to FALSE for `selected & hovered`. Keeping every
+  // alpha distinct sidesteps the collision.
   border: {
     '': '#white.3',
-    pressed: '#white.12',
-    'selected & pressed': '#white.4',
+    selected: '#white.4',
     focused: '#white',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
     '': '#special-surface #white.0',
-    hovered: '#special-surface #white.18',
+    hovered: '#special-surface #white.06',
     pressed: '#special-surface #white.12',
-    selected: '#special-surface #white.12',
-    'selected & hovered & !pressed': '#special-surface #white.18',
-    disabled: '#special-surface #white.12',
+    selected: '#special-surface #white.18',
+    'selected & (hovered | focused)': '#special-surface #white.24',
+    'selected & pressed': '#special-surface #white.3',
+    disabled: '#special-surface #white.04',
   },
+  // Mirrors the colored-theme soft→opaque pattern (`*-accent-text-soft` →
+  // `*-accent-text`) using white-alpha steps: default is slightly muted so
+  // that selected reads as the more prominent state.
   color: {
-    '': '#white',
+    '': '#white.8',
+    selected: '#white',
     disabled: '#white.4',
   },
 } as const;
 
 export const SPECIAL_CLEAR_STYLES: Styles = {
-  // Non-selected = old SPECIAL NEUTRAL: transparent / dark-tinted.
-  // Selected = old SPECIAL CLEAR: solid white fill with dark accent text.
+  // Non-selected = old SPECIAL NEUTRAL: transparent / white-tinted overlay
+  // on the dark base.
+  // Selected INVERTS the surface — the fill flips to a solid white pill with
+  // dark accent-text on top. To express "increasing contrast on press" in
+  // this inverted layout we go the *other* direction: pure white at rest →
+  // slightly tinted on hover → more tinted on press, i.e. progressively
+  // letting the dark base bleed through. This keeps the monotonic-contrast
+  // pattern semantically (hover < pressed) while preserving the inversion.
+  //
+  // IMPORTANT: every alpha step within a single state-map must be a unique
+  // value string. Tasty's `mergeEntriesByValue` pass coalesces entries that
+  // share a serialized value into a single OR-condition entry whose priority
+  // is the *max* of the merged group, which then negates against lower-
+  // priority rules. If `'hovered | focused'` and `'selected & disabled'`
+  // both used `#white.12`, the merged entry would sit at priority 7 and
+  // negate against `'selected & (hovered | focused)'` (priority 4), making
+  // it resolve to FALSE for `selected & hovered` — which is exactly the
+  // "selected-hover stays dark" bug. `'selected & disabled'` therefore uses
+  // a slightly different alpha (.16) that's visually similar but a distinct
+  // value string. The default `''` and `disabled` may share `#white.0`
+  // because Tasty keeps the TRUE/default entry separate from non-defaults
+  // during merging.
   outline: {
-    'selected & focused': '1bw #white',
+    'selected & focused': '1bw #primary-accent-text',
   },
   border: {
     '': 'transparent',
     focused: '#white',
-    'selected & pressed': '#white',
-    'selected & disabled': '#white.3',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
     '': '#white.0',
-    hovered: '#white.12',
+    'hovered | focused': '#white.12',
     pressed: '#white.18',
     selected: '#white',
-    'selected & hovered & !pressed': '#white.94',
+    'selected & (hovered | focused)': '#white.94',
+    'selected & pressed': '#white.88',
     disabled: '#white.0',
-    'selected & disabled': '#white.12',
+    'selected & disabled': '#white.16',
   },
+  // Non-selected mirrors the colored-theme soft→opaque pattern with
+  // white-alpha steps. Selected keeps its inverted look — dark accent-text
+  // on a white pill — so the soft/opaque transition only applies to the
+  // non-selected variant.
   color: {
-    '': '#white',
+    '': '#white.8',
     selected: '#special-accent-text',
-    'selected & hovered': '#special-accent-fill',
-    'selected & hovered & pressed': '#special-accent-text',
     disabled: '#white.4',
   },
 } as const;
