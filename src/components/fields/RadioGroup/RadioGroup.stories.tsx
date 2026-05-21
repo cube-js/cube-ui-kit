@@ -2,7 +2,7 @@ import { StoryFn } from '@storybook/react-vite';
 
 import { CheckIcon, CloseIcon, ExclamationIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Block } from '../../content/Block';
+import { Block } from '../../Block';
 import { Flow } from '../../layout/Flow';
 
 import { Radio } from './Radio';
