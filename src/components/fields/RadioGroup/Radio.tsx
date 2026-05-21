@@ -40,12 +40,15 @@ const RadioButtonElement = tasty(Item, {
     shadow: {
       '': false,
       'tabs & selected': '$item-shadow',
+      'tabs & selected & disabled': false,
     },
     fill: {
       'selected & tabs': '#surface',
+      'selected & tabs & disabled': '#surface.6',
     },
     color: {
       'selected & tabs': '#dark',
+      'selected & tabs & disabled': '#dark.3',
     },
 
     // Mirror the ButtonSplit grouping: the corner radius is shared so the
