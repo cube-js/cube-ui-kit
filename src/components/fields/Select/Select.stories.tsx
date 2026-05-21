@@ -449,6 +449,12 @@ Default.args = {};
 export const Primary = Template.bind({});
 Primary.args = { type: 'primary', placeholder: 'primary' };
 
+export const Outline2 = Template.bind({});
+Outline2.args = { type: 'outline-2', placeholder: 'outline-2' };
+// `outline-2` uses `#surface-3` as its base fill so it stands out when
+// sitting on a `#surface-2` container — render this story on a tinted bg.
+Outline2.parameters = { backgrounds: { default: 'gray' } };
+
 export const Clear = Template.bind({});
 Clear.args = { type: 'clear', placeholder: 'clear', width: 'max-content' };
 

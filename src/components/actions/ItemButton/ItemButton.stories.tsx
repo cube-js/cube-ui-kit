@@ -27,7 +27,7 @@ const meta: Meta<typeof ItemButton> = {
   argTypes: {
     type: {
       control: 'select',
-      options: ['primary', 'outline', 'clear'],
+      options: ['primary', 'outline', 'outline-2', 'clear'],
       description: 'Visual type/variant of the button',
     },
     theme: {

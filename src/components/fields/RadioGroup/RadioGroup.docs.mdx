@@ -30,7 +30,7 @@ A radio group allows users to select exactly one option from a set of mutually e
 - **`type`** `'radio' | 'button' | 'tabs'` (default: `radio`) — Visual type for all radios in the group (button/tabs default to horizontal)
 - **`orientation`** `undefined | 'vertical' | 'horizontal'` (default: `auto`) — Orientation of the radio group (auto-set based on type)
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `xsmall`) — Size for all radio buttons in the group
-- **`buttonType`** `'outline' | 'clear' | 'primary'` — Button type for button-style radios (ignored in tabs mode). When set to "primary", selected buttons use primary style and non-selected use outline with brand tint
+- **`buttonType`** `'outline' | 'outline-2' | 'clear' | 'primary'` — Button type for button-style radios (ignored in tabs mode). When set to "primary", selected buttons use primary style and non-selected use outline with brand tint. `outline-2` is identical to `outline` but uses `#surface-3` as its base fill, so it stands out when the radio group sits on a `#surface-2` container
 - **`onChange`** `function` — Callback fired when the selected value changes
 - **`onBlur`** `function` — Callback fired when the radio group loses focus
 - **`onFocus`** `function` — Callback fired when the radio group receives focus

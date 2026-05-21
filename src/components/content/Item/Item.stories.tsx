@@ -2362,7 +2362,13 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
   // - title: only 'default'
   // - card: 'default', 'success', 'danger', 'warning', 'note'
   // - all other types: 'default', 'success', 'danger', 'warning', 'note', 'special'
-  const standardTypes = ['item', 'primary', 'outline', 'clear'] as const;
+  const standardTypes = [
+    'item',
+    'primary',
+    'outline',
+    'outline-2',
+    'clear',
+  ] as const;
   const standardThemes = [
     'default',
     'danger',
@@ -2447,7 +2453,7 @@ TypesAndThemes.parameters = {
   docs: {
     description: {
       story:
-        'Showcases all valid type and theme combinations. Valid combinations: `title` type only supports `default` theme; `card` type supports `default`, `success`, `danger`, `warning`, and `note` themes; all other types (`item`, `primary`, `outline`, `clear`, `link`) support `default`, `success`, `danger`, `warning`, `note`, and `special` themes. The `link` type does not support icons or loading state (`isLoading`). Using an invalid type+theme combination, icons with `link` type, or `isLoading` with `link` type will trigger a console warning.',
+        'Showcases all valid type and theme combinations. Valid combinations: `title` type only supports `default` theme; `card` type supports `default`, `success`, `danger`, `warning`, and `note` themes; all other types (`item`, `primary`, `outline`, `outline-2`, `clear`, `link`) support `default`, `success`, `danger`, `warning`, `note`, and `special` themes (the `outline-2` + `special` combination falls back to `outline` since `outline-2` paints over `#surface-3`, which has no analogue on the special theme). The `link` type does not support icons or loading state (`isLoading`). Using an invalid type+theme combination, icons with `link` type, or `isLoading` with `link` type will trigger a console warning.',
     },
   },
 };

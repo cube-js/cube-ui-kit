@@ -174,8 +174,9 @@ const BUTTON_TYPES = [
 
 const SELECTED_TYPES: string[] = ['outline', 'outline-2', 'clear'];
 
-// Types that ship a `#surface-2`-friendly fill base (`outline-2` paints over
-// `#surface-3` so it stands out from a `#surface-2` container).
+// Types whose base fill is `#surface-3` and are therefore designed to sit
+// on a `#surface-2` container (so they remain visible against the
+// surrounding ladder).
 const SURFACE_2_TYPES: string[] = ['outline-2'];
 
 const BASE_MODS = {
@@ -310,8 +311,9 @@ const TypeStatesRow = ({
 const ThemeStatesTemplate: StoryFn<CubeButtonProps> = ({ theme }) => {
   const isSpecial = theme === 'special';
 
-  // `outline-2` paints over the default surface ladder (`#surface-3`) and has
-  // no counterpart in the special theme, which paints over `#special-surface`.
+  // `outline-2` uses `#surface-3` as its base fill (so it stands out on a
+  // `#surface-2` container) and has no counterpart in the special theme,
+  // which is anchored on the fixed `#special-surface` base.
   const visibleTypes = isSpecial
     ? BUTTON_TYPES.filter((type) => type !== 'outline-2')
     : BUTTON_TYPES;

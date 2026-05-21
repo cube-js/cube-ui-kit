@@ -2,6 +2,7 @@ import { StoryFn } from '@storybook/react-vite';
 
 import { CheckIcon, CloseIcon, ExclamationIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Block } from '../../content/Block';
 import { Flow } from '../../layout/Flow';
 
 import { Radio } from './Radio';
@@ -67,7 +68,7 @@ export default {
       },
     },
     buttonType: {
-      options: ['outline', 'clear', 'primary'],
+      options: ['outline', 'outline-2', 'clear', 'primary'],
       control: { type: 'radio' },
       description:
         'Button type for button-style radios (ignored in tabs mode). When set to "primary", selected buttons use primary style and non-selected use outline',
@@ -272,6 +273,20 @@ export const CustomButtonTypes: StoryFn<CubeRadioGroupProps> = () => (
       <Radio value="no">No</Radio>
       <Radio value="maybe">Maybe</Radio>
     </Radio.Group>
+    {/* `outline-2` uses `#surface-3` as its base fill so it stands out
+        when sitting on a `#surface-2` container — wrap accordingly. */}
+    <Block fill="#surface-2" padding="1.5x" radius="1cr">
+      <Radio.Group
+        type="button"
+        buttonType="outline-2"
+        defaultValue="yes"
+        label="Outline 2 (on a #surface-2 container)"
+      >
+        <Radio value="yes">Yes</Radio>
+        <Radio value="no">No</Radio>
+        <Radio value="maybe">Maybe</Radio>
+      </Radio.Group>
+    </Block>
     <Radio.Group
       type="button"
       buttonType="clear"
