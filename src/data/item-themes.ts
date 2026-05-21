@@ -77,20 +77,17 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
   // `--tasty-second-fill-color` all interpolate smoothly during the CSS
   // transition — without it, the gradient overlay would snap on/off and the
   // bg-color would briefly show through (the "surface flash" on form submit).
+  //
+  // The brand ramp `accent-surface` → `-2` → `-3` gives a monotonically
+  // increasing contrast against `#surface` (cr ≈ 4.5 → 4.8 → 5.2 in light,
+  // similar in dark), so hover and pressed read visibly *darker* than the
+  // default state in both schemes. Disabled uses the brand-tinted,
+  // scheme-symmetric chip (`accent-disabled-surface` cr ≈ 1.4 vs surface)
+  // so the muted state stays identifiable as a brand color.
   fill: {
     '': '#surface #primary-accent-surface',
-    // `#primary-accent-surface-hover` is a fixed-mode shade ~7–9 OKHSL pts
-    // darker than `#primary-accent-surface`, so hover stays visibly *darker*
-    // than default in BOTH light and dark schemes. Anchoring to the *fixed*
-    // brand surface (rather than the adaptive `#primary-accent-text`) avoids
-    // an inverted hover affordance in dark mode.
-    hovered: '#surface #primary-accent-surface-hover',
-    pressed: '#surface #primary-accent-surface',
-    // Brand-tinted, scheme-symmetric disabled pair from the accent system
-    // (`#primary-accent-disabled-surface` chip cr ≈ 1.4 vs surface, label
-    // `#primary-accent-disabled-surface-text` cr ≈ 2.8–3.2 vs surface) so
-    // the disabled state looks identical in light and dark while still
-    // reading as a *muted brand* color.
+    hovered: '#surface #primary-accent-surface-2',
+    pressed: '#surface #primary-accent-surface-3',
     disabled: '#surface #primary-accent-disabled-surface',
   },
   color: {
@@ -244,14 +241,11 @@ export const DANGER_PRIMARY_STYLES: Styles = {
     pressed: '#danger-accent-text',
     disabled: 'transparent',
   },
+  // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   fill: {
     '': '#surface #danger-accent-surface',
-    hovered: '#surface #danger-accent-surface-hover',
-    pressed: '#surface #danger-accent-surface',
-    // See `DEFAULT_PRIMARY_STYLES.fill.disabled` for the rationale —
-    // `#danger-accent-disabled-surface` + `#danger-accent-disabled-surface-text`
-    // keep the disabled chip identical across schemes and brand-tinted with
-    // the danger hue.
+    hovered: '#surface #danger-accent-surface-2',
+    pressed: '#surface #danger-accent-surface-3',
     disabled: '#surface #danger-accent-disabled-surface',
   },
   color: {
@@ -377,12 +371,11 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
     pressed: '#success-accent-text',
     disabled: 'transparent',
   },
+  // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   fill: {
     '': '#surface #success-accent-surface',
-    hovered: '#surface #success-accent-surface-hover',
-    pressed: '#surface #success-accent-surface',
-    // See `DEFAULT_PRIMARY_STYLES.fill.disabled` for rationale (brand-tinted,
-    // scheme-symmetric chip + higher-contrast disabled label).
+    hovered: '#surface #success-accent-surface-2',
+    pressed: '#surface #success-accent-surface-3',
     disabled: '#surface #success-accent-disabled-surface',
   },
   color: {
@@ -502,12 +495,11 @@ export const WARNING_PRIMARY_STYLES: Styles = {
     pressed: '#warning-accent-text',
     disabled: 'transparent',
   },
+  // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   fill: {
     '': '#surface #warning-accent-surface',
-    hovered: '#surface #warning-accent-surface-hover',
-    pressed: '#surface #warning-accent-surface',
-    // See `DEFAULT_PRIMARY_STYLES.fill.disabled` for rationale (brand-tinted,
-    // scheme-symmetric chip + higher-contrast disabled label).
+    hovered: '#surface #warning-accent-surface-2',
+    pressed: '#surface #warning-accent-surface-3',
     disabled: '#surface #warning-accent-disabled-surface',
   },
   color: {
@@ -627,12 +619,11 @@ export const NOTE_PRIMARY_STYLES: Styles = {
     pressed: '#note-accent-text',
     disabled: 'transparent',
   },
+  // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   fill: {
     '': '#surface #note-accent-surface',
-    hovered: '#surface #note-accent-surface-hover',
-    pressed: '#surface #note-accent-surface',
-    // See `DEFAULT_PRIMARY_STYLES.fill.disabled` for rationale (brand-tinted,
-    // scheme-symmetric chip + higher-contrast disabled label).
+    hovered: '#surface #note-accent-surface-2',
+    pressed: '#surface #note-accent-surface-3',
     disabled: '#surface #note-accent-disabled-surface',
   },
   color: {
@@ -763,10 +754,14 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
     pressed: '#white.4',
     disabled: 'transparent',
   },
+  // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
+  // The base layer is `#white` (matching the rest of the special theme's
+  // anchor) instead of `#surface`, but the same monotonic `-1`/`-2`/`-3`
+  // ramp gives the brand fill a visibly darker hover and pressed state.
   fill: {
-    '': '#white #special-accent-fill',
-    hovered: '#white #special-accent-fill-hover',
-    pressed: '#white #special-accent-fill',
+    '': '#white #special-accent-surface',
+    hovered: '#white #special-accent-surface-2',
+    pressed: '#white #special-accent-surface-3',
     disabled: '#white #special-accent-disabled-surface',
   },
   color: {
