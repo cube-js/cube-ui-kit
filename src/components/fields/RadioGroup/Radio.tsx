@@ -101,10 +101,6 @@ const RadioWrapperElement = tasty({
       checked: 1,
     },
     flexGrow: 1,
-    outline: {
-      '': '1bw #primary-text.0 / 1bw',
-      focused: '1bw #primary-text / 1bw',
-    },
   },
 });
 
@@ -133,10 +129,9 @@ const RadioNormalElement = tasty({
     width: '2x',
     height: '2x',
     outline: {
-      '': '#primary-text.0',
-      focused: '1bw #primary-text',
+      '': '#primary-text.0 / 1bw',
+      focused: '1bw #primary-text / 1bw',
     },
-    outlineOffset: 1,
     transition: 'theme',
     whiteSpace: 'nowrap',
 

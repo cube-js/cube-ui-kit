@@ -7,7 +7,7 @@ import {
   tasty,
 } from '@tenphi/tasty';
 import { forwardRef } from 'react';
-import { AriaRadioGroupProps, useRadioGroup } from 'react-aria';
+import { AriaRadioGroupProps, useFocusRing, useRadioGroup } from 'react-aria';
 import { useRadioGroupState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
@@ -63,7 +63,7 @@ const RadioGroupElement = tasty({
       '': '0',
       tabs: '.5x',
     },
-    radius: '1cr',
+    radius: true,
     fill: {
       '': '#clear',
       'tabs | disabled': '#surface-4',
@@ -76,6 +76,14 @@ const RadioGroupElement = tasty({
       tabs: '.5x',
     },
     whiteSpace: 'nowrap',
+    // Keyboard focus ring on the group, shown only for button/tabs layouts
+    // where individual items are visually merged (button-group) or share a
+    // single chrome (tabs) — the classic vertical radio list already shows
+    // a per-item focus ring on the radio circle.
+    outline: {
+      '': '1bw #primary-text.0 / 1bw',
+      'focused & (button | tabs)': '1bw #primary-text / 1bw',
+    },
   },
 });
 
@@ -123,6 +131,13 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     state,
   );
 
+  // Keyboard-only focus ring on the group container (button/tabs layouts).
+  // `within: true` tracks focus on any descendant radio. We read
+  // `isFocusVisible` (not `isFocused`), which is keyboard-gated — mouse
+  // clicks on a radio focus the input but leave `isFocusVisible` false.
+  let { isFocusVisible: isFocusWithinVisible, focusProps: groupFocusProps } =
+    useFocusRing({ within: true });
+
   let radioGroup = (
     <RadioGroupElement
       id={id}
@@ -136,7 +151,9 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
         'side-label': labelPosition === 'side',
         button: type === 'button',
         tabs: type === 'tabs',
+        focused: isFocusWithinVisible,
       }}
+      {...groupFocusProps}
     >
       <FormContext.Provider
         value={{
