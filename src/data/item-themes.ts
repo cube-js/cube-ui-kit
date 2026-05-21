@@ -67,7 +67,7 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
   },
   border: {
     '': '#white.2',
-    'pressed | focused': '#primary-accent-text',
+    pressed: '#primary-accent-text',
     disabled: 'transparent',
   },
   // All states share the same `#surface` base layer (opaque). Only the
@@ -112,10 +112,13 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
   // bg toward the text lightness in dark mode and collapse label↔bg contrast
   // below AA. The fixed brand keeps cr=6.52 light / 5.95 dark at α.10,
   // 6.19 / 5.41 at α.16.
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
+  },
   border: {
     '': true,
     selected: '#primary-border',
-    focused: '#primary-accent-text',
     disabled: '#border',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
@@ -164,9 +167,12 @@ export const DEFAULT_OUTLINE_2_STYLES: Styles = {
 export const DEFAULT_CLEAR_STYLES: Styles = {
   // Non-selected = old NEUTRAL: transparent / dark-tinted neutral look.
   // Selected = old CLEAR: brand-tinted overlay over the surface.
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
+  },
   border: {
     '': 'transparent',
-    focused: '#primary-accent-text',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
@@ -230,12 +236,12 @@ export const DEFAULT_LINK_STYLES: Styles = {
 // ---------- DANGER THEME ----------
 export const DANGER_PRIMARY_STYLES: Styles = {
   outline: {
-    '': '0 #danger-accent-text.0',
-    focused: '1bw #danger-accent-text',
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
   },
   border: {
     '': '#white.2',
-    'pressed | focused': '#danger-accent-text',
+    pressed: '#danger-accent-text',
     disabled: 'transparent',
   },
   fill: {
@@ -261,9 +267,12 @@ export const DANGER_OUTLINE_STYLES: Styles = {
   // `TINTED_SURFACE_OVERRIDE` in `palette.ts`). It replaces an alpha-blended
   // brand-text border so adjacent borders in grouped layouts don't double up
   // at their overlap into a darker stripe.
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
+  },
   border: {
     '': '#danger-border',
-    focused: '#danger-accent-text',
     disabled: '#border',
   },
   fill: {
@@ -299,9 +308,12 @@ export const DANGER_CLEAR_STYLES: Styles = {
   // Non-selected = old DANGER NEUTRAL: dark-tinted overlay; pressed switches
   // text to `#danger-accent-text` (matches old neutral).
   // Selected = old DANGER CLEAR: danger-text-tinted overlay.
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
+  },
   border: {
     '': 'transparent',
-    focused: '#danger-accent-text',
   },
   fill: {
     '': '#surface-text.0',
@@ -322,8 +334,8 @@ export const DANGER_CLEAR_STYLES: Styles = {
 export const DANGER_LINK_STYLES: Styles = {
   // See DEFAULT_LINK_STYLES for the soft→strong rationale.
   outline: {
-    '': '0 #danger-accent-text.0',
-    focused: '1bw #danger-accent-text',
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
   },
   border: 0,
   fill: {
@@ -357,12 +369,12 @@ export const DANGER_ITEM_STYLES: Styles = {
 // ---------- SUCCESS THEME ----------
 export const SUCCESS_PRIMARY_STYLES: Styles = {
   outline: {
-    '': '0 #success-accent-text.0',
-    focused: '1bw #success-accent-text',
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
   },
   border: {
     '': '#white.2',
-    'pressed | focused': '#success-accent-text',
+    pressed: '#success-accent-text',
     disabled: 'transparent',
   },
   fill: {
@@ -382,9 +394,12 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
 export const SUCCESS_OUTLINE_STYLES: Styles = {
   // Non-selected = old SUCCESS OUTLINE; selected = old SUCCESS SECONDARY.
   // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
+  },
   border: {
     '': '#success-border',
-    focused: '#success-accent-text',
     disabled: '#border',
   },
   fill: {
@@ -418,9 +433,12 @@ export const SUCCESS_OUTLINE_2_STYLES: Styles = {
 
 export const SUCCESS_CLEAR_STYLES: Styles = {
   // Non-selected = old SUCCESS NEUTRAL; selected = old SUCCESS CLEAR.
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
+  },
   border: {
     '': 'transparent',
-    focused: '#success-accent-text',
   },
   fill: {
     '': '#surface-text.0',
@@ -441,8 +459,8 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
 export const SUCCESS_LINK_STYLES: Styles = {
   // See DEFAULT_LINK_STYLES for the soft→strong rationale.
   outline: {
-    '': '0 #success-accent-text.0',
-    focused: '1bw #success-accent-text',
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
   },
   border: 0,
   fill: {
@@ -476,12 +494,12 @@ export const SUCCESS_ITEM_STYLES: Styles = {
 // ---------- WARNING THEME ----------
 export const WARNING_PRIMARY_STYLES: Styles = {
   outline: {
-    '': '0 #warning-accent-text.0',
-    focused: '1bw #warning-accent-text',
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
   },
   border: {
     '': '#white.2',
-    'pressed | focused': '#warning-accent-text',
+    pressed: '#warning-accent-text',
     disabled: 'transparent',
   },
   fill: {
@@ -501,9 +519,12 @@ export const WARNING_PRIMARY_STYLES: Styles = {
 export const WARNING_OUTLINE_STYLES: Styles = {
   // Non-selected = old WARNING OUTLINE; selected = old WARNING SECONDARY.
   // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
+  },
   border: {
     '': '#warning-border',
-    focused: '#warning-accent-text',
     disabled: '#border',
   },
   fill: {
@@ -537,9 +558,12 @@ export const WARNING_OUTLINE_2_STYLES: Styles = {
 
 export const WARNING_CLEAR_STYLES: Styles = {
   // Non-selected = old WARNING NEUTRAL; selected = old WARNING CLEAR.
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
+  },
   border: {
     '': 'transparent',
-    focused: '#warning-accent-text',
   },
   fill: {
     '': '#surface-text.0',
@@ -560,8 +584,8 @@ export const WARNING_CLEAR_STYLES: Styles = {
 export const WARNING_LINK_STYLES: Styles = {
   // See DEFAULT_LINK_STYLES for the soft→strong rationale.
   outline: {
-    '': '0 #warning-accent-text.0',
-    focused: '1bw #warning-accent-text',
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
   },
   border: 0,
   fill: {
@@ -595,12 +619,12 @@ export const WARNING_ITEM_STYLES: Styles = {
 // ---------- NOTE THEME ----------
 export const NOTE_PRIMARY_STYLES: Styles = {
   outline: {
-    '': '0 #note-accent-text.0',
-    focused: '1bw #note-accent-text',
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
   },
   border: {
     '': '#white.2',
-    'pressed | focused': '#note-accent-text',
+    pressed: '#note-accent-text',
     disabled: 'transparent',
   },
   fill: {
@@ -620,9 +644,12 @@ export const NOTE_PRIMARY_STYLES: Styles = {
 export const NOTE_OUTLINE_STYLES: Styles = {
   // Non-selected = old NOTE OUTLINE; selected = old NOTE SECONDARY.
   // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
+  },
   border: {
     '': '#note-border',
-    focused: '#note-accent-text',
     disabled: '#border',
   },
   fill: {
@@ -656,9 +683,12 @@ export const NOTE_OUTLINE_2_STYLES: Styles = {
 
 export const NOTE_CLEAR_STYLES: Styles = {
   // Non-selected = old NOTE NEUTRAL; selected = old NOTE CLEAR.
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
+  },
   border: {
     '': 'transparent',
-    focused: '#note-accent-text',
   },
   fill: {
     '': '#surface-text.0',
@@ -679,8 +709,8 @@ export const NOTE_CLEAR_STYLES: Styles = {
 export const NOTE_LINK_STYLES: Styles = {
   // See DEFAULT_LINK_STYLES for the soft→strong rationale.
   outline: {
-    '': '0 #note-accent-text.0',
-    focused: '1bw #note-accent-text',
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
   },
   border: 0,
   fill: {
@@ -720,13 +750,17 @@ export const NOTE_ITEM_STYLES: Styles = {
 // (`#danger-accent-text` / `#success-accent-text`) — validation state is allowed to follow
 // the active scheme.
 export const SPECIAL_PRIMARY_STYLES: Styles = {
+  // Focus ring uses `#special-accent-text` — a fixed-mode dark-purple that
+  // stays identical across light/dark/HC, matching the special theme's
+  // "intentionally non-inverting" identity. Picked over `#primary-accent-text`
+  // (the cross-theme default) which is `mode: 'auto'` and would shift in dark.
   outline: {
-    '': '0 #white.0',
-    focused: '1bw #primary-accent-text',
+    '': '0 #special-accent-text.0',
+    focused: '1bw #special-accent-text',
   },
   border: {
     '': '#white.2',
-    'pressed | focused': '#white.4',
+    pressed: '#white.4',
     disabled: 'transparent',
   },
   fill: {
@@ -757,10 +791,17 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
   // negate against the `selected & (hovered | focused)` rule below, making
   // the latter resolve to FALSE for `selected & hovered`. Keeping every
   // alpha distinct sidesteps the collision.
+  //
+  // Focus ring uses the fixed-mode `#special-accent-text` so the indicator
+  // stays scheme-invariant alongside the rest of the special theme — see
+  // `SPECIAL_PRIMARY_STYLES.outline` for the full rationale.
+  outline: {
+    '': '0 #special-accent-text.0',
+    focused: '1bw #special-accent-text',
+  },
   border: {
     '': '#white.3',
     selected: '#white.4',
-    focused: '#white',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
@@ -805,12 +846,16 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
   // value string. The default `''` and `disabled` may share `#white.0`
   // because Tasty keeps the TRUE/default entry separate from non-defaults
   // during merging.
+  //
+  // Focus ring uses the fixed-mode `#special-accent-text` so the indicator
+  // stays scheme-invariant alongside the rest of the special theme — see
+  // `SPECIAL_PRIMARY_STYLES.outline` for the full rationale.
   outline: {
-    'selected & focused': '1bw #primary-accent-text',
+    '': '0 #special-accent-text.0',
+    focused: '1bw #special-accent-text',
   },
   border: {
     '': 'transparent',
-    focused: '#white',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
@@ -835,9 +880,11 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
 } as const;
 
 export const SPECIAL_LINK_STYLES: Styles = {
+  // See `SPECIAL_PRIMARY_STYLES.outline` for why we use the fixed-mode
+  // `#special-accent-text` here instead of the cross-theme `#primary-accent-text`.
   outline: {
-    '': '0 #white.0',
-    focused: '1bw #white',
+    '': '0 #special-accent-text.0',
+    focused: '1bw #special-accent-text',
   },
   border: '0',
   fill: {
