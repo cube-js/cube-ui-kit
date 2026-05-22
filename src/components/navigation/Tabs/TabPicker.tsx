@@ -2,7 +2,8 @@ import { CloseIcon, MoreIcon } from '../../../icons';
 import { ItemAction } from '../../actions/ItemAction';
 import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
 
-import type { Placement } from 'react-aria';
+import { POPOVER_PLACEMENT_BY_TABS_PLACEMENT } from './popover-placement';
+
 import type { ParsedTab, TabPlacement, TabSize, TabType } from './types';
 
 // =============================================================================
@@ -29,18 +30,6 @@ export interface TabPickerProps {
   /** Callback when items are reordered via drag-and-drop */
   onReorder?: (newOrder: string[]) => void;
 }
-
-// Maps the parent Tabs placement to the popover placement of the FilterPicker.
-// The popover opens *toward the panel area* (away from the bar's outer edge),
-// so it never covers the strip itself. Tooltips are the only thing that opens
-// on the outer-edge side; the picker dropdown is a menu and must flow into
-// the content side instead.
-const POPOVER_PLACEMENT_BY_TABS_PLACEMENT: Record<TabPlacement, Placement> = {
-  top: 'bottom start',
-  bottom: 'top start',
-  left: 'right top',
-  right: 'left top',
-};
 
 // =============================================================================
 // Component
