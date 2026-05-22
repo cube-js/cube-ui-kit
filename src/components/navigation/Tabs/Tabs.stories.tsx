@@ -275,6 +275,63 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+function ReorderableTabsDemo({ storyArgs }: { storyArgs: Story['args'] }) {
+  const [tabs] = useState([
+    { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
+    { id: 'tab2', title: 'Tab 2', content: 'Content for Tab 2' },
+    { id: 'tab3', title: 'Tab 3', content: 'Content for Tab 3' },
+    { id: 'tab4', title: 'Tab 4', content: 'Content for Tab 4' },
+  ]);
+  const [keyOrder, setKeyOrder] = useState<Key[]>([
+    'tab1',
+    'tab2',
+    'tab3',
+    'tab4',
+  ]);
+  const [activeKey, setActiveKey] = useState<string>('tab1');
+
+  const placement = storyArgs?.placement ?? 'top';
+  const isVertical = placement === 'left' || placement === 'right';
+
+  const body = (
+    <Space flow="column" gap="2x">
+      <Paragraph>
+        Drag tabs to reorder them. The order is controlled via the `keyOrder`
+        prop.
+        {isVertical ? (
+          <>
+            {' '}
+            This example uses{' '}
+            <Text monospace>placement=&quot;{placement}&quot;</Text> so the
+            strip is vertical and drag-and-drop follows the same axis as the
+            bar.
+          </>
+        ) : null}
+      </Paragraph>
+      <Paragraph preset="t3">
+        Current order: {keyOrder.map(String).join(', ')}
+      </Paragraph>
+      <Tabs
+        {...storyArgs}
+        isReorderable
+        type="file"
+        activeKey={activeKey}
+        keyOrder={keyOrder}
+        onChange={(key) => setActiveKey(String(key))}
+        onReorder={(newOrder) => setKeyOrder(newOrder)}
+      >
+        {tabs.map((tab) => (
+          <Tab key={tab.id} title={tab.title}>
+            {tab.content}
+          </Tab>
+        ))}
+      </Tabs>
+    </Space>
+  );
+
+  return isVertical ? <Layout height="40x">{body}</Layout> : body;
+}
+
 /**
  * Basic tabs with content panels
  */
@@ -1231,48 +1288,16 @@ export const InsideLayout: Story = {
  * Reorderable tabs - demonstrates drag-and-drop tab reordering
  */
 export const Reorderable: Story = {
-  render: function ReorderableRender(args) {
-    const [tabs] = useState([
-      { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
-      { id: 'tab2', title: 'Tab 2', content: 'Content for Tab 2' },
-      { id: 'tab3', title: 'Tab 3', content: 'Content for Tab 3' },
-      { id: 'tab4', title: 'Tab 4', content: 'Content for Tab 4' },
-    ]);
-    const [keyOrder, setKeyOrder] = useState<Key[]>([
-      'tab1',
-      'tab2',
-      'tab3',
-      'tab4',
-    ]);
-    const [activeKey, setActiveKey] = useState<string>('tab1');
+  render: (args) => <ReorderableTabsDemo storyArgs={args} />,
+};
 
-    return (
-      <Space flow="column" gap="2x">
-        <Paragraph>
-          Drag tabs to reorder them. The order is controlled via the `keyOrder`
-          prop.
-        </Paragraph>
-        <Paragraph preset="t3">
-          Current order: {keyOrder.map(String).join(', ')}
-        </Paragraph>
-        <Tabs
-          {...args}
-          isReorderable
-          type="file"
-          activeKey={activeKey}
-          keyOrder={keyOrder}
-          onChange={(key) => setActiveKey(String(key))}
-          onReorder={(newOrder) => setKeyOrder(newOrder)}
-        >
-          {tabs.map((tab) => (
-            <Tab key={tab.id} title={tab.title}>
-              {tab.content}
-            </Tab>
-          ))}
-        </Tabs>
-      </Space>
-    );
-  },
+/**
+ * Same as `Reorderable`, with `placement="left"` (vertical strip) so
+ * drag-and-drop uses vertical collection orientation.
+ */
+export const ReorderableLeft: Story = {
+  args: { placement: 'left' },
+  render: (args) => <ReorderableTabsDemo storyArgs={args} />,
 };
 
 /**
