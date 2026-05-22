@@ -55,7 +55,7 @@ import {
 import { useFocus } from '../../../utils/react/interactions';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
-import { ItemAction } from '../../actions';
+import { ItemAction, ItemActionProvider } from '../../actions';
 import {
   StyledDivider as ListDivider,
   StyledSectionHeading as ListSectionHeading,
@@ -466,13 +466,17 @@ function Select<T extends object>(
           rightIcon !== undefined ? (
             rightIcon
           ) : showClearButton ? (
-            <ItemAction
-              icon={<CloseIcon />}
-              theme={validationState === 'invalid' ? 'danger' : undefined}
-              qa="SelectClearButton"
-              mods={{ pressed: false }}
-              onPress={clearValue}
-            />
+            <ItemActionProvider
+              type={type}
+              theme={validationState === 'invalid' ? 'danger' : theme}
+            >
+              <ItemAction
+                icon={<CloseIcon />}
+                qa="SelectClearButton"
+                mods={{ pressed: false }}
+                onPress={clearValue}
+              />
+            </ItemActionProvider>
           ) : isLoading ? (
             <LoadingIcon />
           ) : (

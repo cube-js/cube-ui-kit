@@ -477,6 +477,99 @@ Clearable.args = {
   placeholder: 'Choose a color...',
 };
 
+export const ClearableThemes: StoryObj<CubeSelectProps<any>>['render'] = () => {
+  const triggerVariants = [
+    {
+      type: 'outline' as const,
+      theme: 'default' as const,
+      label: 'outline / default',
+    },
+    {
+      type: 'outline-2' as const,
+      theme: 'default' as const,
+      label: 'outline-2 / default',
+    },
+    {
+      type: 'clear' as const,
+      theme: 'default' as const,
+      label: 'clear / default',
+    },
+    {
+      type: 'primary' as const,
+      theme: 'default' as const,
+      label: 'primary / default',
+    },
+    {
+      type: 'outline' as const,
+      theme: 'special' as const,
+      label: 'outline / special',
+    },
+    {
+      type: 'outline-2' as const,
+      theme: 'special' as const,
+      label: 'outline-2 / special',
+    },
+    {
+      type: 'clear' as const,
+      theme: 'special' as const,
+      label: 'clear / special',
+    },
+    {
+      type: 'primary' as const,
+      theme: 'special' as const,
+      label: 'primary / special',
+    },
+  ];
+
+  return (
+    <Space flow="column" gap="2x">
+      {triggerVariants.map(({ type, theme, label }) => (
+        <Space
+          key={`${type}-${theme}`}
+          radius="1x"
+          padding={theme === 'special' ? '2x' : undefined}
+          fill={theme === 'special' ? '#dark' : undefined}
+        >
+          <Select
+            isClearable
+            label={label}
+            type={type}
+            theme={theme}
+            defaultSelectedKey="blue"
+            placeholder="Choose a color..."
+            width="200px"
+          >
+            {options.map((option) => (
+              <Select.Item key={option}>{option}</Select.Item>
+            ))}
+          </Select>
+        </Space>
+      ))}
+      <Select
+        isClearable
+        label="outline / default + invalid"
+        defaultSelectedKey="blue"
+        validationState="invalid"
+        placeholder="Choose a color..."
+        width="200px"
+      >
+        {options.map((option) => (
+          <Select.Item key={option}>{option}</Select.Item>
+        ))}
+      </Select>
+    </Space>
+  );
+};
+ClearableThemes.parameters = {
+  layout: 'padded',
+  docs: {
+    description: {
+      story:
+        'Verifies that the clear button inherits the trigger\u2019s `type` and `theme` via `ItemActionProvider`, so its text color always matches the trigger label across every trigger variant \u2014 including `type="primary"`, `theme="special"`, and `validationState="invalid"`.',
+    },
+  },
+};
+
 export const WithIcon = Template.bind({});
 WithIcon.args = { icon: <IconCoin /> };
 

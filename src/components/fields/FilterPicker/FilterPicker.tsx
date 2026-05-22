@@ -33,7 +33,12 @@ import { generateRandomId } from '../../../utils/random';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles } from '../../../utils/styles';
-import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
+import {
+  CubeItemButtonProps,
+  ItemAction,
+  ItemActionProvider,
+  ItemButton,
+} from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
@@ -637,14 +642,18 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         ) : rightIcon !== undefined ? (
           rightIcon
         ) : showClearButton ? (
-          <ItemAction
-            icon={<CloseIcon />}
-            size={size}
-            theme={validationState === 'invalid' ? 'danger' : undefined}
-            qa="FilterPickerClearButton"
-            mods={{ pressed: false }}
-            onPress={clearValue}
-          />
+          <ItemActionProvider
+            type={type}
+            theme={validationState === 'invalid' ? 'danger' : theme}
+          >
+            <ItemAction
+              icon={<CloseIcon />}
+              size={size}
+              qa="FilterPickerClearButton"
+              mods={{ pressed: false }}
+              onPress={clearValue}
+            />
+          </ItemActionProvider>
         ) : (
           <DirectionIcon to={isPopoverOpen ? 'top' : 'bottom'} />
         )
