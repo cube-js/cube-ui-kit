@@ -187,8 +187,13 @@ export function DraggableCollection({
 
   const keyboardDelegate = useMemo(
     () =>
-      new ListKeyboardDelegate(state.collection, state.disabledKeys, listRef),
-    [state.collection, state.disabledKeys, listRef],
+      new ListKeyboardDelegate({
+        collection: state.collection,
+        disabledKeys: state.disabledKeys,
+        ref: listRef,
+        orientation,
+      }),
+    [state.collection, state.disabledKeys, listRef, orientation],
   );
 
   const dropTargetDelegate = useMemo(
