@@ -540,6 +540,104 @@ export const Clearable: Story = {
   ),
 };
 
+export const ClearableThemes: Story = {
+  parameters: {
+    layout: 'padded',
+    docs: {
+      description: {
+        story:
+          'Verifies that the clear button inherits the trigger\u2019s `type` and `theme` via `ItemActionProvider`, so its text color always matches the trigger label across every trigger variant — including `type="primary"`, `theme="special"`, and `validationState="invalid"`.',
+      },
+    },
+  },
+  render: () => {
+    const triggerVariants = [
+      {
+        type: 'outline' as const,
+        theme: 'default' as const,
+        label: 'outline / default',
+      },
+      {
+        type: 'outline-2' as const,
+        theme: 'default' as const,
+        label: 'outline-2 / default',
+      },
+      {
+        type: 'clear' as const,
+        theme: 'default' as const,
+        label: 'clear / default',
+      },
+      {
+        type: 'primary' as const,
+        theme: 'default' as const,
+        label: 'primary / default',
+      },
+      {
+        type: 'outline' as const,
+        theme: 'special' as const,
+        label: 'outline / special',
+      },
+      {
+        type: 'outline-2' as const,
+        theme: 'special' as const,
+        label: 'outline-2 / special',
+      },
+      {
+        type: 'clear' as const,
+        theme: 'special' as const,
+        label: 'clear / special',
+      },
+      {
+        type: 'primary' as const,
+        theme: 'special' as const,
+        label: 'primary / special',
+      },
+    ];
+
+    return (
+      <Flow gap="2x">
+        {triggerVariants.map(({ type, theme, label }) => (
+          <FilterPicker<(typeof fruits)[number]>
+            key={`${type}-${theme}`}
+            isClearable
+            items={fruits}
+            label={label}
+            type={type}
+            theme={theme}
+            placeholder="Choose items..."
+            searchPlaceholder="Search fruits..."
+            width="max 30x"
+            defaultSelectedKey="apple"
+          >
+            {(fruit) => (
+              <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+                {fruit.label}
+              </FilterPicker.Item>
+            )}
+          </FilterPicker>
+        ))}
+        <FilterPicker<(typeof fruits)[number]>
+          isClearable
+          items={fruits}
+          label="outline / default + invalid"
+          placeholder="Choose items..."
+          searchPlaceholder="Search fruits..."
+          width="max 30x"
+          defaultSelectedKey="apple"
+          validationState="invalid"
+          message="This selection is invalid"
+        >
+          {(fruit) => (
+            <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+              {fruit.label}
+            </FilterPicker.Item>
+          )}
+        </FilterPicker>
+      </Flow>
+    );
+  },
+};
+
 export const MultipleSelection: Story = {
   args: {
     label: 'Select Multiple Options',
