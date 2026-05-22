@@ -1,6 +1,6 @@
 import { tasty } from '@tenphi/tasty';
 
-import { DEFAULT_NEUTRAL_STYLES } from '../../../data/item-themes';
+import { DEFAULT_CLEAR_STYLES } from '../../../data/item-themes';
 import { Space } from '../../layout/Space';
 import { DEFAULT_BUTTON_STYLES } from '../Button/Button';
 
@@ -141,7 +141,7 @@ export const StyledItem = tasty({
   styles: {
     // Base button-like styles merged from Action/Button defaults
     ...DEFAULT_BUTTON_STYLES,
-    ...DEFAULT_NEUTRAL_STYLES,
+    ...DEFAULT_CLEAR_STYLES,
 
     // Override specifics for menu context
     display: 'flex',

@@ -137,7 +137,7 @@ const TabElement = tasty(Action, {
 
 const CloseButton = tasty(Button, {
   element: 'CloseButton',
-  type: 'neutral',
+  type: 'clear',
   icon: <CloseIcon />,
   label: 'Close Tab',
   styles: {

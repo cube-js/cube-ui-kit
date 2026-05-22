@@ -23,40 +23,33 @@ import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
   DANGER_CLEAR_STYLES,
   DANGER_LINK_STYLES,
-  DANGER_NEUTRAL_STYLES,
+  DANGER_OUTLINE_2_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
-  DANGER_SECONDARY_STYLES,
   DEFAULT_CLEAR_STYLES,
   DEFAULT_LINK_STYLES,
-  DEFAULT_NEUTRAL_STYLES,
+  DEFAULT_OUTLINE_2_STYLES,
   DEFAULT_OUTLINE_STYLES,
   DEFAULT_PRIMARY_STYLES,
-  DEFAULT_SECONDARY_STYLES,
   NOTE_CLEAR_STYLES,
   NOTE_LINK_STYLES,
-  NOTE_NEUTRAL_STYLES,
+  NOTE_OUTLINE_2_STYLES,
   NOTE_OUTLINE_STYLES,
   NOTE_PRIMARY_STYLES,
-  NOTE_SECONDARY_STYLES,
   SPECIAL_CLEAR_STYLES,
   SPECIAL_LINK_STYLES,
-  SPECIAL_NEUTRAL_STYLES,
   SPECIAL_OUTLINE_STYLES,
   SPECIAL_PRIMARY_STYLES,
-  SPECIAL_SECONDARY_STYLES,
   SUCCESS_CLEAR_STYLES,
   SUCCESS_LINK_STYLES,
-  SUCCESS_NEUTRAL_STYLES,
+  SUCCESS_OUTLINE_2_STYLES,
   SUCCESS_OUTLINE_STYLES,
   SUCCESS_PRIMARY_STYLES,
-  SUCCESS_SECONDARY_STYLES,
   WARNING_CLEAR_STYLES,
   WARNING_LINK_STYLES,
-  WARNING_NEUTRAL_STYLES,
+  WARNING_OUTLINE_2_STYLES,
   WARNING_OUTLINE_STYLES,
   WARNING_PRIMARY_STYLES,
-  WARNING_SECONDARY_STYLES,
 } from '../../../data/item-themes';
 import { LoadingIcon } from '../../../icons';
 import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
@@ -98,12 +91,11 @@ export interface CubeButtonProps extends CubeActionProps {
   isSelected?: boolean;
   type?:
     | 'primary'
-    | 'secondary'
     | 'danger'
     | 'link'
     | 'clear'
     | 'outline'
-    | 'neutral'
+    | 'outline-2'
     | (string & {});
   size?:
     | 'xsmall'
@@ -134,39 +126,32 @@ export interface CubeButtonProps extends CubeActionProps {
 
 export type ButtonVariant =
   | 'default.primary'
-  | 'default.secondary'
   | 'default.outline'
-  | 'default.neutral'
+  | 'default.outline-2'
   | 'default.clear'
   | 'default.link'
   | 'danger.primary'
-  | 'danger.secondary'
   | 'danger.outline'
-  | 'danger.neutral'
+  | 'danger.outline-2'
   | 'danger.clear'
   | 'danger.link'
   | 'success.primary'
-  | 'success.secondary'
   | 'success.outline'
-  | 'success.neutral'
+  | 'success.outline-2'
   | 'success.clear'
   | 'success.link'
   | 'warning.primary'
-  | 'warning.secondary'
   | 'warning.outline'
-  | 'warning.neutral'
+  | 'warning.outline-2'
   | 'warning.clear'
   | 'warning.link'
   | 'note.primary'
-  | 'note.secondary'
   | 'note.outline'
-  | 'note.neutral'
+  | 'note.outline-2'
   | 'note.clear'
   | 'note.link'
   | 'special.primary'
-  | 'special.secondary'
   | 'special.outline'
-  | 'special.neutral'
   | 'special.clear'
   | 'special.link';
 
@@ -230,7 +215,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   },
   margin: {
     '': 0,
-    '@parent(button-split, >) & !:first-child & (type=secondary | type=outline | type=primary)':
+    '@parent(button-split, >) & !:first-child & (type=outline | type=outline-2 | type=primary)':
       '-1bw left',
   },
   zIndex: {
@@ -326,49 +311,42 @@ const ButtonElement = tasty({
   variants: {
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
-    'default.secondary': DEFAULT_SECONDARY_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
-    'default.neutral': DEFAULT_NEUTRAL_STYLES,
+    'default.outline-2': DEFAULT_OUTLINE_2_STYLES,
     'default.clear': DEFAULT_CLEAR_STYLES,
     'default.link': DEFAULT_LINK_STYLES,
 
     // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
-    'danger.secondary': DANGER_SECONDARY_STYLES,
     'danger.outline': DANGER_OUTLINE_STYLES,
-    'danger.neutral': DANGER_NEUTRAL_STYLES,
+    'danger.outline-2': DANGER_OUTLINE_2_STYLES,
     'danger.clear': DANGER_CLEAR_STYLES,
     'danger.link': DANGER_LINK_STYLES,
 
     // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
-    'success.secondary': SUCCESS_SECONDARY_STYLES,
     'success.outline': SUCCESS_OUTLINE_STYLES,
-    'success.neutral': SUCCESS_NEUTRAL_STYLES,
+    'success.outline-2': SUCCESS_OUTLINE_2_STYLES,
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
 
     // Warning theme
     'warning.primary': WARNING_PRIMARY_STYLES,
-    'warning.secondary': WARNING_SECONDARY_STYLES,
     'warning.outline': WARNING_OUTLINE_STYLES,
-    'warning.neutral': WARNING_NEUTRAL_STYLES,
+    'warning.outline-2': WARNING_OUTLINE_2_STYLES,
     'warning.clear': WARNING_CLEAR_STYLES,
     'warning.link': WARNING_LINK_STYLES,
 
     // Note theme
     'note.primary': NOTE_PRIMARY_STYLES,
-    'note.secondary': NOTE_SECONDARY_STYLES,
     'note.outline': NOTE_OUTLINE_STYLES,
-    'note.neutral': NOTE_NEUTRAL_STYLES,
+    'note.outline-2': NOTE_OUTLINE_2_STYLES,
     'note.clear': NOTE_CLEAR_STYLES,
     'note.link': NOTE_LINK_STYLES,
 
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
-    'special.secondary': SPECIAL_SECONDARY_STYLES,
     'special.outline': SPECIAL_OUTLINE_STYLES,
-    'special.neutral': SPECIAL_NEUTRAL_STYLES,
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,
   },
@@ -567,6 +545,12 @@ export const Button = forwardRef(function Button(
     const sizeTokenValue =
       typeof size === 'number' ? `${size}px` : isCustomSize ? size : undefined;
 
+    // The `special` theme has no `outline-2` variant (it paints over
+    // `#special-surface`, not `#surface-2`/`#surface-3`); fall back to
+    // `outline` so the button still renders.
+    const effectiveType =
+      theme === 'special' && type === 'outline-2' ? 'outline' : type;
+
     return (
       <ButtonElement
         download={download}
@@ -574,9 +558,9 @@ export const Button = forwardRef(function Button(
         ref={handleRef}
         mods={{ ...actionProps.mods, ...modifiers }}
         disabled={isDisabledElement}
-        variant={`${theme}.${type ?? 'outline'}` as ButtonVariant}
+        variant={`${theme}.${effectiveType ?? 'outline'}` as ButtonVariant}
         data-theme={theme}
-        data-type={type ?? 'outline'}
+        data-type={effectiveType ?? 'outline'}
         data-size={size}
         data-popover-dismiss=""
         styles={styles}

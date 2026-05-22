@@ -240,25 +240,25 @@ export const ProgressStateToggle = () => {
   return (
     <Space gap="1x">
       <Button
-        type={state === 'loading' ? 'primary' : 'secondary'}
+        type={state === 'loading' ? 'primary' : 'outline'}
         onPress={() => setState('loading')}
       >
         Loading
       </Button>
       <Button
-        type={state === 'success' ? 'primary' : 'secondary'}
+        type={state === 'success' ? 'primary' : 'outline'}
         onPress={() => setState('success')}
       >
         Success
       </Button>
       <Button
-        type={state === 'error' ? 'primary' : 'secondary'}
+        type={state === 'error' ? 'primary' : 'outline'}
         onPress={() => setState('error')}
       >
         Error
       </Button>
       <Button
-        type={state === 'idle' ? 'primary' : 'secondary'}
+        type={state === 'idle' ? 'primary' : 'outline'}
         onPress={() => setState('idle')}
       >
         Idle (Hide)
@@ -351,7 +351,11 @@ export const ProgressToastWithAction = () => {
           title: 'Deploying...',
           theme: 'note',
           actions: (
-            <Item.Action type="secondary" onPress={() => setIsLoading(false)}>
+            <Item.Action
+              isSelected
+              type="outline"
+              onPress={() => setIsLoading(false)}
+            >
               Cancel
             </Item.Action>
           ),

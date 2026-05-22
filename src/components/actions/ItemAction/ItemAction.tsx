@@ -11,36 +11,24 @@ import {
 
 import {
   DANGER_CLEAR_STYLES,
-  DANGER_NEUTRAL_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
-  DANGER_SECONDARY_STYLES,
   DEFAULT_CLEAR_STYLES,
-  DEFAULT_NEUTRAL_STYLES,
   DEFAULT_OUTLINE_STYLES,
   DEFAULT_PRIMARY_STYLES,
-  DEFAULT_SECONDARY_STYLES,
   ITEM_ACTION_BASE_STYLES,
   NOTE_CLEAR_STYLES,
-  NOTE_NEUTRAL_STYLES,
   NOTE_OUTLINE_STYLES,
   NOTE_PRIMARY_STYLES,
-  NOTE_SECONDARY_STYLES,
   SPECIAL_CLEAR_STYLES,
-  SPECIAL_NEUTRAL_STYLES,
   SPECIAL_OUTLINE_STYLES,
   SPECIAL_PRIMARY_STYLES,
-  SPECIAL_SECONDARY_STYLES,
   SUCCESS_CLEAR_STYLES,
-  SUCCESS_NEUTRAL_STYLES,
   SUCCESS_OUTLINE_STYLES,
   SUCCESS_PRIMARY_STYLES,
-  SUCCESS_SECONDARY_STYLES,
   WARNING_CLEAR_STYLES,
-  WARNING_NEUTRAL_STYLES,
   WARNING_OUTLINE_STYLES,
   WARNING_PRIMARY_STYLES,
-  WARNING_SECONDARY_STYLES,
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
@@ -52,17 +40,11 @@ import { CubeUseActionProps, useAction } from '../use-action';
 export interface CubeItemActionProps
   extends Omit<CubeUseActionProps, 'as' | 'htmlType'>,
     Omit<BaseProps, 'as'> {
-  icon?: ReactNode | 'checkbox';
+  icon?: ReactNode | 'checkmark';
   children?: ReactNode;
   isLoading?: boolean;
   isSelected?: boolean;
-  type?:
-    | 'primary'
-    | 'secondary'
-    | 'outline'
-    | 'neutral'
-    | 'clear'
-    | (string & {});
+  type?: 'primary' | 'outline' | 'clear' | (string & {});
   theme?:
     | 'default'
     | 'danger'
@@ -82,34 +64,22 @@ export interface CubeItemActionProps
 
 type ItemActionVariant =
   | 'default.primary'
-  | 'default.secondary'
   | 'default.outline'
-  | 'default.neutral'
   | 'default.clear'
   | 'danger.primary'
-  | 'danger.secondary'
   | 'danger.outline'
-  | 'danger.neutral'
   | 'danger.clear'
   | 'success.primary'
-  | 'success.secondary'
   | 'success.outline'
-  | 'success.neutral'
   | 'success.clear'
   | 'warning.primary'
-  | 'warning.secondary'
   | 'warning.outline'
-  | 'warning.neutral'
   | 'warning.clear'
   | 'note.primary'
-  | 'note.secondary'
   | 'note.outline'
-  | 'note.neutral'
   | 'note.clear'
   | 'special.primary'
-  | 'special.secondary'
   | 'special.outline'
-  | 'special.neutral'
   | 'special.clear';
 
 const ItemActionElement = tasty({
@@ -146,44 +116,32 @@ const ItemActionElement = tasty({
   variants: {
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
-    'default.secondary': DEFAULT_SECONDARY_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
-    'default.neutral': DEFAULT_NEUTRAL_STYLES,
     'default.clear': DEFAULT_CLEAR_STYLES,
 
     // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
-    'danger.secondary': DANGER_SECONDARY_STYLES,
     'danger.outline': DANGER_OUTLINE_STYLES,
-    'danger.neutral': DANGER_NEUTRAL_STYLES,
     'danger.clear': DANGER_CLEAR_STYLES,
 
     // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
-    'success.secondary': SUCCESS_SECONDARY_STYLES,
     'success.outline': SUCCESS_OUTLINE_STYLES,
-    'success.neutral': SUCCESS_NEUTRAL_STYLES,
     'success.clear': SUCCESS_CLEAR_STYLES,
 
     // Warning theme
     'warning.primary': WARNING_PRIMARY_STYLES,
-    'warning.secondary': WARNING_SECONDARY_STYLES,
     'warning.outline': WARNING_OUTLINE_STYLES,
-    'warning.neutral': WARNING_NEUTRAL_STYLES,
     'warning.clear': WARNING_CLEAR_STYLES,
 
     // Note theme
     'note.primary': NOTE_PRIMARY_STYLES,
-    'note.secondary': NOTE_SECONDARY_STYLES,
     'note.outline': NOTE_OUTLINE_STYLES,
-    'note.neutral': NOTE_NEUTRAL_STYLES,
     'note.clear': NOTE_CLEAR_STYLES,
 
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
-    'special.secondary': SPECIAL_SECONDARY_STYLES,
     'special.outline': SPECIAL_OUTLINE_STYLES,
-    'special.neutral': SPECIAL_NEUTRAL_STYLES,
     'special.clear': SPECIAL_CLEAR_STYLES,
   },
 });
@@ -199,9 +157,8 @@ export const ItemAction = forwardRef(function ItemAction(
     isDisabled: contextIsDisabled,
   } = useItemActionContext();
 
-  // Note: 'outline' type is only supported when explicitly provided, not from context
   const {
-    type = contextType === 'outline' ? 'neutral' : contextType ?? 'neutral',
+    type = contextType ?? 'clear',
     theme = contextTheme ?? 'default',
     icon,
     children,
@@ -217,13 +174,13 @@ export const ItemAction = forwardRef(function ItemAction(
   // Inherit disabled state from context, but allow local override
   const isDisabled = isDisabledProp ?? contextIsDisabled;
 
-  // Determine if we should show checkbox
-  const hasCheckbox = icon === 'checkbox';
+  // Determine if we should show a checkmark
+  const hasCheckmark = icon === 'checkmark';
 
   // Determine final icon (loading takes precedence)
   const finalIcon = isLoading ? (
     <LoadingIcon />
-  ) : hasCheckbox ? (
+  ) : hasCheckmark ? (
     <CheckIcon />
   ) : (
     icon
@@ -232,7 +189,7 @@ export const ItemAction = forwardRef(function ItemAction(
   // Build modifiers
   const finalMods = useMemo(
     () => ({
-      checkbox: hasCheckbox,
+      checkmark: hasCheckmark,
       selected: isSelected,
       loading: isLoading,
       'has-label': !!children,
@@ -240,7 +197,7 @@ export const ItemAction = forwardRef(function ItemAction(
       'has-icon': !!icon,
       ...mods,
     }),
-    [hasCheckbox, isSelected, isLoading, children, contextType, mods],
+    [hasCheckmark, isSelected, isLoading, children, contextType, mods],
   );
 
   // Extract aria-label from tooltip if needed
@@ -291,9 +248,7 @@ export const ItemAction = forwardRef(function ItemAction(
     return {};
   }, [tooltip]);
 
-  const finalType = useMemo(() => {
-    return theme !== 'default' && type === 'neutral' ? 'clear' : type;
-  }, [theme, type]);
+  const finalType = type;
 
   // Render function that accepts tooltip trigger props and ref
   const renderButton = (

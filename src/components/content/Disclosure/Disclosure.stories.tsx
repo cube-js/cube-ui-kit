@@ -176,7 +176,9 @@ export const CardShape: Story = {
 export const SharpShape: Story = {
   render: (args) => (
     <Disclosure {...args} shape="sharp">
-      <Disclosure.Trigger type="secondary">What is Cube?</Disclosure.Trigger>
+      <Disclosure.Trigger isSelected type="outline">
+        What is Cube?
+      </Disclosure.Trigger>
       <Disclosure.Content>
         <Paragraph>
           Cube is a semantic layer that connects data sources to applications.
@@ -474,7 +476,7 @@ export const ContentPreservation: Story = {
           >
             {({ isExpanded: isExpandedNow, toggle }) => (
               <>
-                <Button type="secondary" onPress={toggle}>
+                <Button type="outline" onPress={toggle}>
                   {isExpandedNow ? 'Hide Content' : 'Show Content'}
                 </Button>
                 <Disclosure.Content>

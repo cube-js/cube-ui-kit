@@ -37,9 +37,20 @@ export const Types: Story = {
   render: () => (
     <Space gap="1x" placeItems="center">
       <ItemBadge icon={<KeyIcon />} type="primary" tooltip="Primary" />
-      <ItemBadge icon={<KeyIcon />} type="secondary" tooltip="Secondary" />
-      <ItemBadge icon={<KeyIcon />} type="neutral" tooltip="Neutral" />
+      <ItemBadge icon={<KeyIcon />} type="outline" tooltip="Outline" />
+      <ItemBadge
+        isSelected
+        icon={<KeyIcon />}
+        type="outline"
+        tooltip="Outline (selected)"
+      />
       <ItemBadge icon={<KeyIcon />} type="clear" tooltip="Clear" />
+      <ItemBadge
+        isSelected
+        icon={<KeyIcon />}
+        type="clear"
+        tooltip="Clear (selected)"
+      />
     </Space>
   ),
 };
@@ -65,7 +76,7 @@ export const Loading: Story = {
 
 export const Selected: Story = {
   args: {
-    icon: 'checkbox',
+    icon: 'checkmark',
     isSelected: true,
     tooltip: 'Selected',
   },

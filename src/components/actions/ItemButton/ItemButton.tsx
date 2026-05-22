@@ -29,7 +29,7 @@ export interface CubeItemButtonProps
 
 const StyledItem = tasty(Item, {
   as: 'button',
-  type: 'neutral',
+  type: 'item',
   theme: 'default',
   styles: {
     recipe: 'reset button',
@@ -97,7 +97,7 @@ const ItemButton = forwardRef(function ItemButton(
     to,
     htmlType,
     as,
-    type = 'neutral',
+    type = 'item',
     theme = 'default',
     onPress,
     // Extract react-aria press callbacks to prevent them from leaking to DOM via rest.

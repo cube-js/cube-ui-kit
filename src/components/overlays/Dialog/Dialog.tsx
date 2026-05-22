@@ -105,7 +105,7 @@ const DialogElement = tasty({
 
 const CloseButton = tasty(ItemButton, {
   qa: 'ModalCloseButton',
-  type: 'neutral',
+  type: 'clear',
   styles: {
     position: 'absolute',
     top: '1x',

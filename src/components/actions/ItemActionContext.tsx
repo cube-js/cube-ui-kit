@@ -34,12 +34,11 @@ export function ItemActionProvider({
         type:
           type === 'item' ||
           type === 'outline' ||
+          type === 'outline-2' ||
           type === 'header' ||
           type === 'card'
-            ? 'neutral'
-            : type === 'secondary'
-              ? 'clear'
-              : type,
+            ? 'clear'
+            : type,
         theme,
         disableActionsFocus,
         isDisabled,

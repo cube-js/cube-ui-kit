@@ -28,50 +28,43 @@ import {
   DANGER_CLEAR_STYLES,
   DANGER_ITEM_STYLES,
   DANGER_LINK_STYLES,
-  DANGER_NEUTRAL_STYLES,
+  DANGER_OUTLINE_2_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
-  DANGER_SECONDARY_STYLES,
   DEFAULT_CARD_STYLES,
   DEFAULT_CLEAR_STYLES,
   DEFAULT_ITEM_STYLES,
   DEFAULT_LINK_STYLES,
-  DEFAULT_NEUTRAL_STYLES,
+  DEFAULT_OUTLINE_2_STYLES,
   DEFAULT_OUTLINE_STYLES,
   DEFAULT_PRIMARY_STYLES,
-  DEFAULT_SECONDARY_STYLES,
   ItemVariant,
   NOTE_CARD_STYLES,
   NOTE_CLEAR_STYLES,
   NOTE_ITEM_STYLES,
   NOTE_LINK_STYLES,
-  NOTE_NEUTRAL_STYLES,
+  NOTE_OUTLINE_2_STYLES,
   NOTE_OUTLINE_STYLES,
   NOTE_PRIMARY_STYLES,
-  NOTE_SECONDARY_STYLES,
   SPECIAL_CLEAR_STYLES,
   SPECIAL_ITEM_STYLES,
   SPECIAL_LINK_STYLES,
-  SPECIAL_NEUTRAL_STYLES,
   SPECIAL_OUTLINE_STYLES,
   SPECIAL_PRIMARY_STYLES,
-  SPECIAL_SECONDARY_STYLES,
   SUCCESS_CARD_STYLES,
   SUCCESS_CLEAR_STYLES,
   SUCCESS_ITEM_STYLES,
   SUCCESS_LINK_STYLES,
-  SUCCESS_NEUTRAL_STYLES,
+  SUCCESS_OUTLINE_2_STYLES,
   SUCCESS_OUTLINE_STYLES,
   SUCCESS_PRIMARY_STYLES,
-  SUCCESS_SECONDARY_STYLES,
   WARNING_CARD_STYLES,
   WARNING_CLEAR_STYLES,
   WARNING_ITEM_STYLES,
   WARNING_LINK_STYLES,
-  WARNING_NEUTRAL_STYLES,
+  WARNING_OUTLINE_2_STYLES,
   WARNING_OUTLINE_STYLES,
   WARNING_PRIMARY_STYLES,
-  WARNING_SECONDARY_STYLES,
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
@@ -108,7 +101,7 @@ export type ItemMods = Mods<{
   'has-actions-content'?: boolean;
   'auto-hide-actions'?: boolean;
   'preserve-actions-space'?: boolean;
-  checkbox?: boolean;
+  checkmark?: boolean;
   disabled?: boolean;
   selected?: boolean;
   loading?: boolean;
@@ -120,7 +113,7 @@ export type ItemMods = Mods<{
 }>;
 
 export interface CubeItemProps extends BaseProps, ContainerStyleProps {
-  icon?: DynamicIcon<ItemMods> | 'checkbox';
+  icon?: DynamicIcon<ItemMods> | 'checkmark';
   rightIcon?: DynamicIcon<ItemMods>;
   prefix?: ReactNode;
   suffix?: ReactNode;
@@ -176,9 +169,8 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'item'
     | 'header'
     | 'primary'
-    | 'secondary'
     | 'outline'
-    | 'neutral'
+    | 'outline-2'
     | 'clear'
     | 'link'
     | 'card'
@@ -277,9 +269,9 @@ const DEFAULT_ICON_STYLES: Styles = {
   width: '($size - 2bw)',
   opacity: {
     '': 1,
-    'checkbox & selected': 1,
-    'checkbox & !selected': 0,
-    'checkbox & !selected & hovered': 0.4,
+    'checkmark & selected': 1,
+    'checkmark & !selected': 0,
+    'checkmark & !selected & hovered': 0.4,
   },
 };
 
@@ -554,54 +546,47 @@ const ItemElement = tasty({
   variants: {
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
-    'default.secondary': DEFAULT_SECONDARY_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
-    'default.neutral': DEFAULT_NEUTRAL_STYLES,
+    'default.outline-2': DEFAULT_OUTLINE_2_STYLES,
     'default.clear': DEFAULT_CLEAR_STYLES,
     'default.link': DEFAULT_LINK_STYLES,
     'default.item': DEFAULT_ITEM_STYLES,
     'default.card': DEFAULT_CARD_STYLES,
     // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
-    'danger.secondary': DANGER_SECONDARY_STYLES,
     'danger.outline': DANGER_OUTLINE_STYLES,
-    'danger.neutral': DANGER_NEUTRAL_STYLES,
+    'danger.outline-2': DANGER_OUTLINE_2_STYLES,
     'danger.clear': DANGER_CLEAR_STYLES,
     'danger.link': DANGER_LINK_STYLES,
     'danger.item': DANGER_ITEM_STYLES,
     'danger.card': DANGER_CARD_STYLES,
     // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
-    'success.secondary': SUCCESS_SECONDARY_STYLES,
     'success.outline': SUCCESS_OUTLINE_STYLES,
-    'success.neutral': SUCCESS_NEUTRAL_STYLES,
+    'success.outline-2': SUCCESS_OUTLINE_2_STYLES,
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
     'success.item': SUCCESS_ITEM_STYLES,
     'success.card': SUCCESS_CARD_STYLES,
     // Warning theme
     'warning.primary': WARNING_PRIMARY_STYLES,
-    'warning.secondary': WARNING_SECONDARY_STYLES,
     'warning.outline': WARNING_OUTLINE_STYLES,
-    'warning.neutral': WARNING_NEUTRAL_STYLES,
+    'warning.outline-2': WARNING_OUTLINE_2_STYLES,
     'warning.clear': WARNING_CLEAR_STYLES,
     'warning.link': WARNING_LINK_STYLES,
     'warning.item': WARNING_ITEM_STYLES,
     'warning.card': WARNING_CARD_STYLES,
     // Note theme
     'note.primary': NOTE_PRIMARY_STYLES,
-    'note.secondary': NOTE_SECONDARY_STYLES,
     'note.outline': NOTE_OUTLINE_STYLES,
-    'note.neutral': NOTE_NEUTRAL_STYLES,
+    'note.outline-2': NOTE_OUTLINE_2_STYLES,
     'note.clear': NOTE_CLEAR_STYLES,
     'note.link': NOTE_LINK_STYLES,
     'note.item': NOTE_ITEM_STYLES,
     'note.card': NOTE_CARD_STYLES,
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
-    'special.secondary': SPECIAL_SECONDARY_STYLES,
     'special.outline': SPECIAL_OUTLINE_STYLES,
-    'special.neutral': SPECIAL_NEUTRAL_STYLES,
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,
     'special.item': SPECIAL_ITEM_STYLES,
@@ -717,8 +702,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     ],
   });
 
-  // Determine if we should show checkbox instead of icon
-  const hasCheckbox = iconProp === 'checkbox';
+  // Determine if we should show a checkmark instead of icon
+  const hasCheckmark = iconProp === 'checkmark';
 
   // Determine if size is custom (number or unrecognized string)
   const isCustomSize =
@@ -752,13 +737,13 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     ],
   );
 
-  // Resolve dynamic icon props (skip resolution for 'checkbox' special value)
+  // Resolve dynamic icon props (skip resolution for 'checkmark' special value)
   const resolvedIcon = useMemo(() => {
-    if (hasCheckbox) {
+    if (hasCheckmark) {
       return { content: null, hasSlot: true };
     }
     return resolveIcon(iconProp as DynamicIcon<ItemMods>, baseMods);
-  }, [iconProp, baseMods, hasCheckbox]);
+  }, [iconProp, baseMods, hasCheckmark]);
 
   const resolvedRightIcon = useMemo(
     () => resolveIcon(rightIconProp, baseMods),
@@ -803,8 +788,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     );
 
   // Generate stable keys for icon transitions based on icon type
-  const iconKey = hasCheckbox
-    ? 'checkbox'
+  const iconKey = hasCheckmark
+    ? 'checkmark'
     : isLoading && resolvedLoadingSlot === 'icon'
       ? 'loading'
       : isValidElement(finalIcon)
@@ -882,7 +867,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       'preserve-actions-space': preserveActionsSpace === true,
       'inside-wrapper': insideWrapper,
       'actions-shown': showActions && insideWrapper,
-      checkbox: hasCheckbox,
+      checkmark: hasCheckmark,
       description: showDescription ? finalDescriptionPlacement : 'none',
     };
   }, [
@@ -893,7 +878,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     finalSuffix,
     showDescription,
     finalDescriptionPlacement,
-    hasCheckbox,
+    hasCheckmark,
     actions,
     autoHideActions,
     preserveActionsSpace,
@@ -945,12 +930,18 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       }
     };
 
+    // The `special` theme has no `outline-2` variant (it paints over
+    // `#special-surface`, not `#surface-2`/`#surface-3`); fall back to
+    // `outline` so the item still renders.
+    const effectiveType =
+      theme === 'special' && type === 'outline-2' ? 'outline' : type;
+
     return (
       <ItemElement
         ref={handleRef}
         variant={
-          theme && type
-            ? (`${type === 'header' ? 'default' : theme}.${type === 'header' ? 'item' : type}` as ItemVariant)
+          theme && effectiveType
+            ? (`${effectiveType === 'header' ? 'default' : theme}.${effectiveType === 'header' ? 'item' : effectiveType}` as ItemVariant)
             : undefined
         }
         disabled={finalIsDisabled}
@@ -966,7 +957,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         {hasIconSlot && (
           <div data-element="Icon">
             <IconSwitch noWrapper contentKey={iconKey}>
-              {hasCheckbox ? <CheckIcon /> : finalIcon}
+              {hasCheckmark ? <CheckIcon /> : finalIcon}
             </IconSwitch>
           </div>
         )}

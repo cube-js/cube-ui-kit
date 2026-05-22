@@ -80,7 +80,7 @@ export function TabPicker({
       icon={<MoreIcon />}
       rightIcon={null}
       shape="sharp"
-      type="neutral"
+      type="clear"
       size={pickerSize}
       placement={POPOVER_PLACEMENT_BY_TABS_PLACEMENT[placement]}
       // Apply border to wrapper (FilterPickerWrapper) so :first-child evaluates

@@ -724,7 +724,7 @@ function ApplicationShell() {
         />
         <Layout.Content padding=".5x" scrollbar="tiny" gap="1bw">
           {['Dashboard', 'Analytics', 'Reports'].map((item) => (
-            <ItemButton key={item} type="neutral" width="100%">
+            <ItemButton key={item} type="clear" width="100%">
               {item}
             </ItemButton>
           ))}
@@ -737,7 +737,7 @@ function ApplicationShell() {
         breadcrumbs={[['Home', '/'], ['Analytics', '/analytics']]}
         subtitle="Real-time overview of your metrics"
         suffix={
-          <Button type="neutral" onPress={() => setSidebarOpen(!sidebarOpen)}>
+          <Button type="clear" onPress={() => setSidebarOpen(!sidebarOpen)}>
             ☰
           </Button>
         }

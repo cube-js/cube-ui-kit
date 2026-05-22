@@ -139,7 +139,6 @@ defaultTheme.colors({
     base: 'surface',
     lightness: ['-10', '-20'],
     saturation: 0.175,
-    inherit: false,
   },
   placeholder: {
     base: 'surface',
@@ -227,13 +226,13 @@ defaultTheme.colors({
   'accent-surface-2': {
     base: 'accent-surface-text',
     lightness: '-1',
-    contrast: [4.8, 7.5],
+    contrast: [5, 8],
     mode: 'fixed',
   },
   'accent-surface-3': {
     base: 'accent-surface-text',
     lightness: '-1',
-    contrast: [5.2, 8],
+    contrast: [5.5, 9],
     mode: 'fixed',
   },
   // Hover variant of `accent-surface` — a *fixed*-mode darker shade used as
@@ -247,7 +246,7 @@ defaultTheme.colors({
   'accent-surface-hover': {
     base: 'accent-surface-text',
     lightness: '-1',
-    contrast: [6, 8.5],
+    contrast: [6, 10],
     mode: 'fixed',
   },
   // Saturated foreground variants. Anchored to `surface` (NOT `accent-surface`)
@@ -430,9 +429,22 @@ defaultTheme.colors({
 // Colored themes
 // ============================================================================
 
-/** Override `surface` per colored theme so the banner bg is visibly tinted. */
+/**
+ * Per-colored-theme overrides on top of `defaultTheme`:
+ *   - `surface` — bumped saturation so the banner bg is visibly tinted.
+ *   - `border`  — bumped saturation so OUTLINE-variant borders pick up the
+ *     theme hue (used by `#<theme>-border` in `item-themes.ts`). Mirrors the
+ *     default-theme `border` shape (`base: 'surface'`, lightness window) but
+ *     with higher saturation. Glaze's `extend({ colors })` redefines each
+ *     listed color from scratch, so we restate the full definition here.
+ */
 const TINTED_SURFACE_OVERRIDE: ColorMap = {
   surface: { lightness: 96, saturation: 0.8 },
+  border: {
+    base: 'surface',
+    lightness: ['-10', '-20'],
+    saturation: 0.5,
+  },
 };
 
 const primaryTheme = defaultTheme.extend({
@@ -470,11 +482,15 @@ const noteTheme = defaultTheme.extend({
  *
  * Token rundown:
  *   - `surface` — dark L≈12 backdrop (same value as `#surface-inverse`).
- *   - `accent-fill` / `accent-fill-hover` — brand-purple PRIMARY fill +
- *     darker hover shade. Same anchor/contrast as `#primary-accent-surface*`
- *     so values match today's `#primary` / `#primary-hover`.
- *   - `accent-fill-text` — fixed white (= built-in `#white`), exposed for
- *     explicit references.
+ *   - `accent-surface` / `accent-surface-2` / `accent-surface-3` —
+ *     brand-purple PRIMARY fill ramp (default → hover → pressed). Mirrors
+ *     the `#primary-accent-surface` / `-2` / `-3` ramp on the colored
+ *     themes so `SPECIAL_PRIMARY_STYLES.fill` can use the same shape.
+ *   - `accent-surface-hover` — legacy alias kept around for the
+ *     `#special-hover` color shortcut in `src/tokens/colors.ts`. Item
+ *     themes themselves no longer reference it.
+ *   - `accent-surface-text` — fixed white (= built-in `#white`), exposed
+ *     for explicit references.
  *   - `accent-text` — dark-purple foreground readable on white. Used as
  *     CLEAR-variant text on the always-white pill, and as the
  *     pressed/focused border on the brand-purple primary fill. Matches the
@@ -488,21 +504,33 @@ const specialTheme = glaze(PURPLE_HUE, SEED_SATURATION);
 specialTheme.colors({
   surface: { lightness: 12, saturation: 0.475, mode: 'fixed' },
 
-  'accent-fill-text': { lightness: 100, mode: 'fixed' },
-  'accent-fill': {
-    base: 'accent-fill-text',
+  'accent-surface-text': { lightness: 100, mode: 'fixed' },
+  'accent-surface': {
+    base: 'accent-surface-text',
     lightness: '-1',
     contrast: [4.5, 7],
     mode: 'fixed',
   },
-  'accent-fill-hover': {
-    base: 'accent-fill-text',
+  'accent-surface-2': {
+    base: 'accent-surface-text',
+    lightness: '-1',
+    contrast: [5, 8],
+    mode: 'fixed',
+  },
+  'accent-surface-3': {
+    base: 'accent-surface-text',
+    lightness: '-1',
+    contrast: [5.5, 9],
+    mode: 'fixed',
+  },
+  'accent-surface-hover': {
+    base: 'accent-surface-text',
     lightness: '-1',
     contrast: [6, 8.5],
     mode: 'fixed',
   },
   'accent-text': {
-    base: 'accent-fill-text',
+    base: 'accent-surface-text',
     lightness: '-1',
     contrast: [6, 8.5],
     mode: 'fixed',
