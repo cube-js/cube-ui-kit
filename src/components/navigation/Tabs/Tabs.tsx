@@ -132,6 +132,7 @@ function TabsComponent(
     activeKey,
     size,
     type = 'default',
+    placement = 'top',
     onChange,
     onDelete,
     onTitleChange,
@@ -159,13 +160,24 @@ function TabsComponent(
     scrollArrowsPosition = 'suffix',
     hideTabListScroll = false,
     tabListPadding,
+    barStyles,
     tabListStyles,
     prefixStyles,
     suffixStyles,
     ...otherProps
   } = props;
 
-  // Extract outer styles
+  // Derive orientation from placement
+  const orientation: 'horizontal' | 'vertical' =
+    placement === 'left' || placement === 'right' ? 'vertical' : 'horizontal';
+
+  // `narrow` only makes sense for a horizontal strip — its whole point is
+  // collapsed horizontal padding for a denser row of tabs. Force `default`
+  // when the strip is vertical.
+  const effectiveType =
+    orientation === 'vertical' && type === 'narrow' ? 'default' : type;
+
+  // Extract outer styles (these go on the new outer wrapper)
   const baseStyles = extractStyles(otherProps, OUTER_STYLES);
 
   // Build TabList padding style (memoized)
@@ -181,8 +193,11 @@ function TabsComponent(
     [tabListPaddingStyles, tabListStyles],
   );
 
-  // Merge all sub-element styles into baseStyles
+  // Merge all sub-element styles into baseStyles. The outer `TabsElement`
+  // exposes `Bar`, `Prefix`, `Suffix`, `TabList`, `ScrollWrapper`, `Scroll`,
+  // and `Scrollbar` sub-elements (defined in styled.ts).
   const combinedStyles = useMergeStyles(baseStyles, {
+    Bar: barStyles,
     TabList: mergedTabListStyles,
     Prefix: prefixStyles,
     Suffix: suffixStyles,
@@ -363,6 +378,7 @@ function TabsComponent(
       disabledKeys,
       children: collectionItems,
       'aria-label': label,
+      orientation,
     }),
     [
       selectedKey,
@@ -371,6 +387,7 @@ function TabsComponent(
       disabledKeys,
       collectionItems,
       label,
+      orientation,
     ],
   );
 
@@ -407,24 +424,40 @@ function TabsComponent(
   const indicatorStyle = useTabIndicator(
     listRef,
     state.selectedKey,
-    type === 'default' || type === 'narrow',
+    effectiveType === 'default' || effectiveType === 'narrow',
+    orientation,
     orderToken,
   );
 
   // =========================================================================
   // Tiny Scrollbar (not for radio type)
   // =========================================================================
-  const isTinyScrollbar = type !== 'radio';
-  const { handleHStyle, hasOverflowX, isScrolling, isAtStartX, isAtEndX } =
-    useTinyScrollbar(scrollRef, isTinyScrollbar);
+  const isTinyScrollbar = effectiveType !== 'radio';
+  const {
+    handleHStyle,
+    handleVStyle,
+    hasOverflowX,
+    hasOverflowY,
+    isScrolling,
+    isAtStartX,
+    isAtEndX,
+    isAtStartY,
+    isAtEndY,
+  } = useTinyScrollbar(scrollRef, isTinyScrollbar);
   const showTinyScrollbar = isTinyScrollbar && !hideTabListScroll;
+
+  // Active-axis aggregates (used everywhere downstream so we don't sprinkle
+  // orientation checks around).
+  const hasOverflow = orientation === 'vertical' ? hasOverflowY : hasOverflowX;
+  const isAtStart = orientation === 'vertical' ? isAtStartY : isAtStartX;
+  const isAtEnd = orientation === 'vertical' ? isAtEndY : isAtEndX;
 
   const hasPanels = hasAnyContent || !!renderPanel;
 
   // =========================================================================
   // Tab Picker visibility
   // =========================================================================
-  useWarn(showTabPicker && type === 'radio', {
+  useWarn(showTabPicker && effectiveType === 'radio', {
     key: ['tabs-tabpicker-radio-unsupported'],
     args: [
       'Tabs:',
@@ -433,13 +466,13 @@ function TabsComponent(
   });
 
   const shouldShowTabPicker =
-    type !== 'radio' &&
-    (showTabPicker === true || (showTabPicker === 'auto' && hasOverflowX));
+    effectiveType !== 'radio' &&
+    (showTabPicker === true || (showTabPicker === 'auto' && hasOverflow));
 
   // =========================================================================
   // Scroll Arrows visibility and handlers
   // =========================================================================
-  useWarn(showScrollArrows && type === 'radio', {
+  useWarn(showScrollArrows && effectiveType === 'radio', {
     key: ['tabs-scrollarrows-radio-unsupported'],
     args: [
       'Tabs:',
@@ -448,13 +481,18 @@ function TabsComponent(
   });
 
   const shouldShowScrollArrows =
-    type !== 'radio' &&
-    (showScrollArrows === true ||
-      (showScrollArrows === 'auto' && hasOverflowX));
+    effectiveType !== 'radio' &&
+    (showScrollArrows === true || (showScrollArrows === 'auto' && hasOverflow));
 
-  const handleScrollLeft = useEvent(() => {
+  const handleScrollStart = useEvent(() => {
     const el = scrollRef.current;
-    if (el) {
+    if (!el) return;
+    if (orientation === 'vertical') {
+      el.scrollTo({
+        top: el.scrollTop - el.clientHeight,
+        behavior: 'smooth',
+      });
+    } else {
       el.scrollTo({
         left: el.scrollLeft - el.clientWidth,
         behavior: 'smooth',
@@ -462,9 +500,15 @@ function TabsComponent(
     }
   });
 
-  const handleScrollRight = useEvent(() => {
+  const handleScrollEnd = useEvent(() => {
     const el = scrollRef.current;
-    if (el) {
+    if (!el) return;
+    if (orientation === 'vertical') {
+      el.scrollTo({
+        top: el.scrollTop + el.clientHeight,
+        behavior: 'smooth',
+      });
+    } else {
       el.scrollTo({
         left: el.scrollLeft + el.clientWidth,
         behavior: 'smooth',
@@ -478,8 +522,9 @@ function TabsComponent(
   const baseContextValue = useMemo(
     () => ({
       state,
-      type,
+      type: effectiveType,
       size,
+      placement,
       autoHideActions,
       isEditable: parentIsEditable,
       menu: parentMenu,
@@ -495,8 +540,9 @@ function TabsComponent(
     }),
     [
       state,
-      type,
+      effectiveType,
       size,
+      placement,
       autoHideActions,
       parentIsEditable,
       parentMenu,
@@ -551,10 +597,18 @@ function TabsComponent(
       </TabsProvider>
       {indicatorStyle && (
         <TabIndicatorElement
-          style={{
-            left: indicatorStyle.left,
-            width: indicatorStyle.width,
-          }}
+          mods={{ placement }}
+          style={
+            orientation === 'vertical'
+              ? {
+                  top: indicatorStyle.start,
+                  height: indicatorStyle.size,
+                }
+              : {
+                  left: indicatorStyle.start,
+                  width: indicatorStyle.size,
+                }
+          }
         />
       )}
     </div>
@@ -565,22 +619,24 @@ function TabsComponent(
   // =========================================================================
   const mods = useMemo(
     () => ({
-      type,
+      type: effectiveType,
       size,
+      placement,
       deletable: !!onDelete,
       scrolling: showTinyScrollbar && isScrolling,
-      'fade-left': !isAtStartX,
-      'fade-right': !isAtEndX,
+      'fade-start': !isAtStart,
+      'fade-end': !isAtEnd,
       'has-panels': hasPanels,
     }),
     [
-      type,
+      effectiveType,
       size,
+      placement,
       onDelete,
       showTinyScrollbar,
       isScrolling,
-      isAtStartX,
-      isAtEndX,
+      isAtStart,
+      isAtEnd,
       hasPanels,
     ],
   );
@@ -591,16 +647,24 @@ function TabsComponent(
   const scrollArrowsElement = shouldShowScrollArrows ? (
     <>
       <TabsAction
-        icon={<DirectionIcon to="left" />}
-        aria-label="Scroll tabs left"
-        isDisabled={isAtStartX}
-        onPress={handleScrollLeft}
+        icon={
+          <DirectionIcon to={orientation === 'vertical' ? 'top' : 'left'} />
+        }
+        aria-label={
+          orientation === 'vertical' ? 'Scroll tabs up' : 'Scroll tabs left'
+        }
+        isDisabled={isAtStart}
+        onPress={handleScrollStart}
       />
       <TabsAction
-        icon={<DirectionIcon to="right" />}
-        aria-label="Scroll tabs right"
-        isDisabled={isAtEndX}
-        onPress={handleScrollRight}
+        icon={
+          <DirectionIcon to={orientation === 'vertical' ? 'bottom' : 'right'} />
+        }
+        aria-label={
+          orientation === 'vertical' ? 'Scroll tabs down' : 'Scroll tabs right'
+        }
+        isDisabled={isAtEnd}
+        onPress={handleScrollEnd}
       />
     </>
   ) : null;
@@ -610,7 +674,8 @@ function TabsComponent(
       tabs={orderedParsedTabs}
       selectedKey={state.selectedKey}
       size={size}
-      type={type}
+      type={effectiveType}
+      placement={placement}
       isReorderable={isReorderable}
       onSelect={handleTabPickerSelect}
       onDelete={onDelete}
@@ -629,8 +694,16 @@ function TabsComponent(
     (shouldShowTabPicker && tabPickerPosition === 'suffix') ||
     (shouldShowScrollArrows && scrollArrowsPosition === 'suffix');
 
-  // Wrap with TabsProvider so prefix/suffix can access context (size, type)
-  // The inner TabsProvider in renderTabListContent will override for tab buttons
+  // Apply the active-axis scrollbar handle vars to the outer wrapper so the
+  // `Scrollbar` sub-element can read them via CSS variables.
+  const handleStyle = showTinyScrollbar
+    ? orientation === 'vertical'
+      ? handleVStyle
+      : handleHStyle
+    : undefined;
+
+  // Wrap with TabsProvider so prefix/suffix can access context (size, type, placement).
+  // The inner TabsProvider in renderTabListContent will override for tab buttons.
   return (
     <TabsProvider value={baseContextValue}>
       <TabsElement
@@ -638,89 +711,92 @@ function TabsComponent(
         qa={qa}
         mods={mods}
         styles={combinedStyles}
-        style={showTinyScrollbar ? handleHStyle : undefined}
+        style={handleStyle}
         data-size={size}
       >
-        {prefix || prefixHasActions ? (
-          <div data-element="Prefix">
-            {tabPickerPosition === 'prefix' && tabPickerElement}
-            {scrollArrowsPosition === 'prefix' && scrollArrowsElement}
-            {prefix}
-          </div>
-        ) : null}
-        <div data-element="ScrollWrapper">
-          <div ref={scrollRef} data-element="Scroll">
-            {isReorderable ? (
-              <DraggableTabList
-                state={state}
-                listRef={listRef}
-                orderedKeys={orderedParsedTabs.map((t) => t.key)}
-                onReorder={onReorder}
-              >
-                {(dragState, dropState, collectionProps) =>
-                  renderTabListContent(
-                    createContextValue(dragState, dropState),
-                    collectionProps,
-                  )
-                }
-              </DraggableTabList>
-            ) : (
-              renderTabListContent(createContextValue())
+        <div data-element="Bar">
+          {prefix || prefixHasActions ? (
+            <div data-element="Prefix">
+              {tabPickerPosition === 'prefix' && tabPickerElement}
+              {scrollArrowsPosition === 'prefix' && scrollArrowsElement}
+              {prefix}
+            </div>
+          ) : null}
+          <div data-element="ScrollWrapper">
+            <div ref={scrollRef} data-element="Scroll">
+              {isReorderable ? (
+                <DraggableTabList
+                  state={state}
+                  listRef={listRef}
+                  orderedKeys={orderedParsedTabs.map((t) => t.key)}
+                  orientation={orientation}
+                  onReorder={onReorder}
+                >
+                  {(dragState, dropState, collectionProps) =>
+                    renderTabListContent(
+                      createContextValue(dragState, dropState),
+                      collectionProps,
+                    )
+                  }
+                </DraggableTabList>
+              ) : (
+                renderTabListContent(createContextValue())
+              )}
+            </div>
+            {showTinyScrollbar && hasOverflow && (
+              <div data-element="Scrollbar" />
             )}
           </div>
-          {showTinyScrollbar && hasOverflowX && (
-            <div data-element="ScrollbarH" />
-          )}
+          {suffix || suffixHasActions ? (
+            <div data-element="Suffix">
+              {scrollArrowsPosition === 'suffix' && scrollArrowsElement}
+              {tabPickerPosition === 'suffix' && tabPickerElement}
+              {suffix}
+            </div>
+          ) : null}
         </div>
-        {suffix || suffixHasActions ? (
-          <div data-element="Suffix">
-            {scrollArrowsPosition === 'suffix' && scrollArrowsElement}
-            {tabPickerPosition === 'suffix' && tabPickerElement}
-            {suffix}
-          </div>
-        ) : null}
+
+        {/* Functional panel rendering with content caching */}
+        {renderPanel && (
+          <CachedPanelRenderer
+            parsedTabs={parsedTabs}
+            explicitPanels={explicitPanels}
+            state={state}
+            renderPanel={renderPanel}
+            panelCacheKeys={panelCacheKeys}
+            prerender={prerender}
+            keepMounted={keepMounted}
+            visitedKeys={visitedKeysRef.current}
+          />
+        )}
+
+        {/* Static panel rendering (traditional children-based approach) */}
+        {!renderPanel &&
+          hasAnyContent &&
+          parsedTabs.map((tab) => {
+            const explicitPanel = explicitPanels.get(tab.key);
+            const content = explicitPanel?.content ?? tab.content;
+
+            if (content == null) return null;
+
+            return (
+              <TabPanelRenderer
+                key={tab.key}
+                tabKey={tab.key}
+                state={state}
+                content={content}
+                prerender={prerender}
+                keepMounted={keepMounted}
+                tabPrerender={explicitPanel?.prerender ?? tab.prerender}
+                tabKeepMounted={explicitPanel?.keepMounted ?? tab.keepMounted}
+                visitedKeys={visitedKeysRef.current}
+                panelStyles={explicitPanel?.styles}
+                qa={explicitPanel?.qa}
+                qaVal={explicitPanel?.qaVal}
+              />
+            );
+          })}
       </TabsElement>
-
-      {/* Functional panel rendering with content caching */}
-      {renderPanel && (
-        <CachedPanelRenderer
-          parsedTabs={parsedTabs}
-          explicitPanels={explicitPanels}
-          state={state}
-          renderPanel={renderPanel}
-          panelCacheKeys={panelCacheKeys}
-          prerender={prerender}
-          keepMounted={keepMounted}
-          visitedKeys={visitedKeysRef.current}
-        />
-      )}
-
-      {/* Static panel rendering (traditional children-based approach) */}
-      {!renderPanel &&
-        hasAnyContent &&
-        parsedTabs.map((tab) => {
-          const explicitPanel = explicitPanels.get(tab.key);
-          const content = explicitPanel?.content ?? tab.content;
-
-          if (content == null) return null;
-
-          return (
-            <TabPanelRenderer
-              key={tab.key}
-              tabKey={tab.key}
-              state={state}
-              content={content}
-              prerender={prerender}
-              keepMounted={keepMounted}
-              tabPrerender={explicitPanel?.prerender ?? tab.prerender}
-              tabKeepMounted={explicitPanel?.keepMounted ?? tab.keepMounted}
-              visitedKeys={visitedKeysRef.current}
-              panelStyles={explicitPanel?.styles}
-              qa={explicitPanel?.qa}
-              qaVal={explicitPanel?.qaVal}
-            />
-          );
-        })}
     </TabsProvider>
   );
 }

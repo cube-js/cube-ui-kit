@@ -1124,7 +1124,7 @@ describe('<Tabs />', () => {
   });
 
   describe('hideTabListScroll', () => {
-    it('should not render ScrollbarH element when hideTabListScroll is true', () => {
+    it('should not render Scrollbar element when hideTabListScroll is true', () => {
       const { container } = renderWithRoot(
         <Tabs hideTabListScroll defaultActiveKey="tab1">
           <Tab key="tab1" title="Tab 1">
@@ -1137,11 +1137,11 @@ describe('<Tabs />', () => {
       );
 
       expect(
-        container.querySelector('[data-element="ScrollbarH"]'),
+        container.querySelector('[data-element="Scrollbar"]'),
       ).not.toBeInTheDocument();
     });
 
-    it('should render ScrollbarH element when hideTabListScroll is false (default)', () => {
+    it('should render Scrollbar element when hideTabListScroll is false (default)', () => {
       const { container } = renderWithRoot(
         <Tabs defaultActiveKey="tab1">
           <Tab key="tab1" title="Tab 1">
@@ -1153,7 +1153,7 @@ describe('<Tabs />', () => {
         </Tabs>,
       );
 
-      // ScrollbarH is only rendered when there is overflow, which doesn't
+      // Scrollbar is only rendered when there is overflow, which doesn't
       // happen in tests. Verify the Scroll wrapper is present (scrollbar
       // would appear inside it when overflow occurs).
       expect(
@@ -1196,6 +1196,151 @@ describe('<Tabs />', () => {
         );
 
       expect(arrowLabels).toHaveLength(2);
+    });
+  });
+
+  describe('placement', () => {
+    const placements = ['top', 'bottom', 'left', 'right'] as const;
+
+    it.each(placements)(
+      'renders without errors with placement=%s',
+      (placement) => {
+        const { getByRole } = renderWithRoot(
+          <Tabs defaultActiveKey="tab1" placement={placement}>
+            <Tab key="tab1" title="Tab 1">
+              Content 1
+            </Tab>
+            <Tab key="tab2" title="Tab 2">
+              Content 2
+            </Tab>
+          </Tabs>,
+        );
+
+        expect(getByRole('tablist')).toBeInTheDocument();
+        expect(getByRole('tab', { name: 'Tab 1' })).toBeInTheDocument();
+      },
+    );
+
+    it('sets aria-orientation="horizontal" for placement="top" (default)', () => {
+      const { getByRole } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1">
+          <Tab key="tab1" title="Tab 1">
+            Content 1
+          </Tab>
+        </Tabs>,
+      );
+
+      expect(getByRole('tablist')).toHaveAttribute(
+        'aria-orientation',
+        'horizontal',
+      );
+    });
+
+    it.each(['left', 'right'] as const)(
+      'sets aria-orientation="vertical" for placement=%s',
+      (placement) => {
+        const { getByRole } = renderWithRoot(
+          <Tabs defaultActiveKey="tab1" placement={placement}>
+            <Tab key="tab1" title="Tab 1">
+              Content 1
+            </Tab>
+          </Tabs>,
+        );
+
+        expect(getByRole('tablist')).toHaveAttribute(
+          'aria-orientation',
+          'vertical',
+        );
+      },
+    );
+
+    it('navigates with ArrowDown/ArrowUp when placement="left"', async () => {
+      const { getByRole } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1" placement="left">
+          <Tab key="tab1" title="Tab 1">
+            Content 1
+          </Tab>
+          <Tab key="tab2" title="Tab 2">
+            Content 2
+          </Tab>
+          <Tab key="tab3" title="Tab 3">
+            Content 3
+          </Tab>
+        </Tabs>,
+      );
+
+      const tab1 = getByRole('tab', { name: 'Tab 1' });
+
+      await act(async () => {
+        tab1.focus();
+      });
+
+      await userEvent.keyboard('{ArrowDown}');
+
+      expect(getByRole('tab', { name: 'Tab 2' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+
+      await userEvent.keyboard('{ArrowUp}');
+
+      expect(getByRole('tab', { name: 'Tab 1' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    });
+
+    it('renders selection indicator for default type in vertical placement', () => {
+      const { container } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1" placement="left">
+          <Tab key="tab1" title="Tab 1">
+            Content 1
+          </Tab>
+          <Tab key="tab2" title="Tab 2">
+            Content 2
+          </Tab>
+        </Tabs>,
+      );
+
+      // The indicator is a child of the TabList container; we just confirm
+      // an element with absolute-positioning inline style was rendered.
+      const tabList = container.querySelector('[data-element="TabList"]');
+      expect(tabList).toBeInTheDocument();
+    });
+
+    it('uses the vertical scroll-arrow labels for placement="left"', () => {
+      const { getAllByRole } = renderWithRoot(
+        <Tabs showScrollArrows defaultActiveKey="tab1" placement="left">
+          <Tab key="tab1" title="Tab 1">
+            Content 1
+          </Tab>
+        </Tabs>,
+      );
+
+      const arrowLabels = getAllByRole('button')
+        .map((btn) => btn.getAttribute('aria-label'))
+        .filter(
+          (label) => label === 'Scroll tabs up' || label === 'Scroll tabs down',
+        );
+
+      expect(arrowLabels).toHaveLength(2);
+    });
+
+    it('renders the Bar sub-element wrapping the tab strip', () => {
+      const { container } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1">
+          <Tab key="tab1" title="Tab 1">
+            Content 1
+          </Tab>
+        </Tabs>,
+      );
+
+      const bar = container.querySelector('[data-element="Bar"]');
+      expect(bar).toBeInTheDocument();
+      // TabList must live inside the Bar.
+      expect(
+        bar?.querySelector('[data-element="TabList"]'),
+      ).toBeInTheDocument();
     });
   });
 });

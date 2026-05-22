@@ -11,6 +11,13 @@ import type { CubeItemProps } from '../../content/Item';
 /** Visual appearance type for tabs */
 export type TabType = 'default' | 'narrow' | 'file' | 'radio';
 
+/**
+ * Where the tab bar sits relative to its panels.
+ * - `'top'` / `'bottom'` keep the bar horizontal.
+ * - `'left'` / `'right'` switch it to a vertical strip.
+ */
+export type TabPlacement = 'top' | 'bottom' | 'left' | 'right';
+
 /** Position for TabPicker and scroll arrows */
 export type TabsActionPosition = 'prefix' | 'suffix';
 
@@ -60,7 +67,7 @@ export interface QAProps {
 /** Props from CubeItemProps that don't apply to Tab */
 type OmittedItemProps =
   | 'id' // Tab has its own id as Key type
-  | 'type' // Tab has its own TabType
+  | 'type' // Type is decided at the Tabs level, never per-tab
   | 'size' // Tab has its own TabSize
   | 'theme' // Tabs have internal theming
   | 'shape' // Tabs have internal shape logic
@@ -93,8 +100,6 @@ export interface TabStyleProps extends Omit<CubeItemProps, OmittedItemProps> {
    * mapped to Item button sizes medium (32px) and xsmall (24px).
    */
   size?: TabSize;
-  /** Visual appearance type. */
-  type?: TabType;
   /** Whether to show actions only on hover. */
   autoHideActions?: boolean;
 }
@@ -123,6 +128,14 @@ export interface CubeTabsProps
    * @default 'default'
    */
   type?: TabType;
+  /**
+   * Where the tab bar sits relative to its panels.
+   * `'top'` / `'bottom'` keep the bar horizontal; `'left'` / `'right'`
+   * switch it to a vertical strip. The selection indicator, scroll behavior,
+   * fades, and per-type visuals all adapt automatically.
+   * @default 'top'
+   */
+  placement?: TabPlacement;
   /**
    * Tab size. Supports 'xsmall', 'small', 'medium', 'large'.
    * Radio type supports 'large' (default, 40px) and 'medium' (32px),
@@ -257,6 +270,8 @@ export interface CubeTabsProps
    * Sets horizontal padding only (e.g., "2x" → padding: "0 2x").
    */
   tabListPadding?: string;
+  /** Custom tasty styles for the tab bar (Bar sub-element). */
+  barStyles?: Styles;
   /** Custom tasty styles for the TabList sub-element. */
   tabListStyles?: Styles;
   /** Custom tasty styles for the Prefix sub-element. */

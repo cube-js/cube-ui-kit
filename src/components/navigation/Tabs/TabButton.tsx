@@ -31,6 +31,7 @@ import {
 } from '../../content/InlineInput/InlineInput';
 import { createMockDragState } from '../../shared/DraggableCollection';
 
+import { POPOVER_PLACEMENT_BY_TABS_PLACEMENT } from './popover-placement';
 import { TabContainer, TabElement } from './styled';
 import { TabDropIndicator } from './TabDropIndicator';
 import { useTabsContext } from './TabsContext';
@@ -187,6 +188,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     state,
     type,
     size,
+    placement,
     autoHideActions: parentAutoHideActions,
     isEditable: parentIsEditable,
     menu: parentMenu,
@@ -261,7 +263,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   };
   const effectiveContextMenu =
     tabData.contextMenu ?? parentContextMenu ?? false;
-  const effectiveType = tabData.type ?? type ?? 'default';
+  const effectiveType = type ?? 'default';
 
   const contextMenuEnabled =
     effectiveContextMenu === true || effectiveContextMenu === 'context-only';
@@ -391,9 +393,13 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     </Menu>
   ) : null;
 
+  // Menus follow the same axis-aware popover rule as TabPicker so they always
+  // open toward the panel area instead of past the bar's outer edge.
+  const menuPopoverPlacement = POPOVER_PLACEMENT_BY_TABS_PLACEMENT[placement];
+
   const contextMenu = useContextMenu<HTMLDivElement, CubeMenuProps<object>>(
     Menu,
-    { placement: 'bottom start' },
+    { placement: menuPopoverPlacement },
     {
       ...effectiveMenuProps,
       onAction: handleMenuAction,
@@ -441,6 +447,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   const mods = useMemo(
     () => ({
       type: effectiveType,
+      placement,
       active: isActive,
       deletable: isDeletable,
       disabled: isDisabled,
@@ -453,6 +460,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     }),
     [
       effectiveType,
+      placement,
       isActive,
       isDeletable,
       isDisabled,
@@ -475,7 +483,11 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   // Overflow trigger (hidden in context-only mode)
   const menuAction =
     menuElement && !contextMenuOnly ? (
-      <MenuTrigger isOpen={isMenuOpen} onOpenChange={setIsMenuOpen}>
+      <MenuTrigger
+        isOpen={isMenuOpen}
+        placement={menuPopoverPlacement}
+        onOpenChange={setIsMenuOpen}
+      >
         <ItemAction
           tabIndex={-1}
           icon={<MoreIcon />}
@@ -539,7 +551,6 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     prerender: _prerender,
     keepMounted: _keepMounted,
     size: _size,
-    type: _type,
     actions: _actions,
     autoHideActions: _autoHideActions,
     isEditable: _isEditable,

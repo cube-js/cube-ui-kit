@@ -2,7 +2,9 @@ import { CloseIcon, MoreIcon } from '../../../icons';
 import { ItemAction } from '../../actions/ItemAction';
 import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
 
-import type { ParsedTab, TabSize, TabType } from './types';
+import { POPOVER_PLACEMENT_BY_TABS_PLACEMENT } from './popover-placement';
+
+import type { ParsedTab, TabPlacement, TabSize, TabType } from './types';
 
 // =============================================================================
 // Types
@@ -21,6 +23,8 @@ export interface TabPickerProps {
   size?: TabSize;
   /** Type of the parent Tabs component (for border styling) */
   type?: TabType;
+  /** Placement of the parent Tabs component (controls divider + popover placement) */
+  placement?: TabPlacement;
   /** Enable drag-and-drop reordering of items in the picker dropdown */
   isReorderable?: boolean;
   /** Callback when items are reordered via drag-and-drop */
@@ -44,6 +48,7 @@ export function TabPicker({
   onDelete,
   size,
   type = 'default',
+  placement = 'top',
   isReorderable,
   onReorder,
 }: TabPickerProps) {
@@ -54,6 +59,7 @@ export function TabPicker({
 
   // Only show border divider for file type
   const showBorderDivider = type === 'file';
+  const isVertical = placement === 'left' || placement === 'right';
 
   return (
     <FilterPicker
@@ -65,13 +71,15 @@ export function TabPicker({
       shape="sharp"
       type="clear"
       size={pickerSize}
+      placement={POPOVER_PLACEMENT_BY_TABS_PLACEMENT[placement]}
       // Apply border to wrapper (FilterPickerWrapper) so :first-child evaluates
-      // relative to Suffix container, not the internal DialogTrigger
+      // relative to Suffix container, not the internal DialogTrigger. The
+      // divider side flips with the bar's orientation.
       styles={{
         border: showBorderDivider
           ? {
               '': 0,
-              '!:first-child': 'left',
+              '!:first-child': isVertical ? 'top' : 'left',
             }
           : 0,
       }}
