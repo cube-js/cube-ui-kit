@@ -197,7 +197,7 @@ function LayoutHeader(
       {onBack && (
         <div data-element="Back">
           <Button
-            type="neutral"
+            type="clear"
             icon={<IconArrowLeft />}
             aria-label="Go back"
             onPress={onBack}

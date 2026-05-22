@@ -10,22 +10,18 @@ import {
 
 import {
   DANGER_CLEAR_STYLES,
-  DANGER_NEUTRAL_STYLES,
+  DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
-  DANGER_SECONDARY_STYLES,
   DEFAULT_CLEAR_STYLES,
-  DEFAULT_NEUTRAL_STYLES,
+  DEFAULT_OUTLINE_STYLES,
   DEFAULT_PRIMARY_STYLES,
-  DEFAULT_SECONDARY_STYLES,
   ITEM_ACTION_BASE_STYLES,
   SPECIAL_CLEAR_STYLES,
-  SPECIAL_NEUTRAL_STYLES,
+  SPECIAL_OUTLINE_STYLES,
   SPECIAL_PRIMARY_STYLES,
-  SPECIAL_SECONDARY_STYLES,
   SUCCESS_CLEAR_STYLES,
-  SUCCESS_NEUTRAL_STYLES,
+  SUCCESS_OUTLINE_STYLES,
   SUCCESS_PRIMARY_STYLES,
-  SUCCESS_SECONDARY_STYLES,
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
@@ -34,11 +30,11 @@ import { useItemActionContext } from '../../actions/ItemActionContext';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 
 export interface CubeItemBadgeProps extends BaseProps {
-  icon?: ReactNode | 'checkbox';
+  icon?: ReactNode | 'checkmark';
   children?: ReactNode;
   isLoading?: boolean;
   isSelected?: boolean;
-  type?: 'primary' | 'secondary' | 'neutral' | 'clear' | (string & {});
+  type?: 'primary' | 'outline' | 'clear' | (string & {});
   theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
   tooltip?:
     | string
@@ -49,20 +45,16 @@ export interface CubeItemBadgeProps extends BaseProps {
 
 type ItemBadgeVariant =
   | 'default.primary'
-  | 'default.secondary'
-  | 'default.neutral'
+  | 'default.outline'
   | 'default.clear'
   | 'danger.primary'
-  | 'danger.secondary'
-  | 'danger.neutral'
+  | 'danger.outline'
   | 'danger.clear'
   | 'success.primary'
-  | 'success.secondary'
-  | 'success.neutral'
+  | 'success.outline'
   | 'success.clear'
   | 'special.primary'
-  | 'special.secondary'
-  | 'special.neutral'
+  | 'special.outline'
   | 'special.clear';
 
 const ItemBadgeElement = tasty({
@@ -77,26 +69,22 @@ const ItemBadgeElement = tasty({
   variants: {
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
-    'default.secondary': DEFAULT_SECONDARY_STYLES,
-    'default.neutral': DEFAULT_NEUTRAL_STYLES,
+    'default.outline': DEFAULT_OUTLINE_STYLES,
     'default.clear': DEFAULT_CLEAR_STYLES,
 
     // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
-    'danger.secondary': DANGER_SECONDARY_STYLES,
-    'danger.neutral': DANGER_NEUTRAL_STYLES,
+    'danger.outline': DANGER_OUTLINE_STYLES,
     'danger.clear': DANGER_CLEAR_STYLES,
 
     // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
-    'success.secondary': SUCCESS_SECONDARY_STYLES,
-    'success.neutral': SUCCESS_NEUTRAL_STYLES,
+    'success.outline': SUCCESS_OUTLINE_STYLES,
     'success.clear': SUCCESS_CLEAR_STYLES,
 
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
-    'special.secondary': SPECIAL_SECONDARY_STYLES,
-    'special.neutral': SPECIAL_NEUTRAL_STYLES,
+    'special.outline': SPECIAL_OUTLINE_STYLES,
     'special.clear': SPECIAL_CLEAR_STYLES,
   },
 });
@@ -106,7 +94,7 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
     const { type: contextType, theme: contextTheme } = useItemActionContext();
 
     const {
-      type = contextType ?? 'neutral',
+      type = contextType ?? 'clear',
       theme = contextTheme ?? 'default',
       icon,
       children,
@@ -117,13 +105,13 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
       ...rest
     } = allProps;
 
-    // Determine if we should show checkbox
-    const hasCheckbox = icon === 'checkbox';
+    // Determine if we should show a checkmark
+    const hasCheckmark = icon === 'checkmark';
 
     // Determine final icon (loading takes precedence)
     const finalIcon = isLoading ? (
       <LoadingIcon />
-    ) : hasCheckbox ? (
+    ) : hasCheckmark ? (
       <CheckIcon />
     ) : (
       icon
@@ -132,14 +120,14 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
     // Build modifiers
     const finalMods = useMemo(
       () => ({
-        checkbox: hasCheckbox,
+        checkmark: hasCheckmark,
         selected: isSelected,
         loading: isLoading,
         'has-label': !!children,
         context: !!contextType,
         ...mods,
       }),
-      [hasCheckbox, isSelected, isLoading, children, contextType, mods],
+      [hasCheckmark, isSelected, isLoading, children, contextType, mods],
     );
 
     // Extract aria-label from tooltip if needed
@@ -175,9 +163,7 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
       return {};
     }, [tooltip]);
 
-    const finalType = useMemo(() => {
-      return theme !== 'default' && type === 'neutral' ? 'clear' : type;
-    }, [theme, type]);
+    const finalType = type;
 
     // Render function that accepts tooltip trigger props and ref
     const renderBadge = (

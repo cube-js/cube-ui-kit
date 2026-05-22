@@ -227,7 +227,7 @@ export interface CubeSelectBaseProps<T>
   /** Minimum padding in pixels between the popover and viewport edges */
   containerPadding?: number;
   inputProps?: Props;
-  type?: 'outline' | 'clear' | 'primary' | (string & {});
+  type?: 'outline' | 'outline-2' | 'clear' | 'primary' | (string & {});
   /**
    * Shape of the trigger's border radius.
    * - `card` - Card shape with larger border radius (`1cr`)

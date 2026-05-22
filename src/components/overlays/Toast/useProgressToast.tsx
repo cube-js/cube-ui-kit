@@ -150,7 +150,7 @@ export function useProgressToast(
 
     const hideAction =
       isDismissable && currentIsLoading ? (
-        <ItemAction type="secondary" onPress={handleHide}>
+        <ItemAction isSelected type="outline" onPress={handleHide}>
           Hide
         </ItemAction>
       ) : null;

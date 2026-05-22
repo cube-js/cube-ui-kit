@@ -37,6 +37,41 @@ const RadioButtonElement = tasty(Item, {
     gridTemplate:
       '"icon prefix label suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
     placeContent: 'center',
+    shadow: {
+      '': false,
+      'tabs & selected': '$item-shadow',
+      'tabs & selected & disabled': false,
+    },
+    fill: {
+      'selected & tabs': '#surface',
+      'selected & tabs & disabled': '#surface.6',
+    },
+    color: {
+      'selected & tabs': '#dark',
+      'selected & tabs & disabled': '#dark.3',
+    },
+
+    // Mirror the ButtonSplit grouping: the corner radius is shared so the
+    // first/last items keep only their outer-side radius and middle items go
+    // square; a -1bw left margin overlaps adjacent borders into a single
+    // continuous edge. The selected button is bumped above its siblings so its
+    // brand-tinted border is visible from all four sides — without the bump
+    // the right edge of an adjacent sibling would paint over the selected
+    // button's left edge (and vice-versa). Hover / focus-visible bump higher
+    // still so they always read on top of the selected highlight.
+    radius: {
+      '': true,
+      '!tabs & !:last-child': '1r left',
+      '!tabs & !:first-child': '1r right',
+      '!tabs & !:first-child & !:last-child': 0,
+    },
+    margin: {
+      '': 0,
+      '!tabs & !:first-child': '-1bw left',
+    },
+    zIndex: {
+      '!tabs & selected': 1,
+    },
 
     Label: {
       placeSelf: {
@@ -44,13 +79,6 @@ const RadioButtonElement = tasty(Item, {
         '!has-prefix & !has-suffix & !has-icon & !has-right-icon': 'center',
       },
     },
-  },
-});
-
-const TabRadioButtonSelectedElement = tasty(RadioButtonElement, {
-  styles: {
-    fill: '#surface',
-    shadow: '$item-shadow',
   },
 });
 
@@ -66,6 +94,7 @@ const RadioWrapperElement = tasty({
     flow: 'column',
     preset: 'default',
     width: 'min-content',
+    radius: true,
     margin: {
       '': '1x right',
       button: '0',
@@ -103,10 +132,9 @@ const RadioNormalElement = tasty({
     width: '2x',
     height: '2x',
     outline: {
-      '': '#primary-text.0',
-      focused: '1bw #primary-text',
+      '': '#primary-text.0 / 1bw',
+      focused: '1bw #primary-text / 1bw',
     },
-    outlineOffset: 1,
     transition: 'theme',
     whiteSpace: 'nowrap',
 
@@ -135,7 +163,7 @@ export interface CubeRadioProps
   'aria-label'?: string;
   /* The visual type of the radio button */
   type?: 'button' | 'radio';
-  buttonType?: Exclude<CubeItemProps['type'], 'secondary'>;
+  buttonType?: CubeItemProps['type'];
   value?: string;
   /* Whether the radio is invalid */
   isInvalid?: boolean;
@@ -225,16 +253,24 @@ function Radio(props: CubeRadioProps, ref) {
   }
 
   // Determine effective button type
-  // In tabs mode, always use 'neutral' and ignore buttonType prop
-  let effectiveButtonType;
+  // In tabs mode, always use 'clear' and ignore buttonType prop.
+  let effectiveButtonType: string;
+  // When buttonType is 'primary', non-selected radios use 'outline' with a
+  // visual-only `selected` mod (mods.selected=true) to render the brand-tinted
+  // outline+selected look — this is the only place mods.selected intentionally
+  // decouples from the aria/isSelected state.
+  let forceSelectedMod = false;
   if (effectiveType === 'tabs') {
-    effectiveButtonType = 'neutral'; // Force neutral for tabs, ignore buttonType
+    effectiveButtonType = 'clear';
   } else {
     const baseButtonType = buttonType ?? contextButtonType ?? 'outline';
-    // When buttonType is 'primary', use 'secondary' for non-selected and 'primary' for selected
     if (baseButtonType === 'primary') {
-      effectiveButtonType =
-        state.selectedValue === props.value ? 'primary' : 'secondary';
+      if (state.selectedValue === props.value) {
+        effectiveButtonType = 'primary';
+      } else {
+        effectiveButtonType = 'outline';
+        forceSelectedMod = true;
+      }
     } else {
       effectiveButtonType = baseButtonType;
     }
@@ -289,13 +325,8 @@ function Radio(props: CubeRadioProps, ref) {
 
   // Render button type using Item
   if (isButton) {
-    const ButtonElement =
-      isRadioSelected && contextType === 'tabs'
-        ? TabRadioButtonSelectedElement
-        : RadioButtonElement;
-
     return (
-      <ButtonElement
+      <RadioButtonElement
         ref={domRef}
         type={effectiveButtonType}
         theme={isInvalid ? 'danger' : 'default'}
@@ -309,7 +340,7 @@ function Radio(props: CubeRadioProps, ref) {
         hotkeys={hotkeys}
         isSelected={isRadioSelected}
         isDisabled={isRadioDisabled}
-        mods={mods}
+        mods={{ ...mods, ...(forceSelectedMod ? { selected: true } : {}) }}
         styles={styles}
         {...mergeProps(hoverProps, focusProps)}
       >
@@ -323,7 +354,7 @@ function Radio(props: CubeRadioProps, ref) {
           mods={{ button: isButton, disabled: isRadioDisabled }}
         />
         {label}
-      </ButtonElement>
+      </RadioButtonElement>
     );
   }
 

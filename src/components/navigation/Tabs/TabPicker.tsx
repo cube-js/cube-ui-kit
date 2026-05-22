@@ -63,7 +63,7 @@ export function TabPicker({
       icon={<MoreIcon />}
       rightIcon={null}
       shape="sharp"
-      type="neutral"
+      type="clear"
       size={pickerSize}
       // Apply border to wrapper (FilterPickerWrapper) so :first-child evaluates
       // relative to Suffix container, not the internal DialogTrigger

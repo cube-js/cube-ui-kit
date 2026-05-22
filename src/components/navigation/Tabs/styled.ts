@@ -239,6 +239,7 @@ export const TabElement = tasty(Item, {
       'type=radio & selected & focused & focus-visible':
         '$item-shadow, inset 0 0 0 1bw #primary-text',
     },
+    outline: 'none',
     placeContent: {
       // extend
       'type=radio': 'center',

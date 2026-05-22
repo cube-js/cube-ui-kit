@@ -782,7 +782,7 @@ export const WithTextValue: Story = {
       >
         <Space gap="1x" flow="column">
           <Text weight="600">Basic Plan</Text>
-          <Badge type="neutral">Free</Badge>
+          <Badge type="disabled">Free</Badge>
         </Space>
       </FilterListBox.Item>
       <FilterListBox.Item

@@ -110,7 +110,7 @@ const meta: Meta<typeof FilterPicker> = {
     },
     type: {
       control: 'radio',
-      options: ['outline', 'clear', 'primary', 'secondary', 'neutral'],
+      options: ['outline', 'outline-2', 'clear', 'primary'],
       description: 'Button styling type',
       table: {
         defaultValue: { summary: 'outline' },
@@ -982,7 +982,7 @@ export const RenderSummaryBehavior: Story = {
                 const count = selectedKeys?.length ?? 0;
                 return (
                   <Space gap="0.5x" flow="row" placeItems="center">
-                    <Badge type={count > 0 ? 'success' : 'neutral'}>
+                    <Badge type={count > 0 ? 'success' : 'disabled'}>
                       {count}
                     </Badge>
                     <Text>filters</Text>
@@ -1009,7 +1009,7 @@ export const RenderSummaryBehavior: Story = {
                 const count = selectedKeys?.length ?? 0;
                 return (
                   <Space gap="0.5x" flow="row" placeItems="center">
-                    <Badge type={count > 0 ? 'success' : 'neutral'}>
+                    <Badge type={count > 0 ? 'success' : 'disabled'}>
                       {count}
                     </Badge>
                     <Text>filters</Text>
@@ -1447,7 +1447,7 @@ export const DifferentTypes: Story = {
         ))}
       </FilterPicker>
 
-      <FilterPicker {...args} type="primary" placeholder="Primary">
+      <FilterPicker {...args} type="outline-2" placeholder="Outline 2">
         {fruits.slice(0, 3).map((fruit) => (
           <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
             {fruit.label}
@@ -1455,7 +1455,7 @@ export const DifferentTypes: Story = {
         ))}
       </FilterPicker>
 
-      <FilterPicker {...args} type="secondary" placeholder="Secondary">
+      <FilterPicker {...args} type="primary" placeholder="Primary">
         {fruits.slice(0, 3).map((fruit) => (
           <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
             {fruit.label}
@@ -1476,7 +1476,7 @@ export const DifferentTypes: Story = {
     docs: {
       description: {
         story:
-          'Use different button types to match your interface design: `outline`, `primary`, `secondary`, `clear`, and `neutral`.',
+          'Use different button types to match your interface design: `outline`, `outline-2`, `clear`, and `primary`.',
       },
     },
   },
@@ -1592,7 +1592,7 @@ export const WithTextValue: Story = {
       >
         <Space gap="1x" flow="row" placeItems="center">
           <Text weight="600">Basic Plan</Text>
-          <Badge type="neutral">Free</Badge>
+          <Badge type="disabled">Free</Badge>
         </Space>
       </FilterPicker.Item>
       <FilterPicker.Item
@@ -1793,7 +1793,7 @@ export const ComplexExample: Story = {
           <Space gap="1x" flow="row" placeItems="center">
             <FilterIcon />
             <Title level={6}>Filter Options</Title>
-            <Badge type="neutral">24 available</Badge>
+            <Badge type="disabled">24 available</Badge>
           </Space>
           <Space gap="1x" flow="row">
             <Button

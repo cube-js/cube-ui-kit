@@ -126,19 +126,22 @@ export const MultipleStates: Story = {
       <Container>
         <IconContainer>
           <Button
-            type={state === 'idle' ? 'primary' : 'secondary'}
+            type="outline"
+            isSelected={state === 'idle'}
             onPress={() => setState('idle')}
           >
             Idle
           </Button>
           <Button
-            type={state === 'success' ? 'primary' : 'secondary'}
+            type="outline"
+            isSelected={state === 'success'}
             onPress={() => setState('success')}
           >
             Success
           </Button>
           <Button
-            type={state === 'error' ? 'primary' : 'secondary'}
+            type="outline"
+            isSelected={state === 'error'}
             onPress={() => setState('error')}
           >
             Error

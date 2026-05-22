@@ -174,19 +174,19 @@ describe('<Menu />', () => {
         selectionMode="multiple"
         selectedKeys={['copy']}
       >
-        <Menu.Item key="copy" icon="checkbox">
+        <Menu.Item key="copy" icon="checkmark">
           Copy
         </Menu.Item>
-        <Menu.Item key="paste" icon="checkbox">
+        <Menu.Item key="paste" icon="checkmark">
           Paste
         </Menu.Item>
-        <Menu.Item key="cut" icon="checkbox">
+        <Menu.Item key="cut" icon="checkmark">
           Cut
         </Menu.Item>
       </Menu>,
     );
 
-    // Check that selected items have checkboxes (Icon elements for selected items)
+    // Check that selected items have checkmarks (Icon elements for selected items)
     const icons = container.querySelectorAll('[data-element="Icon"]');
     expect(icons.length).toBeGreaterThan(0);
   });
@@ -199,13 +199,13 @@ describe('<Menu />', () => {
         selectionMode="single"
         selectedKeys={['copy']}
       >
-        <Menu.Item key="copy" icon="checkbox">
+        <Menu.Item key="copy" icon="checkmark">
           Copy
         </Menu.Item>
-        <Menu.Item key="paste" icon="checkbox">
+        <Menu.Item key="paste" icon="checkmark">
           Paste
         </Menu.Item>
-        <Menu.Item key="cut" icon="checkbox">
+        <Menu.Item key="cut" icon="checkmark">
           Cut
         </Menu.Item>
       </Menu>,

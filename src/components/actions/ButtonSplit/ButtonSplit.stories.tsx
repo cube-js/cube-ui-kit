@@ -47,7 +47,7 @@ const meta = {
 
     /* Presentation */
     type: {
-      options: ['primary', 'secondary', 'outline', 'neutral', 'clear'],
+      options: ['primary', 'outline', 'outline-2', 'clear'],
       control: { type: 'radio' },
       description: 'Button type (inherited by children via context)',
       table: { defaultValue: { summary: 'outline' } },
@@ -160,7 +160,7 @@ export const Variants: Story = {
 
     return (
       <Space gap="2x" flow="column">
-        <Space gap="2x">
+        <Space gap="2x" placeItems="center">
           <Button.Split
             actions={actions}
             defaultActionKey="copy"
@@ -169,12 +169,21 @@ export const Variants: Story = {
           <Button.Split
             actions={actions}
             defaultActionKey="copy"
-            type="secondary"
+            type="outline"
           />
+          {/* `outline-2` uses `#surface-3` as its base fill so it stands
+              out when sitting on a `#surface-2` container. */}
+          <Space fill="#surface-2" padding="1x" radius="1cr">
+            <Button.Split
+              actions={actions}
+              defaultActionKey="copy"
+              type="outline-2"
+            />
+          </Space>
           <Button.Split
             actions={actions}
             defaultActionKey="copy"
-            type="outline"
+            type="clear"
           />
         </Space>
         <Space gap="2x">

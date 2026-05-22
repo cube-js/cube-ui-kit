@@ -73,7 +73,7 @@ export const SearchInput = forwardRef(function SearchInput(
               <ItemAction
                 icon={<CloseIcon />}
                 size={restProps.size}
-                type={validationState === 'invalid' ? 'clear' : 'neutral'}
+                type="clear"
                 theme={validationState === 'invalid' ? 'danger' : undefined}
                 {...ariaToCubeButtonProps(clearButtonProps)}
                 onPress={(e) => {

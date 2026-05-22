@@ -228,13 +228,13 @@ export const WithSidePanel: Story = {
             onClose={() => setIsPanelOpen(false)}
           />
           <Layout.Content gap="0.5x">
-            <Button type="neutral" width="100%">
+            <Button type="clear" width="100%">
               Dashboard
             </Button>
-            <Button type="neutral" width="100%">
+            <Button type="clear" width="100%">
               Reports
             </Button>
-            <Button type="neutral" width="100%">
+            <Button type="clear" width="100%">
               Settings
             </Button>
           </Layout.Content>
@@ -571,7 +571,7 @@ export const CompleteApplicationShell: Story = {
           <Layout.Content padding=".5x" scrollbar="tiny" gap="1bw">
             {['Dashboard', 'Analytics', 'Reports', 'Users', 'Settings'].map(
               (item) => (
-                <ItemButton key={item} type="neutral" width="100%">
+                <ItemButton key={item} type="clear" width="100%">
                   {item}
                 </ItemButton>
               ),
@@ -597,7 +597,7 @@ export const CompleteApplicationShell: Story = {
           subtitle="Real-time overview of your metrics"
           suffix={
             <Button
-              type="neutral"
+              type="clear"
               aria-label="Toggle sidebar"
               onPress={() => setSidebarOpen(!sidebarOpen)}
             >
@@ -927,9 +927,9 @@ export const PanelAsDialog: Story = {
               become modal dialogs on smaller screens.
             </Text>
             <Space direction="vertical" gap="1bw">
-              <ItemButton type="neutral">Menu Item 1</ItemButton>
-              <ItemButton type="neutral">Menu Item 2</ItemButton>
-              <ItemButton type="neutral">Menu Item 3</ItemButton>
+              <ItemButton type="clear">Menu Item 1</ItemButton>
+              <ItemButton type="clear">Menu Item 2</ItemButton>
+              <ItemButton type="clear">Menu Item 3</ItemButton>
             </Space>
           </Layout.Content>
           <Layout.Footer invertOrder>
@@ -997,25 +997,25 @@ export const ResponsivePanelToDialog: Story = {
             <Title level={5} preset="c2" color="#dark-04" padding=".5x">
               Categories
             </Title>
-            <ItemButton type="neutral" width="100%">
+            <ItemButton type="clear" width="100%">
               Electronics
             </ItemButton>
-            <ItemButton type="neutral" width="100%">
+            <ItemButton type="clear" width="100%">
               Clothing
             </ItemButton>
-            <ItemButton type="neutral" width="100%">
+            <ItemButton type="clear" width="100%">
               Home & Garden
             </ItemButton>
             <Title level={5} preset="c2" color="#dark-04" padding=".5x">
               Price Range
             </Title>
-            <ItemButton type="neutral" width="100%">
+            <ItemButton type="clear" width="100%">
               Under $50
             </ItemButton>
-            <ItemButton type="neutral" width="100%">
+            <ItemButton type="clear" width="100%">
               $50 - $100
             </ItemButton>
-            <ItemButton type="neutral" width="100%">
+            <ItemButton type="clear" width="100%">
               Over $100
             </ItemButton>
           </Layout.Content>
@@ -1024,14 +1024,14 @@ export const ResponsivePanelToDialog: Story = {
         <Layout.Toolbar>
           <Space>
             <Button
-              type={isMobileMode ? 'primary' : 'neutral'}
+              type={isMobileMode ? 'primary' : 'clear'}
               icon={!isPanelOpen ? <IconFilter /> : <IconFilterFilled />}
               onPress={() => setIsPanelOpen(!isPanelOpen)}
             />
             <Title level={4}>Product Catalog</Title>
           </Space>
           <Button
-            type={isMobileMode ? 'primary' : 'neutral'}
+            type={isMobileMode ? 'primary' : 'clear'}
             onPress={() => setIsMobileMode(!isMobileMode)}
           >
             {isMobileMode ? '📱 Mobile' : '🖥️ Desktop'}

@@ -62,9 +62,9 @@ export const SidebarLayout: Story = {
             onClose={() => setIsOpen(false)}
           />
           <Layout.Content padding=".5x" gap="1bw">
-            <ItemButton type="neutral">Dashboard</ItemButton>
-            <ItemButton type="neutral">Settings</ItemButton>
-            <ItemButton type="neutral">Profile</ItemButton>
+            <ItemButton type="clear">Dashboard</ItemButton>
+            <ItemButton type="clear">Settings</ItemButton>
+            <ItemButton type="clear">Profile</ItemButton>
           </Layout.Content>
         </Layout.Panel>
         <Layout.Toolbar>

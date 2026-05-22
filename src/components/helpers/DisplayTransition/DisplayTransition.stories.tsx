@@ -276,7 +276,7 @@ export const PreserveContent: Story = {
           {isShown ? 'Hide Card' : 'Show Card'}
         </Button>
         <Button
-          type="secondary"
+          type="outline"
           onPress={() =>
             setContent(`Updated at ${new Date().toLocaleTimeString()}`)
           }
