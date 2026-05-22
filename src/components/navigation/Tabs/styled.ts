@@ -55,13 +55,13 @@ export const TabsElement = tasty({
         '(type=default | type=file | type=narrow) & has-panels & placement=right':
           'left',
       },
-      // Bar sizing:
-      // - horizontal placements: cross-axis fills wrapper (width 100%), main-axis intrinsic
-      // - vertical   placements: main-axis intrinsic (width auto), cross-axis fills wrapper (height 100%)
-      // - radio keeps `max-content` on the main axis
+      // Bar sizing — always follow the outer wrapper along the main axis so
+      // `width` / `height` props on `<Tabs>` apply to the strip as they did
+      // before the wrapper was introduced.
+      // - horizontal placements: main-axis = wrapper width  (100%), cross-axis intrinsic (auto)
+      // - vertical   placements: main-axis = wrapper height (100%), cross-axis intrinsic (auto / max-content for radio)
       width: {
         '': '100%',
-        'type=radio': 'max-content',
         'placement=left | placement=right': 'auto',
         'type=radio & (placement=left | placement=right)': 'max-content',
       },
