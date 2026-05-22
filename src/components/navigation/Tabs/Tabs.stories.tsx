@@ -62,6 +62,16 @@ const meta = {
         defaultValue: { summary: 'normal' },
       },
     },
+    placement: {
+      control: 'radio',
+      options: ['top', 'bottom', 'left', 'right'],
+      description:
+        'Where the tab bar sits relative to its panels. `top` / `bottom` keep the bar horizontal; `left` / `right` switch it to a vertical strip.',
+      table: {
+        type: { summary: "'top' | 'bottom' | 'left' | 'right'" },
+        defaultValue: { summary: 'top' },
+      },
+    },
 
     /* Behavior */
     prerender: {
@@ -230,6 +240,13 @@ const meta = {
         type: { summary: 'string' },
       },
     },
+    barStyles: {
+      control: { type: null },
+      description: 'Custom styles for the tab bar (Bar sub-element)',
+      table: {
+        type: { summary: 'Styles' },
+      },
+    },
     tabListStyles: {
       control: { type: null },
       description: 'Custom styles for the tab list container',
@@ -372,45 +389,6 @@ export const RadioType: Story = {
       <Tab key="tab2" title="Weekly" />
       <Tab key="tab3" title="Monthly" />
     </Tabs>
-  ),
-};
-
-/**
- * Radio type with content panels
- */
-export const RadioTypeWithPanels: Story = {
-  render: (args) => (
-    <Tabs {...args} type="radio" defaultActiveKey="tab1">
-      <Tab key="tab1" title="Daily">
-        <Paragraph>Daily statistics and reports.</Paragraph>
-      </Tab>
-      <Tab key="tab2" title="Weekly">
-        <Paragraph>Weekly aggregated data.</Paragraph>
-      </Tab>
-      <Tab key="tab3" title="Monthly">
-        <Paragraph>Monthly summary and trends.</Paragraph>
-      </Tab>
-    </Tabs>
-  ),
-};
-
-/**
- * Radio type sizes — large (default, 40px total) and medium (32px total)
- */
-export const RadioTypeSizes: Story = {
-  render: (args) => (
-    <Space flow="column" gap="2x">
-      <Tabs {...args} type="radio" size="large" defaultActiveKey="tab1">
-        <Tab key="tab1" title="Large (default)" />
-        <Tab key="tab2" title="Weekly" />
-        <Tab key="tab3" title="Monthly" />
-      </Tabs>
-      <Tabs {...args} type="radio" size="medium" defaultActiveKey="tab1">
-        <Tab key="tab1" title="Medium" />
-        <Tab key="tab2" title="Weekly" />
-        <Tab key="tab3" title="Monthly" />
-      </Tabs>
-    </Space>
   ),
 };
 
@@ -678,144 +656,6 @@ export const KeepMounted: Story = {
       </Tab>
     </Tabs>
   ),
-};
-
-/**
- * File type with delete functionality - file editor style tabs
- */
-export const FileDeletable: Story = {
-  render: function FileDeletableStory(args) {
-    const [tabs, setTabs] = useState([
-      { key: 'file1', title: 'index.ts', content: 'Index file content' },
-      { key: 'file2', title: 'utils.ts', content: 'Utility functions' },
-      { key: 'file3', title: 'types.ts', content: 'Type definitions' },
-    ]);
-    const [activeKey, setActiveKey] = useState('file1');
-
-    const handleDelete = (key: Key) => {
-      setTabs((prev) => prev.filter((tab) => tab.key !== key));
-
-      if (activeKey === key) {
-        const remaining = tabs.filter((tab) => tab.key !== key);
-
-        if (remaining.length > 0) {
-          setActiveKey(remaining[0].key);
-        }
-      }
-    };
-
-    return (
-      <Tabs
-        {...args}
-        type="file"
-        activeKey={activeKey}
-        onChange={(key) => setActiveKey(String(key))}
-        onDelete={handleDelete}
-      >
-        {tabs.map((tab) => (
-          <Tab key={tab.key} title={tab.title}>
-            <Paragraph>{tab.content}</Paragraph>
-          </Tab>
-        ))}
-      </Tabs>
-    );
-  },
-};
-
-/**
- * Scrollable tabs with tiny scrollbar - demonstrates horizontal scrolling
- * and tab picker dropdown for quick navigation when tabs overflow
- */
-export const ScrollableTabs: Story = {
-  render: (args) => (
-    <Tabs
-      prefix={<Button size="small">Menu</Button>}
-      suffix={<Button size="small">Add New</Button>}
-      {...args}
-      defaultActiveKey="tab1"
-      styles={{ width: '500px' }}
-    >
-      {Array.from({ length: 15 }, (_, i) => (
-        <Tab key={`tab${i + 1}`} title={`Tab ${i + 1}`}>
-          <Paragraph>Content for Tab {i + 1}</Paragraph>
-        </Tab>
-      ))}
-    </Tabs>
-  ),
-};
-
-/**
- * Scrollable tabs with tab picker and delete functionality - demonstrates
- * auto-showing tab picker when tabs overflow with deletable tabs in the picker dropdown
- * and an "Add" button in the prefix slot
- */
-export const ScrollableTabsWithPicker: Story = {
-  render: function ScrollableTabsWithPickerRender(args) {
-    const [tabs, setTabs] = useState(
-      Array.from({ length: 15 }, (_, i) => ({
-        id: `tab${i + 1}`,
-        title: `Tab ${i + 1}`,
-        content: `Content for Tab ${i + 1}`,
-      })),
-    );
-    const [activeKey, setActiveKey] = useState<string>('tab1');
-    const [counter, setCounter] = useState(16);
-
-    const handleDelete = (key: Key) => {
-      const tabId = String(key);
-      const newTabs = tabs.filter((t) => t.id !== tabId);
-
-      if (newTabs.length === 0) return;
-
-      // If deleting the active tab, select the next or previous tab
-      if (activeKey === tabId) {
-        const currentIndex = tabs.findIndex((t) => t.id === tabId);
-        const newActiveIndex = Math.min(currentIndex, newTabs.length - 1);
-        setActiveKey(newTabs[newActiveIndex].id);
-      }
-
-      setTabs(newTabs);
-    };
-
-    const handleAdd = () => {
-      const newId = `tab${counter}`;
-      setTabs((prev) => [
-        ...prev,
-        {
-          id: newId,
-          title: `Tab ${counter}`,
-          content: `Content for Tab ${counter}`,
-        },
-      ]);
-      setActiveKey(newId);
-      setCounter((c) => c + 1);
-    };
-
-    return (
-      <Tabs
-        {...args}
-        activeKey={activeKey}
-        showTabPicker="auto"
-        type="file"
-        styles={{ width: '500px' }}
-        prefix={
-          <Tabs.Action
-            icon={<PlusIcon />}
-            aria-label="Add tab"
-            onPress={handleAdd}
-          />
-        }
-        onChange={(key) => setActiveKey(String(key))}
-        onDelete={handleDelete}
-      >
-        {tabs.map((tab) => (
-          <Tab key={tab.id} title={tab.title}>
-            <Paragraph>{tab.content}</Paragraph>
-          </Tab>
-        ))}
-      </Tabs>
-    );
-  },
 };
 
 /**
@@ -1341,62 +1181,6 @@ export const LazyRenderingWithRenderPanel: Story = {
 };
 
 /**
- * With `keepMounted` enabled, visited tabs stay in the DOM but still use
- * cached content. Combined with `renderPanel`, this provides optimal
- * performance for tabs with expensive content.
- */
-export const LazyRenderingWithKeepMounted: Story = {
-  render: (args) => {
-    return (
-      <Tabs
-        {...args}
-        keepMounted
-        defaultActiveKey="tab1"
-        renderPanel={(key) => {
-          switch (key) {
-            case 'tab1':
-              return (
-                <Space flow="column" gap="1x">
-                  <Text.Strong>Dashboard</Text.Strong>
-                  <Paragraph>
-                    Your main dashboard with charts and statistics.
-                  </Paragraph>
-                </Space>
-              );
-            case 'tab2':
-              return (
-                <Space flow="column" gap="1x">
-                  <Text.Strong>Settings</Text.Strong>
-                  <Paragraph>
-                    Configure your preferences here. State is preserved when
-                    switching tabs.
-                  </Paragraph>
-                </Space>
-              );
-            case 'tab3':
-              return (
-                <Space flow="column" gap="1x">
-                  <Text.Strong>Reports</Text.Strong>
-                  <Paragraph>
-                    Generate and view reports. Complex data tables would load
-                    lazily.
-                  </Paragraph>
-                </Space>
-              );
-            default:
-              return null;
-          }
-        }}
-      >
-        <Tab key="tab1" title="Dashboard" />
-        <Tab key="tab2" title="Settings" />
-        <Tab key="tab3" title="Reports" />
-      </Tabs>
-    );
-  },
-};
-
-/**
  * Tabs inside a Layout - demonstrates that tab panels stretch to fill remaining space.
  * The Layout has a fixed height, and the Tabs component is inside Layout.Content.
  * Each tab panel contains a nested Layout with a colored background to visualize stretching.
@@ -1581,49 +1365,6 @@ export const ReorderableWithMenu: Story = {
 };
 
 /**
- * Reorderable tabs with different types - shows reordering works with all tab types
- */
-export const ReorderableDefaultType: Story = {
-  render: function ReorderableDefaultTypeRender(args) {
-    const [keyOrder, setKeyOrder] = useState<Key[]>([
-      'overview',
-      'analytics',
-      'reports',
-      'settings',
-    ]);
-
-    return (
-      <Space flow="column" gap="2x">
-        <Paragraph>
-          Drag-and-drop reordering also works with the default tab style.
-        </Paragraph>
-        <Tabs
-          {...args}
-          isReorderable
-          type="default"
-          defaultActiveKey="overview"
-          keyOrder={keyOrder}
-          onReorder={(newOrder) => setKeyOrder(newOrder)}
-        >
-          <Tab key="overview" title="Overview">
-            Overview content
-          </Tab>
-          <Tab key="analytics" title="Analytics">
-            Analytics content
-          </Tab>
-          <Tab key="reports" title="Reports">
-            Reports content
-          </Tab>
-          <Tab key="settings" title="Settings">
-            Settings content
-          </Tab>
-        </Tabs>
-      </Space>
-    );
-  },
-};
-
-/**
  * Tabs with scroll arrows - shows left/right navigation arrows for scrolling tabs
  */
 export const WithScrollArrows: Story = {
@@ -1714,36 +1455,6 @@ export const ActionsInPrefix: Story = {
 };
 
 /**
- * Tabs with the custom scrollbar hidden via `hideTabListScroll`.
- * Scroll arrows and tab picker remain functional.
- */
-export const HiddenScrollbar: Story = {
-  render: function HiddenScrollbarRender(args) {
-    const tabs = Array.from({ length: 15 }, (_, i) => ({
-      id: `tab${i + 1}`,
-      title: `Tab ${i + 1}`,
-      content: `Content for Tab ${i + 1}`,
-    }));
-
-    return (
-      <Tabs
-        {...args}
-        hideTabListScroll
-        defaultActiveKey="tab1"
-        showScrollArrows="auto"
-        styles={{ width: '500px' }}
-      >
-        {tabs.map((tab) => (
-          <Tab key={tab.id} title={tab.title}>
-            <Paragraph>{tab.content}</Paragraph>
-          </Tab>
-        ))}
-      </Tabs>
-    );
-  },
-};
-
-/**
  * Reorderable tabs with a tab picker dropdown that also supports reordering.
  * When `isReorderable` is enabled and a tab picker is shown, the picker dropdown
  * automatically supports drag-and-drop reordering as well.
@@ -1816,4 +1527,120 @@ export const ReorderableTabPicker: Story = {
       </Space>
     );
   },
+};
+
+// =============================================================================
+// Placement / Vertical Tabs
+// =============================================================================
+//
+// Note: `placement="top"` is the default and is already covered by every other
+// story above (including `Default`, `DefaultType`, `FileType`, etc.), so it
+// doesn't need a dedicated `PlacementTop` story.
+
+/**
+ * `placement="bottom"` — the tab bar sits below the panels. DOM order is still
+ * "bar then panels"; the visual order is controlled with `flex-direction: column-reverse`.
+ */
+export const PlacementBottom: Story = {
+  args: { placement: 'bottom' },
+  render: (args) => (
+    <Layout height="40x">
+      <Tabs {...args} defaultActiveKey="tab1">
+        <Tab key="tab1" title="Overview">
+          <Paragraph>Overview content for the bottom-placed tabs.</Paragraph>
+        </Tab>
+        <Tab key="tab2" title="Settings">
+          <Paragraph>Settings content.</Paragraph>
+        </Tab>
+        <Tab key="tab3" title="Advanced">
+          <Paragraph>Advanced options.</Paragraph>
+        </Tab>
+      </Tabs>
+    </Layout>
+  ),
+};
+
+/**
+ * `placement="left"` — vertical strip on the left, panels on the right.
+ * The selection indicator, scroll behaviour, and per-type visuals all rotate.
+ */
+export const PlacementLeft: Story = {
+  args: { placement: 'left' },
+  render: (args) => (
+    <Layout height="40x">
+      <Tabs {...args} defaultActiveKey="tab1">
+        <Tab key="tab1" title="Overview">
+          <Paragraph>Overview content for the left-placed tabs.</Paragraph>
+        </Tab>
+        <Tab key="tab2" title="Settings">
+          <Paragraph>Settings content.</Paragraph>
+        </Tab>
+        <Tab key="tab3" title="Advanced">
+          <Paragraph>Advanced options.</Paragraph>
+        </Tab>
+      </Tabs>
+    </Layout>
+  ),
+};
+
+/**
+ * `placement="right"` — vertical strip on the right.
+ */
+export const PlacementRight: Story = {
+  args: { placement: 'right' },
+  render: (args) => (
+    <Layout height="40x">
+      <Tabs {...args} defaultActiveKey="tab1">
+        <Tab key="tab1" title="Overview">
+          <Paragraph>Overview content for the right-placed tabs.</Paragraph>
+        </Tab>
+        <Tab key="tab2" title="Settings">
+          <Paragraph>Settings content.</Paragraph>
+        </Tab>
+        <Tab key="tab3" title="Advanced">
+          <Paragraph>Advanced options.</Paragraph>
+        </Tab>
+      </Tabs>
+    </Layout>
+  ),
+};
+
+/**
+ * `file` type laid out vertically — selection shadow flips to the edge that
+ * faces the panel area, dividers run between rows instead of columns.
+ */
+export const VerticalFile: Story = {
+  args: { placement: 'left', type: 'file' },
+  render: (args) => (
+    <Layout height="40x">
+      <Tabs {...args} defaultActiveKey="file1">
+        <Tab key="file1" title="index.ts">
+          <Paragraph>File 1 content.</Paragraph>
+        </Tab>
+        <Tab key="file2" title="utils.ts">
+          <Paragraph>File 2 content.</Paragraph>
+        </Tab>
+        <Tab key="file3" title="types.ts">
+          <Paragraph>File 3 content.</Paragraph>
+        </Tab>
+      </Tabs>
+    </Layout>
+  ),
+};
+
+/**
+ * `radio` type in a vertical layout — the pill container wraps its tabs in a
+ * column and each tab fills the width of the strip.
+ */
+export const VerticalRadio: Story = {
+  args: { placement: 'left', type: 'radio' },
+  render: (args) => (
+    <Layout height="40x">
+      <Tabs {...args} defaultActiveKey="tab1">
+        <Tab key="tab1" icon={<IconCalendar />} title="Daily" />
+        <Tab key="tab2" title="Weekly" />
+        <Tab key="tab3" title="Monthly" />
+      </Tabs>
+    </Layout>
+  ),
 };

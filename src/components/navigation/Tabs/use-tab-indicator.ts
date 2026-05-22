@@ -15,10 +15,17 @@ import type { Key } from '@react-types/shared';
 // Types
 // =============================================================================
 
+/**
+ * Axis-agnostic indicator geometry.
+ * For horizontal orientation: `start` is `left`, `size` is `width`.
+ * For vertical   orientation: `start` is `top`,  `size` is `height`.
+ */
 export interface IndicatorStyle {
-  left: number;
-  width: number;
+  start: number;
+  size: number;
 }
+
+export type IndicatorOrientation = 'horizontal' | 'vertical';
 
 // =============================================================================
 // Hook
@@ -27,20 +34,22 @@ export interface IndicatorStyle {
 /**
  * Hook to track and animate tab indicator position.
  *
- * Calculates the position and width of the selection indicator
- * based on the currently selected tab. Returns null if disabled
- * (e.g., for non-default tab types).
+ * Calculates the start position and size of the selection indicator
+ * along the orientation axis. Returns null if disabled (e.g., for
+ * non-default/narrow tab types).
  *
  * @param containerRef - Ref to the tab container element
  * @param selectedKey - Currently selected tab key
  * @param enabled - Whether the indicator should be shown
+ * @param orientation - Axis along which the indicator moves
  * @param orderToken - Optional token that changes when tab order changes (triggers recalculation)
- * @returns Indicator style (left, width) or null if disabled/not ready
+ * @returns Indicator style (`start`, `size`) or null if disabled/not ready
  */
 export function useTabIndicator(
   containerRef: RefObject<HTMLElement | null>,
   selectedKey: Key | null,
   enabled: boolean,
+  orientation: IndicatorOrientation = 'horizontal',
   orderToken?: string,
 ): IndicatorStyle | null {
   const [style, setStyle] = useState<IndicatorStyle | null>(null);
@@ -65,15 +74,25 @@ export function useTabIndicator(
     const containerRect = containerRef.current.getBoundingClientRect();
     const tabRect = selectedTab.getBoundingClientRect();
 
-    // Only update if dimensions are valid (element has been painted)
-    if (tabRect.width > 0) {
-      setStyle({
-        left:
-          tabRect.left - containerRect.left + containerRef.current.scrollLeft,
-        width: tabRect.width,
-      });
+    if (orientation === 'vertical') {
+      // Only update if dimensions are valid (element has been painted)
+      if (tabRect.height > 0) {
+        setStyle({
+          start:
+            tabRect.top - containerRect.top + containerRef.current.scrollTop,
+          size: tabRect.height,
+        });
+      }
+    } else {
+      if (tabRect.width > 0) {
+        setStyle({
+          start:
+            tabRect.left - containerRect.left + containerRef.current.scrollLeft,
+          size: tabRect.width,
+        });
+      }
     }
-  }, [containerRef, selectedKey, enabled, orderToken]);
+  }, [containerRef, selectedKey, enabled, orientation, orderToken]);
 
   // Update on selectedKey change - use chainRaf to ensure DOM is fully painted
   useLayoutEffect(() => {
@@ -105,32 +124,35 @@ export function useTabIndicator(
     return () => window.removeEventListener('resize', handleResize);
   }, [enabled, updateIndicator]);
 
-  // Recalculate when container becomes visible (0 -> non-zero width)
+  // Recalculate when container becomes visible (0 -> non-zero size along the axis)
   useEffect(() => {
     if (!enabled) return;
 
     const container = containerRef.current;
     if (!container) return;
 
-    let prevWidth = container.getBoundingClientRect().width;
+    const getAxisSize = (rect: { width: number; height: number }) =>
+      orientation === 'vertical' ? rect.height : rect.width;
+
+    let prevSize = getAxisSize(container.getBoundingClientRect());
 
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (!entry) return;
 
-      const newWidth = entry.contentRect.width;
+      const newSize = getAxisSize(entry.contentRect);
 
-      if (prevWidth === 0 && newWidth > 0) {
+      if (prevSize === 0 && newSize > 0) {
         updateIndicator();
       }
 
-      prevWidth = newWidth;
+      prevSize = newSize;
     });
 
     observer.observe(container);
 
     return () => observer.disconnect();
-  }, [enabled, updateIndicator]);
+  }, [enabled, orientation, updateIndicator]);
 
   return enabled ? style : null;
 }

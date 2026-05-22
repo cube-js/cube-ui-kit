@@ -187,6 +187,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     state,
     type,
     size,
+    placement,
     autoHideActions: parentAutoHideActions,
     isEditable: parentIsEditable,
     menu: parentMenu,
@@ -441,6 +442,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   const mods = useMemo(
     () => ({
       type: effectiveType,
+      placement,
       active: isActive,
       deletable: isDeletable,
       disabled: isDisabled,
@@ -453,6 +455,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     }),
     [
       effectiveType,
+      placement,
       isActive,
       isDeletable,
       isDisabled,

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useDropIndicator } from 'react-aria';
 
 import { DropIndicatorElement } from './styled';
+import { useTabsContext } from './TabsContext';
 
 import type { DropTarget } from 'react-aria';
 import type { DroppableCollectionState } from 'react-stately';
@@ -26,8 +27,10 @@ export interface TabDropIndicatorProps {
 /**
  * Visual drop indicator for drag-and-drop tab reordering.
  *
- * Renders a vertical line showing where the dragged tab will be dropped.
- * Only visible when the drop target is active.
+ * Renders a bar showing where the dragged tab will be dropped. The bar is
+ * vertical for horizontal Tabs (`placement: 'top' | 'bottom'`) and horizontal
+ * for vertical Tabs (`placement: 'left' | 'right'`). Only visible when the
+ * drop target is active.
  */
 export function TabDropIndicator({
   target,
@@ -36,6 +39,7 @@ export function TabDropIndicator({
 }: TabDropIndicatorProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [, setTick] = useState(0);
+  const { placement } = useTabsContext();
 
   const { dropIndicatorProps, isHidden, isDropTarget } = useDropIndicator(
     { target },
@@ -74,6 +78,7 @@ export function TabDropIndicator({
         'drop-target': isDropTarget,
         after: position === 'after',
         before: position === 'before',
+        placement,
       }}
     />
   );

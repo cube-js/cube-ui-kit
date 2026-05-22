@@ -32,7 +32,8 @@ const TabsActionElement = tasty(ItemButton, {
   styles: {
     border: {
       'type=neutral': 0,
-      'type=neutral & tabs-type-file & !:first-child': 'left',
+      'type=neutral & tabs-type-file & !:first-child & !tabs-vertical': 'left',
+      'type=neutral & tabs-type-file & !:first-child & tabs-vertical': 'top',
     },
     radius: {
       'type=neutral': 0,
@@ -78,17 +79,20 @@ export const TabsAction = forwardRef(function TabsAction(
 ) {
   const { size, mods, type, ...rest } = props;
 
-  // Get size and type from context if available (when used inside Tabs)
+  // Get size, type, and placement from context if available (when used inside Tabs)
   const tabsContext = useOptionalTabsContext();
   const effectiveSize = size ?? tabsContext?.size ?? 'medium';
   const tabsType = tabsContext?.type ?? 'default';
+  const tabsPlacement = tabsContext?.placement ?? 'top';
+  const tabsVertical = tabsPlacement === 'left' || tabsPlacement === 'right';
 
   const combinedMods = useMemo(
     () => ({
       'tabs-type-file': tabsType === 'file',
+      'tabs-vertical': tabsVertical,
       ...mods,
     }),
-    [tabsType, mods],
+    [tabsType, tabsVertical, mods],
   );
 
   return (

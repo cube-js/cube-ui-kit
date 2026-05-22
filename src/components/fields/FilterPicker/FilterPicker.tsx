@@ -22,7 +22,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FocusScope, Key, useKeyboard } from 'react-aria';
+import { FocusScope, Key, Placement, useKeyboard } from 'react-aria';
 import { Section as BaseSection, ListState, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
@@ -87,6 +87,13 @@ export interface CubeFilterPickerProps<T>
   isCheckable?: boolean;
   /** Whether to flip the popover placement */
   shouldFlip?: boolean;
+  /**
+   * Placement of the popover relative to the trigger.
+   * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
+   * `'top start'`, `'right top'`, `'left top'`).
+   * @default 'bottom start'
+   */
+  placement?: Placement;
   /** Minimum padding in pixels between the popover and viewport edges */
   containerPadding?: number;
   /** Tooltip for the trigger button (separate from field tooltip) */
@@ -222,6 +229,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     shouldFocusWrap,
     children,
     shouldFlip = true,
+    placement = 'bottom start',
     containerPadding = 8,
     selectedKey,
     defaultSelectedKey,
@@ -748,7 +756,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <DialogTrigger
         isDismissable
         type="popover"
-        placement="bottom start"
+        placement={placement}
         isOpen={isPopoverOpen}
         containerPadding={containerPadding}
         shouldFlip={shouldFlip}

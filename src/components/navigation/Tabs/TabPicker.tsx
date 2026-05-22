@@ -2,7 +2,8 @@ import { CloseIcon, MoreIcon } from '../../../icons';
 import { ItemAction } from '../../actions/ItemAction';
 import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
 
-import type { ParsedTab, TabSize, TabType } from './types';
+import type { Placement } from 'react-aria';
+import type { ParsedTab, TabPlacement, TabSize, TabType } from './types';
 
 // =============================================================================
 // Types
@@ -21,11 +22,21 @@ export interface TabPickerProps {
   size?: TabSize;
   /** Type of the parent Tabs component (for border styling) */
   type?: TabType;
+  /** Placement of the parent Tabs component (controls divider + popover placement) */
+  placement?: TabPlacement;
   /** Enable drag-and-drop reordering of items in the picker dropdown */
   isReorderable?: boolean;
   /** Callback when items are reordered via drag-and-drop */
   onReorder?: (newOrder: string[]) => void;
 }
+
+// Maps the parent Tabs placement to the popover placement of the FilterPicker.
+const POPOVER_PLACEMENT_BY_TABS_PLACEMENT: Record<TabPlacement, Placement> = {
+  top: 'top start',
+  bottom: 'top start',
+  left: 'right top',
+  right: 'left top',
+};
 
 // =============================================================================
 // Component
@@ -44,6 +55,7 @@ export function TabPicker({
   onDelete,
   size,
   type = 'default',
+  placement = 'top',
   isReorderable,
   onReorder,
 }: TabPickerProps) {
@@ -54,6 +66,7 @@ export function TabPicker({
 
   // Only show border divider for file type
   const showBorderDivider = type === 'file';
+  const isVertical = placement === 'left' || placement === 'right';
 
   return (
     <FilterPicker
@@ -65,13 +78,15 @@ export function TabPicker({
       shape="sharp"
       type="neutral"
       size={pickerSize}
+      placement={POPOVER_PLACEMENT_BY_TABS_PLACEMENT[placement]}
       // Apply border to wrapper (FilterPickerWrapper) so :first-child evaluates
-      // relative to Suffix container, not the internal DialogTrigger
+      // relative to Suffix container, not the internal DialogTrigger. The
+      // divider side flips with the bar's orientation.
       styles={{
         border: showBorderDivider
           ? {
               '': 0,
-              '!:first-child': 'left',
+              '!:first-child': isVertical ? 'top' : 'left',
             }
           : 0,
       }}

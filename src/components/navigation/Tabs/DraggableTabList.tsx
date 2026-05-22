@@ -18,6 +18,12 @@ export interface DraggableTabListProps {
   listRef: RefObject<HTMLDivElement | null>;
   /** Current ordered keys */
   orderedKeys: string[];
+  /**
+   * Orientation of the underlying DraggableCollection.
+   * Driven by the parent Tabs `placement`.
+   * @default 'horizontal'
+   */
+  orientation?: 'horizontal' | 'vertical';
   /** Callback when tabs are reordered */
   onReorder?: (newOrder: string[]) => void;
   /** Render function that receives drag/drop states */
@@ -35,12 +41,15 @@ export interface DraggableTabListProps {
 /**
  * Component that enables drag-and-drop reordering for tabs.
  *
- * Thin wrapper around DraggableCollection with horizontal orientation.
+ * Thin wrapper around DraggableCollection. The `orientation` prop should be
+ * derived from the parent Tabs `placement` so drag math/visuals match the
+ * visible axis (horizontal for `top`/`bottom`, vertical for `left`/`right`).
  */
 export function DraggableTabList({
   state,
   listRef,
   orderedKeys,
+  orientation = 'horizontal',
   onReorder,
   children,
 }: DraggableTabListProps) {
@@ -49,7 +58,7 @@ export function DraggableTabList({
       state={state}
       listRef={listRef}
       orderedKeys={orderedKeys}
-      orientation="horizontal"
+      orientation={orientation}
       onReorder={onReorder}
     >
       {children}

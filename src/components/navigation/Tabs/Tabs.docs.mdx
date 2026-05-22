@@ -29,6 +29,7 @@ An accessible tabbed interface for organizing content into multiple panels, show
 - **`defaultActiveKey`** `Key` — Initial active tab key for uncontrolled mode
 - **`type`** `'default' | 'narrow' | 'file' | 'radio'` (default: `'default'`) — Visual style variant
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large'` (default: `'small'`) — Tab size
+- **`placement`** `'top' | 'bottom' | 'left' | 'right'` (default: `'top'`) — Where the tab bar sits relative to its panels. `top` / `bottom` keep the bar horizontal; `left` / `right` switch it to a vertical strip. The selection indicator, scrolling, fades, scroll arrows, and per-type visuals (radius, file-style shadow, dividers) all adapt automatically.
 - **`prerender`** `boolean` (default: `false`) — If true, all tab panels are rendered but hidden
 - **`keepMounted`** `boolean` (default: `false`) — If true, visited tab panels stay in DOM
 - **`label`** `string` (default: `'Tabs'`) — Accessible label for the tab list
@@ -54,7 +55,8 @@ An accessible tabbed interface for organizing content into multiple panels, show
 - **`tabPickerPosition`** `'prefix' | 'suffix'` (default: `suffix`) — Position of the tab picker
 - **`scrollArrowsPosition`** `'prefix' | 'suffix'` (default: `suffix`) — Position of the scroll arrows
 - **`hideTabListScroll`** `boolean` (default: `false`) — Visually hide the custom horizontal scrollbar in the tab list and skip its tracking logic. Does not affect tab picker, scroll arrows, or fade indicators.
-- **`tabListPadding`** `string` — Inline padding for the tab list container (e.g., `"2x"`)
+- **`tabListPadding`** `string` — Inline padding for the tab list container (e.g., `"2x"`). For horizontal placements it controls the start/end padding (along the strip); for vertical placements (`left`/`right`) it controls the padding on all four sides. Defaults to `1x` (horizontal default/narrow) and `.5x` (vertical default/narrow).
+- **`barStyles`** `Styles` — Custom styles for the tab bar (the `Bar` sub-element). Use this to target the strip itself; the `styles` prop targets the outer flex wrapper.
 - **`tabListStyles`** `Styles` — Custom styles for the tab list container
 - **`prefixStyles`** `Styles` — Custom styles for the prefix slot
 - **`suffixStyles`** `Styles` — Custom styles for the suffix slot
@@ -67,22 +69,23 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 
 #### styles
 
-Customizes the root element of the Tabs component.
+Customizes the root flex wrapper of the Tabs component. The wrapper holds the tab `Bar` and the panels; visual ordering is controlled with `flex-direction` based on `placement`.
 
 **Sub-elements:**
 
+- `Bar` - The tab strip (Prefix + Scroll area + Suffix). Use `barStyles` or `styles={{ Bar: { ... } }}` to style it
 - `TabList` - The container holding the tab buttons
 - `Prefix` - Content rendered before the tab list
 - `Suffix` - Content rendered after the tab list
 - `ScrollWrapper` - Wrapper for scroll area and scrollbar positioning
 - `Scroll` - Scrollable area containing the tab container
-- `ScrollbarH` - Custom horizontal scrollbar indicator
+- `Scrollbar` - Custom tiny scrollbar indicator (axis-neutral — horizontal for `top` / `bottom` placements, vertical for `left` / `right`)
 
 ### Style Properties
 
 These properties allow direct style application without using the `styles` prop:
 
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`
 
@@ -91,10 +94,11 @@ These properties allow direct style application without using the `styles` prop:
 The `mods` property accepts the following modifiers:
 
 - **`type`** `'default' \| 'narrow' \| 'file' \| 'radio'` — Current tab type
+- **`placement`** `'top' \| 'bottom' \| 'left' \| 'right'` — Current bar placement
 - **`deletable`** `boolean` — True when onDelete callback is provided
 - **`scrolling`** `boolean` — True when tabs are being scrolled
-- **`fade-left`** `boolean` — True when content is scrolled (left fade visible)
-- **`fade-right`** `boolean` — True when more content exists to the right
+- **`fade-start`** `boolean` — True when more content exists in the start direction (left for horizontal, top for vertical)
+- **`fade-end`** `boolean` — True when more content exists in the end direction (right for horizontal, bottom for vertical)
 - **`has-panels`** `boolean` — True when tabs have panel content
 
 For individual tabs:
@@ -135,6 +139,35 @@ For individual tabs:
 **Note:** Radio type supports `large` (default, 40px total) and `medium` (32px total) sizes, mapped to Item button sizes `medium` (32px) and `xsmall` (24px) respectively.
 
 <Story of={TabsStories.LargeSize} />
+
+### Placement / Vertical Tabs
+
+Use the `placement` prop to control where the tab bar sits relative to its panels. The default is `'top'` (shown in every example above); `'bottom'`, `'left'`, and `'right'` are also supported. For `'left'` and `'right'` the strip becomes vertical and the selection indicator, scrolling, fades, scroll arrows, and per-type visuals (radius, file-style shadow, dividers) all rotate to match.
+
+DOM order is always "bar then panels" — visual order is controlled internally via `flex-direction` (`column` / `column-reverse` / `row` / `row-reverse`) so the markup stays consistent regardless of placement.
+
+```jsx
+<Tabs placement="left" defaultActiveKey="overview">
+  <Tab key="overview" title="Overview">Overview content</Tab>
+  <Tab key="settings" title="Settings">Settings content</Tab>
+</Tabs>
+```
+
+<Story of={TabsStories.PlacementBottom} />
+
+<Story of={TabsStories.PlacementLeft} />
+
+<Story of={TabsStories.PlacementRight} />
+
+#### Vertical tabs across types
+
+`narrow` only makes sense for a horizontal strip (it collapses horizontal
+label padding for a denser row). When `placement` is `'left'` or `'right'`,
+`type="narrow"` is coerced to `type="default"`.
+
+<Story of={TabsStories.VerticalFile} />
+
+<Story of={TabsStories.VerticalRadio} />
 
 ## Compound Components
 
@@ -853,7 +886,8 @@ Tabs work seamlessly inside Layout components. When placed in a `Layout` or `Lay
 ### Keyboard Navigation
 
 - `Tab` - Move focus into/out of the tab list
-- `ArrowLeft` / `ArrowRight` - Navigate between tabs
+- `ArrowLeft` / `ArrowRight` - Navigate between tabs (horizontal placement)
+- `ArrowUp` / `ArrowDown` - Navigate between tabs (vertical placement, `left` / `right`)
 - `Home` - Move to first tab
 - `End` - Move to last tab
 - `Enter` / `Space` - Activate focused tab

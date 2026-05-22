@@ -7,7 +7,7 @@ import type {
 } from 'react-stately';
 import type { CubeItemActionProps } from '../../actions/ItemAction';
 import type { CubeMenuProps } from '../../actions/Menu';
-import type { TabContextMenu, TabSize, TabType } from './types';
+import type { TabContextMenu, TabPlacement, TabSize, TabType } from './types';
 
 // =============================================================================
 // Context Value Interface
@@ -20,6 +20,8 @@ export interface TabsContextValue {
   type: TabType;
   /** Parent-level size default */
   size?: TabSize;
+  /** Where the tab bar sits relative to its panels */
+  placement: TabPlacement;
   /** Parent-level autoHideActions default */
   autoHideActions?: boolean;
   /** Parent-level isEditable default */
