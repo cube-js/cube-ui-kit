@@ -67,7 +67,7 @@ export interface QAProps {
 /** Props from CubeItemProps that don't apply to Tab */
 type OmittedItemProps =
   | 'id' // Tab has its own id as Key type
-  | 'type' // Tab has its own TabType
+  | 'type' // Type is decided at the Tabs level, never per-tab
   | 'size' // Tab has its own TabSize
   | 'theme' // Tabs have internal theming
   | 'shape' // Tabs have internal shape logic
@@ -100,8 +100,6 @@ export interface TabStyleProps extends Omit<CubeItemProps, OmittedItemProps> {
    * mapped to Item button sizes medium (32px) and xsmall (24px).
    */
   size?: TabSize;
-  /** Visual appearance type. */
-  type?: TabType;
   /** Whether to show actions only on hover. */
   autoHideActions?: boolean;
 }

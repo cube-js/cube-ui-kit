@@ -262,7 +262,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   };
   const effectiveContextMenu =
     tabData.contextMenu ?? parentContextMenu ?? false;
-  const effectiveType = tabData.type ?? type ?? 'default';
+  const effectiveType = type ?? 'default';
 
   const contextMenuEnabled =
     effectiveContextMenu === true || effectiveContextMenu === 'context-only';
@@ -543,7 +543,6 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     prerender: _prerender,
     keepMounted: _keepMounted,
     size: _size,
-    type: _type,
     actions: _actions,
     autoHideActions: _autoHideActions,
     isEditable: _isEditable,
