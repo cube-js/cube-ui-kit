@@ -286,8 +286,12 @@ export interface CubeTabProps extends TabStyleProps, PanelBehaviorProps {
    * Auto-injected from the React `key` prop (converted to string).
    */
   id?: string;
-  /** Content displayed in the tab button. */
-  title: ReactNode;
+  /**
+   * Content displayed in the tab button. Optional for icon-only tabs
+   * (`icon` / `rightIcon`). When omitted, provide an `aria-label` (and
+   * typically a `tooltip`) so the tab has an accessible name.
+   */
+  title?: ReactNode;
   /** Panel content rendered when tab is active. */
   children?: ReactNode;
   /** Disables the tab (cannot be selected). */

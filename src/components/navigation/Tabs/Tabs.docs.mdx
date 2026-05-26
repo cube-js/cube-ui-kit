@@ -193,6 +193,29 @@ Each `Tab` renders an [Item](/docs/content-item--docs) internally, so it inherit
 </Tabs>
 ```
 
+#### Icon-only tabs
+
+Omit `title` to render an icon-only tab. Always provide an `aria-label` (and typically a `tooltip`) so the tab remains accessible. Pairs well with `placement="left" | "right"` and `tabListPadding` for a compact vertical strip.
+
+<Story of={TabsStories.VerticalIconOnly} />
+
+```jsx
+<Tabs placement="left" tabListPadding="1x" defaultActiveKey="overview">
+  <Tab
+    key="overview"
+    icon={<DatabaseIcon />}
+    aria-label="Overview"
+    tooltip={{ title: 'Overview', placement: 'right' }}
+  />
+  <Tab
+    key="settings"
+    icon={<SettingsIcon />}
+    aria-label="Settings"
+    tooltip={{ title: 'Settings', placement: 'right' }}
+  />
+</Tabs>
+```
+
 #### Tab with constrained width
 
 The `width` style prop (inherited from Item) is useful for file-style tabs where titles may be long.
@@ -258,7 +281,7 @@ Inherits all props from `ItemButton` except `shape` (always sharp).
 
 In addition, Tab accepts these tab-specific props:
 
-- **`title`** `ReactNode` — Content displayed in the tab button (required)
+- **`title`** `ReactNode` — Content displayed in the tab button. Optional for icon-only tabs (`icon` / `rightIcon`); when omitted, supply an `aria-label` (and typically a `tooltip`) so the tab has an accessible name.
 - **`isDisabled`** `boolean` — Disables the tab
 - **`size`** `TabSize` — Override tab size for this tab
 - **`type`** `TabType` — Override tab type for this tab

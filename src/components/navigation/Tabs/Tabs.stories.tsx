@@ -1654,6 +1654,49 @@ export const VerticalFile: Story = {
 };
 
 /**
+ * Vertical icon-only tabs. `title` is omitted; each tab uses `icon` plus an
+ * `aria-label` and `tooltip` for accessibility. `tabListPadding="1x"` gives
+ * the strip a compact inset.
+ */
+export const VerticalIconOnly: Story = {
+  args: { placement: 'left', tabListPadding: '1x' },
+  render: (args) => (
+    <Layout height="40x">
+      <Tabs {...args} defaultActiveKey="overview">
+        <Tab
+          key="overview"
+          qa="Tab-overview"
+          icon={<DatabaseIcon />}
+          aria-label="Overview"
+          tooltip={{ title: 'Overview', placement: 'right' }}
+        />
+        <Tab
+          key="analytics"
+          qa="Tab-analytics"
+          icon={<FilterIcon />}
+          aria-label="Analytics"
+          tooltip={{ title: 'Analytics', placement: 'right' }}
+        />
+        <Tab
+          key="users"
+          qa="Tab-users"
+          icon={<UserIcon />}
+          aria-label="Users"
+          tooltip={{ title: 'Users', placement: 'right' }}
+        />
+        <Tab
+          key="settings"
+          qa="Tab-settings"
+          icon={<SettingsIcon />}
+          aria-label="Settings"
+          tooltip={{ title: 'Settings', placement: 'right' }}
+        />
+      </Tabs>
+    </Layout>
+  ),
+};
+
+/**
  * `radio` type in a vertical layout — the pill container wraps its tabs in a
  * column and each tab fills the width of the strip.
  */
