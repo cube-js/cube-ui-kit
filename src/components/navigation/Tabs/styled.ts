@@ -20,9 +20,11 @@ export const TabsElement = tasty({
     // Participate in parent flex layouts; allow shrinking on both axes so we
     // never force the parent into overflow. The Bar keeps `flex-shrink: 0`,
     // which makes the practical minimum of the wrapper along the main axis
-    // equal to the tablist's intrinsic size.
-    flexShrink: 1,
-    flexGrow: 1,
+    // equal to the tablist's intrinsic size. When there are no panels the
+    // wrapper has only the Bar inside it, so we lock its sizing to the Bar's
+    // intrinsic size — matching the pre-wrapper behavior of a panel-less Tabs.
+    flexShrink: { '': 0, 'has-panels': 1 },
+    flexGrow: { '': 0, 'has-panels': 1 },
     width: 'min 0',
     height: 'min 0',
     overflow: 'visible',
