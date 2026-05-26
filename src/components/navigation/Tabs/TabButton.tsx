@@ -249,8 +249,10 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   const isDeletable = !!onDelete;
   const isEditing = editingKey === item.key;
 
-  // Compute effective values - Tab-level overrides Tabs-level
-  const effectiveIsEditable = tabData.isEditable ?? parentIsEditable ?? false;
+  // Compute effective values - Tab-level overrides Tabs-level.
+  // Icon-only tabs (no `title`) have nothing to rename, so editing is disabled.
+  const effectiveIsEditable =
+    (tabData.isEditable ?? parentIsEditable ?? false) && tabData.title != null;
   const effectiveMenu =
     tabData.menu === null ? null : tabData.menu ?? parentMenu;
   const effectiveMenuTriggerProps: Partial<CubeItemActionProps> = {
