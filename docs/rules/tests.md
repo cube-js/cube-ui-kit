@@ -1,8 +1,3 @@
----
-globs: *.test.tsx,*.test.ts
-alwaysApply: false
----
-
 # Testing Rules for UI Kit
 
 Test runner: **Vitest** (globals enabled — `vi`, `describe`, `it`, `expect` etc. are available without imports).

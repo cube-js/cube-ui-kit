@@ -1,7 +1,4 @@
----
-description: When commiting the changes
-alwaysApply: false
----
+# Committing Changes
 
 Use Conventional Commits convention.
 If changes described in changesets are isolated (For example in a single component) then use syntax with `()` like `fix(ComboBox): what exactly is fixed` and so on.

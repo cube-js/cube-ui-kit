@@ -1,7 +1,3 @@
----
-description: When creating or updating the component documentation file *.docs.mdx
-alwaysApply: false
----
 # Component Documentation Guidelines
 
 ## Key Principles
@@ -221,3 +217,23 @@ For input components: "This component supports all [Field properties](/docs/gett
 - [ ] Form integration noted (input components)
 - [ ] Base properties linked, not listed (except `qa`)
 - [ ] Icons from `@tabler/icons-react` or `/src/icons`
+
+## Updating Existing Documentation
+
+When updating `{ComponentName}.docs.mdx`, also look at:
+
+- Implementation — `{ComponentName}.tsx`
+- Tests — `{ComponentName}.test.tsx`
+- Storybook — `{ComponentName}.stories.tsx`
+
+Align the documentation with the current implementation. Look for use cases in Storybook and code examples in tests.
+
+Don't include ALL stories in the documentation — only those that make sense to document. Some stories exist only to test visuals or basic interactions. Virtualization is a key performance feature, but since it is enabled by default it shouldn't appear as a documented story.
+
+Use story links in the following format:
+
+```
+- [FilterListBox](/docs/forms-filterlistbox--docs)
+```
+
+Where `/docs/` is the standard prefix, `forms` is the section, `filterlistbox` is the lower-cased component name, and `--docs` is the standard suffix.

@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+For verification, review, or simple edits: answer in 1 turn. Do not auto-search, do not read extra files, do not run multi-step loops. If context is needed, only use explicitly @-referenced files.

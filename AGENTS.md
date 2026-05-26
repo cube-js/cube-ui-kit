@@ -1,66 +1,31 @@
 # AI Agent Reference — Cube UI Kit
 
-This document is a comprehensive reference for AI agents maintaining or extending the `@cube-dev/ui-kit` codebase.
-
-> **Maintenance note:** The design system reference (tokens, presets, colors, modifiers, state syntax, form system, icons) lives in `src/stories/Usage.docs.mdx` and is rendered in Storybook under **Getting Started / Usage**. The component creation guide lives in `src/stories/CreateComponent.docs.mdx` (**Getting Started / Create Component**). Update these files whenever you introduce new components, change API surface, add/remove tokens or presets, or make other material changes to the design system.
-
-## Package Overview
+Entry point for AI agents working on `@cube-dev/ui-kit`.
 
 - **Package:** `@cube-dev/ui-kit`
-- **Repository:** [https://github.com/cube-js/cube-ui-kit](https://github.com/cube-js/cube-ui-kit)
-- **Storybook:** [https://cube-ui-kit.vercel.app/](https://cube-ui-kit.vercel.app/)
+- **Repository:** [cube-js/cube-ui-kit](https://github.com/cube-js/cube-ui-kit)
+- **Storybook:** [cube-ui-kit.vercel.app](https://cube-ui-kit.vercel.app/)
 - **Styling engine:** [Tasty](https://github.com/tenphi/tasty) (`@tenphi/tasty`)
+- **Palette engine:** [Glaze](https://github.com/tenphi/glaze) (`@tenphi/glaze`)
 
-## Tasty Documentation
+> **Maintenance note:** The design-system reference (tokens, presets, colors, modifiers, state syntax, form system, icons) lives in `src/stories/Usage.docs.mdx` (Storybook → **Getting Started / Usage**). The component creation guide lives in `src/stories/CreateComponent.docs.mdx` (**Getting Started / Create Component**). Update these whenever you add components, change the API surface, or modify tokens/presets.
 
-Tasty documentation is bundled with this package in `docs/tasty/` (symlinked to `node_modules/@tenphi/tasty/docs` during development; copied at pack time by `scripts/prepare-docs.mjs`).
+## Rules
 
+Project-specific working rules for AI agents. Not published with the package.
 
-Only the docs relevant to authoring UI Kit components are listed here. Internal-only references (`pipeline.md`, `injector.md`), positioning material (`comparison.md`, `adoption.md`), and modes the UI Kit does not ship (`tasty-static.md`, `ssr.md`) are intentionally omitted; consult `docs/tasty/` directly if you need them.
-
-| File                                                  | Description                                                                                                                                                       |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [getting-started.md](./docs/tasty/getting-started.md) | Setup, prerequisites, first component, configuration scaffolding, and editor tooling.                                                                             |
-| [methodology.md](./docs/tasty/methodology.md)         | Recommended patterns for Tasty components: root + sub-elements model, `styleProps` as the public API, `styles` vs `style` props, wrapping, and anti-patterns.     |
-| [design-system.md](./docs/tasty/design-system.md)     | Building a design-system layer with Tasty: token vocabularies, state aliases, recipes, primitive layout components, and compound components with sub-elements.   |
-| [react-api.md](./docs/tasty/react-api.md)             | React API: `tasty()` factory, component creation, extending, `styleProps`, variants, sub-elements, and hooks (`useStyles`, `useGlobalStyles`, `useRawCSS`, etc.). |
-| [dsl.md](./docs/tasty/dsl.md)                         | Style DSL: state maps, color tokens, built-in units, replace tokens, recipes, extending/replacing semantics, advanced states (`@media`, `@parent`, `@root`).      |
-| [styles.md](./docs/tasty/styles.md)                   | Reference for enhanced style properties: `fill`, `flow`, `preset`, `border`, `radius`, `padding`, `margin`, `gap`, `shadow`, `outline`, `scrollbar`, etc.         |
-| [configuration.md](./docs/tasty/configuration.md)     | `configure()` options: tokens, recipes, custom units, custom functions, style handlers, plugins, and TypeScript module augmentation.                              |
-| [debug.md](./docs/tasty/debug.md)                     | `tastyDebug` runtime API: inspect injected CSS, view cache metrics, chunk breakdowns, and troubleshoot style issues during development.                           |
-
-
-## Glaze Documentation
-
-Glaze documentation is bundled with this package in `docs/glaze/` (symlinked to `node_modules/@tenphi/glaze/docs` during development; copied at pack time by `scripts/prepare-docs.mjs`).
-
-`@tenphi/glaze` is the OKHSL-based palette engine that powers `src/tokens/palette.ts`. Refer to these docs when working on color tokens, theme generation, or contrast tuning.
-
-| File                                            | Description                                                                                                                              |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| [methodology.md](./docs/glaze/methodology.md)   | Practical guide for designing a Glaze palette: default-neutral + sibling-theme model, hue/saturation choices, state ramps, and recipes.  |
-| [api.md](./docs/glaze/api.md)                   | API reference: `glaze()`, `glaze.palette()`, `glaze.from()`, `glaze.fromHex()`, theme methods (`extend`, `colors`, `toTokens`), options. |
-| [migration.md](./docs/glaze/migration.md)       | Integration guide: exporting tokens, prefix mapping, migrating off legacy color systems without breaking dark-mode wiring.               |
-
+- [coding.md](docs/rules/coding.md) — development flow, code style, knowledge maintenance
+- [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring
+- [documentation.md](docs/rules/documentation.md) — `.docs.mdx` structure + update flow
+- [tests.md](docs/rules/tests.md) — Vitest + React Testing Library patterns
+- [commit-changes.md](docs/rules/commit-changes.md) — commit message convention
 
 ## Project Structure
 
 ```
 src/
-├── components/
-│   ├── actions/       # Button, Link, Menu, CommandMenu, Banner, ...
-│   ├── content/       # Card, Badge, Tag, Alert, Avatar, Skeleton, ...
-│   ├── fields/        # TextInput, Select, ComboBox, DatePicker, ...
-│   ├── form/          # Form, Field, FieldWrapper, SubmitButton, ResetButton
-│   ├── layout/        # Flex, Grid, Space, Flow, Panel, ResizablePanel, ...
-│   ├── navigation/    # Tabs
-│   ├── organisms/     # FileTabs, StatsCard
-│   ├── overlays/      # Dialog, AlertDialog, Modal, Tooltip, Toast, Notifications
-│   ├── status/        # Spin, LoadingAnimation
-│   ├── helpers/       # DisplayTransition, IconSwitch
-│   ├── portal/        # Portal
-│   ├── other/         # Calendar, CloudLogo
-│   └── shared/        # InvalidIcon, ValidIcon
+├── components/        # actions, content, fields, form, layout, navigation,
+│                      # organisms, overlays, status, helpers, portal, other, shared
 ├── icons/             # 130+ icon components
 ├── shared/            # Form types (FieldBaseProps, FormBaseProps, FieldCoreProps)
 ├── tokens/            # Design tokens (colors, typography, spacing, sizes, shadows, layout)
@@ -70,52 +35,45 @@ src/
 └── index.ts           # Public barrel export
 ```
 
-### Component File Layout
-
-Each component lives in `src/components/{category}/{ComponentName}/`:
-
-```
-ComponentName/
-├── ComponentName.tsx          # Implementation
-├── ComponentName.stories.tsx  # Storybook stories
-├── ComponentName.docs.mdx     # Documentation
-├── ComponentName.test.tsx     # Tests
-└── index.tsx                  # Re-exports
-```
+Each component lives in `src/components/{category}/{ComponentName}/` and ships `ComponentName.tsx`, `.stories.tsx`, `.docs.mdx`, `.test.tsx`, and `index.tsx`.
 
 ## Commands
 
+- `pnpm storybook` — start Storybook on port 6060
+- `pnpm build` — build library (`tsdown`, unbundled ESM)
+- `pnpm test` — run all tests (Vitest); add `-- ComponentName` to filter, `-u` to update snapshots
+- `pnpm fix` — lint + format (ESLint + Prettier)
+- `pnpm size` — check bundle size limits
+- `pnpm chromatic` — visual regression
+- `pnpm add-icons` — add new icons from tabler
+- `pnpm audit-docs` — audit component API ↔ docs ↔ argTypes sync. Options: `--component=Name`, `--fix-stories`, `--fix-docs`, `--json`, `--verbose`, `--all-props`. **Run after changing a component's API or adding a new component.**
+- `pnpm run update-tasty` / `pnpm run update-glaze` — bump and pin `@tenphi/tasty` or `@tenphi/glaze` to the latest version. Pass `--version=X.Y.Z` to pin a specific version.
 
-| Command                         | Description                                                                                                                                                                                                                                                                                                                                                                                   |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm storybook`                | Start Storybook on port 6060                                                                                                                                                                                                                                                                                                                                                                  |
-| `pnpm build`                    | Build library (tsdown, unbundled ESM)                                                                                                                                                                                                                                                                                                                                                         |
-| `pnpm test`                     | Run all tests (Vitest)                                                                                                                                                                                                                                                                                                                                                                        |
-| `pnpm test -- ComponentName`    | Run tests matching a pattern                                                                                                                                                                                                                                                                                                                                                                  |
-| `pnpm test -u -- ComponentName` | Update snapshots for a component                                                                                                                                                                                                                                                                                                                                                              |
-| `pnpm fix`                      | Lint + format (ESLint + Prettier)                                                                                                                                                                                                                                                                                                                                                             |
-| `pnpm size`                     | Check bundle size limits                                                                                                                                                                                                                                                                                                                                                                      |
-| `pnpm chromatic`                | Visual regression tests                                                                                                                                                                                                                                                                                                                                                                       |
-| `pnpm add-icons`                | Add new icons from tabler                                                                                                                                                                                                                                                                                                                                                                     |
-| `pnpm audit-docs`               | Audit component API ↔ docs ↔ argTypes sync. Uses TS Compiler API for full type resolution. Options: `--component=Name` (single component), `--fix-stories` (auto-add/remove argTypes in `.stories.tsx`), `--fix-docs` (auto-update `### Style Properties` sections in `.docs.mdx`), `--json`, `--verbose`, `--all-props`. **Run after changing a component's API or adding a new component.** |
+## Environment
 
+- Node `>=22.14.0`, pnpm `^10` (pinned to `pnpm@10.32.0`).
+- After `pnpm install`, run `pnpm rebuild esbuild` (postinstall is blocked in `pnpm-workspace.yaml`).
+- Husky hooks: `pre-commit` runs `pnpm lint-staged`; `pre-push` runs `pnpm test`. Skip only intentionally (`--no-verify` or `HUSKY=0`).
+- No external services or databases required for local development.
 
-## Environment & Local Development
+## Tasty Documentation
 
-- **Required runtimes:** Node.js `>=22.14.0` and pnpm `^10` (`packageManager` is pinned to `pnpm@10.32.0` in `package.json`).
-- **Install step for Storybook/Vite:** after `pnpm install`, run `pnpm rebuild esbuild` because `pnpm-workspace.yaml` blocks `esbuild` postinstall by default.
-- **Storybook (dev):** `pnpm storybook` (port `6060`).
-- **Storybook (static fallback):** if Vite dev mode overloads constrained environments, run `pnpm build-storybook`, then serve `storybook-static` (for example `npx serve storybook-static -l 6060`) when visual verification is needed.
-- **Tests:** `pnpm test` (single run) or `pnpm test-watch`.
-- **Linting:** `pnpm lint` (check) and `pnpm fix` (auto-fix).
-- **Build:** `pnpm build` (tsdown, unbundled ESM output in `dist/`).
-- **Git hooks:** Husky installs via `prepare`; `pre-commit` runs `pnpm lint-staged`, and `pre-push` runs `pnpm test`. Skip hooks only when explicitly intended (`--no-verify` or `HUSKY=0`).
-- **External dependencies:** no databases, Docker services, or external APIs are required for normal local development.
+Bundled in `docs/tasty/` (symlinked from `node_modules/@tenphi/tasty/docs` in dev, copied at pack time by `scripts/prepare-docs.mjs`). Consult these when authoring components or working with style props:
+
+- [`getting-started.md`](docs/tasty/getting-started.md), [`methodology.md`](docs/tasty/methodology.md), [`design-system.md`](docs/tasty/design-system.md), [`react-api.md`](docs/tasty/react-api.md), [`dsl.md`](docs/tasty/dsl.md), [`styles.md`](docs/tasty/styles.md), [`configuration.md`](docs/tasty/configuration.md), [`debug.md`](docs/tasty/debug.md)
+
+Internal-only references (`pipeline.md`, `injector.md`), positioning material (`comparison.md`, `adoption.md`), and modes the UI Kit does not ship (`tasty-static.md`, `ssr.md`) are intentionally omitted; read them directly in `docs/tasty/` if needed.
+
+## Glaze Documentation
+
+Bundled in `docs/glaze/` (same symlink/copy mechanism). Consult when working on color tokens, theme generation, or contrast tuning — Glaze powers `src/tokens/palette.ts`.
+
+- [`methodology.md`](docs/glaze/methodology.md), [`api.md`](docs/glaze/api.md), [`migration.md`](docs/glaze/migration.md)
 
 ## Stack
 
-- **Styling:** `@tenphi/tasty` — declarative token-aware CSS-in-JS
-- **Accessibility:** `react-aria` + `react-stately` — keyboard nav, focus management, ARIA
+- **Styling:** `@tenphi/tasty` (declarative token-aware CSS-in-JS)
+- **Accessibility:** `react-aria` + `react-stately`
 - **Icons:** `@tabler/icons-react` + custom icons in `src/icons/`
 - **Testing:** Vitest + React Testing Library + Chromatic
 - **Build:** tsdown (unbundled ESM, `es2022`)
@@ -124,46 +82,23 @@ ComponentName/
 
 ## Creating Components
 
-The full guide for creating components — including style props (`styleProps` vs `extractStyles`), `filterBaseProps`, modifiers, sub-elements, React Aria integration, variants, `useEvent`, and complete examples — is maintained in `**src/stories/CreateComponent.docs.mdx`** (rendered in Storybook under **Getting Started / Create Component**).
+See `src/stories/CreateComponent.docs.mdx` (Storybook → **Getting Started / Create Component**) for the full guide: `styleProps` vs `extractStyles`, `filterBaseProps`, modifiers, sub-elements, React Aria integration, variants, `useEvent`, and complete examples.
 
 ## Design System Reference
 
-The full reference for tokens, presets, colors, modifiers, state syntax, recipes, icons, and the form system is maintained in `**src/stories/Usage.docs.mdx`** (rendered in Storybook under **Getting Started / Usage**).
+See `src/stories/Usage.docs.mdx` (Storybook → **Getting Started / Usage**) for units, base/spacing/size/shadow/layout tokens, color tokens, typography presets, themes, recipes, modifiers, state syntax, icons, and the form system.
 
-Refer to that file for:
+## TypeScript & Exports
 
-- **Units** — `x`, `r`, `cr`, `bw`, `ow` and their CSS variable mappings
-- **Base tokens** — `$gap`, `$radius`, `$border-width`, transitions, etc.
-- **Spacing / Size / Shadow / Layout tokens**
-- **Color tokens** — base colors, semantic groups (primary, danger, success, warning, note), dark scale, purple scale, disabled colors
-- **Typography presets** — headings (`h1`–`h6`), text (`t1`–`t4m`), paragraph (`p1`–`p4`), markdown (`m1`–`m3`), captions (`c1`–`c2`), and special presets
-- **Themes** — `default`, `danger`, `special`, `success`, `warning`, `note`
-- **Recipes** — `reset`, `button`, `input`, `input-autofill`, `input-placeholder`, `input-search-cancel-button`
-- **Modifiers** — `disabled`, `hovered`, `focused`, `pressed`, `selected`, `checked`, `invalid`, etc.
-- **State syntax** — pseudo-classes, modifiers, media/container queries, boolean combinators
-- **Icons** — `<Icon>`, `wrapIcon()`, usage conventions
-- **Form system** — `<Form>`, `useForm`, validation rules, field integration
+- **Module augmentation:** `src/tasty-augment.d.ts` extends `@tenphi/tasty` with project-specific color tokens, preset names, and theme names.
+- **Props naming:** `Cube{ComponentName}Props`. Extend `BaseProps`/`AllBaseProps` from `@tenphi/tasty`; mix in style-prop interfaces (`ContainerStyleProps`, `OuterStyleProps`, `ColorStyleProps`, …) as needed. Form types live in `src/shared/`.
+- **Barrel exports:** every category has an `index.ts`; everything re-exports through `src/index.ts`.
+- **Compound components:** `Object.assign(Button, { Group: ButtonGroup, Split: ButtonSplit })`.
+- **Tasty re-exports:** only types are re-exported. Runtime imports (`tasty`, `extractStyles`, `filterBaseProps`) come directly from `@tenphi/tasty`.
 
 ## Testing
 
-- **Framework:** Vitest + React Testing Library
-- **Config:** `vitest.config.ts` + `src/test/setup.ts`
-- **Helpers:** `renderWithRoot` (wraps with `<Root>`), `renderWithForm` (wraps with `<Form>`)
-- **QA selectors:** use `qa` prop → `data-qa` attribute → `screen.getByTestId('name')`
-- **Setup:** `testIdAttribute` is configured to `data-qa`
-- **Tasty snapshots:** `toMatchTastySnapshot()` matcher captures markup + CSS together
-
-## TypeScript
-
-- **Module augmentation:** `src/tasty-augment.d.ts` extends `@tenphi/tasty` with project-specific color tokens, preset names, and theme names.
-- **Props naming:** `Cube{ComponentName}Props` for component prop interfaces.
-- **Base props:** Extend `BaseProps` or `AllBaseProps` from `@tenphi/tasty`.
-- **Style props:** Mix in `ContainerStyleProps`, `OuterStyleProps`, `ColorStyleProps`, etc.
-- **Form types:** `FieldBaseProps`, `FormBaseProps`, `FieldCoreProps` from `src/shared/`.
-
-## Export Patterns
-
-- **Barrel exports:** each category has `index.ts` files; everything re-exports through `src/index.ts`.
-- **Compound components:** `Object.assign(Button, { Group: ButtonGroup, Split: ButtonSplit })`.
-- **Tasty re-exports:** Only types are re-exported from `@tenphi/tasty`. Runtime imports (`tasty`, `extractStyles`, `filterBaseProps`) come directly from `@tenphi/tasty`.
-
+- **Helpers:** `renderWithRoot` (wraps with `<Root>`), `renderWithForm` (returns `{ formInstance, ...renderResult }`).
+- **QA selectors:** `qa` prop → `data-qa` attribute → `screen.getByTestId('name')` (`testIdAttribute` is configured to `data-qa`).
+- **Tasty snapshots:** `toMatchTastySnapshot()` captures markup + CSS together.
+- Patterns: see [docs/rules/tests.md](docs/rules/tests.md).

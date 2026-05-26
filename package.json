@@ -23,7 +23,10 @@
     "dist/**/*.map",
     "dist/README.md",
     "dist/CHANGELOG.md",
-    "docs"
+    "docs/components",
+    "docs/tasty",
+    "docs/glaze",
+    "docs/*.md"
   ],
   "scripts": {
     "start": "pnpm storybook",
@@ -51,7 +54,9 @@
     "postpack": "node scripts/cleanup-docs.mjs",
     "release": "pnpm build && changeset publish --provenance",
     "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix",
-    "audit-docs": "node scripts/audit-docs.mjs"
+    "audit-docs": "node scripts/audit-docs.mjs",
+    "update-tasty": "pnpm add @tenphi/tasty@${npm_config_version:-latest} --save-exact",
+    "update-glaze": "pnpm add @tenphi/glaze@${npm_config_version:-latest} --save-exact"
   },
   "keywords": [
     "uikit"

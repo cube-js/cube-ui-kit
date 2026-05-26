@@ -1,7 +1,3 @@
----
-alwaysApply: true
----
-
 # Development flow rules
 - Don't respond with "You're right!", "Great idea!" and so on. Get straight to the point.
 - **Stop and describe the reason**, if you can't closely implement the task, or need a different approach from what was asked, or noticed a critical mistake in the prompt.

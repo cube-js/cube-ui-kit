@@ -1,7 +1,5 @@
----
-description: When creating or updating storybook files and documentatino files *.stories.tsx, *.docs.mdx
-alwaysApply: false
----
+# Storybook & Docs Authoring
+
 ## Imports
 
 ### Stories Files (.stories.tsx)
