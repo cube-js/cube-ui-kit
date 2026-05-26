@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.140.1
+
+### Patch Changes
+
+- [#1184](https://github.com/cube-js/cube-ui-kit/pull/1184) [`c44ee3bb`](https://github.com/cube-js/cube-ui-kit/commit/c44ee3bb075d7b9ebbe8105cd3c5d005e2505bf8) Thanks [@tenphi](https://github.com/tenphi)! - `Tabs`: when there are no panels (no `Tab` content, no `Tabs.Panel` children, no `renderPanel`), the outer wrapper no longer grows or shrinks within its parent flex container — it now locks to the tab bar's intrinsic size, matching the pre-wrapper behavior of a panel-less `<Tabs>`. With panels, the wrapper still participates in parent flex layouts as before.
+
 ## 0.140.0
 
 ### Minor Changes
