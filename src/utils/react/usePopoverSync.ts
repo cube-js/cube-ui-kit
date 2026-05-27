@@ -52,6 +52,73 @@ interface PopoverDismissAncestorPayload {
   from: Element | null;
 }
 
+interface PopoverRegistryEntry {
+  getContainerEl: () => Element | null;
+  getTriggerEl: () => Element | null;
+}
+
+/**
+ * Module-level registry of currently open popovers. Lets us resolve the
+ * LOGICAL parent of an arbitrary element across portal boundaries.
+ *
+ * Popover content is portaled to a shared root (`document.body` by default —
+ * see `Overlay.tsx`), so a grandchild popover's trigger lives inside a
+ * sibling portal rather than physically inside its grandparent's container.
+ * A naive `container.contains(triggerEl)` check therefore misses the
+ * relationship and closes the grandparent — the bug that surfaces with 3+
+ * levels of `SubMenuTrigger` nesting.
+ *
+ * The registry stores closures over the host's refs so reads always see the
+ * latest `.current` value without forcing a re-register per render.
+ */
+const openPopovers = new Map<string, PopoverRegistryEntry>();
+
+/**
+ * Find the open popover whose container directly contains `target`. Returns
+ * `null` for elements that live outside every registered popover (e.g. a
+ * top-level trigger button rendered next to its overlay root).
+ */
+function findOwningPopover(
+  target: Element | null,
+): [string, PopoverRegistryEntry] | null {
+  if (!target) return null;
+  for (const entry of openPopovers) {
+    if (entry[1].getContainerEl()?.contains(target)) {
+      return entry;
+    }
+  }
+  return null;
+}
+
+/**
+ * Returns `true` when `target` is nested inside the overlay identified by
+ * `ancestorMenuId` — either as a direct DOM descendant of `ancestorContainer`
+ * or as a descendant of a chain of popovers whose triggers eventually land
+ * inside it. Used by `popover:open` peers to avoid closing themselves when a
+ * grand-child overlay opens through a portal.
+ */
+function isLogicalDescendantOf(
+  target: Element | null,
+  ancestorMenuId: string,
+  ancestorContainer: Element | null,
+): boolean {
+  if (ancestorContainer && target && ancestorContainer.contains(target)) {
+    return true;
+  }
+  let cur: Element | null = target;
+  const visited = new Set<string>();
+  while (cur) {
+    const owner = findOwningPopover(cur);
+    if (!owner) return false;
+    const [id, entry] = owner;
+    if (visited.has(id)) return false;
+    visited.add(id);
+    if (id === ancestorMenuId) return true;
+    cur = entry.getTriggerEl();
+  }
+  return false;
+}
+
 /**
  * Coordinates the "only one popover open at a time" invariant via the EventBus.
  *
@@ -115,11 +182,14 @@ export function usePopoverSync({
 
     const offOpen = on('popover:open', (data: PopoverOpenPayload) => {
       if (data.menuId === menuId || !isOpenRef.current) return;
-      const container = containerRefRef.current?.current;
-      const triggerEl = data.triggerEl;
-      // Nested-popover guard: if the peer's trigger lives inside our own
-      // overlay, treat the open as a child interaction and stay open.
-      if (container && triggerEl && container.contains(triggerEl)) return;
+      const container = containerRefRef.current?.current ?? null;
+      // Nested-popover guard: stay open when the opening peer's trigger is
+      // a LOGICAL descendant of our overlay. Direct DOM containment only
+      // covers the first level — for grand-child popovers the trigger lives
+      // in a sibling portal, so we walk the registered popover chain back
+      // up via each parent's trigger element. Without this, opening a
+      // third-level `SubMenuTrigger` would close every ancestor menu.
+      if (isLogicalDescendantOf(data.triggerEl, menuId, container)) return;
       onCloseRef.current();
     });
 
@@ -155,19 +225,39 @@ export function usePopoverSync({
   const wasOpenRef = useRef(false);
   useEffect(() => {
     if (!enabled) {
+      if (wasOpenRef.current) {
+        openPopovers.delete(menuId);
+      }
       wasOpenRef.current = false;
       return;
     }
     if (isOpen && !wasOpenRef.current) {
       wasOpenRef.current = true;
+      // Register BEFORE emitting so peers' listeners (deferred via the
+      // bus's `setTimeout(0)`) can already see us in the registry when
+      // they walk the logical chain.
+      openPopovers.set(menuId, {
+        getContainerEl: () => containerRefRef.current?.current ?? null,
+        getTriggerEl: () => triggerRefRef.current?.current ?? null,
+      });
       emit<PopoverOpenPayload>('popover:open', {
         menuId,
         triggerEl: triggerRefRef.current?.current ?? null,
       });
-    } else if (!isOpen) {
+    } else if (!isOpen && wasOpenRef.current) {
       wasOpenRef.current = false;
+      openPopovers.delete(menuId);
     }
   }, [isOpen, emit, menuId, enabled]);
+
+  // Final cleanup on unmount: covers the case where a host unmounts while
+  // still flagged open (e.g. a parent unmount tears down a child popover
+  // before its close transition runs).
+  useEffect(() => {
+    return () => {
+      openPopovers.delete(menuId);
+    };
+  }, [menuId]);
 }
 
 /**

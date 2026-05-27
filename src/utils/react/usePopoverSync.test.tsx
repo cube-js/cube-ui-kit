@@ -151,6 +151,88 @@ describe('usePopoverSync', () => {
     aContainer.remove();
   });
 
+  it('logical nesting across portals: opening a grandchild popover does not close the grandparent', async () => {
+    // Build the shape of 3 nested popovers as the Overlay portal would
+    // produce: each popover container is a sibling of the others (not a
+    // DOM descendant), but each popover's TRIGGER lives inside its
+    // parent's container. This mirrors the SubMenuTrigger story where
+    // popover content is portaled to `document.body`.
+    const aContainer = document.createElement('div');
+    const aTrigger = document.createElement('button');
+    const bContainer = document.createElement('div');
+    const bTrigger = document.createElement('button');
+    const cContainer = document.createElement('div');
+    const cTrigger = document.createElement('button');
+    // a's trigger lives outside any popover; a's container is portaled
+    // alongside it. b's trigger is rendered into a's container; b's
+    // container is portaled separately. Same for c relative to b.
+    document.body.append(aTrigger, aContainer, bContainer, cContainer);
+    aContainer.append(bTrigger);
+    bContainer.append(cTrigger);
+
+    const closeA = vi.fn();
+    const closeB = vi.fn();
+    const closeC = vi.fn();
+
+    const { rerender } = renderHook(
+      ({ a, b, c }: { a: boolean; b: boolean; c: boolean }) => {
+        const aTriggerRef = useRef<HTMLElement | null>(aTrigger);
+        const aContainerRef = useRef<HTMLElement | null>(aContainer);
+        const bTriggerRef = useRef<HTMLElement | null>(bTrigger);
+        const bContainerRef = useRef<HTMLElement | null>(bContainer);
+        const cTriggerRef = useRef<HTMLElement | null>(cTrigger);
+        const cContainerRef = useRef<HTMLElement | null>(cContainer);
+        usePopoverSync({
+          menuId: 'a',
+          isOpen: a,
+          onClose: closeA,
+          triggerRef: aTriggerRef,
+          containerRef: aContainerRef,
+        });
+        usePopoverSync({
+          menuId: 'b',
+          isOpen: b,
+          onClose: closeB,
+          triggerRef: bTriggerRef,
+          containerRef: bContainerRef,
+        });
+        usePopoverSync({
+          menuId: 'c',
+          isOpen: c,
+          onClose: closeC,
+          triggerRef: cTriggerRef,
+          containerRef: cContainerRef,
+        });
+      },
+      {
+        wrapper: HookWrapper,
+        initialProps: { a: false, b: false, c: false },
+      },
+    );
+
+    rerender({ a: true, b: false, c: false });
+    await flushBus();
+    rerender({ a: true, b: true, c: false });
+    await flushBus();
+    expect(closeA).not.toHaveBeenCalled();
+    expect(closeB).not.toHaveBeenCalled();
+
+    // Open c (the grandchild). Without logical-chain traversal, a closes
+    // here because c's trigger lives in b's container (sibling portal),
+    // not directly in a's container — which is the regression we are
+    // guarding against.
+    rerender({ a: true, b: true, c: true });
+    await flushBus();
+    expect(closeA).not.toHaveBeenCalled();
+    expect(closeB).not.toHaveBeenCalled();
+    expect(closeC).not.toHaveBeenCalled();
+
+    aTrigger.remove();
+    aContainer.remove();
+    bContainer.remove();
+    cContainer.remove();
+  });
+
   it('non-nested: peer whose trigger lives outside our containerRef closes us', async () => {
     const closeA = vi.fn();
     const closeB = vi.fn();

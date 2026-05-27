@@ -64,3 +64,11 @@ need `data-popover-keep`. Popover triggers wrapped by `MenuTrigger`,
   overlay content with its own `EventBusProvider`, which used to silently
   shadow the global `<Root>` bus and prevent cross-overlay events from
   reaching the host.
+- `usePopoverSync`'s nested-popover guard now walks the **logical**
+  popover chain via a module-level registry of open overlays, rather than
+  relying solely on a direct `container.contains(triggerEl)` DOM check.
+  Popover content is portaled to a shared overlay root, so a grandchild
+  popover's trigger lives in a sibling portal — not inside its
+  grandparent's DOM. Without the chain walk, opening a third+ level
+  `SubMenuTrigger` (or any equivalent nested popover) closed every
+  ancestor.
