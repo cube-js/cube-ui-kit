@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
 } from 'react';
 
@@ -96,18 +97,16 @@ export function EventBusProvider({ children }: EventBusProviderProps) {
   );
 
   // Always compute the local contextValue so hook order stays stable, then
-  // pick parent OR local. (`useMemo` keeps the local one stable for any
-  // descendants that DO end up using it.)
+  // pick parent OR local. `useMemo` keeps the local value referentially
+  // stable across renders — every consumer of `EventBusContext` (notably
+  // `useDismissParentPopover` inside every `Button` / `ItemButton`) would
+  // otherwise re-render on every render of this provider.
+  const localContextValue = useMemo<EventBusContextValue>(
+    () => ({ emit, emitSync, on, off }),
+    [emit, emitSync, on, off],
+  );
 
-  const localContextValue = useRef<EventBusContextValue>({
-    emit,
-    emitSync,
-    on,
-    off,
-  });
-  localContextValue.current = { emit, emitSync, on, off };
-
-  const contextValue = parentBus ?? localContextValue.current;
+  const contextValue = parentBus ?? localContextValue;
 
   return React.createElement(
     EventBusContext.Provider,
