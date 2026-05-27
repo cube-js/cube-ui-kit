@@ -145,15 +145,20 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
   const syncOverlayRef = useRef<HTMLElement | null>(null);
 
   // Only popover-type Dialogs participate in the "press inside dismisses
-  // me" behaviour: modals/trays/fullscreen Dialogs are persistent workspaces
-  // and buttons inside them should NOT auto-close them.
+  // me" / "peer popover opening dismisses me" behaviours: modals, trays,
+  // fullscreen and panel Dialogs are persistent workspaces and must not be
+  // yanked closed via the EventBus (which would bypass `isDismissable` and
+  // call `state.close()` directly). Non-popover types DO still EMIT
+  // `popover:open`, so opening a modal correctly dismisses peer popovers.
+  const isPopoverFlavored = type === 'popover';
   usePopoverSync({
     menuId: dialogSyncId,
     isOpen: state.isOpen,
     onClose: () => state.close(),
     triggerRef: syncTriggerRef,
     containerRef: syncOverlayRef,
-    dismissOnInnerButtonPress: type === 'popover',
+    dismissOnInnerButtonPress: isPopoverFlavored,
+    closeOnPeerOpen: isPopoverFlavored,
   });
 
   useEffect(() => {

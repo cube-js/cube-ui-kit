@@ -54,6 +54,13 @@ need `data-popover-keep`. Popover triggers wrapped by `MenuTrigger`,
   event. The `popover:dismiss-ancestor` EventBus event carries the
   originating DOM element so each popover host can do a `container.contains()`
   check before closing.
+- `usePopoverSync` gained a `closeOnPeerOpen` option (default `true`).
+  `DialogTrigger` passes `false` for modal/tray/fullscreen/panel types so
+  a peer popover opening (e.g. via `useDialogContainer` or
+  `useAnchoredMenu`) cannot bypass the dialog's `isDismissable` /
+  `onClose` handling and call `state.close()` directly. The host still
+  EMITS `popover:open`, so opening a modal correctly dismisses peer
+  popovers — only the listener side is gated.
 - `DialogTrigger` now applies `data-popover-trigger` to its child press
   responder **only when `type === 'popover'`**. This is the critical
   correctness piece for the original bug — when a `DialogTrigger type="modal"`

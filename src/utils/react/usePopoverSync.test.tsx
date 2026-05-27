@@ -280,6 +280,55 @@ describe('usePopoverSync', () => {
     bTrigger.remove();
   });
 
+  it('closeOnPeerOpen=false: peer popover opening does not close us, but our open still emits to peers (modal scope)', async () => {
+    const closeModal = vi.fn();
+    const closePopover = vi.fn();
+
+    const { rerender } = renderHook(
+      ({ modal, popover }: { modal: boolean; popover: boolean }) => {
+        // Mimic a modal Dialog: emits to dismiss peer popovers, but does NOT
+        // listen for peer popover opens (so it can't be yanked shut bypassing
+        // isDismissable when a popover opens programmatically while it's up).
+        usePopoverSync({
+          menuId: 'modal',
+          isOpen: modal,
+          onClose: closeModal,
+          dismissOnInnerButtonPress: false,
+          closeOnPeerOpen: false,
+        });
+        usePopoverSync({
+          menuId: 'popover',
+          isOpen: popover,
+          onClose: closePopover,
+        });
+      },
+      {
+        wrapper: HookWrapper,
+        initialProps: { modal: false, popover: true },
+      },
+    );
+
+    // Popover opens first.
+    await flushBus();
+    expect(closeModal).not.toHaveBeenCalled();
+    expect(closePopover).not.toHaveBeenCalled();
+
+    // Modal opens. Its emit must close the peer popover (modal "wins").
+    rerender({ modal: true, popover: true });
+    await flushBus();
+    expect(closePopover).toHaveBeenCalledTimes(1);
+    expect(closeModal).not.toHaveBeenCalled();
+
+    // Now the regression: while the modal is up, a peer popover opens
+    // programmatically. The modal must stay open — its onClose must NOT be
+    // called via the popover:open path (that would bypass isDismissable).
+    rerender({ modal: true, popover: false });
+    await flushBus();
+    rerender({ modal: true, popover: true });
+    await flushBus();
+    expect(closeModal).not.toHaveBeenCalled();
+  });
+
   it('enabled=false: no emit and no peer-close', async () => {
     const closeA = vi.fn();
     const closeB = vi.fn();

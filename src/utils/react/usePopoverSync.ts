@@ -40,6 +40,16 @@ export interface UsePopoverSyncOptions {
    * overlay and is effectively a no-op.
    */
   dismissOnInnerButtonPress?: boolean;
+  /**
+   * Whether this overlay closes when a peer popover opens. Defaults to `true`
+   * (popover semantics — only one popover open at a time). Set to `false` for
+   * modals/trays/fullscreen dialogs so a peer popover opening cannot bypass
+   * the dialog's own `isDismissable` / `onClose` handling and yank it shut.
+   *
+   * The host still EMITS `popover:open` regardless of this flag, so opening a
+   * modal/tray correctly dismisses any peer popover that was open before.
+   */
+  closeOnPeerOpen?: boolean;
 }
 
 interface PopoverOpenPayload {
@@ -150,6 +160,7 @@ export function usePopoverSync({
   triggerRef,
   containerRef,
   dismissOnInnerButtonPress = true,
+  closeOnPeerOpen = true,
 }: UsePopoverSyncOptions): void {
   const { emit, on } = useEventBus();
 
@@ -180,47 +191,52 @@ export function usePopoverSync({
   useEffect(() => {
     if (!enabled) return;
 
-    const offOpen = on('popover:open', (data: PopoverOpenPayload) => {
-      if (data.menuId === menuId || !isOpenRef.current) return;
-      const container = containerRefRef.current?.current ?? null;
-      // Nested-popover guard: stay open when the opening peer's trigger is
-      // a LOGICAL descendant of our overlay. Direct DOM containment only
-      // covers the first level — for grand-child popovers the trigger lives
-      // in a sibling portal, so we walk the registered popover chain back
-      // up via each parent's trigger element. Without this, opening a
-      // third-level `SubMenuTrigger` would close every ancestor menu.
-      if (isLogicalDescendantOf(data.triggerEl, menuId, container)) return;
-      onCloseRef.current();
-    });
+    // `popover:open` listener — gated on `closeOnPeerOpen`. Modals/trays opt
+    // out so a peer popover opening cannot bypass the dialog's
+    // `isDismissable` / `onClose` handling and call `state.close()` directly.
+    // Note: the EMIT side (lower in this hook) still fires regardless, so
+    // opening a modal still correctly dismisses peer popovers.
+    const offOpen = closeOnPeerOpen
+      ? on('popover:open', (data: PopoverOpenPayload) => {
+          if (data.menuId === menuId || !isOpenRef.current) return;
+          const container = containerRefRef.current?.current ?? null;
+          // Nested-popover guard: stay open when the opening peer's trigger is
+          // a LOGICAL descendant of our overlay. Direct DOM containment only
+          // covers the first level — for grand-child popovers the trigger lives
+          // in a sibling portal, so we walk the registered popover chain back
+          // up via each parent's trigger element. Without this, opening a
+          // third-level `SubMenuTrigger` would close every ancestor menu.
+          if (isLogicalDescendantOf(data.triggerEl, menuId, container)) return;
+          onCloseRef.current();
+        })
+      : null;
 
     // `popover:dismiss-ancestor` is emitted by `Button` / `ItemButton` (and any
     // consumer using `useDismissParentPopover`) after their `onPress` runs.
     // Only popover-type overlays subscribe; modals/trays opt out via
     // `dismissOnInnerButtonPress: false` so a Button inside a Dialog content
     // does NOT auto-close the Dialog.
-    if (!dismissOnInnerButtonPress) {
-      return offOpen;
-    }
-
-    const offDismiss = on(
-      'popover:dismiss-ancestor',
-      (data: PopoverDismissAncestorPayload) => {
-        if (!isOpenRef.current) return;
-        const container = containerRefRef.current?.current;
-        const from = data?.from;
-        // Require both a container and an originating element so we can do
-        // the contains-check. Hosts without `containerRef` (e.g.
-        // `use-anchored-menu`, `use-context-menu`) are silently no-op.
-        if (!container || !from) return;
-        if (container.contains(from)) onCloseRef.current();
-      },
-    );
+    const offDismiss = dismissOnInnerButtonPress
+      ? on(
+          'popover:dismiss-ancestor',
+          (data: PopoverDismissAncestorPayload) => {
+            if (!isOpenRef.current) return;
+            const container = containerRefRef.current?.current;
+            const from = data?.from;
+            // Require both a container and an originating element so we can do
+            // the contains-check. Hosts without `containerRef` (e.g.
+            // `use-anchored-menu`, `use-context-menu`) are silently no-op.
+            if (!container || !from) return;
+            if (container.contains(from)) onCloseRef.current();
+          },
+        )
+      : null;
 
     return () => {
-      offOpen();
-      offDismiss();
+      offOpen?.();
+      offDismiss?.();
     };
-  }, [on, menuId, enabled, dismissOnInnerButtonPress]);
+  }, [on, menuId, enabled, dismissOnInnerButtonPress, closeOnPeerOpen]);
 
   const wasOpenRef = useRef(false);
   useEffect(() => {
