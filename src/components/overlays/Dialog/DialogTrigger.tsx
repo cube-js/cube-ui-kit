@@ -1,7 +1,14 @@
 import { PressResponder } from '@react-aria/interactions';
 import { useMediaQuery } from '@react-spectrum/utils';
 import { Styles } from '@tenphi/tasty';
-import { Fragment, ReactElement, RefObject, useEffect, useRef } from 'react';
+import {
+  Fragment,
+  ReactElement,
+  RefObject,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import {
   OverlayTriggerProps,
   Placement,
@@ -11,7 +18,9 @@ import {
 } from 'react-aria';
 import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
 
+import { generateRandomId } from '../../../utils/random';
 import { useCombinedRefs } from '../../../utils/react/index';
+import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 
 import { DialogContext } from './context';
@@ -124,6 +133,24 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
 
   wasOpen.current = state.isOpen;
 
+  // Shared identity + refs for `usePopoverSync`. Allocating here (rather than
+  // inside the branch-specific sub-trees) keeps a single sync registration for
+  // the lifetime of the trigger, even when `type` flips between popover and
+  // modal at the mobile breakpoint. The refs are then threaded into the
+  // appropriate branch via `useCombinedRefs` so existing positioning /
+  // useOverlayTrigger hooks keep their original ref targets.
+  const dialogSyncId = useMemo(() => generateRandomId(), []);
+  const syncTriggerRef = useRef<HTMLElement | null>(null);
+  const syncOverlayRef = useRef<HTMLElement | null>(null);
+
+  usePopoverSync({
+    menuId: dialogSyncId,
+    isOpen: state.isOpen,
+    onClose: () => state.close(),
+    triggerRef: syncTriggerRef,
+    containerRef: syncOverlayRef,
+  });
+
   useEffect(() => {
     return () => {
       if (
@@ -158,6 +185,8 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         hideArrow={hideArrow}
         shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
+        syncTriggerRef={syncTriggerRef}
+        syncOverlayRef={syncOverlayRef}
         onClose={onClose}
       />
     );
@@ -171,6 +200,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
       case 'modal':
         return (
           <Modal
+            ref={syncOverlayRef}
             hideOnClose={hideOnClose}
             isOpen={state.isOpen}
             isDismissable={isDismissable}
@@ -188,6 +218,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
       case 'tray':
         return (
           <Tray
+            ref={syncOverlayRef}
             hideOnClose={hideOnClose}
             isOpen={state.isOpen}
             isKeyboardDismissDisabled={isKeyboardDismissDisabled}
@@ -208,6 +239,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
       trigger={trigger}
       overlay={renderOverlay()}
       hideOnClose={hideOnClose}
+      syncTriggerRef={syncTriggerRef}
       onClose={onClose}
     />
   );
@@ -226,11 +258,26 @@ function PopoverTrigger(allProps) {
     hideOnClose,
     shouldCloseOnInteractOutside,
     keepOpenOnScroll,
+    syncTriggerRef,
+    syncOverlayRef,
     ...props
   } = allProps;
 
   let triggerRef = useRef<HTMLButtonElement>(null);
   let overlayRef = useRef<HTMLDivElement>(null);
+
+  // Mirror the (effective) trigger and overlay nodes into the sync refs so
+  // `usePopoverSync` in the parent can perform its nested-popover check. When
+  // an external `targetRef` is provided we mirror that one instead, since the
+  // local triggerRef stays null in that case.
+  let combinedTriggerRef = useCombinedRefs<HTMLElement>(
+    syncTriggerRef,
+    targetRef ?? triggerRef,
+  );
+  let combinedOverlayRef = useCombinedRefs<HTMLElement>(
+    syncOverlayRef,
+    overlayRef,
+  );
 
   let {
     overlayProps: popoverProps,
@@ -263,12 +310,12 @@ function PopoverTrigger(allProps) {
 
   let triggerPropsWithRef = {
     ...triggerProps,
-    ref: targetRef ? undefined : triggerRef,
+    ref: targetRef ? undefined : combinedTriggerRef,
   };
 
   let overlay = (
     <Popover
-      ref={overlayRef}
+      ref={combinedOverlayRef}
       styles={styles}
       hideOnClose={hideOnClose}
       isOpen={state.isOpen}
@@ -298,7 +345,7 @@ function PopoverTrigger(allProps) {
 }
 
 function DialogTriggerBase(props: any) {
-  const ref = useCombinedRefs<HTMLElement>(props.ref);
+  const ref = useCombinedRefs<HTMLElement>(props.ref, props.syncTriggerRef);
   const wasOpenRef = useRef(false);
 
   let {

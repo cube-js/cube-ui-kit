@@ -81,6 +81,8 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     isOpen: state.isOpen,
     onClose: () => state.close(),
     enabled: !isDummy,
+    triggerRef: menuTriggerRef,
+    containerRef: menuPopoverRef,
   });
 
   // Restore focus manually when the menu closes

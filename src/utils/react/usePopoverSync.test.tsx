@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 
 import { act, renderHook } from '../../test';
 
@@ -97,6 +97,105 @@ describe('usePopoverSync', () => {
 
     expect(first).not.toHaveBeenCalled();
     expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  it('nested: peer whose trigger lives inside our containerRef does not close us', async () => {
+    const closeA = vi.fn();
+    const closeB = vi.fn();
+
+    // Build the DOM shape that the nesting guard reads. `bTrigger` is rendered
+    // inside `aContainer` to mimic a popover (B) opened from inside another
+    // popover's content (A).
+    const aContainer = document.createElement('div');
+    const aTrigger = document.createElement('button');
+    const bTrigger = document.createElement('button');
+    document.body.append(aContainer, aTrigger);
+    aContainer.append(bTrigger);
+
+    const { rerender } = renderHook(
+      ({ a, b }: { a: boolean; b: boolean }) => {
+        const aTriggerRef = useRef<HTMLElement | null>(aTrigger);
+        const aContainerRef = useRef<HTMLElement | null>(aContainer);
+        const bTriggerRef = useRef<HTMLElement | null>(bTrigger);
+        usePopoverSync({
+          menuId: 'a',
+          isOpen: a,
+          onClose: closeA,
+          triggerRef: aTriggerRef,
+          containerRef: aContainerRef,
+        });
+        usePopoverSync({
+          menuId: 'b',
+          isOpen: b,
+          onClose: closeB,
+          triggerRef: bTriggerRef,
+        });
+      },
+      {
+        wrapper: HookWrapper,
+        initialProps: { a: false, b: false },
+      },
+    );
+
+    rerender({ a: true, b: false });
+    await flushBus();
+    // Opening B: A's listener sees B's trigger inside `aContainer` and stays
+    // open. B opens normally and is unaffected (its own emit is ignored by
+    // identity check).
+    rerender({ a: true, b: true });
+    await flushBus();
+    expect(closeA).not.toHaveBeenCalled();
+    expect(closeB).not.toHaveBeenCalled();
+
+    aTrigger.remove();
+    aContainer.remove();
+  });
+
+  it('non-nested: peer whose trigger lives outside our containerRef closes us', async () => {
+    const closeA = vi.fn();
+    const closeB = vi.fn();
+
+    const aContainer = document.createElement('div');
+    const aTrigger = document.createElement('button');
+    const bTrigger = document.createElement('button');
+    // bTrigger is a sibling of aContainer — explicitly NOT nested.
+    document.body.append(aContainer, aTrigger, bTrigger);
+
+    const { rerender } = renderHook(
+      ({ a, b }: { a: boolean; b: boolean }) => {
+        const aTriggerRef = useRef<HTMLElement | null>(aTrigger);
+        const aContainerRef = useRef<HTMLElement | null>(aContainer);
+        const bTriggerRef = useRef<HTMLElement | null>(bTrigger);
+        usePopoverSync({
+          menuId: 'a',
+          isOpen: a,
+          onClose: closeA,
+          triggerRef: aTriggerRef,
+          containerRef: aContainerRef,
+        });
+        usePopoverSync({
+          menuId: 'b',
+          isOpen: b,
+          onClose: closeB,
+          triggerRef: bTriggerRef,
+        });
+      },
+      {
+        wrapper: HookWrapper,
+        initialProps: { a: false, b: false },
+      },
+    );
+
+    rerender({ a: true, b: false });
+    await flushBus();
+    rerender({ a: true, b: true });
+    await flushBus();
+    expect(closeA).toHaveBeenCalledTimes(1);
+    expect(closeB).not.toHaveBeenCalled();
+
+    aTrigger.remove();
+    aContainer.remove();
+    bTrigger.remove();
   });
 
   it('enabled=false: no emit and no peer-close', async () => {

@@ -83,10 +83,17 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   // Generate a unique ID for this menu instance
   const menuId = useMemo(() => generateRandomId(), []);
 
+  // `containerRef` is intentionally omitted: the underlying `MenuTrigger` is
+  // `isDummy`, so its own popover container ref isn't reachable from here.
+  // Passing `triggerRef` is enough to let peers (e.g. a `DialogTrigger`
+  // opened inside the menu's content) identify themselves as nested and stay
+  // open — the menu's own `MenuTrigger` already maintains its container ref
+  // via its non-dummy usage elsewhere; here the dummy proxies a real one.
   usePopoverSync({
     menuId,
     isOpen,
     onClose: () => setIsOpen(false),
+    triggerRef: anchorRef,
   });
 
   function setupCheck() {

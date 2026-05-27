@@ -29,8 +29,6 @@ import { useEvent } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
-import { generateRandomId } from '../../../utils/random';
-import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles } from '../../../utils/styles';
 import {
@@ -250,9 +248,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
-  // Generate a unique ID for this Picker instance
-  const pickerId = useMemo(() => generateRandomId(), []);
-
   // Warn if isCheckable is false in single selection mode
   useWarn(isCheckable === false && selectionMode === 'single', {
     key: ['picker-checkable-single-mode'],
@@ -466,11 +461,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     onOpenChange?.(isOpen);
   });
 
-  usePopoverSync({
-    menuId: pickerId,
-    isOpen: isPopoverOpen,
-    onClose: () => handleOpenChange(false),
-  });
+  // Popover sync is handled by the inner `DialogTrigger` (type="popover").
 
   // Keyboard handler for arrow keys to open popover
   const { keyboardProps } = useKeyboard({

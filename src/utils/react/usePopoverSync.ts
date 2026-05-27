@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { RefObject, useEffect, useRef } from 'react';
 
 import { useEventBus } from './useEventBus';
 
@@ -15,6 +15,26 @@ export interface UsePopoverSyncOptions {
    * `MenuTrigger`'s `isDummy`). Defaults to `true`.
    */
   enabled?: boolean;
+  /**
+   * Ref to the popover's trigger element. When provided, the element is
+   * included in the `popover:open` emit payload so peers can detect whether
+   * the new opener is nested inside their own overlay (and skip closing in
+   * that case). Optional — omitting it preserves the legacy "always close on
+   * peer open" behaviour.
+   */
+  triggerRef?: RefObject<HTMLElement | null>;
+  /**
+   * Ref to the overlay/container element that hosts this popover's content.
+   * When provided, the listener performs a DOM `contains()` check on incoming
+   * peer triggers: peers whose trigger lives inside this container are
+   * considered nested children and do NOT close us.
+   */
+  containerRef?: RefObject<HTMLElement | null>;
+}
+
+interface PopoverOpenPayload {
+  menuId: string;
+  triggerEl: Element | null;
 }
 
 /**
@@ -45,6 +65,8 @@ export function usePopoverSync({
   isOpen,
   onClose,
   enabled = true,
+  triggerRef,
+  containerRef,
 }: UsePopoverSyncOptions): void {
   const { emit, on } = useEventBus();
 
@@ -58,12 +80,30 @@ export function usePopoverSync({
     onCloseRef.current = onClose;
   }, [onClose]);
 
+  // Track the latest containerRef via a stable ref-of-refs so the listener
+  // never resubscribes when callers pass freshly-created ref wrappers across
+  // renders. Same pattern as `onCloseRef` above — without this the listener's
+  // effect would churn for any caller that doesn't memoize its refs.
+  const containerRefRef = useRef(containerRef);
+  useEffect(() => {
+    containerRefRef.current = containerRef;
+  }, [containerRef]);
+
+  const triggerRefRef = useRef(triggerRef);
+  useEffect(() => {
+    triggerRefRef.current = triggerRef;
+  }, [triggerRef]);
+
   useEffect(() => {
     if (!enabled) return;
-    return on('popover:open', (data: { menuId: string }) => {
-      if (data.menuId !== menuId && isOpenRef.current) {
-        onCloseRef.current();
-      }
+    return on('popover:open', (data: PopoverOpenPayload) => {
+      if (data.menuId === menuId || !isOpenRef.current) return;
+      const container = containerRefRef.current?.current;
+      const triggerEl = data.triggerEl;
+      // Nested-popover guard: if the peer's trigger lives inside our own
+      // overlay, treat the open as a child interaction and stay open.
+      if (container && triggerEl && container.contains(triggerEl)) return;
+      onCloseRef.current();
     });
   }, [on, menuId, enabled]);
 
@@ -75,7 +115,10 @@ export function usePopoverSync({
     }
     if (isOpen && !wasOpenRef.current) {
       wasOpenRef.current = true;
-      emit('popover:open', { menuId });
+      emit<PopoverOpenPayload>('popover:open', {
+        menuId,
+        triggerEl: triggerRefRef.current?.current ?? null,
+      });
     } else if (!isOpen) {
       wasOpenRef.current = false;
     }
