@@ -1,4 +1,4 @@
-import { useDOMRef } from '@react-spectrum/utils';
+import { useObjectRef } from '@react-aria/utils';
 import { BaseProps, Props, Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode } from 'react';
 import { useModal, useOverlay, usePreventScroll } from 'react-aria';
@@ -82,7 +82,7 @@ export interface CubeModalProps
 
 function Modal(props: CubeModalProps, ref) {
   let { qa, children, onClose, type, styles, ...otherProps } = props;
-  let domRef = useDOMRef(ref);
+  let domRef = useObjectRef(ref);
 
   let { overlayProps, underlayProps } = useOverlay({ ...props }, domRef);
 

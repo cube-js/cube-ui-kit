@@ -1,4 +1,4 @@
-import { useDOMRef } from '@react-spectrum/utils';
+import { useObjectRef } from '@react-aria/utils';
 import { BaseProps, Props, Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode } from 'react';
 import {
@@ -82,7 +82,7 @@ function Tray(props: CubeTrayProps, ref) {
     shouldCloseOnInteractOutside,
     ...otherProps
   } = props;
-  let domRef = useDOMRef(ref);
+  let domRef = useObjectRef(ref);
 
   let { overlayProps, underlayProps } = useOverlay(
     { ...props, isDismissable: true, shouldCloseOnInteractOutside },

@@ -1,4 +1,4 @@
-import { FocusableRef } from '@react-types/shared';
+import { FocusableRef, PressEvent } from '@react-types/shared';
 import {
   CONTAINER_STYLES,
   Mods,
@@ -14,10 +14,12 @@ import {
   ReactNode,
   RefObject,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { OverlayProps } from 'react-aria';
 
+import { useEvent } from '../../../_internal';
 import { useIsFirstRender } from '../../../_internal/hooks/use-is-first-render';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
@@ -52,7 +54,12 @@ import {
   WARNING_PRIMARY_STYLES,
 } from '../../../data/item-themes';
 import { LoadingIcon } from '../../../icons';
-import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
+import {
+  DynamicIcon,
+  mergeProps,
+  resolveIcon,
+  useDismissParentPopover,
+} from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import { DisplayTransition } from '../../helpers/DisplayTransition';
@@ -370,6 +377,7 @@ export const Button = forwardRef(function Button(
     download,
     tooltip = true,
     defaultTooltipPlacement = 'top',
+    onPress: userOnPress,
     ...props
   } = allProps;
 
@@ -382,8 +390,32 @@ export const Button = forwardRef(function Button(
   const isLoading = props.isLoading;
   const isSelected = props.isSelected;
 
+  // Default: pressing a Button inside an open popover closes that popover.
+  // Opt-outs (handled inline below):
+  //   - `data-popover-trigger` (auto, applied by MenuTrigger/DialogTrigger
+  //     type='popover' so triggers don't dismiss the popover they live in)
+  //   - `data-popover-keep` on self or any ancestor (manual opt-out for
+  //     toggles, custom inline editors, etc.)
+  // Modals/trays don't subscribe at all, so this is a no-op there.
+  const dismissParentPopover = useDismissParentPopover();
+  const buttonElementRef = useRef<HTMLElement | null>(null);
+
+  const wrappedOnPress = useEvent((e: PressEvent) => {
+    userOnPress?.(e);
+    const el = buttonElementRef.current;
+    if (!el) return;
+    if (el.hasAttribute('data-popover-trigger')) return;
+    if (el.closest('[data-popover-keep]')) return;
+    dismissParentPopover(el);
+  });
+
   const { actionProps, isPressed } = useAction(
-    { ...allProps, isDisabled, ...(label ? { label } : {}) },
+    {
+      ...allProps,
+      isDisabled,
+      onPress: wrappedOnPress,
+      ...(label ? { label } : {}),
+    },
     ref,
   );
 
@@ -535,6 +567,9 @@ export const Button = forwardRef(function Button(
       if (tooltipRef) {
         (tooltipRef as any).current = element;
       }
+      // Track the rendered DOM node so the dismiss wrapper around `onPress`
+      // can read it synchronously without coupling to `useAction`'s ref shape.
+      buttonElementRef.current = element;
     };
 
     // Determine if size is custom (number or unrecognized string)

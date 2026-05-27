@@ -19,7 +19,7 @@ import {
 import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
 
 import { generateRandomId } from '../../../utils/random';
-import { useCombinedRefs } from '../../../utils/react/index';
+import { useCombinedRefs, useLayoutEffect } from '../../../utils/react/index';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 
@@ -137,18 +137,23 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
   // inside the branch-specific sub-trees) keeps a single sync registration for
   // the lifetime of the trigger, even when `type` flips between popover and
   // modal at the mobile breakpoint. The refs are then threaded into the
-  // appropriate branch via `useCombinedRefs` so existing positioning /
-  // useOverlayTrigger hooks keep their original ref targets.
+  // appropriate branch so existing positioning / useOverlayTrigger hooks keep
+  // their original ref targets and `usePopoverSync`'s `contains()` check has a
+  // real DOM node to query.
   const dialogSyncId = useMemo(() => generateRandomId(), []);
   const syncTriggerRef = useRef<HTMLElement | null>(null);
   const syncOverlayRef = useRef<HTMLElement | null>(null);
 
+  // Only popover-type Dialogs participate in the "press inside dismisses
+  // me" behaviour: modals/trays/fullscreen Dialogs are persistent workspaces
+  // and buttons inside them should NOT auto-close them.
   usePopoverSync({
     menuId: dialogSyncId,
     isOpen: state.isOpen,
     onClose: () => state.close(),
     triggerRef: syncTriggerRef,
     containerRef: syncOverlayRef,
+    dismissOnInnerButtonPress: type === 'popover',
   });
 
   useEffect(() => {
@@ -187,6 +192,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
         shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
         syncTriggerRef={syncTriggerRef}
         syncOverlayRef={syncOverlayRef}
+        triggerType={type}
         onClose={onClose}
       />
     );
@@ -260,24 +266,35 @@ function PopoverTrigger(allProps) {
     keepOpenOnScroll,
     syncTriggerRef,
     syncOverlayRef,
+    triggerType,
     ...props
   } = allProps;
 
   let triggerRef = useRef<HTMLButtonElement>(null);
   let overlayRef = useRef<HTMLDivElement>(null);
 
-  // Mirror the (effective) trigger and overlay nodes into the sync refs so
-  // `usePopoverSync` in the parent can perform its nested-popover check. When
-  // an external `targetRef` is provided we mirror that one instead, since the
-  // local triggerRef stays null in that case.
-  let combinedTriggerRef = useCombinedRefs<HTMLElement>(
-    syncTriggerRef,
-    targetRef ?? triggerRef,
-  );
-  let combinedOverlayRef = useCombinedRefs<HTMLElement>(
-    syncOverlayRef,
-    overlayRef,
-  );
+  // Mirror the trigger/overlay DOM nodes into the parent-owned sync refs.
+  //
+  // We deliberately do NOT use `useCombinedRefs` here: that hook returns a
+  // brand new internal ref and propagates to the passed refs via a regular
+  // `useEffect` (post-commit). `useOverlayPosition` below reads
+  // `triggerRef.current` in its own layout effect during the SAME commit, so
+  // if `triggerRef` only receives the DOM node via a delayed effect, the
+  // first measurement sees `null` and the popover positions at the document
+  // origin until something forces a re-measure.
+  //
+  // Keeping `triggerRef`/`overlayRef` as the direct React refs preserves
+  // synchronous assignment for `useOverlayPosition`. The sync refs are only
+  // ever read inside `popover:open` handlers, which fire via setTimeout(0),
+  // so a layout-effect mirror is more than fast enough.
+  useLayoutEffect(() => {
+    if (syncTriggerRef) {
+      syncTriggerRef.current = targetRef?.current ?? triggerRef.current ?? null;
+    }
+    if (syncOverlayRef) {
+      syncOverlayRef.current = overlayRef.current ?? null;
+    }
+  });
 
   let {
     overlayProps: popoverProps,
@@ -310,12 +327,12 @@ function PopoverTrigger(allProps) {
 
   let triggerPropsWithRef = {
     ...triggerProps,
-    ref: targetRef ? undefined : combinedTriggerRef,
+    ref: targetRef ? undefined : triggerRef,
   };
 
   let overlay = (
     <Popover
-      ref={combinedOverlayRef}
+      ref={overlayRef}
       styles={styles}
       hideOnClose={hideOnClose}
       isOpen={state.isOpen}
@@ -345,8 +362,18 @@ function PopoverTrigger(allProps) {
 }
 
 function DialogTriggerBase(props: any) {
-  const ref = useCombinedRefs<HTMLElement>(props.ref, props.syncTriggerRef);
+  const ref = useCombinedRefs<HTMLElement>(props.ref);
   const wasOpenRef = useRef(false);
+
+  // Mirror the press-responder DOM node into the parent's sync trigger ref.
+  // Done via `useLayoutEffect` rather than threading through `useCombinedRefs`
+  // for consistency with `PopoverTrigger` (see comment there) — keeps the
+  // sync-ref population deterministic regardless of branch.
+  useLayoutEffect(() => {
+    if (props.syncTriggerRef) {
+      props.syncTriggerRef.current = ref.current ?? null;
+    }
+  });
 
   let {
     type,
@@ -377,11 +404,21 @@ function DialogTriggerBase(props: any) {
     }
   }, [state.isOpen]);
 
+  // Mark popover-type DialogTrigger children with `data-popover-trigger` so
+  // `Button` / `ItemButton`'s default dismiss-on-press behaviour treats them
+  // as popover triggers (skips the dismiss). Modal/tray/fullscreen children
+  // intentionally stay UNMARKED — when a modal-type DialogTrigger lives
+  // inside a popover footer, pressing it should dismiss the parent popover
+  // (matching the "modal takes over" native UX).
+  const triggerExtraProps =
+    type === 'popover' ? { 'data-popover-trigger': '' } : {};
+
   return (
     <Fragment>
       <PressResponder
         ref={ref}
         {...triggerProps}
+        {...triggerExtraProps}
         isPressed={
           state.isOpen &&
           type !== 'modal' &&

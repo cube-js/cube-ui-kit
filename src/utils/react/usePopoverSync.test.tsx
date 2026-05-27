@@ -3,7 +3,7 @@ import { ReactNode, useEffect, useRef } from 'react';
 import { act, renderHook } from '../../test';
 
 import { EventBusProvider, useEventBus } from './useEventBus';
-import { usePopoverSync } from './usePopoverSync';
+import { useDismissParentPopover, usePopoverSync } from './usePopoverSync';
 
 const HookWrapper = ({ children }: { children: ReactNode }) => (
   <EventBusProvider>{children}</EventBusProvider>
@@ -228,5 +228,171 @@ describe('usePopoverSync', () => {
     rerender({ a: true, b: true });
     await flushBus();
     expect(closeA).not.toHaveBeenCalled();
+  });
+
+  describe('popover:dismiss-ancestor', () => {
+    it('closes the popover when the dispatching element is inside its containerRef', async () => {
+      const closeA = vi.fn();
+
+      const aContainer = document.createElement('div');
+      const aTrigger = document.createElement('button');
+      const innerButton = document.createElement('button');
+      document.body.append(aContainer, aTrigger);
+      aContainer.append(innerButton);
+
+      const { result } = renderHook(
+        () => {
+          const aTriggerRef = useRef<HTMLElement | null>(aTrigger);
+          const aContainerRef = useRef<HTMLElement | null>(aContainer);
+          usePopoverSync({
+            menuId: 'a',
+            isOpen: true,
+            onClose: closeA,
+            triggerRef: aTriggerRef,
+            containerRef: aContainerRef,
+          });
+          return useDismissParentPopover();
+        },
+        { wrapper: HookWrapper },
+      );
+
+      act(() => {
+        result.current(innerButton);
+      });
+      await flushBus();
+      expect(closeA).toHaveBeenCalledTimes(1);
+
+      aTrigger.remove();
+      aContainer.remove();
+    });
+
+    it('does NOT close the popover when the dispatching element is outside its containerRef', async () => {
+      const closeA = vi.fn();
+
+      const aContainer = document.createElement('div');
+      const aTrigger = document.createElement('button');
+      const outerButton = document.createElement('button');
+      document.body.append(aContainer, aTrigger, outerButton);
+
+      const { result } = renderHook(
+        () => {
+          const aTriggerRef = useRef<HTMLElement | null>(aTrigger);
+          const aContainerRef = useRef<HTMLElement | null>(aContainer);
+          usePopoverSync({
+            menuId: 'a',
+            isOpen: true,
+            onClose: closeA,
+            triggerRef: aTriggerRef,
+            containerRef: aContainerRef,
+          });
+          return useDismissParentPopover();
+        },
+        { wrapper: HookWrapper },
+      );
+
+      act(() => {
+        result.current(outerButton);
+      });
+      await flushBus();
+      expect(closeA).not.toHaveBeenCalled();
+
+      aTrigger.remove();
+      aContainer.remove();
+      outerButton.remove();
+    });
+
+    it('does NOT close when no containerRef is set (host has no way to compute containment)', async () => {
+      const closeA = vi.fn();
+      const somewhere = document.createElement('button');
+      document.body.append(somewhere);
+
+      const { result } = renderHook(
+        () => {
+          usePopoverSync({ menuId: 'a', isOpen: true, onClose: closeA });
+          return useDismissParentPopover();
+        },
+        { wrapper: HookWrapper },
+      );
+
+      act(() => {
+        result.current(somewhere);
+      });
+      await flushBus();
+      expect(closeA).not.toHaveBeenCalled();
+
+      somewhere.remove();
+    });
+
+    it('does NOT close when isOpen=false', async () => {
+      const closeA = vi.fn();
+
+      const aContainer = document.createElement('div');
+      const innerButton = document.createElement('button');
+      document.body.append(aContainer);
+      aContainer.append(innerButton);
+
+      const { result } = renderHook(
+        () => {
+          const aContainerRef = useRef<HTMLElement | null>(aContainer);
+          usePopoverSync({
+            menuId: 'a',
+            isOpen: false,
+            onClose: closeA,
+            containerRef: aContainerRef,
+          });
+          return useDismissParentPopover();
+        },
+        { wrapper: HookWrapper },
+      );
+
+      act(() => {
+        result.current(innerButton);
+      });
+      await flushBus();
+      expect(closeA).not.toHaveBeenCalled();
+
+      aContainer.remove();
+    });
+
+    it('dismissOnInnerButtonPress=false: never closes regardless of containment (modal scope)', async () => {
+      const closeA = vi.fn();
+
+      const aContainer = document.createElement('div');
+      const innerButton = document.createElement('button');
+      document.body.append(aContainer);
+      aContainer.append(innerButton);
+
+      const { result } = renderHook(
+        () => {
+          const aContainerRef = useRef<HTMLElement | null>(aContainer);
+          usePopoverSync({
+            menuId: 'a',
+            isOpen: true,
+            onClose: closeA,
+            containerRef: aContainerRef,
+            dismissOnInnerButtonPress: false,
+          });
+          return useDismissParentPopover();
+        },
+        { wrapper: HookWrapper },
+      );
+
+      act(() => {
+        result.current(innerButton);
+      });
+      await flushBus();
+      expect(closeA).not.toHaveBeenCalled();
+
+      aContainer.remove();
+    });
+
+    it('useDismissParentPopover outside EventBusProvider is a no-op (does not throw)', () => {
+      const { result } = renderHook(() => useDismissParentPopover());
+      // No EventBusProvider in the wrapper; calling the dispatcher should
+      // gracefully degrade rather than crashing the consumer.
+      expect(() =>
+        result.current(document.createElement('button')),
+      ).not.toThrow();
+    });
   });
 });

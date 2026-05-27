@@ -29,6 +29,8 @@ import { baseProps } from '../../../stories/lists/baseProps';
 import { Block } from '../../Block';
 import { Alert } from '../../content/Alert';
 import { Card } from '../../content/Card/Card';
+import { Content } from '../../content/Content';
+import { Header } from '../../content/Header';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
@@ -39,7 +41,12 @@ import { Flex } from '../../layout/Flex';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { AlertDialog } from '../../overlays/AlertDialog';
-import { DialogContainer } from '../../overlays/Dialog';
+import {
+  Dialog,
+  DialogContainer,
+  DialogTrigger,
+  useDialogContainer,
+} from '../../overlays/Dialog';
 import { Button } from '../Button';
 import { ItemAction } from '../ItemAction';
 import { useAnchoredMenu } from '../use-anchored-menu';
@@ -1914,6 +1921,24 @@ export const ComprehensivePopoverSynchronization = () => {
     { onAction: handleAction },
   );
 
+  const FooterModalDialog = () => (
+    <Dialog>
+      <Header>
+        <Title>Footer Modal Dialog</Title>
+      </Header>
+      <Content>
+        <Paragraph>
+          This modal dialog is opened from the FilterPicker footer via
+          useDialogContainer. Opening it closes the FilterPicker and any other
+          open popover.
+        </Paragraph>
+      </Content>
+    </Dialog>
+  );
+
+  const { open: openFooterModal, rendered: footerModalRendered } =
+    useDialogContainer(FooterModalDialog, { type: 'modal' });
+
   const selectOptions = [
     { value: 'option1', label: 'Option 1' },
     { value: 'option2', label: 'Option 2' },
@@ -1942,7 +1967,12 @@ export const ComprehensivePopoverSynchronization = () => {
       </Title>
       <Paragraph preset="t4" color="#dark-03" margin="0 0 4x 0">
         Only one popover can be open at a time. Opening any trigger
-        automatically closes others.
+        automatically closes others. By default, pressing a Button or ItemButton
+        inside an open popover dismisses the popover (modals and other Dialogs
+        are unaffected). Use <code>data-popover-keep</code> on the button (or
+        any ancestor) to opt out — e.g. for toggles inside the popover footer.
+        Popover triggers wrapped by MenuTrigger or DialogTrigger
+        (type=&quot;popover&quot;) auto-skip the dismiss.
       </Paragraph>
 
       <Flex gap="2x" placeItems="start">
@@ -1996,16 +2026,87 @@ export const ComprehensivePopoverSynchronization = () => {
           {(item) => <ComboBox.Item key={item.id}>{item.name}</ComboBox.Item>}
         </ComboBox>
 
-        {/* FilterPicker */}
+        {/* FilterPicker - demonstrates the three canonical footer button cases */}
+        {footerModalRendered}
         <FilterPicker
           placeholder="FilterPicker"
           items={filterPickerOptions}
           size="small"
+          footer={
+            <Flex gap="1x">
+              {/* Case 1: popover trigger - auto-skips dismiss via
+                  data-popover-trigger (DialogTrigger type="popover" sets it).
+                  Pressing keeps the FilterPicker open as a nested popover. */}
+              <DialogTrigger type="popover" placement="bottom start">
+                <Button size="small">Dialog (popover)</Button>
+                <Dialog>
+                  <Header>
+                    <Title>Footer Popover Dialog</Title>
+                  </Header>
+                  <Content>
+                    <Paragraph>
+                      Nested popover. The parent FilterPicker stays open because
+                      DialogTrigger marks this button as a popover trigger.
+                    </Paragraph>
+                  </Content>
+                </Dialog>
+              </DialogTrigger>
+
+              {/* Case 2: plain action - closes the FilterPicker by default
+                  while the hoisted modal mounts (EventBus defers via
+                  setTimeout(0), so onPress flushes first). */}
+              <Button size="small" onPress={() => openFooterModal({})}>
+                Dialog (modal)
+              </Button>
+
+              {/* Case 3: toggle - opts out of the auto-dismiss with
+                  data-popover-keep so multiple presses are possible without
+                  reopening the FilterPicker. */}
+              <Button
+                data-popover-keep
+                size="small"
+                onPress={() => console.log('Toggle pressed (popover stays)')}
+              >
+                Toggle (keeps popover)
+              </Button>
+            </Flex>
+          }
         >
           {(item) => (
             <FilterPicker.Item key={item.id}>{item.name}</FilterPicker.Item>
           )}
         </FilterPicker>
+
+        {/* DialogTrigger (popover) */}
+        <DialogTrigger type="popover" placement="bottom start">
+          <Button size="small">DialogTrigger (popover)</Button>
+          <Dialog>
+            <Header>
+              <Title>Popover Dialog</Title>
+            </Header>
+            <Content>
+              <Paragraph>
+                Opening this dialog closes any other open popover, and opening
+                another popover closes this dialog.
+              </Paragraph>
+            </Content>
+          </Dialog>
+        </DialogTrigger>
+
+        {/* DialogTrigger (modal) */}
+        <DialogTrigger type="modal">
+          <Button size="small">DialogTrigger (modal)</Button>
+          <Dialog>
+            <Header>
+              <Title>Modal Dialog</Title>
+            </Header>
+            <Content>
+              <Paragraph>
+                Opening this modal dialog closes any other open popover.
+              </Paragraph>
+            </Content>
+          </Dialog>
+        </DialogTrigger>
       </Flex>
     </Flow>
   );

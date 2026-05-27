@@ -1,6 +1,5 @@
-import { useSyncRef } from '@react-aria/utils';
-import { useDOMRef } from '@react-spectrum/utils';
-import { DOMRef, FocusStrategy, ItemProps } from '@react-types/shared';
+import { useObjectRef, useSyncRef } from '@react-aria/utils';
+import { FocusStrategy, ItemProps } from '@react-types/shared';
 import {
   BasePropsWithoutChildren,
   CONTAINER_STYLES,
@@ -8,7 +7,7 @@ import {
   filterBaseProps,
   Styles,
 } from '@tenphi/tasty';
-import React, { ReactElement, ReactNode, useMemo } from 'react';
+import React, { ReactElement, ReactNode, Ref, useMemo } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
 import { Section as BaseSection, useTreeState } from 'react-stately';
 
@@ -72,7 +71,7 @@ export interface CubeMenuProps<T>
 
 function Menu<T extends object>(
   props: CubeMenuProps<T>,
-  ref: DOMRef<HTMLUListElement>,
+  ref: Ref<HTMLUListElement>,
 ) {
   const {
     header,
@@ -91,7 +90,7 @@ function Menu<T extends object>(
     onSelectionChange,
     ...rest
   } = props;
-  const domRef = useDOMRef(ref);
+  const domRef = useObjectRef(ref);
   const contextProps = useMenuContext();
 
   // Convert string[] to Set<Key> for React Aria compatibility
@@ -150,9 +149,9 @@ function Menu<T extends object>(
     };
   }, [hasSections]);
 
-  // Sync the ref stored in the context object with the DOM ref returned by useDOMRef.
-  // The helper from @react-aria/utils expects the context object as the first argument
-  // to keep it up-to-date, and a ref object as the second.
+  // Sync the ref stored in the context object with the menu's DOM ref.
+  // `useSyncRef` from @react-aria/utils expects the context object as the
+  // first argument to keep it up-to-date, and a ref object as the second.
   useSyncRef(contextProps, domRef);
 
   const renderedItems = useMemo(() => {

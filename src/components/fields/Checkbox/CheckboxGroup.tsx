@@ -1,4 +1,4 @@
-import { useDOMRef } from '@react-spectrum/utils';
+import { useObjectRef } from '@react-aria/utils';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -86,7 +86,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
     form,
     ...otherProps
   } = props;
-  let domRef = useDOMRef(ref);
+  let domRef = useObjectRef(ref);
 
   let styles = extractStyles(otherProps, CONTAINER_STYLES);
 

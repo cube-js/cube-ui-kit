@@ -16,7 +16,7 @@ export interface EventBusContextValue {
   off: <T = any>(event: string, listener: EventBusListener<T>) => void;
 }
 
-const EventBusContext = createContext<EventBusContextValue | null>(null);
+export const EventBusContext = createContext<EventBusContextValue | null>(null);
 
 export interface EventBusProviderProps {
   children: ReactNode;
@@ -37,6 +37,16 @@ export interface EventBusProviderProps {
  * ```
  */
 export function EventBusProvider({ children }: EventBusProviderProps) {
+  // If we're already inside a parent EventBusProvider (e.g. the global Root
+  // one), DO NOT create a fresh bus — that would isolate listeners and
+  // emitters across the boundary. This matters because overlays (Popover,
+  // Modal, Tray) re-wrap their content with our `Provider` from
+  // `provider.tsx`, which transparently nests an EventBusProvider. Cross-
+  // overlay events such as `popover:dismiss-ancestor` (a Button inside a
+  // popover footer dismissing the popover host) only work when both sides
+  // share the same bus.
+  const parentBus = useContext(EventBusContext);
+
   const listeners = useRef<Record<string, EventBusListener[]>>({});
 
   const off = useCallback(
@@ -61,12 +71,14 @@ export function EventBusProvider({ children }: EventBusProviderProps) {
     }
   }, []);
 
-  const emit = useCallback(<T = any>(event: string, data?: T) => {
-    // Use setTimeout to ensure async emission after current render cycle
-    setTimeout(() => {
-      emitSync(event, data);
-    }, 0);
-  }, []);
+  const emit = useCallback(
+    <T = any>(event: string, data?: T) => {
+      setTimeout(() => {
+        emitSync(event, data);
+      }, 0);
+    },
+    [emitSync],
+  );
 
   const on = useCallback(
     <T = any>(event: string, listener: EventBusListener<T>) => {
@@ -83,12 +95,19 @@ export function EventBusProvider({ children }: EventBusProviderProps) {
     [off],
   );
 
-  const contextValue: EventBusContextValue = {
+  // Always compute the local contextValue so hook order stays stable, then
+  // pick parent OR local. (`useMemo` keeps the local one stable for any
+  // descendants that DO end up using it.)
+
+  const localContextValue = useRef<EventBusContextValue>({
     emit,
     emitSync,
     on,
     off,
-  };
+  });
+  localContextValue.current = { emit, emitSync, on, off };
+
+  const contextValue = parentBus ?? localContextValue.current;
 
   return React.createElement(
     EventBusContext.Provider,

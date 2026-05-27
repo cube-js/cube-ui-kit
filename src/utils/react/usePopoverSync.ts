@@ -1,6 +1,6 @@
-import { RefObject, useEffect, useRef } from 'react';
+import { RefObject, useCallback, useContext, useEffect, useRef } from 'react';
 
-import { useEventBus } from './useEventBus';
+import { EventBusContext, useEventBus } from './useEventBus';
 
 export interface UsePopoverSyncOptions {
   /** Stable identifier for this popover instance (typically a generateRandomId() memo). */
@@ -30,11 +30,26 @@ export interface UsePopoverSyncOptions {
    * considered nested children and do NOT close us.
    */
   containerRef?: RefObject<HTMLElement | null>;
+  /**
+   * Whether this overlay closes when a Button/ItemButton inside its container
+   * is pressed. Defaults to `true` (popover semantics — popovers are transient
+   * surfaces and any action inside them should dismiss them). Set to `false`
+   * for modals/trays/fullscreen dialogs — buttons inside a Dialog should not
+   * auto-close it. Requires `containerRef` to be set; without it the listener
+   * has no way to determine whether the dispatching button is "inside" this
+   * overlay and is effectively a no-op.
+   */
+  dismissOnInnerButtonPress?: boolean;
 }
 
 interface PopoverOpenPayload {
   menuId: string;
   triggerEl: Element | null;
+}
+
+interface PopoverDismissAncestorPayload {
+  /** The DOM node of the button that requested the dismiss. */
+  from: Element | null;
 }
 
 /**
@@ -67,6 +82,7 @@ export function usePopoverSync({
   enabled = true,
   triggerRef,
   containerRef,
+  dismissOnInnerButtonPress = true,
 }: UsePopoverSyncOptions): void {
   const { emit, on } = useEventBus();
 
@@ -96,7 +112,8 @@ export function usePopoverSync({
 
   useEffect(() => {
     if (!enabled) return;
-    return on('popover:open', (data: PopoverOpenPayload) => {
+
+    const offOpen = on('popover:open', (data: PopoverOpenPayload) => {
       if (data.menuId === menuId || !isOpenRef.current) return;
       const container = containerRefRef.current?.current;
       const triggerEl = data.triggerEl;
@@ -105,7 +122,35 @@ export function usePopoverSync({
       if (container && triggerEl && container.contains(triggerEl)) return;
       onCloseRef.current();
     });
-  }, [on, menuId, enabled]);
+
+    // `popover:dismiss-ancestor` is emitted by `Button` / `ItemButton` (and any
+    // consumer using `useDismissParentPopover`) after their `onPress` runs.
+    // Only popover-type overlays subscribe; modals/trays opt out via
+    // `dismissOnInnerButtonPress: false` so a Button inside a Dialog content
+    // does NOT auto-close the Dialog.
+    if (!dismissOnInnerButtonPress) {
+      return offOpen;
+    }
+
+    const offDismiss = on(
+      'popover:dismiss-ancestor',
+      (data: PopoverDismissAncestorPayload) => {
+        if (!isOpenRef.current) return;
+        const container = containerRefRef.current?.current;
+        const from = data?.from;
+        // Require both a container and an originating element so we can do
+        // the contains-check. Hosts without `containerRef` (e.g.
+        // `use-anchored-menu`, `use-context-menu`) are silently no-op.
+        if (!container || !from) return;
+        if (container.contains(from)) onCloseRef.current();
+      },
+    );
+
+    return () => {
+      offOpen();
+      offDismiss();
+    };
+  }, [on, menuId, enabled, dismissOnInnerButtonPress]);
 
   const wasOpenRef = useRef(false);
   useEffect(() => {
@@ -123,4 +168,46 @@ export function usePopoverSync({
       wasOpenRef.current = false;
     }
   }, [isOpen, emit, menuId, enabled]);
+}
+
+/**
+ * Hook that returns a dispatcher to close the popover that contains a given
+ * DOM element. Used by `Button` / `ItemButton` to implement the default
+ * "press inside a popover closes the popover" behaviour. Custom (non-Cube)
+ * interactive controls can call this directly:
+ *
+ * ```tsx
+ * const dismiss = useDismissParentPopover();
+ * <MyCustomPressable onPress={(e) => { doThing(); dismiss(e.currentTarget); }} />
+ * ```
+ *
+ * The actual dismiss is dispatched through the EventBus, which defers via
+ * `setTimeout(0)` — so the user's synchronous handler (and any React state
+ * updates it triggers) flushes BEFORE the popover closes. This is critical
+ * for the "open a hoisted modal from a popover footer" case: the modal
+ * mounts first, then the popover closes.
+ *
+ * Only popover-type containers (those that pass `dismissOnInnerButtonPress`
+ * as `true`, the default) react to the event. Modal/tray/fullscreen Dialog
+ * containers explicitly opt out so a Button inside their content does not
+ * auto-close them.
+ *
+ * When called outside an `EventBusProvider` (e.g. in unit tests that render
+ * a Button without wrapping in `<Root>`), the returned function is a no-op —
+ * the dismiss flow gracefully degrades rather than throwing.
+ */
+export function useDismissParentPopover() {
+  // Read context defensively: `Button` / `ItemButton` use this hook
+  // unconditionally, but tests (and standalone usages outside `<Root>`) may
+  // mount them without an `EventBusProvider`. A throw would crash every
+  // Button render in those cases.
+  const bus = useContext(EventBusContext);
+  const emit = bus?.emit;
+  return useCallback(
+    (from: Element | null) => {
+      if (!from || !emit) return;
+      emit<PopoverDismissAncestorPayload>('popover:dismiss-ancestor', { from });
+    },
+    [emit],
+  );
 }

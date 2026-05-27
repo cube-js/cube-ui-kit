@@ -1,4 +1,5 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks';
+
 import { ItemButton } from './ItemButton';
 import * as ItemButtonStories from './ItemButton.stories';
 
@@ -82,7 +83,7 @@ Inherits all modifiers from [Item](/docs/content-item--docs) plus:
 ### Sizes
 
 - `xsmall` - Extra small size for compact interfaces
-- `small` - Small size for dense layouts  
+- `small` - Small size for dense layouts
 - `medium` - Default size for most use cases
 - `large` - Large size for prominent actions
 - `xlarge` - Extra large size for hero actions
@@ -92,15 +93,13 @@ Inherits all modifiers from [Item](/docs/content-item--docs) plus:
 ### Basic Button
 
 ```jsx
-<ItemButton onPress={() => console.log('Clicked')}>
-  Click me
-</ItemButton>
+<ItemButton onPress={() => console.log('Clicked')}>Click me</ItemButton>
 ```
 
 ### Button with Icons
 
 ```jsx
-<ItemButton 
+<ItemButton
   icon={<IconFile />}
   rightIcon={<IconExternalLink />}
   onPress={handleOpen}
@@ -112,19 +111,13 @@ Inherits all modifiers from [Item](/docs/content-item--docs) plus:
 ### Link Button
 
 ```jsx
-<ItemButton to="/docs">
-  Go to Documentation
-</ItemButton>
+<ItemButton to="/docs">Go to Documentation</ItemButton>
 ```
 
 ### Button with Hotkey
 
 ```jsx
-<ItemButton 
-  hotkeys="cmd+s"
-  onPress={handleSave}
-  type="primary"
->
+<ItemButton hotkeys="cmd+s" onPress={handleSave} type="primary">
   Save Document
 </ItemButton>
 ```
@@ -132,11 +125,7 @@ Inherits all modifiers from [Item](/docs/content-item--docs) plus:
 ### Form Submit Button
 
 ```jsx
-<ItemButton 
-  htmlType="submit"
-  type="primary"
-  icon={<IconCheck />}
->
+<ItemButton htmlType="submit" type="primary" icon={<IconCheck />}>
   Submit Form
 </ItemButton>
 ```
@@ -144,10 +133,7 @@ Inherits all modifiers from [Item](/docs/content-item--docs) plus:
 ### Button with Selection State
 
 ```jsx
-<ItemButton 
-  isSelected={isSelected}
-  onPress={() => setIsSelected(!isSelected)}
->
+<ItemButton isSelected={isSelected} onPress={() => setIsSelected(!isSelected)}>
   Toggle Selection
 </ItemButton>
 ```
@@ -157,12 +143,20 @@ Inherits all modifiers from [Item](/docs/content-item--docs) plus:
 ItemButton supports inline actions that appear on the right side. Use the `ItemButton.Action` compound component for consistent styling:
 
 ```jsx
-<ItemButton 
+<ItemButton
   icon={<IconFile />}
   actions={
     <>
-      <ItemButton.Action icon={<IconEdit />} aria-label="Edit" onPress={handleEdit} />
-      <ItemButton.Action icon={<IconTrash />} aria-label="Delete" onPress={handleDelete} />
+      <ItemButton.Action
+        icon={<IconEdit />}
+        aria-label="Edit"
+        onPress={handleEdit}
+      />
+      <ItemButton.Action
+        icon={<IconTrash />}
+        aria-label="Delete"
+        onPress={handleDelete}
+      />
     </>
   }
   onPress={handleOpen}
@@ -196,9 +190,41 @@ Actions automatically inherit the parent button's `type` prop and adjust their s
 - `aria-pressed` - Indicates toggle state for toggle buttons
 - `role` - Automatically set to "button" or "link" based on props
 
+## Behaviour Inside Popovers
+
+Like `Button`, an `ItemButton` press inside an open popover **dismisses
+that popover** by default — popovers are transient surfaces and any action
+inside them should close them. Modals/trays/fullscreen Dialogs are not
+affected.
+
+### Opt-outs
+
+- **Automatic for popover triggers** — `MenuTrigger`, `DialogTrigger
+type="popover"`, and the picker components (`FilterPicker`, `Picker`,
+  `ComboBox`, `Select`) mark their trigger ItemButtons with
+  `data-popover-trigger` so they don't dismiss the popover they themselves
+  live in.
+- **Manual via `data-popover-keep`** — add to the ItemButton (toggle) or
+  any ancestor (whole subtree):
+  ```jsx
+  <ItemButton data-popover-keep onPress={() => setMode((m) => !m)}>
+    Toggle Mode
+  </ItemButton>
+  ```
+- **Custom non-Cube triggers** — call `useDismissParentPopover()` directly
+  if you build a control on top of something other than `Button` /
+  `ItemButton`.
+
+The dismiss is dispatched via the EventBus, which defers with `setTimeout(0)`
+— so synchronous `onPress` handlers (and the React state updates they
+trigger) flush BEFORE the popover closes. This makes the "open a hoisted
+modal from a popover footer" pattern work without flicker: the modal mounts
+first, then the popover closes behind it.
+
 ## Best Practices
 
 1. **Do**: Use clear, action-oriented text
+
    ```jsx
    <ItemButton onPress={handleSave} type="primary">
      Save Changes
@@ -206,6 +232,7 @@ Actions automatically inherit the parent button's `type` prop and adjust their s
    ```
 
 2. **Do**: Add hotkeys for frequently used actions
+
    ```jsx
    <ItemButton hotkeys="cmd+s" onPress={handleSave}>
      Save Document
@@ -213,6 +240,7 @@ Actions automatically inherit the parent button's `type` prop and adjust their s
    ```
 
 3. **Do**: Use appropriate button types for forms
+
    ```jsx
    <ItemButton htmlType="submit" type="primary">
      Submit Form
@@ -220,8 +248,9 @@ Actions automatically inherit the parent button's `type` prop and adjust their s
    ```
 
 4. **Do**: Use `ItemButton.Action` for inline actions
+
    ```jsx
-   <ItemButton 
+   <ItemButton
      icon={<IconFile />}
      actions={
        <>
@@ -236,15 +265,21 @@ Actions automatically inherit the parent button's `type` prop and adjust their s
    ```
 
 5. **Don't**: Use vague or unclear button text
+
    ```jsx
-   {/* Avoid this - unclear what "OK" does */}
-   <ItemButton onPress={handleAction}>OK</ItemButton>
+   {
+     /* Avoid this - unclear what "OK" does */
+   }
+   <ItemButton onPress={handleAction}>OK</ItemButton>;
    ```
 
 6. **Don't**: Add too many actions (limit to 2-3 for clarity)
+
    ```jsx
-   {/* Avoid this - too many action buttons */}
-   <ItemButton 
+   {
+     /* Avoid this - too many action buttons */
+   }
+   <ItemButton
      actions={
        <>
          <ItemButton.Action icon={<IconEdit />} aria-label="Edit" />
@@ -255,13 +290,16 @@ Actions automatically inherit the parent button's `type` prop and adjust their s
      }
    >
      Button with too many actions
-   </ItemButton>
+   </ItemButton>;
    ```
 
 7. **Don't**: Overcrowd buttons with too many visual elements
+
    ```jsx
-   {/* Avoid this - too many competing elements */}
-   <ItemButton 
+   {
+     /* Avoid this - too many competing elements */
+   }
+   <ItemButton
      icon={<IconA />}
      rightIcon={<IconB />}
      prefix="Pre"
@@ -269,7 +307,7 @@ Actions automatically inherit the parent button's `type` prop and adjust their s
      description="Long description"
    >
      Overcrowded Button
-   </ItemButton>
+   </ItemButton>;
    ```
 
 8. **Accessibility**: Always ensure buttons have clear, descriptive labels, proper keyboard support, and provide `aria-label` for action buttons
