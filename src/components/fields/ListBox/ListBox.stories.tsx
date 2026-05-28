@@ -1595,8 +1595,6 @@ export const Reorderable: StoryObj = {
       { key: 'retention', label: 'Retention' },
       { key: 'churn', label: 'Churn Rate' },
       { key: 'ltv', label: 'Lifetime Value' },
-      { key: 'arpu', label: 'ARPU' },
-      { key: 'mrr', label: 'MRR' },
     ];
 
     const [keyOrder, setKeyOrder] = useState<Key[]>(

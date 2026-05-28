@@ -139,6 +139,7 @@ const ListBoxItem = tasty(Item, {
     margin: {
       '': '0 0 1bw 0',
       ':last-of-type': '0',
+      'draggable & :last-of-type': '0 0 .5x 0',
       all: '.5x',
     },
     Icon: {
