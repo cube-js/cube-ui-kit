@@ -1,4 +1,5 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks';
+
 import { Button } from './Button';
 import * as ButtonStories from './Button.stories';
 
@@ -49,6 +50,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 Customises the root element of the component.
 
 **Sub-elements:**
+
 - `Icon` – wrapper around the leading icon
 - `RightIcon` – wrapper around the trailing icon
 - `Label` – the button text content
@@ -122,27 +124,35 @@ The `mods` prop accepts the following modifiers you can override:
 ```jsx
 import { IconPlus } from '@tabler/icons-react';
 
-{/* Standard icon */}
-<Button icon={<IconPlus />} aria-label="Add item" />
+{
+  /* Standard icon */
+}
+<Button icon={<IconPlus />} aria-label="Add item" />;
 
-{/* Empty slot (reserves space but shows nothing) */}
-<Button icon={true} aria-label="Empty slot" />
+{
+  /* Empty slot (reserves space but shows nothing) */
+}
+<Button icon={true} aria-label="Empty slot" />;
 
-{/* Dynamic icon based on mods */}
-<Button 
-  icon={({ loading }) => loading ? <SpinnerIcon /> : <IconPlus />}
+{
+  /* Dynamic icon based on mods */
+}
+<Button
+  icon={({ loading }) => (loading ? <SpinnerIcon /> : <IconPlus />)}
   aria-label="Dynamic icon"
 >
   Save
-</Button>
+</Button>;
 
-{/* Return true from function for empty slot */}
-<Button 
-  icon={({ selected }) => selected ? <CheckIcon /> : true}
+{
+  /* Return true from function for empty slot */
+}
+<Button
+  icon={({ selected }) => (selected ? <CheckIcon /> : true)}
   aria-label="Conditional icon"
 >
   Option
-</Button>
+</Button>;
 ```
 
 ### Link Button
@@ -167,21 +177,31 @@ import { IconPlus } from '@tabler/icons-react';
 ### With Tooltip
 
 ```jsx
-{/* Simple tooltip text */}
-<Button icon={<IconPlus />} tooltip="Add new item" aria-label="Add" />
+{
+  /* Simple tooltip text */
+}
+<Button icon={<IconPlus />} tooltip="Add new item" aria-label="Add" />;
 
-{/* Auto tooltip on overflow */}
-<Button tooltip={true} width="100px">This text will be truncated</Button>
+{
+  /* Auto tooltip on overflow */
+}
+<Button tooltip={true} width="100px">
+  This text will be truncated
+</Button>;
 ```
 
 ### Custom Size
 
 ```jsx
-{/* Using a number (pixels) */}
-<Button size={64}>Large Custom</Button>
+{
+  /* Using a number (pixels) */
+}
+<Button size={64}>Large Custom</Button>;
 
-{/* Using a string multiplier */}
-<Button size="8x">8x Size</Button>
+{
+  /* Using a string multiplier */
+}
+<Button size="8x">8x Size</Button>;
 ```
 
 ## Accessibility
@@ -202,6 +222,65 @@ import { IconPlus } from '@tabler/icons-react';
 - `aria-label`, `aria-labelledby` – Accessible name.
 - `aria-pressed` – Managed automatically when `isSelected` is used.
 - Additional ARIA attributes supported by React Aria's `useButton`.
+
+## Behaviour Inside Popovers
+
+By default, pressing a `Button` inside an open popover (any overlay that
+uses `usePopoverSync` — including the popovers rendered by `FilterPicker`,
+`Picker`, `ComboBox`, `Select`, `MenuTrigger`, and
+`DialogTrigger type="popover"`) **dismisses that popover** after the user's
+`onPress` runs. This matches the common UX where a popover is a transient
+surface: any action inside it should close it.
+
+Modal / tray / fullscreen Dialogs are **not** affected — a Button inside a
+modal Dialog does not auto-close it.
+
+### Opt-outs
+
+There are three ways to keep the popover open when a Button is pressed:
+
+1. **Automatic for popover triggers.** Buttons that act as popover triggers
+   already carry `data-popover-trigger` (applied by `MenuTrigger`,
+   `DialogTrigger type="popover"`, `FilterPicker`, `Picker`, `ComboBox`,
+   `Select`). Modal-type `DialogTrigger` children are **not** marked, so they
+   correctly dismiss the parent popover and let the modal take over.
+2. **Manual via `data-popover-keep`.** Add the attribute to the button
+   (toggle case) or to any ancestor element (subtree case — useful when a
+   custom inline editor inside a popover footer should not collapse on
+   every interaction):
+
+   ```jsx
+   <Button data-popover-keep onPress={() => setMode((m) => !m)}>
+     Toggle
+   </Button>
+
+   <div data-popover-keep>
+     {/* All Buttons inside this wrapper opt out. */}
+   </div>
+   ```
+
+3. **Custom non-Cube triggers.** Call `useDismissParentPopover()` yourself if
+   your control should dismiss the popover but does not extend `Button` /
+   `ItemButton`:
+   ```jsx
+   const dismiss = useDismissParentPopover();
+   <MyCustomPressable
+     onPress={(e) => {
+       doThing();
+       dismiss(e.currentTarget);
+     }}
+   />;
+   ```
+
+### Async `onPress`
+
+The dismiss is dispatched via the EventBus, which defers with `setTimeout(0)`.
+This means synchronous `onPress` handlers (and any React state updates they
+trigger) flush **before** the popover closes — including the common case of
+opening a hoisted modal via `useDialogContainer` from a popover footer (the
+modal mounts first, then the popover closes behind it). If your `onPress` is
+async and `await`s before opening another overlay, the popover will close
+first and the new overlay will appear after — usually fine, but worth noting.
 
 ## Best Practices
 

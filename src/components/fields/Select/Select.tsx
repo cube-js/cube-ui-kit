@@ -323,12 +323,6 @@ function Select<T extends object>(
   // Generate a unique ID for this select instance
   const selectId = useMemo(() => generateRandomId(), []);
 
-  usePopoverSync({
-    menuId: selectId,
-    isOpen: state.isOpen,
-    onClose: () => state.close(),
-  });
-
   // Call onOpenChange when open state changes
   useEffect(() => {
     onOpenChange?.(state.isOpen);
@@ -340,6 +334,14 @@ function Select<T extends object>(
   triggerRef = useCombinedRefs(triggerRef);
   popoverRef = useCombinedRefs(popoverRef);
   listBoxRef = useCombinedRefs(listBoxRef);
+
+  usePopoverSync({
+    menuId: selectId,
+    isOpen: state.isOpen,
+    onClose: () => state.close(),
+    triggerRef: triggerRef as RefObject<HTMLElement | null>,
+    containerRef: popoverRef as RefObject<HTMLElement | null>,
+  });
 
   let { labelProps, triggerProps, valueProps, menuProps } = useSelect(
     props,

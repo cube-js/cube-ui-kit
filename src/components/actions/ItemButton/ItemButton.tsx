@@ -1,4 +1,4 @@
-import { FocusableRef } from '@react-types/shared';
+import { FocusableRef, PressEvent } from '@react-types/shared';
 import { Styles, tasty } from '@tenphi/tasty';
 import {
   CSSProperties,
@@ -11,7 +11,12 @@ import {
 } from 'react';
 import { useFocusWithin, useHover } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react';
+import { useEvent } from '../../../_internal';
+import {
+  mergeProps,
+  mergeRefs,
+  useDismissParentPopover,
+} from '../../../utils/react';
 import { CubeItemProps, Item } from '../../content/Item';
 import { ItemBadge } from '../../content/ItemBadge';
 import { DisplayTransition } from '../../helpers';
@@ -169,6 +174,22 @@ const ItemButton = forwardRef(function ItemButton(
   const shouldShowActions =
     isHovered || isFocusWithin || hasPressed || !autoHideActions;
 
+  // Default: pressing an ItemButton inside an open popover closes that
+  // popover. Opt-outs: `data-popover-trigger` on self (applied by
+  // FilterPicker / Picker / Select / MenuTrigger for their own triggers) and
+  // `data-popover-keep` on self or any ancestor. Modals don't subscribe.
+  const dismissParentPopover = useDismissParentPopover();
+  const buttonElementRef = useRef<HTMLElement | null>(null);
+
+  const wrappedOnPress = useEvent((e: PressEvent) => {
+    onPress?.(e);
+    const el = buttonElementRef.current;
+    if (!el) return;
+    if (el.hasAttribute('data-popover-trigger')) return;
+    if (el.closest('[data-popover-keep]')) return;
+    dismissParentPopover(el);
+  });
+
   const { actionProps } = useAction(
     {
       ...(allProps as any),
@@ -177,6 +198,7 @@ const ItemButton = forwardRef(function ItemButton(
       as,
       mods,
       isDisabled: finalIsDisabled,
+      onPress: wrappedOnPress,
     },
     ref,
   );
@@ -185,12 +207,20 @@ const ItemButton = forwardRef(function ItemButton(
     return shouldShowActions ? { ...mods, 'actions-shown': true } : mods;
   }, [mods, shouldShowActions]);
 
+  // Merge the useAction-supplied ref with our internal ref so the dismiss
+  // wrapper can read the rendered DOM node at press time.
+  const combinedRef = useMemo(
+    () => mergeRefs(actionProps.ref as any, buttonElementRef),
+    [actionProps.ref],
+  );
+
   const button = (
     <StyledItem
       insideWrapper={!!actions}
       showActions={shouldShowActions}
       actions={actions ? true : undefined}
       {...(mergeProps(rest, actionProps) as any)}
+      ref={combinedRef}
       data-popover-dismiss=""
       htmlType={actionProps.type}
       type={type}

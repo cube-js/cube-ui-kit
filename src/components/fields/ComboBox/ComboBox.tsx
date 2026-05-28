@@ -259,6 +259,8 @@ interface UseComboBoxStateProps {
   inputValue?: string;
   defaultInputValue?: string;
   comboBoxId: string;
+  triggerRef?: RefObject<HTMLElement | null>;
+  popoverRef?: RefObject<HTMLElement | null>;
 }
 
 interface UseComboBoxStateReturn {
@@ -278,6 +280,8 @@ function useComboBoxState({
   inputValue,
   defaultInputValue,
   comboBoxId,
+  triggerRef,
+  popoverRef,
 }: UseComboBoxStateProps): UseComboBoxStateReturn {
   // Internal state for uncontrolled mode
   const [internalSelectedKey, setInternalSelectedKey] = useState<Key | null>(
@@ -304,6 +308,8 @@ function useComboBoxState({
     menuId: comboBoxId,
     isOpen: isPopoverOpen,
     onClose: () => setIsPopoverOpen(false),
+    triggerRef,
+    containerRef: popoverRef,
   });
 
   return {
@@ -1027,6 +1033,12 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // Generate a unique ID for this combobox instance
   const comboBoxId = useMemo(() => generateRandomId(), []);
 
+  // Hoist the wrapper/popover ref normalization above `useComboBoxState` so
+  // the popover-sync inside it sees stable, attached refs. Other ref combines
+  // happen below alongside the legacy ordering.
+  wrapperRef = useCombinedRefs(wrapperRef);
+  popoverRef = useCombinedRefs(popoverRef);
+
   // State management hook
   const {
     effectiveSelectedKey,
@@ -1043,6 +1055,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     inputValue,
     defaultInputValue,
     comboBoxId,
+    triggerRef: wrapperRef as RefObject<HTMLElement | null>,
+    popoverRef: popoverRef as RefObject<HTMLElement | null>,
   });
 
   // Track if sortSelectedToTop was explicitly provided
@@ -1057,10 +1071,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   ref = useCombinedRefs(ref);
-  wrapperRef = useCombinedRefs(wrapperRef);
   inputRef = useCombinedRefs(inputRef);
   triggerRef = useCombinedRefs(triggerRef);
-  popoverRef = useCombinedRefs(popoverRef);
   listBoxRef = useCombinedRefs(listBoxRef);
 
   // Sort items with selected on top if enabled

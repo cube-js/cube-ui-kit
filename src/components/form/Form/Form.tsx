@@ -1,5 +1,4 @@
-import { useDOMRef } from '@react-spectrum/utils';
-import { DOMRef } from '@react-types/shared';
+import { useObjectRef } from '@react-aria/utils';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -14,6 +13,7 @@ import {
   forwardRef,
   ReactElement,
   ReactNode,
+  Ref,
   useContext,
   useRef,
 } from 'react';
@@ -91,7 +91,7 @@ export interface CubeFormProps<T extends FieldTypes = FieldTypes>
 
 function Form<T extends FieldTypes>(
   props: CubeFormProps<T>,
-  ref: DOMRef<HTMLFormElement>,
+  ref: Ref<HTMLFormElement>,
 ) {
   props = useProviderProps(props);
   let {
@@ -201,7 +201,7 @@ function Form<T extends FieldTypes>(
     styles['$label-width'] = labelWidth;
   }
 
-  let domRef = useDOMRef(ref as any);
+  let domRef = useObjectRef(ref);
 
   let ctx = {
     labelPosition,
@@ -261,7 +261,7 @@ function Form<T extends FieldTypes>(
  * Forms allow users to enter data that can be submitted while providing alignment and styling for form fields.
  */
 const _Form = forwardRef(Form) as unknown as <T extends FieldTypes>(
-  props: CubeFormProps<T> & { ref?: DOMRef<HTMLFormElement> },
+  props: CubeFormProps<T> & { ref?: Ref<HTMLFormElement> },
 ) => ReactElement;
 
 (_Form as any).displayName = 'Form';

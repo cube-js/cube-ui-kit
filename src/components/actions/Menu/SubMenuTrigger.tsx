@@ -106,16 +106,18 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
   // Generate a unique ID for this submenu instance
   const submenuId = useMemo(() => generateRandomId(), []);
 
-  usePopoverSync({
-    menuId: submenuId,
-    isOpen: state.isOpen,
-    onClose: () => state.close(),
-  });
-
   // Refs – trigger (MenuItem <li>) and overlay (<div> from Popover)
   const domTriggerRef = useRef<HTMLElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
+
+  usePopoverSync({
+    menuId: submenuId,
+    isOpen: state.isOpen,
+    onClose: () => state.close(),
+    triggerRef: domTriggerRef,
+    containerRef: popoverRef,
+  });
 
   // Strip keyboard/press handlers that we will implement ourselves
   const { menuTriggerProps: rawTriggerProps, menuProps } = useMenuTrigger(

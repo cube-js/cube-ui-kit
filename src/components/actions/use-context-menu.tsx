@@ -114,6 +114,10 @@ export function useContextMenu<
   // Generate a unique ID for this menu instance
   const menuId = useMemo(() => generateRandomId(), []);
 
+  // `containerRef` is intentionally omitted: the underlying `MenuTrigger` is
+  // `isDummy`, so its own popover container ref isn't reachable from here.
+  // Providing `triggerRef` (the context-menu target element) is enough to let
+  // peers identify themselves correctly when they emit `popover:open`.
   usePopoverSync({
     menuId,
     isOpen,
@@ -121,6 +125,7 @@ export function useContextMenu<
       setIsOpen(false);
       setAnchorPosition(null);
     },
+    triggerRef: targetRef as RefObject<HTMLElement | null>,
   });
 
   function setupCheck() {

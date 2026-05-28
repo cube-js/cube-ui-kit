@@ -1,6 +1,5 @@
-import { useSyncRef } from '@react-aria/utils';
-import { useDOMRef } from '@react-spectrum/utils';
-import { DOMRef, FocusStrategy } from '@react-types/shared';
+import { useObjectRef, useSyncRef } from '@react-aria/utils';
+import { FocusStrategy } from '@react-types/shared';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -12,6 +11,7 @@ import React, {
   Key,
   ReactElement,
   ReactNode,
+  Ref,
   useCallback,
   useMemo,
   useRef,
@@ -94,7 +94,7 @@ export interface CubeCommandMenuProps<T>
 
 function CommandMenu<T extends object>(
   props: CubeCommandMenuProps<T>,
-  ref: DOMRef<HTMLDivElement>,
+  ref: Ref<HTMLDivElement>,
 ) {
   const {
     searchPlaceholder = 'Search commands...',
@@ -119,7 +119,7 @@ function CommandMenu<T extends object>(
     ...restMenuProps
   } = props;
 
-  const domRef = useDOMRef(ref);
+  const domRef = useObjectRef(ref);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const contextProps = useMenuContext();
 

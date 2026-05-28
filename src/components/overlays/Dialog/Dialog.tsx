@@ -1,6 +1,5 @@
 import { createFocusManager } from '@react-aria/focus';
-import { useDOMRef } from '@react-spectrum/utils';
-import { DOMRef } from '@react-types/shared';
+import { useObjectRef } from '@react-aria/utils';
 import {
   BASE_STYLES,
   BaseProps,
@@ -13,7 +12,7 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, ReactElement, useEffect, useMemo } from 'react';
+import { forwardRef, ReactElement, Ref, useEffect, useMemo } from 'react';
 import {
   AriaDialogProps,
   DismissButton,
@@ -155,7 +154,7 @@ export interface CubeDialogProps
  */
 export const Dialog = forwardRef(function Dialog(
   props: CubeDialogProps,
-  ref: DOMRef<HTMLDivElement>,
+  ref: Ref<HTMLDivElement>,
 ) {
   const transitionContext = useOpenTransitionContext();
 
@@ -180,7 +179,7 @@ export const Dialog = forwardRef(function Dialog(
 
 const DialogContent = forwardRef(function DialogContent(
   props: CubeDialogProps,
-  ref: DOMRef<HTMLDivElement>,
+  ref: Ref<HTMLDivElement>,
 ) {
   let { type = 'modal', ...contextProps } = useDialogContext();
 
@@ -202,7 +201,7 @@ const DialogContent = forwardRef(function DialogContent(
 
   let formatMessage = useMessageFormatter(intlMessages);
 
-  let domRef = useDOMRef(ref);
+  let domRef = useObjectRef(ref);
   let { dialogProps, titleProps } = useDialog(
     mergeProps(contextProps, props),
     domRef,

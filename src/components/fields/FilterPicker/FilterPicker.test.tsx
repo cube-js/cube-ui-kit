@@ -2,7 +2,7 @@ import { createRef } from 'react';
 
 import { Dialog, DialogTrigger, FilterPicker } from '../../../index';
 import { renderWithRoot, userEvent, waitFor, within } from '../../../test';
-import { Button } from '../../actions';
+import { Button, ItemButton } from '../../actions';
 
 vi.mock('../../../_internal/hooks/use-warn');
 
@@ -889,6 +889,228 @@ describe('<FilterPicker />', () => {
         const icon = suffix?.querySelector('[data-qa="LoadingIcon"]');
         expect(icon).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Footer Button dismiss-on-press behavior', () => {
+    // Asserting that the search input (only rendered inside the popover) is
+    // present in the DOM is a reliable open/closed signal — independent of
+    // any text on footer buttons or the trigger.
+    const isPopoverOpen = (baseElement: HTMLElement) =>
+      !!baseElement.querySelector('[data-qa="FilterListBoxSearchWrapper"]');
+
+    // The FilterPicker trigger has qa="FilterPicker" by default. Footer
+    // buttons have their own qa, so we target the trigger explicitly.
+    const getTrigger = (baseElement: HTMLElement) =>
+      baseElement.querySelector('[data-qa="FilterPicker"]') as HTMLElement;
+
+    it('plain Button in footer closes the FilterPicker on press (default)', async () => {
+      const onPress = vi.fn();
+      const { getByText, baseElement } = renderWithRoot(
+        <FilterPicker
+          label="Pick"
+          placeholder="Choose..."
+          selectionMode="single"
+          footer={
+            <Button qa="FooterAction" onPress={onPress}>
+              Footer Action
+            </Button>
+          }
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await user.click(getTrigger(baseElement));
+      await waitFor(() => expect(isPopoverOpen(baseElement)).toBe(true));
+
+      await user.click(getByText('Footer Action'));
+
+      expect(onPress).toHaveBeenCalledTimes(1);
+      // The EventBus defers via setTimeout(0); allow a few ticks for the
+      // dismiss event to flush before asserting the popover closed.
+      await waitFor(() => expect(isPopoverOpen(baseElement)).toBe(false), {
+        timeout: 1500,
+      });
+    });
+
+    it('Button with data-popover-keep keeps the FilterPicker open', async () => {
+      const onPress = vi.fn();
+      const { getByText, baseElement } = renderWithRoot(
+        <FilterPicker
+          label="Pick"
+          placeholder="Choose..."
+          selectionMode="single"
+          footer={
+            <Button data-popover-keep qa="StickyFooterAction" onPress={onPress}>
+              Sticky Action
+            </Button>
+          }
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await user.click(getTrigger(baseElement));
+      await waitFor(() => expect(isPopoverOpen(baseElement)).toBe(true));
+
+      await user.click(getByText('Sticky Action'));
+
+      expect(onPress).toHaveBeenCalledTimes(1);
+      // Wait a tick so any setTimeout(0) dismiss would land — then assert
+      // the popover is still open.
+      await new Promise((resolve) => setTimeout(resolve, 16));
+      expect(isPopoverOpen(baseElement)).toBe(true);
+    });
+
+    it('Button wrapped in an ancestor with data-popover-keep keeps the FilterPicker open', async () => {
+      const onPress = vi.fn();
+      const { getByText, baseElement } = renderWithRoot(
+        <FilterPicker
+          label="Pick"
+          placeholder="Choose..."
+          selectionMode="single"
+          footer={
+            <div data-popover-keep>
+              <Button qa="NestedFooterAction" onPress={onPress}>
+                Wrapped Action
+              </Button>
+            </div>
+          }
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await user.click(getTrigger(baseElement));
+      await waitFor(() => expect(isPopoverOpen(baseElement)).toBe(true));
+
+      await user.click(getByText('Wrapped Action'));
+
+      expect(onPress).toHaveBeenCalledTimes(1);
+      await new Promise((resolve) => setTimeout(resolve, 16));
+      expect(isPopoverOpen(baseElement)).toBe(true);
+    });
+
+    it('DialogTrigger type="popover" child auto-skips dismiss (nested popover)', async () => {
+      const { getByText, baseElement } = renderWithRoot(
+        <FilterPicker
+          label="Pick"
+          placeholder="Choose..."
+          selectionMode="single"
+          footer={
+            <DialogTrigger type="popover" placement="bottom start">
+              <Button qa="PopoverTriggerButton">Open Popover</Button>
+              <Dialog qa="NestedPopoverDialog">
+                <div>Nested content</div>
+              </Dialog>
+            </DialogTrigger>
+          }
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await user.click(getTrigger(baseElement));
+      await waitFor(() => expect(isPopoverOpen(baseElement)).toBe(true));
+
+      // Sanity-check the DOM-level contract: DialogTrigger type="popover"
+      // must propagate data-popover-trigger to its Button child.
+      const popoverTriggerButton = baseElement.querySelector(
+        '[data-qa="PopoverTriggerButton"]',
+      );
+      expect(popoverTriggerButton).toHaveAttribute('data-popover-trigger');
+
+      await user.click(getByText('Open Popover'));
+
+      // Wait for any potential dismiss to fire; the parent FilterPicker
+      // must still be open because DialogTrigger type="popover" marks its
+      // child with data-popover-trigger.
+      await new Promise((resolve) => setTimeout(resolve, 16));
+      expect(isPopoverOpen(baseElement)).toBe(true);
+    });
+
+    it('ItemButton inside footer closes the FilterPicker on press (default)', async () => {
+      const onPress = vi.fn();
+      const { getByText, baseElement } = renderWithRoot(
+        <FilterPicker
+          label="Pick"
+          placeholder="Choose..."
+          selectionMode="single"
+          footer={
+            <ItemButton qa="FooterItemAction" onPress={onPress}>
+              Item Action
+            </ItemButton>
+          }
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await user.click(getTrigger(baseElement));
+      await waitFor(() => expect(isPopoverOpen(baseElement)).toBe(true));
+
+      await user.click(getByText('Item Action'));
+
+      expect(onPress).toHaveBeenCalledTimes(1);
+      await waitFor(() => expect(isPopoverOpen(baseElement)).toBe(false), {
+        timeout: 1500,
+      });
+    });
+
+    it('ItemButton with data-popover-keep keeps the FilterPicker open', async () => {
+      const onPress = vi.fn();
+      const { getByText, baseElement } = renderWithRoot(
+        <FilterPicker
+          label="Pick"
+          placeholder="Choose..."
+          selectionMode="single"
+          footer={
+            <ItemButton
+              data-popover-keep
+              qa="StickyFooterItemAction"
+              onPress={onPress}
+            >
+              Sticky Item
+            </ItemButton>
+          }
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await user.click(getTrigger(baseElement));
+      await waitFor(() => expect(isPopoverOpen(baseElement)).toBe(true));
+
+      await user.click(getByText('Sticky Item'));
+
+      expect(onPress).toHaveBeenCalledTimes(1);
+      await new Promise((resolve) => setTimeout(resolve, 16));
+      expect(isPopoverOpen(baseElement)).toBe(true);
+    });
+
+    it('DialogTrigger type="modal" does NOT propagate data-popover-trigger (regression test)', () => {
+      // This is the critical correctness check for the modal-DialogTrigger
+      // case. If we accidentally marked every DialogTrigger child as
+      // data-popover-trigger, a modal opener inside a popover footer would
+      // skip the auto-dismiss and leave the popover behind the modal —
+      // the exact bug this feature fixes.
+      //
+      // Rendering the full modal Dialog inside jsdom hits an unrelated
+      // intlmessageformat issue, so we validate the contract at the DOM
+      // level instead: the Button rendered as DialogTrigger type="modal"
+      // child must NOT carry data-popover-trigger.
+      const { baseElement } = renderWithRoot(
+        <DialogTrigger type="modal">
+          <Button qa="ModalTriggerButton">Open Modal</Button>
+          {() => <span />}
+        </DialogTrigger>,
+      );
+
+      const modalTriggerButton = baseElement.querySelector(
+        '[data-qa="ModalTriggerButton"]',
+      );
+      expect(modalTriggerButton).not.toHaveAttribute('data-popover-trigger');
     });
   });
 });

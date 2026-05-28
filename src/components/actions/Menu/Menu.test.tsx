@@ -667,8 +667,8 @@ describe('<Menu />', () => {
     );
 
     const menu = getByRole('menu');
-    expect(menuRef.current).toBeDefined();
-    expect(menuRef.current.UNSAFE_getDOMNode).toBeDefined();
+    expect(menuRef.current).toBeInstanceOf(HTMLUListElement);
+    expect(menuRef.current).toBe(menu);
   });
 
   // Combined functionality tests

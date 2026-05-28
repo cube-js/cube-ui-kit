@@ -1,4 +1,4 @@
-import { useDOMRef } from '@react-spectrum/utils';
+import { useObjectRef } from '@react-aria/utils';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -114,7 +114,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     form,
     ...otherProps
   } = props;
-  let domRef = useDOMRef(ref);
+  let domRef = useObjectRef(ref);
 
   styles = extractStyles(otherProps, CONTAINER_STYLES, styles);
 

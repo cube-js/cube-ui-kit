@@ -1,10 +1,11 @@
 import { PressResponder } from '@react-aria/interactions';
-import { useDOMRef, useIsMobileDevice } from '@react-spectrum/utils';
-import { DOMRef } from '@react-types/shared';
+import { useObjectRef } from '@react-aria/utils';
+import { useIsMobileDevice } from '@react-spectrum/utils';
 import {
   forwardRef,
   Fragment,
   ReactElement,
+  Ref,
   useEffect,
   useMemo,
   useRef,
@@ -49,10 +50,10 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
     mobileType?: 'popover' | 'tray';
   };
 
-function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
+function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
   const menuPopoverRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement>(null);
-  const domRef = useDOMRef(ref);
+  const domRef = useObjectRef(ref);
   const menuTriggerRef = props.targetRef || domRef || triggerRef;
   const menuRef = useRef<HTMLUListElement>(null);
   const wasOpenRef = useRef(false);
@@ -81,6 +82,8 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     isOpen: state.isOpen,
     onClose: () => state.close(),
     enabled: !isDummy,
+    triggerRef: menuTriggerRef,
+    containerRef: menuPopoverRef,
   });
 
   // Restore focus manually when the menu closes

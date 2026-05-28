@@ -1,4 +1,4 @@
-import { useDOMRef } from '@react-spectrum/utils';
+import { useObjectRef } from '@react-aria/utils';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -109,7 +109,7 @@ function Label(props: CubeLabelProps, ref) {
     ...otherProps
   } = props;
 
-  let domRef = useDOMRef(ref);
+  let domRef = useObjectRef(ref);
 
   const styles = extractStyles(otherProps, CONTAINER_STYLES);
 

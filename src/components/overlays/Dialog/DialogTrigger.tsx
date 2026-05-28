@@ -1,7 +1,14 @@
 import { PressResponder } from '@react-aria/interactions';
 import { useMediaQuery } from '@react-spectrum/utils';
 import { Styles } from '@tenphi/tasty';
-import { Fragment, ReactElement, RefObject, useEffect, useRef } from 'react';
+import {
+  Fragment,
+  ReactElement,
+  RefObject,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import {
   OverlayTriggerProps,
   Placement,
@@ -11,7 +18,9 @@ import {
 } from 'react-aria';
 import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
 
-import { useCombinedRefs } from '../../../utils/react/index';
+import { generateRandomId } from '../../../utils/random';
+import { useCombinedRefs, useLayoutEffect } from '../../../utils/react/index';
+import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 
 import { DialogContext } from './context';
@@ -124,6 +133,34 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
 
   wasOpen.current = state.isOpen;
 
+  // Shared identity + refs for `usePopoverSync`. Allocating here (rather than
+  // inside the branch-specific sub-trees) keeps a single sync registration for
+  // the lifetime of the trigger, even when `type` flips between popover and
+  // modal at the mobile breakpoint. The refs are then threaded into the
+  // appropriate branch so existing positioning / useOverlayTrigger hooks keep
+  // their original ref targets and `usePopoverSync`'s `contains()` check has a
+  // real DOM node to query.
+  const dialogSyncId = useMemo(() => generateRandomId(), []);
+  const syncTriggerRef = useRef<HTMLElement | null>(null);
+  const syncOverlayRef = useRef<HTMLElement | null>(null);
+
+  // Only popover-type Dialogs participate in the "press inside dismisses
+  // me" / "peer popover opening dismisses me" behaviours: modals, trays,
+  // fullscreen and panel Dialogs are persistent workspaces and must not be
+  // yanked closed via the EventBus (which would bypass `isDismissable` and
+  // call `state.close()` directly). Non-popover types DO still EMIT
+  // `popover:open`, so opening a modal correctly dismisses peer popovers.
+  const isPopoverFlavored = type === 'popover';
+  usePopoverSync({
+    menuId: dialogSyncId,
+    isOpen: state.isOpen,
+    onClose: () => state.close(),
+    triggerRef: syncTriggerRef,
+    containerRef: syncOverlayRef,
+    dismissOnInnerButtonPress: isPopoverFlavored,
+    closeOnPeerOpen: isPopoverFlavored,
+  });
+
   useEffect(() => {
     return () => {
       if (
@@ -158,6 +195,9 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         hideArrow={hideArrow}
         shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
+        syncTriggerRef={syncTriggerRef}
+        syncOverlayRef={syncOverlayRef}
+        triggerType={type}
         onClose={onClose}
       />
     );
@@ -171,6 +211,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
       case 'modal':
         return (
           <Modal
+            ref={syncOverlayRef}
             hideOnClose={hideOnClose}
             isOpen={state.isOpen}
             isDismissable={isDismissable}
@@ -188,6 +229,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
       case 'tray':
         return (
           <Tray
+            ref={syncOverlayRef}
             hideOnClose={hideOnClose}
             isOpen={state.isOpen}
             isKeyboardDismissDisabled={isKeyboardDismissDisabled}
@@ -208,6 +250,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
       trigger={trigger}
       overlay={renderOverlay()}
       hideOnClose={hideOnClose}
+      syncTriggerRef={syncTriggerRef}
       onClose={onClose}
     />
   );
@@ -226,11 +269,37 @@ function PopoverTrigger(allProps) {
     hideOnClose,
     shouldCloseOnInteractOutside,
     keepOpenOnScroll,
+    syncTriggerRef,
+    syncOverlayRef,
+    triggerType,
     ...props
   } = allProps;
 
   let triggerRef = useRef<HTMLButtonElement>(null);
   let overlayRef = useRef<HTMLDivElement>(null);
+
+  // Mirror the trigger/overlay DOM nodes into the parent-owned sync refs.
+  //
+  // We deliberately do NOT use `useCombinedRefs` here: that hook returns a
+  // brand new internal ref and propagates to the passed refs via a regular
+  // `useEffect` (post-commit). `useOverlayPosition` below reads
+  // `triggerRef.current` in its own layout effect during the SAME commit, so
+  // if `triggerRef` only receives the DOM node via a delayed effect, the
+  // first measurement sees `null` and the popover positions at the document
+  // origin until something forces a re-measure.
+  //
+  // Keeping `triggerRef`/`overlayRef` as the direct React refs preserves
+  // synchronous assignment for `useOverlayPosition`. The sync refs are only
+  // ever read inside `popover:open` handlers, which fire via setTimeout(0),
+  // so a layout-effect mirror is more than fast enough.
+  useLayoutEffect(() => {
+    if (syncTriggerRef) {
+      syncTriggerRef.current = targetRef?.current ?? triggerRef.current ?? null;
+    }
+    if (syncOverlayRef) {
+      syncOverlayRef.current = overlayRef.current ?? null;
+    }
+  });
 
   let {
     overlayProps: popoverProps,
@@ -301,6 +370,16 @@ function DialogTriggerBase(props: any) {
   const ref = useCombinedRefs<HTMLElement>(props.ref);
   const wasOpenRef = useRef(false);
 
+  // Mirror the press-responder DOM node into the parent's sync trigger ref.
+  // Done via `useLayoutEffect` rather than threading through `useCombinedRefs`
+  // for consistency with `PopoverTrigger` (see comment there) — keeps the
+  // sync-ref population deterministic regardless of branch.
+  useLayoutEffect(() => {
+    if (props.syncTriggerRef) {
+      props.syncTriggerRef.current = ref.current ?? null;
+    }
+  });
+
   let {
     type,
     state,
@@ -330,11 +409,21 @@ function DialogTriggerBase(props: any) {
     }
   }, [state.isOpen]);
 
+  // Mark popover-type DialogTrigger children with `data-popover-trigger` so
+  // `Button` / `ItemButton`'s default dismiss-on-press behaviour treats them
+  // as popover triggers (skips the dismiss). Modal/tray/fullscreen children
+  // intentionally stay UNMARKED — when a modal-type DialogTrigger lives
+  // inside a popover footer, pressing it should dismiss the parent popover
+  // (matching the "modal takes over" native UX).
+  const triggerExtraProps =
+    type === 'popover' ? { 'data-popover-trigger': '' } : {};
+
   return (
     <Fragment>
       <PressResponder
         ref={ref}
         {...triggerProps}
+        {...triggerExtraProps}
         isPressed={
           state.isOpen &&
           type !== 'modal' &&
