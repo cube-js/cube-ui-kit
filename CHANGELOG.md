@@ -1,5 +1,95 @@
 # @cube-dev/ui-kit
 
+## 0.142.0
+
+### Minor Changes
+
+- [#1188](https://github.com/cube-js/cube-ui-kit/pull/1188) [`dd3419ce`](https://github.com/cube-js/cube-ui-kit/commit/dd3419ce0a91e9f747c1ed78175e94c557b8c810) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking:** Refs forwarded to `Modal`, `Tray`, `Dialog`, `Form`, `MenuTrigger`, `Menu`, `CommandMenu`, `RadioGroup`, `CheckboxGroup`, and `Label` now resolve to the underlying DOM element directly. The previous `@react-spectrum/utils` `{ UNSAFE_getDOMNode() }` wrapper (`DOMRefValue`) has been removed. Migrate by reading `ref.current` instead of calling `ref.current?.UNSAFE_getDOMNode()` on these components.
+
+  Internally, these components now use `useObjectRef` from `@react-aria/utils` in place of `useDOMRef` from `@react-spectrum/utils`. Refs into focusable wrappers like `Button` (which still use `useFocusableRef`) are unaffected and continue to expose `UNSAFE_getDOMNode()` plus `focus()`.
+
+- [#1188](https://github.com/cube-js/cube-ui-kit/pull/1188) [`dd3419ce`](https://github.com/cube-js/cube-ui-kit/commit/dd3419ce0a91e9f747c1ed78175e94c557b8c810) Thanks [@tenphi](https://github.com/tenphi)! - **New:** Pressing a `Button` or `ItemButton` inside an open popover now
+  **dismisses that popover by default**. This covers every overlay that uses
+  `usePopoverSync` — `FilterPicker`, `Picker`, `ComboBox`, `Select`,
+  `MenuTrigger`, `SubMenuTrigger`, `DialogTrigger type="popover"`,
+  `use-anchored-menu`, and `use-context-menu`. Modal/tray/fullscreen Dialogs
+  are **not** affected — a Button inside a modal Dialog still does not
+  auto-close it.
+
+  The dismiss event is dispatched through the EventBus and deferred via
+  `setTimeout(0)`, so synchronous `onPress` handlers (and any React state
+  updates they trigger) flush BEFORE the popover closes. This makes the
+  common "open a hoisted modal from a popover footer" flow work without
+  flicker: the modal mounts first, then the popover closes.
+
+  ### Opt-outs
+
+  - **Automatic** — Buttons that act as popover triggers (`MenuTrigger`
+    children, `DialogTrigger type="popover"` children, picker trigger
+    ItemButtons) already carry `data-popover-trigger` and skip the dismiss.
+    Modal-type `DialogTrigger` children stay unmarked so they correctly
+    dismiss the parent popover and let the modal take over.
+  - **Manual** — Add `data-popover-keep` to a Button (toggle case) or any
+    ancestor element (subtree case):
+
+    ```jsx
+    <Button data-popover-keep onPress={() => setMode((m) => !m)}>
+      Toggle
+    </Button>
+
+    <div data-popover-keep>{/* every Button inside opts out */}</div>
+    ```
+
+  - **Custom non-Cube triggers** — call the newly exported
+    `useDismissParentPopover()` to wire the same behaviour into your own
+    interactive controls.
+
+  ### Migration
+
+  Existing Buttons / ItemButtons inside popovers that were expected to **keep
+  the popover open** on press (toggles, inline editors, mode switches, etc.)
+  need `data-popover-keep`. Popover triggers wrapped by `MenuTrigger`,
+  `DialogTrigger type="popover"`, `FilterPicker`, `Picker`, `ComboBox`, or
+  `Select` need no change — they're auto-skipped.
+
+  ### Internals
+
+  - `usePopoverSync` gained a `dismissOnInnerButtonPress` option (default
+    `true`). `DialogTrigger` passes `false` for modal/tray/fullscreen types
+    so buttons inside those dialogs don't subscribe to the new dismiss
+    event. The `popover:dismiss-ancestor` EventBus event carries the
+    originating DOM element so each popover host can do a `container.contains()`
+    check before closing.
+  - `usePopoverSync` gained a `closeOnPeerOpen` option (default `true`).
+    `DialogTrigger` passes `false` for modal/tray/fullscreen/panel types so
+    a peer popover opening (e.g. via `useDialogContainer` or
+    `useAnchoredMenu`) cannot bypass the dialog's `isDismissable` /
+    `onClose` handling and call `state.close()` directly. The host still
+    EMITS `popover:open`, so opening a modal correctly dismisses peer
+    popovers — only the listener side is gated.
+  - `DialogTrigger` now applies `data-popover-trigger` to its child press
+    responder **only when `type === 'popover'`**. This is the critical
+    correctness piece for the original bug — when a `DialogTrigger type="modal"`
+    lives inside a `FilterPicker` footer, pressing its trigger now correctly
+    dismisses the FilterPicker, and the modal takes over.
+  - `EventBusProvider` is now a no-op when nested inside another
+    `EventBusProvider`. The internal `Provider` from `provider.tsx` wraps
+    overlay content with its own `EventBusProvider`, which used to silently
+    shadow the global `<Root>` bus and prevent cross-overlay events from
+    reaching the host.
+  - `usePopoverSync`'s nested-popover guard now walks the **logical**
+    popover chain via a module-level registry of open overlays, rather than
+    relying solely on a direct `container.contains(triggerEl)` DOM check.
+    Popover content is portaled to a shared overlay root, so a grandchild
+    popover's trigger lives in a sibling portal — not inside its
+    grandparent's DOM. Without the chain walk, opening a third+ level
+    `SubMenuTrigger` (or any equivalent nested popover) closed every
+    ancestor.
+
+### Patch Changes
+
+- [#1189](https://github.com/cube-js/cube-ui-kit/pull/1189) [`cb9c0635`](https://github.com/cube-js/cube-ui-kit/commit/cb9c0635e6b060e473b38faab7fdef2c4cdad496) Thanks [@solarrust](https://github.com/solarrust)! - `ListBox`: fix missing bottom spacing for the last item in `isReorderable` mode.
+
 ## 0.141.0
 
 ### Minor Changes
