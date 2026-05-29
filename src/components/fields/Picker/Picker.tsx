@@ -678,23 +678,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
         isOpen={isPopoverOpen}
         containerPadding={containerPadding}
         shouldFlip={shouldFlip}
-        shouldCloseOnInteractOutside={(el) => {
-          const menuTriggerEl = el.closest('[data-popover-trigger]');
-          if (!menuTriggerEl) {
-            // Plain interactive controls (Button, ItemButton) opt in via
-            // `data-popover-dismiss` to dismiss us without losing their click
-            // to useOverlay's stopPropagation. Schedule the close after the
-            // click finishes so the button's onPress runs first.
-            if (el.closest('[data-popover-dismiss]')) {
-              setTimeout(() => handleOpenChange(false), 0);
-              return false;
-            }
-            return true;
-          }
-          if (menuTriggerEl === triggerRef?.current?.UNSAFE_getDOMNode())
-            return true;
-          return false;
-        }}
         onOpenChange={handleOpenChange}
       >
         {triggerElement}

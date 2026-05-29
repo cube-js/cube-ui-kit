@@ -18,6 +18,7 @@ import {
 } from 'react-aria';
 import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
 
+import { useEvent } from '../../../_internal';
 import { generateRandomId } from '../../../utils/random';
 import { useCombinedRefs, useLayoutEffect } from '../../../utils/react/index';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
@@ -335,6 +336,37 @@ function PopoverTrigger(allProps) {
     ref: targetRef ? undefined : triggerRef,
   };
 
+  // Mirror the Select/ComboBox/MenuTrigger pattern: when an outside click lands
+  // on ANOTHER popover trigger, return `false` so react-aria's `useOverlay`
+  // does NOT `stopPropagation()` the click. The click then reaches that trigger,
+  // its popover opens, and `usePopoverSync` closes this one via the EventBus.
+  // Without this, react-aria swallows every outside click and a single click on
+  // a sibling trigger can't open it while this popover is open.
+  const resolveShouldCloseOnInteractOutside = useEvent(
+    (el: Element): boolean => {
+      const popoverTriggerEl = el.closest('[data-popover-trigger]');
+      if (!popoverTriggerEl) {
+        // Plain interactive controls (Button, ItemButton) opt in via
+        // `data-popover-dismiss`. Schedule the close after the click finishes so
+        // the control's `onPress` runs first instead of losing the click to
+        // useOverlay's stopPropagation.
+        if (el.closest('[data-popover-dismiss]')) {
+          setTimeout(() => state.close(), 0);
+          return false;
+        }
+        return shouldCloseOnInteractOutside
+          ? shouldCloseOnInteractOutside(el)
+          : true;
+      }
+      // Clicking our own trigger again should dismiss us.
+      const ownTrigger = targetRef?.current ?? triggerRef.current;
+      if (popoverTriggerEl === ownTrigger || ownTrigger?.contains(el))
+        return true;
+      // Another popover's trigger: let the click through so it can open.
+      return false;
+    },
+  );
+
   let overlay = (
     <Popover
       ref={overlayRef}
@@ -346,7 +378,7 @@ function PopoverTrigger(allProps) {
       arrowProps={arrowProps}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       hideArrow={hideArrow}
-      shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
+      shouldCloseOnInteractOutside={resolveShouldCloseOnInteractOutside}
       onClose={onClose}
     >
       {typeof content === 'function' ? content(state.close) : content}
