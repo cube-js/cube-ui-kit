@@ -78,10 +78,10 @@ configure({
       },
       '-webkit-text-fill-color': {
         '': 'currentColor',
-        '@autofill': '#primary',
+        '@autofill': '#primary-text',
       },
       caretColor: {
-        '@autofill': '#primary',
+        '@autofill': '#primary-text',
       },
       shadow: {
         '@autofill': '0 0 0 9999rem #surface inset',
