@@ -68,6 +68,7 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   const [componentProps, setComponentProps] = useState<P | null>(null);
   const [triggerProps, setTriggerProps] = useState<T | null>(null);
   const anchorRef = useRef<HTMLElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const setupRef = useRef(false);
 
   useEffect(() => {
@@ -83,17 +84,18 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   // Generate a unique ID for this menu instance
   const menuId = useMemo(() => generateRandomId(), []);
 
-  // `containerRef` is intentionally omitted: the underlying `MenuTrigger` is
-  // `isDummy`, so its own popover container ref isn't reachable from here.
-  // Passing `triggerRef` is enough to let peers (e.g. a `DialogTrigger`
-  // opened inside the menu's content) identify themselves as nested and stay
-  // open — the menu's own `MenuTrigger` already maintains its container ref
-  // via its non-dummy usage elsewhere; here the dummy proxies a real one.
+  // Feed both the anchor (`triggerRef`) and the popover container
+  // (`containerRef`) into the sync. The container ref is shared with the
+  // rendered `MenuTrigger` via its `popoverRef` prop — the dummy `MenuTrigger`
+  // opts out of `usePopoverSync` (`enabled: !isDummy`), so without this the
+  // nested-popover guard would have no container to match against and a
+  // `SubMenuTrigger` opened inside this menu would close the whole menu.
   usePopoverSync({
     menuId,
     isOpen,
     onClose: () => setIsOpen(false),
     triggerRef: anchorRef,
+    containerRef: popoverRef,
   });
 
   function setupCheck() {
@@ -143,6 +145,7 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
         isDummy
         isOpen={isOpen}
         targetRef={anchorRef}
+        popoverRef={popoverRef}
         placement="bottom start"
         onOpenChange={setIsOpen}
         {...mergeProps(defaultTriggerProps, triggerProps || undefined)}

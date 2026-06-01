@@ -38,6 +38,25 @@ describe('useContextMenu', () => {
     </Menu>
   );
 
+  // Test component with a SubMenuTrigger nested inside the menu. Hovering the
+  // submenu trigger must NOT close the parent context menu.
+  const TestSubMenuComponent = ({
+    onAction,
+  }: {
+    onAction?: (key: string) => void;
+  }) => (
+    <Menu onAction={onAction}>
+      <Menu.Item key="edit">Edit</Menu.Item>
+      <Menu.SubMenuTrigger>
+        <Menu.Item key="more">More</Menu.Item>
+        <Menu onAction={onAction}>
+          <Menu.Item key="nested-1">Nested 1</Menu.Item>
+          <Menu.Item key="nested-2">Nested 2</Menu.Item>
+        </Menu>
+      </Menu.SubMenuTrigger>
+    </Menu>
+  );
+
   // Test component that uses the hook with CommandMenu
   const TestCommandMenuComponent = ({
     onAction,
@@ -947,5 +966,49 @@ describe('useContextMenu', () => {
     });
 
     expect(onAction).toHaveBeenCalledWith('edit');
+  });
+
+  it('keeps the context menu open when a nested submenu opens on hover', async () => {
+    const onAction = vi.fn();
+
+    const { getByTestId, getByText, queryByText } = renderWithRoot(
+      <TestWrapper
+        Component={TestSubMenuComponent}
+        defaultMenuProps={{ onAction }}
+      />,
+    );
+
+    const trigger = getByTestId('Trigger');
+
+    // Open the context menu.
+    await act(async () => {
+      await userEvent.click(trigger);
+    });
+
+    await waitFor(() => {
+      expect(getByText('More')).toBeInTheDocument();
+    });
+
+    // Wait for the submenu trigger to be wired up.
+    await waitFor(() => {
+      const moreItem = getByText('More').closest('li');
+      expect(moreItem).toHaveAttribute('data-has-submenu', 'true');
+    });
+
+    // Hover the submenu trigger to open the nested submenu.
+    await userEvent.hover(getByText('More'));
+
+    await waitFor(
+      () => {
+        expect(getByText('Nested 1')).toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
+
+    // The parent context menu must still be open — the nested submenu opening
+    // must not have triggered `usePopoverSync`'s peer-close.
+    expect(queryByText('Edit')).toBeInTheDocument();
+    expect(queryByText('More')).toBeInTheDocument();
+    expect(getByText('Nested 2')).toBeInTheDocument();
   });
 });

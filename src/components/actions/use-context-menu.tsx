@@ -94,6 +94,7 @@ export function useContextMenu<
   } | null>(null);
   const targetRef = useRef<E>(null);
   const invisibleAnchorRef = useRef<HTMLSpanElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const setupRef = useRef(false);
 
   // Mark the container as a popover trigger so that other open menus' close-on-
@@ -114,10 +115,13 @@ export function useContextMenu<
   // Generate a unique ID for this menu instance
   const menuId = useMemo(() => generateRandomId(), []);
 
-  // `containerRef` is intentionally omitted: the underlying `MenuTrigger` is
-  // `isDummy`, so its own popover container ref isn't reachable from here.
-  // Providing `triggerRef` (the context-menu target element) is enough to let
-  // peers identify themselves correctly when they emit `popover:open`.
+  // Feed both the context-menu target (`triggerRef`) and the popover
+  // container (`containerRef`) into the sync. The container ref is shared with
+  // the rendered `MenuTrigger` via its `popoverRef` prop — the dummy
+  // `MenuTrigger` opts out of `usePopoverSync` (`enabled: !isDummy`), so
+  // without this the nested-popover guard would have no container to match
+  // against and a `SubMenuTrigger` opened inside this menu would close the
+  // whole menu.
   usePopoverSync({
     menuId,
     isOpen,
@@ -126,6 +130,7 @@ export function useContextMenu<
       setAnchorPosition(null);
     },
     triggerRef: targetRef as RefObject<HTMLElement | null>,
+    containerRef: popoverRef,
   });
 
   function setupCheck() {
@@ -312,6 +317,7 @@ export function useContextMenu<
           isDummy
           isOpen={isOpen}
           targetRef={invisibleAnchorRef}
+          popoverRef={popoverRef}
           offset={0}
           crossOffset={0}
           placement={

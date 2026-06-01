@@ -4,6 +4,7 @@ import { useIsMobileDevice } from '@react-spectrum/utils';
 import {
   forwardRef,
   Fragment,
+  MutableRefObject,
   ReactElement,
   Ref,
   useEffect,
@@ -42,6 +43,14 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
     closeOnSelect?: boolean;
     isDummy?: boolean;
     /**
+     * External ref to the popover container element. When provided, it is
+     * aliased to the internal `menuPopoverRef`, letting consumers (e.g.
+     * `useAnchoredMenu` / `useContextMenu`) feed the popover container into
+     * their own `usePopoverSync` so the nested-popover guard can recognize
+     * submenus opened inside this menu. Optional.
+     */
+    popoverRef?: MutableRefObject<HTMLDivElement | null>;
+    /**
      * Overlay variant to use on mobile screens. Defaults to `'popover'`, which
      * keeps the desktop overlay even on small viewports. Pass `'tray'` to opt
      * into the bottom-sheet `Tray` overlay on mobile (the previous implicit
@@ -51,7 +60,8 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
   };
 
 function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
-  const menuPopoverRef = useRef<HTMLDivElement>(null);
+  const internalPopoverRef = useRef<HTMLDivElement>(null);
+  const menuPopoverRef = props.popoverRef ?? internalPopoverRef;
   const triggerRef = useRef<HTMLElement>(null);
   const domRef = useObjectRef(ref);
   const menuTriggerRef = props.targetRef || domRef || triggerRef;
