@@ -223,6 +223,7 @@ const TriggerIcon = tasty(RightIcon, {
 const StyledTrigger = tasty(ItemButton, {
   qa: 'DisclosureTrigger',
   type: 'header',
+  'data-popover-keep': true,
   styles: {
     radius: {
       '': '1r',
