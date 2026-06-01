@@ -314,10 +314,6 @@ export function useContextMenu<
           }}
         />
         <MenuTrigger
-          isDummy
-          isOpen={isOpen}
-          targetRef={invisibleAnchorRef}
-          popoverRef={popoverRef}
           offset={0}
           crossOffset={0}
           placement={
@@ -325,8 +321,12 @@ export function useContextMenu<
             defaultTriggerProps?.placement ||
             'bottom start'
           }
-          onOpenChange={setIsOpen}
           {...mergeProps(defaultTriggerProps, triggerProps || undefined)}
+          isDummy
+          isOpen={isOpen}
+          targetRef={invisibleAnchorRef}
+          popoverRef={popoverRef}
+          onOpenChange={setIsOpen}
         >
           <VisuallyHidden>
             <Pressable>

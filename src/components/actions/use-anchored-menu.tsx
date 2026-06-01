@@ -142,13 +142,13 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
 
     return (
       <MenuTrigger
+        placement="bottom start"
+        {...mergeProps(defaultTriggerProps, triggerProps || undefined)}
         isDummy
         isOpen={isOpen}
         targetRef={anchorRef}
         popoverRef={popoverRef}
-        placement="bottom start"
         onOpenChange={setIsOpen}
-        {...mergeProps(defaultTriggerProps, triggerProps || undefined)}
       >
         <VisuallyHidden>
           <Pressable>
