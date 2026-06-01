@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.142.2
+
+### Patch Changes
+
+- [#1194](https://github.com/cube-js/cube-ui-kit/pull/1194) [`7f721bf8`](https://github.com/cube-js/cube-ui-kit/commit/7f721bf8aba4505df5c386b2496e7472f860cf2d) Thanks [@tenphi](https://github.com/tenphi)! - Prevent Disclosure.Trigger closing the parent popover.
+
+- [#1195](https://github.com/cube-js/cube-ui-kit/pull/1195) [`a84ac7f4`](https://github.com/cube-js/cube-ui-kit/commit/a84ac7f4dcb734bc2de4bc5308fc3b2c04456f6d) Thanks [@tenphi](https://github.com/tenphi)! - Fix submenu trigger behavior inside menus triggered by useAnchoredMenu and useContextMenu.
+
 ## 0.142.1
 
 ### Patch Changes
