@@ -66,8 +66,8 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     focused: '1bw #primary-accent-text',
   },
   border: {
-    '': '#white.2',
-    pressed: '#primary-accent-text',
+    '': '#primary-accent-surface-border',
+    pressed: '#primary-accent-surface-border',
     disabled: 'transparent',
   },
   // All states share the same `#surface` base layer (opaque). Only the
@@ -750,8 +750,8 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
     focused: '1bw #special-accent-text',
   },
   border: {
-    '': '#white.2',
-    pressed: '#white.4',
+    '': '#special-accent-surface-border',
+    pressed: '#special-accent-surface-border',
     disabled: 'transparent',
   },
   // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
@@ -795,8 +795,8 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
     focused: '1bw #special-accent-text',
   },
   border: {
-    '': '#white.3',
-    selected: '#white.4',
+    '': '#white.15',
+    selected: '#white.2',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
