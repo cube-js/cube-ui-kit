@@ -25,6 +25,7 @@ declare module '@tenphi/tasty' {
     'accent-surface': true;
     'accent-surface-2': true;
     'accent-surface-3': true;
+    'accent-surface-border': true;
     'accent-surface-text': true;
     'accent-text': true;
     'accent-text-soft': true;

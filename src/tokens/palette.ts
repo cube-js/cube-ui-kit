@@ -249,6 +249,16 @@ defaultTheme.colors({
     contrast: [6, 10],
     mode: 'fixed',
   },
+  // Border for accent surfaces — mirrors the default-theme `border` shape
+  // (a relative lightness step down from its surface base) but anchored to the
+  // fixed accent surface so it stays in the brand hue family and does not flip
+  // in dark mode. Used for outlines/dividers on top of `accent-surface`.
+  'accent-surface-border': {
+    base: 'accent-surface',
+    lightness: '+1',
+    contrast: [1.4, 1.8],
+    mode: 'fixed',
+  },
   // Saturated foreground variants. Anchored to `surface` (NOT `accent-surface`)
   // with `mode: 'auto'` so they adapt with the scheme: in dark mode the solver
   // pushes them lighter to stay readable on the dark surface. Anchoring to the
@@ -521,6 +531,12 @@ specialTheme.colors({
     base: 'accent-surface-text',
     lightness: '-1',
     contrast: [5.5, 9],
+    mode: 'fixed',
+  },
+  'accent-surface-border': {
+    base: 'accent-surface',
+    lightness: '+1',
+    contrast: [1.4, 1.8],
     mode: 'fixed',
   },
   'accent-surface-hover': {
