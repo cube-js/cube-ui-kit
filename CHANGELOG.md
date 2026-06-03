@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.142.3
+
+### Patch Changes
+
+- [#1199](https://github.com/cube-js/cube-ui-kit/pull/1199) [`310031c3`](https://github.com/cube-js/cube-ui-kit/commit/310031c3e43899eba0230b542e158790eb2ceb82) Thanks [@tenphi](https://github.com/tenphi)! - Improve border styling for buttons.
+
+- [#1200](https://github.com/cube-js/cube-ui-kit/pull/1200) [`dc847c41`](https://github.com/cube-js/cube-ui-kit/commit/dc847c41a8a58e0efbc618b1f06e9c6b163eaa23) Thanks [@tenphi](https://github.com/tenphi)! - Update tasty to the latest version.
+
+- [#1197](https://github.com/cube-js/cube-ui-kit/pull/1197) [`146e5cff`](https://github.com/cube-js/cube-ui-kit/commit/146e5cff4bff6a5490c2238a0bd9c4a03bad0317) Thanks [@tenphi](https://github.com/tenphi)! - Fix the input autofill text and caret color.
+
 ## 0.142.2
 
 ### Patch Changes
