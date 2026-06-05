@@ -996,6 +996,136 @@ describe('<InlineInput />', () => {
       expect(getByTestId('II')).not.toHaveAttribute('data-focused');
     });
 
+    it('returns focus to the display span without a ring after committing with Enter', async () => {
+      const user = userEvent.setup();
+      const { getByTestId, getByRole } = renderWithRoot(
+        <InlineInput defaultValue="Hello" qa="II" />,
+      );
+
+      const root = getByTestId('II');
+
+      // Keyboard-initiate edit mode → ring on while editing.
+      await user.tab();
+      await act(async () => {
+        fireEvent.keyDown(root, { key: 'Enter' });
+      });
+      const input = getByRole('textbox') as HTMLInputElement;
+      expect(document.activeElement).toBe(input);
+
+      // Commit with Enter → focus returns to the display span, but the
+      // programmatic restore must NOT draw a focus ring.
+      await act(async () => {
+        fireEvent.change(input, { target: { value: 'World' } });
+        fireEvent.keyDown(input, { key: 'Enter' });
+      });
+
+      expect(document.activeElement).toBe(getByTestId('II'));
+      expect(getByTestId('II')).not.toHaveAttribute('data-focused');
+    });
+
+    it('does not pull focus back when onSubmit synchronously moves it elsewhere', async () => {
+      const user = userEvent.setup();
+      const onSubmit = vi.fn();
+      const { getByTestId, getByRole } = renderWithRoot(
+        <>
+          <InlineInput
+            defaultValue="Hello"
+            qa="II"
+            onSubmit={(next) => {
+              onSubmit(next);
+              // Handlers may synchronously move focus elsewhere; the
+              // programmatic restore must respect that and leave it alone.
+              (getByTestId('Other') as HTMLButtonElement).focus();
+            }}
+          />
+          <button data-qa="Other">Other</button>
+        </>,
+      );
+
+      const root = getByTestId('II');
+
+      // Keyboard-initiate edit mode, then commit with Enter.
+      await user.tab();
+      await act(async () => {
+        fireEvent.keyDown(root, { key: 'Enter' });
+      });
+      const input = getByRole('textbox') as HTMLInputElement;
+      await act(async () => {
+        fireEvent.change(input, { target: { value: 'World' } });
+        fireEvent.keyDown(input, { key: 'Enter' });
+      });
+
+      expect(onSubmit).toHaveBeenCalledWith('World');
+      // The handler's focus move wins — focus stays on the button and is NOT
+      // yanked back to the inline input's display span.
+      expect(document.activeElement).toBe(getByTestId('Other'));
+      expect(getByTestId('II')).not.toHaveAttribute('data-focused');
+    });
+
+    it('does not pull focus back when onCancel synchronously moves it elsewhere', async () => {
+      const user = userEvent.setup();
+      const onCancel = vi.fn();
+      const { getByTestId, getByRole } = renderWithRoot(
+        <>
+          <InlineInput
+            defaultValue="Hello"
+            qa="II"
+            onCancel={() => {
+              onCancel();
+              (getByTestId('Other') as HTMLButtonElement).focus();
+            }}
+          />
+          <button data-qa="Other">Other</button>
+        </>,
+      );
+
+      const root = getByTestId('II');
+
+      // Keyboard-initiate edit mode, then cancel with Escape.
+      await user.tab();
+      await act(async () => {
+        fireEvent.keyDown(root, { key: 'Enter' });
+      });
+      const input = getByRole('textbox') as HTMLInputElement;
+      await act(async () => {
+        fireEvent.keyDown(input, { key: 'Escape' });
+      });
+
+      expect(onCancel).toHaveBeenCalled();
+      expect(document.activeElement).toBe(getByTestId('Other'));
+      expect(getByTestId('II')).not.toHaveAttribute('data-focused');
+    });
+
+    it('clears the focus ring when focus moves to another component while editing', async () => {
+      const user = userEvent.setup();
+      const { getByTestId, getByRole } = renderWithRoot(
+        <>
+          <InlineInput defaultValue="Hello" qa="II" />
+          <button data-qa="Other">Other</button>
+        </>,
+      );
+
+      const root = getByTestId('II');
+
+      // Tab to the inline input and enter edit mode via keyboard.
+      await user.tab();
+      await act(async () => {
+        fireEvent.keyDown(root, { key: 'Enter' });
+      });
+      const input = getByRole('textbox') as HTMLInputElement;
+      expect(document.activeElement).toBe(input);
+
+      // Move focus to the sibling button (submit-on-blur commits, focus has
+      // already moved away). The inline input must not retain the ring.
+      const other = getByTestId('Other') as HTMLButtonElement;
+      await act(async () => {
+        other.focus();
+      });
+
+      expect(getByTestId('II')).not.toHaveAttribute('data-focused');
+      expect(document.activeElement).toBe(other);
+    });
+
     it('marks the display with aria-disabled / aria-readonly when applicable', () => {
       const { getByTestId, rerender } = renderWithRoot(
         <InlineInput isDisabled defaultValue="Hello" qa="II" />,
