@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.142.4
+
+### Patch Changes
+
+- [`c70c2004`](https://github.com/cube-js/cube-ui-kit/commit/c70c2004076c7abf8aa5a9bacb76de744fadd2a7) Thanks [@tenphi](https://github.com/tenphi)! - Improve InlineInput focus management.
+
 ## 0.142.3
 
 ### Patch Changes
