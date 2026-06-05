@@ -365,6 +365,19 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     const [draft, setDraft] = useState<string>(value);
     const [inputWidth, setInputWidth] = useState<number | null>(null);
 
+    // Reliable focus presence for the whole component, driven by
+    // `useFocusWithin` (which, unlike `useFocusRing`/`useFocus` on a bare
+    // span, has an element-removal fallback). Used to gate the display focus
+    // ring so it can never get stuck on after editing ends or after focus
+    // moves to another component.
+    const [isFocusWithin, setIsFocusWithin] = useState(false);
+
+    // Suppresses the display focus ring for a single programmatic focus
+    // restore (when we return focus to the display span after a keyboard /
+    // programmatic edit-end). Reset whenever focus truly leaves the component
+    // so a later real keyboard Tab back shows the ring again.
+    const [ringSuppressed, setRingSuppressed] = useState(false);
+
     // Token to invalidate in-flight onSubmit promises if a newer commit /
     // re-entry happens before they settle.
     const submitTokenRef = useRef(0);
@@ -381,6 +394,12 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     // / `handleKeyDown`) and on leaving editing mode, so any later blur
     // commits normally.
     const programmaticEditStartRef = useRef<number | null>(null);
+
+    // Set when an edit-end should return focus to the display span (keyboard
+    // Enter/Escape, imperative `stopEditing`). NOT set for submit-on-blur /
+    // tab-away, where focus has already moved elsewhere. Consumed by a layout
+    // effect after the display span re-mounts.
+    const pendingRestoreFocusRef = useRef(false);
 
     // Synchronous mirror of `isEditing`. We need this because cancel/commit
     // call user callbacks (`onCancel`/`onSubmit`) that may synchronously
@@ -415,12 +434,26 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       setIsEditing(true);
     });
 
-    const commit = useEvent((rawValue: string) => {
+    // Whether an edit-end should return focus to the display span. Only when
+    // this component owns its own keyboard/focus story (standalone usage).
+    // Hosts that drive editing through `ref.startEditing()` with
+    // `keyboardActivation={false}` (e.g. `Tabs`) keep ownership of focus.
+    const canRestoreFocus = () =>
+      keyboardActivation &&
+      editTrigger !== 'none' &&
+      !isDisabled &&
+      !isReadOnly;
+
+    const commit = useEvent((rawValue: string, restoreFocus = true) => {
       // Re-entry guard. `onSubmit`/`onCancel` may synchronously refocus and
       // trigger another blur-driven commit before the state update lands.
       if (!isEditingRef.current) return;
 
       const next = trimOnSubmit ? rawValue.trim() : rawValue;
+
+      if (restoreFocus && canRestoreFocus()) {
+        pendingRestoreFocusRef.current = true;
+      }
 
       if (!next && !allowEmpty) {
         isEditingRef.current = false;
@@ -462,8 +495,11 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       }
     });
 
-    const cancel = useEvent(() => {
+    const cancel = useEvent((restoreFocus = true) => {
       if (!isEditingRef.current) return;
+      if (restoreFocus && canRestoreFocus()) {
+        pendingRestoreFocusRef.current = true;
+      }
       isEditingRef.current = false;
       programmaticEditStartRef.current = null;
       setIsEditing(false);
@@ -479,6 +515,18 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     useLayoutEffect(() => {
       if (!isEditing) return;
       inputRef.current?.select();
+    }, [isEditing]);
+
+    // Return focus to the display span after a keyboard / programmatic
+    // edit-end so keyboard navigation continues from this control. The focus
+    // is programmatic (react-aria treats it as non-keyboard) and we set
+    // `ringSuppressed` so it does not draw a focus ring; a later real Tab to
+    // the element resets the suppression (see `onFocusWithinChange`).
+    useLayoutEffect(() => {
+      if (isEditing || !pendingRestoreFocusRef.current) return;
+      pendingRestoreFocusRef.current = false;
+      setRingSuppressed(true);
+      rootRef.current?.focus();
     }, [isEditing]);
 
     // Measure the draft so the input width follows the typed glyphs.
@@ -526,16 +574,34 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       setDraft(e.target.value);
     });
 
-    // Keyboard focus ring on the root. Only fires when the span itself is
-    // keyboard-focused (i.e. `wantsKeyboard` made it tabbable) — clicking
-    // does not trigger focus-visible, and once edit mode starts focus moves
-    // to the inner input, so the ring vanishes naturally.
+    // Keyboard focus-visible modality (mouse vs keyboard). Used together with
+    // `isFocusWithin` to drive the display focus ring. We rely on
+    // `useFocusWithin` (below) for the *presence* of focus because, unlike
+    // `useFocusRing`/`useFocus` on a bare span, it has an element-removal
+    // fallback — so the ring can never get stuck on after the inner input is
+    // unmounted on edit-end or after focus moves away.
     const { isFocusVisible, focusProps: focusRingProps } = useFocusRing();
 
+    // Always enabled so it reliably reports focus presence in BOTH display
+    // and edit modes. The submit-on-blur logic is internally guarded by
+    // `isEditingRef`, so running `onBlurWithin` in display mode is a no-op.
     const { focusWithinProps } = useFocusWithin({
-      isDisabled: !isEditing,
+      onFocusWithinChange: (within) => {
+        setIsFocusWithin(within);
+        // Once focus truly leaves the component, clear the one-shot ring
+        // suppression so a later real keyboard Tab back shows the ring again.
+        if (!within) setRingSuppressed(false);
+      },
       onBlurWithin: () => {
+        if (!isEditingRef.current) return;
         if (!submitOnBlur) return;
+
+        // Spurious-blur guard. `useFocusWithin` fires a synthetic blur via its
+        // element-removal fallback when the display span unmounts as we enter
+        // edit mode (focus actually moved INTO the inner input). Ignore it if
+        // focus is in fact still within the component.
+        const active = rootRef.current?.ownerDocument.activeElement;
+        if (active && rootRef.current?.contains(active)) return;
 
         // Grace-period guard against focus theft right after a programmatic
         // `startEditing()` — e.g. a `<FocusScope restoreFocus>` inside a
@@ -561,7 +627,9 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
           return;
         }
 
-        commit(draft);
+        // Focus has already moved elsewhere (tab-away / click-away), so do
+        // NOT pull it back to the display span.
+        commit(draft, false);
       },
     });
 
@@ -623,16 +691,23 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     // `autoFocus`), so we show the focus indicator on the root regardless
     // of how the user activated edit mode (click vs keyboard).
     //
-    // In display mode, we keep the original behaviour: only show the
-    // indicator on keyboard focus (focus-visible), and only when the display
-    // element is actually focusable (i.e. `isEditable`).
+    // In display mode we show the indicator only on keyboard focus
+    // (`isFocusVisible`) AND when focus is actually within the component
+    // (`isFocusWithin`) AND the display element is focusable (`isEditable`).
+    // The `isFocusWithin` gate is the key fix: it reliably drops to `false`
+    // on edit-end / tab-away (it has an element-removal fallback that
+    // `useFocusRing` lacks on a bare span), so the ring can never get stuck
+    // on. `ringSuppressed` hides the ring for a single programmatic focus
+    // restore after a keyboard / programmatic edit-end.
     //
     // When `keyboardActivation` is `false` the host (e.g. `Tabs`) owns the
     // entire focus story for this control, so we suppress the focus ring
     // entirely — including while editing — to avoid drawing a redundant
     // indicator on top of the host's own focus ring.
     const showFocusRing =
-      keyboardActivation && (isEditing || (isFocusVisible && isEditable));
+      keyboardActivation &&
+      (isEditing ||
+        (isFocusVisible && isFocusWithin && isEditable && !ringSuppressed));
 
     const mods = useMemo(
       () => ({
