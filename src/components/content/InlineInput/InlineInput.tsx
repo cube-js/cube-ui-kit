@@ -522,11 +522,26 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     // is programmatic (react-aria treats it as non-keyboard) and we set
     // `ringSuppressed` so it does not draw a focus ring; a later real Tab to
     // the element resets the suppression (see `onFocusWithinChange`).
+    //
+    // `onSubmit`/`onCancel` may synchronously move focus elsewhere. When the
+    // input unmounts, the browser drops focus to `<body>`, so we only restore
+    // focus to the display span when focus actually landed there (or nowhere).
+    // If a handler deliberately moved focus to another element, we leave it.
     useLayoutEffect(() => {
       if (isEditing || !pendingRestoreFocusRef.current) return;
       pendingRestoreFocusRef.current = false;
+
+      const root = rootRef.current;
+      if (!root) return;
+
+      const active = root.ownerDocument.activeElement;
+      const focusLost = !active || active === root.ownerDocument.body;
+      // A handler moved focus to a real element outside this control — respect
+      // it and don't pull focus back.
+      if (!focusLost && !root.contains(active)) return;
+
       setRingSuppressed(true);
-      rootRef.current?.focus();
+      root.focus();
     }, [isEditing]);
 
     // Measure the draft so the input width follows the typed glyphs.
