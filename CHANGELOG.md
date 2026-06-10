@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.142.5
+
+### Patch Changes
+
+- [#1206](https://github.com/cube-js/cube-ui-kit/pull/1206) [`68b25b38`](https://github.com/cube-js/cube-ui-kit/commit/68b25b383e46f6cce952efbf06c0f38ba719fe8c) Thanks [@tenphi](https://github.com/tenphi)! - Update glaze to the latest version.
+
+- [#1204](https://github.com/cube-js/cube-ui-kit/pull/1204) [`1bfb2cb7`](https://github.com/cube-js/cube-ui-kit/commit/1bfb2cb7376ebfaa47482b1566712d7aaa31f0a5) Thanks [@tenphi](https://github.com/tenphi)! - Prevent the parent popover closing for calendar buttons.
+
 ## 0.142.4
 
 ### Patch Changes
