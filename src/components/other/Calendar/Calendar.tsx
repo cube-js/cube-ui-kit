@@ -20,7 +20,6 @@ import { Space } from '../../layout/Space';
 import { CalendarGrid } from './CalendarGrid';
 
 const CalendarElement = tasty({
-  'data-popover-keep': true,
   styles: {
     padding: '1x',
     gap: '1x',
@@ -73,8 +72,18 @@ function Calendar(props: CubeCalendarProps, ref: FocusableRef<HTMLElement>) {
           {title}
         </Title>
         <Space gap=".5x">
-          <Button size="xsmall" {...prevButtonProps} icon={<LeftIcon />} />
-          <Button size="xsmall" {...nextButtonProps} icon={<RightIcon />} />
+          <Button
+            data-popover-keep
+            size="xsmall"
+            {...prevButtonProps}
+            icon={<LeftIcon />}
+          />
+          <Button
+            data-popover-keep
+            size="xsmall"
+            {...nextButtonProps}
+            icon={<RightIcon />}
+          />
         </Space>
       </CalendarHeaderElement>
       <CalendarGrid state={state} selectedRange={props.selectedRange} />
