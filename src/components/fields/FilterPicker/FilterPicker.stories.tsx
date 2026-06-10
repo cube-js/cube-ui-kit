@@ -1192,6 +1192,7 @@ export const WithHeaderAndFooter: Story = {
             <Badge type="purple">12</Badge>
           </Space>
           <Button
+            data-popover-keep
             type="clear"
             size="small"
             icon={<SettingsIcon />}
@@ -1204,7 +1205,7 @@ export const WithHeaderAndFooter: Story = {
           <Text color="#dark.50" preset="t4">
             Popular languages shown
           </Text>
-          <Button type="link" rightIcon={<RightIcon />}>
+          <Button data-popover-keep type="link" rightIcon={<RightIcon />}>
             View all
           </Button>
         </>
@@ -1895,12 +1896,14 @@ export const ComplexExample: Story = {
           </Space>
           <Space gap="1x" flow="row">
             <Button
+              data-popover-keep
               type="clear"
               size="small"
               icon={<SearchIcon />}
               aria-label="Advanced search"
             />
             <Button
+              data-popover-keep
               type="clear"
               size="small"
               icon={<PlusIcon />}
@@ -1914,7 +1917,7 @@ export const ComplexExample: Story = {
           <Text color="#dark.50" preset="t4">
             Select multiple filters to combine conditions
           </Text>
-          <Button type="link" size="small">
+          <Button data-popover-keep type="link" size="small">
             Reset all
           </Button>
         </>

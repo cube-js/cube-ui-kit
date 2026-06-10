@@ -20,6 +20,7 @@ import { Space } from '../../layout/Space';
 import { CalendarGrid } from './CalendarGrid';
 
 const CalendarElement = tasty({
+  'data-popover-keep': true,
   styles: {
     padding: '1x',
     gap: '1x',
