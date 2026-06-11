@@ -198,6 +198,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
 
     const menuTriggerEl = el.closest('[data-popover-trigger]');
     if (!menuTriggerEl) {
+      if (el.closest('[data-popover-keep]')) return false;
       // Plain interactive controls (Button, ItemButton) opt in via
       // `data-popover-dismiss`. We schedule the close via setTimeout(0) so
       // it lands AFTER the click event finishes — the button's onPress

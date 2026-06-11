@@ -335,6 +335,7 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
 
     const menuTriggerEl = el.closest('[data-popover-trigger]');
     if (!menuTriggerEl) {
+      if (el.closest('[data-popover-keep]')) return false;
       if (el.closest('[data-popover-dismiss]')) {
         // Let the button's onPress fire first, then collapse the chain.
         setTimeout(() => parentContext.onClose?.(), 0);

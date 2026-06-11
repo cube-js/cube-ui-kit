@@ -568,6 +568,7 @@ export function ListBoxPopup({
       shouldCloseOnInteractOutside: (el) => {
         const menuTriggerEl = el.closest('[data-popover-trigger]');
         if (!menuTriggerEl) {
+          if (el.closest('[data-popover-keep]')) return false;
           // Plain interactive controls (Button, ItemButton) opt in via
           // `data-popover-dismiss` to dismiss us without losing their click
           // to useOverlay's stopPropagation. Schedule the close after the
