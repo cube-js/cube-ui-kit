@@ -20,7 +20,6 @@ import { Space } from '../../layout/Space';
 import { CalendarGrid } from './CalendarGrid';
 
 const CalendarElement = tasty({
-  'data-popover-keep': true,
   styles: {
     padding: '1x',
     gap: '1x',
@@ -67,8 +66,18 @@ function RangeCalendar<T extends DateValue>(
           {title}
         </Title>
         <Space gap=".5x">
-          <Button size="small" {...prevButtonProps} icon={<LeftIcon />} />
-          <Button size="small" {...nextButtonProps} icon={<RightIcon />} />
+          <Button
+            data-popover-keep
+            size="small"
+            {...prevButtonProps}
+            icon={<LeftIcon />}
+          />
+          <Button
+            data-popover-keep
+            size="small"
+            {...nextButtonProps}
+            icon={<RightIcon />}
+          />
         </Space>
       </CalendarHeaderElement>
       <CalendarGrid state={state} />

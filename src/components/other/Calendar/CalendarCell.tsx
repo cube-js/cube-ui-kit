@@ -12,6 +12,7 @@ const CalendarCellElement = tasty({
 });
 
 const CalendarButtonElement = tasty({
+  'data-popover-keep': true,
   styles: {
     display: 'grid',
     placeItems: 'center',

@@ -346,6 +346,7 @@ function PopoverTrigger(allProps) {
     (el: Element): boolean => {
       const popoverTriggerEl = el.closest('[data-popover-trigger]');
       if (!popoverTriggerEl) {
+        if (el.closest('[data-popover-keep]')) return false;
         // Plain interactive controls (Button, ItemButton) opt in via
         // `data-popover-dismiss`. Schedule the close after the click finishes so
         // the control's `onPress` runs first instead of losing the click to

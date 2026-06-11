@@ -1,6 +1,8 @@
 import { CalendarDate } from '@internationalized/date';
 
 import { renderWithRoot, userEvent, waitFor, within } from '../../../test';
+import { Button } from '../../actions/Button';
+import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 
 import { DatePicker } from './DatePicker';
 
@@ -13,6 +15,57 @@ describe('<DatePicker />', () => {
     !!baseElement.querySelector('[data-qa="Dialog"]');
 
   describe('calendar popover month navigation', () => {
+    it('clicking next-month inside a nested popover keeps the parent popover open', async () => {
+      const { baseElement } = renderWithRoot(
+        <DialogTrigger type="popover">
+          <Button qa="Trigger">Open Parent</Button>
+          <Dialog>
+            <DatePicker
+              label="Date"
+              defaultValue={new CalendarDate(2025, 6, 15)}
+            />
+          </Dialog>
+        </DialogTrigger>,
+      );
+
+      // Open parent popover
+      await user.click(
+        baseElement.querySelector('[data-qa="Trigger"]') as HTMLElement,
+      );
+
+      // Wait for parent popover to open
+      let dialogs = await waitFor(() => {
+        const d = baseElement.querySelectorAll('[data-qa="Dialog"]');
+        expect(d.length).toBe(1);
+        return d;
+      });
+      const parentDialog = dialogs[0] as HTMLElement;
+
+      // Open the calendar popover via the calendar icon trigger
+      await user.click(
+        parentDialog.querySelector('[data-popover-trigger]') as HTMLElement,
+      );
+
+      // Wait for calendar to be open
+      dialogs = await waitFor(() => {
+        const d = baseElement.querySelectorAll('[data-qa="Dialog"]');
+        expect(d.length).toBe(2);
+        return d;
+      });
+
+      const calendarDialog = dialogs[1] as HTMLElement;
+
+      // Click the "Next" month navigation button
+      await user.click(
+        within(calendarDialog).getByRole('button', { name: /next/i }),
+      );
+
+      // Wait a bit
+      await new Promise((resolve) => setTimeout(resolve, 16));
+
+      expect(baseElement.querySelectorAll('[data-qa="Dialog"]').length).toBe(2);
+    });
+
     it('clicking next-month keeps the popover open (data-popover-keep regression)', async () => {
       const { baseElement } = renderWithRoot(
         <DatePicker
