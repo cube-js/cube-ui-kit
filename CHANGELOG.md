@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.142.6
+
+### Patch Changes
+
+- [#1207](https://github.com/cube-js/cube-ui-kit/pull/1207) [`bea79e74`](https://github.com/cube-js/cube-ui-kit/commit/bea79e749d42b4feb1d4e2d158920b1752583730) Thanks [@tenphi](https://github.com/tenphi)! - One more fix to Calendar popover.
+
 ## 0.142.5
 
 ### Patch Changes
