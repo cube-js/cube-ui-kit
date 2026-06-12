@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.142.7
+
+### Patch Changes
+
+- [#1209](https://github.com/cube-js/cube-ui-kit/pull/1209) [`a56c4e04`](https://github.com/cube-js/cube-ui-kit/commit/a56c4e043bc63c3426a1dde9857c6c592357a70b) Thanks [@tenphi](https://github.com/tenphi)! - Fix Disclosure.Content collapsing to 0px height when content-visibility skips the panel.
+
 ## 0.142.6
 
 ### Patch Changes
