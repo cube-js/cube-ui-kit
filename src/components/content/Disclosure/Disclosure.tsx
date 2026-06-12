@@ -197,7 +197,10 @@ const ContentElement = tasty({
   styles: {
     display: 'block',
     flow: 'column',
-    contentVisibility: 'auto',
+    contentVisibility: {
+      '': 'auto',
+      shown: 'visible',
+    },
   },
 });
 
@@ -429,7 +432,7 @@ const DisclosureContent = forwardRef<
         >
           <ContentElement
             ref={mergeRefs(ref, panelRef)}
-            mods={mods}
+            mods={{ ...mods, shown: isShown }}
             styles={mergedStyles}
             {...filteredPanelProps}
             {...otherProps}
