@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.142.8
+
+### Patch Changes
+
+- [#1212](https://github.com/cube-js/cube-ui-kit/pull/1212) [`fc4d6cca`](https://github.com/cube-js/cube-ui-kit/commit/fc4d6ccac63c54b71fdc8441f606a4e1b18a7c31) Thanks [@tenphi](https://github.com/tenphi)! - Update tasty to the latest version.
+
+- [#1213](https://github.com/cube-js/cube-ui-kit/pull/1213) [`cc725703`](https://github.com/cube-js/cube-ui-kit/commit/cc7257038d6ad302d793bea1fd035803e36b4260) Thanks [@tenphi](https://github.com/tenphi)! - Fix default typography values to fallback to the existing t3 preset.
+
 ## 0.142.7
 
 ### Patch Changes
