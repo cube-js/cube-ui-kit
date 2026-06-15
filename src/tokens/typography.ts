@@ -240,7 +240,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     lineHeight: 'var(--t3-line-height)',
     letterSpacing: 'var(--t3-letter-spacing)',
     fontWeight: 'var(--t3-font-weight)',
-    boldFontWeight: '600',
-    iconSize: 'inherit',
+    boldFontWeight: 'var(--t3-bold-font-weight)',
+    iconSize: 'var(--t3-icon-size)',
   },
 };
