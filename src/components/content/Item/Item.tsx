@@ -634,6 +634,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     highlightStyles,
     insideWrapper = false,
     showActions = false,
+    tokens,
     ...rest
   } = props;
 
@@ -949,7 +950,10 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         aria-selected={isSelected}
         mods={finalMods}
         styles={styles}
-        tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
+        tokens={{
+          ...tokens,
+          ...(sizeTokenValue ? { $size: sizeTokenValue } : {}),
+        }}
         type={htmlType as any}
         {...mergeProps(rest, tooltipTriggerProps || {})}
         style={style}
