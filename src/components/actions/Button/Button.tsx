@@ -378,6 +378,7 @@ export const Button = forwardRef(function Button(
     tooltip = true,
     defaultTooltipPlacement = 'top',
     onPress: userOnPress,
+    tokens,
     ...props
   } = allProps;
 
@@ -599,7 +600,10 @@ export const Button = forwardRef(function Button(
         data-size={size}
         data-popover-dismiss=""
         styles={styles}
-        tokens={sizeTokenValue ? { $size: sizeTokenValue } : undefined}
+        tokens={{
+          ...tokens,
+          ...(sizeTokenValue ? { $size: sizeTokenValue } : {}),
+        }}
       >
         <DisplayTransition
           isShown={hasLeftIcon}
