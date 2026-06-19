@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.142.9
+
+### Patch Changes
+
+- [#1217](https://github.com/cube-js/cube-ui-kit/pull/1217) [`6d690d93`](https://github.com/cube-js/cube-ui-kit/commit/6d690d937ec80a70ffe3ffb1e956a9dba7033497) Thanks [@tenphi](https://github.com/tenphi)! - Fix LayoutHeader inner layout.
+
 ## 0.142.8
 
 ### Patch Changes
