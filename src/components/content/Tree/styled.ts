@@ -130,6 +130,7 @@ export const TreeNodeCheckboxWrapper = tasty({
     display: 'grid',
     placeItems: 'center',
     placeContent: 'center',
+    placeSelf: 'stretch',
     padding: '0 1x',
   },
 });

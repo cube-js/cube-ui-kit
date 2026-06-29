@@ -75,6 +75,7 @@ const IconSlotElement = tasty({
     gridArea: '1 / 1',
     display: 'grid',
     placeItems: 'center',
+    placeSelf: 'stretch',
     opacity: {
       '': 0,
       entered: 1,
