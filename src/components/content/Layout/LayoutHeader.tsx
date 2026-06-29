@@ -26,19 +26,22 @@ const HeaderElement = tasty(LayoutContent, {
     border: 'bottom',
     flexShrink: 0,
     flexGrow: 0,
+    height: 'min 6x',
 
     Inner: {
       $: '>',
       display: 'grid',
       gridTemplate: `
-        "breadcrumbs breadcrumbs breadcrumbs breadcrumbs" auto
-        "back title suffix extra" 1fr
+        "breadcrumbs breadcrumbs breadcrumbs extra" auto
+        "back title suffix extra" max-content
         ".. subtitle subtitle extra" auto
         / auto max-content 1fr minmax(0, auto)
       `,
       gap: 0,
-      placeContent: 'stretch',
+      placeContent: 'center stretch',
       placeItems: 'center stretch',
+      padding: '0 ($content-padding, 1x)',
+      placeSelf: 'center stretch',
     },
 
     Back: {
@@ -64,13 +67,13 @@ const HeaderElement = tasty(LayoutContent, {
       $: '> Inner >',
       gridArea: 'title',
       preset: {
-        '': 'h3',
-        'level=1': 'h1',
-        'level=2': 'h2',
-        'level=3': 'h3',
-        'level=4': 'h4',
-        'level=5': 'h5',
-        'level=6': 'h6',
+        '': 'h3 / tight',
+        'level=1': 'h1 / tight',
+        'level=2': 'h2 / tight',
+        'level=3': 'h3 / tight',
+        'level=4': 'h4 / tight',
+        'level=5': 'h5 / tight',
+        'level=6': 'h6 / tight',
       },
       color: '#dark',
       margin: 0,
@@ -91,7 +94,7 @@ const HeaderElement = tasty(LayoutContent, {
       gridArea: 'extra',
       display: 'flex',
       placeItems: 'center',
-      placeSelf: 'end',
+      placeSelf: 'center',
       gap: '1x',
       width: 'max 100%',
     },

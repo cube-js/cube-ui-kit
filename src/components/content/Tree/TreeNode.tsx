@@ -22,6 +22,7 @@ import type { Styles } from '@tenphi/tasty';
 import type {
   CSSProperties,
   KeyboardEvent,
+  MouseEvent,
   ReactNode,
   Ref,
   SyntheticEvent,
@@ -208,6 +209,15 @@ function TreeNodeInner(props: TreeNodeProps) {
     onToggleChecked(String(node.key));
   });
 
+  const handleWrapperClick = useEvent((e: MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    if (isDisabled || data.isCheckboxDisabled) return;
+    // The inner <Checkbox> label toggles on direct click; skip to avoid a double toggle.
+    if ((e.target as HTMLElement).closest('[data-qa="CheckboxWrapper"]'))
+      return;
+    onToggleChecked(String(node.key));
+  });
+
   // ---- Keyboard ------------------------------------------------------------
 
   // Composed keydown handler. Runs BEFORE `rowProps.onKeyDown` from
@@ -343,7 +353,7 @@ function TreeNodeInner(props: TreeNodeProps) {
     <TreeNodeCheckboxWrapper
       data-element="Checkbox"
       role="presentation"
-      onClick={stopPropagation}
+      onClick={handleWrapperClick}
       onKeyDown={stopPropagation}
     >
       <Checkbox
