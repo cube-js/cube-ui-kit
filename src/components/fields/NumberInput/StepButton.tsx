@@ -7,7 +7,7 @@ const StepButtonElement = tasty(Button, {
   preventDefault: true,
   type: 'clear',
   styles: {
-    width: '2.5x',
+    width: '($local-size * 1.25)',
     height: 'auto',
     radius: {
       '': '0 (1r - 1bw) 0 0',
@@ -15,7 +15,8 @@ const StepButtonElement = tasty(Button, {
     },
     padding: 0,
 
-    '$icon-size': '1em',
+    $size: 'inherit',
+    '$local-size': '(($size - 2bw) / 2)',
 
     Icon: {
       width: 'auto',
@@ -39,7 +40,10 @@ export function StepButton(props) {
       label={`Step ${props.direction}`}
       {...props}
     >
-      <DirectionIcon to={props.direction} />
+      <DirectionIcon
+        to={props.direction}
+        styles={{ fontSize: '$local-size' }}
+      />
     </StepButtonElement>
   );
 }
