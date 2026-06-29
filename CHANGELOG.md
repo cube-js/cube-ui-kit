@@ -1,5 +1,16 @@
 # @cube-dev/ui-kit
 
+## 0.142.10
+
+### Patch Changes
+
+- [#1220](https://github.com/cube-js/cube-ui-kit/pull/1220) [`916384db`](https://github.com/cube-js/cube-ui-kit/commit/916384db2715be63e7d07342da28ca74b6d9f88e) Thanks [@tenphi](https://github.com/tenphi)! - Fix checkbox click area regressions in checkable ListBox and Tree.
+
+  - **ListBox:** The `IconSwitch` slot now stretches to fill its parent grid cell, restoring the full-cell click target for checkable multiple-selection options.
+  - **Tree:** The checkbox wrapper now stretches to the full row height and toggles on click across the entire wrapper area (not just the inner checkbox box).
+
+- [#1215](https://github.com/cube-js/cube-ui-kit/pull/1215) [`03c1c58e`](https://github.com/cube-js/cube-ui-kit/commit/03c1c58eb7c41e9d628057b3e7cc0b654105491b) Thanks [@tenphi](https://github.com/tenphi)! - Update tasty to the latest version.
+
 ## 0.142.9
 
 ### Patch Changes
