@@ -42,7 +42,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - `pnpm storybook` — start Storybook on port 6060
 - `pnpm build` — build library (`tsdown`, unbundled ESM)
 - `pnpm test` — run all tests (Vitest); add `-- ComponentName` to filter, `-u` to update snapshots
-- `pnpm fix` — lint + format (ESLint + Prettier)
+- `pnpm fix` — lint + format (Oxlint + Prettier)
 - `pnpm size` — check bundle size limits
 - `pnpm chromatic` — visual regression
 - `pnpm add-icons` — add new icons from tabler

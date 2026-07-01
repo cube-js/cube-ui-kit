@@ -122,7 +122,7 @@ pnpm storybook        # Start Storybook dev server on port 6060
 pnpm build            # Build the library (tsdown, unbundled ESM)
 pnpm test             # Run all tests (Vitest)
 pnpm test -- Button   # Run tests matching "Button"
-pnpm fix              # Lint and format (ESLint + Prettier)
+pnpm fix              # Lint and format (Oxlint + Prettier)
 pnpm size             # Check bundle size limits
 pnpm chromatic        # Run visual regression tests
 ```
