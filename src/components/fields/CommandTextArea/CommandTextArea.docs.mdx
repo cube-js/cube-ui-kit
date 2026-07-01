@@ -48,6 +48,21 @@ the active token and the inserted value, so `/cle` becomes `/clear ` with no
 duplication. This decouples insertion from the trigger, so non-command
 autocomplete (e.g. a `@mention` resolving to `@john`) works the same way.
 
+> **What the filter matches.** The trigger char is stripped from the active
+> token before matching (so `/co` searches for `co`), and the query is matched
+> against each option's `textValue`, its plain-text `children`, and its
+> plain-text `description`. This means an option can match by its description
+> even though the description doesn't contain the trigger char (e.g. typing
+> `/co` keeps `/clear` because its description "Clear conversation" contains
+> "co"). A recommended layout is to put the command in `children` (e.g.
+> `/clear`) and the human-readable text in the `description` prop (e.g.
+> `Clear conversation`), keeping `textValue` equal to the command so it inserts
+> correctly.
+
+The matched substring (the query with the trigger char stripped) is highlighted
+within each option's plain-text `children` **and** `description`, so wherever the
+query matched is visible.
+
 ### Base Properties
 
 Supports [Base properties](/docs/getting-started-base-properties--docs).
@@ -86,8 +101,8 @@ These properties allow direct style application without using the `styles` prop:
   placeholder="Type / to see commands…"
   onCommand={(key) => console.log('picked', key)}
 >
-  <CommandTextArea.Item key="/clear" textValue="/clear">Clear conversation</CommandTextArea.Item>
-  <CommandTextArea.Item key="/help" textValue="/help">Show help</CommandTextArea.Item>
+  <CommandTextArea.Item key="/clear" textValue="/clear" description="Clear conversation">/clear</CommandTextArea.Item>
+  <CommandTextArea.Item key="/help" textValue="/help" description="Show help">/help</CommandTextArea.Item>
 </CommandTextArea>
 ```
 
@@ -98,8 +113,8 @@ These properties allow direct style application without using the `styles` prop:
   label="Message"
   triggers={[{ char: '@', atLineStart: false }]}
 >
-  <CommandTextArea.Item key="@john" textValue="@john">John Doe</CommandTextArea.Item>
-  <CommandTextArea.Item key="@jane" textValue="@jane">Jane Roe</CommandTextArea.Item>
+  <CommandTextArea.Item key="@john" textValue="@john" description="John Doe">@john</CommandTextArea.Item>
+  <CommandTextArea.Item key="@jane" textValue="@jane" description="Jane Roe">@jane</CommandTextArea.Item>
 </CommandTextArea>
 ```
 
@@ -107,7 +122,7 @@ These properties allow direct style application without using the `styles` prop:
 
 ```jsx
 <CommandTextArea items={commands}>
-  {(item) => <CommandTextArea.Item key={item.key} textValue={item.key}>{item.label}</CommandTextArea.Item>}
+  {(item) => <CommandTextArea.Item key={item.key} textValue={item.key} description={item.label}>{item.key}</CommandTextArea.Item>}
 </CommandTextArea>
 ```
 

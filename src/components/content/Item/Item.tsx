@@ -912,6 +912,19 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     return children;
   }, [children, highlight, highlightCaseSensitive, highlightStyles]);
 
+  // Process description with highlight if applicable
+  const processedDescription = useMemo(() => {
+    if (typeof description === 'string' && highlight) {
+      return highlightText(
+        description,
+        highlight,
+        highlightCaseSensitive,
+        highlightStyles,
+      );
+    }
+    return description;
+  }, [description, highlight, highlightCaseSensitive, highlightStyles]);
+
   // Render function that creates the item element
   const renderItemElement = (
     tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
@@ -985,7 +998,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           : null}
         {showDescription ? (
           <div data-element="Description" {...descriptionProps}>
-            {description}
+            {processedDescription}
           </div>
         ) : null}
         {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}

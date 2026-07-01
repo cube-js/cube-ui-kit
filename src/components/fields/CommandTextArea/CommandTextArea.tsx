@@ -316,7 +316,17 @@ function CommandTextArea<T extends object>(
     [effectiveValue, caret, triggers],
   );
 
-  const term = activeToken?.token ?? '';
+  // The active token includes the trigger char (e.g. `/co`). Strip it before
+  // filtering so the query is matched against the meaningful text — this lets
+  // options match by their label/description (which don't contain the trigger
+  // char) as well as by their `textValue`.
+  const term = useMemo(() => {
+    if (!activeToken) return '';
+    const { token, trigger } = activeToken;
+    return token.startsWith(trigger.char)
+      ? token.slice(trigger.char.length)
+      : token;
+  }, [activeToken]);
 
   // ---- filtering --------------------------------------------------------
   const { contains } = useFilter({ sensitivity: 'base' });
@@ -662,6 +672,7 @@ function CommandTextArea<T extends object>(
         overlayStyles={popoverOverlayStyles}
         listBoxStyles={listBoxStyles}
         optionStyles={optionStyles}
+        optionHighlight={term}
         sectionStyles={sectionStyles}
         headingStyles={headingStyles}
         isDisabled={isDisabled}
@@ -688,11 +699,14 @@ function CommandTextArea<T extends object>(
   );
 }
 
-const _CommandTextArea = forwardRef(CommandTextArea) as <T>(
+const _CommandTextArea = forwardRef(CommandTextArea) as unknown as (<T>(
   props: CubeCommandTextAreaProps<T> & {
     ref?: ForwardedRef<HTMLElement>;
   },
-) => ReactElement;
+) => ReactElement) & {
+  Item: typeof Item;
+  Section: typeof BaseSection;
+};
 
 Object.assign(_CommandTextArea, {
   Item,

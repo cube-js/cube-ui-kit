@@ -7,15 +7,19 @@ import { CommandTextArea } from './CommandTextArea';
 vi.mock('../../../_internal/hooks/use-warn');
 
 const commands = [
-  { key: '/clear', children: 'Clear conversation', textValue: '/clear' },
-  { key: '/help', children: 'Show help', textValue: '/help' },
-  { key: '/share', children: 'Share conversation', textValue: '/share' },
-  { key: '/summarize', children: 'Summarize thread', textValue: '/summarize' },
+  { key: '/clear', description: 'Clear conversation', textValue: '/clear' },
+  { key: '/help', description: 'Show help', textValue: '/help' },
+  { key: '/share', description: 'Share conversation', textValue: '/share' },
+  {
+    key: '/summarize',
+    description: 'Summarize thread',
+    textValue: '/summarize',
+  },
 ];
 
 const commandItems = commands.map((c) => (
   <CommandTextArea.Item key={c.key} textValue={c.textValue}>
-    {c.children}
+    {c.key}
   </CommandTextArea.Item>
 ));
 
@@ -69,6 +73,109 @@ describe('<CommandTextArea />', () => {
     await waitFor(() => {
       // /share and /summarize match "/s"
       expect(getAllByRole('option')).toHaveLength(2);
+    });
+  });
+
+  it('matches an option by its (text) children when the textValue differs', async () => {
+    const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
+      <CommandTextArea label="Message">
+        <CommandTextArea.Item key="a" textValue="/xxx">
+          /alpha
+        </CommandTextArea.Item>
+        <CommandTextArea.Item key="b" textValue="/yyy">
+          /beta
+        </CommandTextArea.Item>
+      </CommandTextArea>,
+    );
+
+    const input = getByRole('combobox');
+    // "/al" matches neither textValue but does match the "/alpha" children.
+    await userEvent.type(input, '/al');
+
+    await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
+    await waitFor(() => {
+      const options = getAllByRole('option').map((o) => o.textContent);
+      expect(options).toEqual(['/alpha']);
+    });
+  });
+
+  it('matches an option by its (text) description', async () => {
+    const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
+      <CommandTextArea label="Message">
+        <CommandTextArea.Item
+          key="/clear"
+          textValue="/clear"
+          description="run /reset first"
+        >
+          /clear
+        </CommandTextArea.Item>
+        <CommandTextArea.Item
+          key="/help"
+          textValue="/help"
+          description="Show help"
+        >
+          /help
+        </CommandTextArea.Item>
+      </CommandTextArea>,
+    );
+
+    const input = getByRole('combobox');
+    // "/re" isn't in any command's textValue/children, but the /clear option's
+    // description contains "/reset".
+    await userEvent.type(input, '/re');
+
+    await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
+    await waitFor(() => {
+      const options = getAllByRole('option');
+      expect(options).toHaveLength(1);
+      expect(options[0].textContent).toContain('/clear');
+    });
+  });
+
+  it('highlights the typed token within the matching option', async () => {
+    const { getByRole, queryByRole } = renderWithRoot(
+      <CommandTextArea label="Message">{commandItems}</CommandTextArea>,
+    );
+
+    const input = getByRole('combobox');
+    await userEvent.type(input, '/cl');
+
+    await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
+    await waitFor(() => {
+      const option = getByRole('option');
+      const mark = option.querySelector('mark');
+      expect(mark).not.toBeNull();
+      // The trigger char is stripped from the query, so "cl" is highlighted
+      // within the "/clear" children.
+      expect(mark?.textContent).toBe('cl');
+    });
+  });
+
+  it('highlights the matched substring within the description', async () => {
+    const { getByRole, queryByRole } = renderWithRoot(
+      <CommandTextArea label="Message">
+        <CommandTextArea.Item
+          key="/clear"
+          textValue="/clear"
+          description="Clear conversation"
+        >
+          /clear
+        </CommandTextArea.Item>
+      </CommandTextArea>,
+    );
+
+    const input = getByRole('combobox');
+    // "/co" matches the description ("Clear c[o]nversation") but not the command.
+    await userEvent.type(input, '/co');
+
+    await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
+    await waitFor(() => {
+      const description = getByRole('option').querySelector(
+        '[data-element="Description"]',
+      );
+      const mark = description?.querySelector('mark');
+      expect(mark).not.toBeNull();
+      expect(mark?.textContent?.toLowerCase()).toBe('co');
     });
   });
 

@@ -119,9 +119,44 @@ export function markKeyboardFocus(listState: ListStateLike): void {
 export type TextFilterFn = (textValue: string, inputValue: string) => boolean;
 
 /**
+ * Collects the strings a node can be matched against: its `textValue` plus any
+ * plain-text `children` and `description` props. Non-string children/description
+ * (e.g. React elements) are ignored since we can't reliably read their text.
+ */
+function getSearchableStrings(node: any): string[] {
+  const strings: string[] = [];
+
+  if (node.textValue) {
+    strings.push(node.textValue);
+  }
+
+  const props = node.props;
+  if (props) {
+    if (typeof props.children === 'string') {
+      strings.push(props.children);
+    }
+    if (typeof props.description === 'string') {
+      strings.push(props.description);
+    }
+  }
+
+  return strings.length > 0 ? strings : [node.textValue || ''];
+}
+
+/** True when the term matches any of the node's searchable strings. */
+function nodeMatchesTerm(
+  node: any,
+  term: string,
+  textFilterFn: TextFilterFn,
+): boolean {
+  return getSearchableStrings(node).some((text) => textFilterFn(text, term));
+}
+
+/**
  * Filters collection nodes by a search term while preserving section structure.
- * Sections whose children all fail the filter are dropped. Extracted verbatim
- * from the former `useComboBoxFiltering` inline filter.
+ * A node matches when the term matches its `textValue`, its plain-text
+ * `children`, or its plain-text `description`. Sections whose children all fail
+ * the filter are dropped.
  */
 export function filterCollectionNodes(
   nodes: Iterable<any>,
@@ -136,7 +171,7 @@ export function filterCollectionNodes(
     .map((node: any) => {
       if (node.type === 'section' && node.childNodes) {
         const filteredChildren = [...node.childNodes].filter((child: any) =>
-          textFilterFn(child.textValue || '', term),
+          nodeMatchesTerm(child, term, textFilterFn),
         );
 
         if (filteredChildren.length === 0) {
@@ -150,7 +185,7 @@ export function filterCollectionNodes(
         };
       }
 
-      return textFilterFn(node.textValue || '', term) ? node : null;
+      return nodeMatchesTerm(node, term, textFilterFn) ? node : null;
     })
     .filter(Boolean);
 }

@@ -102,11 +102,11 @@ export default {
 };
 
 const commands = [
-  { key: '/clear', children: 'Clear conversation', textValue: '/clear' },
-  { key: '/help', children: 'Show help', textValue: '/help' },
-  { key: '/share', children: 'Share conversation', textValue: '/share' },
-  { key: '/summarize', children: 'Summarize thread', textValue: '/summarize' },
-  { key: '/settings', children: 'Open settings', textValue: '/settings' },
+  { key: '/clear', description: 'Clear conversation' },
+  { key: '/help', description: 'Show help' },
+  { key: '/share', description: 'Share conversation' },
+  { key: '/summarize', description: 'Summarize thread' },
+  { key: '/settings', description: 'Open settings' },
 ];
 
 export const Default: StoryFn = (props) => (
@@ -117,8 +117,12 @@ export const Default: StoryFn = (props) => (
     {...props}
   >
     {commands.map((c) => (
-      <CommandTextArea.Item key={c.key} textValue={c.textValue}>
-        {c.children}
+      <CommandTextArea.Item
+        key={c.key}
+        textValue={c.key}
+        description={c.description}
+      >
+        {c.key}
       </CommandTextArea.Item>
     ))}
   </CommandTextArea>
@@ -138,8 +142,12 @@ export const Controlled: StoryFn = () => {
       }}
     >
       {commands.map((c) => (
-        <CommandTextArea.Item key={c.key} textValue={c.textValue}>
-          {c.children}
+        <CommandTextArea.Item
+          key={c.key}
+          textValue={c.key}
+          description={c.description}
+        >
+          {c.key}
         </CommandTextArea.Item>
       ))}
     </CommandTextArea>
@@ -155,12 +163,16 @@ export const MentionTrigger: StoryFn = (props) => (
     {...props}
   >
     {[
-      { key: '@john', children: 'John Doe', textValue: '@john' },
-      { key: '@jane', children: 'Jane Roe', textValue: '@jane' },
-      { key: '@alex', children: 'Alex Kim', textValue: '@alex' },
+      { key: '@john', description: 'John Doe' },
+      { key: '@jane', description: 'Jane Roe' },
+      { key: '@alex', description: 'Alex Kim' },
     ].map((c) => (
-      <CommandTextArea.Item key={c.key} textValue={c.textValue}>
-        {c.children}
+      <CommandTextArea.Item
+        key={c.key}
+        textValue={c.key}
+        description={c.description}
+      >
+        {c.key}
       </CommandTextArea.Item>
     ))}
   </CommandTextArea>
@@ -174,19 +186,35 @@ export const WithSections: StoryFn = (props) => (
     {...props}
   >
     <CommandTextArea.Section title="Actions">
-      <CommandTextArea.Item key="/clear" textValue="/clear">
-        Clear conversation
+      <CommandTextArea.Item
+        key="/clear"
+        textValue="/clear"
+        description="Clear conversation"
+      >
+        /clear
       </CommandTextArea.Item>
-      <CommandTextArea.Item key="/share" textValue="/share">
-        Share conversation
+      <CommandTextArea.Item
+        key="/share"
+        textValue="/share"
+        description="Share conversation"
+      >
+        /share
       </CommandTextArea.Item>
     </CommandTextArea.Section>
     <CommandTextArea.Section title="Info">
-      <CommandTextArea.Item key="/help" textValue="/help">
-        Show help
+      <CommandTextArea.Item
+        key="/help"
+        textValue="/help"
+        description="Show help"
+      >
+        /help
       </CommandTextArea.Item>
-      <CommandTextArea.Item key="/settings" textValue="/settings">
-        Open settings
+      <CommandTextArea.Item
+        key="/settings"
+        textValue="/settings"
+        description="Open settings"
+      >
+        /settings
       </CommandTextArea.Item>
     </CommandTextArea.Section>
   </CommandTextArea>
@@ -201,8 +229,12 @@ export const AutoSize: StoryFn = (props) => (
     {...props}
   >
     {commands.map((c) => (
-      <CommandTextArea.Item key={c.key} textValue={c.textValue}>
-        {c.children}
+      <CommandTextArea.Item
+        key={c.key}
+        textValue={c.key}
+        description={c.description}
+      >
+        {c.key}
       </CommandTextArea.Item>
     ))}
   </CommandTextArea>

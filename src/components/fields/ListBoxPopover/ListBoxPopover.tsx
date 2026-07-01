@@ -24,6 +24,8 @@ export interface ListBoxPopoverProps {
   overlayStyles?: Styles;
   listBoxStyles?: Styles;
   optionStyles?: Styles;
+  /** Substring to highlight within each option's (text) children. */
+  optionHighlight?: string;
   sectionStyles?: Styles;
   headingStyles?: Styles;
   selectedKey?: Key | null;
@@ -116,6 +118,7 @@ export const ListBoxPopover = function ListBoxPopover(
     overlayStyles,
     listBoxStyles,
     optionStyles,
+    optionHighlight,
     sectionStyles,
     headingStyles,
     selectedKey,
@@ -221,6 +224,7 @@ export const ListBoxPopover = function ListBoxPopover(
               filter={filter}
               styles={listBoxStyles}
               optionStyles={optionStyles}
+              optionHighlight={optionHighlight}
               sectionStyles={sectionStyles}
               headingStyles={headingStyles}
               stateRef={listStateRef}
