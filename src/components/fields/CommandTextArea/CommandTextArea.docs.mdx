@@ -1,0 +1,138 @@
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import { CommandTextArea } from './CommandTextArea';
+import * as CommandTextAreaStories from './CommandTextArea.stories';
+
+<Meta of={CommandTextAreaStories} />
+
+# CommandTextArea
+
+A multiline text input (built on `TextArea` / `TextInputBase`) that shows a
+command-autocomplete popover when the text matches a configurable trigger. The
+focus always stays in the textarea; arrow keys, Enter/Tab, and Escape drive the
+list only while it is open. Selecting an option inserts the option's literal
+value (e.g. `/clear`) into the text and fires `onCommand`.
+
+## When to Use
+
+- Chat or prompt inputs where users type slash commands (`/clear`, `/help`).
+- Inputs that need token-based autocomplete (`@mentions`, snippets) without
+  giving up free-form, multiline editing.
+- Any textarea that should "feel like a textarea" but offer inline suggestions.
+
+## Component
+
+<Story of={CommandTextAreaStories.Default} />
+
+---
+
+### Properties
+
+- **`triggers`** `CommandTrigger[]` (default: `[{ char: '/', atLineStart: true }]`) — Descriptors that open the autocomplete. `atLineStart` restricts the token to the start of the input; `false` allows it anywhere after whitespace.
+- **`items`** `Iterable<T>` — Data-driven option source (alternative to JSX children).
+- **`children`** `ReactNode | ((item) => ReactElement)` — Static items or a render function (same shape as `ComboBox` / `ListBox`).
+- **`filter`** `(textValue, query) => boolean | false` — Custom filter. Pass `false` to disable internal filtering (e.g. server-side).
+- **`onCommand`** `(key, item) => void` — Fired when the user picks a command. The option's `textValue` is inserted into the textarea regardless.
+- **`insertSpaceAfter`** `boolean` (default: `true`) — Insert a trailing space after the chosen command.
+- **`disabledKeys`** `Iterable<Key>` — Keys of disabled options.
+- **`direction`** `'top' | 'bottom'` (default: `'top'`) — Popover placement. Chat inputs usually want `top`.
+- **`shouldFlip`** `boolean` (default: `true`) — Whether the popover flips when overflowing.
+- **`overlayOffset`** `number` (default: `8`) — Distance between the textarea and the popover.
+- **`containerPadding`** `number` (default: `8`) — Padding between the popover and the viewport edge.
+- **`autoSize`** `boolean` (default: `false`) — Resize to fit content.
+- **`rows`** `number` (default: `3`) — Visible rows.
+- **`maxRows`** `number` (default: `10`) — Max visible rows when `autoSize` is true.
+
+Each option's value is the **literal string to insert**. For commands, set the
+item's `textValue` (and `key`) to the full `/clear` — the slash is part of both
+the active token and the inserted value, so `/cle` becomes `/clear ` with no
+duplication. This decouples insertion from the trigger, so non-command
+autocomplete (e.g. a `@mention` resolving to `@john`) works the same way.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs).
+
+### Field Properties
+
+Supports all [Field properties](/docs/getting-started-field-properties--docs)
+(`label`, `name`, `isRequired`, `isDisabled`, `isReadOnly`, `validationState`,
+`description`, `rules`, etc.).
+
+### Styling Properties
+
+- **`overlayStyles`** — Styles for the popover overlay.
+- **`listBoxStyles`** — Styles for the inner listbox.
+- **`optionStyles`** — Styles for individual options.
+- **`sectionStyles`** — Styles for section containers.
+- **`headingStyles`** — Styles for section headings.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
+- **Color:** `color`, `fill`, `fade`, `image`
+
+## Examples
+
+### Basic usage
+
+```jsx
+<CommandTextArea
+  label="Message"
+  placeholder="Type / to see commands…"
+  onCommand={(key) => console.log('picked', key)}
+>
+  <CommandTextArea.Item key="/clear" textValue="/clear">Clear conversation</CommandTextArea.Item>
+  <CommandTextArea.Item key="/help" textValue="/help">Show help</CommandTextArea.Item>
+</CommandTextArea>
+```
+
+### Mention trigger (anywhere in the text)
+
+```jsx
+<CommandTextArea
+  label="Message"
+  triggers={[{ char: '@', atLineStart: false }]}
+>
+  <CommandTextArea.Item key="@john" textValue="@john">John Doe</CommandTextArea.Item>
+  <CommandTextArea.Item key="@jane" textValue="@jane">Jane Roe</CommandTextArea.Item>
+</CommandTextArea>
+```
+
+### Data-driven with sections
+
+```jsx
+<CommandTextArea items={commands}>
+  {(item) => <CommandTextArea.Item key={item.key} textValue={item.key}>{item.label}</CommandTextArea.Item>}
+</CommandTextArea>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` — Moves focus into / out of the textarea.
+- `ArrowUp` / `ArrowDown` — Move the highlighted option (only while the popover is open; otherwise moves the caret).
+- `Home` / `End` — Jump to the first / last option while open.
+- `Enter` / `Tab` — Insert the highlighted option while open; otherwise insert a newline / submit.
+- `Escape` — Close the popover without changing the text.
+
+### Screen Reader Support
+
+- The textarea is announced as a `combobox` with `aria-autocomplete="list"`.
+- `aria-expanded`, `aria-controls`, and `aria-activedescendant` track the
+  popover and the highlighted option.
+
+## Integration with Forms
+
+This component supports all [Field properties](/docs/getting-started-field-properties--docs) when used within a Form. Its `value` is the full textarea string.
+
+## Related Components
+
+- [TextArea](/docs/forms-textarea--docs) — The base multiline field this builds on.
+- [ComboBox](/docs/forms-combobox--docs) — Single-value select with search (different semantics: commits a `selectedKey`).
+- [ListBox](/docs/forms-listbox--docs) — The virtual-focus list rendered inside the popover.
