@@ -42,13 +42,6 @@ jobs:
       - name: Prepare pnpm (pre)
         run: corepack prepare pnpm@10.14.0 --activate
 
-      - uses: actions/cache@v4
-        name: Download eslint cache
-        with:
-          path: |
-            **/.eslintcache
-          key: ${{ runner.os }}-eslint
-
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
