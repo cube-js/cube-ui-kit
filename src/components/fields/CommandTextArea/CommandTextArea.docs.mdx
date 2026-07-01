@@ -63,6 +63,14 @@ The matched substring (the query with the trigger char stripped) is highlighted
 within each option's plain-text `children` **and** `description`, so wherever the
 query matched is visible.
 
+> **Popover anchors to the caret.** The autocomplete popover tracks the text
+> caret on both axes — it opens at the caret's horizontal position and on the
+> caret's current line (not pinned to the textarea's top/bottom edge). This
+> matters for multiline inputs, where the caret can be on any line. The popover
+> is clamped to the viewport, so it flips or shifts when the caret is near an
+> edge. `direction` still controls whether it prefers to open above (`top`) or
+> below (`bottom`) the caret.
+
 ### Base Properties
 
 Supports [Base properties](/docs/getting-started-base-properties--docs).

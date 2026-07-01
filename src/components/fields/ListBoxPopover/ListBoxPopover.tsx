@@ -1,6 +1,6 @@
 import { Key } from '@react-types/shared';
 import { Styles, tasty } from '@tenphi/tasty';
-import React, { ReactNode, RefObject } from 'react';
+import React, { ReactNode, RefObject, useEffect } from 'react';
 import { useOverlay, useOverlayPosition } from 'react-aria';
 
 import { mergeProps } from '../../../utils/react';
@@ -46,6 +46,17 @@ export interface ListBoxPopoverProps {
   /** Collection node filter applied to the ListBox. */
   filter?: (nodes: Iterable<any>) => Iterable<any>;
   size?: 'small' | 'medium' | 'large' | (string & {});
+  /**
+   * Element to anchor the overlay to geometrically. Defaults to `triggerRef`.
+   * Use this to anchor to something other than the trigger (e.g. the caret in
+   * a textarea) while keeping `triggerRef` for outside-click/dismiss logic.
+   */
+  positionTargetRef?: RefObject<Element | null>;
+  /**
+   * Receives an imperative handle exposing `updatePosition()` so the caller can
+   * force the overlay to re-anchor (e.g. when the caret moves).
+   */
+  positionApiRef?: RefObject<{ updatePosition: () => void } | null>;
 }
 
 const ListBoxPopoverWrapper = tasty({
@@ -134,13 +145,21 @@ export const ListBoxPopover = function ListBoxPopover(
     compositeFocusProps,
     filter,
     size = 'medium',
+    positionTargetRef,
+    positionApiRef,
   } = props;
 
   const mergedPopoverRef = popoverRef;
 
-  // Overlay positioning
-  const { overlayProps: overlayPositionProps, placement } = useOverlayPosition({
-    targetRef: triggerRef as any,
+  // Overlay positioning — anchor to the explicit position target when given
+  // (e.g. a caret anchor), otherwise to the trigger. `triggerRef` is still
+  // used below for outside-click/dismiss behavior.
+  const {
+    overlayProps: overlayPositionProps,
+    placement,
+    updatePosition,
+  } = useOverlayPosition({
+    targetRef: (positionTargetRef ?? triggerRef) as any,
     overlayRef: mergedPopoverRef as any,
     placement: `${direction} start` as any,
     shouldFlip,
@@ -148,6 +167,18 @@ export const ListBoxPopover = function ListBoxPopover(
     offset: overlayOffset,
     containerPadding: containerPadding,
   });
+
+  // Expose updatePosition so callers can re-anchor on demand (e.g. caret move).
+  useEffect(() => {
+    if (positionApiRef) {
+      positionApiRef.current = { updatePosition };
+    }
+    return () => {
+      if (positionApiRef) {
+        positionApiRef.current = null;
+      }
+    };
+  }, [positionApiRef, updatePosition]);
 
   // Overlay behavior (dismiss on outside click, escape)
   const { overlayProps: overlayBehaviorProps } = useOverlay(

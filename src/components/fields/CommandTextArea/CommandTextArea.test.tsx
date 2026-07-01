@@ -316,4 +316,28 @@ describe('<CommandTextArea />', () => {
     });
     expect(formInstance.getFieldValue('message')).toEqual('Hello');
   });
+
+  it('mounts a caret anchor inside the input wrapper for popover positioning', async () => {
+    const { getByRole, queryByRole, container } = renderWithRoot(
+      <CommandTextArea label="Message">{commandItems}</CommandTextArea>,
+    );
+
+    // The anchor is a hidden, zero-size element kept inside the input wrapper
+    // so react-aria can measure it. jsdom can't lay out text, so we only
+    // assert presence/placement — not coordinates.
+    const anchorBefore = container.querySelector('[data-caret-anchor]');
+    expect(anchorBefore).not.toBeNull();
+    expect(anchorBefore?.closest('[data-qa="InputWrapper"]')).not.toBeNull();
+
+    const input = getByRole('combobox');
+    await userEvent.type(input, '/c');
+
+    await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
+    const anchorDuring = container.querySelector('[data-caret-anchor]');
+    expect(anchorDuring).not.toBeNull();
+    expect(anchorDuring?.closest('[data-qa="InputWrapper"]')).not.toBeNull();
+
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(queryByRole('listbox')).not.toBeInTheDocument());
+  });
 });

@@ -41,6 +41,8 @@ import {
   TextInputBase,
 } from '../TextInput/TextInputBase';
 
+import { useCaretAnchor } from './useCaretAnchor';
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -381,6 +383,17 @@ function CommandTextArea<T extends object>(
   const isCommandMode = !!activeToken && activeToken.token !== dismissedToken;
   const shouldShowPopover = isCommandMode && filteredCount > 0;
 
+  // ---- caret-anchored popover ------------------------------------------
+  // A zero-size element positioned at the caret (both axes) drives the
+  // popover's geometry; the wrapper remains the dismiss/outside-click trigger.
+  const { anchorRef: caretAnchorRef, positionApiRef } = useCaretAnchor({
+    inputRef: inputRef as RefObject<HTMLTextAreaElement>,
+    wrapperRef: wrapperRef as RefObject<HTMLElement>,
+    caret,
+    value: effectiveValue,
+    isActive: shouldShowPopover,
+  });
+
   // ---- height autosize (mirrors TextArea) -------------------------------
   const adjustHeight = useEvent(() => {
     const textarea = inputRef.current;
@@ -608,14 +621,13 @@ function CommandTextArea<T extends object>(
   // ---- popover width ----------------------------------------------------
   // The virtualized ListBox has no intrinsic width, so an overlay sized to
   // `max-content` collapses to a sliver. We give the popover a concrete
-  // default width (independent of the textarea) and a real-pixel min-width
-  // derived from the textarea wrapper, so it is never narrower than the
-  // input. The user's `overlayStyles` still win on top.
-  const anchorWidth = wrapperRef.current?.offsetWidth ?? 0;
+  // default width (independent of the textarea). Because the popover is now
+  // anchored to the caret (a point) rather than the textarea edge, it should
+  // not be forced to the textarea's full width — react-aria clamps it to the
+  // viewport. The user's `overlayStyles` still win on top.
   const popoverOverlayStyles: Styles = {
     width: '40x',
     maxWidth: '50vw',
-    minWidth: anchorWidth ? `${anchorWidth}px` : '40x',
     ...overlayStyles,
   };
 
@@ -662,6 +674,8 @@ function CommandTextArea<T extends object>(
       <ListBoxPopover
         isOpen={shouldShowPopover}
         triggerRef={wrapperRef as RefObject<HTMLElement>}
+        positionTargetRef={caretAnchorRef as RefObject<Element | null>}
+        positionApiRef={positionApiRef}
         popoverRef={popoverRef}
         listBoxRef={listBoxRef}
         direction={direction}

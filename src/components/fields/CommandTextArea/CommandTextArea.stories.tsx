@@ -239,3 +239,24 @@ export const AutoSize: StoryFn = (props) => (
     ))}
   </CommandTextArea>
 );
+
+export const Multiline: StoryFn = (props) => (
+  <CommandTextArea
+    label="Message"
+    placeholder="Type / on any line to see commands…"
+    width="40x"
+    rows={6}
+    defaultValue={'Hello, how are you?\n\nI wanted to ask about '}
+    {...props}
+  >
+    {commands.map((c) => (
+      <CommandTextArea.Item
+        key={c.key}
+        textValue={c.key}
+        description={c.description}
+      >
+        {c.key}
+      </CommandTextArea.Item>
+    ))}
+  </CommandTextArea>
+);
