@@ -18,4 +18,5 @@ export type {
   NavigationDirection,
   NavigationEdge,
   TextFilterFn,
+  FilterCollectionOptions,
 } from './listNavigation';

@@ -118,25 +118,40 @@ export function markKeyboardFocus(listState: ListStateLike): void {
 
 export type TextFilterFn = (textValue: string, inputValue: string) => boolean;
 
+/** Options controlling how {@link filterCollectionNodes} matches nodes. */
+export interface FilterCollectionOptions {
+  /**
+   * Also match against a node's plain-text `children` and `description` props
+   * in addition to its `textValue`. Defaults to `false` so the search stays
+   * consistent with the visible `textValue` (which is what components like
+   * ComboBox document). Components that surface `children`/`description` in the
+   * option list (e.g. CommandTextArea) can opt in.
+   */
+  matchExtraFields?: boolean;
+}
+
 /**
- * Collects the strings a node can be matched against: its `textValue` plus any
+ * Collects the strings a node can be matched against. Always includes the
+ * node's `textValue`; when `matchExtraFields` is set, also includes any
  * plain-text `children` and `description` props. Non-string children/description
  * (e.g. React elements) are ignored since we can't reliably read their text.
  */
-function getSearchableStrings(node: any): string[] {
+function getSearchableStrings(node: any, matchExtraFields: boolean): string[] {
   const strings: string[] = [];
 
   if (node.textValue) {
     strings.push(node.textValue);
   }
 
-  const props = node.props;
-  if (props) {
-    if (typeof props.children === 'string') {
-      strings.push(props.children);
-    }
-    if (typeof props.description === 'string') {
-      strings.push(props.description);
+  if (matchExtraFields) {
+    const props = node.props;
+    if (props) {
+      if (typeof props.children === 'string') {
+        strings.push(props.children);
+      }
+      if (typeof props.description === 'string') {
+        strings.push(props.description);
+      }
     }
   }
 
@@ -148,30 +163,36 @@ function nodeMatchesTerm(
   node: any,
   term: string,
   textFilterFn: TextFilterFn,
+  matchExtraFields: boolean,
 ): boolean {
-  return getSearchableStrings(node).some((text) => textFilterFn(text, term));
+  return getSearchableStrings(node, matchExtraFields).some((text) =>
+    textFilterFn(text, term),
+  );
 }
 
 /**
  * Filters collection nodes by a search term while preserving section structure.
- * A node matches when the term matches its `textValue`, its plain-text
- * `children`, or its plain-text `description`. Sections whose children all fail
- * the filter are dropped.
+ * By default a node matches only when the term matches its `textValue`; pass
+ * `{ matchExtraFields: true }` to also match its plain-text `children` and
+ * `description`. Sections whose children all fail the filter are dropped.
  */
 export function filterCollectionNodes(
   nodes: Iterable<any>,
   term: string,
   textFilterFn: TextFilterFn,
+  options: FilterCollectionOptions = {},
 ): Iterable<any> {
   if (!term) {
     return nodes;
   }
 
+  const matchExtraFields = options.matchExtraFields ?? false;
+
   return [...nodes]
     .map((node: any) => {
       if (node.type === 'section' && node.childNodes) {
         const filteredChildren = [...node.childNodes].filter((child: any) =>
-          nodeMatchesTerm(child, term, textFilterFn),
+          nodeMatchesTerm(child, term, textFilterFn, matchExtraFields),
         );
 
         if (filteredChildren.length === 0) {
@@ -185,7 +206,9 @@ export function filterCollectionNodes(
         };
       }
 
-      return nodeMatchesTerm(node, term, textFilterFn) ? node : null;
+      return nodeMatchesTerm(node, term, textFilterFn, matchExtraFields)
+        ? node
+        : null;
     })
     .filter(Boolean);
 }

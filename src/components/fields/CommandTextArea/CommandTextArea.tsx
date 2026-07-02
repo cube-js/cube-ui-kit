@@ -27,6 +27,7 @@ import {
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps, useFormProps } from '../../form';
 import {
+  collectVisibleKeys,
   filterCollectionNodes,
   getEdgeVisibleKey,
   getNextVisibleKey,
@@ -223,6 +224,7 @@ function CommandTextArea<T extends object>(
     labelProps: userLabelProps,
     inputRef: propsInputRef,
     value,
+    defaultValue,
     placeholder,
     // command props
     items,
@@ -261,8 +263,9 @@ function CommandTextArea<T extends object>(
   const wrapperRef = useCombinedRefs(propsWrapperRef);
   const popoverRef = useCombinedRefs(propsPopoverRef);
   const listBoxRef = useCombinedRefs(propsListBoxRef);
+  const localListStateRef = useRef<ListStateLike | null>(null);
   const listStateRef = (propsListStateRef ??
-    useRef<ListStateLike | null>(null)) as RefObject<ListStateLike | null>;
+    localListStateRef) as RefObject<ListStateLike | null>;
 
   const commandTextAreaId = useMemo(() => generateRandomId(), []);
 
@@ -271,7 +274,7 @@ function CommandTextArea<T extends object>(
   // internally so trigger detection and commit still work.
   const isControlled = value !== undefined;
   const [internalValue, setInternalValue] = useState<string>(
-    (value as string) ?? '',
+    (value as string) ?? (defaultValue as string) ?? '',
   );
   const effectiveValue: string = isControlled
     ? (value as string)
@@ -312,7 +315,12 @@ function CommandTextArea<T extends object>(
 
   // ---- trigger detection ------------------------------------------------
   const activeToken = useMemo(
-    () => parseActiveToken(effectiveValue, caret, triggers),
+    () =>
+      parseActiveToken(
+        effectiveValue,
+        Math.min(caret, effectiveValue.length),
+        triggers,
+      ),
     [effectiveValue, caret, triggers],
   );
 
@@ -343,26 +351,32 @@ function CommandTextArea<T extends object>(
   });
 
   const filterFn = useCallback(
-    (nodes: Iterable<any>) => filterCollectionNodes(nodes, term, textFilterFn),
+    (nodes: Iterable<any>) =>
+      filterCollectionNodes(nodes, term, textFilterFn, {
+        matchExtraFields: true,
+      }),
     [term, textFilterFn],
   );
 
-  // Count filtered options (flatten sections) to decide whether to show.
-  const filteredCount = useMemo(() => {
-    if (!activeToken) return 0;
-    const filtered = filterFn(localCollectionState.collection);
-    let count = 0;
-    for (const node of filtered as Iterable<any>) {
-      if (node.type === 'section' && node.childNodes) {
-        for (const child of node.childNodes) {
-          if (child.type === 'item') count++;
-        }
-      } else if (node.type === 'item') {
-        count++;
-      }
-    }
-    return count;
-  }, [activeToken, filterFn, localCollectionState.collection]);
+  // Keys of the currently visible (filtered) options, in display order.
+  // Derived from our own local collection + filter (rather than the ListBox's
+  // exposed state ref) so it is always in sync with the current token — the
+  // ListBox's `stateRef.collection` can momentarily lag by a render right after
+  // the token narrows, which would otherwise leave virtual focus on (and commit)
+  // an option that is no longer visible.
+  const visibleFilteredKeys = useMemo<Key[]>(() => {
+    if (!activeToken) return [];
+    const keys: Key[] = [];
+    const disabled = disabledKeys ? new Set<Key>(disabledKeys) : undefined;
+    collectVisibleKeys(
+      filterFn(localCollectionState.collection),
+      keys,
+      disabled,
+    );
+    return keys;
+  }, [activeToken, filterFn, localCollectionState.collection, disabledKeys]);
+
+  const filteredCount = visibleFilteredKeys.length;
 
   // ---- dismiss handling (Escape keeps the text but hides the popover) ---
   const [dismissedToken, setDismissedToken] = useState<string | null>(null);
@@ -453,13 +467,25 @@ function CommandTextArea<T extends object>(
   // ---- caret restore after commit --------------------------------------
   const pendingCaretRef = useRef<number | null>(null);
   useEnvironmentalEffect(() => {
-    if (pendingCaretRef.current != null && inputRef.current) {
+    const el = inputRef.current;
+    if (!el) return;
+
+    if (pendingCaretRef.current != null) {
+      // Restore caret after we programmatically inserted a command.
       const pos = pendingCaretRef.current;
       pendingCaretRef.current = null;
-      inputRef.current.focus();
-      inputRef.current.setSelectionRange(pos, pos);
+      el.focus();
+      el.setSelectionRange(pos, pos);
       setCaret(pos);
+      return;
     }
+
+    // The value changed without our own commit (controlled update from
+    // outside, form reset, or defaultValue seeding). Resync the caret from
+    // the DOM selection so trigger parsing works off a valid index instead of
+    // a stale one. We intentionally do not steal focus here.
+    const domCaret = el.selectionStart ?? el.value.length;
+    setCaret((prev) => (prev === domCaret ? prev : domCaret));
   }, [effectiveValue]);
 
   // ---- helpers ----------------------------------------------------------
@@ -474,6 +500,13 @@ function CommandTextArea<T extends object>(
   // ---- commit (insert the chosen option's literal value) ---------------
   const commit = useEvent((key: Key) => {
     const listState = listStateRef.current;
+    // Guard against committing a stale key that has been filtered out of the
+    // visible list (e.g. the token was narrowed after focus landed on it).
+    // Fall back to the first still-visible option so the inserted command
+    // always matches what the user can see.
+    if (visibleFilteredKeys.length > 0 && !visibleFilteredKeys.includes(key)) {
+      key = visibleFilteredKeys[0];
+    }
     const textValue = getItemTextValue(key);
     const token = activeToken;
     const el = inputRef.current;
@@ -602,6 +635,25 @@ function CommandTextArea<T extends object>(
 
     requestAnimationFrame(() => requestAnimationFrame(tick));
   }, [shouldShowPopover]);
+
+  // ---- keep virtual focus valid as the filtered list narrows -----------
+  // When the user narrows the token, the previously focused option may drop
+  // out of the filtered list. Move focus to the first still-visible option so
+  // the highlight and any Enter/Tab commit stay in sync with what's shown.
+  useLayoutEffect(() => {
+    if (!shouldShowPopover) return;
+    const listState = listStateRef.current;
+    if (!listState) return;
+
+    if (visibleFilteredKeys.length === 0) return;
+
+    const focused = listState.selectionManager.focusedKey;
+    if (focused == null || !visibleFilteredKeys.includes(focused)) {
+      markKeyboardFocus(listState);
+      listState.selectionManager.setFocusedKey(visibleFilteredKeys[0]);
+      bumpFocus();
+    }
+  }, [visibleFilteredKeys, shouldShowPopover]);
 
   // ---- composite focus (wrapper + portaled popover) ---------------------
   const { compositeFocusProps } = useCompositeFocus({

@@ -373,4 +373,50 @@ describe('<CommandTextArea />', () => {
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(queryByRole('listbox')).not.toBeInTheDocument());
   });
+
+  it('moves virtual focus off a filtered-out option as the token narrows', async () => {
+    const { getByRole, queryByRole } = renderWithRoot(
+      <CommandTextArea label="Message">{commandItems}</CommandTextArea>,
+    );
+
+    const input = getByRole('combobox') as HTMLTextAreaElement;
+    await userEvent.type(input, '/');
+
+    await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
+    // Auto-focus lands on the first option (/clear).
+    await waitFor(() =>
+      expect(input).toHaveAttribute(
+        'aria-activedescendant',
+        'ListBoxItem-/clear',
+      ),
+    );
+
+    // Narrow the token so /clear no longer matches ("/h" -> /help, /share).
+    await userEvent.type(input, 'h');
+
+    // Focus must move to the first still-visible option instead of staying on
+    // the now-hidden /clear, so Enter commits a command the user can see.
+    await waitFor(() =>
+      expect(input).toHaveAttribute(
+        'aria-activedescendant',
+        'ListBoxItem-/help',
+      ),
+    );
+
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(input.value).toBe('/help ');
+    });
+  });
+
+  it('seeds an uncontrolled textarea from defaultValue', () => {
+    const { getByRole } = renderWithRoot(
+      <CommandTextArea label="Message" defaultValue="Hello there">
+        {commandItems}
+      </CommandTextArea>,
+    );
+
+    expect(getByRole('combobox')).toHaveValue('Hello there');
+  });
 });
