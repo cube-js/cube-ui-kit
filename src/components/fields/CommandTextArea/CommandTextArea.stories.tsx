@@ -260,3 +260,36 @@ export const Multiline: StoryFn = (props) => (
     ))}
   </CommandTextArea>
 );
+
+export const TopPopoverPosition: StoryFn = (props) => (
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
+      minHeight: '80vh',
+      width: '100%',
+    }}
+  >
+    <CommandTextArea
+      label="Message"
+      placeholder="Type / to see commands…"
+      width="40x"
+      direction="top"
+      {...props}
+    >
+      {commands.map((c) => (
+        <CommandTextArea.Item
+          key={c.key}
+          textValue={c.key}
+          description={c.description}
+        >
+          {c.key}
+        </CommandTextArea.Item>
+      ))}
+    </CommandTextArea>
+  </div>
+);
+TopPopoverPosition.parameters = {
+  layout: 'fullscreen',
+};

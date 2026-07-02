@@ -27,7 +27,7 @@ value (e.g. `/clear`) into the text and fires `onCommand`.
 
 ### Properties
 
-- **`triggers`** `CommandTrigger[]` (default: `[{ char: '/', atLineStart: true }]`) — Descriptors that open the autocomplete. `atLineStart` restricts the token to the start of the input; `false` allows it anywhere after whitespace.
+- **`triggers`** `CommandTrigger[]` (default: `[{ char: '/', atLineStart: true }]`) — Descriptors that open the autocomplete. `atLineStart` restricts the token to the start of the line the caret is on (after a newline, or at the very start of the input); `false` allows it anywhere after whitespace.
 - **`items`** `Iterable<T>` — Data-driven option source (alternative to JSX children).
 - **`children`** `ReactNode | ((item) => ReactElement)` — Static items or a render function (same shape as `ComboBox` / `ListBox`).
 - **`filter`** `(textValue, query) => boolean | false` — Custom filter. Pass `false` to disable internal filtering (e.g. server-side).

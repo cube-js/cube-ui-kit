@@ -293,6 +293,39 @@ describe('<CommandTextArea />', () => {
     });
   });
 
+  it('opens the popover for a line-start trigger on a non-first line', async () => {
+    const { getByRole, queryByRole } = renderWithRoot(
+      <CommandTextArea label="Message" defaultValue={'Hello\n'}>
+        {commandItems}
+      </CommandTextArea>,
+    );
+
+    const input = getByRole('combobox') as HTMLTextAreaElement;
+    // Caret is at the end of the default value; typing "/c" puts it at the
+    // start of the second line.
+    await userEvent.type(input, '/c');
+
+    await waitFor(() => {
+      expect(queryByRole('listbox')).toBeInTheDocument();
+      expect(input).toHaveAttribute('aria-expanded', 'true');
+    });
+  });
+
+  it('does not open the popover when the line-start trigger is not at a line start', async () => {
+    const { getByRole, queryByRole } = renderWithRoot(
+      <CommandTextArea label="Message">{commandItems}</CommandTextArea>,
+    );
+
+    const input = getByRole('combobox') as HTMLTextAreaElement;
+    // "hi /c" — the slash is mid-line, not at a line start, so the default
+    // atLineStart trigger should not fire.
+    await userEvent.type(input, 'hi /c');
+
+    await waitFor(() => {
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
+  });
+
   it('works without a form', async () => {
     const { getByRole } = renderWithRoot(
       <CommandTextArea label="Message">{commandItems}</CommandTextArea>,

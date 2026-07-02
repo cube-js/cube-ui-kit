@@ -52,8 +52,9 @@ export interface CommandTrigger {
   /** The character that opens the autocomplete (e.g. `/` or `@`). */
   char: string;
   /**
-   * When true, the trigger token must start at index 0 of the input
-   * (whole-message slash commands). When false, the token may appear after
+   * When true, the trigger token must start at the beginning of the line the
+   * caret is on (right after a newline, or at the very start of the input) —
+   * i.e. line-scoped slash commands. When false, the token may appear after
    * any whitespace, anywhere in the text (Slack/Notion-style).
    */
   atLineStart?: boolean;
@@ -157,21 +158,18 @@ export function parseActiveToken(
   for (const trigger of triggers) {
     const ch = trigger.char;
     if (trigger.atLineStart) {
-      // Whole-message command: token must start at index 0 and contain no
-      // whitespace up to the caret.
-      if (value[0] !== ch) continue;
-      // No whitespace allowed within the token.
-      const wsIndex = before.slice(1).search(/\s/);
+      // Line-start command: the trigger char must sit at the start of the line
+      // the caret is on (right after a newline, or at index 0), with no
+      // whitespace between it and the caret. On a single-line input with no
+      // newlines this is equivalent to "index 0 of the whole input".
+      const lineStart = before.lastIndexOf('\n') + 1;
+      const linePrefix = before.slice(lineStart);
+      if (linePrefix[0] !== ch) continue;
+      // No whitespace allowed within the token (after the trigger char).
+      const wsIndex = linePrefix.slice(1).search(/\s/);
       if (wsIndex !== -1) continue;
-      // The rest of the input (after caret) must also not yet contain a
-      // whitespace boundary that would mean the command is "finished" — but
-      // since the caret is the typing position, the token runs from 0 to the
-      // first whitespace at/after... we keep it simple: token = value up to
-      // caret, provided no whitespace in `before` past the trigger char and
-      // the char after caret (if any) is not whitespace-only trailing.
-      const token = before;
-      if (!token) continue;
-      return { trigger, token, start: 0, end: caret };
+      if (!linePrefix) continue;
+      return { trigger, token: linePrefix, start: lineStart, end: caret };
     }
 
     // Caret-token mode: find the last trigger char that begins a token at or
@@ -619,15 +617,14 @@ function CommandTextArea<T extends object>(
   const listBoxId = `CommandTextAreaListBox-${commandTextAreaId}`;
 
   // ---- popover width ----------------------------------------------------
-  // The virtualized ListBox has no intrinsic width, so an overlay sized to
-  // `max-content` collapses to a sliver. We give the popover a concrete
-  // default width (independent of the textarea). Because the popover is now
-  // anchored to the caret (a point) rather than the textarea edge, it should
-  // not be forced to the textarea's full width — react-aria clamps it to the
-  // viewport. The user's `overlayStyles` still win on top.
+  // The popover is anchored to the caret (a point), so it must not be sized to
+  // the textarea. We use the same default as the shared `ListBoxPopover` /
+  // `Picker` popovers: a `30x` floor (240px), `max-content` preferred, `50vw`
+  // cap. The concrete floor keeps the virtualized ListBox from collapsing to a
+  // sliver (it has no intrinsic width), and `max-content` lets short option
+  // lists size to their content. The user's `overlayStyles` still win on top.
   const popoverOverlayStyles: Styles = {
-    width: '40x',
-    maxWidth: '50vw',
+    width: '30x max-content 50vw',
     ...overlayStyles,
   };
 
