@@ -572,6 +572,54 @@ describe('isDismiss context detection', () => {
   });
 });
 
+// ─── isDismiss suppression via notify() overlay path ─────────────────
+
+describe('isDismiss suppression via notify()', () => {
+  it('suppresses default Dismiss when isDismiss action is present via notify()', async () => {
+    function TestComponent() {
+      const { notify } = useNotifications();
+
+      return (
+        <Button
+          onPress={() =>
+            notify({
+              id: 'update-available',
+              theme: 'note',
+              title: 'New version available',
+              description:
+                'A quick refresh will update you to the latest version.',
+              duration: null,
+              persistent: true,
+              actions: (
+                <>
+                  <NotificationAction onPress={() => {}}>
+                    Refresh now
+                  </NotificationAction>
+                  <NotificationAction isDismiss>Later</NotificationAction>
+                </>
+              ),
+            })
+          }
+        >
+          Show
+        </Button>
+      );
+    }
+
+    const { getByRole, getByText, queryAllByText } = renderWithOverlay(
+      <TestComponent />,
+    );
+
+    await act(async () => {
+      getByRole('button', { name: 'Show' }).click();
+    });
+
+    await waitFor(() => expect(getByText('Later')).toBeInTheDocument());
+    await waitFor(() => expect(getByText('Refresh now')).toBeInTheDocument());
+    expect(queryAllByText('Dismiss')).toHaveLength(0);
+  });
+});
+
 // ─── Persistent Notifications ────────────────────────────────────────
 
 describe('Persistent Notifications', () => {

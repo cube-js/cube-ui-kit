@@ -1,5 +1,5 @@
 import { tasty } from '@tenphi/tasty';
-import { Key, ReactNode, useContext, useRef } from 'react';
+import { isValidElement, Key, ReactNode } from 'react';
 
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { Block } from '../../Block';
@@ -9,7 +9,6 @@ import { Space } from '../../layout/Space';
 import { getThemeIcon } from '../Toast/useToast';
 
 import {
-  DismissActionDetectedContext,
   NotificationAction,
   NotificationDismissProvider,
 } from './NotificationAction';
@@ -43,32 +42,51 @@ const StyledItem = tasty(Item, {
 // ─── Dismiss Action Detection ────────────────────────────────────────
 
 /**
- * Provides a ref via context that NotificationAction children write to
- * during render when `isDismiss` is set. The ref is reset each render.
+ * Deterministically checks whether any `NotificationAction` with `isDismiss`
+ * is present in the `actions` ReactNode tree.
+ *
+ * Walks the static element tree (fragments, arrays, single elements) instead
+ * of relying on render-phase ref mutation, so suppression does not depend on
+ * sibling render order or concurrent rendering timing.
  */
-function DismissActionDetector({ children }: { children: ReactNode }) {
-  const ref = useRef(false);
+function hasDismissAction(node: ReactNode): boolean {
+  let found = false;
 
-  // Reset each render so detection is fresh
-  ref.current = false;
+  const visit = (n: ReactNode) => {
+    if (found || n == null || typeof n === 'boolean' || typeof n === 'string') {
+      return;
+    }
 
-  return (
-    <DismissActionDetectedContext.Provider value={ref}>
-      {children}
-    </DismissActionDetectedContext.Provider>
-  );
+    if (Array.isArray(n)) {
+      for (const child of n) visit(child);
+      return;
+    }
+
+    if (isValidElement(n)) {
+      if (n.type === NotificationAction && (n.props as any).isDismiss) {
+        found = true;
+        return;
+      }
+
+      // Recurse into fragments (and other host-like wrappers with only children)
+      if (
+        n.type === Symbol.for('react.fragment') ||
+        typeof n.type === 'symbol'
+      ) {
+        visit((n.props as any).children);
+      }
+    }
+  };
+
+  visit(node);
+  return found;
 }
 
 /**
- * Renders the default "Dismiss" button only if no sibling NotificationAction
- * has `isDismiss` set. Reads from DismissActionDetectedContext ref which is
- * populated by actions that rendered before this component (left-to-right order).
+ * Renders the default "Dismiss" button. Suppression is decided by the caller
+ * via `hasDismissAction(actions)` — this component always renders the button.
  */
 function AutoDismissButton() {
-  const dismissDetectedRef = useContext(DismissActionDetectedContext);
-
-  if (dismissDetectedRef?.current) return null;
-
   return <NotificationAction isDismiss>Dismiss</NotificationAction>;
 }
 
@@ -110,17 +128,17 @@ function ActionsSection({
   onDismiss,
   onRestore,
 }: ActionsSectionProps) {
+  // Suppress the auto-appended "Dismiss" when any provided action is already
+  // marked `isDismiss`. Determined statically from the element tree so it does
+  // not depend on render order or concurrent rendering timing.
+  const hasDismiss = hasDismissAction(actions);
+  const showDefaultDismiss = showAutoDismiss && !hasDismiss;
+
   const actionsContent = (
     <Space placeSelf="end" placeContent="end" flexGrow={1}>
       {actions}
-      {showAutoDismiss && <AutoDismissButton />}
+      {showDefaultDismiss && <AutoDismissButton />}
     </Space>
-  );
-
-  const wrappedContent = showAutoDismiss ? (
-    <DismissActionDetector>{actionsContent}</DismissActionDetector>
-  ) : (
-    actionsContent
   );
 
   return (
@@ -131,10 +149,10 @@ function ActionsSection({
           onDismiss={onDismiss!}
           onRestore={onRestore}
         >
-          {wrappedContent}
+          {actionsContent}
         </NotificationDismissProvider>
       ) : (
-        wrappedContent
+        actionsContent
       )}
     </ItemActionProvider>
   );
