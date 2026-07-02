@@ -45,9 +45,10 @@ const StyledItem = tasty(Item, {
  * Deterministically checks whether any `NotificationAction` with `isDismiss`
  * is present in the `actions` ReactNode tree.
  *
- * Walks the static element tree (fragments, arrays, single elements) instead
- * of relying on render-phase ref mutation, so suppression does not depend on
- * sibling render order or concurrent rendering timing.
+ * Walks the static element tree (arrays, fragments, host elements, and
+ * composite wrappers via their `children` prop) instead of relying on
+ * render-phase ref mutation, so suppression does not depend on sibling render
+ * order or concurrent rendering timing.
  */
 function hasDismissAction(node: ReactNode): boolean {
   let found = false;
@@ -68,13 +69,12 @@ function hasDismissAction(node: ReactNode): boolean {
         return;
       }
 
-      // Recurse into fragments (and other host-like wrappers with only children)
-      if (
-        n.type === Symbol.for('react.fragment') ||
-        typeof n.type === 'symbol'
-      ) {
-        visit((n.props as any).children);
-      }
+      // Recurse into any wrapper's children (fragments, host elements like
+      // `div`, and composite wrappers like `Flex` that receive the actions as
+      // children). Note: a component that creates the NotificationAction
+      // internally rather than receiving it via children cannot be detected
+      // statically.
+      visit((n.props as any).children);
     }
   };
 
