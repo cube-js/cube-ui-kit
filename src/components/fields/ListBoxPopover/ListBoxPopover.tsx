@@ -1,6 +1,13 @@
 import { Key } from '@react-types/shared';
 import { Styles, tasty } from '@tenphi/tasty';
-import React, { ReactNode, RefObject, useEffect } from 'react';
+import React, {
+  CSSProperties,
+  ReactNode,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
 import { useOverlay, useOverlayPosition } from 'react-aria';
 
 import { mergeProps } from '../../../utils/react';
@@ -151,6 +158,12 @@ export const ListBoxPopover = function ListBoxPopover(
 
   const mergedPopoverRef = popoverRef;
 
+  // Ref to the inner scrollable element (the visible popover). react-aria
+  // measures this for its flip/shrink math and writes maxHeight onto the
+  // overlay (positioning wrapper); we forward that maxHeight to this element
+  // below so the scroll container actually shrinks instead of overflowing.
+  const overlayScrollRef = useRef<HTMLDivElement | null>(null);
+
   // Overlay positioning — anchor to the explicit position target when given
   // (e.g. a caret anchor), otherwise to the trigger. `triggerRef` is still
   // used below for outside-click/dismiss behavior.
@@ -161,12 +174,18 @@ export const ListBoxPopover = function ListBoxPopover(
   } = useOverlayPosition({
     targetRef: (positionTargetRef ?? triggerRef) as any,
     overlayRef: mergedPopoverRef as any,
+    scrollRef: overlayScrollRef as any,
     placement: `${direction} start` as any,
     shouldFlip,
     isOpen,
     offset: overlayOffset,
     containerPadding: containerPadding,
   });
+
+  // Keep positioning (top/left/zIndex) on the wrapper, but split out the
+  // available-space cap so it can be applied to the inner scroll element.
+  const { maxHeight, maxWidth, ...positionStyle } =
+    (overlayPositionProps.style ?? {}) as CSSProperties;
 
   // Expose updatePosition so callers can re-anchor on demand (e.g. caret move).
   useEffect(() => {
@@ -211,63 +230,78 @@ export const ListBoxPopover = function ListBoxPopover(
   // Extract primary placement direction for consistent styling
   const placementDirection = placement?.split(' ')[0] || direction;
 
+  // Hold the DisplayTransition ref so we can bind the same node to both the
+  // transition listener and our scroll ref via a single stable callback.
+  const transitionRefHolder = useRef<
+    ((node: HTMLElement | null) => void) | null
+  >(null);
+  const setScrollRef = useCallback((node: HTMLElement | null) => {
+    overlayScrollRef.current = node as HTMLDivElement | null;
+    transitionRefHolder.current?.(node);
+  }, []);
+
   const overlayContent = (
     <DisplayTransition isShown={isOpen}>
-      {({ phase, isShown, ref: transitionRef }) => (
-        <ListBoxPopoverWrapper
-          {...mergeProps(
-            overlayPositionProps,
-            overlayBehaviorProps,
-            compositeFocusProps,
-          )}
-          ref={mergedPopoverRef}
-          style={overlayPositionProps.style}
-        >
-          <ListBoxPopoverElement
-            ref={transitionRef}
-            data-placement={placementDirection}
-            data-phase={phase}
-            mods={{
-              open: isShown,
-              hidden: phase === 'unmounted',
-            }}
-            styles={overlayStyles}
-            style={{
-              '--overlay-min-width': comboBoxWidth
-                ? `${comboBoxWidth}px`
-                : undefined,
-            }}
+      {({ phase, isShown, ref: transitionRef }) => {
+        transitionRefHolder.current = transitionRef;
+        return (
+          <ListBoxPopoverWrapper
+            {...mergeProps(
+              { ...overlayPositionProps, style: positionStyle },
+              overlayBehaviorProps,
+              compositeFocusProps,
+            )}
+            ref={mergedPopoverRef}
+            style={positionStyle}
           >
-            <ListBox
-              ref={listBoxRef}
-              focusOnHover
-              disableSelectionToggle
-              id={listBoxId}
-              aria-label={
-                ariaLabel || (typeof label === 'string' ? label : 'Options')
-              }
-              selectedKey={selectedKey}
-              selectionMode="single"
-              isDisabled={isDisabled}
-              disabledKeys={disabledKeys}
-              shouldUseVirtualFocus={true}
-              items={items as any}
-              filter={filter}
-              styles={listBoxStyles}
-              optionStyles={optionStyles}
-              optionHighlight={optionHighlight}
-              sectionStyles={sectionStyles}
-              headingStyles={headingStyles}
-              stateRef={listStateRef}
-              size="medium"
-              shape="popover"
-              onSelectionChange={onSelectionChange}
+            <ListBoxPopoverElement
+              ref={setScrollRef}
+              data-placement={placementDirection}
+              data-phase={phase}
+              mods={{
+                open: isShown,
+                hidden: phase === 'unmounted',
+              }}
+              styles={overlayStyles}
+              style={{
+                '--overlay-min-width': comboBoxWidth
+                  ? `${comboBoxWidth}px`
+                  : undefined,
+                maxHeight,
+                maxWidth,
+              }}
             >
-              {children as any}
-            </ListBox>
-          </ListBoxPopoverElement>
-        </ListBoxPopoverWrapper>
-      )}
+              <ListBox
+                ref={listBoxRef}
+                focusOnHover
+                disableSelectionToggle
+                id={listBoxId}
+                aria-label={
+                  ariaLabel || (typeof label === 'string' ? label : 'Options')
+                }
+                selectedKey={selectedKey}
+                selectionMode="single"
+                isDisabled={isDisabled}
+                disabledKeys={disabledKeys}
+                shouldUseVirtualFocus={true}
+                items={items as any}
+                filter={filter}
+                styles={listBoxStyles}
+                optionStyles={optionStyles}
+                optionHighlight={optionHighlight}
+                sectionStyles={sectionStyles}
+                headingStyles={headingStyles}
+                stateRef={listStateRef}
+                size="medium"
+                shape="popover"
+                onSelectionChange={onSelectionChange}
+              >
+                {children as any}
+              </ListBox>
+            </ListBoxPopoverElement>
+          </ListBoxPopoverWrapper>
+        );
+      }}
     </DisplayTransition>
   );
 
