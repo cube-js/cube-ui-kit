@@ -1,5 +1,23 @@
 # @cube-dev/ui-kit
 
+## 0.143.0
+
+### Minor Changes
+
+- [`2528e514`](https://github.com/cube-js/cube-ui-kit/commit/2528e51491afdb563e7ab4b1a2da4f85d5dfd318) Thanks [@tenphi](https://github.com/tenphi)! - Add new `CommandTextArea` component: a textarea-based command input with token-triggered autocomplete, virtual focus management, and form system integration.
+
+### Patch Changes
+
+- [#1222](https://github.com/cube-js/cube-ui-kit/pull/1222) [`4232aad3`](https://github.com/cube-js/cube-ui-kit/commit/4232aad3d7910632e6c99e5ab985b572c5272824) Thanks [@tenphi](https://github.com/tenphi)! - Fix several `CommandTextArea` issues and a related `ComboBox` filtering regression:
+
+  - **Stale virtual focus / commit**: As the typed token narrows, virtual focus now moves to the first still-visible option when the previously highlighted option is filtered out, and `Enter`/`Tab` can no longer commit a hidden command (e.g. typing `/` then `h` no longer inserts `/clear`). Visible options are derived from the component's own filtered collection instead of the ListBox state ref, which can lag by one render.
+  - **Conditional Hook**: `listStateRef` no longer calls `useRef` conditionally, preventing the Hook-order changes that could occur when the optional `listStateRef` prop was added or removed.
+  - **Stale caret after external value updates**: When the textarea value changes from outside (controlled updates, form reset, or a seeded `defaultValue`), the caret is now resynced from the DOM selection so trigger parsing uses a valid index.
+  - **`defaultValue` ignored**: An uncontrolled `CommandTextArea` now seeds its text (and trigger parsing) from `defaultValue`.
+  - **`ComboBox` filtering**: `ComboBox` again filters on `textValue` only, as documented. The shared `filterCollectionNodes` helper now matches plain-text `children`/`description` only when a component opts in via `matchExtraFields` (used by `CommandTextArea`).
+
+- [#1224](https://github.com/cube-js/cube-ui-kit/pull/1224) [`5acb166c`](https://github.com/cube-js/cube-ui-kit/commit/5acb166c961d394043f83d254ac4625127a41d85) Thanks [@tenphi](https://github.com/tenphi)! - Fix Notification rendering a duplicate "Dismiss" button when a custom `NotificationAction` with `isDismiss` is provided. Replaced the render-phase ref-mutation detection with deterministic static inspection of the `actions` tree, so the auto-appended "Dismiss" is reliably suppressed regardless of render order or concurrent rendering timing.
+
 ## 0.142.10
 
 ### Patch Changes
