@@ -291,6 +291,11 @@ export interface CubeListBoxProps<T>
   listStyles?: Styles;
   /** Custom styles for individual options */
   optionStyles?: Styles;
+  /**
+   * Substring to highlight within each option's (text) children. Typically the
+   * current search query. Matching is case-insensitive.
+   */
+  optionHighlight?: string;
   /** Custom styles for section containers */
   sectionStyles?: Styles;
   /** Custom styles for section headings */
@@ -598,6 +603,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     isDisabled,
     listStyles,
     optionStyles,
+    optionHighlight,
     sectionStyles,
     headingStyles,
     listRef,
@@ -1057,6 +1063,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       item={item}
                       state={listState}
                       styles={optionStyles}
+                      highlight={optionHighlight}
                       isParentDisabled={isDisabled}
                       validationState={validationState}
                       focusOnHover={focusOnHover}
@@ -1100,6 +1107,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       item={item}
                       state={listState}
                       styles={optionStyles}
+                      highlight={optionHighlight}
                       isParentDisabled={isDisabled}
                       validationState={validationState}
                       focusOnHover={focusOnHover}
@@ -1142,6 +1150,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                           item={item}
                           state={listState}
                           optionStyles={optionStyles}
+                          optionHighlight={optionHighlight}
                           headingStyles={headingStyles}
                           sectionStyles={sectionStyles}
                           isParentDisabled={isDisabled}
@@ -1163,6 +1172,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                           item={item}
                           state={listState}
                           styles={optionStyles}
+                          highlight={optionHighlight}
                           isParentDisabled={isDisabled}
                           validationState={validationState}
                           focusOnHover={focusOnHover}
@@ -1206,6 +1216,7 @@ function Option({
   item,
   state,
   styles,
+  highlight,
   isParentDisabled,
   validationState,
   focusOnHover = false,
@@ -1222,6 +1233,7 @@ function Option({
   item: any;
   state: any;
   styles?: Styles;
+  highlight?: string;
   isParentDisabled?: boolean;
   validationState?: any;
   focusOnHover?: boolean;
@@ -1400,6 +1412,7 @@ function Option({
       isSelected={isSelected}
       isDisabled={isDisabled}
       icon={effectiveIcon}
+      highlight={highlight}
       labelProps={labelProps}
       descriptionProps={descriptionProps}
       styles={mergeStyles(styles, filteredItemProps.styles)}
@@ -1479,6 +1492,7 @@ interface ListBoxSectionProps<T> {
   item: any;
   state: any;
   optionStyles?: Styles;
+  optionHighlight?: string;
   headingStyles?: Styles;
   sectionStyles?: Styles;
   isParentDisabled?: boolean;
@@ -1495,6 +1509,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
     item,
     state,
     optionStyles,
+    optionHighlight,
     headingStyles,
     sectionStyles,
     isParentDisabled,
@@ -1532,6 +1547,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
               item={node}
               state={state}
               styles={optionStyles}
+              highlight={optionHighlight}
               isParentDisabled={isParentDisabled}
               validationState={validationState}
               focusOnHover={focusOnHover}

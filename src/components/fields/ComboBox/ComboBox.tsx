@@ -23,12 +23,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  useFilter,
-  useKeyboard,
-  useOverlay,
-  useOverlayPosition,
-} from 'react-aria';
+import { useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
@@ -36,21 +31,22 @@ import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { generateRandomId } from '../../../utils/random';
-import {
-  mergeProps,
-  useCombinedRefs,
-  useLayoutEffect,
-} from '../../../utils/react';
+import { useCombinedRefs, useLayoutEffect } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { DisplayTransition } from '../../helpers';
-import { Portal } from '../../portal';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
-import { ListBox } from '../ListBox/ListBox';
+import {
+  filterCollectionNodes,
+  getEdgeVisibleKey,
+  getNextVisibleKey,
+  ListBoxPopover,
+  markKeyboardFocus,
+  useCompositeFocus,
+} from '../ListBoxPopover';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
@@ -68,59 +64,6 @@ const ComboBoxWrapperElement = tasty({
 const InputElement = tasty({
   as: 'input',
   styles: DEFAULT_INPUT_STYLES,
-});
-
-const ComboBoxOverlayWrapper = tasty({
-  qa: 'ComboBoxOverlayWrapper',
-  styles: {
-    position: 'absolute',
-    zIndex: 1000,
-  },
-});
-
-const ComboBoxOverlayElement = tasty({
-  qa: 'ComboBoxOverlay',
-  styles: {
-    display: 'grid',
-    gridRows: '1sf',
-    gridColumns: '1sf',
-    width: '$overlay-min-width max-content 50vw',
-    height: 'initial max-content (50vh - 5x)',
-    overflow: 'auto',
-    fill: '#surface',
-    radius: '1cr',
-    shadow: true,
-    padding: '0',
-    border: '#border',
-    hide: {
-      '': false,
-      hidden: true,
-    },
-    boxSizing: 'border-box',
-    transition:
-      'translate $transition ease-out, scale $transition ease-out, theme $transition ease-out',
-    translate: {
-      '': '0 0',
-      'open & [data-placement="top"]': '0 0',
-      '!open & [data-placement="top"]': '0 1x',
-      'open & ([data-placement="bottom"] | ![data-placement])': '0 0',
-      '!open & ([data-placement="bottom"] | ![data-placement])': '0 -1x',
-    },
-    transformOrigin: {
-      '': 'top center',
-      '[data-placement="top"]': 'bottom center',
-    },
-    scale: {
-      '': '1 1',
-      '!open': '1 .9',
-    },
-    opacity: {
-      '': 1,
-      '!open': 0.001,
-    },
-
-    '$overlay-min-width': 'min 30x',
-  },
 });
 
 export interface CubeComboBoxProps<T>
@@ -361,28 +304,7 @@ function useComboBoxFiltering({
         return nodes;
       }
 
-      // Filter nodes based on their textValue and preserve section structure
-      return [...nodes]
-        .map((node: any) => {
-          if (node.type === 'section' && node.childNodes) {
-            const filteredChildren = [...node.childNodes].filter((child: any) =>
-              textFilterFn(child.textValue || '', term),
-            );
-
-            if (filteredChildren.length === 0) {
-              return null;
-            }
-
-            return {
-              ...node,
-              childNodes: filteredChildren,
-              hasChildNodes: true,
-            };
-          }
-
-          return textFilterFn(node.textValue || '', term) ? node : null;
-        })
-        .filter(Boolean);
+      return filterCollectionNodes(nodes, term, textFilterFn);
     },
     [isFilterActive, effectiveInputValue, textFilterFn],
   );
@@ -391,85 +313,6 @@ function useComboBoxFiltering({
     filterFn,
     isFilterActive,
     setIsFilterActive,
-  };
-}
-
-// ============================================================================
-// Hook: useCompositeFocus
-// ============================================================================
-interface UseCompositeFocusProps {
-  wrapperRef: RefObject<HTMLElement>;
-  popoverRef: RefObject<HTMLElement>;
-  onFocus?: () => void;
-  onBlur?: () => void;
-  isDisabled?: boolean;
-}
-
-interface UseCompositeFocusReturn {
-  compositeFocusProps: {
-    onFocus: (e: React.FocusEvent) => void;
-    onBlur: (e: React.FocusEvent) => void;
-  };
-}
-
-function useCompositeFocus({
-  wrapperRef,
-  popoverRef,
-  onFocus,
-  onBlur,
-  isDisabled,
-}: UseCompositeFocusProps): UseCompositeFocusReturn {
-  const wasInsideRef = useRef(false);
-  const rafRef = useRef<number | null>(null);
-
-  const checkFocus = useCallback(() => {
-    if (isDisabled) return;
-
-    const activeElement = document.activeElement;
-    const isInside =
-      (wrapperRef.current?.contains(activeElement) ?? false) ||
-      (popoverRef.current?.contains(activeElement) ?? false);
-
-    if (isInside !== wasInsideRef.current) {
-      wasInsideRef.current = isInside;
-      if (isInside) {
-        onFocus?.();
-      } else {
-        onBlur?.();
-      }
-    }
-  }, [wrapperRef, popoverRef, onFocus, onBlur, isDisabled]);
-
-  const handleFocusOrBlur = useCallback(
-    (e: React.FocusEvent) => {
-      // Cancel any pending check
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-      }
-
-      // Schedule focus check for next frame
-      rafRef.current = requestAnimationFrame(() => {
-        rafRef.current = null;
-        checkFocus();
-      });
-    },
-    [checkFocus],
-  );
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
-  }, []);
-
-  return {
-    compositeFocusProps: {
-      onFocus: handleFocusOrBlur,
-      onBlur: handleFocusOrBlur,
-    },
   };
 }
 
@@ -528,54 +371,12 @@ function useComboBoxKeyboard({
         const listState = listStateRef.current;
         if (!listState) return;
 
-        const { selectionManager, collection, disabledKeys } = listState;
-
-        // Helper to collect visible item keys (supports sections)
-        const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
-          for (const node of nodes) {
-            if (node.type === 'item') {
-              if (!disabledKeys?.has(node.key)) {
-                out.push(node.key);
-              }
-            } else if (node.childNodes) {
-              collectVisibleKeys(node.childNodes, out);
-            }
-          }
-        };
-
-        const visibleKeys: Key[] = [];
-        collectVisibleKeys(collection, visibleKeys);
-
-        if (visibleKeys.length === 0) return;
-
         const isArrowDown = e.key === 'ArrowDown';
-        const currentKey = selectionManager.focusedKey;
-
-        let nextKey: Key | null = null;
-
-        if (currentKey == null) {
-          nextKey = isArrowDown
-            ? visibleKeys[0]
-            : visibleKeys[visibleKeys.length - 1];
-        } else {
-          const currentIndex = visibleKeys.indexOf(currentKey);
-          if (currentIndex !== -1) {
-            const newIndex = currentIndex + (isArrowDown ? 1 : -1);
-            if (newIndex >= 0 && newIndex < visibleKeys.length) {
-              nextKey = visibleKeys[newIndex];
-            }
-          } else {
-            nextKey = isArrowDown
-              ? visibleKeys[0]
-              : visibleKeys[visibleKeys.length - 1];
-          }
-        }
+        const nextKey = getNextVisibleKey(listState, isArrowDown ? 1 : -1);
 
         if (nextKey != null) {
-          if (listState.lastFocusSourceRef) {
-            listState.lastFocusSourceRef.current = 'keyboard';
-          }
-          selectionManager.setFocusedKey(nextKey);
+          markKeyboardFocus(listState);
+          listState.selectionManager.setFocusedKey(nextKey);
         }
       } else if (e.key === 'Enter') {
         // If popover is open, try to select the focused item first
@@ -641,35 +442,15 @@ function useComboBoxKeyboard({
           const listState = listStateRef.current;
           if (!listState) return;
 
-          const { selectionManager, collection, disabledKeys } = listState;
+          const targetKey = getEdgeVisibleKey(
+            listState,
+            e.key === 'Home' ? 'first' : 'last',
+          );
 
-          // Helper to collect visible item keys (supports sections)
-          const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
-            for (const node of nodes) {
-              if (node.type === 'item') {
-                if (!disabledKeys?.has(node.key)) {
-                  out.push(node.key);
-                }
-              } else if (node.childNodes) {
-                collectVisibleKeys(node.childNodes, out);
-              }
-            }
-          };
-
-          const visibleKeys: Key[] = [];
-          collectVisibleKeys(collection, visibleKeys);
-
-          if (visibleKeys.length === 0) return;
-
-          const targetKey =
-            e.key === 'Home'
-              ? visibleKeys[0]
-              : visibleKeys[visibleKeys.length - 1];
-
-          if (listState.lastFocusSourceRef) {
-            listState.lastFocusSourceRef.current = 'keyboard';
+          if (targetKey != null) {
+            markKeyboardFocus(listState);
+            listState.selectionManager.setFocusedKey(targetKey);
           }
-          selectionManager.setFocusedKey(targetKey);
         }
       }
     },
@@ -772,177 +553,6 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
     );
   },
 );
-
-// ============================================================================
-// Component: ComboBoxOverlay
-// ============================================================================
-interface ComboBoxOverlayProps {
-  isOpen: boolean;
-  triggerRef: RefObject<HTMLElement>;
-  popoverRef: RefObject<HTMLDivElement>;
-  listBoxRef: RefObject<HTMLDivElement>;
-  direction: 'bottom' | 'top';
-  shouldFlip: boolean;
-  overlayOffset: number;
-  containerPadding: number;
-  comboBoxWidth?: number;
-  comboBoxId: string;
-  overlayStyles?: Styles;
-  listBoxStyles?: Styles;
-  optionStyles?: Styles;
-  sectionStyles?: Styles;
-  headingStyles?: Styles;
-  effectiveSelectedKey: Key | null;
-  isDisabled?: boolean;
-  disabledKeys?: Iterable<Key>;
-  items?: Iterable<any>;
-  children: ReactNode;
-  listStateRef: RefObject<any>;
-  onSelectionChange: (selection: Key | Key[] | null) => void;
-  onClose: () => void;
-  label?: ReactNode;
-  ariaLabel?: string;
-  compositeFocusProps: {
-    onFocus: (e: React.FocusEvent) => void;
-    onBlur: (e: React.FocusEvent) => void;
-  };
-  filter?: (nodes: Iterable<any>) => Iterable<any>;
-  size?: 'small' | 'medium' | 'large' | (string & {});
-}
-
-function ComboBoxOverlay({
-  isOpen,
-  triggerRef,
-  popoverRef,
-  listBoxRef,
-  direction,
-  shouldFlip,
-  overlayOffset,
-  containerPadding,
-  comboBoxWidth,
-  comboBoxId,
-  overlayStyles,
-  listBoxStyles,
-  optionStyles,
-  sectionStyles,
-  headingStyles,
-  effectiveSelectedKey,
-  isDisabled,
-  disabledKeys,
-  items,
-  children,
-  listStateRef,
-  onSelectionChange,
-  onClose,
-  label,
-  ariaLabel,
-  compositeFocusProps,
-  filter,
-  size = 'medium',
-}: ComboBoxOverlayProps) {
-  // Overlay positioning
-  const { overlayProps: overlayPositionProps, placement } = useOverlayPosition({
-    targetRef: triggerRef as any,
-    overlayRef: popoverRef as any,
-    placement: `${direction} start` as any,
-    shouldFlip,
-    isOpen,
-    offset: overlayOffset,
-    containerPadding: containerPadding,
-  });
-
-  // Overlay behavior (dismiss on outside click, escape)
-  const { overlayProps: overlayBehaviorProps } = useOverlay(
-    {
-      onClose,
-      shouldCloseOnBlur: true,
-      isOpen,
-      isDismissable: true,
-      shouldCloseOnInteractOutside: (el) => {
-        const menuTriggerEl = el.closest('[data-popover-trigger]');
-        if (!menuTriggerEl) {
-          if (el.closest('[data-popover-keep]')) return false;
-          // Plain interactive controls (Button, ItemButton) opt in via
-          // `data-popover-dismiss` to dismiss us without losing their click
-          // to useOverlay's stopPropagation. Schedule the close after the
-          // click finishes so the button's onPress runs first.
-          if (el.closest('[data-popover-dismiss]')) {
-            setTimeout(onClose, 0);
-            return false;
-          }
-          return true;
-        }
-        if (menuTriggerEl === triggerRef?.current) return true;
-        return false;
-      },
-    },
-    popoverRef as any,
-  );
-
-  // Extract primary placement direction for consistent styling
-  const placementDirection = placement?.split(' ')[0] || direction;
-
-  const overlayContent = (
-    <DisplayTransition isShown={isOpen}>
-      {({ phase, isShown, ref: transitionRef }) => (
-        <ComboBoxOverlayWrapper
-          {...mergeProps(
-            overlayPositionProps,
-            overlayBehaviorProps,
-            compositeFocusProps,
-          )}
-          ref={popoverRef}
-          style={overlayPositionProps.style}
-        >
-          <ComboBoxOverlayElement
-            ref={transitionRef}
-            data-placement={placementDirection}
-            data-phase={phase}
-            mods={{
-              open: isShown,
-              hidden: phase === 'unmounted',
-            }}
-            styles={overlayStyles}
-            style={{
-              '--overlay-min-width': comboBoxWidth
-                ? `${comboBoxWidth}px`
-                : undefined,
-            }}
-          >
-            <ListBox
-              ref={listBoxRef}
-              focusOnHover
-              disableSelectionToggle
-              id={`ComboBoxListBox-${comboBoxId}`}
-              aria-label={
-                ariaLabel || (typeof label === 'string' ? label : 'Options')
-              }
-              selectedKey={effectiveSelectedKey}
-              selectionMode="single"
-              isDisabled={isDisabled}
-              disabledKeys={disabledKeys}
-              shouldUseVirtualFocus={true}
-              items={items as any}
-              filter={filter}
-              styles={listBoxStyles}
-              optionStyles={optionStyles}
-              sectionStyles={sectionStyles}
-              headingStyles={headingStyles}
-              stateRef={listStateRef}
-              size="medium"
-              shape="popover"
-              onSelectionChange={onSelectionChange}
-            >
-              {children as any}
-            </ListBox>
-          </ComboBoxOverlayElement>
-        </ComboBoxOverlayWrapper>
-      )}
-    </DisplayTransition>
-  );
-
-  return <Portal>{overlayContent}</Portal>;
-}
 
 // ============================================================================
 // Main Component: ComboBox
@@ -1814,7 +1424,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           />
         ) : null}
       </div>
-      <ComboBoxOverlay
+      <ListBoxPopover
         isOpen={shouldShowPopover}
         triggerRef={wrapperRef as RefObject<HTMLElement>}
         popoverRef={popoverRef}
@@ -1824,13 +1434,13 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         overlayOffset={overlayOffset}
         containerPadding={containerPadding}
         comboBoxWidth={comboBoxWidth}
-        comboBoxId={comboBoxId}
+        listBoxId={`ComboBoxListBox-${comboBoxId}`}
         overlayStyles={overlayStyles}
         listBoxStyles={listBoxStyles}
         optionStyles={optionStyles}
         sectionStyles={sectionStyles}
         headingStyles={headingStyles}
-        effectiveSelectedKey={effectiveSelectedKey}
+        selectedKey={effectiveSelectedKey}
         isDisabled={isDisabled}
         disabledKeys={props.disabledKeys}
         items={sortedItems}
@@ -1844,7 +1454,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         onClose={() => setIsPopoverOpen(false)}
       >
         {children}
-      </ComboBoxOverlay>
+      </ListBoxPopover>
     </ComboBoxWrapperElement>
   );
 

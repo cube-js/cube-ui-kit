@@ -4,6 +4,7 @@ export * from './PasswordInput/PasswordInput';
 export * from './NumberInput/NumberInput';
 export * from './FileInput/FileInput';
 export * from './TextArea';
+export * from './CommandTextArea';
 export * from './Checkbox';
 export * from './DatePicker';
 export * from './RadioGroup';
