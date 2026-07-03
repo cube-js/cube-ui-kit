@@ -1,11 +1,4 @@
-import {
-  createContext,
-  Key,
-  ReactNode,
-  useContext,
-  useMemo,
-  useRef,
-} from 'react';
+import { createContext, Key, ReactNode, useContext, useMemo } from 'react';
 
 import { useEvent } from '../../../_internal';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
@@ -65,25 +58,6 @@ export function NotificationDismissProvider({
   );
 }
 
-// ─── Dismiss Action Detection Context ────────────────────────────────
-//
-// Allows NotificationCard to detect whether any child NotificationAction
-// has `isDismiss` set, without requiring a separate `hasDismissAction` prop.
-//
-// Mechanism:
-// - DismissActionDetector provides a ref via context and resets it each render.
-// - NotificationAction writes to the ref during render when isDismiss is true.
-// - DefaultDismissGuard reads the ref to decide whether to show the default button.
-//
-// This relies on React's left-to-right sibling render order: {actions}
-// children render before <DefaultDismissGuard />, so the ref is populated
-// before it's read. The ref is reset at the provider level each render,
-// making it safe under StrictMode double-rendering.
-
-export const DismissActionDetectedContext = createContext<ReturnType<
-  typeof useRef<boolean>
-> | null>(null);
-
 // ─── NotificationAction Component ────────────────────────────────────
 
 /**
@@ -93,7 +67,8 @@ export const DismissActionDetectedContext = createContext<ReturnType<
  * - `closeOnPress` (default: true) — auto-dismisses the notification after `onPress`.
  * - An action with no `onPress` and `closeOnPress: true` acts as a dismiss-only action.
  * - `isDismiss` — marks this action as the dismiss button; when present, the default
- *   "Dismiss" button is auto-suppressed via context detection.
+ *   "Dismiss" button is auto-suppressed (detected statically from the actions tree
+ *   by NotificationCard).
  * - Type (primary/outline/clear/etc.) is set automatically via ItemActionProvider context.
  */
 export function NotificationAction({
@@ -104,14 +79,6 @@ export function NotificationAction({
   isDismiss,
 }: NotificationActionProps) {
   const dismissCtx = useContext(NotificationDismissContext);
-  const dismissDetectedRef = useContext(DismissActionDetectedContext);
-
-  // Register isDismiss during render (synchronous, before DefaultDismissGuard renders).
-  // Safe under StrictMode: the ref is reset at the DismissActionDetector level each render.
-  if (isDismiss && dismissDetectedRef) {
-    dismissDetectedRef.current = true;
-  }
-
   const actionInterceptor = useContext(NotificationActionInterceptorContext);
 
   const handlePress = useEvent(async () => {
