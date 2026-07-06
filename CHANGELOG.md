@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.143.1
+
+### Patch Changes
+
+- [#1226](https://github.com/cube-js/cube-ui-kit/pull/1226) [`8c2a36e8`](https://github.com/cube-js/cube-ui-kit/commit/8c2a36e803c50ea7153b2ab88c9fdec2d94ab262) Thanks [@solarrust](https://github.com/solarrust)! - Fix `Layout.Header` title and breadcrumb text clipping by using normal line height instead of the tight heading preset.
+
 ## 0.143.0
 
 ### Minor Changes
