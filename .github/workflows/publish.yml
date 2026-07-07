@@ -80,7 +80,16 @@ jobs:
         run: npm config delete //registry.npmjs.org/:_authToken || true
 
       - name: Publish canary to npm
-        run: npm publish --access public --tag pr_${{ github.event.number }} --provenance
+        env:
+          CANARY_VERSION: ${{ steps.version.outputs.version }}
+          PR_TAG: pr_${{ github.event.number }}
+        run: |
+          if npm view "@cube-dev/ui-kit@$CANARY_VERSION" version >/dev/null 2>&1; then
+            echo "Canary version $CANARY_VERSION is already published; re-tagging '$PR_TAG' and skipping publish."
+            npm dist-tag add "@cube-dev/ui-kit@$CANARY_VERSION" "$PR_TAG" || true
+          else
+            npm publish --access public --tag "$PR_TAG" --provenance
+          fi
 
       - name: Comment PR
         uses: actions/github-script@v6

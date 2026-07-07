@@ -1,0 +1,270 @@
+import { render, screen } from '../../../test/render';
+
+import { Board } from './index';
+
+const baseLayout = [
+  { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+  { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+  { i: 'c', x: 0, y: 2, w: 4, h: 2 },
+];
+
+describe('Board', () => {
+  it('renders widgets content', () => {
+    render(
+      <Board width={1200} defaultLayout={baseLayout}>
+        <Board.Widget id="a">Widget A</Board.Widget>
+        <Board.Widget id="b">Widget B</Board.Widget>
+        <Board.Widget id="c">Widget C</Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByText('Widget A')).toBeInTheDocument();
+    expect(screen.getByText('Widget B')).toBeInTheDocument();
+    expect(screen.getByText('Widget C')).toBeInTheDocument();
+  });
+
+  it('renders a widget host per layout item', () => {
+    render(
+      <Board width={1200} defaultLayout={baseLayout}>
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+        <Board.Widget id="b" qa="WidgetB">
+          B
+        </Board.Widget>
+        <Board.Widget id="c" qa="WidgetC">
+          C
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByTestId('WidgetA')).toBeInTheDocument();
+    expect(screen.getByTestId('WidgetB')).toBeInTheDocument();
+    expect(screen.getByTestId('WidgetC')).toBeInTheDocument();
+  });
+
+  it('positions widgets using CSS transforms', () => {
+    render(
+      <Board
+        width={1200}
+        rowHeight={100}
+        margin={[10, 10]}
+        containerPadding={[10, 10]}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    // First item sits at the container padding origin (10, 10).
+    expect(widget.style.transform).toBe('translate(10px, 10px)');
+  });
+
+  it('makes draggable widgets focusable', () => {
+    render(
+      <Board width={1200} defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}>
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByTestId('WidgetA')).toHaveAttribute('tabindex', '0');
+  });
+
+  it('does not make widgets focusable when dragging is disabled', () => {
+    render(
+      <Board
+        width={1200}
+        isDraggable={false}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByTestId('WidgetA')).not.toHaveAttribute('tabindex');
+  });
+
+  it('renders resize handles for resizable widgets', () => {
+    render(
+      <Board
+        width={1200}
+        resizeHandles={['se']}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getAllByTestId('BoardResizeHandle').length).toBe(1);
+  });
+
+  it('does not render resize handles when resizing is disabled', () => {
+    render(
+      <Board
+        width={1200}
+        isResizable={false}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.queryByTestId('BoardResizeHandle')).not.toBeInTheDocument();
+  });
+
+  it('renders a resize grip affordance for corner handles', () => {
+    render(
+      <Board
+        width={1200}
+        resizeHandles={['se']}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    const grips = screen.getAllByTestId('BoardResizeGrip');
+    expect(grips.length).toBe(1);
+    expect(grips[0]).toHaveAttribute('data-axis', 'se');
+  });
+
+  it('renders grips only for corner handles, not edges', () => {
+    render(
+      <Board
+        width={1200}
+        resizeHandles={['se', 'n', 'e', 'nw']}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    // 4 handles total, but only the two corners (se, nw) get a visible grip.
+    expect(screen.getAllByTestId('BoardResizeHandle').length).toBe(4);
+    expect(screen.getAllByTestId('BoardResizeGrip').length).toBe(2);
+  });
+
+  it('does not render grips when resizing is disabled', () => {
+    render(
+      <Board
+        width={1200}
+        isResizable={false}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.queryByTestId('BoardResizeGrip')).not.toBeInTheDocument();
+  });
+
+  it('renders all widgets at their given positions in free mode', () => {
+    render(
+      <Board
+        width={1200}
+        rowHeight={100}
+        margin={[10, 10]}
+        containerPadding={[10, 10]}
+        compact="free"
+        defaultLayout={[
+          { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+          { i: 'b', x: 3, y: 0, w: 2, h: 2 },
+        ]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+        <Board.Widget id="b" qa="WidgetB">
+          B
+        </Board.Widget>
+      </Board>,
+    );
+
+    // Free positioning keeps items exactly where placed (no reflow to origin).
+    expect(screen.getByTestId('WidgetA').style.transform).toBe(
+      'translate(10px, 10px)',
+    );
+    const widgetB = screen.getByTestId('WidgetB');
+    expect(widgetB.style.transform).not.toBe('translate(10px, 10px)');
+  });
+
+  it('supports nested boards inside a widget', () => {
+    render(
+      <Board.Provider>
+        <Board
+          id="outer"
+          width={1200}
+          defaultLayout={[{ i: 'container', x: 0, y: 0, w: 6, h: 4 }]}
+        >
+          <Board.Widget id="container">
+            <Board
+              id="inner"
+              width={500}
+              defaultLayout={[{ i: 'child', x: 0, y: 0, w: 2, h: 2 }]}
+            >
+              <Board.Widget id="child">Nested child</Board.Widget>
+            </Board>
+          </Board.Widget>
+        </Board>
+      </Board.Provider>,
+    );
+
+    expect(screen.getByText('Nested child')).toBeInTheDocument();
+  });
+
+  it('renders multiple boards under a shared provider', () => {
+    render(
+      <Board.Provider>
+        <Board
+          id="left"
+          width={600}
+          defaultLayout={[{ i: 'l1', x: 0, y: 0, w: 2, h: 2 }]}
+        >
+          <Board.Widget id="l1">Left widget</Board.Widget>
+        </Board>
+        <Board
+          id="right"
+          width={600}
+          defaultLayout={[{ i: 'r1', x: 0, y: 0, w: 2, h: 2 }]}
+        >
+          <Board.Widget id="r1">Right widget</Board.Widget>
+        </Board>
+      </Board.Provider>,
+    );
+
+    expect(screen.getByText('Left widget')).toBeInTheDocument();
+    expect(screen.getByText('Right widget')).toBeInTheDocument();
+  });
+
+  it('does not render a static widget as draggable', () => {
+    render(
+      <Board
+        width={1200}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2, static: true }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByTestId('WidgetA')).not.toHaveAttribute('tabindex');
+  });
+});

@@ -1,0 +1,141 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as BoardStories from './Board.stories';
+
+<Meta of={BoardStories} />
+
+# Board
+
+A draggable and resizable widget grid for building dashboards. Widgets are
+declared with `Board.Widget` and positioned via a `layout` (grid units). Wrap
+multiple boards in a `BoardProvider` (`Board.Provider`) to drag widgets between
+them, including out of a nested board into its parent.
+
+Dragging and resizing are powered by React Aria's `useMove`, so they work with
+mouse, touch, and keyboard (focus a widget and use the arrow keys). While a
+widget is dragged with a pointer it renders into a fixed overlay so it is never
+clipped by an ancestor's `overflow: hidden`.
+
+## When to Use
+
+- Customizable dashboards where users arrange widgets
+- Report/analytics layouts with resizable tiles
+- Multi-panel workspaces where items move between areas
+- Nested containers whose children can be dragged out
+
+## Component
+
+<Story of={BoardStories.Default} />
+
+---
+
+## Concepts
+
+- **Layout** — an array of items `{ i, x, y, w, h }` in grid units. `i` matches a
+  `Board.Widget` `id`.
+- **Content vs. position** — `Board.Widget` declares content; the owning `Board`
+  positions it. This decoupling is what lets a widget be transferred between
+  boards.
+- **Compaction** — `vertical` (default), `horizontal`, or `free` (no compaction,
+  free placement). Combine `free` with `allowOverlap` for a fully free canvas.
+
+## Properties
+
+### Board
+
+- **`layout`** `LayoutItem[]` — Controlled layout.
+- **`defaultLayout`** `LayoutItem[]` — Initial layout for uncontrolled usage.
+- **`onLayoutChange`** `(layout: LayoutItem[]) => void` — Called when a drag or resize is committed.
+- **`cols`** `number` (default: `12`) — Number of columns.
+- **`rowHeight`** `number` (default: `100`) — Row height in pixels.
+- **`margin`** `[number, number]` (default: `[8, 8]`) — Horizontal/vertical gap between widgets.
+- **`containerPadding`** `[number, number]` — Inner padding. Defaults to `margin`.
+- **`maxRows`** `number` (default: `Infinity`) — Maximum number of rows.
+- **`compact`** `'vertical' | 'horizontal' | 'free' | null` (default: `'vertical'`) — Compaction behavior.
+- **`allowOverlap`** `boolean` (default: `false`) — Allow widgets to overlap.
+- **`preventCollision`** `boolean` (default: `false`) — Block movement into occupied cells instead of pushing.
+- **`isDraggable`** `boolean` (default: `true`) — Enable dragging for all widgets.
+- **`isResizable`** `boolean` (default: `true`) — Enable resizing for all widgets.
+- **`isDroppable`** `boolean` (default: `true`) — Whether the board accepts widgets dropped from other boards.
+- **`resizeHandles`** `ResizeHandleAxis[]` (default: `['se']`) — Which resize handles to show.
+- **`constraints`** `LayoutConstraint[]` — Grid/item layout constraints.
+- **`width`** `number` — Explicit width (disables measurement; useful for SSR/tests).
+- **`place`** `Styles['place']` — Style prop shorthand for `place-items`/`place-content`.
+- **`scrollMargin`** `Styles['scrollMargin']` — Style prop for scroll margin.
+
+### Board.Widget
+
+- **`id`** `string` (required) — Must match the `i` of a layout item.
+- **`isDraggable`** `boolean` — Disable dragging for this widget.
+- **`isResizable`** `boolean` — Disable resizing for this widget.
+- **`resizeHandles`** `ResizeHandleAxis[]` — Override the board's handles.
+- **`constraints`** `LayoutConstraint[]` — Per-widget constraints.
+- **`qa`** `string` — Test id for the rendered widget element.
+- **`styles`** `Styles` — Style overrides for the rendered widget element.
+
+### Board.Provider
+
+Shares one drag context across multiple boards. A standalone `Board` provides its
+own automatically; only use `Board.Provider` when you need cross-board dragging.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs).
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop.
+Note: `margin` is repurposed as the grid gap (see Properties above) rather than a
+CSS margin.
+
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
+- **Color:** `color`, `fill`, `fade`, `image`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+## Examples
+
+### Controlled layout
+
+<Story of={BoardStories.Controlled} />
+
+### Free positioning
+
+<Story of={BoardStories.FreePositioning} />
+
+### Horizontal compaction
+
+<Story of={BoardStories.HorizontalCompaction} />
+
+### Non-resizable
+
+<Story of={BoardStories.NonResizable} />
+
+### Cross-board dragging
+
+Wrap boards in `Board.Provider` to drag widgets between them.
+
+<Story of={BoardStories.CrossBoardDragging} />
+
+### Nested boards
+
+A `Board` can be placed inside a `Board.Widget`, making the whole container
+draggable while its children can be dragged out into sibling boards.
+
+<Story of={BoardStories.NestedBoards} />
+
+## Accessibility
+
+- Widgets are focusable when draggable. Press <kbd>Tab</kbd> to focus a widget,
+  then use the arrow keys to move it one cell at a time.
+- Dragging, resizing, and keyboard movement are all handled by React Aria's
+  `useMove`, which normalizes mouse, touch, and keyboard interactions.
+
+## Attribution
+
+The layout engine in `grid-core/` is a vendored, trimmed copy of
+[react-grid-layout](https://github.com/react-grid-layout/react-grid-layout)
+(MIT). The React layer is a UI Kit-native reimplementation on top of tasty and
+React Aria. See `grid-core/NOTICE.md`.
