@@ -75,6 +75,7 @@ export type {
   ResizeHandleAxis as BoardResizeHandleAxis,
   Compactor as BoardCompactor,
   LayoutConstraint as BoardLayoutConstraint,
+  WidgetTransferInfo as BoardWidgetTransferInfo,
 } from './components/layout/Board';
 export { Root } from './components/Root';
 export type { CubeRootProps } from './components/Root';

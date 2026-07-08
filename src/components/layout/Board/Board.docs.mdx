@@ -78,6 +78,17 @@ clipped by an ancestor's `overflow: hidden`.
 Shares one drag context across multiple boards. A standalone `Board` provides its
 own automatically; only use `Board.Provider` when you need cross-board dragging.
 
+- **`onWidgetTransfer`** `(info: { widgetId, fromBoardId, toBoardId, item }) => void` —
+  Fired when a widget is dropped from one board into another.
+
+Dragging a widget across a container that can unmount (for example, out of an
+inactive `Tab`) requires controlled ownership: a widget's content is declared by
+its `Board.Widget`, so if that declaration unmounts the content is lost. Keep
+each board's `layout` controlled and, in response to `onWidgetTransfer`, move the
+`Board.Widget` declaration into the destination container so the content follows
+the widget. The [Boards inside Tabs](#boards-inside-tabs) example shows the
+pattern.
+
 ### Base Properties
 
 Supports [Base properties](/docs/getting-started-base-properties--docs).
@@ -130,7 +141,10 @@ draggable while its children can be dragged out into sibling boards.
 
 A `Board.Widget` can host a `Tabs` where each tab renders its own `Board`, all
 under a shared `Board.Provider` so widgets can be dragged between tabs and out
-into the surrounding board.
+into the surrounding board. Because an inactive tab unmounts, this example is
+fully controlled: each board's `layout` is controlled and `onWidgetTransfer`
+moves a widget's declaration into the destination container so its content
+survives dragging out of (and switching away from) a tab.
 
 <Story of={BoardStories.TabsBoard} />
 

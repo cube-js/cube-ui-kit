@@ -358,39 +358,6 @@ export function WidgetHost(props: WidgetHostProps) {
     </>
   );
 
-  // While dragging with a pointer, render the widget into the shared overlay so
-  // it floats above everything (immune to ancestor overflow clipping).
-  if (useOverlay && dragState) {
-    const overlayNode = registry.overlayRef.current;
-    const overlayStyle: CSSProperties = {
-      position: 'absolute',
-      left: `${dragState.rect.left}px`,
-      top: `${dragState.rect.top}px`,
-      width: `${dragState.rect.width}px`,
-      height: `${dragState.rect.height}px`,
-      pointerEvents: 'none',
-    };
-
-    const overlayWidget = (
-      <WidgetElement
-        {...mergeProps(moveProps, hoverProps, focusWithinProps, a11yProps, {
-          style: overlayStyle,
-        })}
-        qa={registration?.qa}
-        mods={mods}
-        styles={registration?.styles as Styles}
-      >
-        {content}
-      </WidgetElement>
-    );
-
-    return (
-      <>
-        {overlayNode ? createPortal(overlayWidget, overlayNode) : overlayWidget}
-      </>
-    );
-  }
-
   const pos = calcGridItemPosition(
     positionParams,
     item.x,
@@ -398,23 +365,75 @@ export function WidgetHost(props: WidgetHostProps) {
     item.w,
     item.h,
   );
-  const style: CSSProperties = {
+
+  // While dragging with a pointer, the widget's visual floats in the shared
+  // overlay so it is never clipped by an ancestor's `overflow: hidden`. The
+  // gesture-owning element (the one carrying `moveProps`) must NOT be the node
+  // that moves into the overlay: React Aria's `useMove` binds its pointer
+  // move/end listeners relative to the node that received `onPointerDown`, and
+  // relocating that node into the portal tears it down and mounts a fresh one
+  // (inside a `pointerEvents: 'none'` layer), which can drop the in-flight
+  // gesture. Instead we keep a stable, always-mounted in-grid host that owns the
+  // gesture for its whole lifetime, and portal a separate, non-interactive
+  // visual clone into the overlay.
+  const overlayNode = registry.overlayRef.current;
+  const floatInOverlay = useOverlay && !!overlayNode && !!dragState;
+
+  const hostStyle: CSSProperties = {
     transform: `translate(${pos.left}px, ${pos.top}px)`,
     width: `${pos.width}px`,
     height: `${pos.height}px`,
+    // Kept mounted but hidden while its clone floats, so the gesture stays live
+    // on this node (the pointer listeners never get torn down).
+    ...(floatInOverlay ? { opacity: 0, pointerEvents: 'none' } : null),
   };
 
-  return (
+  // The floating clone carries the "drag" affordance (raised shadow/z-index);
+  // keep the hidden host flat. Keyboard drags (which never float) still
+  // highlight the in-grid host, so only suppress `drag` when floating.
+  const hostMods = { ...mods, drag: isActiveDrag && !floatInOverlay };
+
+  // The host is always rendered first, with a stable element shape, so React
+  // reuses the same DOM node across the drag transition (never remounts it).
+  const host = (
     <WidgetElement
       ref={hostRef}
       {...mergeProps(moveProps, hoverProps, focusWithinProps, a11yProps, {
-        style,
+        style: hostStyle,
       })}
       qa={registration?.qa}
-      mods={mods}
+      mods={hostMods}
       styles={registration?.styles as Styles}
     >
-      {content}
+      {floatInOverlay ? null : content}
     </WidgetElement>
+  );
+
+  const overlayClone = floatInOverlay
+    ? createPortal(
+        <WidgetElement
+          style={{
+            position: 'absolute',
+            left: `${dragState!.rect.left}px`,
+            top: `${dragState!.rect.top}px`,
+            width: `${dragState!.rect.width}px`,
+            height: `${dragState!.rect.height}px`,
+            pointerEvents: 'none',
+          }}
+          mods={{ ...mods, drag: true }}
+          styles={registration?.styles as Styles}
+          aria-hidden="true"
+        >
+          {content}
+        </WidgetElement>,
+        overlayNode!,
+      )
+    : null;
+
+  return (
+    <>
+      {host}
+      {overlayClone}
+    </>
   );
 }

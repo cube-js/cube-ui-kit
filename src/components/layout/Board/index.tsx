@@ -14,6 +14,7 @@ export { Widget as BoardWidget };
 export type { CubeBoardProps, BoardCompactType } from './Board';
 export type { CubeBoardWidgetProps } from './Widget';
 export type { CubeBoardProviderProps } from './BoardProvider';
+export type { WidgetTransferInfo } from './board-context';
 
 export type {
   Layout,

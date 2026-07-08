@@ -39,6 +39,14 @@ export interface BoardEntry {
   isDroppable: () => boolean;
 }
 
+/** Emitted when a widget is dropped from one board into another. */
+export interface WidgetTransferInfo {
+  widgetId: string;
+  fromBoardId: string;
+  toBoardId: string;
+  item: LayoutItem;
+}
+
 /** Live drag state, shared across boards for overlay + placeholders. */
 export interface BoardDragState {
   sourceBoardId: string;

@@ -9,6 +9,7 @@ import { Flow } from '../Flow';
 import { Board } from './index';
 
 import type { CubeBoardProps } from './Board';
+import type { WidgetTransferInfo } from './board-context';
 import type { LayoutItem } from './grid-core';
 
 export default {
@@ -258,39 +259,117 @@ const NestedTemplate: StoryFn<CubeBoardProps> = (args) => (
 export const NestedBoards = NestedTemplate.bind({});
 NestedBoards.args = {};
 
-const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => (
-  <Board.Provider>
-    <Board
-      id="root"
-      fill="#light"
-      padding="1x"
-      radius="1r"
-      rowHeight={120}
-      defaultLayout={[
-        { i: 'summary', x: 0, y: 0, w: 4, h: 2 },
-        { i: 'kpis', x: 4, y: 0, w: 4, h: 2 },
-        { i: 'tabs', x: 8, y: 0, w: 4, h: 4, minW: 3, minH: 2 },
-        { i: 'nested', x: 0, y: 2, w: 8, h: 4, minW: 4, minH: 2 },
-      ]}
-      {...args}
-    >
-      <Board.Widget id="summary">
-        <WidgetBody title="Summary" text="A top-level widget" />
-      </Board.Widget>
-      <Board.Widget id="kpis">
-        <WidgetBody title="KPIs" text="Another top-level widget" />
-      </Board.Widget>
-      <Board.Widget id="tabs">
-        <Flow display="flex" gap="0.5x" padding="1x" height="100%">
-          <Title level={6} preset="h6">
-            Tabbed board
-          </Title>
-          <Tabs
-            defaultActiveKey="sales"
-            isReorderable={false}
-            flexGrow={1}
-            minHeight="100%"
-          >
+// Static content for the transferable leaf widgets, keyed by id. Because the
+// content lives here (not inline in a tab that can unmount), any board can
+// re-declare a widget it owns whenever it mounts - which is what keeps content
+// from disappearing on a tab switch.
+const WIDGET_CONTENT: Record<string, { title: string; text?: string }> = {
+  'sales-1': { title: 'Revenue', text: 'Drag me out' },
+  'sales-2': { title: 'Deals', text: 'Drag me out' },
+  'traffic-1': { title: 'Visitors' },
+  'traffic-2': { title: 'Sources' },
+  'traffic-3': { title: 'Bounce' },
+  'errors-1': { title: 'Error rate', text: 'Drag me out' },
+  'errors-2': { title: 'Top errors' },
+  'nested-1': { title: 'Nested A', text: 'Drag me out' },
+  'nested-2': { title: 'Nested B', text: 'Drag me out' },
+};
+
+const TABS_INITIAL_LAYOUTS: Record<string, LayoutItem[]> = {
+  root: [
+    { i: 'summary', x: 0, y: 0, w: 4, h: 2 },
+    { i: 'kpis', x: 4, y: 0, w: 4, h: 2 },
+    { i: 'tabs', x: 8, y: 0, w: 4, h: 4, minW: 3, minH: 2 },
+    { i: 'nested', x: 0, y: 2, w: 8, h: 4, minW: 4, minH: 2 },
+  ],
+  'tab-sales': [
+    { i: 'sales-1', x: 0, y: 0, w: 3, h: 2 },
+    { i: 'sales-2', x: 3, y: 0, w: 3, h: 2 },
+  ],
+  'tab-traffic': [
+    { i: 'traffic-1', x: 0, y: 0, w: 2, h: 2 },
+    { i: 'traffic-2', x: 2, y: 0, w: 2, h: 2 },
+    { i: 'traffic-3', x: 4, y: 0, w: 2, h: 2 },
+  ],
+  'tab-errors': [
+    { i: 'errors-1', x: 0, y: 0, w: 6, h: 2 },
+    { i: 'errors-2', x: 0, y: 2, w: 3, h: 2 },
+  ],
+  'nested-inner': [
+    { i: 'nested-1', x: 0, y: 0, w: 4, h: 2 },
+    { i: 'nested-2', x: 4, y: 0, w: 4, h: 2 },
+  ],
+};
+
+// Which container currently owns (declares) each transferable leaf widget. Root
+// starts with none; each inner board owns its own leaves.
+const TABS_INITIAL_OWNER: Record<string, string[]> = {
+  root: [],
+  'tab-sales': ['sales-1', 'sales-2'],
+  'tab-traffic': ['traffic-1', 'traffic-2', 'traffic-3'],
+  'tab-errors': ['errors-1', 'errors-2'],
+  'nested-inner': ['nested-1', 'nested-2'],
+};
+
+function renderLeaf(id: string) {
+  const content = WIDGET_CONTENT[id];
+  if (!content) return null;
+  return (
+    <Board.Widget key={id} id={id}>
+      <WidgetBody title={content.title} text={content.text} />
+    </Board.Widget>
+  );
+}
+
+const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => {
+  const [layouts, setLayouts] = useState<Record<string, LayoutItem[]>>(
+    () => TABS_INITIAL_LAYOUTS,
+  );
+  const [owner, setOwner] = useState<Record<string, string[]>>(
+    () => TABS_INITIAL_OWNER,
+  );
+
+  const handleLayoutChange = (boardId: string) => (next: LayoutItem[]) =>
+    setLayouts((prev) => ({ ...prev, [boardId]: next }));
+
+  // Move the widget's declaration into the destination container so its content
+  // follows it across the (unmountable) tab boundary.
+  const handleTransfer = ({
+    widgetId,
+    fromBoardId,
+    toBoardId,
+  }: WidgetTransferInfo) => {
+    if (fromBoardId === toBoardId) return;
+    setOwner((prev) => ({
+      ...prev,
+      [fromBoardId]: (prev[fromBoardId] ?? []).filter((id) => id !== widgetId),
+      [toBoardId]: [
+        ...(prev[toBoardId] ?? []).filter((id) => id !== widgetId),
+        widgetId,
+      ],
+    }));
+  };
+
+  return (
+    <Board.Provider onWidgetTransfer={handleTransfer}>
+      <Board
+        id="root"
+        fill="#light"
+        padding="1x"
+        radius="1r"
+        rowHeight={120}
+        layout={layouts.root}
+        onLayoutChange={handleLayoutChange('root')}
+        {...args}
+      >
+        <Board.Widget id="summary">
+          <WidgetBody title="Summary" text="A top-level widget" />
+        </Board.Widget>
+        <Board.Widget id="kpis">
+          <WidgetBody title="KPIs" text="Another top-level widget" />
+        </Board.Widget>
+        <Board.Widget id="tabs">
+          <Tabs defaultActiveKey="sales" height="100%">
             <Tab key="sales" title="Sales">
               <Board
                 id="tab-sales"
@@ -299,17 +378,10 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => (
                 radius="1r"
                 cols={6}
                 rowHeight={80}
-                defaultLayout={[
-                  { i: 'sales-1', x: 0, y: 0, w: 3, h: 2 },
-                  { i: 'sales-2', x: 3, y: 0, w: 3, h: 2 },
-                ]}
+                layout={layouts['tab-sales']}
+                onLayoutChange={handleLayoutChange('tab-sales')}
               >
-                <Board.Widget id="sales-1">
-                  <WidgetBody title="Revenue" text="Drag me out" />
-                </Board.Widget>
-                <Board.Widget id="sales-2">
-                  <WidgetBody title="Deals" text="Drag me out" />
-                </Board.Widget>
+                {owner['tab-sales'].map(renderLeaf)}
               </Board>
             </Tab>
             <Tab key="traffic" title="Traffic">
@@ -320,21 +392,10 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => (
                 radius="1r"
                 cols={6}
                 rowHeight={80}
-                defaultLayout={[
-                  { i: 'traffic-1', x: 0, y: 0, w: 2, h: 2 },
-                  { i: 'traffic-2', x: 2, y: 0, w: 2, h: 2 },
-                  { i: 'traffic-3', x: 4, y: 0, w: 2, h: 2 },
-                ]}
+                layout={layouts['tab-traffic']}
+                onLayoutChange={handleLayoutChange('tab-traffic')}
               >
-                <Board.Widget id="traffic-1">
-                  <WidgetBody title="Visitors" />
-                </Board.Widget>
-                <Board.Widget id="traffic-2">
-                  <WidgetBody title="Sources" />
-                </Board.Widget>
-                <Board.Widget id="traffic-3">
-                  <WidgetBody title="Bounce" />
-                </Board.Widget>
+                {owner['tab-traffic'].map(renderLeaf)}
               </Board>
             </Tab>
             <Tab key="errors" title="Errors">
@@ -345,52 +406,39 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => (
                 radius="1r"
                 cols={6}
                 rowHeight={80}
-                defaultLayout={[
-                  { i: 'errors-1', x: 0, y: 0, w: 6, h: 2 },
-                  { i: 'errors-2', x: 0, y: 2, w: 3, h: 2 },
-                ]}
+                layout={layouts['tab-errors']}
+                onLayoutChange={handleLayoutChange('tab-errors')}
               >
-                <Board.Widget id="errors-1">
-                  <WidgetBody title="Error rate" text="Drag me out" />
-                </Board.Widget>
-                <Board.Widget id="errors-2">
-                  <WidgetBody title="Top errors" />
-                </Board.Widget>
+                {owner['tab-errors'].map(renderLeaf)}
               </Board>
             </Tab>
           </Tabs>
-        </Flow>
-      </Board.Widget>
-      <Board.Widget id="nested">
-        <Flow display="flex" gap="0.5x" padding="1x" height="100%">
-          <Title level={6} preset="h6">
-            Nested board (drag the whole container)
-          </Title>
-          <Board
-            id="nested-inner"
-            fill="#purple-04.10"
-            padding=".5x"
-            radius="1r"
-            flexGrow={1}
-            cols={8}
-            rowHeight={80}
-            defaultLayout={[
-              { i: 'nested-1', x: 0, y: 0, w: 4, h: 2 },
-              { i: 'nested-2', x: 4, y: 0, w: 4, h: 2 },
-            ]}
-          >
-            <Board.Widget id="nested-1">
-              <WidgetBody title="Nested A" text="Drag me out" />
-            </Board.Widget>
-            <Board.Widget id="nested-2">
-              <WidgetBody title="Nested B" text="Drag me out" />
-            </Board.Widget>
-          </Board>
-        </Flow>
-      </Board.Widget>
-    </Board>
-  </Board.Provider>
-);
+        </Board.Widget>
+        <Board.Widget id="nested">
+          <Flow display="flex" gap="0.5x" padding="1x" height="100%">
+            <Title level={6} preset="h6">
+              Nested board (drag the whole container)
+            </Title>
+            <Board
+              id="nested-inner"
+              fill="#purple-04.10"
+              padding=".5x"
+              radius="1r"
+              flexGrow={1}
+              cols={8}
+              rowHeight={80}
+              layout={layouts['nested-inner']}
+              onLayoutChange={handleLayoutChange('nested-inner')}
+            >
+              {owner['nested-inner'].map(renderLeaf)}
+            </Board>
+          </Flow>
+        </Board.Widget>
+        {owner.root.map(renderLeaf)}
+      </Board>
+    </Board.Provider>
+  );
+};
 
 export const TabsBoard = TabsBoardTemplate.bind({});
 TabsBoard.args = {};

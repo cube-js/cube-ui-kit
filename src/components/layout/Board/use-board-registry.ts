@@ -7,6 +7,7 @@ import {
   BoardEntry,
   BoardRegistryContextValue,
   ViewportRect,
+  WidgetTransferInfo,
 } from './board-context';
 import { BoardWidgetStore } from './board-store';
 import {
@@ -33,8 +34,19 @@ function rectCenter(rect: ViewportRect): { x: number; y: number } {
  * boards (including nested ones) by hit-testing the pointer against each board's
  * content rectangle.
  */
-export function useBoardRegistry(): BoardRegistryContextValue {
+export interface UseBoardRegistryOptions {
+  /** Fired when a widget is dropped from one board into another. */
+  onWidgetTransfer?: (info: WidgetTransferInfo) => void;
+}
+
+export function useBoardRegistry(
+  options?: UseBoardRegistryOptions,
+): BoardRegistryContextValue {
   const store = useMemo(() => new BoardWidgetStore(), []);
+  // Latest transfer callback, read from a ref so the stable `onDragEnd` handler
+  // always calls the current one without re-creating the registry.
+  const onTransferRef = useRef(options?.onWidgetTransfer);
+  onTransferRef.current = options?.onWidgetTransfer;
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const boardsRef = useRef<Map<string, BoardEntry>>(new Map());
   const dragStateRef = useRef<BoardDragState | null>(null);
@@ -43,6 +55,22 @@ export function useBoardRegistry(): BoardRegistryContextValue {
   // source when the pointer leaves it (the dragged item is never removed from
   // the source mid-drag, so its gesture host stays mounted).
   const sourceSnapshotRef = useRef<LayoutItem[]>([]);
+  // Snapshot of each visited target board's layout at the moment the pointer
+  // first entered it. Used to restore a board when the pointer leaves it, and as
+  // the clean seed for the reflow preview on (re-)entry. Never mutated.
+  const targetSnapshotsRef = useRef<Map<string, LayoutItem[]>>(new Map());
+  // The current target board's live working layout (including the incoming
+  // item). Carried across frames so small pointer movements reflow the board
+  // incrementally - exactly like an in-board drag - instead of recomputing from
+  // scratch each frame (which lets collision resolution sink the item to the
+  // bottom of an occupied column).
+  const previewRef = useRef<{ boardId: string; working: LayoutItem[] } | null>(
+    null,
+  );
+  // Board content rects captured at drag start. Reading geometry from here (not
+  // live getBoundingClientRect) means the live-reflow preview can't move the
+  // rects that selection/landing depend on -> no feedback loop.
+  const frozenRectsRef = useRef<Map<string, DOMRect>>(new Map());
   // Last landing position computed for the current target board (grid units).
   const lastLandingRef = useRef<{ x: number; y: number } | null>(null);
   const [dragState, setDragStateInternal] = useState<BoardDragState | null>(
@@ -65,6 +93,14 @@ export function useBoardRegistry(): BoardRegistryContextValue {
     };
   }, []);
 
+  // Geometry frozen at drag start; falls back to the live rect for boards that
+  // mount mid-drag (they weren't captured at start).
+  const getBoardRect = useCallback(
+    (entry: BoardEntry): DOMRect | null =>
+      frozenRectsRef.current.get(entry.id) ?? entry.getContentRect(),
+    [],
+  );
+
   /** Find the most-nested droppable board whose content rect contains a point. */
   const hitTest = useCallback(
     (point: { x: number; y: number }): BoardEntry | null => {
@@ -80,7 +116,7 @@ export function useBoardRegistry(): BoardRegistryContextValue {
       boardsRef.current.forEach((entry) => {
         if (!entry.isDroppable()) return;
         if (overlay && overlay.contains(entry.getContentNode())) return;
-        const rect = entry.getContentRect();
+        const rect = getBoardRect(entry);
         if (!rect) return;
         if (
           point.x >= rect.left &&
@@ -98,7 +134,7 @@ export function useBoardRegistry(): BoardRegistryContextValue {
 
       return best;
     },
-    [],
+    [getBoardRect],
   );
 
   const onDragStart = useEvent(
@@ -112,8 +148,18 @@ export function useBoardRegistry(): BoardRegistryContextValue {
       const item = entry ? getLayoutItem(entry.getLayout(), itemId) : undefined;
       if (!entry || !item) return;
 
+      // Freeze every board's geometry for the whole gesture so live-reflow
+      // preview writes can't move the rects selection/landing read.
+      const frozen = new Map<string, DOMRect>();
+      boardsRef.current.forEach((e) => {
+        const r = e.getContentRect();
+        if (r) frozen.set(e.id, r);
+      });
+      frozenRectsRef.current = frozen;
+
       affectedRef.current = new Set([boardId]);
       sourceSnapshotRef.current = cloneLayout(entry.getLayout());
+      previewRef.current = null;
       lastLandingRef.current = { x: item.x, y: item.y };
       // Layout-item constraints win; otherwise fall back to the ones declared on
       // the owning `Board.Widget` so position constraints apply during drag.
@@ -142,7 +188,7 @@ export function useBoardRegistry(): BoardRegistryContextValue {
       rect: ViewportRect,
     ): { x: number; y: number } => {
       const pp = target.getPositionParams();
-      const contentRect = target.getContentRect();
+      const contentRect = getBoardRect(target);
       const localLeft = rect.left - (contentRect?.left ?? 0);
       const localTop = rect.top - (contentRect?.top ?? 0);
       const raw = calcXYRaw(pp, localTop, localLeft);
@@ -163,7 +209,7 @@ export function useBoardRegistry(): BoardRegistryContextValue {
         },
       );
     },
-    [],
+    [getBoardRect],
   );
 
   const moveWithinBoard = useCallback(
@@ -194,6 +240,74 @@ export function useBoardRegistry(): BoardRegistryContextValue {
     [],
   );
 
+  /**
+   * Live cross-board reflow preview. Pushes the target board's *other* widgets
+   * aside to make room for the incoming item, without ever adding the dragged
+   * item's host to the target (it stays visualized as a placeholder + overlay
+   * clone, and its gesture host remains mounted in the source board).
+   *
+   * Continuity: the working layout (including the incoming item) is carried
+   * across frames via `previewRef`, so a small pointer movement moves the item
+   * one step and reflows the neighbours incrementally - identical to an in-board
+   * drag. Recomputing from the clean snapshot every frame instead lets
+   * `moveElement`/compaction sink the item to the bottom of an occupied column
+   * (the "pushed too far below" bug). On (re-)entry the working layout is seeded
+   * from a *clone* of the snapshot so the stored snapshot is never mutated.
+   */
+  const previewOnTarget = useCallback(
+    (target: BoardEntry, item: LayoutItem, x: number, y: number) => {
+      const pp = target.getPositionParams();
+      const compactor = target.getCompactor();
+
+      const carried =
+        previewRef.current?.boardId === target.id
+          ? previewRef.current.working
+          : null;
+      const base = (
+        carried ??
+        cloneLayout(
+          targetSnapshotsRef.current.get(target.id) ?? target.getLayout(),
+        )
+      ).filter((l) => l.i !== item.i);
+
+      // Reuse the item's carried position as the move origin (continuity). On
+      // first entry there is none, so seed it just above (or left of) its target
+      // cell: that makes the first `moveElement` an *active* placement (never a
+      // no-op) that pushes colliding widgets aside instead of the item sinking.
+      const prevItem = carried ? getLayoutItem(carried, item.i) : undefined;
+      const dragged: LayoutItem = prevItem
+        ? { ...prevItem }
+        : compactor.type === 'horizontal'
+          ? { ...item, x: Math.max(0, x) - 1, y }
+          : { ...item, x, y: Math.max(0, y) - 1 };
+      const working = [...base, dragged];
+
+      const moved = moveElement(
+        working,
+        dragged,
+        x,
+        y,
+        true,
+        compactor.preventCollision,
+        compactor.type,
+        pp.cols,
+        compactor.allowOverlap,
+      );
+      const compacted = [...compactor.compact(moved, pp.cols)];
+      previewRef.current = { boardId: target.id, working: compacted };
+
+      const landed = getLayoutItem(compacted, item.i) ?? { ...item, x, y };
+      // Apply only the other widgets so the dragged item is never rendered as a
+      // host on the target board.
+      target.applyLayout(
+        compacted.filter((l) => l.i !== item.i),
+        false,
+      );
+      target.setPlaceholder({ ...landed });
+    },
+    [],
+  );
+
   const onDragMove = useEvent(
     (deltaX: number, deltaY: number, _pointerType: string) => {
       const ds = dragStateRef.current;
@@ -207,7 +321,8 @@ export function useBoardRegistry(): BoardRegistryContextValue {
 
       const source = boardsRef.current.get(ds.sourceBoardId);
       // Fall back to the source board so a pointer outside every board keeps the
-      // widget anchored to where it came from.
+      // widget anchored to where it came from. Frozen rects make this
+      // deterministic per pointer position (no preview-induced flip-flop).
       const target = hitTest(rectCenter(newRect)) ?? source ?? null;
 
       if (!target) {
@@ -222,8 +337,13 @@ export function useBoardRegistry(): BoardRegistryContextValue {
       // source, so its gesture host is never unmounted).
       if (target.id === ds.sourceBoardId) {
         if (ds.currentBoardId !== ds.sourceBoardId) {
-          // Returning from another board: clear that board's placeholder.
-          boardsRef.current.get(ds.currentBoardId)?.setPlaceholder(null);
+          // Returning from another board: restore that board's pushed widgets
+          // to their pre-hover arrangement and clear its placeholder.
+          const prev = boardsRef.current.get(ds.currentBoardId);
+          const snap = targetSnapshotsRef.current.get(ds.currentBoardId);
+          if (snap) prev?.applyLayout(cloneLayout(snap), false);
+          prev?.setPlaceholder(null);
+          previewRef.current = null;
         }
         moveWithinBoard(target, ds.item, x, y);
         setDragState({
@@ -234,20 +354,36 @@ export function useBoardRegistry(): BoardRegistryContextValue {
         return;
       }
 
-      // Cross-board: never mutate layouts during the drag. Only preview the
-      // landing slot on the target via a placeholder. The actual transfer is
-      // committed on drop. This keeps the dragged widget's gesture host mounted
-      // in the source board for the entire drag.
+      // Cross-board: preview the transfer live by pushing the target board's
+      // other widgets aside (see `previewOnTarget`). The dragged item's host
+      // stays mounted in the source board for the entire drag; the actual
+      // transfer is committed on drop.
       if (ds.currentBoardId !== target.id) {
         const prev = boardsRef.current.get(ds.currentBoardId);
         if (ds.currentBoardId === ds.sourceBoardId) {
           // Leaving the source: restore it to its pre-drag arrangement.
           prev?.applyLayout(cloneLayout(sourceSnapshotRef.current), false);
+        } else {
+          // Leaving another target board: restore its pushed widgets.
+          const snap = targetSnapshotsRef.current.get(ds.currentBoardId);
+          if (snap) prev?.applyLayout(cloneLayout(snap), false);
         }
         prev?.setPlaceholder(null);
+        // Drop the carried working layout so the newly entered target seeds a
+        // fresh preview from its own clean snapshot.
+        previewRef.current = null;
+
+        // Snapshot the newly entered target once, as the stable base for its
+        // reflow preview.
+        if (!targetSnapshotsRef.current.has(target.id)) {
+          targetSnapshotsRef.current.set(
+            target.id,
+            cloneLayout(target.getLayout()),
+          );
+        }
       }
 
-      target.setPlaceholder({ ...ds.item, x, y });
+      previewOnTarget(target, ds.item, x, y);
       affectedRef.current.add(target.id);
       setDragState({ ...ds, currentBoardId: target.id, rect: newRect });
     },
@@ -262,8 +398,13 @@ export function useBoardRegistry(): BoardRegistryContextValue {
     const droppedInSource = !target || target.id === ds.sourceBoardId;
 
     if (droppedInSource) {
-      // Commit the current source arrangement (already previewed in-board).
-      source?.applyLayout([...(source.getLayout() ?? [])], true);
+      // Commit a freshly compacted source so the result never depends on the
+      // last preview frame (which may have been mid-reflow).
+      if (source) {
+        const sp = source.getPositionParams();
+        const sc = source.getCompactor();
+        source.applyLayout([...sc.compact(source.getLayout(), sp.cols)], true);
+      }
     } else {
       const landing = lastLandingRef.current ?? { x: ds.item.x, y: ds.item.y };
 
@@ -275,31 +416,64 @@ export function useBoardRegistry(): BoardRegistryContextValue {
         source.applyLayout([...sc.compact(remaining, sp.cols)], true);
       }
 
-      // Insert the item into the target board at the previewed landing slot.
       const tp = target!.getPositionParams();
       const tc = target!.getCompactor();
-      const newItem: LayoutItem = {
-        ...ds.item,
-        x: landing.x,
-        y: landing.y,
-        moved: true,
-      };
-      const base = [
-        ...target!.getLayout().filter((l) => l.i !== ds.itemId),
-        newItem,
-      ];
-      const moved = moveElement(
-        base,
-        newItem,
-        landing.x,
-        landing.y,
-        true,
-        tc.preventCollision,
-        tc.type,
-        tp.cols,
-        tc.allowOverlap,
-      );
-      target!.applyLayout([...tc.compact(moved, tp.cols)], true);
+
+      // Prefer committing the exact arrangement the user was previewing (item
+      // already placed with the neighbours reflowed around it via continuity).
+      const carried =
+        previewRef.current?.boardId === target!.id &&
+        getLayoutItem(previewRef.current.working, ds.itemId)
+          ? previewRef.current.working
+          : null;
+
+      let finalLayout: LayoutItem[];
+      if (carried) {
+        finalLayout = [...tc.compact(cloneLayout(carried), tp.cols)];
+      } else {
+        // No preview frame ran (e.g. a teleport drop). Seed the item just above
+        // (or left of) its landing cell so `moveElement` actively places it
+        // rather than no-opping and letting compaction sink it to the bottom.
+        const newItem: LayoutItem =
+          tc.type === 'horizontal'
+            ? { ...ds.item, x: Math.max(0, landing.x) - 1, y: landing.y }
+            : { ...ds.item, x: landing.x, y: Math.max(0, landing.y) - 1 };
+        const base = [
+          ...cloneLayout(
+            (
+              targetSnapshotsRef.current.get(target!.id) ?? target!.getLayout()
+            ).filter((l) => l.i !== ds.itemId),
+          ),
+          newItem,
+        ];
+        const moved = moveElement(
+          base,
+          newItem,
+          landing.x,
+          landing.y,
+          true,
+          tc.preventCollision,
+          tc.type,
+          tp.cols,
+          tc.allowOverlap,
+        );
+        finalLayout = [...tc.compact(moved, tp.cols)];
+      }
+      target!.applyLayout(finalLayout, true);
+
+      // Signal the transfer so a controlled app can move the widget's
+      // declaration into the destination container (positions are already
+      // reported via each board's onLayoutChange).
+      onTransferRef.current?.({
+        widgetId: ds.itemId,
+        fromBoardId: ds.sourceBoardId,
+        toBoardId: target!.id,
+        item: getLayoutItem(finalLayout, ds.itemId) ?? {
+          ...ds.item,
+          x: landing.x,
+          y: landing.y,
+        },
+      });
     }
 
     const ids = new Set(affectedRef.current);
@@ -309,6 +483,9 @@ export function useBoardRegistry(): BoardRegistryContextValue {
 
     affectedRef.current.clear();
     sourceSnapshotRef.current = [];
+    targetSnapshotsRef.current.clear();
+    frozenRectsRef.current.clear();
+    previewRef.current = null;
     lastLandingRef.current = null;
     setDragState(null);
   });

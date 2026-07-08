@@ -50,6 +50,8 @@ const BoardElement = tasty({
     position: 'relative',
     display: 'block',
     width: '100%',
+    flexGrow: 1,
+    minHeight: '0',
     fill: '#clear',
     boxSizing: 'border-box',
   },

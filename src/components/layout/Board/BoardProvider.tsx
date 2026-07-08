@@ -1,7 +1,7 @@
 import { tasty } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
-import { BoardRegistryContext } from './board-context';
+import { BoardRegistryContext, WidgetTransferInfo } from './board-context';
 import { useBoardRegistry } from './use-board-registry';
 
 const OverlayElement = tasty({
@@ -20,6 +20,12 @@ const OverlayElement = tasty({
 
 export interface CubeBoardProviderProps {
   children?: ReactNode;
+  /**
+   * Fired when a widget is dropped from one board into another. Use it to move
+   * the widget's `Board.Widget` declaration into the destination container when
+   * the source container can unmount (e.g. an inactive `Tab`).
+   */
+  onWidgetTransfer?: (info: WidgetTransferInfo) => void;
 }
 
 /**
@@ -32,8 +38,8 @@ export interface CubeBoardProviderProps {
  * boards in a `BoardProvider` only when you need cross-board dragging.
  */
 export function BoardProvider(props: CubeBoardProviderProps) {
-  const { children } = props;
-  const registry = useBoardRegistry();
+  const { children, onWidgetTransfer } = props;
+  const registry = useBoardRegistry({ onWidgetTransfer });
 
   return (
     <BoardRegistryContext.Provider value={registry}>
