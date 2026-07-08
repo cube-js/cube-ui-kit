@@ -362,4 +362,188 @@ describe('Board', () => {
 
     expect(onLayoutChange).toHaveBeenCalled();
   });
+
+  it('aligns a nested board column pitch to the parent grid', () => {
+    render(
+      <Board.Provider>
+        <Board
+          id="outer"
+          width={1212}
+          cols={12}
+          margin={[10, 10]}
+          containerPadding={[10, 10]}
+          defaultLayout={[
+            { i: 'p', x: 0, y: 0, w: 1, h: 1 },
+            { i: 'container', x: 1, y: 0, w: 6, h: 4 },
+          ]}
+        >
+          <Board.Widget id="p" qa="ParentCell">
+            P
+          </Board.Widget>
+          <Board.Widget id="container">
+            <Board
+              id="inner"
+              align
+              width={500}
+              cols={6}
+              defaultLayout={[{ i: 'c', x: 0, y: 0, w: 1, h: 1 }]}
+            >
+              <Board.Widget id="c" qa="InnerCell">
+                C
+              </Board.Widget>
+            </Board>
+          </Board.Widget>
+        </Board>
+      </Board.Provider>,
+    );
+
+    const parentCell = screen.getByTestId('ParentCell');
+    const innerCell = screen.getByTestId('InnerCell');
+    // The aligned board inherits the parent's column pitch, so a single-column
+    // widget has the same pixel width in both boards even though their own
+    // widths and column counts differ.
+    expect(innerCell.style.width).toBe(parentCell.style.width);
+  });
+
+  it('leaves a nested board without align on its own grid', () => {
+    render(
+      <Board.Provider>
+        <Board
+          id="outer"
+          width={1212}
+          cols={12}
+          margin={[10, 10]}
+          containerPadding={[10, 10]}
+          defaultLayout={[
+            { i: 'p', x: 0, y: 0, w: 1, h: 1 },
+            { i: 'container', x: 1, y: 0, w: 6, h: 4 },
+          ]}
+        >
+          <Board.Widget id="p" qa="ParentCell">
+            P
+          </Board.Widget>
+          <Board.Widget id="container">
+            <Board
+              id="inner"
+              width={600}
+              cols={4}
+              margin={[10, 10]}
+              containerPadding={[10, 10]}
+              defaultLayout={[{ i: 'c', x: 0, y: 0, w: 1, h: 1 }]}
+            >
+              <Board.Widget id="c" qa="InnerCell">
+                C
+              </Board.Widget>
+            </Board>
+          </Board.Widget>
+        </Board>
+      </Board.Provider>,
+    );
+
+    const parentCell = screen.getByTestId('ParentCell');
+    const innerCell = screen.getByTestId('InnerCell');
+    // Without `align`, the nested board keeps its own column width.
+    expect(innerCell.style.width).not.toBe(parentCell.style.width);
+  });
+
+  it('moves a widget within an aligned board using the keyboard', () => {
+    const onLayoutChange = vi.fn();
+
+    render(
+      <Board.Provider>
+        <Board
+          id="outer"
+          width={1200}
+          cols={12}
+          defaultLayout={[{ i: 'container', x: 0, y: 0, w: 12, h: 4 }]}
+        >
+          <Board.Widget id="container">
+            <Board
+              id="inner"
+              align
+              width={600}
+              onLayoutChange={onLayoutChange}
+              defaultLayout={[{ i: 'c', x: 0, y: 0, w: 1, h: 1 }]}
+            >
+              <Board.Widget id="c" qa="InnerCell">
+                C
+              </Board.Widget>
+            </Board>
+          </Board.Widget>
+        </Board>
+      </Board.Provider>,
+    );
+
+    const widget = screen.getByTestId('InnerCell');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    expect(onLayoutChange).toHaveBeenCalled();
+    const lastLayout = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+    // One arrow step moves the widget exactly one aligned column to the right.
+    expect(lastLayout.find((l) => l.i === 'c')?.x).toBe(1);
+  });
+
+  it('shrinks aligned row height to fit a constrained container', () => {
+    // jsdom reports 0 for offset dimensions; mock them so a nested board can
+    // measure the height it is given (and derive a column count from its width).
+    const widthSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+      .mockReturnValue(600);
+    const heightSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+      .mockReturnValue(120);
+
+    try {
+      render(
+        <Board.Provider>
+          <Board
+            id="outer"
+            width={1212}
+            cols={12}
+            rowHeight={100}
+            defaultLayout={[
+              { i: 'a', x: 0, y: 0, w: 6, h: 4 },
+              { i: 'b', x: 6, y: 0, w: 6, h: 4 },
+            ]}
+          >
+            <Board.Widget id="a">
+              <Board
+                id="inner-aligned"
+                align
+                defaultLayout={[{ i: 'ca', x: 0, y: 0, w: 1, h: 2 }]}
+              >
+                <Board.Widget id="ca" qa="AlignedCell">
+                  CA
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+            <Board.Widget id="b">
+              <Board
+                id="inner-plain"
+                rowHeight={100}
+                defaultLayout={[{ i: 'cb', x: 0, y: 0, w: 1, h: 2 }]}
+              >
+                <Board.Widget id="cb" qa="PlainCell">
+                  CB
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+          </Board>
+        </Board.Provider>,
+      );
+
+      const aligned = screen.getByTestId('AlignedCell');
+      const plain = screen.getByTestId('PlainCell');
+      // The aligned board fits its rows into the 120px it measures, so the same
+      // widget renders shorter than on a board keeping the full parent row
+      // height.
+      expect(parseInt(aligned.style.height, 10)).toBeLessThan(
+        parseInt(plain.style.height, 10),
+      );
+    } finally {
+      widthSpy.mockRestore();
+      heightSpy.mockRestore();
+    }
+  });
 });

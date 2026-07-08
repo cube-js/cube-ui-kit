@@ -81,3 +81,26 @@ export const BoardRegistryContext =
 export function useBoardRegistry(): BoardRegistryContextValue | null {
   return useContext(BoardRegistryContext);
 }
+
+/**
+ * The resolved grid metrics a `Board` exposes to any boards nested inside its
+ * widgets. A nested board with `align` reads these to inherit the parent's
+ * column pitch (column width + horizontal margin) and target row height, so its
+ * cells line up with the surrounding layout instead of stretching.
+ */
+export interface BoardMetrics {
+  /** Resolved pixel width of one parent column. */
+  colWidth: number;
+  /** Resolved parent row height in pixels (the alignment target). */
+  rowHeight: number;
+  /** Parent [horizontal, vertical] margin between widgets in pixels. */
+  margin: readonly [number, number];
+  /** Parent [horizontal, vertical] container padding in pixels. */
+  containerPadding: readonly [number, number];
+}
+
+export const BoardMetricsContext = createContext<BoardMetrics | null>(null);
+
+export function useBoardMetrics(): BoardMetrics | null {
+  return useContext(BoardMetricsContext);
+}

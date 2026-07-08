@@ -229,10 +229,14 @@ const NestedTemplate: StoryFn<CubeBoardProps> = (args) => (
           </Title>
           <Board
             id="inner"
+            align
             fill="#purple-04.10"
             padding=".5x"
             radius="1r"
             flexGrow={1}
+            // cols/rowHeight are fallbacks used only until the parent metrics
+            // resolve; `align` then derives the column count from the parent's
+            // pitch and inherits its row height.
             cols={6}
             rowHeight={70}
             defaultLayout={[
@@ -421,6 +425,7 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => {
             </Title>
             <Board
               id="nested-inner"
+              align
               fill="#purple-04.10"
               padding=".5x"
               radius="1r"

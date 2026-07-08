@@ -58,6 +58,7 @@ clipped by an ancestor's `overflow: hidden`.
 - **`isResizable`** `boolean` (default: `true`) — Enable resizing for all widgets.
 - **`isDroppable`** `boolean` (default: `true`) — Whether the board accepts widgets dropped from other boards.
 - **`resizeHandles`** `ResizeHandleAxis[]` (default: `['se']`) — Which resize handles to show.
+- **`align`** `boolean` (default: `false`) — Align a nested board with its ancestor `Board`'s layout. Only takes effect when the board is nested inside another `Board`'s widget. When set, the board inherits the parent's column pitch (deriving its own column count from its measured width so cells stay parent-sized as the container is resized) and inherits the parent's row height as a target, shrinking rows slightly when needed to fit the height the container widget grants it. `cols`/`rowHeight` then act as fallbacks used only until the parent metrics resolve.
 - **`constraints`** `LayoutConstraint[]` — Grid/item layout constraints.
 - **`width`** `number` — Explicit width (disables measurement; useful for SSR/tests).
 - **`place`** `Styles['place']` — Style prop shorthand for `place-items`/`place-content`.
@@ -134,6 +135,12 @@ Wrap boards in `Board.Provider` to drag widgets between them.
 
 A `Board` can be placed inside a `Board.Widget`, making the whole container
 draggable while its children can be dragged out into sibling boards.
+
+Set `align` on the nested board to align it with the surrounding layout: its
+columns keep the parent's pixel pitch (so resizing the container adds or removes
+columns instead of stretching them), and its rows inherit the parent's row
+height, shrinking slightly when needed to fit the space the container widget
+gives it.
 
 <Story of={BoardStories.NestedBoards} />
 
