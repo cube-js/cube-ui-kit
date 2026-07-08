@@ -360,6 +360,8 @@ export const TabElement = tasty(Item, {
       'type=file & hovered': '#surface-3.5',
       'type=radio & hovered': '#surface.5',
       '(type=file | type=radio) & selected': '#surface',
+      // Spring-load hint: a widget is hovering this tab and it is about to open.
+      'drop-pending': '#primary.10',
     },
     border: {
       '': '#clear',

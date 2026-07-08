@@ -1,7 +1,11 @@
 import { tasty } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
-import { BoardRegistryContext, WidgetTransferInfo } from './board-context';
+import {
+  BoardDragActiveContext,
+  BoardRegistryContext,
+  WidgetTransferInfo,
+} from './board-context';
 import { useBoardRegistry } from './use-board-registry';
 
 const OverlayElement = tasty({
@@ -43,8 +47,10 @@ export function BoardProvider(props: CubeBoardProviderProps) {
 
   return (
     <BoardRegistryContext.Provider value={registry}>
-      {children}
-      <OverlayElement ref={registry.overlayRef} aria-hidden="true" />
+      <BoardDragActiveContext.Provider value={registry.dragState != null}>
+        {children}
+        <OverlayElement ref={registry.overlayRef} aria-hidden="true" />
+      </BoardDragActiveContext.Provider>
     </BoardRegistryContext.Provider>
   );
 }

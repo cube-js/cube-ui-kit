@@ -334,6 +334,9 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => {
   const [owner, setOwner] = useState<Record<string, string[]>>(
     () => TABS_INITIAL_OWNER,
   );
+  // Controlled so a drag (which portals/remounts the widget's subtree) doesn't
+  // reset the active tab back to the first one.
+  const [activeTab, setActiveTab] = useState('sales');
 
   const handleLayoutChange = (boardId: string) => (next: LayoutItem[]) =>
     setLayouts((prev) => ({ ...prev, [boardId]: next }));
@@ -375,7 +378,7 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => {
           <WidgetBody title="KPIs" text="Another top-level widget" />
         </Board.Widget>
         <Board.Widget id="tabs">
-          <Tabs defaultActiveKey="sales" height="100%">
+          <Tabs activeKey={activeTab} onChange={setActiveTab} height="100%">
             <Tab key="sales" title="Sales">
               <Board
                 id="tab-sales"

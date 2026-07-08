@@ -85,6 +85,20 @@ export function useBoardRegistry(): BoardRegistryContextValue | null {
 }
 
 /**
+ * A stable boolean signalling whether a Board widget is currently being
+ * dragged. Provided by `BoardProvider` (and therefore by any standalone
+ * `Board`, which self-wraps in one). Unlike the full `dragState`, this only
+ * flips on drag start/end, so components that only care about "is a drag in
+ * progress" (e.g. `Tabs` spring-loading a tab on hover) can subscribe without
+ * re-rendering on every pointer move. Defaults to `false` outside any Board.
+ */
+export const BoardDragActiveContext = createContext<boolean>(false);
+
+export function useBoardDragActive(): boolean {
+  return useContext(BoardDragActiveContext);
+}
+
+/**
  * The resolved grid metrics a `Board` exposes to any boards nested inside its
  * widgets. A nested board with `isAligned` reads these to inherit the parent's
  * column pitch (column width + horizontal margin) and target row height, so its

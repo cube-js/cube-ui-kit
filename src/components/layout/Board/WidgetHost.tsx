@@ -370,6 +370,20 @@ export function WidgetHost(props: WidgetHostProps) {
     'aria-label': registration?.qa ?? item.i,
   };
 
+  // When this widget is draggable it owns its gesture, so stop the pointer-down
+  // from bubbling to an ancestor widget host (e.g. a container widget hosting a
+  // nested board / Tabs). Otherwise the ancestor's `useMove` would start a
+  // second drag from the same press and the whole parent widget would move too.
+  // Non-draggable widgets let the event bubble so their container stays grabbable
+  // through their content.
+  const stopBubbleProps = isDraggable
+    ? {
+        onPointerDown: (e: React.PointerEvent) => e.stopPropagation(),
+        onMouseDown: (e: React.MouseEvent) => e.stopPropagation(),
+        onTouchStart: (e: React.TouchEvent) => e.stopPropagation(),
+      }
+    : {};
+
   const handleResize = (
     axis: ResizeHandleAxis,
     phase: ResizePhase,
@@ -449,9 +463,19 @@ export function WidgetHost(props: WidgetHostProps) {
   const host = (
     <WidgetElement
       ref={hostRef}
-      {...mergeProps(moveProps, hoverProps, focusWithinProps, a11yProps, {
-        style: hostStyle,
-      })}
+      // Marks this element as a board widget host so the registry can find the
+      // container widget a nested board lives in (used to keep a drag anchored to
+      // a nested board while the anchor is still over its host - e.g. the Tabs
+      // header above a nested board - instead of reflowing the ancestor board).
+      data-board-widget-host=""
+      {...mergeProps(
+        moveProps,
+        stopBubbleProps,
+        hoverProps,
+        focusWithinProps,
+        a11yProps,
+        { style: hostStyle },
+      )}
       qa={registration?.qa}
       mods={hostMods}
       styles={registration?.styles as Styles}

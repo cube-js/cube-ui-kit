@@ -203,10 +203,17 @@ function BoardInner(
 
   const onResizeContainer = useEvent(() => {
     const el = containerRef.current;
-    if (el) {
-      setMeasuredWidth(el.offsetWidth);
-      setMeasuredHeight(el.offsetHeight);
-    }
+    if (!el) return;
+    // A hidden container (e.g. the board inside an inactive tab after a
+    // spring-loaded tab switch) reports 0. Keep the last non-zero measurement so
+    // the board stays "ready" and keeps its widget hosts mounted while briefly
+    // hidden. Otherwise the board would render nothing, unmounting the widget
+    // that owns an in-flight drag gesture and stranding the drag (React Aria's
+    // `useMove` tears down its listeners on unmount, so the drop never fires).
+    const nextWidth = el.offsetWidth;
+    const nextHeight = el.offsetHeight;
+    if (nextWidth > 0) setMeasuredWidth(nextWidth);
+    if (nextHeight > 0) setMeasuredHeight(nextHeight);
   });
   useResizeObserver({ ref: containerRef, onResize: onResizeContainer });
   useEffect(() => {

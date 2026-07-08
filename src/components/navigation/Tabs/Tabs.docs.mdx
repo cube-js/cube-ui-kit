@@ -148,8 +148,12 @@ DOM order is always "bar then panels" — visual order is controlled internally 
 
 ```jsx
 <Tabs placement="left" defaultActiveKey="overview">
-  <Tab key="overview" title="Overview">Overview content</Tab>
-  <Tab key="settings" title="Settings">Settings content</Tab>
+  <Tab key="overview" title="Overview">
+    Overview content
+  </Tab>
+  <Tab key="settings" title="Settings">
+    Settings content
+  </Tab>
 </Tabs>
 ```
 
@@ -903,6 +907,18 @@ Tabs work seamlessly inside Layout components. When placed in a `Layout` or `Lay
 - The tab bar has fixed height and doesn't grow
 - Tab panels use `display: contents`, allowing children to participate in parent flex layout
 - Nested Layout components with `flexGrow: 1` (default) stretch to fill remaining space
+
+### Inside a Board (spring-loaded switching)
+
+When `Tabs` is rendered inside a [`Board`](/docs/layout-board--docs), tab
+switching becomes spring-loaded automatically: while a Board widget is being
+dragged, hovering a tab header for a moment opens that tab, so a widget can be
+dropped into it or moved between tabs. This requires no configuration - `Tabs`
+detects the active Board drag and, for its duration, keeps panels mounted so the
+tab a widget is dragged out of (and the board owning the in-flight gesture) is
+not unmounted mid-drag. Spring-loading works with mouse and pen; touch drags
+capture the pointer and do not trigger it. Outside a `Board` this behavior is
+inert.
 
 ## Accessibility
 

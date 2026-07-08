@@ -1,4 +1,11 @@
-import { fireEvent, render, screen } from '../../../test/render';
+import {
+  act,
+  fireEvent,
+  render,
+  renderWithRoot,
+  screen,
+} from '../../../test/render';
+import { Tab, Tabs } from '../../navigation/Tabs';
 
 import { Board } from './index';
 
@@ -792,6 +799,123 @@ describe('Board', () => {
           toBoardId: 'target',
         }),
       );
+    });
+  });
+
+  describe('spring-loaded tab activation', () => {
+    // React Aria's useMove derives its deltas from pageX/pageY, which jsdom
+    // drops when passed via the PointerEvent init, so define them by hand.
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    const renderBoardWithTabs = () =>
+      renderWithRoot(
+        <Board
+          width={1200}
+          defaultLayout={[
+            { i: 'dragme', x: 0, y: 0, w: 2, h: 2 },
+            { i: 'tabs', x: 2, y: 0, w: 6, h: 4 },
+          ]}
+        >
+          <Board.Widget id="dragme" qa="DragMe">
+            Drag me
+          </Board.Widget>
+          <Board.Widget id="tabs">
+            <Tabs defaultActiveKey="one">
+              <Tab key="one" title="One">
+                Panel one
+              </Tab>
+              <Tab key="two" title="Two">
+                Panel two
+              </Tab>
+            </Tabs>
+          </Board.Widget>
+        </Board>,
+      );
+
+    it('opens an inactive tab when a widget is dragged over its header', () => {
+      vi.useFakeTimers();
+      try {
+        renderBoardWithTabs();
+
+        expect(screen.getByText('Panel one')).toBeInTheDocument();
+        expect(screen.queryByText('Panel two')).not.toBeInTheDocument();
+
+        // Start a pointer drag: the first move flips the board into "dragging",
+        // which is what arms spring-loading in the tabs it contains.
+        const widget = screen.getByTestId('DragMe');
+        fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+        fireEvent(window, pointerEvent('pointermove', 40, 0));
+
+        // Hover the inactive tab; after the delay it spring-loads open.
+        fireEvent.pointerEnter(screen.getByTestId('Tab-two'));
+        act(() => {
+          vi.advanceTimersByTime(600);
+        });
+
+        expect(screen.getByText('Panel two')).toBeInTheDocument();
+        // The source tab stays mounted during the drag so a widget dragged out
+        // of it (and any board owning the gesture) is not unmounted mid-drag.
+        expect(screen.getByText('Panel one')).toBeInTheDocument();
+
+        fireEvent(window, pointerEvent('pointerup', 40, 0));
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('does not switch tabs on hover when no drag is in progress', () => {
+      vi.useFakeTimers();
+      try {
+        renderBoardWithTabs();
+
+        fireEvent.pointerEnter(screen.getByTestId('Tab-two'));
+        act(() => {
+          vi.advanceTimersByTime(600);
+        });
+
+        expect(screen.queryByText('Panel two')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('cancels a pending spring-load when the pointer leaves before the delay', () => {
+      vi.useFakeTimers();
+      try {
+        renderBoardWithTabs();
+
+        const widget = screen.getByTestId('DragMe');
+        fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+        fireEvent(window, pointerEvent('pointermove', 40, 0));
+
+        const tabTwo = screen.getByTestId('Tab-two');
+        fireEvent.pointerEnter(tabTwo);
+        act(() => {
+          vi.advanceTimersByTime(200);
+        });
+        // Leave before the delay elapses - the tab must not open.
+        fireEvent.pointerLeave(tabTwo);
+        act(() => {
+          vi.advanceTimersByTime(600);
+        });
+
+        expect(screen.queryByText('Panel two')).not.toBeInTheDocument();
+
+        fireEvent(window, pointerEvent('pointerup', 40, 0));
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 });

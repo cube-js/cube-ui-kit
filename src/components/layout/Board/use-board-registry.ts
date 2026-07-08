@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
 
@@ -90,6 +90,13 @@ export function useBoardRegistry(
   const nestedInDraggedRef = useRef<Set<string>>(new Set());
   // Last landing position computed for the current target board (grid units).
   const lastLandingRef = useRef<{ x: number; y: number } | null>(null);
+  // Live pointer position (viewport coords) tracked for the whole drag via a
+  // window listener. `useMove` only reports deltas, but the ancestor-handoff gate
+  // needs the actual cursor (not the dragged widget's top-left anchor, which sits
+  // above the cursor by the grab offset) so a nested board hands off to its
+  // ancestor only once the *pointer* truly leaves the container widget. Null for
+  // keyboard drags (no pointer) and until the first pointer move.
+  const pointerPosRef = useRef<{ x: number; y: number } | null>(null);
   const [dragState, setDragStateInternal] = useState<BoardDragState | null>(
     null,
   );
@@ -98,6 +105,19 @@ export function useBoardRegistry(
     dragStateRef.current = next;
     setDragStateInternal(next);
   }, []);
+
+  // Record the live cursor for the ancestor-handoff gate (see `pointerPosRef`).
+  // Capture phase so it lands before `useMove`'s own window listeners drive the
+  // frame's `onDragMove`.
+  const trackPointer = useCallback((e: PointerEvent) => {
+    pointerPosRef.current = { x: e.clientX, y: e.clientY };
+  }, []);
+
+  // Safety net: drop the window listener if the hook unmounts mid-drag.
+  useEffect(
+    () => () => window.removeEventListener('pointermove', trackPointer, true),
+    [trackPointer],
+  );
 
   const registerBoard = useCallback((entry: BoardEntry) => {
     boardsRef.current.set(entry.id, entry);
@@ -111,10 +131,57 @@ export function useBoardRegistry(
   }, []);
 
   // Geometry frozen at drag start; falls back to the live rect for boards that
-  // mount mid-drag (they weren't captured at start).
-  const getBoardRect = useCallback(
-    (entry: BoardEntry): DOMRect | null =>
-      frozenRectsRef.current.get(entry.id) ?? entry.getContentRect(),
+  // mount (or become visible) mid-drag. A board hidden at drag start - e.g. a
+  // board inside an inactive tab - has a degenerate (0x0) frozen rect; ignore
+  // it and read the live rect instead, freezing that first real measurement so
+  // later frames stay stable (no preview feedback loop). This lets a tab board
+  // revealed by a spring-loaded tab switch become a valid drop/landing target.
+  const getBoardRect = useCallback((entry: BoardEntry): DOMRect | null => {
+    const frozen = frozenRectsRef.current.get(entry.id);
+    if (frozen && frozen.width > 0 && frozen.height > 0) return frozen;
+
+    const live = entry.getContentRect();
+    if (live && live.width > 0 && live.height > 0) {
+      frozenRectsRef.current.set(entry.id, live);
+      return live;
+    }
+
+    return frozen ?? live;
+  }, []);
+
+  /** True when board `outer` DOM-contains board `inner` (outer is an ancestor). */
+  const isAncestorBoard = useCallback(
+    (outer: BoardEntry, inner: BoardEntry): boolean => {
+      const outerNode = outer.getContentNode();
+      const innerNode = inner.getContentNode();
+      return !!outerNode && !!innerNode && outerNode.contains(innerNode);
+    },
+    [],
+  );
+
+  /**
+   * Viewport rect of the widget host a nested board lives in, or null for a
+   * top-level board. Lets a drag stay anchored to a nested board while the anchor
+   * is still within its container widget (e.g. over a Tabs header sitting above
+   * the board), so an ancestor board does not reflow prematurely.
+   */
+  const getBoardContainerRect = useCallback(
+    (entry: BoardEntry): DOMRect | null => {
+      const host = entry
+        .getContentNode()
+        ?.parentElement?.closest<HTMLElement>('[data-board-widget-host]');
+      return host?.getBoundingClientRect() ?? null;
+    },
+    [],
+  );
+
+  /** Whether a point falls within a rect (inclusive of edges). */
+  const pointInRect = useCallback(
+    (point: { x: number; y: number }, rect: DOMRect): boolean =>
+      point.x >= rect.left &&
+      point.x <= rect.right &&
+      point.y >= rect.top &&
+      point.y <= rect.bottom,
     [],
   );
 
@@ -134,6 +201,15 @@ export function useBoardRegistry(
         if (!entry.isDroppable()) return;
         if (nestedInDraggedRef.current.has(entry.id)) return;
         if (overlay && overlay.contains(entry.getContentNode())) return;
+        // Skip boards that are currently hidden - e.g. the board inside an
+        // inactive tab after a spring-loaded tab switch. Such a board keeps the
+        // frozen rect it had while visible, which would otherwise shadow the
+        // sibling board now shown in the exact same screen area (tabs share it),
+        // trapping the drag in the hidden board. A hidden element reports a
+        // zero-sized live rect, so use that as the visibility gate while still
+        // reading geometry from the frozen rect (no preview feedback loop).
+        const liveRect = entry.getContentRect();
+        if (!liveRect || liveRect.width === 0 || liveRect.height === 0) return;
         const rect = getBoardRect(entry);
         if (!rect) return;
         if (
@@ -193,6 +269,12 @@ export function useBoardRegistry(
       sourceSnapshotRef.current = cloneLayout(entry.getLayout());
       previewRef.current = null;
       lastLandingRef.current = { x: item.x, y: item.y };
+      // Start tracking the live cursor for the ancestor-handoff gate. Keyboard
+      // drags have no pointer, so the gate falls back to the widget anchor.
+      pointerPosRef.current = null;
+      if (pointerType !== 'keyboard') {
+        window.addEventListener('pointermove', trackPointer, true);
+      }
       // Layout-item constraints win; otherwise fall back to the ones declared on
       // the owning `Board.Widget` so position constraints apply during drag.
       const draggedItem: LayoutItem = {
@@ -358,7 +440,31 @@ export function useBoardRegistry(
       // floating overlay (see `rectOrigin`). Fall back to the source board so a
       // pointer outside every board keeps the widget anchored to where it came
       // from. Frozen rects make this deterministic (no preview-induced flip-flop).
-      const target = hitTest(rectOrigin(newRect)) ?? source ?? null;
+      const anchor = rectOrigin(newRect);
+      let target = hitTest(anchor) ?? source ?? null;
+
+      // Keep the drag on a nested source board while the cursor is still within
+      // the widget that hosts it, instead of handing off to an ancestor board.
+      // Hit-testing anchors on the dragged widget's top-left corner, which sits
+      // above the cursor by the grab offset, so nudging a widget up inside a
+      // nested board (e.g. toward a Tabs header above it) pushes that anchor into
+      // the ancestor's area while the pointer is still over the container. Gating
+      // on the real cursor (not the anchor) means the ancestor only reflows once
+      // the pointer truly leaves the container widget - no transient shift.
+      // Cross-tab / sibling boards are unaffected: they are not ancestors of the
+      // source, so a real move out still hands off normally.
+      if (
+        target &&
+        source &&
+        target.id !== source.id &&
+        isAncestorBoard(target, source)
+      ) {
+        const containerRect = getBoardContainerRect(source);
+        const gatePoint = pointerPosRef.current ?? anchor;
+        if (containerRect && pointInRect(gatePoint, containerRect)) {
+          target = source;
+        }
+      }
 
       if (!target) {
         setDragState({ ...ds, rect: newRect });
@@ -425,6 +531,8 @@ export function useBoardRegistry(
   );
 
   const onDragEnd = useEvent(() => {
+    window.removeEventListener('pointermove', trackPointer, true);
+    pointerPosRef.current = null;
     const ds = dragStateRef.current;
     if (!ds) return;
 
