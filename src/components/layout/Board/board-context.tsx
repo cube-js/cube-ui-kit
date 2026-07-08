@@ -69,6 +69,8 @@ export interface BoardRegistryContextValue {
     itemId: string,
     rect: ViewportRect,
     pointerType: string,
+    /** The dragged widget's host node, used to exclude boards nested inside it. */
+    widgetNode: HTMLElement | null,
   ) => void;
   onDragMove: (deltaX: number, deltaY: number, pointerType: string) => void;
   onDragEnd: () => void;

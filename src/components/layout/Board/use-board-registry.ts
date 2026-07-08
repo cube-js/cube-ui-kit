@@ -71,6 +71,16 @@ export function useBoardRegistry(
   // live getBoundingClientRect) means the live-reflow preview can't move the
   // rects that selection/landing depend on -> no feedback loop.
   const frozenRectsRef = useRef<Map<string, DOMRect>>(new Map());
+  // Ids of boards nested inside the dragged widget, captured at drag start.
+  // Such a board must never be a drop target: dropping a widget into a board
+  // nested within itself removes it from the tree that renders that board.
+  // The overlay-containment check in `hitTest` only catches these once the
+  // dragged widget has floated into the overlay, but `useMove` fires the first
+  // `onMove` synchronously with `onMoveStart` (before React relocates the
+  // widget into the overlay), so on a tiny one-move drag the nested board is
+  // still in-grid and would be selected. Excluding these ids for the whole
+  // gesture closes that window.
+  const nestedInDraggedRef = useRef<Set<string>>(new Set());
   // Last landing position computed for the current target board (grid units).
   const lastLandingRef = useRef<{ x: number; y: number } | null>(null);
   const [dragState, setDragStateInternal] = useState<BoardDragState | null>(
@@ -115,6 +125,7 @@ export function useBoardRegistry(
 
       boardsRef.current.forEach((entry) => {
         if (!entry.isDroppable()) return;
+        if (nestedInDraggedRef.current.has(entry.id)) return;
         if (overlay && overlay.contains(entry.getContentNode())) return;
         const rect = getBoardRect(entry);
         if (!rect) return;
@@ -143,10 +154,24 @@ export function useBoardRegistry(
       itemId: string,
       rect: ViewportRect,
       pointerType: string,
+      widgetNode: HTMLElement | null,
     ) => {
       const entry = boardsRef.current.get(boardId);
       const item = entry ? getLayoutItem(entry.getLayout(), itemId) : undefined;
       if (!entry || !item) return;
+
+      // Record boards nested inside the dragged widget so they are never picked
+      // as a drop target (dropping a widget into a board nested within itself
+      // would unmount it). Computed here, before the widget floats into the
+      // overlay, while its nested boards are still in-grid descendants.
+      const nested = new Set<string>();
+      if (widgetNode) {
+        boardsRef.current.forEach((e) => {
+          const node = e.getContentNode();
+          if (node && widgetNode.contains(node)) nested.add(e.id);
+        });
+      }
+      nestedInDraggedRef.current = nested;
 
       // Freeze every board's geometry for the whole gesture so live-reflow
       // preview writes can't move the rects selection/landing read.
@@ -485,6 +510,7 @@ export function useBoardRegistry(
     sourceSnapshotRef.current = [];
     targetSnapshotsRef.current.clear();
     frozenRectsRef.current.clear();
+    nestedInDraggedRef.current = new Set();
     previewRef.current = null;
     lastLandingRef.current = null;
     setDragState(null);

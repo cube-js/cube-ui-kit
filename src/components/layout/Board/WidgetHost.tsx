@@ -340,7 +340,7 @@ export function WidgetHost(props: WidgetHostProps) {
             width: pos.width,
             height: pos.height,
           };
-      registry.onDragStart(boardId, item.i, vr, e.pointerType);
+      registry.onDragStart(boardId, item.i, vr, e.pointerType, hostRef.current);
     },
     onMove(e) {
       if (!isDraggable) return;
