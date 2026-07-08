@@ -222,21 +222,23 @@ const NestedTemplate: StoryFn<CubeBoardProps> = (args) => (
       ]}
       {...args}
     >
-      <Board.Widget id="container">
+      {/* isAutoHeight grows this container in the outer grid until the inner
+          board's rows fit at the parent's row height (only ever increases). */}
+      <Board.Widget id="container" isAutoHeight>
         <Flow display="flex" gap="0.5x" padding="1x" height="100%">
           <Title level={6} preset="h6">
             Container widget (drag the whole container)
           </Title>
           <Board
             id="inner"
-            align
+            isAligned
             fill="#purple-04.10"
             padding=".5x"
             radius="1r"
             flexGrow={1}
             // cols/rowHeight are fallbacks used only until the parent metrics
-            // resolve; `align` then derives the column count from the parent's
-            // pitch and inherits its row height.
+            // resolve; `isAligned` then derives the column count from the
+            // parent's pitch and inherits its row height.
             cols={6}
             rowHeight={70}
             defaultLayout={[
@@ -418,14 +420,14 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => {
             </Tab>
           </Tabs>
         </Board.Widget>
-        <Board.Widget id="nested">
+        <Board.Widget id="nested" isAutoHeight>
           <Flow display="flex" gap="0.5x" padding="1x" height="100%">
             <Title level={6} preset="h6">
               Nested board (drag the whole container)
             </Title>
             <Board
               id="nested-inner"
-              align
+              isAligned
               fill="#purple-04.10"
               padding=".5x"
               radius="1r"

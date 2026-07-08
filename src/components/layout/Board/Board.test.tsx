@@ -383,7 +383,7 @@ describe('Board', () => {
           <Board.Widget id="container">
             <Board
               id="inner"
-              align
+              isAligned
               width={500}
               cols={6}
               defaultLayout={[{ i: 'c', x: 0, y: 0, w: 1, h: 1 }]}
@@ -405,7 +405,7 @@ describe('Board', () => {
     expect(innerCell.style.width).toBe(parentCell.style.width);
   });
 
-  it('leaves a nested board without align on its own grid', () => {
+  it('leaves a nested board without isAligned on its own grid', () => {
     render(
       <Board.Provider>
         <Board
@@ -442,7 +442,7 @@ describe('Board', () => {
 
     const parentCell = screen.getByTestId('ParentCell');
     const innerCell = screen.getByTestId('InnerCell');
-    // Without `align`, the nested board keeps its own column width.
+    // Without `isAligned`, the nested board keeps its own column width.
     expect(innerCell.style.width).not.toBe(parentCell.style.width);
   });
 
@@ -460,7 +460,7 @@ describe('Board', () => {
           <Board.Widget id="container">
             <Board
               id="inner"
-              align
+              isAligned
               width={600}
               onLayoutChange={onLayoutChange}
               defaultLayout={[{ i: 'c', x: 0, y: 0, w: 1, h: 1 }]}
@@ -510,7 +510,7 @@ describe('Board', () => {
             <Board.Widget id="a">
               <Board
                 id="inner-aligned"
-                align
+                isAligned
                 defaultLayout={[{ i: 'ca', x: 0, y: 0, w: 1, h: 2 }]}
               >
                 <Board.Widget id="ca" qa="AlignedCell">
@@ -541,6 +541,135 @@ describe('Board', () => {
       expect(parseInt(aligned.style.height, 10)).toBeLessThan(
         parseInt(plain.style.height, 10),
       );
+    } finally {
+      widthSpy.mockRestore();
+      heightSpy.mockRestore();
+    }
+  });
+
+  it('grows an isAutoHeight widget so a squeezed aligned board fits', async () => {
+    // Mock offset dimensions so the nested aligned board measures a container
+    // that is too short (120px) for its two rows at the parent's 100px row
+    // height - which is exactly the deficit isAutoHeight should close.
+    const widthSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+      .mockReturnValue(600);
+    const heightSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+      .mockReturnValue(120);
+    const onLayoutChange = vi.fn();
+
+    try {
+      render(
+        <Board.Provider>
+          <Board
+            id="outer"
+            width={1212}
+            cols={12}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            onLayoutChange={onLayoutChange}
+            defaultLayout={[{ i: 'container', x: 0, y: 0, w: 6, h: 2 }]}
+          >
+            <Board.Widget id="container" isAutoHeight>
+              <Board
+                id="inner"
+                isAligned
+                defaultLayout={[{ i: 'ca', x: 0, y: 0, w: 1, h: 2 }]}
+              >
+                <Board.Widget id="ca" qa="AutoCell">
+                  CA
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+          </Board>
+        </Board.Provider>,
+      );
+
+      // The container started 2 rows tall but its inner board wants 2 rows at
+      // 100px; the reported deficit should grow the container (never shrink it).
+      await vi.waitFor(() => {
+        expect(onLayoutChange).toHaveBeenCalled();
+        const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+        const container = last.find((l) => l.i === 'container');
+        expect(container && container.h).toBeGreaterThan(2);
+      });
+    } finally {
+      widthSpy.mockRestore();
+      heightSpy.mockRestore();
+    }
+  });
+
+  it('cannot resize an isAutoHeight widget below the height its board needs', async () => {
+    // The container is 4 rows tall but its aligned board only needs 2 rows at
+    // the parent's 100px row height (mocked container height 400 => two 100px
+    // rows plus slack). Dragging the resize handle far up should stop at that
+    // 2-row floor instead of collapsing to a single row.
+    const widthSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+      .mockReturnValue(600);
+    const heightSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+      .mockReturnValue(400);
+    const onLayoutChange = vi.fn();
+
+    try {
+      render(
+        <Board.Provider>
+          <Board
+            id="outer"
+            width={1212}
+            cols={12}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            resizeHandles={['se']}
+            onLayoutChange={onLayoutChange}
+            defaultLayout={[{ i: 'container', x: 0, y: 0, w: 6, h: 4 }]}
+          >
+            <Board.Widget id="container" qa="Container" isAutoHeight>
+              <Board
+                id="inner"
+                isAligned
+                isResizable={false}
+                defaultLayout={[{ i: 'ca', x: 0, y: 0, w: 1, h: 2 }]}
+              >
+                <Board.Widget id="ca" qa="AutoCell">
+                  CA
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+          </Board>
+        </Board.Provider>,
+      );
+
+      // Only the container is resizable, so this is its south-east handle.
+      const handle = screen.getByTestId('BoardResizeHandle');
+      // jsdom's PointerEvent drops pageX/pageY passed via init, and React Aria's
+      // useMove derives its deltas from them, so build the events by hand.
+      const pointerEvent = (type: string, pageX: number, pageY: number) => {
+        const event = new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+          pointerId: 1,
+          pointerType: 'mouse',
+        });
+        Object.defineProperty(event, 'pageX', { get: () => pageX });
+        Object.defineProperty(event, 'pageY', { get: () => pageY });
+        return event;
+      };
+      // Drag the handle far up (well past two rows) to try to shrink it.
+      fireEvent(handle, pointerEvent('pointerdown', 500, 500));
+      fireEvent(window, pointerEvent('pointermove', 500, 150));
+      fireEvent(window, pointerEvent('pointerup', 500, 150));
+
+      expect(onLayoutChange).toHaveBeenCalled();
+      const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+      const container = last.find((l) => l.i === 'container');
+      // Clamped to the 2-row content floor, not the 1 row the drag asked for.
+      expect(container?.h).toBe(2);
     } finally {
       widthSpy.mockRestore();
       heightSpy.mockRestore();

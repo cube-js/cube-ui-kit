@@ -84,7 +84,7 @@ export function useBoardRegistry(): BoardRegistryContextValue | null {
 
 /**
  * The resolved grid metrics a `Board` exposes to any boards nested inside its
- * widgets. A nested board with `align` reads these to inherit the parent's
+ * widgets. A nested board with `isAligned` reads these to inherit the parent's
  * column pitch (column width + horizontal margin) and target row height, so its
  * cells line up with the surrounding layout instead of stretching.
  */
@@ -103,4 +103,25 @@ export const BoardMetricsContext = createContext<BoardMetrics | null>(null);
 
 export function useBoardMetrics(): BoardMetrics | null {
   return useContext(BoardMetricsContext);
+}
+
+/**
+ * Information a `WidgetHost` exposes to the content it renders (including a
+ * nested `Board`). Lets a nested board know whether its host widget auto-sizes
+ * its height and, if so, ask the host to grow to fit the board's natural size.
+ */
+export interface BoardHost {
+  /** Whether the host widget grows its height to fit its content. */
+  isAutoHeight: boolean;
+  /**
+   * Ask the host widget to grow so it provides `px` more content height. Only
+   * ever increases the host's height. No-op when the host does not auto-size.
+   */
+  requestHeightDeficit: (px: number) => void;
+}
+
+export const BoardHostContext = createContext<BoardHost | null>(null);
+
+export function useBoardHost(): BoardHost | null {
+  return useContext(BoardHostContext);
 }

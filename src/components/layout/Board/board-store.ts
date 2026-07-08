@@ -19,6 +19,8 @@ export interface WidgetRegistration {
   constraints?: LayoutConstraint[];
   qa?: string;
   styles?: Styles;
+  /** Grow this widget's height to fit its content (only ever increases). */
+  isAutoHeight?: boolean;
 }
 
 /**
@@ -59,7 +61,8 @@ export class BoardWidgetStore {
       prev.resizeHandles !== reg.resizeHandles ||
       prev.constraints !== reg.constraints ||
       prev.qa !== reg.qa ||
-      prev.styles !== reg.styles;
+      prev.styles !== reg.styles ||
+      prev.isAutoHeight !== reg.isAutoHeight;
 
     if (changed) {
       this.version++;

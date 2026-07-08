@@ -1,12 +1,15 @@
 import { Styles, tasty } from '@tenphi/tasty';
-import { CSSProperties, useRef, useState } from 'react';
+import { CSSProperties, useMemo, useRef, useState } from 'react';
 import { useFocusWithin, useHover, useMove } from 'react-aria';
 import { createPortal } from 'react-dom';
 
+import { useEvent } from '../../../_internal/hooks';
 import { mergeProps } from '../../../utils/react';
 
 import {
   BoardDragState,
+  BoardHost,
+  BoardHostContext,
   BoardRegistryContextValue,
   ViewportRect,
 } from './board-context';
@@ -21,6 +24,12 @@ import {
 
 export type ResizePhase = 'start' | 'move' | 'end';
 
+/**
+ * Slack (px) absorbed when converting an auto-height widget's content height to
+ * whole rows, so sub-pixel measurement/rounding noise never bumps an extra row.
+ */
+const AUTO_HEIGHT_TOLERANCE = 4;
+
 const WidgetElement = tasty({
   qa: 'BoardWidget',
   styles: {
@@ -32,7 +41,8 @@ const WidgetElement = tasty({
     border: true,
     shadow: {
       '': false,
-      'drag | resizing': '0 2x 4x #dark.20',
+      // `$dialog-shadow` uses Glaze `#shadow-lg`, which adapts to dark / high-contrast schemes.
+      'drag | resizing': '$dialog-shadow',
     },
     zIndex: {
       '': 1,
@@ -222,6 +232,13 @@ export interface WidgetHostProps {
     dx: number,
     dy: number,
   ) => void;
+  /**
+   * Report the minimum number of rows this widget needs to fit its content
+   * (typically a nested board). The owning board grows the item to this height
+   * when it is taller than the current one, and treats it as the resize floor
+   * so the widget cannot be dragged shorter than its content requires.
+   */
+  onAutoHeight: (id: string, neededRows: number) => void;
 }
 
 /**
@@ -242,10 +259,44 @@ export function WidgetHost(props: WidgetHostProps) {
     registry,
     dragState,
     onResize,
+    onAutoHeight,
   } = props;
 
   const hostRef = useRef<HTMLDivElement | null>(null);
   const isActiveDrag = dragState?.itemId === item.i;
+  const isAutoHeight = registration?.isAutoHeight === true;
+
+  // Translate a nested board's reported height deficit (signed px: positive when
+  // it is squeezed, negative when it has slack) into the absolute number of rows
+  // this widget needs, and report it to the owning board. The widget's chrome
+  // cancels out: the needed pixel height is the widget's current pixel height
+  // plus the deficit. A small tolerance keeps sub-pixel rounding from bumping an
+  // extra row. Skipped during a drag (the widget is floating in the overlay).
+  const requestHeightDeficit = useEvent((deficitPx: number) => {
+    if (!isAutoHeight || isActiveDrag) return;
+    const step = positionParams.rowHeight + positionParams.margin[1];
+    if (step <= 0) return;
+    const current = calcGridItemPosition(
+      positionParams,
+      item.x,
+      item.y,
+      item.w,
+      item.h,
+    );
+    const neededPx = current.height + deficitPx;
+    const neededRows = Math.max(
+      1,
+      Math.ceil(
+        (neededPx + positionParams.margin[1] - AUTO_HEIGHT_TOLERANCE) / step,
+      ),
+    );
+    onAutoHeight(item.i, neededRows);
+  });
+
+  const hostValue = useMemo<BoardHost>(
+    () => ({ isAutoHeight, requestHeightDeficit }),
+    [isAutoHeight, requestHeightDeficit],
+  );
   // Keyboard drags stay in place: moving the focused element into the overlay
   // portal would unmount it and stop arrow-key move events.
   const useOverlay = isActiveDrag && dragState?.pointerType !== 'keyboard';
@@ -338,7 +389,7 @@ export function WidgetHost(props: WidgetHostProps) {
   };
 
   const content = (
-    <>
+    <BoardHostContext.Provider value={hostValue}>
       {registration?.content}
       {isResizable && !item.static ? (
         <>
@@ -355,7 +406,7 @@ export function WidgetHost(props: WidgetHostProps) {
           ))}
         </>
       ) : null}
-    </>
+    </BoardHostContext.Provider>
   );
 
   const pos = calcGridItemPosition(

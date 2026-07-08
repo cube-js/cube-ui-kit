@@ -26,6 +26,7 @@ import {
   BoardEntry,
   BoardMetrics,
   BoardMetricsContext,
+  useBoardHost,
   useBoardMetrics,
   useBoardRegistry,
 } from './board-context';
@@ -140,7 +141,7 @@ export interface CubeBoardProps
    * parent's row height as a target, shrinking rows slightly when needed to fit
    * the height the container widget grants it. @default false
    */
-  align?: boolean;
+  isAligned?: boolean;
   /** Grid/item layout constraints. */
   constraints?: LayoutConstraint[];
   /**
@@ -177,7 +178,7 @@ function BoardInner(
     isResizable = true,
     isDroppable = true,
     resizeHandles = ['se'],
-    align = false,
+    isAligned = false,
     constraints,
     width: providedWidth,
     children,
@@ -186,7 +187,8 @@ function BoardInner(
 
   const registry = useBoardRegistry()!;
   const parentMetrics = useBoardMetrics();
-  const aligned = align && !!parentMetrics;
+  const host = useBoardHost();
+  const aligned = isAligned && !!parentMetrics;
   const generatedId = useId();
   const boardId = providedId ?? generatedId;
 
@@ -397,6 +399,34 @@ function BoardInner(
     recompactForCols(effectiveCols);
   }, [aligned, effectiveCols, recompactForCols]);
 
+  // Natural height this board wants: its rows at the (unshrunk) target row
+  // height. When aligned rows are shrunk to fit a short container, this exceeds
+  // the measured height by the amount the board was squeezed.
+  const naturalHeight =
+    rows > 0
+      ? rows * parentRowHeight +
+        Math.max(0, rows - 1) * effectiveMargin[1] +
+        resolvedPadding[1] * 2
+      : parentRowHeight;
+
+  // Report this aligned board's height deficit to an auto-sizing host so the
+  // host can both grow to fit and pin its resize floor. The value is signed:
+  // positive when the board is squeezed (needs more height), negative when the
+  // container is taller than needed (so the floor can be lowered). The host
+  // never shrinks the widget on its own - it only grows and clamps resizing.
+  const requestHeightDeficit = host?.requestHeightDeficit;
+  useEffect(() => {
+    if (!aligned || !host?.isAutoHeight || !requestHeightDeficit) return;
+    if (measuredHeight <= 0) return;
+    requestHeightDeficit(naturalHeight - measuredHeight);
+  }, [
+    aligned,
+    host?.isAutoHeight,
+    requestHeightDeficit,
+    naturalHeight,
+    measuredHeight,
+  ]);
+
   // In-board resize orchestration.
   const resizeStateRef = useRef<{
     id: string;
@@ -406,6 +436,11 @@ function BoardInner(
     accX: number;
     accY: number;
   } | null>(null);
+
+  // Minimum rows each auto-height widget currently needs to fit its content.
+  // Read during resize so a widget can never be dragged shorter than its
+  // content, and used to grow the item when the content needs more room.
+  const autoHeightMinRowsRef = useRef<Record<string, number>>({});
 
   const handleResize = useEvent(
     (
@@ -480,10 +515,16 @@ function BoardInner(
         },
       );
 
+      // An auto-height widget cannot be resized shorter than the content it
+      // hosts (a nested board) currently needs, so pin its height to the floor.
+      const floorRows = autoHeightMinRowsRef.current[id] ?? 0;
+      const finalW = constrained.w;
+      const finalH = Math.max(constrained.h, floorRows);
+
       let x = item.x;
       let y = item.y;
-      if (handle.includes('w')) x = item.x + item.w - constrained.w;
-      if (handle.includes('n')) y = item.y + item.h - constrained.h;
+      if (handle.includes('w')) x = item.x + item.w - finalW;
+      if (handle.includes('n')) y = item.y + item.h - finalH;
       x = Math.max(0, x);
       y = Math.max(0, y);
 
@@ -491,8 +532,8 @@ function BoardInner(
         ...item,
         x,
         y,
-        w: constrained.w,
-        h: constrained.h,
+        w: finalW,
+        h: finalH,
       };
       const working = modifyLayout(layoutRef.current, newItem);
       const compacted = [
@@ -502,6 +543,22 @@ function BoardInner(
       setPlaceholder(getLayoutItem(compacted, id) ?? newItem);
     },
   );
+
+  // Record an auto-height widget's needed rows. Grow the item when its content
+  // needs more height (only ever increases); the stored value is also the
+  // resize floor enforced in `handleResize`.
+  const handleAutoHeight = useEvent((id: string, neededRows: number) => {
+    autoHeightMinRowsRef.current[id] = neededRows;
+    const current = getLayoutItem(layoutRef.current, id);
+    if (!current || neededRows <= current.h) return;
+    const pp = liveRef.current.positionParams;
+    const working = modifyLayout(layoutRef.current, {
+      ...current,
+      h: neededRows,
+    });
+    const compacted = [...liveRef.current.compactor.compact(working, pp.cols)];
+    applyLayout(compacted, true);
+  });
 
   const styles: Styles = extractStyles(otherProps, CONTAINER_STYLES);
 
@@ -589,6 +646,7 @@ function BoardInner(
                     registry={registry}
                     dragState={dragState}
                     onResize={handleResize}
+                    onAutoHeight={handleAutoHeight}
                   />
                 );
               })

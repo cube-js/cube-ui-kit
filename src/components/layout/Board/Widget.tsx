@@ -23,6 +23,12 @@ export interface CubeBoardWidgetProps {
   qa?: string;
   /** Style overrides applied to the rendered widget element. */
   styles?: Styles;
+  /**
+   * Grow this widget's height in its board to fit its content (only ever
+   * increases). Pair with a nested `Board isAligned` to make the container
+   * expand until the inner board's rows fit at the parent's row height.
+   */
+  isAutoHeight?: boolean;
 }
 
 /**
@@ -40,6 +46,7 @@ export function Widget(props: CubeBoardWidgetProps) {
     constraints,
     qa,
     styles,
+    isAutoHeight,
   } = props;
   const registry = useBoardRegistry();
 
@@ -59,6 +66,7 @@ export function Widget(props: CubeBoardWidgetProps) {
         constraints,
         qa,
         styles,
+        isAutoHeight,
       },
       ownerRef.current,
     );
