@@ -31,8 +31,16 @@ export interface CubeBoardWidgetProps {
  * which is what allows a widget to be transferred between boards.
  */
 export function Widget(props: CubeBoardWidgetProps) {
-  const { id, children, isDraggable, isResizable, resizeHandles, qa, styles } =
-    props;
+  const {
+    id,
+    children,
+    isDraggable,
+    isResizable,
+    resizeHandles,
+    constraints,
+    qa,
+    styles,
+  } = props;
   const registry = useBoardRegistry();
 
   // Stable per-instance token so a stale unregister (from an unmounting copy of
@@ -48,6 +56,7 @@ export function Widget(props: CubeBoardWidgetProps) {
         isDraggable,
         isResizable,
         resizeHandles,
+        constraints,
         qa,
         styles,
       },

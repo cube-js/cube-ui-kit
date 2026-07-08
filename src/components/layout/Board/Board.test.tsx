@@ -1,6 +1,8 @@
-import { render, screen } from '../../../test/render';
+import { fireEvent, render, screen } from '../../../test/render';
 
 import { Board } from './index';
+
+import type { LayoutConstraint, LayoutItem } from './grid-core';
 
 const baseLayout = [
   { i: 'a', x: 0, y: 0, w: 2, h: 2 },
@@ -266,5 +268,98 @@ describe('Board', () => {
     );
 
     expect(screen.getByTestId('WidgetA')).not.toHaveAttribute('tabindex');
+  });
+
+  it('updates widget content when children change', () => {
+    const layout = [{ i: 'a', x: 0, y: 0, w: 2, h: 2 }];
+    const { rerender } = render(
+      <Board width={1200} defaultLayout={layout}>
+        <Board.Widget id="a">Original content</Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByText('Original content')).toBeInTheDocument();
+
+    rerender(
+      <Board width={1200} defaultLayout={layout}>
+        <Board.Widget id="a">Updated content</Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByText('Updated content')).toBeInTheDocument();
+    expect(screen.queryByText('Original content')).not.toBeInTheDocument();
+  });
+
+  it('applies per-widget constraints during a keyboard drag', () => {
+    const onLayoutChange = vi.fn();
+    // A constraint that pins the item to column 5 regardless of the requested
+    // position - only observable if the widget's `constraints` prop is wired
+    // through to the layout item the constraint engine reads.
+    const pinToColumn5: LayoutConstraint = {
+      name: 'pinToColumn5',
+      constrainPosition: (_item, _x, y) => ({ x: 5, y }),
+    };
+
+    render(
+      <Board
+        width={1200}
+        cols={12}
+        onLayoutChange={onLayoutChange}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA" constraints={[pinToColumn5]}>
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    expect(onLayoutChange).toHaveBeenCalled();
+    const lastLayout = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+    expect(lastLayout.find((l) => l.i === 'a')?.x).toBe(5);
+  });
+
+  it('stays registered and draggable after its id changes', () => {
+    const onLayoutChange = vi.fn();
+
+    function Wrapper({ boardId }: { boardId: string }) {
+      return (
+        <Board.Provider>
+          <Board
+            id={boardId}
+            width={1200}
+            cols={12}
+            onLayoutChange={onLayoutChange}
+            defaultLayout={[
+              { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+              { i: 'b', x: 4, y: 0, w: 2, h: 2 },
+            ]}
+          >
+            <Board.Widget id="a" qa="WidgetA">
+              A
+            </Board.Widget>
+            <Board.Widget id="b" qa="WidgetB">
+              B
+            </Board.Widget>
+          </Board>
+        </Board.Provider>
+      );
+    }
+
+    const { rerender } = render(<Wrapper boardId="first" />);
+    rerender(<Wrapper boardId="second" />);
+
+    expect(screen.getByText('A')).toBeInTheDocument();
+
+    // A drag only commits if the board is still found in the registry under its
+    // new id (the drag handlers key off the current board id).
+    const widget = screen.getByTestId('WidgetA');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    expect(onLayoutChange).toHaveBeenCalled();
   });
 });

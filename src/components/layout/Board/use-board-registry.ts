@@ -115,11 +115,17 @@ export function useBoardRegistry(): BoardRegistryContextValue {
       affectedRef.current = new Set([boardId]);
       sourceSnapshotRef.current = cloneLayout(entry.getLayout());
       lastLandingRef.current = { x: item.x, y: item.y };
+      // Layout-item constraints win; otherwise fall back to the ones declared on
+      // the owning `Board.Widget` so position constraints apply during drag.
+      const draggedItem: LayoutItem = {
+        ...item,
+        constraints: item.constraints ?? store.get(itemId)?.constraints,
+      };
       const next: BoardDragState = {
         sourceBoardId: boardId,
         currentBoardId: boardId,
         itemId,
-        item: { ...item },
+        item: draggedItem,
         rect,
         pointerType,
       };

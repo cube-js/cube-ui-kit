@@ -280,6 +280,10 @@ function BoardInner(
 
   useEffect(() => {
     const entry = entryRef.current!;
+    // Keep the entry's id in sync with the (possibly changed) board id before
+    // registering. The previous effect's cleanup has already removed the old id,
+    // so registering here keys the entry under the current id.
+    entry.id = boardId;
     return registry.registerBoard(entry);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boardId]);
@@ -305,8 +309,15 @@ function BoardInner(
       const pp = liveRef.current.positionParams;
 
       if (phase === 'start') {
-        const item = getLayoutItem(layoutRef.current, id);
-        if (!item) return;
+        const rawItem = getLayoutItem(layoutRef.current, id);
+        if (!rawItem) return;
+        // Layout-item constraints win; otherwise fall back to the ones declared
+        // on the owning `Board.Widget` so `applySizeConstraints` picks them up.
+        const item: LayoutItem = {
+          ...rawItem,
+          constraints:
+            rawItem.constraints ?? registry.store.get(id)?.constraints,
+        };
         resizeStateRef.current = {
           id,
           axis,

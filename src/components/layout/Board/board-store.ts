@@ -44,17 +44,24 @@ export class BoardWidgetStore {
     this.map.set(reg.id, reg);
     this.owners.set(reg.id, owner);
 
-    // Only notify on structural (primitive) changes. Content, styles and
-    // resize handles are read fresh from the store by the hosting board on its
-    // next render, so emitting for those (which change reference every render)
-    // would cause an infinite register -> re-render -> register loop.
-    const structuralChange =
+    // Notify on any reference change. The hosting board reads registrations
+    // during render, but `Board.Widget` registers in a layout effect (after
+    // commit), so a content/config change lands one commit late and would never
+    // be shown without an emit. Reference comparison is loop-safe: a board's own
+    // re-render reuses the same `children` element references from its
+    // (un-rerendered) parent, so `content` only differs on a genuine parent
+    // update -> we emit once and then settle.
+    const changed =
       !prev ||
+      prev.content !== reg.content ||
       prev.isDraggable !== reg.isDraggable ||
       prev.isResizable !== reg.isResizable ||
-      prev.qa !== reg.qa;
+      prev.resizeHandles !== reg.resizeHandles ||
+      prev.constraints !== reg.constraints ||
+      prev.qa !== reg.qa ||
+      prev.styles !== reg.styles;
 
-    if (structuralChange) {
+    if (changed) {
       this.version++;
       this.emit();
     }
