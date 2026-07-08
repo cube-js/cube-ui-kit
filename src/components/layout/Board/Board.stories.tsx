@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
+import { Tab, Tabs } from '../../navigation/Tabs';
 import { Flow } from '../Flow';
 
 import { Board } from './index';
@@ -256,3 +257,140 @@ const NestedTemplate: StoryFn<CubeBoardProps> = (args) => (
 
 export const NestedBoards = NestedTemplate.bind({});
 NestedBoards.args = {};
+
+const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board.Provider>
+    <Board
+      id="root"
+      fill="#light"
+      padding="1x"
+      radius="1r"
+      rowHeight={120}
+      defaultLayout={[
+        { i: 'summary', x: 0, y: 0, w: 4, h: 2 },
+        { i: 'kpis', x: 4, y: 0, w: 4, h: 2 },
+        { i: 'tabs', x: 8, y: 0, w: 4, h: 4, minW: 3, minH: 2 },
+        { i: 'nested', x: 0, y: 2, w: 8, h: 4, minW: 4, minH: 2 },
+      ]}
+      {...args}
+    >
+      <Board.Widget id="summary">
+        <WidgetBody title="Summary" text="A top-level widget" />
+      </Board.Widget>
+      <Board.Widget id="kpis">
+        <WidgetBody title="KPIs" text="Another top-level widget" />
+      </Board.Widget>
+      <Board.Widget id="tabs">
+        <Flow display="flex" gap="0.5x" padding="1x" height="100%">
+          <Title level={6} preset="h6">
+            Tabbed board
+          </Title>
+          <Tabs
+            defaultActiveKey="sales"
+            isReorderable={false}
+            flexGrow={1}
+            minHeight="100%"
+          >
+            <Tab key="sales" title="Sales">
+              <Board
+                id="tab-sales"
+                fill="#purple-04.10"
+                padding=".5x"
+                radius="1r"
+                cols={6}
+                rowHeight={80}
+                defaultLayout={[
+                  { i: 'sales-1', x: 0, y: 0, w: 3, h: 2 },
+                  { i: 'sales-2', x: 3, y: 0, w: 3, h: 2 },
+                ]}
+              >
+                <Board.Widget id="sales-1">
+                  <WidgetBody title="Revenue" text="Drag me out" />
+                </Board.Widget>
+                <Board.Widget id="sales-2">
+                  <WidgetBody title="Deals" text="Drag me out" />
+                </Board.Widget>
+              </Board>
+            </Tab>
+            <Tab key="traffic" title="Traffic">
+              <Board
+                id="tab-traffic"
+                fill="#purple-04.10"
+                padding=".5x"
+                radius="1r"
+                cols={6}
+                rowHeight={80}
+                defaultLayout={[
+                  { i: 'traffic-1', x: 0, y: 0, w: 2, h: 2 },
+                  { i: 'traffic-2', x: 2, y: 0, w: 2, h: 2 },
+                  { i: 'traffic-3', x: 4, y: 0, w: 2, h: 2 },
+                ]}
+              >
+                <Board.Widget id="traffic-1">
+                  <WidgetBody title="Visitors" />
+                </Board.Widget>
+                <Board.Widget id="traffic-2">
+                  <WidgetBody title="Sources" />
+                </Board.Widget>
+                <Board.Widget id="traffic-3">
+                  <WidgetBody title="Bounce" />
+                </Board.Widget>
+              </Board>
+            </Tab>
+            <Tab key="errors" title="Errors">
+              <Board
+                id="tab-errors"
+                fill="#purple-04.10"
+                padding=".5x"
+                radius="1r"
+                cols={6}
+                rowHeight={80}
+                defaultLayout={[
+                  { i: 'errors-1', x: 0, y: 0, w: 6, h: 2 },
+                  { i: 'errors-2', x: 0, y: 2, w: 3, h: 2 },
+                ]}
+              >
+                <Board.Widget id="errors-1">
+                  <WidgetBody title="Error rate" text="Drag me out" />
+                </Board.Widget>
+                <Board.Widget id="errors-2">
+                  <WidgetBody title="Top errors" />
+                </Board.Widget>
+              </Board>
+            </Tab>
+          </Tabs>
+        </Flow>
+      </Board.Widget>
+      <Board.Widget id="nested">
+        <Flow display="flex" gap="0.5x" padding="1x" height="100%">
+          <Title level={6} preset="h6">
+            Nested board (drag the whole container)
+          </Title>
+          <Board
+            id="nested-inner"
+            fill="#purple-04.10"
+            padding=".5x"
+            radius="1r"
+            flexGrow={1}
+            cols={8}
+            rowHeight={80}
+            defaultLayout={[
+              { i: 'nested-1', x: 0, y: 0, w: 4, h: 2 },
+              { i: 'nested-2', x: 4, y: 0, w: 4, h: 2 },
+            ]}
+          >
+            <Board.Widget id="nested-1">
+              <WidgetBody title="Nested A" text="Drag me out" />
+            </Board.Widget>
+            <Board.Widget id="nested-2">
+              <WidgetBody title="Nested B" text="Drag me out" />
+            </Board.Widget>
+          </Board>
+        </Flow>
+      </Board.Widget>
+    </Board>
+  </Board.Provider>
+);
+
+export const TabsBoard = TabsBoardTemplate.bind({});
+TabsBoard.args = {};

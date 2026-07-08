@@ -126,6 +126,14 @@ draggable while its children can be dragged out into sibling boards.
 
 <Story of={BoardStories.NestedBoards} />
 
+### Boards inside Tabs
+
+A `Board.Widget` can host a `Tabs` where each tab renders its own `Board`, all
+under a shared `Board.Provider` so widgets can be dragged between tabs and out
+into the surrounding board.
+
+<Story of={BoardStories.TabsBoard} />
+
 ## Accessibility
 
 - Widgets are focusable when draggable. Press <kbd>Tab</kbd> to focus a widget,
