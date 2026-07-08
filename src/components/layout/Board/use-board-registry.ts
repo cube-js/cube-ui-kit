@@ -19,11 +19,18 @@ import {
   moveElement,
 } from './grid-core';
 
-function rectCenter(rect: ViewportRect): { x: number; y: number } {
-  return {
-    x: rect.left + rect.width / 2,
-    y: rect.top + rect.height / 2,
-  };
+/**
+ * The dragged widget's top-left corner in viewport coordinates.
+ *
+ * This is the anchor `computeLanding` maps into a target board's grid, and the
+ * same point the floating overlay clone is positioned at (see `WidgetHost`), so
+ * the drop-target hit-test must use it too. Picking the target by the widget's
+ * center instead lets a wide/tall widget select a board its top-left has not yet
+ * entered: `computeLanding` then clamps the landing to that board's edge and the
+ * placeholder/drop slot drift away from where the overlay is actually drawn.
+ */
+function rectOrigin(rect: ViewportRect): { x: number; y: number } {
+  return { x: rect.left, y: rect.top };
 }
 
 /**
@@ -345,10 +352,13 @@ export function useBoardRegistry(
       };
 
       const source = boardsRef.current.get(ds.sourceBoardId);
-      // Fall back to the source board so a pointer outside every board keeps the
-      // widget anchored to where it came from. Frozen rects make this
-      // deterministic per pointer position (no preview-induced flip-flop).
-      const target = hitTest(rectCenter(newRect)) ?? source ?? null;
+      // Hit-test with the widget's top-left corner - the same anchor
+      // `computeLanding` and the overlay clone use - so the chosen board always
+      // contains the landing anchor and the placeholder can't diverge from the
+      // floating overlay (see `rectOrigin`). Fall back to the source board so a
+      // pointer outside every board keeps the widget anchored to where it came
+      // from. Frozen rects make this deterministic (no preview-induced flip-flop).
+      const target = hitTest(rectOrigin(newRect)) ?? source ?? null;
 
       if (!target) {
         setDragState({ ...ds, rect: newRect });

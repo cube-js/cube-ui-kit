@@ -675,4 +675,123 @@ describe('Board', () => {
       heightSpy.mockRestore();
     }
   });
+
+  describe('cross-board drop target selection', () => {
+    // jsdom returns empty rects, so feed the registry deterministic geometry:
+    // two 600px-wide boards sitting side by side.
+    const mockRect = (
+      left: number,
+      top: number,
+      width: number,
+      height: number,
+    ): DOMRect =>
+      ({
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    // React Aria's useMove derives its deltas from pageX/pageY, which jsdom drops
+    // when passed via the PointerEvent init, so define them by hand.
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    // A wide widget (4 of 6 columns => 400px) starting flush-left on the source
+    // board, whose content sits at viewport x:[0,600] and the target at
+    // x:[600,1200]. Returns the pieces a test needs to drive a pointer drag.
+    function setupSideBySideBoards(onWidgetTransfer: () => void) {
+      const utils = render(
+        <Board.Provider onWidgetTransfer={onWidgetTransfer}>
+          <Board
+            id="source"
+            width={600}
+            cols={6}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            defaultLayout={[{ i: 'w', x: 0, y: 0, w: 4, h: 1 }]}
+          >
+            <Board.Widget id="w" qa="Wide">
+              W
+            </Board.Widget>
+          </Board>
+          <Board
+            id="target"
+            width={600}
+            cols={6}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            defaultLayout={[{ i: 'z', x: 5, y: 0, w: 1, h: 1 }]}
+          >
+            <Board.Widget id="z" qa="Target">
+              Z
+            </Board.Widget>
+          </Board>
+        </Board.Provider>,
+      );
+
+      const widget = screen.getByTestId('Wide');
+      // A widget host is a direct child of its board's content layer.
+      const sourceContent = widget.parentElement as HTMLElement;
+      const targetContent = screen.getByTestId('Target')
+        .parentElement as HTMLElement;
+
+      sourceContent.getBoundingClientRect = () => mockRect(0, 0, 600, 400);
+      targetContent.getBoundingClientRect = () => mockRect(600, 0, 600, 400);
+      widget.getBoundingClientRect = () => mockRect(0, 0, 400, 100);
+
+      return { ...utils, widget };
+    }
+
+    it('does not transfer when only the widget center crosses into the target', () => {
+      const onWidgetTransfer = vi.fn();
+      const { widget } = setupSideBySideBoards(onWidgetTransfer);
+
+      // Drag the top-left to x=500: the widget center (700) is over the target
+      // board, but its top-left - the anchor the landing and overlay use - is
+      // still over the source. The drop must follow the top-left, not the
+      // center, so the widget stays on the source board.
+      fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 500, 0));
+      fireEvent(window, pointerEvent('pointerup', 500, 0));
+
+      expect(onWidgetTransfer).not.toHaveBeenCalled();
+    });
+
+    it('transfers once the widget top-left crosses into the target', () => {
+      const onWidgetTransfer = vi.fn();
+      const { widget } = setupSideBySideBoards(onWidgetTransfer);
+
+      // Drag the top-left to x=700, inside the target board's rect.
+      fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 700, 0));
+      fireEvent(window, pointerEvent('pointerup', 700, 0));
+
+      expect(onWidgetTransfer).toHaveBeenCalledTimes(1);
+      expect(onWidgetTransfer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          widgetId: 'w',
+          fromBoardId: 'source',
+          toBoardId: 'target',
+        }),
+      );
+    });
+  });
 });
