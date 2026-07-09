@@ -172,9 +172,78 @@ const GripElement = tasty({
   },
 });
 
+// Edge axes (n/s/e/w) get a dotted grip affordance, revealed on
+// hover/focus/resize. The dots line up along the edge (a vertical column for the
+// e/w handles, a horizontal row for n/s), matching the design-system pane grip
+// (see `Layout.Pane`). Purely visual - the interaction still lives on the
+// transparent `HandleElement` hit-zone above.
+const EdgeGripElement = tasty({
+  qa: 'BoardResizeEdgeGrip',
+  styles: {
+    position: 'absolute',
+    display: 'grid',
+    gap: '2bw',
+    boxSizing: 'border-box',
+    pointerEvents: 'none',
+    opacity: {
+      '': 0,
+      revealed: 1,
+    },
+    transition: 'opacity 120ms ease-in-out',
+    // A column of 5 dots for the vertical edges (e/w), a row of 5 for n/s.
+    gridColumns: {
+      '': '3px',
+      '[data-axis="n"] | [data-axis="s"]': '3px 3px 3px 3px 3px',
+    },
+    gridRows: {
+      '': '3px 3px 3px 3px 3px',
+      '[data-axis="n"] | [data-axis="s"]': '3px',
+    },
+    // Anchor to the relevant edge and center along it.
+    top: {
+      '': '50%',
+      '[data-axis="n"]': '3px',
+      '[data-axis="s"]': 'auto',
+    },
+    bottom: {
+      '': 'auto',
+      '[data-axis="s"]': '3px',
+    },
+    left: {
+      '': 'auto',
+      '[data-axis="w"]': '3px',
+      '[data-axis="n"] | [data-axis="s"]': '50%',
+    },
+    right: {
+      '': 'auto',
+      '[data-axis="e"]': '3px',
+    },
+    transform: {
+      '': 'translate(0, 0)',
+      '[data-axis="e"] | [data-axis="w"]': 'translate(0, -50%)',
+      '[data-axis="n"] | [data-axis="s"]': 'translate(-50%, 0)',
+    },
+
+    Dot: {
+      width: '3px',
+      height: '3px',
+      radius: 'round',
+      fill: {
+        '': '#dark-03',
+        resizing: '#dark-02',
+      },
+    },
+  },
+});
+
 /** Corner axes get a visible grip affordance on hover/focus/resize. */
 function isCornerAxis(axis: ResizeHandleAxis): boolean {
   return axis.length === 2;
+}
+
+/** Edge axes (n/s/e/w) get a dotted grip affordance. */
+function isEdgeAxis(axis: ResizeHandleAxis): boolean {
+  return axis.length === 1;
 }
 
 interface ResizeHandleProps {
@@ -485,6 +554,20 @@ export function WidgetHost(props: WidgetHostProps) {
               mods={{ revealed: gripsRevealed }}
               aria-hidden="true"
             />
+          ))}
+          {resizeHandles.filter(isEdgeAxis).map((axis) => (
+            <EdgeGripElement
+              key={`edge-grip-${axis}`}
+              data-axis={axis}
+              mods={{ revealed: gripsRevealed, resizing: isResizing }}
+              aria-hidden="true"
+            >
+              <div data-element="Dot" />
+              <div data-element="Dot" />
+              <div data-element="Dot" />
+              <div data-element="Dot" />
+              <div data-element="Dot" />
+            </EdgeGripElement>
           ))}
         </>
       ) : null}

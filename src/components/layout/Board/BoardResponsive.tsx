@@ -46,6 +46,13 @@ export interface CubeBoardResponsiveProps
   /** Called when the active breakpoint changes. */
   onBreakpointChange?: (breakpoint: string, cols: number) => void;
   /**
+   * Called when the measured container width changes, with the current column
+   * count for the active breakpoint. Mirrors react-grid-layout's
+   * `WidthProvider` `onWidthChange`. Not fired while width is unmeasured (0) or
+   * when an explicit `width` is provided.
+   */
+  onWidthChange?: (width: number, cols: number) => void;
+  /**
    * Force a specific breakpoint regardless of the measured width (e.g. for a
    * fixed-size screenshot or PDF export).
    */
@@ -73,6 +80,7 @@ function BoardResponsiveInner(
     defaultLayouts,
     onLayoutChange,
     onBreakpointChange,
+    onWidthChange,
     breakpoint: forcedBreakpoint,
     width: providedWidth,
     compact = 'vertical',
@@ -150,6 +158,18 @@ function BoardResponsiveInner(
     lastBreakpointRef.current = activeBreakpoint;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBreakpoint]);
+
+  // Report width changes (measured widths only; an explicit `width` disables
+  // measurement, and an unmeasured board reports 0 which we skip).
+  const onWidthChangeEvent = useEvent(() =>
+    onWidthChange?.(widthForBreakpoint, activeCols),
+  );
+  useEffect(() => {
+    if (providedWidth != null) return;
+    if (measuredWidth <= 0) return;
+    onWidthChangeEvent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [measuredWidth, activeCols]);
 
   const handleLayoutChange = useEvent((next: LayoutItem[]) => {
     const merged = { ...layoutsRef.current, [activeBreakpoint]: next };

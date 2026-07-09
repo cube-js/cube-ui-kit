@@ -61,7 +61,7 @@ clipped by an ancestor's `overflow: hidden`.
 - **`isDraggable`** `boolean` (default: `true`) — Enable dragging for all widgets.
 - **`isResizable`** `boolean` (default: `true`) — Enable resizing for all widgets.
 - **`isDroppable`** `boolean` (default: `true`) — Whether the board accepts widgets dropped from other boards.
-- **`resizeHandles`** `ResizeHandleAxis[]` (default: `['se']`) — Which resize handles to show.
+- **`resizeHandles`** `ResizeHandleAxis[]` (default: `['se']`) — Which resize handles to show. Corner handles (`ne`/`nw`/`se`/`sw`) show an angle grip; edge handles (`n`/`s`/`e`/`w`) show a dotted grip. Both are revealed on hover/focus/resize. A single edge (e.g. `['e']` or `['s']`) gives a horizontally- or vertically-only resizable widget.
 - **`dragCancel`** `string` — CSS selector for elements that must not start a pointer drag (e.g. form controls inside a widget: `"input,textarea,button,a,.no-drag"`). Keyboard moves are unaffected. Can be overridden per widget.
 - **`dragHandle`** `string` — CSS selector for the only elements from which a pointer drag may start. Can be overridden per widget.
 - **`showGridLines`** `boolean | 'drag'` (default: `false`) — Show grid lines behind the widgets. `true` always, `'drag'` only while a widget is being dragged or resized.
@@ -113,6 +113,7 @@ container's measured width, mirroring react-grid-layout's `Responsive` +
 - **`defaultLayouts`** `Record<string, LayoutItem[]>` — Initial per-breakpoint layouts for uncontrolled usage.
 - **`onLayoutChange`** `(currentLayout: LayoutItem[], allLayouts: Record<string, LayoutItem[]>) => void` — Called on commit with the active breakpoint's layout and the full map.
 - **`onBreakpointChange`** `(breakpoint: string, cols: number) => void` — Called when the active breakpoint changes.
+- **`onWidthChange`** `(width: number, cols: number) => void` — Called when the measured container width changes, with the active breakpoint's column count. Mirrors react-grid-layout's `WidthProvider` `onWidthChange`. Not fired while width is unmeasured or when an explicit `width` is provided.
 - **`breakpoint`** `string` — Force a specific breakpoint regardless of width (e.g. for a fixed-size screenshot or PDF export).
 - **`width`** `number` — Explicit width; disables measurement (SSR/tests/forced-size exports).
 
@@ -233,6 +234,17 @@ touch drags capture the pointer, so they do not trigger it.
   then use the arrow keys to move it one cell at a time.
 - Dragging, resizing, and keyboard movement are all handled by React Aria's
   `useMove`, which normalizes mouse, touch, and keyboard interactions.
+
+## Not yet supported
+
+- **External drag-in from a palette** — dragging a brand-new widget from an
+  element outside any board into the grid (react-grid-layout's
+  `isDroppable`/`onDrop`/`droppingItem`) is not implemented. Board's drag engine
+  is built entirely on React Aria's `useMove` over registered widgets; drag-in
+  is a separate HTML5 drag-and-drop modality (pixel-to-grid mapping, a dropping
+  placeholder, and new `onDrop`/`droppingItem` props). Add widgets
+  programmatically (render a new `Board.Widget` and add its layout item), or drag
+  between boards with `Board.Provider`.
 
 ## Attribution
 

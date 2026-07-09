@@ -142,6 +142,43 @@ NonResizable.args = {
   isResizable: false,
 };
 
+// Per-widget `resizeHandles` restrict a widget to a single axis. Edge handles
+// (`e`/`s`) render a dotted grip revealed on hover/focus/resize.
+const SingleAxisTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board
+    fill="#light"
+    padding="1x"
+    radius="1r"
+    defaultLayout={[
+      { i: 'h', x: 0, y: 0, w: 4, h: 2, minW: 2 },
+      { i: 'v', x: 4, y: 0, w: 4, h: 2, minH: 1 },
+      { i: 'both', x: 8, y: 0, w: 4, h: 2 },
+    ]}
+    {...args}
+  >
+    <Board.Widget id="h" resizeHandles={['e']}>
+      <WidgetBody title="Horizontal only" text="Resize from the right edge" />
+    </Board.Widget>
+    <Board.Widget id="v" resizeHandles={['s']}>
+      <WidgetBody title="Vertical only" text="Resize from the bottom edge" />
+    </Board.Widget>
+    <Board.Widget id="both">
+      <WidgetBody title="Corner" text="Default se handle" />
+    </Board.Widget>
+  </Board>
+);
+
+export const SingleAxisResize = SingleAxisTemplate.bind({});
+SingleAxisResize.args = {};
+SingleAxisResize.parameters = {
+  docs: {
+    description: {
+      story:
+        'Set per-widget `resizeHandles` to a single edge to constrain resizing to one axis: `["e"]` for horizontal-only, `["s"]` for vertical-only. Edge handles show a dotted grip (matching `Layout.Pane`) that is revealed on hover, focus, or while resizing.',
+    },
+  },
+};
+
 export const GridLines = Template.bind({});
 GridLines.args = {
   showGridLines: 'drag',
@@ -259,11 +296,13 @@ const RESPONSIVE_LAYOUTS: ResponsiveLayouts = {
 const ResponsiveTemplate: StoryFn<CubeBoardResponsiveProps> = (args) => {
   const [layouts, setLayouts] = useState<ResponsiveLayouts>(RESPONSIVE_LAYOUTS);
   const [breakpoint, setBreakpoint] = useState('lg');
+  const [width, setWidth] = useState<number | null>(null);
 
   return (
     <Flow gap="1x">
       <Text preset="c2" color="#dark-03">
         Resize the window/preview — active breakpoint: <b>{breakpoint}</b>
+        {width != null ? ` — width: ${Math.round(width)}px` : null}
       </Text>
       <Board.Responsive
         fill="#light"
@@ -274,6 +313,7 @@ const ResponsiveTemplate: StoryFn<CubeBoardResponsiveProps> = (args) => {
         layouts={layouts}
         onLayoutChange={(_current, all) => setLayouts(all)}
         onBreakpointChange={setBreakpoint}
+        onWidthChange={setWidth}
         {...args}
       >
         <Board.Widget id="a">

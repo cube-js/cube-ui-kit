@@ -150,7 +150,7 @@ describe('Board', () => {
     expect(grips[0]).toHaveAttribute('data-axis', 'se');
   });
 
-  it('renders grips only for corner handles, not edges', () => {
+  it('renders corner grips for corners and edge grips for edges', () => {
     render(
       <Board
         width={1200}
@@ -163,9 +163,45 @@ describe('Board', () => {
       </Board>,
     );
 
-    // 4 handles total, but only the two corners (se, nw) get a visible grip.
+    // 4 handles total: the two corners (se, nw) get an angle grip, the two
+    // edges (n, e) get a dotted edge grip.
     expect(screen.getAllByTestId('BoardResizeHandle').length).toBe(4);
     expect(screen.getAllByTestId('BoardResizeGrip').length).toBe(2);
+    expect(screen.getAllByTestId('BoardResizeEdgeGrip').length).toBe(2);
+  });
+
+  it('renders a dotted edge grip for a single-axis edge handle', () => {
+    render(
+      <Board width={1200} defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}>
+        <Board.Widget id="a" qa="WidgetA" resizeHandles={['e']}>
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    // A single east handle with a dotted edge grip and no corner grip.
+    expect(screen.getAllByTestId('BoardResizeHandle').length).toBe(1);
+    const grips = screen.getAllByTestId('BoardResizeEdgeGrip');
+    expect(grips.length).toBe(1);
+    expect(grips[0]).toHaveAttribute('data-axis', 'e');
+    expect(screen.queryByTestId('BoardResizeGrip')).not.toBeInTheDocument();
+  });
+
+  it('does not render edge grips when resizing is disabled', () => {
+    render(
+      <Board
+        width={1200}
+        isResizable={false}
+        resizeHandles={['e']}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.queryByTestId('BoardResizeEdgeGrip')).not.toBeInTheDocument();
   });
 
   it('does not render grips when resizing is disabled', () => {
@@ -917,6 +953,38 @@ describe('Board', () => {
       expect(onResize).toHaveBeenCalled();
       expect(onResizeStop).toHaveBeenCalled();
     });
+
+    it('resizes width-only from a single edge handle', () => {
+      const onResizeStop = vi.fn();
+
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          onResizeStop={onResizeStop}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA" resizeHandles={['e']}>
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const handle = screen.getByTestId('BoardResizeHandle');
+      // Drag the east handle right by ~200px (2 columns of 100px).
+      fireEvent(handle, pointerEvent('pointerdown', 200, 200));
+      fireEvent(window, pointerEvent('pointermove', 400, 400));
+      fireEvent(window, pointerEvent('pointerup', 400, 400));
+
+      expect(onResizeStop).toHaveBeenCalled();
+      const info = onResizeStop.mock.calls.at(-1)![0];
+      // Width grew; height stayed the same (edge handle is horizontal-only).
+      expect(info.item.w).toBeGreaterThan(2);
+      expect(info.item.h).toBe(2);
+    });
   });
 
   describe('drag cancel / handle', () => {
@@ -1175,6 +1243,67 @@ describe('Board', () => {
       expect((current as LayoutItem[]).find((l) => l.i === 'a')?.x).toBe(1);
       // The active breakpoint (lg) is updated in the returned map.
       expect((all.lg as LayoutItem[]).find((l) => l.i === 'a')?.x).toBe(1);
+    });
+
+    it('fires onWidthChange with the measured width and active column count', () => {
+      // The default ResizeObserver mock never invokes its callback; use a
+      // controllable one so a measurement can be simulated, and spy offsetWidth
+      // so the board measures a non-zero width.
+      const offsetWidthSpy = vi
+        .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+        .mockReturnValue(1000);
+      const fires: Array<() => void> = [];
+      const RealResizeObserver = global.ResizeObserver;
+      global.ResizeObserver = class {
+        cb: ResizeObserverCallback;
+        constructor(cb: ResizeObserverCallback) {
+          this.cb = cb;
+        }
+        observe(element: Element) {
+          // react-aria's useResizeObserver ignores empty entry lists, so pass a
+          // non-empty one.
+          fires.push(() =>
+            this.cb(
+              [{ target: element } as ResizeObserverEntry],
+              this as unknown as ResizeObserver,
+            ),
+          );
+        }
+        unobserve() {}
+        disconnect() {}
+      } as unknown as typeof ResizeObserver;
+
+      const onWidthChange = vi.fn();
+
+      try {
+        render(
+          <Board.Responsive
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            breakpoints={breakpoints}
+            cols={cols}
+            layouts={layouts}
+            onWidthChange={onWidthChange}
+          >
+            <Board.Widget id="a" qa="WidgetA">
+              A
+            </Board.Widget>
+          </Board.Responsive>,
+        );
+
+        act(() => {
+          fires.forEach((fire) => fire());
+        });
+
+        expect(onWidthChange).toHaveBeenCalled();
+        const [width, colCount] = onWidthChange.mock.calls.at(-1)!;
+        expect(width).toBe(1000);
+        // width 1000 => lg breakpoint (min 800) => 12 columns.
+        expect(colCount).toBe(12);
+      } finally {
+        offsetWidthSpy.mockRestore();
+        global.ResizeObserver = RealResizeObserver;
+      }
     });
   });
 
