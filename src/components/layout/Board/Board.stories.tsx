@@ -1,8 +1,10 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 import { useState } from 'react';
 
+import { Button } from '../../actions/Button';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
+import { TextInput } from '../../fields/TextInput';
 import { Tab, Tabs } from '../../navigation/Tabs';
 import { Flow } from '../Flow';
 
@@ -10,7 +12,9 @@ import { Board } from './index';
 
 import type { CubeBoardProps } from './Board';
 import type { WidgetTransferInfo } from './board-context';
+import type { CubeBoardResponsiveProps } from './BoardResponsive';
 import type { LayoutItem } from './grid-core';
+import type { ResponsiveLayouts } from './responsive-utils';
 
 export default {
   title: 'Layout/Board',
@@ -42,6 +46,12 @@ export default {
     },
     allowOverlap: {
       control: { type: 'boolean' },
+      table: { defaultValue: { summary: 'false' } },
+    },
+    showGridLines: {
+      control: { type: 'radio' },
+      options: [false, 'drag', true],
+      description: 'Show grid lines behind the widgets.',
       table: { defaultValue: { summary: 'false' } },
     },
   },
@@ -99,6 +109,28 @@ export const FreePositioning = Template.bind({});
 FreePositioning.args = {
   compact: 'free',
 };
+FreePositioning.parameters = {
+  docs: {
+    description: {
+      story:
+        'With `compact="free"` a widget is placed exactly where you drop it and its neighbours never move. Without `allowOverlap`, dragging onto an occupied cell is blocked - the widget stays at its last free spot instead of pushing or swapping the others.',
+    },
+  },
+};
+
+export const FreePositioningOverlap = Template.bind({});
+FreePositioningOverlap.args = {
+  compact: 'free',
+  allowOverlap: true,
+};
+FreePositioningOverlap.parameters = {
+  docs: {
+    description: {
+      story:
+        'Combining `compact="free"` with `allowOverlap` lets widgets be dropped anywhere, stacking on top of each other. Neighbours are still never pushed around.',
+    },
+  },
+};
 
 export const HorizontalCompaction = Template.bind({});
 HorizontalCompaction.args = {
@@ -108,6 +140,60 @@ HorizontalCompaction.args = {
 export const NonResizable = Template.bind({});
 NonResizable.args = {
   isResizable: false,
+};
+
+export const GridLines = Template.bind({});
+GridLines.args = {
+  showGridLines: 'drag',
+};
+GridLines.parameters = {
+  docs: {
+    description: {
+      story:
+        'Grid lines appear behind the widgets while a widget is being dragged or resized (`showGridLines="drag"`). Use `true` to always show them.',
+    },
+  },
+};
+
+// A widget whose interactive controls must not start a drag. `dragCancel`
+// matches those elements (plus a `.no-drag` escape hatch) so the widget can
+// still be dragged from its empty areas.
+const DragCancelTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board
+    fill="#light"
+    padding="1x"
+    radius="1r"
+    dragCancel="input,textarea,button,a,.no-drag"
+    defaultLayout={[
+      { i: 'form', x: 0, y: 0, w: 6, h: 3 },
+      { i: 'plain', x: 6, y: 0, w: 6, h: 3 },
+    ]}
+    {...args}
+  >
+    <Board.Widget id="form">
+      <Flow gap="1x" padding="1.5x" height="100%">
+        <Title level={5} preset="h6">
+          Filters (drag from the header)
+        </Title>
+        <TextInput aria-label="Search" placeholder="Type here - no drag" />
+        <Button>Apply</Button>
+      </Flow>
+    </Board.Widget>
+    <Board.Widget id="plain">
+      <WidgetBody title="Chart" text="Drag me anywhere" />
+    </Board.Widget>
+  </Board>
+);
+
+export const DragCancel = DragCancelTemplate.bind({});
+DragCancel.args = {};
+DragCancel.parameters = {
+  docs: {
+    description: {
+      story:
+        'A pointer press on an element matching `dragCancel` (inputs, buttons, links, `.no-drag`) never starts a drag, so form controls inside a widget stay interactive. Keyboard moves are unaffected.',
+    },
+  },
 };
 
 const ControlledTemplate: StoryFn<CubeBoardProps> = (args) => {
@@ -149,6 +235,71 @@ const ControlledTemplate: StoryFn<CubeBoardProps> = (args) => {
 
 export const Controlled = ControlledTemplate.bind({});
 Controlled.args = {};
+
+const RESPONSIVE_BREAKPOINTS = { lg: 800, md: 500, sm: 0 };
+const RESPONSIVE_COLS = { lg: 12, md: 6, sm: 2 };
+const RESPONSIVE_LAYOUTS: ResponsiveLayouts = {
+  lg: [
+    { i: 'a', x: 0, y: 0, w: 4, h: 2 },
+    { i: 'b', x: 4, y: 0, w: 4, h: 2 },
+    { i: 'c', x: 8, y: 0, w: 4, h: 2 },
+  ],
+  md: [
+    { i: 'a', x: 0, y: 0, w: 3, h: 2 },
+    { i: 'b', x: 3, y: 0, w: 3, h: 2 },
+    { i: 'c', x: 0, y: 2, w: 6, h: 2 },
+  ],
+  sm: [
+    { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+    { i: 'b', x: 0, y: 2, w: 2, h: 2 },
+    { i: 'c', x: 0, y: 4, w: 2, h: 2 },
+  ],
+};
+
+const ResponsiveTemplate: StoryFn<CubeBoardResponsiveProps> = (args) => {
+  const [layouts, setLayouts] = useState<ResponsiveLayouts>(RESPONSIVE_LAYOUTS);
+  const [breakpoint, setBreakpoint] = useState('lg');
+
+  return (
+    <Flow gap="1x">
+      <Text preset="c2" color="#dark-03">
+        Resize the window/preview — active breakpoint: <b>{breakpoint}</b>
+      </Text>
+      <Board.Responsive
+        fill="#light"
+        padding="1x"
+        radius="1r"
+        breakpoints={RESPONSIVE_BREAKPOINTS}
+        cols={RESPONSIVE_COLS}
+        layouts={layouts}
+        onLayoutChange={(_current, all) => setLayouts(all)}
+        onBreakpointChange={setBreakpoint}
+        {...args}
+      >
+        <Board.Widget id="a">
+          <WidgetBody title="Revenue" text="Drag or resize me" />
+        </Board.Widget>
+        <Board.Widget id="b">
+          <WidgetBody title="Active users" text="Drag or resize me" />
+        </Board.Widget>
+        <Board.Widget id="c">
+          <WidgetBody title="Latency" text="Drag or resize me" />
+        </Board.Widget>
+      </Board.Responsive>
+    </Flow>
+  );
+};
+
+export const Responsive = ResponsiveTemplate.bind({});
+Responsive.args = {};
+Responsive.parameters = {
+  docs: {
+    description: {
+      story:
+        '`Board.Responsive` selects a layout and column count per breakpoint from the measured width (mirroring react-grid-layout `Responsive`). `onLayoutChange` reports both the active layout and the full map.',
+    },
+  },
+};
 
 const CrossBoardTemplate: StoryFn<CubeBoardProps> = (args) => (
   <Board.Provider>

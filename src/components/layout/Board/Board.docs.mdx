@@ -36,8 +36,10 @@ clipped by an ancestor's `overflow: hidden`.
 - **Content vs. position** — `Board.Widget` declares content; the owning `Board`
   positions it. This decoupling is what lets a widget be transferred between
   boards.
-- **Compaction** — `vertical` (default), `horizontal`, or `free` (no compaction,
-  free placement). Combine `free` with `allowOverlap` for a fully free canvas.
+- **Compaction** — `vertical` (default), `horizontal`, or `free`. In `free` mode a
+  widget is placed exactly where you drop it and its neighbours are never pushed
+  or swapped; without `allowOverlap` a drop onto an occupied cell is blocked, and
+  with `allowOverlap` widgets may stack for a fully free canvas.
 
 ## Properties
 
@@ -46,18 +48,23 @@ clipped by an ancestor's `overflow: hidden`.
 - **`layout`** `LayoutItem[]` — Controlled layout.
 - **`defaultLayout`** `LayoutItem[]` — Initial layout for uncontrolled usage.
 - **`onLayoutChange`** `(layout: LayoutItem[]) => void` — Called when a drag or resize is committed.
+- **`onDragStart` / `onDrag` / `onDragStop`** `(info: BoardInteractionInfo) => void` — Drag lifecycle callbacks. `onDrag` fires on every step; `onDragStop` fires after the layout is committed.
+- **`onResizeStart` / `onResize` / `onResizeStop`** `(info: BoardInteractionInfo) => void` — Resize lifecycle callbacks, mirroring the drag ones.
 - **`cols`** `number` (default: `12`) — Number of columns.
 - **`rowHeight`** `number` (default: `100`) — Row height in pixels.
 - **`margin`** `[number, number]` (default: `[8, 8]`) — Horizontal/vertical gap between widgets.
 - **`containerPadding`** `[number, number]` — Inner padding. Defaults to `margin`.
 - **`maxRows`** `number` (default: `Infinity`) — Maximum number of rows.
-- **`compact`** `'vertical' | 'horizontal' | 'free' | null` (default: `'vertical'`) — Compaction behavior.
-- **`allowOverlap`** `boolean` (default: `false`) — Allow widgets to overlap.
+- **`compact`** `'vertical' | 'horizontal' | 'free' | null` (default: `'vertical'`) — Compaction behavior. `'vertical'`/`'horizontal'` reflow widgets to remove gaps; `'free'` places each widget exactly where dropped and never pushes its neighbours (blocked from occupied cells unless `allowOverlap`); `null` disables compaction but still resolves collisions the legacy react-grid-layout way.
+- **`allowOverlap`** `boolean` (default: `false`) — Allow widgets to overlap (stack). In `'free'` mode this is what distinguishes stacking from blocking a drop onto an occupied cell.
 - **`preventCollision`** `boolean` (default: `false`) — Block movement into occupied cells instead of pushing.
 - **`isDraggable`** `boolean` (default: `true`) — Enable dragging for all widgets.
 - **`isResizable`** `boolean` (default: `true`) — Enable resizing for all widgets.
 - **`isDroppable`** `boolean` (default: `true`) — Whether the board accepts widgets dropped from other boards.
 - **`resizeHandles`** `ResizeHandleAxis[]` (default: `['se']`) — Which resize handles to show.
+- **`dragCancel`** `string` — CSS selector for elements that must not start a pointer drag (e.g. form controls inside a widget: `"input,textarea,button,a,.no-drag"`). Keyboard moves are unaffected. Can be overridden per widget.
+- **`dragHandle`** `string` — CSS selector for the only elements from which a pointer drag may start. Can be overridden per widget.
+- **`showGridLines`** `boolean | 'drag'` (default: `false`) — Show grid lines behind the widgets. `true` always, `'drag'` only while a widget is being dragged or resized.
 - **`isAligned`** `boolean` (default: `false`) — Align a nested board with its ancestor `Board`'s layout. Only takes effect when the board is nested inside another `Board`'s widget. When set, the board inherits the parent's column pitch (deriving its own column count from its measured width so cells stay parent-sized as the container is resized) and inherits the parent's row height as a target, shrinking rows slightly when needed to fit the height the container widget grants it. `cols`/`rowHeight` then act as fallbacks used only until the parent metrics resolve.
 - **`constraints`** `LayoutConstraint[]` — Grid/item layout constraints.
 - **`width`** `number` — Explicit width (disables measurement; useful for SSR/tests).
@@ -74,6 +81,8 @@ clipped by an ancestor's `overflow: hidden`.
 - **`qa`** `string` — Test id for the rendered widget element.
 - **`styles`** `Styles` — Style overrides for the rendered widget element.
 - **`isAutoHeight`** `boolean` (default: `false`) — Grow this widget's height in its board to fit its content (only ever increases, never shrinks). Pair it with a nested `Board isAligned` so the container expands until the inner board's rows fit at the parent's row height. It also pins the widget's resize floor: you cannot drag the widget shorter than the height its content currently needs.
+- **`dragCancel`** `string` — Override the board's `dragCancel` selector for this widget.
+- **`dragHandle`** `string` — Override the board's `dragHandle` selector for this widget.
 
 ### Board.Provider
 
@@ -90,6 +99,25 @@ each board's `layout` controlled and, in response to `onWidgetTransfer`, move th
 `Board.Widget` declaration into the destination container so the content follows
 the widget. The [Boards inside Tabs](#boards-inside-tabs) example shows the
 pattern.
+
+### Board.Responsive
+
+A wrapper around `Board` that selects a layout and column count based on the
+container's measured width, mirroring react-grid-layout's `Responsive` +
+`WidthProvider`. It accepts all `Board` props except `layout`, `defaultLayout`,
+`cols`, `onLayoutChange`, and `width` (which it manages), plus:
+
+- **`breakpoints`** `Record<string, number>` — Breakpoint name to minimum container width (px).
+- **`cols`** `Record<string, number>` — Breakpoint name to column count.
+- **`layouts`** `Record<string, LayoutItem[]>` — Controlled per-breakpoint layouts.
+- **`defaultLayouts`** `Record<string, LayoutItem[]>` — Initial per-breakpoint layouts for uncontrolled usage.
+- **`onLayoutChange`** `(currentLayout: LayoutItem[], allLayouts: Record<string, LayoutItem[]>) => void` — Called on commit with the active breakpoint's layout and the full map.
+- **`onBreakpointChange`** `(breakpoint: string, cols: number) => void` — Called when the active breakpoint changes.
+- **`breakpoint`** `string` — Force a specific breakpoint regardless of width (e.g. for a fixed-size screenshot or PDF export).
+- **`width`** `number` — Explicit width; disables measurement (SSR/tests/forced-size exports).
+
+A breakpoint with no layout is synthesized from the nearest available one,
+corrected into bounds and compacted for the target column count.
 
 ### Base Properties
 
@@ -116,7 +144,18 @@ CSS margin.
 
 ### Free positioning
 
+A widget stays exactly where you drop it and never shuffles its neighbours.
+Dropping onto an occupied cell is blocked, so the widget stays at its last free
+spot.
+
 <Story of={BoardStories.FreePositioning} />
+
+### Free positioning (overlap)
+
+Add `allowOverlap` to let widgets stack on top of each other instead of being
+blocked from occupied cells.
+
+<Story of={BoardStories.FreePositioningOverlap} />
 
 ### Horizontal compaction
 
@@ -125,6 +164,25 @@ CSS margin.
 ### Non-resizable
 
 <Story of={BoardStories.NonResizable} />
+
+### Grid lines
+
+Show grid lines behind the widgets while dragging or resizing (or always).
+
+<Story of={BoardStories.GridLines} />
+
+### Drag cancel
+
+Keep interactive controls inside a widget clickable by excluding them from the
+drag gesture with `dragCancel`.
+
+<Story of={BoardStories.DragCancel} />
+
+### Responsive
+
+`Board.Responsive` swaps the layout and column count per breakpoint.
+
+<Story of={BoardStories.Responsive} />
 
 ### Cross-board dragging
 

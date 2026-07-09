@@ -21,6 +21,10 @@ export interface WidgetRegistration {
   styles?: Styles;
   /** Grow this widget's height to fit its content (only ever increases). */
   isAutoHeight?: boolean;
+  /** Override the board's `dragCancel` selector for this widget. */
+  dragCancel?: string;
+  /** Override the board's `dragHandle` selector for this widget. */
+  dragHandle?: string;
 }
 
 /**
@@ -62,7 +66,9 @@ export class BoardWidgetStore {
       prev.constraints !== reg.constraints ||
       prev.qa !== reg.qa ||
       prev.styles !== reg.styles ||
-      prev.isAutoHeight !== reg.isAutoHeight;
+      prev.isAutoHeight !== reg.isAutoHeight ||
+      prev.dragCancel !== reg.dragCancel ||
+      prev.dragHandle !== reg.dragHandle;
 
     if (changed) {
       this.version++;

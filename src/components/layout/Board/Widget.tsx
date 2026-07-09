@@ -29,6 +29,16 @@ export interface CubeBoardWidgetProps {
    * expand until the inner board's rows fit at the parent's row height.
    */
   isAutoHeight?: boolean;
+  /**
+   * CSS selector for elements that must not start a pointer drag inside this
+   * widget (overrides the board's `dragCancel`).
+   */
+  dragCancel?: string;
+  /**
+   * CSS selector for the only elements from which a pointer drag may start
+   * inside this widget (overrides the board's `dragHandle`).
+   */
+  dragHandle?: string;
 }
 
 /**
@@ -47,6 +57,8 @@ export function Widget(props: CubeBoardWidgetProps) {
     qa,
     styles,
     isAutoHeight,
+    dragCancel,
+    dragHandle,
   } = props;
   const registry = useBoardRegistry();
 
@@ -67,6 +79,8 @@ export function Widget(props: CubeBoardWidgetProps) {
         qa,
         styles,
         isAutoHeight,
+        dragCancel,
+        dragHandle,
       },
       ownerRef.current,
     );

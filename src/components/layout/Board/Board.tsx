@@ -91,6 +91,24 @@ const PlaceholderElement = tasty({
   },
 });
 
+// Grid overlay drawn behind the widgets. Each snap cell is painted as a faint
+// block (column stripes intersected with a row-band alpha mask); the margin gaps
+// between cells stay transparent. The element is positioned as an explicit
+// rectangle inset by the board's resolved padding and sized to the grid content
+// so the padding reads as a symmetric frame on every edge. Its size, position
+// and gradients come from the board's position params via inline `style`. The
+// fill uses the `#border` token (via its CSS var) so it adapts to the scheme.
+const GridOverlayElement = tasty({
+  qa: 'BoardGridOverlay',
+  styles: {
+    position: 'absolute',
+    zIndex: 0,
+    pointerEvents: 'none',
+    boxSizing: 'border-box',
+    opacity: '.5',
+  },
+});
+
 /**
  * Lower bound for the reduced row height used by an aligned nested board, so a
  * very short container can never collapse its rows to zero.
@@ -99,8 +117,28 @@ const MIN_ALIGNED_ROW_HEIGHT = 24;
 
 export type BoardCompactType = 'vertical' | 'horizontal' | 'free' | null;
 
+/**
+ * Payload passed to the drag/resize lifecycle callbacks. `layout` is the board's
+ * current layout at the moment the callback fires, `item` is the affected item
+ * (falls back to `oldItem` if the item just left this board via a cross-board
+ * transfer), `oldItem` is that item as it was when the gesture started, and
+ * `placeholder` is the current drop-slot preview (if any).
+ */
+export interface BoardInteractionInfo {
+  layout: LayoutItem[];
+  item: LayoutItem;
+  oldItem: LayoutItem;
+  placeholder: LayoutItem | null;
+}
+
+/** Visibility of the internal grid-line overlay. */
+export type BoardGridLines = boolean | 'drag';
+
 export interface CubeBoardProps
-  extends Omit<AllBaseProps, 'children'>,
+  extends Omit<
+      AllBaseProps,
+      'children' | 'onDragStart' | 'onDrag' | 'onResize'
+    >,
     Omit<ContainerStyleProps, 'margin'> {
   /** Stable board id (used for cross-board drag). Auto-generated if omitted. */
   id?: string;
@@ -109,6 +147,18 @@ export interface CubeBoardProps
   /** Initial layout for uncontrolled usage. */
   defaultLayout?: LayoutItem[];
   onLayoutChange?: (layout: LayoutItem[]) => void;
+  /** Called when a drag gesture starts. */
+  onDragStart?: (info: BoardInteractionInfo) => void;
+  /** Called on every step of a drag gesture. */
+  onDrag?: (info: BoardInteractionInfo) => void;
+  /** Called when a drag gesture ends (after the layout is committed). */
+  onDragStop?: (info: BoardInteractionInfo) => void;
+  /** Called when a resize gesture starts. */
+  onResizeStart?: (info: BoardInteractionInfo) => void;
+  /** Called on every step of a resize gesture. */
+  onResize?: (info: BoardInteractionInfo) => void;
+  /** Called when a resize gesture ends (after the layout is committed). */
+  onResizeStop?: (info: BoardInteractionInfo) => void;
   /** Number of columns. @default 12 */
   cols?: number;
   /** Row height in pixels. @default 100 */
@@ -119,7 +169,13 @@ export interface CubeBoardProps
   containerPadding?: [number, number];
   /** Maximum number of rows. @default Infinity */
   maxRows?: number;
-  /** Compaction behavior. @default 'vertical' */
+  /**
+   * Compaction behavior. `'vertical'` / `'horizontal'` reflow widgets to remove
+   * gaps; `'free'` places each widget exactly where dropped and never pushes its
+   * neighbours (pair with `allowOverlap` to let widgets stack, otherwise moving
+   * onto an occupied cell is blocked); `null` disables compaction but still
+   * resolves collisions the legacy react-grid-layout way. @default 'vertical'
+   */
   compact?: BoardCompactType;
   /** Allow widgets to overlap. @default false */
   allowOverlap?: boolean;
@@ -133,6 +189,23 @@ export interface CubeBoardProps
   isDroppable?: boolean;
   /** Which resize handles to show. @default ['se'] */
   resizeHandles?: ResizeHandleAxis[];
+  /**
+   * CSS selector for elements that must not start a pointer drag (e.g. form
+   * controls inside a widget: `"input,textarea,button,a,.no-drag"`). Keyboard
+   * moves are unaffected. Can be overridden per widget on `Board.Widget`.
+   */
+  dragCancel?: string;
+  /**
+   * CSS selector for the only elements from which a pointer drag may start.
+   * Can be overridden per widget on `Board.Widget`.
+   */
+  dragHandle?: string;
+  /**
+   * Show grid lines behind the widgets. `true` always shows them, `'drag'`
+   * shows them only while a widget is being dragged or resized, `false` never.
+   * @default false
+   */
+  showGridLines?: BoardGridLines;
   /**
    * Align this board's grid with an ancestor `Board`'s layout. Only takes
    * effect when the board is nested inside another `Board`'s widget. When set,
@@ -166,6 +239,12 @@ function BoardInner(
     layout: controlledLayout,
     defaultLayout,
     onLayoutChange,
+    onDragStart,
+    onDrag,
+    onDragStop,
+    onResizeStart,
+    onResize: onResizeProp,
+    onResizeStop,
     cols = 12,
     rowHeight = 100,
     margin = [8, 8],
@@ -178,6 +257,9 @@ function BoardInner(
     isResizable = true,
     isDroppable = true,
     resizeHandles = ['se'],
+    dragCancel,
+    dragHandle,
+    showGridLines = false,
     isAligned = false,
     constraints,
     width: providedWidth,
@@ -307,19 +389,21 @@ function BoardInner(
     ],
   );
 
-  const compactor = useMemo<Compactor>(() => {
-    // 'free' means true free positioning: widgets can overlap and nothing is
-    // pushed or recompacted. Force allowOverlap so `moveElement` short-circuits
-    // on collision and the (no-op) compactor leaves items exactly where dropped.
-    if (compact === 'free') {
-      return getCompactor(null, true, preventCollision);
-    }
-    return getCompactor(
-      compactTypeToCore(compact),
-      allowOverlap,
-      preventCollision,
-    );
-  }, [compact, allowOverlap, preventCollision]);
+  // 'free' means no compaction (nothing is pushed up/left or recompacted) AND a
+  // dragged widget never pushes or swaps its neighbours: it is placed exactly
+  // where dropped. Without `allowOverlap` a move onto an occupied cell is
+  // blocked (the widget stays at its last free spot); with `allowOverlap`
+  // widgets may stack. The explicit `preventCollision` prop still applies to the
+  // compacting modes (`vertical` / `horizontal`) and to the legacy `null` mode.
+  const compactor = useMemo<Compactor>(
+    () =>
+      getCompactor(
+        compactTypeToCore(compact),
+        allowOverlap,
+        compact === 'free' ? !allowOverlap : preventCollision,
+      ),
+    [compact, allowOverlap, preventCollision],
+  );
 
   const resolvedConstraints = constraints ?? defaultConstraints;
 
@@ -478,6 +562,12 @@ function BoardInner(
           accY: 0,
         };
         setPlaceholder({ ...item });
+        onResizeStart?.({
+          layout: layoutRef.current,
+          item: { ...item },
+          oldItem: { ...item },
+          placeholder: { ...item },
+        });
         return;
       }
 
@@ -485,8 +575,15 @@ function BoardInner(
       if (!rs) return;
 
       if (phase === 'end') {
-        applyLayout([...layoutRef.current], true);
+        const finalLayout = [...layoutRef.current];
+        applyLayout(finalLayout, true);
         setPlaceholder(null);
+        onResizeStop?.({
+          layout: finalLayout,
+          item: getLayoutItem(finalLayout, id) ?? rs.item,
+          oldItem: rs.item,
+          placeholder: null,
+        });
         resizeStateRef.current = null;
         return;
       }
@@ -547,7 +644,14 @@ function BoardInner(
         ...liveRef.current.compactor.compact(working, pp.cols),
       ];
       applyLayout(compacted, false);
-      setPlaceholder(getLayoutItem(compacted, id) ?? newItem);
+      const nextPlaceholder = getLayoutItem(compacted, id) ?? newItem;
+      setPlaceholder(nextPlaceholder);
+      onResizeProp?.({
+        layout: compacted,
+        item: getLayoutItem(compacted, id) ?? newItem,
+        oldItem: rs.item,
+        placeholder: nextPlaceholder,
+      });
     },
   );
 
@@ -558,6 +662,14 @@ function BoardInner(
     autoHeightMinRowsRef.current[id] = neededRows;
     const current = getLayoutItem(layoutRef.current, id);
     if (!current || neededRows <= current.h) return;
+    // While a drag or resize gesture is in flight the layout is transient - the
+    // registry (drag) and `handleResize` write uncommitted previews and commit
+    // only on drop / release. Growing an auto-height widget here with
+    // `commit: true` would fire `onLayoutChange` mid-gesture and persist the
+    // in-flight positions of the widget being moved. Skip the grow-commit; the
+    // floor ref is already updated above (so `handleResize` still respects it),
+    // and the deficit effect re-fires once the gesture settles.
+    if (registry.dragState || resizeStateRef.current) return;
     const pp = liveRef.current.positionParams;
     const working = modifyLayout(layoutRef.current, {
       ...current,
@@ -565,6 +677,36 @@ function BoardInner(
     });
     const compacted = [...liveRef.current.compactor.compact(working, pp.cols)];
     applyLayout(compacted, true);
+  });
+
+  // The dragged item captured at gesture start, so drag callbacks can report the
+  // original position throughout (and after a cross-board transfer removes the
+  // item from this board's layout).
+  const dragOldItemRef = useRef<LayoutItem | null>(null);
+
+  const handleDragLifecycle = useEvent((id: string, phase: ResizePhase) => {
+    const currentLayout = layoutRef.current;
+    const liveItem = getLayoutItem(currentLayout, id);
+
+    if (phase === 'start') {
+      dragOldItemRef.current = liveItem ? { ...liveItem } : null;
+    }
+    const oldItem = dragOldItemRef.current ?? liveItem;
+    if (!oldItem) return;
+    const item = liveItem ?? oldItem;
+
+    const info: BoardInteractionInfo = {
+      layout: currentLayout,
+      item,
+      oldItem,
+      placeholder,
+    };
+    if (phase === 'start') onDragStart?.(info);
+    else if (phase === 'move') onDrag?.(info);
+    else {
+      onDragStop?.(info);
+      dragOldItemRef.current = null;
+    }
   });
 
   const styles: Styles = extractStyles(otherProps, CONTAINER_STYLES);
@@ -590,6 +732,55 @@ function BoardInner(
     : null;
 
   const showPlaceholder = placeholder && placeholderStyle;
+
+  const gridLinesVisible =
+    showGridLines === true ||
+    (showGridLines === 'drag' && (!!dragState || !!placeholder));
+  const gridOverlayStyle = gridLinesVisible
+    ? (() => {
+        const colWidth = calcGridColWidth(positionParams);
+        const rowHeightPx = positionParams.rowHeight;
+        // A grid with margins has real gaps between cells, so any line-based
+        // overlay either misses a cell edge (single line at the cell pitch) or
+        // shows a double line in every gap (a line at both edges). Instead,
+        // paint each snap cell as a faint block sized exactly `colWidth` x
+        // `rowHeightPx` with the margin gaps left transparent: the blocks line
+        // up 1:1 with the drop-zone placeholder and there are no lines to
+        // double. Column stripes form the background; a row-band alpha mask
+        // intersects them into cells.
+        const pitchX = colWidth + effectiveMargin[0];
+        const pitchY = rowHeightPx + effectiveMargin[1];
+        // Position the overlay as an explicit rectangle inset by the board's
+        // resolved padding and sized to exactly cover the grid content (cols x
+        // rows). This makes the padding a symmetric frame on all four edges (the
+        // previous `inset: 0` + top-left-anchored repeat left the padding
+        // unvisualized on the right/bottom and inside any extra min-height) and
+        // lets the cell pattern tile from the overlay's own origin.
+        const padX = resolvedPadding[0];
+        const padY = resolvedPadding[1];
+        const gridWidth = Math.max(0, effectiveContainerWidth - padX * 2);
+        const gridHeight =
+          rows > 0 ? rows * rowHeightPx + (rows - 1) * effectiveMargin[1] : 0;
+        const fill = 'var(--border-color)';
+        const columns = `repeating-linear-gradient(to right, ${fill} 0, ${fill} ${colWidth}px, transparent ${colWidth}px, transparent ${pitchX}px)`;
+        const rowsGrad = `repeating-linear-gradient(to bottom, #000 0, #000 ${rowHeightPx}px, transparent ${rowHeightPx}px, transparent ${pitchY}px)`;
+        return {
+          left: `${padX}px`,
+          top: `${padY}px`,
+          width: `${gridWidth}px`,
+          height: `${gridHeight}px`,
+          backgroundImage: columns,
+          backgroundPosition: '0 0',
+          backgroundRepeat: 'repeat',
+          maskImage: rowsGrad,
+          WebkitMaskImage: rowsGrad,
+          maskPosition: '0 0',
+          WebkitMaskPosition: '0 0',
+          maskRepeat: 'repeat',
+          WebkitMaskRepeat: 'repeat',
+        };
+      })()
+    : null;
 
   // Metrics this board exposes to any aligned boards nested inside its widgets.
   const boardMetrics = useMemo<BoardMetrics>(
@@ -622,6 +813,9 @@ function BoardInner(
         }}
       >
         <ContentLayer ref={contentRef}>
+          {ready && gridOverlayStyle ? (
+            <GridOverlayElement aria-hidden="true" style={gridOverlayStyle} />
+          ) : null}
           {ready
             ? layout.map((item) => {
                 const registration = registry.store.get(item.i);
@@ -639,6 +833,8 @@ function BoardInner(
                   item.resizeHandles ??
                   registration?.resizeHandles ??
                   resizeHandles;
+                const widgetDragCancel = registration?.dragCancel ?? dragCancel;
+                const widgetDragHandle = registration?.dragHandle ?? dragHandle;
 
                 return (
                   <WidgetHost
@@ -650,10 +846,13 @@ function BoardInner(
                     isDraggable={widgetDraggable}
                     isResizable={widgetResizable}
                     resizeHandles={handles}
+                    dragCancel={widgetDragCancel}
+                    dragHandle={widgetDragHandle}
                     registry={registry}
                     dragState={dragState}
                     onResize={handleResize}
                     onAutoHeight={handleAutoHeight}
+                    onDragLifecycle={handleDragLifecycle}
                   />
                 );
               })

@@ -223,6 +223,17 @@ export interface WidgetHostProps {
   isDraggable: boolean;
   isResizable: boolean;
   resizeHandles: ResizeHandleAxis[];
+  /**
+   * CSS selector for elements that must not start a pointer drag (e.g. form
+   * controls inside the widget). A pointer-down whose target matches this
+   * selector never begins a drag.
+   */
+  dragCancel?: string;
+  /**
+   * CSS selector for the only elements from which a pointer drag may start. A
+   * pointer-down outside a matching element never begins a drag.
+   */
+  dragHandle?: string;
   registry: BoardRegistryContextValue;
   dragState: BoardDragState | null;
   onResize: (
@@ -239,6 +250,11 @@ export interface WidgetHostProps {
    * so the widget cannot be dragged shorter than its content requires.
    */
   onAutoHeight: (id: string, neededRows: number) => void;
+  /**
+   * Notify the owning board of a drag gesture's lifecycle so it can emit the
+   * public drag callbacks. Fires after the registry has updated drag state.
+   */
+  onDragLifecycle?: (id: string, phase: ResizePhase) => void;
 }
 
 /**
@@ -256,10 +272,13 @@ export function WidgetHost(props: WidgetHostProps) {
     isDraggable,
     isResizable,
     resizeHandles,
+    dragCancel,
+    dragHandle,
     registry,
     dragState,
     onResize,
     onAutoHeight,
+    onDragLifecycle,
   } = props;
 
   const hostRef = useRef<HTMLDivElement | null>(null);
@@ -341,6 +360,7 @@ export function WidgetHost(props: WidgetHostProps) {
             height: pos.height,
           };
       registry.onDragStart(boardId, item.i, vr, e.pointerType, hostRef.current);
+      onDragLifecycle?.(item.i, 'start');
     },
     onMove(e) {
       if (!isDraggable) return;
@@ -354,13 +374,16 @@ export function WidgetHost(props: WidgetHostProps) {
           Math.sign(e.deltaY) * stepY,
           e.pointerType,
         );
+        onDragLifecycle?.(item.i, 'move');
         return;
       }
       registry.onDragMove(e.deltaX, e.deltaY, e.pointerType);
+      onDragLifecycle?.(item.i, 'move');
     },
     onMoveEnd() {
       if (!isDraggable) return;
       registry.onDragEnd();
+      onDragLifecycle?.(item.i, 'end');
     },
   });
 
@@ -383,6 +406,51 @@ export function WidgetHost(props: WidgetHostProps) {
         onTouchStart: (e: React.TouchEvent) => e.stopPropagation(),
       }
     : {};
+
+  // Gate a pointer drag by `dragHandle` / `dragCancel` selectors. Returns true
+  // when the press must NOT start a drag (outside a `dragHandle`, or matching
+  // `dragCancel`).
+  const shouldGateDrag = (target: EventTarget | null) => {
+    if (!(target instanceof Element)) return false;
+    if (dragHandle && !target.closest(dragHandle)) return true;
+    return !!(dragCancel && target.closest(dragCancel));
+  };
+
+  // The gate wraps `useMove`'s own pointer-down handlers rather than a separate
+  // capture-phase listener. When a press is gated we simply do not forward it to
+  // `useMove`, so the drag never begins. This is deliberate: `useMove`'s
+  // pointer-down handler calls both `stopPropagation()` and `preventDefault()`.
+  // Calling it (or pre-empting it with a capture-phase `stopPropagation()`)
+  // would break the very controls `dragCancel` is meant to protect - a
+  // `preventDefault()` on pointer-down cancels a native `<input>`'s focus, and a
+  // capture-phase `stopPropagation()` swallows a `<button>`'s own press events.
+  // Skipping `useMove` entirely leaves the target's default behavior and its own
+  // handlers fully intact. Keyboard moves go through `onKeyDown` and are never
+  // gated.
+  const gatedMoveProps =
+    isDraggable && (dragHandle || dragCancel)
+      ? {
+          ...moveProps,
+          ...(moveProps.onPointerDown && {
+            onPointerDown: (e: React.PointerEvent) => {
+              if (shouldGateDrag(e.target)) return;
+              moveProps.onPointerDown!(e);
+            },
+          }),
+          ...(moveProps.onMouseDown && {
+            onMouseDown: (e: React.MouseEvent) => {
+              if (shouldGateDrag(e.target)) return;
+              moveProps.onMouseDown!(e);
+            },
+          }),
+          ...(moveProps.onTouchStart && {
+            onTouchStart: (e: React.TouchEvent) => {
+              if (shouldGateDrag(e.target)) return;
+              moveProps.onTouchStart!(e);
+            },
+          }),
+        }
+      : moveProps;
 
   const handleResize = (
     axis: ResizeHandleAxis,
@@ -469,7 +537,7 @@ export function WidgetHost(props: WidgetHostProps) {
       // header above a nested board - instead of reflowing the ancestor board).
       data-board-widget-host=""
       {...mergeProps(
-        moveProps,
+        gatedMoveProps,
         stopBubbleProps,
         hoverProps,
         focusWithinProps,
