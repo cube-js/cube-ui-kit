@@ -14,6 +14,7 @@ import {
 import { VisuallyHidden } from 'react-aria';
 
 import { useEvent } from '../../_internal';
+import { useUIKitTranslation } from '../../i18n';
 import { generateRandomId } from '../../utils/random';
 import { mergeProps } from '../../utils/react';
 import { usePopoverSync } from '../../utils/react/usePopoverSync';
@@ -85,6 +86,7 @@ export function useContextMenu<
   >,
   defaultMenuProps?: P,
 ): UseContextMenuReturn<E, P, T> {
+  const { t } = useUIKitTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [componentProps, setComponentProps] = useState<P | null>(null);
   const [triggerProps, setTriggerProps] = useState<T | null>(null);
@@ -330,7 +332,12 @@ export function useContextMenu<
         >
           <VisuallyHidden>
             <Pressable>
-              <button aria-label="Open context menu" />
+              <button
+                aria-label={t(
+                  'contextMenu.openContextMenu',
+                  'Open context menu',
+                )}
+              />
             </Pressable>
           </VisuallyHidden>
           <Component {...componentProps} />
@@ -343,6 +350,7 @@ export function useContextMenu<
     isOpen,
     defaultTriggerProps,
     anchorPosition,
+    t,
   ]);
 
   return {

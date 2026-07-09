@@ -10,6 +10,7 @@ import React, {
 } from 'react';
 import { useOverlay, useOverlayPosition } from 'react-aria';
 
+import { useUIKitTranslation } from '../../../i18n';
 import { mergeProps } from '../../../utils/react';
 import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
@@ -122,6 +123,7 @@ const ListBoxPopoverElement = tasty({
 export const ListBoxPopover = function ListBoxPopover(
   props: ListBoxPopoverProps,
 ) {
+  const { t } = useUIKitTranslation();
   const {
     isOpen,
     triggerRef,
@@ -277,7 +279,10 @@ export const ListBoxPopover = function ListBoxPopover(
                 disableSelectionToggle
                 id={listBoxId}
                 aria-label={
-                  ariaLabel || (typeof label === 'string' ? label : 'Options')
+                  ariaLabel ||
+                  (typeof label === 'string'
+                    ? label
+                    : t('listBoxPopover.options', 'Options'))
                 }
                 selectedKey={selectedKey}
                 selectionMode="single"

@@ -9,6 +9,7 @@ import {
 } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
+import { useUIKitTranslation } from '../../i18n';
 import { useProviderProps } from '../../provider';
 import {
   LabelPosition,
@@ -42,11 +43,6 @@ const REQUIRED_ICON = (
     </switch>
   </svg>
 );
-
-const INTL_MESSAGES = {
-  '(required)': '(required)',
-  '(optional)': '(optional)',
-};
 
 export const INLINE_LABEL_STYLES: Styles = {
   preset: 't3',
@@ -93,6 +89,8 @@ export interface CubeLabelProps extends BaseProps, ContainerStyleProps {
 function Label(props: CubeLabelProps, ref) {
   props = useProviderProps<CubeLabelProps>(props);
 
+  const { t } = useUIKitTranslation();
+
   let {
     as,
     qa,
@@ -113,16 +111,14 @@ function Label(props: CubeLabelProps, ref) {
 
   const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
-  let formatMessage = (message) => INTL_MESSAGES[message];
+  let requiredLabel = t('form.required', '(required)');
   let necessityLabel = isRequired
-    ? formatMessage('(required)')
-    : formatMessage('(optional)');
+    ? requiredLabel
+    : t('form.optional', '(optional)');
   let icon = (
     <span
       aria-label={
-        includeNecessityIndicatorInAccessibilityName
-          ? formatMessage('(required)')
-          : undefined
+        includeNecessityIndicatorInAccessibilityName ? requiredLabel : undefined
       }
     >
       {REQUIRED_ICON}

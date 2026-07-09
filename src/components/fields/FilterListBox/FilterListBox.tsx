@@ -25,6 +25,7 @@ import { useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, Item, useListState } from 'react-stately';
 import { CubeCollectionItemProps } from 'src/components/CollectionItem';
 
+import { useUIKitTranslation } from '../../../i18n';
 import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
@@ -219,6 +220,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
     },
   });
 
+  const { t } = useUIKitTranslation();
+
   let {
     qa,
     label,
@@ -231,7 +234,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     isDisabled,
     isLoading,
     isLoadingItems,
-    searchPlaceholder = 'Search...',
+    searchPlaceholder = t('filterListBox.searchPlaceholder', 'Search...'),
     autoFocus,
     filter,
     mods: externalMods,
@@ -601,7 +604,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
       );
 
       const customValueSection = (
-        <BaseSection key="__custom_value__" aria-label="Custom value">
+        <BaseSection
+          key="__custom_value__"
+          aria-label={t('filterListBox.customValue', 'Custom value')}
+        >
           {customOption}
         </BaseSection>
       );
@@ -616,7 +622,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
       // No sections in collection - wrap items in a section for visual separation
       const filteredItemsSection = (
-        <BaseSection key="__filtered_items__" aria-label="Filtered items">
+        <BaseSection
+          key="__filtered_items__"
+          aria-label={t('filterListBox.filteredItems', 'Filtered items')}
+        >
           {childrenToProcess}
         </BaseSection>
       );
@@ -645,6 +654,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     textFilterFn,
     filter,
     contains,
+    t,
   ]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
@@ -1135,8 +1145,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
           emptyLabel !== undefined
             ? emptyLabel
             : searchValue.trim()
-              ? 'No results found'
-              : 'No items'
+              ? t('filterListBox.noResults', 'No results found')
+              : t('filterListBox.noItems', 'No items')
         }
         isReorderable={isReorderable && !searchValue.trim()}
         onReorder={onReorder}

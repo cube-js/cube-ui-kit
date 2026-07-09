@@ -1,0 +1,124 @@
+{
+  "alertDialog": {
+    "confirm": "Aceptar",
+    "cancel": "Cancelar"
+  },
+  "dialog": {
+    "dismiss": "Cerrar"
+  },
+  "dialogForm": {
+    "submit": "Enviar",
+    "cancel": "Cancelar"
+  },
+  "form": {
+    "required": "(obligatorio)",
+    "optional": "(opcional)",
+    "internalError": "Error interno"
+  },
+  "notifications": {
+    "dismiss": "Cerrar",
+    "ariaLabel": "Notificaciones",
+    "empty": "No hay notificaciones"
+  },
+  "relativeTime": {
+    "justNow": "ahora mismo",
+    "minAgo": "hace {{count}} min",
+    "hoursAgo": "hace {{count}} h",
+    "daysAgo": "hace {{count}} d",
+    "weeksAgo": "hace {{count}} sem",
+    "monthsAgo": "hace {{count}} mes",
+    "yearsAgo": "hace {{count}} a"
+  },
+  "toast": {
+    "hide": "Ocultar"
+  },
+  "listBox": {
+    "selectAll": "Seleccionar todo",
+    "noItems": "No hay elementos"
+  },
+  "filterListBox": {
+    "searchPlaceholder": "Buscar...",
+    "noResults": "No se encontraron resultados",
+    "noItems": "No hay elementos",
+    "customValue": "Valor personalizado",
+    "filteredItems": "Elementos filtrados"
+  },
+  "picker": {
+    "all": "Todos",
+    "pickerAriaLabel": "Selector"
+  },
+  "comboBox": {
+    "clearValue": "Borrar valor",
+    "showOptions": "Mostrar opciones"
+  },
+  "commandMenu": {
+    "searchPlaceholder": "Buscar comandos...",
+    "empty": "No se encontraron comandos"
+  },
+  "listBoxPopover": {
+    "options": "Opciones"
+  },
+  "datePicker": {
+    "time": "Hora",
+    "startTime": "Hora de inicio",
+    "endTime": "Hora de fin",
+    "showEndCalendar": "Mostrar el calendario de la fecha de fin"
+  },
+  "fileInput": {
+    "chooseFile": "Elegir archivo",
+    "noFileSelected": "Ningún archivo seleccionado"
+  },
+  "passwordInput": {
+    "toggleMasking": "Alternar enmascaramiento"
+  },
+  "numberInput": {
+    "stepUp": "Aumentar",
+    "stepDown": "Disminuir"
+  },
+  "textInputMapper": {
+    "key": "Clave",
+    "value": "Valor",
+    "removeMapping": "Eliminar asignación"
+  },
+  "copySnippet": {
+    "title": "Ejemplo de código",
+    "copyToClipboard": "Copiar al portapapeles",
+    "showHiddenParts": "Mostrar las partes ocultas",
+    "copied": "{{title}} copiado"
+  },
+  "copyPasteBlock": {
+    "copyToClipboard": "Copiar al portapapeles",
+    "selectAndPaste": "Seleccionar y pegar",
+    "invalidData": "Datos no válidos",
+    "copied": "{{title}} copiado",
+    "defaultTitle": "Texto"
+  },
+  "tag": {
+    "close": "Cerrar"
+  },
+  "placeholder": {
+    "contentIsLoading": "Cargando contenido"
+  },
+  "loadingAnimation": {
+    "ariaLabel": "Animación de carga"
+  },
+  "layout": {
+    "closePanel": "Cerrar panel",
+    "goBack": "Volver"
+  },
+  "tree": {
+    "actions": "Acciones"
+  },
+  "banner": {
+    "hideBanner": "Ocultar banner"
+  },
+  "tabs": {
+    "close": "Cerrar",
+    "editTabTitle": "Editar el título de la pestaña",
+    "selectTab": "Seleccionar pestaña"
+  },
+  "contextMenu": {
+    "openContextMenu": "Abrir el menú contextual",
+    "contextMenu": "context-menu"
+  }
+}

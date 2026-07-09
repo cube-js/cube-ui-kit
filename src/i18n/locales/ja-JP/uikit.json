@@ -1,0 +1,124 @@
+{
+  "alertDialog": {
+    "confirm": "OK",
+    "cancel": "キャンセル"
+  },
+  "dialog": {
+    "dismiss": "閉じる"
+  },
+  "dialogForm": {
+    "submit": "送信",
+    "cancel": "キャンセル"
+  },
+  "form": {
+    "required": "（必須）",
+    "optional": "（任意）",
+    "internalError": "内部エラー"
+  },
+  "notifications": {
+    "dismiss": "閉じる",
+    "ariaLabel": "通知",
+    "empty": "通知はありません"
+  },
+  "relativeTime": {
+    "justNow": "たった今",
+    "minAgo": "{{count}}分前",
+    "hoursAgo": "{{count}}時間前",
+    "daysAgo": "{{count}}日前",
+    "weeksAgo": "{{count}}週間前",
+    "monthsAgo": "{{count}}か月前",
+    "yearsAgo": "{{count}}年前"
+  },
+  "toast": {
+    "hide": "非表示"
+  },
+  "listBox": {
+    "selectAll": "すべて選択",
+    "noItems": "項目がありません"
+  },
+  "filterListBox": {
+    "searchPlaceholder": "検索...",
+    "noResults": "結果が見つかりません",
+    "noItems": "項目がありません",
+    "customValue": "カスタム値",
+    "filteredItems": "フィルターされた項目"
+  },
+  "picker": {
+    "all": "すべて",
+    "pickerAriaLabel": "ピッカー"
+  },
+  "comboBox": {
+    "clearValue": "値をクリア",
+    "showOptions": "オプションを表示"
+  },
+  "commandMenu": {
+    "searchPlaceholder": "コマンドを検索...",
+    "empty": "コマンドが見つかりません"
+  },
+  "listBoxPopover": {
+    "options": "オプション"
+  },
+  "datePicker": {
+    "time": "時刻",
+    "startTime": "開始時刻",
+    "endTime": "終了時刻",
+    "showEndCalendar": "終了日のカレンダーを表示"
+  },
+  "fileInput": {
+    "chooseFile": "ファイルを選択",
+    "noFileSelected": "ファイルが選択されていません"
+  },
+  "passwordInput": {
+    "toggleMasking": "マスク表示を切り替え"
+  },
+  "numberInput": {
+    "stepUp": "増やす",
+    "stepDown": "減らす"
+  },
+  "textInputMapper": {
+    "key": "キー",
+    "value": "値",
+    "removeMapping": "マッピングを削除"
+  },
+  "copySnippet": {
+    "title": "コード例",
+    "copyToClipboard": "クリップボードにコピー",
+    "showHiddenParts": "非表示の部分を表示",
+    "copied": "{{title}}をコピーしました"
+  },
+  "copyPasteBlock": {
+    "copyToClipboard": "クリップボードにコピー",
+    "selectAndPaste": "選択して貼り付け",
+    "invalidData": "無効なデータ",
+    "copied": "{{title}}をコピーしました",
+    "defaultTitle": "テキスト"
+  },
+  "tag": {
+    "close": "閉じる"
+  },
+  "placeholder": {
+    "contentIsLoading": "コンテンツを読み込んでいます"
+  },
+  "loadingAnimation": {
+    "ariaLabel": "読み込みアニメーション"
+  },
+  "layout": {
+    "closePanel": "パネルを閉じる",
+    "goBack": "戻る"
+  },
+  "tree": {
+    "actions": "アクション"
+  },
+  "banner": {
+    "hideBanner": "バナーを非表示"
+  },
+  "tabs": {
+    "close": "閉じる",
+    "editTabTitle": "タブのタイトルを編集",
+    "selectTab": "タブを選択"
+  },
+  "contextMenu": {
+    "openContextMenu": "コンテキストメニューを開く",
+    "contextMenu": "context-menu"
+  }
+}

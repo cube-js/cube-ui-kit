@@ -1,5 +1,6 @@
 import { forwardRef, ReactNode } from 'react';
 
+import { useUIKitTranslation } from '../../../i18n';
 import { chain } from '../../../utils/react';
 import { Button } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
@@ -29,19 +30,20 @@ export interface CubeAlertDialogProps
   noActions?: boolean;
 }
 
-const DEFAULT_CONFIRM_PROPS: CubeButtonProps = {
-  label: 'Ok',
-  type: 'primary',
-};
-const DEFAULT_CANCEL_PROPS: CubeButtonProps = {
-  label: 'Cancel',
-};
-
 /**
  * AlertDialogs are a specific type of Dialog. They display important information that users need to acknowledge.
  */
 function AlertDialog(props: CubeAlertDialogProps, ref) {
   const { onClose } = useDialogContext();
+  const { t } = useUIKitTranslation();
+
+  const DEFAULT_CONFIRM_PROPS: CubeButtonProps = {
+    label: t('alertDialog.confirm', 'Ok'),
+    type: 'primary',
+  };
+  const DEFAULT_CANCEL_PROPS: CubeButtonProps = {
+    label: t('alertDialog.cancel', 'Cancel'),
+  };
 
   const { danger, actions, title, styles, noActions, content, ...otherProps } =
     props;

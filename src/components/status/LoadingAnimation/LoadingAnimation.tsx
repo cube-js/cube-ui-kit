@@ -1,6 +1,7 @@
 import { tasty } from '@tenphi/tasty';
 import { CSSProperties } from 'react';
 
+import { useUIKitTranslation } from '../../../i18n';
 import { Block, CubeBlockProps } from '../../Block';
 
 const CubeElement = tasty({
@@ -116,12 +117,13 @@ export function LoadingAnimation({
   size = 'medium',
   ...props
 }: CubeLoadingAnimationProps) {
+  const { t } = useUIKitTranslation();
   const numSize: number = SIZE_MAP[size] || size || SIZE_MAP.medium;
 
   return (
     <Block
       role="img"
-      aria-label="Loading animation"
+      aria-label={t('loadingAnimation.ariaLabel', 'Loading animation')}
       width={numSize}
       height={numSize * 1.1388888889}
       style={{ position: 'relative' }}

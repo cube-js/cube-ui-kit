@@ -27,6 +27,7 @@ import { Section as BaseSection, ListState, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
+import { useUIKitTranslation } from '../../../i18n';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { processSelectionArray } from '../../../utils/selection';
@@ -145,6 +146,8 @@ export const Picker = forwardRef(function Picker<T extends object>(
   props: CubePickerProps<T>,
   ref: ForwardedRef<HTMLElement>,
 ) {
+  const { t } = useUIKitTranslation();
+
   props = useProviderProps(props);
   props = useFormProps(props);
   props = useFieldProps(props, {
@@ -219,7 +222,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     listStateRef,
     focusOnHover,
     showSelectAll,
-    selectAllLabel = 'All',
+    selectAllLabel = t('picker.all', 'All'),
     items,
     header,
     footer,
@@ -703,7 +706,10 @@ export const Picker = forwardRef(function Picker<T extends object>(
               <ListBox
                 autoFocus
                 items={items ? (finalItems as typeof props.items) : undefined}
-                aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
+                aria-label={`${props['aria-label'] ?? props.label ?? ''} ${t(
+                  'picker.pickerAriaLabel',
+                  'Picker',
+                )}`}
                 selectedKey={
                   selectionMode === 'single' ? effectiveSelectedKey : undefined
                 }

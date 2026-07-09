@@ -19,6 +19,7 @@ import {
 } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
+import { useUIKitTranslation } from '../../../i18n';
 import { CloseIcon, MoreIcon } from '../../../icons';
 import { mergeProps } from '../../../utils/react';
 import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
@@ -183,6 +184,9 @@ export interface TabButtonProps {
  * - Focus and hover states
  */
 export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
+  const { t } = useUIKitTranslation();
+  const editTabTitleLabel = t('tabs.editTabTitle', 'Edit tab title');
+
   // Get shared context
   const {
     state,
@@ -326,7 +330,12 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   // user has already finished editing (Enter / Escape / blur-to-elsewhere):
   // once we've observed the editing input in the DOM and it later
   // disappears, the user committed/cancelled and we stop retrying.
-  const renameInputSelector = 'input[aria-label="Edit tab title"]';
+  // Escape only the characters that are special inside a double-quoted
+  // attribute-selector value (`\` and `"`); spaces and other chars are literal.
+  const renameInputSelector = `input[aria-label="${editTabTitleLabel.replace(
+    /["\\]/g,
+    '\\$&',
+  )}"]`;
   const scheduleRenameRefocus = useEvent(() => {
     let seenEditingInput = false;
     let cancelled = false;
@@ -504,7 +513,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     <ItemAction
       tabIndex={-1}
       icon={<CloseIcon />}
-      tooltip="Close"
+      tooltip={t('tabs.close', 'Close')}
       onPress={handleDelete}
     />
   ) : null;
@@ -590,7 +599,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
       isEditing={isEditing}
       isDisabled={isDisabled}
       keyboardActivation={false}
-      aria-label="Edit tab title"
+      aria-label={editTabTitleLabel}
       styles={INLINE_INPUT_STYLES}
       renderDisplay={renderTitleDisplay}
       tooltip={tabTooltip ?? true}

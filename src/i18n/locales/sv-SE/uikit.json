@@ -1,0 +1,124 @@
+{
+  "alertDialog": {
+    "confirm": "OK",
+    "cancel": "Avbryt"
+  },
+  "dialog": {
+    "dismiss": "Stäng"
+  },
+  "dialogForm": {
+    "submit": "Skicka",
+    "cancel": "Avbryt"
+  },
+  "form": {
+    "required": "(obligatoriskt)",
+    "optional": "(valfritt)",
+    "internalError": "Internt fel"
+  },
+  "notifications": {
+    "dismiss": "Stäng",
+    "ariaLabel": "Aviseringar",
+    "empty": "Inga aviseringar"
+  },
+  "relativeTime": {
+    "justNow": "just nu",
+    "minAgo": "{{count}} min sedan",
+    "hoursAgo": "{{count}} tim sedan",
+    "daysAgo": "{{count}} d sedan",
+    "weeksAgo": "{{count}} v sedan",
+    "monthsAgo": "{{count}} mån sedan",
+    "yearsAgo": "{{count}} år sedan"
+  },
+  "toast": {
+    "hide": "Dölj"
+  },
+  "listBox": {
+    "selectAll": "Markera alla",
+    "noItems": "Inga objekt"
+  },
+  "filterListBox": {
+    "searchPlaceholder": "Sök...",
+    "noResults": "Inga resultat hittades",
+    "noItems": "Inga objekt",
+    "customValue": "Anpassat värde",
+    "filteredItems": "Filtrerade objekt"
+  },
+  "picker": {
+    "all": "Alla",
+    "pickerAriaLabel": "Väljare"
+  },
+  "comboBox": {
+    "clearValue": "Rensa värde",
+    "showOptions": "Visa alternativ"
+  },
+  "commandMenu": {
+    "searchPlaceholder": "Sök kommandon...",
+    "empty": "Inga kommandon hittades"
+  },
+  "listBoxPopover": {
+    "options": "Alternativ"
+  },
+  "datePicker": {
+    "time": "Tid",
+    "startTime": "Starttid",
+    "endTime": "Sluttid",
+    "showEndCalendar": "Visa kalender för slutdatum"
+  },
+  "fileInput": {
+    "chooseFile": "Välj fil",
+    "noFileSelected": "Ingen fil vald"
+  },
+  "passwordInput": {
+    "toggleMasking": "Växla maskering"
+  },
+  "numberInput": {
+    "stepUp": "Öka",
+    "stepDown": "Minska"
+  },
+  "textInputMapper": {
+    "key": "Nyckel",
+    "value": "Värde",
+    "removeMapping": "Ta bort mappning"
+  },
+  "copySnippet": {
+    "title": "Kodexempel",
+    "copyToClipboard": "Kopiera till urklipp",
+    "showHiddenParts": "Visa dolda delar",
+    "copied": "{{title}} kopierad"
+  },
+  "copyPasteBlock": {
+    "copyToClipboard": "Kopiera till urklipp",
+    "selectAndPaste": "Markera och klistra in",
+    "invalidData": "Ogiltiga data",
+    "copied": "{{title}} kopierad",
+    "defaultTitle": "Text"
+  },
+  "tag": {
+    "close": "Stäng"
+  },
+  "placeholder": {
+    "contentIsLoading": "Innehållet läses in"
+  },
+  "loadingAnimation": {
+    "ariaLabel": "Inläsningsanimering"
+  },
+  "layout": {
+    "closePanel": "Stäng panel",
+    "goBack": "Tillbaka"
+  },
+  "tree": {
+    "actions": "Åtgärder"
+  },
+  "banner": {
+    "hideBanner": "Dölj banner"
+  },
+  "tabs": {
+    "close": "Stäng",
+    "editTabTitle": "Redigera fliktitel",
+    "selectTab": "Välj flik"
+  },
+  "contextMenu": {
+    "openContextMenu": "Öppna snabbmeny",
+    "contextMenu": "context-menu"
+  }
+}

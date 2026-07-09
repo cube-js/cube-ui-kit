@@ -1,0 +1,124 @@
+{
+  "alertDialog": {
+    "confirm": "OK",
+    "cancel": "Annuler"
+  },
+  "dialog": {
+    "dismiss": "Fermer"
+  },
+  "dialogForm": {
+    "submit": "Envoyer",
+    "cancel": "Annuler"
+  },
+  "form": {
+    "required": "(obligatoire)",
+    "optional": "(facultatif)",
+    "internalError": "Erreur interne"
+  },
+  "notifications": {
+    "dismiss": "Fermer",
+    "ariaLabel": "Notifications",
+    "empty": "Aucune notification"
+  },
+  "relativeTime": {
+    "justNow": "à l’instant",
+    "minAgo": "il y a {{count}} min",
+    "hoursAgo": "il y a {{count}} h",
+    "daysAgo": "il y a {{count}} j",
+    "weeksAgo": "il y a {{count}} sem",
+    "monthsAgo": "il y a {{count}} mois",
+    "yearsAgo": "il y a {{count}} an"
+  },
+  "toast": {
+    "hide": "Masquer"
+  },
+  "listBox": {
+    "selectAll": "Tout sélectionner",
+    "noItems": "Aucun élément"
+  },
+  "filterListBox": {
+    "searchPlaceholder": "Rechercher...",
+    "noResults": "Aucun résultat trouvé",
+    "noItems": "Aucun élément",
+    "customValue": "Valeur personnalisée",
+    "filteredItems": "Éléments filtrés"
+  },
+  "picker": {
+    "all": "Tous",
+    "pickerAriaLabel": "Sélecteur"
+  },
+  "comboBox": {
+    "clearValue": "Effacer la valeur",
+    "showOptions": "Afficher les options"
+  },
+  "commandMenu": {
+    "searchPlaceholder": "Rechercher des commandes...",
+    "empty": "Aucune commande trouvée"
+  },
+  "listBoxPopover": {
+    "options": "Options"
+  },
+  "datePicker": {
+    "time": "Heure",
+    "startTime": "Heure de début",
+    "endTime": "Heure de fin",
+    "showEndCalendar": "Afficher le calendrier de la date de fin"
+  },
+  "fileInput": {
+    "chooseFile": "Choisir un fichier",
+    "noFileSelected": "Aucun fichier sélectionné"
+  },
+  "passwordInput": {
+    "toggleMasking": "Activer/désactiver le masquage"
+  },
+  "numberInput": {
+    "stepUp": "Augmenter",
+    "stepDown": "Diminuer"
+  },
+  "textInputMapper": {
+    "key": "Clé",
+    "value": "Valeur",
+    "removeMapping": "Supprimer la correspondance"
+  },
+  "copySnippet": {
+    "title": "Exemple de code",
+    "copyToClipboard": "Copier dans le presse-papiers",
+    "showHiddenParts": "Afficher les parties masquées",
+    "copied": "{{title}} copié"
+  },
+  "copyPasteBlock": {
+    "copyToClipboard": "Copier dans le presse-papiers",
+    "selectAndPaste": "Sélectionner et coller",
+    "invalidData": "Données non valides",
+    "copied": "{{title}} copié",
+    "defaultTitle": "Texte"
+  },
+  "tag": {
+    "close": "Fermer"
+  },
+  "placeholder": {
+    "contentIsLoading": "Chargement du contenu"
+  },
+  "loadingAnimation": {
+    "ariaLabel": "Animation de chargement"
+  },
+  "layout": {
+    "closePanel": "Fermer le panneau",
+    "goBack": "Retour"
+  },
+  "tree": {
+    "actions": "Actions"
+  },
+  "banner": {
+    "hideBanner": "Masquer la bannière"
+  },
+  "tabs": {
+    "close": "Fermer",
+    "editTabTitle": "Modifier le titre de l’onglet",
+    "selectTab": "Sélectionner l’onglet"
+  },
+  "contextMenu": {
+    "openContextMenu": "Ouvrir le menu contextuel",
+    "contextMenu": "context-menu"
+  }
+}

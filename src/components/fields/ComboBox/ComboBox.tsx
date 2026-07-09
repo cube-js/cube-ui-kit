@@ -27,6 +27,7 @@ import { useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
+import { useUIKitTranslation } from '../../../i18n';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
@@ -575,6 +576,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       };
     },
   });
+
+  const { t } = useUIKitTranslation();
 
   let {
     qa,
@@ -1387,7 +1390,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             theme={validationState === 'invalid' ? 'danger' : undefined}
             qa="ComboBoxClearButton"
             data-no-trigger={hideTrigger ? '' : undefined}
-            aria-label="Clear value"
+            aria-label={t('comboBox.clearValue', 'Clear value')}
             onPress={clearValue}
           />
         )}
@@ -1407,7 +1410,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             styles={triggerStyles}
             aria-expanded={isPopoverOpen}
             aria-haspopup="listbox"
-            aria-label="Show options"
+            aria-label={t('comboBox.showOptions', 'Show options')}
             onPress={() => {
               if (!isDisabled) {
                 const willOpen = !isPopoverOpen;

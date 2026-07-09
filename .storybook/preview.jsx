@@ -7,6 +7,7 @@ import { configure } from 'storybook/test';
 import { create, themes } from 'storybook/theming';
 
 import { Root } from '../src/components/Root';
+import { getUIKitI18n, LOCALE_LABELS, SUPPORTED_LOCALES } from '../src/i18n';
 import { setToolbarScheme } from '../src/stories/decorators/colorSchemeBridge';
 
 // Brand both Storybook themes (manager chrome, sidebar selection, toolbar
@@ -152,11 +153,42 @@ export const parameters = {
   },
 };
 
-export const decorators = [
-  (Story) => (
+// Toolbar switch to preview every shipped UI Kit locale. It drives the shared
+// i18next instance (owned by the UI Kit and provided through `Root` via
+// `I18nextProvider`), so flipping it re-renders all built-in strings — the same
+// mechanism a host app (Cube Cloud) uses when it calls `changeLanguage`.
+export const globalTypes = {
+  locale: {
+    name: 'Locale',
+    description: 'UI Kit language',
+    defaultValue: 'en-US',
+    toolbar: {
+      icon: 'globe',
+      dynamicTitle: true,
+      items: SUPPORTED_LOCALES.map((value) => ({
+        value,
+        title: LOCALE_LABELS[value],
+      })),
+    },
+  },
+};
+
+const LocaleDecorator = (Story, context) => {
+  const locale = context.globals.locale ?? 'en-US';
+  const i18n = getUIKitI18n();
+
+  useEffect(() => {
+    if (i18n.language !== locale) {
+      i18n.changeLanguage(locale);
+    }
+  }, [i18n, locale]);
+
+  return (
     <Root fontDisplay="auto">
       <Story />
     </Root>
-  ),
-];
+  );
+};
+
+export const decorators = [LocaleDecorator];
 export const tags = ['autodocs'];

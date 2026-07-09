@@ -18,9 +18,9 @@ import {
   DismissButton,
   FocusScope,
   useDialog,
-  useMessageFormatter,
 } from 'react-aria';
 
+import { useUIKitTranslation } from '../../../i18n';
 import { CloseIcon } from '../../../icons';
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
@@ -123,13 +123,6 @@ const sizePxMap = {
   large: 798,
 };
 
-const intlMessages = {
-  'en-US': {
-    dismiss: 'Dismiss',
-    alert: 'Alert',
-  },
-};
-
 export interface CubeDialogProps
   extends Omit<BaseProps, 'role'>,
     AriaDialogProps,
@@ -199,7 +192,7 @@ const DialogContent = forwardRef(function DialogContent(
 
   const styles: Styles = extractStyles(otherProps, STYLES_LIST);
 
-  let formatMessage = useMessageFormatter(intlMessages);
+  const { t } = useUIKitTranslation();
 
   let domRef = useObjectRef(ref);
   let { dialogProps, titleProps } = useDialog(
@@ -329,7 +322,7 @@ const DialogContent = forwardRef(function DialogContent(
         {isDismissable && (
           <CloseButton
             icon={closeIcon || <CloseIcon size={20} />}
-            label={formatMessage('dismiss')}
+            label={t('dialog.dismiss', 'Dismiss')}
             onPress={() => onDismiss && onDismiss()}
           />
         )}

@@ -3,6 +3,20 @@ import './tasty-vitest';
 
 import { configure } from '@testing-library/react';
 
+import { getUIKitI18n } from '../i18n';
+
+// The UI Kit's shared i18next instance is initialized synchronously at import
+// (all locale bundles are bundled), so components resolve translated defaults
+// without an `<I18nextProvider>`. Reset the active language to `en-US` before
+// each test so a spec that exercises `changeLanguage` can't leak its locale
+// into unrelated specs sharing the worker's module graph (isolate: false).
+beforeEach(() => {
+  const i18n = getUIKitI18n();
+  if (i18n.language !== 'en-US') {
+    i18n.changeLanguage('en-US');
+  }
+});
+
 // Mock ResizeObserver for test environment
 global.ResizeObserver = class ResizeObserver {
   observe() {}

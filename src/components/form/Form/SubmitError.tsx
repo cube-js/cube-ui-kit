@@ -6,6 +6,7 @@ import {
   useContext,
 } from 'react';
 
+import { useUIKitTranslation } from '../../../i18n';
 import { Alert, CubeAlertProps } from '../../content/Alert/index';
 
 import { FormContext } from './Form';
@@ -16,6 +17,7 @@ type SubmitErrorContextProps = {
 
 function SubmitError(props: CubeAlertProps, ref: ForwardedRef<HTMLDivElement>) {
   let { submitError } = useContext(FormContext) as SubmitErrorContextProps;
+  const { t } = useUIKitTranslation();
 
   if (!submitError) {
     return null;
@@ -25,7 +27,7 @@ function SubmitError(props: CubeAlertProps, ref: ForwardedRef<HTMLDivElement>) {
     !isValidElement(submitError as ReactNode) &&
     typeof submitError !== 'string'
   ) {
-    submitError = 'Internal error';
+    submitError = t('form.internalError', 'Internal error');
   }
 
   return (

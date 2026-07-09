@@ -21,6 +21,7 @@ import { useFilter, useMenu } from 'react-aria';
 // Import Item and Section from Menu for CommandMenu compound component
 import { Item, Section, useTreeState } from 'react-stately';
 
+import { useUIKitTranslation } from '../../../i18n';
 import { LoadingIcon } from '../../../icons';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
@@ -96,12 +97,17 @@ function CommandMenu<T extends object>(
   props: CubeCommandMenuProps<T>,
   ref: Ref<HTMLDivElement>,
 ) {
+  const { t } = useUIKitTranslation();
+
   const {
-    searchPlaceholder = 'Search commands...',
+    searchPlaceholder = t(
+      'commandMenu.searchPlaceholder',
+      'Search commands...',
+    ),
     searchValue: controlledSearchValue,
     onSearchChange,
     filter: customFilter,
-    emptyLabel = 'No commands found',
+    emptyLabel = t('commandMenu.empty', 'No commands found'),
     searchInputStyles,
     headerStyles,
     footerStyles,

@@ -14,6 +14,7 @@ import {
 } from 'react-aria';
 import { useDatePickerState } from 'react-stately';
 
+import { useUIKitTranslation } from '../../../i18n';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps, ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
@@ -25,7 +26,6 @@ import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { DateInputBase } from './DateInputBase';
 import { DatePickerButton } from './DatePickerButton';
 import { DatePickerInput } from './DatePickerInput';
-import { dateMessages } from './intl';
 import { DEFAULT_DATE_PROPS } from './props';
 import { TimeInput } from './TimeInput';
 import { DateFieldBase } from './types';
@@ -52,6 +52,8 @@ function DatePicker<T extends DateValue>(
   props: CubeDatePickerProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
+  const { t } = useUIKitTranslation();
+
   props = useProviderProps(props);
   props = useFormProps(props);
   props = useFieldProps(props, {
@@ -150,7 +152,7 @@ function DatePicker<T extends DateValue>(
             {showTimeField && (
               <TimeInput
                 padding="1x"
-                label={dateMessages['time']}
+                label={t('datePicker.time', 'Time')}
                 value={state.timeValue}
                 placeholderValue={timePlaceholder}
                 granularity={timeGranularity}

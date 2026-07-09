@@ -9,6 +9,7 @@ import { ForwardedRef, forwardRef, ReactNode, useState } from 'react';
 import { TextDropItem, useClipboard } from 'react-aria';
 
 import { useTimer } from '../../../_internal';
+import { useUIKitTranslation } from '../../../i18n';
 import { CopyIcon } from '../../../icons';
 import { extractStyles } from '../../../utils/styles';
 import { Button } from '../../actions';
@@ -94,7 +95,6 @@ const CopyPasteBlockElement = tasty(Card, {
 const CopyButton = tasty(Button, {
   type: 'clear',
   icon: <CopyIcon />,
-  'aria-label': 'Copy to clipboard',
   styles: {
     placeSelf: 'stretch',
     border: '#clear',
@@ -139,6 +139,7 @@ function CopyPasteBlock(
   } = allProps;
   const styles = extractStyles(props, POSITION_STYLES);
 
+  const { t } = useUIKitTranslation();
   const [error, setError] = useState<string | null>(null);
   const toast = useToast();
 
@@ -168,7 +169,11 @@ function CopyPasteBlock(
     },
     onCopy() {
       if (value) {
-        toast.success(`${title || 'Text'} copied`);
+        toast.success(
+          t('copyPasteBlock.copied', '{{title}} copied', {
+            title: title || t('copyPasteBlock.defaultTitle', 'Text'),
+          }),
+        );
       }
     },
   });
@@ -184,7 +189,11 @@ function CopyPasteBlock(
   async function onCopy() {
     await copy(value);
 
-    toast.success(`${title || 'Text'} copied`);
+    toast.success(
+      t('copyPasteBlock.copied', '{{title}} copied', {
+        title: title || t('copyPasteBlock.defaultTitle', 'Text'),
+      }),
+    );
   }
 
   const pristineValue = value.replace(/\n/, ' ');
@@ -208,11 +217,15 @@ function CopyPasteBlock(
         >
           <div data-element="Label">
             {error != null ? (
-              error || 'Invalid data'
+              error || t('copyPasteBlock.invalidData', 'Invalid data')
             ) : value ? (
               pristineValue
             ) : (
-              <>{placeholder ? placeholder : 'Select and paste'}</>
+              <>
+                {placeholder
+                  ? placeholder
+                  : t('copyPasteBlock.selectAndPaste', 'Select and paste')}
+              </>
             )}
           </div>
           <span data-element="Shortcut">
@@ -222,7 +235,10 @@ function CopyPasteBlock(
         {value && !error && (
           <CopyButton
             size={size}
-            aria-label={`Copy ${title}`}
+            aria-label={t(
+              'copyPasteBlock.copyToClipboard',
+              'Copy to clipboard',
+            )}
             onPress={onCopy}
           />
         )}

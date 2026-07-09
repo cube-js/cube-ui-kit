@@ -1,6 +1,7 @@
 import { ForwardedRef, forwardRef, useCallback, useRef, useState } from 'react';
 import { useTextField } from 'react-aria';
 
+import { useUIKitTranslation } from '../../../i18n';
 import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { mergeProps } from '../../../utils/react';
@@ -19,6 +20,8 @@ function PasswordInput(
   props: CubePasswordInputProps,
   ref: ForwardedRef<HTMLElement>,
 ) {
+  const { t } = useUIKitTranslation();
+
   props = castNullableStringValue(props);
   props = useProviderProps(props);
   props = useFieldProps(props, {
@@ -59,7 +62,7 @@ function PasswordInput(
       {suffix}
       <ItemAction
         type="clear"
-        tooltip="Toggle masking"
+        tooltip={t('passwordInput.toggleMasking', 'Toggle masking')}
         icon={type === 'password' ? <EyeInvisibleIcon /> : <EyeIcon />}
         onPress={toggleType}
       />

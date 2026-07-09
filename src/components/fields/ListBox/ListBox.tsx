@@ -42,6 +42,7 @@ import {
 } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
+import { useUIKitTranslation } from '../../../i18n';
 import { CheckIcon, GripVerticalIcon } from '../../../icons';
 import { Icon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
@@ -431,7 +432,7 @@ export interface CubeListBoxProps<T>
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
 const SelectAllOption = ({
-  label = 'Select All',
+  label,
   isSelected,
   isIndeterminate,
   isDisabled,
@@ -453,7 +454,9 @@ const SelectAllOption = ({
   onClick: (propagate?: boolean) => void;
   allValueProps?: Partial<CubeCollectionItemProps<any>>;
 }) => {
+  const { t } = useUIKitTranslation();
   const { hoverProps, isHovered } = useHover({ isDisabled });
+  const resolvedLabel = label ?? t('listBox.selectAll', 'Select All');
 
   const markIcon = isIndeterminate ? (
     <Icon size={12} stroke={3}>
@@ -556,7 +559,7 @@ const SelectAllOption = ({
           onClick: handleOptionClick,
         })}
       >
-        {label}
+        {resolvedLabel}
       </ListBoxItem>
       <StyledDivider />
     </>
@@ -590,6 +593,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       return fieldProps;
     },
   });
+
+  const { t } = useUIKitTranslation();
 
   let {
     qa,
@@ -633,7 +638,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     selectAllLabel,
     allValueProps,
     filter,
-    emptyLabel = 'No items',
+    emptyLabel = t('listBox.noItems', 'No items'),
     shape = 'card',
     isReorderable = false,
     onReorder,
@@ -1013,7 +1018,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       )}
       {showSelectAll && props.selectionMode === 'multiple' ? (
         <SelectAllOption
-          label={selectAllLabel || 'Select All'}
+          label={selectAllLabel}
           state={listState}
           lastFocusSourceRef={lastFocusSourceRef}
           isSelected={selectAllState.isSelected}

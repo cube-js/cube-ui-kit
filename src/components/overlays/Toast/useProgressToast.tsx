@@ -1,6 +1,7 @@
 import { Key, useEffect, useRef } from 'react';
 
 import { useEvent } from '../../../_internal';
+import { useUIKitTranslation } from '../../../i18n';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 
 import { useToastContext } from './ToastProvider';
@@ -62,6 +63,7 @@ export function useProgressToast(
   options?: ProgressToastOptions | ProgressToastEmpty,
 ): void {
   const { addToast, removeToast, updateToast } = useToastContext();
+  const { t } = useUIKitTranslation();
 
   const toastIdRef = useRef<Key | null>(null);
   const wasLoadingRef = useRef<boolean | null>(null);
@@ -151,7 +153,7 @@ export function useProgressToast(
     const hideAction =
       isDismissable && currentIsLoading ? (
         <ItemAction isSelected type="outline" onPress={handleHide}>
-          Hide
+          {t('toast.hide', 'Hide')}
         </ItemAction>
       ) : null;
 
@@ -261,6 +263,7 @@ export function useProgressToast(
     removeToast,
     updateToast,
     handleHide,
+    t,
   ]);
 
   // Cleanup on unmount

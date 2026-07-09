@@ -10,6 +10,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { ModalProvider } from 'react-aria';
 
+import { UIKitI18nProvider } from '../i18n';
 import { Provider } from '../provider';
 import { NavigationAdapter } from '../providers/navigation.types';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
@@ -164,40 +165,42 @@ export function Root(allProps: CubeRootProps) {
   const styles = extractStyles(props, STYLES);
 
   return (
-    <Provider navigation={navigation} root={rootRef}>
-      <TrackingProvider event={tracking?.event}>
-        <RootElement
-          ref={ref}
-          data-uikit={VERSION}
-          data-tasty={TASTY_VERSION}
-          data-font-display={fontDisplay}
-          {...filterBaseProps(props, { eventProps: true })}
-          styles={styles}
-          style={{
-            '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
-            ...style,
-          }}
-          tokens={tokens}
-        >
-          <GlobalStyles
-            bodyStyles={bodyStyles}
-            publicUrl={publicUrl}
-            fonts={fonts}
-            font={font}
-            monospaceFont={monospaceFont}
-            fontDisplay={fontDisplay}
-          />
-          <ModalProvider>
-            <PortalProvider value={ref}>
-              <EventBusProvider>
-                <OverlayProvider>
-                  <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
-                </OverlayProvider>
-              </EventBusProvider>
-            </PortalProvider>
-          </ModalProvider>
-        </RootElement>
-      </TrackingProvider>
-    </Provider>
+    <UIKitI18nProvider>
+      <Provider navigation={navigation} root={rootRef}>
+        <TrackingProvider event={tracking?.event}>
+          <RootElement
+            ref={ref}
+            data-uikit={VERSION}
+            data-tasty={TASTY_VERSION}
+            data-font-display={fontDisplay}
+            {...filterBaseProps(props, { eventProps: true })}
+            styles={styles}
+            style={{
+              '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
+              ...style,
+            }}
+            tokens={tokens}
+          >
+            <GlobalStyles
+              bodyStyles={bodyStyles}
+              publicUrl={publicUrl}
+              fonts={fonts}
+              font={font}
+              monospaceFont={monospaceFont}
+              fontDisplay={fontDisplay}
+            />
+            <ModalProvider>
+              <PortalProvider value={ref}>
+                <EventBusProvider>
+                  <OverlayProvider>
+                    <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
+                  </OverlayProvider>
+                </EventBusProvider>
+              </PortalProvider>
+            </ModalProvider>
+          </RootElement>
+        </TrackingProvider>
+      </Provider>
+    </UIKitI18nProvider>
   );
 }
