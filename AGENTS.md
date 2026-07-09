@@ -51,7 +51,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 
 ## Environment
 
-- Node `>=22.14.0`, pnpm `^10` (pinned to `pnpm@10.32.0`).
+- Node `>=24.0.0`, pnpm `^10` (pinned to `pnpm@10.32.0`).
 - After `pnpm install`, run `pnpm rebuild esbuild` (postinstall is blocked in `pnpm-workspace.yaml`).
 - Husky hooks: `pre-commit` runs `pnpm lint-staged`; `pre-push` runs `pnpm test`. Skip only intentionally (`--no-verify` or `HUSKY=0`).
 - No external services or databases required for local development.

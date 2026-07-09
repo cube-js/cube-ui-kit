@@ -121,7 +121,7 @@
     "@testing-library/user-event": "14.6.1",
     "@types/babel__core": "^7.20.5",
     "@types/babel__helper-plugin-utils": "^7.10.3",
-    "@types/node": "^22.17.2",
+    "@types/node": "^24.0.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@types/react-is": "^18.2.4",
@@ -163,7 +163,7 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": ">=22.14.0",
+    "node": ">=24.0.0",
     "pnpm": "^10.0.0"
   }
 }

@@ -112,7 +112,7 @@ const StatusBadge = tasty({
 
 ### Prerequisites
 
-- Node.js >= 22.14.0
+- Node.js >= 24.0.0
 - pnpm >= 10
 
 ### Scripts
