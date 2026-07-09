@@ -48,7 +48,15 @@ const WidgetElement = tasty({
       '': 1,
       'drag | resizing': 10,
     },
-    transition: 'theme, shadow',
+    // The pointer-drag ghost (the clone that floats in the overlay) is slightly
+    // translucent so the user can see through it to whatever it hovers over -
+    // e.g. a Tabs header underneath - and land a precise drop / tab switch. The
+    // in-place host (keyboard drags, which never float) stays fully opaque.
+    opacity: {
+      '': 1,
+      floating: 0.8,
+    },
+    transition: 'theme, shadow, opacity',
     boxSizing: 'border-box',
     userSelect: {
       '': 'auto',
@@ -646,7 +654,7 @@ export function WidgetHost(props: WidgetHostProps) {
             height: `${dragState!.rect.height}px`,
             pointerEvents: 'none',
           }}
-          mods={{ ...mods, drag: true }}
+          mods={{ ...mods, drag: true, floating: true }}
           styles={registration?.styles as Styles}
           aria-hidden="true"
         >
