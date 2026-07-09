@@ -1,0 +1,91 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+import { useEvent } from '../../../_internal/hooks';
+
+import { cloneLayout, LayoutItem } from './grid-core';
+
+export interface UseBoardLayoutOptions {
+  /** Controlled layout. */
+  layout?: LayoutItem[];
+  /** Initial layout for uncontrolled usage. */
+  defaultLayout?: LayoutItem[];
+  onLayoutChange?: (layout: LayoutItem[]) => void;
+}
+
+export interface UseBoardLayoutResult {
+  layout: LayoutItem[];
+  layoutRef: React.MutableRefObject<LayoutItem[]>;
+  placeholder: LayoutItem | null;
+  /**
+   * Synchronously-updated mirror of `placeholder`. `setPlaceholder` only
+   * schedules a re-render, so consumers that run in the same tick as a
+   * `setPlaceholder` call (e.g. drag lifecycle callbacks fired right after the
+   * registry updates the placeholder) must read the ref to see the live value.
+   */
+  placeholderRef: React.MutableRefObject<LayoutItem | null>;
+  setPlaceholder: (item: LayoutItem | null) => void;
+  /** Update the layout. `commit` fires `onLayoutChange`. */
+  applyLayout: (layout: LayoutItem[], commit: boolean) => void;
+}
+
+/**
+ * Headless layout state for a single board.
+ *
+ * Supports both controlled (`layout`) and uncontrolled (`defaultLayout`) usage.
+ * Intermediate drag/resize previews always update local state; only committed
+ * changes call `onLayoutChange`.
+ */
+export function useBoardLayout(
+  options: UseBoardLayoutOptions,
+): UseBoardLayoutResult {
+  const { layout: controlledLayout, defaultLayout, onLayoutChange } = options;
+  const isControlled = controlledLayout !== undefined;
+
+  const [layout, setLayout] = useState<LayoutItem[]>(() =>
+    cloneLayout(controlledLayout ?? defaultLayout ?? []),
+  );
+  const layoutRef = useRef<LayoutItem[]>(layout);
+  layoutRef.current = layout;
+
+  const [placeholder, setPlaceholderState] = useState<LayoutItem | null>(null);
+  const placeholderRef = useRef<LayoutItem | null>(null);
+  const setPlaceholder = useCallback((item: LayoutItem | null) => {
+    placeholderRef.current = item;
+    setPlaceholderState(item);
+  }, []);
+
+  const onLayoutChangeEvent = useEvent((next: LayoutItem[]) =>
+    onLayoutChange?.(next),
+  );
+
+  // Sync controlled prop into local state when it changes by reference.
+  const prevControlledRef = useRef(controlledLayout);
+  useEffect(() => {
+    if (isControlled && controlledLayout !== prevControlledRef.current) {
+      prevControlledRef.current = controlledLayout;
+      const next = cloneLayout(controlledLayout ?? []);
+      layoutRef.current = next;
+      setLayout(next);
+    }
+  }, [controlledLayout, isControlled]);
+
+  const applyLayout = useCallback(
+    (next: LayoutItem[], commit: boolean) => {
+      layoutRef.current = next;
+      setLayout(next);
+      if (commit) {
+        onLayoutChangeEvent(next);
+      }
+    },
+    [onLayoutChangeEvent],
+  );
+
+  return {
+    layout,
+    layoutRef,
+    placeholder,
+    placeholderRef,
+    setPlaceholder,
+    applyLayout,
+  };
+}

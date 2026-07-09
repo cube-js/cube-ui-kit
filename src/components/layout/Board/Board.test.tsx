@@ -1,0 +1,1628 @@
+import {
+  act,
+  fireEvent,
+  render,
+  renderWithRoot,
+  screen,
+} from '../../../test/render';
+import { Tab, Tabs } from '../../navigation/Tabs';
+
+import { Board } from './index';
+
+import type { LayoutConstraint, LayoutItem } from './grid-core';
+
+const baseLayout = [
+  { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+  { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+  { i: 'c', x: 0, y: 2, w: 4, h: 2 },
+];
+
+describe('Board', () => {
+  it('renders widgets content', () => {
+    render(
+      <Board width={1200} defaultLayout={baseLayout}>
+        <Board.Widget id="a">Widget A</Board.Widget>
+        <Board.Widget id="b">Widget B</Board.Widget>
+        <Board.Widget id="c">Widget C</Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByText('Widget A')).toBeInTheDocument();
+    expect(screen.getByText('Widget B')).toBeInTheDocument();
+    expect(screen.getByText('Widget C')).toBeInTheDocument();
+  });
+
+  it('renders a widget host per layout item', () => {
+    render(
+      <Board width={1200} defaultLayout={baseLayout}>
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+        <Board.Widget id="b" qa="WidgetB">
+          B
+        </Board.Widget>
+        <Board.Widget id="c" qa="WidgetC">
+          C
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByTestId('WidgetA')).toBeInTheDocument();
+    expect(screen.getByTestId('WidgetB')).toBeInTheDocument();
+    expect(screen.getByTestId('WidgetC')).toBeInTheDocument();
+  });
+
+  it('positions widgets using CSS transforms', () => {
+    render(
+      <Board
+        width={1200}
+        rowHeight={100}
+        margin={[10, 10]}
+        containerPadding={[10, 10]}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    // First item sits at the container padding origin (10, 10).
+    expect(widget.style.transform).toBe('translate(10px, 10px)');
+  });
+
+  it('makes draggable widgets focusable', () => {
+    render(
+      <Board width={1200} defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}>
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByTestId('WidgetA')).toHaveAttribute('tabindex', '0');
+  });
+
+  it('does not make widgets focusable when dragging is disabled', () => {
+    render(
+      <Board
+        width={1200}
+        isDraggable={false}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByTestId('WidgetA')).not.toHaveAttribute('tabindex');
+  });
+
+  it('renders resize handles for resizable widgets', () => {
+    render(
+      <Board
+        width={1200}
+        resizeHandles={['se']}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getAllByTestId('BoardResizeHandle').length).toBe(1);
+  });
+
+  it('does not render resize handles when resizing is disabled', () => {
+    render(
+      <Board
+        width={1200}
+        isResizable={false}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.queryByTestId('BoardResizeHandle')).not.toBeInTheDocument();
+  });
+
+  it('renders a resize grip affordance for corner handles', () => {
+    render(
+      <Board
+        width={1200}
+        resizeHandles={['se']}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    const grips = screen.getAllByTestId('BoardResizeGrip');
+    expect(grips.length).toBe(1);
+    expect(grips[0]).toHaveAttribute('data-axis', 'se');
+  });
+
+  it('renders corner grips for corners and edge grips for edges', () => {
+    render(
+      <Board
+        width={1200}
+        resizeHandles={['se', 'n', 'e', 'nw']}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    // 4 handles total: the two corners (se, nw) get an angle grip, the two
+    // edges (n, e) get a dotted edge grip.
+    expect(screen.getAllByTestId('BoardResizeHandle').length).toBe(4);
+    expect(screen.getAllByTestId('BoardResizeGrip').length).toBe(2);
+    expect(screen.getAllByTestId('BoardResizeEdgeGrip').length).toBe(2);
+  });
+
+  it('renders a dotted edge grip for a single-axis edge handle', () => {
+    render(
+      <Board width={1200} defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}>
+        <Board.Widget id="a" qa="WidgetA" resizeHandles={['e']}>
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    // A single east handle with a dotted edge grip and no corner grip.
+    expect(screen.getAllByTestId('BoardResizeHandle').length).toBe(1);
+    const grips = screen.getAllByTestId('BoardResizeEdgeGrip');
+    expect(grips.length).toBe(1);
+    expect(grips[0]).toHaveAttribute('data-axis', 'e');
+    expect(screen.queryByTestId('BoardResizeGrip')).not.toBeInTheDocument();
+  });
+
+  it('does not render edge grips when resizing is disabled', () => {
+    render(
+      <Board
+        width={1200}
+        isResizable={false}
+        resizeHandles={['e']}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.queryByTestId('BoardResizeEdgeGrip')).not.toBeInTheDocument();
+  });
+
+  it('does not render grips when resizing is disabled', () => {
+    render(
+      <Board
+        width={1200}
+        isResizable={false}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.queryByTestId('BoardResizeGrip')).not.toBeInTheDocument();
+  });
+
+  it('renders all widgets at their given positions in free mode', () => {
+    render(
+      <Board
+        width={1200}
+        rowHeight={100}
+        margin={[10, 10]}
+        containerPadding={[10, 10]}
+        compact="free"
+        defaultLayout={[
+          { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+          { i: 'b', x: 3, y: 0, w: 2, h: 2 },
+        ]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+        <Board.Widget id="b" qa="WidgetB">
+          B
+        </Board.Widget>
+      </Board>,
+    );
+
+    // Free positioning keeps items exactly where placed (no reflow to origin).
+    expect(screen.getByTestId('WidgetA').style.transform).toBe(
+      'translate(10px, 10px)',
+    );
+    const widgetB = screen.getByTestId('WidgetB');
+    expect(widgetB.style.transform).not.toBe('translate(10px, 10px)');
+  });
+
+  describe('free positioning', () => {
+    // A single arrow key runs the whole keyboard-drag gesture (start + move +
+    // commit), like the lifecycle tests. jsdom reports a zero rect for the
+    // dragged host, so the keyboard landing is computed from the origin: one
+    // ArrowRight always lands the dragged widget at x=1. Dragging the widget
+    // that starts at x=0 therefore gives a deterministic one-column move.
+
+    it('blocks a drop onto an occupied cell and never moves neighbours', () => {
+      const onLayoutChange = vi.fn();
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          compact="free"
+          onLayoutChange={onLayoutChange}
+          defaultLayout={[
+            { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+            { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+          ]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+          <Board.Widget id="b" qa="WidgetB">
+            B
+          </Board.Widget>
+        </Board>,
+      );
+
+      const widget = screen.getByTestId('WidgetA');
+      widget.focus();
+      // Moving A one column right would overlap B; without overlap the move is
+      // blocked, so A stays put and B is neither pushed nor swapped.
+      fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+      expect(onLayoutChange).toHaveBeenCalled();
+      const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+      expect(last.find((l) => l.i === 'a')?.x).toBe(0);
+      expect(last.find((l) => l.i === 'b')?.x).toBe(2);
+    });
+
+    it('places a widget in free space without disturbing neighbours', () => {
+      const onLayoutChange = vi.fn();
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          compact="free"
+          onLayoutChange={onLayoutChange}
+          defaultLayout={[
+            { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+            { i: 'b', x: 4, y: 0, w: 2, h: 2 },
+          ]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+          <Board.Widget id="b" qa="WidgetB">
+            B
+          </Board.Widget>
+        </Board>,
+      );
+
+      const widget = screen.getByTestId('WidgetA');
+      widget.focus();
+      // A lands in empty space one column over; B is untouched.
+      fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+      expect(onLayoutChange).toHaveBeenCalled();
+      const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+      expect(last.find((l) => l.i === 'a')?.x).toBe(1);
+      expect(last.find((l) => l.i === 'b')?.x).toBe(4);
+    });
+
+    it('lets widgets overlap with allowOverlap and still never moves neighbours', () => {
+      const onLayoutChange = vi.fn();
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          compact="free"
+          allowOverlap
+          onLayoutChange={onLayoutChange}
+          defaultLayout={[
+            { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+            { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+          ]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+          <Board.Widget id="b" qa="WidgetB">
+            B
+          </Board.Widget>
+        </Board>,
+      );
+
+      const widget = screen.getByTestId('WidgetA');
+      widget.focus();
+      // Moving A one column right overlaps B; with overlap it stacks there and
+      // B stays where it is.
+      fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+      expect(onLayoutChange).toHaveBeenCalled();
+      const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+      expect(last.find((l) => l.i === 'a')?.x).toBe(1);
+      expect(last.find((l) => l.i === 'b')?.x).toBe(2);
+    });
+  });
+
+  it('supports nested boards inside a widget', () => {
+    render(
+      <Board.Provider>
+        <Board
+          id="outer"
+          width={1200}
+          defaultLayout={[{ i: 'container', x: 0, y: 0, w: 6, h: 4 }]}
+        >
+          <Board.Widget id="container">
+            <Board
+              id="inner"
+              width={500}
+              defaultLayout={[{ i: 'child', x: 0, y: 0, w: 2, h: 2 }]}
+            >
+              <Board.Widget id="child">Nested child</Board.Widget>
+            </Board>
+          </Board.Widget>
+        </Board>
+      </Board.Provider>,
+    );
+
+    expect(screen.getByText('Nested child')).toBeInTheDocument();
+  });
+
+  it('renders multiple boards under a shared provider', () => {
+    render(
+      <Board.Provider>
+        <Board
+          id="left"
+          width={600}
+          defaultLayout={[{ i: 'l1', x: 0, y: 0, w: 2, h: 2 }]}
+        >
+          <Board.Widget id="l1">Left widget</Board.Widget>
+        </Board>
+        <Board
+          id="right"
+          width={600}
+          defaultLayout={[{ i: 'r1', x: 0, y: 0, w: 2, h: 2 }]}
+        >
+          <Board.Widget id="r1">Right widget</Board.Widget>
+        </Board>
+      </Board.Provider>,
+    );
+
+    expect(screen.getByText('Left widget')).toBeInTheDocument();
+    expect(screen.getByText('Right widget')).toBeInTheDocument();
+  });
+
+  it('does not render a static widget as draggable', () => {
+    render(
+      <Board
+        width={1200}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2, static: true }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByTestId('WidgetA')).not.toHaveAttribute('tabindex');
+  });
+
+  it('updates widget content when children change', () => {
+    const layout = [{ i: 'a', x: 0, y: 0, w: 2, h: 2 }];
+    const { rerender } = render(
+      <Board width={1200} defaultLayout={layout}>
+        <Board.Widget id="a">Original content</Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByText('Original content')).toBeInTheDocument();
+
+    rerender(
+      <Board width={1200} defaultLayout={layout}>
+        <Board.Widget id="a">Updated content</Board.Widget>
+      </Board>,
+    );
+
+    expect(screen.getByText('Updated content')).toBeInTheDocument();
+    expect(screen.queryByText('Original content')).not.toBeInTheDocument();
+  });
+
+  it('applies per-widget constraints during a keyboard drag', () => {
+    const onLayoutChange = vi.fn();
+    // A constraint that pins the item to column 5 regardless of the requested
+    // position - only observable if the widget's `constraints` prop is wired
+    // through to the layout item the constraint engine reads.
+    const pinToColumn5: LayoutConstraint = {
+      name: 'pinToColumn5',
+      constrainPosition: (_item, _x, y) => ({ x: 5, y }),
+    };
+
+    render(
+      <Board
+        width={1200}
+        cols={12}
+        onLayoutChange={onLayoutChange}
+        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA" constraints={[pinToColumn5]}>
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    expect(onLayoutChange).toHaveBeenCalled();
+    const lastLayout = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+    expect(lastLayout.find((l) => l.i === 'a')?.x).toBe(5);
+  });
+
+  it('stays registered and draggable after its id changes', () => {
+    const onLayoutChange = vi.fn();
+
+    function Wrapper({ boardId }: { boardId: string }) {
+      return (
+        <Board.Provider>
+          <Board
+            id={boardId}
+            width={1200}
+            cols={12}
+            onLayoutChange={onLayoutChange}
+            defaultLayout={[
+              { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+              { i: 'b', x: 4, y: 0, w: 2, h: 2 },
+            ]}
+          >
+            <Board.Widget id="a" qa="WidgetA">
+              A
+            </Board.Widget>
+            <Board.Widget id="b" qa="WidgetB">
+              B
+            </Board.Widget>
+          </Board>
+        </Board.Provider>
+      );
+    }
+
+    const { rerender } = render(<Wrapper boardId="first" />);
+    rerender(<Wrapper boardId="second" />);
+
+    expect(screen.getByText('A')).toBeInTheDocument();
+
+    // A drag only commits if the board is still found in the registry under its
+    // new id (the drag handlers key off the current board id).
+    const widget = screen.getByTestId('WidgetA');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    expect(onLayoutChange).toHaveBeenCalled();
+  });
+
+  it('aligns a nested board column pitch to the parent grid', () => {
+    render(
+      <Board.Provider>
+        <Board
+          id="outer"
+          width={1212}
+          cols={12}
+          margin={[10, 10]}
+          containerPadding={[10, 10]}
+          defaultLayout={[
+            { i: 'p', x: 0, y: 0, w: 1, h: 1 },
+            { i: 'container', x: 1, y: 0, w: 6, h: 4 },
+          ]}
+        >
+          <Board.Widget id="p" qa="ParentCell">
+            P
+          </Board.Widget>
+          <Board.Widget id="container">
+            <Board
+              id="inner"
+              isAligned
+              width={500}
+              cols={6}
+              defaultLayout={[{ i: 'c', x: 0, y: 0, w: 1, h: 1 }]}
+            >
+              <Board.Widget id="c" qa="InnerCell">
+                C
+              </Board.Widget>
+            </Board>
+          </Board.Widget>
+        </Board>
+      </Board.Provider>,
+    );
+
+    const parentCell = screen.getByTestId('ParentCell');
+    const innerCell = screen.getByTestId('InnerCell');
+    // The aligned board inherits the parent's column pitch, so a single-column
+    // widget has the same pixel width in both boards even though their own
+    // widths and column counts differ.
+    expect(innerCell.style.width).toBe(parentCell.style.width);
+  });
+
+  it('leaves a nested board without isAligned on its own grid', () => {
+    render(
+      <Board.Provider>
+        <Board
+          id="outer"
+          width={1212}
+          cols={12}
+          margin={[10, 10]}
+          containerPadding={[10, 10]}
+          defaultLayout={[
+            { i: 'p', x: 0, y: 0, w: 1, h: 1 },
+            { i: 'container', x: 1, y: 0, w: 6, h: 4 },
+          ]}
+        >
+          <Board.Widget id="p" qa="ParentCell">
+            P
+          </Board.Widget>
+          <Board.Widget id="container">
+            <Board
+              id="inner"
+              width={600}
+              cols={4}
+              margin={[10, 10]}
+              containerPadding={[10, 10]}
+              defaultLayout={[{ i: 'c', x: 0, y: 0, w: 1, h: 1 }]}
+            >
+              <Board.Widget id="c" qa="InnerCell">
+                C
+              </Board.Widget>
+            </Board>
+          </Board.Widget>
+        </Board>
+      </Board.Provider>,
+    );
+
+    const parentCell = screen.getByTestId('ParentCell');
+    const innerCell = screen.getByTestId('InnerCell');
+    // Without `isAligned`, the nested board keeps its own column width.
+    expect(innerCell.style.width).not.toBe(parentCell.style.width);
+  });
+
+  it('moves a widget within an aligned board using the keyboard', () => {
+    const onLayoutChange = vi.fn();
+
+    render(
+      <Board.Provider>
+        <Board
+          id="outer"
+          width={1200}
+          cols={12}
+          defaultLayout={[{ i: 'container', x: 0, y: 0, w: 12, h: 4 }]}
+        >
+          <Board.Widget id="container">
+            <Board
+              id="inner"
+              isAligned
+              width={600}
+              onLayoutChange={onLayoutChange}
+              defaultLayout={[{ i: 'c', x: 0, y: 0, w: 1, h: 1 }]}
+            >
+              <Board.Widget id="c" qa="InnerCell">
+                C
+              </Board.Widget>
+            </Board>
+          </Board.Widget>
+        </Board>
+      </Board.Provider>,
+    );
+
+    const widget = screen.getByTestId('InnerCell');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    expect(onLayoutChange).toHaveBeenCalled();
+    const lastLayout = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+    // One arrow step moves the widget exactly one aligned column to the right.
+    expect(lastLayout.find((l) => l.i === 'c')?.x).toBe(1);
+  });
+
+  it('does not reflow a measured aligned board on the first width measurement', () => {
+    // A nested aligned board with no explicit `width` renders first at width 0
+    // (falling back to `cols`), then jumps to a measured width once the resize
+    // observer fires. That first jump derives a different aligned column count,
+    // but it is not a user-driven change and must not commit a reflow.
+    const widthSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+      .mockReturnValue(600);
+    const onLayoutChange = vi.fn();
+
+    try {
+      render(
+        <Board.Provider>
+          <Board
+            id="outer"
+            width={1212}
+            cols={12}
+            defaultLayout={[{ i: 'container', x: 0, y: 0, w: 6, h: 4 }]}
+          >
+            <Board.Widget id="container">
+              <Board
+                id="inner"
+                isAligned
+                cols={12}
+                onLayoutChange={onLayoutChange}
+                defaultLayout={[{ i: 'c', x: 8, y: 0, w: 2, h: 1 }]}
+              >
+                <Board.Widget id="c" qa="InnerCell">
+                  C
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+          </Board>
+        </Board.Provider>,
+      );
+
+      // No user interaction happened, so the aligned board must not have
+      // committed a reflow despite deriving a narrower column count on measure.
+      expect(onLayoutChange).not.toHaveBeenCalled();
+    } finally {
+      widthSpy.mockRestore();
+    }
+  });
+
+  it('shrinks aligned row height to fit a constrained container', () => {
+    // jsdom reports 0 for offset dimensions; mock them so a nested board can
+    // measure the height it is given (and derive a column count from its width).
+    const widthSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+      .mockReturnValue(600);
+    const heightSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+      .mockReturnValue(120);
+
+    try {
+      render(
+        <Board.Provider>
+          <Board
+            id="outer"
+            width={1212}
+            cols={12}
+            rowHeight={100}
+            defaultLayout={[
+              { i: 'a', x: 0, y: 0, w: 6, h: 4 },
+              { i: 'b', x: 6, y: 0, w: 6, h: 4 },
+            ]}
+          >
+            <Board.Widget id="a">
+              <Board
+                id="inner-aligned"
+                isAligned
+                defaultLayout={[{ i: 'ca', x: 0, y: 0, w: 1, h: 2 }]}
+              >
+                <Board.Widget id="ca" qa="AlignedCell">
+                  CA
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+            <Board.Widget id="b">
+              <Board
+                id="inner-plain"
+                rowHeight={100}
+                defaultLayout={[{ i: 'cb', x: 0, y: 0, w: 1, h: 2 }]}
+              >
+                <Board.Widget id="cb" qa="PlainCell">
+                  CB
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+          </Board>
+        </Board.Provider>,
+      );
+
+      const aligned = screen.getByTestId('AlignedCell');
+      const plain = screen.getByTestId('PlainCell');
+      // The aligned board fits its rows into the 120px it measures, so the same
+      // widget renders shorter than on a board keeping the full parent row
+      // height.
+      expect(parseInt(aligned.style.height, 10)).toBeLessThan(
+        parseInt(plain.style.height, 10),
+      );
+    } finally {
+      widthSpy.mockRestore();
+      heightSpy.mockRestore();
+    }
+  });
+
+  it('grows an isAutoHeight widget so a squeezed aligned board fits', async () => {
+    // Mock offset dimensions so the nested aligned board measures a container
+    // that is too short (120px) for its two rows at the parent's 100px row
+    // height - which is exactly the deficit isAutoHeight should close.
+    const widthSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+      .mockReturnValue(600);
+    const heightSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+      .mockReturnValue(120);
+    const onLayoutChange = vi.fn();
+
+    try {
+      render(
+        <Board.Provider>
+          <Board
+            id="outer"
+            width={1212}
+            cols={12}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            onLayoutChange={onLayoutChange}
+            defaultLayout={[{ i: 'container', x: 0, y: 0, w: 6, h: 2 }]}
+          >
+            <Board.Widget id="container" isAutoHeight>
+              <Board
+                id="inner"
+                isAligned
+                defaultLayout={[{ i: 'ca', x: 0, y: 0, w: 1, h: 2 }]}
+              >
+                <Board.Widget id="ca" qa="AutoCell">
+                  CA
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+          </Board>
+        </Board.Provider>,
+      );
+
+      // The container started 2 rows tall but its inner board wants 2 rows at
+      // 100px; the reported deficit should grow the container (never shrink it).
+      await vi.waitFor(() => {
+        expect(onLayoutChange).toHaveBeenCalled();
+        const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+        const container = last.find((l) => l.i === 'container');
+        expect(container && container.h).toBeGreaterThan(2);
+      });
+    } finally {
+      widthSpy.mockRestore();
+      heightSpy.mockRestore();
+    }
+  });
+
+  it('cannot resize an isAutoHeight widget below the height its board needs', async () => {
+    // The container is 4 rows tall but its aligned board only needs 2 rows at
+    // the parent's 100px row height (mocked container height 400 => two 100px
+    // rows plus slack). Dragging the resize handle far up should stop at that
+    // 2-row floor instead of collapsing to a single row.
+    const widthSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+      .mockReturnValue(600);
+    const heightSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+      .mockReturnValue(400);
+    const onLayoutChange = vi.fn();
+
+    try {
+      render(
+        <Board.Provider>
+          <Board
+            id="outer"
+            width={1212}
+            cols={12}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            resizeHandles={['se']}
+            onLayoutChange={onLayoutChange}
+            defaultLayout={[{ i: 'container', x: 0, y: 0, w: 6, h: 4 }]}
+          >
+            <Board.Widget id="container" qa="Container" isAutoHeight>
+              <Board
+                id="inner"
+                isAligned
+                isResizable={false}
+                defaultLayout={[{ i: 'ca', x: 0, y: 0, w: 1, h: 2 }]}
+              >
+                <Board.Widget id="ca" qa="AutoCell">
+                  CA
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+          </Board>
+        </Board.Provider>,
+      );
+
+      // Only the container is resizable, so this is its south-east handle.
+      const handle = screen.getByTestId('BoardResizeHandle');
+      // jsdom's PointerEvent drops pageX/pageY passed via init, and React Aria's
+      // useMove derives its deltas from them, so build the events by hand.
+      const pointerEvent = (type: string, pageX: number, pageY: number) => {
+        const event = new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+          pointerId: 1,
+          pointerType: 'mouse',
+        });
+        Object.defineProperty(event, 'pageX', { get: () => pageX });
+        Object.defineProperty(event, 'pageY', { get: () => pageY });
+        return event;
+      };
+      // Drag the handle far up (well past two rows) to try to shrink it.
+      fireEvent(handle, pointerEvent('pointerdown', 500, 500));
+      fireEvent(window, pointerEvent('pointermove', 500, 150));
+      fireEvent(window, pointerEvent('pointerup', 500, 150));
+
+      expect(onLayoutChange).toHaveBeenCalled();
+      const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+      const container = last.find((l) => l.i === 'container');
+      // Clamped to the 2-row content floor, not the 1 row the drag asked for.
+      expect(container?.h).toBe(2);
+    } finally {
+      widthSpy.mockRestore();
+      heightSpy.mockRestore();
+    }
+  });
+
+  describe('drag/resize lifecycle callbacks', () => {
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    it('fires drag lifecycle callbacks during a keyboard drag', () => {
+      const onDragStart = vi.fn();
+      const onDrag = vi.fn();
+      const onDragStop = vi.fn();
+
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          onDragStart={onDragStart}
+          onDrag={onDrag}
+          onDragStop={onDragStop}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const widget = screen.getByTestId('WidgetA');
+      widget.focus();
+      fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+      expect(onDragStart).toHaveBeenCalled();
+      expect(onDrag).toHaveBeenCalled();
+      expect(onDragStop).toHaveBeenCalled();
+      // The committed layout reports the moved item and its original position.
+      const info = onDragStop.mock.calls.at(-1)![0];
+      expect(info.oldItem.x).toBe(0);
+      expect(info.item.x).toBe(1);
+    });
+
+    it('fires resize lifecycle callbacks during a pointer resize', () => {
+      const onResizeStart = vi.fn();
+      const onResize = vi.fn();
+      const onResizeStop = vi.fn();
+
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          resizeHandles={['se']}
+          onResizeStart={onResizeStart}
+          onResize={onResize}
+          onResizeStop={onResizeStop}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const handle = screen.getByTestId('BoardResizeHandle');
+      fireEvent(handle, pointerEvent('pointerdown', 100, 100));
+      fireEvent(window, pointerEvent('pointermove', 300, 300));
+      fireEvent(window, pointerEvent('pointerup', 300, 300));
+
+      expect(onResizeStart).toHaveBeenCalled();
+      expect(onResize).toHaveBeenCalled();
+      expect(onResizeStop).toHaveBeenCalled();
+    });
+
+    it('resizes width-only from a single edge handle', () => {
+      const onResizeStop = vi.fn();
+
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          onResizeStop={onResizeStop}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA" resizeHandles={['e']}>
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const handle = screen.getByTestId('BoardResizeHandle');
+      // Drag the east handle right by ~200px (2 columns of 100px).
+      fireEvent(handle, pointerEvent('pointerdown', 200, 200));
+      fireEvent(window, pointerEvent('pointermove', 400, 400));
+      fireEvent(window, pointerEvent('pointerup', 400, 400));
+
+      expect(onResizeStop).toHaveBeenCalled();
+      const info = onResizeStop.mock.calls.at(-1)![0];
+      // Width grew; height stayed the same (edge handle is horizontal-only).
+      expect(info.item.w).toBeGreaterThan(2);
+      expect(info.item.h).toBe(2);
+    });
+
+    it('blocks a resize from overlapping a neighbour in free mode', () => {
+      const onResizeStop = vi.fn();
+
+      // `a` and `b` are edge-to-edge (cols 0-1 and 2-3). Growing `a` to the
+      // right would immediately overlap `b`, so in `free` mode (no overlap) the
+      // resize must be blocked - matching how dragging onto an occupied cell is
+      // blocked - rather than the no-op compactor letting the box grow over `b`.
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact="free"
+          onResizeStop={onResizeStop}
+          defaultLayout={[
+            { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+            { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+          ]}
+        >
+          <Board.Widget id="a" qa="WidgetA" resizeHandles={['e']}>
+            A
+          </Board.Widget>
+          <Board.Widget id="b" qa="WidgetB">
+            B
+          </Board.Widget>
+        </Board>,
+      );
+
+      const handle = screen.getAllByTestId('BoardResizeHandle')[0];
+      // Try to grow `a` far to the right, well into `b`'s cells.
+      fireEvent(handle, pointerEvent('pointerdown', 200, 200));
+      fireEvent(window, pointerEvent('pointermove', 600, 200));
+      fireEvent(window, pointerEvent('pointerup', 600, 200));
+
+      expect(onResizeStop).toHaveBeenCalled();
+      const info = onResizeStop.mock.calls.at(-1)![0];
+      const a = info.layout.find((l: LayoutItem) => l.i === 'a')!;
+      const b = info.layout.find((l: LayoutItem) => l.i === 'b')!;
+      // `a` never grew onto `b`; the two widgets do not overlap.
+      expect(a.x + a.w).toBeLessThanOrEqual(b.x);
+      expect(a.w).toBe(2);
+    });
+
+    it('allows a resize to overlap a neighbour when allowOverlap is set', () => {
+      const onResizeStop = vi.fn();
+
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact="free"
+          allowOverlap
+          onResizeStop={onResizeStop}
+          defaultLayout={[
+            { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+            { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+          ]}
+        >
+          <Board.Widget id="a" qa="WidgetA" resizeHandles={['e']}>
+            A
+          </Board.Widget>
+          <Board.Widget id="b" qa="WidgetB">
+            B
+          </Board.Widget>
+        </Board>,
+      );
+
+      const handle = screen.getAllByTestId('BoardResizeHandle')[0];
+      fireEvent(handle, pointerEvent('pointerdown', 200, 200));
+      fireEvent(window, pointerEvent('pointermove', 600, 200));
+      fireEvent(window, pointerEvent('pointerup', 600, 200));
+
+      expect(onResizeStop).toHaveBeenCalled();
+      const info = onResizeStop.mock.calls.at(-1)![0];
+      // With overlap allowed the resize is not blocked.
+      expect(info.item.w).toBeGreaterThan(2);
+    });
+  });
+
+  describe('drag cancel / handle', () => {
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    it('does not start a drag from an element matching dragCancel', () => {
+      const onDragStart = vi.fn();
+      render(
+        <Board
+          width={1200}
+          dragCancel="button"
+          onDragStart={onDragStart}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 4, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            <button data-qa="Btn" type="button">
+              Click
+            </button>
+          </Board.Widget>
+        </Board>,
+      );
+
+      const btn = screen.getByTestId('Btn');
+      fireEvent(btn, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 60, 0));
+      fireEvent(window, pointerEvent('pointerup', 60, 0));
+
+      expect(onDragStart).not.toHaveBeenCalled();
+    });
+
+    it('lets a dragCancel element still receive its own pointer events', () => {
+      // Regression: the gate must not `stopPropagation()` in the capture phase,
+      // or React halts the synthetic dispatch before the pressed element (the
+      // button) gets its own `onPointerDown`, breaking its press state.
+      const onDragStart = vi.fn();
+      const onButtonPointerDown = vi.fn();
+      render(
+        <Board
+          width={1200}
+          dragCancel="button"
+          onDragStart={onDragStart}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 4, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            <button
+              data-qa="Btn"
+              type="button"
+              onPointerDown={onButtonPointerDown}
+            >
+              Click
+            </button>
+          </Board.Widget>
+        </Board>,
+      );
+
+      const btn = screen.getByTestId('Btn');
+      fireEvent(btn, pointerEvent('pointerdown', 0, 0));
+
+      expect(onButtonPointerDown).toHaveBeenCalledTimes(1);
+      expect(onDragStart).not.toHaveBeenCalled();
+    });
+
+    it('does not preventDefault on a dragCancel element (keeps native focus)', () => {
+      // Regression: the drag must not reach `useMove`'s pointer-down handler for
+      // a gated press, because it calls `preventDefault()` - which would cancel
+      // a native input's focus-on-pointerdown.
+      const onDragStart = vi.fn();
+      render(
+        <Board
+          width={1200}
+          dragCancel="input"
+          onDragStart={onDragStart}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 4, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            <input data-qa="Inp" />
+          </Board.Widget>
+        </Board>,
+      );
+
+      const inp = screen.getByTestId('Inp');
+      const evt = pointerEvent('pointerdown', 0, 0);
+      fireEvent(inp, evt);
+
+      expect(evt.defaultPrevented).toBe(false);
+      expect(onDragStart).not.toHaveBeenCalled();
+    });
+
+    it('still starts a drag from a non-cancelled area of the widget', () => {
+      const onDragStart = vi.fn();
+      render(
+        <Board
+          width={1200}
+          dragCancel="button"
+          onDragStart={onDragStart}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 4, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            <button data-qa="Btn" type="button">
+              Click
+            </button>
+          </Board.Widget>
+        </Board>,
+      );
+
+      const widget = screen.getByTestId('WidgetA');
+      fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 60, 0));
+      fireEvent(window, pointerEvent('pointerup', 60, 0));
+
+      expect(onDragStart).toHaveBeenCalled();
+    });
+
+    it('only starts a drag from within dragHandle', () => {
+      const onDragStart = vi.fn();
+      render(
+        <Board
+          width={1200}
+          dragHandle=".handle"
+          onDragStart={onDragStart}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 4, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            <div className="handle" data-qa="Handle">
+              Grip
+            </div>
+            <div data-qa="Body">Body</div>
+          </Board.Widget>
+        </Board>,
+      );
+
+      // Press outside the handle: no drag.
+      const body = screen.getByTestId('Body');
+      fireEvent(body, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 60, 0));
+      fireEvent(window, pointerEvent('pointerup', 60, 0));
+      expect(onDragStart).not.toHaveBeenCalled();
+
+      // Press on the handle: drag starts.
+      const handle = screen.getByTestId('Handle');
+      fireEvent(handle, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 60, 0));
+      fireEvent(window, pointerEvent('pointerup', 60, 0));
+      expect(onDragStart).toHaveBeenCalled();
+    });
+  });
+
+  describe('Board.Responsive', () => {
+    const breakpoints = { lg: 800, md: 500, sm: 0 };
+    const cols = { lg: 12, md: 6, sm: 2 };
+    const layouts = {
+      lg: [{ i: 'a', x: 0, y: 0, w: 1, h: 1 }],
+      md: [{ i: 'a', x: 0, y: 0, w: 1, h: 1 }],
+      sm: [{ i: 'a', x: 0, y: 0, w: 1, h: 1 }],
+    };
+
+    it('selects the breakpoint (and column count) from the width', () => {
+      render(
+        <Board.Responsive
+          width={1000}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          breakpoints={breakpoints}
+          cols={cols}
+          layouts={layouts}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board.Responsive>,
+      );
+
+      // lg => 12 columns over 1000px => a 1-col-wide widget is ~83px.
+      const widget = screen.getByTestId('WidgetA');
+      expect(widget.style.width).toBe('83px');
+    });
+
+    it('activates a breakpoint at a width exactly equal to its minimum', () => {
+      render(
+        <Board.Responsive
+          width={800}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          breakpoints={breakpoints}
+          cols={cols}
+          layouts={layouts}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board.Responsive>,
+      );
+
+      // width === lg minimum (800) => lg => 12 columns over 800px => ~67px.
+      const widget = screen.getByTestId('WidgetA');
+      expect(widget.style.width).toBe('67px');
+    });
+
+    it('honors a forced breakpoint regardless of width', () => {
+      render(
+        <Board.Responsive
+          width={1000}
+          breakpoint="sm"
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          breakpoints={breakpoints}
+          cols={cols}
+          layouts={layouts}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board.Responsive>,
+      );
+
+      // Forced sm => 2 columns over 1000px => a 1-col-wide widget is 500px.
+      const widget = screen.getByTestId('WidgetA');
+      expect(widget.style.width).toBe('500px');
+    });
+
+    it('writes back a committed layout under the active breakpoint', () => {
+      const onLayoutChange = vi.fn();
+      render(
+        <Board.Responsive
+          width={1000}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          breakpoints={breakpoints}
+          cols={cols}
+          layouts={layouts}
+          onLayoutChange={onLayoutChange}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board.Responsive>,
+      );
+
+      const widget = screen.getByTestId('WidgetA');
+      widget.focus();
+      fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+      expect(onLayoutChange).toHaveBeenCalled();
+      const [current, all] = onLayoutChange.mock.calls.at(-1)!;
+      expect((current as LayoutItem[]).find((l) => l.i === 'a')?.x).toBe(1);
+      // The active breakpoint (lg) is updated in the returned map.
+      expect((all.lg as LayoutItem[]).find((l) => l.i === 'a')?.x).toBe(1);
+    });
+
+    it('fires onWidthChange with the measured width and active column count', () => {
+      // The default ResizeObserver mock never invokes its callback; use a
+      // controllable one so a measurement can be simulated, and spy offsetWidth
+      // so the board measures a non-zero width.
+      const offsetWidthSpy = vi
+        .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+        .mockReturnValue(1000);
+      const fires: Array<() => void> = [];
+      const RealResizeObserver = global.ResizeObserver;
+      global.ResizeObserver = class {
+        cb: ResizeObserverCallback;
+        constructor(cb: ResizeObserverCallback) {
+          this.cb = cb;
+        }
+        observe(element: Element) {
+          // react-aria's useResizeObserver ignores empty entry lists, so pass a
+          // non-empty one.
+          fires.push(() =>
+            this.cb(
+              [{ target: element } as ResizeObserverEntry],
+              this as unknown as ResizeObserver,
+            ),
+          );
+        }
+        unobserve() {}
+        disconnect() {}
+      } as unknown as typeof ResizeObserver;
+
+      const onWidthChange = vi.fn();
+
+      try {
+        render(
+          <Board.Responsive
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            breakpoints={breakpoints}
+            cols={cols}
+            layouts={layouts}
+            onWidthChange={onWidthChange}
+          >
+            <Board.Widget id="a" qa="WidgetA">
+              A
+            </Board.Widget>
+          </Board.Responsive>,
+        );
+
+        act(() => {
+          fires.forEach((fire) => fire());
+        });
+
+        expect(onWidthChange).toHaveBeenCalled();
+        const [width, colCount] = onWidthChange.mock.calls.at(-1)!;
+        expect(width).toBe(1000);
+        // width 1000 => lg breakpoint (min 800) => 12 columns.
+        expect(colCount).toBe(12);
+      } finally {
+        offsetWidthSpy.mockRestore();
+        global.ResizeObserver = RealResizeObserver;
+      }
+    });
+  });
+
+  describe('cross-board drop target selection', () => {
+    // jsdom returns empty rects, so feed the registry deterministic geometry:
+    // two 600px-wide boards sitting side by side.
+    const mockRect = (
+      left: number,
+      top: number,
+      width: number,
+      height: number,
+    ): DOMRect =>
+      ({
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    // React Aria's useMove derives its deltas from pageX/pageY, which jsdom drops
+    // when passed via the PointerEvent init, so define them by hand.
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    // A wide widget (4 of 6 columns => 400px) starting flush-left on the source
+    // board, whose content sits at viewport x:[0,600] and the target at
+    // x:[600,1200]. Returns the pieces a test needs to drive a pointer drag.
+    function setupSideBySideBoards(onWidgetTransfer: () => void) {
+      const utils = render(
+        <Board.Provider onWidgetTransfer={onWidgetTransfer}>
+          <Board
+            id="source"
+            width={600}
+            cols={6}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            defaultLayout={[{ i: 'w', x: 0, y: 0, w: 4, h: 1 }]}
+          >
+            <Board.Widget id="w" qa="Wide">
+              W
+            </Board.Widget>
+          </Board>
+          <Board
+            id="target"
+            width={600}
+            cols={6}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            defaultLayout={[{ i: 'z', x: 5, y: 0, w: 1, h: 1 }]}
+          >
+            <Board.Widget id="z" qa="Target">
+              Z
+            </Board.Widget>
+          </Board>
+        </Board.Provider>,
+      );
+
+      const widget = screen.getByTestId('Wide');
+      // A widget host is a direct child of its board's content layer.
+      const sourceContent = widget.parentElement as HTMLElement;
+      const targetContent = screen.getByTestId('Target')
+        .parentElement as HTMLElement;
+
+      sourceContent.getBoundingClientRect = () => mockRect(0, 0, 600, 400);
+      targetContent.getBoundingClientRect = () => mockRect(600, 0, 600, 400);
+      widget.getBoundingClientRect = () => mockRect(0, 0, 400, 100);
+
+      return { ...utils, widget };
+    }
+
+    it('does not transfer when only the widget center crosses into the target', () => {
+      const onWidgetTransfer = vi.fn();
+      const { widget } = setupSideBySideBoards(onWidgetTransfer);
+
+      // Drag the top-left to x=500: the widget center (700) is over the target
+      // board, but its top-left - the anchor the landing and overlay use - is
+      // still over the source. The drop must follow the top-left, not the
+      // center, so the widget stays on the source board.
+      fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 500, 0));
+      fireEvent(window, pointerEvent('pointerup', 500, 0));
+
+      expect(onWidgetTransfer).not.toHaveBeenCalled();
+    });
+
+    it('transfers once the widget top-left crosses into the target', () => {
+      const onWidgetTransfer = vi.fn();
+      const { widget } = setupSideBySideBoards(onWidgetTransfer);
+
+      // Drag the top-left to x=700, inside the target board's rect.
+      fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 700, 0));
+      fireEvent(window, pointerEvent('pointerup', 700, 0));
+
+      expect(onWidgetTransfer).toHaveBeenCalledTimes(1);
+      expect(onWidgetTransfer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          widgetId: 'w',
+          fromBoardId: 'source',
+          toBoardId: 'target',
+        }),
+      );
+    });
+  });
+
+  describe('spring-loaded tab activation', () => {
+    // React Aria's useMove derives its deltas from pageX/pageY, which jsdom
+    // drops when passed via the PointerEvent init, so define them by hand.
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    const renderBoardWithTabs = () =>
+      renderWithRoot(
+        <Board
+          width={1200}
+          defaultLayout={[
+            { i: 'dragme', x: 0, y: 0, w: 2, h: 2 },
+            { i: 'tabs', x: 2, y: 0, w: 6, h: 4 },
+          ]}
+        >
+          <Board.Widget id="dragme" qa="DragMe">
+            Drag me
+          </Board.Widget>
+          <Board.Widget id="tabs">
+            <Tabs defaultActiveKey="one">
+              <Tab key="one" title="One">
+                Panel one
+              </Tab>
+              <Tab key="two" title="Two">
+                Panel two
+              </Tab>
+            </Tabs>
+          </Board.Widget>
+        </Board>,
+      );
+
+    it('opens an inactive tab when a widget is dragged over its header', () => {
+      vi.useFakeTimers();
+      try {
+        renderBoardWithTabs();
+
+        expect(screen.getByText('Panel one')).toBeInTheDocument();
+        expect(screen.queryByText('Panel two')).not.toBeInTheDocument();
+
+        // Start a pointer drag: the first move flips the board into "dragging",
+        // which is what arms spring-loading in the tabs it contains.
+        const widget = screen.getByTestId('DragMe');
+        fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+        fireEvent(window, pointerEvent('pointermove', 40, 0));
+
+        // Hover the inactive tab; after the delay it spring-loads open.
+        fireEvent.pointerEnter(screen.getByTestId('Tab-two'));
+        act(() => {
+          vi.advanceTimersByTime(600);
+        });
+
+        expect(screen.getByText('Panel two')).toBeInTheDocument();
+        // The source tab stays mounted during the drag so a widget dragged out
+        // of it (and any board owning the gesture) is not unmounted mid-drag.
+        expect(screen.getByText('Panel one')).toBeInTheDocument();
+
+        fireEvent(window, pointerEvent('pointerup', 40, 0));
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('does not switch tabs on hover when no drag is in progress', () => {
+      vi.useFakeTimers();
+      try {
+        renderBoardWithTabs();
+
+        fireEvent.pointerEnter(screen.getByTestId('Tab-two'));
+        act(() => {
+          vi.advanceTimersByTime(600);
+        });
+
+        expect(screen.queryByText('Panel two')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('cancels a pending spring-load when the pointer leaves before the delay', () => {
+      vi.useFakeTimers();
+      try {
+        renderBoardWithTabs();
+
+        const widget = screen.getByTestId('DragMe');
+        fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+        fireEvent(window, pointerEvent('pointermove', 40, 0));
+
+        const tabTwo = screen.getByTestId('Tab-two');
+        fireEvent.pointerEnter(tabTwo);
+        act(() => {
+          vi.advanceTimersByTime(200);
+        });
+        // Leave before the delay elapses - the tab must not open.
+        fireEvent.pointerLeave(tabTwo);
+        act(() => {
+          vi.advanceTimersByTime(600);
+        });
+
+        expect(screen.queryByText('Panel two')).not.toBeInTheDocument();
+
+        fireEvent(window, pointerEvent('pointerup', 40, 0));
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
+});
