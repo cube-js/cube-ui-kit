@@ -23,6 +23,7 @@ import { DirectionIcon } from '../../../icons';
 import { mergeProps, useMergeStyles } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
+import { useBoardDragActive } from '../../layout/Board/board-context';
 
 import { DraggableTabList } from './DraggableTabList';
 import { TabIndicatorElement, TabsElement } from './styled';
@@ -209,6 +210,13 @@ function TabsComponent(
 
   // Track visited tabs for keepMounted functionality
   const visitedKeysRef = useRef<Set<string>>(new Set());
+
+  // While a Board widget is being dragged (this Tabs sits inside a Board),
+  // force panels to stay mounted so a tab a widget is dragged out of - and its
+  // board owning the in-flight drag gesture - is not unmounted when the user
+  // spring-loads a different tab by hovering it. Always `false` outside a Board.
+  const isBoardDragActive = useBoardDragActive();
+  const effectiveKeepMounted = keepMounted || isBoardDragActive;
 
   // =========================================================================
   // Tab Title Editing Hook
@@ -765,7 +773,7 @@ function TabsComponent(
             renderPanel={renderPanel}
             panelCacheKeys={panelCacheKeys}
             prerender={prerender}
-            keepMounted={keepMounted}
+            keepMounted={effectiveKeepMounted}
             visitedKeys={visitedKeysRef.current}
           />
         )}
@@ -786,7 +794,7 @@ function TabsComponent(
                 state={state}
                 content={content}
                 prerender={prerender}
-                keepMounted={keepMounted}
+                keepMounted={effectiveKeepMounted}
                 tabPrerender={explicitPanel?.prerender ?? tab.prerender}
                 tabKeepMounted={explicitPanel?.keepMounted ?? tab.keepMounted}
                 visitedKeys={visitedKeysRef.current}

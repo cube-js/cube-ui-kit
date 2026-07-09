@@ -1,0 +1,254 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as BoardStories from './Board.stories';
+
+<Meta of={BoardStories} />
+
+# Board
+
+A draggable and resizable widget grid for building dashboards. Widgets are
+declared with `Board.Widget` and positioned via a `layout` (grid units). Wrap
+multiple boards in a `BoardProvider` (`Board.Provider`) to drag widgets between
+them, including out of a nested board into its parent.
+
+Dragging and resizing are powered by React Aria's `useMove`, so they work with
+mouse, touch, and keyboard (focus a widget and use the arrow keys). While a
+widget is dragged with a pointer it renders into a fixed overlay so it is never
+clipped by an ancestor's `overflow: hidden`.
+
+## When to Use
+
+- Customizable dashboards where users arrange widgets
+- Report/analytics layouts with resizable tiles
+- Multi-panel workspaces where items move between areas
+- Nested containers whose children can be dragged out
+
+## Component
+
+<Story of={BoardStories.Default} />
+
+---
+
+## Concepts
+
+- **Layout** — an array of items `{ i, x, y, w, h }` in grid units. `i` matches a
+  `Board.Widget` `id`.
+- **Content vs. position** — `Board.Widget` declares content; the owning `Board`
+  positions it. This decoupling is what lets a widget be transferred between
+  boards.
+- **Compaction** — `vertical` (default), `horizontal`, or `free`. In `free` mode a
+  widget is placed exactly where you drop it and its neighbours are never pushed
+  or swapped; without `allowOverlap` a drop onto an occupied cell is blocked, and
+  with `allowOverlap` widgets may stack for a fully free canvas.
+
+## Properties
+
+### Board
+
+- **`layout`** `LayoutItem[]` — Controlled layout.
+- **`defaultLayout`** `LayoutItem[]` — Initial layout for uncontrolled usage.
+- **`onLayoutChange`** `(layout: LayoutItem[]) => void` — Called when a drag or resize is committed.
+- **`onDragStart` / `onDrag` / `onDragStop`** `(info: BoardInteractionInfo) => void` — Drag lifecycle callbacks. `onDrag` fires on every step; `onDragStop` fires after the layout is committed.
+- **`onResizeStart` / `onResize` / `onResizeStop`** `(info: BoardInteractionInfo) => void` — Resize lifecycle callbacks, mirroring the drag ones.
+- **`cols`** `number` (default: `12`) — Number of columns.
+- **`rowHeight`** `number` (default: `100`) — Row height in pixels.
+- **`margin`** `[number, number]` (default: `[8, 8]`) — Horizontal/vertical gap between widgets.
+- **`containerPadding`** `[number, number]` — Inner padding. Defaults to `margin`.
+- **`maxRows`** `number` (default: `Infinity`) — Maximum number of rows.
+- **`compact`** `'vertical' | 'horizontal' | 'free' | null` (default: `'vertical'`) — Compaction behavior. `'vertical'`/`'horizontal'` reflow widgets to remove gaps; `'free'` places each widget exactly where dropped and never pushes its neighbours (blocked from occupied cells unless `allowOverlap`); `null` disables compaction but still resolves collisions the legacy react-grid-layout way.
+- **`allowOverlap`** `boolean` (default: `false`) — Allow widgets to overlap (stack). In `'free'` mode this is what distinguishes stacking from blocking a drop onto an occupied cell.
+- **`preventCollision`** `boolean` (default: `false`) — Block movement into occupied cells instead of pushing.
+- **`isDraggable`** `boolean` (default: `true`) — Enable dragging for all widgets.
+- **`isResizable`** `boolean` (default: `true`) — Enable resizing for all widgets.
+- **`isDroppable`** `boolean` (default: `true`) — Whether the board accepts widgets dropped from other boards.
+- **`resizeHandles`** `ResizeHandleAxis[]` (default: `['se']`) — Which resize handles to show. Corner handles (`ne`/`nw`/`se`/`sw`) show an angle grip; edge handles (`n`/`s`/`e`/`w`) show a dotted grip. Both are revealed on hover/focus/resize. A single edge (e.g. `['e']` or `['s']`) gives a horizontally- or vertically-only resizable widget.
+- **`dragCancel`** `string` — CSS selector for elements that must not start a pointer drag (e.g. form controls inside a widget: `"input,textarea,button,a,.no-drag"`). Keyboard moves are unaffected. Can be overridden per widget.
+- **`dragHandle`** `string` — CSS selector for the only elements from which a pointer drag may start. Can be overridden per widget.
+- **`showGridLines`** `boolean | 'drag'` (default: `false`) — Show grid lines behind the widgets. `true` always, `'drag'` only while a widget is being dragged or resized.
+- **`isAligned`** `boolean` (default: `false`) — Align a nested board with its ancestor `Board`'s layout. Only takes effect when the board is nested inside another `Board`'s widget. When set, the board inherits the parent's column pitch (deriving its own column count from its measured width so cells stay parent-sized as the container is resized) and inherits the parent's row height as a target, shrinking rows slightly when needed to fit the height the container widget grants it. `cols`/`rowHeight` then act as fallbacks used only until the parent metrics resolve.
+- **`constraints`** `LayoutConstraint[]` — Grid/item layout constraints.
+- **`width`** `number` — Explicit width (disables measurement; useful for SSR/tests).
+- **`place`** `Styles['place']` — Style prop shorthand for `place-items`/`place-content`.
+- **`scrollMargin`** `Styles['scrollMargin']` — Style prop for scroll margin.
+
+### Board.Widget
+
+- **`id`** `string` (required) — Must match the `i` of a layout item.
+- **`isDraggable`** `boolean` — Disable dragging for this widget.
+- **`isResizable`** `boolean` — Disable resizing for this widget.
+- **`resizeHandles`** `ResizeHandleAxis[]` — Override the board's handles.
+- **`constraints`** `LayoutConstraint[]` — Per-widget constraints.
+- **`qa`** `string` — Test id for the rendered widget element.
+- **`styles`** `Styles` — Style overrides for the rendered widget element.
+- **`isAutoHeight`** `boolean` (default: `false`) — Grow this widget's height in its board to fit its content (only ever increases, never shrinks). Pair it with a nested `Board isAligned` so the container expands until the inner board's rows fit at the parent's row height. It also pins the widget's resize floor: you cannot drag the widget shorter than the height its content currently needs.
+- **`dragCancel`** `string` — Override the board's `dragCancel` selector for this widget.
+- **`dragHandle`** `string` — Override the board's `dragHandle` selector for this widget.
+
+### Board.Provider
+
+Shares one drag context across multiple boards. A standalone `Board` provides its
+own automatically; only use `Board.Provider` when you need cross-board dragging.
+
+- **`onWidgetTransfer`** `(info: { widgetId, fromBoardId, toBoardId, item }) => void` —
+  Fired when a widget is dropped from one board into another.
+
+Dragging a widget across a container that can unmount (for example, out of an
+inactive `Tab`) requires controlled ownership: a widget's content is declared by
+its `Board.Widget`, so if that declaration unmounts the content is lost. Keep
+each board's `layout` controlled and, in response to `onWidgetTransfer`, move the
+`Board.Widget` declaration into the destination container so the content follows
+the widget. The [Boards inside Tabs](#boards-inside-tabs) example shows the
+pattern.
+
+### Board.Responsive
+
+A wrapper around `Board` that selects a layout and column count based on the
+container's measured width, mirroring react-grid-layout's `Responsive` +
+`WidthProvider`. It accepts all `Board` props except `layout`, `defaultLayout`,
+`cols`, `onLayoutChange`, and `width` (which it manages), plus:
+
+- **`breakpoints`** `Record<string, number>` — Breakpoint name to minimum container width (px).
+- **`cols`** `Record<string, number>` — Breakpoint name to column count.
+- **`layouts`** `Record<string, LayoutItem[]>` — Controlled per-breakpoint layouts.
+- **`defaultLayouts`** `Record<string, LayoutItem[]>` — Initial per-breakpoint layouts for uncontrolled usage.
+- **`onLayoutChange`** `(currentLayout: LayoutItem[], allLayouts: Record<string, LayoutItem[]>) => void` — Called on commit with the active breakpoint's layout and the full map.
+- **`onBreakpointChange`** `(breakpoint: string, cols: number) => void` — Called when the active breakpoint changes.
+- **`onWidthChange`** `(width: number, cols: number) => void` — Called when the measured container width changes, with the active breakpoint's column count. Mirrors react-grid-layout's `WidthProvider` `onWidthChange`. Not fired while width is unmeasured or when an explicit `width` is provided.
+- **`breakpoint`** `string` — Force a specific breakpoint regardless of width (e.g. for a fixed-size screenshot or PDF export).
+- **`width`** `number` — Explicit width; disables measurement (SSR/tests/forced-size exports).
+
+A breakpoint with no layout is synthesized from the nearest available one,
+corrected into bounds and compacted for the target column count.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs).
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop.
+Note: `margin` is repurposed as the grid gap (see Properties above) rather than a
+CSS margin.
+
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
+- **Color:** `color`, `fill`, `fade`, `image`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+## Examples
+
+### Controlled layout
+
+<Story of={BoardStories.Controlled} />
+
+### Free positioning
+
+A widget stays exactly where you drop it and never shuffles its neighbours.
+Dropping onto an occupied cell is blocked, so the widget stays at its last free
+spot.
+
+<Story of={BoardStories.FreePositioning} />
+
+### Free positioning (overlap)
+
+Add `allowOverlap` to let widgets stack on top of each other instead of being
+blocked from occupied cells.
+
+<Story of={BoardStories.FreePositioningOverlap} />
+
+### Horizontal compaction
+
+<Story of={BoardStories.HorizontalCompaction} />
+
+### Non-resizable
+
+<Story of={BoardStories.NonResizable} />
+
+### Grid lines
+
+Show grid lines behind the widgets while dragging or resizing (or always).
+
+<Story of={BoardStories.GridLines} />
+
+### Drag cancel
+
+Keep interactive controls inside a widget clickable by excluding them from the
+drag gesture with `dragCancel`.
+
+<Story of={BoardStories.DragCancel} />
+
+### Responsive
+
+`Board.Responsive` swaps the layout and column count per breakpoint.
+
+<Story of={BoardStories.Responsive} />
+
+### Cross-board dragging
+
+Wrap boards in `Board.Provider` to drag widgets between them.
+
+<Story of={BoardStories.CrossBoardDragging} />
+
+### Nested boards
+
+A `Board` can be placed inside a `Board.Widget`, making the whole container
+draggable while its children can be dragged out into sibling boards.
+
+Set `isAligned` on the nested board to align it with the surrounding layout: its
+columns keep the parent's pixel pitch (so resizing the container adds or removes
+columns instead of stretching them), and its rows inherit the parent's row
+height, shrinking slightly when needed to fit the space the container widget
+gives it.
+
+Add `isAutoHeight` to the container `Board.Widget` to grow it (only ever taller)
+until the inner board's rows fit at the parent's row height, so an aligned board
+never has to squeeze its rows. It also stops the container's resize handle at
+that height, so you can't drag it shorter than the inner board needs.
+
+<Story of={BoardStories.NestedBoards} />
+
+### Boards inside Tabs
+
+A `Board.Widget` can host a `Tabs` where each tab renders its own `Board`, all
+under a shared `Board.Provider` so widgets can be dragged between tabs and out
+into the surrounding board. Because an inactive tab unmounts, this example is
+fully controlled: each board's `layout` is controlled and `onWidgetTransfer`
+moves a widget's declaration into the destination container so its content
+survives dragging out of (and switching away from) a tab.
+
+When a `Tabs` sits inside a `Board`, tab switching becomes "spring-loaded"
+automatically: while you drag a widget, hovering a tab header for a moment opens
+that tab so you can drop into it (or move a widget between tabs). This needs no
+setup - `Tabs` detects the active Board drag and, for its duration, keeps panels
+mounted so the tab a widget is dragged out of (and the board owning the in-flight
+drag) is not unmounted mid-gesture. Spring-loading works with mouse and pen;
+touch drags capture the pointer, so they do not trigger it.
+
+<Story of={BoardStories.TabsBoard} />
+
+## Accessibility
+
+- Widgets are focusable when draggable. Press <kbd>Tab</kbd> to focus a widget,
+  then use the arrow keys to move it one cell at a time.
+- Dragging, resizing, and keyboard movement are all handled by React Aria's
+  `useMove`, which normalizes mouse, touch, and keyboard interactions.
+
+## Not yet supported
+
+- **External drag-in from a palette** — dragging a brand-new widget from an
+  element outside any board into the grid (react-grid-layout's
+  `isDroppable`/`onDrop`/`droppingItem`) is not implemented. Board's drag engine
+  is built entirely on React Aria's `useMove` over registered widgets; drag-in
+  is a separate HTML5 drag-and-drop modality (pixel-to-grid mapping, a dropping
+  placeholder, and new `onDrop`/`droppingItem` props). Add widgets
+  programmatically (render a new `Board.Widget` and add its layout item), or drag
+  between boards with `Board.Provider`.
+
+## Attribution
+
+The layout engine in `grid-core/` is a vendored, trimmed copy of
+[react-grid-layout](https://github.com/react-grid-layout/react-grid-layout)
+(MIT). The React layer is a UI Kit-native reimplementation on top of tasty and
+React Aria. See `grid-core/NOTICE.md`.

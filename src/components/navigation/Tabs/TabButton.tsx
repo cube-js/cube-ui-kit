@@ -30,6 +30,7 @@ import {
   CubeInlineInputRef,
   InlineInput,
 } from '../../content/InlineInput/InlineInput';
+import { useBoardDragActive } from '../../layout/Board/board-context';
 import { createMockDragState } from '../../shared/DraggableCollection';
 
 import { POPOVER_PLACEMENT_BY_TABS_PLACEMENT } from './popover-placement';
@@ -62,6 +63,11 @@ const ACTIONS_EVENT_HANDLERS = {
 // Inherit the tab button's pointer cursor — InlineInput's default `cursor: text`
 // hover hint is misleading inside a clickable tab.
 const INLINE_INPUT_STYLES = { cursor: 'inherit' } as const;
+
+// How long a dragged Board widget must hover a tab header before that tab
+// spring-loads (opens). Long enough to avoid accidental switches while crossing
+// tabs, short enough to feel responsive.
+const SPRING_LOAD_DELAY = 500;
 
 // =============================================================================
 // Menu Processing Utilities
@@ -252,6 +258,42 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   const isDisabled = state.disabledKeys.has(item.key);
   const isDeletable = !!onDelete;
   const isEditing = editingKey === item.key;
+
+  // Spring-load: when this Tabs sits inside a Board and a widget is being
+  // dragged, hovering an inactive tab header for a moment opens it, so the user
+  // can drop the widget into (or move it between) tabs. React Aria's `useMove`
+  // uses window listeners without pointer capture and the dragged widget is
+  // `pointer-events: none`, so the tab header still receives native pointer
+  // enter/leave during the drag. `false` outside a Board, so nothing changes.
+  const isBoardDragActive = useBoardDragActive();
+  const [isDropPending, setIsDropPending] = useState(false);
+  const springLoadTimerRef = useRef<number | null>(null);
+
+  const clearSpringLoad = useEvent(() => {
+    if (springLoadTimerRef.current != null) {
+      clearTimeout(springLoadTimerRef.current);
+      springLoadTimerRef.current = null;
+    }
+    setIsDropPending(false);
+  });
+
+  const handleSpringLoadEnter = useEvent(() => {
+    if (!isBoardDragActive || isActive || isDisabled) return;
+    if (springLoadTimerRef.current != null) return;
+    setIsDropPending(true);
+    springLoadTimerRef.current = window.setTimeout(() => {
+      springLoadTimerRef.current = null;
+      setIsDropPending(false);
+      state.setSelectedKey(item.key);
+    }, SPRING_LOAD_DELAY);
+  });
+
+  // Cancel any pending spring-load when the drag ends (or the tab unmounts), so
+  // a stale timer can never switch tabs after the drop.
+  useEffect(() => {
+    if (!isBoardDragActive) clearSpringLoad();
+    return clearSpringLoad;
+  }, [isBoardDragActive, clearSpringLoad]);
 
   // Compute effective values - Tab-level overrides Tabs-level.
   // Icon-only tabs (no `title`) have nothing to rename, so editing is disabled.
@@ -468,6 +510,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
       'focus-visible': effectiveFocusVisible,
       draggable: isDraggable,
       dragging: isDragging,
+      'drop-pending': isDropPending,
     }),
     [
       effectiveType,
@@ -481,6 +524,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
       effectiveFocusVisible,
       isDraggable,
       isDragging,
+      isDropPending,
     ],
   );
 
@@ -646,6 +690,8 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
         as="button"
         {...mergeProps(tabProps, hoverProps, focusProps, {
           onKeyDown: handleKeyDown,
+          onPointerEnter: handleSpringLoadEnter,
+          onPointerLeave: clearSpringLoad,
         })}
         {...ariaProps}
         {...itemStyleProps}

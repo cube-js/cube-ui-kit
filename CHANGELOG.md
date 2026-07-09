@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.144.0
+
+### Minor Changes
+
+- [#1228](https://github.com/cube-js/cube-ui-kit/pull/1228) [`e5a3b853`](https://github.com/cube-js/cube-ui-kit/commit/e5a3b853a01d3b063242043606d9f11803b326e4) Thanks [@tenphi](https://github.com/tenphi)! - Add new `Board` component: a draggable and resizable widget grid for dashboards with layout compaction, cross-board dragging via `Board.Provider`, nested boards, and keyboard accessibility via React Aria.
+
 ## 0.143.1
 
 ### Patch Changes
