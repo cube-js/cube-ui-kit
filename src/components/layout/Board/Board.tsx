@@ -479,16 +479,31 @@ function BoardInner(
     ];
     applyLayoutEvent(compacted, true);
   });
-  const prevAlignedColsRef = useRef(effectiveCols);
+  // `null` until the first *measured* aligned column count is established. This
+  // avoids treating the initial zero-width -> measured-width transition as a
+  // column-count change: a board that measures its own width (no explicit
+  // `width` prop) renders first with `width === 0`, so `effectiveCols` falls
+  // back to `cols` and only becomes the derived aligned count once measured.
+  // Seeding the baseline on that first measured value (without committing)
+  // prevents an unsolicited reflow + `onLayoutChange` before the user interacts.
+  const prevAlignedColsRef = useRef<number | null>(null);
   useEffect(() => {
     if (!aligned) {
+      // Re-entering aligned mode should re-seed from the next measured value.
+      prevAlignedColsRef.current = null;
+      return;
+    }
+    // Wait for a real width measurement; the fallback-`cols` value that stands
+    // in before measurement is not a meaningful aligned column count.
+    if (width <= 0) return;
+    if (prevAlignedColsRef.current === null) {
       prevAlignedColsRef.current = effectiveCols;
       return;
     }
     if (prevAlignedColsRef.current === effectiveCols) return;
     prevAlignedColsRef.current = effectiveCols;
     recompactForCols(effectiveCols);
-  }, [aligned, effectiveCols, recompactForCols]);
+  }, [aligned, width, effectiveCols, recompactForCols]);
 
   // Natural height this board wants: its rows at the (unshrunk) target row
   // height. When aligned rows are shrunk to fit a short container, this exceeds

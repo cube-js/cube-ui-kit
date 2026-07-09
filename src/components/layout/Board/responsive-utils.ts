@@ -22,8 +22,8 @@ export function sortBreakpoints(breakpoints: Breakpoints): string[] {
 }
 
 /**
- * The largest breakpoint whose minimum width is below `width`. Falls back to the
- * smallest breakpoint when `width` is narrower than all of them.
+ * The largest breakpoint whose minimum width is at or below `width`. Falls back
+ * to the smallest breakpoint when `width` is narrower than all of them.
  */
 export function getBreakpointFromWidth(
   breakpoints: Breakpoints,
@@ -33,7 +33,7 @@ export function getBreakpointFromWidth(
   let matching = sorted[0];
   for (let i = 1; i < sorted.length; i++) {
     const name = sorted[i];
-    if (width > breakpoints[name]) matching = name;
+    if (width >= breakpoints[name]) matching = name;
   }
   return matching;
 }

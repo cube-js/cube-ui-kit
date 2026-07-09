@@ -601,6 +601,50 @@ describe('Board', () => {
     expect(lastLayout.find((l) => l.i === 'c')?.x).toBe(1);
   });
 
+  it('does not reflow a measured aligned board on the first width measurement', () => {
+    // A nested aligned board with no explicit `width` renders first at width 0
+    // (falling back to `cols`), then jumps to a measured width once the resize
+    // observer fires. That first jump derives a different aligned column count,
+    // but it is not a user-driven change and must not commit a reflow.
+    const widthSpy = vi
+      .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+      .mockReturnValue(600);
+    const onLayoutChange = vi.fn();
+
+    try {
+      render(
+        <Board.Provider>
+          <Board
+            id="outer"
+            width={1212}
+            cols={12}
+            defaultLayout={[{ i: 'container', x: 0, y: 0, w: 6, h: 4 }]}
+          >
+            <Board.Widget id="container">
+              <Board
+                id="inner"
+                isAligned
+                cols={12}
+                onLayoutChange={onLayoutChange}
+                defaultLayout={[{ i: 'c', x: 8, y: 0, w: 2, h: 1 }]}
+              >
+                <Board.Widget id="c" qa="InnerCell">
+                  C
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+          </Board>
+        </Board.Provider>,
+      );
+
+      // No user interaction happened, so the aligned board must not have
+      // committed a reflow despite deriving a narrower column count on measure.
+      expect(onLayoutChange).not.toHaveBeenCalled();
+    } finally {
+      widthSpy.mockRestore();
+    }
+  });
+
   it('shrinks aligned row height to fit a constrained container', () => {
     // jsdom reports 0 for offset dimensions; mock them so a nested board can
     // measure the height it is given (and derive a column count from its width).
@@ -1059,6 +1103,27 @@ describe('Board', () => {
       // lg => 12 columns over 1000px => a 1-col-wide widget is ~83px.
       const widget = screen.getByTestId('WidgetA');
       expect(widget.style.width).toBe('83px');
+    });
+
+    it('activates a breakpoint at a width exactly equal to its minimum', () => {
+      render(
+        <Board.Responsive
+          width={800}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          breakpoints={breakpoints}
+          cols={cols}
+          layouts={layouts}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board.Responsive>,
+      );
+
+      // width === lg minimum (800) => lg => 12 columns over 800px => ~67px.
+      const widget = screen.getByTestId('WidgetA');
+      expect(widget.style.width).toBe('67px');
     });
 
     it('honors a forced breakpoint regardless of width', () => {
