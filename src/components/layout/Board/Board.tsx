@@ -43,6 +43,7 @@ import {
   CompactType,
   correctBounds,
   defaultConstraints,
+  getAllCollisions,
   getCompactor,
   getLayoutItem,
   LayoutConstraint,
@@ -653,17 +654,35 @@ function BoardInner(
       x = Math.max(0, x);
       y = Math.max(0, y);
 
-      const newItem: LayoutItem = {
+      let newItem: LayoutItem = {
         ...item,
         x,
         y,
         w: finalW,
         h: finalH,
       };
+
+      // Collision-blocking modes (`free` without `allowOverlap`, or an explicit
+      // `preventCollision`) run a no-op/gap-filling compactor that never
+      // resolves overlaps, so a resize must be blocked here the same way the
+      // drag path blocks a move (`moveElement` reverts on collision). Without
+      // this, growing or moving an edge via a resize handle could push the box
+      // onto an occupied cell. When the new box overlaps a neighbour, revert to
+      // the last committed box for this widget so the gesture stalls at the
+      // last valid size/position instead of overlapping.
+      const compactor = liveRef.current.compactor;
+      if (compactor.preventCollision && !compactor.allowOverlap) {
+        const collides = getAllCollisions(layoutRef.current, newItem).some(
+          (other) => other.i !== id,
+        );
+        if (collides) {
+          const lastValid = getLayoutItem(layoutRef.current, id);
+          if (lastValid) newItem = { ...lastValid };
+        }
+      }
+
       const working = modifyLayout(layoutRef.current, newItem);
-      const compacted = [
-        ...liveRef.current.compactor.compact(working, pp.cols),
-      ];
+      const compacted = [...compactor.compact(working, pp.cols)];
       applyLayout(compacted, false);
       const nextPlaceholder = getLayoutItem(compacted, id) ?? newItem;
       setPlaceholder(nextPlaceholder);

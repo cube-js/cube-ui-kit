@@ -985,6 +985,89 @@ describe('Board', () => {
       expect(info.item.w).toBeGreaterThan(2);
       expect(info.item.h).toBe(2);
     });
+
+    it('blocks a resize from overlapping a neighbour in free mode', () => {
+      const onResizeStop = vi.fn();
+
+      // `a` and `b` are edge-to-edge (cols 0-1 and 2-3). Growing `a` to the
+      // right would immediately overlap `b`, so in `free` mode (no overlap) the
+      // resize must be blocked - matching how dragging onto an occupied cell is
+      // blocked - rather than the no-op compactor letting the box grow over `b`.
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact="free"
+          onResizeStop={onResizeStop}
+          defaultLayout={[
+            { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+            { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+          ]}
+        >
+          <Board.Widget id="a" qa="WidgetA" resizeHandles={['e']}>
+            A
+          </Board.Widget>
+          <Board.Widget id="b" qa="WidgetB">
+            B
+          </Board.Widget>
+        </Board>,
+      );
+
+      const handle = screen.getAllByTestId('BoardResizeHandle')[0];
+      // Try to grow `a` far to the right, well into `b`'s cells.
+      fireEvent(handle, pointerEvent('pointerdown', 200, 200));
+      fireEvent(window, pointerEvent('pointermove', 600, 200));
+      fireEvent(window, pointerEvent('pointerup', 600, 200));
+
+      expect(onResizeStop).toHaveBeenCalled();
+      const info = onResizeStop.mock.calls.at(-1)![0];
+      const a = info.layout.find((l: LayoutItem) => l.i === 'a')!;
+      const b = info.layout.find((l: LayoutItem) => l.i === 'b')!;
+      // `a` never grew onto `b`; the two widgets do not overlap.
+      expect(a.x + a.w).toBeLessThanOrEqual(b.x);
+      expect(a.w).toBe(2);
+    });
+
+    it('allows a resize to overlap a neighbour when allowOverlap is set', () => {
+      const onResizeStop = vi.fn();
+
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact="free"
+          allowOverlap
+          onResizeStop={onResizeStop}
+          defaultLayout={[
+            { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+            { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+          ]}
+        >
+          <Board.Widget id="a" qa="WidgetA" resizeHandles={['e']}>
+            A
+          </Board.Widget>
+          <Board.Widget id="b" qa="WidgetB">
+            B
+          </Board.Widget>
+        </Board>,
+      );
+
+      const handle = screen.getAllByTestId('BoardResizeHandle')[0];
+      fireEvent(handle, pointerEvent('pointerdown', 200, 200));
+      fireEvent(window, pointerEvent('pointermove', 600, 200));
+      fireEvent(window, pointerEvent('pointerup', 600, 200));
+
+      expect(onResizeStop).toHaveBeenCalled();
+      const info = onResizeStop.mock.calls.at(-1)![0];
+      // With overlap allowed the resize is not blocked.
+      expect(info.item.w).toBeGreaterThan(2);
+    });
   });
 
   describe('drag cancel / handle', () => {
