@@ -16,6 +16,13 @@ export interface UseBoardLayoutResult {
   layout: LayoutItem[];
   layoutRef: React.MutableRefObject<LayoutItem[]>;
   placeholder: LayoutItem | null;
+  /**
+   * Synchronously-updated mirror of `placeholder`. `setPlaceholder` only
+   * schedules a re-render, so consumers that run in the same tick as a
+   * `setPlaceholder` call (e.g. drag lifecycle callbacks fired right after the
+   * registry updates the placeholder) must read the ref to see the live value.
+   */
+  placeholderRef: React.MutableRefObject<LayoutItem | null>;
   setPlaceholder: (item: LayoutItem | null) => void;
   /** Update the layout. `commit` fires `onLayoutChange`. */
   applyLayout: (layout: LayoutItem[], commit: boolean) => void;
@@ -40,7 +47,12 @@ export function useBoardLayout(
   const layoutRef = useRef<LayoutItem[]>(layout);
   layoutRef.current = layout;
 
-  const [placeholder, setPlaceholder] = useState<LayoutItem | null>(null);
+  const [placeholder, setPlaceholderState] = useState<LayoutItem | null>(null);
+  const placeholderRef = useRef<LayoutItem | null>(null);
+  const setPlaceholder = useCallback((item: LayoutItem | null) => {
+    placeholderRef.current = item;
+    setPlaceholderState(item);
+  }, []);
 
   const onLayoutChangeEvent = useEvent((next: LayoutItem[]) =>
     onLayoutChange?.(next),
@@ -72,6 +84,7 @@ export function useBoardLayout(
     layout,
     layoutRef,
     placeholder,
+    placeholderRef,
     setPlaceholder,
     applyLayout,
   };

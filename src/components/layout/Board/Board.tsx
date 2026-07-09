@@ -305,12 +305,18 @@ function BoardInner(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [providedWidth]);
 
-  const { layout, layoutRef, placeholder, setPlaceholder, applyLayout } =
-    useBoardLayout({
-      layout: controlledLayout,
-      defaultLayout,
-      onLayoutChange,
-    });
+  const {
+    layout,
+    layoutRef,
+    placeholder,
+    placeholderRef,
+    setPlaceholder,
+    applyLayout,
+  } = useBoardLayout({
+    layout: controlledLayout,
+    defaultLayout,
+    onLayoutChange,
+  });
 
   // Re-render when any widget's registered content/config changes.
   useSyncExternalStore(registry.store.subscribe, registry.store.getVersion);
@@ -714,7 +720,11 @@ function BoardInner(
       layout: currentLayout,
       item,
       oldItem,
-      placeholder,
+      // Read the live ref, not render-time state: the registry calls
+      // `setPlaceholder` synchronously right before this fires, and that only
+      // schedules a re-render, so `placeholder` state still holds the previous
+      // value (or a stale preview after the drop clears it to `null`).
+      placeholder: placeholderRef.current,
     };
     if (phase === 'start') onDragStart?.(info);
     else if (phase === 'move') onDrag?.(info);
