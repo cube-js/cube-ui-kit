@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.145.2
+
+### Patch Changes
+
+- [#1236](https://github.com/cube-js/cube-ui-kit/pull/1236) [`cf45199b`](https://github.com/cube-js/cube-ui-kit/commit/cf45199b23d6f4b385607448fe9feb779adb0588) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: a board now becomes the drop target when the dragged widget's center enters it, instead of only once its top-left corner is inside. Empty boards open (expand to preview the drop) as soon as the widget's center touches them. The landing/placeholder stays anchored to the grabbed point, so it keeps tracking the floating widget.
+
+- [#1236](https://github.com/cube-js/cube-ui-kit/pull/1236) [`cf45199b`](https://github.com/cube-js/cube-ui-kit/commit/cf45199b23d6f4b385607448fe9feb779adb0588) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: widgets no longer animate (`inset` transition) on initial render. The board now waits for widgets to paint at their first measured positions before activating position transitions, so they settle into place instead of sliding in from their default spot. Transitions still apply to subsequent reflows (drag/resize of neighbours, compaction, aligned-column changes).
+
 ## 0.145.1
 
 ### Patch Changes
