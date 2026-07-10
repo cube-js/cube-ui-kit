@@ -20,17 +20,22 @@ import {
 } from './grid-core';
 
 /**
- * The dragged widget's top-left corner in viewport coordinates.
+ * The dragged widget's center in viewport coordinates.
  *
- * This is the anchor `computeLanding` maps into a target board's grid, and the
- * same point the floating overlay clone is positioned at (see `WidgetHost`), so
- * the drop-target hit-test must use it too. Picking the target by the widget's
- * center instead lets a wide/tall widget select a board its top-left has not yet
- * entered: `computeLanding` then clamps the landing to that board's edge and the
- * placeholder/drop slot drift away from where the overlay is actually drawn.
+ * This is the anchor the drop-target hit-test uses to pick which board a drag is
+ * over, so a board (including an empty one) opens as soon as the widget's center
+ * enters it rather than only once its whole top-left corner is inside.
+ *
+ * The landing itself stays anchored to the grabbed top-left (`rect.left/top` in
+ * `computeLanding`): that point is this center offset by the widget's own fixed
+ * pixel size, so the resolved landing cell keeps corresponding to where the
+ * floating overlay clone is drawn (see `WidgetHost`) and the placeholder keeps
+ * tracking the ghost. The only unavoidable divergence is while the widget
+ * physically overhangs a board edge - a placeholder cannot render outside row 0
+ * / column 0 - which is the accepted tradeoff for opening on the center.
  */
-function rectOrigin(rect: ViewportRect): { x: number; y: number } {
-  return { x: rect.left, y: rect.top };
+function rectCenter(rect: ViewportRect): { x: number; y: number } {
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 }
 
 /**
@@ -435,13 +440,14 @@ export function useBoardRegistry(
       };
 
       const source = boardsRef.current.get(ds.sourceBoardId);
-      // Hit-test with the widget's top-left corner - the same anchor
-      // `computeLanding` and the overlay clone use - so the chosen board always
-      // contains the landing anchor and the placeholder can't diverge from the
-      // floating overlay (see `rectOrigin`). Fall back to the source board so a
-      // pointer outside every board keeps the widget anchored to where it came
-      // from. Frozen rects make this deterministic (no preview-induced flip-flop).
-      const anchor = rectOrigin(newRect);
+      // Hit-test with the widget's center so a board opens as soon as the center
+      // enters it (see `rectCenter`). The landing still resolves from the grabbed
+      // top-left, which is this center offset by the widget's own size, so the
+      // placeholder keeps tracking the floating overlay. Fall back to the source
+      // board so a pointer outside every board keeps the widget anchored to where
+      // it came from. Frozen rects make this deterministic (no preview-induced
+      // flip-flop).
+      const anchor = rectCenter(newRect);
       let target = hitTest(anchor) ?? source ?? null;
 
       // Keep the drag on a nested source board while the cursor is still within

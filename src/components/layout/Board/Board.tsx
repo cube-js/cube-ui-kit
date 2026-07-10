@@ -807,6 +807,30 @@ function BoardInner(
   const dragState = registry.dragState;
   const ready = width > 0;
 
+  // Gate widget position transitions off until the widgets have been painted at
+  // their initial positions once. Without this, the first render animates every
+  // widget sliding in from its default spot (0, 0). We render one frame with the
+  // gate closed (no `inset` transition), let the browser paint, then lift it so
+  // later reflows animate. A double rAF waits past the first committed paint;
+  // re-arm whenever the board (re)becomes ready so a board that hides and
+  // remeasures (e.g. inside a tab) re-settles too.
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!ready) {
+      setSettled(false);
+      return;
+    }
+    let id1 = 0;
+    let id2 = 0;
+    id1 = requestAnimationFrame(() => {
+      id2 = requestAnimationFrame(() => setSettled(true));
+    });
+    return () => {
+      cancelAnimationFrame(id1);
+      if (id2) cancelAnimationFrame(id2);
+    };
+  }, [ready]);
+
   // When the widget that hosts this nested board is the one being dragged, its
   // whole content (including this board) floats as a single unit, so its own
   // grid lines add nothing but clutter. Suppress them for that drag.
@@ -991,6 +1015,7 @@ function BoardInner(
                       dragHandle={widgetDragHandle}
                       registry={registry}
                       dragState={dragState}
+                      settled={settled}
                       onResize={handleResize}
                       onAutoHeight={handleAutoHeight}
                       onDragLifecycle={handleDragLifecycle}

@@ -67,8 +67,13 @@ const WidgetElement = tasty({
     // Reflowing widgets animate their position via the `inset` group (left/top).
     // The actively dragged/resized element - and the floating overlay clone -
     // must track the pointer with no lag, so they drop `inset` from the list.
+    // `inset` is also dropped until the board reports `settled`: on init widgets
+    // jump to their first measured positions, and without this gate they would
+    // slide in from their default (0, 0) spot. The board lifts the gate after
+    // the first positioned paint so subsequent reflows animate normally.
     transition: {
-      '': 'theme, shadow, opacity, inset',
+      '': 'theme, shadow, opacity',
+      settled: 'theme, shadow, opacity, inset',
       'drag | floating | resizing': 'theme, shadow, opacity',
     },
     boxSizing: 'border-box',
@@ -348,6 +353,13 @@ export interface WidgetHostProps {
    * pointer-down outside a matching element never begins a drag.
    */
   dragHandle?: string;
+  /**
+   * Whether the owning board has settled its widgets' initial positions. While
+   * false, the widget does not animate `inset` (left/top) so the first
+   * positioned paint isn't seen as a transition. Lifted after the board's first
+   * measured render.
+   */
+  settled?: boolean;
   registry: BoardRegistryContextValue;
   dragState: BoardDragState | null;
   onResize: (
@@ -394,6 +406,7 @@ export function WidgetHost(props: WidgetHostProps) {
     dragHandle,
     registry,
     dragState,
+    settled,
     onResize,
     onAutoHeight,
     onDragLifecycle,
@@ -665,7 +678,7 @@ export function WidgetHost(props: WidgetHostProps) {
   // The floating clone carries the "drag" affordance (raised shadow/z-index);
   // keep the hidden host flat. Keyboard drags (which never float) still
   // highlight the in-grid host, so only suppress `drag` when floating.
-  const hostMods = { ...mods, drag: isActiveDrag && !floatInOverlay };
+  const hostMods = { ...mods, drag: isActiveDrag && !floatInOverlay, settled };
 
   // The host is always rendered first, with a stable element shape, so React
   // reuses the same DOM node across the drag transition (never remounts it).

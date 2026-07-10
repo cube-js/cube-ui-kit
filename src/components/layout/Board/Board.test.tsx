@@ -1509,29 +1509,30 @@ describe('Board', () => {
       return { ...utils, widget };
     }
 
-    it('does not transfer when only the widget center crosses into the target', () => {
+    it('does not transfer while the widget center is still over the source', () => {
       const onWidgetTransfer = vi.fn();
       const { widget } = setupSideBySideBoards(onWidgetTransfer);
 
-      // Drag the top-left to x=500: the widget center (700) is over the target
-      // board, but its top-left - the anchor the landing and overlay use - is
-      // still over the source. The drop must follow the top-left, not the
-      // center, so the widget stays on the source board.
+      // Drag the top-left to x=300: the widget center (500) is still over the
+      // source board (x:[0,600]). Selection follows the center, so the widget
+      // stays on the source board.
       fireEvent(widget, pointerEvent('pointerdown', 0, 0));
-      fireEvent(window, pointerEvent('pointermove', 500, 0));
-      fireEvent(window, pointerEvent('pointerup', 500, 0));
+      fireEvent(window, pointerEvent('pointermove', 300, 0));
+      fireEvent(window, pointerEvent('pointerup', 300, 0));
 
       expect(onWidgetTransfer).not.toHaveBeenCalled();
     });
 
-    it('transfers once the widget top-left crosses into the target', () => {
+    it('transfers once the widget center crosses into the target', () => {
       const onWidgetTransfer = vi.fn();
       const { widget } = setupSideBySideBoards(onWidgetTransfer);
 
-      // Drag the top-left to x=700, inside the target board's rect.
+      // Drag the top-left to x=500: the widget center (700) is inside the target
+      // board (x:[600,1200]) even though the top-left is still over the source.
+      // Selection follows the center, so the widget transfers.
       fireEvent(widget, pointerEvent('pointerdown', 0, 0));
-      fireEvent(window, pointerEvent('pointermove', 700, 0));
-      fireEvent(window, pointerEvent('pointerup', 700, 0));
+      fireEvent(window, pointerEvent('pointermove', 500, 0));
+      fireEvent(window, pointerEvent('pointerup', 500, 0));
 
       expect(onWidgetTransfer).toHaveBeenCalledTimes(1);
       expect(onWidgetTransfer).toHaveBeenCalledWith(
