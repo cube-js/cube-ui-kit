@@ -16,6 +16,11 @@ export interface WidgetRegistration {
   isDraggable?: boolean;
   isResizable?: boolean;
   resizeHandles?: ResizeHandleAxis[];
+  /**
+   * Add a card border to this widget (widgets are always filled and rounded).
+   * Falls back to the owning board's `widgetProps.isCard` when unset here.
+   */
+  isCard?: boolean;
   /** Minimum width in grid columns (fallback when the layout item omits `minW`). */
   minW?: number;
   /** Maximum width in grid columns (fallback when the layout item omits `maxW`). */
@@ -71,6 +76,7 @@ export class BoardWidgetStore {
       prev.isDraggable !== reg.isDraggable ||
       prev.isResizable !== reg.isResizable ||
       prev.resizeHandles !== reg.resizeHandles ||
+      prev.isCard !== reg.isCard ||
       prev.minW !== reg.minW ||
       prev.maxW !== reg.maxW ||
       prev.minH !== reg.minH ||

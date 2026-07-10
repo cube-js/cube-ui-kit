@@ -81,6 +81,7 @@ const Template: StoryFn<CubeBoardProps> = (args) => (
     fill="#light"
     padding="1x"
     radius="1r"
+    widgetProps={{ isCard: true }}
     defaultLayout={defaultLayout}
     {...args}
   >
@@ -149,6 +150,7 @@ const SingleAxisTemplate: StoryFn<CubeBoardProps> = (args) => (
     fill="#light"
     padding="1x"
     radius="1r"
+    widgetProps={{ isCard: true }}
     defaultLayout={[
       { i: 'h', x: 0, y: 0, w: 4, h: 2, minW: 2 },
       { i: 'v', x: 4, y: 0, w: 4, h: 2, minH: 1 },
@@ -187,6 +189,7 @@ const MinMaxTemplate: StoryFn<CubeBoardProps> = (args) => (
     fill="#light"
     padding="1x"
     radius="1r"
+    widgetProps={{ isCard: true }}
     showGridLines="drag"
     defaultLayout={[
       { i: 'clamped', x: 0, y: 0, w: 4, h: 2 },
@@ -231,6 +234,48 @@ GridLines.parameters = {
   },
 };
 
+// Widgets are filled (`#surface-2`) and rounded by default, but borderless. Add
+// a card border per widget with `isCard`, or for the whole board at once with
+// `widgetProps={{ isCard: true }}` (per-widget `isCard` still overrides that
+// default).
+const CardWidgetsTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board
+    fill="#light"
+    padding="1x"
+    radius="1r"
+    showGridLines="drag"
+    widgetProps={{ isCard: true }}
+    defaultLayout={[
+      { i: 'card-a', x: 0, y: 0, w: 4, h: 2 },
+      { i: 'card-b', x: 4, y: 0, w: 4, h: 2 },
+      { i: 'flat', x: 8, y: 0, w: 4, h: 2 },
+    ]}
+    {...args}
+  >
+    <Board.Widget id="card-a">
+      <WidgetBody title="Card" text="bordered via widgetProps" />
+    </Board.Widget>
+    <Board.Widget id="card-b">
+      <WidgetBody title="Card" text="bordered via widgetProps" />
+    </Board.Widget>
+    {/* Override the board default to render this one without a border. */}
+    <Board.Widget id="flat" isCard={false}>
+      <WidgetBody title="Flat" text="isCard={false} override" />
+    </Board.Widget>
+  </Board>
+);
+
+export const CardWidgets = CardWidgetsTemplate.bind({});
+CardWidgets.args = {};
+CardWidgets.parameters = {
+  docs: {
+    description: {
+      story:
+        'Widgets are filled (`#surface-2`) and rounded by default, but borderless. Set `widgetProps={{ isCard: true }}` on the `Board` to add a card border to every widget, or set `isCard` on a single `Board.Widget` to opt in/out individually — per-widget `isCard` overrides the board default.',
+    },
+  },
+};
+
 // A widget whose interactive controls must not start a drag. `dragCancel`
 // matches those elements (plus a `.no-drag` escape hatch) so the widget can
 // still be dragged from its empty areas.
@@ -239,6 +284,7 @@ const DragCancelTemplate: StoryFn<CubeBoardProps> = (args) => (
     fill="#light"
     padding="1x"
     radius="1r"
+    widgetProps={{ isCard: true }}
     dragCancel="input,textarea,button,a,.no-drag"
     defaultLayout={[
       { i: 'form', x: 0, y: 0, w: 6, h: 3 },
@@ -281,6 +327,7 @@ const ControlledTemplate: StoryFn<CubeBoardProps> = (args) => {
         fill="#light"
         padding="1x"
         radius="1r"
+        widgetProps={{ isCard: true }}
         layout={layout}
         onLayoutChange={setLayout}
         {...args}
@@ -347,6 +394,7 @@ const ResponsiveTemplate: StoryFn<CubeBoardResponsiveProps> = (args) => {
         fill="#light"
         padding="1x"
         radius="1r"
+        widgetProps={{ isCard: true }}
         breakpoints={RESPONSIVE_BREAKPOINTS}
         cols={RESPONSIVE_COLS}
         layouts={layouts}
@@ -392,6 +440,7 @@ const CrossBoardTemplate: StoryFn<CubeBoardProps> = (args) => (
           fill="#light"
           padding="1x"
           radius="1r"
+          widgetProps={{ isCard: true }}
           cols={6}
           defaultLayout={[
             { i: 'one-1', x: 0, y: 0, w: 3, h: 2 },
@@ -420,6 +469,7 @@ const CrossBoardTemplate: StoryFn<CubeBoardProps> = (args) => (
           fill="#light"
           padding="1x"
           radius="1r"
+          widgetProps={{ isCard: true }}
           cols={6}
           defaultLayout={[{ i: 'two-1', x: 0, y: 0, w: 6, h: 2 }]}
           {...args}
@@ -440,7 +490,6 @@ const NestedTemplate: StoryFn<CubeBoardProps> = (args) => (
   <Board.Provider>
     <Board
       id="outer"
-      fill="#light"
       padding="1x"
       radius="1r"
       rowHeight={120}
@@ -455,17 +504,16 @@ const NestedTemplate: StoryFn<CubeBoardProps> = (args) => (
     >
       {/* isAutoHeight grows this container in the outer grid until the inner
           board's rows fit at the parent's row height (only ever increases). */}
-      <Board.Widget id="container" isAutoHeight>
-        <Flow display="flex" gap="0.5x" padding="1x" height="100%">
-          <Title level={6} preset="h6">
-            Container widget (drag the whole container)
-          </Title>
+      <Board.Widget id="container" isAutoHeight fill="#surface">
+        <Flow display="flex" flow="column" gap="1x" height="100%">
+          <Flow padding="1x 1.5x" fill="#light">
+            <Title level={6} preset="h6">
+              Container widget (drag the whole container)
+            </Title>
+          </Flow>
           <Board
             id="inner"
             isAligned
-            fill="#purple-04.10"
-            padding=".5x"
-            radius="1r"
             flexGrow={1}
             // cols/rowHeight are fallbacks used only until the parent metrics
             // resolve; `isAligned` then derives the column count from the
@@ -495,6 +543,79 @@ const NestedTemplate: StoryFn<CubeBoardProps> = (args) => (
 
 export const NestedBoards = NestedTemplate.bind({});
 NestedBoards.args = {};
+
+// Nested boards with no padding, fill, border, or radius of their own — only a
+// header above the grid. With `isAligned`, the inner board inherits the parent's
+// column pitch, and because it adds no insets, its columns line up exactly with
+// the outer board's. Grid lines are shown on both while dragging so the
+// alignment is verifiable.
+const AlignedNestedTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board.Provider>
+    <Board
+      id="outer-aligned"
+      padding="1x"
+      radius="1r"
+      rowHeight={120}
+      showGridLines="drag"
+      defaultLayout={[
+        { i: 'aligned-container', x: 0, y: 0, w: 7, h: 4, minW: 3, minH: 2 },
+        { i: 'aligned-side', x: 7, y: 0, w: 5, h: 4 },
+      ]}
+      {...args}
+    >
+      <Board.Widget id="aligned-container" isAutoHeight fill="#surface">
+        <Flow display="flex" flow="column" gap="1x" height="100%">
+          <Flow padding="1x 1.5x" fill="#light">
+            <Title level={6} preset="h6">
+              Aligned nested board
+            </Title>
+          </Flow>
+          <Board
+            id="inner-aligned"
+            isAligned
+            // No fill/border/radius: the inner grid's origin sits flush on the
+            // container widget's edge, which already coincides with the outer
+            // board's column-0 origin. `isAligned` defaults the inner board's
+            // `containerPadding` to zero, so its columns line up exactly with
+            // the outer board's without any extra chrome.
+            flexGrow={1}
+            cols={6}
+            rowHeight={70}
+            defaultLayout={[
+              { i: 'aligned-a', x: 0, y: 0, w: 3, h: 2 },
+              { i: 'aligned-b', x: 3, y: 0, w: 3, h: 2 },
+              { i: 'aligned-c', x: 0, y: 2, w: 6, h: 2 },
+            ]}
+          >
+            <Board.Widget id="aligned-a">
+              <WidgetBody title="Child A" text="Columns align with parent" />
+            </Board.Widget>
+            <Board.Widget id="aligned-b">
+              <WidgetBody title="Child B" text="Columns align with parent" />
+            </Board.Widget>
+            <Board.Widget id="aligned-c">
+              <WidgetBody title="Child C" text="Spans the full width" />
+            </Board.Widget>
+          </Board>
+        </Flow>
+      </Board.Widget>
+      <Board.Widget id="aligned-side">
+        <WidgetBody title="Sibling" text="Outer grid reference" />
+      </Board.Widget>
+    </Board>
+  </Board.Provider>
+);
+
+export const AlignedNestedBoards = AlignedNestedTemplate.bind({});
+AlignedNestedBoards.args = {};
+AlignedNestedBoards.parameters = {
+  docs: {
+    description: {
+      story:
+        'A nested `Board` with `isAligned` and no padding, fill, border, or radius of its own — only a header above the grid — inherits the parent column pitch with zero offset, so its columns line up exactly with the outer board. Grid lines are shown on both boards while dragging to verify the alignment.',
+    },
+  },
+};
 
 // Static content for the transferable leaf widgets, keyed by id. Because the
 // content lives here (not inline in a tab that can unmount), any board can
@@ -594,7 +715,6 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => {
     <Board.Provider onWidgetTransfer={handleTransfer}>
       <Board
         id="root"
-        fill="#light"
         padding="1x"
         radius="1r"
         rowHeight={120}
@@ -609,14 +729,12 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => {
         <Board.Widget id="kpis">
           <WidgetBody title="KPIs" text="Another top-level widget" />
         </Board.Widget>
-        <Board.Widget id="tabs">
+        <Board.Widget id="tabs" fill="#surface">
           <Tabs activeKey={activeTab} onChange={setActiveTab} height="100%">
             <Tab key="sales" title="Sales">
               <Board
                 id="tab-sales"
-                fill="#purple-04.10"
-                padding=".5x"
-                radius="1r"
+                containerPadding={[0, 8]}
                 cols={6}
                 rowHeight={80}
                 layout={layouts['tab-sales']}
@@ -628,9 +746,7 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => {
             <Tab key="traffic" title="Traffic">
               <Board
                 id="tab-traffic"
-                fill="#purple-04.10"
-                padding=".5x"
-                radius="1r"
+                containerPadding={[0, 8]}
                 cols={6}
                 rowHeight={80}
                 layout={layouts['tab-traffic']}
@@ -642,9 +758,7 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => {
             <Tab key="errors" title="Errors">
               <Board
                 id="tab-errors"
-                fill="#purple-04.10"
-                padding=".5x"
-                radius="1r"
+                containerPadding={[0, 8]}
                 cols={6}
                 rowHeight={80}
                 layout={layouts['tab-errors']}
@@ -655,17 +769,16 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => {
             </Tab>
           </Tabs>
         </Board.Widget>
-        <Board.Widget id="nested" isAutoHeight>
-          <Flow display="flex" gap="0.5x" padding="1x" height="100%">
-            <Title level={6} preset="h6">
-              Nested board (drag the whole container)
-            </Title>
+        <Board.Widget id="nested" isAutoHeight fill="#surface">
+          <Flow display="flex" flow="column" gap="1x" height="100%">
+            <Flow padding="1x 1.5x" fill="#light">
+              <Title level={6} preset="h6">
+                Nested board (drag the whole container)
+              </Title>
+            </Flow>
             <Board
               id="nested-inner"
               isAligned
-              fill="#purple-04.10"
-              padding=".5x"
-              radius="1r"
               flexGrow={1}
               cols={8}
               rowHeight={80}

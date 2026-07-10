@@ -682,9 +682,12 @@ describe('Board', () => {
     }
   });
 
-  it('shrinks aligned row height to fit a constrained container', () => {
+  it('uses the parent row height verbatim for aligned cells', () => {
     // jsdom reports 0 for offset dimensions; mock them so a nested board can
     // measure the height it is given (and derive a column count from its width).
+    // The container is intentionally shorter (120px) than the two rows need at
+    // the 100px parent row height: an aligned board must NOT shrink its rows to
+    // fit, so the cell keeps the full parent-sized height regardless.
     const widthSpy = vi
       .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
       .mockReturnValue(600);
@@ -733,10 +736,10 @@ describe('Board', () => {
 
       const aligned = screen.getByTestId('AlignedCell');
       const plain = screen.getByTestId('PlainCell');
-      // The aligned board fits its rows into the 120px it measures, so the same
-      // widget renders shorter than on a board keeping the full parent row
-      // height.
-      expect(parseInt(aligned.style.height, 10)).toBeLessThan(
+      // The aligned board uses the parent's row height verbatim, so the same
+      // widget renders at exactly the same height as on a plain board with the
+      // matching rowHeight - it is not shrunk to fit the short container.
+      expect(parseInt(aligned.style.height, 10)).toBe(
         parseInt(plain.style.height, 10),
       );
     } finally {

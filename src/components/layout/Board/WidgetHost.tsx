@@ -36,9 +36,16 @@ const WidgetElement = tasty({
     position: 'absolute',
     top: 0,
     left: 0,
-    fill: '#surface',
+    // Widgets always carry a `#surface-2` fill and rounded corners. The `card`
+    // modifier (board-level `widgetProps.isCard` or per-widget `isCard`) adds a
+    // border on top; a non-card widget is borderless so nested boards can align
+    // their columns flush with the parent grid.
+    fill: '#surface-2',
     radius: '1cr',
-    border: true,
+    border: {
+      '': false,
+      card: true,
+    },
     shadow: {
       '': false,
       // `$dialog-shadow` uses Glaze `#shadow-lg`, which adapts to dark / high-contrast schemes.
@@ -303,6 +310,17 @@ export interface WidgetHostProps {
   item: LayoutItem;
   positionParams: PositionParams;
   registration: WidgetRegistration | undefined;
+  /**
+   * Whether this widget renders with card chrome (fill/border/radius). Resolved
+   * by the owning `Board` from the per-widget `isCard` and the board-level
+   * `widgetProps.isCard` default.
+   */
+  isCard: boolean;
+  /**
+   * Resolved style overrides for the rendered widget element (per-widget
+   * `styles` falling back to the board-level `widgetProps.styles`).
+   */
+  styles?: Styles;
   isDraggable: boolean;
   isResizable: boolean;
   resizeHandles: ResizeHandleAxis[];
@@ -352,6 +370,8 @@ export function WidgetHost(props: WidgetHostProps) {
     item,
     positionParams,
     registration,
+    isCard,
+    styles: widgetStyles,
     isDraggable,
     isResizable,
     resizeHandles,
@@ -551,6 +571,8 @@ export function WidgetHost(props: WidgetHostProps) {
     draggable: isDraggable && !isActiveDrag,
     static: !!item.static,
     resizing: isResizing,
+    card: isCard,
+    hovered: isHovered,
   };
 
   const content = (
@@ -644,7 +666,7 @@ export function WidgetHost(props: WidgetHostProps) {
       )}
       qa={registration?.qa}
       mods={hostMods}
-      styles={registration?.styles as Styles}
+      styles={widgetStyles as Styles}
     >
       {floatInOverlay ? null : content}
     </WidgetElement>
@@ -662,7 +684,7 @@ export function WidgetHost(props: WidgetHostProps) {
             pointerEvents: 'none',
           }}
           mods={{ ...mods, drag: true, floating: true }}
-          styles={registration?.styles as Styles}
+          styles={widgetStyles as Styles}
           aria-hidden="true"
         >
           {content}

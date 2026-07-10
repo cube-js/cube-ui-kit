@@ -53,7 +53,7 @@ clipped by an ancestor's `overflow: hidden`.
 - **`cols`** `number` (default: `12`) — Number of columns.
 - **`rowHeight`** `number` (default: `100`) — Row height in pixels.
 - **`margin`** `[number, number]` (default: `[8, 8]`) — Horizontal/vertical gap between widgets.
-- **`containerPadding`** `[number, number]` — Inner padding. Defaults to `margin`.
+- **`containerPadding`** `[number, number]` — Inner padding. Defaults to `margin`, or to `[0, 0]` for an aligned nested board (`isAligned`) so its grid lines up with the ancestor board's.
 - **`maxRows`** `number` (default: `Infinity`) — Maximum number of rows.
 - **`compact`** `'vertical' | 'horizontal' | 'free' | null` (default: `'vertical'`) — Compaction behavior. `'vertical'`/`'horizontal'` reflow widgets to remove gaps; `'free'` places each widget exactly where dropped and never pushes its neighbours (blocked from occupied cells unless `allowOverlap`); `null` disables compaction but still resolves collisions the legacy react-grid-layout way.
 - **`allowOverlap`** `boolean` (default: `false`) — Allow widgets to overlap (stack). In `'free'` mode this is what distinguishes stacking from blocking a drop onto an occupied cell.
@@ -65,15 +65,17 @@ clipped by an ancestor's `overflow: hidden`.
 - **`dragCancel`** `string` — CSS selector for elements that must not start a pointer drag (e.g. form controls inside a widget: `"input,textarea,button,a,.no-drag"`). Keyboard moves are unaffected. Can be overridden per widget.
 - **`dragHandle`** `string` — CSS selector for the only elements from which a pointer drag may start. Can be overridden per widget.
 - **`showGridLines`** `boolean | 'drag'` (default: `false`) — Show grid lines behind the widgets. `true` always, `'drag'` only while a widget is being dragged or resized. A nested board that does not set this inherits an enabled ancestor's grid lines, showing its own while a drag is in progress.
-- **`isAligned`** `boolean` (default: `false`) — Align a nested board with its ancestor `Board`'s layout. Only takes effect when the board is nested inside another `Board`'s widget. When set, the board inherits the parent's column pitch (deriving its own column count from its measured width so cells stay parent-sized as the container is resized) and inherits the parent's row height as a target, shrinking rows slightly when needed to fit the height the container widget grants it. `cols`/`rowHeight` then act as fallbacks used only until the parent metrics resolve.
+- **`isAligned`** `boolean` (default: `false`) — Align a nested board with its ancestor `Board`'s layout. Only takes effect when the board is nested inside another `Board`'s widget. When set, every cell matches the parent's cell size exactly: the board inherits the parent's column pitch (deriving its own column count from its measured width so cells stay parent-sized as the container is resized) and uses the parent's row height verbatim. It never shrinks rows to fit — pair it with an `isAutoHeight` container so the widget grows to fit its rows at that height. `cols`/`rowHeight` then act as fallbacks used only until the parent metrics resolve.
 - **`constraints`** `LayoutConstraint[]` — Grid/item layout constraints.
 - **`width`** `number` — Explicit width (disables measurement; useful for SSR/tests).
+- **`widgetProps`** `Partial<Board.Widget props>` — Default props applied to every widget this board hosts (per-widget `Board.Widget` props override these). Use it to add a card border to every widget (`widgetProps={{ isCard: true }}`) or set shared `styles`/sizing defaults without repeating them on each widget.
 - **`place`** `Styles['place']` — Style prop shorthand for `place-items`/`place-content`.
 - **`scrollMargin`** `Styles['scrollMargin']` — Style prop for scroll margin.
 
 ### Board.Widget
 
 - **`id`** `string` (required) — Must match the `i` of a layout item.
+- **`isCard`** `boolean` (default: `false`) — Render this widget as a card by adding a border. Widgets are always filled (`#surface-2`) and rounded (`1cr`); `isCard` adds the border on top. Defaults to `false` (borderless) unless the owning `Board`'s `widgetProps.isCard` opts in; set it per widget to override that default.
 - **`isDraggable`** `boolean` — Disable dragging for this widget.
 - **`isResizable`** `boolean` — Disable resizing for this widget.
 - **`resizeHandles`** `ResizeHandleAxis[]` — Override the board's handles.
@@ -84,6 +86,7 @@ clipped by an ancestor's `overflow: hidden`.
 - **`constraints`** `LayoutConstraint[]` — Per-widget constraints.
 - **`qa`** `string` — Test id for the rendered widget element.
 - **`styles`** `Styles` — Style overrides for the rendered widget element.
+- **Style properties** — `Board.Widget` also accepts container style props directly (e.g. `fill`, `padding`, `radius`, `border`, `shadow`, `color`, `flow`, `gap`), just like `Board`. They are merged into `styles` (the `styles` object wins on conflicts).
 - **`isAutoHeight`** `boolean` (default: `false`) — Grow this widget's height in its board to fit its content (only ever increases, never shrinks). Pair it with a nested `Board isAligned` so the container expands until the inner board's rows fit at the parent's row height. It also pins the widget's resize floor: you cannot drag the widget shorter than the height its content currently needs.
 - **`dragCancel`** `string` — Override the board's `dragCancel` selector for this widget.
 - **`dragHandle`** `string` — Override the board's `dragHandle` selector for this widget.
@@ -182,6 +185,14 @@ Show grid lines behind the widgets while dragging or resizing (or always).
 
 <Story of={BoardStories.GridLines} />
 
+### Card widgets
+
+Widgets are filled (`#surface-2`) and rounded by default, but borderless. Add a
+card border per widget with `isCard`, or for the whole board at once with
+`widgetProps={{ isCard: true }}`. Per-widget `isCard` overrides the board default.
+
+<Story of={BoardStories.CardWidgets} />
+
 ### Drag cancel
 
 Keep interactive controls inside a widget clickable by excluding them from the
@@ -206,18 +217,26 @@ Wrap boards in `Board.Provider` to drag widgets between them.
 A `Board` can be placed inside a `Board.Widget`, making the whole container
 draggable while its children can be dragged out into sibling boards.
 
-Set `isAligned` on the nested board to align it with the surrounding layout: its
-columns keep the parent's pixel pitch (so resizing the container adds or removes
-columns instead of stretching them), and its rows inherit the parent's row
-height, shrinking slightly when needed to fit the space the container widget
-gives it.
+Set `isAligned` on the nested board to align it with the surrounding layout:
+every cell matches the parent's cell size exactly. Its columns keep the parent's
+pixel pitch (so resizing the container adds or removes columns instead of
+stretching them) and its rows use the parent's row height verbatim.
 
-Add `isAutoHeight` to the container `Board.Widget` to grow it (only ever taller)
-until the inner board's rows fit at the parent's row height, so an aligned board
-never has to squeeze its rows. It also stops the container's resize handle at
-that height, so you can't drag it shorter than the inner board needs.
+Because an aligned board never shrinks its rows to fit, add `isAutoHeight` to the
+container `Board.Widget` so it grows (only ever taller) until the inner board's
+rows fit at the parent's row height. It also stops the container's resize handle
+at that height, so you can't drag it shorter than the inner board needs.
 
 <Story of={BoardStories.NestedBoards} />
+
+### Aligned nested boards
+
+A nested `Board` with `isAligned` and no padding, fill, border, or radius of its
+own — only a header above the grid — inherits the parent column pitch with zero
+offset, so its columns line up exactly with the outer board. Grid lines are
+shown on both boards while dragging to verify the alignment.
+
+<Story of={BoardStories.AlignedNestedBoards} />
 
 ### Boards inside Tabs
 

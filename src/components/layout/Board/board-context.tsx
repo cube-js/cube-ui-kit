@@ -58,6 +58,13 @@ export interface BoardDragState {
   /** Dragged widget rect in viewport coordinates (follows the pointer). */
   rect: ViewportRect;
   pointerType: string;
+  /**
+   * Ids of boards nested inside the dragged widget, captured at drag start.
+   * Such a board is never a drop target, and it suppresses its own grid-line
+   * overlay while its host widget is being dragged (the whole widget floats, so
+   * the inner grid lines would only add clutter).
+   */
+  nestedBoardIds: Set<string>;
 }
 
 export interface BoardRegistryContextValue {

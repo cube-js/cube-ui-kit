@@ -288,6 +288,7 @@ export function useBoardRegistry(
         item: draggedItem,
         rect,
         pointerType,
+        nestedBoardIds: nested,
       };
       setDragState(next);
       entry.setPlaceholder({ ...item });
