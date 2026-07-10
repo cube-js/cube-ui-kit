@@ -326,6 +326,18 @@ export interface WidgetHostProps {
   isResizable: boolean;
   resizeHandles: ResizeHandleAxis[];
   /**
+   * Whether this widget grows to fit its content. Resolved by the owning
+   * `Board` from the per-widget `isAutoHeight` and the board-level
+   * `widgetProps.isAutoHeight` default.
+   */
+  isAutoHeight: boolean;
+  /**
+   * Test id / accessible name for the rendered widget element. Resolved by the
+   * owning `Board` from the per-widget `qa` and the board-level `widgetProps.qa`
+   * default; falls back to the layout id.
+   */
+  qa?: string;
+  /**
    * CSS selector for elements that must not start a pointer drag (e.g. form
    * controls inside the widget). A pointer-down whose target matches this
    * selector never begins a drag.
@@ -376,6 +388,8 @@ export function WidgetHost(props: WidgetHostProps) {
     isDraggable,
     isResizable,
     resizeHandles,
+    isAutoHeight,
+    qa,
     dragCancel,
     dragHandle,
     registry,
@@ -387,7 +401,6 @@ export function WidgetHost(props: WidgetHostProps) {
 
   const hostRef = useRef<HTMLDivElement | null>(null);
   const isActiveDrag = dragState?.itemId === item.i;
-  const isAutoHeight = registration?.isAutoHeight === true;
 
   // Translate a nested board's reported height deficit (signed px: positive when
   // it is squeezed, negative when it has slack) into the absolute number of rows
@@ -494,7 +507,7 @@ export function WidgetHost(props: WidgetHostProps) {
   const a11yProps = {
     tabIndex: isDraggable ? 0 : undefined,
     'aria-roledescription': isDraggable ? 'Draggable widget' : undefined,
-    'aria-label': registration?.qa ?? item.i,
+    'aria-label': qa ?? item.i,
   };
 
   // When this widget is draggable it owns its gesture, so stop the pointer-down
@@ -672,7 +685,7 @@ export function WidgetHost(props: WidgetHostProps) {
         a11yProps,
         { style: hostStyle },
       )}
-      qa={registration?.qa}
+      qa={qa}
       mods={hostMods}
       styles={widgetStyles as Styles}
     >

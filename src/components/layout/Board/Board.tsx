@@ -955,6 +955,13 @@ function BoardInner(
                   // (borderless - widgets are always filled and rounded).
                   const widgetIsCard =
                     registration?.isCard ?? widgetProps?.isCard ?? false;
+                  // Per-widget `isAutoHeight`/`qa` fall back to the board-level
+                  // `widgetProps` defaults (mirroring the other widget props).
+                  const widgetIsAutoHeight =
+                    registration?.isAutoHeight ??
+                    widgetProps?.isAutoHeight ??
+                    false;
+                  const widgetQa = registration?.qa ?? widgetProps?.qa;
                   // Merge board-level `widgetProps` styles (its `styles` object
                   // plus direct style props) with the per-widget styles so
                   // shared defaults survive when a widget sets even a single
@@ -978,6 +985,8 @@ function BoardInner(
                       isDraggable={widgetDraggable}
                       isResizable={widgetResizable}
                       resizeHandles={handles}
+                      isAutoHeight={widgetIsAutoHeight}
+                      qa={widgetQa}
                       dragCancel={widgetDragCancel}
                       dragHandle={widgetDragHandle}
                       registry={registry}
