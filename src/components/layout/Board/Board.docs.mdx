@@ -86,7 +86,7 @@ clipped by an ancestor's `overflow: hidden`.
 - **`constraints`** `LayoutConstraint[]` — Per-widget constraints.
 - **`qa`** `string` — Test id for the rendered widget element.
 - **`styles`** `Styles` — Style overrides for the rendered widget element.
-- **Style properties** — `Board.Widget` also accepts container style props directly (e.g. `fill`, `padding`, `radius`, `border`, `shadow`, `color`, `flow`, `gap`), just like `Board`. They are merged into `styles` (the `styles` object wins on conflicts).
+- **Style properties** — `Board.Widget` also accepts container style props directly (e.g. `fill`, `padding`, `radius`, `border`, `shadow`, `color`, `flow`, `gap`), just like `Board`. They are merged into `styles` (a direct prop wins over the same key in the `styles` object). Shared `widgetProps.styles` from the owning `Board` are merged underneath, so a per-widget style only overrides the matching keys instead of replacing the whole default.
 - **`isAutoHeight`** `boolean` (default: `false`) — Grow this widget's height in its board to fit its content (only ever increases, never shrinks). Pair it with a nested `Board isAligned` so the container expands until the inner board's rows fit at the parent's row height. It also pins the widget's resize floor: you cannot drag the widget shorter than the height its content currently needs.
 - **`dragCancel`** `string` — Override the board's `dragCancel` selector for this widget.
 - **`dragHandle`** `string` — Override the board's `dragHandle` selector for this widget.

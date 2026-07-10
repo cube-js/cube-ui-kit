@@ -4,6 +4,7 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   filterBaseProps,
+  mergeStyles,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -944,8 +945,15 @@ function BoardInner(
                   // (borderless - widgets are always filled and rounded).
                   const widgetIsCard =
                     registration?.isCard ?? widgetProps?.isCard ?? false;
+                  // Merge board-level `widgetProps.styles` with the per-widget
+                  // styles so shared defaults survive when a widget sets even a
+                  // single style prop; per-widget styles win on conflicts. Only
+                  // merge when both exist to preserve reference stability (and
+                  // avoid churn) in the common single-source case.
                   const widgetStyles =
-                    registration?.styles ?? widgetProps?.styles;
+                    registration?.styles && widgetProps?.styles
+                      ? mergeStyles(widgetProps.styles, registration.styles)
+                      : registration?.styles ?? widgetProps?.styles;
 
                   return (
                     <WidgetHost

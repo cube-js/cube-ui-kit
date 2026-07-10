@@ -41,7 +41,7 @@ export interface CubeBoardWidgetProps extends ContainerStyleProps {
    * Style overrides applied to the rendered widget element. Individual style
    * props (`fill`, `padding`, `radius`, `border`, ...) can also be passed
    * directly on `Board.Widget`, just like on `Board`; they are merged into
-   * these styles (the `styles` object wins on conflicts).
+   * these styles (a direct prop wins over the same key in the `styles` object).
    */
   styles?: Styles;
   /**
@@ -60,6 +60,28 @@ export interface CubeBoardWidgetProps extends ContainerStyleProps {
    * inside this widget (overrides the board's `dragHandle`).
    */
   dragHandle?: string;
+}
+
+/**
+ * Shallow-compare two style maps by their top-level keys. Direct style props
+ * (e.g. `fill`) are primitives, so this reliably detects a real change while
+ * ignoring the fresh object identity `extractStyles` produces each render.
+ */
+function shallowEqualStyles(a?: Styles, b?: Styles): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  for (const key of aKeys) {
+    if (
+      (a as Record<string, unknown>)[key] !==
+      (b as Record<string, unknown>)[key]
+    ) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -92,8 +114,20 @@ export function Widget(props: CubeBoardWidgetProps) {
   // styles. Fall back to `undefined` when nothing was provided so widgets with
   // no styling keep a stable registration (avoids needless store churn).
   const extractedStyles = extractStyles(props, CONTAINER_STYLES);
-  const styles =
+  const nextStyles =
     Object.keys(extractedStyles).length > 0 ? extractedStyles : undefined;
+
+  // `extractStyles` returns a fresh object every render, so passing it straight
+  // to `register` would make the store treat every render as a style change,
+  // bump its version, and re-render the hosting board in a loop. Keep a stable
+  // reference across renders and only swap it when the shallow style values
+  // actually change (direct props are primitives; a `styles` object is compared
+  // per top-level key).
+  const stylesRef = useRef<Styles | undefined>(undefined);
+  if (!shallowEqualStyles(stylesRef.current, nextStyles)) {
+    stylesRef.current = nextStyles;
+  }
+  const styles = stylesRef.current;
 
   // Stable per-instance token so a stale unregister (from an unmounting copy of
   // this widget) can't wipe out a newer instance's registration.
