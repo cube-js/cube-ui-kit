@@ -4,6 +4,7 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   filterBaseProps,
+  mergeStyles,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -24,8 +25,10 @@ import { extractStyles } from '../../../utils/styles';
 
 import {
   BoardEntry,
+  BoardGridLinesContext,
   BoardMetrics,
   BoardMetricsContext,
+  useBoardGridLines,
   useBoardHost,
   useBoardMetrics,
   useBoardRegistry,
@@ -37,7 +40,6 @@ import {
   calcGridColWidth,
   calcGridItemPosition,
   calcWH,
-  clamp,
   cloneLayout,
   Compactor,
   CompactType,
@@ -56,6 +58,8 @@ import {
 import { useBoardLayout } from './use-board-layout';
 import { ResizePhase, WidgetHost } from './WidgetHost';
 
+import type { CubeBoardWidgetProps } from './Widget';
+
 const BoardElement = tasty({
   qa: 'Board',
   styles: {
@@ -64,7 +68,7 @@ const BoardElement = tasty({
     width: '100%',
     flexGrow: 1,
     minHeight: '0',
-    fill: '#clear',
+    fill: '#surface',
     boxSizing: 'border-box',
   },
 });
@@ -87,7 +91,7 @@ const PlaceholderElement = tasty({
     border: '#purple.40',
     zIndex: 2,
     pointerEvents: 'none',
-    transition: 'transform 80ms linear, width 80ms linear, height 80ms linear',
+    transition: 'inset 80ms linear, width 80ms linear, height 80ms linear',
     boxSizing: 'border-box',
   },
 });
@@ -110,12 +114,6 @@ const GridOverlayElement = tasty({
   },
 });
 
-/**
- * Lower bound for the reduced row height used by an aligned nested board, so a
- * very short container can never collapse its rows to zero.
- */
-const MIN_ALIGNED_ROW_HEIGHT = 24;
-
 export type BoardCompactType = 'vertical' | 'horizontal' | 'free' | null;
 
 /**
@@ -134,6 +132,16 @@ export interface BoardInteractionInfo {
 
 /** Visibility of the internal grid-line overlay. */
 export type BoardGridLines = boolean | 'drag';
+
+/**
+ * The subset of `Board.Widget` props a `Board` can set as defaults for every
+ * widget it hosts (via `widgetProps`). Excludes `id`/`children`, which are
+ * per-widget. Per-widget `Board.Widget` props override these.
+ */
+export type CubeBoardWidgetDefaults = Omit<
+  CubeBoardWidgetProps,
+  'id' | 'children'
+>;
 
 export interface CubeBoardProps
   extends Omit<
@@ -166,7 +174,11 @@ export interface CubeBoardProps
   rowHeight?: number;
   /** [horizontal, vertical] margin between widgets in pixels. @default [8, 8] */
   margin?: [number, number];
-  /** [horizontal, vertical] padding inside the board. Defaults to `margin`. */
+  /**
+   * [horizontal, vertical] padding inside the board. Defaults to `margin`, or
+   * to `[0, 0]` for an aligned nested board (`isAligned`) so its grid lines up
+   * with the ancestor board's.
+   */
   containerPadding?: [number, number];
   /** Maximum number of rows. @default Infinity */
   maxRows?: number;
@@ -210,10 +222,11 @@ export interface CubeBoardProps
   /**
    * Align this board's grid with an ancestor `Board`'s layout. Only takes
    * effect when the board is nested inside another `Board`'s widget. When set,
-   * the board inherits the parent's column pitch (deriving its own column count
-   * from its measured width so cells stay parent-sized) and inherits the
-   * parent's row height as a target, shrinking rows slightly when needed to fit
-   * the height the container widget grants it. @default false
+   * every cell matches the parent's cell size exactly: the board inherits the
+   * parent's column pitch (deriving its own column count from its measured
+   * width) and uses the parent's row height verbatim. It never shrinks rows to
+   * fit; pair it with an `isAutoHeight` container so the widget grows to fit its
+   * rows at that height. @default false
    */
   isAligned?: boolean;
   /** Grid/item layout constraints. */
@@ -223,6 +236,13 @@ export interface CubeBoardProps
    * measurement (useful for SSR and tests).
    */
   width?: number;
+  /**
+   * Default props applied to every widget this board hosts. Per-widget
+   * `Board.Widget` props override these. Use it to add a card border to every
+   * widget (`widgetProps={{ isCard: true }}`) or set shared sizing/`styles`
+   * defaults without repeating them on each `Board.Widget`.
+   */
+  widgetProps?: Partial<CubeBoardWidgetDefaults>;
   children?: ReactNode;
 }
 
@@ -260,10 +280,11 @@ function BoardInner(
     resizeHandles = ['se'],
     dragCancel,
     dragHandle,
-    showGridLines = false,
+    showGridLines,
     isAligned = false,
     constraints,
     width: providedWidth,
+    widgetProps,
     children,
     ...otherProps
   } = props;
@@ -271,7 +292,22 @@ function BoardInner(
   const registry = useBoardRegistry()!;
   const parentMetrics = useBoardMetrics();
   const host = useBoardHost();
+  const inheritedGridLines = useBoardGridLines();
   const aligned = isAligned && !!parentMetrics;
+  // `widgetProps` may carry container style props directly (e.g. `fill`,
+  // `padding`, `radius`) alongside an explicit `styles` object, mirroring
+  // `Board.Widget`. Extract them into a single style map here so those defaults
+  // actually reach every widget - forwarding only `widgetProps.styles` would
+  // drop the direct props. A direct prop wins over the same key in `styles`.
+  const widgetPropsStyles = useMemo<Styles | undefined>(() => {
+    if (!widgetProps) return undefined;
+    const extracted = extractStyles(widgetProps, CONTAINER_STYLES);
+    return Object.keys(extracted).length > 0 ? extracted : undefined;
+  }, [widgetProps]);
+  // A nested board with no explicit `showGridLines` inherits the ancestor's:
+  // when the ancestor has grid lines enabled, show them here while dragging.
+  const effectiveShowGridLines: BoardGridLines =
+    showGridLines ?? (inheritedGridLines ? 'drag' : false);
   const generatedId = useId();
   const boardId = providedId ?? generatedId;
 
@@ -328,9 +364,14 @@ function BoardInner(
     ? parentMetrics!.margin
     : margin;
   // The board keeps its own padding (it sits inside the container's chrome);
-  // when unspecified it defaults to the effective gap.
+  // when unspecified it defaults to the effective gap. An aligned nested board
+  // is the exception: its grid origin must sit flush on the container widget's
+  // edge (which already coincides with the parent's column-0 origin) so its
+  // columns line up with the ancestor board's. Inheriting the gap there would
+  // inset every column by one margin and break the alignment, so it defaults
+  // to zero padding instead.
   const resolvedPadding: readonly [number, number] =
-    containerPadding ?? effectiveMargin;
+    containerPadding ?? (aligned ? [0, 0] : effectiveMargin);
 
   const rows = Math.max(
     bottom(layout),
@@ -342,12 +383,23 @@ function BoardInner(
   // than stretched. `containerWidth` is then back-solved so `calcGridColWidth`
   // returns exactly the parent's column width.
   const parentColWidth = aligned ? parentMetrics!.colWidth : 0;
+  // `width` is `offsetWidth` (an integer the browser rounds), while
+  // `parentColWidth` is fractional. A container sized to exactly N parent
+  // columns can therefore measure a fraction of a pixel short, so a bare
+  // `Math.floor` would drop the last column and leave its space unused. Add a
+  // small pixel tolerance to absorb that rounding; it only rounds up when the
+  // width is within ~2px of a full column, so it can't invent a column that
+  // genuinely doesn't fit.
+  const ALIGN_WIDTH_TOLERANCE = 2;
   const alignedCols =
     aligned && width > 0
       ? Math.max(
           1,
           Math.floor(
-            (width - resolvedPadding[0] * 2 + effectiveMargin[0]) /
+            (width -
+              resolvedPadding[0] * 2 +
+              effectiveMargin[0] +
+              ALIGN_WIDTH_TOLERANCE) /
               (parentColWidth + effectiveMargin[0]),
           ),
         )
@@ -359,21 +411,11 @@ function BoardInner(
       resolvedPadding[0] * 2
     : width;
 
-  // Row height inherits the parent's as the target, but shrinks (never grows
-  // beyond it) so the board's rows fit the height the container grants. When
-  // the height is unbounded/unmeasured, it stays at the parent's row height.
-  const parentRowHeight = aligned ? parentMetrics!.rowHeight : rowHeight;
-  const effectiveRowHeight =
-    aligned && rows > 0 && measuredHeight > 0
-      ? clamp(
-          (measuredHeight -
-            Math.max(0, rows - 1) * effectiveMargin[1] -
-            resolvedPadding[1] * 2) /
-            rows,
-          MIN_ALIGNED_ROW_HEIGHT,
-          parentRowHeight,
-        )
-      : parentRowHeight;
+  // An aligned board uses the parent's row height verbatim, so every cell is
+  // exactly the parent's cell size (width already matches via the inherited
+  // column pitch). It never shrinks rows to fit; pair it with an `isAutoHeight`
+  // container so the widget grows to fit the rows at this height instead.
+  const effectiveRowHeight = aligned ? parentMetrics!.rowHeight : rowHeight;
 
   const positionParams = useMemo<PositionParams>(
     () => ({
@@ -512,15 +554,15 @@ function BoardInner(
     recompactForCols(effectiveCols);
   }, [aligned, width, effectiveCols, recompactForCols]);
 
-  // Natural height this board wants: its rows at the (unshrunk) target row
-  // height. When aligned rows are shrunk to fit a short container, this exceeds
-  // the measured height by the amount the board was squeezed.
+  // Natural height this board wants: its rows at the (parent) row height. When
+  // the container is shorter than this, an `isAutoHeight` host grows to fit it
+  // (aligned boards no longer shrink their rows).
   const naturalHeight =
     rows > 0
-      ? rows * parentRowHeight +
+      ? rows * effectiveRowHeight +
         Math.max(0, rows - 1) * effectiveMargin[1] +
         resolvedPadding[1] * 2
-      : parentRowHeight;
+      : effectiveRowHeight;
 
   // Report this aligned board's height deficit to an auto-sizing host so the
   // host can both grow to fit and pin its resize floor. The value is signed:
@@ -568,12 +610,19 @@ function BoardInner(
       if (phase === 'start') {
         const rawItem = getLayoutItem(layoutRef.current, id);
         if (!rawItem) return;
-        // Layout-item constraints win; otherwise fall back to the ones declared
-        // on the owning `Board.Widget` so `applySizeConstraints` picks them up.
+        // Layout-item min/max and constraints win; otherwise fall back to the
+        // ones declared on the owning `Board.Widget` (and then the board-level
+        // `widgetProps` defaults) so `applySizeConstraints` (via `minMaxSize`)
+        // picks them up.
+        const reg = registry.store.get(id);
         const item: LayoutItem = {
           ...rawItem,
+          minW: rawItem.minW ?? reg?.minW ?? widgetProps?.minW,
+          maxW: rawItem.maxW ?? reg?.maxW ?? widgetProps?.maxW,
+          minH: rawItem.minH ?? reg?.minH ?? widgetProps?.minH,
+          maxH: rawItem.maxH ?? reg?.maxH ?? widgetProps?.maxH,
           constraints:
-            rawItem.constraints ?? registry.store.get(id)?.constraints,
+            rawItem.constraints ?? reg?.constraints ?? widgetProps?.constraints,
         };
         resizeStateRef.current = {
           id,
@@ -758,6 +807,12 @@ function BoardInner(
   const dragState = registry.dragState;
   const ready = width > 0;
 
+  // When the widget that hosts this nested board is the one being dragged, its
+  // whole content (including this board) floats as a single unit, so its own
+  // grid lines add nothing but clutter. Suppress them for that drag.
+  const hostWidgetIsDragging =
+    !!dragState && dragState.nestedBoardIds.has(boardId);
+
   const placeholderStyle = placeholder
     ? (() => {
         const pos = calcGridItemPosition(
@@ -768,7 +823,8 @@ function BoardInner(
           placeholder.h,
         );
         return {
-          transform: `translate(${pos.left}px, ${pos.top}px)`,
+          left: `${pos.left}px`,
+          top: `${pos.top}px`,
           width: `${pos.width}px`,
           height: `${pos.height}px`,
         };
@@ -778,8 +834,9 @@ function BoardInner(
   const showPlaceholder = placeholder && placeholderStyle;
 
   const gridLinesVisible =
-    showGridLines === true ||
-    (showGridLines === 'drag' && (!!dragState || !!placeholder));
+    !hostWidgetIsDragging &&
+    (effectiveShowGridLines === true ||
+      (effectiveShowGridLines === 'drag' && (!!dragState || !!placeholder)));
   const gridOverlayStyle = gridLinesVisible
     ? (() => {
         const colWidth = calcGridColWidth(positionParams);
@@ -839,74 +896,118 @@ function BoardInner(
 
   return (
     <BoardMetricsContext.Provider value={boardMetrics}>
-      <BoardElement
-        {...filterBaseProps(otherProps, { eventProps: true })}
-        ref={containerRef}
-        styles={styles}
-        // Non-aligned: use min-height (not a fixed height) so the board
-        // auto-sizes to its content by default but can still grow to fill a
-        // taller parent. Widgets are absolutely positioned, so growing never
-        // shifts them, and the content layer (inset: 0) always covers the full
-        // board -> the whole board is droppable. Aligned: omit the inline height
-        // so the board fills (and is bounded by) the space the container grants,
-        // which is what drives the reduced row height.
-        style={aligned ? undefined : { minHeight: `${containerHeight}px` }}
-        mods={{
-          dragging: !!dragState,
-          'drop-target': dragState?.currentBoardId === boardId,
-        }}
+      <BoardGridLinesContext.Provider
+        value={
+          effectiveShowGridLines === true || effectiveShowGridLines === 'drag'
+        }
       >
-        <ContentLayer ref={contentRef}>
-          {ready && gridOverlayStyle ? (
-            <GridOverlayElement aria-hidden="true" style={gridOverlayStyle} />
-          ) : null}
-          {ready
-            ? layout.map((item) => {
-                const registration = registry.store.get(item.i);
-                const widgetDraggable =
-                  isDraggable &&
-                  registration?.isDraggable !== false &&
-                  item.isDraggable !== false &&
-                  !item.static;
-                const widgetResizable =
-                  isResizable &&
-                  registration?.isResizable !== false &&
-                  item.isResizable !== false &&
-                  !item.static;
-                const handles =
-                  item.resizeHandles ??
-                  registration?.resizeHandles ??
-                  resizeHandles;
-                const widgetDragCancel = registration?.dragCancel ?? dragCancel;
-                const widgetDragHandle = registration?.dragHandle ?? dragHandle;
+        <BoardElement
+          {...filterBaseProps(otherProps, { eventProps: true })}
+          ref={containerRef}
+          styles={styles}
+          // Non-aligned: use min-height (not a fixed height) so the board
+          // auto-sizes to its content by default but can still grow to fill a
+          // taller parent. Widgets are absolutely positioned, so growing never
+          // shifts them, and the content layer (inset: 0) always covers the full
+          // board -> the whole board is droppable. Aligned: omit the inline height
+          // so the board fills (and is bounded by) the space the container grants,
+          // which is what drives the reduced row height.
+          style={aligned ? undefined : { minHeight: `${containerHeight}px` }}
+          mods={{
+            dragging: !!dragState,
+            'drop-target': dragState?.currentBoardId === boardId,
+          }}
+        >
+          <ContentLayer ref={contentRef}>
+            {ready && gridOverlayStyle ? (
+              <GridOverlayElement aria-hidden="true" style={gridOverlayStyle} />
+            ) : null}
+            {ready
+              ? layout.map((item) => {
+                  const registration = registry.store.get(item.i);
+                  const widgetDraggable =
+                    isDraggable &&
+                    (registration?.isDraggable ?? widgetProps?.isDraggable) !==
+                      false &&
+                    item.isDraggable !== false &&
+                    !item.static;
+                  const widgetResizable =
+                    isResizable &&
+                    (registration?.isResizable ?? widgetProps?.isResizable) !==
+                      false &&
+                    item.isResizable !== false &&
+                    !item.static;
+                  const handles =
+                    item.resizeHandles ??
+                    registration?.resizeHandles ??
+                    widgetProps?.resizeHandles ??
+                    resizeHandles;
+                  const widgetDragCancel =
+                    registration?.dragCancel ??
+                    widgetProps?.dragCancel ??
+                    dragCancel;
+                  const widgetDragHandle =
+                    registration?.dragHandle ??
+                    widgetProps?.dragHandle ??
+                    dragHandle;
+                  // Per-widget `isCard`/`styles` override the board-level
+                  // `widgetProps` defaults; `isCard` defaults to `false`
+                  // (borderless - widgets are always filled and rounded).
+                  const widgetIsCard =
+                    registration?.isCard ?? widgetProps?.isCard ?? false;
+                  // Per-widget `isAutoHeight`/`qa` fall back to the board-level
+                  // `widgetProps` defaults (mirroring the other widget props).
+                  const widgetIsAutoHeight =
+                    registration?.isAutoHeight ??
+                    widgetProps?.isAutoHeight ??
+                    false;
+                  const widgetQa = registration?.qa ?? widgetProps?.qa;
+                  // Merge board-level `widgetProps` styles (its `styles` object
+                  // plus direct style props) with the per-widget styles so
+                  // shared defaults survive when a widget sets even a single
+                  // style prop; per-widget styles win on conflicts. Only merge
+                  // when both exist to preserve reference stability (and avoid
+                  // churn) in the common single-source case.
+                  const widgetStyles =
+                    registration?.styles && widgetPropsStyles
+                      ? mergeStyles(widgetPropsStyles, registration.styles)
+                      : registration?.styles ?? widgetPropsStyles;
 
-                return (
-                  <WidgetHost
-                    key={item.i}
-                    boardId={boardId}
-                    item={item}
-                    positionParams={positionParams}
-                    registration={registration}
-                    isDraggable={widgetDraggable}
-                    isResizable={widgetResizable}
-                    resizeHandles={handles}
-                    dragCancel={widgetDragCancel}
-                    dragHandle={widgetDragHandle}
-                    registry={registry}
-                    dragState={dragState}
-                    onResize={handleResize}
-                    onAutoHeight={handleAutoHeight}
-                    onDragLifecycle={handleDragLifecycle}
-                  />
-                );
-              })
-            : null}
-          {showPlaceholder ? (
-            <PlaceholderElement aria-hidden="true" style={placeholderStyle!} />
-          ) : null}
-        </ContentLayer>
-        {children}
-      </BoardElement>
+                  return (
+                    <WidgetHost
+                      key={item.i}
+                      boardId={boardId}
+                      item={item}
+                      positionParams={positionParams}
+                      registration={registration}
+                      isCard={widgetIsCard}
+                      styles={widgetStyles as Styles}
+                      isDraggable={widgetDraggable}
+                      isResizable={widgetResizable}
+                      resizeHandles={handles}
+                      isAutoHeight={widgetIsAutoHeight}
+                      qa={widgetQa}
+                      dragCancel={widgetDragCancel}
+                      dragHandle={widgetDragHandle}
+                      registry={registry}
+                      dragState={dragState}
+                      onResize={handleResize}
+                      onAutoHeight={handleAutoHeight}
+                      onDragLifecycle={handleDragLifecycle}
+                    />
+                  );
+                })
+              : null}
+            {showPlaceholder ? (
+              <PlaceholderElement
+                aria-hidden="true"
+                style={placeholderStyle!}
+              />
+            ) : null}
+          </ContentLayer>
+          {children}
+        </BoardElement>
+      </BoardGridLinesContext.Provider>
     </BoardMetricsContext.Provider>
   );
 }

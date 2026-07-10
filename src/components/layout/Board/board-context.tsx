@@ -58,6 +58,13 @@ export interface BoardDragState {
   /** Dragged widget rect in viewport coordinates (follows the pointer). */
   rect: ViewportRect;
   pointerType: string;
+  /**
+   * Ids of boards nested inside the dragged widget, captured at drag start.
+   * Such a board is never a drop target, and it suppresses its own grid-line
+   * overlay while its host widget is being dragged (the whole widget floats, so
+   * the inner grid lines would only add clutter).
+   */
+  nestedBoardIds: Set<string>;
 }
 
 export interface BoardRegistryContextValue {
@@ -96,6 +103,18 @@ export const BoardDragActiveContext = createContext<boolean>(false);
 
 export function useBoardDragActive(): boolean {
   return useContext(BoardDragActiveContext);
+}
+
+/**
+ * Whether an ancestor `Board` has its grid-line overlay enabled. A nested board
+ * that does not set `showGridLines` explicitly reads this to inherit the
+ * behaviour, showing its own grid lines while a drag is in progress. Defaults to
+ * `false` outside any grid-lined board.
+ */
+export const BoardGridLinesContext = createContext<boolean>(false);
+
+export function useBoardGridLines(): boolean {
+  return useContext(BoardGridLinesContext);
 }
 
 /**

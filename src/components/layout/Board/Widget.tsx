@@ -1,12 +1,13 @@
-import { Styles } from '@tenphi/tasty';
+import { CONTAINER_STYLES, ContainerStyleProps, Styles } from '@tenphi/tasty';
 import { ReactNode, useEffect, useRef } from 'react';
 
 import { useLayoutEffect } from '../../../utils/react';
+import { extractStyles } from '../../../utils/styles';
 
 import { useBoardRegistry } from './board-context';
 import { LayoutConstraint, ResizeHandleAxis } from './grid-core';
 
-export interface CubeBoardWidgetProps {
+export interface CubeBoardWidgetProps extends ContainerStyleProps {
   /** Unique id, must match the `i` of a layout item in a `Board`. */
   id: string;
   /** Widget content. */
@@ -17,11 +18,31 @@ export interface CubeBoardWidgetProps {
   isResizable?: boolean;
   /** Which resize handles to show (overrides the board default). */
   resizeHandles?: ResizeHandleAxis[];
+  /**
+   * Render this widget as a card by adding a border. Widgets are always filled
+   * (`#surface-2`) and rounded; `isCard` adds the border on top. Defaults to
+   * `false` (borderless) unless the owning `Board`'s `widgetProps.isCard` opts
+   * in. Override per widget to enable or disable.
+   */
+  isCard?: boolean;
+  /** Minimum width in grid columns (used when the layout item omits `minW`). */
+  minW?: number;
+  /** Maximum width in grid columns (used when the layout item omits `maxW`). */
+  maxW?: number;
+  /** Minimum height in grid rows (used when the layout item omits `minH`). */
+  minH?: number;
+  /** Maximum height in grid rows (used when the layout item omits `maxH`). */
+  maxH?: number;
   /** Per-widget layout constraints. */
   constraints?: LayoutConstraint[];
   /** Test id applied to the rendered widget element. */
   qa?: string;
-  /** Style overrides applied to the rendered widget element. */
+  /**
+   * Style overrides applied to the rendered widget element. Individual style
+   * props (`fill`, `padding`, `radius`, `border`, ...) can also be passed
+   * directly on `Board.Widget`, just like on `Board`; they are merged into
+   * these styles (a direct prop wins over the same key in the `styles` object).
+   */
   styles?: Styles;
   /**
    * Grow this widget's height in its board to fit its content (only ever
@@ -42,6 +63,28 @@ export interface CubeBoardWidgetProps {
 }
 
 /**
+ * Shallow-compare two style maps by their top-level keys. Direct style props
+ * (e.g. `fill`) are primitives, so this reliably detects a real change while
+ * ignoring the fresh object identity `extractStyles` produces each render.
+ */
+function shallowEqualStyles(a?: Styles, b?: Styles): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  for (const key of aKeys) {
+    if (
+      (a as Record<string, unknown>)[key] !==
+      (b as Record<string, unknown>)[key]
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Declares a widget's content and per-widget options. Rendering and positioning
  * are performed by the owning `Board` (the component itself renders nothing),
  * which is what allows a widget to be transferred between boards.
@@ -53,14 +96,38 @@ export function Widget(props: CubeBoardWidgetProps) {
     isDraggable,
     isResizable,
     resizeHandles,
+    isCard,
+    minW,
+    maxW,
+    minH,
+    maxH,
     constraints,
     qa,
-    styles,
     isAutoHeight,
     dragCancel,
     dragHandle,
   } = props;
   const registry = useBoardRegistry();
+
+  // Collect direct style props (e.g. `fill`, `padding`, `radius`) and merge them
+  // with the explicit `styles` prop, mirroring how `Board` extracts its own
+  // styles. Fall back to `undefined` when nothing was provided so widgets with
+  // no styling keep a stable registration (avoids needless store churn).
+  const extractedStyles = extractStyles(props, CONTAINER_STYLES);
+  const nextStyles =
+    Object.keys(extractedStyles).length > 0 ? extractedStyles : undefined;
+
+  // `extractStyles` returns a fresh object every render, so passing it straight
+  // to `register` would make the store treat every render as a style change,
+  // bump its version, and re-render the hosting board in a loop. Keep a stable
+  // reference across renders and only swap it when the shallow style values
+  // actually change (direct props are primitives; a `styles` object is compared
+  // per top-level key).
+  const stylesRef = useRef<Styles | undefined>(undefined);
+  if (!shallowEqualStyles(stylesRef.current, nextStyles)) {
+    stylesRef.current = nextStyles;
+  }
+  const styles = stylesRef.current;
 
   // Stable per-instance token so a stale unregister (from an unmounting copy of
   // this widget) can't wipe out a newer instance's registration.
@@ -75,6 +142,11 @@ export function Widget(props: CubeBoardWidgetProps) {
         isDraggable,
         isResizable,
         resizeHandles,
+        isCard,
+        minW,
+        maxW,
+        minH,
+        maxH,
         constraints,
         qa,
         styles,

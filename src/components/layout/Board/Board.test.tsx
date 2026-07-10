@@ -52,7 +52,7 @@ describe('Board', () => {
     expect(screen.getByTestId('WidgetC')).toBeInTheDocument();
   });
 
-  it('positions widgets using CSS transforms', () => {
+  it('positions widgets using CSS inset (left/top)', () => {
     render(
       <Board
         width={1200}
@@ -69,7 +69,8 @@ describe('Board', () => {
 
     const widget = screen.getByTestId('WidgetA');
     // First item sits at the container padding origin (10, 10).
-    expect(widget.style.transform).toBe('translate(10px, 10px)');
+    expect(widget.style.left).toBe('10px');
+    expect(widget.style.top).toBe('10px');
   });
 
   it('makes draggable widgets focusable', () => {
@@ -243,11 +244,11 @@ describe('Board', () => {
     );
 
     // Free positioning keeps items exactly where placed (no reflow to origin).
-    expect(screen.getByTestId('WidgetA').style.transform).toBe(
-      'translate(10px, 10px)',
-    );
+    const widgetA = screen.getByTestId('WidgetA');
+    expect(widgetA.style.left).toBe('10px');
+    expect(widgetA.style.top).toBe('10px');
     const widgetB = screen.getByTestId('WidgetB');
-    expect(widgetB.style.transform).not.toBe('translate(10px, 10px)');
+    expect(widgetB.style.left).not.toBe('10px');
   });
 
   describe('free positioning', () => {
@@ -681,9 +682,12 @@ describe('Board', () => {
     }
   });
 
-  it('shrinks aligned row height to fit a constrained container', () => {
+  it('uses the parent row height verbatim for aligned cells', () => {
     // jsdom reports 0 for offset dimensions; mock them so a nested board can
     // measure the height it is given (and derive a column count from its width).
+    // The container is intentionally shorter (120px) than the two rows need at
+    // the 100px parent row height: an aligned board must NOT shrink its rows to
+    // fit, so the cell keeps the full parent-sized height regardless.
     const widthSpy = vi
       .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
       .mockReturnValue(600);
@@ -732,10 +736,10 @@ describe('Board', () => {
 
       const aligned = screen.getByTestId('AlignedCell');
       const plain = screen.getByTestId('PlainCell');
-      // The aligned board fits its rows into the 120px it measures, so the same
-      // widget renders shorter than on a board keeping the full parent row
-      // height.
-      expect(parseInt(aligned.style.height, 10)).toBeLessThan(
+      // The aligned board uses the parent's row height verbatim, so the same
+      // widget renders at exactly the same height as on a plain board with the
+      // matching rowHeight - it is not shrunk to fit the short container.
+      expect(parseInt(aligned.style.height, 10)).toBe(
         parseInt(plain.style.height, 10),
       );
     } finally {
@@ -984,6 +988,37 @@ describe('Board', () => {
       // Width grew; height stayed the same (edge handle is horizontal-only).
       expect(info.item.w).toBeGreaterThan(2);
       expect(info.item.h).toBe(2);
+    });
+
+    it('bounds a resize by a widget-level maxW', () => {
+      const onResizeStop = vi.fn();
+
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          onResizeStop={onResizeStop}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA" resizeHandles={['e']} maxW={4}>
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const handle = screen.getByTestId('BoardResizeHandle');
+      // Drag the east handle far right (well past 4 columns).
+      fireEvent(handle, pointerEvent('pointerdown', 200, 200));
+      fireEvent(window, pointerEvent('pointermove', 1000, 200));
+      fireEvent(window, pointerEvent('pointerup', 1000, 200));
+
+      expect(onResizeStop).toHaveBeenCalled();
+      const info = onResizeStop.mock.calls.at(-1)![0];
+      // Width is clamped to the widget-level maxW.
+      expect(info.item.w).toBe(4);
     });
 
     it('blocks a resize from overlapping a neighbour in free mode', () => {
