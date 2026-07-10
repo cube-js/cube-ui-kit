@@ -179,6 +179,45 @@ SingleAxisResize.parameters = {
   },
 };
 
+// Per-widget min/max size. `minW`/`maxW` are in grid columns, `minH`/`maxH` in
+// grid rows. Resizing a widget stops at these bounds (the handle won't grow or
+// shrink past them).
+const MinMaxTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board
+    fill="#light"
+    padding="1x"
+    radius="1r"
+    showGridLines="drag"
+    defaultLayout={[
+      { i: 'clamped', x: 0, y: 0, w: 4, h: 2 },
+      { i: 'wide', x: 4, y: 0, w: 4, h: 2 },
+      { i: 'tall', x: 8, y: 0, w: 4, h: 2 },
+    ]}
+    {...args}
+  >
+    <Board.Widget id="clamped" minW={2} maxW={6} minH={2} maxH={4}>
+      <WidgetBody title="Clamped" text="min 2x2 - max 6x4" />
+    </Board.Widget>
+    <Board.Widget id="wide" minW={3} maxW={8}>
+      <WidgetBody title="Width bound" text="min 3, max 8 cols" />
+    </Board.Widget>
+    <Board.Widget id="tall" minH={2} maxH={5}>
+      <WidgetBody title="Height bound" text="min 2, max 5 rows" />
+    </Board.Widget>
+  </Board>
+);
+
+export const MinMaxSize = MinMaxTemplate.bind({});
+MinMaxSize.args = {};
+MinMaxSize.parameters = {
+  docs: {
+    description: {
+      story:
+        'Set per-widget `minW`/`maxW` (grid columns) and `minH`/`maxH` (grid rows) on `Board.Widget` to bound resizing. The resize handle stops at each limit, so a widget can never be dragged smaller than its minimum or larger than its maximum. Grid lines are shown while resizing so the bounds are easy to read.',
+    },
+  },
+};
+
 export const GridLines = Template.bind({});
 GridLines.args = {
   showGridLines: 'drag',
@@ -405,6 +444,7 @@ const NestedTemplate: StoryFn<CubeBoardProps> = (args) => (
       padding="1x"
       radius="1r"
       rowHeight={120}
+      showGridLines="drag"
       defaultLayout={[
         // minW/minH keep the container from being resized smaller than the
         // inner board needs to fit its widgets (the resize handle stops there).
@@ -558,6 +598,7 @@ const TabsBoardTemplate: StoryFn<CubeBoardProps> = (args) => {
         padding="1x"
         radius="1r"
         rowHeight={120}
+        showGridLines="drag"
         layout={layouts.root}
         onLayoutChange={handleLayoutChange('root')}
         {...args}

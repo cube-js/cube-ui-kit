@@ -56,7 +56,13 @@ const WidgetElement = tasty({
       '': 1,
       floating: 0.8,
     },
-    transition: 'theme, shadow, opacity',
+    // Reflowing widgets animate their position via the `inset` group (left/top).
+    // The actively dragged/resized element - and the floating overlay clone -
+    // must track the pointer with no lag, so they drop `inset` from the list.
+    transition: {
+      '': 'theme, shadow, opacity, inset',
+      'drag | floating | resizing': 'theme, shadow, opacity',
+    },
     boxSizing: 'border-box',
     userSelect: {
       '': 'auto',
@@ -604,7 +610,8 @@ export function WidgetHost(props: WidgetHostProps) {
   const floatInOverlay = useOverlay && !!overlayNode && !!dragState;
 
   const hostStyle: CSSProperties = {
-    transform: `translate(${pos.left}px, ${pos.top}px)`,
+    left: `${pos.left}px`,
+    top: `${pos.top}px`,
     width: `${pos.width}px`,
     height: `${pos.height}px`,
     // Kept mounted but hidden while its clone floats, so the gesture stays live

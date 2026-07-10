@@ -17,6 +17,14 @@ export interface CubeBoardWidgetProps {
   isResizable?: boolean;
   /** Which resize handles to show (overrides the board default). */
   resizeHandles?: ResizeHandleAxis[];
+  /** Minimum width in grid columns (used when the layout item omits `minW`). */
+  minW?: number;
+  /** Maximum width in grid columns (used when the layout item omits `maxW`). */
+  maxW?: number;
+  /** Minimum height in grid rows (used when the layout item omits `minH`). */
+  minH?: number;
+  /** Maximum height in grid rows (used when the layout item omits `maxH`). */
+  maxH?: number;
   /** Per-widget layout constraints. */
   constraints?: LayoutConstraint[];
   /** Test id applied to the rendered widget element. */
@@ -53,6 +61,10 @@ export function Widget(props: CubeBoardWidgetProps) {
     isDraggable,
     isResizable,
     resizeHandles,
+    minW,
+    maxW,
+    minH,
+    maxH,
     constraints,
     qa,
     styles,
@@ -75,6 +87,10 @@ export function Widget(props: CubeBoardWidgetProps) {
         isDraggable,
         isResizable,
         resizeHandles,
+        minW,
+        maxW,
+        minH,
+        maxH,
         constraints,
         qa,
         styles,

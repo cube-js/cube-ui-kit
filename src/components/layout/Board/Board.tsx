@@ -24,8 +24,10 @@ import { extractStyles } from '../../../utils/styles';
 
 import {
   BoardEntry,
+  BoardGridLinesContext,
   BoardMetrics,
   BoardMetricsContext,
+  useBoardGridLines,
   useBoardHost,
   useBoardMetrics,
   useBoardRegistry,
@@ -87,7 +89,7 @@ const PlaceholderElement = tasty({
     border: '#purple.40',
     zIndex: 2,
     pointerEvents: 'none',
-    transition: 'transform 80ms linear, width 80ms linear, height 80ms linear',
+    transition: 'inset 80ms linear, width 80ms linear, height 80ms linear',
     boxSizing: 'border-box',
   },
 });
@@ -260,7 +262,7 @@ function BoardInner(
     resizeHandles = ['se'],
     dragCancel,
     dragHandle,
-    showGridLines = false,
+    showGridLines,
     isAligned = false,
     constraints,
     width: providedWidth,
@@ -271,7 +273,12 @@ function BoardInner(
   const registry = useBoardRegistry()!;
   const parentMetrics = useBoardMetrics();
   const host = useBoardHost();
+  const inheritedGridLines = useBoardGridLines();
   const aligned = isAligned && !!parentMetrics;
+  // A nested board with no explicit `showGridLines` inherits the ancestor's:
+  // when the ancestor has grid lines enabled, show them here while dragging.
+  const effectiveShowGridLines: BoardGridLines =
+    showGridLines ?? (inheritedGridLines ? 'drag' : false);
   const generatedId = useId();
   const boardId = providedId ?? generatedId;
 
@@ -568,12 +575,17 @@ function BoardInner(
       if (phase === 'start') {
         const rawItem = getLayoutItem(layoutRef.current, id);
         if (!rawItem) return;
-        // Layout-item constraints win; otherwise fall back to the ones declared
-        // on the owning `Board.Widget` so `applySizeConstraints` picks them up.
+        // Layout-item min/max and constraints win; otherwise fall back to the
+        // ones declared on the owning `Board.Widget` so `applySizeConstraints`
+        // (via `minMaxSize`) picks them up.
+        const reg = registry.store.get(id);
         const item: LayoutItem = {
           ...rawItem,
-          constraints:
-            rawItem.constraints ?? registry.store.get(id)?.constraints,
+          minW: rawItem.minW ?? reg?.minW,
+          maxW: rawItem.maxW ?? reg?.maxW,
+          minH: rawItem.minH ?? reg?.minH,
+          maxH: rawItem.maxH ?? reg?.maxH,
+          constraints: rawItem.constraints ?? reg?.constraints,
         };
         resizeStateRef.current = {
           id,
@@ -768,7 +780,8 @@ function BoardInner(
           placeholder.h,
         );
         return {
-          transform: `translate(${pos.left}px, ${pos.top}px)`,
+          left: `${pos.left}px`,
+          top: `${pos.top}px`,
           width: `${pos.width}px`,
           height: `${pos.height}px`,
         };
@@ -778,8 +791,8 @@ function BoardInner(
   const showPlaceholder = placeholder && placeholderStyle;
 
   const gridLinesVisible =
-    showGridLines === true ||
-    (showGridLines === 'drag' && (!!dragState || !!placeholder));
+    effectiveShowGridLines === true ||
+    (effectiveShowGridLines === 'drag' && (!!dragState || !!placeholder));
   const gridOverlayStyle = gridLinesVisible
     ? (() => {
         const colWidth = calcGridColWidth(positionParams);
@@ -839,74 +852,85 @@ function BoardInner(
 
   return (
     <BoardMetricsContext.Provider value={boardMetrics}>
-      <BoardElement
-        {...filterBaseProps(otherProps, { eventProps: true })}
-        ref={containerRef}
-        styles={styles}
-        // Non-aligned: use min-height (not a fixed height) so the board
-        // auto-sizes to its content by default but can still grow to fill a
-        // taller parent. Widgets are absolutely positioned, so growing never
-        // shifts them, and the content layer (inset: 0) always covers the full
-        // board -> the whole board is droppable. Aligned: omit the inline height
-        // so the board fills (and is bounded by) the space the container grants,
-        // which is what drives the reduced row height.
-        style={aligned ? undefined : { minHeight: `${containerHeight}px` }}
-        mods={{
-          dragging: !!dragState,
-          'drop-target': dragState?.currentBoardId === boardId,
-        }}
+      <BoardGridLinesContext.Provider
+        value={
+          effectiveShowGridLines === true || effectiveShowGridLines === 'drag'
+        }
       >
-        <ContentLayer ref={contentRef}>
-          {ready && gridOverlayStyle ? (
-            <GridOverlayElement aria-hidden="true" style={gridOverlayStyle} />
-          ) : null}
-          {ready
-            ? layout.map((item) => {
-                const registration = registry.store.get(item.i);
-                const widgetDraggable =
-                  isDraggable &&
-                  registration?.isDraggable !== false &&
-                  item.isDraggable !== false &&
-                  !item.static;
-                const widgetResizable =
-                  isResizable &&
-                  registration?.isResizable !== false &&
-                  item.isResizable !== false &&
-                  !item.static;
-                const handles =
-                  item.resizeHandles ??
-                  registration?.resizeHandles ??
-                  resizeHandles;
-                const widgetDragCancel = registration?.dragCancel ?? dragCancel;
-                const widgetDragHandle = registration?.dragHandle ?? dragHandle;
+        <BoardElement
+          {...filterBaseProps(otherProps, { eventProps: true })}
+          ref={containerRef}
+          styles={styles}
+          // Non-aligned: use min-height (not a fixed height) so the board
+          // auto-sizes to its content by default but can still grow to fill a
+          // taller parent. Widgets are absolutely positioned, so growing never
+          // shifts them, and the content layer (inset: 0) always covers the full
+          // board -> the whole board is droppable. Aligned: omit the inline height
+          // so the board fills (and is bounded by) the space the container grants,
+          // which is what drives the reduced row height.
+          style={aligned ? undefined : { minHeight: `${containerHeight}px` }}
+          mods={{
+            dragging: !!dragState,
+            'drop-target': dragState?.currentBoardId === boardId,
+          }}
+        >
+          <ContentLayer ref={contentRef}>
+            {ready && gridOverlayStyle ? (
+              <GridOverlayElement aria-hidden="true" style={gridOverlayStyle} />
+            ) : null}
+            {ready
+              ? layout.map((item) => {
+                  const registration = registry.store.get(item.i);
+                  const widgetDraggable =
+                    isDraggable &&
+                    registration?.isDraggable !== false &&
+                    item.isDraggable !== false &&
+                    !item.static;
+                  const widgetResizable =
+                    isResizable &&
+                    registration?.isResizable !== false &&
+                    item.isResizable !== false &&
+                    !item.static;
+                  const handles =
+                    item.resizeHandles ??
+                    registration?.resizeHandles ??
+                    resizeHandles;
+                  const widgetDragCancel =
+                    registration?.dragCancel ?? dragCancel;
+                  const widgetDragHandle =
+                    registration?.dragHandle ?? dragHandle;
 
-                return (
-                  <WidgetHost
-                    key={item.i}
-                    boardId={boardId}
-                    item={item}
-                    positionParams={positionParams}
-                    registration={registration}
-                    isDraggable={widgetDraggable}
-                    isResizable={widgetResizable}
-                    resizeHandles={handles}
-                    dragCancel={widgetDragCancel}
-                    dragHandle={widgetDragHandle}
-                    registry={registry}
-                    dragState={dragState}
-                    onResize={handleResize}
-                    onAutoHeight={handleAutoHeight}
-                    onDragLifecycle={handleDragLifecycle}
-                  />
-                );
-              })
-            : null}
-          {showPlaceholder ? (
-            <PlaceholderElement aria-hidden="true" style={placeholderStyle!} />
-          ) : null}
-        </ContentLayer>
-        {children}
-      </BoardElement>
+                  return (
+                    <WidgetHost
+                      key={item.i}
+                      boardId={boardId}
+                      item={item}
+                      positionParams={positionParams}
+                      registration={registration}
+                      isDraggable={widgetDraggable}
+                      isResizable={widgetResizable}
+                      resizeHandles={handles}
+                      dragCancel={widgetDragCancel}
+                      dragHandle={widgetDragHandle}
+                      registry={registry}
+                      dragState={dragState}
+                      onResize={handleResize}
+                      onAutoHeight={handleAutoHeight}
+                      onDragLifecycle={handleDragLifecycle}
+                    />
+                  );
+                })
+              : null}
+            {showPlaceholder ? (
+              <PlaceholderElement
+                aria-hidden="true"
+                style={placeholderStyle!}
+              />
+            ) : null}
+          </ContentLayer>
+          {children}
+        </BoardElement>
+      </BoardGridLinesContext.Provider>
     </BoardMetricsContext.Provider>
   );
 }

@@ -64,7 +64,7 @@ clipped by an ancestor's `overflow: hidden`.
 - **`resizeHandles`** `ResizeHandleAxis[]` (default: `['se']`) — Which resize handles to show. Corner handles (`ne`/`nw`/`se`/`sw`) show an angle grip; edge handles (`n`/`s`/`e`/`w`) show a dotted grip. Both are revealed on hover/focus/resize. A single edge (e.g. `['e']` or `['s']`) gives a horizontally- or vertically-only resizable widget.
 - **`dragCancel`** `string` — CSS selector for elements that must not start a pointer drag (e.g. form controls inside a widget: `"input,textarea,button,a,.no-drag"`). Keyboard moves are unaffected. Can be overridden per widget.
 - **`dragHandle`** `string` — CSS selector for the only elements from which a pointer drag may start. Can be overridden per widget.
-- **`showGridLines`** `boolean | 'drag'` (default: `false`) — Show grid lines behind the widgets. `true` always, `'drag'` only while a widget is being dragged or resized.
+- **`showGridLines`** `boolean | 'drag'` (default: `false`) — Show grid lines behind the widgets. `true` always, `'drag'` only while a widget is being dragged or resized. A nested board that does not set this inherits an enabled ancestor's grid lines, showing its own while a drag is in progress.
 - **`isAligned`** `boolean` (default: `false`) — Align a nested board with its ancestor `Board`'s layout. Only takes effect when the board is nested inside another `Board`'s widget. When set, the board inherits the parent's column pitch (deriving its own column count from its measured width so cells stay parent-sized as the container is resized) and inherits the parent's row height as a target, shrinking rows slightly when needed to fit the height the container widget grants it. `cols`/`rowHeight` then act as fallbacks used only until the parent metrics resolve.
 - **`constraints`** `LayoutConstraint[]` — Grid/item layout constraints.
 - **`width`** `number` — Explicit width (disables measurement; useful for SSR/tests).
@@ -77,6 +77,10 @@ clipped by an ancestor's `overflow: hidden`.
 - **`isDraggable`** `boolean` — Disable dragging for this widget.
 - **`isResizable`** `boolean` — Disable resizing for this widget.
 - **`resizeHandles`** `ResizeHandleAxis[]` — Override the board's handles.
+- **`minW`** `number` — Minimum width in grid columns. Used when the layout item omits `minW`; the resize handle stops here.
+- **`maxW`** `number` — Maximum width in grid columns. Used when the layout item omits `maxW`.
+- **`minH`** `number` — Minimum height in grid rows. Used when the layout item omits `minH`.
+- **`maxH`** `number` — Maximum height in grid rows. Used when the layout item omits `maxH`.
 - **`constraints`** `LayoutConstraint[]` — Per-widget constraints.
 - **`qa`** `string` — Test id for the rendered widget element.
 - **`styles`** `Styles` — Style overrides for the rendered widget element.
@@ -165,6 +169,12 @@ blocked from occupied cells.
 ### Non-resizable
 
 <Story of={BoardStories.NonResizable} />
+
+### Min/max widget size
+
+Bound resizing with per-widget `minW`/`maxW` (columns) and `minH`/`maxH` (rows).
+
+<Story of={BoardStories.MinMaxSize} />
 
 ### Grid lines
 

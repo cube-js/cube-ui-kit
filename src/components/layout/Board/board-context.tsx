@@ -99,6 +99,18 @@ export function useBoardDragActive(): boolean {
 }
 
 /**
+ * Whether an ancestor `Board` has its grid-line overlay enabled. A nested board
+ * that does not set `showGridLines` explicitly reads this to inherit the
+ * behaviour, showing its own grid lines while a drag is in progress. Defaults to
+ * `false` outside any grid-lined board.
+ */
+export const BoardGridLinesContext = createContext<boolean>(false);
+
+export function useBoardGridLines(): boolean {
+  return useContext(BoardGridLinesContext);
+}
+
+/**
  * The resolved grid metrics a `Board` exposes to any boards nested inside its
  * widgets. A nested board with `isAligned` reads these to inherit the parent's
  * column pitch (column width + horizontal margin) and target row height, so its

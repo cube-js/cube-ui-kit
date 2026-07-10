@@ -16,6 +16,14 @@ export interface WidgetRegistration {
   isDraggable?: boolean;
   isResizable?: boolean;
   resizeHandles?: ResizeHandleAxis[];
+  /** Minimum width in grid columns (fallback when the layout item omits `minW`). */
+  minW?: number;
+  /** Maximum width in grid columns (fallback when the layout item omits `maxW`). */
+  maxW?: number;
+  /** Minimum height in grid rows (fallback when the layout item omits `minH`). */
+  minH?: number;
+  /** Maximum height in grid rows (fallback when the layout item omits `maxH`). */
+  maxH?: number;
   constraints?: LayoutConstraint[];
   qa?: string;
   styles?: Styles;
@@ -63,6 +71,10 @@ export class BoardWidgetStore {
       prev.isDraggable !== reg.isDraggable ||
       prev.isResizable !== reg.isResizable ||
       prev.resizeHandles !== reg.resizeHandles ||
+      prev.minW !== reg.minW ||
+      prev.maxW !== reg.maxW ||
+      prev.minH !== reg.minH ||
+      prev.maxH !== reg.maxH ||
       prev.constraints !== reg.constraints ||
       prev.qa !== reg.qa ||
       prev.styles !== reg.styles ||
