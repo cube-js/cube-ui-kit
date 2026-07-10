@@ -294,6 +294,16 @@ function BoardInner(
   const host = useBoardHost();
   const inheritedGridLines = useBoardGridLines();
   const aligned = isAligned && !!parentMetrics;
+  // `widgetProps` may carry container style props directly (e.g. `fill`,
+  // `padding`, `radius`) alongside an explicit `styles` object, mirroring
+  // `Board.Widget`. Extract them into a single style map here so those defaults
+  // actually reach every widget - forwarding only `widgetProps.styles` would
+  // drop the direct props. A direct prop wins over the same key in `styles`.
+  const widgetPropsStyles = useMemo<Styles | undefined>(() => {
+    if (!widgetProps) return undefined;
+    const extracted = extractStyles(widgetProps, CONTAINER_STYLES);
+    return Object.keys(extracted).length > 0 ? extracted : undefined;
+  }, [widgetProps]);
   // A nested board with no explicit `showGridLines` inherits the ancestor's:
   // when the ancestor has grid lines enabled, show them here while dragging.
   const effectiveShowGridLines: BoardGridLines =
@@ -945,15 +955,16 @@ function BoardInner(
                   // (borderless - widgets are always filled and rounded).
                   const widgetIsCard =
                     registration?.isCard ?? widgetProps?.isCard ?? false;
-                  // Merge board-level `widgetProps.styles` with the per-widget
-                  // styles so shared defaults survive when a widget sets even a
-                  // single style prop; per-widget styles win on conflicts. Only
-                  // merge when both exist to preserve reference stability (and
-                  // avoid churn) in the common single-source case.
+                  // Merge board-level `widgetProps` styles (its `styles` object
+                  // plus direct style props) with the per-widget styles so
+                  // shared defaults survive when a widget sets even a single
+                  // style prop; per-widget styles win on conflicts. Only merge
+                  // when both exist to preserve reference stability (and avoid
+                  // churn) in the common single-source case.
                   const widgetStyles =
-                    registration?.styles && widgetProps?.styles
-                      ? mergeStyles(widgetProps.styles, registration.styles)
-                      : registration?.styles ?? widgetProps?.styles;
+                    registration?.styles && widgetPropsStyles
+                      ? mergeStyles(widgetPropsStyles, registration.styles)
+                      : registration?.styles ?? widgetPropsStyles;
 
                   return (
                     <WidgetHost
