@@ -9,7 +9,7 @@ import { ForwardedRef, forwardRef, ReactNode, useState } from 'react';
 import { TextDropItem, useClipboard } from 'react-aria';
 
 import { useTimer } from '../../../_internal';
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CopyIcon } from '../../../icons';
 import { extractStyles } from '../../../utils/styles';
 import { Button } from '../../actions';
@@ -139,7 +139,7 @@ function CopyPasteBlock(
   } = allProps;
   const styles = extractStyles(props, POSITION_STYLES);
 
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
   const toast = useToast();
 

@@ -10,7 +10,7 @@ import {
 } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CloseIcon, PlusIcon } from '../../../icons';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
@@ -77,7 +77,7 @@ function TextInputMapper(
   props: CubeTextInputMapperProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   ref = useCombinedRefs(ref);
 

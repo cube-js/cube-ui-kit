@@ -19,7 +19,7 @@ import {
 } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CloseIcon, MoreIcon } from '../../../icons';
 import { mergeProps } from '../../../utils/react';
 import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
@@ -190,7 +190,7 @@ export interface TabButtonProps {
  * - Focus and hover states
  */
 export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
   const editTabTitleLabel = t('tabs.editTabTitle', 'Edit tab title');
 
   // Get shared context

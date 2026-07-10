@@ -1,7 +1,7 @@
 import { tasty } from '@tenphi/tasty';
 import { isValidElement, Key, ReactNode } from 'react';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { Block } from '../../Block';
 import { Item } from '../../content/Item/Item';
@@ -88,7 +88,7 @@ function hasDismissAction(node: ReactNode): boolean {
  * via `hasDismissAction(actions)` — this component always renders the button.
  */
 function AutoDismissButton() {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   return (
     <NotificationAction isDismiss>

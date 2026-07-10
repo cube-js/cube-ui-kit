@@ -2,7 +2,7 @@ import { tasty } from '@tenphi/tasty';
 import { Fragment, Key, useContext, useEffect, useRef, useState } from 'react';
 
 import { useEvent } from '../../../_internal';
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { Divider } from '../../content/Divider';
 import { Text } from '../../content/Text';
 
@@ -69,7 +69,7 @@ export function PersistentNotificationsList({
   onAction,
   emptyState,
 }: PersistentNotificationsListProps) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
   const { items, remove, markAllAsRead } = usePersistentNotifications();
   const listAriaLabel = t('notifications.ariaLabel', 'Notifications');
 
@@ -154,7 +154,7 @@ function PersistentNotificationListItem({
   item,
   onDismiss,
 }: PersistentNotificationListItemProps) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
   const suffix = (
     <Text opacity={0.5} preset="c2">
       {formatRelativeTime(item.createdAt, t)}

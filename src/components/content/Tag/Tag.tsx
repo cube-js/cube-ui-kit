@@ -2,7 +2,7 @@ import { Styles, tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 import { ItemVariant } from 'src/data/item-themes';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons';
 import { CubeItemProps, Item } from '../Item';
 
@@ -39,7 +39,7 @@ export interface CubeTagProps extends CubeItemProps {
 }
 
 function Tag(allProps: CubeTagProps, ref) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   let {
     theme = 'default',

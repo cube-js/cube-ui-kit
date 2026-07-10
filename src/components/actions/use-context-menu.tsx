@@ -14,7 +14,7 @@ import {
 import { VisuallyHidden } from 'react-aria';
 
 import { useEvent } from '../../_internal';
-import { useUIKitTranslation } from '../../i18n';
+import { useI18n } from '../../i18n';
 import { generateRandomId } from '../../utils/random';
 import { mergeProps } from '../../utils/react';
 import { usePopoverSync } from '../../utils/react/usePopoverSync';
@@ -86,7 +86,7 @@ export function useContextMenu<
   >,
   defaultMenuProps?: P,
 ): UseContextMenuReturn<E, P, T> {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [componentProps, setComponentProps] = useState<P | null>(null);
   const [triggerProps, setTriggerProps] = useState<T | null>(null);

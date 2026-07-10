@@ -1,7 +1,7 @@
 import { tasty } from '@tenphi/tasty';
 import { CSSProperties } from 'react';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { Block, CubeBlockProps } from '../../Block';
 
 const CubeElement = tasty({
@@ -117,7 +117,7 @@ export function LoadingAnimation({
   size = 'medium',
   ...props
 }: CubeLoadingAnimationProps) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
   const numSize: number = SIZE_MAP[size] || size || SIZE_MAP.medium;
 
   return (

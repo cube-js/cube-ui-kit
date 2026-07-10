@@ -42,7 +42,7 @@ import {
 } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CheckIcon, GripVerticalIcon } from '../../../icons';
 import { Icon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
@@ -454,7 +454,7 @@ const SelectAllOption = ({
   onClick: (propagate?: boolean) => void;
   allValueProps?: Partial<CubeCollectionItemProps<any>>;
 }) => {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
   const { hoverProps, isHovered } = useHover({ isDisabled });
   const resolvedLabel = label ?? t('listBox.selectAll', 'Select All');
 
@@ -594,7 +594,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     },
   });
 
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   let {
     qa,

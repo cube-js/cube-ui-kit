@@ -15,7 +15,7 @@ import type {
  * Returns locale-aware formatting helpers bound to the current UI language.
  *
  * The locale comes from React Aria's `useLocale()` — i.e. the nearest
- * `<I18nProvider>`, which `UIKitI18nProvider` populates from the shared i18next
+ * `<I18nProvider>`, which populates React Aria's locale from the shared i18next
  * language. So the returned helpers re-render and re-bind whenever the language
  * changes:
  *

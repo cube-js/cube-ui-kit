@@ -20,7 +20,7 @@ import {
   useDialog,
 } from 'react-aria';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons';
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
@@ -192,7 +192,7 @@ const DialogContent = forwardRef(function DialogContent(
 
   const styles: Styles = extractStyles(otherProps, STYLES_LIST);
 
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   let domRef = useObjectRef(ref);
   let { dialogProps, titleProps } = useDialog(

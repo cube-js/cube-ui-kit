@@ -21,7 +21,7 @@ import { useFilter, useMenu } from 'react-aria';
 // Import Item and Section from Menu for CommandMenu compound component
 import { Item, Section, useTreeState } from 'react-stately';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { LoadingIcon } from '../../../icons';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
@@ -97,7 +97,7 @@ function CommandMenu<T extends object>(
   props: CubeCommandMenuProps<T>,
   ref: Ref<HTMLDivElement>,
 ) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   const {
     searchPlaceholder = t(

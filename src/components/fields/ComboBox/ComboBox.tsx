@@ -27,7 +27,7 @@ import { useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
@@ -577,7 +577,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     },
   });
 
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   let {
     qa,

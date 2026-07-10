@@ -1,7 +1,7 @@
 import { Key, useEffect, useRef } from 'react';
 
 import { useEvent } from '../../../_internal';
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 
 import { useToastContext } from './ToastProvider';
@@ -63,7 +63,7 @@ export function useProgressToast(
   options?: ProgressToastOptions | ProgressToastEmpty,
 ): void {
   const { addToast, removeToast, updateToast } = useToastContext();
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   const toastIdRef = useRef<Key | null>(null);
   const wasLoadingRef = useRef<boolean | null>(null);

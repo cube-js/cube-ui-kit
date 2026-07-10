@@ -1,6 +1,6 @@
 import { forwardRef, ReactNode } from 'react';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { chain } from '../../../utils/react';
 import { Button } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
@@ -35,7 +35,7 @@ export interface CubeAlertDialogProps
  */
 function AlertDialog(props: CubeAlertDialogProps, ref) {
   const { onClose } = useDialogContext();
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   const DEFAULT_CONFIRM_PROPS: CubeButtonProps = {
     label: t('alertDialog.confirm', 'Ok'),

@@ -3,7 +3,7 @@ import { useLocale, useNumberFormatter } from 'react-aria';
 
 import { renderWithRoot, screen, waitFor } from '../test';
 
-import { getUIKitI18n } from './index';
+import { getI18n } from './index';
 
 function LocaleProbe() {
   const { locale } = useLocale();
@@ -20,12 +20,12 @@ function LocaleProbe() {
 describe('React Aria i18n bridge', () => {
   afterEach(async () => {
     await act(async () => {
-      await getUIKitI18n().changeLanguage('en-US');
+      await getI18n().changeLanguage('en-US');
     });
   });
 
   it('feeds the shared i18next language into React Aria useLocale()', async () => {
-    // `Root` wraps children in `UIKitI18nProvider`, which mirrors the shared
+    // `Root` wraps children in `I18nProvider`, which mirrors the shared
     // i18next language into React Aria's `I18nProvider`.
     renderWithRoot(<LocaleProbe />);
 
@@ -34,7 +34,7 @@ describe('React Aria i18n bridge', () => {
     expect(screen.getByTestId('number')).toHaveTextContent('1,234.5');
 
     await act(async () => {
-      await getUIKitI18n().changeLanguage('de-DE');
+      await getI18n().changeLanguage('de-DE');
     });
 
     await waitFor(() => {

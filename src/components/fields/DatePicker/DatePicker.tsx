@@ -14,7 +14,7 @@ import {
 } from 'react-aria';
 import { useDatePickerState } from 'react-stately';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps, ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
@@ -52,7 +52,7 @@ function DatePicker<T extends DateValue>(
   props: CubeDatePickerProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   props = useProviderProps(props);
   props = useFormProps(props);

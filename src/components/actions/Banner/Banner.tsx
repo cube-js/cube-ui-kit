@@ -9,7 +9,7 @@ import { tasty } from '@tenphi/tasty';
 import { ReactNode, useMemo } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 import { Button, CubeButtonProps } from '../Button/Button';
 import { CubeItemActionProps } from '../ItemAction/ItemAction';
@@ -98,7 +98,7 @@ export function BannerLink(props: BannerLinkProps) {
  * Use Banner.Action for action buttons and Banner.Link for inline links.
  */
 export function Banner(props: BannerProps) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   const {
     theme = 'note',

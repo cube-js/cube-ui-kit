@@ -6,7 +6,7 @@ import { renderWithRoot, screen, waitFor } from '../test';
 import { createFormatter } from './createFormatter';
 import { setActiveFormattingLocale } from './formatting-locale';
 
-import { getUIKitI18n } from './index';
+import { getI18n } from './index';
 
 // A fixed instant so relative-time math is deterministic.
 const NOW = new Date('2024-01-15T12:00:00Z').getTime();
@@ -101,13 +101,13 @@ describe('createFormatter (pure factory)', () => {
 describe('useFormatter + pure helpers follow the active language', () => {
   afterEach(async () => {
     await act(async () => {
-      await getUIKitI18n().changeLanguage('en-US');
+      await getI18n().changeLanguage('en-US');
     });
     setActiveFormattingLocale('en-US');
   });
 
   it('binds the hook to the shared language and re-renders on change', async () => {
-    // `Root` wraps children in `UIKitI18nProvider`, which drives React Aria's
+    // `Root` wraps children in `I18nProvider`, which drives React Aria's
     // locale (read by `useFormatter`) and the module mirror (read by the pure
     // helpers) from the shared i18next language.
     renderWithRoot(<FormatterProbe />);
@@ -119,7 +119,7 @@ describe('useFormatter + pure helpers follow the active language', () => {
     expect(screen.getByTestId('pure-number')).toHaveTextContent('1,234.5');
 
     await act(async () => {
-      await getUIKitI18n().changeLanguage('de-DE');
+      await getI18n().changeLanguage('de-DE');
     });
 
     await waitFor(() => {

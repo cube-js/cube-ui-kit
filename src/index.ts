@@ -283,8 +283,6 @@ export {
   initReactI18next,
   withTranslation,
   useSSR as useI18nSSR,
-  getI18n,
-  setI18n,
 } from 'react-i18next';
 export type {
   TransProps,
@@ -302,13 +300,10 @@ export type {
   InitOptions,
 } from 'i18next';
 export {
-  uiKitI18n,
-  getUIKitI18n,
-  useUIKitTranslation,
+  getI18n,
   UIKIT_I18N_NAMESPACE,
   addUIKitLocale,
-  configureUIKitI18n,
-  UIKitI18nProvider,
+  I18nProvider,
   createFormatter,
   useFormatter,
   formatDate,
@@ -328,17 +323,16 @@ export {
 export type {
   SupportedLocale,
   UIKitResources,
-  ConfigureUIKitI18nOptions,
-  UIKitI18nProviderProps,
+  I18nProviderProps,
   Formatter,
   FormatDateInput,
   RelativeTimeOptions,
   CurrencyOptions,
   BytesOptions,
 } from './i18n';
-// React Aria's locale primitives, re-exported so consumers read the same
-// locale context the UI Kit's `UIKitI18nProvider` populates from i18next.
-export { I18nProvider, useLocale } from 'react-aria';
+// React Aria's `useLocale`, re-exported so consumers read the same locale
+// context the UI Kit's `I18nProvider` populates from i18next.
+export { useLocale } from 'react-aria';
 
 export * from './utils';
 export { default as copy } from 'clipboard-copy';

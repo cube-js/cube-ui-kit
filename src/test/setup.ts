@@ -3,7 +3,7 @@ import './tasty-vitest';
 
 import { configure } from '@testing-library/react';
 
-import { getUIKitI18n } from '../i18n';
+import { getI18n } from '../i18n';
 
 // The UI Kit's shared i18next instance is initialized synchronously at import
 // (all locale bundles are bundled), so components resolve translated defaults
@@ -11,7 +11,7 @@ import { getUIKitI18n } from '../i18n';
 // each test so a spec that exercises `changeLanguage` can't leak its locale
 // into unrelated specs sharing the worker's module graph (isolate: false).
 beforeEach(() => {
-  const i18n = getUIKitI18n();
+  const i18n = getI18n();
   if (i18n.language !== 'en-US') {
     i18n.changeLanguage('en-US');
   }

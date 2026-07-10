@@ -27,7 +27,7 @@ import { Section as BaseSection, ListState, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { processSelectionArray } from '../../../utils/selection';
@@ -171,7 +171,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   props: CubeFilterPickerProps<T>,
   ref: ForwardedRef<HTMLElement>,
 ) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   props = useProviderProps(props);
   props = useFormProps(props);

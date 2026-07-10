@@ -7,7 +7,7 @@ import { configure } from 'storybook/test';
 import { create, themes } from 'storybook/theming';
 
 import { Root } from '../src/components/Root';
-import { getUIKitI18n, LOCALE_LABELS, SUPPORTED_LOCALES } from '../src/i18n';
+import { getI18n, LOCALE_LABELS, SUPPORTED_LOCALES } from '../src/i18n';
 import { setToolbarScheme } from '../src/stories/decorators/colorSchemeBridge';
 
 // Brand both Storybook themes (manager chrome, sidebar selection, toolbar
@@ -175,7 +175,7 @@ export const globalTypes = {
 
 const LocaleDecorator = (Story, context) => {
   const locale = context.globals.locale ?? 'en-US';
-  const i18n = getUIKitI18n();
+  const i18n = getI18n();
 
   useEffect(() => {
     if (i18n.language !== locale) {

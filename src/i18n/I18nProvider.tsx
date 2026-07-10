@@ -1,13 +1,13 @@
-import { I18nProvider } from 'react-aria';
+import { I18nProvider as AriaI18nProvider } from 'react-aria';
 import { I18nextProvider } from 'react-i18next';
 
 import { setActiveFormattingLocale } from './formatting-locale';
-import { getUIKitI18n } from './instance';
-import { useUIKitTranslation } from './useUIKitTranslation';
+import { getI18n } from './instance';
+import { useI18n } from './useI18n';
 
 import type { ReactNode } from 'react';
 
-export interface UIKitI18nProviderProps {
+export interface I18nProviderProps {
   children: ReactNode;
   /**
    * Force a specific BCP-47 locale for React Aria formatting instead of
@@ -30,19 +30,16 @@ export interface UIKitI18nProviderProps {
  * These are two independent library contexts, so they can't be a single physical
  * provider — but the language is one concept, owned by the i18next instance. This
  * component makes the instance the single source of truth and *derives* React
- * Aria's locale from it, so a host calling
- * `getUIKitI18n().changeLanguage('de-DE')` gets German labels **and** German
- * number/date formatting with no extra setup. `useUIKitTranslation` re-renders on
- * `languageChanged`, keeping the two in sync automatically.
+ * Aria's locale from it, so a host calling `getI18n().changeLanguage('de-DE')`
+ * gets German labels **and** German number/date formatting with no extra setup.
+ * `useI18n` re-renders on `languageChanged`, keeping the two in sync
+ * automatically.
  */
-export function UIKitI18nProvider({
-  children,
-  locale,
-}: UIKitI18nProviderProps) {
+export function I18nProvider({ children, locale }: I18nProviderProps) {
   // Binds directly to the shared instance (not this component's own
   // `<I18nextProvider>` below), so it re-renders on `languageChanged` regardless
   // of nesting order.
-  const { i18n } = useUIKitTranslation();
+  const { i18n } = useI18n();
   const resolvedLocale = locale ?? i18n.language;
 
   // Mirror the active locale into the module registry so the pure (non-hook)
@@ -51,8 +48,8 @@ export function UIKitI18nProvider({
   setActiveFormattingLocale(resolvedLocale);
 
   return (
-    <I18nextProvider i18n={getUIKitI18n()}>
-      <I18nProvider locale={resolvedLocale}>{children}</I18nProvider>
+    <I18nextProvider i18n={getI18n()}>
+      <AriaI18nProvider locale={resolvedLocale}>{children}</AriaI18nProvider>
     </I18nextProvider>
   );
 }

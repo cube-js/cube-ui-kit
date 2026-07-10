@@ -13,7 +13,7 @@ import type { TFunction } from 'i18next';
  * - `N mo ago` (1–11 months)
  * - `N y ago` (1+ years)
  *
- * `t` is the UI Kit translation function (from `useUIKitTranslation`), passed
+ * `t` is the UI Kit translation function (from `useI18n`), passed
  * in so the string reacts to the active language. When omitted (non-component
  * callers), English defaults are used.
  */

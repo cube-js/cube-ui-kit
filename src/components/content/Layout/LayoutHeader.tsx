@@ -10,7 +10,7 @@ import {
   RefCallback,
 } from 'react';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { SlashIcon } from '../../../icons/SlashIcon';
 import { Button } from '../../actions/Button/Button';
 import { Link } from '../../actions/Link/Link';
@@ -134,7 +134,7 @@ function LayoutHeader(
   props: CubeLayoutHeaderProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   const {
     title,

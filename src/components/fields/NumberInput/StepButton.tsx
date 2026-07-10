@@ -1,6 +1,6 @@
 import { Styles, tasty } from '@tenphi/tasty';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CaretDownIcon, CaretUpIcon, DirectionIcon } from '../../../icons';
 import { Button } from '../../actions';
 
@@ -30,7 +30,7 @@ const StepButtonElement = tasty(Button, {
  * Buttons for NumberField.
  */
 export function StepButton(props) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   const label =
     props.direction === 'up'

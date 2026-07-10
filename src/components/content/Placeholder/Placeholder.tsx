@@ -9,7 +9,7 @@ import {
 } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { extractStyles } from '../../../utils/styles';
 
 // Create the placeholder animation using keyframes helper
@@ -81,7 +81,7 @@ export const Placeholder = forwardRef(function Placeholder(
 ) {
   let { size = '2x', isStatic, circle, ...props } = allProps;
 
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   let styles = extractStyles(props, CONTAINER_STYLES);
 

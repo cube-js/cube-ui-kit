@@ -10,7 +10,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { ModalProvider } from 'react-aria';
 
-import { UIKitI18nProvider } from '../i18n';
+import { I18nProvider } from '../i18n';
 import { Provider } from '../provider';
 import { NavigationAdapter } from '../providers/navigation.types';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
@@ -165,7 +165,7 @@ export function Root(allProps: CubeRootProps) {
   const styles = extractStyles(props, STYLES);
 
   return (
-    <UIKitI18nProvider>
+    <I18nProvider>
       <Provider navigation={navigation} root={rootRef}>
         <TrackingProvider event={tracking?.event}>
           <RootElement
@@ -201,6 +201,6 @@ export function Root(allProps: CubeRootProps) {
           </RootElement>
         </TrackingProvider>
       </Provider>
-    </UIKitI18nProvider>
+    </I18nProvider>
   );
 }

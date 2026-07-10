@@ -6,32 +6,27 @@ import { render, renderHook, screen, waitFor } from '../test';
 
 import { SUPPORTED_LOCALES } from './locales';
 
-import {
-  addUIKitLocale,
-  getUIKitI18n,
-  UIKIT_I18N_NAMESPACE,
-  uiKitI18n,
-} from './index';
+import { addUIKitLocale, getI18n, UIKIT_I18N_NAMESPACE } from './index';
 
 describe('UI Kit i18n', () => {
   afterEach(async () => {
     // Undo any locale change so specs don't leak into one another (the worker
     // shares the module graph with `isolate: false`).
     await act(async () => {
-      await getUIKitI18n().changeLanguage('en-US');
+      await getI18n().changeLanguage('en-US');
     });
   });
 
   it('exposes exactly one shared instance', () => {
-    // `uiKitI18n` (default export) and `getUIKitI18n()` must be the same object.
-    expect(uiKitI18n).toBe(getUIKitI18n());
+    // `getI18n()` must be stable across calls (the single owned instance).
+    expect(getI18n()).toBe(getI18n());
 
     // `useTranslation` (bound to the shared instance) must resolve strings from
     // that same instance — i.e. the `uikit` bundle is registered on the object
     // the hook reads from. (Identity of the returned `i18n` ref is not asserted;
     // react-i18next may return a wrapped reference.)
     const { result } = renderHook(() =>
-      useTranslation(UIKIT_I18N_NAMESPACE, { i18n: getUIKitI18n() }),
+      useTranslation(UIKIT_I18N_NAMESPACE, { i18n: getI18n() }),
     );
 
     expect(
@@ -41,7 +36,7 @@ describe('UI Kit i18n', () => {
   });
 
   it('ships every supported locale under the uikit namespace', () => {
-    const i18n = getUIKitI18n();
+    const i18n = getI18n();
 
     for (const locale of SUPPORTED_LOCALES) {
       expect(i18n.hasResourceBundle(locale, UIKIT_I18N_NAMESPACE)).toBe(true);
@@ -57,7 +52,7 @@ describe('UI Kit i18n', () => {
     // A host app driving the shared instance (Cube Cloud calling
     // `changeLanguage`) flips UI Kit strings for free — no separate instance.
     await act(async () => {
-      await getUIKitI18n().changeLanguage('de-DE');
+      await getI18n().changeLanguage('de-DE');
     });
 
     await waitFor(() => {
@@ -75,7 +70,7 @@ describe('UI Kit i18n', () => {
     render(<Tag isClosable>Example</Tag>);
 
     await act(async () => {
-      await getUIKitI18n().changeLanguage('zz-ZZ');
+      await getI18n().changeLanguage('zz-ZZ');
     });
 
     await waitFor(() => {
@@ -85,7 +80,7 @@ describe('UI Kit i18n', () => {
 
   it('supports the typed selector API (t($ => $.key)) hosts rely on', () => {
     const { result } = renderHook(() =>
-      useTranslation(UIKIT_I18N_NAMESPACE, { i18n: getUIKitI18n() }),
+      useTranslation(UIKIT_I18N_NAMESPACE, { i18n: getI18n() }),
     );
 
     const { t } = result.current;

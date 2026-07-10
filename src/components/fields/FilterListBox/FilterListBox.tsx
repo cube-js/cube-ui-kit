@@ -25,7 +25,7 @@ import { useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, Item, useListState } from 'react-stately';
 import { CubeCollectionItemProps } from 'src/components/CollectionItem';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
@@ -220,7 +220,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     },
   });
 
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   let {
     qa,

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { getUIKitI18n, UIKIT_I18N_NAMESPACE } from './instance';
+import { getI18n, UIKIT_I18N_NAMESPACE } from './instance';
 
 /**
  * Internal hook every UI Kit component uses to read its own strings. It binds
@@ -9,6 +9,6 @@ import { getUIKitI18n, UIKIT_I18N_NAMESPACE } from './instance';
  * unit tests, non-i18next apps). When a host app connects its own instance to
  * this same object, the current language is shared automatically.
  */
-export function useUIKitTranslation() {
-  return useTranslation(UIKIT_I18N_NAMESPACE, { i18n: getUIKitI18n() });
+export function useI18n() {
+  return useTranslation(UIKIT_I18N_NAMESPACE, { i18n: getI18n() });
 }

@@ -10,7 +10,7 @@ import React, {
 } from 'react';
 import { useOverlay, useOverlayPosition } from 'react-aria';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { mergeProps } from '../../../utils/react';
 import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
@@ -123,7 +123,7 @@ const ListBoxPopoverElement = tasty({
 export const ListBoxPopover = function ListBoxPopover(
   props: ListBoxPopoverProps,
 ) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
   const {
     isOpen,
     triggerRef,

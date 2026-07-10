@@ -2,7 +2,7 @@ import { Children, memo, useMemo, useRef, useState } from 'react';
 import { useHover, useTreeItem } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { DirectionIcon, LoadingIcon, MoreIcon } from '../../../icons';
 import { mergeProps, mergeRefs } from '../../../utils/react';
 import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
@@ -99,7 +99,7 @@ export interface TreeNodeProps {
 }
 
 function TreeNodeInner(props: TreeNodeProps) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
   const {
     node,
     data,

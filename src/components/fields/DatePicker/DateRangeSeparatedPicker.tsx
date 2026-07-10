@@ -16,7 +16,7 @@ import {
 } from 'react-aria';
 import { useDatePickerState, useDateRangePickerState } from 'react-stately';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps, ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
@@ -65,7 +65,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
   props: CubeDateRangeSeparatedPickerProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   props = useProviderProps(props);
   props = useFormProps(props);

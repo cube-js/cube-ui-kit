@@ -48,11 +48,11 @@ const resources = Object.fromEntries(
 );
 
 /**
- * The single i18next instance the UI Kit owns and exports. `useTranslation`
- * (re-exported from the UI Kit) and `<I18nextProvider>` both reference this
- * object, so a host app that drives it (e.g. Cube Cloud registering its own
- * namespaces onto it and calling `changeLanguage`) shares one instance —
- * switching language in the host switches UI Kit strings for free.
+ * The single i18next instance the UI Kit owns. `useTranslation` (re-exported
+ * from the UI Kit) and `<I18nextProvider>` both reference this object, so a host
+ * app that drives it (e.g. Cube Cloud registering its own namespaces onto it and
+ * calling `changeLanguage`) shares one instance — switching language in the host
+ * switches UI Kit strings for free. Read it via `getI18n()`.
  */
 const instance: I18nInstance = i18next.createInstance();
 
@@ -80,8 +80,6 @@ void instance.use(initReactI18next).init({
 });
 
 /** Returns the shared UI Kit i18next instance. */
-export function getUIKitI18n(): I18nInstance {
+export function getI18n(): I18nInstance {
   return instance;
 }
-
-export default instance;

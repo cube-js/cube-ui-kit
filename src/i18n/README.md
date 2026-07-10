@@ -11,9 +11,10 @@ app runs on exactly one copy / one version / one instance.
 | File | Purpose |
 | --- | --- |
 | `locales.ts` | `SUPPORTED_LOCALES` (the 12 Cloud locales), `SupportedLocale`, `LOCALE_LABELS`, `isSupportedLocale`. Self-contained — no dependency on the cloud `cross-runtime` package. |
-| `instance.ts` | Creates the shared instance (`createInstance()` → `initReactI18next` → `init(...)`), eagerly registers all 12 `uikit` bundles, exports `getUIKitI18n()`. |
-| `useUIKitTranslation.ts` | Internal hook every UI Kit component uses: `useTranslation('uikit', { i18n: getUIKitI18n() })`. Binds explicitly to the shared instance so strings resolve even without an `<I18nextProvider>` (Storybook, unit tests, non-i18next hosts). |
-| `index.ts` | Public UI Kit i18n API: `addUIKitLocale`, `configureUIKitI18n`, the instance, locale exports. |
+| `instance.ts` | Creates the shared instance (`createInstance()` → `initReactI18next` → `init(...)`), eagerly registers all 12 `uikit` bundles, exports `getI18n()`. |
+| `useI18n.ts` | Internal hook every UI Kit component uses: `useTranslation('uikit', { i18n: getI18n() })`. Binds explicitly to the shared instance so strings resolve even without an `<I18nextProvider>` (Storybook, unit tests, non-i18next hosts). Not part of the public barrel. |
+| `I18nProvider.tsx` | The UI Kit's single provider — composes `<I18nextProvider>` (translated strings) and React Aria's `<I18nProvider>` (locale formatting). Rendered once by `Root`. |
+| `index.ts` | Public UI Kit i18n API: `getI18n`, `addUIKitLocale`, `I18nProvider`, the formatters, locale exports. |
 | `locales/<locale>/uikit.json` | One bundle per locale. `en-US` is the source of truth. |
 
 The instance is initialized with the options Cloud relies on: `enableSelector: true`
@@ -27,10 +28,10 @@ Never hardcode a user-facing string. Add a key to `locales/en-US/uikit.json`,
 translate it into **all 12 locales** (see below), and read it with the internal hook:
 
 ```tsx
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 
 function MyComponent() {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   // English default is kept inline as a belt-and-suspenders fallback.
   return <button aria-label={t('myComponent.close', 'Close')} />;
@@ -74,16 +75,20 @@ drives language:
 
 ```
 @cube-dev/ui-kit
-  ├─ shared instance (createInstance + initReactI18next + init)
+  ├─ shared instance (createInstance + initReactI18next + init), read via getI18n()
   ├─ re-exports: useTranslation, Trans, I18nextProvider, initReactI18next, i18next, …
   ├─ uikit namespace (12 locales) + addUIKitLocale
-  └─ Root wraps children in <UIKitI18nProvider> (i18next instance + React Aria locale)
+  └─ Root wraps children in <I18nProvider> (i18next instance + React Aria locale)
 
 host (Cube Cloud)
-  ├─ import i18next / react-i18next / the instance from @cube-dev/ui-kit
-  ├─ addResourceBundle('chat', …) / loadNamespaces(…) on the SAME instance
-  └─ changeLanguage(...) → flips UI Kit strings for free (one instance)
+  ├─ import everything (useTranslation, I18nProvider, getI18n, …) from @cube-dev/ui-kit
+  ├─ getI18n().addResourceBundle('chat', …) / loadNamespaces(…) on the SAME instance
+  └─ getI18n().changeLanguage(...) → flips UI Kit strings for free (one instance)
 ```
+
+Hosts never import from `react-i18next` / `react-aria` directly — everything
+(`useTranslation`, `Trans`, `I18nextProvider`, `I18nProvider`, `useLocale`, `getI18n`,
+the formatters) is re-exported from `@cube-dev/ui-kit`, guaranteeing one physical copy.
 
 ## Locale provider — formatting follows the language
 
@@ -92,27 +97,28 @@ collation are formatted by **React Aria**, which reads its locale from the neare
 `<I18nProvider>` (from `@react-aria/i18n`) and otherwise falls back to the browser
 default. These are two independent library contexts (react-i18next carries the
 _instance_; react-aria carries a _locale string_), so they can't be one physical
-provider — but the language is one concept. `UIKitI18nProvider` composes both from a
-single component, making the i18next instance the source of truth and _deriving_ React
-Aria's locale from it. `Root` renders it once:
+provider — but the language is one concept. The UI Kit's `I18nProvider` composes both
+from a single component, making the i18next instance the source of truth and _deriving_
+React Aria's locale from it. `Root` renders it once:
 
 ```
 Root
-  └─ <UIKitI18nProvider>                           ← single UI Kit provider
-       ├─ <I18nextProvider i18n={getUIKitI18n()}>  ← translated strings
-       └─ <I18nProvider locale={i18n.language}>     ← React Aria formatting
+  └─ <I18nProvider>                                ← single UI Kit provider
+       ├─ <I18nextProvider i18n={getI18n()}>       ← translated strings
+       └─ <AriaI18nProvider locale={i18n.language}> ← React Aria formatting
 ```
 
-`UIKitI18nProvider` reads the current language via `useUIKitTranslation` (which
-re-renders on `languageChanged`), so a single `getUIKitI18n().changeLanguage('de-DE')`
+The provider reads the current language via the internal `useI18n` hook (which
+re-renders on `languageChanged`), so a single `getI18n().changeLanguage('de-DE')`
 gives German labels **and** German number/date formatting. Consequently
 `useLocale`, `useNumberFormatter`, `useDateFormatter`, `useCollator`, and `useFilter`
 all resolve to the active language automatically — `NumberInput`, `Slider`, and the
 `Calendar` family already benefit with no per-component wiring.
 
 `I18nProvider` and `useLocale` are re-exported from `@cube-dev/ui-kit` so hosts read
-the same locale context; `UIKitI18nProvider` also accepts an optional `locale` prop to
-force a specific BCP-47 tag when a subtree must diverge from the shared language.
+the same locale context (the UI Kit's `I18nProvider` supersedes React Aria's raw one,
+which is no longer re-exported); `I18nProvider` also accepts an optional `locale` prop
+to force a specific BCP-47 tag when a subtree must diverge from the shared language.
 
 > **Note:** `DateInput` / `DatePickerInput` keep an explicit `useLocale` opt-in prop
 > and default to `'en-US'` formatting for backward compatibility. Pass `useLocale`
@@ -147,7 +153,7 @@ it re-binds automatically when the language changes.
 
 **In non-render code — pure helpers.** Table column definitions, event handlers, and
 plain utilities can't call a hook, so use the top-level functions. They read the
-locale from a module mirror that `UIKitI18nProvider` keeps in sync:
+locale from a module mirror that `I18nProvider` keeps in sync:
 
 ```ts
 import { formatDate, formatCurrency, formatBytes } from '@cube-dev/ui-kit';
@@ -195,14 +201,14 @@ When Cloud adopts this, the steps are:
    `I18nextProvider`, etc.) from `@cube-dev/ui-kit` instead. This guarantees a single
    physical copy and version across the app.
 2. **Use the exported shared instance.** Replace the `createInstance()` / `init()` in
-   `packages/console-ui/src/i18n/index.ts` with the instance imported from
-   `@cube-dev/ui-kit`. Move the current `init({ resources, ns })` onto it as
-   `addResourceBundle(...)` + `loadNamespaces(...)` — Cloud's `ensureLocaleLoaded`
-   already uses `addResourceBundle`, so this is a natural change. i18next allows only
-   one `init()`, and the UI Kit already did it.
-3. **Keep `defaultNS` as Cloud needs it.** Call `configureUIKitI18n({ defaultNS: 'chat' })`
-   (or `setDefaultNamespace`) if Cloud wants a non-`uikit` default. UI Kit components
-   always request `'uikit'` explicitly, so they're unaffected either way.
+   `packages/console-ui/src/i18n/index.ts` with `getI18n()` from `@cube-dev/ui-kit`.
+   Move the current `init({ resources, ns })` onto it as `addResourceBundle(...)` +
+   `loadNamespaces(...)` — Cloud's `ensureLocaleLoaded` already uses `addResourceBundle`,
+   so this is a natural change. i18next allows only one `init()`, and the UI Kit already
+   did it.
+3. **Keep `defaultNS` as Cloud needs it.** Call `getI18n().setDefaultNamespace('chat')`
+   if Cloud wants a non-`uikit` default. UI Kit components always request `'uikit'`
+   explicitly, so they're unaffected either way.
 4. **Leave `i18next.d.ts` augmentation as-is.** Cloud's global `CustomTypeOptions`
    augmentation still applies because there's exactly one real `i18next` package in the
    tree. The UI Kit deliberately does **not** re-augment that interface (it would

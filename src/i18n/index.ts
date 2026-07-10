@@ -1,16 +1,15 @@
-import { getUIKitI18n, UIKIT_I18N_NAMESPACE } from './instance';
+import { getI18n, UIKIT_I18N_NAMESPACE } from './instance';
 
 import type { UIKitResources } from './instance';
 
-export {
-  default as uiKitI18n,
-  getUIKitI18n,
-  UIKIT_I18N_NAMESPACE,
-} from './instance';
+export { getI18n, UIKIT_I18N_NAMESPACE } from './instance';
 export type { UIKitResources } from './instance';
-export { useUIKitTranslation } from './useUIKitTranslation';
-export { UIKitI18nProvider } from './UIKitI18nProvider';
-export type { UIKitI18nProviderProps } from './UIKitI18nProvider';
+// Internal hook — used by UI Kit components to read their own strings. Not part
+// of the public barrel (`src/index.ts`); hosts use the re-exported
+// `useTranslation` for their own strings.
+export { useI18n } from './useI18n';
+export { I18nProvider } from './I18nProvider';
+export type { I18nProviderProps } from './I18nProvider';
 export { createFormatter } from './createFormatter';
 export type {
   Formatter,
@@ -46,28 +45,11 @@ export function addUIKitLocale(
   locale: string,
   resources: Partial<UIKitResources>,
 ): void {
-  getUIKitI18n().addResourceBundle(
+  getI18n().addResourceBundle(
     locale,
     UIKIT_I18N_NAMESPACE,
     resources,
     true,
     true,
   );
-}
-
-export interface ConfigureUIKitI18nOptions {
-  /**
-   * Default namespace to set on the shared instance. Host apps that own their
-   * own strings (e.g. Cube Cloud with a `chat` default) can set it here; UI Kit
-   * components always request the `uikit` namespace explicitly, so they are
-   * unaffected either way.
-   */
-  defaultNS?: string;
-}
-
-/** Adjust host-facing options on the shared UI Kit i18next instance. */
-export function configureUIKitI18n(options: ConfigureUIKitI18nOptions): void {
-  if (options.defaultNS) {
-    getUIKitI18n().setDefaultNamespace(options.defaultNS);
-  }
 }

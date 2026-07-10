@@ -6,7 +6,7 @@ import {
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode, useCallback } from 'react';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction';
@@ -45,7 +45,7 @@ function LayoutPanelHeader(
   props: CubeLayoutPanelHeaderProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   const {
     title,

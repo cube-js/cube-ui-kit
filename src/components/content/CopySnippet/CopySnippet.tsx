@@ -2,7 +2,7 @@ import { tasty } from '@tenphi/tasty';
 import copy from 'clipboard-copy';
 import { ReactNode, useMemo, useState } from 'react';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CopyIcon, EyeIcon, EyeInvisibleIcon } from '../../../icons';
 import { Action, Button } from '../../actions';
 import {
@@ -170,7 +170,7 @@ function replaceSymbolsToHidden(str: string) {
 }
 
 function CopySnippet(allProps: CubeCopySnippetProps) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   const {
     code = '',

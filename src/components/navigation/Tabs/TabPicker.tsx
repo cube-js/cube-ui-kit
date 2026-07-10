@@ -1,4 +1,4 @@
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { CloseIcon, MoreIcon } from '../../../icons';
 import { ItemAction } from '../../actions/ItemAction';
 import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
@@ -53,7 +53,7 @@ export function TabPicker({
   isReorderable,
   onReorder,
 }: TabPickerProps) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
   const isDeletable = !!onDelete;
 
   // Map TabSize to FilterPicker size (xsmall -> small)

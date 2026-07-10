@@ -1,7 +1,7 @@
 import { ForwardedRef, forwardRef, useCallback, useRef, useState } from 'react';
 import { useTextField } from 'react-aria';
 
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { mergeProps } from '../../../utils/react';
@@ -20,7 +20,7 @@ function PasswordInput(
   props: CubePasswordInputProps,
   ref: ForwardedRef<HTMLElement>,
 ) {
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
 
   props = castNullableStringValue(props);
   props = useProviderProps(props);

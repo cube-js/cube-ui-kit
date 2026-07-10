@@ -1,4 +1,4 @@
-import { useUIKitTranslation } from '../../../i18n';
+import { useI18n } from '../../../i18n';
 import { Button, ButtonGroup, CubeButtonProps } from '../../actions';
 import { Content } from '../../content/Content';
 import { Header } from '../../content/Header';
@@ -77,7 +77,7 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
 
   [form] = useForm(form);
 
-  const { t } = useUIKitTranslation();
+  const { t } = useI18n();
   const { onClose } = useDialogContext();
 
   function onLocalDismiss() {
