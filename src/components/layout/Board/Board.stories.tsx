@@ -486,60 +486,71 @@ const CrossBoardTemplate: StoryFn<CubeBoardProps> = (args) => (
 export const CrossBoardDragging = CrossBoardTemplate.bind({});
 CrossBoardDragging.args = {};
 
-const NestedTemplate: StoryFn<CubeBoardProps> = (args) => (
-  <Board.Provider>
-    <Board
-      id="outer"
-      padding="1x"
-      radius="1r"
-      rowHeight={120}
-      showGridLines="drag"
-      defaultLayout={[
-        // minW/minH keep the container from being resized smaller than the
-        // inner board needs to fit its widgets (the resize handle stops there).
-        { i: 'container', x: 0, y: 0, w: 7, h: 4, minW: 3, minH: 2 },
-        { i: 'side', x: 7, y: 0, w: 5, h: 4 },
-      ]}
-      {...args}
-    >
-      {/* isAutoHeight grows this container in the outer grid until the inner
-          board's rows fit at the parent's row height (only ever increases). */}
-      <Board.Widget id="container" isAutoHeight fill="#surface">
-        <Flow display="flex" flow="column" gap="1x" height="100%">
-          <Flow padding="1x 1.5x" fill="#light">
-            <Title level={6} preset="h6">
-              Container widget (drag the whole container)
-            </Title>
+const NestedTemplate: StoryFn<CubeBoardProps> = (args) => {
+  // Keep the inner board controlled so its positions survive the remount that
+  // happens when the container widget is dragged in the outer board. With an
+  // uncontrolled inner board the layout state lives inside the remounted
+  // subtree and resets to `defaultLayout` on every outer drag.
+  const [outerLayout, setOuterLayout] = useState<LayoutItem[]>([
+    // minW/minH keep the container from being resized smaller than the
+    // inner board needs to fit its widgets (the resize handle stops there).
+    { i: 'container', x: 0, y: 0, w: 7, h: 4, minW: 3, minH: 2 },
+    { i: 'side', x: 7, y: 0, w: 5, h: 4 },
+  ]);
+  const [innerLayout, setInnerLayout] = useState<LayoutItem[]>([
+    { i: 'child-1', x: 0, y: 0, w: 3, h: 2 },
+    { i: 'child-2', x: 3, y: 0, w: 3, h: 2 },
+  ]);
+
+  return (
+    <Board.Provider>
+      <Board
+        id="outer"
+        padding="1x"
+        radius="1r"
+        rowHeight={120}
+        showGridLines="drag"
+        layout={outerLayout}
+        onLayoutChange={setOuterLayout}
+        {...args}
+      >
+        {/* isAutoHeight grows this container in the outer grid until the inner
+            board's rows fit at the parent's row height (only ever increases). */}
+        <Board.Widget id="container" isAutoHeight fill="#surface">
+          <Flow display="flex" flow="column" gap="1x" height="100%">
+            <Flow padding="1x 1.5x" fill="#light">
+              <Title level={6} preset="h6">
+                Container widget (drag the whole container)
+              </Title>
+            </Flow>
+            <Board
+              id="inner"
+              isAligned
+              flexGrow={1}
+              // cols/rowHeight are fallbacks used only until the parent metrics
+              // resolve; `isAligned` then derives the column count from the
+              // parent's pitch and inherits its row height.
+              cols={6}
+              rowHeight={70}
+              layout={innerLayout}
+              onLayoutChange={setInnerLayout}
+            >
+              <Board.Widget id="child-1">
+                <WidgetBody title="Child 1" text="Drag me out" />
+              </Board.Widget>
+              <Board.Widget id="child-2">
+                <WidgetBody title="Child 2" text="Drag me out" />
+              </Board.Widget>
+            </Board>
           </Flow>
-          <Board
-            id="inner"
-            isAligned
-            flexGrow={1}
-            // cols/rowHeight are fallbacks used only until the parent metrics
-            // resolve; `isAligned` then derives the column count from the
-            // parent's pitch and inherits its row height.
-            cols={6}
-            rowHeight={70}
-            defaultLayout={[
-              { i: 'child-1', x: 0, y: 0, w: 3, h: 2 },
-              { i: 'child-2', x: 3, y: 0, w: 3, h: 2 },
-            ]}
-          >
-            <Board.Widget id="child-1">
-              <WidgetBody title="Child 1" text="Drag me out" />
-            </Board.Widget>
-            <Board.Widget id="child-2">
-              <WidgetBody title="Child 2" text="Drag me out" />
-            </Board.Widget>
-          </Board>
-        </Flow>
-      </Board.Widget>
-      <Board.Widget id="side">
-        <WidgetBody title="Sibling" text="Drop children here" />
-      </Board.Widget>
-    </Board>
-  </Board.Provider>
-);
+        </Board.Widget>
+        <Board.Widget id="side">
+          <WidgetBody title="Sibling" text="Drop children here" />
+        </Board.Widget>
+      </Board>
+    </Board.Provider>
+  );
+};
 
 export const NestedBoards = NestedTemplate.bind({});
 NestedBoards.args = {};
@@ -549,62 +560,71 @@ NestedBoards.args = {};
 // column pitch, and because it adds no insets, its columns line up exactly with
 // the outer board's. Grid lines are shown on both while dragging so the
 // alignment is verifiable.
-const AlignedNestedTemplate: StoryFn<CubeBoardProps> = (args) => (
-  <Board.Provider>
-    <Board
-      id="outer-aligned"
-      padding="1x"
-      radius="1r"
-      rowHeight={120}
-      showGridLines="drag"
-      defaultLayout={[
-        { i: 'aligned-container', x: 0, y: 0, w: 7, h: 4, minW: 3, minH: 2 },
-        { i: 'aligned-side', x: 7, y: 0, w: 5, h: 4 },
-      ]}
-      {...args}
-    >
-      <Board.Widget id="aligned-container" isAutoHeight fill="#surface">
-        <Flow display="flex" flow="column" gap="1x" height="100%">
-          <Flow padding="1x 1.5x" fill="#light">
-            <Title level={6} preset="h6">
-              Aligned nested board
-            </Title>
+const AlignedNestedTemplate: StoryFn<CubeBoardProps> = (args) => {
+  // Controlled inner/outer layouts so inner widget positions survive the
+  // container widget remount during an outer drag (see NestedTemplate).
+  const [outerLayout, setOuterLayout] = useState<LayoutItem[]>([
+    { i: 'aligned-container', x: 0, y: 0, w: 7, h: 4, minW: 3, minH: 2 },
+    { i: 'aligned-side', x: 7, y: 0, w: 5, h: 4 },
+  ]);
+  const [innerLayout, setInnerLayout] = useState<LayoutItem[]>([
+    { i: 'aligned-a', x: 0, y: 0, w: 3, h: 2 },
+    { i: 'aligned-b', x: 3, y: 0, w: 3, h: 2 },
+    { i: 'aligned-c', x: 0, y: 2, w: 6, h: 2 },
+  ]);
+
+  return (
+    <Board.Provider>
+      <Board
+        id="outer-aligned"
+        padding="1x"
+        radius="1r"
+        rowHeight={120}
+        showGridLines="drag"
+        layout={outerLayout}
+        onLayoutChange={setOuterLayout}
+        {...args}
+      >
+        <Board.Widget id="aligned-container" isAutoHeight fill="#surface">
+          <Flow display="flex" flow="column" gap="1x" height="100%">
+            <Flow padding="1x 1.5x" fill="#light">
+              <Title level={6} preset="h6">
+                Aligned nested board
+              </Title>
+            </Flow>
+            <Board
+              id="inner-aligned"
+              isAligned
+              // No fill/border/radius: the inner grid's origin sits flush on the
+              // container widget's edge, which already coincides with the outer
+              // board's column-0 origin. `isAligned` defaults the inner board's
+              // `containerPadding` to zero, so its columns line up exactly with
+              // the outer board's without any extra chrome.
+              flexGrow={1}
+              cols={6}
+              rowHeight={70}
+              layout={innerLayout}
+              onLayoutChange={setInnerLayout}
+            >
+              <Board.Widget id="aligned-a">
+                <WidgetBody title="Child A" text="Columns align with parent" />
+              </Board.Widget>
+              <Board.Widget id="aligned-b">
+                <WidgetBody title="Child B" text="Columns align with parent" />
+              </Board.Widget>
+              <Board.Widget id="aligned-c">
+                <WidgetBody title="Child C" text="Spans the full width" />
+              </Board.Widget>
+            </Board>
           </Flow>
-          <Board
-            id="inner-aligned"
-            isAligned
-            // No fill/border/radius: the inner grid's origin sits flush on the
-            // container widget's edge, which already coincides with the outer
-            // board's column-0 origin. `isAligned` defaults the inner board's
-            // `containerPadding` to zero, so its columns line up exactly with
-            // the outer board's without any extra chrome.
-            flexGrow={1}
-            cols={6}
-            rowHeight={70}
-            defaultLayout={[
-              { i: 'aligned-a', x: 0, y: 0, w: 3, h: 2 },
-              { i: 'aligned-b', x: 3, y: 0, w: 3, h: 2 },
-              { i: 'aligned-c', x: 0, y: 2, w: 6, h: 2 },
-            ]}
-          >
-            <Board.Widget id="aligned-a">
-              <WidgetBody title="Child A" text="Columns align with parent" />
-            </Board.Widget>
-            <Board.Widget id="aligned-b">
-              <WidgetBody title="Child B" text="Columns align with parent" />
-            </Board.Widget>
-            <Board.Widget id="aligned-c">
-              <WidgetBody title="Child C" text="Spans the full width" />
-            </Board.Widget>
-          </Board>
-        </Flow>
-      </Board.Widget>
-      <Board.Widget id="aligned-side">
-        <WidgetBody title="Sibling" text="Outer grid reference" />
-      </Board.Widget>
-    </Board>
-  </Board.Provider>
-);
+        </Board.Widget>
+        <Board.Widget id="aligned-side">
+          <WidgetBody title="Sibling" text="Outer grid reference" />
+        </Board.Widget>
+      </Board>
+    </Board.Provider>
+  );
+};
 
 export const AlignedNestedBoards = AlignedNestedTemplate.bind({});
 AlignedNestedBoards.args = {};

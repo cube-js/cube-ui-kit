@@ -48,6 +48,7 @@ const WidgetElement = tasty({
     },
     shadow: {
       '': false,
+      'hovered & !card': '0 0 0 1bw #border',
       // `$dialog-shadow` uses Glaze `#shadow-lg`, which adapts to dark / high-contrast schemes.
       'drag | resizing': '$dialog-shadow',
     },
