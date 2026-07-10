@@ -143,6 +143,20 @@ NonResizable.args = {
   isResizable: false,
 };
 
+export const ReadOnly = Template.bind({});
+ReadOnly.args = {
+  isDraggable: false,
+  isResizable: false,
+};
+ReadOnly.parameters = {
+  docs: {
+    description: {
+      story:
+        'With `isDraggable={false}` and `isResizable={false}` the board is fully read-only: widgets can neither be moved nor resized. Their content stays fully interactive - you can still select text inside a widget.',
+    },
+  },
+};
+
 // Per-widget `resizeHandles` restrict a widget to a single axis. Edge handles
 // (`e`/`s`) render a dotted grip revealed on hover/focus/resize.
 const SingleAxisTemplate: StoryFn<CubeBoardProps> = (args) => (

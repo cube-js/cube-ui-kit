@@ -48,7 +48,7 @@ const WidgetElement = tasty({
     },
     shadow: {
       '': false,
-      'hovered & !card': '0 0 0 1bw #border',
+      'hovered & !card & (draggable | resizing)': '0 0 0 1bw #border',
       // `$dialog-shadow` uses Glaze `#shadow-lg`, which adapts to dark / high-contrast schemes.
       'drag | resizing': '$dialog-shadow',
     },
@@ -531,8 +531,15 @@ export function WidgetHost(props: WidgetHostProps) {
   // Skipping `useMove` entirely leaves the target's default behavior and its own
   // handlers fully intact. Keyboard moves go through `onKeyDown` and are never
   // gated.
-  const gatedMoveProps =
-    isDraggable && (dragHandle || dragCancel)
+  //
+  // A non-draggable widget must not carry `moveProps` at all: `useMove`'s
+  // pointer-down handler calls `preventDefault()`, which cancels native text
+  // selection inside the widget. Read-only boards (`isDraggable={false}`) still
+  // need selectable content, so we drop the handlers entirely instead of relying
+  // on the early-returns inside the `onMove*` callbacks.
+  const gatedMoveProps = !isDraggable
+    ? {}
+    : dragHandle || dragCancel
       ? {
           ...moveProps,
           ...(moveProps.onPointerDown && {
