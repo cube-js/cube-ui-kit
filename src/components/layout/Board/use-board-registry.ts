@@ -12,8 +12,10 @@ import {
 import { BoardWidgetStore } from './board-store';
 import {
   applyPositionConstraints,
+  bottom,
   calcXYRaw,
   cloneLayout,
+  getAllCollisions,
   getLayoutItem,
   LayoutItem,
   moveElement,
@@ -361,6 +363,112 @@ export function useBoardRegistry(
   );
 
   /**
+   * Move a widget by one logical keyboard step. Unlike pointer movement, this
+   * starts from the live grid coordinates rather than DOM geometry and scans
+   * farther in the requested direction when the adjacent slot cannot produce a
+   * valid move.
+   */
+  const moveWithKeyboard = useCallback(
+    (entry: BoardEntry, item: LayoutItem, deltaX: number, deltaY: number) => {
+      const pp = entry.getPositionParams();
+      const compactor = entry.getCompactor();
+      const layout = entry.getLayout();
+      const live = getLayoutItem(layout, item.i);
+      if (!live) return;
+
+      const directionX = Math.sign(deltaX);
+      const directionY = Math.sign(deltaY);
+      if (directionX === 0 && directionY === 0) return;
+
+      const maxRows = entry.getMaxRows();
+      const attempts =
+        directionX < 0
+          ? live.x
+          : directionX > 0
+            ? Math.max(0, pp.cols - live.w - live.x)
+            : directionY < 0
+              ? live.y
+              : Number.isFinite(maxRows)
+                ? Math.max(0, maxRows - live.h - live.y)
+                : Math.max(1, bottom(layout) - live.y);
+      const seen = new Set<string>();
+
+      for (let distance = 1; distance <= attempts; distance++) {
+        const rawX = live.x + directionX * distance;
+        const rawY = live.y + directionY * distance;
+        const candidate = applyPositionConstraints(
+          entry.getConstraints(),
+          item,
+          rawX,
+          rawY,
+          {
+            cols: pp.cols,
+            maxRows,
+            containerWidth: pp.containerWidth,
+            containerHeight: entry.getContainerHeight(),
+            rowHeight: pp.rowHeight,
+            margin: pp.margin,
+            layout,
+          },
+        );
+        const candidateKey = `${candidate.x}:${candidate.y}`;
+        if (seen.has(candidateKey)) continue;
+        seen.add(candidateKey);
+
+        // A custom constraint may jump farther than one cell. It is still a
+        // valid candidate only when it advances in the requested direction and
+        // does not introduce movement on the orthogonal axis.
+        if (
+          (directionX !== 0 &&
+            (Math.sign(candidate.x - live.x) !== directionX ||
+              candidate.y !== live.y)) ||
+          (directionY !== 0 &&
+            (Math.sign(candidate.y - live.y) !== directionY ||
+              candidate.x !== live.x))
+        ) {
+          continue;
+        }
+
+        const working = cloneLayout(layout);
+        const target = getLayoutItem(working, item.i);
+        if (!target) return;
+        const moved = moveElement(
+          working,
+          target,
+          candidate.x,
+          candidate.y,
+          true,
+          compactor.preventCollision,
+          compactor.type,
+          pp.cols,
+          compactor.allowOverlap,
+        );
+        const compacted = [...compactor.compact(moved, pp.cols)];
+        const landed = getLayoutItem(compacted, item.i);
+        if (!landed) continue;
+
+        const advanced =
+          directionX !== 0
+            ? Math.sign(landed.x - live.x) === directionX && landed.y === live.y
+            : Math.sign(landed.y - live.y) === directionY &&
+              landed.x === live.x;
+        const overlaps =
+          !compactor.allowOverlap &&
+          getAllCollisions(compacted, landed).some(
+            (other) => other.i !== landed.i,
+          );
+        if (!advanced || overlaps) continue;
+
+        entry.applyLayout(compacted, false);
+        entry.setPlaceholder(landed);
+        lastLandingRef.current = { x: landed.x, y: landed.y };
+        return;
+      }
+    },
+    [],
+  );
+
+  /**
    * Live cross-board reflow preview. Pushes the target board's *other* widgets
    * aside to make room for the incoming item, without ever adding the dragged
    * item's host to the target (it stays visualized as a placeholder + overlay
@@ -429,9 +537,15 @@ export function useBoardRegistry(
   );
 
   const onDragMove = useEvent(
-    (deltaX: number, deltaY: number, _pointerType: string) => {
+    (deltaX: number, deltaY: number, pointerType: string) => {
       const ds = dragStateRef.current;
       if (!ds) return;
+
+      if (pointerType === 'keyboard') {
+        const source = boardsRef.current.get(ds.sourceBoardId);
+        if (source) moveWithKeyboard(source, ds.item, deltaX, deltaY);
+        return;
+      }
 
       const newRect: ViewportRect = {
         ...ds.rect,

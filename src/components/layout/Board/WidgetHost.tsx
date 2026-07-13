@@ -1,6 +1,6 @@
 import { Styles, tasty } from '@tenphi/tasty';
 import { CSSProperties, useMemo, useRef, useState } from 'react';
-import { useFocusWithin, useHover, useMove } from 'react-aria';
+import { useFocusRing, useFocusWithin, useHover, useMove } from 'react-aria';
 import { createPortal } from 'react-dom';
 
 import { useEvent } from '../../../_internal/hooks';
@@ -52,6 +52,11 @@ const WidgetElement = tasty({
       // `$dialog-shadow` uses Glaze `#shadow-lg`, which adapts to dark / high-contrast schemes.
       'drag | resizing': '$dialog-shadow',
     },
+    outline: {
+      '': '1bw #primary-text.0',
+      'focus-visible': '1bw #primary-text',
+    },
+    outlineOffset: '1bw',
     zIndex: {
       '': 1,
       'drag | resizing': 10,
@@ -64,16 +69,16 @@ const WidgetElement = tasty({
       '': 1,
       floating: 0.8,
     },
-    // Reflowing widgets animate their position via the `inset` group (left/top).
-    // The actively dragged/resized element - and the floating overlay clone -
-    // must track the pointer with no lag, so they drop `inset` from the list.
-    // `inset` is also dropped until the board reports `settled`: on init widgets
-    // jump to their first measured positions, and without this gate they would
-    // slide in from their default (0, 0) spot. The board lifts the gate after
-    // the first positioned paint so subsequent reflows animate normally.
+    // Reflowing widgets animate their position and size. The actively
+    // dragged/resized element - and the floating overlay clone - must track the
+    // pointer with no lag, so they drop geometry from the list. Geometry is also
+    // dropped until the board reports `settled`: on init widgets jump to their
+    // first measured positions, and without this gate they would slide/grow in
+    // from their default box. The board lifts the gate after the first
+    // positioned paint so subsequent reflows animate normally.
     transition: {
       '': 'theme, shadow, opacity',
-      settled: 'theme, shadow, opacity, inset',
+      settled: 'theme, shadow, opacity, inset, width, height',
       'drag | floating | resizing': 'theme, shadow, opacity',
     },
     boxSizing: 'border-box',
@@ -453,6 +458,7 @@ export function WidgetHost(props: WidgetHostProps) {
   const [isResizing, setIsResizing] = useState(false);
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const { hoverProps, isHovered } = useHover({ isDisabled: isActiveDrag });
+  const { focusProps, isFocusVisible } = useFocusRing();
   const { focusWithinProps } = useFocusWithin({
     onFocusWithinChange: setIsFocusWithin,
   });
@@ -565,29 +571,29 @@ export function WidgetHost(props: WidgetHostProps) {
   // on the early-returns inside the `onMove*` callbacks.
   const gatedMoveProps = !isDraggable
     ? {}
-    : dragHandle || dragCancel
-      ? {
-          ...moveProps,
-          ...(moveProps.onPointerDown && {
-            onPointerDown: (e: React.PointerEvent) => {
-              if (shouldGateDrag(e.target)) return;
-              moveProps.onPointerDown!(e);
-            },
-          }),
-          ...(moveProps.onMouseDown && {
-            onMouseDown: (e: React.MouseEvent) => {
-              if (shouldGateDrag(e.target)) return;
-              moveProps.onMouseDown!(e);
-            },
-          }),
-          ...(moveProps.onTouchStart && {
-            onTouchStart: (e: React.TouchEvent) => {
-              if (shouldGateDrag(e.target)) return;
-              moveProps.onTouchStart!(e);
-            },
-          }),
-        }
-      : moveProps;
+    : {
+        ...moveProps,
+        ...(moveProps.onPointerDown && {
+          onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => {
+            if (shouldGateDrag(e.target)) return;
+            hostRef.current?.focus({ preventScroll: true });
+            moveProps.onPointerDown!(e);
+          },
+        }),
+        ...(moveProps.onMouseDown && {
+          onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => {
+            if (shouldGateDrag(e.target)) return;
+            hostRef.current?.focus({ preventScroll: true });
+            moveProps.onMouseDown!(e);
+          },
+        }),
+        ...(moveProps.onTouchStart && {
+          onTouchStart: (e: React.TouchEvent<HTMLDivElement>) => {
+            if (shouldGateDrag(e.target)) return;
+            moveProps.onTouchStart!(e);
+          },
+        }),
+      };
 
   const handleResize = (
     axis: ResizeHandleAxis,
@@ -607,6 +613,7 @@ export function WidgetHost(props: WidgetHostProps) {
     resizing: isResizing,
     card: isCard,
     hovered: isHovered,
+    'focus-visible': isFocusVisible,
   };
 
   const content = (
@@ -694,6 +701,7 @@ export function WidgetHost(props: WidgetHostProps) {
         gatedMoveProps,
         stopBubbleProps,
         hoverProps,
+        focusProps,
         focusWithinProps,
         a11yProps,
         { style: hostStyle },
