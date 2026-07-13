@@ -15,7 +15,7 @@ import {
   bottom,
   calcXYRaw,
   cloneLayout,
-  getAllCollisions,
+  collides,
   getLayoutItem,
   LayoutItem,
   moveElement,
@@ -38,6 +38,16 @@ import {
  */
 function rectCenter(rect: ViewportRect): { x: number; y: number } {
   return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+}
+
+/** Whether any two items in the layout overlap. */
+function hasCollision(layout: LayoutItem[]): boolean {
+  for (let i = 0; i < layout.length; i++) {
+    for (let j = i + 1; j < layout.length; j++) {
+      if (collides(layout[i], layout[j])) return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -452,11 +462,14 @@ export function useBoardRegistry(
             ? Math.sign(landed.x - live.x) === directionX && landed.y === live.y
             : Math.sign(landed.y - live.y) === directionY &&
               landed.x === live.x;
-        const overlaps =
-          !compactor.allowOverlap &&
-          getAllCollisions(compacted, landed).some(
-            (other) => other.i !== landed.i,
-          );
+        // Reject any candidate whose resulting layout contains an overlapping
+        // pair. Checking only the moved widget is not enough: in the legacy
+        // (`compact={null}`) and `preventCollision` modes the compactor does not
+        // resolve overlaps, so a *pushed neighbour* can land on top of another
+        // widget even when the moved widget itself is clear. The stricter
+        // whole-layout check keeps arrow moves from ever creating a stack (the
+        // pointer path is unaffected). `allowOverlap` opts out entirely.
+        const overlaps = !compactor.allowOverlap && hasCollision(compacted);
         if (!advanced || overlaps) continue;
 
         entry.applyLayout(compacted, false);

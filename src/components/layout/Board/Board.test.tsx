@@ -471,6 +471,53 @@ describe('Board', () => {
     ).toBe(false);
   });
 
+  it('never stacks a pushed neighbour during a keyboard move in legacy compaction', () => {
+    // Regression: in `compact={null}` (collisions resolved the legacy
+    // react-grid-layout way, no gap compaction) a keyboard move that pushed a
+    // neighbour could drop it on top of the widget below - a z-overlap the
+    // pointer path never produced. Moving A right onto B swaps B down onto C.
+    const onLayoutChange = vi.fn();
+    render(
+      <Board
+        width={1200}
+        cols={12}
+        compact={null}
+        onLayoutChange={onLayoutChange}
+        defaultLayout={[
+          { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+          { i: 'c', x: 2, y: 2, w: 2, h: 2 },
+        ]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+        <Board.Widget id="b">B</Board.Widget>
+        <Board.Widget id="c">C</Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    const last = onLayoutChange.mock.calls.at(-1)?.[0] as
+      | LayoutItem[]
+      | undefined;
+    const overlapping = (last ?? []).some((x, i) =>
+      (last ?? [])
+        .slice(i + 1)
+        .some(
+          (y) =>
+            x.x < y.x + y.w &&
+            x.x + x.w > y.x &&
+            x.y < y.y + y.h &&
+            x.y + x.h > y.y,
+        ),
+    );
+    expect(overlapping).toBe(false);
+  });
+
   it('supports nested boards inside a widget', () => {
     render(
       <Board.Provider>
