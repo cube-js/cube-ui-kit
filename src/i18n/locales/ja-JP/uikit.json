@@ -82,12 +82,12 @@
   },
   "copySnippet": {
     "title": "コード例",
-    "copyToClipboard": "クリップボードにコピー",
+    "copyToClipboard": "{{title}}をクリップボードにコピー",
     "showHiddenParts": "非表示の部分を表示",
     "copied": "{{title}}をコピーしました"
   },
   "copyPasteBlock": {
-    "copyToClipboard": "クリップボードにコピー",
+    "copyToClipboard": "{{title}}をクリップボードにコピー",
     "selectAndPaste": "選択して貼り付け",
     "invalidData": "無効なデータ",
     "copied": "{{title}}をコピーしました",

@@ -244,7 +244,11 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
         </StyledBlock>
         <ButtonContainer mods={mods}>
           <CopyButton
-            aria-label={t('copySnippet.copyToClipboard', 'Copy to clipboard')}
+            aria-label={t(
+              'copySnippet.copyToClipboard',
+              'Copy {{title}} to clipboard',
+              { title },
+            )}
             onPress={onCopy}
           />
           {hideText && (

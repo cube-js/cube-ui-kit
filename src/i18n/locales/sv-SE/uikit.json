@@ -82,12 +82,12 @@
   },
   "copySnippet": {
     "title": "Kodexempel",
-    "copyToClipboard": "Kopiera till urklipp",
+    "copyToClipboard": "Kopiera {{title}} till urklipp",
     "showHiddenParts": "Visa dolda delar",
     "copied": "{{title}} kopierad"
   },
   "copyPasteBlock": {
-    "copyToClipboard": "Kopiera till urklipp",
+    "copyToClipboard": "Kopiera {{title}} till urklipp",
     "selectAndPaste": "Markera och klistra in",
     "invalidData": "Ogiltiga data",
     "copied": "{{title}} kopierad",

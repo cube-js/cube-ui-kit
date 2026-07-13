@@ -82,12 +82,12 @@
   },
   "copySnippet": {
     "title": "Kodeeksempel",
-    "copyToClipboard": "Kopier til utklippstavlen",
+    "copyToClipboard": "Kopier {{title}} til utklippstavlen",
     "showHiddenParts": "Vis skjulte deler",
     "copied": "{{title}} kopiert"
   },
   "copyPasteBlock": {
-    "copyToClipboard": "Kopier til utklippstavlen",
+    "copyToClipboard": "Kopier {{title}} til utklippstavlen",
     "selectAndPaste": "Merk og lim inn",
     "invalidData": "Ugyldige data",
     "copied": "{{title}} kopiert",

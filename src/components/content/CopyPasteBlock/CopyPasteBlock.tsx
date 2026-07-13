@@ -237,7 +237,10 @@ function CopyPasteBlock(
             size={size}
             aria-label={t(
               'copyPasteBlock.copyToClipboard',
-              'Copy to clipboard',
+              'Copy {{title}} to clipboard',
+              {
+                title: title || t('copyPasteBlock.defaultTitle', 'Text'),
+              },
             )}
             onPress={onCopy}
           />

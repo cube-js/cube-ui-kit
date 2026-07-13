@@ -82,12 +82,12 @@
   },
   "copySnippet": {
     "title": "Ví dụ mã",
-    "copyToClipboard": "Sao chép vào bảng nhớ tạm",
+    "copyToClipboard": "Sao chép {{title}} vào bảng nhớ tạm",
     "showHiddenParts": "Hiển thị các phần ẩn",
     "copied": "Đã sao chép {{title}}"
   },
   "copyPasteBlock": {
-    "copyToClipboard": "Sao chép vào bảng nhớ tạm",
+    "copyToClipboard": "Sao chép {{title}} vào bảng nhớ tạm",
     "selectAndPaste": "Chọn và dán",
     "invalidData": "Dữ liệu không hợp lệ",
     "copied": "Đã sao chép {{title}}",

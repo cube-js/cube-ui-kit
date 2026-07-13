@@ -82,12 +82,12 @@
   },
   "copySnippet": {
     "title": "Codebeispiel",
-    "copyToClipboard": "In die Zwischenablage kopieren",
+    "copyToClipboard": "{{title}} in die Zwischenablage kopieren",
     "showHiddenParts": "Ausgeblendete Teile anzeigen",
     "copied": "{{title}} kopiert"
   },
   "copyPasteBlock": {
-    "copyToClipboard": "In die Zwischenablage kopieren",
+    "copyToClipboard": "{{title}} in die Zwischenablage kopieren",
     "selectAndPaste": "Auswählen und einfügen",
     "invalidData": "Ungültige Daten",
     "copied": "{{title}} kopiert",
