@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.145.3
+
+### Patch Changes
+
+- [#1238](https://github.com/cube-js/cube-ui-kit/pull/1238) [`18befae9`](https://github.com/cube-js/cube-ui-kit/commit/18befae913ab33a34054a880125ae2aae0691994) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: improve keyboard and focus behavior for draggable widgets. Clicking an eligible drag zone now focuses the widget; keyboard focus shows an adaptive focus ring (`:focus-visible`). Arrow-key moves respect layout constraints, scan past blocked cells to the next valid slot, and reflow neighbours without overlap where the board mode allows. Widget position transitions now include `width` and `height`.
+
 ## 0.145.2
 
 ### Patch Changes
