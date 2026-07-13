@@ -51,6 +51,33 @@ function hasCollision(layout: LayoutItem[]): boolean {
 }
 
 /**
+ * First position at or below the preferred cell where `item` fits without
+ * overlapping any of `others` (assumed overlap-free), scanning left-to-right
+ * then top-to-bottom. Last-resort placement for a legacy (no-op compaction)
+ * cross-board drop that would otherwise stack widgets - there is always a free
+ * slot below every existing item, so the scan terminates.
+ */
+function placeInFreeSlot(
+  others: LayoutItem[],
+  item: LayoutItem,
+  cols: number,
+): LayoutItem {
+  const w = Math.min(item.w, cols);
+  const fits = (x: number, y: number) =>
+    !others.some((o) => collides(o, { ...item, x, y, w }));
+  const preferX = Math.min(Math.max(0, item.x), cols - w);
+  const startY = Math.max(0, item.y);
+  if (fits(preferX, startY)) return { ...item, x: preferX, y: startY, w };
+  const limit = others.reduce((m, o) => Math.max(m, o.y + o.h), 0) + 1;
+  for (let y = startY; y <= startY + limit; y++) {
+    for (let x = 0; x <= cols - w; x++) {
+      if (fits(x, y)) return { ...item, x, y, w };
+    }
+  }
+  return { ...item, x: preferX, y: startY, w };
+}
+
+/**
  * Cross-board drag orchestration.
  *
  * Owns the shared widget-content store, the drag overlay ref, and the registry
@@ -350,7 +377,14 @@ export function useBoardRegistry(
       const compactor = entry.getCompactor();
       const layout = entry.getLayout();
       const live = getLayoutItem(layout, item.i);
-      const working = live ? [...layout] : [...layout, { ...item, x, y }];
+      // Deep-clone so `moveElement` (which mutates item objects in place) never
+      // touches the live layout's items. A shallow copy shares those objects, so
+      // rejecting a frame below would still leave the live layout mutated into
+      // the overlapping arrangement (committed on drop). `moveWithKeyboard`
+      // clones for the same reason.
+      const working = live
+        ? cloneLayout(layout)
+        : [...cloneLayout(layout), { ...item, x, y }];
       const target = getLayoutItem(working, item.i);
       if (!target) return;
 
@@ -366,6 +400,14 @@ export function useBoardRegistry(
         compactor.allowOverlap,
       );
       const compacted = [...compactor.compact(moved, pp.cols)];
+      // Never commit a frame that stacks widgets. In the legacy
+      // (`compact={null}`) mode `moveElement` pushes colliding neighbours but the
+      // no-op compactor leaves any residual overlap in place, so a push can drop
+      // a neighbour on top of another widget. Skipping such frames keeps the
+      // dragged widget at its last valid arrangement until the pointer reaches a
+      // slot where the move (and any push) resolves cleanly - matching the
+      // keyboard path. `allowOverlap` opts out entirely.
+      if (!compactor.allowOverlap && hasCollision(compacted)) return;
       entry.applyLayout(compacted, false);
       entry.setPlaceholder(getLayoutItem(compacted, item.i) ?? null);
     },
@@ -467,8 +509,10 @@ export function useBoardRegistry(
         // (`compact={null}`) and `preventCollision` modes the compactor does not
         // resolve overlaps, so a *pushed neighbour* can land on top of another
         // widget even when the moved widget itself is clear. The stricter
-        // whole-layout check keeps arrow moves from ever creating a stack (the
-        // pointer path is unaffected). `allowOverlap` opts out entirely.
+        // whole-layout check keeps arrow moves from ever creating a stack. The
+        // pointer path enforces the same invariant (see `moveWithinBoard`), so
+        // both inputs push/swap when clean and block otherwise. `allowOverlap`
+        // opts out entirely.
         const overlaps = !compactor.allowOverlap && hasCollision(compacted);
         if (!advanced || overlaps) continue;
 
@@ -504,11 +548,13 @@ export function useBoardRegistry(
         previewRef.current?.boardId === target.id
           ? previewRef.current.working
           : null;
-      const base = (
+      // Deep-clone the base: `moveElement` mutates item objects in place, and a
+      // rejected frame (see the overlap guard below) must not leave the carried
+      // preview or the target's live layout mutated into an overlapping state.
+      const base = cloneLayout(
         carried ??
-        cloneLayout(
-          targetSnapshotsRef.current.get(target.id) ?? target.getLayout(),
-        )
+          targetSnapshotsRef.current.get(target.id) ??
+          target.getLayout(),
       ).filter((l) => l.i !== item.i);
 
       // Reuse the item's carried position as the move origin (continuity). On
@@ -535,6 +581,10 @@ export function useBoardRegistry(
         compactor.allowOverlap,
       );
       const compacted = [...compactor.compact(moved, pp.cols)];
+      // Skip a frame that would stack widgets on the target (see the same guard
+      // in `moveWithinBoard`): keep the last valid preview instead of committing
+      // an overlap that the no-op compactor cannot resolve. `allowOverlap` off.
+      if (!compactor.allowOverlap && hasCollision(compacted)) return;
       previewRef.current = { boardId: target.id, working: compacted };
 
       const landed = getLayoutItem(compacted, item.i) ?? { ...item, x, y };
@@ -735,6 +785,26 @@ export function useBoardRegistry(
           tc.allowOverlap,
         );
         finalLayout = [...tc.compact(moved, tp.cols)];
+      }
+      // Never commit a stacked drop. When the compactor cannot resolve overlaps
+      // (`compact={null}` / `preventCollision`) a teleport drop into an occupied
+      // region would otherwise land the item on top of another widget; place it
+      // in the first free slot instead so the pointer path matches the keyboard
+      // path (never overlaps unless `allowOverlap`).
+      if (!tc.allowOverlap && hasCollision(finalLayout)) {
+        const others = cloneLayout(
+          (
+            targetSnapshotsRef.current.get(target!.id) ?? target!.getLayout()
+          ).filter((l) => l.i !== ds.itemId),
+        );
+        finalLayout = [
+          ...others,
+          placeInFreeSlot(
+            others,
+            { ...ds.item, x: landing.x, y: landing.y },
+            tp.cols,
+          ),
+        ];
       }
       target!.applyLayout(finalLayout, true);
 

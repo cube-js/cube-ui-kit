@@ -473,9 +473,10 @@ describe('Board', () => {
 
   it('never stacks a pushed neighbour during a keyboard move in legacy compaction', () => {
     // Regression: in `compact={null}` (collisions resolved the legacy
-    // react-grid-layout way, no gap compaction) a keyboard move that pushed a
-    // neighbour could drop it on top of the widget below - a z-overlap the
-    // pointer path never produced. Moving A right onto B swaps B down onto C.
+    // react-grid-layout way, no gap compaction) a move that pushed a neighbour
+    // could drop it on top of the widget below - a z-overlap. Moving A right
+    // onto B pushes B down onto C. Both the keyboard path (this test) and the
+    // pointer path (next test) must refuse the stack.
     const onLayoutChange = vi.fn();
     render(
       <Board
@@ -506,6 +507,93 @@ describe('Board', () => {
       | undefined;
     const overlapping = (last ?? []).some((x, i) =>
       (last ?? [])
+        .slice(i + 1)
+        .some(
+          (y) =>
+            x.x < y.x + y.w &&
+            x.x + x.w > y.x &&
+            x.y < y.y + y.h &&
+            x.y + x.h > y.y,
+        ),
+    );
+    expect(overlapping).toBe(false);
+  });
+
+  it('never stacks a pushed neighbour during a pointer drag in legacy compaction', () => {
+    // Same regression as above but driven by the mouse: dragging A one column
+    // right onto B (legacy `compact={null}`) would push B down onto C. The
+    // pointer path must keep the widget at its last valid arrangement instead of
+    // committing the stack, matching the keyboard path.
+    const onLayoutChange = vi.fn();
+    // jsdom drops pageX/pageY passed via init; React Aria's useMove reads them.
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+    const mockRect = (
+      left: number,
+      top: number,
+      width: number,
+      height: number,
+    ): DOMRect =>
+      ({
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    render(
+      <Board
+        width={1200}
+        cols={12}
+        rowHeight={100}
+        margin={[0, 0]}
+        containerPadding={[0, 0]}
+        compact={null}
+        onLayoutChange={onLayoutChange}
+        defaultLayout={[
+          { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+          { i: 'c', x: 2, y: 2, w: 2, h: 2 },
+        ]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+        <Board.Widget id="b">B</Board.Widget>
+        <Board.Widget id="c">C</Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    const content = widget.parentElement as HTMLElement;
+    // 12 cols over 1200px with no margin/padding => 100px per column.
+    content.getBoundingClientRect = () => mockRect(0, 0, 1200, 800);
+    widget.getBoundingClientRect = () => mockRect(0, 0, 200, 200);
+
+    // Drag A one column right, straight onto B.
+    fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+    fireEvent(window, pointerEvent('pointermove', 100, 0));
+    fireEvent(window, pointerEvent('pointerup', 100, 0));
+
+    expect(onLayoutChange).toHaveBeenCalled();
+    const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+    const overlapping = last.some((x, i) =>
+      last
         .slice(i + 1)
         .some(
           (y) =>
