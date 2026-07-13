@@ -4,7 +4,8 @@ import {
   render,
   renderWithRoot,
   screen,
-} from '../../../test/render';
+  userEvent,
+} from '../../../test';
 import { Tab, Tabs } from '../../navigation/Tabs';
 
 import { Board } from './index';
@@ -73,6 +74,40 @@ describe('Board', () => {
     expect(widget.style.top).toBe('10px');
   });
 
+  it('transitions widget position and size after initial placement', () => {
+    const callbacks: FrameRequestCallback[] = [];
+    const rafSpy = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((callback) => {
+        callbacks.push(callback);
+        return callbacks.length;
+      });
+
+    try {
+      render(
+        <Board
+          width={1200}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      act(() => callbacks.shift()?.(0));
+      act(() => callbacks.shift()?.(0));
+
+      const widget = screen.getByTestId('WidgetA');
+      expect(widget).toHaveAttribute('data-settled');
+      const transition = getComputedStyle(widget).transition;
+      expect(transition).toContain('width');
+      expect(transition).toContain('height');
+    } finally {
+      rafSpy.mockRestore();
+    }
+  });
+
   it('makes draggable widgets focusable', () => {
     render(
       <Board width={1200} defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}>
@@ -83,6 +118,21 @@ describe('Board', () => {
     );
 
     expect(screen.getByTestId('WidgetA')).toHaveAttribute('tabindex', '0');
+  });
+
+  it('shows the widget focus state only for focus-visible focus', async () => {
+    const user = userEvent.setup();
+    render(
+      <Board width={1200} defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}>
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    await user.tab();
+
+    expect(screen.getByTestId('WidgetA')).toHaveAttribute('data-focus-visible');
   });
 
   it('does not make widgets focusable when dragging is disabled', () => {
@@ -258,7 +308,7 @@ describe('Board', () => {
     // ArrowRight always lands the dragged widget at x=1. Dragging the widget
     // that starts at x=0 therefore gives a deterministic one-column move.
 
-    it('blocks a drop onto an occupied cell and never moves neighbours', () => {
+    it('scans past occupied cells and never moves neighbours', () => {
       const onLayoutChange = vi.fn();
       render(
         <Board
@@ -268,7 +318,7 @@ describe('Board', () => {
           onLayoutChange={onLayoutChange}
           defaultLayout={[
             { i: 'a', x: 0, y: 0, w: 2, h: 2 },
-            { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+            { i: 'b', x: 2, y: 0, w: 4, h: 2 },
           ]}
         >
           <Board.Widget id="a" qa="WidgetA">
@@ -282,13 +332,13 @@ describe('Board', () => {
 
       const widget = screen.getByTestId('WidgetA');
       widget.focus();
-      // Moving A one column right would overlap B; without overlap the move is
-      // blocked, so A stays put and B is neither pushed nor swapped.
+      // Adjacent candidates overlap B, so keyboard movement scans to the first
+      // free slot after it without pushing or swapping in free mode.
       fireEvent.keyDown(widget, { key: 'ArrowRight' });
 
       expect(onLayoutChange).toHaveBeenCalled();
       const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
-      expect(last.find((l) => l.i === 'a')?.x).toBe(0);
+      expect(last.find((l) => l.i === 'a')?.x).toBe(6);
       expect(last.find((l) => l.i === 'b')?.x).toBe(2);
     });
 
@@ -359,6 +409,66 @@ describe('Board', () => {
       expect(last.find((l) => l.i === 'a')?.x).toBe(1);
       expect(last.find((l) => l.i === 'b')?.x).toBe(2);
     });
+  });
+
+  it('scans past a larger static widget without changing rows', () => {
+    const onLayoutChange = vi.fn();
+    render(
+      <Board
+        width={1200}
+        cols={12}
+        onLayoutChange={onLayoutChange}
+        defaultLayout={[
+          { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+          { i: 'b', x: 2, y: 0, w: 4, h: 4, static: true },
+        ]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+        <Board.Widget id="b">B</Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+    expect(last.find((l) => l.i === 'a')).toMatchObject({ x: 6, y: 0 });
+    expect(last.find((l) => l.i === 'b')).toMatchObject({ x: 2, y: 0 });
+  });
+
+  it('reflows a larger movable widget without creating overlap', () => {
+    const onLayoutChange = vi.fn();
+    render(
+      <Board
+        width={1200}
+        cols={12}
+        onLayoutChange={onLayoutChange}
+        defaultLayout={[
+          { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+          { i: 'b', x: 2, y: 0, w: 4, h: 4 },
+        ]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+        <Board.Widget id="b">B</Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+    const a = last.find((l) => l.i === 'a')!;
+    const b = last.find((l) => l.i === 'b')!;
+    expect(a.x).toBeGreaterThan(0);
+    expect(
+      a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y,
+    ).toBe(false);
   });
 
   it('supports nested boards inside a widget', () => {
@@ -474,6 +584,29 @@ describe('Board', () => {
     expect(onLayoutChange).toHaveBeenCalled();
     const lastLayout = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
     expect(lastLayout.find((l) => l.i === 'a')?.x).toBe(5);
+  });
+
+  it('keeps keyboard movement within the grid bounds', () => {
+    const onLayoutChange = vi.fn();
+    render(
+      <Board
+        width={1200}
+        cols={12}
+        onLayoutChange={onLayoutChange}
+        defaultLayout={[{ i: 'a', x: 10, y: 0, w: 2, h: 2 }]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    const lastLayout = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+    expect(lastLayout.find((l) => l.i === 'a')?.x).toBe(10);
   });
 
   it('stays registered and draggable after its id changes', () => {
@@ -1118,6 +1251,34 @@ describe('Board', () => {
       Object.defineProperty(event, 'pageY', { get: () => pageY });
       return event;
     };
+
+    it('focuses the widget from an eligible pointer drag zone', () => {
+      render(
+        <Board
+          width={1200}
+          dragHandle=".handle"
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 4, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            <div className="handle" data-qa="Handle">
+              Grip
+            </div>
+            <div data-qa="Body">Body</div>
+          </Board.Widget>
+        </Board>,
+      );
+
+      const widget = screen.getByTestId('WidgetA');
+      fireEvent(screen.getByTestId('Body'), pointerEvent('pointerdown', 0, 0));
+      expect(widget).not.toHaveFocus();
+
+      fireEvent(
+        screen.getByTestId('Handle'),
+        pointerEvent('pointerdown', 0, 0),
+      );
+      expect(widget).toHaveFocus();
+      expect(widget).not.toHaveAttribute('data-focus-visible');
+    });
 
     it('does not start a drag from an element matching dragCancel', () => {
       const onDragStart = vi.fn();
