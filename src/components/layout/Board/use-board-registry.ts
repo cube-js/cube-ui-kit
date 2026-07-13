@@ -40,12 +40,37 @@ function rectCenter(rect: ViewportRect): { x: number; y: number } {
   return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 }
 
-/** Whether any two items in the layout overlap. */
-function hasCollision(layout: LayoutItem[]): boolean {
+/**
+ * Keys (`"<i1>|<i2>"`, ids sorted) of every overlapping pair in the layout, so
+ * two layouts' overlap sets can be compared to tell which overlaps a move
+ * *introduced* versus which already existed.
+ */
+function overlappingPairs(layout: LayoutItem[]): Set<string> {
+  const pairs = new Set<string>();
   for (let i = 0; i < layout.length; i++) {
     for (let j = i + 1; j < layout.length; j++) {
-      if (collides(layout[i], layout[j])) return true;
+      const a = layout[i];
+      const b = layout[j];
+      if (collides(a, b)) {
+        pairs.add(a.i < b.i ? `${a.i}|${b.i}` : `${b.i}|${a.i}`);
+      }
     }
+  }
+  return pairs;
+}
+
+/**
+ * Whether `after` contains an overlapping pair that `before` did not. Used to
+ * reject only moves that *create* a new stack. A board may already hold
+ * overlapping widgets - a `compact={null}` layout is never gap-compacted, and an
+ * app can supply overlapping items directly (or toggle `allowOverlap` off after
+ * stacking) - and those pre-existing overlaps must not freeze every subsequent
+ * move by making a whole-layout collision check always true.
+ */
+function hasNewOverlap(before: Set<string>, after: LayoutItem[]): boolean {
+  const afterPairs = overlappingPairs(after);
+  for (const key of afterPairs) {
+    if (!before.has(key)) return true;
   }
   return false;
 }
@@ -400,14 +425,21 @@ export function useBoardRegistry(
         compactor.allowOverlap,
       );
       const compacted = [...compactor.compact(moved, pp.cols)];
-      // Never commit a frame that stacks widgets. In the legacy
+      // Never commit a frame that *creates* a stack. In the legacy
       // (`compact={null}`) mode `moveElement` pushes colliding neighbours but the
       // no-op compactor leaves any residual overlap in place, so a push can drop
       // a neighbour on top of another widget. Skipping such frames keeps the
       // dragged widget at its last valid arrangement until the pointer reaches a
       // slot where the move (and any push) resolves cleanly - matching the
-      // keyboard path. `allowOverlap` opts out entirely.
-      if (!compactor.allowOverlap && hasCollision(compacted)) return;
+      // keyboard path. Only *newly introduced* overlaps block: pre-existing ones
+      // (an app-supplied stacked layout) must not freeze the drag. `allowOverlap`
+      // opts out entirely.
+      if (
+        !compactor.allowOverlap &&
+        hasNewOverlap(overlappingPairs(layout), compacted)
+      ) {
+        return;
+      }
       entry.applyLayout(compacted, false);
       entry.setPlaceholder(getLayoutItem(compacted, item.i) ?? null);
     },
@@ -444,6 +476,11 @@ export function useBoardRegistry(
                 ? Math.max(0, maxRows - live.h - live.y)
                 : Math.max(1, bottom(layout) - live.y);
       const seen = new Set<string>();
+      // Overlaps already present before the move: a candidate is only rejected
+      // for a *new* pair, never for one the board already had (see
+      // `hasNewOverlap`). Computed once - the baseline is constant across the
+      // directional scan.
+      const beforePairs = overlappingPairs(layout);
 
       for (let distance = 1; distance <= attempts; distance++) {
         const rawX = live.x + directionX * distance;
@@ -504,16 +541,18 @@ export function useBoardRegistry(
             ? Math.sign(landed.x - live.x) === directionX && landed.y === live.y
             : Math.sign(landed.y - live.y) === directionY &&
               landed.x === live.x;
-        // Reject any candidate whose resulting layout contains an overlapping
-        // pair. Checking only the moved widget is not enough: in the legacy
-        // (`compact={null}`) and `preventCollision` modes the compactor does not
-        // resolve overlaps, so a *pushed neighbour* can land on top of another
-        // widget even when the moved widget itself is clear. The stricter
-        // whole-layout check keeps arrow moves from ever creating a stack. The
-        // pointer path enforces the same invariant (see `moveWithinBoard`), so
-        // both inputs push/swap when clean and block otherwise. `allowOverlap`
+        // Reject a candidate that *introduces* an overlapping pair. Checking
+        // only the moved widget is not enough: in the legacy (`compact={null}`)
+        // and `preventCollision` modes the compactor does not resolve overlaps,
+        // so a *pushed neighbour* can land on top of another widget even when the
+        // moved widget itself is clear. Comparing the whole layout's overlap set
+        // against the pre-move baseline keeps arrow moves from creating a stack
+        // while still allowing movement around overlaps the board already had.
+        // The pointer path enforces the same invariant (see `moveWithinBoard`),
+        // so both inputs push/swap when clean and block otherwise. `allowOverlap`
         // opts out entirely.
-        const overlaps = !compactor.allowOverlap && hasCollision(compacted);
+        const overlaps =
+          !compactor.allowOverlap && hasNewOverlap(beforePairs, compacted);
         if (!advanced || overlaps) continue;
 
         entry.applyLayout(compacted, false);
@@ -581,10 +620,17 @@ export function useBoardRegistry(
         compactor.allowOverlap,
       );
       const compacted = [...compactor.compact(moved, pp.cols)];
-      // Skip a frame that would stack widgets on the target (see the same guard
-      // in `moveWithinBoard`): keep the last valid preview instead of committing
-      // an overlap that the no-op compactor cannot resolve. `allowOverlap` off.
-      if (!compactor.allowOverlap && hasCollision(compacted)) return;
+      // Skip a frame that would *newly* stack widgets on the target (see the same
+      // guard in `moveWithinBoard`): keep the last valid preview instead of
+      // committing an overlap the no-op compactor cannot resolve. The baseline is
+      // the target's own widgets (`base`), so overlaps the target already had do
+      // not block the incoming widget. `allowOverlap` opts out.
+      if (
+        !compactor.allowOverlap &&
+        hasNewOverlap(overlappingPairs(base), compacted)
+      ) {
+        return;
+      }
       previewRef.current = { boardId: target.id, working: compacted };
 
       const landed = getLayoutItem(compacted, item.i) ?? { ...item, x, y };
@@ -786,21 +832,25 @@ export function useBoardRegistry(
         );
         finalLayout = [...tc.compact(moved, tp.cols)];
       }
-      // Never commit a stacked drop. When the compactor cannot resolve overlaps
-      // (`compact={null}` / `preventCollision`) a teleport drop into an occupied
-      // region would otherwise land the item on top of another widget; place it
-      // in the first free slot instead so the pointer path matches the keyboard
-      // path (never overlaps unless `allowOverlap`).
-      if (!tc.allowOverlap && hasCollision(finalLayout)) {
-        const others = cloneLayout(
-          (
-            targetSnapshotsRef.current.get(target!.id) ?? target!.getLayout()
-          ).filter((l) => l.i !== ds.itemId),
-        );
+      // Never commit a drop that *creates* a stack. When the compactor cannot
+      // resolve overlaps (`compact={null}` / `preventCollision`) a teleport drop
+      // into an occupied region would otherwise land the item on top of another
+      // widget; place it in the first free slot instead so the pointer path
+      // matches the keyboard path. Overlaps the target already had do not trigger
+      // the reshuffle (they are preserved as-is). `allowOverlap` opts out.
+      const targetOthers = cloneLayout(
+        (
+          targetSnapshotsRef.current.get(target!.id) ?? target!.getLayout()
+        ).filter((l) => l.i !== ds.itemId),
+      );
+      if (
+        !tc.allowOverlap &&
+        hasNewOverlap(overlappingPairs(targetOthers), finalLayout)
+      ) {
         finalLayout = [
-          ...others,
+          ...targetOthers,
           placeInFreeSlot(
-            others,
+            targetOthers,
             { ...ds.item, x: landing.x, y: landing.y },
             tp.cols,
           ),

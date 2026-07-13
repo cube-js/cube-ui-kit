@@ -606,6 +606,48 @@ describe('Board', () => {
     expect(overlapping).toBe(false);
   });
 
+  it('still moves a widget with the keyboard when an unrelated overlap exists', () => {
+    // Regression: the overlap guard must reject only *newly introduced* stacks,
+    // not any overlap in the board. In `compact={null}` a layout is never
+    // gap-compacted, so an app can supply already-overlapping widgets; a
+    // whole-layout collision check would then see an overlap for every candidate
+    // and freeze keyboard navigation for the whole board. Here `b`/`c` overlap
+    // from the start, but moving the unrelated `a` must still work.
+    const onLayoutChange = vi.fn();
+    render(
+      <Board
+        width={1200}
+        cols={12}
+        compact={null}
+        onLayoutChange={onLayoutChange}
+        defaultLayout={[
+          { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+          { i: 'b', x: 6, y: 0, w: 2, h: 2 },
+          { i: 'c', x: 6, y: 0, w: 2, h: 2 },
+        ]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+        <Board.Widget id="b">B</Board.Widget>
+        <Board.Widget id="c">C</Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+    const a = last.find((l) => l.i === 'a');
+    // `a` advanced one column despite the pre-existing `b`/`c` stack.
+    expect(a?.x).toBe(1);
+    expect(a?.y).toBe(0);
+    // The pre-existing overlap is preserved, not "fixed" by the move.
+    expect(last.find((l) => l.i === 'b')).toMatchObject({ x: 6, y: 0 });
+    expect(last.find((l) => l.i === 'c')).toMatchObject({ x: 6, y: 0 });
+  });
+
   it('supports nested boards inside a widget', () => {
     render(
       <Board.Provider>
