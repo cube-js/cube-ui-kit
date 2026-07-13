@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.144.0",
+  "version": "0.145.2",
   "type": "module",
   "description": "UIKit for Cube Projects",
   "repository": {
@@ -138,7 +138,7 @@
     "dedent": "^0.7.0",
     "husky": "^6.0.0",
     "jsdom": "^29.1.1",
-    "lint-staged": "^10.0.0",
+    "lint-staged": "^17.0.8",
     "markdown-table": "^3.0.3",
     "npm-run-all": "^4.1.5",
     "oxlint": "^1.72.0",
@@ -165,7 +165,7 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": ">=24.0.0",
+    "node": ">=22.0.0",
     "pnpm": "^10.0.0"
   }
 }

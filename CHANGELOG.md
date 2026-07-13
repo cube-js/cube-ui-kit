@@ -1,5 +1,32 @@
 # @cube-dev/ui-kit
 
+## 0.145.2
+
+### Patch Changes
+
+- [#1236](https://github.com/cube-js/cube-ui-kit/pull/1236) [`cf45199b`](https://github.com/cube-js/cube-ui-kit/commit/cf45199b23d6f4b385607448fe9feb779adb0588) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: a board now becomes the drop target when the dragged widget's center enters it, instead of only once its top-left corner is inside. Empty boards open (expand to preview the drop) as soon as the widget's center touches them. The landing/placeholder stays anchored to the grabbed point, so it keeps tracking the floating widget.
+
+- [#1236](https://github.com/cube-js/cube-ui-kit/pull/1236) [`cf45199b`](https://github.com/cube-js/cube-ui-kit/commit/cf45199b23d6f4b385607448fe9feb779adb0588) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: widgets no longer animate (`inset` transition) on initial render. The board now waits for widgets to paint at their first measured positions before activating position transitions, so they settle into place instead of sliding in from their default spot. Transitions still apply to subsequent reflows (drag/resize of neighbours, compaction, aligned-column changes).
+
+## 0.145.1
+
+### Patch Changes
+
+- [`75485638`](https://github.com/cube-js/cube-ui-kit/commit/75485638fa25b93f07ae1c14c96ab03d377188f0) Thanks [@tenphi](https://github.com/tenphi)! - Lowered the `engines.node` requirement from `>=24.0.0` to `>=22.0.0` so the package installs cleanly into projects on Node 22 (e.g. Cube Cloud, which runs Node 22.14). No runtime code changes; CI non-publish jobs now run on Node 22 too. The npm publish jobs remain on Node 24 because OIDC trusted publishing requires npm ≥ 11.5.1+, which Node 24 ships natively (Node 22 ships npm 10.x).
+
+## 0.145.0
+
+### Minor Changes
+
+- [#1233](https://github.com/cube-js/cube-ui-kit/pull/1233) [`3a2d553e`](https://github.com/cube-js/cube-ui-kit/commit/3a2d553e970062080a04d1120cca77192981d4cb) Thanks [@tenphi](https://github.com/tenphi)! - Enhance `Board` with widget defaults, card styling, and aligned nested-board improvements:
+
+  - Add `widgetProps` on `Board` to set default props for every hosted widget (e.g. `widgetProps={{ isCard: true }}`).
+  - Add `isCard` on `Board.Widget` for optional card borders; widgets are filled (`#surface-2`) and rounded by default.
+  - Add per-widget `minW`/`maxW`/`minH`/`maxH` bounds on `Board.Widget` (used when layout items omit them).
+  - Accept container style props directly on `Board.Widget` (merged into `styles`).
+  - Aligned nested boards (`isAligned`) now use the parent's row height verbatim (no shrinking to fit) and default `containerPadding` to `[0, 0]` so columns line up with the ancestor grid.
+  - Nested boards inherit an ancestor's `showGridLines` while dragging when they do not set their own.
+
 ## 0.144.0
 
 ### Minor Changes

@@ -36,11 +36,19 @@ const WidgetElement = tasty({
     position: 'absolute',
     top: 0,
     left: 0,
-    fill: '#surface',
+    // Widgets always carry a `#surface-2` fill and rounded corners. The `card`
+    // modifier (board-level `widgetProps.isCard` or per-widget `isCard`) adds a
+    // border on top; a non-card widget is borderless so nested boards can align
+    // their columns flush with the parent grid.
+    fill: '#surface-2',
     radius: '1cr',
-    border: true,
+    border: {
+      '': false,
+      card: true,
+    },
     shadow: {
       '': false,
+      'hovered & !card & (draggable | resizing)': '0 0 0 1bw #border',
       // `$dialog-shadow` uses Glaze `#shadow-lg`, which adapts to dark / high-contrast schemes.
       'drag | resizing': '$dialog-shadow',
     },
@@ -56,7 +64,18 @@ const WidgetElement = tasty({
       '': 1,
       floating: 0.8,
     },
-    transition: 'theme, shadow, opacity',
+    // Reflowing widgets animate their position via the `inset` group (left/top).
+    // The actively dragged/resized element - and the floating overlay clone -
+    // must track the pointer with no lag, so they drop `inset` from the list.
+    // `inset` is also dropped until the board reports `settled`: on init widgets
+    // jump to their first measured positions, and without this gate they would
+    // slide in from their default (0, 0) spot. The board lifts the gate after
+    // the first positioned paint so subsequent reflows animate normally.
+    transition: {
+      '': 'theme, shadow, opacity',
+      settled: 'theme, shadow, opacity, inset',
+      'drag | floating | resizing': 'theme, shadow, opacity',
+    },
     boxSizing: 'border-box',
     userSelect: {
       '': 'auto',
@@ -297,9 +316,32 @@ export interface WidgetHostProps {
   item: LayoutItem;
   positionParams: PositionParams;
   registration: WidgetRegistration | undefined;
+  /**
+   * Whether this widget renders with card chrome (fill/border/radius). Resolved
+   * by the owning `Board` from the per-widget `isCard` and the board-level
+   * `widgetProps.isCard` default.
+   */
+  isCard: boolean;
+  /**
+   * Resolved style overrides for the rendered widget element (per-widget
+   * `styles` falling back to the board-level `widgetProps.styles`).
+   */
+  styles?: Styles;
   isDraggable: boolean;
   isResizable: boolean;
   resizeHandles: ResizeHandleAxis[];
+  /**
+   * Whether this widget grows to fit its content. Resolved by the owning
+   * `Board` from the per-widget `isAutoHeight` and the board-level
+   * `widgetProps.isAutoHeight` default.
+   */
+  isAutoHeight: boolean;
+  /**
+   * Test id / accessible name for the rendered widget element. Resolved by the
+   * owning `Board` from the per-widget `qa` and the board-level `widgetProps.qa`
+   * default; falls back to the layout id.
+   */
+  qa?: string;
   /**
    * CSS selector for elements that must not start a pointer drag (e.g. form
    * controls inside the widget). A pointer-down whose target matches this
@@ -311,6 +353,13 @@ export interface WidgetHostProps {
    * pointer-down outside a matching element never begins a drag.
    */
   dragHandle?: string;
+  /**
+   * Whether the owning board has settled its widgets' initial positions. While
+   * false, the widget does not animate `inset` (left/top) so the first
+   * positioned paint isn't seen as a transition. Lifted after the board's first
+   * measured render.
+   */
+  settled?: boolean;
   registry: BoardRegistryContextValue;
   dragState: BoardDragState | null;
   onResize: (
@@ -346,13 +395,18 @@ export function WidgetHost(props: WidgetHostProps) {
     item,
     positionParams,
     registration,
+    isCard,
+    styles: widgetStyles,
     isDraggable,
     isResizable,
     resizeHandles,
+    isAutoHeight,
+    qa,
     dragCancel,
     dragHandle,
     registry,
     dragState,
+    settled,
     onResize,
     onAutoHeight,
     onDragLifecycle,
@@ -360,7 +414,6 @@ export function WidgetHost(props: WidgetHostProps) {
 
   const hostRef = useRef<HTMLDivElement | null>(null);
   const isActiveDrag = dragState?.itemId === item.i;
-  const isAutoHeight = registration?.isAutoHeight === true;
 
   // Translate a nested board's reported height deficit (signed px: positive when
   // it is squeezed, negative when it has slack) into the absolute number of rows
@@ -467,7 +520,7 @@ export function WidgetHost(props: WidgetHostProps) {
   const a11yProps = {
     tabIndex: isDraggable ? 0 : undefined,
     'aria-roledescription': isDraggable ? 'Draggable widget' : undefined,
-    'aria-label': registration?.qa ?? item.i,
+    'aria-label': qa ?? item.i,
   };
 
   // When this widget is draggable it owns its gesture, so stop the pointer-down
@@ -504,8 +557,15 @@ export function WidgetHost(props: WidgetHostProps) {
   // Skipping `useMove` entirely leaves the target's default behavior and its own
   // handlers fully intact. Keyboard moves go through `onKeyDown` and are never
   // gated.
-  const gatedMoveProps =
-    isDraggable && (dragHandle || dragCancel)
+  //
+  // A non-draggable widget must not carry `moveProps` at all: `useMove`'s
+  // pointer-down handler calls `preventDefault()`, which cancels native text
+  // selection inside the widget. Read-only boards (`isDraggable={false}`) still
+  // need selectable content, so we drop the handlers entirely instead of relying
+  // on the early-returns inside the `onMove*` callbacks.
+  const gatedMoveProps = !isDraggable
+    ? {}
+    : dragHandle || dragCancel
       ? {
           ...moveProps,
           ...(moveProps.onPointerDown && {
@@ -545,6 +605,8 @@ export function WidgetHost(props: WidgetHostProps) {
     draggable: isDraggable && !isActiveDrag,
     static: !!item.static,
     resizing: isResizing,
+    card: isCard,
+    hovered: isHovered,
   };
 
   const content = (
@@ -604,7 +666,8 @@ export function WidgetHost(props: WidgetHostProps) {
   const floatInOverlay = useOverlay && !!overlayNode && !!dragState;
 
   const hostStyle: CSSProperties = {
-    transform: `translate(${pos.left}px, ${pos.top}px)`,
+    left: `${pos.left}px`,
+    top: `${pos.top}px`,
     width: `${pos.width}px`,
     height: `${pos.height}px`,
     // Kept mounted but hidden while its clone floats, so the gesture stays live
@@ -615,7 +678,7 @@ export function WidgetHost(props: WidgetHostProps) {
   // The floating clone carries the "drag" affordance (raised shadow/z-index);
   // keep the hidden host flat. Keyboard drags (which never float) still
   // highlight the in-grid host, so only suppress `drag` when floating.
-  const hostMods = { ...mods, drag: isActiveDrag && !floatInOverlay };
+  const hostMods = { ...mods, drag: isActiveDrag && !floatInOverlay, settled };
 
   // The host is always rendered first, with a stable element shape, so React
   // reuses the same DOM node across the drag transition (never remounts it).
@@ -635,9 +698,9 @@ export function WidgetHost(props: WidgetHostProps) {
         a11yProps,
         { style: hostStyle },
       )}
-      qa={registration?.qa}
+      qa={qa}
       mods={hostMods}
-      styles={registration?.styles as Styles}
+      styles={widgetStyles as Styles}
     >
       {floatInOverlay ? null : content}
     </WidgetElement>
@@ -655,7 +718,7 @@ export function WidgetHost(props: WidgetHostProps) {
             pointerEvents: 'none',
           }}
           mods={{ ...mods, drag: true, floating: true }}
-          styles={registration?.styles as Styles}
+          styles={widgetStyles as Styles}
           aria-hidden="true"
         >
           {content}

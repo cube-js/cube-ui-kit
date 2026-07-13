@@ -37,10 +37,15 @@ jobs:
       - name: Prepare pnpm (pre)
         run: corepack prepare pnpm@10.14.0 --activate
 
+      # Publish jobs stay on Node 24 (not .nvmrc) because OIDC trusted
+      # publishing requires npm ≥ 11.5.1+, which Node 24 ships natively.
+      # Node 22 ships npm 10.x, which does NOT meet that requirement.
+      # Do not run `npm install -g npm@latest` — it corrupts npm's module
+      # tree (e.g. missing sigstore) on hosted runners.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
 
@@ -50,9 +55,6 @@ jobs:
       - name: Prepare pnpm
         run: corepack prepare pnpm@10.14.0 --activate
 
-      # Node 24 ships npm 11.5.1+ (required for OIDC trusted publishing).
-      # Do not run `npm install -g npm@latest` — it corrupts npm's module
-      # tree (e.g. missing sigstore) on hosted runners.
       - name: Verify npm version and OIDC availability
         run: |
           echo "node version: $(node --version)"
@@ -126,10 +128,15 @@ jobs:
       - name: Prepare pnpm (pre)
         run: corepack prepare pnpm@10.14.0 --activate
 
+      # Publish jobs stay on Node 24 (not .nvmrc) because OIDC trusted
+      # publishing requires npm ≥ 11.5.1+, which Node 24 ships natively.
+      # Node 22 ships npm 10.x, which does NOT meet that requirement.
+      # Do not run `npm install -g npm@latest` — it corrupts npm's module
+      # tree (e.g. missing sigstore) on hosted runners.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
 
@@ -139,9 +146,6 @@ jobs:
       - name: Prepare pnpm
         run: corepack prepare pnpm@10.14.0 --activate
 
-      # Node 24 ships npm 11.5.1+ (required for OIDC trusted publishing).
-      # Do not run `npm install -g npm@latest` — it corrupts npm's module
-      # tree (e.g. missing sigstore) on hosted runners.
       - name: Verify npm version and OIDC availability
         run: |
           echo "node version: $(node --version)"
