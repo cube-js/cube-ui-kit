@@ -300,6 +300,7 @@ export type {
   InitOptions,
 } from 'i18next';
 export {
+  createUIKitI18n,
   getI18n,
   UIKIT_I18N_NAMESPACE,
   addUIKitLocale,

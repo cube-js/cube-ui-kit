@@ -1,4 +1,5 @@
 import { act } from '@testing-library/react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { useTranslation } from 'react-i18next';
 
 import { Tag } from '../index';
@@ -6,7 +7,13 @@ import { render, renderHook, screen, waitFor } from '../test';
 
 import { SUPPORTED_LOCALES } from './locales';
 
-import { addUIKitLocale, getI18n, UIKIT_I18N_NAMESPACE } from './index';
+import {
+  addUIKitLocale,
+  createUIKitI18n,
+  getI18n,
+  I18nProvider,
+  UIKIT_I18N_NAMESPACE,
+} from './index';
 
 describe('UI Kit i18n', () => {
   afterEach(async () => {
@@ -33,6 +40,33 @@ describe('UI Kit i18n', () => {
       result.current.i18n.hasResourceBundle('en-US', UIKIT_I18N_NAMESPACE),
     ).toBe(true);
     expect(result.current.t('tag.close')).toBe('Close');
+  });
+
+  it('isolates concurrent server renders from the shared language', async () => {
+    const englishRequest = createUIKitI18n('en-US');
+    const germanRequest = createUIKitI18n('de-DE');
+
+    expect(englishRequest).not.toBe(germanRequest);
+    expect(englishRequest.language).toBe('en-US');
+    expect(germanRequest.language).toBe('de-DE');
+
+    // A different request (or the browser singleton) changing language must not
+    // alter either request-local render.
+    await getI18n().changeLanguage('fr-FR');
+
+    const englishHtml = renderToStaticMarkup(
+      <I18nProvider i18n={englishRequest}>
+        <Tag isClosable>Example</Tag>
+      </I18nProvider>,
+    );
+    const germanHtml = renderToStaticMarkup(
+      <I18nProvider i18n={germanRequest}>
+        <Tag isClosable>Example</Tag>
+      </I18nProvider>,
+    );
+
+    expect(englishHtml).toContain('aria-label="Close"');
+    expect(germanHtml).toContain('aria-label="Schließen"');
   });
 
   it('ships every supported locale under the uikit namespace', () => {

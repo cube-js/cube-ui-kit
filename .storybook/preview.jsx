@@ -173,14 +173,36 @@ export const globalTypes = {
   },
 };
 
+let latestRequestedLocale = 'en-US';
+let localeChangeQueue = Promise.resolve();
+
+function changeStorybookLocale(i18n, locale) {
+  latestRequestedLocale = locale;
+  localeChangeQueue = localeChangeQueue
+    .catch(() => undefined)
+    .then(async () => {
+      // Serialize changes and always converge on the latest toolbar value. This
+      // prevents a slower, older changeLanguage() call from winning the race.
+      while (i18n.language !== latestRequestedLocale) {
+        await i18n.changeLanguage(latestRequestedLocale);
+      }
+    });
+
+  return localeChangeQueue;
+}
+
 const LocaleDecorator = (Story, context) => {
   const locale = context.globals.locale ?? 'en-US';
   const i18n = getI18n();
 
   useEffect(() => {
-    if (i18n.language !== locale) {
-      i18n.changeLanguage(locale);
+    async function applyLocale() {
+      await changeStorybookLocale(i18n, locale);
     }
+
+    void applyLocale().catch((error) => {
+      console.error('Failed to change Storybook locale:', error);
+    });
   }, [i18n, locale]);
 
   return (

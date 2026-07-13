@@ -15,7 +15,7 @@ import ptPT from './locales/pt-PT/uikit.json';
 import svSE from './locales/sv-SE/uikit.json';
 import viVN from './locales/vi-VN/uikit.json';
 
-import type { i18n as I18nInstance } from 'i18next';
+import type { i18n as I18nInstance, InitOptions } from 'i18next';
 
 /** The dedicated namespace all UI Kit strings live under. */
 export const UIKIT_I18N_NAMESPACE = 'uikit';
@@ -47,16 +47,7 @@ const resources = Object.fromEntries(
   ]),
 );
 
-/**
- * The single i18next instance the UI Kit owns. `useTranslation` (re-exported
- * from the UI Kit) and `<I18nextProvider>` both reference this object, so a host
- * app that drives it (e.g. Cube Cloud registering its own namespaces onto it and
- * calling `changeLanguage`) shares one instance — switching language in the host
- * switches UI Kit strings for free. Read it via `getI18n()`.
- */
-const instance: I18nInstance = i18next.createInstance();
-
-void instance.use(initReactI18next).init({
+const DEFAULT_OPTIONS: InitOptions = {
   resources,
   lng: 'en-US',
   fallbackLng: 'en-US',
@@ -71,13 +62,41 @@ void instance.use(initReactI18next).init({
   // All resources are bundled synchronously at init, so the instance is ready
   // immediately — disable Suspense so components (and unit tests / SSR) render
   // translated text on the first pass without a Suspense boundary.
+  initAsync: false,
   react: { useSuspense: false },
   // Proxy-based selector API (`t($ => $.a.b)`). UI Kit components use plain
   // string keys, but Cube Cloud drives this same instance with the selector
   // form, so enabling it here preserves that contract once Cloud consumes the
   // exported instance.
   enableSelector: true,
-});
+};
+
+/**
+ * Creates an isolated, synchronously initialized UI Kit i18next instance.
+ *
+ * Create one per server request and pass it to `<Root i18n={instance}>` (or
+ * `<I18nProvider i18n={instance}>`). Its language can then be changed without
+ * racing with another request rendered by the same server process.
+ */
+export function createUIKitI18n(locale = 'en-US'): I18nInstance {
+  const isolatedInstance = i18next.createInstance();
+
+  void isolatedInstance.init({
+    ...DEFAULT_OPTIONS,
+    lng: locale,
+  });
+
+  return isolatedInstance;
+}
+
+/**
+ * The browser-friendly default instance. Existing hosts can continue to drive
+ * it through `getI18n()`. Concurrent server renders must use a request-local
+ * instance from `createUIKitI18n()` instead.
+ */
+const instance: I18nInstance = i18next.createInstance();
+
+void instance.use(initReactI18next).init(DEFAULT_OPTIONS);
 
 /** Returns the shared UI Kit i18next instance. */
 export function getI18n(): I18nInstance {

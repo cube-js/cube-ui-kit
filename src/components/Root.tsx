@@ -23,6 +23,8 @@ import { AlertDialogApiProvider } from './overlays/AlertDialog';
 import { OverlayProvider } from './overlays/Notifications/OverlayProvider';
 import { PortalProvider } from './portal';
 
+import type { i18n as I18nInstance } from 'i18next';
+
 // Color-scheme aliases for the Glaze-generated palette (see `src/tokens/palette.ts`).
 // Attribute opt-in wins over system preference:
 //   <html data-schema="dark">    → forces dark scheme
@@ -130,6 +132,13 @@ export interface CubeRootProps extends BaseProps {
   applyLegacyTokens?: boolean;
   tracking?: TrackingProps;
   cursorStrategy?: 'web' | 'native';
+  /**
+   * i18next instance for this tree. During SSR, pass a request-local instance
+   * created with `createUIKitI18n(locale)`.
+   */
+  i18n?: I18nInstance;
+  /** Override the React Aria formatting locale. */
+  locale?: string;
 }
 
 export function Root(allProps: CubeRootProps) {
@@ -148,6 +157,8 @@ export function Root(allProps: CubeRootProps) {
     cursorStrategy = 'web',
     style,
     tokens,
+    i18n,
+    locale,
     ...props
   } = allProps;
 
@@ -165,7 +176,7 @@ export function Root(allProps: CubeRootProps) {
   const styles = extractStyles(props, STYLES);
 
   return (
-    <I18nProvider>
+    <I18nProvider i18n={i18n} locale={locale}>
       <Provider navigation={navigation} root={rootRef}>
         <TrackingProvider event={tracking?.event}>
           <RootElement
