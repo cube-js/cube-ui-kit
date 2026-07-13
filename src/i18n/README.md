@@ -151,26 +151,23 @@ function Row({ createdAt, amount }) {
 `useFormatter()` reads the locale from React Aria's `useLocale()` (the provider), so
 it re-binds automatically when the language changes.
 
-**In non-render code — pure helpers.** Table column definitions, event handlers, and
-plain utilities can't call a hook, so use the top-level functions. They read the
-locale from a module mirror that `I18nProvider` keeps in sync:
+**In non-render code — explicit formatter.** Table column definitions, event handlers,
+and plain utilities can't call a hook, so create a formatter with the locale available
+to that code. The resulting formatter is safe to use across concurrent SSR requests:
 
 ```ts
-import { formatDate, formatCurrency, formatBytes } from '@cube-dev/ui-kit';
+import { createFormatter } from '@cube-dev/ui-kit';
 
+const formatter = createFormatter(locale);
 const columns = [
-  { key: 'createdAt', render: (v) => formatDate(v) },
-  { key: 'cost', render: (v) => formatCurrency(v) },
+  { key: 'createdAt', render: (v) => formatter.formatDate(v) },
+  { key: 'cost', render: (v) => formatter.formatCurrency(v) },
 ];
 ```
 
-For a locale that must diverge from the shared language, build a bundle explicitly:
-`createFormatter('de-DE').formatCurrency(...)`.
-
 **The bundle** (`useFormatter()` / `createFormatter(locale)`): `formatDate`,
 `formatTime`, `formatDateTime`, `formatRelativeTime`, `formatNumber`,
-`formatCurrency`, `formatPercent`, `formatBytes`, `formatList`, plus `locale`. The
-pure top-level exports mirror these **except** `formatRelativeTime` (see below).
+`formatCurrency`, `formatPercent`, `formatBytes`, `formatList`, plus `locale`.
 
 ### Conventions
 

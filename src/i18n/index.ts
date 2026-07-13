@@ -18,21 +18,7 @@ export type {
   CurrencyOptions,
   BytesOptions,
 } from './createFormatter';
-export {
-  getActiveFormattingLocale,
-  setActiveFormattingLocale,
-} from './formatting-locale';
-export {
-  useFormatter,
-  formatDate,
-  formatTime,
-  formatDateTime,
-  formatNumber,
-  formatCurrency,
-  formatPercent,
-  formatBytes,
-  formatList,
-} from './useFormatter';
+export { useFormatter } from './useFormatter';
 export { SUPPORTED_LOCALES, LOCALE_LABELS, isSupportedLocale } from './locales';
 export type { SupportedLocale } from './locales';
 

@@ -1,12 +1,18 @@
-import { act } from '@testing-library/react';
+import { PassThrough } from 'stream';
 
-import { formatDate, formatNumber, useFormatter } from '../index';
+import { act } from '@testing-library/react';
+import { Suspense } from 'react';
+import { renderToPipeableStream, renderToString } from 'react-dom/server.node';
+
+import { useFormatter } from '../index';
 import { renderWithRoot, screen, waitFor } from '../test';
 
 import { createFormatter } from './createFormatter';
-import { setActiveFormattingLocale } from './formatting-locale';
+import { I18nProvider } from './I18nProvider';
 
 import { getI18n } from './index';
+
+import type { Formatter } from './createFormatter';
 
 // A fixed instant so relative-time math is deterministic.
 const NOW = new Date('2024-01-15T12:00:00Z').getTime();
@@ -24,7 +30,6 @@ function FormatterProbe() {
       <span data-qa="number">{fmtNumber(1234.5)}</span>
       <span data-qa="currency">{formatCurrency(1234.5)}</span>
       <span data-qa="date">{fmtDate(NOW, { timeZone: 'UTC' })}</span>
-      <span data-qa="pure-number">{formatNumber(1234.5)}</span>
     </>
   );
 }
@@ -98,25 +103,21 @@ describe('createFormatter (pure factory)', () => {
   });
 });
 
-describe('useFormatter + pure helpers follow the active language', () => {
+describe('useFormatter', () => {
   afterEach(async () => {
     await act(async () => {
       await getI18n().changeLanguage('en-US');
     });
-    setActiveFormattingLocale('en-US');
   });
 
   it('binds the hook to the shared language and re-renders on change', async () => {
-    // `Root` wraps children in `I18nProvider`, which drives React Aria's
-    // locale (read by `useFormatter`) and the module mirror (read by the pure
-    // helpers) from the shared i18next language.
+    // `Root` wraps children in `I18nProvider`, which drives React Aria's locale
+    // (read by `useFormatter`) from the shared i18next language.
     renderWithRoot(<FormatterProbe />);
 
     expect(screen.getByTestId('number')).toHaveTextContent('1,234.5');
     expect(screen.getByTestId('currency')).toHaveTextContent('$1,234.50');
     expect(screen.getByTestId('date')).toHaveTextContent('Jan 15, 2024');
-    // Pure helper reads the provider-synced module mirror.
-    expect(screen.getByTestId('pure-number')).toHaveTextContent('1,234.5');
 
     await act(async () => {
       await getI18n().changeLanguage('de-DE');
@@ -126,14 +127,58 @@ describe('useFormatter + pure helpers follow the active language', () => {
       expect(screen.getByTestId('number')).toHaveTextContent('1.234,5');
     });
     expect(screen.getByTestId('currency')).toHaveTextContent('1.234,50');
-    expect(screen.getByTestId('pure-number')).toHaveTextContent('1.234,5');
   });
 
-  it('formatDate pure helper follows the mirror', () => {
-    setActiveFormattingLocale('de-DE');
-    expect(formatDate(NOW, { timeZone: 'UTC' })).toContain('15');
+  it('keeps explicit formatters scoped to their SSR request', async () => {
+    let resolveRender: () => void;
+    let isReady = false;
+    const renderPromise = new Promise<void>((resolve) => {
+      resolveRender = resolve;
+    });
+    const enFormatter = createFormatter('en-US');
+    const deFormatter = createFormatter('de-DE');
 
-    setActiveFormattingLocale('en-US');
-    expect(formatDate(NOW, { timeZone: 'UTC' })).toContain('Jan');
+    function DeferredNumber({ formatter }: { formatter: Formatter }) {
+      if (!isReady) throw renderPromise;
+
+      return <span>{formatter.formatNumber(1234.5)}</span>;
+    }
+
+    const output = new PassThrough();
+    const chunks: Buffer[] = [];
+    output.on('data', (chunk: Buffer) => chunks.push(chunk));
+    const markup = new Promise<string>((resolve, reject) => {
+      output.on('end', () => resolve(Buffer.concat(chunks).toString()));
+      output.on('error', reject);
+    });
+    const shellReady = new Promise<void>((resolve, reject) => {
+      const { pipe } = renderToPipeableStream(
+        <I18nProvider locale="en-US">
+          <Suspense fallback={<span>Loading</span>}>
+            <DeferredNumber formatter={enFormatter} />
+          </Suspense>
+        </I18nProvider>,
+        {
+          onShellReady() {
+            pipe(output);
+            resolve();
+          },
+          onError: reject,
+        },
+      );
+    });
+
+    await shellReady;
+
+    renderToString(
+      <I18nProvider locale="de-DE">
+        <span>{deFormatter.formatNumber(1234.5)}</span>
+      </I18nProvider>,
+    );
+
+    isReady = true;
+    resolveRender!();
+
+    expect(await markup).toContain('1,234.5');
   });
 });

@@ -1,7 +1,6 @@
 import { I18nProvider as AriaI18nProvider } from 'react-aria';
 import { I18nextProvider } from 'react-i18next';
 
-import { setActiveFormattingLocale } from './formatting-locale';
 import { getI18n } from './instance';
 import { useI18n } from './useI18n';
 
@@ -41,11 +40,6 @@ export function I18nProvider({ children, locale }: I18nProviderProps) {
   // of nesting order.
   const { i18n } = useI18n();
   const resolvedLocale = locale ?? i18n.language;
-
-  // Mirror the active locale into the module registry so the pure (non-hook)
-  // formatting helpers (`formatDate`, `formatNumber`, ...) follow the language
-  // too. Set during render (not in an effect) so it's correct on first paint.
-  setActiveFormattingLocale(resolvedLocale);
 
   return (
     <I18nextProvider i18n={getI18n()}>
