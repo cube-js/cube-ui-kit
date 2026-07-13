@@ -456,7 +456,10 @@ const SelectAllOption = ({
 }) => {
   const { t } = useI18n();
   const { hoverProps, isHovered } = useHover({ isDisabled });
-  const resolvedLabel = label ?? t('listBox.selectAll', 'Select All');
+  const resolvedLabel =
+    label === '' || label === undefined || label === null
+      ? t('listBox.selectAll', 'Select All')
+      : label;
 
   const markIcon = isIndeterminate ? (
     <Icon size={12} stroke={3}>
