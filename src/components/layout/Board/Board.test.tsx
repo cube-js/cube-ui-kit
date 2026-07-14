@@ -471,6 +471,183 @@ describe('Board', () => {
     ).toBe(false);
   });
 
+  it('never stacks a pushed neighbour during a keyboard move in legacy compaction', () => {
+    // Regression: in `compact={null}` (collisions resolved the legacy
+    // react-grid-layout way, no gap compaction) a move that pushed a neighbour
+    // could drop it on top of the widget below - a z-overlap. Moving A right
+    // onto B pushes B down onto C. Both the keyboard path (this test) and the
+    // pointer path (next test) must refuse the stack.
+    const onLayoutChange = vi.fn();
+    render(
+      <Board
+        width={1200}
+        cols={12}
+        compact={null}
+        onLayoutChange={onLayoutChange}
+        defaultLayout={[
+          { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+          { i: 'c', x: 2, y: 2, w: 2, h: 2 },
+        ]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+        <Board.Widget id="b">B</Board.Widget>
+        <Board.Widget id="c">C</Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    const last = onLayoutChange.mock.calls.at(-1)?.[0] as
+      | LayoutItem[]
+      | undefined;
+    const overlapping = (last ?? []).some((x, i) =>
+      (last ?? [])
+        .slice(i + 1)
+        .some(
+          (y) =>
+            x.x < y.x + y.w &&
+            x.x + x.w > y.x &&
+            x.y < y.y + y.h &&
+            x.y + x.h > y.y,
+        ),
+    );
+    expect(overlapping).toBe(false);
+  });
+
+  it('never stacks a pushed neighbour during a pointer drag in legacy compaction', () => {
+    // Same regression as above but driven by the mouse: dragging A one column
+    // right onto B (legacy `compact={null}`) would push B down onto C. The
+    // pointer path must keep the widget at its last valid arrangement instead of
+    // committing the stack, matching the keyboard path.
+    const onLayoutChange = vi.fn();
+    // jsdom drops pageX/pageY passed via init; React Aria's useMove reads them.
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+    const mockRect = (
+      left: number,
+      top: number,
+      width: number,
+      height: number,
+    ): DOMRect =>
+      ({
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    render(
+      <Board
+        width={1200}
+        cols={12}
+        rowHeight={100}
+        margin={[0, 0]}
+        containerPadding={[0, 0]}
+        compact={null}
+        onLayoutChange={onLayoutChange}
+        defaultLayout={[
+          { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+          { i: 'c', x: 2, y: 2, w: 2, h: 2 },
+        ]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+        <Board.Widget id="b">B</Board.Widget>
+        <Board.Widget id="c">C</Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    const content = widget.parentElement as HTMLElement;
+    // 12 cols over 1200px with no margin/padding => 100px per column.
+    content.getBoundingClientRect = () => mockRect(0, 0, 1200, 800);
+    widget.getBoundingClientRect = () => mockRect(0, 0, 200, 200);
+
+    // Drag A one column right, straight onto B.
+    fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+    fireEvent(window, pointerEvent('pointermove', 100, 0));
+    fireEvent(window, pointerEvent('pointerup', 100, 0));
+
+    expect(onLayoutChange).toHaveBeenCalled();
+    const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+    const overlapping = last.some((x, i) =>
+      last
+        .slice(i + 1)
+        .some(
+          (y) =>
+            x.x < y.x + y.w &&
+            x.x + x.w > y.x &&
+            x.y < y.y + y.h &&
+            x.y + x.h > y.y,
+        ),
+    );
+    expect(overlapping).toBe(false);
+  });
+
+  it('still moves a widget with the keyboard when an unrelated overlap exists', () => {
+    // Regression: the overlap guard must reject only *newly introduced* stacks,
+    // not any overlap in the board. In `compact={null}` a layout is never
+    // gap-compacted, so an app can supply already-overlapping widgets; a
+    // whole-layout collision check would then see an overlap for every candidate
+    // and freeze keyboard navigation for the whole board. Here `b`/`c` overlap
+    // from the start, but moving the unrelated `a` must still work.
+    const onLayoutChange = vi.fn();
+    render(
+      <Board
+        width={1200}
+        cols={12}
+        compact={null}
+        onLayoutChange={onLayoutChange}
+        defaultLayout={[
+          { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+          { i: 'b', x: 6, y: 0, w: 2, h: 2 },
+          { i: 'c', x: 6, y: 0, w: 2, h: 2 },
+        ]}
+      >
+        <Board.Widget id="a" qa="WidgetA">
+          A
+        </Board.Widget>
+        <Board.Widget id="b">B</Board.Widget>
+        <Board.Widget id="c">C</Board.Widget>
+      </Board>,
+    );
+
+    const widget = screen.getByTestId('WidgetA');
+    widget.focus();
+    fireEvent.keyDown(widget, { key: 'ArrowRight' });
+
+    const last = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+    const a = last.find((l) => l.i === 'a');
+    // `a` advanced one column despite the pre-existing `b`/`c` stack.
+    expect(a?.x).toBe(1);
+    expect(a?.y).toBe(0);
+    // The pre-existing overlap is preserved, not "fixed" by the move.
+    expect(last.find((l) => l.i === 'b')).toMatchObject({ x: 6, y: 0 });
+    expect(last.find((l) => l.i === 'c')).toMatchObject({ x: 6, y: 0 });
+  });
+
   it('supports nested boards inside a widget', () => {
     render(
       <Board.Provider>
