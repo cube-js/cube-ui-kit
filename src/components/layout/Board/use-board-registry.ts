@@ -41,9 +41,20 @@ function rectCenter(rect: ViewportRect): { x: number; y: number } {
 }
 
 /**
- * Keys (`"<i1>|<i2>"`, ids sorted) of every overlapping pair in the layout, so
- * two layouts' overlap sets can be compared to tell which overlaps a move
- * *introduced* versus which already existed.
+ * Canonical key for the unordered pair `{id1, id2}`. Widget ids are unrestricted
+ * strings, so a naive `` `${id1}|${id2}` `` join is ambiguous - an id containing
+ * the delimiter lets two different pairs collide (e.g. `{"a|b","c"}` and
+ * `{"a","b|c"}` both yield `"a|b|c"`). `JSON.stringify` of the sorted tuple
+ * quotes and escapes each id, so distinct pairs always produce distinct keys.
+ */
+function pairKey(id1: string, id2: string): string {
+  return id1 < id2 ? JSON.stringify([id1, id2]) : JSON.stringify([id2, id1]);
+}
+
+/**
+ * Keys of every overlapping pair in the layout (see `pairKey`), so two layouts'
+ * overlap sets can be compared to tell which overlaps a move *introduced* versus
+ * which already existed.
  */
 function overlappingPairs(layout: LayoutItem[]): Set<string> {
   const pairs = new Set<string>();
@@ -52,7 +63,7 @@ function overlappingPairs(layout: LayoutItem[]): Set<string> {
       const a = layout[i];
       const b = layout[j];
       if (collides(a, b)) {
-        pairs.add(a.i < b.i ? `${a.i}|${b.i}` : `${b.i}|${a.i}`);
+        pairs.add(pairKey(a.i, b.i));
       }
     }
   }
