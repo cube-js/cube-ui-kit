@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.145.4
+
+### Patch Changes
+
+- [#1240](https://github.com/cube-js/cube-ui-kit/pull/1240) [`6f0cbd7d`](https://github.com/cube-js/cube-ui-kit/commit/6f0cbd7d25f5663d59c31cccfc0039f184de1376) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: fix drags creating overlapping widgets in non-compacting modes (`compact={null}` or `preventCollision`). Moving a widget so it pushed a neighbour could stack that neighbour on top of another widget. Both keyboard and pointer moves now reject any step whose resulting layout has overlapping widgets — keyboard scans further for a clear slot, pointer keeps the widget at its last valid arrangement — so the two inputs behave consistently and neither ever stacks widgets (unless `allowOverlap` is set). Widgets still push/swap neighbours whenever the move resolves without an overlap.
+
 ## 0.145.3
 
 ### Patch Changes
