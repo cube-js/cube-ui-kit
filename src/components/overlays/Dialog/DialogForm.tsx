@@ -1,3 +1,4 @@
+import { useI18n } from '../../../i18n';
 import { Button, ButtonGroup, CubeButtonProps } from '../../actions';
 import { Content } from '../../content/Content';
 import { Header } from '../../content/Header';
@@ -76,6 +77,7 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
 
   [form] = useForm(form);
 
+  const { t } = useI18n();
   const { onClose } = useDialogContext();
 
   function onLocalDismiss() {
@@ -136,12 +138,12 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
               <SubmitButton
                 qa={`${qa || ''}SubmitButton`}
                 theme={danger ? 'danger' : undefined}
-                label="Submit"
+                label={t('dialogForm.submit', 'Submit')}
                 {...(submitProps || {})}
               />
               <Button
                 qa={`${qa || ''}CancelButton`}
-                label="Cancel"
+                label={t('dialogForm.cancel', 'Cancel')}
                 onPress={onLocalDismiss}
                 {...(cancelProps || {})}
               />

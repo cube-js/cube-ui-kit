@@ -9,6 +9,7 @@ import {
 } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
+import { useI18n } from '../../../i18n';
 import { extractStyles } from '../../../utils/styles';
 
 // Create the placeholder animation using keyframes helper
@@ -24,7 +25,6 @@ const placeholderAnimation = keyframes({
 const StyledPlaceholder = tasty({
   role: 'alert',
   'aria-live': 'polite',
-  'aria-label': 'Content is loading',
   styles: {
     display: 'block',
     fill: '#dark.10',
@@ -81,11 +81,14 @@ export const Placeholder = forwardRef(function Placeholder(
 ) {
   let { size = '2x', isStatic, circle, ...props } = allProps;
 
+  const { t } = useI18n();
+
   let styles = extractStyles(props, CONTAINER_STYLES);
 
   return (
     <StyledPlaceholder
       role="region"
+      aria-label={t('placeholder.contentIsLoading', 'Content is loading')}
       {...filterBaseProps(props, { eventProps: true })}
       ref={ref}
       mods={{ animated: !isStatic, circle }}

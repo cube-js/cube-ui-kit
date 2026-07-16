@@ -19,6 +19,7 @@ import {
   useState,
 } from 'react';
 
+import { useI18n } from '../../../i18n';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { useCombinedRefs } from '../../../utils/react';
@@ -149,6 +150,8 @@ function extractFileNameFromValue(value?: string) {
 }
 
 function FileInput(props: CubeFileInputProps, ref) {
+  const { t } = useI18n();
+
   props = useProviderProps(props);
   props = useFormProps(props);
   props = useFieldProps(
@@ -263,9 +266,13 @@ function FileInput(props: CubeFileInputProps, ref) {
         }}
         {...inputProps}
       />
-      <div data-element="Button">Choose file</div>
+      <div data-element="Button">
+        {t('fileInput.chooseFile', 'Choose file')}
+      </div>
       <div data-element={fileName ? 'Value' : 'Placeholder'}>
-        {fileName || placeholder || 'No file selected'}
+        {fileName ||
+          placeholder ||
+          t('fileInput.noFileSelected', 'No file selected')}
       </div>
     </FileInputElement>
   );

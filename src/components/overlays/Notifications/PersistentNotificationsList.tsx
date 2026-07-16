@@ -2,6 +2,7 @@ import { tasty } from '@tenphi/tasty';
 import { Fragment, Key, useContext, useEffect, useRef, useState } from 'react';
 
 import { useEvent } from '../../../_internal';
+import { useI18n } from '../../../i18n';
 import { Divider } from '../../content/Divider';
 import { Text } from '../../content/Text';
 
@@ -27,7 +28,6 @@ const TIMESTAMP_REFRESH_INTERVAL = 10_000;
 const ListContainer = tasty({
   qa: 'PersistentNotificationsList',
   role: 'log',
-  'aria-label': 'Notifications',
   styles: {
     display: 'flex',
     flow: 'column',
@@ -69,7 +69,9 @@ export function PersistentNotificationsList({
   onAction,
   emptyState,
 }: PersistentNotificationsListProps) {
+  const { t } = useI18n();
   const { items, remove, markAllAsRead } = usePersistentNotifications();
+  const listAriaLabel = t('notifications.ariaLabel', 'Notifications');
 
   // Default dismiss handler removes the item from the persistent list (which
   // also marks the id as "fully dismissed" so it won't reappear).
@@ -116,9 +118,9 @@ export function PersistentNotificationsList({
 
   if (items.length === 0) {
     return (
-      <ListContainer>
+      <ListContainer aria-label={listAriaLabel}>
         <EmptyStateContainer>
-          {emptyState ?? 'No notifications'}
+          {emptyState ?? t('notifications.empty', 'No notifications')}
         </EmptyStateContainer>
       </ListContainer>
     );
@@ -126,7 +128,7 @@ export function PersistentNotificationsList({
 
   return (
     <NotificationActionInterceptorContext.Provider value={onAction ?? null}>
-      <ListContainer>
+      <ListContainer aria-label={listAriaLabel}>
         {items.map((item, index) => (
           <Fragment key={String(item.id)}>
             {index > 0 && <Divider />}
@@ -152,9 +154,10 @@ function PersistentNotificationListItem({
   item,
   onDismiss,
 }: PersistentNotificationListItemProps) {
+  const { t } = useI18n();
   const suffix = (
     <Text opacity={0.5} preset="c2">
-      {formatRelativeTime(item.createdAt)}
+      {formatRelativeTime(item.createdAt, t)}
     </Text>
   );
 

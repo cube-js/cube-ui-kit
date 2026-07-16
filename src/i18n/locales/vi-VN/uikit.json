@@ -1,0 +1,124 @@
+{
+  "alertDialog": {
+    "confirm": "OK",
+    "cancel": "Hủy"
+  },
+  "dialog": {
+    "dismiss": "Đóng"
+  },
+  "dialogForm": {
+    "submit": "Gửi",
+    "cancel": "Hủy"
+  },
+  "form": {
+    "required": "(bắt buộc)",
+    "optional": "(tùy chọn)",
+    "internalError": "Lỗi nội bộ"
+  },
+  "notifications": {
+    "dismiss": "Đóng",
+    "ariaLabel": "Thông báo",
+    "empty": "Không có thông báo"
+  },
+  "relativeTime": {
+    "justNow": "vừa xong",
+    "minAgo": "{{count}} phút trước",
+    "hoursAgo": "{{count}} giờ trước",
+    "daysAgo": "{{count}} ngày trước",
+    "weeksAgo": "{{count}} tuần trước",
+    "monthsAgo": "{{count}} tháng trước",
+    "yearsAgo": "{{count}} năm trước"
+  },
+  "toast": {
+    "hide": "Ẩn"
+  },
+  "listBox": {
+    "selectAll": "Chọn tất cả",
+    "noItems": "Không có mục nào"
+  },
+  "filterListBox": {
+    "searchPlaceholder": "Tìm kiếm...",
+    "noResults": "Không tìm thấy kết quả",
+    "noItems": "Không có mục nào",
+    "customValue": "Giá trị tùy chỉnh",
+    "filteredItems": "Các mục đã lọc"
+  },
+  "picker": {
+    "all": "Tất cả",
+    "pickerAriaLabel": "Bộ chọn"
+  },
+  "comboBox": {
+    "clearValue": "Xóa giá trị",
+    "showOptions": "Hiển thị tùy chọn"
+  },
+  "commandMenu": {
+    "searchPlaceholder": "Tìm kiếm lệnh...",
+    "empty": "Không tìm thấy lệnh"
+  },
+  "listBoxPopover": {
+    "options": "Tùy chọn"
+  },
+  "datePicker": {
+    "time": "Thời gian",
+    "startTime": "Thời gian bắt đầu",
+    "endTime": "Thời gian kết thúc",
+    "showEndCalendar": "Hiển thị lịch cho ngày kết thúc"
+  },
+  "fileInput": {
+    "chooseFile": "Chọn tệp",
+    "noFileSelected": "Chưa chọn tệp nào"
+  },
+  "passwordInput": {
+    "toggleMasking": "Bật/tắt che giấu"
+  },
+  "numberInput": {
+    "stepUp": "Tăng",
+    "stepDown": "Giảm"
+  },
+  "textInputMapper": {
+    "key": "Khóa",
+    "value": "Giá trị",
+    "removeMapping": "Xóa ánh xạ"
+  },
+  "copySnippet": {
+    "title": "Ví dụ mã",
+    "copyToClipboard": "Sao chép {{title}} vào bảng nhớ tạm",
+    "showHiddenParts": "Hiển thị các phần ẩn",
+    "copied": "Đã sao chép {{title}}"
+  },
+  "copyPasteBlock": {
+    "copyToClipboard": "Sao chép {{title}} vào bảng nhớ tạm",
+    "selectAndPaste": "Chọn và dán",
+    "invalidData": "Dữ liệu không hợp lệ",
+    "copied": "Đã sao chép {{title}}",
+    "defaultTitle": "Văn bản"
+  },
+  "tag": {
+    "close": "Đóng"
+  },
+  "placeholder": {
+    "contentIsLoading": "Đang tải nội dung"
+  },
+  "loadingAnimation": {
+    "ariaLabel": "Hoạt ảnh tải"
+  },
+  "layout": {
+    "closePanel": "Đóng bảng điều khiển",
+    "goBack": "Quay lại"
+  },
+  "tree": {
+    "actions": "Hành động"
+  },
+  "banner": {
+    "hideBanner": "Ẩn biểu ngữ"
+  },
+  "tabs": {
+    "close": "Đóng",
+    "editTabTitle": "Chỉnh sửa tiêu đề tab",
+    "selectTab": "Chọn tab"
+  },
+  "contextMenu": {
+    "openContextMenu": "Mở menu ngữ cảnh",
+    "contextMenu": "context-menu"
+  }
+}

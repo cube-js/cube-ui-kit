@@ -16,6 +16,7 @@ import {
 } from 'react-aria';
 import { useDatePickerState, useDateRangePickerState } from 'react-stately';
 
+import { useI18n } from '../../../i18n';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps, ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
@@ -28,7 +29,6 @@ import { DateInputBase } from './DateInputBase';
 import { DatePickerButton } from './DatePickerButton';
 import { DatePickerElement } from './DatePickerElement';
 import { DatePickerInput } from './DatePickerInput';
-import { dateMessages } from './intl';
 import { DEFAULT_DATE_PROPS } from './props';
 import { TimeInput } from './TimeInput';
 import { DateFieldBase } from './types';
@@ -65,6 +65,8 @@ function DateRangeSeparatedPicker<T extends DateValue>(
   props: CubeDateRangeSeparatedPickerProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
+  const { t } = useI18n();
+
   props = useProviderProps(props);
   props = useFormProps(props);
   props = useFieldProps(props, {
@@ -228,7 +230,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
               {showTimeField && (
                 <TimeInput
                   padding="1x"
-                  label={dateMessages['time']}
+                  label={t('datePicker.time', 'Time')}
                   value={startState.timeValue}
                   placeholderValue={timePlaceholder}
                   granularity={timeGranularity}
@@ -264,7 +266,10 @@ function DateRangeSeparatedPicker<T extends DateValue>(
             onOpenChange={endState.setOpen}
           >
             <DatePickerButton
-              aria-label="Show calendar for the end date"
+              aria-label={t(
+                'datePicker.showEndCalendar',
+                'Show calendar for the end date',
+              )}
               size={size}
               {...mergeProps(endFocusProps.focusProps, endProps.buttonProps)}
               isDisabled={isDisabled}
@@ -287,7 +292,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
               {showTimeField && (
                 <TimeInput
                   padding="1x"
-                  label={dateMessages['time']}
+                  label={t('datePicker.time', 'Time')}
                   value={endState.timeValue}
                   placeholderValue={timePlaceholder}
                   granularity={timeGranularity}

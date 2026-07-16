@@ -15,6 +15,7 @@ import {
 } from 'react-aria';
 import { useDateRangePickerState } from 'react-stately';
 
+import { useI18n } from '../../../i18n';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps, ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
@@ -27,7 +28,6 @@ import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { DateInputBase } from './DateInputBase';
 import { DatePickerButton } from './DatePickerButton';
 import { DatePickerInput } from './DatePickerInput';
-import { dateMessages } from './intl';
 import { DEFAULT_DATE_PROPS } from './props';
 import { TimeInput } from './TimeInput';
 import { DateFieldBase } from './types';
@@ -64,6 +64,8 @@ function DateRangePicker<T extends DateValue>(
   props: CubeDateRangePickerProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
+  const { t } = useI18n();
+
   props = useProviderProps(props);
   props = useFormProps(props);
   props = useFieldProps(props, {
@@ -165,7 +167,7 @@ function DateRangePicker<T extends DateValue>(
               <Space>
                 <TimeInput
                   padding="1x"
-                  label={dateMessages['startTime']}
+                  label={t('datePicker.startTime', 'Start time')}
                   value={state.timeRange?.start || null}
                   placeholderValue={timePlaceholder}
                   granularity={timeGranularity}
@@ -177,7 +179,7 @@ function DateRangePicker<T extends DateValue>(
                 />
                 <TimeInput
                   padding="1x"
-                  label={dateMessages['endTime']}
+                  label={t('datePicker.endTime', 'End time')}
                   value={state.timeRange?.end || null}
                   placeholderValue={timePlaceholder}
                   granularity={timeGranularity}

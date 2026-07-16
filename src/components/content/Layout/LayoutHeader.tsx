@@ -10,6 +10,7 @@ import {
   RefCallback,
 } from 'react';
 
+import { useI18n } from '../../../i18n';
 import { SlashIcon } from '../../../icons/SlashIcon';
 import { Button } from '../../actions/Button/Button';
 import { Link } from '../../actions/Link/Link';
@@ -133,6 +134,8 @@ function LayoutHeader(
   props: CubeLayoutHeaderProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
+  const { t } = useI18n();
+
   const {
     title,
     level = 3,
@@ -203,7 +206,7 @@ function LayoutHeader(
           <Button
             type="clear"
             icon={<IconArrowLeft />}
-            aria-label="Go back"
+            aria-label={t('layout.goBack', 'Go back')}
             onPress={onBack}
           />
         </div>

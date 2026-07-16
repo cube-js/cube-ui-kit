@@ -10,6 +10,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { ModalProvider } from 'react-aria';
 
+import { I18nProvider } from '../i18n';
 import { Provider } from '../provider';
 import { NavigationAdapter } from '../providers/navigation.types';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
@@ -21,6 +22,8 @@ import { GlobalStyles } from './GlobalStyles';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
 import { OverlayProvider } from './overlays/Notifications/OverlayProvider';
 import { PortalProvider } from './portal';
+
+import type { i18n as I18nInstance } from 'i18next';
 
 // Color-scheme aliases for the Glaze-generated palette (see `src/tokens/palette.ts`).
 // Attribute opt-in wins over system preference:
@@ -129,6 +132,13 @@ export interface CubeRootProps extends BaseProps {
   applyLegacyTokens?: boolean;
   tracking?: TrackingProps;
   cursorStrategy?: 'web' | 'native';
+  /**
+   * i18next instance for this tree. During SSR, pass a request-local instance
+   * created with `createUIKitI18n(locale)`.
+   */
+  i18n?: I18nInstance;
+  /** Override the React Aria formatting locale. */
+  locale?: string;
 }
 
 export function Root(allProps: CubeRootProps) {
@@ -147,6 +157,8 @@ export function Root(allProps: CubeRootProps) {
     cursorStrategy = 'web',
     style,
     tokens,
+    i18n,
+    locale,
     ...props
   } = allProps;
 
@@ -164,40 +176,42 @@ export function Root(allProps: CubeRootProps) {
   const styles = extractStyles(props, STYLES);
 
   return (
-    <Provider navigation={navigation} root={rootRef}>
-      <TrackingProvider event={tracking?.event}>
-        <RootElement
-          ref={ref}
-          data-uikit={VERSION}
-          data-tasty={TASTY_VERSION}
-          data-font-display={fontDisplay}
-          {...filterBaseProps(props, { eventProps: true })}
-          styles={styles}
-          style={{
-            '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
-            ...style,
-          }}
-          tokens={tokens}
-        >
-          <GlobalStyles
-            bodyStyles={bodyStyles}
-            publicUrl={publicUrl}
-            fonts={fonts}
-            font={font}
-            monospaceFont={monospaceFont}
-            fontDisplay={fontDisplay}
-          />
-          <ModalProvider>
-            <PortalProvider value={ref}>
-              <EventBusProvider>
-                <OverlayProvider>
-                  <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
-                </OverlayProvider>
-              </EventBusProvider>
-            </PortalProvider>
-          </ModalProvider>
-        </RootElement>
-      </TrackingProvider>
-    </Provider>
+    <I18nProvider i18n={i18n} locale={locale}>
+      <Provider navigation={navigation} root={rootRef}>
+        <TrackingProvider event={tracking?.event}>
+          <RootElement
+            ref={ref}
+            data-uikit={VERSION}
+            data-tasty={TASTY_VERSION}
+            data-font-display={fontDisplay}
+            {...filterBaseProps(props, { eventProps: true })}
+            styles={styles}
+            style={{
+              '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
+              ...style,
+            }}
+            tokens={tokens}
+          >
+            <GlobalStyles
+              bodyStyles={bodyStyles}
+              publicUrl={publicUrl}
+              fonts={fonts}
+              font={font}
+              monospaceFont={monospaceFont}
+              fontDisplay={fontDisplay}
+            />
+            <ModalProvider>
+              <PortalProvider value={ref}>
+                <EventBusProvider>
+                  <OverlayProvider>
+                    <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
+                  </OverlayProvider>
+                </EventBusProvider>
+              </PortalProvider>
+            </ModalProvider>
+          </RootElement>
+        </TrackingProvider>
+      </Provider>
+    </I18nProvider>
   );
 }

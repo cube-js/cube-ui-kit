@@ -12,6 +12,7 @@ import {
 import { VisuallyHidden } from 'react-aria';
 
 import { useEvent } from '../../_internal';
+import { useI18n } from '../../i18n';
 import { generateRandomId } from '../../utils/random';
 import { mergeProps } from '../../utils/react';
 import { usePopoverSync } from '../../utils/react/usePopoverSync';
@@ -64,6 +65,7 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   >,
   defaultMenuProps?: P,
 ): UseAnchoredMenuReturn<P, T> {
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [componentProps, setComponentProps] = useState<P | null>(null);
   const [triggerProps, setTriggerProps] = useState<T | null>(null);
@@ -152,13 +154,13 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
       >
         <VisuallyHidden>
           <Pressable>
-            <button aria-label="context-menu" />
+            <button aria-label={t('contextMenu.contextMenu', 'context-menu')} />
           </Pressable>
         </VisuallyHidden>
         <Component {...componentProps} />
       </MenuTrigger>
     );
-  }, [componentProps, triggerProps, isOpen, defaultTriggerProps]);
+  }, [componentProps, triggerProps, isOpen, defaultTriggerProps, t]);
 
   return {
     anchorRef,

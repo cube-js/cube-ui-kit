@@ -2,6 +2,7 @@ import { Styles, tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 import { ItemVariant } from 'src/data/item-themes';
 
+import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons';
 import { CubeItemProps, Item } from '../Item';
 
@@ -38,6 +39,8 @@ export interface CubeTagProps extends CubeItemProps {
 }
 
 function Tag(allProps: CubeTagProps, ref) {
+  const { t } = useI18n();
+
   let {
     theme = 'default',
     isClosable,
@@ -66,7 +69,7 @@ function Tag(allProps: CubeTagProps, ref) {
       actions={
         isClosable ? (
           <Item.Action
-            aria-label="Close"
+            aria-label={t('tag.close', 'Close')}
             styles={{ color: 'currentColor', ...closeButtonStyles }}
             icon={<CloseIcon />}
             onPress={onClose}

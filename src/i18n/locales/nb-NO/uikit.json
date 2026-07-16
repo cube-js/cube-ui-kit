@@ -1,0 +1,124 @@
+{
+  "alertDialog": {
+    "confirm": "OK",
+    "cancel": "Avbryt"
+  },
+  "dialog": {
+    "dismiss": "Lukk"
+  },
+  "dialogForm": {
+    "submit": "Send inn",
+    "cancel": "Avbryt"
+  },
+  "form": {
+    "required": "(påkrevd)",
+    "optional": "(valgfritt)",
+    "internalError": "Intern feil"
+  },
+  "notifications": {
+    "dismiss": "Lukk",
+    "ariaLabel": "Varsler",
+    "empty": "Ingen varsler"
+  },
+  "relativeTime": {
+    "justNow": "akkurat nå",
+    "minAgo": "{{count}} min siden",
+    "hoursAgo": "{{count}} t siden",
+    "daysAgo": "{{count}} d siden",
+    "weeksAgo": "{{count}} u siden",
+    "monthsAgo": "{{count}} mnd siden",
+    "yearsAgo": "{{count}} år siden"
+  },
+  "toast": {
+    "hide": "Skjul"
+  },
+  "listBox": {
+    "selectAll": "Velg alle",
+    "noItems": "Ingen elementer"
+  },
+  "filterListBox": {
+    "searchPlaceholder": "Søk...",
+    "noResults": "Ingen resultater funnet",
+    "noItems": "Ingen elementer",
+    "customValue": "Egendefinert verdi",
+    "filteredItems": "Filtrerte elementer"
+  },
+  "picker": {
+    "all": "Alle",
+    "pickerAriaLabel": "Velger"
+  },
+  "comboBox": {
+    "clearValue": "Tøm verdi",
+    "showOptions": "Vis alternativer"
+  },
+  "commandMenu": {
+    "searchPlaceholder": "Søk etter kommandoer...",
+    "empty": "Ingen kommandoer funnet"
+  },
+  "listBoxPopover": {
+    "options": "Alternativer"
+  },
+  "datePicker": {
+    "time": "Tid",
+    "startTime": "Starttid",
+    "endTime": "Sluttid",
+    "showEndCalendar": "Vis kalender for sluttdato"
+  },
+  "fileInput": {
+    "chooseFile": "Velg fil",
+    "noFileSelected": "Ingen fil valgt"
+  },
+  "passwordInput": {
+    "toggleMasking": "Veksle maskering"
+  },
+  "numberInput": {
+    "stepUp": "Øk",
+    "stepDown": "Reduser"
+  },
+  "textInputMapper": {
+    "key": "Nøkkel",
+    "value": "Verdi",
+    "removeMapping": "Fjern tilordning"
+  },
+  "copySnippet": {
+    "title": "Kodeeksempel",
+    "copyToClipboard": "Kopier {{title}} til utklippstavlen",
+    "showHiddenParts": "Vis skjulte deler",
+    "copied": "{{title}} kopiert"
+  },
+  "copyPasteBlock": {
+    "copyToClipboard": "Kopier {{title}} til utklippstavlen",
+    "selectAndPaste": "Merk og lim inn",
+    "invalidData": "Ugyldige data",
+    "copied": "{{title}} kopiert",
+    "defaultTitle": "Tekst"
+  },
+  "tag": {
+    "close": "Lukk"
+  },
+  "placeholder": {
+    "contentIsLoading": "Innholdet lastes inn"
+  },
+  "loadingAnimation": {
+    "ariaLabel": "Innlastingsanimasjon"
+  },
+  "layout": {
+    "closePanel": "Lukk panel",
+    "goBack": "Tilbake"
+  },
+  "tree": {
+    "actions": "Handlinger"
+  },
+  "banner": {
+    "hideBanner": "Skjul banner"
+  },
+  "tabs": {
+    "close": "Lukk",
+    "editTabTitle": "Rediger fanetittel",
+    "selectTab": "Velg fane"
+  },
+  "contextMenu": {
+    "openContextMenu": "Åpne kontekstmeny",
+    "contextMenu": "context-menu"
+  }
+}

@@ -272,6 +272,59 @@ export type {
   ShortGridStyles,
 } from '@tenphi/tasty';
 
+// i18n — the UI Kit owns the i18next + react-i18next libraries and the single
+// shared instance. Consumers (e.g. Cube Cloud) import ALL i18n symbols from
+// here so there is exactly one physical copy / one version / one instance.
+export {
+  useTranslation,
+  Trans,
+  Translation,
+  I18nextProvider,
+  initReactI18next,
+  withTranslation,
+  useSSR as useI18nSSR,
+} from 'react-i18next';
+export type {
+  TransProps,
+  UseTranslationOptions,
+  UseTranslationResponse,
+  WithTranslation,
+} from 'react-i18next';
+export { default as i18next, createInstance } from 'i18next';
+export type {
+  i18n as I18n,
+  TFunction,
+  Resource,
+  ResourceKey,
+  ResourceLanguage,
+  InitOptions,
+} from 'i18next';
+export {
+  createUIKitI18n,
+  getI18n,
+  UIKIT_I18N_NAMESPACE,
+  addUIKitLocale,
+  I18nProvider,
+  createFormatter,
+  useFormatter,
+  SUPPORTED_LOCALES,
+  LOCALE_LABELS,
+  isSupportedLocale,
+} from './i18n';
+export type {
+  SupportedLocale,
+  UIKitResources,
+  I18nProviderProps,
+  Formatter,
+  FormatDateInput,
+  RelativeTimeOptions,
+  CurrencyOptions,
+  BytesOptions,
+} from './i18n';
+// React Aria's `useLocale`, re-exported so consumers read the same locale
+// context the UI Kit's `I18nProvider` populates from i18next.
+export { useLocale } from 'react-aria';
+
 export * from './utils';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';

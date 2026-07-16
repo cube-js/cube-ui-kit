@@ -2,6 +2,7 @@ import { tasty } from '@tenphi/tasty';
 import copy from 'clipboard-copy';
 import { ReactNode, useMemo, useState } from 'react';
 
+import { useI18n } from '../../../i18n';
 import { CopyIcon, EyeIcon, EyeInvisibleIcon } from '../../../icons';
 import { Action, Button } from '../../actions';
 import {
@@ -138,12 +139,9 @@ const ActionButton = tasty(Button, {
 
 const CopyButton = tasty(ActionButton, {
   icon: <CopyIcon />,
-  'aria-label': 'Copy to clipboard',
 });
 
-const ShowButton = tasty(ActionButton, {
-  'aria-label': 'Show hidden parts',
-});
+const ShowButton = tasty(ActionButton, {});
 
 export interface CubeCopySnippetProps extends CubeCardProps {
   /** The code snippet */
@@ -172,9 +170,11 @@ function replaceSymbolsToHidden(str: string) {
 }
 
 function CopySnippet(allProps: CubeCopySnippetProps) {
+  const { t } = useI18n();
+
   const {
     code = '',
-    title = 'Code example',
+    title = t('copySnippet.title', 'Code example'),
     nowrap,
     prefix = '',
     language,
@@ -192,7 +192,7 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
   async function onCopy() {
     await copy(code);
 
-    toast.success(`${title} copied`);
+    toast.success(t('copySnippet.copied', '{{title}} copied', { title }));
   }
 
   const pristineCode = code.replace(/\n$/, '');
@@ -243,9 +243,17 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
           />
         </StyledBlock>
         <ButtonContainer mods={mods}>
-          <CopyButton aria-label={`Copy ${title}`} onPress={onCopy} />
+          <CopyButton
+            aria-label={t(
+              'copySnippet.copyToClipboard',
+              'Copy {{title}} to clipboard',
+              { title },
+            )}
+            onPress={onCopy}
+          />
           {hideText && (
             <ShowButton
+              aria-label={t('copySnippet.showHiddenParts', 'Show hidden parts')}
               icon={showHidden ? <EyeInvisibleIcon /> : <EyeIcon />}
               onPress={() => setShowHidden(!showHidden)}
             />

@@ -6,6 +6,7 @@ import {
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode, useCallback } from 'react';
 
+import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction';
@@ -44,6 +45,8 @@ function LayoutPanelHeader(
   props: CubeLayoutPanelHeaderProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
+  const { t } = useI18n();
+
   const {
     title,
     level = 3,
@@ -75,7 +78,7 @@ function LayoutPanelHeader(
   const closeAction = isClosable ? (
     <ItemAction
       icon={<CloseIcon />}
-      aria-label="Close panel"
+      aria-label={t('layout.closePanel', 'Close panel')}
       onPress={handleClose}
     />
   ) : null;

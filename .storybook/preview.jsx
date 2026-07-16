@@ -7,6 +7,7 @@ import { configure } from 'storybook/test';
 import { create, themes } from 'storybook/theming';
 
 import { Root } from '../src/components/Root';
+import { getI18n, LOCALE_LABELS, SUPPORTED_LOCALES } from '../src/i18n';
 import { setToolbarScheme } from '../src/stories/decorators/colorSchemeBridge';
 
 // Brand both Storybook themes (manager chrome, sidebar selection, toolbar
@@ -152,11 +153,64 @@ export const parameters = {
   },
 };
 
-export const decorators = [
-  (Story) => (
+// Toolbar switch to preview every shipped UI Kit locale. It drives the shared
+// i18next instance (owned by the UI Kit and provided through `Root` via
+// `I18nextProvider`), so flipping it re-renders all built-in strings — the same
+// mechanism a host app (Cube Cloud) uses when it calls `changeLanguage`.
+export const globalTypes = {
+  locale: {
+    name: 'Locale',
+    description: 'UI Kit language',
+    defaultValue: 'en-US',
+    toolbar: {
+      icon: 'globe',
+      dynamicTitle: true,
+      items: SUPPORTED_LOCALES.map((value) => ({
+        value,
+        title: LOCALE_LABELS[value],
+      })),
+    },
+  },
+};
+
+let latestRequestedLocale = 'en-US';
+let localeChangeQueue = Promise.resolve();
+
+function changeStorybookLocale(i18n, locale) {
+  latestRequestedLocale = locale;
+  localeChangeQueue = localeChangeQueue
+    .catch(() => undefined)
+    .then(async () => {
+      // Serialize changes and always converge on the latest toolbar value. This
+      // prevents a slower, older changeLanguage() call from winning the race.
+      while (i18n.language !== latestRequestedLocale) {
+        await i18n.changeLanguage(latestRequestedLocale);
+      }
+    });
+
+  return localeChangeQueue;
+}
+
+const LocaleDecorator = (Story, context) => {
+  const locale = context.globals.locale ?? 'en-US';
+  const i18n = getI18n();
+
+  useEffect(() => {
+    async function applyLocale() {
+      await changeStorybookLocale(i18n, locale);
+    }
+
+    void applyLocale().catch((error) => {
+      console.error('Failed to change Storybook locale:', error);
+    });
+  }, [i18n, locale]);
+
+  return (
     <Root fontDisplay="auto">
       <Story />
     </Root>
-  ),
-];
+  );
+};
+
+export const decorators = [LocaleDecorator];
 export const tags = ['autodocs'];

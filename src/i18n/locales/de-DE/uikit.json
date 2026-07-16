@@ -1,0 +1,124 @@
+{
+  "alertDialog": {
+    "confirm": "OK",
+    "cancel": "Abbrechen"
+  },
+  "dialog": {
+    "dismiss": "Schließen"
+  },
+  "dialogForm": {
+    "submit": "Absenden",
+    "cancel": "Abbrechen"
+  },
+  "form": {
+    "required": "(erforderlich)",
+    "optional": "(optional)",
+    "internalError": "Interner Fehler"
+  },
+  "notifications": {
+    "dismiss": "Schließen",
+    "ariaLabel": "Benachrichtigungen",
+    "empty": "Keine Benachrichtigungen"
+  },
+  "relativeTime": {
+    "justNow": "gerade eben",
+    "minAgo": "vor {{count}} Min.",
+    "hoursAgo": "vor {{count}} Std.",
+    "daysAgo": "vor {{count}} T.",
+    "weeksAgo": "vor {{count}} Wo.",
+    "monthsAgo": "vor {{count}} Mon.",
+    "yearsAgo": "vor {{count}} J."
+  },
+  "toast": {
+    "hide": "Ausblenden"
+  },
+  "listBox": {
+    "selectAll": "Alle auswählen",
+    "noItems": "Keine Einträge"
+  },
+  "filterListBox": {
+    "searchPlaceholder": "Suchen...",
+    "noResults": "Keine Ergebnisse gefunden",
+    "noItems": "Keine Einträge",
+    "customValue": "Benutzerdefinierter Wert",
+    "filteredItems": "Gefilterte Einträge"
+  },
+  "picker": {
+    "all": "Alle",
+    "pickerAriaLabel": "Auswahl"
+  },
+  "comboBox": {
+    "clearValue": "Wert löschen",
+    "showOptions": "Optionen anzeigen"
+  },
+  "commandMenu": {
+    "searchPlaceholder": "Befehle suchen...",
+    "empty": "Keine Befehle gefunden"
+  },
+  "listBoxPopover": {
+    "options": "Optionen"
+  },
+  "datePicker": {
+    "time": "Uhrzeit",
+    "startTime": "Startzeit",
+    "endTime": "Endzeit",
+    "showEndCalendar": "Kalender für das Enddatum anzeigen"
+  },
+  "fileInput": {
+    "chooseFile": "Datei auswählen",
+    "noFileSelected": "Keine Datei ausgewählt"
+  },
+  "passwordInput": {
+    "toggleMasking": "Maskierung umschalten"
+  },
+  "numberInput": {
+    "stepUp": "Erhöhen",
+    "stepDown": "Verringern"
+  },
+  "textInputMapper": {
+    "key": "Schlüssel",
+    "value": "Wert",
+    "removeMapping": "Zuordnung entfernen"
+  },
+  "copySnippet": {
+    "title": "Codebeispiel",
+    "copyToClipboard": "{{title}} in die Zwischenablage kopieren",
+    "showHiddenParts": "Ausgeblendete Teile anzeigen",
+    "copied": "{{title}} kopiert"
+  },
+  "copyPasteBlock": {
+    "copyToClipboard": "{{title}} in die Zwischenablage kopieren",
+    "selectAndPaste": "Auswählen und einfügen",
+    "invalidData": "Ungültige Daten",
+    "copied": "{{title}} kopiert",
+    "defaultTitle": "Text"
+  },
+  "tag": {
+    "close": "Schließen"
+  },
+  "placeholder": {
+    "contentIsLoading": "Inhalt wird geladen"
+  },
+  "loadingAnimation": {
+    "ariaLabel": "Ladeanimation"
+  },
+  "layout": {
+    "closePanel": "Panel schließen",
+    "goBack": "Zurück"
+  },
+  "tree": {
+    "actions": "Aktionen"
+  },
+  "banner": {
+    "hideBanner": "Banner ausblenden"
+  },
+  "tabs": {
+    "close": "Schließen",
+    "editTabTitle": "Tab-Titel bearbeiten",
+    "selectTab": "Tab auswählen"
+  },
+  "contextMenu": {
+    "openContextMenu": "Kontextmenü öffnen",
+    "contextMenu": "context-menu"
+  }
+}

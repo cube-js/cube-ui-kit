@@ -634,6 +634,21 @@ describe('<ListBox />', () => {
       expect(screen.getByText('Select All Fruits')).toBeInTheDocument();
     });
 
+    it('should use the default label when selectAllLabel is empty', () => {
+      render(
+        <ListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          showSelectAll
+          selectAllLabel=""
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      expect(screen.getByText('Select All')).toBeInTheDocument();
+    });
+
     it('should not show select all option in single selection mode', () => {
       render(
         <ListBox

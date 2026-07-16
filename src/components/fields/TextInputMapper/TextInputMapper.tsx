@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
+import { useI18n } from '../../../i18n';
 import { CloseIcon, PlusIcon } from '../../../icons';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
@@ -76,6 +77,8 @@ function TextInputMapper(
   props: CubeTextInputMapperProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
+  const { t } = useI18n();
+
   ref = useCombinedRefs(ref);
 
   props = useFormProps(props);
@@ -236,7 +239,7 @@ function TextInputMapper(
             isDisabled={isDisabled}
             fieldType="key"
             value={key}
-            placeholder="Key"
+            placeholder={t('textInputMapper.key', 'Key')}
             size={size}
             onChange={onKeyChange}
             onSubmit={onSubmit}
@@ -247,14 +250,14 @@ function TextInputMapper(
             fieldType="value"
             isDisabled={!key || isDisabled}
             value={value}
-            placeholder="Value"
+            placeholder={t('textInputMapper.value', 'Value')}
             size={size}
             onChange={onValueChange}
             onSubmit={onSubmit}
             {...valueProps}
           />
           <Button
-            aria-label="Remove mapping"
+            aria-label={t('textInputMapper.removeMapping', 'Remove mapping')}
             theme="danger"
             type="clear"
             size={size}
@@ -267,7 +270,7 @@ function TextInputMapper(
         </Grid>
       );
     });
-  }, [JSON.stringify(mappings)]);
+  }, [JSON.stringify(mappings), t]);
 
   const element = (
     <Flow
