@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.146.0
+
+### Minor Changes
+
+- [#1232](https://github.com/cube-js/cube-ui-kit/pull/1232) [`76e1f991`](https://github.com/cube-js/cube-ui-kit/commit/76e1f991e7490bb8c0131ce302e1d479e2511b4b) Thanks [@tenphi](https://github.com/tenphi)! - Add built-in i18n: a default i18next instance (read via `getI18n()`), request-local instances from `createUIKitI18n(locale)`, 12 locale bundles, an `I18nProvider` wired into `Root`, locale-aware formatters (`useFormatter` and `createFormatter(locale)`), and translated defaults across UI Kit components. Re-export `i18next` and `react-i18next` so hosts import a single copy from `@cube-dev/ui-kit`.
+
 ## 0.145.4
 
 ### Patch Changes
