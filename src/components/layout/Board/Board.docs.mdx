@@ -62,7 +62,7 @@ clipped by an ancestor's `overflow: hidden`.
 - **`isResizable`** `boolean` (default: `true`) — Enable resizing for all widgets.
 - **`isDroppable`** `boolean` (default: `true`) — Whether the board accepts widgets dropped from other boards.
 - **`resizeHandles`** `ResizeHandleAxis[]` (default: `['se']`) — Which resize handles to show. Corner handles (`ne`/`nw`/`se`/`sw`) show an angle grip; edge handles (`n`/`s`/`e`/`w`) show a dotted grip. Both are revealed on hover/focus/resize. A single edge (e.g. `['e']` or `['s']`) gives a horizontally- or vertically-only resizable widget.
-- **`dragCancel`** `string` — CSS selector for elements that must not start a pointer drag (e.g. form controls inside a widget: `"input,textarea,button,a,.no-drag"`). Keyboard moves are unaffected. Can be overridden per widget.
+- **`dragCancel`** `string` — CSS selector for elements that must not start a pointer drag (e.g. form controls inside a widget: `"input,textarea,button,a,.no-drag"`). Does not affect keyboard moves — those only run when the widget host itself is focused. Can be overridden per widget.
 - **`dragHandle`** `string` — CSS selector for the only elements from which a pointer drag may start. Can be overridden per widget.
 - **`showGridLines`** `boolean | 'drag'` (default: `false`) — Show grid lines behind the widgets. `true` always, `'drag'` only while a widget is being dragged or resized. A nested board that does not set this inherits an enabled ancestor's grid lines, showing its own while a drag is in progress.
 - **`isAligned`** `boolean` (default: `false`) — Align a nested board with its ancestor `Board`'s layout. Only takes effect when the board is nested inside another `Board`'s widget. When set, every cell matches the parent's cell size exactly: the board inherits the parent's column pitch (deriving its own column count from its measured width so cells stay parent-sized as the container is resized) and uses the parent's row height verbatim. It never shrinks rows to fit — pair it with an `isAutoHeight` container so the widget grows to fit its rows at that height. `cols`/`rowHeight` then act as fallbacks used only until the parent metrics resolve.
@@ -260,7 +260,9 @@ touch drags capture the pointer, so they do not trigger it.
 ## Accessibility
 
 - Widgets are focusable when draggable. Press <kbd>Tab</kbd> to focus a widget,
-  then use the arrow keys to move it one cell at a time.
+  then use the arrow keys to move it one cell at a time. Arrow keys only move
+  the widget when the widget host itself is focused — not when focus is inside
+  a nested control (e.g. an <kbd>input</kbd> or <kbd>textarea</kbd>).
 - Dragging, resizing, and keyboard movement are all handled by React Aria's
   `useMove`, which normalizes mouse, touch, and keyboard interactions.
 

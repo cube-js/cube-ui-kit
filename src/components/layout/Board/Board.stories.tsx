@@ -327,7 +327,7 @@ DragCancel.parameters = {
   docs: {
     description: {
       story:
-        'A pointer press on an element matching `dragCancel` (inputs, buttons, links, `.no-drag`) never starts a drag, so form controls inside a widget stay interactive. Keyboard moves are unaffected.',
+        'A pointer press on an element matching `dragCancel` (inputs, buttons, links, `.no-drag`) never starts a drag, so form controls inside a widget stay interactive. Keyboard moves only run when the widget host itself is focused, not when focus is inside a nested control.',
     },
   },
 };
