@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.146.1
+
+### Patch Changes
+
+- [#1243](https://github.com/cube-js/cube-ui-kit/pull/1243) [`d7c67aee`](https://github.com/cube-js/cube-ui-kit/commit/d7c67aee9e0e8f7f4008e5a857f1ed65f4ad5747) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: stop arrow keys from moving a widget when focus is inside nested controls (e.g. `input` / `textarea`). Keyboard moves only run when the widget host itself is focused.
+
 ## 0.146.0
 
 ### Minor Changes
