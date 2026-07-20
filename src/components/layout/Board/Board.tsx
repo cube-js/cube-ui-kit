@@ -204,8 +204,9 @@ export interface CubeBoardProps
   resizeHandles?: ResizeHandleAxis[];
   /**
    * CSS selector for elements that must not start a pointer drag (e.g. form
-   * controls inside a widget: `"input,textarea,button,a,.no-drag"`). Keyboard
-   * moves are unaffected. Can be overridden per widget on `Board.Widget`.
+   * controls inside a widget: `"input,textarea,button,a,.no-drag"`). Does not
+   * affect keyboard moves — those only run when the widget host itself is
+   * focused. Can be overridden per widget on `Board.Widget`.
    */
   dragCancel?: string;
   /**

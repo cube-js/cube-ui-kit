@@ -561,8 +561,12 @@ export function WidgetHost(props: WidgetHostProps) {
   // `preventDefault()` on pointer-down cancels a native `<input>`'s focus, and a
   // capture-phase `stopPropagation()` swallows a `<button>`'s own press events.
   // Skipping `useMove` entirely leaves the target's default behavior and its own
-  // handlers fully intact. Keyboard moves go through `onKeyDown` and are never
-  // gated.
+  // handlers fully intact.
+  //
+  // Keyboard moves also go through `useMove` (`onKeyDown`). Arrow keys must only
+  // move the widget when the host itself is focused — not when focus is inside a
+  // nested input, textarea, or other descendant (those events bubble to the host
+  // and would otherwise steal caret / list navigation).
   //
   // A non-draggable widget must not carry `moveProps` at all: `useMove`'s
   // pointer-down handler calls `preventDefault()`, which cancels native text
@@ -591,6 +595,12 @@ export function WidgetHost(props: WidgetHostProps) {
           onTouchStart: (e: React.TouchEvent<HTMLDivElement>) => {
             if (shouldGateDrag(e.target)) return;
             moveProps.onTouchStart!(e);
+          },
+        }),
+        ...(moveProps.onKeyDown && {
+          onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
+            if (e.target !== e.currentTarget) return;
+            moveProps.onKeyDown!(e);
           },
         }),
       };

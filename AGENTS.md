@@ -20,6 +20,16 @@ Project-specific working rules for AI agents. Not published with the package.
 - [tests.md](docs/rules/tests.md) — Vitest + React Testing Library patterns
 - [commit-changes.md](docs/rules/commit-changes.md) — commit message convention
 
+## Changesets
+
+When making code changes that affect end users or the public API, **always add a new changeset or update an existing one** in [`.changeset/`](.changeset/) as part of the same task. Do not wait to be asked.
+
+- Prefer updating an existing open changeset that already covers the same work/PR; otherwise add a new `.md` file.
+- Use `patch` for bug fixes and small changes; `minor` for new features and noticeable breaking changes.
+- Keep the summary concise and user-focused (`"@cube-dev/ui-kit": patch|minor` frontmatter).
+- Skip changesets for docs-only, test-only, Storybook-only, or internal tooling that does not affect package consumers. Also skip fixes for issues introduced and resolved within the same PR.
+- Add changeset manually (no CLI) — full guidelines: [`.cursor/commands/add-changeset.md`](.cursor/commands/add-changeset.md).
+
 ## Project Structure
 
 ```

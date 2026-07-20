@@ -1234,6 +1234,42 @@ describe('Board', () => {
       expect(info.item.x).toBe(1);
     });
 
+    it('does not move a widget with arrow keys when focus is inside a nested input', () => {
+      // Regression: useMove's onKeyDown sits on the host, so arrow keys from a
+      // focused <input>/<textarea> bubble there. They must not start a keyboard
+      // drag — only when the widget host itself is focused.
+      const onDragStart = vi.fn();
+      const onLayoutChange = vi.fn();
+
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          onDragStart={onDragStart}
+          onLayoutChange={onLayoutChange}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            <input data-qa="Inp" defaultValue="hello" />
+          </Board.Widget>
+        </Board>,
+      );
+
+      const input = screen.getByTestId('Inp');
+      input.focus();
+      fireEvent.keyDown(input, { key: 'ArrowRight' });
+
+      expect(onDragStart).not.toHaveBeenCalled();
+      expect(onLayoutChange).not.toHaveBeenCalled();
+
+      // Focus on the host itself still moves the widget.
+      const widget = screen.getByTestId('WidgetA');
+      widget.focus();
+      fireEvent.keyDown(widget, { key: 'ArrowRight' });
+      expect(onDragStart).toHaveBeenCalled();
+      expect(onLayoutChange).toHaveBeenCalled();
+    });
+
     it('fires resize lifecycle callbacks during a pointer resize', () => {
       const onResizeStart = vi.fn();
       const onResize = vi.fn();
