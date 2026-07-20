@@ -189,6 +189,24 @@ describe('<ComboBox />', () => {
     });
   });
 
+  it('should show emptyLabel when no results match', async () => {
+    const { getByRole, getByText } = renderWithRoot(
+      <ComboBox label="test" emptyLabel="No results found">
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    await userEvent.type(combobox, 'zzz');
+
+    await waitFor(() => {
+      expect(getByText('No results found')).toBeInTheDocument();
+    });
+  });
+
   it('should manage selection correctly', async () => {
     const onSelectionChange = vi.fn();
 

@@ -161,6 +161,13 @@ export interface CubeComboBoxProps<T>
   /** Custom styles for section headings */
   headingStyles?: Styles;
 
+  /**
+   * Label shown when filtering yields no results.
+   * When provided, the popover stays open and displays this label.
+   * When omitted, the popover closes when there are no matching results.
+   */
+  emptyLabel?: ReactNode;
+
   /** Whether the combobox is disabled */
   isDisabled?: boolean;
   /** Whether the combobox is in loading state */
@@ -480,8 +487,8 @@ interface ComboBoxInputProps {
   focusProps: any;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
-  isPopoverOpen: boolean;
   hasResults: boolean;
+  shouldShowPopover: boolean;
   comboBoxId: string;
   listStateRef: RefObject<any>;
 }
@@ -505,8 +512,8 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
       focusProps,
       onChange,
       onFocus,
-      isPopoverOpen,
       hasResults,
+      shouldShowPopover,
       comboBoxId,
       listStateRef,
     },
@@ -536,15 +543,13 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         data-size={size}
         data-input-type="combobox"
         role="combobox"
-        aria-expanded={isPopoverOpen && hasResults}
+        aria-expanded={shouldShowPopover}
         aria-haspopup="listbox"
         aria-controls={
-          isPopoverOpen && hasResults
-            ? `ComboBoxListBox-${comboBoxId}`
-            : undefined
+          shouldShowPopover ? `ComboBoxListBox-${comboBoxId}` : undefined
         }
         aria-activedescendant={
-          isPopoverOpen &&
+          shouldShowPopover &&
           hasResults &&
           listStateRef.current?.selectionManager.focusedKey != null
             ? `ListBoxItem-${listStateRef.current?.selectionManager.focusedKey}`
@@ -641,6 +646,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     onBlur,
     onKeyDown,
     form,
+    emptyLabel,
     ...otherProps
   } = props;
 
@@ -1248,14 +1254,16 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   const comboBoxWidth = wrapperRef?.current?.offsetWidth;
 
-  const shouldShowPopover = Boolean(isPopoverOpen && hasResults);
+  const shouldShowPopover = Boolean(
+    isPopoverOpen && (hasResults || emptyLabel !== undefined),
+  );
 
-  // Close popover if no results
+  // Close popover if no results and no emptyLabel to show
   useEffect(() => {
-    if (isPopoverOpen && !hasResults) {
+    if (isPopoverOpen && !hasResults && emptyLabel === undefined) {
       setIsPopoverOpen(false);
     }
-  }, [isPopoverOpen, hasResults]);
+  }, [isPopoverOpen, hasResults, emptyLabel]);
 
   const ensureInitialFocus = useCallback(() => {
     if (!shouldShowPopover) return;
@@ -1367,8 +1375,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         inputStyles={inputStyles}
         keyboardProps={keyboardProps}
         focusProps={{ ...focusProps, onBlur: handleInputBlur }}
-        isPopoverOpen={isPopoverOpen}
         hasResults={hasResults}
+        shouldShowPopover={shouldShowPopover}
         comboBoxId={comboBoxId}
         listStateRef={listStateRef}
         onChange={handleInputChange}
@@ -1453,6 +1461,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         compositeFocusProps={compositeFocusProps}
         filter={filterFn}
         size={size}
+        {...(emptyLabel !== undefined ? { emptyLabel } : {})}
         onSelectionChange={handleSelectionChange}
         onClose={() => setIsPopoverOpen(false)}
       >

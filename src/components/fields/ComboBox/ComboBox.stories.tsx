@@ -124,6 +124,11 @@ const meta = {
       description:
         'Custom filter function or false to disable filtering. If not provided, uses default contains filter',
     },
+    emptyLabel: {
+      control: { type: 'text' },
+      description:
+        'Label shown when filtering yields no results. When provided, the popover stays open; when omitted, the popover closes',
+    },
     hideTrigger: {
       control: { type: 'boolean' },
       description: 'Whether to hide the trigger button',
@@ -927,6 +932,34 @@ export const ShowAllOnNoResults: StoryObj<typeof ComboBox> = {
     // Click the trigger to show all items
     const trigger = canvas.getByTestId('ComboBoxTrigger');
     await userEvent.click(trigger);
+  },
+};
+
+export const EmptyLabel: StoryObj<typeof ComboBox> = {
+  render: () => (
+    <Flow gap="1x">
+      <ComboBox
+        label="Search Fruits"
+        placeholder="Type 'xyz' to see empty state..."
+        emptyLabel="No fruits found"
+      >
+        <ComboBox.Item key="apple">Apple</ComboBox.Item>
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+        <ComboBox.Item key="date">Date</ComboBox.Item>
+        <ComboBox.Item key="elderberry">Elderberry</ComboBox.Item>
+      </ComboBox>
+      <Paragraph preset="t4" color="#dark-03" margin="1x 0 0 0">
+        Type text that matches no items (e.g., "xyz") to see the empty label
+        instead of the popover closing.
+      </Paragraph>
+    </Flow>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('combobox');
+
+    await userEvent.type(input, 'xyz', { delay: 100 });
   },
 };
 

@@ -40,6 +40,14 @@ export default {
         type: { summary: 'string' },
       },
     },
+    emptyLabel: {
+      control: { type: 'text' },
+      description: 'Label shown when the option list is empty',
+      table: {
+        type: { summary: 'ReactNode' },
+        defaultValue: { summary: 'No items' },
+      },
+    },
     icon: {
       control: { type: null },
       description: 'Icon element rendered before the select value',

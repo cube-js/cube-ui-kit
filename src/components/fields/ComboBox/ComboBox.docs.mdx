@@ -40,6 +40,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 - **`sortSelectedToTop`** `boolean` (default: `true when items provided, false otherwise`) — Whether to sort selected item to the top when popover opens (only works with items prop)
 - **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — How the popover is triggered
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function or false to disable filtering. If not provided, uses default contains filter
+- **`emptyLabel`** `ReactNode` — Label shown when filtering yields no results. When provided, the popover stays open and displays this label; when omitted, the popover closes (no default)
 - **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the trigger button
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — ComboBox size
 - **`necessityIndicator`** `'label' | 'icon'` — How the required state should be indicated
@@ -565,6 +566,23 @@ const [selectedKey, setSelectedKey] = useState(null);
 </ComboBox>
 ```
 
+### Empty Label
+
+When `emptyLabel` is provided, the popover stays open and shows the label instead of closing when filtering yields no matches.
+
+<Story of={ComboBoxStories.EmptyLabel} />
+
+```jsx
+<ComboBox
+  label="Search Fruits"
+  placeholder="Type 'xyz' to see empty state..."
+  emptyLabel="No fruits found"
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+</ComboBox>
+```
+
 ## Accessibility
 
 ### Keyboard Navigation
@@ -729,7 +747,6 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 - **Async Loading**: Built-in support for async data loading with loading states per scroll position (partial support via `isLoading` prop)
 - **Custom Option Rendering**: Allow more flexibility in rendering option content beyond text
 - **Grouped Item Navigation**: Improve keyboard navigation to allow jumping between section groups (e.g., Ctrl+Arrow to skip to next section)
-- **Empty State Component**: Allow passing custom React components for empty state when no results are found
 - **Prefix/Suffix Slots**: Add more flexible slot-based API for prefix and suffix content
 - **Item Descriptions**: Support for showing secondary text/descriptions in list items
 

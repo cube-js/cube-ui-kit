@@ -246,6 +246,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     sortSelectedToTop,
     onOpenChange,
     listStateRef: externalListStateRef,
+    emptyLabel,
     ...otherProps
   } = props;
 
@@ -746,6 +747,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
                 onEscape={handleEscape}
                 onOptionClick={handleOptionClick}
                 onSelectionChange={handleSelectionChange}
+                {...(emptyLabel !== undefined ? { emptyLabel } : {})}
               >
                 {children as CollectionChildren<T>}
               </ListBox>

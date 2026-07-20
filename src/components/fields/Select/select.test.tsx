@@ -3,6 +3,7 @@ import {
   renderWithForm,
   renderWithRoot,
   userEvent,
+  waitFor,
   waitForElementToBeRemoved,
 } from '../../../test/index';
 import { Field } from '../../form';
@@ -93,5 +94,29 @@ describe('<Select />', () => {
 
     // Wait for the exit transition to complete and element to be removed
     await waitForElementToBeRemoved(() => queryByRole('listbox'));
+  });
+
+  it('should show default empty label when collection is empty', async () => {
+    const { getByText } = renderWithRoot(
+      <Select label="test" name="test" defaultOpen>
+        {null}
+      </Select>,
+    );
+
+    await waitFor(() => {
+      expect(getByText('No items')).toBeInTheDocument();
+    });
+  });
+
+  it('should show custom emptyLabel when collection is empty', async () => {
+    const { getByText } = renderWithRoot(
+      <Select label="test" name="test" defaultOpen emptyLabel="Nothing to pick">
+        {null}
+      </Select>,
+    );
+
+    await waitFor(() => {
+      expect(getByText('Nothing to pick')).toBeInTheDocument();
+    });
   });
 });

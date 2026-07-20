@@ -822,4 +822,42 @@ describe('<Picker />', () => {
       expect(trigger).toHaveTextContent('Red Apple');
     });
   });
+
+  describe('emptyLabel', () => {
+    it('should show default empty label when collection is empty', async () => {
+      const { getByRole, getByText } = renderWithRoot(
+        <Picker label="Select fruits" selectionMode="single">
+          {null}
+        </Picker>,
+      );
+
+      const trigger = getByRole('button');
+
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      expect(getByText('No items')).toBeInTheDocument();
+    });
+
+    it('should show custom emptyLabel when collection is empty', async () => {
+      const { getByRole, getByText } = renderWithRoot(
+        <Picker
+          label="Select fruits"
+          selectionMode="single"
+          emptyLabel="Nothing here"
+        >
+          {null}
+        </Picker>,
+      );
+
+      const trigger = getByRole('button');
+
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      expect(getByText('Nothing here')).toBeInTheDocument();
+    });
+  });
 });

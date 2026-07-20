@@ -43,6 +43,7 @@ import { Section as BaseSection, useSelectState } from 'react-stately';
 import { CubeTooltipProviderProps } from 'src/components/overlays/Tooltip/TooltipProvider';
 
 import { useEvent } from '../../../_internal';
+import { useI18n } from '../../../i18n';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/index';
@@ -245,6 +246,11 @@ export interface CubeSelectBaseProps<T>
   onClear?: () => void;
   /** Callback called when the popover open state changes */
   onOpenChange?: (isOpen: boolean) => void;
+  /**
+   * Label shown when the list is empty.
+   * Defaults to "No items".
+   */
+  emptyLabel?: ReactNode;
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -316,6 +322,7 @@ function Select<T extends object>(
     isClearable,
     onOpenChange,
     form,
+    emptyLabel,
     ...otherProps
   } = props;
   let state = useSelectState(props);
@@ -510,6 +517,7 @@ function Select<T extends object>(
         minWidth={triggerWidth}
         triggerRef={triggerRef}
         isDisabled={isDisabled}
+        emptyLabel={emptyLabel}
       />
     </SelectWrapperElement>
   );
@@ -540,8 +548,15 @@ export function ListBoxPopup({
   size = 'small',
   triggerRef,
   isDisabled,
+  emptyLabel: emptyLabelProp,
   ...otherProps
 }) {
+  const { t } = useI18n();
+  const emptyLabel =
+    emptyLabelProp !== undefined
+      ? emptyLabelProp
+      : t('listBox.noItems', 'No items');
+
   // For trigger+popover components, map 'small' size to 'medium' for list items
   // while preserving 'medium' and 'large' sizes
   const listItemSize = size === 'small' ? 'medium' : size;
@@ -634,6 +649,26 @@ export function ListBoxPopup({
               <FocusScope autoFocus restoreFocus>
                 <DismissButton onDismiss={() => state.close()} />
                 {(() => {
+                  if (state.collection.size === 0) {
+                    return (
+                      <ListBoxElement
+                        styles={listBoxStyles}
+                        {...listBoxProps}
+                        ref={listBoxRef}
+                      >
+                        <OptionItem
+                          preset="t4"
+                          color="#dark-03"
+                          size={listItemSize}
+                          padding="(.5x - 1bw)"
+                          isDisabled
+                        >
+                          {emptyLabel}
+                        </OptionItem>
+                      </ListBoxElement>
+                    );
+                  }
+
                   const renderedItems: React.ReactNode[] = [];
                   let isFirstSection = true;
 
