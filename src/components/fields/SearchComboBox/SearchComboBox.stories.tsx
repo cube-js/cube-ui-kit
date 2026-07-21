@@ -333,7 +333,7 @@ export const ServerSideFiltering = () => {
           <SearchComboBox.Item key={item.key}>{item.name}</SearchComboBox.Item>
         )}
       </SearchComboBox>
-      <Space flow="column" gap="1x">
+      <Space flow="column">
         <Paragraph preset="t4" color="#dark-03">
           Items are provided by the parent based on the query with `filter=
           {'{false}'}`. The loading indicator only appears if the fetch takes

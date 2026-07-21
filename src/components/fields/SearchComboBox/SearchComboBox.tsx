@@ -250,8 +250,8 @@ interface SearchComboBoxInputProps {
   focusProps: any;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
-  isPopoverOpen: boolean;
-  hasResults: boolean;
+  /** Whether the listbox popover is actually visible (results, loading, or empty state). */
+  isExpanded: boolean;
   searchComboBoxId: string;
   listStateRef: RefObject<any>;
 }
@@ -277,8 +277,7 @@ const SearchComboBoxInput = forwardRef<
     focusProps,
     onChange,
     onFocus,
-    isPopoverOpen,
-    hasResults,
+    isExpanded,
     searchComboBoxId,
     listStateRef,
   },
@@ -308,17 +307,13 @@ const SearchComboBoxInput = forwardRef<
       data-size={size}
       data-input-type="searchcombobox"
       role="combobox"
-      aria-expanded={isPopoverOpen && hasResults}
+      aria-expanded={isExpanded}
       aria-haspopup="listbox"
       aria-controls={
-        isPopoverOpen && hasResults
-          ? `SearchComboBoxListBox-${searchComboBoxId}`
-          : undefined
+        isExpanded ? `SearchComboBoxListBox-${searchComboBoxId}` : undefined
       }
       aria-activedescendant={
-        isPopoverOpen &&
-        hasResults &&
-        listStateRef.current?.selectionManager.focusedKey != null
+        isExpanded && listStateRef.current?.selectionManager.focusedKey != null
           ? `ListBoxItem-${listStateRef.current?.selectionManager.focusedKey}`
           : undefined
       }
@@ -734,8 +729,11 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
   // Keep the popover visible while there's something meaningful to show:
   // results, a loading indicator, or an empty state for a non-empty query.
+  // While a load is in flight but the delayed indicator hasn't kicked in yet,
+  // suppress the empty state so users never see a false "No results found".
   const shouldShowPopover = Boolean(
-    isPopoverOpen && (hasResults || showLoading || trimmedInput.length > 0),
+    isPopoverOpen &&
+      (hasResults || showLoading || (trimmedInput.length > 0 && !isLoading)),
   );
 
   const resolvedEmptyLabel =
@@ -772,8 +770,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
         inputStyles={inputStyles}
         keyboardProps={keyboardProps}
         focusProps={focusProps}
-        isPopoverOpen={isPopoverOpen}
-        hasResults={hasResults}
+        isExpanded={shouldShowPopover}
         searchComboBoxId={searchComboBoxId}
         listStateRef={listStateRef}
         onChange={handleInputChange}
