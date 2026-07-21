@@ -74,6 +74,66 @@ describe('<SearchComboBox />', () => {
     });
   });
 
+  it('auto-focuses the first match so Enter fires onSelect', async () => {
+    const onSelect = vi.fn();
+
+    const { getByRole } = renderWithRoot(
+      <SearchComboBox label="Colors" onSelect={onSelect}>
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+
+    // "re" matches "Red" (first) and "Green"; the first should be auto-focused.
+    await userEvent.type(input, 're');
+
+    await waitFor(() => {
+      expect(getByRole('listbox')).toBeInTheDocument();
+    });
+
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalledWith('red', 'Red');
+      expect(input).toHaveValue('');
+    });
+  });
+
+  it('prefers onSelect over onSubmit when a match is auto-focused', async () => {
+    const onSelect = vi.fn();
+    const onSubmit = vi.fn();
+
+    const { getByRole } = renderWithRoot(
+      <SearchComboBox label="Colors" onSelect={onSelect} onSubmit={onSubmit}>
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+
+    await userEvent.type(input, 'blu');
+
+    await waitFor(() => {
+      expect(getByRole('listbox')).toBeInTheDocument();
+    });
+
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalledWith('blue', 'Blue');
+    });
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
   it('submits raw text via onSubmit when no option is focused', async () => {
     const onSubmit = vi.fn();
 

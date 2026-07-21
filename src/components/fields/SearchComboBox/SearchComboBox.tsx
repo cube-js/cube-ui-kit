@@ -19,6 +19,7 @@ import React, {
   RefObject,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -97,9 +98,11 @@ export interface CubeSearchComboBoxProps<T>
    */
   onSelect?: (key: string, textValue: string) => void;
   /**
-   * Opt-in callback fired when the user presses Enter without a focused or
-   * available option. Receives the trimmed input text. The input is cleared
-   * afterwards. When not provided, Enter with no option is a no-op.
+   * Opt-in callback fired when the user presses Enter while no suggestion is
+   * visible (the popover has no results). Receives the trimmed input text. The
+   * input is cleared afterwards. When suggestions are visible, Enter selects the
+   * top result via `onSelect` instead. When not provided, Enter with no visible
+   * suggestion is a no-op.
    */
   onSubmit?: (value: string) => void;
   /**
@@ -510,6 +513,32 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     return false;
   }, [localCollectionState?.collection, filterFn]);
 
+  const disabledKeySet = useMemo(
+    () => new Set<Key>(disabledKeys ? Array.from(disabledKeys) : []),
+    [disabledKeys],
+  );
+
+  // Flat list of selectable keys after filtering. Doubles as the dependency
+  // that re-triggers auto-focus whenever the visible results change.
+  const visibleItemKeys = useMemo(() => {
+    const collection = localCollectionState?.collection;
+    const keys: Key[] = [];
+    if (!collection) return keys;
+
+    const walk = (nodes: Iterable<any>) => {
+      for (const node of nodes) {
+        if (node.type === 'item') {
+          if (!disabledKeySet.has(node.key)) keys.push(node.key);
+        } else if (node.childNodes) {
+          walk(node.childNodes);
+        }
+      }
+    };
+
+    walk(filterFn(collection) as Iterable<any>);
+    return keys;
+  }, [localCollectionState?.collection, filterFn, disabledKeySet]);
+
   const trimmedInput = effectiveInputValue.trim();
 
   // Shared tail for commit actions (select/submit): reset the filter, clear the
@@ -639,25 +668,30 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
           listState.selectionManager.setFocusedKey(nextKey);
         }
       } else if (e.key === 'Enter') {
-        // Prefer selecting the focused option when the popover is open. The
-        // focused key may be stale (filtered out by further typing), so only
-        // commit it when it's still in the visible collection.
+        // Commit an option when the popover is open. Prefer the highlighted
+        // option, but only when it's still visible (further typing may have
+        // filtered it out); otherwise fall back to the first visible option so
+        // typing a match and pressing Enter always selects the top result.
         if (isPopoverOpen) {
           const listState = listStateRef.current;
-          const keyToSelect = listState?.selectionManager.focusedKey;
 
-          if (
-            listState &&
-            keyToSelect != null &&
-            getVisibleKeys(listState).includes(keyToSelect)
-          ) {
-            e.preventDefault();
-            listState.selectionManager.select(keyToSelect, e);
-            return;
+          if (listState) {
+            const visibleKeys = getVisibleKeys(listState);
+            const focusedKey = listState.selectionManager.focusedKey;
+            const keyToSelect =
+              focusedKey != null && visibleKeys.includes(focusedKey)
+                ? focusedKey
+                : visibleKeys[0] ?? null;
+
+            if (keyToSelect != null) {
+              e.preventDefault();
+              listState.selectionManager.select(keyToSelect, e);
+              return;
+            }
           }
         }
 
-        // No focused/available option — optionally submit the raw text.
+        // No option available — optionally submit the raw text.
         const value = trimmedInput;
         if (onSubmit && value) {
           e.preventDefault();
@@ -754,6 +788,55 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     isPopoverOpen &&
       (hasResults || showLoading || (trimmedInput.length > 0 && !isLoading)),
   );
+
+  // Highlight the first visible suggestion when the popover opens or when the
+  // filtered results change, so the top match is visibly pre-selected (parity
+  // with ComboBox's initial-focus behaviour). The user's own highlight is left
+  // untouched while the focused option is still visible; a missing or
+  // filtered-out focus falls back to the first visible key. This only drives
+  // the visual highlight — Enter always resolves the option itself, so
+  // correctness never depends on this effect's timing.
+  useLayoutEffect(() => {
+    if (!shouldShowPopover) return;
+
+    let attempts = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const applyFocus = () => {
+      if (!shouldShowPopover) return;
+
+      const listState = listStateRef.current;
+
+      if (listState) {
+        const keys = getVisibleKeys(listState);
+
+        if (keys.length > 0) {
+          const focusedKey = listState.selectionManager.focusedKey;
+          const isFocusValid = focusedKey != null && keys.includes(focusedKey);
+
+          if (!isFocusValid) {
+            markKeyboardFocus(listState);
+            listState.selectionManager.setFocusedKey(keys[0]);
+          }
+
+          return;
+        }
+      }
+
+      // The listbox mounts inside a portal/transition, so its state may not be
+      // ready on the first tick; retry a few times before giving up.
+      attempts += 1;
+      if (attempts < 8) {
+        timer = setTimeout(applyFocus, 16);
+      }
+    };
+
+    applyFocus();
+
+    return () => {
+      if (timer != null) clearTimeout(timer);
+    };
+  }, [shouldShowPopover, visibleItemKeys]);
 
   const resolvedEmptyLabel =
     emptyLabel !== undefined

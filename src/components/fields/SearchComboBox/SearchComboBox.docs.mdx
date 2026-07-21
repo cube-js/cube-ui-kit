@@ -57,7 +57,7 @@ For a field that keeps a selected value (e.g. inside a form), use [ComboBox](/do
 
 #### Notable Properties
 
-**onSelect vs onSubmit** — `onSelect(key, textValue)` fires when a suggestion from the list is chosen. `onSubmit(value)` is an opt-in escape hatch: when there is no focused or available option and the user presses Enter, the raw trimmed text is submitted. Without `onSubmit`, Enter with no option is a no-op. Both callbacks clear the input afterwards.
+**onSelect vs onSubmit** — `onSelect(key, textValue)` fires when a suggestion from the list is chosen. When the popover has visible suggestions, pressing Enter selects the highlighted one (or the first visible one when nothing is highlighted). `onSubmit(value)` is an opt-in escape hatch: only when there are no visible suggestions and the user presses Enter is the raw trimmed text submitted. Without `onSubmit`, Enter with no visible suggestion is a no-op. Both callbacks clear the input afterwards.
 
 **filter** — By default the list is filtered client-side with a contains match. Pass a custom `(textValue, inputValue) => boolean`, or set `filter={false}` to disable internal filtering entirely and provide already-filtered `items` yourself (server-side filtering).
 
@@ -235,7 +235,7 @@ useEffect(() => {
 - `Tab` - Moves focus to/from the input
 - `ArrowDown` - Opens the popover (if closed) or moves focus to the next suggestion
 - `ArrowUp` - Opens the popover (if closed) or moves focus to the previous suggestion
-- `Enter` - Selects the focused suggestion, or submits the raw text via `onSubmit` when no suggestion is focused
+- `Enter` - Selects the highlighted suggestion, falling back to the first visible suggestion; when no suggestion is visible, submits the raw text via `onSubmit`
 - `Escape` - Closes the popover (if open) or clears the input (if clearable and popover closed)
 - `Home` / `End` - Moves focus to the first / last suggestion (when the popover is open)
 - Typing - Filters suggestions based on the input value
