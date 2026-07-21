@@ -134,6 +134,47 @@ describe('<SearchComboBox />', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it('resets and closes the popover after selecting with popoverTrigger="focus"', async () => {
+    const onSelect = vi.fn();
+
+    const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
+      <SearchComboBox label="Colors" popoverTrigger="focus" onSelect={onSelect}>
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+
+    // Focusing the input opens the popover (popoverTrigger="focus").
+    await userEvent.click(input);
+
+    await waitFor(() => {
+      expect(getByRole('listbox')).toBeInTheDocument();
+    });
+
+    await userEvent.click(getAllByRole('option')[0]);
+
+    // After the commit the input is cleared and refocused; the programmatic
+    // refocus must NOT reopen the popover.
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalled();
+      expect(input).toHaveFocus();
+    });
+
+    expect(input).toHaveValue('');
+
+    await waitFor(
+      () => {
+        expect(queryByRole('listbox')).not.toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
+  });
+
   it('submits raw text via onSubmit when no option is focused', async () => {
     const onSubmit = vi.fn();
 

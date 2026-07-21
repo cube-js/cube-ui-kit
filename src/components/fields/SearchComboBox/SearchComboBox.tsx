@@ -541,6 +541,11 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
   const trimmedInput = effectiveInputValue.trim();
 
+  // When we programmatically return focus to the input after a commit, the
+  // resulting focus event must not reopen the popover (relevant for
+  // `popoverTrigger="focus"`). Consumed once by `handleInputFocus`.
+  const suppressFocusOpenRef = useRef(false);
+
   // Shared tail for commit actions (select/submit): reset the filter, clear the
   // input, close the popover, and return focus to the input.
   const clearAndClose = useEvent(() => {
@@ -553,8 +558,13 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
     setIsPopoverOpen(false);
 
+    suppressFocusOpenRef.current = true;
     setTimeout(() => {
       inputRef.current?.focus();
+      // Clear right after the (synchronous) focus dispatch so a stale flag can
+      // never suppress a later, genuine user focus — even if `focus()` was a
+      // no-op because the input already held focus.
+      suppressFocusOpenRef.current = false;
     }, 0);
   });
 
@@ -622,6 +632,12 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   const handleInputFocus = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
     focusProps.onFocus?.(e as any);
 
+    // Skip the focus-triggered open exactly once when we refocused the input
+    // ourselves right after a commit, so select/submit truly resets the field.
+    if (suppressFocusOpenRef.current) {
+      return;
+    }
+
     if (popoverTrigger === 'focus' && !isPopoverOpen) {
       setIsPopoverOpen(true);
     }
@@ -672,22 +688,33 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
         // option, but only when it's still visible (further typing may have
         // filtered it out); otherwise fall back to the first visible option so
         // typing a match and pressing Enter always selects the top result.
+        //
+        // `listStateRef` can still be null while the popover is mounting/
+        // transitioning. In that window we fall back to the parent-computed
+        // `visibleItemKeys` so a matching query commits via `onSelect` instead
+        // of leaking through to `onSubmit`.
         if (isPopoverOpen) {
           const listState = listStateRef.current;
+          const visibleKeys = listState
+            ? getVisibleKeys(listState)
+            : visibleItemKeys;
+          const focusedKey = listState?.selectionManager.focusedKey;
+          const keyToSelect =
+            focusedKey != null && visibleKeys.includes(focusedKey)
+              ? focusedKey
+              : visibleKeys[0] ?? null;
 
-          if (listState) {
-            const visibleKeys = getVisibleKeys(listState);
-            const focusedKey = listState.selectionManager.focusedKey;
-            const keyToSelect =
-              focusedKey != null && visibleKeys.includes(focusedKey)
-                ? focusedKey
-                : visibleKeys[0] ?? null;
+          if (keyToSelect != null) {
+            e.preventDefault();
 
-            if (keyToSelect != null) {
-              e.preventDefault();
+            if (listState) {
               listState.selectionManager.select(keyToSelect, e);
-              return;
+            } else {
+              // No mounted list state to route through — commit directly.
+              handleSelectionChange(keyToSelect);
             }
+
+            return;
           }
         }
 
