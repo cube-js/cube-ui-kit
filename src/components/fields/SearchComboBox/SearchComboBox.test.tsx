@@ -375,4 +375,72 @@ describe('<SearchComboBox />', () => {
       expect(onClear).toHaveBeenCalled();
     });
   });
+
+  it('clears the input on Escape when clearable and the popover is closed', async () => {
+    const onClear = vi.fn();
+
+    const { getByRole, queryByRole } = renderWithRoot(
+      <SearchComboBox label="Colors" onClear={onClear}>
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+    await userEvent.type(input, 'zzz');
+
+    // Close the empty-state popover first so Escape targets the input value.
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
+    expect(input).toHaveValue('zzz');
+
+    await userEvent.keyboard('{Escape}');
+
+    await waitFor(() => {
+      expect(input).toHaveValue('');
+      expect(onClear).toHaveBeenCalled();
+    });
+  });
+
+  it('does not clear on Escape when isClearable={false}', async () => {
+    const onClear = vi.fn();
+    const onInputChange = vi.fn();
+
+    const { getByRole, queryByRole } = renderWithRoot(
+      <SearchComboBox
+        isClearable={false}
+        label="Colors"
+        onClear={onClear}
+        onInputChange={onInputChange}
+      >
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+    await userEvent.type(input, 'zzz');
+    onInputChange.mockClear();
+
+    // Close the empty-state popover first so Escape targets the input value.
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
+
+    await userEvent.keyboard('{Escape}');
+
+    // type="search" would clear natively without preventDefault; value must stay.
+    expect(input).toHaveValue('zzz');
+    expect(onClear).not.toHaveBeenCalled();
+    expect(onInputChange).not.toHaveBeenCalled();
+  });
 });

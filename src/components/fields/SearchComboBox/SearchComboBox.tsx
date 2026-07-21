@@ -733,9 +733,13 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
           e.preventDefault();
           setIsPopoverOpen(false);
           inputRef.current?.focus();
-        } else if (effectiveInputValue && isClearable) {
+        } else if (effectiveInputValue) {
+          // Always preventDefault: type="search" clears natively on Escape
+          // unless cancelled, which would bypass isClearable={false}.
           e.preventDefault();
-          clearValue();
+          if (isClearable) {
+            clearValue();
+          }
         }
       } else if (e.key === 'Home' || e.key === 'End') {
         if (isPopoverOpen) {
