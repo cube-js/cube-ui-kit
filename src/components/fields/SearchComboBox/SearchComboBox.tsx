@@ -615,7 +615,13 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
       setIsPopoverOpen(false);
     }
 
-    inputRef.current?.focus();
+    // Same suppress as clearAndClose: programmatic refocus must not reopen the
+    // popover when popoverTrigger="focus" (e.g. clear button steal+restore focus).
+    suppressFocusOpenRef.current = true;
+    setTimeout(() => {
+      inputRef.current?.focus();
+      suppressFocusOpenRef.current = false;
+    }, 0);
 
     onClear?.();
   });

@@ -376,6 +376,51 @@ describe('<SearchComboBox />', () => {
     });
   });
 
+  it('does not reopen the popover after clear with popoverTrigger="focus"', async () => {
+    const onClear = vi.fn();
+
+    const { getByRole, getByTestId, queryByRole } = renderWithRoot(
+      <SearchComboBox label="Colors" popoverTrigger="focus" onClear={onClear}>
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+
+    // Open via focus, type to filter, then close the popover so clear runs
+    // while closed (the reopen-on-refocus path).
+    await userEvent.click(input);
+    await waitFor(() => {
+      expect(getByRole('listbox')).toBeInTheDocument();
+    });
+
+    await userEvent.type(input, 're');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
+
+    await userEvent.click(getByTestId('SearchComboBoxClearButton'));
+
+    await waitFor(() => {
+      expect(input).toHaveValue('');
+      expect(onClear).toHaveBeenCalled();
+      expect(input).toHaveFocus();
+    });
+
+    // Programmatic refocus after clear must not reopen the unfiltered list.
+    await waitFor(
+      () => {
+        expect(queryByRole('listbox')).not.toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
+  });
+
   it('clears the input on Escape when clearable and the popover is closed', async () => {
     const onClear = vi.fn();
 
