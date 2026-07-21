@@ -822,49 +822,4 @@ describe('<Picker />', () => {
       expect(trigger).toHaveTextContent('Red Apple');
     });
   });
-
-  describe('emptyLabel', () => {
-    it('should not open popover when collection is empty and emptyLabel is omitted', async () => {
-      const { getByRole, queryByRole } = renderWithRoot(
-        <Picker
-          label="Select fruits"
-          placeholder="Choose..."
-          selectionMode="single"
-        >
-          {[]}
-        </Picker>,
-      );
-
-      const trigger = getByRole('button');
-
-      await act(async () => {
-        await userEvent.click(trigger);
-      });
-
-      expect(queryByRole('listbox')).not.toBeInTheDocument();
-    });
-
-    it('should show emptyLabel when collection is empty', async () => {
-      const { getByRole, getByText } = renderWithRoot(
-        <Picker
-          label="Select fruits"
-          placeholder="Choose..."
-          selectionMode="single"
-          emptyLabel="No fruits available"
-        >
-          {[]}
-        </Picker>,
-      );
-
-      const trigger = getByRole('button');
-
-      await act(async () => {
-        await userEvent.click(trigger);
-      });
-
-      await waitFor(() => {
-        expect(getByText('No fruits available')).toBeInTheDocument();
-      });
-    });
-  });
 });

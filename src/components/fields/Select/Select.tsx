@@ -245,12 +245,6 @@ export interface CubeSelectBaseProps<T>
   onClear?: () => void;
   /** Callback called when the popover open state changes */
   onOpenChange?: (isOpen: boolean) => void;
-  /**
-   * Label shown when the option list is empty.
-   * When provided, the popover stays open and displays this message.
-   * When omitted, the popover does not open for an empty collection.
-   */
-  emptyLabel?: ReactNode;
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -321,16 +315,10 @@ function Select<T extends object>(
     suffixPosition = 'before',
     isClearable,
     onOpenChange,
-    emptyLabel,
     form,
     ...otherProps
   } = props;
-  let state = useSelectState({
-    ...props,
-    // React Aria refuses to open an empty collection unless this is set.
-    // Enable it when we have an emptyLabel to show.
-    allowsEmptyCollection: emptyLabel != null,
-  });
+  let state = useSelectState(props);
 
   // Generate a unique ID for this select instance
   const selectId = useMemo(() => generateRandomId(), []);
@@ -339,14 +327,6 @@ function Select<T extends object>(
   useEffect(() => {
     onOpenChange?.(state.isOpen);
   }, [state.isOpen]);
-
-  // Keep the popover closed when the collection is empty unless an
-  // emptyLabel is provided to show in place of options.
-  useEffect(() => {
-    if (state.isOpen && state.collection.size === 0 && emptyLabel == null) {
-      state.close();
-    }
-  }, [state.isOpen, state.collection.size, emptyLabel]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -530,7 +510,6 @@ function Select<T extends object>(
         minWidth={triggerWidth}
         triggerRef={triggerRef}
         isDisabled={isDisabled}
-        emptyLabel={emptyLabel}
       />
     </SelectWrapperElement>
   );
@@ -561,20 +540,16 @@ export function ListBoxPopup({
   size = 'small',
   triggerRef,
   isDisabled,
-  emptyLabel,
   ...otherProps
 }) {
   // For trigger+popover components, map 'small' size to 'medium' for list items
   // while preserving 'medium' and 'large' sizes
   const listItemSize = size === 'small' ? 'medium' : size;
-  const isCollectionEmpty = state.collection.size === 0;
-  const shouldShowOverlay =
-    state.isOpen && !isDisabled && (!isCollectionEmpty || emptyLabel != null);
 
   // Get props for the listbox
   let { listBoxProps } = useListBox(
     {
-      autoFocus: isCollectionEmpty ? false : state.focusStrategy || true,
+      autoFocus: state.focusStrategy || true,
       shouldUseVirtualFocus,
       ...otherProps,
     },
@@ -587,10 +562,7 @@ export function ListBoxPopup({
   let { overlayProps } = useOverlay(
     {
       onClose: () => state.close(),
-      // Keep open on blur when showing an empty-state message — there is no
-      // focusable listbox to receive focus, so autoFocus would otherwise
-      // immediately dismiss the overlay.
-      shouldCloseOnBlur: !isCollectionEmpty,
+      shouldCloseOnBlur: true,
       isOpen: state.isOpen,
       isDismissable: true,
       shouldCloseOnInteractOutside: (el) => {
@@ -607,10 +579,6 @@ export function ListBoxPopup({
           }
           return true;
         }
-        // Opening pointer events land on the trigger. With an empty collection
-        // there is no listbox to take focus, so the same interaction would
-        // immediately dismiss the overlay — ignore trigger interacts then.
-        if (isCollectionEmpty) return false;
         // If the same trigger that opened this select was clicked, allow closing
         if (menuTriggerEl === triggerRef?.current) return true;
         // Otherwise, don't close (let event mechanism handle it)
@@ -643,7 +611,7 @@ export function ListBoxPopup({
   // it back to the trigger.
   return (
     <Portal>
-      <DisplayTransition isShown={shouldShowOverlay}>
+      <DisplayTransition isShown={state.isOpen && !isDisabled}>
         {({ phase, isShown, ref: transitionRef }) => (
           <SelectOverlayWrapper
             {...overlayProps}
@@ -663,73 +631,62 @@ export function ListBoxPopup({
                 '--overlay-min-width': minWidth ? `${minWidth}px` : 'initial',
               }}
             >
-              <FocusScope autoFocus={!isCollectionEmpty} restoreFocus>
+              <FocusScope autoFocus restoreFocus>
                 <DismissButton onDismiss={() => state.close()} />
-                {isCollectionEmpty ? (
-                  <Item
-                    preset="t4"
-                    color="#dark-03"
-                    size={listItemSize}
-                    padding="(.5x - 1bw)"
-                  >
-                    {emptyLabel}
-                  </Item>
-                ) : (
-                  (() => {
-                    const renderedItems: React.ReactNode[] = [];
-                    let isFirstSection = true;
+                {(() => {
+                  const renderedItems: React.ReactNode[] = [];
+                  let isFirstSection = true;
 
-                    for (const item of state.collection) {
-                      if (item.type === 'section') {
-                        if (!isFirstSection) {
-                          renderedItems.push(
-                            <ListDivider
-                              key={`divider-${String(item.key)}`}
-                              as="li"
-                              role="separator"
-                              aria-orientation="horizontal"
-                            />,
-                          );
-                        }
-
+                  for (const item of state.collection) {
+                    if (item.type === 'section') {
+                      if (!isFirstSection) {
                         renderedItems.push(
-                          <SelectSection
-                            key={item.key}
-                            item={item}
-                            state={state}
-                            optionStyles={optionStyles}
-                            sectionStyles={undefined}
-                            shouldUseVirtualFocus={shouldUseVirtualFocus}
-                            size={listItemSize}
-                          />,
-                        );
-
-                        isFirstSection = false;
-                      } else {
-                        renderedItems.push(
-                          <Option
-                            key={item.key}
-                            item={item}
-                            state={state}
-                            styles={optionStyles}
-                            shouldUseVirtualFocus={shouldUseVirtualFocus}
-                            size={listItemSize}
+                          <ListDivider
+                            key={`divider-${String(item.key)}`}
+                            as="li"
+                            role="separator"
+                            aria-orientation="horizontal"
                           />,
                         );
                       }
-                    }
 
-                    return (
-                      <ListBoxElement
-                        styles={listBoxStyles}
-                        {...listBoxProps}
-                        ref={listBoxRef}
-                      >
-                        {renderedItems}
-                      </ListBoxElement>
-                    );
-                  })()
-                )}
+                      renderedItems.push(
+                        <SelectSection
+                          key={item.key}
+                          item={item}
+                          state={state}
+                          optionStyles={optionStyles}
+                          sectionStyles={undefined}
+                          shouldUseVirtualFocus={shouldUseVirtualFocus}
+                          size={listItemSize}
+                        />,
+                      );
+
+                      isFirstSection = false;
+                    } else {
+                      renderedItems.push(
+                        <Option
+                          key={item.key}
+                          item={item}
+                          state={state}
+                          styles={optionStyles}
+                          shouldUseVirtualFocus={shouldUseVirtualFocus}
+                          size={listItemSize}
+                        />,
+                      );
+                    }
+                  }
+
+                  return (
+                    <ListBoxElement
+                      styles={listBoxStyles}
+                      {...listBoxProps}
+                      ref={listBoxRef}
+                    >
+                      {renderedItems}
+                    </ListBoxElement>
+                  );
+                })()}
                 <DismissButton onDismiss={() => state.close()} />
               </FocusScope>
             </OverlayElement>

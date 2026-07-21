@@ -40,7 +40,6 @@ A combobox component that combines a text input with a dropdown list, allowing u
 - **`sortSelectedToTop`** `boolean` (default: `true when items provided, false otherwise`) — Whether to sort selected item to the top when popover opens (only works with items prop)
 - **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — How the popover is triggered
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function or false to disable filtering. If not provided, uses default contains filter
-- **`emptyLabel`** `ReactNode` — Label shown when filtering yields no results. When provided, the popover stays open and displays this message; when omitted, the popover closes
 - **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the trigger button
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — ComboBox size
 - **`necessityIndicator`** `'label' | 'icon'` — How the required state should be indicated
@@ -561,21 +560,6 @@ const [selectedKey, setSelectedKey] = useState(null);
 ```jsx
 {/* Type text that yields no results, then click trigger or press arrow keys */}
 <ComboBox label="Search Fruits" placeholder="Type 'xyz' to see behavior...">
-  <ComboBox.Item key="apple">Apple</ComboBox.Item>
-  <ComboBox.Item key="banana">Banana</ComboBox.Item>
-</ComboBox>
-```
-
-### Custom Empty State
-
-<Story of={ComboBoxStories.CustomEmptyState} />
-
-```jsx
-<ComboBox
-  label="Search Fruits"
-  placeholder="Type to filter..."
-  emptyLabel="No matching fruits found"
->
   <ComboBox.Item key="apple">Apple</ComboBox.Item>
   <ComboBox.Item key="banana">Banana</ComboBox.Item>
 </ComboBox>

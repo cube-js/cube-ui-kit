@@ -47,7 +47,10 @@ import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import type { FieldBaseProps } from '../../../shared';
 
 export interface CubePickerProps<T>
-  extends Omit<CubeListBoxProps<T>, 'size' | 'tooltip' | 'shape'>,
+  extends Omit<
+      CubeListBoxProps<T>,
+      'size' | 'tooltip' | 'shape' | 'emptyLabel'
+    >,
     Omit<CubeItemProps, 'children' | 'size'>,
     BasePropsWithoutChildren,
     BaseStyleProps,
@@ -245,7 +248,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
     onClear,
     sortSelectedToTop,
     onOpenChange,
-    emptyLabel,
     listStateRef: externalListStateRef,
     ...otherProps
   } = props;
@@ -454,11 +456,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
     if (isOpen === isPopoverOpen) return;
 
     if (isOpen) {
-      // Keep the popover closed when the collection is empty unless an
-      // emptyLabel is provided to show in place of results.
-      if (localCollectionState.collection.size === 0 && emptyLabel == null) {
-        return;
-      }
       triggerWidthRef.current =
         triggerRef?.current?.UNSAFE_getDOMNode()?.offsetWidth;
     }
@@ -749,7 +746,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
                 footerStyles={footerStyles}
                 qa={`${props.qa || 'Picker'}ListBox`}
                 allValueProps={allValueProps}
-                emptyLabel={emptyLabel}
                 onEscape={handleEscape}
                 onOptionClick={handleOptionClick}
                 onSelectionChange={handleSelectionChange}

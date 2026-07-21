@@ -94,26 +94,4 @@ describe('<Select />', () => {
     // Wait for the exit transition to complete and element to be removed
     await waitForElementToBeRemoved(() => queryByRole('listbox'));
   });
-
-  it('should not open popover when collection is empty and emptyLabel is omitted', async () => {
-    const { getByRole, queryByText } = renderWithRoot(
-      <Select label="test" name="test" />,
-    );
-
-    const select = getByRole('button');
-    await act(async () => await userEvent.click(select));
-
-    expect(queryByText('No items')).not.toBeInTheDocument();
-  });
-
-  it('should show emptyLabel when collection is empty', async () => {
-    const { getByRole, findByText } = renderWithRoot(
-      <Select label="test" emptyLabel="No colors available" />,
-    );
-
-    const select = getByRole('button');
-    await act(async () => await userEvent.click(select));
-
-    expect(await findByText('No colors available')).toBeInTheDocument();
-  });
 });

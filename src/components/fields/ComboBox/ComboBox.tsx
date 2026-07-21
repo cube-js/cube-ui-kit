@@ -123,12 +123,6 @@ export interface CubeComboBoxProps<T>
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
-  /**
-   * Label shown when filtering yields no results.
-   * When provided, the popover stays open and displays this message.
-   * When omitted, the popover closes when there are no matching results.
-   */
-  emptyLabel?: ReactNode;
 
   /** Left input icon */
   icon?: ReactElement;
@@ -633,7 +627,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     allowsCustomValue,
     shouldCommitOnBlur = true,
     clearOnBlur,
-    emptyLabel,
     items,
     children: renderChildren,
     sectionStyles,
@@ -1255,16 +1248,14 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   const comboBoxWidth = wrapperRef?.current?.offsetWidth;
 
-  const shouldShowPopover = Boolean(
-    isPopoverOpen && (hasResults || emptyLabel != null),
-  );
+  const shouldShowPopover = Boolean(isPopoverOpen && hasResults);
 
-  // Close popover if no results and no empty label to show
+  // Close popover if no results
   useEffect(() => {
-    if (isPopoverOpen && !hasResults && emptyLabel == null) {
+    if (isPopoverOpen && !hasResults) {
       setIsPopoverOpen(false);
     }
-  }, [isPopoverOpen, hasResults, emptyLabel]);
+  }, [isPopoverOpen, hasResults]);
 
   const ensureInitialFocus = useCallback(() => {
     if (!shouldShowPopover) return;
@@ -1463,7 +1454,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         compositeFocusProps={compositeFocusProps}
         filter={filterFn}
         size={size}
-        emptyLabel={emptyLabel}
         onSelectionChange={handleSelectionChange}
         onClose={() => setIsPopoverOpen(false)}
       >

@@ -117,14 +117,6 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    emptyLabel: {
-      control: { type: 'text' },
-      description:
-        'Label shown when the option list is empty. When provided, the popover stays open and displays this message; when omitted, the popover does not open for an empty collection.',
-      table: {
-        type: { summary: 'ReactNode' },
-      },
-    },
     shouldFlip: {
       control: { type: 'boolean' },
       description: 'Whether dropdown should flip to fit in viewport',
@@ -846,26 +838,6 @@ LoadingState.parameters = {
     description: {
       story:
         'Select displays a loading indicator when `isLoading` is true, preventing user interaction until data is loaded.',
-    },
-  },
-};
-
-export const CustomEmptyState: StoryObj<CubeSelectProps<any>>['render'] = (
-  args,
-) => (
-  <Select
-    {...args}
-    label="Color"
-    placeholder="No options available"
-    emptyLabel="No colors available"
-  />
-);
-
-CustomEmptyState.parameters = {
-  docs: {
-    description: {
-      story:
-        'When `emptyLabel` is provided and there are no options, the popover opens and shows the message. Omit it to keep the popover closed for an empty collection.',
     },
   },
 };
