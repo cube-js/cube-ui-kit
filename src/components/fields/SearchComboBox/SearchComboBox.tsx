@@ -49,6 +49,7 @@ import {
   filterCollectionNodes,
   getEdgeVisibleKey,
   getNextVisibleKey,
+  getVisibleKeys,
   ListBoxPopover,
   markKeyboardFocus,
   useCompositeFocus,
@@ -77,7 +78,19 @@ export interface CubeSearchComboBoxProps<T>
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
-    FieldBaseProps {
+    // SearchComboBox is not form-connected: it holds no persistent value, so
+    // form-binding and form-validation props are excluded from the public API.
+    Omit<
+      FieldBaseProps,
+      | 'name'
+      | 'form'
+      | 'rules'
+      | 'shouldUpdate'
+      | 'validationDelay'
+      | 'validateTrigger'
+      | 'insideForm'
+      | 'idPrefix'
+    > {
   /**
    * Callback fired when the user picks a suggestion from the list.
    * Receives the option key and its text value. The input is cleared afterwards.
@@ -626,12 +639,18 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
           listState.selectionManager.setFocusedKey(nextKey);
         }
       } else if (e.key === 'Enter') {
-        // Prefer selecting the focused option when the popover is open.
+        // Prefer selecting the focused option when the popover is open. The
+        // focused key may be stale (filtered out by further typing), so only
+        // commit it when it's still in the visible collection.
         if (isPopoverOpen) {
           const listState = listStateRef.current;
           const keyToSelect = listState?.selectionManager.focusedKey;
 
-          if (listState && keyToSelect != null) {
+          if (
+            listState &&
+            keyToSelect != null &&
+            getVisibleKeys(listState).includes(keyToSelect)
+          ) {
             e.preventDefault();
             listState.selectionManager.select(keyToSelect, e);
             return;
