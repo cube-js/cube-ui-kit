@@ -1379,7 +1379,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         {validationState || isLoading ? (
           <>
             {validationState && !isLoading ? validation : null}
-            {isLoading ? <LoadingIcon /> : null}
+            {isLoading ? <LoadingIcon data-element="InputIcon" /> : null}
           </>
         ) : null}
         {suffixPosition === 'after' ? suffix : null}
@@ -1390,6 +1390,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             theme={validationState === 'invalid' ? 'danger' : undefined}
             qa="ComboBoxClearButton"
             data-no-trigger={hideTrigger ? '' : undefined}
+            data-popover-dismiss=""
             aria-label={t('comboBox.clearValue', 'Clear value')}
             onPress={clearValue}
           />

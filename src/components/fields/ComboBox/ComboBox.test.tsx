@@ -1,4 +1,5 @@
 import { act, waitFor } from '@testing-library/react';
+import { useState } from 'react';
 
 import { renderWithForm, renderWithRoot, userEvent } from '../../../test/index';
 
@@ -343,6 +344,53 @@ describe('<ComboBox />', () => {
     });
 
     // Clear button should be gone after clearing
+    expect(queryByTestId('ComboBoxClearButton')).not.toBeInTheDocument();
+  });
+
+  it('should clear in a single click while the popover is open (controlled + external filter)', async () => {
+    function ControlledCombo() {
+      const [inputValue, setInputValue] = useState('Red');
+      const [selectedKey, setSelectedKey] = useState<string | null>('red');
+
+      const filtered = items.filter((item) =>
+        String(item.children).toLowerCase().includes(inputValue.toLowerCase()),
+      );
+
+      return (
+        <ComboBox
+          isClearable
+          label="test"
+          filter={false}
+          inputValue={inputValue}
+          selectedKey={selectedKey}
+          onInputChange={setInputValue}
+          onSelectionChange={setSelectedKey}
+        >
+          {filtered.map((item) => (
+            <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          ))}
+        </ComboBox>
+      );
+    }
+
+    const { getByRole, getByTestId, queryByRole, queryByTestId } =
+      renderWithRoot(<ControlledCombo />);
+
+    const combobox = getByRole('combobox');
+    expect(combobox).toHaveValue('Red');
+
+    // Open the popover so the clear-while-open path is exercised
+    await userEvent.click(getByTestId('ComboBoxTrigger'));
+    await waitFor(() => {
+      expect(queryByRole('listbox')).toBeInTheDocument();
+    });
+
+    // A single click must both close the popover AND clear the value
+    await userEvent.click(getByTestId('ComboBoxClearButton'));
+
+    await waitFor(() => {
+      expect(combobox).toHaveValue('');
+    });
     expect(queryByTestId('ComboBoxClearButton')).not.toBeInTheDocument();
   });
 

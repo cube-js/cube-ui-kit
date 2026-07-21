@@ -55,6 +55,11 @@ export interface ListBoxPopoverProps {
   filter?: (nodes: Iterable<any>) => Iterable<any>;
   size?: 'small' | 'medium' | 'large' | (string & {});
   /**
+   * Label shown when the list is empty (no items / no filter results).
+   * Forwarded to the inner ListBox.
+   */
+  emptyLabel?: ReactNode;
+  /**
    * Element to anchor the overlay to geometrically. Defaults to `triggerRef`.
    * Use this to anchor to something other than the trigger (e.g. the caret in
    * a textarea) while keeping `triggerRef` for outside-click/dismiss logic.
@@ -154,6 +159,7 @@ export const ListBoxPopover = function ListBoxPopover(
     compositeFocusProps,
     filter,
     size = 'medium',
+    emptyLabel,
     positionTargetRef,
     positionApiRef,
   } = props;
@@ -299,6 +305,7 @@ export const ListBoxPopover = function ListBoxPopover(
                 stateRef={listStateRef}
                 size="medium"
                 shape="popover"
+                emptyLabel={emptyLabel}
                 onSelectionChange={onSelectionChange}
               >
                 {children as any}
