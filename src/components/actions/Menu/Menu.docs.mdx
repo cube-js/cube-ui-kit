@@ -6,15 +6,22 @@ import * as MenuStories from './Menu.stories';
 
 # Menu
 
-A versatile dropdown menu component that displays a list of actions or options. Built with React Aria for accessibility and supports single/multiple selection, sections, keyboard navigation, and custom styling.
+An action-oriented menu for short, scannable sets of commands, navigation destinations, or toggles. `Menu` renders the menu content; combine it with `MenuTrigger` to open a dropdown from a button or use the trigger variants for context menus. It supports keyboard typeahead, but does not show a search field.
 
 ## When to Use
 
-- Display a list of actions that can be performed (like Cut, Copy, Paste)
-- Create context menus for right-click interactions
-- Build dropdown menus for navigation or settings
-- Implement selection lists with single or multiple selection modes
-- Group related options using sections with dividers
+- A button or context-menu gesture should reveal a short list of related actions
+- Items execute commands or navigate rather than populate a form field
+- Mutually exclusive menu options or independent toggles need menu-item selection states
+- Related actions need sections, submenus, icons, or keyboard shortcut hints
+
+Choose a different component when the interaction has another shape:
+
+- Use [CommandMenu](/docs/actions-commandmenu--docs) when users need a visible search field to discover or filter commands.
+- Use [Select](/docs/forms-select--docs) for a conventional single-value form field.
+- Use [Picker](/docs/forms-picker--docs) for persistent single or multiple field values without search.
+- Use [FilterPicker](/docs/forms-filterpicker--docs) for persistent single or multiple field values with search.
+- Use [SearchComboBox](/docs/forms-searchcombobox--docs) for a focused search-and-act input that clears after each result.
 
 ## Component
 
@@ -474,16 +481,21 @@ The Menu component is typically used with MenuTrigger for dropdown functionality
 </MenuTrigger>
 ```
 
+`Menu` is the content and selection model; `MenuTrigger` supplies the button-triggered popover behavior. Use `CommandMenu.Trigger` instead when the opened content needs a visible command-search input.
+
 ## Suggested Improvements
 
 - Enhancement 1: Implement virtual scrolling for large item lists
 - Enhancement 2: Add animation presets for menu transitions
 - Enhancement 3: Support for item templates and custom renderers
-- Enhancement 4: Built-in search/filter functionality
+- Enhancement 4: For built-in search/filter functionality, use CommandMenu
 - Enhancement 5: Add support for icons in section headers
 
 ## Related Components
 
-- [Button](/docs/actions-button--docs) - Common trigger element for menus
-- [ListBox](/docs/forms-listbox--docs) - Alternative for selection-focused interfaces
-- [ComboBox](/docs/forms-combobox--docs) - Combines input with menu selection 
+- [CommandMenu](/docs/actions-commandmenu--docs) - Use for searchable, keyboard-first command discovery
+- [Button](/docs/actions-button--docs) - Common trigger element for MenuTrigger
+- [Select](/docs/forms-select--docs) - Use for a conventional persistent single-value field
+- [Picker](/docs/forms-picker--docs) - Use for persistent single or multiple selection without search
+- [FilterPicker](/docs/forms-filterpicker--docs) - Use for persistent single or multiple selection with search
+- [ListBox](/docs/forms-listbox--docs) - Use for an always-visible selection-focused interface

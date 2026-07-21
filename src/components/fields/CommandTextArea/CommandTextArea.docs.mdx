@@ -6,18 +6,23 @@ import * as CommandTextAreaStories from './CommandTextArea.stories';
 
 # CommandTextArea
 
-A multiline text input (built on `TextArea` / `TextInputBase`) that shows a
-command-autocomplete popover when the text matches a configurable trigger. The
-focus always stays in the textarea; arrow keys, Enter/Tab, and Escape drive the
-list only while it is open. Selecting an option inserts the option's literal
-value (e.g. `/clear`) into the text and fires `onCommand`.
+A multiline free-form field with inline token autocomplete. Typing a configured
+trigger such as `/` or `@` opens suggestions at the caret; choosing one inserts
+its literal value into the text and fires `onCommand`. The field value remains
+the complete textarea string rather than a selected option key.
 
 ## When to Use
 
-- Chat or prompt inputs where users type slash commands (`/clear`, `/help`).
-- Inputs that need token-based autocomplete (`@mentions`, snippets) without
-  giving up free-form, multiline editing.
-- Any textarea that should "feel like a textarea" but offer inline suggestions.
+- Chat or prompt inputs where slash commands (`/clear`, `/help`) are inserted into the message
+- Multiline editors that need inline `@mentions`, snippets, variables, or other triggered tokens
+- Cases where focus and the text caret must remain in a normal textarea while suggestions are open
+
+Choose a different component when the interaction has another outcome:
+
+- Use [SearchComboBox](/docs/forms-searchcombobox--docs) for a separate single-line search-and-act input that clears after a result is chosen.
+- Use [ComboBox](/docs/forms-combobox--docs) when the field should keep one selected option rather than a free-form text document.
+- Use [CommandMenu](/docs/actions-commandmenu--docs) when users should search for and immediately execute application commands instead of inserting text.
+- Use [TextArea](/docs/forms-textarea--docs) when no inline suggestions are needed.
 
 ## Component
 
@@ -157,5 +162,7 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 ## Related Components
 
 - [TextArea](/docs/forms-textarea--docs) — The base multiline field this builds on.
-- [ComboBox](/docs/forms-combobox--docs) — Single-value select with search (different semantics: commits a `selectedKey`).
+- [SearchComboBox](/docs/forms-searchcombobox--docs) — Single-line search-and-act input that clears after each result.
+- [ComboBox](/docs/forms-combobox--docs) — Searchable field that commits one selected key instead of inserting text.
+- [CommandMenu](/docs/actions-commandmenu--docs) — Searchable command surface that executes actions instead of editing text.
 - [ListBox](/docs/forms-listbox--docs) — The virtual-focus list rendered inside the popover.

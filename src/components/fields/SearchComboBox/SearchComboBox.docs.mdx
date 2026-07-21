@@ -5,16 +5,22 @@ import * as SearchComboBoxStories from './SearchComboBox.stories';
 
 # SearchComboBox
 
-A search-styled combobox for "search and act" flows. The user types a query, picks a suggestion (or optionally submits raw text), a callback fires, and the input clears so they can search again. Unlike [ComboBox](/docs/forms-combobox--docs), it does not hold a persistent selection and cannot be connected to a form.
+A single-line input for **search-and-act** flows. The user types a query, chooses a suggestion (or optionally submits the raw text), an action fires, and the input clears for the next query. SearchComboBox does not represent a selected value and cannot be connected to a form.
 
 ## When to Use
 
-- Command palettes, "add item" inputs, or global search where each interaction is a discrete action
+- "Add item" inputs, resource launchers, or focused searches where every result choice is a discrete action
 - Server-driven suggestions where results are fetched based on the query (use `filter={false}`)
 - When you want the input to reset after every pick instead of showing the selected label
 - When you optionally want to submit a free-form query that matches no suggestion
 
-For a field that keeps a selected value (e.g. inside a form), use [ComboBox](/docs/forms-combobox--docs) instead.
+Choose a different component when the interaction has another outcome:
+
+- Use [ComboBox](/docs/forms-combobox--docs) when the input should keep one selected value and participate in a form.
+- Use [FilterPicker](/docs/forms-filterpicker--docs) when a button should open a searchable list and keep one or more selected values.
+- Use [CommandMenu](/docs/actions-commandmenu--docs) for a searchable, keyboard-first palette of application commands, usually opened from a trigger or dialog.
+- Use [CommandTextArea](/docs/forms-commandtextarea--docs) when suggestions insert tokens into multiline free-form text.
+- Use [SearchInput](/docs/forms-searchinput--docs) when users submit free text without choosing suggestions.
 
 ## Component
 
@@ -265,6 +271,9 @@ useEffect(() => {
 
 ## Related Components
 
-- [ComboBox](/docs/forms-combobox--docs) - Use when you need a persistent selection that can be bound to a form
+- [ComboBox](/docs/forms-combobox--docs) - Use for an input-based searchable field that keeps one selected value
+- [FilterPicker](/docs/forms-filterpicker--docs) - Use when searched items become persistent single or multiple field values
+- [CommandMenu](/docs/actions-commandmenu--docs) - Use for searchable, keyboard-first application commands in a popover or dialog
+- [CommandTextArea](/docs/forms-commandtextarea--docs) - Use when suggestions insert tokens into multiline free-form text
 - [SearchInput](/docs/forms-searchinput--docs) - Use for free-text search without suggestions
 - [ListBox](/docs/forms-listbox--docs) - The underlying list component used in the popover

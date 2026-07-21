@@ -6,15 +6,21 @@ import * as CommandMenuStories from './CommandMenu.stories';
 
 # CommandMenu
 
-A searchable menu interface that combines the functionality of Menu and ListBox components. It provides a command-line-like experience for users to quickly find and execute actions through a searchable interface.
+A searchable, keyboard-first surface for finding and executing application actions. CommandMenu renders the searchable menu content; wrap it in `CommandMenu.Trigger` for a button-anchored popover or place it in a `Dialog` for a global command palette.
 
 ## When to use
 
-- **Quick action access**: Enable users to quickly find and execute commands or actions
-- **Large command sets**: When you have many available actions that benefit from search filtering
-- **Keyboard-first workflows**: For power users who prefer keyboard navigation
-- **Command-line interfaces**: When building developer tools or admin interfaces
-- **Global search**: As a global command palette accessible via keyboard shortcuts
+- Users need to search a large or changing set of application commands
+- The primary result of choosing an item is executing an action
+- Keyboard-first discovery, aliases (`keywords`), and shortcut hints are important
+- A trigger-based command popover or modal global command palette is needed
+
+Choose a different component when the interaction has another outcome:
+
+- Use [Menu](/docs/actions-menu--docs) with `MenuTrigger` for a short contextual action list that does not need a search field.
+- Use [SearchComboBox](/docs/forms-searchcombobox--docs) for a focused single-line search-and-act input that may submit raw text and clears after each result.
+- Use [FilterPicker](/docs/forms-filterpicker--docs) when users are searching to keep one or more selected field values.
+- Use [CommandTextArea](/docs/forms-commandtextarea--docs) when a command or mention should be inserted into multiline text rather than executed immediately.
 
 ## Examples
 
@@ -431,10 +437,12 @@ The CommandMenu supports enhanced search capabilities:
 
 ## Related Components
 
-- [Menu](/docs/actions-menu--docs) - For static menu options without search
-- [ListBox](/docs/forms-listbox--docs) - For searchable selection lists
-- [Dialog](/docs/overlays-dialog--docs) - For modal command palette usage
-- [MenuTrigger](/docs/actions-menu--docs) - For trigger-based command palette usage
+- [Menu](/docs/actions-menu--docs) - Use with MenuTrigger for short contextual action lists without visible search
+- [SearchComboBox](/docs/forms-searchcombobox--docs) - Use for focused search-and-act inputs that clear after each result
+- [FilterPicker](/docs/forms-filterpicker--docs) - Use when searched items become persistent field values
+- [CommandTextArea](/docs/forms-commandtextarea--docs) - Use when suggestions insert text at the caret
+- [Dialog](/docs/overlays-dialog--docs) - Use as the container for a modal global command palette
+- [MenuTrigger](/docs/actions-menu--docs) - Use through CommandMenu.Trigger for a button-anchored command popover
 
 ## Technical Notes
 
