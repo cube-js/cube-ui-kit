@@ -26,7 +26,6 @@ A select allows users to choose a single option from a list of predefined choice
 - **`selectedKey`** `string` — The selected value in controlled mode
 - **`defaultSelectedKey`** `string` — The default selected value in uncontrolled mode
 - **`placeholder`** `string` — Placeholder text when no option is selected
-- **`emptyLabel`** `ReactNode` (default: `"No items"`) — Label shown when the option list is empty
 - **`icon`** `ReactElement` — Icon element rendered before the select value
 - **`rightIcon`** `ReactNode` — Icon element rendered after the select value (caret by default)
 - **`prefix`** `ReactNode` — Content rendered before the select value
@@ -64,6 +63,7 @@ A select allows users to choose a single option from a list of predefined choice
 - **`selectionMode`** `'single'` — Selection mode for the select
 - **`onSelectionChange`** `(key: Key) => void` — Callback fired when the selected option changes
 - **`onOpenChange`** `(isOpen: boolean) => void` — Callback fired when the dropdown opens or closes
+- **`emptyLabel`** `ReactNode` — Label shown when the option list is empty. When provided, the popover stays open and displays this message; when omitted, the popover does not open for an empty collection
 - **`onFocus`** `(e: FocusEvent) => void` — Callback fired when the select receives focus
 - **`onBlur`** `(e: FocusEvent) => void` — Callback fired when the select loses focus
 - **`onFocusChange`** `(isFocused: boolean) => void` — Callback fired when focus state changes
@@ -484,6 +484,20 @@ const groups = [
 </Select>
 ```
 
+### Custom Empty State
+
+<Story of={SelectStories.CustomEmptyState} />
+
+When `emptyLabel` is provided and there are no options, the popover opens and shows the message. Omit it to keep the popover closed.
+
+```jsx
+<Select
+  label="Color"
+  placeholder="No options available"
+  emptyLabel="No colors available"
+/>
+```
+
 ## Accessibility
 
 ### Keyboard Navigation
@@ -612,7 +626,6 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 - Implement virtual scrolling for very large option lists (1000+ items)
 - Built-in async loading support with loading states per scroll position
 - Enhanced keyboard shortcuts for power users (e.g., type to jump to option)
-- Custom empty state component when no options are available
 - Support for option groups with visual separators beyond sections
 
 ## Related Components

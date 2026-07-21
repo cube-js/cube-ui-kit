@@ -191,7 +191,7 @@ describe('<ComboBox />', () => {
 
   it('should show emptyLabel when no results match', async () => {
     const { getByRole, getByText } = renderWithRoot(
-      <ComboBox label="test" emptyLabel="No results found">
+      <ComboBox label="test" emptyLabel="No matching colors">
         {items.map((item) => (
           <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
         ))}
@@ -203,7 +203,7 @@ describe('<ComboBox />', () => {
     await userEvent.type(combobox, 'zzz');
 
     await waitFor(() => {
-      expect(getByText('No results found')).toBeInTheDocument();
+      expect(getByText('No matching colors')).toBeInTheDocument();
     });
   });
 

@@ -55,8 +55,8 @@ export interface ListBoxPopoverProps {
   filter?: (nodes: Iterable<any>) => Iterable<any>;
   size?: 'small' | 'medium' | 'large' | (string & {});
   /**
-   * Label shown when the filtered list is empty.
-   * Only forwarded to ListBox when defined (avoids ListBox's default empty label).
+   * Label shown when the list is empty (no items / no filter results).
+   * Forwarded to the inner ListBox.
    */
   emptyLabel?: ReactNode;
   /**
@@ -305,7 +305,7 @@ export const ListBoxPopover = function ListBoxPopover(
                 stateRef={listStateRef}
                 size="medium"
                 shape="popover"
-                {...(emptyLabel !== undefined ? { emptyLabel } : {})}
+                emptyLabel={emptyLabel}
                 onSelectionChange={onSelectionChange}
               >
                 {children as any}

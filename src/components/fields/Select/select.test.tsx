@@ -3,7 +3,6 @@ import {
   renderWithForm,
   renderWithRoot,
   userEvent,
-  waitFor,
   waitForElementToBeRemoved,
 } from '../../../test/index';
 import { Field } from '../../form';
@@ -96,27 +95,25 @@ describe('<Select />', () => {
     await waitForElementToBeRemoved(() => queryByRole('listbox'));
   });
 
-  it('should show default empty label when collection is empty', async () => {
-    const { getByText } = renderWithRoot(
-      <Select label="test" name="test" defaultOpen>
-        {null}
-      </Select>,
+  it('should not open popover when collection is empty and emptyLabel is omitted', async () => {
+    const { getByRole, queryByText } = renderWithRoot(
+      <Select label="test" name="test" />,
     );
 
-    await waitFor(() => {
-      expect(getByText('No items')).toBeInTheDocument();
-    });
+    const select = getByRole('button');
+    await act(async () => await userEvent.click(select));
+
+    expect(queryByText('No items')).not.toBeInTheDocument();
   });
 
-  it('should show custom emptyLabel when collection is empty', async () => {
-    const { getByText } = renderWithRoot(
-      <Select label="test" name="test" defaultOpen emptyLabel="Nothing to pick">
-        {null}
-      </Select>,
+  it('should show emptyLabel when collection is empty', async () => {
+    const { getByRole, findByText } = renderWithRoot(
+      <Select label="test" emptyLabel="No colors available" />,
     );
 
-    await waitFor(() => {
-      expect(getByText('Nothing to pick')).toBeInTheDocument();
-    });
+    const select = getByRole('button');
+    await act(async () => await userEvent.click(select));
+
+    expect(await findByText('No colors available')).toBeInTheDocument();
   });
 });

@@ -123,6 +123,12 @@ export interface CubeComboBoxProps<T>
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
+  /**
+   * Label shown when filtering yields no results.
+   * When provided, the popover stays open and displays this message.
+   * When omitted, the popover closes when there are no matching results.
+   */
+  emptyLabel?: ReactNode;
 
   /** Left input icon */
   icon?: ReactElement;
@@ -160,13 +166,6 @@ export interface CubeComboBoxProps<T>
   sectionStyles?: Styles;
   /** Custom styles for section headings */
   headingStyles?: Styles;
-
-  /**
-   * Label shown when filtering yields no results.
-   * When provided, the popover stays open and displays this label.
-   * When omitted, the popover closes when there are no matching results.
-   */
-  emptyLabel?: ReactNode;
 
   /** Whether the combobox is disabled */
   isDisabled?: boolean;
@@ -487,8 +486,8 @@ interface ComboBoxInputProps {
   focusProps: any;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
+  isPopoverOpen: boolean;
   hasResults: boolean;
-  shouldShowPopover: boolean;
   comboBoxId: string;
   listStateRef: RefObject<any>;
 }
@@ -512,8 +511,8 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
       focusProps,
       onChange,
       onFocus,
+      isPopoverOpen,
       hasResults,
-      shouldShowPopover,
       comboBoxId,
       listStateRef,
     },
@@ -543,13 +542,15 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         data-size={size}
         data-input-type="combobox"
         role="combobox"
-        aria-expanded={shouldShowPopover}
+        aria-expanded={isPopoverOpen && hasResults}
         aria-haspopup="listbox"
         aria-controls={
-          shouldShowPopover ? `ComboBoxListBox-${comboBoxId}` : undefined
+          isPopoverOpen && hasResults
+            ? `ComboBoxListBox-${comboBoxId}`
+            : undefined
         }
         aria-activedescendant={
-          shouldShowPopover &&
+          isPopoverOpen &&
           hasResults &&
           listStateRef.current?.selectionManager.focusedKey != null
             ? `ListBoxItem-${listStateRef.current?.selectionManager.focusedKey}`
@@ -632,6 +633,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     allowsCustomValue,
     shouldCommitOnBlur = true,
     clearOnBlur,
+    emptyLabel,
     items,
     children: renderChildren,
     sectionStyles,
@@ -646,7 +648,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     onBlur,
     onKeyDown,
     form,
-    emptyLabel,
     ...otherProps
   } = props;
 
@@ -1255,12 +1256,12 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   const comboBoxWidth = wrapperRef?.current?.offsetWidth;
 
   const shouldShowPopover = Boolean(
-    isPopoverOpen && (hasResults || emptyLabel !== undefined),
+    isPopoverOpen && (hasResults || emptyLabel != null),
   );
 
-  // Close popover if no results and no emptyLabel to show
+  // Close popover if no results and no empty label to show
   useEffect(() => {
-    if (isPopoverOpen && !hasResults && emptyLabel === undefined) {
+    if (isPopoverOpen && !hasResults && emptyLabel == null) {
       setIsPopoverOpen(false);
     }
   }, [isPopoverOpen, hasResults, emptyLabel]);
@@ -1375,8 +1376,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         inputStyles={inputStyles}
         keyboardProps={keyboardProps}
         focusProps={{ ...focusProps, onBlur: handleInputBlur }}
+        isPopoverOpen={isPopoverOpen}
         hasResults={hasResults}
-        shouldShowPopover={shouldShowPopover}
         comboBoxId={comboBoxId}
         listStateRef={listStateRef}
         onChange={handleInputChange}
@@ -1387,7 +1388,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         {validationState || isLoading ? (
           <>
             {validationState && !isLoading ? validation : null}
-            {isLoading ? <LoadingIcon /> : null}
+            {isLoading ? <LoadingIcon data-element="InputIcon" /> : null}
           </>
         ) : null}
         {suffixPosition === 'after' ? suffix : null}
@@ -1461,7 +1462,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         compositeFocusProps={compositeFocusProps}
         filter={filterFn}
         size={size}
-        {...(emptyLabel !== undefined ? { emptyLabel } : {})}
+        emptyLabel={emptyLabel}
         onSelectionChange={handleSelectionChange}
         onClose={() => setIsPopoverOpen(false)}
       >

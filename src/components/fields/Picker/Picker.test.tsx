@@ -824,10 +824,14 @@ describe('<Picker />', () => {
   });
 
   describe('emptyLabel', () => {
-    it('should show default empty label when collection is empty', async () => {
-      const { getByRole, getByText } = renderWithRoot(
-        <Picker label="Select fruits" selectionMode="single">
-          {null}
+    it('should not open popover when collection is empty and emptyLabel is omitted', async () => {
+      const { getByRole, queryByRole } = renderWithRoot(
+        <Picker
+          label="Select fruits"
+          placeholder="Choose..."
+          selectionMode="single"
+        >
+          {[]}
         </Picker>,
       );
 
@@ -837,17 +841,18 @@ describe('<Picker />', () => {
         await userEvent.click(trigger);
       });
 
-      expect(getByText('No items')).toBeInTheDocument();
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
     });
 
-    it('should show custom emptyLabel when collection is empty', async () => {
+    it('should show emptyLabel when collection is empty', async () => {
       const { getByRole, getByText } = renderWithRoot(
         <Picker
           label="Select fruits"
+          placeholder="Choose..."
           selectionMode="single"
-          emptyLabel="Nothing here"
+          emptyLabel="No fruits available"
         >
-          {null}
+          {[]}
         </Picker>,
       );
 
@@ -857,7 +862,9 @@ describe('<Picker />', () => {
         await userEvent.click(trigger);
       });
 
-      expect(getByText('Nothing here')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(getByText('No fruits available')).toBeInTheDocument();
+      });
     });
   });
 });

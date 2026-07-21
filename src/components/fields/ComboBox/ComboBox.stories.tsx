@@ -94,6 +94,14 @@ const meta = {
         defaultValue: { summary: false },
       },
     },
+    emptyLabel: {
+      control: { type: 'text' },
+      description:
+        'Label shown when filtering yields no results. When provided, the popover stays open and displays this message; when omitted, the popover closes.',
+      table: {
+        type: { summary: 'ReactNode' },
+      },
+    },
     sortSelectedToTop: {
       control: { type: 'boolean' },
       description:
@@ -123,11 +131,6 @@ const meta = {
       control: { type: null },
       description:
         'Custom filter function or false to disable filtering. If not provided, uses default contains filter',
-    },
-    emptyLabel: {
-      control: { type: 'text' },
-      description:
-        'Label shown when filtering yields no results. When provided, the popover stays open; when omitted, the popover closes',
     },
     hideTrigger: {
       control: { type: 'boolean' },
@@ -935,31 +938,33 @@ export const ShowAllOnNoResults: StoryObj<typeof ComboBox> = {
   },
 };
 
-export const EmptyLabel: StoryObj<typeof ComboBox> = {
+export const CustomEmptyState: StoryObj<typeof ComboBox> = {
   render: () => (
-    <Flow gap="1x">
-      <ComboBox
-        label="Search Fruits"
-        placeholder="Type 'xyz' to see empty state..."
-        emptyLabel="No fruits found"
-      >
-        <ComboBox.Item key="apple">Apple</ComboBox.Item>
-        <ComboBox.Item key="banana">Banana</ComboBox.Item>
-        <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
-        <ComboBox.Item key="date">Date</ComboBox.Item>
-        <ComboBox.Item key="elderberry">Elderberry</ComboBox.Item>
-      </ComboBox>
-      <Paragraph preset="t4" color="#dark-03" margin="1x 0 0 0">
-        Type text that matches no items (e.g., "xyz") to see the empty label
-        instead of the popover closing.
-      </Paragraph>
-    </Flow>
+    <ComboBox
+      label="Search Fruits"
+      placeholder="Type 'xyz' to see empty state..."
+      emptyLabel="No matching fruits found"
+    >
+      <ComboBox.Item key="apple">Apple</ComboBox.Item>
+      <ComboBox.Item key="banana">Banana</ComboBox.Item>
+      <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+      <ComboBox.Item key="date">Date</ComboBox.Item>
+      <ComboBox.Item key="elderberry">Elderberry</ComboBox.Item>
+    </ComboBox>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const input = canvas.getByRole('combobox');
 
-    await userEvent.type(input, 'xyz', { delay: 100 });
+    await userEvent.type(input, 'xyz', { delay: 50 });
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `emptyLabel` is provided, the popover stays open and shows the message when filtering yields no results. Omit it to keep the default close-on-no-results behavior.',
+      },
+    },
   },
 };
 

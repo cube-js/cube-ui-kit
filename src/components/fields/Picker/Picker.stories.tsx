@@ -414,3 +414,21 @@ export const LoadingState: Story = {
     )),
   },
 };
+
+export const CustomEmptyState: Story = {
+  args: {
+    placeholder: 'Select a fruit',
+    label: 'Favorite Fruit',
+    selectionMode: 'single',
+    emptyLabel: 'No fruits available',
+    children: [],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `emptyLabel` is provided and the collection is empty, the popover opens and shows the message. Omit it to keep the popover closed for an empty collection.',
+      },
+    },
+  },
+};

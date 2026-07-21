@@ -64,7 +64,7 @@ A versatile selection component that combines a trigger button with a dropdown l
 - **`onClear`** `() => void` — Callback called when the clear button is pressed
 - **`onOpenChange`** `(isOpen: boolean) => void` — Callback called when the popover open state changes
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function for items. Pass `false` to disable filtering.
-- **`emptyLabel`** `ReactNode` (default: `"No items"`) — Content shown when the collection is empty
+- **`emptyLabel`** `ReactNode` — Content shown when the collection is empty. When provided, the popover opens and displays this message; when omitted, the popover does not open for an empty collection
 
 ### Base Properties
 
@@ -559,6 +559,22 @@ Add helpful description text below the label.
 >
   <Picker.Item key="apple">Apple</Picker.Item>
   <Picker.Item key="banana">Banana</Picker.Item>
+</Picker>
+```
+
+### Custom Empty State
+
+<Story of={PickerStories.CustomEmptyState} />
+
+When `emptyLabel` is provided and the collection is empty, the popover opens and shows the message. Omit it to keep the popover closed.
+
+```jsx
+<Picker
+  label="Favorite Fruit"
+  placeholder="Select a fruit"
+  emptyLabel="No fruits available"
+>
+  {/* no items */}
 </Picker>
 ```
 
