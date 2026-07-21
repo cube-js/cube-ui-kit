@@ -424,16 +424,9 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     ? (inputValue as string)
     : internalInputValue;
 
-  // Popover state
+  // Popover state — open *intent*. The overlay is gated separately by
+  // `shouldShowPopover` (results / delayed loading / empty-query state).
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-
-  usePopoverSync({
-    menuId: searchComboBoxId,
-    isOpen: isPopoverOpen,
-    onClose: () => setIsPopoverOpen(false),
-    triggerRef: wrapperRef as RefObject<HTMLElement | null>,
-    containerRef: popoverRef as RefObject<HTMLElement | null>,
-  });
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -443,11 +436,6 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   listBoxRef = useCombinedRefs(listBoxRef);
 
   const children = renderChildren as ReactNode;
-
-  // Call onOpenChange when popover state changes
-  useEffect(() => {
-    onOpenChange?.(isPopoverOpen);
-  }, [isPopoverOpen]);
 
   // Filtering
   const [isFilterActive, setIsFilterActive] = useState(false);
@@ -540,6 +528,33 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   }, [localCollectionState?.collection, filterFn, disabledKeySet]);
 
   const trimmedInput = effectiveInputValue.trim();
+
+  // Keep the popover visible while there's something meaningful to show:
+  // results, a loading indicator, or an empty state for a non-empty query.
+  // While a load is in flight but the delayed indicator hasn't kicked in yet,
+  // suppress the empty state so users never see a false "No results found".
+  //
+  // `isPopoverOpen` can still be true while this is false (loading delay with
+  // no results, or opening an empty collection). Sync, notifications, and
+  // keyboard commit must key off *this* flag so we never advertise or act on
+  // an invisible overlay (incl. stale keys left in `listStateRef`).
+  const shouldShowPopover = Boolean(
+    isPopoverOpen &&
+      (hasResults || showLoading || (trimmedInput.length > 0 && !isLoading)),
+  );
+
+  usePopoverSync({
+    menuId: searchComboBoxId,
+    isOpen: shouldShowPopover,
+    onClose: () => setIsPopoverOpen(false),
+    triggerRef: wrapperRef as RefObject<HTMLElement | null>,
+    containerRef: popoverRef as RefObject<HTMLElement | null>,
+  });
+
+  // Notify when the overlay is actually shown/hidden, not merely intended open.
+  useEffect(() => {
+    onOpenChange?.(shouldShowPopover);
+  }, [shouldShowPopover]);
 
   // When we programmatically return focus to the input after a commit, the
   // resulting focus event must not reopen the popover (relevant for
@@ -665,11 +680,13 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
 
-        if (!isPopoverOpen) {
-          if (!hasResults) {
-            setIsFilterActive(false);
+        if (!shouldShowPopover) {
+          if (!isPopoverOpen) {
+            if (!hasResults) {
+              setIsFilterActive(false);
+            }
+            setIsPopoverOpen(true);
           }
-          setIsPopoverOpen(true);
           return;
         }
 
@@ -684,16 +701,21 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
           listState.selectionManager.setFocusedKey(nextKey);
         }
       } else if (e.key === 'Enter') {
-        // Commit an option when the popover is open. Prefer the highlighted
-        // option, but only when it's still visible (further typing may have
-        // filtered it out); otherwise fall back to the first visible option so
-        // typing a match and pressing Enter always selects the top result.
+        // Commit an option only when the overlay is actually shown. Prefer the
+        // highlighted option, but only when it's still visible (further typing
+        // may have filtered it out); otherwise fall back to the first visible
+        // option so typing a match and pressing Enter always selects the top
+        // result.
         //
         // `listStateRef` can still be null while the popover is mounting/
         // transitioning. In that window we fall back to the parent-computed
         // `visibleItemKeys` so a matching query commits via `onSelect` instead
         // of leaking through to `onSubmit`.
-        if (isPopoverOpen) {
+        //
+        // Gate on `shouldShowPopover` (not `isPopoverOpen`): during the loading
+        // delay or an empty open, intent can be open while nothing is mounted,
+        // and a stale `listStateRef` must not be committed.
+        if (shouldShowPopover) {
           const listState = listStateRef.current;
           const visibleKeys = listState
             ? getVisibleKeys(listState)
@@ -742,7 +764,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
           }
         }
       } else if (e.key === 'Home' || e.key === 'End') {
-        if (isPopoverOpen) {
+        if (shouldShowPopover) {
           e.preventDefault();
 
           const listState = listStateRef.current;
@@ -810,15 +832,6 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   );
 
   const searchComboBoxWidth = wrapperRef?.current?.offsetWidth;
-
-  // Keep the popover visible while there's something meaningful to show:
-  // results, a loading indicator, or an empty state for a non-empty query.
-  // While a load is in flight but the delayed indicator hasn't kicked in yet,
-  // suppress the empty state so users never see a false "No results found".
-  const shouldShowPopover = Boolean(
-    isPopoverOpen &&
-      (hasResults || showLoading || (trimmedInput.length > 0 && !isLoading)),
-  );
 
   // Highlight the first visible suggestion when the popover opens or when the
   // filtered results change, so the top match is visibly pre-selected (parity
@@ -934,17 +947,17 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
           <Item.Action
             ref={triggerRef}
             data-popover-trigger
-            icon={<DirectionIcon to={isPopoverOpen ? 'up' : 'down'} />}
+            icon={<DirectionIcon to={shouldShowPopover ? 'up' : 'down'} />}
             qa="SearchComboBoxTrigger"
             mods={{
-              pressed: isPopoverOpen,
+              pressed: shouldShowPopover,
               disabled: isDisabled,
               loading: showLoading,
             }}
             data-size={size}
             isDisabled={isDisabled}
             styles={triggerStyles}
-            aria-expanded={isPopoverOpen}
+            aria-expanded={shouldShowPopover}
             aria-haspopup="listbox"
             aria-label={t('searchComboBox.showOptions', 'Show options')}
             onPress={() => {

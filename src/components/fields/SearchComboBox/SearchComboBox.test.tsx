@@ -443,4 +443,113 @@ describe('<SearchComboBox />', () => {
     expect(onClear).not.toHaveBeenCalled();
     expect(onInputChange).not.toHaveBeenCalled();
   });
+
+  it('does not report open or show the overlay while loading with no results (before loadingDelay)', async () => {
+    const onOpenChange = vi.fn();
+
+    const { getByRole, queryByRole } = renderWithRoot(
+      <SearchComboBox
+        filter={false}
+        label="Colors"
+        isLoading
+        loadingDelay={1000}
+        items={[]}
+        onOpenChange={onOpenChange}
+      >
+        {(item: { key: string; children: string }) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        )}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+    await userEvent.type(input, 're');
+
+    // Intent is open, but the overlay is suppressed until the delayed loader
+    // appears or results arrive — parents must not be told it is open.
+    expect(queryByRole('listbox')).not.toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalledWith(true);
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('does not report open when opening an empty collection with no query', async () => {
+    const onOpenChange = vi.fn();
+
+    const { getByRole, queryByRole } = renderWithRoot(
+      <SearchComboBox label="Colors" items={[]} onOpenChange={onOpenChange}>
+        {(item: { key: string; children: string }) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        )}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+    await userEvent.click(input);
+    await userEvent.keyboard('{ArrowDown}');
+
+    expect(queryByRole('listbox')).not.toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalledWith(true);
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('does not commit a stale option on Enter while the overlay is suppressed during loading', async () => {
+    const onSelect = vi.fn();
+    const onSubmit = vi.fn();
+
+    function Harness({
+      results,
+      isLoading,
+    }: {
+      results: typeof items;
+      isLoading: boolean;
+    }) {
+      return (
+        <SearchComboBox
+          filter={false}
+          label="Colors"
+          isLoading={isLoading}
+          loadingDelay={1000}
+          items={results}
+          onSelect={onSelect}
+          onSubmit={onSubmit}
+        >
+          {(item: (typeof items)[number]) => (
+            <SearchComboBox.Item key={item.key}>
+              {item.children}
+            </SearchComboBox.Item>
+          )}
+        </SearchComboBox>
+      );
+    }
+
+    const { getByRole, queryByRole, rerender } = renderWithRoot(
+      <Harness results={items} isLoading={false} />,
+    );
+
+    const input = getByRole('combobox');
+    await userEvent.type(input, 're');
+
+    await waitFor(() => {
+      expect(queryByRole('listbox')).toBeInTheDocument();
+    });
+
+    // Drop results and start loading — overlay hides during the delay, but
+    // open intent (and a stale listStateRef) can remain.
+    rerender(<Harness results={[]} isLoading />);
+
+    await waitFor(() => {
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
+
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith('re');
+    });
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });
