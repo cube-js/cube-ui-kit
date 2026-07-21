@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.147.1
+
+### Patch Changes
+
+- [#1247](https://github.com/cube-js/cube-ui-kit/pull/1247) [`2c071cc1`](https://github.com/cube-js/cube-ui-kit/commit/2c071cc104f8be599e89a1d6f597beecc0021dcf) Thanks [@tenphi](https://github.com/tenphi)! - Clarify when to use selection, search, command, and menu components.
+
 ## 0.147.0
 
 ### Minor Changes
