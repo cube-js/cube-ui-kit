@@ -519,6 +519,69 @@ describe('<SearchComboBox />', () => {
     expect(input).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('does not reopen the popover when results arrive after blur during loading', async () => {
+    const onBlur = vi.fn();
+
+    function Harness({
+      results,
+      isLoading,
+    }: {
+      results: typeof items;
+      isLoading: boolean;
+    }) {
+      return (
+        <SearchComboBox
+          filter={false}
+          label="Colors"
+          isLoading={isLoading}
+          loadingDelay={1000}
+          items={results}
+          onBlur={onBlur}
+        >
+          {(item: (typeof items)[number]) => (
+            <SearchComboBox.Item key={item.key}>
+              {item.children}
+            </SearchComboBox.Item>
+          )}
+        </SearchComboBox>
+      );
+    }
+
+    const { getByRole, queryByRole, rerender } = renderWithRoot(
+      <>
+        <Harness results={[]} isLoading />
+        <button type="button">outside</button>
+      </>,
+    );
+
+    const input = getByRole('combobox');
+    await userEvent.type(input, 're');
+
+    // Overlay suppressed while loading with no results — open intent only.
+    expect(queryByRole('listbox')).not.toBeInTheDocument();
+
+    // Blur away before results arrive. useOverlay cannot dismiss because the
+    // overlay is not mounted; composite blur must clear open intent.
+    await userEvent.click(getByRole('button', { name: 'outside' }));
+
+    // useCompositeFocus defers the leave check to the next animation frame.
+    await waitFor(() => {
+      expect(onBlur).toHaveBeenCalled();
+    });
+    expect(input).not.toHaveFocus();
+
+    // Results arrive after focus has left — popover must stay closed.
+    rerender(
+      <>
+        <Harness results={items} isLoading={false} />
+        <button type="button">outside</button>
+      </>,
+    );
+
+    expect(queryByRole('listbox')).not.toBeInTheDocument();
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('does not report open when opening an empty collection with no query', async () => {
     const onOpenChange = vi.fn();
 

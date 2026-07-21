@@ -665,8 +665,14 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   });
 
   // Composite blur — fires when focus leaves the whole component.
+  // Always clear open intent: while the overlay is suppressed (e.g. loading
+  // delay with no results), `useOverlay` is not mounted and cannot dismiss
+  // on outside interaction, so blur is the only chance to drop `isPopoverOpen`.
+  // Otherwise a late result arrival would flip `shouldShowPopover` true and
+  // show the popover after focus has already left.
   const handleCompositeBlur = useEvent(() => {
     setIsFilterActive(false);
+    setIsPopoverOpen(false);
     onBlur?.();
   });
 
