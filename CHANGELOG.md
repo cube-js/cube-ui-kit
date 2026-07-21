@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.147.0
+
+### Minor Changes
+
+- [#1245](https://github.com/cube-js/cube-ui-kit/pull/1245) [`e1f53628`](https://github.com/cube-js/cube-ui-kit/commit/e1f5362810d152b9e1427397d1b43704b083286f) Thanks [@tenphi](https://github.com/tenphi)! - Add `SearchComboBox` — a search-styled combobox for "search and act" flows. It fires `onSelect`/`onSubmit` and clears the input after each action, supports external (server-side) filtering with `filter={false}`, delays the loading indicator (via `loadingDelay`, default 1s) to avoid flicker on fast responses, and accepts a custom `emptyLabel`.
+
+### Patch Changes
+
+- [#1245](https://github.com/cube-js/cube-ui-kit/pull/1245) [`e1f53628`](https://github.com/cube-js/cube-ui-kit/commit/e1f5362810d152b9e1427397d1b43704b083286f) Thanks [@tenphi](https://github.com/tenphi)! - Fix ComboBox clear button requiring two clicks to clear the value while the options popover is open. The clear button now dismisses the popover and clears the value in a single click.
+
+- [#1245](https://github.com/cube-js/cube-ui-kit/pull/1245) [`e1f53628`](https://github.com/cube-js/cube-ui-kit/commit/e1f5362810d152b9e1427397d1b43704b083286f) Thanks [@tenphi](https://github.com/tenphi)! - Fix ComboBox loading icon alignment so it occupies the same square slot as the left icon.
+
 ## 0.146.1
 
 ### Patch Changes
