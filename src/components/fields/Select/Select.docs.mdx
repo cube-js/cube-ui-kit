@@ -5,15 +5,23 @@ import * as SelectStories from './Select.stories';
 
 # Select
 
-A select allows users to choose a single option from a list of predefined choices. It provides a compact interface for selection with a dropdown menu that displays available options when activated.
+A conventional field for keeping one selected value from a predefined list. Select uses a compact button trigger and supports keyboard typeahead, but it does not show a search input or support multiple selection.
 
 ## When to Use
 
-- Allow users to select one option from a predefined list
-- Provide selection in forms where space is limited
-- Offer choices where only one selection is allowed
-- Create dropdown menus for navigation or filtering
-- Present structured options in a compact interface
+- Exactly one value should persist after the dropdown closes
+- The option set is short enough to scan or navigate with keyboard typeahead
+- A familiar compact field is preferable to an always-visible list
+- The value should participate in form state and validation
+
+Choose a different component when the interaction has another shape:
+
+- Use [Picker](/docs/forms-picker--docs) when you need multiple selection, checkboxes, select-all, or a custom trigger summary.
+- Use [FilterPicker](/docs/forms-filterpicker--docs) when users need a visible search field, especially for multiple selection.
+- Use [ComboBox](/docs/forms-combobox--docs) for an always-visible text input that searches and keeps one selected value.
+- Use [SearchComboBox](/docs/forms-searchcombobox--docs) when choosing a result should fire an action and clear the input.
+- Use [Menu](/docs/actions-menu--docs) with `MenuTrigger` for navigation or actions that do not represent a field value.
+- Use [RadioGroup](/docs/forms-radiogroup--docs) when a small set of choices should remain visible for direct comparison.
 
 ## Component
 
@@ -616,8 +624,11 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 
 ## Related Components
 
-- [ComboBox](/docs/forms-combobox--docs) - For searchable selection with filtering capabilities
-- [FilterPicker](/docs/forms-filterpicker--docs) - Alternative with different interaction patterns
+- [Picker](/docs/forms-picker--docs) - For richer button-triggered selection, including multiple values
+- [FilterPicker](/docs/forms-filterpicker--docs) - For button-triggered selection with a visible search field
+- [ComboBox](/docs/forms-combobox--docs) - For an input-based searchable field that keeps one selected value
+- [SearchComboBox](/docs/forms-searchcombobox--docs) - For search-and-act flows that clear after each result
 - [ListBox](/docs/forms-listbox--docs) - The underlying list component used in Select
 - [RadioGroup](/docs/forms-radiogroup--docs) - For visible selection options with fewer choices
+- [Menu](/docs/actions-menu--docs) - For action-oriented or navigation dropdowns
 - [Item](/docs/content-item--docs) - The base component used for rendering items

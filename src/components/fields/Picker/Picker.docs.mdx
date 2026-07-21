@@ -6,15 +6,23 @@ import * as PickerStories from './Picker.stories';
 
 # Picker
 
-A versatile selection component that combines a trigger button with a dropdown list. It provides a space-efficient interface for selecting one or multiple items from a list, with support for sections, custom summaries, and various UI states.
+A button-triggered field for keeping one or more selected values from a predefined list **without a visible search field**. Picker is suited to compact controls that need multiple selection, checkboxes, select-all, sections, or a custom summary in the trigger.
 
 ## When to Use
 
-- Creating selection interfaces where users need to choose from predefined options
-- Implementing compact selection interfaces where space is limited
-- Building user preference panels with organized option groups
-- When you need single or multiple selection from a list
-- When you don't need search/filter functionality (use ComboBox or FilterPicker for searchable lists)
+- The selected value or values must persist after the popover closes
+- The option set is manageable through scanning or keyboard typeahead, without a search input
+- Multiple selection, checkboxes, select-all, grouped options, or a custom trigger summary are needed
+- A compact button trigger fits a toolbar, filter bar, or preference panel
+- The selection should participate in form state and validation
+
+Choose a different component when the interaction has another shape:
+
+- Use [Select](/docs/forms-select--docs) for a conventional single-value field with a short predefined list.
+- Use [FilterPicker](/docs/forms-filterpicker--docs) when users need a visible search field while keeping single or multiple selections.
+- Use [ComboBox](/docs/forms-combobox--docs) for an always-visible text input that searches and keeps one selected value.
+- Use [SearchComboBox](/docs/forms-searchcombobox--docs) when choosing a result should fire an action and clear the input.
+- Use [Menu](/docs/actions-menu--docs) with `MenuTrigger` when entries primarily execute actions rather than become field values.
 
 ## Component
 
@@ -968,8 +976,11 @@ Optimize complex item content with the `textValue` prop for better accessibility
 
 ## Related Components
 
-- [ComboBox](/docs/forms-combobox--docs) - Use when you need search/filter functionality or custom value entry
+- [Select](/docs/forms-select--docs) - Use for a conventional single-value field with a short predefined list
+- [FilterPicker](/docs/forms-filterpicker--docs) - Use for button-triggered single or multiple selection with a visible search field
+- [ComboBox](/docs/forms-combobox--docs) - Use for an input-based searchable field that keeps one selected value
+- [SearchComboBox](/docs/forms-searchcombobox--docs) - Use for search-and-act flows that clear after each result
 - [ListBox](/docs/forms-listbox--docs) - Use for always-visible list selection without a trigger
-- [Select](/docs/forms-select--docs) - Use for native select behavior
+- [Menu](/docs/actions-menu--docs) - Use with MenuTrigger for action-oriented dropdowns
 - [Button](/docs/actions-button--docs) - The underlying trigger component
 - [Dialog](/docs/overlays-dialog--docs) - The popover container component

@@ -6,16 +6,23 @@ import * as FilterPickerStories from './FilterPicker.stories';
 
 # FilterPicker
 
-A versatile selection component that combines a trigger button with a searchable dropdown. It provides a space-efficient interface for selecting one or multiple items from a filtered list, with support for sections, custom summaries, and various UI states. Built with React Aria's accessibility features and the Cube `tasty` style system.
+A button-triggered field for keeping one or more selected values from a **searchable** list. It is designed for compact filters and preference controls, with sections, checkboxes, select-all, custom summaries, and form integration.
 
 ## When to Use
 
-- Creating filter interfaces where users need to select from predefined options
-- Building advanced search and filtering systems with multiple criteria
-- Implementing tag-based selection systems with multiple categories
-- Designing compact selection interfaces where space is limited
-- Providing searchable selection without taking up permanent screen space
-- Building user preference panels with organized option groups
+- The selected value or values must persist after the popover closes
+- Users need a visible search field to find options
+- A compact button trigger is preferable to an always-visible input
+- Multiple selection, checkboxes, select-all, grouped options, or a custom trigger summary are needed
+- The selection should participate in form state and validation
+
+Choose a different component when the interaction has another shape:
+
+- Use [Picker](/docs/forms-picker--docs) for the same compact single/multiple-selection pattern when the list is manageable without search.
+- Use [Select](/docs/forms-select--docs) for a conventional single-value field with a short predefined list.
+- Use [ComboBox](/docs/forms-combobox--docs) for an always-visible text input that searches and keeps one selected value.
+- Use [SearchComboBox](/docs/forms-searchcombobox--docs) when choosing a result should fire an action and clear the input rather than persist a value.
+- Use [CommandMenu](/docs/actions-commandmenu--docs) when entries execute application commands instead of becoming field values.
 
 ## Component
 
@@ -888,8 +895,10 @@ When using the dynamic content pattern (`items` prop) without sections, FilterPi
 
 ## Related Components
 
-- [FilterListBox](/docs/forms-filterlistbox--docs) - The underlying searchable list component
-- [Select](/docs/forms-select--docs) - Use for simple selection without search functionality
-- [ComboBox](/docs/forms-combobox--docs) - Use when users need to enter custom values
+- [FilterListBox](/docs/forms-filterlistbox--docs) - Use for an always-visible searchable selection list without a trigger
+- [Picker](/docs/forms-picker--docs) - Use for button-triggered single or multiple selection without a search field
+- [Select](/docs/forms-select--docs) - Use for a conventional single-value field with a short predefined list
+- [ComboBox](/docs/forms-combobox--docs) - Use for an input-based searchable field that keeps one selected value
+- [SearchComboBox](/docs/forms-searchcombobox--docs) - Use for search-and-act flows that clear after each result
 - [ListBox](/docs/forms-listbox--docs) - Use for basic list selection without search
 - [Button](/docs/actions-button--docs) - The underlying trigger component
