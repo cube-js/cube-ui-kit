@@ -1399,6 +1399,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             theme={validationState === 'invalid' ? 'danger' : undefined}
             qa="ComboBoxClearButton"
             data-no-trigger={hideTrigger ? '' : undefined}
+            data-popover-dismiss=""
             aria-label={t('comboBox.clearValue', 'Clear value')}
             onPress={clearValue}
           />
