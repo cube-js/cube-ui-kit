@@ -1,0 +1,270 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+import * as SearchComboBoxStories from './SearchComboBox.stories';
+
+<Meta of={SearchComboBoxStories} />
+
+# SearchComboBox
+
+A search-styled combobox for "search and act" flows. The user types a query, picks a suggestion (or optionally submits raw text), a callback fires, and the input clears so they can search again. Unlike [ComboBox](/docs/forms-combobox--docs), it does not hold a persistent selection and cannot be connected to a form.
+
+## When to Use
+
+- Command palettes, "add item" inputs, or global search where each interaction is a discrete action
+- Server-driven suggestions where results are fetched based on the query (use `filter={false}`)
+- When you want the input to reset after every pick instead of showing the selected label
+- When you optionally want to submit a free-form query that matches no suggestion
+
+For a field that keeps a selected value (e.g. inside a form), use [ComboBox](/docs/forms-combobox--docs) instead.
+
+## Component
+
+<Story of={SearchComboBoxStories.Default} />
+
+---
+
+### Properties
+
+- **`children`** `ReactNode` — SearchComboBox.Item elements that define the available suggestions
+- **`items`** `Iterable<T>` — Items for the listbox (alternative to children, enables data-driven mode)
+- **`placeholder`** `string` — Placeholder text when the input is empty
+- **`icon`** `ReactElement | null` — Icon rendered before the input. Defaults to a search icon; pass `null` to remove it
+- **`inputValue`** `string` — The current input value in controlled mode
+- **`defaultInputValue`** `string` — The default input value in uncontrolled mode
+- **`emptyLabel`** `ReactNode` (default: context-aware `No results found` / `Loading…`) — Label shown when the list is empty
+- **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function, or `false` to disable internal filtering for external/server-side filtering
+- **`isClearable`** `boolean` (default: `true`) — Whether the input is clearable via the clear button or Escape key
+- **`hideTrigger`** `boolean` (default: `true`) — Whether the dropdown trigger button is hidden (search-field look)
+- **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — How the popover is triggered
+- **`isLoading`** `boolean` (default: `false`) — Whether items are being loaded (e.g. from a server)
+- **`loadingDelay`** `number` (default: `1000`) — Delay in ms before the loading indicator appears
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the component
+- **`disabledKeys`** `Iterable<Key>` — Keys of suggestions that cannot be selected
+- **`onSelect`** `(key: string, textValue: string) => void` — Fired when a suggestion is picked; the input clears afterwards
+- **`onSubmit`** `(value: string) => void` — Opt-in. Fired when Enter is pressed with no focused/available option; the input clears afterwards
+- **`onInputChange`** `(value: string) => void` — Fired when the input text changes
+- **`onClear`** `() => void` — Fired when the input is cleared
+- **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
+- **`onFocus`** `() => void` — Fired when focus enters the component
+- **`onBlur`** `() => void` — Fired when focus leaves the component
+- **`onKeyDown`** `(e: KeyboardEvent) => void` — Fired when a key is pressed on the input
+- **`prefix`** `ReactNode` — Content rendered before the input
+- **`suffix`** `ReactNode` — Content rendered after the input
+- **`suffixPosition`** `'before' | 'after'` (default: `before`) — Position of suffix relative to status icons
+- **`direction`** `'top' | 'bottom'` (default: `bottom`) — Preferred direction for the dropdown
+- **`shouldFlip`** `boolean` (default: `true`) — Whether the dropdown flips to fit in the viewport
+- **`overlayOffset`** `number` (default: `8`) — Distance between input and dropdown in pixels
+- **`containerPadding`** `number` (default: `8`) — Minimum padding between the popover and viewport edges
+
+#### Notable Properties
+
+**onSelect vs onSubmit** — `onSelect(key, textValue)` fires when a suggestion from the list is chosen. `onSubmit(value)` is an opt-in escape hatch: when there is no focused or available option and the user presses Enter, the raw trimmed text is submitted. Without `onSubmit`, Enter with no option is a no-op. Both callbacks clear the input afterwards.
+
+**filter** — By default the list is filtered client-side with a contains match. Pass a custom `(textValue, inputValue) => boolean`, or set `filter={false}` to disable internal filtering entirely and provide already-filtered `items` yourself (server-side filtering).
+
+**isLoading + loadingDelay** — While `isLoading` is `true`, the previous results stay visible. The loading indicator (and the `Loading…` empty label) only appear after `loadingDelay` has elapsed, so fast responses never flash a loading state.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Field Properties
+
+Supports the layout-related [Field properties](/docs/getting-started-field-properties--docs) (`label`, `description`, `message`, `labelPosition`, etc.). Note that SearchComboBox is not form-connected: it does not accept `name`/`rules` and does not participate in form state or validation.
+
+### Styling Properties
+
+#### styles
+
+Customizes the root wrapper element of the SearchComboBox (the input container).
+
+**Sub-elements:**
+- `Prefix` - Container for prefix content and icons
+- `Suffix` - Container for suffix content, status icons, and action buttons
+- `InputIcon` - Container for the left icon
+
+#### inputStyles
+
+Customizes the text input element where users type.
+
+#### triggerStyles
+
+Customizes the dropdown trigger button (visible when `hideTrigger={false}`).
+
+#### listBoxStyles
+
+Customizes the dropdown list container that displays suggestions.
+
+#### overlayStyles
+
+Customizes the popover overlay wrapper that contains the list.
+
+#### optionStyles
+
+Customizes individual option items in the dropdown list.
+
+#### sectionStyles
+
+Customizes section containers when using grouped suggestions.
+
+#### headingStyles
+
+Customizes section heading elements within grouped suggestions.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`
+- **Color:** `color`, `fill`, `fade`, `image`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+- **`invalid`** `boolean` — Applied when validation state is invalid
+- **`valid`** `boolean` — Applied when validation state is valid
+- **`disabled`** `boolean` — Applied when the component is disabled
+- **`focused`** `boolean` — Applied when the input has focus
+- **`loading`** `boolean` — Applied when the loading indicator is visible
+- **`prefix`** `boolean` — Applied when prefix content is present
+- **`suffix`** `boolean` — Applied when suffix content is present
+- **`clearable`** `boolean` — Applied when the clear button is visible
+
+## Variants
+
+### Sizes
+
+<Story of={SearchComboBoxStories.Sizes} />
+
+### With Trigger Button
+
+<Story of={SearchComboBoxStories.WithTrigger} />
+
+## Examples
+
+### Clears on Select
+
+<Story of={SearchComboBoxStories.ClearsOnSelect} />
+
+```jsx
+<SearchComboBox
+  label="Add a fruit"
+  placeholder="Search a fruit..."
+  onSelect={(key, textValue) => addFruit(key, textValue)}
+>
+  <SearchComboBox.Item key="apple">Apple</SearchComboBox.Item>
+  <SearchComboBox.Item key="banana">Banana</SearchComboBox.Item>
+</SearchComboBox>
+```
+
+### Submit Free-form Text
+
+<Story of={SearchComboBoxStories.WithSubmit} />
+
+```jsx
+<SearchComboBox
+  label="Search or add a tag"
+  placeholder="Type and press Enter..."
+  onSubmit={(value) => addTag(value)}
+>
+  <SearchComboBox.Item key="apple">Apple</SearchComboBox.Item>
+  <SearchComboBox.Item key="banana">Banana</SearchComboBox.Item>
+</SearchComboBox>
+```
+
+### Custom Empty Label
+
+<Story of={SearchComboBoxStories.CustomEmptyLabel} />
+
+```jsx
+<SearchComboBox
+  label="Search a fruit"
+  emptyLabel="No fruit matches your search"
+>
+  <SearchComboBox.Item key="apple">Apple</SearchComboBox.Item>
+  <SearchComboBox.Item key="banana">Banana</SearchComboBox.Item>
+</SearchComboBox>
+```
+
+### Server-side Filtering
+
+<Story of={SearchComboBoxStories.ServerSideFiltering} />
+
+Set `filter={false}` and drive `items` from your own (debounced) fetch. Toggle `isLoading` while the request is in flight — the indicator only appears if it takes longer than `loadingDelay`.
+
+```jsx
+const [value, setValue] = useState('');
+const [isLoading, setIsLoading] = useState(false);
+const [results, setResults] = useState([]);
+
+useEffect(() => {
+  if (!value.trim()) {
+    setResults([]);
+    return;
+  }
+  setIsLoading(true);
+  const handle = setTimeout(async () => {
+    setResults(await fetchCountries(value));
+    setIsLoading(false);
+  }, 400); // debounce is your responsibility
+  return () => clearTimeout(handle);
+}, [value]);
+
+<SearchComboBox
+  filter={false}
+  label="Country"
+  placeholder="Search countries..."
+  inputValue={value}
+  isLoading={isLoading}
+  items={results}
+  emptyLabel={value.trim() ? 'No countries found' : 'Type to search'}
+  onInputChange={setValue}
+  onSelect={(key) => selectCountry(key)}
+>
+  {(item) => <SearchComboBox.Item key={item.key}>{item.name}</SearchComboBox.Item>}
+</SearchComboBox>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to/from the input
+- `ArrowDown` - Opens the popover (if closed) or moves focus to the next suggestion
+- `ArrowUp` - Opens the popover (if closed) or moves focus to the previous suggestion
+- `Enter` - Selects the focused suggestion, or submits the raw text via `onSubmit` when no suggestion is focused
+- `Escape` - Closes the popover (if open) or clears the input (if clearable and popover closed)
+- `Home` / `End` - Moves focus to the first / last suggestion (when the popover is open)
+- Typing - Filters suggestions based on the input value
+
+### ARIA Properties
+
+- `role="combobox"` - Identifies the input as a combobox
+- `aria-expanded` - Indicates whether the popover is open
+- `aria-haspopup="listbox"` - Indicates the combobox has a listbox popup
+- `aria-controls` - References the listbox ID when the popover is open
+- `aria-activedescendant` - References the currently focused suggestion
+- `aria-label` - Provides an accessible label when no visible label exists
+
+## Best Practices
+
+1. **Do**: Debounce server requests before updating `items`
+   ```jsx
+   <SearchComboBox filter={false} isLoading={isLoading} items={results} />
+   ```
+
+2. **Do**: Provide a meaningful `emptyLabel` for both the empty and loading states
+   ```jsx
+   <SearchComboBox emptyLabel={query ? 'No results' : 'Type to search'} />
+   ```
+
+3. **Don't**: Use SearchComboBox to capture a persistent value in a form — use [ComboBox](/docs/forms-combobox--docs) instead
+
+## Related Components
+
+- [ComboBox](/docs/forms-combobox--docs) - Use when you need a persistent selection that can be bound to a form
+- [SearchInput](/docs/forms-searchinput--docs) - Use for free-text search without suggestions
+- [ListBox](/docs/forms-listbox--docs) - The underlying list component used in the popover
