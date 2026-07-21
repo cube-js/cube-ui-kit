@@ -473,6 +473,11 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   const validation = cloneElement(validationIcon);
 
   const listStateRef = useRef<any>(null);
+  // Bumped whenever we move the virtual focus so the input's
+  // `aria-activedescendant` (read from the ListBox's stateRef at render time)
+  // stays in sync — the ListBox's own state update does not re-render us.
+  const [, setFocusTick] = useState(0);
+  const bumpFocus = useEvent(() => setFocusTick((t) => t + 1));
 
   const getItemLabel = useCallback(
     (key: Key): string => {
@@ -711,6 +716,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
         if (nextKey != null) {
           markKeyboardFocus(listState);
           listState.selectionManager.setFocusedKey(nextKey);
+          bumpFocus();
         }
       } else if (e.key === 'Enter') {
         // Commit an option only when the overlay is actually shown. Prefer the
@@ -790,6 +796,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
           if (targetKey != null) {
             markKeyboardFocus(listState);
             listState.selectionManager.setFocusedKey(targetKey);
+            bumpFocus();
           }
         }
       }
@@ -873,6 +880,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
           if (!isFocusValid) {
             markKeyboardFocus(listState);
             listState.selectionManager.setFocusedKey(keys[0]);
+            bumpFocus();
           }
 
           return;

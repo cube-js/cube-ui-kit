@@ -104,6 +104,42 @@ describe('<SearchComboBox />', () => {
     });
   });
 
+  it('keeps aria-activedescendant in sync with virtual focus', async () => {
+    const { getByRole } = renderWithRoot(
+      <SearchComboBox label="Colors">
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+
+    // "re" matches "Red" then "Green"; auto-focus lands on Red.
+    await userEvent.type(input, 're');
+
+    await waitFor(() => {
+      expect(input).toHaveAttribute('aria-activedescendant', 'ListBoxItem-red');
+    });
+
+    await userEvent.keyboard('{ArrowDown}');
+
+    await waitFor(() => {
+      expect(input).toHaveAttribute(
+        'aria-activedescendant',
+        'ListBoxItem-green',
+      );
+    });
+
+    await userEvent.keyboard('{Home}');
+
+    await waitFor(() => {
+      expect(input).toHaveAttribute('aria-activedescendant', 'ListBoxItem-red');
+    });
+  });
+
   it('prefers onSelect over onSubmit when a match is auto-focused', async () => {
     const onSelect = vi.fn();
     const onSubmit = vi.fn();
