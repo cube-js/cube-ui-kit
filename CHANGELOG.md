@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.147.2
+
+### Patch Changes
+
+- [#1249](https://github.com/cube-js/cube-ui-kit/pull/1249) [`e695981e`](https://github.com/cube-js/cube-ui-kit/commit/e695981e518a59205ef8d9b9768dcbf9804ada4e) Thanks [@tenphi](https://github.com/tenphi)! - Fix Disclosure content panel occasionally measuring to 0 height when expanding (content-visibility: auto interacted badly with the height 0 → max-content transition).
+
 ## 0.147.1
 
 ### Patch Changes
