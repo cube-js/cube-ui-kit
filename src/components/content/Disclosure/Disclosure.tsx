@@ -197,10 +197,12 @@ const ContentElement = tasty({
   styles: {
     display: 'block',
     flow: 'column',
-    contentVisibility: {
-      '': 'auto',
-      shown: 'visible',
-    },
+    // Always visible: `content-visibility: auto` while height animates
+    // `0 → max-content` can leave the panel at 0px (children skipped for
+    // layout, so max-content resolves to 0). Collapsed content is already
+    // clipped via height:0 + overflow:hidden on the wrapper, and
+    // DisplayTransition unmounts when fully closed.
+    contentVisibility: 'visible',
   },
 });
 
