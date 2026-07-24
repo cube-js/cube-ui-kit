@@ -58,4 +58,39 @@ describe('PrismCode component', () => {
     expect(codeElement).toBeInTheDocument();
     expect(codeElement?.className).toContain('diff-highlight');
   });
+
+  test('renders HTML with tag and attribute tokens', () => {
+    const code = `<button type="button" class="primary">Save</button>`;
+
+    const { container } = render(<PrismCode code={code} language="html" />);
+
+    const codeElement = container.querySelector('code');
+    expect(codeElement).toBeInTheDocument();
+    expect(codeElement?.querySelector('.token.tag')).toBeInTheDocument();
+    expect(codeElement?.querySelector('.token.attr-name')).toBeInTheDocument();
+    // prism-react-renderer flattens nested markup with a parent `tag` type
+    expect(
+      codeElement?.querySelector('.token.tag.attr-name'),
+    ).toBeInTheDocument();
+    expect(
+      codeElement?.querySelector('.token.tag.attr-value'),
+    ).toBeInTheDocument();
+    expect(
+      codeElement?.querySelector('.token.tag.punctuation'),
+    ).toBeInTheDocument();
+  });
+
+  test('highlights JavaScript inside HTML script tags', () => {
+    const code = `<script>
+  const x = 1;
+  console.log('hi');
+</script>`;
+
+    const { container } = render(<PrismCode code={code} language="html" />);
+
+    const codeElement = container.querySelector('code');
+    expect(codeElement).toBeInTheDocument();
+    expect(codeElement?.querySelector('.token.keyword')).toBeInTheDocument();
+    expect(codeElement?.querySelector('.token.string')).toBeInTheDocument();
+  });
 });

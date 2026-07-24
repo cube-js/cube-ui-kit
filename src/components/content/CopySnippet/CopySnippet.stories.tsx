@@ -116,6 +116,70 @@ JavascriptSyntax.args = {
 });`,
 };
 
+export const HtmlSyntax = Template.bind({});
+HtmlSyntax.args = {
+  language: 'html',
+  code: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cube Dashboard</title>
+    <link rel="stylesheet" href="/assets/dashboard.css" />
+  </head>
+  <body>
+    <header class="topbar" data-qa="topbar">
+      <a href="/" class="logo">Cube</a>
+      <nav aria-label="Primary">
+        <a href="/queries">Queries</a>
+        <a href="/semantic-layer">Semantic Layer</a>
+      </nav>
+    </header>
+
+    <main class="app" data-theme="light">
+      <section class="card" id="welcome">
+        <h1>Welcome</h1>
+        <p>Explore your metrics and run ad-hoc queries.</p>
+        <!-- Host-rendered content -->
+        <button type="button" id="run-query" disabled>Loading…</button>
+      </section>
+
+      <section class="card" id="results" hidden>
+        <h2>Results</h2>
+        <pre id="output"></pre>
+      </section>
+    </main>
+
+    <script>
+      const button = document.getElementById('run-query');
+      const results = document.getElementById('results');
+      const output = document.getElementById('output');
+
+      button.disabled = false;
+      button.textContent = 'Run query';
+
+      button.addEventListener('click', async () => {
+        button.disabled = true;
+        results.hidden = false;
+        output.textContent = 'Loading…';
+
+        const response = await fetch('/api/v1/load', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: { measures: ['Orders.count'] },
+          }),
+        });
+
+        const data = await response.json();
+        output.textContent = JSON.stringify(data, null, 2);
+        button.disabled = false;
+      });
+    </script>
+  </body>
+</html>`,
+};
+
 export const DAX = Template.bind({});
 DAX.args = {
   language: 'javascript',

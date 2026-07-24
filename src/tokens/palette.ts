@@ -325,8 +325,8 @@ defaultTheme.colors({
   // in light, dark, and high-contrast schemes alike. Hues mirror the
   // long-standing PrismCode reference (pink keywords / pink functions /
   // orange strings / green numbers / gray comments). `code-attribute` keeps
-  // a cyan hue for HTML attribute names / CSS properties / selectors — not
-  // exercised in the SQL reference but useful in other languages. Diff
+  // a cyan hue for HTML attribute names / CSS properties / selectors; HTML/XML
+  // tag names use `code-keyword`. Diff
   // insertion / deletion re-use the existing `success-*` / `danger-*` ramps.
   'code-comment': {
     base: 'surface',

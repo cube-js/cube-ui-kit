@@ -231,8 +231,12 @@ const STATIC_CSS = `
     color: var(--code-function-color);
   }
 
-  /* Attributes / properties / tags / selectors / built-ins — cyan */
-  .token.tag,
+  /* HTML/XML tag names — same hue as keywords (see Colors / CodeSyntax) */
+  .token.tag {
+    color: var(--code-keyword-color);
+  }
+
+  /* Attributes / properties / selectors / built-ins — cyan */
   .token.attr-name,
   .token.property,
   .token.symbol,
@@ -240,6 +244,23 @@ const STATIC_CSS = `
   .token.builtin,
   .token.selector {
     color: var(--code-attribute-color);
+  }
+
+  /*
+   * prism-react-renderer flattens nested markup tokens and prefixes parent
+   * types onto each leaf (e.g. \`token tag attr-value\`). Re-assert leaf
+   * colors so the bare \`.token.tag\` rule does not wash the whole tag.
+   */
+  .token.tag.attr-name {
+    color: var(--code-attribute-color);
+  }
+
+  .token.tag.attr-value {
+    color: var(--code-string-color);
+  }
+
+  .token.tag.punctuation {
+    color: var(--code-punctuation-color);
   }
 
   .token.important,
