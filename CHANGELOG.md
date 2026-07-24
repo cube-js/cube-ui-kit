@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.147.3
+
+### Patch Changes
+
+- [#1251](https://github.com/cube-js/cube-ui-kit/pull/1251) [`b8388790`](https://github.com/cube-js/cube-ui-kit/commit/b83887900ad95737181268cf113d29165fa760cd) Thanks [@tenphi](https://github.com/tenphi)! - Ensure HTML syntax highlighting works in `PrismCode` and `CopySnippet`, including JavaScript inside `<script>` tags. Differentiate tag names, attributes, values, and punctuation so markup is not a single color wash.
+
 ## 0.147.2
 
 ### Patch Changes
