@@ -10,6 +10,7 @@ import { forwardRef } from 'react';
 
 import { ensureYamlSqlExtensions, Prism } from './prismSetup';
 
+import 'prismjs/components/prism-markup.js';
 import 'prismjs/components/prism-javascript.js';
 import 'prismjs/components/prism-yaml.js';
 import 'prismjs/components/prism-bash.js';
