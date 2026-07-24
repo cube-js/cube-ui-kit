@@ -356,7 +356,7 @@ describe('<CommandTextArea />', () => {
     );
 
     // The anchor is a hidden, zero-size element kept inside the input wrapper
-    // so react-aria can measure it. jsdom can't lay out text, so we only
+    // so react-aria can measure it. happy-dom can't lay out text, so we only
     // assert presence/placement — not coordinates.
     const anchorBefore = container.querySelector('[data-caret-anchor]');
     expect(anchorBefore).not.toBeNull();

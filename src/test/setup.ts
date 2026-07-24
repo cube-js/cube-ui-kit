@@ -5,6 +5,68 @@ import { configure } from '@testing-library/react';
 
 import { getI18n } from '../i18n';
 
+// Happy DOM's MessagePort.postMessage is a no-op stub, and MessageChannel is
+// missing on window. React's scheduler posts to a MessageChannel; without a
+// working implementation, updates can stall or spin the worker. Provide a
+// minimal microtask-based polyfill for the test environment.
+class TestMessagePort {
+  onmessage: ((ev: MessageEvent) => void) | null = null;
+  onmessageerror: ((ev: MessageEvent) => void) | null = null;
+  #peer: TestMessagePort | null = null;
+
+  /** @internal */
+  _link(peer: TestMessagePort) {
+    this.#peer = peer;
+  }
+
+  postMessage(data: unknown) {
+    const peer = this.#peer;
+    if (!peer) return;
+    queueMicrotask(() => {
+      peer.onmessage?.({ data } as MessageEvent);
+    });
+  }
+
+  start() {}
+  close() {
+    this.#peer = null;
+    this.onmessage = null;
+  }
+
+  addEventListener(type: string, listener: EventListener) {
+    if (type === 'message') {
+      this.onmessage = listener as (ev: MessageEvent) => void;
+    }
+  }
+
+  removeEventListener(type: string) {
+    if (type === 'message') {
+      this.onmessage = null;
+    }
+  }
+
+  dispatchEvent() {
+    return false;
+  }
+}
+
+class TestMessageChannel {
+  port1 = new TestMessagePort();
+  port2 = new TestMessagePort();
+
+  constructor() {
+    this.port1._link(this.port2);
+    this.port2._link(this.port1);
+  }
+}
+
+(
+  window as unknown as { MessageChannel: typeof TestMessageChannel }
+).MessageChannel = TestMessageChannel;
+(
+  globalThis as unknown as { MessageChannel: typeof TestMessageChannel }
+).MessageChannel = TestMessageChannel;
+
 // The UI Kit's shared i18next instance is initialized synchronously at import
 // (all locale bundles are bundled), so components resolve translated defaults
 // without an `<I18nextProvider>`. Reset the active language to `en-US` before
@@ -87,7 +149,8 @@ const suppressedConsoleError = (...args: any[]) => {
 console.error = suppressedConsoleError;
 
 // Suppress console.warn for tasty @container query rejections
-// These warnings occur because jsdom/cssom doesn't support CSS container style queries
+// These warnings occur because headless DOM CSSOM doesn't support container
+// style queries.
 const originalWarn = console.warn;
 console.warn = (...args: any[]) => {
   const firstArg = args[0];
@@ -96,7 +159,7 @@ console.warn = (...args: any[]) => {
     typeof firstArg === 'string' &&
     firstArg.includes('[tasty] Browser rejected CSS rule:')
   ) {
-    // Only suppress @container query warnings (style() not supported in jsdom)
+    // Only suppress @container query warnings (style() not supported headless)
     if (typeof secondArg === 'string' && secondArg.includes('@container')) {
       return;
     }

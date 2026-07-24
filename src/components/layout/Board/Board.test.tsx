@@ -303,7 +303,7 @@ describe('Board', () => {
 
   describe('free positioning', () => {
     // A single arrow key runs the whole keyboard-drag gesture (start + move +
-    // commit), like the lifecycle tests. jsdom reports a zero rect for the
+    // commit), like the lifecycle tests. happy-dom reports a zero rect for the
     // dragged host, so the keyboard landing is computed from the origin: one
     // ArrowRight always lands the dragged widget at x=1. Dragging the widget
     // that starts at x=0 therefore gives a deterministic one-column move.
@@ -525,7 +525,7 @@ describe('Board', () => {
     // pointer path must keep the widget at its last valid arrangement instead of
     // committing the stack, matching the keyboard path.
     const onLayoutChange = vi.fn();
-    // jsdom drops pageX/pageY passed via init; React Aria's useMove reads them.
+    // happy-dom drops pageX/pageY passed via init; React Aria's useMove reads them.
     const pointerEvent = (type: string, pageX: number, pageY: number) => {
       const event = new PointerEvent(type, {
         bubbles: true,
@@ -993,7 +993,7 @@ describe('Board', () => {
   });
 
   it('uses the parent row height verbatim for aligned cells', () => {
-    // jsdom reports 0 for offset dimensions; mock them so a nested board can
+    // happy-dom reports 0 for offset dimensions; mock them so a nested board can
     // measure the height it is given (and derive a column count from its width).
     // The container is intentionally shorter (120px) than the two rows need at
     // the 100px parent row height: an aligned board must NOT shrink its rows to
@@ -1157,7 +1157,7 @@ describe('Board', () => {
 
       // Only the container is resizable, so this is its south-east handle.
       const handle = screen.getByTestId('BoardResizeHandle');
-      // jsdom's PointerEvent drops pageX/pageY passed via init, and React Aria's
+      // happy-dom PointerEvent drops pageX/pageY passed via init, and React Aria's
       // useMove derives its deltas from them, so build the events by hand.
       const pointerEvent = (type: string, pageX: number, pageY: number) => {
         const event = new PointerEvent(type, {
@@ -1800,7 +1800,7 @@ describe('Board', () => {
   });
 
   describe('cross-board drop target selection', () => {
-    // jsdom returns empty rects, so feed the registry deterministic geometry:
+    // happy-dom returns empty rects, so feed the registry deterministic geometry:
     // two 600px-wide boards sitting side by side.
     const mockRect = (
       left: number,
@@ -1820,7 +1820,7 @@ describe('Board', () => {
         toJSON: () => ({}),
       }) as DOMRect;
 
-    // React Aria's useMove derives its deltas from pageX/pageY, which jsdom drops
+    // React Aria's useMove derives its deltas from pageX/pageY, which happy-dom drops
     // when passed via the PointerEvent init, so define them by hand.
     const pointerEvent = (type: string, pageX: number, pageY: number) => {
       const event = new PointerEvent(type, {

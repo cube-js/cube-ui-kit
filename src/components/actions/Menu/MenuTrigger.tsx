@@ -123,7 +123,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
 
   // Tray rendering is now opt-in via `mobileType="tray"` (matches DialogTrigger).
   // Without that opt-in, MenuTrigger always renders a Popover so that environments
-  // like jsdom (where `window.screen.width === 0` makes useIsMobileDevice() true)
+  // like happy-dom/jsdom (where `window.screen.width === 0` makes useIsMobileDevice() true)
   // don't accidentally swap in the tray overlay.
   const isMobileDevice = useIsMobileDevice();
   const isTray = mobileType === 'tray' && isMobileDevice;
@@ -188,7 +188,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
   // rely on.
   const shouldCloseOnInteractOutside = useEvent((el: Element) => {
     // While `Popover` is animating out, `useInteractOutside`'s capture-phase
-    // listener is still attached (jsdom 29+ uses pointerdown/click capture).
+    // listener is still attached (headless DOM uses pointerdown/click capture).
     // The animation lasts ~350ms; without this guard, clicks on a sibling
     // trigger during the exit window get stopPropagation()'d and the
     // sibling's `onClick` never runs — breaking rapid-open and "open menu

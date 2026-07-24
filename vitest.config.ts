@@ -16,15 +16,30 @@ export default defineConfig({
     jsx: { runtime: 'automatic' },
   },
   test: {
-    environment: 'jsdom',
+    environment: 'happy-dom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    // threads + isolate:false: worker_threads are lighter than child_process
-    // forks, and reusing the jsdom env + module graph across files in the same
-    // worker eliminates per-file setup/import overhead (~10s saved on 63 files).
-    // vi.mock() registry is still reset between files by Vitest; RTL cleanup()
-    // runs after each test, so test isolation is preserved.
-    pool: 'threads',
+    // forks: process isolation avoids happy-dom async-task leaks (Menu/FocusScope
+    // teardown) poisoning subsequent files when using the threads pool.
+    pool: 'forks',
+    // Happy DOM follows <a href> / location navigations with real fetches by
+    // default (default URL is http://localhost:3000). Disable navigation and
+    // asset loading so action/link tests don't hang on ECONNREFUSED.
+    environmentOptions: {
+      happyDOM: {
+        url: 'http://localhost/',
+        settings: {
+          disableJavaScriptFileLoading: true,
+          disableCSSFileLoading: true,
+          handleDisabledFileLoadingAsSuccess: true,
+          navigation: {
+            disableMainFrameNavigation: true,
+            disableChildFrameNavigation: true,
+            disableChildPageNavigation: true,
+          },
+        },
+      },
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

@@ -1,6 +1,6 @@
 /**
  * Computes the caret's position for a `<textarea>` using a mirror-element
- * technique. jsdom returns zeros (no layout), but in a real browser this gives
+ * technique. Headless DOM (happy-dom) returns zeros (no layout), but in a real browser this gives
  * the caret's viewport coordinates and its line height, so a popover can be
  * anchored to it.
  */
@@ -52,7 +52,7 @@ const MIRROR_STYLES: ReadonlyArray<keyof CSSStyleDeclaration> = [
 
 /**
  * Returns the viewport-space rect of the caret at `index` within `textarea`,
- * or `null` if it can't be measured (e.g. jsdom, no layout, detached node).
+ * or `null` if it can't be measured (e.g. happy-dom, no layout, detached node).
  */
 export function getCaretRect(
   textarea: HTMLTextAreaElement,
@@ -64,7 +64,7 @@ export function getCaretRect(
   const style = doc.defaultView?.getComputedStyle(textarea);
   if (!style) return null;
 
-  // Bail out in environments without real layout (jsdom reports 0x0).
+  // Bail out in environments without real layout (happy-dom reports 0x0).
   const box = textarea.getBoundingClientRect();
   if (box.width === 0 && box.height === 0) return null;
 

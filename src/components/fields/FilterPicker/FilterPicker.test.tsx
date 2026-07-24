@@ -1096,7 +1096,7 @@ describe('<FilterPicker />', () => {
       // skip the auto-dismiss and leave the popover behind the modal —
       // the exact bug this feature fixes.
       //
-      // Rendering the full modal Dialog inside jsdom hits an unrelated
+      // Rendering the full modal Dialog inside happy-dom hits an unrelated
       // intlmessageformat issue, so we validate the contract at the DOM
       // level instead: the Button rendered as DialogTrigger type="modal"
       // child must NOT carry data-popover-trigger.

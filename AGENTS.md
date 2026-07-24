@@ -108,6 +108,7 @@ See `src/stories/Usage.docs.mdx` (Storybook → **Getting Started / Usage**) for
 
 ## Testing
 
+- **Environment:** Vitest + **happy-dom** (`vitest.config.ts`), setup in `src/test/setup.ts`. Coverage: `pnpm test-cover`.
 - **Helpers:** `renderWithRoot` (wraps with `<Root>`), `renderWithForm` (returns `{ formInstance, ...renderResult }`).
 - **QA selectors:** `qa` prop → `data-qa` attribute → `screen.getByTestId('name')` (`testIdAttribute` is configured to `data-qa`).
 - **Tasty snapshots:** `toMatchTastySnapshot()` captures markup + CSS together.
