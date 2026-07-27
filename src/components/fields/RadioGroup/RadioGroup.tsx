@@ -10,7 +10,6 @@ import { forwardRef } from 'react';
 import { AriaRadioGroupProps, useFocusRing, useRadioGroup } from 'react-aria';
 import { useRadioGroupState } from 'react-stately';
 
-import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import {
@@ -19,12 +18,7 @@ import {
 } from '../../../utils/react/nullableValue';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemProps } from '../../content/Item/Item';
-import {
-  FormContext,
-  useFieldProps,
-  useFormProps,
-  wrapWithField,
-} from '../../form';
+import { FormContext, useFieldProps, wrapWithField } from '../../form';
 
 import { RadioContext } from './context';
 
@@ -38,8 +32,6 @@ export interface CubeRadioGroupProps
   value?: string;
   defaultValue?: string;
   onChange?: (value: string) => void;
-  /* Whether the radio group is invalid */
-  isInvalid?: boolean;
   /* Size for all radio buttons in the group */
   size?: Omit<CubeItemProps['size'], 'inline'>;
   /* Button type for all button-style radios (ignored in tabs mode). When set to 'primary', selected buttons use 'primary' and non-selected use 'outline' with isSelected appearance */
@@ -91,8 +83,6 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
   let orientation = props.orientation;
 
   props = castNullableStringValue(props);
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, { defaultValidationTrigger: 'onChange' });
 
   let {
@@ -102,6 +92,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     isRequired,
     labelPosition = 'top',
     isInvalid,
+    isValid,
     children,
     styles,
     groupStyles,
@@ -159,6 +150,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
         value={{
           isRequired,
           isInvalid,
+          isValid,
           isDisabled,
         }}
       >
@@ -180,7 +172,6 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   return wrapWithField(radioGroup, domRef, {
     ...props,
-    children: null,
     fieldProps,
     labelProps: mergeProps(baseLabelProps, labelProps),
   });

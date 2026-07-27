@@ -7,8 +7,16 @@ import { mergeProps } from '../../utils/react/index';
 
 import { FieldWrapper } from './FieldWrapper/index';
 
-interface WrapWithFieldProps extends FieldBaseProps, BaseProps, FormBaseProps {}
+// `children` is intentionally omitted: the input is passed as `component`, never through props.
+interface WrapWithFieldProps
+  extends FieldBaseProps,
+    Omit<BaseProps, 'children'>,
+    FormBaseProps {}
 
+/**
+ * Wraps an input with the field chrome (label, description, message) when it has a `label` or `forceField`.
+ * Only the field wrapper props are forwarded, so callers can pass their whole props object as is.
+ */
 export function wrapWithField<T extends WrapWithFieldProps>(
   component: ReactElement,
   ref: RefObject<unknown> | FocusableRef<HTMLElement> | DOMRef<HTMLElement>,
@@ -27,7 +35,8 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     messageStyles,
     description,
     errorMessage,
-    validationState,
+    isInvalid,
+    isValid,
     labelProps,
     fieldProps,
     fieldStyles,
@@ -69,7 +78,8 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         messageStyles,
         description,
         errorMessage,
-        validationState,
+        isInvalid,
+        isValid,
         requiredMark,
         tooltip,
         isHidden,

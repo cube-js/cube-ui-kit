@@ -14,11 +14,10 @@ import {
 } from 'react-aria';
 import { useTimeFieldState } from 'react-stately';
 
-import { useProviderProps } from '../../../provider';
-import { FieldBaseProps, ValidationState } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { useFieldProps, wrapWithField } from '../../form';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';
@@ -35,7 +34,6 @@ export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
   inputStyles?: Styles;
   styles?: Styles;
   size?: 'small' | 'medium' | 'large' | (string & {});
-  validationState?: ValidationState;
   value?: TimeValue;
   /** The minimum allowed date that a user may select. */
   minValue?: TimeValue;
@@ -61,8 +59,6 @@ function TimeInput<T extends TimeValue>(
   props: CubeTimeInputProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
   });
@@ -78,7 +74,8 @@ function TimeInput<T extends TimeValue>(
     isDisabled,
     isReadOnly,
     isRequired,
-    validationState,
+    isInvalid,
+    isValid,
     size = 'medium',
     labelProps: userLabelProps,
   } = props;
@@ -104,7 +101,8 @@ function TimeInput<T extends TimeValue>(
       autoFocus={autoFocus}
       inputStyles={inputStyles}
       styles={wrapperStyles}
-      validationState={validationState}
+      isInvalid={isInvalid}
+      isValid={isValid}
     >
       {state.segments.map((segment, i) => (
         <DatePickerSegment

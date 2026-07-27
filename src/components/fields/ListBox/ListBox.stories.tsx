@@ -146,10 +146,20 @@ const meta: any = {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description: 'Validation state',
+    isInvalid: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isValid: {
+      control: { type: 'boolean' },
+      description: 'Whether the input should display its valid visual styling',
+      table: {
+        defaultValue: { summary: false },
+      },
     },
 
     /* Field */
@@ -705,7 +715,7 @@ export const ValidationStates: StoryObj<
   <Space gap="3x" flow="column">
     <ListBox
       label="Valid Selection"
-      validationState="valid"
+      isValid
       selectionMode="single"
       defaultSelectedKey="option1"
       message="Great choice!"
@@ -716,7 +726,7 @@ export const ValidationStates: StoryObj<
 
     <ListBox
       label="Invalid Selection"
-      validationState="invalid"
+      isInvalid
       selectionMode="single"
       defaultSelectedKey="option1"
       message="Please select a different option"

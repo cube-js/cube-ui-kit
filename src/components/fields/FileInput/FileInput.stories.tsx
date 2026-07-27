@@ -69,11 +69,20 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
+    isInvalid: {
+      control: { type: 'boolean' },
       description:
-        'Whether the file input should display valid or invalid visual styling',
+        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isValid: {
+      control: { type: 'boolean' },
+      description: 'Whether the input should display its valid visual styling',
+      table: {
+        defaultValue: { summary: false },
+      },
     },
     autoFocus: {
       control: { type: 'boolean' },

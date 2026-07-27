@@ -61,7 +61,8 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
     necessityIndicator,
     necessityLabel,
     isReadOnly,
-    validationState,
+    isInvalid,
+    isValid,
     validateTrigger,
     children,
     danger,
@@ -114,7 +115,8 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
           necessityIndicator={necessityIndicator}
           necessityLabel={necessityLabel}
           isReadOnly={isReadOnly}
-          validationState={validationState}
+          isInvalid={isInvalid}
+          isValid={isValid}
           validateTrigger={validateTrigger}
           onSubmit={async (data) => {
             await onSubmit?.(data);

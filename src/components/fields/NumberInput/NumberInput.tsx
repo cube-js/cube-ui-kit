@@ -43,7 +43,6 @@ function NumberInput(
   ref: ForwardedRef<HTMLElement>,
 ) {
   props = castNullableNumberValue(props);
-  props = useProviderProps(props);
   props = useFieldProps(props);
 
   let {

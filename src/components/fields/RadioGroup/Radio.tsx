@@ -9,13 +9,17 @@ import {
 import { forwardRef, useMemo, useRef } from 'react';
 import { useHover, useRadio } from 'react-aria';
 
-import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemProps, Item } from '../../content/Item/Item';
-import { INLINE_LABEL_STYLES, useFieldProps, useFormProps } from '../../form';
+import {
+  getValidationMods,
+  getValidationTheme,
+  INLINE_LABEL_STYLES,
+  useFieldProps,
+} from '../../form';
 import { HiddenInput } from '../../HiddenInput';
 import { RADIO_SIZE_MAP } from '../../navigation/Tabs/types';
 
@@ -165,8 +169,6 @@ export interface CubeRadioProps
   type?: 'button' | 'radio';
   buttonType?: CubeItemProps['type'];
   value?: string;
-  /* Whether the radio is invalid */
-  isInvalid?: boolean;
   /* Size of the button (for button type only) */
   size?: Omit<CubeItemProps['size'], 'inline'>;
   /* Icon to display (for button type only) */
@@ -186,14 +188,13 @@ export interface CubeRadioProps
 }
 
 function Radio(props: CubeRadioProps, ref) {
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, { defaultValidationTrigger: 'onChange' });
 
   let {
     qa,
     isDisabled,
     isInvalid,
+    isValid,
     children,
     label,
     autoFocus,
@@ -305,7 +306,7 @@ function Radio(props: CubeRadioProps, ref) {
   const mods = useMemo(
     () => ({
       checked: isRadioSelected,
-      invalid: !!isInvalid,
+      ...getValidationMods({ isInvalid, isValid }),
       disabled: isRadioDisabled,
       hovered: isHovered,
       button: isButton,
@@ -315,6 +316,7 @@ function Radio(props: CubeRadioProps, ref) {
     [
       isRadioSelected,
       isInvalid,
+      isValid,
       isRadioDisabled,
       isHovered,
       isButton,
@@ -329,7 +331,7 @@ function Radio(props: CubeRadioProps, ref) {
       <RadioButtonElement
         ref={domRef}
         type={effectiveButtonType}
-        theme={isInvalid ? 'danger' : 'default'}
+        theme={getValidationTheme('default', { isInvalid, isValid })}
         size={effectiveSize}
         icon={icon}
         rightIcon={rightIcon}

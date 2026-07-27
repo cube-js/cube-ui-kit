@@ -90,11 +90,20 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
+    isInvalid: {
+      control: { type: 'boolean' },
       description:
-        'Whether the slider should display valid or invalid visual styling',
+        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isValid: {
+      control: { type: 'boolean' },
+      description: 'Whether the input should display its valid visual styling',
+      table: {
+        defaultValue: { summary: false },
+      },
     },
     autoFocus: {
       control: { type: 'boolean' },
@@ -149,13 +158,6 @@ export default {
       description: 'How to display required or optional indicators',
       table: {
         defaultValue: { summary: 'icon' },
-      },
-    },
-    isInvalid: {
-      control: { type: 'boolean' },
-      description: 'Whether the current value is invalid',
-      table: {
-        defaultValue: { summary: false },
       },
     },
     description: {

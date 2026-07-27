@@ -27,12 +27,11 @@ import { CubeCollectionItemProps } from 'src/components/CollectionItem';
 
 import { useI18n } from '../../../i18n';
 import { LoadingIcon } from '../../../icons';
-import { useProviderProps } from '../../../provider';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
 import { StyledHeader } from '../../actions/Menu/styled';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import {
   DEFAULT_INPUT_STYLES,
@@ -191,8 +190,6 @@ const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 export const FilterListBox = forwardRef(function FilterListBox<
   T extends object,
 >(props: CubeFilterListBoxProps<T>, ref: ForwardedRef<HTMLDivElement>) {
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     valuePropsMapper: ({ value, onChange }) => {
       const fieldProps: any = {};
@@ -230,7 +227,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
     labelStyles,
     isRequired,
     necessityIndicator,
-    validationState,
+    isInvalid,
+    isValid,
     isDisabled,
     isLoading,
     isLoadingItems,
@@ -664,7 +662,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
   listRef = useCombinedRefs(listRef);
 
   const { isFocused, focusProps } = useFocus({ isDisabled });
-  const isInvalid = validationState === 'invalid';
 
   const listBoxRef = useRef<HTMLDivElement>(null);
 
@@ -977,8 +974,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
   const mods = useMemo(
     () => ({
-      invalid: isInvalid,
-      valid: validationState === 'valid',
+      ...getValidationMods({ isInvalid, isValid }),
       disabled: !!isDisabled,
       focused: isFocused,
       loading: !!isLoading,
@@ -990,7 +986,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }),
     [
       isInvalid,
-      validationState,
+      isInvalid,
+      isValid,
       isDisabled,
       isFocused,
       isLoading,
@@ -1125,7 +1122,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
         optionStyles={optionStyles}
         sectionStyles={sectionStyles}
         headingStyles={headingStyles}
-        validationState={validationState}
+        isInvalid={isInvalid}
+        isValid={isValid}
         disallowEmptySelection={props.disallowEmptySelection}
         disabledKeys={props.disabledKeys}
         focusOnHover={focusOnHover}

@@ -19,7 +19,6 @@ import {
 import { useToggleState } from 'react-stately';
 
 import { Icon } from '../../../icons/index';
-import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
@@ -30,10 +29,11 @@ import {
 import { extractStyles } from '../../../utils/styles';
 import { Text } from '../../content/Text';
 import {
+  getValidationMods,
   INLINE_LABEL_STYLES,
   LABEL_STYLES,
+  resolveValidationProps,
   useFieldProps,
-  useFormProps,
   wrapWithField,
 } from '../../form';
 import { HiddenInput } from '../../HiddenInput';
@@ -121,8 +121,6 @@ function Checkbox(
 
   let originalProps = props;
 
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
@@ -141,7 +139,8 @@ function Checkbox(
     isRequired,
     children,
     label,
-    validationState,
+    isInvalid,
+    isValid,
     labelProps,
     labelStyles,
     labelPosition,
@@ -176,10 +175,10 @@ function Checkbox(
           // Value is optional for standalone checkboxes, but required for CheckboxGroup items;
           // it's passed explicitly here to avoid typescript error (requires strictNullChecks disabled).
           value: props.value || '',
-          // Only pass isRequired and validationState to react-aria if they came from
+          // Only pass isRequired and the validation state to react-aria if they came from
           // the props for this individual checkbox, and not from the group via context.
           isRequired: originalProps.isRequired,
-          validationState: originalProps.validationState,
+          isInvalid: resolveValidationProps(originalProps).isInvalid,
         },
         groupState,
         inputRef,
@@ -223,8 +222,7 @@ function Checkbox(
   const mods = {
     checked: inputProps.checked,
     indeterminate: isIndeterminate,
-    invalid: validationState === 'invalid',
-    valid: validationState === 'valid',
+    ...getValidationMods({ isInvalid, isValid }),
     disabled: isDisabled,
     hovered: isHovered,
     focused: isFocused,
@@ -254,11 +252,7 @@ function Checkbox(
   );
 
   if (!groupState) {
-    return wrapWithField(checkboxField, domRef, {
-      ...props,
-      children: null,
-      inputStyles,
-    });
+    return wrapWithField(checkboxField, domRef, props);
   }
 
   return (
@@ -274,8 +268,7 @@ function Checkbox(
         <Element
           styles={labelStyles}
           mods={{
-            invalid: validationState === 'invalid',
-            valid: validationState === 'valid',
+            ...getValidationMods({ isInvalid, isValid }),
             disabled: isDisabled,
           }}
           {...(labelProps ? filterBaseProps(labelProps) : undefined)}

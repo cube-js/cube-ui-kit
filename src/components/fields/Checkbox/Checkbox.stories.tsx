@@ -72,11 +72,20 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
+    isInvalid: {
+      control: { type: 'boolean' },
       description:
-        'Whether the checkbox should display valid or invalid visual styling',
+        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isValid: {
+      control: { type: 'boolean' },
+      description: 'Whether the input should display its valid visual styling',
+      table: {
+        defaultValue: { summary: false },
+      },
     },
     autoFocus: {
       control: { type: 'boolean' },
@@ -139,7 +148,7 @@ Indeterminate.args = {
 export const Invalid = Template.bind({});
 Invalid.args = {
   children: 'Required checkbox',
-  validationState: 'invalid',
+  isInvalid: true,
   isRequired: true,
 };
 
@@ -183,7 +192,7 @@ AllStatesDisabled.args = {
 export const AllStatesInvalid = MultiStateTemplate.bind({});
 AllStatesInvalid.args = {
   children: 'Invalid checkbox',
-  validationState: 'invalid',
+  isInvalid: true,
   isRequired: true,
 };
 

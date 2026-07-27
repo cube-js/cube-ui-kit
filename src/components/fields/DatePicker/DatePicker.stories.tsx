@@ -138,13 +138,19 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
+    isInvalid: {
+      control: { type: 'boolean' },
       description:
-        'Whether the date picker should display valid or invalid visual styling',
+        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
       table: {
-        type: { summary: 'ValidationState' },
+        defaultValue: { summary: false },
+      },
+    },
+    isValid: {
+      control: { type: 'boolean' },
+      description: 'Whether the input should display its valid visual styling',
+      table: {
+        defaultValue: { summary: false },
       },
     },
     autoFocus: {
@@ -326,7 +332,7 @@ WithDefaultValueOpen.play = async ({ canvasElement }) => {
 };
 
 export const Invalid = Template.bind({});
-Invalid.args = { validationState: 'invalid' };
+Invalid.args = { isInvalid: true };
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true };

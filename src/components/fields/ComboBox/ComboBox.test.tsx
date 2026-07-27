@@ -907,9 +907,9 @@ describe('<ComboBox />', () => {
       expect(getByTestId('LoadingIcon')).toBeInTheDocument();
     });
 
-    // Test validationState
+    // Test the validation state
     rerender(
-      <ComboBox label="test" validationState="invalid">
+      <ComboBox label="test" isInvalid>
         {items.map((item) => (
           <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
         ))}
@@ -922,7 +922,7 @@ describe('<ComboBox />', () => {
     });
 
     rerender(
-      <ComboBox label="test" validationState="valid">
+      <ComboBox label="test" isValid>
         {items.map((item) => (
           <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
         ))}

@@ -8,6 +8,7 @@ import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
 import { Label } from '../Label';
+import { getValidationMods } from '../validation/index';
 
 import { CubeFieldWrapperProps } from './types';
 
@@ -113,7 +114,8 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     description,
     errorMessage,
     Component,
-    validationState,
+    isInvalid,
+    isValid,
     requiredMark = true,
     tooltip,
     isHidden,
@@ -129,7 +131,8 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
       isRequired={requiredMark ? isRequired : false}
       isDisabled={isDisabled}
       necessityIndicator={necessityIndicator}
-      validationState={validationState}
+      isInvalid={isInvalid}
+      isValid={isValid}
       aria-label={typeof label === 'string' ? label : undefined}
       {...labelProps}
     >
@@ -180,8 +183,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     'has-sider': labelPosition === 'side',
     'has-split': labelPosition === 'split',
     'has-description': !!description,
-    invalid: validationState === 'invalid',
-    valid: validationState === 'valid',
+    ...getValidationMods({ isInvalid, isValid }),
   };
 
   // Determine which message to display (errorMessage takes precedence, then message for backward compatibility)
@@ -215,15 +217,11 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
             <MessageElement
               mods={{
                 ...mods,
-                // Force invalid state for errorMessage regardless of validationState
-                invalid: isErrorMessage || validationState === 'invalid',
+                // Force invalid state for errorMessage regardless of the validation state
+                invalid: isErrorMessage || !!isInvalid,
               }}
               styles={messageStyles}
-              role={
-                isErrorMessage || validationState === 'invalid'
-                  ? 'alert'
-                  : undefined
-              }
+              role={isErrorMessage || isInvalid ? 'alert' : undefined}
             >
               {displayMessage}
             </MessageElement>

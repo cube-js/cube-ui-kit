@@ -86,7 +86,8 @@ const ALLBASE_PROPS = new Set([
 const FIELD_PROPS = new Set([
   'label', 'name', 'description', 'extra', 'tooltip', 'errorMessage',
   'necessityIndicator', 'necessityLabel', 'labelSuffix', 'isRequired',
-  'isDisabled', 'isReadOnly', 'isLoading', 'isHidden', 'validationState',
+  'isDisabled', 'isReadOnly', 'isLoading', 'isHidden',
+  'isInvalid', 'isValid', 'validationState',
   'labelPosition', 'labelStyles', 'labelProps', 'form', 'rules',
   'defaultValue', 'autoFocus',
   'insideForm', 'fieldProps', 'fieldStyles', 'messageStyles', 'forceField',

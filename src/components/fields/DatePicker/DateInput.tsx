@@ -15,11 +15,10 @@ import {
 } from 'react-aria';
 import { useDateFieldState } from 'react-stately';
 
-import { useProviderProps } from '../../../provider';
-import { FieldBaseProps, ValidationState } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { useFieldProps, wrapWithField } from '../../form';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';
@@ -38,7 +37,6 @@ export interface CubeDateInputProps<T extends DateValue = DateValue>
   inputStyles?: Styles;
   styles?: Styles;
   size?: 'small' | 'medium' | 'large' | (string & {});
-  validationState?: ValidationState;
   useLocale?: boolean;
 }
 
@@ -46,8 +44,6 @@ function DateInput<T extends DateValue>(
   props: CubeDateInputProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({
@@ -95,7 +91,7 @@ function DateInput<T extends DateValue>(
       fieldProps={fieldProps}
       isDisabled={isDisabled}
       autoFocus={autoFocus}
-      validationState={state.validationState}
+      isInvalid={state.isInvalid}
       styles={wrapperStyles}
       inputStyles={inputStyles}
     >

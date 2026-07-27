@@ -45,7 +45,6 @@ import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n';
 import { CheckIcon, GripVerticalIcon } from '../../../icons';
 import { Icon } from '../../../icons/index';
-import { useProviderProps } from '../../../provider';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
@@ -63,7 +62,12 @@ import {
   filterCollectionItemProps,
 } from '../../CollectionItem';
 import { Item } from '../../content/Item/Item';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import {
+  getValidationMods,
+  getValidationTheme,
+  useFieldProps,
+  wrapWithField,
+} from '../../form';
 import { createMockDragState } from '../../shared/DraggableCollection';
 
 import { DraggableListBox } from './DraggableListBox';
@@ -258,20 +262,22 @@ function renderCheckboxIcon({
   isDisabled,
   isFocused,
   isHovered,
-  validationState,
+  isInvalid,
+  isValid,
 }: {
   isSelected: boolean;
   isDisabled: boolean;
   isFocused: boolean;
   isHovered: boolean;
-  validationState?: string;
+  isInvalid?: boolean;
+  isValid?: boolean;
 }) {
   const mods = {
     selected: isSelected,
     disabled: isDisabled,
     focused: isFocused,
     hovered: isHovered,
-    invalid: validationState === 'invalid',
+    ...getValidationMods({ isInvalid, isValid }),
   };
 
   return (
@@ -573,8 +579,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   props: CubeListBoxProps<T>,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     valuePropsMapper: ({ value, onChange }) => {
       const fieldProps: any = {};
@@ -607,7 +611,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     labelStyles,
     isRequired,
     necessityIndicator,
-    validationState,
+    isInvalid,
+    isValid,
     isDisabled,
     listStyles,
     optionStyles,
@@ -887,7 +892,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   );
 
   const { isFocused, focusProps } = useFocus({ isDisabled });
-  const isInvalid = validationState === 'invalid';
 
   // Use ref to ensure estimateSize always accesses current itemsArray
   const itemsArrayRef = useRef(itemsArray);
@@ -982,8 +986,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
   const mods = useMemo(
     () => ({
-      invalid: isInvalid,
-      valid: validationState === 'valid',
+      ...getValidationMods({ isInvalid, isValid }),
       disabled: isDisabled,
       focused: isFocused,
       header: !!header || (showSelectAll && props.selectionMode === 'multiple'),
@@ -993,7 +996,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     }),
     [
       isInvalid,
-      validationState,
+      isValid,
       isDisabled,
       isFocused,
       header,
@@ -1073,7 +1076,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       styles={optionStyles}
                       highlight={optionHighlight}
                       isParentDisabled={isDisabled}
-                      validationState={validationState}
+                      isInvalid={isInvalid}
+                      isValid={isValid}
                       focusOnHover={focusOnHover}
                       isCheckable={isCheckable}
                       lastFocusSourceRef={lastFocusSourceRef}
@@ -1117,7 +1121,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       styles={optionStyles}
                       highlight={optionHighlight}
                       isParentDisabled={isDisabled}
-                      validationState={validationState}
+                      isInvalid={isInvalid}
+                      isValid={isValid}
                       focusOnHover={focusOnHover}
                       isCheckable={isCheckable}
                       // We don't need to measure the element here, because the height is already set by the virtualizer
@@ -1162,7 +1167,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                           headingStyles={headingStyles}
                           sectionStyles={sectionStyles}
                           isParentDisabled={isDisabled}
-                          validationState={validationState}
+                          isInvalid={isInvalid}
+                          isValid={isValid}
                           focusOnHover={focusOnHover}
                           isCheckable={isCheckable}
                           size={size}
@@ -1182,7 +1188,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                           styles={optionStyles}
                           highlight={optionHighlight}
                           isParentDisabled={isDisabled}
-                          validationState={validationState}
+                          isInvalid={isInvalid}
+                          isValid={isValid}
                           focusOnHover={focusOnHover}
                           isCheckable={isCheckable}
                           lastFocusSourceRef={lastFocusSourceRef}
@@ -1226,7 +1233,8 @@ function Option({
   styles,
   highlight,
   isParentDisabled,
-  validationState,
+  isInvalid,
+  isValid,
   focusOnHover = false,
   isCheckable,
   onClick: onOptionClick,
@@ -1243,7 +1251,8 @@ function Option({
   styles?: Styles;
   highlight?: string;
   isParentDisabled?: boolean;
-  validationState?: any;
+  isInvalid?: boolean;
+  isValid?: boolean;
   focusOnHover?: boolean;
   isCheckable?: boolean;
   onClick?: (key: Key) => void;
@@ -1326,7 +1335,8 @@ function Option({
       isDisabled,
       isFocused,
       isHovered,
-      validationState,
+      isInvalid,
+      isValid,
     });
   }, [
     isDraggable,
@@ -1336,7 +1346,8 @@ function Option({
     isDisabled,
     isFocused,
     isHovered,
-    validationState,
+    isInvalid,
+    isValid,
     filteredItemProps.icon,
   ]);
 
@@ -1388,8 +1399,11 @@ function Option({
     ...filteredOptionProps
   } = optionProps;
 
-  const theme =
-    { valid: 'success', invalid: 'danger' }[validationState] || 'default';
+  const theme = getValidationTheme(
+    'default' as const,
+    { isInvalid, isValid },
+    { includeValid: true },
+  );
 
   const listBoxItem = (
     <ListBoxItem
@@ -1432,8 +1446,8 @@ function Option({
         dragging: isDragging,
         draggable: isDraggable,
         gripIcon: isDraggable && (!filteredItemProps.icon || isHovered),
-        valid: isSelected && validationState === 'valid',
-        invalid: isSelected && validationState === 'invalid',
+        valid: isSelected && !!isValid && !isInvalid,
+        invalid: isSelected && !!isInvalid,
         checkable: isCheckable,
         hovered: isHovered,
         all: false, // This will be set to true for SelectAllOption
@@ -1504,7 +1518,8 @@ interface ListBoxSectionProps<T> {
   headingStyles?: Styles;
   sectionStyles?: Styles;
   isParentDisabled?: boolean;
-  validationState?: any;
+  isInvalid?: boolean;
+  isValid?: boolean;
   focusOnHover?: boolean;
   isCheckable?: boolean;
   onClick?: (key: Key) => void;
@@ -1521,7 +1536,8 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
     headingStyles,
     sectionStyles,
     isParentDisabled,
-    validationState,
+    isInvalid,
+    isValid,
     focusOnHover,
     isCheckable,
     onClick: onOptionClick,
@@ -1557,7 +1573,8 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
               styles={optionStyles}
               highlight={optionHighlight}
               isParentDisabled={isParentDisabled}
-              validationState={validationState}
+              isInvalid={isInvalid}
+              isValid={isValid}
               focusOnHover={focusOnHover}
               isCheckable={isCheckable}
               lastFocusSourceRef={lastFocusSourceRef}

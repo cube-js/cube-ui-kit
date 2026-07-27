@@ -44,7 +44,6 @@ import { CubeTooltipProviderProps } from 'src/components/overlays/Tooltip/Toolti
 
 import { useEvent } from '../../../_internal';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons/index';
-import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/index';
 import { generateRandomId } from '../../../utils/random';
 import {
@@ -67,11 +66,15 @@ import {
 } from '../../CollectionItem';
 import { CubeItemProps, Item } from '../../content/Item';
 import { Text } from '../../content/Text';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import {
+  getValidationIcon,
+  getValidationMods,
+  getValidationTheme,
+  useFieldProps,
+  wrapWithField,
+} from '../../form';
 import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
-import { InvalidIcon } from '../../shared/InvalidIcon';
-import { ValidIcon } from '../../shared/ValidIcon';
 
 const SelectWrapperElement = tasty({
   qa: 'SelectWrapper',
@@ -261,8 +264,6 @@ function Select<T extends object>(
   props: CubeSelectProps<T>,
   ref: DOMRef<HTMLDivElement>,
 ) {
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
@@ -280,7 +281,8 @@ function Select<T extends object>(
     labelStyles,
     isRequired,
     necessityIndicator,
-    validationState,
+    isInvalid,
+    isValid,
     prefix,
     isDisabled = props.isLoading || false,
     autoFocus,
@@ -367,10 +369,7 @@ function Select<T extends object>(
   // Get props for the button based on the trigger props from useSelect
   let { buttonProps } = useButton(triggerProps, triggerRef);
 
-  let isInvalid = validationState === 'invalid';
-
-  let validationIcon = isInvalid ? InvalidIcon : ValidIcon;
-  let validation = cloneElement(validationIcon);
+  let validationIcon = getValidationIcon({ isInvalid, isValid });
 
   // Clear button logic
   let hasSelection = state.selectedItem != null;
@@ -397,8 +396,7 @@ function Select<T extends object>(
 
   const modifiers = useMemo(
     () => ({
-      invalid: isInvalid,
-      valid: validationState === 'valid',
+      ...getValidationMods({ isInvalid, isValid }),
       disabled: isDisabled,
       loading: isLoading,
       hovered: isHovered,
@@ -408,7 +406,8 @@ function Select<T extends object>(
       suffix: true,
     }),
     [
-      validationState,
+      isInvalid,
+      isValid,
       isDisabled,
       isLoading,
       isHovered,
@@ -419,17 +418,17 @@ function Select<T extends object>(
   );
 
   suffix = useMemo(() => {
-    if (!suffix && !validationState) {
+    if (!suffix && !validationIcon) {
       return null;
     }
 
     return (
       <>
         {suffix}
-        {validationState ? validation : null}
+        {validationIcon}
       </>
     );
-  }, [suffix, validationState, validation]);
+  }, [suffix, validationIcon]);
 
   let selectField = (
     <SelectWrapperElement
@@ -470,7 +469,7 @@ function Select<T extends object>(
           ) : showClearButton ? (
             <ItemActionProvider
               type={type}
-              theme={validationState === 'invalid' ? 'danger' : theme}
+              theme={getValidationTheme(theme, { isInvalid, isValid })}
             >
               <ItemAction
                 icon={<CloseIcon />}

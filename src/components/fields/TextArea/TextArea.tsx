@@ -32,7 +32,6 @@ function TextArea(
   ref: ForwardedRef<HTMLElement>,
 ) {
   props = castNullableStringValue(props);
-  props = useProviderProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({

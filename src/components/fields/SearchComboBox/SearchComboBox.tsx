@@ -43,9 +43,13 @@ import { useFocus } from '../../../utils/react/interactions';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
-import { wrapWithField } from '../../form';
-import { InvalidIcon } from '../../shared/InvalidIcon';
-import { ValidIcon } from '../../shared/ValidIcon';
+import {
+  getValidationIcon,
+  getValidationMods,
+  getValidationTheme,
+  useValidationProps,
+  wrapWithField,
+} from '../../form';
 import {
   filterCollectionNodes,
   getEdgeVisibleKey,
@@ -196,8 +200,6 @@ export interface CubeSearchComboBoxProps<T>
   isLoading?: boolean;
   /** Delay in milliseconds before the loading indicator is shown. Defaults to 1000. */
   loadingDelay?: number;
-  /** Validation state of the search combobox */
-  validationState?: 'valid' | 'invalid';
   /** Keys of disabled items */
   disabledKeys?: Iterable<Key>;
   /** Whether to flip the popover placement */
@@ -343,7 +345,9 @@ const SearchComboBoxInput = forwardRef<
 export const SearchComboBox = forwardRef(function SearchComboBox<
   T extends object,
 >(props: CubeSearchComboBoxProps<T>, ref: ForwardedRef<HTMLDivElement>) {
+  // SearchComboBox is a standalone control, not a form field, so it does not use `useFieldProps`.
   props = useProviderProps(props);
+  props = useValidationProps(props);
 
   const { t } = useI18n();
 
@@ -353,7 +357,8 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     labelStyles,
     isRequired,
     necessityIndicator,
-    validationState,
+    isInvalid,
+    isValid,
     id,
     icon,
     prefix,
@@ -467,10 +472,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   });
 
   const { isFocused, focusProps } = useFocus({ isDisabled });
-
-  const isInvalid = validationState === 'invalid';
-  const validationIcon = isInvalid ? InvalidIcon : ValidIcon;
-  const validation = cloneElement(validationIcon);
+  const validationIcon = getValidationIcon({ isInvalid, isValid });
 
   const listStateRef = useRef<any>(null);
   // Bumped whenever we move the virtual focus so the input's
@@ -827,8 +829,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
   const mods = useMemo(
     () => ({
-      invalid: isInvalid,
-      valid: validationState === 'valid',
+      ...getValidationMods({ isInvalid, isValid }),
       disabled: isDisabled,
       // Hover is handled purely via CSS `:hover`, so it never flows through mods.
       hovered: false,
@@ -841,7 +842,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     }),
     [
       isInvalid,
-      validationState,
+      isValid,
       isDisabled,
       isFocused,
       showLoading,
@@ -944,18 +945,17 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
       />
       <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}
-        {validationState || showLoading ? (
-          <>
-            {validationState && !showLoading ? validation : null}
-            {showLoading ? <LoadingIcon data-element="InputIcon" /> : null}
-          </>
-        ) : null}
+        {showLoading ? (
+          <LoadingIcon data-element="InputIcon" />
+        ) : (
+          validationIcon
+        )}
         {suffixPosition === 'after' ? suffix : null}
         {showClearButton && (
           <Item.Action
             icon={<CloseIcon />}
             size={size}
-            theme={validationState === 'invalid' ? 'danger' : undefined}
+            theme={getValidationTheme(undefined, { isInvalid, isValid })}
             qa="SearchComboBoxClearButton"
             data-no-trigger={hideTrigger ? '' : undefined}
             data-popover-dismiss=""

@@ -98,10 +98,25 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    isInvalid: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isValid: {
+      control: { type: 'boolean' },
+      description: 'Whether the input should display its valid visual styling',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
     validationState: {
-      options: [undefined, 'valid', 'invalid'],
       control: { type: 'radio' },
-      description: 'Validation state of the field',
+      options: [undefined, 'valid', 'invalid'],
+      description: 'Deprecated. Use isInvalid / isValid instead',
     },
 
     /* Styling */
@@ -160,12 +175,12 @@ export const ReadOnlyContent = Template.bind({});
 ReadOnlyContent.args = {
   label: 'Status',
   description: 'Current system status',
-  validationState: 'valid',
+  isValid: true,
 };
 
 export const WithError = Template.bind({});
 WithError.args = {
   label: 'Error Field',
-  validationState: 'invalid',
+  isInvalid: true,
   errorMessage: 'This field has an error',
 };

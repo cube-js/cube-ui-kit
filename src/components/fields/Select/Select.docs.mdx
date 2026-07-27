@@ -309,7 +309,7 @@ Groups related options together with an optional heading.
 <Select
   label="Validated field"
   selectedKey="yes"
-  validationState="valid"
+  isValid
 >
   <Select.Item key="yes">Yes</Select.Item>
   <Select.Item key="no">No</Select.Item>
@@ -318,7 +318,7 @@ Groups related options together with an optional heading.
 {/* Invalid state */}
 <Select
   label="Required field"
-  validationState="invalid"
+  isInvalid
   errorMessage="Please select an option"
 >
   <Select.Item key="yes">Yes</Select.Item>
@@ -556,7 +556,7 @@ const groups = [
    ```jsx
    <Select
      isRequired
-     validationState="invalid"
+     isInvalid
      errorMessage="Please select a shipping method"
      label="Shipping"
    >

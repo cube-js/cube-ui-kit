@@ -73,11 +73,20 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
+    isInvalid: {
+      control: { type: 'boolean' },
       description:
-        'Whether the input should display valid or invalid visual styling',
+        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isValid: {
+      control: { type: 'boolean' },
+      description: 'Whether the input should display its valid visual styling',
+      table: {
+        defaultValue: { summary: false },
+      },
     },
     autoFocus: {
       control: { type: 'boolean' },
@@ -190,7 +199,7 @@ Small.args = {
 export const Invalid = Template.bind({});
 Invalid.args = {
   label: 'Search Query',
-  validationState: 'invalid',
+  isInvalid: true,
   placeholder: 'Enter at least 3 characters',
 };
 

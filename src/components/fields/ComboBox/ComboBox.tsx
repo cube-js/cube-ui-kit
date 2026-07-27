@@ -11,7 +11,6 @@ import {
   tasty,
 } from '@tenphi/tasty';
 import React, {
-  cloneElement,
   ForwardedRef,
   forwardRef,
   ReactElement,
@@ -29,7 +28,6 @@ import { Section as BaseSection, useListState } from 'react-stately';
 import { useEvent } from '../../../_internal';
 import { useI18n } from '../../../i18n';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
-import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { generateRandomId } from '../../../utils/random';
 import { useCombinedRefs, useLayoutEffect } from '../../../utils/react';
@@ -37,9 +35,13 @@ import { useFocus } from '../../../utils/react/interactions';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { InvalidIcon } from '../../shared/InvalidIcon';
-import { ValidIcon } from '../../shared/ValidIcon';
+import {
+  getValidationIcon,
+  getValidationMods,
+  getValidationTheme,
+  useFieldProps,
+  wrapWithField,
+} from '../../form';
 import {
   filterCollectionNodes,
   getEdgeVisibleKey,
@@ -165,8 +167,6 @@ export interface CubeComboBoxProps<T>
   isDisabled?: boolean;
   /** Whether the combobox is in loading state */
   isLoading?: boolean;
-  /** Validation state of the combobox */
-  validationState?: 'valid' | 'invalid';
   /** Keys of disabled items */
   disabledKeys?: Iterable<Key>;
   /** Whether to flip the popover placement */
@@ -562,8 +562,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   props: CubeComboBoxProps<T>,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     valuePropsMapper: ({ value, onChange }) => {
       return {
@@ -586,7 +584,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     labelStyles,
     isRequired,
     necessityIndicator,
-    validationState,
+    isInvalid,
+    isValid,
     id,
     icon,
     prefix,
@@ -811,7 +810,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // Helper to check if current input value is valid
   const checkInputValidity = useCallback(() => {
     if (!effectiveInputValue.trim()) {
-      return { isValid: false, singleMatchKey: null, filteredCount: 0 };
+      return { isInputValid: false, singleMatchKey: null, filteredCount: 0 };
     }
 
     // Get filtered collection based on current input
@@ -847,19 +846,23 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     );
 
     if (exactMatch) {
-      return { isValid: true, singleMatchKey: exactMatch.key, filteredCount };
+      return {
+        isInputValid: true,
+        singleMatchKey: exactMatch.key,
+        filteredCount,
+      };
     }
 
     // If exactly one filtered result, consider it valid
     if (filteredCount === 1) {
       return {
-        isValid: true,
+        isInputValid: true,
         singleMatchKey: filteredItems[0].key,
         filteredCount,
       };
     }
 
-    return { isValid: false, singleMatchKey: null, filteredCount };
+    return { isInputValid: false, singleMatchKey: null, filteredCount };
   }, [effectiveInputValue, filterFn, localCollectionState.collection]);
 
   // Composite blur handler - fires when focus leaves the entire component
@@ -901,11 +904,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
     // In non-custom-value mode, validate input and handle accordingly
     if (!allowsCustomValue) {
-      const { isValid, singleMatchKey } = checkInputValidity();
+      const { isInputValid, singleMatchKey } = checkInputValidity();
 
       // If there's exactly one filtered result, auto-select it
       if (
-        isValid &&
+        isInputValid &&
         singleMatchKey != null &&
         singleMatchKey !== effectiveSelectedKey
       ) {
@@ -925,7 +928,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       }
 
       // If input is invalid (no exact match, not a single result)
-      if (!isValid) {
+      if (!isInputValid) {
         const trimmedInput = effectiveInputValue.trim();
 
         // Clear if clearOnBlur is set or input is empty
@@ -980,10 +983,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     isDisabled,
   });
 
-  let isInvalid = validationState === 'invalid';
-
-  let validationIcon = isInvalid ? InvalidIcon : ValidIcon;
-  let validation = cloneElement(validationIcon);
+  let validationIcon = getValidationIcon({ isInvalid, isValid });
 
   // Ref to access internal ListBox state
   const listStateRef = useRef<any>(null);
@@ -1225,8 +1225,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   let mods = useMemo(
     () => ({
-      invalid: isInvalid,
-      valid: validationState === 'valid',
+      ...getValidationMods({ isInvalid, isValid }),
       disabled: isDisabled,
       hovered: false,
       focused: isFocused,
@@ -1237,7 +1236,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }),
     [
       isInvalid,
-      validationState,
+      isValid,
       isDisabled,
       isFocused,
       isLoading,
@@ -1376,18 +1375,13 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       />
       <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}
-        {validationState || isLoading ? (
-          <>
-            {validationState && !isLoading ? validation : null}
-            {isLoading ? <LoadingIcon data-element="InputIcon" /> : null}
-          </>
-        ) : null}
+        {isLoading ? <LoadingIcon data-element="InputIcon" /> : validationIcon}
         {suffixPosition === 'after' ? suffix : null}
         {showClearButton && (
           <Item.Action
             icon={<CloseIcon />}
             size={size}
-            theme={validationState === 'invalid' ? 'danger' : undefined}
+            theme={getValidationTheme(undefined, { isInvalid, isValid })}
             qa="ComboBoxClearButton"
             data-no-trigger={hideTrigger ? '' : undefined}
             data-popover-dismiss=""

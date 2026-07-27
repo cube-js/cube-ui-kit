@@ -15,11 +15,10 @@ import {
 import { useDatePickerState } from 'react-stately';
 
 import { useI18n } from '../../../i18n';
-import { useProviderProps } from '../../../provider';
-import { FieldBaseProps, ValidationState } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { useFieldProps, wrapWithField } from '../../form';
 import { Calendar } from '../../other/Calendar/Calendar';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 
@@ -42,7 +41,6 @@ export interface CubeDatePickerProps<T extends DateValue = DateValue>
   triggerStyles?: Styles;
   styles?: Styles;
   size?: 'small' | 'medium' | 'large' | (string & {});
-  validationState?: ValidationState;
   maxVisibleMonths?: number;
   shouldFlip?: boolean;
   useLocale?: boolean;
@@ -54,8 +52,6 @@ function DatePicker<T extends DateValue>(
 ) {
   const { t } = useI18n();
 
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
   });
@@ -68,7 +64,8 @@ function DatePicker<T extends DateValue>(
     size,
     placeholderValue,
     isDisabled,
-    validationState,
+    isInvalid,
+    isValid,
     useLocale: useLocaleProp,
     autoFocus,
   } = props;
@@ -127,7 +124,8 @@ function DatePicker<T extends DateValue>(
       styles={props.wrapperStyles}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}
-      validationState={validationState}
+      isInvalid={isInvalid}
+      isValid={isValid}
       size={size}
       fieldProps={groupProps}
       {...focusProps}

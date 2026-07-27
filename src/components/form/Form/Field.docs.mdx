@@ -37,7 +37,9 @@ The Field component is a **legacy wrapper** for form inputs that provides field-
 - **`isDisabled`** `boolean` (default: `false`) — Whether the field is disabled
 - **`isLoading`** `boolean` (default: `false`) — Whether the field is in loading state
 - **`isHidden`** `boolean` (default: `false`) — Whether the field is hidden
-- **`validationState`** `undefined | 'valid' | 'invalid'` — Validation state of the field
+- **`isInvalid`** `boolean` — Whether the field is invalid
+- **`isValid`** `boolean` — Whether the field is valid
+- **`validationState`** `'valid' | 'invalid'` — _(deprecated)_ Use `isInvalid` / `isValid` instead
 - **`styles`** — Style map for the field wrapper
 - **`labelStyles`** — Style map for the field label
 - **`labelProps`** — Additional props for the label element
@@ -102,7 +104,8 @@ These properties allow direct style application without using the `styles` prop:
 - **`isLoading`** `boolean` — Whether the field is in loading state
 - **`isReadOnly`** `boolean` — Whether the field is read-only
 - **`isHidden`** `boolean` — Whether the field is hidden
-- **`validationState`** `'valid' | 'invalid'` — Validation state of the field
+- **`isInvalid`** `boolean` — Whether the field is invalid
+- **`isValid`** `boolean` — Whether the field is valid
 
 ### Advanced Properties
 
@@ -191,12 +194,13 @@ function ModernForm() {
 
 ## Creating Custom Input Components
 
-To create your own input component with built-in field support, use `useFieldProps` and `useFormProps`:
+To create your own input component with built-in field support, use `useFieldProps`. It applies the provider
+and form context for you, so it is the only hook you need:
 
 ```jsx
 import { forwardRef, useRef } from 'react';
 import { tasty } from '@tenphi/tasty';
-import { useFieldProps, useFormProps } from '@cube-dev/ui-kit';
+import { useFieldProps } from '@cube-dev/ui-kit';
 
 // Simple styled input wrapper
 const InputElement = tasty({
@@ -223,10 +227,7 @@ const InputElement = tasty({
 });
 
 const CustomTextInput = forwardRef(function CustomTextInput(props, ref) {
-  // Apply form context (inherits form-level properties)
-  props = useFormProps(props);
-
-  // Apply field behavior (validation, form integration, etc.)
+  // Apply field behavior (provider + form context, validation, form integration)
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({
@@ -243,7 +244,7 @@ const CustomTextInput = forwardRef(function CustomTextInput(props, ref) {
       ref={ref}
       type="text"
       // Add ARIA attributes for accessibility
-      aria-invalid={props.validationState === 'invalid'}
+      aria-invalid={props.isInvalid}
       aria-describedby={props.message ? `${props.id}-message` : undefined}
     />
   );

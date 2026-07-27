@@ -15,7 +15,7 @@ import { useSliderState } from 'react-stately';
 import { forwardRefWithGenerics, mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { Text } from '../../content/Text';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { useFieldProps, wrapWithField } from '../../form';
 
 import { SliderControlsElement, SliderElement } from './elements';
 
@@ -23,8 +23,8 @@ import type { SliderState } from 'react-stately';
 import type { CubeSliderBaseProps } from './types';
 
 export interface SliderBaseChildArguments {
-  inputRef: RefObject<HTMLInputElement>;
-  trackRef: RefObject<HTMLElement>;
+  inputRef: RefObject<HTMLInputElement | null>;
+  trackRef: RefObject<HTMLElement | null>;
   state: SliderState;
 }
 
@@ -40,8 +40,7 @@ const LabelValueElement = tasty(Text, {
 });
 
 function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
-  let props = useFormProps(allProps);
-  props = useFieldProps(props, {
+  let props = useFieldProps(allProps, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
       value: value != null ? value : undefined,
@@ -55,7 +54,6 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
     extra,
     styles,
     isRequired,
-    validationState,
     message,
     description,
     requiredMark,

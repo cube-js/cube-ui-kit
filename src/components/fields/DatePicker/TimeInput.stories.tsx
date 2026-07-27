@@ -3,7 +3,7 @@ import { StoryFn } from '@storybook/react-vite';
 import {
   ICON_ARG,
   TIME_VALUE_ARG,
-  VALIDATION_STATE_ARG,
+  VALIDATION_ARGS,
 } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -21,7 +21,7 @@ export default {
   argTypes: {
     ...TIME_VALUE_ARG,
     ...ICON_ARG,
-    ...VALIDATION_STATE_ARG,
+    ...VALIDATION_ARGS,
   },
 };
 
@@ -59,7 +59,7 @@ export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { defaultValue: new Date('2023-10-04 12:14') };
 
 export const Invalid = Template.bind({});
-Invalid.args = { validationState: 'invalid' };
+Invalid.args = { isInvalid: true };
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true };

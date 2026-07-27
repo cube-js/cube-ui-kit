@@ -112,10 +112,20 @@ const meta = {
       description: 'Whether the input is read-only',
       table: { defaultValue: { summary: false } },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description: 'Whether the input shows valid or invalid styling',
+    isInvalid: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isValid: {
+      control: { type: 'boolean' },
+      description: 'Whether the input should display its valid visual styling',
+      table: {
+        defaultValue: { summary: false },
+      },
     },
     autoFocus: {
       control: { type: 'boolean' },

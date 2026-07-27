@@ -159,13 +159,19 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
+    isInvalid: {
+      control: { type: 'boolean' },
       description:
-        'Whether the select should display valid or invalid visual styling',
+        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
       table: {
-        type: { summary: 'string' },
+        defaultValue: { summary: false },
+      },
+    },
+    isValid: {
+      control: { type: 'boolean' },
+      description: 'Whether the input should display its valid visual styling',
+      table: {
+        defaultValue: { summary: false },
       },
     },
     autoFocus: {
@@ -459,10 +465,10 @@ export const Clear = Template.bind({});
 Clear.args = { type: 'clear', placeholder: 'clear', width: 'max-content' };
 
 export const Invalid = Template.bind({});
-Invalid.args = { selectedKey: 'yellow', validationState: 'invalid' };
+Invalid.args = { selectedKey: 'yellow', isInvalid: true };
 
 export const Valid = Template.bind({});
-Valid.args = { selectedKey: 'yellow', validationState: 'valid' };
+Valid.args = { selectedKey: 'yellow', isValid: true };
 
 export const WithPlaceholder = Template.bind({});
 WithPlaceholder.args = { placeholder: 'Enter a value' };
@@ -549,7 +555,7 @@ export const ClearableThemes: StoryObj<CubeSelectProps<any>>['render'] = () => {
         isClearable
         label="outline / default + invalid"
         defaultSelectedKey="blue"
-        validationState="invalid"
+        isInvalid
         placeholder="Choose a color..."
         width="200px"
       >
@@ -565,7 +571,7 @@ ClearableThemes.parameters = {
   docs: {
     description: {
       story:
-        'Verifies that the clear button inherits the trigger\u2019s `type` and `theme` via `ItemActionProvider`, so its text color always matches the trigger label across every trigger variant \u2014 including `type="primary"`, `theme="special"`, and `validationState="invalid"`.',
+        'Verifies that the clear button inherits the trigger\u2019s `type` and `theme` via `ItemActionProvider`, so its text color always matches the trigger label across every trigger variant \u2014 including `type="primary"`, `theme="special"`, and `isInvalid`.',
     },
   },
 };

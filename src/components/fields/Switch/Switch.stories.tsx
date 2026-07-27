@@ -67,11 +67,20 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
+    isInvalid: {
+      control: { type: 'boolean' },
       description:
-        'Whether the switch should display valid or invalid visual styling',
+        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isValid: {
+      control: { type: 'boolean' },
+      description: 'Whether the input should display its valid visual styling',
+      table: {
+        defaultValue: { summary: false },
+      },
     },
     autoFocus: {
       control: { type: 'boolean' },
@@ -130,7 +139,7 @@ WithDefaultSelected.args = {
 export const Invalid = Template.bind({});
 Invalid.args = {
   children: 'Required switch',
-  validationState: 'invalid',
+  isInvalid: true,
   isRequired: true,
 };
 
@@ -201,7 +210,7 @@ AllStatesDisabled.args = {
 export const AllStatesInvalid = MultiStateTemplate.bind({});
 AllStatesInvalid.args = {
   children: 'Invalid switch',
-  validationState: 'invalid',
+  isInvalid: true,
   isRequired: true,
 };
 

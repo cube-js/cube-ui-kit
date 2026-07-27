@@ -34,7 +34,7 @@ export const Default: StoryFn = Template.bind({});
 Default.args = {};
 
 export const Invalid: StoryFn = Template.bind({});
-Invalid.args = { validationState: 'invalid' };
+Invalid.args = { isInvalid: true };
 
 export const WithLabel: StoryFn = Template.bind({});
 WithLabel.args = { label: 'Checkbox Group', 'aria-label': undefined };

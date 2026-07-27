@@ -25,7 +25,7 @@ import { FieldBaseProps } from '../../../shared';
 import { useCombinedRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { Action } from '../../actions';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { useFieldProps, wrapWithField } from '../../form';
 
 import type { AriaTextFieldProps } from 'react-aria';
 
@@ -152,8 +152,6 @@ function extractFileNameFromValue(value?: string) {
 function FileInput(props: CubeFileInputProps, ref) {
   const { t } = useI18n();
 
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(
     { ...props },
     {

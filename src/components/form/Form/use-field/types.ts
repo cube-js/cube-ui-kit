@@ -3,17 +3,23 @@ import { ReactNode } from 'react';
 import {
   FieldCoreProps,
   ValidateTrigger,
+  ValidationProps,
   ValidationState,
 } from '../../../../shared/index';
 import { CubeFieldData, FieldTypes } from '../types';
 import { CubeFormInstance } from '../use-form';
 
-export interface UseFieldProps<T extends FieldTypes> extends FieldCoreProps {
+export interface UseFieldProps<T extends FieldTypes>
+  extends FieldCoreProps,
+    ValidationProps {
   /** The initial value of the input. */
   defaultValue?: any;
   /** The form instance */
   form?: CubeFormInstance<T>;
-  /** The validation state of the field */
+  /**
+   * The validation state of the field
+   * @deprecated Use `isInvalid` / `isValid` instead.
+   */
   validationState?: ValidationState;
   /** Whether to show valid state */
   showValid?: boolean;
@@ -21,12 +27,11 @@ export interface UseFieldProps<T extends FieldTypes> extends FieldCoreProps {
   validateTrigger?: ValidateTrigger;
 }
 
-export type FieldReturnValue<T extends FieldTypes> = {
+export type FieldReturnValue<T extends FieldTypes> = ValidationProps & {
   id: string;
   name: string;
   value: any;
   validateTrigger?: ValidateTrigger;
-  validationState?: ValidationState;
   form?: CubeFormInstance<T>;
   onChange?: (
     value: any,

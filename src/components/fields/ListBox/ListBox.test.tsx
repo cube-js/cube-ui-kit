@@ -262,7 +262,7 @@ describe('<ListBox />', () => {
 
   it('should handle validation states', () => {
     const { getByRole, rerender } = render(
-      <ListBox label="Select a fruit" validationState="invalid">
+      <ListBox label="Select a fruit" isInvalid>
         {basicItems}
       </ListBox>,
     );
@@ -271,6 +271,25 @@ describe('<ListBox />', () => {
     expect(listbox.closest('[data-invalid]')).toBeInTheDocument();
 
     // Test valid state
+    rerender(
+      <ListBox label="Select a fruit" isValid>
+        {basicItems}
+      </ListBox>,
+    );
+
+    expect(listbox.closest('[data-valid]')).toBeInTheDocument();
+  });
+
+  it('should still support the deprecated validationState', () => {
+    const { getByRole, rerender } = render(
+      <ListBox label="Select a fruit" validationState="invalid">
+        {basicItems}
+      </ListBox>,
+    );
+
+    const listbox = getByRole('listbox');
+    expect(listbox.closest('[data-invalid]')).toBeInTheDocument();
+
     rerender(
       <ListBox label="Select a fruit" validationState="valid">
         {basicItems}

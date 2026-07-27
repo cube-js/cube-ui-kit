@@ -25,7 +25,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { CollectionItem as Item } from '../../CollectionItem';
-import { useFieldProps, useFormProps } from '../../form';
+import { useFieldProps } from '../../form';
 import {
   collectVisibleKeys,
   filterCollectionNodes,
@@ -202,8 +202,6 @@ function CommandTextArea<T extends object>(
   ref: ForwardedRef<HTMLElement>,
 ) {
   props = castNullableStringValue(props);
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({

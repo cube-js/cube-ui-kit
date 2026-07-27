@@ -40,7 +40,7 @@ Group by categories with comments:
 - `/* Selection */` - selectedKey, defaultSelectedKey
 - `/* Behavior */` - filter, trigger modes, loading states
 - `/* Presentation */` - type, theme, size, direction
-- `/* State */` - isDisabled, isRequired, isReadOnly, validationState, autoFocus
+- `/* State */` - isDisabled, isRequired, isReadOnly, isInvalid, isValid, autoFocus
 - `/* Events */` - onPress, onChange, onSelectionChange, onBlur, onFocus
 
 ### ArgType Format

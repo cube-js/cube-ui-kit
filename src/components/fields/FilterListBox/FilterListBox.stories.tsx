@@ -161,12 +161,19 @@ const meta: any = {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description: 'Validation state of the FilterListBox',
+    isInvalid: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
       table: {
-        defaultValue: { summary: undefined },
+        defaultValue: { summary: false },
+      },
+    },
+    isValid: {
+      control: { type: 'boolean' },
+      description: 'Whether the input should display its valid visual styling',
+      table: {
+        defaultValue: { summary: false },
       },
     },
 
@@ -941,7 +948,7 @@ export const ValidationStates: StoryFn<CubeFilterListBoxProps<any>> = () => (
   <Space gap="3x" flow="column">
     <FilterListBox
       label="Valid state"
-      validationState="valid"
+      isValid
       message="Good choice!"
       defaultSelectedKey="option1"
       searchPlaceholder="Search options..."
@@ -952,7 +959,7 @@ export const ValidationStates: StoryFn<CubeFilterListBoxProps<any>> = () => (
 
     <FilterListBox
       label="Invalid state"
-      validationState="invalid"
+      isInvalid
       message="Please select a different option"
       defaultSelectedKey="option1"
       searchPlaceholder="Search options..."

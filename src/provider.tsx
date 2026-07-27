@@ -17,7 +17,8 @@ export interface ProviderProps extends Props {
   isDisabled?: boolean;
   isReadOnly?: boolean;
   isRequired?: boolean;
-  validationState?: string;
+  isInvalid?: boolean;
+  isValid?: boolean;
   navigation?: NavigationAdapter;
   ref?: ReactElement;
   root?: ForwardedRef<any>;
@@ -36,7 +37,8 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
     isDisabled,
     isReadOnly,
     isRequired,
-    validationState,
+    isInvalid,
+    isValid,
     navigation,
     root,
     ref,
@@ -54,7 +56,8 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
       isDisabled,
       isReadOnly,
       isRequired,
-      validationState,
+      isInvalid,
+      isValid,
       navigation: navigation || defaultNavigationAdapter,
       root,
     }),
@@ -64,7 +67,8 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
       isDisabled,
       isReadOnly,
       isRequired,
-      validationState,
+      isInvalid,
+      isValid,
       navigation,
       root,
     ],

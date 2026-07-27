@@ -16,7 +16,7 @@ import { FieldBaseProps } from '../../../shared';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { Button } from '../../actions';
 import { Block } from '../../Block';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { useFieldProps, wrapWithField } from '../../form';
 import { Flow } from '../../layout/Flow';
 import { Grid } from '../../layout/Grid';
 import { Space } from '../../layout/Space';
@@ -81,7 +81,6 @@ function TextInputMapper(
 
   ref = useCombinedRefs(ref);
 
-  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({

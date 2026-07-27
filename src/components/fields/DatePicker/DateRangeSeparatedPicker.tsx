@@ -17,11 +17,10 @@ import {
 import { useDatePickerState, useDateRangePickerState } from 'react-stately';
 
 import { useI18n } from '../../../i18n';
-import { useProviderProps } from '../../../provider';
-import { FieldBaseProps, ValidationState } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { useFieldProps, wrapWithField } from '../../form';
 import { Calendar } from '../../other/Calendar/Calendar';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 
@@ -55,7 +54,6 @@ export interface CubeDateRangeSeparatedPickerProps<
   inputStyles?: Styles;
   styles?: Styles;
   size?: 'small' | 'medium' | 'large' | (string & {});
-  validationState?: ValidationState;
   maxVisibleMonths?: number;
   shouldFlip?: boolean;
   useLocale?: boolean;
@@ -67,8 +65,6 @@ function DateRangeSeparatedPicker<T extends DateValue>(
 ) {
   const { t } = useI18n();
 
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
   });
@@ -81,7 +77,8 @@ function DateRangeSeparatedPicker<T extends DateValue>(
     size,
     placeholderValue,
     isDisabled,
-    validationState,
+    isInvalid,
+    isValid,
     useLocale: useLocaleProp,
     autoFocus,
   } = props;
@@ -192,7 +189,8 @@ function DateRangeSeparatedPicker<T extends DateValue>(
       <DateInputBase
         disableFocusRing={startFocusProps.isFocused}
         isDisabled={isDisabled}
-        validationState={validationState}
+        isInvalid={isInvalid}
+        isValid={isValid}
         size={size}
         {...startFocusRingProps.focusProps}
         suffix={
@@ -251,7 +249,8 @@ function DateRangeSeparatedPicker<T extends DateValue>(
       <DateInputBase
         disableFocusRing={endFocusProps.isFocused}
         isDisabled={isDisabled}
-        validationState={validationState}
+        isInvalid={isInvalid}
+        isValid={isValid}
         size={size}
         {...endFocusRingProps.focusProps}
         suffix={
