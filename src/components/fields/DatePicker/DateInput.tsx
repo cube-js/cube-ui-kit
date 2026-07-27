@@ -61,6 +61,7 @@ function DateInput<T extends DateValue>(
     wrapperStyles,
     isReadOnly,
     isRequired,
+    isValid,
     size = 'medium',
     useLocale: useLocaleProp,
   } = props;
@@ -92,6 +93,7 @@ function DateInput<T extends DateValue>(
       isDisabled={isDisabled}
       autoFocus={autoFocus}
       isInvalid={state.isInvalid}
+      isValid={isValid}
       styles={wrapperStyles}
       inputStyles={inputStyles}
     >

@@ -9,5 +9,6 @@ Align the API of all form input components around `isInvalid` / `isValid`.
 - Explicit validation props now take precedence over the state derived from the form. Previously form-derived state could override an explicitly passed prop.
 - `useFieldProps` is now the single entry point for input components — it applies `useProviderProps` and `useFormProps` internally. Calling them explicitly is still supported but no longer necessary.
 - `TextInputBase` became purely presentational, which removes a duplicate field registration in the text input family. As a result `SearchInput` no longer registers with a surrounding `Form` — like `SearchComboBox`, it is a standalone control rather than a form field. Use `TextInput` or `ComboBox` when you need a form-attached field.
+- Fixed `DateInput` never rendering the valid state. It forwarded only the invalid state to its input chrome, so neither an explicit valid prop nor a form-derived valid state (`showValid`) produced the valid styling or the check icon.
 - New exports for building input components: `resolveValidationProps`, `useValidationProps`, `getValidationMods`, `getValidationTheme`, `getValidationIcon`, `hasValidationIndicator` and `<ValidationIndicator>`.
 - Removed the unused `extractFieldWrapperProps` helper.
