@@ -156,6 +156,43 @@ describe('<InfoBadge />', () => {
     );
   });
 
+  // The name is derived from a plain-string tooltip, so the cases that matter
+  // are the ones where the title stays a string: a static badge, or an
+  // interactive one whose "learn more" suffix is switched off.
+  it.each([
+    ['static', {}],
+    ['interactive', { to: '!https://docs.cube.dev', tooltipSuffix: null }],
+    ['interactive with a suffix', { onPress: () => {} }],
+  ])('lets `label` override the name when %s', (_, props) => {
+    renderWithRoot(
+      <InfoBadge {...props} label="Region docs" tooltip="Where it runs." />,
+    );
+
+    expect(screen.getByTestId('InfoBadge')).toHaveAttribute(
+      'aria-label',
+      'Region docs',
+    );
+  });
+
+  it.each([
+    ['static', {}],
+    ['interactive', { onPress: () => {}, tooltipSuffix: null }],
+    ['interactive with a suffix', { to: '!https://docs.cube.dev' }],
+  ])('lets `aria-label` override the name when %s', (_, props) => {
+    renderWithRoot(
+      <InfoBadge
+        {...props}
+        aria-label="Region docs"
+        tooltip="Where it runs."
+      />,
+    );
+
+    expect(screen.getByTestId('InfoBadge')).toHaveAttribute(
+      'aria-label',
+      'Region docs',
+    );
+  });
+
   it('accepts a tooltip configuration object', async () => {
     renderWithRoot(
       <InfoBadge tooltip={{ title: 'Configured', placement: 'right' }} />,

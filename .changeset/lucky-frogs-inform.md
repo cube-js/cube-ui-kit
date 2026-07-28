@@ -9,3 +9,5 @@ Added the `InfoBadge` component — an informational icon with a tooltip. It ren
 The info icon that fields render for their `tooltip` prop is now an `InfoBadge`, so clicking it no longer activates the field it labels.
 
 `tooltip={{ title }}` on `ItemAction` and `ItemBadge` now accepts any `ReactNode` as the title. Rich titles are no longer used as the `aria-label` (previously they were stringified into it) — pass `aria-label` for those.
+
+`ItemAction` and `ItemBadge` now treat an explicit `aria-label` as higher priority than the accessible name inferred from a string `tooltip`. Previously `ItemAction` let the tooltip win, so an `aria-label` passed alongside a string tooltip was silently dropped.
