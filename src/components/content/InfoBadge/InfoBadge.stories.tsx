@@ -81,6 +81,16 @@ export const Themes: Story = {
   ),
 };
 
+export const Disabled: Story = {
+  render: (args) => (
+    <Space gap="1x" placeItems="center">
+      <InfoBadge {...args} isDisabled />
+      <InfoBadge {...args} isDisabled to="!https://docs.cube.dev" />
+      <InfoBadge {...args} isDisabled onPress={() => {}} />
+    </Space>
+  ),
+};
+
 export const Types: Story = {
   render: (args) => (
     <Space gap="1x" placeItems="center">

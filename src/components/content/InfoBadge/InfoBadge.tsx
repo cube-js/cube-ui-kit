@@ -148,11 +148,17 @@ function sizeStyles(size: NonNullable<CubeInfoBadgeProps['size']>): Styles {
 
 // Soft → strong on interaction, mirroring the link styles: the badge reads as a
 // quiet brand-colored hint at rest and gains contrast once it's engaged.
+//
+// A state map with a `''` entry replaces the variant's map outright, so the
+// disabled color has to be restated here (`@inherit` can't reach the variant —
+// it isn't the parent map in this merge) or a disabled badge would keep the
+// brand tint and still read as interactive.
 const INFO_STYLES: Styles = {
   color: {
     '': '#primary-text-soft',
     'hovered | focused': '#primary-text',
     pressed: '#primary-text',
+    disabled: '#disabled-surface-text',
   },
 };
 
