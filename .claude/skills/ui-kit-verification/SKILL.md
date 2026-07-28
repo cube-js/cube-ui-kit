@@ -1,0 +1,273 @@
+---
+name: ui-kit-verification
+description: "Verify a cube-ui-kit PR against the Cube Cloud console before merging: find the PR's canary snapshot, install it in a fresh cloud branch, hunt down every breakage the new API introduces (including the silent ones types miss), and migrate cloud to the new API. Use when the user says 'verify the ui-kit PR in cloud', 'install the snapshot to cloud', 'check this ui-kit change against cloud', or asks to migrate cloud to a ui-kit API introduced by a PR."
+metadata:
+  version: "1.0.0"
+---
+
+# UI Kit Verification
+
+A `@cube-dev/ui-kit` PR is not done when its own tests pass — it is done when Cube Cloud still
+works on top of it. Every PR publishes a canary snapshot to npm, so cloud can be built against
+the exact PR build before it is merged.
+
+This skill runs that loop: **snapshot → install → hunt breakages → migrate → report**.
+
+The output is a cloud branch the user reviews. Do not open a cloud PR or merge anything unless
+asked.
+
+## Step 1 — Identify the PR and its canary snapshot
+
+Every PR gets an npm **dist-tag** named `pr_<number>`, republished on every push. Read the tag
+rather than the "NPM canary release" PR comment — the comment can be stale if it did not re-run.
+
+```bash
+gh pr list --head "$(git rev-parse --abbrev-ref HEAD)" --json number,title,url
+npm view @cube-dev/ui-kit dist-tags --json | python3 -c "import json,sys; print(json.load(sys.stdin)['pr_<number>'])"
+```
+
+Confirm the snapshot is current before trusting it — compare its publish time to the PR's HEAD
+commit. If the snapshot predates HEAD, the canary workflow has not finished; wait for it rather
+than verifying a stale build.
+
+```bash
+npm view @cube-dev/ui-kit time --json | python3 -c "import json,sys; print(json.load(sys.stdin)['<version>'])"
+git log -1 --format='%cI'
+```
+
+Report the resolved version to the user before installing.
+
+## Step 2 — Read the API change before touching cloud
+
+The migration is only as good as your model of what changed. Read, in this order:
+
+1. **The changeset** in `.changeset/*.md` — the user-facing summary of what moved, what is
+   deprecated, and what silently changed behaviour.
+2. **`git diff origin/main...HEAD --stat`** — the blast radius.
+3. **The rules doc for the area** (e.g. [input-components.md](../../../docs/rules/input-components.md)
+   for form fields) — the canonical shape of the new API, which is what cloud should be migrated *to*.
+4. **The diff of the types and the resolution helpers** — for a prop change, the prop
+   interfaces (`src/shared/*.ts`, `**/types.ts`) and whatever normalizes them. This is where you
+   learn whether the old prop was *deprecated* (still works) or *deleted* (breaks), and that
+   distinction drives everything in Step 4.
+
+Write down, explicitly, three lists:
+
+- **Deleted** — removed exports and removed props. These break loudly at the type level.
+- **Deprecated** — still accepted, normalized internally. These do *not* break; they are the
+  migration work.
+- **Behavioural** — same types, different runtime result (precedence changes, a component no
+  longer registering with a form, a state that now renders where it was previously ignored).
+  These break silently and are the reason this skill exists.
+
+## Step 3 — Branch and install in cloud
+
+Cloud lives in a separate checkout. Ask which one to use if there is more than one and the user
+has not said — branch off `origin/master`, never off whatever feature branch a checkout happens
+to be sitting on.
+
+```bash
+git -C <cloud-dir> fetch origin master
+git -C <cloud-dir> checkout -b <branch> origin/master
+```
+
+Install the snapshot with the repo's own script — it updates all four consumer packages
+(`console-ui`, `sheets-ui`, `cloud-router-auth-ui`, `mcp-app-ui`) and refreshes `yarn.lock`:
+
+```bash
+cd <cloud-dir> && yarn update-uikit <version>
+```
+
+Then verify what actually landed, rather than trusting the install log:
+
+```bash
+node -e "console.log(require('./node_modules/@cube-dev/ui-kit/package.json').version)"
+```
+
+A failure in the optional `sse4_crc32` / `node-gyp` build is pre-existing noise on ARM Macs and
+does not mean the install failed — check the version, not the log.
+
+## Step 4 — Hunt the breakages
+
+Types find the deleted things. You have to go find the rest yourself.
+
+### 4a. Typecheck, and establish a baseline first
+
+Cloud does not typecheck clean from a fresh checkout: workspace packages
+(`@cube-dev/platform-client`, `@cubejs-enterprise/cross-runtime`, `@cubejs-enterprise/console-ui`)
+are unbuilt, producing `TS2307` plus a long cascade of `TS7006`/`TS7031` implicit-any errors.
+**Never** report those as ui-kit breakage.
+
+```bash
+cd <cloud-dir>/packages/console-ui     && yarn typecheck > /tmp/tc-console.txt 2>&1
+cd <cloud-dir>/packages/sheets-ui      && yarn tsc      > /tmp/tc-sheets.txt  2>&1
+cd <cloud-dir>/packages/cloud-router-auth-ui && yarn tsc > /tmp/tc-auth.txt   2>&1
+```
+
+Capture the **whole** output to a file and read the file. Do not pipe a typecheck through
+`tail` — the interesting errors are usually not at the end, and a tail plus a `0` exit code from
+the pipeline reads as "clean" when it is not. Check the exit code of `tsc` itself.
+
+Filter the noise, then attribute what is left:
+
+```bash
+grep -vE "TS2307|TS7006|TS7031|Cannot find module|implicitly has an" /tmp/tc-console.txt
+```
+
+For each surviving error, decide whether it is yours: does the file import `@cube-dev/ui-kit`,
+and does the error mention a ui-kit type? Errors in files that never import the ui kit are
+pre-existing. Re-run the same typecheck after migrating and **diff the error lists** — that diff,
+not the raw count, is the evidence that you fixed something and broke nothing.
+
+### 4b. Find the silent breakages
+
+This is the core of the skill. Types will not help here, so search for the *patterns* the change
+invalidated. For a validation-props change, that was:
+
+| Pattern | Why it breaks silently |
+| --- | --- |
+| Cloud components reading a **removed-from-the-pipeline prop** off the result of `useFieldProps` | `useFieldProps` no longer returns it, so the destructured value is now permanently `undefined` and the styling it drove never renders. Nothing type-errors, because the component declares the prop itself. |
+| Props passed to a ui-kit component through an **object-literal spread** (`{...{ a, b }}`, `{...(cond ? {…} : {})}`) | JSX excess-property checking does not reach through the spread, so a prop that no longer exists is silently dropped instead of erroring. |
+| Local prop types **mirroring** a ui-kit prop union (`validationState?: 'valid' \| 'invalid'`) | Still valid TypeScript, now wired to nothing. |
+| A component that **stopped registering with the form** | Still renders, silently no longer bound. Grep its usages for `name=`, `rules=`, and `form=`. |
+| A prop that was **accepted and ignored**, and now takes effect | New visual state appears where nothing appeared before. Not a bug, but it belongs in the report. |
+| A **precedence flip** (explicit prop now wins over derived state) | Grep for elements carrying *both* the explicit prop and the derived source (e.g. both `name=` and `isInvalid=`) — those are the only places a flip can change behaviour. |
+
+Grep by prop name across all four packages, and read every hit rather than blind-replacing —
+separate genuine ui-kit props from cloud's own identically-named fields (cloud has its own
+`validationStates` error shape that must be left alone).
+
+```bash
+grep -rn "<oldProp>" packages/*/src --include="*.ts" --include="*.tsx"
+grep -rn "<removedExport>" packages/*/src
+```
+
+## Step 5 — Migrate
+
+Migrate to the new API rather than leaning on the deprecation shim — the deprecated path logs
+dev warnings and is scheduled to disappear. Follow the rules doc from Step 2 so cloud lands on the
+same shape the ui kit documents.
+
+Preserve the original semantics exactly. A conditional prop maps to the equivalent boolean, and
+the tri-state cases are where mistakes hide:
+
+- `validationState={err ? 'invalid' : undefined}` → `isInvalid={!!err}`
+- `validationState={ok ? 'valid' : 'invalid'}` → `isInvalid={!ok} isValid={ok}` (both states were
+  always set here — do not collapse it to a single prop)
+- a `Record<string, 'invalid'>` lookup → a `Record<string, boolean>`, renamed to match
+
+Keep the diff scoped to the API change. Cleanups the new API merely *permits* — such as dropping a
+`useFormProps` call that `useFieldProps` now applies internally — are a separate change; leave
+them out unless asked.
+
+**Do not add visual states the ui kit now renders but the cloud component never had.** It is
+tempting: the ui kit gained a valid state, so giving a cloud card its `#success` border to match
+feels like finishing the job. It is a behaviour change smuggled into a mechanical rename, it is
+easy to miss in a 30-file diff, and it will be applied inconsistently — the fields that map only
+`isInvalid` (because that is all their old expression had) end up disagreeing with the ones you
+"improved" inside the same commit. Map exactly what the old expression mapped. If the new state is
+worth adding, that is its own PR with its own design decision.
+
+## Step 6 — Verify
+
+In a fresh checkout `console-ui`'s tests do not merely fail, they fail to *load*: every test file
+errors on `Failed to resolve import "@cubejs-enterprise/cross-runtime"` because that workspace
+package is unbuilt. Build it first, or you will read a total wipeout as ui-kit fallout:
+
+```bash
+cd <cloud-dir>/packages/cross-runtime && yarn build
+```
+
+```bash
+cd <cloud-dir>/packages/console-ui && yarn typecheck   # then diff against the Step 4a baseline
+cd <cloud-dir>/packages/console-ui && yarn lint
+cd <cloud-dir>/packages/console-ui && yarn test
+cd <cloud-dir>/packages/sheets-ui  && yarn test
+cd <cloud-dir> && npx prettier --check <changed files>
+```
+
+Quote file lists carefully — a mangled shell argument list makes prettier report every file as
+failing, which is a false alarm, not a formatting problem.
+
+### Proving a silent breakage is actually fixed
+
+The existing suites pass either way — they never asserted on the state that broke. To get real
+evidence, assert on the **computed style**, which resolves tasty's generated CSS even in jsdom:
+
+```ts
+const border = (el: HTMLElement) => getComputedStyle(el).border;
+// invalid → "var(--border-width) solid var(--danger-color)"
+// neutral → "var(--border-width) solid var(--border-color, currentColor)"
+expect(border(screen.getByTestId('DirectoryTreeInput'))).toContain('--danger-color');
+```
+
+Write a throwaway probe spec first that dumps `outerHTML` and the computed style for both states,
+and build the assertion from what you actually see. Do not guess at an assertion and ship it when
+it passes — a vacuous test is worse than none here. Note that `console.log` is swallowed by this
+vitest reporter; write probe output to a file and `cat` it.
+
+**Drive the state through the form, not through the prop.** A test that hands `isInvalid` in
+directly asserts almost nothing — the component renders the caller's value either way, so it passes
+against the broken version too and only *looks* like a regression guard. Push the state in from the
+form instead:
+
+```ts
+type Values = { folder?: string | null };
+let form: CubeFormInstance<Values> | undefined;   // never `any` — AGENTS.md forbids it in tests,
+                                                 // and `any` hides a setFields signature change
+function Harness() {
+  [form] = useForm<Values>();                    // returns a tuple
+  return <Form form={form}>{/* field with name= */}</Form>;
+}
+// …render, assert neutral, then:
+act(() => form!.setFields([{ name: 'folder', errors: ['Required'] }]));
+```
+
+`form.setFields` is the reliable lever. Clicking `SubmitButton` (that is the export name, not
+`Submit`) did not run the rules in the console-ui harness — and a plain untouched `TextInput`
+behaved identically, which is how you know it is the harness and not your migration.
+
+**Then prove the test can fail.** Temporarily revert the component to its pre-migration form and
+confirm the spec goes red, and say so in the commit message. A regression test you have only ever
+seen pass is a guess.
+
+Unit tests will not catch most Step 4b breakages; they are render-state bugs. If a migrated surface
+matters, run the app and look at it (`yarn dev` in `packages/console-ui`), or say plainly in the
+report that it was not visually verified.
+
+## Step 7 — Release, then de-canary
+
+The consumer PR **must not merge with a `0.0.0-canary-*` pin**: canary tags are mutable and
+ephemeral, so a later `yarn install` or Docker rebuild can resolve to something else or fail once
+the tag is collected. That makes the canary pin a permanent blocker on the consumer PR, resolvable
+only in this order:
+
+1. **The user releases the ui kit.** It takes two merges into `main` — the feature PR, then the
+   `Version Packages` PR that the changesets bot opens from it, which is the merge that actually
+   publishes. Both are gated on branch protection (approval + code-owner review), so hand this step
+   to the user rather than trying to drive it. Do not self-approve and do not `--admin` past
+   protection.
+2. Wait for the version to be real, then confirm it on npm rather than trusting a green workflow:
+   `npm view @cube-dev/ui-kit dist-tags --json` should show it as `latest`.
+3. `cd <cloud-dir> && yarn update-uikit <released-version>`.
+4. Re-run the consumer's checks; the released build is not byte-identical to the canary.
+5. Then the consumer PR can merge.
+
+Expect a reviewer to flag the canary pin, and do not treat it as something you failed to fix — say
+explicitly that it is blocked on the release rather than leaving it looking unaddressed.
+
+## Step 8 — Report
+
+Commit on the cloud branch and hand the user a review, not a summary of your activity:
+
+- The canary version installed, and the PR it came from.
+- **Breakages found**, split into what typechecking caught and what it did not — the silent list
+  is the valuable half, and it is also feedback on the ui-kit PR itself (a prop that silently
+  stops working may deserve a migration note in the changeset).
+- Every file migrated, grouped by kind of change.
+- What you verified, and what you did not.
+- Anything left pre-existing-broken, stated explicitly so it is not mistaken for fallout.
+
+If the hunt turns up a genuine problem with the ui-kit PR — a breaking change presented as
+backwards-compatible, a missing deprecation path — say so. That finding is worth more than the
+migration.
