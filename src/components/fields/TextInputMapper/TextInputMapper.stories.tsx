@@ -1,8 +1,10 @@
 import { StoryFn } from '@storybook/react-vite';
 import { userEvent, within } from 'storybook/test';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Form } from '../../form/Form';
+import { Space } from '../../layout/Space';
 import { TextInput } from '../TextInput/index';
 
 import { CubeTextInputMapperProps, TextInputMapper } from './TextInputMapper';
@@ -71,12 +73,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description:
-        'Whether the mapper should display valid or invalid visual styling',
-    },
+    ...VALIDATION_ARGS,
 
     /* Events */
     onChange: {
@@ -108,13 +105,6 @@ export default {
       description: 'How to display required or optional indicators',
       table: {
         defaultValue: { summary: 'icon' },
-      },
-    },
-    isInvalid: {
-      control: { type: 'boolean' },
-      description: 'Whether the current mappings are invalid',
-      table: {
-        defaultValue: { summary: false },
       },
     },
     description: {
@@ -190,6 +180,23 @@ Default.args = {};
 
 export const WithValue = Template.bind({});
 WithValue.args = { value: { name: 'value' } };
+
+export const Validation: StoryFn<CubeTextInputMapperProps> = (props) => (
+  <Space gap="2x" flow="column" placeItems="stretch">
+    <TextInputMapper
+      {...props}
+      label="Valid"
+      isValid
+      value={{ name: 'value' }}
+    />
+    <TextInputMapper
+      {...props}
+      label="Invalid"
+      isInvalid
+      value={{ name: '' }}
+    />
+  </Space>
+);
 
 export const WithValueAndNewMapping = Template.bind({});
 WithValueAndNewMapping.args = {

@@ -1,7 +1,9 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconKey } from '@tabler/icons-react';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Space } from '../../layout/Space';
 
 import { CubePasswordInputProps, PasswordInput } from './PasswordInput';
 
@@ -80,12 +82,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description:
-        'Whether the input should display valid or invalid visual styling',
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -163,12 +160,12 @@ WithIcon.args = {
   placeholder: 'Enter security key',
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = {
-  label: 'New Password',
-  validationState: 'invalid',
-  isRequired: true,
-};
+export const Validation: StoryFn<CubePasswordInputProps> = (props) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <PasswordInput {...props} label="Valid" isValid value="strong-password" />
+    <PasswordInput {...props} label="Invalid" isInvalid isRequired />
+  </Space>
+);
 
 export const Disabled = Template.bind({});
 Disabled.args = {

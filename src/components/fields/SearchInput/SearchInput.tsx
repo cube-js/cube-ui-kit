@@ -11,13 +11,26 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { ItemAction } from '../../actions';
+import { getValidationTheme, useValidationProps } from '../../form';
 import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
 export { useSearchFieldState, useSearchField };
 export type { SearchFieldProps };
 
 export interface CubeSearchInputProps
-  extends CubeTextInputBaseProps,
+  extends Omit<
+      CubeTextInputBaseProps,
+      // SearchInput is not form-connected: it holds no persistent value, so
+      // form-binding and form-validation props are excluded from the public API.
+      | 'name'
+      | 'form'
+      | 'rules'
+      | 'shouldUpdate'
+      | 'validationDelay'
+      | 'validateTrigger'
+      | 'insideForm'
+      | 'idPrefix'
+    >,
     SearchFieldProps {
   /** Whether the search input is clearable using ESC keyboard button or clear button inside the input */
   isClearable?: boolean;
@@ -30,11 +43,14 @@ export const SearchInput = forwardRef(function SearchInput(
   ref,
 ) {
   props = castNullableStringValue(props);
+  // SearchInput is a standalone control, not a form field, so it does not use `useFieldProps`.
   props = useProviderProps(props);
+  props = useValidationProps(props);
 
   let {
     isClearable,
-    validationState,
+    isInvalid,
+    isValid,
     onClear,
     labelProps: userLabelProps,
     ...restProps
@@ -63,7 +79,8 @@ export const SearchInput = forwardRef(function SearchInput(
       type="search"
       icon={<SearchIcon />}
       suffixPosition="after"
-      validationState={validationState}
+      isInvalid={isInvalid}
+      isValid={isValid}
       {...restProps}
       suffix={
         restProps.suffix || showClearButton ? (
@@ -74,7 +91,7 @@ export const SearchInput = forwardRef(function SearchInput(
                 icon={<CloseIcon />}
                 size={restProps.size}
                 type="clear"
-                theme={validationState === 'invalid' ? 'danger' : undefined}
+                theme={getValidationTheme(undefined, { isInvalid, isValid })}
                 {...ariaToCubeButtonProps(clearButtonProps)}
                 onPress={(e) => {
                   // Call the original clear functionality

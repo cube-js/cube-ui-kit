@@ -14,9 +14,11 @@ import { useProviderProps } from '../../provider';
 import {
   LabelPosition,
   NecessityIndicator,
-  ValidationState,
+  ValidationProps,
 } from '../../shared/index';
 import { extractStyles } from '../../utils/styles';
+
+import { getValidationMods } from './validation/index';
 
 const REQUIRED_ICON = (
   <svg
@@ -75,14 +77,16 @@ const LabelElement = tasty({
   styles: LABEL_STYLES,
 });
 
-export interface CubeLabelProps extends BaseProps, ContainerStyleProps {
+export interface CubeLabelProps
+  extends BaseProps,
+    ContainerStyleProps,
+    ValidationProps {
   labelPosition?: LabelPosition;
   necessityIndicator?: NecessityIndicator;
   isRequired?: boolean;
   includeNecessityIndicatorInAccessibilityName?: boolean;
   htmlFor?: string;
   for?: string;
-  validationState?: ValidationState;
   size?: 'medium' | 'small';
 }
 
@@ -101,7 +105,8 @@ function Label(props: CubeLabelProps, ref) {
     includeNecessityIndicatorInAccessibilityName = false,
     htmlFor,
     isDisabled,
-    validationState,
+    isInvalid,
+    isValid,
     size = 'medium',
     for: labelFor,
     ...otherProps
@@ -135,8 +140,7 @@ function Label(props: CubeLabelProps, ref) {
       mods={{
         side: labelPosition === 'side',
         disabled: isDisabled,
-        invalid: validationState === 'invalid',
-        valid: validationState === 'valid',
+        ...getValidationMods({ isInvalid, isValid }),
       }}
     >
       {typeof children !== 'string' ? (

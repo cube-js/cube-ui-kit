@@ -1,7 +1,9 @@
 import { StoryFn } from '@storybook/react-vite';
 import { userEvent, within } from 'storybook/test';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Space } from '../../layout/Space';
 
 import { CubeDatePickerProps, DatePicker } from './DatePicker';
 import { parseAbsoluteDate } from './parseDate';
@@ -138,15 +140,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description:
-        'Whether the date picker should display valid or invalid visual styling',
-      table: {
-        type: { summary: 'ValidationState' },
-      },
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -325,8 +319,12 @@ WithDefaultValueOpen.play = async ({ canvasElement }) => {
   await userEvent.click(button);
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = { validationState: 'invalid' };
+export const Validation: StoryFn<CubeDatePickerProps> = (props) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <DatePicker {...props} isValid aria-label="Valid date" />
+    <DatePicker {...props} isInvalid aria-label="Invalid date" />
+  </Space>
+);
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true };

@@ -76,10 +76,25 @@ const meta: Meta<typeof Form> = {
         defaultValue: { summary: false },
       },
     },
+    isInvalid: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isValid: {
+      control: { type: 'boolean' },
+      description: 'Whether the input should display its valid visual styling',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
     validationState: {
       control: { type: 'radio' },
       options: [undefined, 'valid', 'invalid'],
-      description: 'Validation state for all fields',
+      description: 'Deprecated. Use isInvalid / isValid instead',
     },
     validateTrigger: {
       control: { type: 'radio' },

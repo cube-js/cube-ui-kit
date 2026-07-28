@@ -18,6 +18,8 @@ size-limit-report/stats.json
 *.spec.md
 .docs-generated
 docs/*
+!docs/rules
 !docs/tasty
+!docs/glaze
 scratch
 

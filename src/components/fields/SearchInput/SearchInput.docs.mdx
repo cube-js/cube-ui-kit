@@ -6,7 +6,7 @@ import * as SearchInputStories from './SearchInput.stories';
 
 # SearchInput
 
-A search input provides a specialized text field for search functionality, featuring a search icon and optional clear button. It's optimized for search queries and includes built-in state management for search field behavior.
+A search input provides a specialized text field for search functionality, featuring a search icon and optional clear button. It's optimized for search queries and includes built-in state management for search field behavior. SearchInput does not represent a persistent value and cannot be connected to a form.
 
 ## When to Use
 
@@ -48,7 +48,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 
 ### Field Properties
 
-Supports all [Field properties](/docs/getting-started-field-properties--docs)
+Supports the layout-related [Field properties](/docs/getting-started-field-properties--docs) (`label`, `description`, `message`, `labelPosition`, etc.). Note that SearchInput is not form-connected: it does not accept `name`/`rules` and does not participate in form state or validation.
 
 ### Styling Properties
 
@@ -155,7 +155,7 @@ const [searchValue, setSearchValue] = useState('');
 ```jsx
 <SearchInput
   label="Search Query"
-  validationState="invalid"
+  isInvalid
   errorMessage="Search query too short"
   placeholder="Enter at least 3 characters"
 />
@@ -225,7 +225,8 @@ const [searchValue, setSearchValue] = useState('');
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/getting-started-field-properties--docs) when used within a Form.
+SearchInput is not a form field. Use [TextInput](/docs/forms-textinput--docs) when the typed text has to be
+captured as a form value.
 
 ## Suggested Improvements
 

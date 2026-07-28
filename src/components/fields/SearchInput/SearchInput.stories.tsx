@@ -1,6 +1,8 @@
 import { StoryFn } from '@storybook/react-vite';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Space } from '../../layout/Space';
 
 import { CubeSearchInputProps, SearchInput } from './SearchInput';
 
@@ -73,12 +75,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description:
-        'Whether the input should display valid or invalid visual styling',
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -187,12 +184,17 @@ Small.args = {
   'aria-label': 'Quick search',
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = {
-  label: 'Search Query',
-  validationState: 'invalid',
-  placeholder: 'Enter at least 3 characters',
-};
+export const Validation: StoryFn<CubeSearchInputProps> = (props) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <SearchInput {...props} label="Valid" isValid defaultValue="cube" />
+    <SearchInput
+      {...props}
+      label="Invalid"
+      isInvalid
+      placeholder="Enter at least 3 characters"
+    />
+  </Space>
+);
 
 export const Disabled = Template.bind({});
 Disabled.args = {

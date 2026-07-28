@@ -13,6 +13,7 @@ import {
   SettingsIcon,
   UserIcon,
 } from '../../../icons';
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
@@ -161,14 +162,7 @@ const meta: any = {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description: 'Validation state of the FilterListBox',
-      table: {
-        defaultValue: { summary: undefined },
-      },
-    },
+    ...VALIDATION_ARGS,
 
     /* Field */
     label: {
@@ -937,11 +931,11 @@ DisabledState.args = {
   searchPlaceholder: 'Cannot search...',
 };
 
-export const ValidationStates: StoryFn<CubeFilterListBoxProps<any>> = () => (
+export const Validation: StoryFn<CubeFilterListBoxProps<any>> = () => (
   <Space gap="3x" flow="column">
     <FilterListBox
       label="Valid state"
-      validationState="valid"
+      isValid
       message="Good choice!"
       defaultSelectedKey="option1"
       searchPlaceholder="Search options..."
@@ -952,7 +946,7 @@ export const ValidationStates: StoryFn<CubeFilterListBoxProps<any>> = () => (
 
     <FilterListBox
       label="Invalid state"
-      validationState="invalid"
+      isInvalid
       message="Please select a different option"
       defaultSelectedKey="option1"
       searchPlaceholder="Search options..."

@@ -1,7 +1,9 @@
 import { StoryFn } from '@storybook/react-vite';
 import { userEvent, waitFor, within } from 'storybook/test';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Space } from '../../layout/Space';
 
 import { CubeFileInputProps, FileInput } from './FileInput';
 
@@ -69,12 +71,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description:
-        'Whether the file input should display valid or invalid visual styling',
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -136,6 +133,13 @@ const Template: StoryFn<CubeFileInputProps> = (props) => (
 
 export const Default = Template.bind({});
 Default.args = {};
+
+export const Validation: StoryFn<CubeFileInputProps> = (props) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <FileInput {...props} label="Valid" isValid />
+    <FileInput {...props} label="Invalid" isInvalid />
+  </Space>
+);
 
 export const LongFilePlaceholderOverflow = Template.bind({});
 LongFilePlaceholderOverflow.args = {

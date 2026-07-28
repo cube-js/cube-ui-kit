@@ -1,5 +1,6 @@
 import { StoryFn } from '@storybook/react-vite';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Flex } from '../../layout/Flex';
 
@@ -72,12 +73,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description:
-        'Whether the checkbox should display valid or invalid visual styling',
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -136,12 +132,16 @@ Indeterminate.args = {
   isIndeterminate: true,
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = {
-  children: 'Required checkbox',
-  validationState: 'invalid',
-  isRequired: true,
-};
+export const Validation: StoryFn<CubeCheckboxProps> = (props) => (
+  <Flex flow="column" gap="2x">
+    <Checkbox {...props} isValid defaultSelected>
+      Valid checkbox
+    </Checkbox>
+    <Checkbox {...props} isInvalid isRequired>
+      Invalid checkbox
+    </Checkbox>
+  </Flex>
+);
 
 export const Disabled = Template.bind({});
 Disabled.args = {
@@ -183,7 +183,7 @@ AllStatesDisabled.args = {
 export const AllStatesInvalid = MultiStateTemplate.bind({});
 AllStatesInvalid.args = {
   children: 'Invalid checkbox',
-  validationState: 'invalid',
+  isInvalid: true,
   isRequired: true,
 };
 

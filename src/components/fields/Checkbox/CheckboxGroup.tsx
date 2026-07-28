@@ -10,7 +10,6 @@ import { forwardRef } from 'react';
 import { AriaCheckboxGroupProps, useCheckboxGroup } from 'react-aria';
 import { useCheckboxGroupState } from 'react-stately';
 
-import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import {
@@ -18,12 +17,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { extractStyles } from '../../../utils/styles';
-import {
-  FormContext,
-  useFieldProps,
-  useFormProps,
-  wrapWithField,
-} from '../../form';
+import { FormContext, useFieldProps, wrapWithField } from '../../form';
 
 import { CheckboxGroupContext } from './context';
 
@@ -55,8 +49,6 @@ export interface CubeCheckboxGroupProps
 
 function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
   props = castNullableArrayValue(props);
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
@@ -73,7 +65,8 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
     necessityLabel,
     label,
     extra,
-    validationState,
+    isInvalid,
+    isValid,
     children,
     orientation = 'vertical',
     message,
@@ -104,7 +97,8 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
       <FormContext.Provider
         value={{
           isDisabled,
-          validationState,
+          isInvalid,
+          isValid,
         }}
       >
         <CheckboxGroupContext.Provider value={state}>
@@ -116,7 +110,6 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
 
   return wrapWithField(radioGroup, domRef, {
     ...props,
-    children: null,
     fieldProps: groupProps,
     labelProps: mergeProps(baseLabelProps, labelProps),
   });

@@ -11,6 +11,7 @@ import {
   SettingsIcon,
   UserIcon,
 } from '../../../icons';
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
 import { Paragraph } from '../../content/Paragraph';
@@ -232,11 +233,7 @@ const meta: Meta<typeof FilterPicker> = {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      control: 'radio',
-      options: [undefined, 'valid', 'invalid'],
-      description: 'Validation state of the picker',
-    },
+    ...VALIDATION_ARGS,
 
     /* Field */
     label: {
@@ -546,7 +543,7 @@ export const ClearableThemes: Story = {
     docs: {
       description: {
         story:
-          'Verifies that the clear button inherits the trigger\u2019s `type` and `theme` via `ItemActionProvider`, so its text color always matches the trigger label across every trigger variant — including `type="primary"`, `theme="special"`, and `validationState="invalid"`.',
+          'Verifies that the clear button inherits the trigger\u2019s `type` and `theme` via `ItemActionProvider`, so its text color always matches the trigger label across every trigger variant — including `type="primary"`, `theme="special"`, and `isInvalid`.',
       },
     },
   },
@@ -624,7 +621,7 @@ export const ClearableThemes: Story = {
           searchPlaceholder="Search fruits..."
           width="max 30x"
           defaultSelectedKey="apple"
-          validationState="invalid"
+          isInvalid
           message="This selection is invalid"
         >
           {(fruit) => (
@@ -1424,7 +1421,7 @@ export const DisallowEmptySelection: Story = {
   },
 };
 
-export const ValidationStates: Story = {
+export const Validation: Story = {
   args: {
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
@@ -1443,7 +1440,7 @@ export const ValidationStates: Story = {
         {...args}
         label="Valid State"
         placeholder="All good!"
-        validationState="valid"
+        isValid
         message="Selection is valid"
       >
         {fruits.slice(0, 4).map((fruit) => (
@@ -1457,7 +1454,7 @@ export const ValidationStates: Story = {
         {...args}
         label="Invalid State"
         placeholder="Please select..."
-        validationState="invalid"
+        isInvalid
         message="Selection is required"
       >
         {fruits.slice(0, 4).map((fruit) => (

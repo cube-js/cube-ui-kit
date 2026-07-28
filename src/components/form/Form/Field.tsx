@@ -13,6 +13,7 @@ import { FieldBaseProps, LabelPosition } from '../../../shared/index';
 import { mergeProps } from '../../../utils/react/index';
 import { warn } from '../../../utils/warnings';
 import { FieldWrapper } from '../FieldWrapper/index';
+import { useValidationProps } from '../validation/index';
 
 import { useFormProps } from './Form';
 import { FieldTypes } from './types';
@@ -117,7 +118,9 @@ interface CubeReplaceFieldProps<T extends FieldTypes>
 }
 
 export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
-  const allProps: CubeFullFieldProps<T> = useFormProps(props);
+  const allProps: CubeFullFieldProps<T> = useValidationProps(
+    useFormProps(props),
+  );
 
   let {
     children,
@@ -150,7 +153,8 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
   });
 
   const {
-    validationState,
+    isInvalid,
+    isValid,
     message,
     description,
     errorMessage,
@@ -175,7 +179,8 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
         <FieldWrapper
           isHidden={isHidden}
           isDisabled={isDisabled}
-          validationState={__props.validationState}
+          isInvalid={isInvalid}
+          isValid={isValid}
           necessityIndicator={necessityIndicator}
           necessityLabel={necessityLabel}
           isRequired={isRequired}
@@ -234,8 +239,12 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     newProps.necessityLabel = necessityLabel;
   }
 
-  if (validationState) {
-    newProps.validationState = validationState;
+  if (isInvalid) {
+    newProps.isInvalid = isInvalid;
+  }
+
+  if (isValid) {
+    newProps.isValid = isValid;
   }
 
   if (isRequired) {

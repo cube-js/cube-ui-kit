@@ -43,7 +43,9 @@ These properties are inherited by all input components within the form:
 - **`necessityIndicator`** `'icon' | 'label'` (default: `icon`) — Type of necessity indicator
 - **`necessityLabel`** `ReactNode` — Custom label to replace the default necessity indicator text
 - **`isReadOnly`** `boolean` (default: `false`) — Whether fields are read-only by default
-- **`validationState`** `'valid' | 'invalid'` — Validation state for all fields
+- **`isInvalid`** `boolean` — Invalid state for all fields
+- **`isValid`** `boolean` — Valid state for all fields
+- **`validationState`** `'valid' | 'invalid'` — _(deprecated)_ Use `isInvalid` / `isValid` instead
 - **`validateTrigger`** `'onBlur' | 'onChange' | 'onSubmit'` (default: `onBlur`) — When to trigger validation
 - **`showValid`** `boolean` (default: `false`) — Whether to show valid state indicators
 

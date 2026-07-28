@@ -67,18 +67,50 @@ export const PLACEHOLDER_ARG = {
   },
 };
 
+/** @deprecated Use `IS_INVALID_ARG` / `IS_VALID_ARG` instead. */
 export const VALIDATION_STATE_ARG = {
   validationState: {
     // defaultValue: undefined,
     description:
-      'Whether the input should display its "valid" or "invalid" visual styling.',
+      'Deprecated. Use `isInvalid` / `isValid` instead. Whether the input should display its "valid" or "invalid" visual styling.',
     options: [undefined, 'valid', 'invalid'],
     control: 'radio',
     table: {
       type: { summary: 'string' },
-      defaultValue: { summary: 'top' },
     },
   },
+};
+
+export const IS_INVALID_ARG = {
+  isInvalid: {
+    description:
+      'Whether the input should display its "invalid" visual styling. Takes precedence over `isValid`.',
+    control: {
+      type: 'boolean',
+    },
+    table: {
+      type: { summary: 'boolean' },
+      defaultValue: { summary: false },
+    },
+  },
+};
+
+export const IS_VALID_ARG = {
+  isValid: {
+    description: 'Whether the input should display its "valid" visual styling.',
+    control: {
+      type: 'boolean',
+    },
+    table: {
+      type: { summary: 'boolean' },
+      defaultValue: { summary: false },
+    },
+  },
+};
+
+export const VALIDATION_ARGS = {
+  ...IS_INVALID_ARG,
+  ...IS_VALID_ARG,
 };
 
 export const IS_LOADING_ARG = {

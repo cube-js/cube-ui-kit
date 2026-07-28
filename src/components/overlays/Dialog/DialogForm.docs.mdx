@@ -49,7 +49,9 @@ DialogForm combines [Dialog](/docs/overlays-dialog--docs) and [Form](/docs/forms
 - **`necessityIndicator`** `NecessityIndicator` — The type of necessity indicator
 - **`necessityLabel`** `ReactNode` — Custom necessity label
 - **`isReadOnly`** `boolean` — Whether the form is read only
-- **`validationState`** `ValidationState` — The validation state of the form
+- **`isInvalid`** `boolean` — Invalid state for all fields in the form
+- **`isValid`** `boolean` — Valid state for all fields in the form
+- **`validationState`** `'valid' | 'invalid'` — _(deprecated)_ Use `isInvalid` / `isValid` instead
 - **`validateTrigger`** `ValidateTrigger` — On which event to perform validation
 - **`showValid`** `boolean` — Whether to show valid state
 

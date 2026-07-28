@@ -193,7 +193,7 @@ This component supports all [Field properties](/field-properties.md) when used w
 
 ### Field Properties
 
-For input components: Add `Supports all [Field properties](/docs/getting-started-field-properties--docs)` in the Properties section, right after Base Properties. Do NOT duplicate field-level props (`label`, `name`, `isRequired`, `isDisabled`, `isReadOnly`, `isLoading`, `validationState`, `autoFocus`, `tooltip`, `description`, `rules`, etc.) — they are documented on the Field Properties page.
+For input components: Add `Supports all [Field properties](/docs/getting-started-field-properties--docs)` in the Properties section, right after Base Properties. Do NOT duplicate field-level props (`label`, `name`, `isRequired`, `isDisabled`, `isReadOnly`, `isLoading`, `isInvalid`, `isValid`, `autoFocus`, `tooltip`, `description`, `rules`, etc.) — they are documented on the Field Properties page.
 
 ### Form Integration
 

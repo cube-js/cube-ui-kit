@@ -52,7 +52,7 @@ WithTooltip.args = {
 export const WithErrorMessage = Template.bind({});
 WithErrorMessage.args = {
   errorMessage: 'This field is required',
-  validationState: 'invalid',
+  isInvalid: true,
 };
 
 export const SideLabel = Template.bind({});
@@ -154,7 +154,7 @@ SideLabelWithDescriptionAndErrorMessage.args = {
 export const BackwardCompatibilityMessage = Template.bind({});
 BackwardCompatibilityMessage.args = {
   message: 'This is the old message prop (deprecated but still works)',
-  validationState: 'invalid',
+  isInvalid: true,
 };
 
 export const ErrorMessageOverridesMessage = Template.bind({});

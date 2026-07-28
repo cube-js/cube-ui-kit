@@ -16,7 +16,7 @@ import { FieldBaseProps } from '../../../shared';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { Button } from '../../actions';
 import { Block } from '../../Block';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { useFieldProps, wrapWithField } from '../../form';
 import { Flow } from '../../layout/Flow';
 import { Grid } from '../../layout/Grid';
 import { Space } from '../../layout/Space';
@@ -81,7 +81,6 @@ function TextInputMapper(
 
   ref = useCombinedRefs(ref);
 
-  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
@@ -95,6 +94,8 @@ function TextInputMapper(
   let {
     qa,
     isDisabled,
+    isInvalid,
+    isValid,
     actionLabel,
     value,
     onChange,
@@ -237,6 +238,8 @@ function TextInputMapper(
             autoFocus={index === mappings.length - 1}
             id={id}
             isDisabled={isDisabled}
+            isInvalid={isInvalid}
+            isValid={isValid}
             fieldType="key"
             value={key}
             placeholder={t('textInputMapper.key', 'Key')}
@@ -249,6 +252,8 @@ function TextInputMapper(
             id={id}
             fieldType="value"
             isDisabled={!key || isDisabled}
+            isInvalid={isInvalid}
+            isValid={isValid}
             value={value}
             placeholder={t('textInputMapper.value', 'Value')}
             size={size}
@@ -270,7 +275,7 @@ function TextInputMapper(
         </Grid>
       );
     });
-  }, [JSON.stringify(mappings), t]);
+  }, [JSON.stringify(mappings), t, isDisabled, isInvalid, isValid]);
 
   const element = (
     <Flow
@@ -312,6 +317,8 @@ export interface CubeTextInputMapperInputProps {
   onChange?: (id: number, newValue: string) => void;
   onSubmit?: (id: number) => void;
   isDisabled?: boolean;
+  isInvalid?: boolean;
+  isValid?: boolean;
   autoFocus?: boolean;
   allowsCustomValue?: boolean;
 }

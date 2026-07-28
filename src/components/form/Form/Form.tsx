@@ -23,6 +23,7 @@ import { FormBaseProps } from '../../../shared/index';
 import { timeout } from '../../../utils/promise';
 import { useCombinedRefs } from '../../../utils/react/index';
 import { extractStyles } from '../../../utils/styles';
+import { useValidationProps } from '../validation/index';
 
 import { FieldTypes } from './types';
 import { CubeFormData, CubeFormInstance, useForm } from './use-form';
@@ -93,7 +94,7 @@ function Form<T extends FieldTypes>(
   props: CubeFormProps<T>,
   ref: Ref<HTMLFormElement>,
 ) {
-  props = useProviderProps(props);
+  props = useValidationProps(useProviderProps(props));
   let {
     qa,
     name,
@@ -103,7 +104,8 @@ function Form<T extends FieldTypes>(
     necessityIndicator,
     isDisabled,
     isReadOnly,
-    validationState,
+    isInvalid,
+    isValid,
     labelStyles,
     validateTrigger,
     showValid,
@@ -248,7 +250,8 @@ function Form<T extends FieldTypes>(
           insideForm={true}
           isDisabled={isDisabled}
           isReadOnly={isReadOnly}
-          validationState={validationState}
+          isInvalid={isInvalid}
+          isValid={isValid}
         >
           {children}
         </Provider>

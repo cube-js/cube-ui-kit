@@ -86,7 +86,7 @@ export const ClearableThemes: Story = {
     docs: {
       description: {
         story:
-          'Verifies that the clear button inherits the trigger\u2019s `type` and `theme` via `ItemActionProvider`, so its text color always matches the trigger label across every trigger variant \u2014 including `type="primary"`, `theme="special"`, and `validationState="invalid"`.',
+          'Verifies that the clear button inherits the trigger\u2019s `type` and `theme` via `ItemActionProvider`, so its text color always matches the trigger label across every trigger variant \u2014 including `type="primary"`, `theme="special"`, and `isInvalid`.',
       },
     },
   },
@@ -156,7 +156,7 @@ export const ClearableThemes: Story = {
           placeholder="Select a fruit"
           label="outline / default + invalid"
           defaultSelectedKey="apple"
-          validationState="invalid"
+          isInvalid
           message="This selection is invalid"
         >
           {fruits.map((fruit) => (
@@ -377,18 +377,32 @@ export const DifferentSizes: Story = {
   ),
 };
 
-export const WithValidation: Story = {
+export const Validation: Story = {
   args: {
     placeholder: 'Select a fruit',
-    label: 'Favorite Fruit (Required)',
     selectionMode: 'single',
-    isRequired: true,
-    validationState: 'invalid',
-    message: 'Please select a fruit',
     children: fruits.map((fruit) => (
       <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
     )),
   },
+  render: (args) => (
+    <Flex flow="column" gap="3x" placeItems="start">
+      <Picker
+        {...args}
+        label="Valid State"
+        isValid
+        defaultSelectedKey="apple"
+        message="Good choice!"
+      />
+      <Picker
+        {...args}
+        label="Invalid State"
+        isInvalid
+        isRequired
+        message="Please select a fruit"
+      />
+    </Flex>
+  ),
 };
 
 export const WithDescription: Story = {

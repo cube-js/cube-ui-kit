@@ -3,9 +3,10 @@ import { StoryFn } from '@storybook/react-vite';
 import {
   ICON_ARG,
   TIME_VALUE_ARG,
-  VALIDATION_STATE_ARG,
+  VALIDATION_ARGS,
 } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Space } from '../../layout/Space';
 
 import { CubeDateInputProps, DateInput } from './DateInput';
 import { parseAbsoluteDate } from './parseDate';
@@ -21,7 +22,7 @@ export default {
   argTypes: {
     ...TIME_VALUE_ARG,
     ...ICON_ARG,
-    ...VALIDATION_STATE_ARG,
+    ...VALIDATION_ARGS,
   },
 };
 
@@ -64,8 +65,12 @@ WithSecondGranularity.args = {
   granularity: 'second',
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = { validationState: 'invalid' };
+export const Validation: StoryFn<CubeDateInputProps> = (props) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <DateInput {...props} isValid aria-label="Valid date" />
+    <DateInput {...props} isInvalid aria-label="Invalid date" />
+  </Space>
+);
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true };

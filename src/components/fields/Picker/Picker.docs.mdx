@@ -313,7 +313,7 @@ The trigger button supports various visual styles via the `type` prop:
 Control the color scheme with the `theme` prop:
 
 - **`default`** — Standard theme (default)
-- **`danger`** — Red/destructive color (also applied automatically when `validationState="invalid"`)
+- **`danger`** — Red/destructive color (also applied automatically when `isInvalid` is set)
 
 ### Sizes
 
@@ -533,7 +533,7 @@ Disable the picker to prevent user interaction.
 
 ### With Validation
 
-<Story of={PickerStories.WithValidation} />
+<Story of={PickerStories.Validation} />
 
 Display validation states and error messages.
 
@@ -543,7 +543,7 @@ Display validation states and error messages.
   placeholder="Select a fruit"
   selectionMode="single"
   isRequired
-  validationState="invalid"
+  isInvalid
   message="Please select a fruit"
 >
   <Picker.Item key="apple">Apple</Picker.Item>
@@ -628,10 +628,10 @@ The following ARIA attributes are automatically managed by React Aria and do not
    >...</Picker>
    ```
 
-4. **Handle validation properly**: Use `validationState` and `message` props
+4. **Handle validation properly**: Use the `isInvalid` / `isValid` and `errorMessage` props
    ```jsx
    <Picker 
-     validationState="invalid"
+     isInvalid
      message="Please select an option"
    >...</Picker>
    ```
@@ -797,7 +797,7 @@ function MyForm() {
 - **`defaultValue`** — Initial value (use with uncontrolled forms)
 - **`value`** — Controlled value (use with controlled forms)
 - **`isRequired`** — Marks field as required and adds visual indicator
-- **`validationState`** — Manual validation state control
+- **`isInvalid`** / **`isValid`** — Manual validation state control
 - **`message`** — Error or help message
 
 ## Advanced Features

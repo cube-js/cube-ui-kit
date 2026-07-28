@@ -14,7 +14,6 @@ import {
   tasty,
 } from '@tenphi/tasty';
 import {
-  cloneElement,
   forwardRef,
   ReactElement,
   ReactNode,
@@ -25,15 +24,16 @@ import {
 } from 'react';
 import { AriaNumberFieldProps, AriaTextFieldProps, useHover } from 'react-aria';
 
-import { LoadingIcon } from '../../../icons';
-import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { InvalidIcon } from '../../shared/InvalidIcon';
-import { ValidIcon } from '../../shared/ValidIcon';
+import {
+  getValidationMods,
+  hasValidationIndicator,
+  ValidationIndicator,
+  wrapWithField,
+} from '../../form';
 
 const ADD_STYLES = {
   $: '>',
@@ -234,24 +234,17 @@ export interface CubeTextInputBaseProps
   autocomplete?: string;
 }
 
+/**
+ * The presentational base for text-like inputs. It renders the input chrome and the field wrapper, but
+ * never wires form state — that is the job of the component rendering it (`TextInput`, `TextArea`,
+ * `PasswordInput`, `NumberInput`, `SearchInput`, `CommandTextArea`).
+ */
 function _TextInputBase(props: CubeTextInputBaseProps, ref) {
-  props = useProviderProps(props);
-  props = useFormProps(props);
-  props = useFieldProps(props, {
-    defaultValidationTrigger: 'onBlur',
-    valuePropsMapper: ({ value, onChange }) => ({
-      value:
-        typeof value === 'string' || typeof value === 'number'
-          ? String(value)
-          : '',
-      onChange,
-    }),
-  });
-
   let {
     qa,
     mods,
-    validationState,
+    isInvalid,
+    isValid,
     prefix,
     isDisabled,
     multiLine,
@@ -305,9 +298,11 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     },
   }));
 
-  let isInvalid = validationState === 'invalid';
-  let validationIcon = isInvalid ? InvalidIcon : ValidIcon;
-  let validation = cloneElement(validationIcon);
+  const showValidationIndicator = hasValidationIndicator({
+    isInvalid,
+    isValid,
+    isLoading,
+  });
 
   // Fix safari bug: https://github.com/philipwalton/flexbugs/issues/270
   if (!inputProps?.placeholder) {
@@ -335,21 +330,21 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
 
   const modifiers = useMemo(
     () => ({
-      invalid: isInvalid,
-      valid: validationState === 'valid',
+      ...getValidationMods({ isInvalid, isValid }),
       loadable: !!loadingIndicator,
       focused: isFocused,
       hovered: isHovered,
       disabled: isDisabled,
       multiline: multiLine,
       prefix: !!prefix,
-      suffix: (validationState && !isLoading) || isLoading || !!suffix,
+      suffix: showValidationIndicator || !!suffix,
       ...mods,
     }),
     [
       mods,
       isInvalid,
-      validationState,
+      isValid,
+      showValidationIndicator,
       loadingIndicator,
       isFocused,
       isDisabled,
@@ -395,25 +390,21 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         maxLength={maxLength}
         minLength={minLength}
       />
-      {(validationState && !isLoading) || isLoading || suffix ? (
+      {showValidationIndicator || suffix ? (
         <div data-element="Suffix">
           {suffixPosition === 'before' ? suffix : null}
-          {(validationState && !isLoading) || isLoading ? (
-            <div data-element="State">
-              {validationState && !isLoading ? validation : null}
-              {isLoading && <LoadingIcon data-element="InputIcon" />}
-            </div>
-          ) : null}
+          <ValidationIndicator
+            isInvalid={isInvalid}
+            isValid={isValid}
+            isLoading={isLoading}
+          />
           {suffixPosition === 'after' ? suffix : null}
         </div>
       ) : null}
     </InputWrapperElement>
   );
 
-  return wrapWithField(textField, domRef, {
-    ...props,
-    form: undefined,
-  });
+  return wrapWithField(textField, domRef, props);
 }
 
 const TextInputBase = forwardRef(_TextInputBase);

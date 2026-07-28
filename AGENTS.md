@@ -15,6 +15,7 @@ Entry point for AI agents working on `@cube-dev/ui-kit`.
 Project-specific working rules for AI agents. Not published with the package.
 
 - [coding.md](docs/rules/coding.md) — development flow, code style, knowledge maintenance
+- [input-components.md](docs/rules/input-components.md) — form-attachable input components (`useFieldProps`, validation props, `wrapWithField`)
 - [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring
 - [documentation.md](docs/rules/documentation.md) — `.docs.mdx` structure + update flow
 - [tests.md](docs/rules/tests.md) — Vitest + React Testing Library patterns
