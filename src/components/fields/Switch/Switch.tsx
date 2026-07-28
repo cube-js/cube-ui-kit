@@ -52,6 +52,7 @@ const SwitchElement = tasty({
     fill: {
       '': '#surface',
       checked: '#primary',
+      'invalid & checked': '#danger',
       'valid & checked': '#success',
       disabled: '#border.5',
       'disabled & checked': '#border',
