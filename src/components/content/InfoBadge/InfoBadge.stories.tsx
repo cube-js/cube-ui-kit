@@ -1,6 +1,7 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Switch } from '../../fields/Switch';
+import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { Paragraph } from '../Paragraph';
 import { Text } from '../Text';
@@ -46,12 +47,27 @@ export const WithoutSuffix: Story = {
 export const Sizes: Story = {
   render: (args) => (
     <Space gap="1x" placeItems="center">
-      <InfoBadge {...args} size="inline" />
-      <InfoBadge {...args} size="xsmall" />
       <InfoBadge {...args} size="small" />
       <InfoBadge {...args} size="medium" />
       <InfoBadge {...args} size="large" />
     </Space>
+  ),
+};
+
+/**
+ * Every size contributes exactly one line to the text around it, so the badge
+ * stays aligned with the label regardless of which one you pick.
+ */
+export const SizesInText: Story = {
+  render: (args) => (
+    <Flow gap="1x">
+      {(['small', 'medium', 'large'] as const).map((size) => (
+        <Paragraph key={size}>
+          Deployments are billed per consumption unit{' '}
+          <InfoBadge {...args} size={size} />
+        </Paragraph>
+      ))}
+    </Flow>
   ),
 };
 
@@ -61,6 +77,14 @@ export const Themes: Story = {
       <InfoBadge {...args} theme="default" />
       <InfoBadge {...args} theme="danger" />
       <InfoBadge {...args} theme="success" />
+    </Space>
+  ),
+};
+
+export const Types: Story = {
+  render: (args) => (
+    <Space gap="1x" placeItems="center">
+      <InfoBadge {...args} type="clear" />
       <InfoBadge {...args} type="outline" />
       <InfoBadge {...args} type="primary" />
     </Space>

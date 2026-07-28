@@ -17,9 +17,9 @@ Every field's `tooltip` prop already renders an `InfoBadge` next to the label, s
 - **`tooltip`** `ReactNode | object` (required) — Tooltip content, or `{ title, ...tooltipProps }` for advanced configuration (`placement`, `delay`, `width`, …)
 - **`tooltipSuffix`** `ReactNode` — Text appended to the tooltip content. Defaults to a localized `Click to learn more.` hint when the badge is interactive. Pass `null` to opt out.
 - **`icon`** `ReactNode` (default: `<InfoCircleIcon />`) — Icon to render
-- **`size`** `'inline' | 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | number` (default: `'inline'`) — `inline` matches the line height of the surrounding text, so the badge blends into labels and paragraphs
+- **`size`** `'small' | 'medium' | 'large'` (default: `'medium'`) — Every size contributes exactly one line to the text around it, so the badge stays aligned with adjacent text whichever one you pick
 - **`type`** `'primary' | 'outline' | 'clear'` (default: `'clear'`) — Visual type
-- **`theme`** `'default' | 'danger' | 'success' | 'special'` (default: `'default'`) — Color theme. The default `default` + `clear` combination is brand-tinted; any other combination uses the theme's own colors.
+- **`theme`** `'default' | 'danger' | 'success'` (default: `'default'`) — Color theme. The default `default` + `clear` combination is brand-tinted; any other combination uses the theme's own colors.
 - **`to`** `string | number | object` — Navigation target. Renders the badge as a link. Supports the `!` (new tab) and `@` (native navigation) prefixes.
 - **`onPress`** `(e: PressEvent) => void` — Press handler. Renders the badge as a button.
 - **`isLoading`** `boolean` — Replace the icon with a loading spinner

@@ -46,27 +46,24 @@ export interface CubeInfoBadgeProps
   /** Icon to render. @default <InfoCircleIcon /> */
   icon?: ReactNode;
   /**
-   * Size of the badge. `inline` matches the line height of the surrounding
-   * text, which makes the badge blend into labels and paragraphs.
-   * @default "inline"
+   * Size of the badge. Every size still contributes exactly one line to the
+   * text around it, so the badge stays aligned with adjacent text.
+   * @default "medium"
    */
-  size?: 'inline' | 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | number;
+  size?: 'small' | 'medium' | 'large';
   /** @default "clear" */
-  type?: 'primary' | 'outline' | 'clear' | (string & {});
+  type?: 'primary' | 'outline' | 'clear';
   /** @default "default" */
-  theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
+  theme?: 'default' | 'danger' | 'success';
   isLoading?: boolean;
   isDisabled?: boolean;
   styles?: Styles;
 }
 
-const SIZE_TOKENS: Record<string, string> = {
-  inline: '(1lh + 2bw)',
-  xsmall: '$size-xs',
-  small: '$size-sm',
-  medium: '$size-md',
-  large: '$size-lg',
-  xlarge: '$size-xl',
+const SIZES: Record<NonNullable<CubeInfoBadgeProps['size']>, string> = {
+  small: '2x',
+  medium: '2.5x',
+  large: '3x',
 };
 
 /**
@@ -113,28 +110,42 @@ const GuardElement = tasty({
 });
 
 /**
- * At the `inline` size the badge box covers exactly one line, which makes
- * `vertical-align: top` land its center on the line box center — the same place
- * the text is optically centered. `middle` would instead align the box center
- * with the x-height midpoint: ~1.5px lower than the text, and tall enough to
- * inflate the line box, which pushes the badge further down again inside block
- * containers (a field's `labelSuffix`, a paragraph).
+ * Sizing the badge so it aligns with the text beside it.
+ *
+ * The box is a fixed square, but its *margin* box is padded (or trimmed, for
+ * `large` in tight text) to exactly one line. An atomic inline's margin box is
+ * what the line box measures, so `vertical-align: top` then lands the badge's
+ * center on the line box center — where the adjacent text is optically
+ * centered — at every size, in inline and block containers alike.
+ *
+ * `vertical-align: middle` can't do this: it aligns the box center with the
+ * x-height midpoint, ~1.5px below the text center, and inflates the line box,
+ * which pushes the badge down again inside a block container (a field's
+ * `labelSuffix`, a paragraph).
+ *
+ * `preset: inherit` is what makes `1lh` mean the line the badge sits on. It
+ * also keeps the glyph identical across render paths, since `ItemAction` pins
+ * itself to the `t4` preset while `ItemBadge` inherits.
  */
-const INLINE_STYLES: Styles = {
-  // `ItemAction` pins itself to the `t4` preset while `ItemBadge` inherits, so
-  // `1lh` would mean different things on the two paths. Inheriting the
-  // surrounding text metrics makes the box track the line it sits on and keeps
-  // both paths identical.
-  preset: 'inherit',
-  height: '1lh',
-  width: '1lh',
-  verticalAlign: 'top',
-  Icon: {
-    height: '1lh',
-    width: '1lh',
-    '$icon-size': '(1lh - .25x)',
-  },
-};
+function sizeStyles(size: NonNullable<CubeInfoBadgeProps['size']>): Styles {
+  const box = SIZES[size];
+
+  return {
+    preset: 'inherit',
+    height: box,
+    width: box,
+    margin: `((1lh - ${box}) / 2) 0`,
+    verticalAlign: 'top',
+    // The badge is standalone rather than part of an `Item` action row, so it
+    // shouldn't reserve the row's side padding as an outer margin.
+    '$side-padding': 0,
+    Icon: {
+      height: box,
+      width: box,
+      '$icon-size': `(${box} - .25x)`,
+    },
+  };
+}
 
 // Soft → strong on interaction, mirroring the link styles: the badge reads as a
 // quiet brand-colored hint at rest and gains contrast once it's engaged.
@@ -171,7 +182,7 @@ export const InfoBadge = forwardRef(function InfoBadge(
     tooltip,
     tooltipSuffix,
     icon = <InfoCircleIcon />,
-    size = 'inline',
+    size = 'medium',
     type = 'clear',
     theme = 'default',
     to,
@@ -226,32 +237,17 @@ export const InfoBadge = forwardRef(function InfoBadge(
       ? title
       : t('infoBadge.ariaLabel', 'More information'));
 
-  const finalStyles = useMemo(() => {
-    const sizeToken =
-      typeof size === 'number' ? `${size}px` : SIZE_TOKENS[size] ?? size;
-
-    return mergeStyles(
-      {
-        $size: sizeToken,
-        // The badge is standalone rather than part of an `Item` action row, so
-        // it shouldn't reserve the row's side padding as an outer margin.
-        '$side-padding': 0,
-        ...(size === 'inline'
-          ? INLINE_STYLES
-          : {
-              verticalAlign: 'middle',
-              // `ItemAction` clamps the glyph to its box while `ItemBadge`
-              // leaves it to the inherited preset. Pinning the size keeps the
-              // glyph identical whether or not the badge is interactive.
-              Icon: { '$icon-size': '($action-size - .25x)' },
-            }),
-      },
-      // Only the default look is brand-tinted; explicit themes and filled
-      // types bring their own colors.
-      theme === 'default' && type === 'clear' ? INFO_STYLES : null,
-      styles,
-    );
-  }, [size, theme, type, styles]);
+  const finalStyles = useMemo(
+    () =>
+      mergeStyles(
+        sizeStyles(size),
+        // Only the default look is brand-tinted; explicit themes and filled
+        // types bring their own colors.
+        theme === 'default' && type === 'clear' ? INFO_STYLES : null,
+        styles,
+      ),
+    [size, theme, type, styles],
+  );
 
   // `ItemAction` exposes a react-spectrum focusable ref; unwrap it so that `ref`
   // points at the DOM node whether or not the badge is interactive.
