@@ -134,11 +134,10 @@ function sizeStyles(size: NonNullable<CubeInfoBadgeProps['size']>): Styles {
     preset: 'inherit',
     height: box,
     width: box,
+    // Replaces the base first/last-child margin rules outright, so the badge
+    // doesn't reserve an `Item` action row's side padding as an outer margin.
     margin: `((1lh - ${box}) / 2) 0`,
     verticalAlign: 'top',
-    // The badge is standalone rather than part of an `Item` action row, so it
-    // shouldn't reserve the row's side padding as an outer margin.
-    '$side-padding': 0,
     Icon: {
       height: box,
       width: box,
