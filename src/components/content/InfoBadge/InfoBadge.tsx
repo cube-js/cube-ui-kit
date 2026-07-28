@@ -1,0 +1,301 @@
+import { FocusableRefValue } from '@react-types/shared';
+import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
+import {
+  ForwardedRef,
+  forwardRef,
+  isValidElement,
+  KeyboardEvent,
+  MouseEvent,
+  PointerEvent,
+  ReactNode,
+  useCallback,
+  useMemo,
+} from 'react';
+
+import { useI18n } from '../../../i18n';
+import { InfoCircleIcon } from '../../../icons/index';
+import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
+import { CubeUseActionProps } from '../../actions/use-action';
+import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
+import { ItemBadge } from '../ItemBadge';
+
+export type CubeInfoBadgeTooltipConfig = Omit<
+  CubeTooltipProviderProps,
+  'children'
+>;
+
+export interface CubeInfoBadgeProps
+  extends Omit<BaseProps, 'children'>,
+    Partial<
+      Pick<
+        CubeUseActionProps,
+        'to' | 'onPress' | 'navigationOptions' | 'target' | 'label'
+      >
+    > {
+  /**
+   * Tooltip content. Either the content itself or a configuration object
+   * `{ title, ...tooltipProps }` for advanced setups (placement, delay, etc.).
+   */
+  tooltip: ReactNode | CubeInfoBadgeTooltipConfig;
+  /**
+   * Text appended to the tooltip content. Defaults to a "learn more" hint when
+   * the badge is interactive (`to` or `onPress` is provided). Pass `null` or an
+   * empty string to opt out.
+   */
+  tooltipSuffix?: ReactNode;
+  /** Icon to render. @default <InfoCircleIcon /> */
+  icon?: ReactNode;
+  /**
+   * Size of the badge. Every size still contributes exactly one line to the
+   * text around it, so the badge stays aligned with adjacent text.
+   * @default "medium"
+   */
+  size?: 'small' | 'medium' | 'large';
+  /** @default "clear" */
+  type?: 'primary' | 'outline' | 'clear';
+  /** @default "default" */
+  theme?: 'default' | 'danger' | 'success';
+  isLoading?: boolean;
+  isDisabled?: boolean;
+  styles?: Styles;
+}
+
+const SIZES: Record<NonNullable<CubeInfoBadgeProps['size']>, string> = {
+  small: '2x',
+  medium: '2.5x',
+  large: '3x',
+};
+
+/**
+ * The info badge is a leaf element that is often placed inside a bigger click
+ * target: a field `<label>`, a switch row, a table header, a list item. Neither
+ * the tooltip nor the optional navigation should ever activate that container,
+ * so the events that would do so are contained here.
+ *
+ * The guard sits *above* the badge, so the badge's own handlers (including
+ * `usePress`, which fires `onPress` from the `click` event) run first and stay
+ * intact. `preventDefault` on click is what stops an enclosing `<label>` from
+ * forwarding activation to its control — `stopPropagation` alone can't.
+ *
+ * `pointerup` / `mouseup` are intentionally left alone: `usePress` finishes a
+ * press through document-level listeners for those events.
+ */
+const GUARD_HANDLERS = {
+  onClick: (event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  },
+  onPointerDown: (event: PointerEvent) => event.stopPropagation(),
+  onMouseDown: (event: MouseEvent) => event.stopPropagation(),
+  onKeyDown: (event: KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.stopPropagation();
+    }
+  },
+  onKeyUp: (event: KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.stopPropagation();
+    }
+  },
+};
+
+/**
+ * `display: contents` keeps the guard out of the layout entirely while staying
+ * in the event path, so the badge remains a direct flex/grid/inline child of
+ * whatever contains it.
+ */
+const GuardElement = tasty({
+  as: 'span',
+  styles: { display: 'contents' },
+});
+
+/**
+ * Sizing the badge so it aligns with the text beside it.
+ *
+ * The box is a fixed square, but its *margin* box is padded (or trimmed, for
+ * `large` in tight text) to exactly one line. An atomic inline's margin box is
+ * what the line box measures, so `vertical-align: top` then lands the badge's
+ * center on the line box center — where the adjacent text is optically
+ * centered — at every size, in inline and block containers alike.
+ *
+ * `vertical-align: middle` can't do this: it aligns the box center with the
+ * x-height midpoint, ~1.5px below the text center, and inflates the line box,
+ * which pushes the badge down again inside a block container (a field's
+ * `labelSuffix`, a paragraph).
+ *
+ * `preset: inherit` is what makes `1lh` mean the line the badge sits on. It
+ * also keeps the glyph identical across render paths, since `ItemAction` pins
+ * itself to the `t4` preset while `ItemBadge` inherits.
+ */
+function sizeStyles(size: NonNullable<CubeInfoBadgeProps['size']>): Styles {
+  const box = SIZES[size];
+
+  return {
+    preset: 'inherit',
+    height: box,
+    width: box,
+    // Replaces the base first/last-child margin rules outright, so the badge
+    // doesn't reserve an `Item` action row's side padding as an outer margin.
+    margin: `((1lh - ${box}) / 2) 0`,
+    verticalAlign: 'top',
+    Icon: {
+      height: box,
+      width: box,
+      '$icon-size': `(${box} - .25x)`,
+    },
+  };
+}
+
+// Soft → strong on interaction, mirroring the link styles: the badge reads as a
+// quiet brand-colored hint at rest and gains contrast once it's engaged.
+//
+// A state map with a `''` entry replaces the variant's map outright, so the
+// disabled color has to be restated here (`@inherit` can't reach the variant —
+// it isn't the parent map in this merge) or a disabled badge would keep the
+// brand tint and still read as interactive.
+const INFO_STYLES: Styles = {
+  color: {
+    '': '#primary-text-soft',
+    'hovered | focused': '#primary-text',
+    pressed: '#primary-text',
+    disabled: '#disabled-surface-text',
+  },
+};
+
+function isTooltipConfig(
+  value: ReactNode | CubeInfoBadgeTooltipConfig,
+): value is CubeInfoBadgeTooltipConfig {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !isValidElement(value) &&
+    !Array.isArray(value)
+  );
+}
+
+/**
+ * An informational icon with a tooltip. Renders as a plain badge by default and
+ * upgrades to a link / button when `to` or `onPress` is provided.
+ */
+export const InfoBadge = forwardRef(function InfoBadge(
+  allProps: CubeInfoBadgeProps,
+  ref: ForwardedRef<HTMLElement>,
+) {
+  const { t } = useI18n();
+
+  const {
+    tooltip,
+    tooltipSuffix,
+    icon = <InfoCircleIcon />,
+    size = 'medium',
+    type = 'clear',
+    theme = 'default',
+    to,
+    onPress,
+    navigationOptions,
+    target,
+    label,
+    qa = 'InfoBadge',
+    styles,
+    ...rest
+  } = allProps;
+
+  const isInteractive = to != null || onPress != null;
+
+  const { title, tooltipProps } = useMemo(() => {
+    if (isTooltipConfig(tooltip)) {
+      const { title, ...tooltipProps } = tooltip;
+
+      return { title, tooltipProps };
+    }
+
+    return { title: tooltip, tooltipProps: {} };
+  }, [tooltip]);
+
+  const suffix =
+    tooltipSuffix === undefined
+      ? isInteractive
+        ? t('infoBadge.learnMore', 'Click to learn more.')
+        : null
+      : tooltipSuffix;
+
+  const finalTooltip = useMemo(
+    () => ({
+      ...tooltipProps,
+      title: suffix ? (
+        <>
+          {title} {suffix}
+        </>
+      ) : (
+        title
+      ),
+    }),
+    [tooltipProps, title, suffix],
+  );
+
+  // The accessible name is the tooltip text itself when it's plain text. Rich
+  // tooltip content can't serve as a label, so fall back to a generic one.
+  const ariaLabel =
+    label ??
+    rest['aria-label'] ??
+    (typeof title === 'string'
+      ? title
+      : t('infoBadge.ariaLabel', 'More information'));
+
+  const finalStyles = useMemo(
+    () =>
+      mergeStyles(
+        sizeStyles(size),
+        // Only the default look is brand-tinted; explicit themes and filled
+        // types bring their own colors.
+        theme === 'default' && type === 'clear' ? INFO_STYLES : null,
+        styles,
+      ),
+    [size, theme, type, styles],
+  );
+
+  // `ItemAction` exposes a react-spectrum focusable ref; unwrap it so that `ref`
+  // points at the DOM node whether or not the badge is interactive.
+  const actionRef = useCallback(
+    (value: FocusableRefValue<HTMLElement> | null) => {
+      const element = value ? value.UNSAFE_getDOMNode() : null;
+
+      if (typeof ref === 'function') {
+        ref(element);
+      } else if (ref) {
+        ref.current = element;
+      }
+    },
+    [ref],
+  );
+
+  const sharedProps = {
+    ...rest,
+    qa,
+    icon,
+    type,
+    theme,
+    styles: finalStyles,
+    'aria-label': ariaLabel,
+    tooltip: finalTooltip as CubeItemActionProps['tooltip'],
+  };
+
+  return (
+    <GuardElement {...GUARD_HANDLERS}>
+      {isInteractive ? (
+        <ItemAction
+          ref={actionRef}
+          to={to}
+          onPress={onPress}
+          navigationOptions={navigationOptions}
+          target={target}
+          {...sharedProps}
+        />
+      ) : (
+        <ItemBadge ref={ref as ForwardedRef<HTMLDivElement>} {...sharedProps} />
+      )}
+    </GuardElement>
+  );
+});
+
+export type { CubeInfoBadgeProps as InfoBadgeProps };

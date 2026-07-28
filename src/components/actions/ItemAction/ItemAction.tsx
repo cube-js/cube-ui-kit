@@ -56,7 +56,7 @@ export interface CubeItemActionProps
   tooltip?:
     | string
     | (Omit<ComponentProps<typeof TooltipProvider>, 'children'> & {
-        title?: string;
+        title?: ReactNode;
       });
   styles?: Styles;
   tabIndex?: number;
@@ -200,15 +200,20 @@ export const ItemAction = forwardRef(function ItemAction(
     [hasCheckmark, isSelected, isLoading, children, contextType, mods],
   );
 
-  // Extract aria-label from tooltip if needed
+  // An explicit label always wins; a tooltip only fills in the accessible name
+  // when there isn't one. Rich tooltip content can't serve as a name, so only
+  // plain strings are used here.
   const ariaLabel = useMemo(() => {
+    if (rest['aria-label']) {
+      return rest['aria-label'];
+    }
     if (typeof tooltip === 'string') {
       return tooltip;
     }
-    if (typeof tooltip === 'object' && tooltip.title) {
+    if (typeof tooltip === 'object' && typeof tooltip.title === 'string') {
       return tooltip.title;
     }
-    return rest['aria-label'];
+    return undefined;
   }, [tooltip, rest]);
 
   // Call useAction hook

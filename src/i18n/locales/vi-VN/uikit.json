@@ -15,6 +15,10 @@
     "optional": "(tùy chọn)",
     "internalError": "Lỗi nội bộ"
   },
+  "infoBadge": {
+    "learnMore": "Nhấp để tìm hiểu thêm.",
+    "ariaLabel": "Thông tin thêm"
+  },
   "notifications": {
     "dismiss": "Đóng",
     "ariaLabel": "Thông báo",

@@ -15,6 +15,10 @@
     "optional": "(facoltativo)",
     "internalError": "Errore interno"
   },
+  "infoBadge": {
+    "learnMore": "Fai clic per saperne di più.",
+    "ariaLabel": "Maggiori informazioni"
+  },
   "notifications": {
     "dismiss": "Chiudi",
     "ariaLabel": "Notifiche",

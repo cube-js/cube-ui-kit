@@ -15,6 +15,10 @@
     "optional": "(valfritt)",
     "internalError": "Internt fel"
   },
+  "infoBadge": {
+    "learnMore": "Klicka för att läsa mer.",
+    "ariaLabel": "Mer information"
+  },
   "notifications": {
     "dismiss": "Stäng",
     "ariaLabel": "Aviseringar",

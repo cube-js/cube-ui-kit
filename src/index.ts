@@ -24,6 +24,11 @@ export { ItemCard } from './components/content/ItemCard/ItemCard';
 export type { CubeItemCardProps } from './components/content/ItemCard/ItemCard';
 export { ItemBadge } from './components/content/ItemBadge/ItemBadge';
 export type { CubeItemBadgeProps } from './components/content/ItemBadge/ItemBadge';
+export { InfoBadge } from './components/content/InfoBadge/InfoBadge';
+export type {
+  CubeInfoBadgeProps,
+  CubeInfoBadgeTooltipConfig,
+} from './components/content/InfoBadge/InfoBadge';
 export { ActiveZone } from './components/content/ActiveZone/ActiveZone';
 export type { CubeActiveZoneProps } from './components/content/ActiveZone/ActiveZone';
 export { InlineInput } from './components/content/InlineInput';

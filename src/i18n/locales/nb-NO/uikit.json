@@ -15,6 +15,10 @@
     "optional": "(valgfritt)",
     "internalError": "Intern feil"
   },
+  "infoBadge": {
+    "learnMore": "Klikk for å lære mer.",
+    "ariaLabel": "Mer informasjon"
+  },
   "notifications": {
     "dismiss": "Lukk",
     "ariaLabel": "Varsler",
