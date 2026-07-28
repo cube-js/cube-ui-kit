@@ -112,6 +112,30 @@ const GuardElement = tasty({
   styles: { display: 'contents' },
 });
 
+/**
+ * At the `inline` size the badge box covers exactly one line, which makes
+ * `vertical-align: top` land its center on the line box center — the same place
+ * the text is optically centered. `middle` would instead align the box center
+ * with the x-height midpoint: ~1.5px lower than the text, and tall enough to
+ * inflate the line box, which pushes the badge further down again inside block
+ * containers (a field's `labelSuffix`, a paragraph).
+ */
+const INLINE_STYLES: Styles = {
+  // `ItemAction` pins itself to the `t4` preset while `ItemBadge` inherits, so
+  // `1lh` would mean different things on the two paths. Inheriting the
+  // surrounding text metrics makes the box track the line it sits on and keeps
+  // both paths identical.
+  preset: 'inherit',
+  height: '1lh',
+  width: '1lh',
+  verticalAlign: 'top',
+  Icon: {
+    height: '1lh',
+    width: '1lh',
+    '$icon-size': '(1lh - .25x)',
+  },
+};
+
 // Soft → strong on interaction, mirroring the link styles: the badge reads as a
 // quiet brand-colored hint at rest and gains contrast once it's engaged.
 const INFO_STYLES: Styles = {
@@ -212,7 +236,15 @@ export const InfoBadge = forwardRef(function InfoBadge(
         // The badge is standalone rather than part of an `Item` action row, so
         // it shouldn't reserve the row's side padding as an outer margin.
         '$side-padding': 0,
-        verticalAlign: 'middle',
+        ...(size === 'inline'
+          ? INLINE_STYLES
+          : {
+              verticalAlign: 'middle',
+              // `ItemAction` clamps the glyph to its box while `ItemBadge`
+              // leaves it to the inherited preset. Pinning the size keeps the
+              // glyph identical whether or not the badge is interactive.
+              Icon: { '$icon-size': '($action-size - .25x)' },
+            }),
       },
       // Only the default look is brand-tinted; explicit themes and filled
       // types bring their own colors.
