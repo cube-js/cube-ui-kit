@@ -39,7 +39,7 @@ export interface CubeItemBadgeProps extends BaseProps {
   tooltip?:
     | string
     | (Omit<ComponentProps<typeof TooltipProvider>, 'children'> & {
-        title?: string;
+        title?: ReactNode;
       });
 }
 
@@ -130,12 +130,13 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
       [hasCheckmark, isSelected, isLoading, children, contextType, mods],
     );
 
-    // Extract aria-label from tooltip if needed
+    // Extract aria-label from tooltip if needed. Rich tooltip content can't
+    // serve as an accessible name, so only plain strings are used here.
     const ariaLabel = useMemo(() => {
       if (typeof tooltip === 'string') {
         return tooltip;
       }
-      if (typeof tooltip === 'object' && tooltip.title) {
+      if (typeof tooltip === 'object' && typeof tooltip.title === 'string') {
         return tooltip.title;
       }
       return rest['aria-label'];

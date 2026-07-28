@@ -15,6 +15,10 @@
     "optional": "(opcional)",
     "internalError": "Erro interno"
   },
+  "infoBadge": {
+    "learnMore": "Clique para saber mais.",
+    "ariaLabel": "Mais informações"
+  },
   "notifications": {
     "dismiss": "Fechar",
     "ariaLabel": "Notificações",

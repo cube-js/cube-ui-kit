@@ -15,6 +15,10 @@
     "optional": "（任意）",
     "internalError": "内部エラー"
   },
+  "infoBadge": {
+    "learnMore": "クリックすると詳細が表示されます。",
+    "ariaLabel": "詳細情報"
+  },
   "notifications": {
     "dismiss": "閉じる",
     "ariaLabel": "通知",

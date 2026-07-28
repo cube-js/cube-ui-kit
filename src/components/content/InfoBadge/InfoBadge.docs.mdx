@@ -1,0 +1,49 @@
+# InfoBadge
+
+An informational icon with a tooltip. Renders as a plain badge (`ItemBadge`) by default, and upgrades to a link or button (`ItemAction`) as soon as `to` or `onPress` is provided — so the same icon can also point at the docs.
+
+The badge contains its own press events, which lets it sit inside a bigger click target — a field `<label>`, a switch row, a table header, a list item — without activating it.
+
+## When to Use
+
+- Explain a field, a label, or a column header without spending layout space on a description
+- Link a piece of UI to its documentation page
+- Any place that used to render a bare info icon wrapped in a tooltip by hand
+
+Every field's `tooltip` prop already renders an `InfoBadge` next to the label, so reach for this component only when you need an info icon outside of a field.
+
+## Properties
+
+- **`tooltip`** `ReactNode | object` (required) — Tooltip content, or `{ title, ...tooltipProps }` for advanced configuration (`placement`, `delay`, `width`, …)
+- **`tooltipSuffix`** `ReactNode` — Text appended to the tooltip content. Defaults to a localized `Click to learn more.` hint when the badge is interactive. Pass `null` to opt out.
+- **`icon`** `ReactNode` (default: `<InfoCircleIcon />`) — Icon to render
+- **`size`** `'inline' | 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | number` (default: `'inline'`) — `inline` matches the line height of the surrounding text, so the badge blends into labels and paragraphs
+- **`type`** `'primary' | 'outline' | 'clear'` (default: `'clear'`) — Visual type
+- **`theme`** `'default' | 'danger' | 'success' | 'special'` (default: `'default'`) — Color theme. The default `default` + `clear` combination is brand-tinted; any other combination uses the theme's own colors.
+- **`to`** `string | number | object` — Navigation target. Renders the badge as a link. Supports the `!` (new tab) and `@` (native navigation) prefixes.
+- **`onPress`** `(e: PressEvent) => void` — Press handler. Renders the badge as a button.
+- **`isLoading`** `boolean` — Replace the icon with a loading spinner
+- **`isDisabled`** `boolean` — Disable the badge
+
+### Accessibility
+
+The accessible name is the tooltip text when it's plain text. Rich tooltip content can't serve as a name, so a localized `More information` label is used instead — pass `aria-label` or `label` to override it.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs).
+
+## Examples
+
+```jsx
+<InfoBadge tooltip="Deployments run in the region closest to your data source." />
+
+<InfoBadge
+  to="!https://docs.cube.dev/admin/deployment/auto-suspension"
+  tooltip="Suspends the deployment after a period of inactivity."
+/>
+
+<InfoBadge tooltip="Copied from the parent space." tooltipSuffix={null} />
+
+<Switch label="Auto-suspend" labelSuffix={<InfoBadge tooltip="…" />} />
+```

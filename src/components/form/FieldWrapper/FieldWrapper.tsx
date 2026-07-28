@@ -1,9 +1,8 @@
 import { tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
-import { InfoCircleIcon } from '../../../icons/index';
 import { mergeProps, wrapNodeIfPlain } from '../../../utils/react/index';
-import { Item } from '../../content/Item';
+import { InfoBadge } from '../../content/InfoBadge';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
@@ -137,15 +136,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
         <Space placeItems="center" gap="0.75x">
           <div>{label}</div>
 
-          {tooltip ? (
-            <Item
-              icon={<InfoCircleIcon color="#primary-text" />}
-              size="inline"
-              tooltip={
-                typeof tooltip === 'string' ? tooltip : { title: tooltip }
-              }
-            />
-          ) : null}
+          {tooltip ? <InfoBadge tooltip={tooltip} /> : null}
 
           {labelSuffix ? <div>{labelSuffix}</div> : null}
         </Space>
