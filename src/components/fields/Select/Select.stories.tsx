@@ -1,6 +1,7 @@
 import { IconCoin, IconUser } from '@tabler/icons-react';
 import { userEvent, within } from 'storybook/test';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Text } from '../../content/Text';
 import { Space } from '../../layout/Space';
@@ -159,21 +160,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    isInvalid: {
-      control: { type: 'boolean' },
-      description:
-        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
-    isValid: {
-      control: { type: 'boolean' },
-      description: 'Whether the input should display its valid visual styling',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -464,11 +451,20 @@ Outline2.parameters = { backgrounds: { default: 'gray' } };
 export const Clear = Template.bind({});
 Clear.args = { type: 'clear', placeholder: 'clear', width: 'max-content' };
 
-export const Invalid = Template.bind({});
-Invalid.args = { selectedKey: 'yellow', isInvalid: true };
-
-export const Valid = Template.bind({});
-Valid.args = { selectedKey: 'yellow', isValid: true };
+export const Validation: StoryObj<CubeSelectProps<any>>['render'] = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Select {...args} label="Valid" selectedKey="yellow" isValid>
+      {options.map((option) => (
+        <Select.Item key={option}>{option}</Select.Item>
+      ))}
+    </Select>
+    <Select {...args} label="Invalid" selectedKey="yellow" isInvalid>
+      {options.map((option) => (
+        <Select.Item key={option}>{option}</Select.Item>
+      ))}
+    </Select>
+  </Space>
+);
 
 export const WithPlaceholder = Template.bind({});
 WithPlaceholder.args = { placeholder: 'Enter a value' };

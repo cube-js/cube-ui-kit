@@ -39,7 +39,12 @@ import {
 } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
-import { getValidationTheme, useFieldProps, wrapWithField } from '../../form';
+import {
+  getValidationIcon,
+  getValidationTheme,
+  useFieldProps,
+  wrapWithField,
+} from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 
@@ -545,6 +550,17 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
   const showClearButton =
     isClearable && hasSelection && !isDisabled && !props.isReadOnly;
+
+  const validationIcon = getValidationIcon({ isInvalid, isValid });
+
+  if (validationIcon) {
+    suffix = (
+      <>
+        {suffix}
+        {validationIcon}
+      </>
+    );
+  }
 
   // Trigger element — plain JSX with no hooks.
   const triggerElement = (

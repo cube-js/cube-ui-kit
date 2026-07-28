@@ -124,6 +124,7 @@ const RadioNormalElement = tasty({
       '': '#clear',
       checked: '#primary',
       'invalid & checked': '#danger-text',
+      'valid & checked': '#success-text',
       'disabled | !checked': '#clear',
       'disabled & checked': '#dark.12',
     },
@@ -131,6 +132,7 @@ const RadioNormalElement = tasty({
       '': '#dark-04',
       checked: '#primary-text',
       invalid: '#danger-text.50',
+      valid: '#success-text.50',
       disabled: '#dark.12',
     },
     width: '2x',
@@ -331,7 +333,11 @@ function Radio(props: CubeRadioProps, ref) {
       <RadioButtonElement
         ref={domRef}
         type={effectiveButtonType}
-        theme={getValidationTheme('default', { isInvalid, isValid })}
+        theme={getValidationTheme(
+          'default',
+          { isInvalid, isValid },
+          { includeValid: true },
+        )}
         size={effectiveSize}
         icon={icon}
         rightIcon={rightIcon}

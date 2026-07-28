@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
@@ -112,21 +113,7 @@ const meta = {
       description: 'Whether the input is read-only',
       table: { defaultValue: { summary: false } },
     },
-    isInvalid: {
-      control: { type: 'boolean' },
-      description:
-        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
-    isValid: {
-      control: { type: 'boolean' },
-      description: 'Whether the input should display its valid visual styling',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the input receives focus on render',
@@ -372,6 +359,37 @@ export const Sizes = () => (
     ))}
   </Flow>
 );
+
+export const Validation: Story = {
+  render: () => (
+    <Flow gap="2x">
+      <SearchComboBox
+        isValid
+        label="Valid"
+        defaultInputValue="Apple"
+        message="Good choice!"
+      >
+        {fruits.map((fruit) => (
+          <SearchComboBox.Item key={fruit.toLowerCase()}>
+            {fruit}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>
+      <SearchComboBox
+        isInvalid
+        label="Invalid"
+        placeholder="Search"
+        message="This fruit is not available"
+      >
+        {fruits.map((fruit) => (
+          <SearchComboBox.Item key={fruit.toLowerCase()}>
+            {fruit}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>
+    </Flow>
+  ),
+};
 
 export const Disabled: Story = {
   render: () => (

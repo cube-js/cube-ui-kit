@@ -39,7 +39,12 @@ import {
 } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
-import { getValidationTheme, useFieldProps, wrapWithField } from '../../form';
+import {
+  getValidationIcon,
+  getValidationTheme,
+  useFieldProps,
+  wrapWithField,
+} from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import {
   CubeFilterListBoxProps,
@@ -617,6 +622,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   const showClearButton =
     isClearable && hasSelection && !isDisabled && !props.isReadOnly;
+
+  const validationIcon = getValidationIcon({ isInvalid, isValid });
+
+  if (validationIcon) {
+    suffix = (
+      <>
+        {suffix}
+        {validationIcon}
+      </>
+    );
+  }
 
   // Trigger element — plain JSX with no hooks.
   // The element type (ItemButton) is stable so React can reconcile efficiently.

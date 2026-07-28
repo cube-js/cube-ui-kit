@@ -377,18 +377,32 @@ export const DifferentSizes: Story = {
   ),
 };
 
-export const WithValidation: Story = {
+export const Validation: Story = {
   args: {
     placeholder: 'Select a fruit',
-    label: 'Favorite Fruit (Required)',
     selectionMode: 'single',
-    isRequired: true,
-    isInvalid: true,
-    message: 'Please select a fruit',
     children: fruits.map((fruit) => (
       <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
     )),
   },
+  render: (args) => (
+    <Flex flow="column" gap="3x" placeItems="start">
+      <Picker
+        {...args}
+        label="Valid State"
+        isValid
+        defaultSelectedKey="apple"
+        message="Good choice!"
+      />
+      <Picker
+        {...args}
+        label="Invalid State"
+        isInvalid
+        isRequired
+        message="Please select a fruit"
+      />
+    </Flex>
+  ),
 };
 
 export const WithDescription: Story = {

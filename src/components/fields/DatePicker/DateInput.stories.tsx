@@ -6,6 +6,7 @@ import {
   VALIDATION_ARGS,
 } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Space } from '../../layout/Space';
 
 import { CubeDateInputProps, DateInput } from './DateInput';
 import { parseAbsoluteDate } from './parseDate';
@@ -64,8 +65,12 @@ WithSecondGranularity.args = {
   granularity: 'second',
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = { isInvalid: true };
+export const Validation: StoryFn<CubeDateInputProps> = (props) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <DateInput {...props} isValid aria-label="Valid date" />
+    <DateInput {...props} isInvalid aria-label="Invalid date" />
+  </Space>
+);
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true };

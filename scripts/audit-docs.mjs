@@ -265,6 +265,48 @@ function extractPropsFromDocs(content) {
   return { names: props, details };
 }
 
+/**
+ * Shared argType presets live in `src/stories/FormFieldArgs.ts` and are spread into story argTypes
+ * (`...VALIDATION_ARGS`). Map every preset name onto the prop names it contributes, so the spread reads
+ * as those props instead of as a prop literally named `VALIDATION_ARGS`.
+ */
+let sharedArgTypePresets = null;
+
+async function loadSharedArgTypePresets() {
+  if (sharedArgTypePresets) return sharedArgTypePresets;
+
+  sharedArgTypePresets = new Map();
+
+  const source = await fs
+    .readFile(path.join(ROOT, 'src/stories/FormFieldArgs.ts'), 'utf8')
+    .catch(() => '');
+
+  // Each preset is a top-level `export const NAME = { … };` object literal.
+  const presetPattern = /export const (\w+) = \{([\s\S]*?)\n\};/g;
+  let match;
+
+  while ((match = presetPattern.exec(source)) !== null) {
+    const [, name, body] = match;
+    const props = new Set();
+
+    for (const line of body.split('\n')) {
+      const key = line.match(/^ {2}(\w+):/);
+      if (key) props.add(key[1]);
+
+      const spread = line.match(/^ {2}\.\.\.(\w+),?$/);
+      if (spread) {
+        for (const prop of sharedArgTypePresets.get(spread[1]) ?? []) {
+          props.add(prop);
+        }
+      }
+    }
+
+    sharedArgTypePresets.set(name, [...props]);
+  }
+
+  return sharedArgTypePresets;
+}
+
 function extractArgTypesFromStories(content) {
   const keys = new Set();
   const idx = content.indexOf('argTypes:');
@@ -300,7 +342,16 @@ function extractArgTypesFromStories(content) {
     if (depth === 1 && /[a-zA-Z_$]/.test(c)) {
       const start = i;
       while (i < len && /[a-zA-Z0-9_$]/.test(content[i])) i++;
-      keys.add(content.slice(start, i));
+      const key = content.slice(start, i);
+      const isSpread = content.slice(start - 3, start) === '...';
+
+      if (isSpread) {
+        const preset = sharedArgTypePresets?.get(key);
+        // An unknown spread is skipped rather than reported as a prop of its own.
+        for (const prop of preset ?? []) keys.add(prop);
+      } else {
+        keys.add(key);
+      }
       continue;
     }
     i++;
@@ -971,11 +1022,13 @@ async function main() {
   const fixStories = args.includes('--fix-stories');
   const fixDocs = args.includes('--fix-docs');
 
+  await loadSharedArgTypePresets();
+
   const docFiles = await glob(COMPONENTS, /\.docs\.mdx$/);
   const docFilesFiltered = componentFilter
     ? docFiles.filter((f) =>
-        path.basename(f, '.docs.mdx').toLowerCase().includes(componentFilter.toLowerCase()),
-      )
+      path.basename(f, '.docs.mdx').toLowerCase().includes(componentFilter.toLowerCase()),
+    )
     : docFiles;
 
   const tsConfigPath = path.join(ROOT, 'tsconfig.json');

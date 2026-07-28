@@ -17,7 +17,6 @@ import { useFilter, useTextField } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
-import { useProviderProps } from '../../../provider';
 import { generateRandomId } from '../../../utils/random';
 import { chain, mergeProps, useCombinedRefs } from '../../../utils/react';
 import {

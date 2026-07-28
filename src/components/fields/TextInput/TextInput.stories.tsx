@@ -1,6 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Title } from '../../content/Title';
 import { Space } from '../../layout/Space';
@@ -96,21 +97,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    isInvalid: {
-      control: { type: 'boolean' },
-      description:
-        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
-    isValid: {
-      control: { type: 'boolean' },
-      description: 'Whether the input should display its valid visual styling',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -188,13 +175,7 @@ WithIcon.args = { icon: <IconCoin /> };
 export const Password = Template.bind({});
 Password.args = { icon: <IconCoin />, type: 'password' };
 
-export const Valid = Template.bind({});
-Valid.args = { isValid: true, defaultValue: 'Valid input' };
-
-export const Invalid = Template.bind({});
-Invalid.args = { isInvalid: true, defaultValue: 'Invalid input' };
-
-export const ValidationStates: StoryFn<CubeTextInputProps> = (args) => (
+export const Validation: StoryFn<CubeTextInputProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Valid State</Title>
     <TextInput {...args} isValid defaultValue="Valid input" />
@@ -204,11 +185,11 @@ export const ValidationStates: StoryFn<CubeTextInputProps> = (args) => (
   </Space>
 );
 
-ValidationStates.args = {
+Validation.args = {
   width: '300px',
 };
 
-ValidationStates.parameters = {
+Validation.parameters = {
   docs: {
     description: {
       story:

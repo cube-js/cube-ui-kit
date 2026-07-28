@@ -15,7 +15,7 @@ import { useSliderState } from 'react-stately';
 import { forwardRefWithGenerics, mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { Text } from '../../content/Text';
-import { useFieldProps, wrapWithField } from '../../form';
+import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
 
 import { SliderControlsElement, SliderElement } from './elements';
 
@@ -26,6 +26,9 @@ export interface SliderBaseChildArguments {
   inputRef: RefObject<HTMLInputElement | null>;
   trackRef: RefObject<HTMLElement | null>;
   state: SliderState;
+  /** Resolved validation state. It is only known here, after `useFieldProps` merged the form state in. */
+  isInvalid?: boolean;
+  isValid?: boolean;
 }
 
 export interface SliderBaseProps<T = number[]> extends CubeSliderBaseProps<T> {
@@ -62,6 +65,8 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
     necessityIndicator,
     gradation,
     isDisabled,
+    isInvalid,
+    isValid,
     inputStyles,
     minValue = 0,
     maxValue = 100,
@@ -195,8 +200,9 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
     () => ({
       'side-label': labelPosition === 'side',
       horizontal: orientation === 'horizontal',
+      ...getValidationMods({ isInvalid, isValid }),
     }),
-    [labelPosition, orientation],
+    [labelPosition, orientation, isInvalid, isValid],
   );
 
   styles = extractStyles(otherProps, OUTER_STYLES, styles);
@@ -215,6 +221,8 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
           trackRef,
           inputRef,
           state,
+          isInvalid,
+          isValid,
         })}
       </SliderControlsElement>
     </SliderElement>

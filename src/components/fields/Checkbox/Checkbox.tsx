@@ -81,6 +81,8 @@ const CheckboxElement = tasty({
       'checked | indeterminate': '#primary',
       'invalid & !checked': '#surface',
       'invalid & checked': '#danger',
+      'valid & !checked': '#surface',
+      'valid & checked': '#success',
       disabled: '#dark.12',
     },
     // The check / minus icon is always rendered inside the box, so the
@@ -95,7 +97,8 @@ const CheckboxElement = tasty({
     border: {
       '': '#dark.30',
       invalid: '#danger',
-      'disabled | ((indeterminate | checked) & !invalid)': '#clear',
+      valid: '#success',
+      'disabled | ((indeterminate | checked) & !invalid & !valid)': '#clear',
     },
     width: '(2x - 2bw)',
     height: '(2x - 2bw)',

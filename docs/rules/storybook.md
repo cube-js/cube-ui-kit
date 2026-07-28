@@ -87,6 +87,24 @@ export const Story = Template.bind({});
 Story.args = { /* ... */ };
 ```
 
+### Validation Story
+
+Input components expose their validation state through **one** story named `Validation` that renders the
+valid case and the invalid case together. Do not add separate `Valid`, `Invalid`, `ValidationStates` or
+`WithValidation` stories.
+
+```tsx
+export const Validation: StoryFn<CubeComponentProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Component {...args} label="Valid" isValid />
+    <Component {...args} label="Invalid" isInvalid />
+  </Space>
+);
+```
+
+Pull the `isInvalid` / `isValid` argTypes from `VALIDATION_ARGS` in `src/stories/FormFieldArgs.ts` instead
+of declaring them inline.
+
 ## Testing with Play Functions
 
 ```tsx

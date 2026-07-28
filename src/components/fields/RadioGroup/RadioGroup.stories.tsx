@@ -1,6 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 
 import { CheckIcon, CloseIcon, ExclamationIcon } from '../../../icons';
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Block } from '../../Block';
 import { Title } from '../../content/Title';
@@ -98,14 +99,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    isInvalid: {
-      control: { type: 'boolean' },
-      description:
-        'Whether the radio group should display invalid visual styling',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
+    ...VALIDATION_ARGS,
 
     /* Events */
     onChange: {
@@ -146,8 +140,18 @@ const Template: StoryFn<CubeRadioGroupProps> = (args) => (
 export const Default = Template.bind({});
 Default.args = {};
 
-export const Invalid = Template.bind({});
-Invalid.args = { isInvalid: true };
+export const Validation: StoryFn<CubeRadioGroupProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Radio.Group {...args} label="Valid group" defaultValue="yes" isValid>
+      <Radio value="yes">Yes</Radio>
+      <Radio value="no">No</Radio>
+    </Radio.Group>
+    <Radio.Group {...args} label="Invalid group" defaultValue="yes" isInvalid>
+      <Radio value="yes">Yes</Radio>
+      <Radio value="no">No</Radio>
+    </Radio.Group>
+  </Space>
+);
 
 export const WithLabel = Template.bind({});
 WithLabel.args = {

@@ -13,6 +13,7 @@ import {
   SettingsIcon,
   UserIcon,
 } from '../../../icons';
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
@@ -161,21 +162,7 @@ const meta: any = {
         defaultValue: { summary: false },
       },
     },
-    isInvalid: {
-      control: { type: 'boolean' },
-      description:
-        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
-    isValid: {
-      control: { type: 'boolean' },
-      description: 'Whether the input should display its valid visual styling',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
+    ...VALIDATION_ARGS,
 
     /* Field */
     label: {
@@ -944,7 +931,7 @@ DisabledState.args = {
   searchPlaceholder: 'Cannot search...',
 };
 
-export const ValidationStates: StoryFn<CubeFilterListBoxProps<any>> = () => (
+export const Validation: StoryFn<CubeFilterListBoxProps<any>> = () => (
   <Space gap="3x" flow="column">
     <FilterListBox
       label="Valid state"

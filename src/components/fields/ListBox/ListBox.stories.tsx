@@ -12,6 +12,7 @@ import {
   SettingsIcon,
   UserIcon,
 } from '../../../icons';
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
@@ -146,21 +147,7 @@ const meta: any = {
         defaultValue: { summary: false },
       },
     },
-    isInvalid: {
-      control: { type: 'boolean' },
-      description:
-        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
-    isValid: {
-      control: { type: 'boolean' },
-      description: 'Whether the input should display its valid visual styling',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
+    ...VALIDATION_ARGS,
 
     /* Field */
     label: {
@@ -709,9 +696,7 @@ DisabledState.args = {
   selectionMode: 'single',
 };
 
-export const ValidationStates: StoryObj<
-  CubeListBoxProps<any>
->['render'] = () => (
+export const Validation: StoryObj<CubeListBoxProps<any>>['render'] = () => (
   <Space gap="3x" flow="column">
     <ListBox
       label="Valid Selection"

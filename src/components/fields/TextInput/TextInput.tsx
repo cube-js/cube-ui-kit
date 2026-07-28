@@ -1,7 +1,6 @@
 import { ForwardedRef, forwardRef, useRef } from 'react';
 import { useTextField } from 'react-aria';
 
-import { useProviderProps } from '../../../provider';
 import { mergeProps } from '../../../utils/react';
 import {
   castNullableStringValue,

@@ -6,6 +6,7 @@ import {
   VALIDATION_ARGS,
 } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Space } from '../../layout/Space';
 
 import { parseAbsoluteDate } from './parseDate';
 import { CubeTimeInputProps, TimeInput } from './TimeInput';
@@ -58,8 +59,12 @@ Default.args = {};
 export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { defaultValue: new Date('2023-10-04 12:14') };
 
-export const Invalid = Template.bind({});
-Invalid.args = { isInvalid: true };
+export const Validation: StoryFn<CubeTimeInputProps> = (props) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <TimeInput {...props} isValid aria-label="Valid time" />
+    <TimeInput {...props} isInvalid aria-label="Invalid time" />
+  </Space>
+);
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true };

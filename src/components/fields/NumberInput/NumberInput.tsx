@@ -3,7 +3,6 @@ import { ForwardedRef, forwardRef, RefObject, useRef } from 'react';
 import { AriaNumberFieldProps, useLocale, useNumberField } from 'react-aria';
 import { useNumberFieldState } from 'react-stately';
 
-import { useProviderProps } from '../../../provider';
 import { mergeProps } from '../../../utils/react';
 import {
   castNullableNumberValue,

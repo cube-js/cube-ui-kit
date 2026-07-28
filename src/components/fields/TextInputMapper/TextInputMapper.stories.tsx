@@ -1,8 +1,10 @@
 import { StoryFn } from '@storybook/react-vite';
 import { userEvent, within } from 'storybook/test';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Form } from '../../form/Form';
+import { Space } from '../../layout/Space';
 import { TextInput } from '../TextInput/index';
 
 import { CubeTextInputMapperProps, TextInputMapper } from './TextInputMapper';
@@ -71,21 +73,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    isInvalid: {
-      control: { type: 'boolean' },
-      description:
-        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
-    isValid: {
-      control: { type: 'boolean' },
-      description: 'Whether the input should display its valid visual styling',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
+    ...VALIDATION_ARGS,
 
     /* Events */
     onChange: {
@@ -192,6 +180,23 @@ Default.args = {};
 
 export const WithValue = Template.bind({});
 WithValue.args = { value: { name: 'value' } };
+
+export const Validation: StoryFn<CubeTextInputMapperProps> = (props) => (
+  <Space gap="2x" flow="column" placeItems="stretch">
+    <TextInputMapper
+      {...props}
+      label="Valid"
+      isValid
+      value={{ name: 'value' }}
+    />
+    <TextInputMapper
+      {...props}
+      label="Invalid"
+      isInvalid
+      value={{ name: '' }}
+    />
+  </Space>
+);
 
 export const WithValueAndNewMapping = Template.bind({});
 WithValueAndNewMapping.args = {

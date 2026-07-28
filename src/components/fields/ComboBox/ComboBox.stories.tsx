@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
@@ -164,21 +165,7 @@ const meta = {
         defaultValue: { summary: false },
       },
     },
-    isInvalid: {
-      control: { type: 'boolean' },
-      description:
-        'Whether the input should display its invalid visual styling. Takes precedence over isValid',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
-    isValid: {
-      control: { type: 'boolean' },
-      description: 'Whether the input should display its valid visual styling',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -603,7 +590,7 @@ export const Disabled = () => (
   </ComboBox>
 );
 
-export const ValidationStates = () => (
+export const Validation = () => (
   <Flex flow="column" gap="2x">
     <ComboBox
       label="Valid"

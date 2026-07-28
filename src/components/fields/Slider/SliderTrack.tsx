@@ -1,6 +1,8 @@
 import { Styles } from '@tenphi/tasty';
 import { useMemo } from 'react';
 
+import { getValidationMods } from '../../form';
+
 import { SliderTrackContainerElement } from './elements';
 
 import type { SliderState } from 'react-stately';
@@ -9,11 +11,20 @@ export type SliderTrackProps = {
   state: SliderState;
   orientation?: 'horizontal' | 'vertical';
   isDisabled?: boolean;
+  isInvalid?: boolean;
+  isValid?: boolean;
   styles?: Styles;
 };
 
 export function SliderTrack(props: SliderTrackProps) {
-  const { isDisabled, state, orientation = 'horizontal', styles } = props;
+  const {
+    isDisabled,
+    isInvalid,
+    isValid,
+    state,
+    orientation = 'horizontal',
+    styles,
+  } = props;
   const selectedTrack = [state.getThumbPercent(0), state.getThumbPercent(1)];
 
   const showRangeTrack = !Number.isNaN(selectedTrack[1]);
@@ -23,8 +34,9 @@ export function SliderTrack(props: SliderTrackProps) {
       disabled: isDisabled,
       horizontal: orientation === 'horizontal',
       range: showRangeTrack,
+      ...getValidationMods({ isInvalid, isValid }),
     }),
-    [isDisabled, showRangeTrack],
+    [isDisabled, showRangeTrack, orientation, isInvalid, isValid],
   );
 
   return (

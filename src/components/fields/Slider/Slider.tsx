@@ -66,13 +66,21 @@ function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
       orientation={orientation}
       styles={extractedStyles}
     >
-      {({ trackRef, inputRef, state }: SliderBaseChildArguments) => {
+      {({
+        trackRef,
+        inputRef,
+        state,
+        isInvalid,
+        isValid,
+      }: SliderBaseChildArguments) => {
         return (
           <>
             <Gradation state={state} ranges={[0, 1]} values={gradation} />
             <SliderTrack
               state={state}
               isDisabled={isDisabled}
+              isInvalid={isInvalid}
+              isValid={isValid}
               orientation={orientation}
               styles={trackStyles}
             />
@@ -82,6 +90,8 @@ function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
               inputRef={inputRef}
               trackRef={trackRef}
               isDisabled={isDisabled}
+              isInvalid={isInvalid}
+              isValid={isValid}
               styles={thumbStyles}
               tokens={thumbTokens}
             />

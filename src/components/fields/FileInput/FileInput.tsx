@@ -20,12 +20,16 @@ import {
 } from 'react';
 
 import { useI18n } from '../../../i18n';
-import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { useCombinedRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { Action } from '../../actions';
-import { useFieldProps, wrapWithField } from '../../form';
+import {
+  getValidationMods,
+  useFieldProps,
+  ValidationIndicator,
+  wrapWithField,
+} from '../../form';
 
 import type { AriaTextFieldProps } from 'react-aria';
 
@@ -47,6 +51,8 @@ const FileInputElement = tasty(Action, {
     },
     border: {
       '': true,
+      valid: '#success-text.50',
+      invalid: '#danger-text.50',
       ':focus-within & :focus-visible': '#primary-text',
     },
     radius: true,
@@ -83,6 +89,19 @@ const FileInputElement = tasty(Action, {
       textOverflow: 'ellipsis',
       width: 'max 100%',
       overflow: 'hidden',
+    },
+
+    State: {
+      display: 'flex',
+      placeItems: 'center',
+    },
+
+    ValidationIcon: {
+      $: '> State >',
+      display: 'grid',
+      placeItems: 'center',
+      width: 'min 2x',
+      fontSize: '$icon-size',
     },
 
     Input: {
@@ -172,6 +191,8 @@ function FileInput(props: CubeFileInputProps, ref) {
     placeholder,
     inputRef,
     isDisabled,
+    isInvalid,
+    isValid,
     inputStyles,
     type = 'file',
     inputProps,
@@ -233,6 +254,7 @@ function FileInput(props: CubeFileInputProps, ref) {
       mods={{
         selected: !!value,
         'drag-hover': dragHover,
+        ...getValidationMods({ isInvalid, isValid }),
       }}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === 'Space') {
@@ -272,6 +294,7 @@ function FileInput(props: CubeFileInputProps, ref) {
           placeholder ||
           t('fileInput.noFileSelected', 'No file selected')}
       </div>
+      <ValidationIndicator isInvalid={isInvalid} isValid={isValid} />
     </FileInputElement>
   );
 

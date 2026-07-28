@@ -3,7 +3,6 @@ import { useTextField } from 'react-aria';
 
 import { useI18n } from '../../../i18n';
 import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
-import { useProviderProps } from '../../../provider';
 import { mergeProps } from '../../../utils/react';
 import {
   castNullableStringValue,
