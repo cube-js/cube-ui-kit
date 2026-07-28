@@ -1,6 +1,6 @@
 ---
 name: ui-kit-verification
-description: "Verify a cube-ui-kit PR against the Cube Cloud console before merging: find the PR's canary snapshot, install it in a fresh cloud branch, hunt down every breakage the new API introduces (including the silent ones types miss), and migrate cloud to the new API. Use when the user says 'verify the ui-kit PR in cloud', 'install the snapshot to cloud', 'check this ui-kit change against cloud', or asks to migrate cloud to a ui-kit API introduced by a PR."
+description: "Verify a cube-ui-kit PR against the Cube Cloud console before merging: check the PR is settled enough to verify, install its canary snapshot in a fresh cloud branch, hunt down every breakage the new API introduces (including the silent ones types miss), migrate cloud, then hand the release back to the user and bump cloud off the canary once it publishes. Use when the user says 'verify the ui-kit PR in cloud', 'install the snapshot to cloud', 'check this ui-kit change against cloud', or asks to migrate cloud to a ui-kit API introduced by a PR."
 metadata:
   version: "1.0.0"
 ---
@@ -11,10 +11,47 @@ A `@cube-dev/ui-kit` PR is not done when its own tests pass — it is done when 
 works on top of it. Every PR publishes a canary snapshot to npm, so cloud can be built against
 the exact PR build before it is merged.
 
-This skill runs that loop: **snapshot → install → hunt breakages → migrate → report**.
+This skill runs that loop: **gate → snapshot → install → hunt breakages → migrate → report →
+release → de-canary**.
 
 The output is a cloud branch the user reviews. Do not open a cloud PR or merge anything unless
 asked.
+
+## Step 0 — Gate: is the PR ready to verify?
+
+Verifying an unsettled PR is wasted work — if the API still moves, you migrate cloud twice. Check
+this before installing anything.
+
+```bash
+gh pr view <number> --repo cube-js/cube-ui-kit --json isDraft,reviewDecision,mergeStateStatus
+gh pr checks <number> --repo cube-js/cube-ui-kit
+gh api graphql -f query='{repository(owner:"cube-js",name:"cube-ui-kit"){pullRequest(number:<number>){
+  reviewThreads(last:30){nodes{isResolved path}}}}}' \
+  --jq '[.data.repository.pullRequest.reviewThreads.nodes[]|select(.isResolved==false)|.path]'
+```
+
+**Stop and hand back to the user** when any of these hold:
+
+- **Unresolved review threads, or open review comments.** The API may still change in response to
+  them. Report what is outstanding; do not start migrating.
+- **`isDraft: true`.**
+- **A failing or pending required check** — `Tests & lint`, `Build & canary release`. If the canary
+  job has not succeeded there may be no snapshot to install, or a broken one.
+- **Chromatic is awaiting a human.** `UI Tests` or `UI Review` outside the `pass` bucket means
+  someone has to look at the visual diff and accept or reject the new baselines. **Only the user
+  can do that** — it is a judgement about whether the rendered change is intended. Ask them to
+  review and approve the Chromatic changes, and wait. Never accept baselines on their behalf.
+  When they are settled the descriptions read like `Approved by <name>`,
+  `N visual and accessibility changes accepted as baselines`, or `no changes`.
+
+**A missing approval is *not* a blocker.** `reviewDecision: REVIEW_REQUIRED` with
+`mergeStateStatus: BLOCKED` is the normal state of a PR that is otherwise green, and it is exactly
+the state worth verifying — cloud verification is often what justifies the approval. Proceed when
+approval is the only thing outstanding, and say so in your report.
+
+The gate is not only a starting condition. If review comments land on the ui-kit PR while you are
+mid-migration, re-apply it: the API may be about to change underneath you, and finishing a migration
+against a version that is about to move is worse than pausing. Report and wait.
 
 ## Step 1 — Identify the PR and its canary snapshot
 
@@ -235,26 +272,44 @@ Unit tests will not catch most Step 4b breakages; they are render-state bugs. If
 matters, run the app and look at it (`yarn dev` in `packages/console-ui`), or say plainly in the
 report that it was not visually verified.
 
-## Step 7 — Release, then de-canary
+## Step 7 — Ask for the release, then de-canary
 
 The consumer PR **must not merge with a `0.0.0-canary-*` pin**: canary tags are mutable and
 ephemeral, so a later `yarn install` or Docker rebuild can resolve to something else or fail once
-the tag is collected. That makes the canary pin a permanent blocker on the consumer PR, resolvable
-only in this order:
+the tag is collected. That makes the canary pin a blocker on the consumer PR which nothing you do
+can clear — it needs a real published version to point at.
 
-1. **The user releases the ui kit.** It takes two merges into `main` — the feature PR, then the
-   `Version Packages` PR that the changesets bot opens from it, which is the merge that actually
-   publishes. Both are gated on branch protection (approval + code-owner review), so hand this step
-   to the user rather than trying to drive it. Do not self-approve and do not `--admin` past
-   protection.
-2. Wait for the version to be real, then confirm it on npm rather than trusting a green workflow:
-   `npm view @cube-dev/ui-kit dist-tags --json` should show it as `latest`.
-3. `cd <cloud-dir> && yarn update-uikit <released-version>`.
-4. Re-run the consumer's checks; the released build is not byte-identical to the canary.
-5. Then the consumer PR can merge.
+So once verification is clean and the ui-kit PR is otherwise ready, **ask the user to make the
+release.** Do not merge it yourself: the release is two merges into `main` — the feature PR, then
+the `Version Packages` PR the changesets bot opens from it, which is the merge that actually
+publishes — and both are gated on branch protection. Do not self-approve, and do not `--admin` past
+protection.
 
-Expect a reviewer to flag the canary pin, and do not treat it as something you failed to fix — say
-explicitly that it is blocked on the release rather than leaving it looking unaddressed.
+Give them what they need to decide, in one message: the verification result, that the ui-kit PR is
+green and needs only their merge, and that the cloud PR is blocked on the canary until a version
+exists.
+
+When the release lands:
+
+1. **Confirm the version is real on npm**, rather than trusting a green workflow:
+   ```bash
+   npm view @cube-dev/ui-kit dist-tags --json   # the new version should be `latest`
+   ```
+2. **Bump cloud off the canary** — all four packages plus `yarn.lock`:
+   ```bash
+   cd <cloud-dir> && yarn update-uikit <released-version>
+   grep -rn "canary" packages/*/package.json yarn.lock   # must come back empty
+   ```
+3. **Re-run the consumer's checks.** The released build is not byte-identical to the canary, so
+   this is a real re-verification, not a formality — typecheck, lint, prettier, and the test suites.
+4. **Push it to the cloud PR** as its own commit, so the history shows the canary being replaced
+   rather than quietly rewritten. Note in the message that it was re-verified against the released
+   build.
+5. Then the consumer PR is mergeable — by the user, not by you.
+
+Expect a reviewer to flag the canary pin before this point, and do not treat it as something you
+failed to fix — say explicitly that it is blocked on the release rather than leaving it looking
+unaddressed.
 
 ## Step 8 — Report
 
@@ -267,6 +322,8 @@ Commit on the cloud branch and hand the user a review, not a summary of your act
 - Every file migrated, grouped by kind of change.
 - What you verified, and what you did not.
 - Anything left pre-existing-broken, stated explicitly so it is not mistaken for fallout.
+- **The one thing you need from them**, stated as a single ask rather than buried in status — the
+  Chromatic approval, the ui-kit approval, or the release. End on it.
 
 If the hunt turns up a genuine problem with the ui-kit PR — a breaking change presented as
 backwards-compatible, a missing deprecation path — say so. That finding is worth more than the
