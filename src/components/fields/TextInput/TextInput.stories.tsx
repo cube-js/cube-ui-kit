@@ -1,6 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Title } from '../../content/Title';
 import { Space } from '../../layout/Space';
@@ -96,12 +97,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description:
-        'Whether the input should display valid or invalid visual styling',
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -179,35 +175,25 @@ WithIcon.args = { icon: <IconCoin /> };
 export const Password = Template.bind({});
 Password.args = { icon: <IconCoin />, type: 'password' };
 
-export const Valid = Template.bind({});
-Valid.args = { validationState: 'valid', defaultValue: 'Valid input' };
-
-export const Invalid = Template.bind({});
-Invalid.args = { validationState: 'invalid', defaultValue: 'Invalid input' };
-
-export const ValidationStates: StoryFn<CubeTextInputProps> = (args) => (
+export const Validation: StoryFn<CubeTextInputProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Valid State</Title>
-    <TextInput {...args} validationState="valid" defaultValue="Valid input" />
+    <TextInput {...args} isValid defaultValue="Valid input" />
 
     <Title level={5}>Invalid State</Title>
-    <TextInput
-      {...args}
-      validationState="invalid"
-      defaultValue="Invalid input"
-    />
+    <TextInput {...args} isInvalid defaultValue="Invalid input" />
   </Space>
 );
 
-ValidationStates.args = {
+Validation.args = {
   width: '300px',
 };
 
-ValidationStates.parameters = {
+Validation.parameters = {
   docs: {
     description: {
       story:
-        'Use `validationState` prop to indicate validation status. Set to `valid` for success styling or `invalid` for error styling.',
+        'Use the `isValid` and `isInvalid` props to indicate validation status.',
     },
   },
 };

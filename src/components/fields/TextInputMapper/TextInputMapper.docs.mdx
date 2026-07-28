@@ -29,6 +29,13 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 
 Supports all [Field properties](/docs/getting-started-field-properties--docs)
 
+## Validation States
+
+`isValid` and `isInvalid` are forwarded to every key and value input, so the whole mapping list picks up
+the state.
+
+<Canvas of={TextInputMapperStories.Validation} />
+
 ## Sub-elements
 
 The TextInputMapper component is a complex compound component that doesn't expose styled sub-elements via the `styles` prop. Instead, it uses internal layout components and delegates styling to its key and value input components.

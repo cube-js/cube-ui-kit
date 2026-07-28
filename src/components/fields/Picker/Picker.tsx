@@ -29,7 +29,6 @@ import { useEvent } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
-import { useProviderProps } from '../../../provider';
 import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles } from '../../../utils/styles';
 import {
@@ -40,7 +39,12 @@ import {
 } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import {
+  getValidationIcon,
+  getValidationTheme,
+  useFieldProps,
+  wrapWithField,
+} from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 
@@ -151,8 +155,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
 ) {
   const { t } = useI18n();
 
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     valuePropsMapper: ({ value, onChange }) => {
       const fieldProps: Record<string, unknown> = {};
@@ -195,7 +197,8 @@ export const Picker = forwardRef(function Picker<T extends object>(
     labelStyles,
     isRequired,
     necessityIndicator,
-    validationState,
+    isInvalid,
+    isValid,
     isDisabled,
     isLoading,
     message,
@@ -548,6 +551,17 @@ export const Picker = forwardRef(function Picker<T extends object>(
   const showClearButton =
     isClearable && hasSelection && !isDisabled && !props.isReadOnly;
 
+  const validationIcon = getValidationIcon({ isInvalid, isValid });
+
+  if (validationIcon) {
+    suffix = (
+      <>
+        {suffix}
+        {validationIcon}
+      </>
+    );
+  }
+
   // Trigger element — plain JSX with no hooks.
   const triggerElement = (
     <ItemButton
@@ -556,7 +570,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
       id={id}
       qa={qa || 'PickerTrigger'}
       type={type}
-      theme={validationState === 'invalid' ? 'danger' : theme}
+      theme={getValidationTheme(theme, { isInvalid, isValid })}
       size={size}
       shape={shape}
       isDisabled={isDisabled || isLoading}
@@ -574,7 +588,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
         ) : showClearButton ? (
           <ItemActionProvider
             type={type}
-            theme={validationState === 'invalid' ? 'danger' : theme}
+            theme={getValidationTheme(theme, { isInvalid, isValid })}
           >
             <ItemAction
               icon={<CloseIcon />}
@@ -731,7 +745,8 @@ export const Picker = forwardRef(function Picker<T extends object>(
                 focusOnHover={focusOnHover}
                 shouldFocusWrap={shouldFocusWrap}
                 selectionMode={selectionMode}
-                validationState={validationState}
+                isInvalid={isInvalid}
+                isValid={isValid}
                 isDisabled={isDisabled}
                 isLoading={isLoading}
                 stateRef={internalListStateRef}

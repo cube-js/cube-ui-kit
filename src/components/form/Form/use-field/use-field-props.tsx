@@ -1,9 +1,12 @@
 import { useDebugValue, useId, useRef } from 'react';
 
 import { useChainedCallback, useEvent } from '../../../../_internal/index';
+import { useProviderProps } from '../../../../provider';
 import { mergeProps } from '../../../../utils/react/index';
 import { warn } from '../../../../utils/warnings';
+import { useValidationProps } from '../../validation/index';
 import { useInsideLegacyField } from '../Field';
+import { useFormProps } from '../Form';
 
 import { useField } from './use-field';
 
@@ -28,6 +31,12 @@ export function useFieldProps<
   T extends FieldTypes,
   Props extends UseFieldProps<T>,
 >(props: Props, params: UseFieldPropsParams = {}): Props {
+  // The single entry point for input components: provider defaults, then form context, then the
+  // normalization of the deprecated `validationState` prop into `isInvalid`/`isValid`.
+  props = useProviderProps(props);
+  props = useFormProps(props);
+  props = useValidationProps(props);
+
   // We use ref here to "memoize" initial value
   const isDisabledRef = useRef(params.unsafe__isDisabled ?? false);
 

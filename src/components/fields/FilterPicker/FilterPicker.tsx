@@ -29,7 +29,6 @@ import { useEvent } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
-import { useProviderProps } from '../../../provider';
 import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles } from '../../../utils/styles';
 import {
@@ -40,7 +39,12 @@ import {
 } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import {
+  getValidationIcon,
+  getValidationTheme,
+  useFieldProps,
+  wrapWithField,
+} from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import {
   CubeFilterListBoxProps,
@@ -173,8 +177,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 ) {
   const { t } = useI18n();
 
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     valuePropsMapper: ({ value, onChange }) => {
       const fieldProps: Record<string, unknown> = {};
@@ -216,7 +218,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     labelStyles,
     isRequired,
     necessityIndicator,
-    validationState,
+    isInvalid,
+    isValid,
     isDisabled,
     isLoading,
     message,
@@ -620,6 +623,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const showClearButton =
     isClearable && hasSelection && !isDisabled && !props.isReadOnly;
 
+  const validationIcon = getValidationIcon({ isInvalid, isValid });
+
+  if (validationIcon) {
+    suffix = (
+      <>
+        {suffix}
+        {validationIcon}
+      </>
+    );
+  }
+
   // Trigger element — plain JSX with no hooks.
   // The element type (ItemButton) is stable so React can reconcile efficiently.
   const triggerElement = (
@@ -629,7 +643,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       qa={qa || 'FilterPicker'}
       id={id}
       type={type}
-      theme={validationState === 'invalid' ? 'danger' : theme}
+      theme={getValidationTheme(theme, { isInvalid, isValid })}
       size={size}
       shape={shape}
       isDisabled={isDisabled || isLoading}
@@ -647,7 +661,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         ) : showClearButton ? (
           <ItemActionProvider
             type={type}
-            theme={validationState === 'invalid' ? 'danger' : theme}
+            theme={getValidationTheme(theme, { isInvalid, isValid })}
           >
             <ItemAction
               icon={<CloseIcon />}
@@ -817,7 +831,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 shouldFocusWrap={shouldFocusWrap}
                 allowsCustomValue={allowsCustomValue}
                 selectionMode={selectionMode}
-                validationState={validationState}
+                isInvalid={isInvalid}
+                isValid={isValid}
                 isDisabled={isDisabled}
                 isLoading={isLoading}
                 isLoadingItems={isLoadingItems}

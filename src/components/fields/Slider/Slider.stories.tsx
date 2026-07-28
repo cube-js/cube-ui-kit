@@ -1,6 +1,8 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Space } from '../../layout/Space';
 
 import { CubeSliderProps, Slider } from './Slider';
 
@@ -90,12 +92,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description:
-        'Whether the slider should display valid or invalid visual styling',
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -149,13 +146,6 @@ export default {
       description: 'How to display required or optional indicators',
       table: {
         defaultValue: { summary: 'icon' },
-      },
-    },
-    isInvalid: {
-      control: { type: 'boolean' },
-      description: 'Whether the current value is invalid',
-      table: {
-        defaultValue: { summary: false },
       },
     },
     description: {
@@ -226,6 +216,13 @@ const Template: StoryFn<CubeSliderProps> = (args) => <Slider {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {};
+
+export const Validation: StoryFn<CubeSliderProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="stretch">
+    <Slider {...args} label="Valid" isValid defaultValue={70} />
+    <Slider {...args} label="Invalid" isInvalid defaultValue={20} />
+  </Space>
+);
 
 export const Disabled = Template.bind({});
 Disabled.args = {

@@ -1,8 +1,9 @@
 import { StoryFn } from '@storybook/react-vite';
 import { userEvent, within } from 'storybook/test';
 
-import { ICON_ARG, VALIDATION_STATE_ARG } from '../../../stories/FormFieldArgs';
+import { ICON_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Space } from '../../layout/Space';
 
 import { CubeDateRangePickerProps, DateRangePicker } from './DateRangePicker';
 import { parseAbsoluteDate } from './parseDate';
@@ -17,7 +18,7 @@ export default {
   },
   argTypes: {
     ...ICON_ARG,
-    ...VALIDATION_STATE_ARG,
+    ...VALIDATION_ARGS,
   },
 };
 
@@ -61,8 +62,12 @@ WithSecondGranularity.args = {
   granularity: 'second',
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = { validationState: 'invalid' };
+export const Validation: StoryFn<CubeDateRangePickerProps> = (props) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <DateRangePicker {...props} isValid aria-label="Valid range" />
+    <DateRangePicker {...props} isInvalid aria-label="Invalid range" />
+  </Space>
+);
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true };

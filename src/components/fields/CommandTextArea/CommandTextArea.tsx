@@ -17,7 +17,6 @@ import { useFilter, useTextField } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
-import { useProviderProps } from '../../../provider';
 import { generateRandomId } from '../../../utils/random';
 import { chain, mergeProps, useCombinedRefs } from '../../../utils/react';
 import {
@@ -25,7 +24,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { CollectionItem as Item } from '../../CollectionItem';
-import { useFieldProps, useFormProps } from '../../form';
+import { useFieldProps } from '../../form';
 import {
   collectVisibleKeys,
   filterCollectionNodes,
@@ -202,8 +201,6 @@ function CommandTextArea<T extends object>(
   ref: ForwardedRef<HTMLElement>,
 ) {
   props = castNullableStringValue(props);
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({

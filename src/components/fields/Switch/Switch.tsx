@@ -13,7 +13,6 @@ import { AriaSwitchProps, useHover, useSwitch } from 'react-aria';
 import { useToggleState } from 'react-stately';
 
 import { LoadingIcon } from '../../../icons';
-import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
@@ -24,7 +23,7 @@ import {
 import { useId } from '../../../utils/react/useId';
 import { extractStyles } from '../../../utils/styles';
 import { Text } from '../../content/Text';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
 import { HiddenInput } from '../../HiddenInput';
 
 const SwitchWrapperElement = tasty({
@@ -53,6 +52,8 @@ const SwitchElement = tasty({
     fill: {
       '': '#surface',
       checked: '#primary',
+      'invalid & checked': '#danger',
+      'valid & checked': '#success',
       disabled: '#border.5',
       'disabled & checked': '#border',
     },
@@ -65,6 +66,7 @@ const SwitchElement = tasty({
       checked: '#primary-text',
       disabled: '#dark-05.5',
       invalid: '#danger',
+      valid: '#success',
     },
     width: {
       '': '5x 5x',
@@ -136,8 +138,6 @@ export interface CubeSwitchProps
 
 function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   props = castNullableIsSelected(props);
-  props = useProviderProps(props);
-  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
@@ -156,7 +156,8 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     isLoading,
     labelPosition,
     inputStyles,
-    validationState,
+    isInvalid,
+    isValid,
     size = 'medium',
     form,
   } = props;
@@ -178,8 +179,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     disabled: isDisabled,
     hovered: isHovered,
     focused: isFocused,
-    invalid: validationState === 'invalid',
-    valid: validationState === 'valid',
+    ...getValidationMods({ isInvalid, isValid }),
     'inside-form': insideForm,
     'side-label': labelPosition === 'side',
   };

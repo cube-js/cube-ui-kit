@@ -31,13 +31,21 @@ function RangeSlider(
 
   return (
     <SliderBase ref={ref} {...(otherProps as CubeSliderBaseProps<number[]>)}>
-      {({ trackRef, inputRef, state }: SliderBaseChildArguments) => {
+      {({
+        trackRef,
+        inputRef,
+        state,
+        isInvalid,
+        isValid,
+      }: SliderBaseChildArguments) => {
         return (
           <>
             <Gradation state={state} ranges={[0, 1]} values={gradation} />
             <SliderTrack
               state={state}
               isDisabled={isDisabled}
+              isInvalid={isInvalid}
+              isValid={isValid}
               orientation={props.orientation}
             />
             <SliderThumb
@@ -47,6 +55,8 @@ function RangeSlider(
               inputRef={minThumbInputRef}
               trackRef={trackRef}
               isDisabled={isDisabled}
+              isInvalid={isInvalid}
+              isValid={isValid}
             />
             <SliderThumb
               index={1}
@@ -55,6 +65,8 @@ function RangeSlider(
               inputRef={maxThumbInputRef}
               trackRef={trackRef}
               isDisabled={isDisabled}
+              isInvalid={isInvalid}
+              isValid={isValid}
             />
           </>
         );

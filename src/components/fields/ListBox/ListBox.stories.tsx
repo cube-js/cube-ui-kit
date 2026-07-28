@@ -12,6 +12,7 @@ import {
   SettingsIcon,
   UserIcon,
 } from '../../../icons';
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
@@ -146,11 +147,7 @@ const meta: any = {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description: 'Validation state',
-    },
+    ...VALIDATION_ARGS,
 
     /* Field */
     label: {
@@ -699,13 +696,11 @@ DisabledState.args = {
   selectionMode: 'single',
 };
 
-export const ValidationStates: StoryObj<
-  CubeListBoxProps<any>
->['render'] = () => (
+export const Validation: StoryObj<CubeListBoxProps<any>>['render'] = () => (
   <Space gap="3x" flow="column">
     <ListBox
       label="Valid Selection"
-      validationState="valid"
+      isValid
       selectionMode="single"
       defaultSelectedKey="option1"
       message="Great choice!"
@@ -716,7 +711,7 @@ export const ValidationStates: StoryObj<
 
     <ListBox
       label="Invalid Selection"
-      validationState="invalid"
+      isInvalid
       selectionMode="single"
       defaultSelectedKey="option1"
       message="Please select a different option"

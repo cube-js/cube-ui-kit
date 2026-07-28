@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
@@ -164,12 +165,7 @@ const meta = {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description:
-        'Whether the input should display valid or invalid visual styling',
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -594,11 +590,11 @@ export const Disabled = () => (
   </ComboBox>
 );
 
-export const ValidationStates = () => (
+export const Validation = () => (
   <Flex flow="column" gap="2x">
     <ComboBox
       label="Valid"
-      validationState="valid"
+      isValid
       defaultSelectedKey="apple"
       message="Good choice!"
     >
@@ -608,7 +604,7 @@ export const ValidationStates = () => (
     </ComboBox>
     <ComboBox
       label="Invalid"
-      validationState="invalid"
+      isInvalid
       defaultSelectedKey="apple"
       message="This fruit is not available"
     >

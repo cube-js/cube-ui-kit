@@ -158,7 +158,7 @@ import { IconMail } from '@tabler/icons-react';
 <TextInput
   label="Username"
   isRequired
-  validationState="invalid"
+  isInvalid
   message="Username must be at least 3 characters"
 />
 ```
@@ -182,7 +182,7 @@ import { IconMail } from '@tabler/icons-react';
 
 - `aria-label`, `aria-labelledby` – Accessible name for the input
 - `aria-describedby` – Links to description and error messages
-- `aria-invalid` – Managed automatically based on `validationState`
+- `aria-invalid` – Managed automatically based on `isInvalid`
 - `aria-required` – Set when `isRequired` is true
 - Additional ARIA attributes supported by React Aria's `useTextField`
 
@@ -200,7 +200,7 @@ import { IconMail } from '@tabler/icons-react';
    ```
 
 3. **Accessibility**: Always provide proper labels for screen readers
-4. **Validation**: Use `validationState` and `message` for user feedback
+4. **Validation**: Use `isInvalid` / `isValid` and `errorMessage` for user feedback
 5. **Performance**: Use `defaultValue` for uncontrolled inputs when possible
 
 ## Integration with Forms

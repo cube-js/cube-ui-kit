@@ -1,5 +1,6 @@
 import { MULTIPLE_VALUE_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Space } from '../../layout/Space';
 
 import { Checkbox } from './Checkbox';
 
@@ -33,8 +34,18 @@ const Template = (props) => (
 export const Default: StoryFn = Template.bind({});
 Default.args = {};
 
-export const Invalid: StoryFn = Template.bind({});
-Invalid.args = { validationState: 'invalid' };
+export const Validation: StoryFn = () => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Checkbox.Group label="Valid group" isValid defaultValue={['one']}>
+      <Checkbox value="one">One</Checkbox>
+      <Checkbox value="two">Two</Checkbox>
+    </Checkbox.Group>
+    <Checkbox.Group label="Invalid group" isInvalid>
+      <Checkbox value="one">One</Checkbox>
+      <Checkbox value="two">Two</Checkbox>
+    </Checkbox.Group>
+  </Space>
+);
 
 export const WithLabel: StoryFn = Template.bind({});
 WithLabel.args = { label: 'Checkbox Group', 'aria-label': undefined };

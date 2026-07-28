@@ -6,14 +6,16 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import React, { cloneElement, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useFocusRing } from 'react-aria';
 
-import { ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
-import { InvalidIcon } from '../../shared/InvalidIcon';
-import { ValidIcon } from '../../shared/ValidIcon';
+import {
+  getValidationMods,
+  hasValidationIndicator,
+  ValidationIndicator,
+} from '../../form';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
@@ -55,7 +57,8 @@ interface CubeDateAtomInputProps extends ContainerStyleProps {
   styles?: Styles;
   inputStyles?: Styles;
   size?: 'small' | 'medium' | 'large' | (string & {});
-  validationState?: ValidationState;
+  isInvalid?: boolean;
+  isValid?: boolean;
   isLoading?: boolean;
   suffix?: React.ReactNode;
 }
@@ -72,7 +75,8 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
     style,
     disableFocusRing,
     autoFocus,
-    validationState,
+    isInvalid,
+    isValid,
     isLoading,
     size = 'medium',
     suffix,
@@ -86,9 +90,11 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
     autoFocus,
   });
 
-  let isInvalid = validationState === 'invalid';
-  let validationIcon = isInvalid ? InvalidIcon : ValidIcon;
-  let validation = cloneElement(validationIcon);
+  const showValidationIndicator = hasValidationIndicator({
+    isInvalid,
+    isValid,
+    isLoading,
+  });
 
   return (
     <DateInputWrapperElement
@@ -99,8 +105,8 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
       mods={{
         disabled: isDisabled,
         focused: isFocused && !disableFocusRing,
-        invalid: isInvalid,
-        suffix: (validationState && !isLoading) || isLoading || !!suffix,
+        ...getValidationMods({ isInvalid, isValid }),
+        suffix: showValidationIndicator || !!suffix,
       }}
       {...mergeProps(fieldProps ?? {}, focusProps)}
       style={style}
@@ -115,13 +121,13 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
           {children}
         </DateInputElement>
       </div>
-      {(validationState && !isLoading) || isLoading || suffix ? (
+      {showValidationIndicator || suffix ? (
         <div data-element="Suffix">
-          {(validationState && !isLoading) || isLoading ? (
-            <div data-element="State">
-              {validationState && !isLoading ? validation : null}
-            </div>
-          ) : null}
+          <ValidationIndicator
+            isInvalid={isInvalid}
+            isValid={isValid}
+            isLoading={isLoading}
+          />
           {suffix}
         </div>
       ) : null}

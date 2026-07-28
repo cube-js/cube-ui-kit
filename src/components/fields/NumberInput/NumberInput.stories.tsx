@@ -1,8 +1,10 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Text } from '../../content/Text';
+import { Space } from '../../layout/Space';
 
 import { NumberInput } from './NumberInput';
 
@@ -93,12 +95,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description:
-        'Whether the input should display valid or invalid visual styling',
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -204,6 +201,13 @@ export const Small = Template.bind({});
 Small.args = {
   size: 'small',
 };
+
+export const Validation: StoryFn<any> = (props) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <NumberInput {...props} label="Valid" isValid defaultValue={42} />
+    <NumberInput {...props} label="Invalid" isInvalid defaultValue={-1} />
+  </Space>
+);
 
 export const Disabled = Template.bind({});
 Disabled.args = {

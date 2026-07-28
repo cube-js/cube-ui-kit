@@ -8,7 +8,6 @@ import {
 import { useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal/index';
-import { useProviderProps } from '../../../provider';
 import { chain, mergeProps } from '../../../utils/react';
 import {
   castNullableStringValue,
@@ -32,7 +31,6 @@ function TextArea(
   ref: ForwardedRef<HTMLElement>,
 ) {
   props = castNullableStringValue(props);
-  props = useProviderProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({

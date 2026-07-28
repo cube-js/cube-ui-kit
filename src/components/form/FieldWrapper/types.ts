@@ -4,15 +4,14 @@ import { ReactElement, ReactNode } from 'react';
 import {
   LabelPosition,
   NecessityIndicator,
-  ValidationState,
+  ValidationProps,
 } from '../../../shared/index';
 import { CubeLabelProps } from '../Label';
 
 // ADDING NEW PROPS TO THIS INTERFACE REQUIRES ADDING THEM TO createFieldWrapperPropsKeys FUNCTION
 
-export type CubeFieldWrapperProps = {
+export type CubeFieldWrapperProps = ValidationProps & {
   as?: keyof HTMLElementTagNameMap;
-  validationState?: ValidationState;
   styles?: Styles;
   /** Whether the input is required */
   isRequired?: boolean;

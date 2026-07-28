@@ -11,7 +11,7 @@ When used inside a [Form](/docs/forms-form--docs), these properties are automati
 ## Identity & Form Integration
 
 - **`name`** `string` — Field name for form data binding. Required when used within a Form.
-- **`form`** `CubeFormInstance` — Form instance. Automatically provided when inside a Form context.
+- **`form`** `CubeFormInstance` — Form instance. Automatically provided when inside a Form context. Pass it explicitly to link an input to a form it is not nested in, or to override the surrounding form.
 - **`defaultValue`** `any` — Default value for the field in uncontrolled mode.
 - **`id`** `string` — Unique ID for the field element.
 - **`idPrefix`** `string` — ID prefix to avoid collisions between multiple forms.
@@ -39,7 +39,9 @@ When used inside a [Form](/docs/forms-form--docs), these properties are automati
 - **`isReadOnly`** `boolean` (default: `false`) — Whether the field can be focused but not changed.
 - **`isLoading`** `boolean` (default: `false`) — Whether to show a loading spinner and disable interactions.
 - **`isHidden`** `boolean` (default: `false`) — Whether the field is hidden.
-- **`validationState`** `'valid' | 'invalid'` — Visual validation state of the field.
+- **`isInvalid`** `boolean` (default: `false`) — Whether the field displays its invalid visual styling. Takes precedence over `isValid`.
+- **`isValid`** `boolean` (default: `false`) — Whether the field displays its valid visual styling.
+- **`validationState`** `'valid' | 'invalid'` — _(deprecated)_ Use `isInvalid` / `isValid` instead.
 - **`autoFocus`** `boolean` (default: `false`) — Whether the field should receive focus on render.
 
 ## Validation

@@ -2,6 +2,7 @@ import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
 import { useState } from 'react';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Space } from '../../layout/Space';
@@ -106,12 +107,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      options: [undefined, 'valid', 'invalid'],
-      control: { type: 'radio' },
-      description:
-        'Whether the textarea should display valid or invalid visual styling',
-    },
+    ...VALIDATION_ARGS,
     autoFocus: {
       control: { type: 'boolean' },
       description: 'Whether the element should receive focus on render',
@@ -170,13 +166,6 @@ export default {
       description: 'How to display required or optional indicators',
       table: {
         defaultValue: { summary: 'icon' },
-      },
-    },
-    isInvalid: {
-      control: { type: 'boolean' },
-      description: 'Whether the current value is invalid',
-      table: {
-        defaultValue: { summary: false },
       },
     },
     description: {
@@ -249,6 +238,18 @@ WithIcon.args = { icon: true };
 
 export const Password = Template.bind({});
 Password.args = { icon: true, type: 'password', defaultValue: 'hidden value' };
+
+export const Validation: StoryFn<CubeTextAreaProps> = (props) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <TextArea {...props} label="Valid" isValid defaultValue="Valid input" />
+    <TextArea
+      {...props}
+      label="Invalid"
+      isInvalid
+      defaultValue="Invalid input"
+    />
+  </Space>
+);
 
 export const AutoSize = Template.bind({});
 AutoSize.args = { autoSize: true, defaultValue: '1\n2\n3\n4', rows: 2 };

@@ -1,7 +1,6 @@
 import { ForwardedRef, forwardRef, useRef } from 'react';
 import { useTextField } from 'react-aria';
 
-import { useProviderProps } from '../../../provider';
 import { mergeProps } from '../../../utils/react';
 import {
   castNullableStringValue,
@@ -20,7 +19,6 @@ export const TextInput = forwardRef(function TextInput(
   ref: ForwardedRef<HTMLElement>,
 ) {
   props = castNullableStringValue(props);
-  props = useProviderProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({

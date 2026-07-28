@@ -16,8 +16,19 @@ export type LabelPosition = 'side' | 'top' | 'split';
 /** The type of necessity indicator */
 export type NecessityIndicator = 'icon' | 'label';
 
-/** The validation state of the field */
+/**
+ * The validation state of the field
+ * @deprecated Use `isInvalid` / `isValid` instead.
+ */
 export type ValidationState = 'invalid' | 'valid';
+
+/** Resolved validation state of the field */
+export interface ValidationProps {
+  /** Whether the field is in an invalid state. Takes precedence over `isValid`. */
+  isInvalid?: boolean;
+  /** Whether the field is in a valid state */
+  isValid?: boolean;
+}
 
 /** On which event perform the validation for the field */
 export type ValidateTrigger = 'onBlur' | 'onChange' | 'onSubmit';
@@ -82,7 +93,7 @@ export interface FieldBaseProps extends FormBaseProps, FieldCoreProps {
   forceField?: boolean;
 }
 
-export interface FormBaseProps {
+export interface FormBaseProps extends ValidationProps {
   /** Styles of the label */
   labelStyles?: Styles;
   /** Where to place label relative to input */
@@ -95,7 +106,10 @@ export interface FormBaseProps {
   necessityLabel?: ReactNode;
   /** Whether the field is read only */
   isReadOnly?: boolean;
-  /** The validation state of the field */
+  /**
+   * The validation state of the field
+   * @deprecated Use `isInvalid` / `isValid` instead.
+   */
   validationState?: ValidationState;
   /** On which event perform validation for the field */
   validateTrigger?: ValidateTrigger;

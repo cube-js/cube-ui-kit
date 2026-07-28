@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useEvent, useIsFirstRender } from '../../../../_internal/index';
 import { ValidateTrigger } from '../../../../shared/index';
+import { resolveValidationProps } from '../../validation/index';
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
 import { delayValidationRule } from '../validation';
@@ -57,12 +58,14 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
     description,
     errorMessage,
     validateTrigger = params.defaultValidationTrigger,
-    validationState,
     validationDelay,
     showValid,
     shouldUpdate,
     isRequired: isRequiredProp,
   } = props;
+
+  const { isInvalid: isInvalidProp, isValid: isValidProp } =
+    resolveValidationProps(props);
 
   const processedRules = useMemo(() => {
     let finalRules = rules;
@@ -209,16 +212,10 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
       field,
       nonInput,
 
-      validationState:
-        validationState ??
-        (field?.errors?.length
-          ? 'invalid'
-          : showValid && field?.status === 'valid'
-            ? 'valid'
-            : undefined),
+      // Explicit validation props always win over the state derived from the form
+      isInvalid: isInvalidProp ?? !!field?.errors?.length,
+      isValid: isValidProp ?? !!(showValid && field?.status === 'valid'),
       ...(isRequired && { isRequired }),
-      isInvalid: field?.status === 'invalid',
-      isValid: field?.status === 'valid',
       message:
         message !== undefined
           ? message
@@ -248,7 +245,8 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
       onBlurHandler,
       onChangeHandler,
       validateTrigger,
-      validationState,
+      isInvalidProp,
+      isValidProp,
       showValid,
       nonInput,
     ],

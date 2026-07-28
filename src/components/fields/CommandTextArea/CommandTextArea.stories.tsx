@@ -1,7 +1,9 @@
 import { StoryFn } from '@storybook/react-vite';
 import { useState } from 'react';
 
+import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Space } from '../../layout/Space';
 
 import { CommandTextArea } from './CommandTextArea';
 
@@ -98,6 +100,7 @@ export default {
       control: { type: null },
       description: 'Keys of disabled options',
     },
+    ...VALIDATION_ARGS,
   },
 };
 
@@ -126,6 +129,45 @@ export const Default: StoryFn = (props) => (
       </CommandTextArea.Item>
     ))}
   </CommandTextArea>
+);
+
+export const Validation: StoryFn = (props) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <CommandTextArea
+      label="Valid"
+      width="40x"
+      {...props}
+      isValid
+      defaultValue="/help"
+    >
+      {commands.map((c) => (
+        <CommandTextArea.Item
+          key={c.key}
+          textValue={c.key}
+          description={c.description}
+        >
+          {c.key}
+        </CommandTextArea.Item>
+      ))}
+    </CommandTextArea>
+    <CommandTextArea
+      label="Invalid"
+      width="40x"
+      placeholder="Type / to see commands…"
+      {...props}
+      isInvalid
+    >
+      {commands.map((c) => (
+        <CommandTextArea.Item
+          key={c.key}
+          textValue={c.key}
+          description={c.description}
+        >
+          {c.key}
+        </CommandTextArea.Item>
+      ))}
+    </CommandTextArea>
+  </Space>
 );
 
 export const Controlled: StoryFn = () => {

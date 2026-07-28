@@ -816,6 +816,24 @@ describe('<FilterListBox />', () => {
   describe('Validation states', () => {
     it('should apply validation styles', () => {
       const { container, rerender } = render(
+        <FilterListBox label="Select a fruit" isValid>
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      expect(container.firstChild).toHaveAttribute('data-valid');
+
+      rerender(
+        <FilterListBox label="Select a fruit" isInvalid>
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      expect(container.firstChild).toHaveAttribute('data-invalid');
+    });
+
+    it('should still support the deprecated validationState', () => {
+      const { container, rerender } = render(
         <FilterListBox label="Select a fruit" validationState="valid">
           {basicItems}
         </FilterListBox>,

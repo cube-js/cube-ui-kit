@@ -8,6 +8,7 @@ import {
 } from 'react-aria';
 
 import { mergeProps } from '../../../utils/react';
+import { getValidationMods } from '../../form';
 
 import { SliderThumbElement } from './elements';
 
@@ -16,6 +17,8 @@ import type { SliderState } from 'react-stately';
 export interface SliderThumbProps extends AriaSliderThumbOptions {
   state: SliderState;
   isDisabled?: boolean;
+  isInvalid?: boolean;
+  isValid?: boolean;
   trackRef: RefObject<HTMLElement | null>;
   inputRef: RefObject<HTMLInputElement | null>;
   index: number;
@@ -24,7 +27,16 @@ export interface SliderThumbProps extends AriaSliderThumbOptions {
 }
 
 export function SliderThumb(props: SliderThumbProps) {
-  let { state, index, inputRef, isDisabled, styles, tokens } = props;
+  let {
+    state,
+    index,
+    inputRef,
+    isDisabled,
+    isInvalid,
+    isValid,
+    styles,
+    tokens,
+  } = props;
 
   const backupRef = useRef<HTMLInputElement>(null);
 
@@ -53,8 +65,18 @@ export function SliderThumb(props: SliderThumbProps) {
       disabled: isDisabled,
       collapsed: isCollapsed,
       stuck: isStuck,
+      ...getValidationMods({ isInvalid, isValid }),
     };
-  }, [isHovered, isCollapsed, isStuck, isDragging, isFocused, isDisabled]);
+  }, [
+    isHovered,
+    isCollapsed,
+    isStuck,
+    isDragging,
+    isFocused,
+    isDisabled,
+    isInvalid,
+    isValid,
+  ]);
 
   return (
     <SliderThumbElement
