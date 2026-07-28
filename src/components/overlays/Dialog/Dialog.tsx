@@ -109,6 +109,13 @@ const CloseButton = tasty(ItemButton, {
     position: 'absolute',
     top: '1x',
     right: '1x',
+    // Without an explicit z-index, this button and any later sibling that is
+    // also positioned (e.g. a dialog content wrapper with `position: relative`)
+    // sit in the same CSS stacking tier ("positioned, z-index: auto"), where
+    // DOM order — not visual position — decides the winner. Being first in
+    // the DOM (see render below), this button would lose that tie and the
+    // sibling would silently swallow clicks meant for it.
+    zIndex: 1,
   },
 });
 

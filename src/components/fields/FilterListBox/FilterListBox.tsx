@@ -32,6 +32,7 @@ import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
 import { StyledHeader } from '../../actions/Menu/styled';
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
+import { useDialogContext } from '../../overlays/Dialog/context';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import {
   DEFAULT_INPUT_STYLES,
@@ -218,6 +219,15 @@ export const FilterListBox = forwardRef(function FilterListBox<
   });
 
   const { t } = useI18n();
+
+  // When rendered inside a dismissable Dialog (e.g. the popover-turned-modal
+  // that `FilterPicker` falls back to on narrow viewports), the Dialog places
+  // an absolutely-positioned close button in its own top-right corner. The
+  // `header` slot below doesn't know about it, so any header content flowing
+  // to that same corner (custom title/actions) visually collides with — and
+  // intercepts clicks on — the close button. Reserve the same right padding
+  // Dialog's own header slot reserves for `isDismissable` to keep clear of it.
+  const { isDismissable: isInsideDismissableDialog } = useDialogContext();
 
   let {
     qa,
@@ -1099,7 +1109,15 @@ export const FilterListBox = forwardRef(function FilterListBox<
       {...focusProps}
     >
       {header ? (
-        <StyledHeaderWithoutBorder data-size={size} styles={headerStyles}>
+        <StyledHeaderWithoutBorder
+          data-size={size}
+          styles={{
+            ...(isInsideDismissableDialog
+              ? { padding: '.5x (1.5x + 4x) .5x 1.5x' }
+              : null),
+            ...headerStyles,
+          }}
+        >
           {header}
         </StyledHeaderWithoutBorder>
       ) : (
