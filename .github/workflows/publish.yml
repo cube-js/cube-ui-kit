@@ -81,7 +81,13 @@ jobs:
       - name: Clear .npmrc auth token (use OIDC instead)
         run: npm config delete //registry.npmjs.org/:_authToken || true
 
+      # The Version Packages PR changes nothing but the version and changelog,
+      # so a canary of it would be a duplicate of what `main` already published
+      # and would leave another stale `pr_*` dist-tag behind. The job itself
+      # still runs so the required `Build & canary release` check reports, and
+      # the build above still verifies the exact tree that is about to ship.
       - name: Publish canary to npm
+        if: github.head_ref != 'changeset-release/main'
         env:
           CANARY_VERSION: ${{ steps.version.outputs.version }}
           PR_TAG: pr_${{ github.event.number }}
@@ -94,6 +100,7 @@ jobs:
           fi
 
       - name: Comment PR
+        if: github.head_ref != 'changeset-release/main'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
