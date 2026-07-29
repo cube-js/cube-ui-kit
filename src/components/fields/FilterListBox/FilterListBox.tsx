@@ -224,9 +224,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
   // that `FilterPicker` falls back to on narrow viewports), the Dialog places
   // an absolutely-positioned close button in its own top-right corner. The
   // `header` slot below doesn't know about it, so any header content flowing
-  // to that same corner (custom title/actions) visually collides with — and
-  // intercepts clicks on — the close button. Reserve the same right padding
-  // Dialog's own header slot reserves for `isDismissable` to keep clear of it.
+  // to that same corner (custom title/actions) visually collides with it.
+  // Reserve the same `+4x` clearance Dialog's own header slot adds to its
+  // base padding for `isDismissable` (see Dialog.tsx), applied on top of
+  // this header's own base right padding (StyledHeader's `1.5x`).
   const { isDismissable: isInsideDismissableDialog } = useDialogContext();
 
   let {
@@ -1113,7 +1114,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           data-size={size}
           styles={{
             ...(isInsideDismissableDialog
-              ? { padding: '.5x (1.5x + 4x) .5x 1.5x' }
+              ? { paddingRight: '(1.5x + 4x)' }
               : null),
             ...headerStyles,
           }}
