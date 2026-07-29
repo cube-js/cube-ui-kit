@@ -110,9 +110,9 @@ const StyledHeaderWithoutBorder = tasty(StyledHeader, {
     // an absolutely-positioned close button in its own top-right corner. Reserve
     // the same `+4x` clearance Dialog's own header slot adds to its base padding
     // for `isDismissable` (see Dialog.tsx), so header content doesn't collide.
-    paddingRight: {
-      '': '1.5x',
-      dismissable: '(1.5x + 4x)',
+    padding: {
+      '': 'right 1.5x',
+      dismissable: 'right (1.5x + 4x)',
     },
   },
 });
