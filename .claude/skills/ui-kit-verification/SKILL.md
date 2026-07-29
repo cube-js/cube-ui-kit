@@ -1,8 +1,8 @@
 ---
 name: ui-kit-verification
-description: "Verify a cube-ui-kit PR against the Cube Cloud console before merging: check the PR is settled enough to verify, install its canary snapshot in a fresh cloud branch, hunt down every breakage the new API introduces (including the silent ones types miss), migrate cloud, then hand the release back to the user and bump cloud off the canary once it publishes. Use when the user says 'verify the ui-kit PR in cloud', 'install the snapshot to cloud', 'check this ui-kit change against cloud', or asks to migrate cloud to a ui-kit API introduced by a PR."
+description: "Verify a cube-ui-kit PR against the Cube Cloud console before merging: check the PR is settled enough to verify, install its canary snapshot in a fresh cloud branch, hunt down every breakage the new API introduces (including the silent ones types miss), migrate cloud, then hand the release back to the user and bump cloud off the canary once it publishes. Also covers palette work, where types and tests prove nothing: measuring token drift across all four scheme variants, bumping @tenphi/glaze, refreshing a stale canary on a long-lived branch, keeping cloud's three copies of the recipe in lockstep, and splitting a palette PR. Use when the user says 'verify the ui-kit PR in cloud', 'install the snapshot to cloud', 'check this ui-kit change against cloud', asks to migrate cloud to a ui-kit API introduced by a PR, or asks to bump Glaze / retune a seed / migrate the palette."
 metadata:
-  version: "1.0.0"
+  version: '1.1.0'
 ---
 
 # UI Kit Verification
@@ -44,7 +44,7 @@ gh api graphql -f query='{repository(owner:"cube-js",name:"cube-ui-kit"){pullReq
   When they are settled the descriptions read like `Approved by <name>`,
   `N visual and accessibility changes accepted as baselines`, or `no changes`.
 
-**A missing approval is *not* a blocker.** `reviewDecision: REVIEW_REQUIRED` with
+**A missing approval is _not_ a blocker.** `reviewDecision: REVIEW_REQUIRED` with
 `mergeStateStatus: BLOCKED` is the normal state of a PR that is otherwise green, and it is exactly
 the state worth verifying — cloud verification is often what justifies the approval. Proceed when
 approval is the only thing outstanding, and say so in your report.
@@ -82,16 +82,16 @@ The migration is only as good as your model of what changed. Read, in this order
    deprecated, and what silently changed behaviour.
 2. **`git diff origin/main...HEAD --stat`** — the blast radius.
 3. **The rules doc for the area** (e.g. [input-components.md](../../../docs/rules/input-components.md)
-   for form fields) — the canonical shape of the new API, which is what cloud should be migrated *to*.
+   for form fields) — the canonical shape of the new API, which is what cloud should be migrated _to_.
 4. **The diff of the types and the resolution helpers** — for a prop change, the prop
    interfaces (`src/shared/*.ts`, `**/types.ts`) and whatever normalizes them. This is where you
-   learn whether the old prop was *deprecated* (still works) or *deleted* (breaks), and that
+   learn whether the old prop was _deprecated_ (still works) or _deleted_ (breaks), and that
    distinction drives everything in Step 4.
 
 Write down, explicitly, three lists:
 
 - **Deleted** — removed exports and removed props. These break loudly at the type level.
-- **Deprecated** — still accepted, normalized internally. These do *not* break; they are the
+- **Deprecated** — still accepted, normalized internally. These do _not_ break; they are the
   migration work.
 - **Behavioural** — same types, different runtime result (precedence changes, a component no
   longer registering with a form, a state that now renders where it was previously ignored).
@@ -158,17 +158,17 @@ not the raw count, is the evidence that you fixed something and broke nothing.
 
 ### 4b. Find the silent breakages
 
-This is the core of the skill. Types will not help here, so search for the *patterns* the change
+This is the core of the skill. Types will not help here, so search for the _patterns_ the change
 invalidated. For a validation-props change, that was:
 
-| Pattern | Why it breaks silently |
-| --- | --- |
-| Cloud components reading a **removed-from-the-pipeline prop** off the result of `useFieldProps` | `useFieldProps` no longer returns it, so the destructured value is now permanently `undefined` and the styling it drove never renders. Nothing type-errors, because the component declares the prop itself. |
-| Props passed to a ui-kit component through an **object-literal spread** (`{...{ a, b }}`, `{...(cond ? {…} : {})}`) | JSX excess-property checking does not reach through the spread, so a prop that no longer exists is silently dropped instead of erroring. |
-| Local prop types **mirroring** a ui-kit prop union (`validationState?: 'valid' \| 'invalid'`) | Still valid TypeScript, now wired to nothing. |
-| A component that **stopped registering with the form** | Still renders, silently no longer bound. Grep its usages for `name=`, `rules=`, and `form=`. |
-| A prop that was **accepted and ignored**, and now takes effect | New visual state appears where nothing appeared before. Not a bug, but it belongs in the report. |
-| A **precedence flip** (explicit prop now wins over derived state) | Grep for elements carrying *both* the explicit prop and the derived source (e.g. both `name=` and `isInvalid=`) — those are the only places a flip can change behaviour. |
+| Pattern                                                                                                             | Why it breaks silently                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloud components reading a **removed-from-the-pipeline prop** off the result of `useFieldProps`                     | `useFieldProps` no longer returns it, so the destructured value is now permanently `undefined` and the styling it drove never renders. Nothing type-errors, because the component declares the prop itself. |
+| Props passed to a ui-kit component through an **object-literal spread** (`{...{ a, b }}`, `{...(cond ? {…} : {})}`) | JSX excess-property checking does not reach through the spread, so a prop that no longer exists is silently dropped instead of erroring.                                                                    |
+| Local prop types **mirroring** a ui-kit prop union (`validationState?: 'valid' \| 'invalid'`)                       | Still valid TypeScript, now wired to nothing.                                                                                                                                                               |
+| A component that **stopped registering with the form**                                                              | Still renders, silently no longer bound. Grep its usages for `name=`, `rules=`, and `form=`.                                                                                                                |
+| A prop that was **accepted and ignored**, and now takes effect                                                      | New visual state appears where nothing appeared before. Not a bug, but it belongs in the report.                                                                                                            |
+| A **precedence flip** (explicit prop now wins over derived state)                                                   | Grep for elements carrying _both_ the explicit prop and the derived source (e.g. both `name=` and `isInvalid=`) — those are the only places a flip can change behaviour.                                    |
 
 Grep by prop name across all four packages, and read every hit rather than blind-replacing —
 separate genuine ui-kit props from cloud's own identically-named fields (cloud has its own
@@ -193,7 +193,7 @@ the tri-state cases are where mistakes hide:
   always set here — do not collapse it to a single prop)
 - a `Record<string, 'invalid'>` lookup → a `Record<string, boolean>`, renamed to match
 
-Keep the diff scoped to the API change. Cleanups the new API merely *permits* — such as dropping a
+Keep the diff scoped to the API change. Cleanups the new API merely _permits_ — such as dropping a
 `useFormProps` call that `useFieldProps` now applies internally — are a separate change; leave
 them out unless asked.
 
@@ -207,7 +207,7 @@ worth adding, that is its own PR with its own design decision.
 
 ## Step 6 — Verify
 
-In a fresh checkout `console-ui`'s tests do not merely fail, they fail to *load*: every test file
+In a fresh checkout `console-ui`'s tests do not merely fail, they fail to _load_: every test file
 errors on `Failed to resolve import "@cubejs-enterprise/cross-runtime"` because that workspace
 package is unbuilt. Build it first, or you will read a total wipeout as ui-kit fallout:
 
@@ -235,7 +235,9 @@ evidence, assert on the **computed style**, which resolves tasty's generated CSS
 const border = (el: HTMLElement) => getComputedStyle(el).border;
 // invalid → "var(--border-width) solid var(--danger-color)"
 // neutral → "var(--border-width) solid var(--border-color, currentColor)"
-expect(border(screen.getByTestId('DirectoryTreeInput'))).toContain('--danger-color');
+expect(border(screen.getByTestId('DirectoryTreeInput'))).toContain(
+  '--danger-color',
+);
 ```
 
 Write a throwaway probe spec first that dumps `outerHTML` and the computed style for both states,
@@ -245,7 +247,7 @@ vitest reporter; write probe output to a file and `cat` it.
 
 **Drive the state through the form, not through the prop.** A test that hands `isInvalid` in
 directly asserts almost nothing — the component renders the caller's value either way, so it passes
-against the broken version too and only *looks* like a regression guard. Push the state in from the
+against the broken version too and only _looks_ like a regression guard. Push the state in from the
 form instead:
 
 ```ts
@@ -328,3 +330,103 @@ Commit on the cloud branch and hand the user a review, not a summary of your act
 If the hunt turns up a genuine problem with the ui-kit PR — a breaking change presented as
 backwards-compatible, a missing deprecation path — say so. That finding is worth more than the
 migration.
+
+---
+
+# Palette and token changes
+
+Everything above assumes the API surface changed. When the **palette** changes — a Glaze bump, a
+seed retune, a `lightness`→`tone` migration — typechecking and the test suites tell you almost
+nothing, because no test asserts on a colour that nobody wrote an assertion for. Measure instead.
+
+## Never eyeball a palette change; dump and diff it
+
+Resolve every token in **all four scheme variants** and diff against a baseline. Tasty needs a DOM,
+so run it as a throwaway vitest spec (jsdom is already configured) rather than a plain node script:
+
+```ts
+// src/__token-dump.test.ts — delete before committing
+import { writeFileSync } from 'node:fs';
+
+import { getPaletteTokens } from './tokens'; // cloud: '@/styles/palette'
+
+it('dumps', () => {
+  const t = getPaletteTokens() as Record<string, Record<string, string>>;
+  const out: Record<string, string> = {};
+  for (const k of Object.keys(t).sort())
+    out[k] = Object.keys(t[k])
+      .sort()
+      .map((s) => `${s}=${t[k][s]}`)
+      .join(' | ');
+  writeFileSync(process.env.TOKEN_DUMP_OUT!, JSON.stringify(out, null, 1));
+  expect(Object.keys(out).length).toBeGreaterThan(50);
+});
+```
+
+Dump once per candidate (stash/patch the source between runs), then diff. To compare across a
+format change (Glaze `0.x` emits `okhsl(...)`, `1.x` defaults to `oklch(...)`) a textual diff is
+useless — convert both sides to RGB first and report a per-channel delta, grouped by token family
+(`surface*` / `accent*` / `accent-disabled*`). A mean delta per group is what tells you whether a
+change is a retune or a redesign.
+
+**Light mode alone will mislead you.** Text tokens usually carry `contrast: ['AA','AAA']`, and the
+contrast solver — not the authored `tone` — fixes their value, so an authored-delta change looks
+like a no-op in light mode and still moves the `@hc` / `@dark & @hc` variants. A relative tone that
+_overshoots_ the window is often deliberate: it is what drives a token to the absolute extremes in
+high contrast. Before "fixing" an inconsistent-looking delta, diff all four variants; if only HC
+moves, you are about to trade away contrast where the user explicitly asked for more.
+
+## Long-lived ui-kit branches: canary drift
+
+A canary is only as current as its branch's last merge from `main`. A branch that has been open a
+while will publish snapshots that **predate an API `main` shipped and cloud master already adopted**
+— cloud then fails to typecheck against the canary even though neither side is individually wrong.
+
+Do not patch the cloud call sites and do not downgrade the pin. Fix it at the source: merge
+`origin/main` into the ui-kit branch, push (the `Publish` workflow mints a fresh `pr_<N>` canary),
+then repin cloud. Check the branch first — `git log --oneline HEAD..origin/main` — and resolve the
+inevitable `package.json` / lockfile conflict deliberately: keep the branch's `@tenphi/glaze` (it is
+the branch's whole point) and take `main`'s newer `@tenphi/tasty`.
+
+A Glaze **major** bump is not a dependency bump. `1.x` removed `lightness` as a color-def input, so
+the upgrade and the axis migration are one inseparable change — check `RegularColorDef` in
+`node_modules/@tenphi/glaze/dist/index.d.mts` for what the version actually accepts before promising
+a "just bump it" PR.
+
+## Cloud mirrors the recipe in three places — move them together
+
+Cloud does not import the ui-kit's theme builder, it **replicates** the recipe. A palette change has
+to land in all of them or they silently diverge:
+
+| File                                                                    | What it mirrors                                         |
+| ----------------------------------------------------------------------- | ------------------------------------------------------- |
+| `packages/console-ui/src/styles/palette.ts`                             | seed + query/APM themes                                 |
+| `packages/sheets-ui/src/styles/palette.ts`                              | the query themes again, for the add-in                  |
+| `packages/console-ui/src/modules/app-theme/engine/default-color-map.ts` | the ui-kit recipe verbatim, re-seeded per user accent   |
+| `.../app-theme/engine/types.ts` → `DEFAULT_APP_THEME`                   | accent/background/foreground read off the native tokens |
+| `.../app-theme/engine/build-app-theme-tokens.ts`                        | the `glaze(hue, saturation, …)` re-seed call            |
+
+`app-theme-tokens.spec.ts` compares the mirror to the shipped tokens within ±2/channel and will
+catch a seed mismatch — but it only checks the handful of tokens named in its list, and a sub-±2
+divergence passes. Treat it as a smoke test, not proof, and re-read `DEFAULT_APP_THEME` from the
+canary's own tokens whenever the palette moves.
+
+Two more traps specific to cloud:
+
+- **Per-hue saturation factors.** `apmThemes` scales the seed per hue (`SEED_SATURATION * 0.3`–`0.6`)
+  precisely because the theme is not pastel. A `pastel: true` variant can drop them — pastel
+  equalises chroma across hues — so copying a pastel palette onto a non-pastel seed silently makes
+  every lane resolve at full saturation.
+- **Baked e2e colour baselines.** `playwright/tests/probation/workbooks/table-alignment-and-coloring.spec.ts`
+  hardcodes member header colours with a ±10/channel tolerance. Re-read them from the running app
+  after a palette change; if they still pass, say so rather than re-baking blindly.
+
+## Splitting a palette PR
+
+If a palette PR has to be split so an upgrade can land ahead of a postponed redesign, verify the
+split empirically — the intuitive cut is often wrong. Dropping `pastel` while leaving the seed at its
+pastel value moved accents _further_ from `main` (mean Δ 43.7) than keeping pastel did (31.0); only
+reverting the seed alongside it brought the delta down (13.3). Seed and `pastel` move together or not
+at all. Copying files wholesale also drags unrelated changes along — audit every `package.json` and
+lockfile diff down to the lines you meant to change, and re-run `yarn install` after reverting a
+dependency so the lockfile agrees with the manifest.
