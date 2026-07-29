@@ -165,7 +165,12 @@ jobs:
           publish: pnpm release
           commit: 'chore: release'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Must be a PAT, not the default GITHUB_TOKEN. GitHub deliberately
+          # does not fire `pull_request` events for PRs opened with
+          # GITHUB_TOKEN, so the Version Packages PR never received the checks
+          # `main` requires (Build & canary release, Tests & lint, UI Tests,
+          # UI Review) and could only ever be merged with an admin override.
+          GITHUB_TOKEN: ${{ secrets.UIKIT_GITHUB_TOKEN }}
           # NPM_TOKEN not needed - using trusted publishing (OIDC)
 
   deploy-chromatic-release:
