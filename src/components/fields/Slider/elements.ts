@@ -59,8 +59,8 @@ export const SliderTrackContainerElement = tasty({
       display: 'block',
       position: 'absolute',
       inset: {
-        '': 'auto 0 0 0',
-        horizontal: '0 auto 0 0',
+        '': '0 bottom dock',
+        horizontal: '0 left dock',
         range: 'auto 0 $slider-range-start 0',
         'range & horizontal': '0 auto 0 $slider-range-start',
       },

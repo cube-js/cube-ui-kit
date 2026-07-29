@@ -180,10 +180,10 @@ const GripElement = tasty({
     },
     radius: {
       '': '0',
-      '[data-axis="se"]': '0 0 4px 0',
-      '[data-axis="sw"]': '0 0 0 4px',
-      '[data-axis="ne"]': '0 4px 0 0',
-      '[data-axis="nw"]': '4px 0 0 0',
+      '[data-axis="se"]': '4px bottom-right',
+      '[data-axis="sw"]': '4px bottom-left',
+      '[data-axis="ne"]': '4px top-right',
+      '[data-axis="nw"]': '4px top-left',
     },
     top: {
       '': 'auto',
