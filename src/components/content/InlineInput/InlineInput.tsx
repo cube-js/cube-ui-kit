@@ -176,7 +176,7 @@ const InlineInputRoot = tasty({
       styled: 'middle',
     },
     position: 'relative',
-    maxWidth: '100%',
+    width: 'initial 100%',
     boxSizing: 'border-box',
     color: {
       '': 'inherit',
@@ -192,7 +192,7 @@ const InlineInputRoot = tasty({
       'editable & !editing': 'text',
     },
     fill: {
-      '': 'transparent',
+      '': '#clear',
       styled: '#surface',
       'styled & disabled': '#disabled-surface',
     },
@@ -238,7 +238,7 @@ const InlineInputRoot = tasty({
       whiteSpace: 'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      maxWidth: '100%',
+      width: 'initial 100%',
       preset: 'inherit',
       color: 'inherit',
     },
@@ -247,18 +247,14 @@ const InlineInputRoot = tasty({
       recipe: 'reset input / input-autofill',
       preset: 'inherit',
       color: 'inherit',
-      fill: 'transparent',
+      fill: '#clear',
       textAlign: 'left',
       // In `styled` mode the wrapper has a fixed size and we want the input
       // to fill it (matches `TextInput`). In the default inline mode the
       // input auto-sizes to its content via `$input-width`.
       width: {
-        '': 'initial $input-width 100%',
-        styled: '100%',
-      },
-      minWidth: {
-        '': '1em',
-        styled: 0,
+        '': '1em $input-width 100%',
+        styled: '0 100% initial',
       },
       '&::placeholder': { recipe: 'input-placeholder' },
     },

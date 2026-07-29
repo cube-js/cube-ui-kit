@@ -26,11 +26,12 @@ const TrayWrapperElement = tasty({
 
 const TrayElement = tasty({
   styles: {
-    display: {
-      '': 'none',
-      'enter | entered': 'initial',
-      exit: 'initial',
-      unmounted: 'none',
+    display: 'initial',
+    hide: {
+      '': true,
+      'enter | entered': false,
+      exit: false,
+      unmounted: true,
     },
     zIndex: 10,
     height: 'max 90dvh',

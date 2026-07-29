@@ -142,9 +142,9 @@ const ListBoxItem = tasty(Item, {
   disableActionsFocus: true,
   styles: {
     margin: {
-      '': '0 0 1bw 0',
+      '': '1bw bottom',
       ':last-of-type': '0',
-      'draggable & :last-of-type': '0 0 .5x 0',
+      'draggable & :last-of-type': '.5x bottom',
       all: '.5x',
     },
     Icon: {
@@ -194,7 +194,7 @@ const SectionWrapperElement = tasty({
     display: 'block',
     padding: {
       '': 0,
-      ':last-of-type': '0 0 .5x 0',
+      ':last-of-type': '.5x bottom',
     },
   },
 });

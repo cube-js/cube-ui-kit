@@ -11,11 +11,12 @@ import { TransitionState, WithCloseBehavior } from './types';
 const PopoverElement = tasty({
   role: 'presentation',
   styles: {
-    display: {
-      '': 'none',
-      'enter | entered': 'initial',
-      exit: 'initial',
-      unmounted: 'none',
+    display: 'initial',
+    hide: {
+      '': true,
+      'enter | entered': false,
+      exit: false,
+      unmounted: true,
     },
     pointerEvents: 'auto',
     position: 'absolute',

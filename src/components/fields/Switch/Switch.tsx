@@ -100,7 +100,7 @@ const SwitchElement = tasty({
       },
       radius: 'round',
       fill: {
-        '': 'currentColor',
+        '': '#current',
         disabled: '#current.5',
         'disabled & checked': '#white.8',
       },

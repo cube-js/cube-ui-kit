@@ -27,7 +27,6 @@ const StyledPlaceholder = tasty({
   'aria-live': 'polite',
   styles: {
     display: 'block',
-    fill: '#dark.10',
     height: '2x',
     opacity: '.35',
     aspectRatio: {
@@ -46,14 +45,14 @@ const StyledPlaceholder = tasty({
     // Base background styling
     backgroundRepeat: 'repeat',
     backgroundSize: '$placeholder-animation-size',
-    backgroundColor: '#dark.15',
+    fill: '#dark.15',
 
     // Animated state styling
     animation: {
       '': 'none',
       animated: `${placeholderAnimation} $placeholder-animation-time linear infinite`,
     },
-    backgroundImage: {
+    image: {
       '': 'none',
       animated: `linear-gradient(
         135deg,

@@ -67,7 +67,7 @@ const BoardElement = tasty({
     display: 'block',
     width: '100%',
     flexGrow: 1,
-    minHeight: '0',
+    height: 'min 0',
     fill: '#surface',
     boxSizing: 'border-box',
   },

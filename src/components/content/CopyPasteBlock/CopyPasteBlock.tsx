@@ -84,9 +84,10 @@ const CopyPasteBlockElement = tasty(Card, {
     },
 
     Shortcut: {
-      display: {
-        '': 'none',
-        ':focus & !error': 'inline',
+      display: 'inline',
+      hide: {
+        '': true,
+        ':focus & !error': false,
       },
     },
   },

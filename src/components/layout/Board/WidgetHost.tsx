@@ -103,9 +103,9 @@ const HandleElement = tasty({
     zIndex: 20,
     fill: '#clear',
     // Overhang: how far the hit-zone extends beyond the widget edge.
-    '--handle-size': '24px',
+    '--handle-size': '3x',
     '--handle-overhang': '-8px',
-    '--handle-inset': '8px',
+    '--handle-inset': '1x',
     width: {
       '': '$handle-size',
       '[data-axis="n"] | [data-axis="s"]': 'auto',

@@ -85,14 +85,22 @@
     "tasty/valid-sub-element": "error",
     "tasty/valid-directional-modifier": "error",
     "tasty/valid-radius-shape": "error",
-    "tasty/no-nested-selector": "warn",
+    "tasty/no-nested-selector": "error",
     "tasty/static-no-dynamic-values": "error",
     "tasty/static-valid-selector": "error",
     "tasty/valid-preset": "error",
     "tasty/valid-recipe": "error",
     "tasty/valid-transition": "warn",
     "tasty/require-default-state": "error",
-    "tasty/no-own-at-root": "warn"
+    "tasty/no-own-at-root": "warn",
+    "tasty/valid-default-state-order": "warn",
+    "tasty/consistent-token-usage": "warn",
+    "tasty/prefer-auto-calc": "warn",
+    "tasty/prefer-custom-property-syntax": "warn",
+    "tasty/prefer-hide": "warn",
+    "tasty/no-raw-color-values": "warn",
+    "tasty/prefer-directional-shorthand": "warn",
+    "tasty/prefer-longhand-property": "error"
   },
   "overrides": [
     {

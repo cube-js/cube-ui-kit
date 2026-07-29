@@ -27,7 +27,7 @@ const GoldenRatioSpacerElement = tasty({
     },
     flexShrink: 1,
     flexBasis: 0,
-    minHeight: 0,
+    height: 'min 0',
     pointerEvents: 'none',
   },
 });
