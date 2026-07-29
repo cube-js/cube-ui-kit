@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.149.1
+
+### Patch Changes
+
+- [#1264](https://github.com/cube-js/cube-ui-kit/pull/1264) [`351a1758`](https://github.com/cube-js/cube-ui-kit/commit/351a1758b7dd27d81680aeb0fb59f2292e4b339b) Thanks [@tenphi](https://github.com/tenphi)! - Release-pipeline maintenance, no runtime changes: the `Build & canary release` check is no longer reported twice by two different workflows, and the Version Packages PR no longer publishes a redundant canary or leaves a stale `pr_*` dist-tag behind.
+
 ## 0.149.0
 
 ### Minor Changes
