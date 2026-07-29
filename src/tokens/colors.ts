@@ -56,6 +56,14 @@ const LEGACY_ALIASES: Styles = {
   '#dark-bg': '#surface-2',
   '#clear': 'transparent',
 
+  // Pink: independent hue, scheme-static (no Glaze adaptation). Kept as a raw
+  // literal rather than folded into a theme — nothing in the palette emits this
+  // hue as a standalone token, and it is a documented public alias (see
+  // `Usage.docs.mdx`, `tasty.config.ts`, and the `pink` key in
+  // `tasty-augment.d.ts`), so dropping it would silently break consumer styles
+  // while the types still advertised it.
+  '#pink': 'okhsl(5 100% 67%)',
+
   // ---- Disabled state aliases ----
   // `#disabled-surface` and `#disabled-surface-text` are emitted directly by
   // the Glaze palette (`palette.ts`) as scheme-symmetric, contrast-driven

@@ -52,6 +52,16 @@ const StyledBlock = tasty({
         '': 's3',
         serif: 't3',
       },
+      // `s3` carries `fontFamily: var(--font-mono)` but `t3` sets no family at
+      // all, so the preset alone cannot express "serif". Left to the preset, the
+      // `serif` variant would inherit the `<code>` element's UA monospace
+      // default and render monospace anyway. Keep the family explicit:
+      // `font: 'monospace'` for the default, `font: true` for the design
+      // system's default (non-mono) stack under `serif`.
+      font: {
+        '': 'monospace',
+        serif: true,
+      },
     },
   },
 });
