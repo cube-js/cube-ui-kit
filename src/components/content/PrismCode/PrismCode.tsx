@@ -26,9 +26,11 @@ const PreElement = tasty({
     padding: 0,
     overflow: 'auto',
     scrollbar: 'styled',
+    preset: 's3',
 
     Code: {
       display: 'block',
+      preset: 's3',
     },
   },
 });

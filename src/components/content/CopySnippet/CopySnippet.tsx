@@ -48,9 +48,9 @@ const StyledBlock = tasty({
 
     Code: {
       $: 'code',
-      font: {
-        '': 'monospace',
-        serif: true,
+      preset: {
+        '': 's3',
+        serif: 't3',
       },
     },
   },

@@ -1,4 +1,5 @@
-import { PALETTE_TOKENS } from './palette';
+import { lazyStyles } from './lazy-styles';
+import { getPaletteTokens } from './palette';
 
 import type { Styles } from '@tenphi/tasty';
 
@@ -54,9 +55,6 @@ const LEGACY_ALIASES: Styles = {
   '#light': '#surface-3',
   '#dark-bg': '#surface-2',
   '#clear': 'transparent',
-
-  // Pink: independent hue, scheme-static (no Glaze adaptation).
-  '#pink': 'okhsl(5 100% 67%)',
 
   // ---- Disabled state aliases ----
   // `#disabled-surface` and `#disabled-surface-text` are emitted directly by
@@ -132,10 +130,22 @@ const LEGACY_ALIASES: Styles = {
 /**
  * Combined color token map: Glaze-generated palette + legacy aliases.
  *
+ * Deferred until first access so host apps can `glaze.configure(...)` after
+ * importing the kit. Prefer {@link getColorTokens} in new code.
+ *
  * `#white` and `#black` are intentionally omitted — they are built-in
  * tasty named colors and resolve automatically.
  */
-export const COLOR_TOKENS: Styles = {
-  ...PALETTE_TOKENS,
-  ...LEGACY_ALIASES,
-};
+let colorTokensCache: Styles | null = null;
+
+export function getColorTokens(): Styles {
+  if (!colorTokensCache) {
+    colorTokensCache = {
+      ...getPaletteTokens(),
+      ...LEGACY_ALIASES,
+    };
+  }
+  return colorTokensCache;
+}
+
+export const COLOR_TOKENS: Styles = lazyStyles(getColorTokens);

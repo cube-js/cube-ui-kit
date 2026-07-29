@@ -357,7 +357,7 @@ export const useAction = function useAction(
 
   let { buttonProps, isPressed } = useButton(
     {
-      'aria-label': label,
+      'aria-label': label, // @TODO: remove label prop
       ...props,
       onPress: customOnPress,
     },

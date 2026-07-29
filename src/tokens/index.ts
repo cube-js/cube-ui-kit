@@ -17,10 +17,11 @@
 import { generateTypographyTokens } from '@tenphi/tasty';
 
 import { BASE_TOKENS } from './base';
-import { COLOR_TOKENS } from './colors';
+import { getColorTokens } from './colors';
 import { LAYOUT_TOKENS } from './layout';
+import { lazyStyles } from './lazy-styles';
 import { SHADOW_TOKENS } from './shadows';
-import { SIZE_NAME_TO_KEY, SIZE_TOKENS, SIZES } from './sizes';
+import { SIZE_TOKENS } from './sizes';
 import { SPACE_TOKENS } from './spacing';
 import { TYPOGRAPHY_PRESETS } from './typography';
 
@@ -31,7 +32,9 @@ import type { SizeKey, SizeName } from './sizes';
  * All design tokens combined into a single Styles object.
  * Keys use $ prefix for CSS custom properties.
  *
- * Ready for use with useGlobalStyles('body', TOKENS).
+ * Color tokens resolve against the live glaze config on first call (see
+ * {@link getColorTokens}). Prefer this over the lazy {@link TOKENS} proxy
+ * when applying styles from React (`GlobalStyles`).
  *
  * Includes:
  * - Base tokens ($gap, $radius, etc.)
@@ -42,18 +45,29 @@ import type { SizeKey, SizeName } from './sizes';
  * - Typography tokens ($h1-font-size, $t3-line-height, etc.)
  * - Color tokens ($purple-color, $purple-color-rgb, etc.)
  */
-export const TOKENS: Styles = {
-  ...BASE_TOKENS,
-  ...SPACE_TOKENS,
-  ...SIZE_TOKENS,
-  ...SHADOW_TOKENS,
-  ...LAYOUT_TOKENS,
-  ...generateTypographyTokens(TYPOGRAPHY_PRESETS),
-  ...COLOR_TOKENS,
-};
+let tokensCache: Styles | null = null;
+
+export function getTokens(): Styles {
+  if (!tokensCache) {
+    tokensCache = {
+      ...BASE_TOKENS,
+      ...SPACE_TOKENS,
+      ...SIZE_TOKENS,
+      ...SHADOW_TOKENS,
+      ...LAYOUT_TOKENS,
+      ...generateTypographyTokens(TYPOGRAPHY_PRESETS),
+      ...getColorTokens(),
+    };
+  }
+  return tokensCache;
+}
+
+/** Lazy proxy of {@link getTokens}. Prefer `getTokens()` in new code. */
+export const TOKENS: Styles = lazyStyles(getTokens);
 
 // Re-export category modules for direct access
-export { COLOR_TOKENS } from './colors';
+export { COLOR_TOKENS, getColorTokens } from './colors';
+export { getPaletteTokens, PALETTE_TOKENS } from './palette';
 export { SIZES, SIZE_NAME_TO_KEY, SIZE_TOKENS } from './sizes';
 export type { SizeKey, SizeName } from './sizes';
 export { SPACE_TOKENS } from './spacing';

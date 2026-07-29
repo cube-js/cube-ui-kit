@@ -1,16 +1,6 @@
-import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
-import {
-  Paragraph,
-  Title,
-  Text,
-  Link,
-  Flow,
-  Root,
-  Space,
-  Block,
-  Card,
-} from '../index';
-import * as TypographyStories from './Typography.stories.tsx';
+import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+
+import * as TypographyStories from './Typography.stories';
 
 <Meta of={TypographyStories} />
 
@@ -20,25 +10,19 @@ There are many ways to create typography elements like text labels and headings.
 
 ## Typography Components
 
-### Headings
+### Presets
 
-<Canvas>
-  <Story of={TypographyStories.Presets} />
-</Canvas>
+<Canvas of={TypographyStories.Presets} />
 
 ### Paragraphs
 
 Paragraphs with gaps between them.
 
-<Canvas>
-  <Story of={TypographyStories.Paragraph} />
-</Canvas>
+<Canvas of={TypographyStories.Paragraph} />
 
 ### Text labels
 
-<Canvas>
-  <Story of={TypographyStories.Text} />
-</Canvas>
+<Canvas of={TypographyStories.Text} />
 
 ### Links
 
@@ -57,9 +41,7 @@ Use `!` prefix to open link in new tab.
   );
 ```
 
-<Canvas>
-  <Story of={TypographyStories.ExternalLink} />
-</Canvas>
+<Canvas of={TypographyStories.ExternalLink} />
 
 Use `@` prefix to navigate to the new page without using the Router.
 
@@ -68,6 +50,4 @@ Use `@` prefix to navigate to the new page without using the Router.
 <Link to="@/">Move to the Main Page</Link>;
 ```
 
-<Canvas>
-  <Story of={TypographyStories.LinkWithoutUsingRouter} />
-</Canvas>
+<Canvas of={TypographyStories.LinkWithoutUsingRouter} />
