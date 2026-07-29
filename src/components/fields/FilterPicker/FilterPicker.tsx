@@ -774,7 +774,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <DialogTrigger
         isDismissable
         type="popover"
-        mobileType="popover"
         placement={placement}
         isOpen={isPopoverOpen}
         containerPadding={containerPadding}
