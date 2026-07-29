@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.149.2
+
+### Patch Changes
+
+- [#1261](https://github.com/cube-js/cube-ui-kit/pull/1261) [`ce4664ac`](https://github.com/cube-js/cube-ui-kit/commit/ce4664ac7ed71c487cb1e89ab85ab00f26e5b24e) Thanks [@solarrust](https://github.com/solarrust)! - `DialogTrigger`'s `mobileType` now defaults to the same value as `type` instead of silently converting `type="popover"` to a full-screen modal under the 700px breakpoint. That auto-conversion was never an intentional per-consumer choice — `FilterPicker` and `Picker` both inherited it by omission, giving them an unrequested full-screen modal (with a close button) on narrow viewports like the Excel/Google Sheets add-in task pane. Consumers that want a different mobile presentation (e.g. `DatePicker`'s `mobileType="tray"`) are unaffected, since they already set it explicitly.
+
+  `FilterPicker` additionally no longer shows a close button in its popover at all (`isDismissable={false}` on its own Dialog) — it read as a duplicate of the existing "Clear" action in the header.
+
 ## 0.149.1
 
 ### Patch Changes
