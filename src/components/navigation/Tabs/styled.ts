@@ -203,12 +203,12 @@ export const TabsElement = tasty({
 
       // Transition transparent color: opaque (no fade) -> transparent (fade visible)
       '#tabs-fade-start': {
-        '': 'rgb(0 0 0 / 1)',
-        'fade-start': 'rgb(0 0 0 / 0)',
+        '': '#black',
+        'fade-start': '#black.0',
       },
       '#tabs-fade-end': {
-        '': 'rgb(0 0 0 / 1)',
-        'fade-end': 'rgb(0 0 0 / 0)',
+        '': '#black',
+        'fade-end': '#black.0',
       },
     },
 
@@ -223,7 +223,7 @@ export const TabsElement = tasty({
       // `right: 0` / `left: 0` of TabList) would land in that overflow region
       // and get clipped by Scroll's `overflow-x: hidden`.
       boxSizing: 'border-box',
-      gridAutoFlow: {
+      flow: {
         '': 'column',
         'placement=left | placement=right': 'row',
       },

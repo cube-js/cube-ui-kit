@@ -42,7 +42,7 @@ const KeyElement = tasty({
     color: {
       '': '#dark.65',
       'type=primary': '#white',
-      'type=inherit': 'currentColor',
+      'type=inherit': '#current',
     },
     fill: {
       '': '#dark.04',
@@ -51,7 +51,7 @@ const KeyElement = tasty({
     border: {
       '': true,
       'type=primary': '#white',
-      'type=inherit': 'currentColor',
+      'type=inherit': '#current',
     },
   },
 });

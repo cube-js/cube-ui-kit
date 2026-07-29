@@ -84,9 +84,10 @@ const CopyPasteBlockElement = tasty(Card, {
     },
 
     Shortcut: {
-      display: {
-        '': 'none',
-        ':focus & !error': 'inline',
+      display: 'inline',
+      hide: {
+        '': true,
+        ':focus & !error': false,
       },
     },
   },
@@ -104,7 +105,7 @@ const CopyButton = tasty(Button, {
     },
     radius: {
       '': '0 1r 1r 0',
-      'multiline | has-scroll': '0 1r 0 0',
+      'multiline | has-scroll': '1r top-right',
     },
     height: 'auto',
     outline: false,

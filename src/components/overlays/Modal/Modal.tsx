@@ -37,11 +37,12 @@ const ModalWrapperElement = tasty({
 
 const ModalElement = tasty({
   styles: {
-    display: {
-      '': 'none',
-      'enter | entered': 'grid',
-      exit: 'grid',
-      unmounted: 'none',
+    display: 'grid',
+    hide: {
+      '': true,
+      'enter | entered': false,
+      exit: false,
+      unmounted: true,
     },
     zIndex: 10,
     height: {

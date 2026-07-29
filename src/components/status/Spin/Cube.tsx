@@ -16,7 +16,7 @@ const CubeElement = tasty({
     left: '$cube-border-compensation',
     width: '$cube-size',
     height: '$cube-size',
-    border: '$cube-border-width solid transparent',
+    border: '$cube-border-width solid #clear',
     overflow: 'hidden',
     contain: 'size layout style paint',
     pointerEvents: 'none',

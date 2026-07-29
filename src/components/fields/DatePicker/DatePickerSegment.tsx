@@ -41,7 +41,7 @@ const EditableSegmentElement = tasty({
     radius: '.25x',
 
     Placeholder: {
-      opacity: 'var(--disabled-opacity)',
+      opacity: '$disabled-opacity',
     },
   },
 });

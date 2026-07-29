@@ -96,7 +96,7 @@ const ItemActionElement = tasty({
     padding: {
       '': '0 $inline-padding',
       'has-icon': 0,
-      'has-icon & has-label': '0 $inline-padding 0 0',
+      'has-icon & has-label': '$inline-padding right',
     },
 
     '$inline-padding': {

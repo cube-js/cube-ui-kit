@@ -48,8 +48,8 @@ importers:
         specifier: 0.13.0
         version: 0.13.0
       '@tenphi/tasty':
-        specifier: 2.8.0
-        version: 2.8.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.1.1)
+        specifier: 2.11.0
+        version: 2.11.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.1.1)
       clipboard-copy:
         specifier: ^4.0.1
         version: 4.0.1
@@ -154,8 +154,8 @@ importers:
         specifier: ^10.3.6
         version: 10.3.6(esbuild@0.27.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(storybook@10.3.6(@testing-library/dom@10.4.1)(prettier@3.2.5)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(typescript@5.6.3)(vite@8.0.0(@types/node@24.13.3)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.31.1)(yaml@2.9.0))(webpack@5.76.1(esbuild@0.27.3))
       '@tenphi/eslint-plugin-tasty':
-        specifier: ^0.6.2
-        version: 0.6.2(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)
+        specifier: ^0.11.2
+        version: 0.11.2(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
@@ -2156,8 +2156,8 @@ packages:
   '@tanstack/virtual-core@3.13.12':
     resolution: {integrity: sha512-1YBOJfRHV4sXUmWsFSf5rQor4Ss82G8dQWLRbnk3GA4jeP8hQt1hxXh0tmflpC0dz3VgEv/1+qwPyLeWkQuPFA==}
 
-  '@tenphi/eslint-plugin-tasty@0.6.2':
-    resolution: {integrity: sha512-GR63b/KobzjwblDP25XMs9qUKU1SmQTMChQybEgR5OMEG2DjMNZz9PRLviFCY8zJQIA8iihXDR5AIdUp334k/w==}
+  '@tenphi/eslint-plugin-tasty@0.11.2':
+    resolution: {integrity: sha512-VX1LQxojSM2mvv2n04F102A/gC2OQBimhoZ2nMi8fs0RpkcQwkRp4UlsK66g96kCWUQRyr/xFonQB2dhqigxrQ==}
     engines: {node: '>=20'}
     peerDependencies:
       eslint: '>=8.0.0'
@@ -2166,8 +2166,8 @@ packages:
     resolution: {integrity: sha512-t4sIiLAquPuy2SYj9QBKVhICwoPTqkNv4ysMRplbyxwQtvYPzEtEmQ3ZEOtJm7KG7sKSo1RTzrsWC3SllkbkSA==}
     engines: {node: '>=20'}
 
-  '@tenphi/tasty@2.8.0':
-    resolution: {integrity: sha512-cX2m85McDvMHtncgQuU1ANNqbVqyGZJyL011VRdnAeQ4LFMccHh3C3VdBRhDTl9S+m+r4JgB921eZfQxmg0lXA==}
+  '@tenphi/tasty@2.11.0':
+    resolution: {integrity: sha512-jzxmuRWA7FpvOyFuFSY8LtuhSgombt0HMY2mY9986wBPhCmJMcWab84g8cx8XTfne2f+PN6FmWM/0aUjWFryMA==}
     engines: {node: '>=20'}
     peerDependencies:
       '@babel/core': ^7.24.0
@@ -8226,7 +8226,7 @@ snapshots:
 
   '@tanstack/virtual-core@3.13.12': {}
 
-  '@tenphi/eslint-plugin-tasty@0.6.2(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)':
+  '@tenphi/eslint-plugin-tasty@0.11.2(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)':
     dependencies:
       '@typescript-eslint/utils': 8.56.1(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)
       eslint: 9.25.1(jiti@2.6.1)
@@ -8237,7 +8237,7 @@ snapshots:
 
   '@tenphi/glaze@0.13.0': {}
 
-  '@tenphi/tasty@2.8.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.1.1)':
+  '@tenphi/tasty@2.11.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.1.1)':
     dependencies:
       csstype: 3.1.2
     optionalDependencies:
