@@ -32,7 +32,6 @@ import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
 import { StyledHeader } from '../../actions/Menu/styled';
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
-import { useDialogContext } from '../../overlays/Dialog/context';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import {
   DEFAULT_INPUT_STYLES,
@@ -105,15 +104,6 @@ const SearchInputElement = tasty({
 const StyledHeaderWithoutBorder = tasty(StyledHeader, {
   styles: {
     border: false,
-    // When rendered inside a dismissable Dialog (e.g. the popover-turned-modal
-    // that `FilterPicker` falls back to on narrow viewports), the Dialog places
-    // an absolutely-positioned close button in its own top-right corner. Reserve
-    // the same `+4x` clearance Dialog's own header slot adds to its base padding
-    // for `isDismissable` (see Dialog.tsx), so header content doesn't collide.
-    padding: {
-      '': 'right 1.5x',
-      dismissable: 'right (1.5x + 4x)',
-    },
   },
 });
 
@@ -228,11 +218,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
   });
 
   const { t } = useI18n();
-
-  // Drives the `dismissable` mod on `StyledHeaderWithoutBorder` below, which
-  // reserves room for the enclosing Dialog's close button (see that
-  // component's definition for why).
-  const { isDismissable: isInsideDismissableDialog } = useDialogContext();
 
   let {
     qa,
@@ -1114,11 +1099,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       {...focusProps}
     >
       {header ? (
-        <StyledHeaderWithoutBorder
-          data-size={size}
-          mods={{ dismissable: isInsideDismissableDialog }}
-          styles={headerStyles}
-        >
+        <StyledHeaderWithoutBorder data-size={size} styles={headerStyles}>
           {header}
         </StyledHeaderWithoutBorder>
       ) : (

@@ -144,8 +144,6 @@ export interface CubeDialogProps
   onDismiss?: (arg?: any) => void;
   /** That you can replace the close icon with */
   closeIcon?: ReactElement;
-  /** Size of the dismiss button. Defaults to the button's own default (medium). */
-  closeButtonSize?: 'small' | 'medium' | 'large';
   closeButtonStyles?: Styles;
   role?: 'dialog' | 'alertdialog';
 }
@@ -192,7 +190,6 @@ const DialogContent = forwardRef(function DialogContent(
     isDismissable = contextProps.isDismissable,
     onDismiss = contextProps.onClose,
     closeIcon,
-    closeButtonSize,
     closeButtonStyles,
     style,
     ...otherProps
@@ -331,7 +328,6 @@ const DialogContent = forwardRef(function DialogContent(
       <SlotProvider slots={slots}>
         {isDismissable && (
           <CloseButton
-            size={closeButtonSize}
             icon={closeIcon || <CloseIcon size={20} />}
             label={t('dialog.dismiss', 'Dismiss')}
             onPress={() => onDismiss && onDismiss()}

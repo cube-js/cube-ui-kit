@@ -774,6 +774,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <DialogTrigger
         isDismissable
         type="popover"
+        mobileType="popover"
         placement={placement}
         isOpen={isPopoverOpen}
         containerPadding={containerPadding}
@@ -784,7 +785,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         {() => (
           <Dialog
             qa="FilterPickerOverlay"
-            closeButtonSize="small"
+            isDismissable={false}
             display="grid"
             styles={{
               gridRows: '1sf',
