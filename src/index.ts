@@ -172,7 +172,7 @@ export { Placeholder } from './components/content/Placeholder/Placeholder';
 export type { CubePlaceholderProps } from './components/content/Placeholder/Placeholder';
 export { Skeleton } from './components/content/Skeleton/Skeleton';
 export type { CubeSkeletonProps } from './components/content/Skeleton/Skeleton';
-export { CloudLogo } from './components/other/CloudLogo/CloudLogo';
+export { CubeLogo, CubeFullLogo } from './components/other/CubeLogo/CubeLogo';
 export { Badge } from './components/content/Badge/Badge';
 export type { CubeBadgeProps } from './components/content/Badge/Badge';
 export { Tag } from './components/content/Tag/Tag';

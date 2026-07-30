@@ -1,0 +1,58 @@
+# CubeLogo / CubeFullLogo
+
+The Cube brand marks. `CubeLogo` is the square cube mark; `CubeFullLogo` is the mark plus the wordmark on one canvas.
+
+Both are `Icon`-based, so they size and colour like any other icon: pass `size`, or let them inherit `font-size` and `currentColor` from their surroundings.
+
+## When to Use
+
+- `CubeLogo` — anywhere a compact brand mark fits: a collapsed sidebar, a favicon-sized slot, an avatar position, a loading state
+- `CubeFullLogo` — the header or sidebar of a full-width layout, an auth screen, an empty state, anywhere the wordmark should read
+
+These replace the removed `CloudLogo`, which baked in the previous brand artwork, hard-coded its hexes, and shipped the retired "Cube Cloud" wordmark.
+
+## Sizing
+
+`size` maps onto `font-size`, and the artwork is expressed in `em`:
+
+- **`CubeLogo`** is square — `size` sets both width and height.
+- **`CubeFullLogo`** takes `size` as its **height only**. The width follows the artwork's `98 / 28` ratio via `aspect-ratio`, so the wordmark is never squashed. Do not set an explicit `width` on it.
+
+```jsx
+<CubeLogo size="32px" />
+<CubeFullLogo size="24px" />   /* 24px tall, ~84px wide */
+```
+
+With no `size`, both fall back to `$icon-size` like every other icon, which makes them drop into text and button layouts without extra styling.
+
+## Colour
+
+Every path is drawn with `currentColor`. Inheriting is the default and usually correct:
+
+```jsx
+<Text color="#purple">
+  <CubeFullLogo />   {/* purple */}
+</Text>
+
+<CubeFullLogo color="#dark" />
+```
+
+There are **no baked-in brand hexes**, which is what lets the marks work on any surface and in any scheme.
+
+## Light and dark schemes
+
+The mark is two different drawings rather than one drawing recoloured — the dark variant is filled differently so it holds its weight against a dark surface. Both are rendered, and the `@dark` state swaps them in CSS.
+
+That means the swap costs no re-render, needs no scheme prop, and is correct during SSR and before hydration. It also means a snapshot of the DOM always contains both paths; assert on `[data-element="LightMark"]` / `[data-element="DarkMark"]` rather than on a single `path`.
+
+## Accessibility
+
+Both render `role="img"` with `aria-label="Cube"`, so they announce as an image with a name instead of being skipped or read as decorative.
+
+When the logo is itself the link home, put the name on the interactive element and let the logo stay decorative there — a nested duplicate name is worse than none:
+
+```jsx
+<Button aria-label="Cube home" to="/">
+  <CubeFullLogo aria-hidden />
+</Button>
+```
