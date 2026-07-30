@@ -345,6 +345,11 @@ export default {
     'c1',
     'c2',
 
+    // Snippet / monospace styles (s2-s4)
+    's2',
+    's3',
+    's4',
+
     // Tag typography
     'tag',
 

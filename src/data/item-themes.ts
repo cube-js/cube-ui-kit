@@ -107,8 +107,9 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
   // darker stripe. Selected FILL anchors to the *fixed* `#primary-accent-surface`
   // brand: anchoring to the adaptive `#primary-accent-text` would drift the
   // bg toward the text lightness in dark mode and collapse label↔bg contrast
-  // below AA. The fixed brand keeps cr=6.52 light / 5.95 dark at α.10,
-  // 6.19 / 5.41 at α.16.
+  // below AA. Selected label mirrors LINK: soft `#primary-accent-text-soft` at
+  // rest, intensifying to `#primary-accent-text` on hover. Both are solved in
+  // `palette.ts` for AA against the BASE selected fill (`accent-selected-fill`).
   outline: {
     '': '0 #primary-accent-text.0',
     focused: '1bw #primary-accent-text',
@@ -141,7 +142,8 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
     '': '#surface-text-soft',
     hovered: '#surface-text-soft',
     pressed: '#surface-text',
-    selected: '#primary-accent-text',
+    selected: '#primary-accent-text-soft',
+    'selected & hovered': '#primary-accent-text',
     disabled: '#disabled-surface-text',
   },
 } as const;
@@ -181,11 +183,14 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
     'selected & pressed': '#primary-accent-surface.18',
     disabled: 'transparent',
   },
+  // Selected label mirrors LINK: soft at rest, `#primary-accent-text` on
+  // hover. See DEFAULT_OUTLINE_STYLES.
   color: {
     '': '#surface-text-soft',
     hovered: '#surface-text-soft',
     'pressed & !selected': '#surface-text',
-    selected: '#primary-accent-text',
+    selected: '#primary-accent-text-soft',
+    'selected & hovered': '#primary-accent-text',
     disabled: '#disabled-surface-text',
   },
 } as const;
@@ -210,11 +215,10 @@ export const DEFAULT_ITEM_STYLES: Styles = {
 } as const;
 
 export const DEFAULT_LINK_STYLES: Styles = {
-  // Default sits at the *softer* AA-floor variant (`#primary-accent-text-soft`,
-  // mode 'auto', cr=4.5) and intensifies on hover to the AAA-ish
-  // `#primary-accent-text` (cr=6.4). Critically, the soft variant is also
-  // adaptive — using the fixed brand `#primary-accent-surface` instead would
-  // collapse to cr≈3 against the dark surface and break AA.
+  // Default sits at `#primary-accent-text-soft` and intensifies on hover to the
+  // stronger `#primary-accent-text`. Both are solved in `palette.ts` for AA
+  // against `accent-selected-fill` (the BASE selected Item fill), so they also
+  // clear AA on plain surfaces; both are adaptive across light/dark/HC.
   outline: {
     '': '0 #primary-accent-text.0',
     focused: '1bw #primary-accent-text',

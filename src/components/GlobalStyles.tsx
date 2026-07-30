@@ -1,7 +1,7 @@
 import { useGlobalStyles, useRawCSS } from '@tenphi/tasty';
 import { useMemo } from 'react';
 
-import { TOKENS } from '../tokens';
+import { getTokens } from '../tokens';
 
 import type { Styles } from '@tenphi/tasty';
 
@@ -103,11 +103,11 @@ const STATIC_CSS = `
   pre[class*="language-"] {
     color: var(--surface-text-color);
     background: none;
-    font-family: var(--font-mono);
+    font-family: var(--s3-font-family, var(--font-mono));
     text-align: left;
-    font-weight: normal;
-    font-size: 14px;
-    line-height: 20px;
+    font-weight: var(--s3-font-weight, 400);
+    font-size: var(--s3-font-size, 14px);
+    line-height: var(--s3-line-height, 20px);
     white-space: pre;
     word-spacing: normal;
     word-break: normal;
@@ -280,10 +280,10 @@ const STATIC_CSS = `
 export function GlobalStyles(props: GlobalStylesProps) {
   const { bodyStyles, font, monospaceFont } = props;
 
-  // Merge token styles with body styles
+  // Merge token styles with body styles. getTokens() resolves glaze colors
+  // against the live config on first call (after host glaze.configure).
   const bodyTokenStyles = useMemo((): Styles => {
-    // Start with design tokens
-    const styles: Styles = { ...TOKENS };
+    const styles: Styles = { ...getTokens() };
 
     // Add base body styles
     Object.assign(styles, BODY_STYLES);

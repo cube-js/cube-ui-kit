@@ -79,6 +79,9 @@ export const Presets = {
       <Block preset="tag">
         <CubeIcon /> The quick brown fox jumps over the lazy dog - tag
       </Block>
+      <Block preset="s2">const greeting = 'The quick brown fox' // s2</Block>
+      <Block preset="s3">const greeting = 'The quick brown fox' // s3</Block>
+      <Block preset="s4">const greeting = 'The quick brown fox' // s4</Block>
     </Flow>
   ),
 };

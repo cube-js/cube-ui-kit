@@ -24,6 +24,7 @@ export interface TypographyPreset {
  * - `m1`-`m3`: Markdown/prose styles (larger line-height)
  * - `p1`-`p4`: Paragraph styles
  * - `c1`-`c2`: Caption/uppercase styles
+ * - `s2`-`s4`: Snippet / monospace styles (parallel to `t2`-`t4`)
  * - `tag`: Tag/badge typography
  * - `default`: Base text style
  */
@@ -232,6 +233,35 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     fontWeight: '600',
     boldFontWeight: '700',
     iconSize: '16px',
+  },
+
+  // Snippet / monospace styles (s2-s4) — sized to parallel t2-t4
+  s2: {
+    fontSize: '16px',
+    lineHeight: '22px',
+    letterSpacing: '0',
+    fontWeight: '400',
+    boldFontWeight: '600',
+    iconSize: '20px',
+    fontFamily: 'var(--font-mono)',
+  },
+  s3: {
+    fontSize: '14px',
+    lineHeight: '20px',
+    letterSpacing: '0',
+    fontWeight: '400',
+    boldFontWeight: '600',
+    iconSize: '18px',
+    fontFamily: 'var(--font-mono)',
+  },
+  s4: {
+    fontSize: '12px',
+    lineHeight: '18px',
+    letterSpacing: '0',
+    fontWeight: '400',
+    boldFontWeight: '600',
+    iconSize: '16px',
+    fontFamily: 'var(--font-mono)',
   },
 
   // Default text style (references t3)

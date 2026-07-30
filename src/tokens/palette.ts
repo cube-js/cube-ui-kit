@@ -1,5 +1,7 @@
 import { glaze } from '@tenphi/glaze';
 
+import { lazyStyles } from './lazy-styles';
+
 import type { ColorMap } from '@tenphi/glaze';
 import type { Styles } from '@tenphi/tasty';
 
@@ -9,7 +11,7 @@ import type { Styles } from '@tenphi/tasty';
  * Produces light, dark, and high-contrast color variants from a single
  * source of truth. Every color token is emitted as a tasty state map:
  *
- *   '#surface': { '': 'okhsl(...)', '@dark': 'okhsl(...)', '@hc': 'okhsl(...)' }
+ *   '#surface': { '': 'oklch(...)', '@dark': 'oklch(...)', '@hc': 'oklch(...)' }
  *
  * The `@dark` and `@hc` state aliases are wired up globally in
  * `src/components/Root.tsx` (see `setGlobalPredefinedStates`).
@@ -28,6 +30,18 @@ const NOTE_HUE = 302.3;
 /** Seed saturation; per-color saturation factors below are 0–1 of this seed. */
 const SEED_SATURATION = 80;
 
+// Relative tone ramp from a white surface.
+// Tone is a contrast-uniform 0–100 scale (OKHST). A relative tone delta of -N
+// yields a fixed WCAG contrast step against the base regardless of where the
+// base sits on the scale. These constants form the primary text ramp; the
+// surface-2 / surface-3 variants reuse the same absolute targets via a small
+// offset because their bases are shifted down from `surface`.
+const TEXT_TONE = -98; // relative tone delta from white surface (~cr 21)
+const TEXT_SOFT_TONE = -72; // relative tone delta from white surface (~cr 9)
+const TEXT_SOFT2_TONE = -52; // relative tone delta from white surface (~cr 4.5)
+const SURFACE_2_TEXT_OFFSET = 2;
+const SURFACE_3_TEXT_OFFSET = 4;
+
 // ============================================================================
 // Global Glaze configuration
 // ============================================================================
@@ -41,6 +55,8 @@ glaze.configure({
     dark: true,
     highContrast: true,
   },
+  darkTone: [14, 95],
+  darkDesaturation: 0,
 });
 
 // ============================================================================
@@ -51,147 +67,128 @@ const defaultTheme = glaze(PURPLE_HUE, SEED_SATURATION);
 
 defaultTheme.colors({
   // ---- Surfaces (neutral, very low saturation) ----
-  surface: { lightness: 100, saturation: 0.11 },
+  surface: { tone: 100, saturation: 0.12 },
   'surface-2': {
     base: 'surface',
-    lightness: '-2',
-    saturation: 0.15,
+    tone: '-2',
+    saturation: 0.1,
     inherit: false,
   },
   'surface-3': {
     base: 'surface',
-    lightness: '-4',
-    saturation: 0.19,
+    tone: '-4',
+    saturation: 0.1,
     inherit: false,
   },
   'surface-4': {
     base: 'surface',
-    lightness: '-6',
-    saturation: 0.2,
+    tone: '-6',
+    saturation: 0.1,
     inherit: false,
   },
 
   // ---- Text on surfaces ----
-  // The darkest text token uses an *absolute* lightness anchored at the very
-  // bottom of Glaze's lightness window (default `[10, 100]` for light /
-  // `[15, 95]` for dark). A contrast-driven `surface-text` would top out near
-  // L≈21 in light mode (because the solver only needs to *meet* the contrast
-  // floor, then stops), leaving it noticeably softer than the legacy `#dark`
-  // (OKHSL L=12). Setting `lightness: 2` (mode: 'auto', default) pins the
-  // light-mode resolved value to L≈11.8 — pixel-equivalent to the legacy
-  // `#dark` — and inverts in dark mode to L≈94 (cr≈13.7 vs the dark surface).
-  // High-contrast pushes it all the way to the absolute extremes (L=2 light /
-  // L=99 dark, cr≈20.8 / 20.5), unbounded by the normal lightness window.
-  //
-  // The softer variants below keep `lightness: '-1'` as a directional hint and
-  // a numeric `contrast` ratio. Values are tuned so light-mode lightness lands
-  // close to the legacy palette (`#dark-02` L=31, `#dark-03` L=49), so the
-  // visual look in light mode is preserved while dark mode gets the proper
-  // inverted ramp via the contrast solver.
+  // Tone is the contrast-uniform OKHST axis, so a relative tone delta directly
+  // encodes a WCAG contrast step. `surface-text` sits at tone 2 (a -98 delta
+  // from white), giving the same near-black appearance as the legacy `#dark`.
+  // We still keep an `['AA','AAA']` contrast floor on every text-on-surface
+  // color so a future low-contrast scale can shift the ramp down without ever
+  // breaking readability.
   'surface-text': {
     base: 'surface',
-    lightness: 2,
-    saturation: 0.475,
+    tone: `${TEXT_TONE - 2}`,
+    saturation: 0.2,
+    contrast: ['AA', 'AAA'],
   },
   'surface-text-soft': {
     base: 'surface',
-    lightness: '-1',
-    saturation: 0.375,
-    contrast: [9, 11],
+    tone: `${TEXT_SOFT_TONE - 2}`,
+    saturation: 0.2,
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
   'surface-text-soft-2': {
     base: 'surface',
-    lightness: '-1',
-    saturation: 0.24,
-    contrast: [4.5, 5.5],
+    tone: `${TEXT_SOFT2_TONE - 2}`,
+    saturation: 0.2,
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
   'surface-2-text': {
     base: 'surface-2',
-    lightness: 2,
-    saturation: 0.475,
+    tone: `${TEXT_TONE + SURFACE_2_TEXT_OFFSET}`,
+    saturation: 0.2,
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
   'surface-2-text-soft': {
     base: 'surface-2',
-    lightness: '-1',
-    saturation: 0.375,
-    contrast: [9, 11],
+    tone: `${TEXT_SOFT_TONE + SURFACE_2_TEXT_OFFSET}`,
+    saturation: 0.2,
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
   'surface-3-text': {
     base: 'surface-3',
-    lightness: 2,
-    saturation: 0.475,
+    tone: `${TEXT_TONE + SURFACE_3_TEXT_OFFSET}`,
+    saturation: 0.2,
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
   'surface-3-text-soft': {
     base: 'surface-3',
-    lightness: '-1',
-    saturation: 0.375,
-    contrast: [9, 11],
+    tone: `${TEXT_SOFT_TONE + SURFACE_3_TEXT_OFFSET}`,
+    saturation: 0.2,
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
 
   // ---- Other neutral UI primitives (default-only) ----
   border: {
     base: 'surface',
-    lightness: ['-10', '-20'],
+    tone: ['-10', '-20'],
     saturation: 0.175,
   },
   placeholder: {
     base: 'surface',
-    lightness: 67,
+    tone: '-33',
     saturation: 0.175,
     inherit: false,
   },
   focus: {
     base: 'surface',
-    lightness: 71,
+    tone: '-29',
     saturation: 0.8625,
     inherit: false,
   },
   disabled: {
-    lightness: 80.8,
+    tone: 80.8,
     saturation: 0.4,
     inherit: false,
   },
-  // Disabled fill chip + text — both adaptive (mode 'auto') and
-  // *contrast-driven* against `surface` so the disabled state has the same
-  // perceived intensity in light and dark schemes.
+  // Disabled fill chip + text — both adaptive (mode 'auto') and positioned
+  // with relative tone deltas against `surface` so the disabled state has the
+  // same perceived intensity in light, dark, and high-contrast schemes. No
+  // numeric contrast prop is needed: tone is already on a WCAG-uniform scale.
   //
-  // The previous design relied on `#dark.04` (alpha tint) for the chip and
-  // `#dark-04` (= `#placeholder`) for text. Because `#dark` is `#surface-text`
-  // (anchored to absolute L=2 → flips to L=94 in dark), the resulting
-  // composite was much more contrasting in dark mode (chip cr=1.04 → 1.51,
-  // text cr=2.21 → 2.75 vs the chip), and combined with `color: '#white'` on
-  // PRIMARY-type buttons text-on-chip jumped from cr=1.6 (washed) to cr=6.5
-  // (fully readable) — the dark disabled state stopped looking disabled.
-  //
-  // With these contrast-driven tokens both schemes resolve to the same
-  // ratios (chip ~1.4, text ~2.0 vs surface, text-on-chip ~1.4) so the
-  // disabled appearance is identical in light, dark, and high-contrast.
-  //
-  // These two tokens are NEUTRAL — the chip has very low saturation and is
-  // used by non-PRIMARY-style disabled states (secondary / outline / neutral
-  // / clear / link / item). PRIMARY-style buttons (solid brand fill, white
-  // label) use `accent-disabled-surface` + `accent-disabled-surface-text`
-  // instead so the disabled chip stays brand-tinted per theme. Both tokens
-  // therefore stay default-only (`inherit: false`) — the colored themes get
-  // their own brand-tinted disabled chip via the inherited accent variants.
+  // Tone deltas reproduce the legacy palette's disabled appearance exactly:
+  // the chip sits ~cr 1.11 vs `surface` (a faint greyed pill for
+  // OUTLINE/SECONDARY/item disabled states) and the label ~cr 2.02 vs
+  // `surface` — intentionally sub-AA so it reads as disabled while staying the
+  // same softness clear/link disabled labels had before. PRIMARY-style buttons
+  // use the brand-tinted `accent-disabled-*` variants below instead. Both
+  // tokens stay default-only (`inherit: false`) — colored themes inherit their
+  // own disabled chip via the accent variants.
   'disabled-surface': {
     base: 'surface',
-    lightness: '-1',
+    tone: '-3.5',
     saturation: 0.2,
-    contrast: [1.1, 1.2],
     inherit: false,
   },
   'disabled-surface-text': {
     base: 'surface',
-    lightness: '-1',
+    tone: '-23',
     saturation: 0.3,
-    contrast: [2, 2.5],
     inherit: false,
   },
 
@@ -201,7 +198,7 @@ defaultTheme.colors({
   // so the color reads as a dark surface in light, dark, and high-contrast.
   // Pair with `#white` (built-in) for foreground text.
   'surface-inverse': {
-    lightness: 12,
+    tone: 12,
     saturation: 0.475,
     mode: 'fixed',
     inherit: false,
@@ -209,202 +206,212 @@ defaultTheme.colors({
 
   // ---- Accent system (theme-aware, inherited by colored themes) ----
   // Everything here is anchored to a fixed white "accent-surface-text" via
-  // `mode: 'fixed'` + small *relative* lightness offsets, so accent colors
-  // stay visually consistent across light/dark/high-contrast schemes (the
-  // brand color does not flip). Contrast targets are explicit numeric ratios
-  // — using 'AA'/'AAA' here would let the solver push the color far away
-  // from its anchor in dark schemes, breaking the visual relationship
-  // between `accent-surface` and `accent-text` (e.g. solid button bg vs.
-  // its hover bg). All accent variants therefore share the same shape.
-  'accent-surface-text': { lightness: 100, mode: 'fixed' },
+  // `mode: 'fixed'` + relative tone deltas, so accent colors stay visually
+  // consistent across light/dark/high-contrast schemes (the brand color does
+  // not flip). The solid fills are white-text-on-brand backgrounds, so they
+  // keep an `['AA','AAA']` contrast floor even though the chosen tone deltas
+  // already exceed it. This leaves room for a future low-contrast scale.
+  'accent-surface-text': { tone: 100, mode: 'fixed' },
   'accent-surface': {
     base: 'accent-surface-text',
-    lightness: '-1',
-    contrast: [4.5, 7],
+    tone: '-49',
+    contrast: ['AA', 'AAA'],
     mode: 'fixed',
   },
   'accent-surface-2': {
     base: 'accent-surface-text',
-    lightness: '-1',
-    contrast: [5, 8],
+    tone: '-52',
+    contrast: ['AA', 'AAA'],
     mode: 'fixed',
   },
   'accent-surface-3': {
     base: 'accent-surface-text',
-    lightness: '-1',
-    contrast: [5.5, 9],
+    tone: '-55',
+    contrast: ['AA', 'AAA'],
     mode: 'fixed',
   },
   // Hover variant of `accent-surface` — a *fixed*-mode darker shade used as
   // the hover fill for solid PRIMARY-type buttons. Anchored to the same
-  // accent-surface-text so it stays in the same hue family. Numeric contrast
-  // is tuned so the hover shade lands near today's light-mode "darker
-  // purple" (≈L=44 light / ≈L=40 dark), giving a visible darkening in BOTH
-  // schemes (~7–9 OKHSL lightness points below `accent-surface`). Using a
-  // dedicated fixed token avoids the trap of reusing `accent-text` (which
-  // is `mode: 'auto'` and inverts direction in dark mode).
+  // accent-surface-text so it stays in the same hue family. The relative tone
+  // lands a few steps darker than the pressed state in both schemes.
   'accent-surface-hover': {
     base: 'accent-surface-text',
-    lightness: '-1',
-    contrast: [6, 10],
+    tone: '-58',
+    contrast: ['AA', 'AAA'],
     mode: 'fixed',
   },
-  // Border for accent surfaces — mirrors the default-theme `border` shape
-  // (a relative lightness step down from its surface base) but anchored to the
-  // fixed accent surface so it stays in the brand hue family and does not flip
-  // in dark mode. Used for outlines/dividers on top of `accent-surface`.
+  // Border for accent surfaces — a small relative tone step away from the
+  // brand fill so it stays in the brand hue family and does not flip in dark
+  // mode. No contrast prop needed; the delta is chosen directly on the tone
+  // scale.
   'accent-surface-border': {
     base: 'accent-surface',
-    lightness: '+1',
-    contrast: [1.4, 1.8],
+    tone: '+13',
     mode: 'fixed',
   },
-  // Saturated foreground variants. Anchored to `surface` (NOT `accent-surface`)
-  // with `mode: 'auto'` so they adapt with the scheme: in dark mode the solver
-  // pushes them lighter to stay readable on the dark surface. Anchoring to the
-  // brand fill instead would only enforce contrast against that fill — leaving
-  // the dark-mode color washed out against the actual surface they sit on
-  // (e.g. SECONDARY button labels). The numeric `contrast` value is the
-  // achieved-light-mode ratio under the previous chain, so the visual
-  // appearance in light mode is preserved while dark mode is brought up to
-  // the same perceived contrast.
-  'accent-text': {
+  // Opaque stand-in for the BASE selected fill used by outline / outline-2 /
+  // clear Item types (`#surface|#surface-2|#surface-3` + `#accent-surface.09`).
+  // Anchors `accent-text` contrast. `value: 9` matches the `.09` alpha overlay;
+  // `space: 'srgb'` approximates CSS two-layer compositing. Inherited so
+  // colored themes re-resolve against their own `surface` + `accent-surface`
+  // (default `surface-2`/`surface-3` are `inherit: false` and can't be the mix
+  // base). Primary's tinted `surface` makes this slightly harder than default
+  // clear-selected, covering outline / outline-2 selected fills as well.
+  'accent-selected-fill': {
+    type: 'mix',
     base: 'surface',
-    lightness: '-1',
-    saturation: 1,
-    contrast: [6.4, 10],
+    target: 'accent-surface',
+    value: 9,
+    space: 'srgb',
   },
-  // Softer adaptive companion to `accent-text` for "secondary" foregrounds
-  // (LINK base color, subdued labels, etc.). Same anchor + saturation as
-  // `accent-text` but a relaxed AA-only contrast floor (4.5/7) so it sits
-  // visibly less prominent than the main brand text. Critically, it stays
-  // `mode: 'auto'` (default) — unlike the fixed `accent-surface` brand color,
-  // which would collapse to cr≈3 against the dark surface and break AA. The
-  // adaptive lightness keeps cr≥4.5 in BOTH light and dark schemes.
-  'accent-text-soft': {
-    base: 'surface',
-    lightness: '-1',
+  // Stronger brand text for HOVERED selected outline/clear labels and LINK
+  // hover. Same anchor + preferred tone as `accent-text-soft`, but a higher
+  // `contrast: { wcag: [6, 7] }` floor against `accent-selected-fill` so it
+  // reads as a clear step up from the soft rest color while staying saturated
+  // (a bare `AAA`/`7` floor over-darkens light and desaturates dark). The HC
+  // pair keeps it at/above the soft variant (which auto-promotes AA→AAA in HC).
+  // `mode: 'auto'` (default) keeps dark-mode text readable on dark surfaces.
+  'accent-text': {
+    base: 'accent-selected-fill',
+    tone: '-49',
     saturation: 1,
-    contrast: [4.5, 7],
+    contrast: [6, 11],
+  },
+  // Rest brand text for selected outline/clear labels and LINK base color.
+  // Anchored to `accent-selected-fill` with `contrast: 'AA'` — the measured
+  // floor for every BASE state of those Item types (surface / outline /
+  // outline-2 / clear selected fills). Sits visibly less prominent than
+  // `accent-text` (lighter in light, darker in dark) so the rest→hover
+  // intensify is real.
+  'accent-text-soft': {
+    base: 'accent-selected-fill',
+    tone: '-49',
+    saturation: 1,
+    contrast: ['AA', 'AAA'],
   },
   'accent-icon': {
     base: 'surface',
-    lightness: '-1',
+    tone: '-38',
     saturation: 0.9375,
-    contrast: [3.2, 5],
   },
 
   // Brand-tinted disabled chip + label for PRIMARY-style buttons (solid brand
-  // fill, white text). Mirrors the shape of the neutral `disabled-surface` /
-  // `disabled-surface-text` pair (`mode: 'auto'`, contrast-driven against
-  // `surface`) so the disabled state is scheme-symmetric — chip cr ≈ 1.4 vs
-  // surface, label cr ≈ 2.8–3.2 vs surface (≈ 2.1 text-on-chip) in BOTH
-  // light and dark. Saturation is bumped up so the chip reads as a *muted
-  // brand* color rather than a fully neutral grey, preserving the brand
-  // identity even in the disabled state. Inherited per theme, so each colored
-  // theme automatically emits `<theme>-accent-disabled-surface` and
-  // `<theme>-accent-disabled-surface-text` (e.g. `#danger-accent-disabled-surface`).
+  // fill). The chip is scheme-symmetric (`mode: 'fixed'`) so the muted state
+  // reads the same weight in light/dark/HC; saturation is bumped so it stays
+  // identifiable as a muted brand color.
+  //
+  // The label rides the extreme away from the chip (`tone: 'max'`, ~cr 1.7):
+  // deliberately faint, so it reads as disabled rather than as live text.
+  // `'max'` is the authored intent — it was temporarily hand-approximated as a
+  // relative `tone: '+15'` with `autoFlip: false`, because Glaze < 1.2.0
+  // re-mapped the extreme through the dark tone window, compressing the
+  // base-to-extreme span and dropping the dark label's contrast. Glaze 1.2.0
+  // (tenphi/glaze#82) instead replays the light scheme's base→extreme tone
+  // shift against the base's resolved dark tone — same-signed under
+  // `mode: 'fixed'` — so `'max'` holds its intended separation in every scheme
+  // and the approximation is no longer needed. Inherited per theme.
+  //
+  // The special theme keeps its own relative `+18` pair: its `surface` is a
+  // fixed dark tone, so an extreme there would resolve to white and read as
+  // live text rather than disabled.
   'accent-disabled-surface': {
     base: 'surface',
-    lightness: '-1',
+    tone: '-13',
     saturation: 0.5,
-    contrast: [1.4, 1.5],
+    mode: 'fixed',
   },
   'accent-disabled-surface-text': {
     base: 'accent-disabled-surface',
-    lightness: '+1',
+    tone: 'max',
     saturation: 0.4,
-    contrast: 1.51,
     mode: 'fixed',
   },
 
   // ---- Code syntax highlighting (PrismCode) ----
   // A small palette of *adaptive* colored tokens for syntax highlighting.
-  // Each token: `mode: 'auto'` (default) + `base: 'surface'` + a numeric
-  // `contrast` floor of 4.5 (= WCAG AA) so every token reads against `#surface`
-  // in light, dark, and high-contrast schemes alike. Hues mirror the
-  // long-standing PrismCode reference (pink keywords / pink functions /
-  // orange strings / green numbers / gray comments). `code-attribute` keeps
-  // a cyan hue for HTML attribute names / CSS properties / selectors; HTML/XML
-  // tag names use `code-keyword`. Diff
+  // Each token is anchored to `surface` with a relative tone plus an `['AA',
+  // 'AAA']` readability floor. Hues mirror the long-standing PrismCode
+  // reference (pink keywords / pink functions / orange strings / green numbers /
+  // gray comments). `code-attribute` keeps a cyan hue for HTML attribute names /
+  // CSS properties / selectors; HTML/XML tag names use `code-keyword`. Diff
   // insertion / deletion re-use the existing `success-*` / `danger-*` ramps.
   'code-comment': {
     base: 'surface',
     hue: 280,
     saturation: 0.1,
-    lightness: '-1',
-    contrast: [4.5, 7],
+    tone: '-50',
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
   'code-punctuation': {
     base: 'surface',
     hue: 348,
     saturation: 0.4,
-    lightness: '-1',
-    contrast: [4.5, 7],
+    tone: '-50',
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
   'code-keyword': {
     base: 'surface',
     hue: 348,
     saturation: 1,
-    lightness: '-1',
-    contrast: [5, 7.5],
+    tone: '-54',
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
   'code-string': {
     base: 'surface',
     hue: PURPLE_HUE,
     saturation: 1,
-    lightness: '-1',
-    contrast: [4.5, 7],
+    tone: '-50',
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
   'code-number': {
     base: 'surface',
     hue: 156,
     saturation: 0.9,
-    lightness: '-1',
-    contrast: [4.5, 7],
+    tone: '-50',
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
   'code-function': {
     base: 'surface',
     hue: 348,
     saturation: 1,
-    lightness: '-1',
-    contrast: [5, 7.5],
+    tone: '-54',
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
   'code-attribute': {
     base: 'surface',
     hue: 200,
     saturation: 1,
-    lightness: '-1',
-    contrast: [4.5, 7],
+    tone: '-50',
+    contrast: ['AA', 'AAA'],
     inherit: false,
   },
 
   // ---- Loading-animation cube faces ----
+  // Decorative gradient steps from `surface` to a saturated mid-tone. Tone
+  // deltas are chosen directly on the contrast-uniform scale; no contrast prop
+  // is needed for a non-text decorative element.
   'loading-face-1': {
     base: 'surface',
-    lightness: 98,
+    tone: '-2',
     saturation: 0.3,
-    contrast: [1.04, 1.5],
     inherit: false,
   },
   'loading-face-2': {
     base: 'surface',
-    lightness: 91,
+    tone: '-9',
     saturation: 0.62,
-    contrast: [1.24, 2.5],
     inherit: false,
   },
   'loading-face-3': {
     base: 'surface',
-    lightness: 79,
+    tone: '-21',
     saturation: 0.66,
-    contrast: [1.75, 4],
     inherit: false,
   },
 
@@ -432,28 +439,52 @@ defaultTheme.colors({
   },
 
   // Backdrop overlay (translucent)
-  overlay: { lightness: 10, opacity: 0.5, inherit: false },
+  overlay: { tone: 10, opacity: 0.5, inherit: false },
 });
 
 // ============================================================================
 // Colored themes
 // ============================================================================
 
+const TINTED_SURFACE_SATURATION = 0.2;
+const TINTED_SURFACE_TONE_OFFSET = 2;
+
 /**
  * Per-colored-theme overrides on top of `defaultTheme`:
  *   - `surface` — bumped saturation so the banner bg is visibly tinted.
  *   - `border`  — bumped saturation so OUTLINE-variant borders pick up the
  *     theme hue (used by `#<theme>-border` in `item-themes.ts`). Mirrors the
- *     default-theme `border` shape (`base: 'surface'`, lightness window) but
+ *     default-theme `border` shape (`base: 'surface'`, tone window) but
  *     with higher saturation. Glaze's `extend({ colors })` redefines each
  *     listed color from scratch, so we restate the full definition here.
  */
 const TINTED_SURFACE_OVERRIDE: ColorMap = {
-  surface: { lightness: 96, saturation: 0.8 },
+  surface: {
+    tone: 100 - TINTED_SURFACE_TONE_OFFSET,
+    saturation: TINTED_SURFACE_SATURATION,
+  },
   border: {
     base: 'surface',
-    lightness: ['-10', '-20'],
+    tone: ['-10', '-20'],
     saturation: 0.5,
+  },
+  'surface-text': {
+    base: 'surface',
+    tone: `${TEXT_TONE - TINTED_SURFACE_TONE_OFFSET}`,
+    saturation: 0.25,
+    contrast: ['AA', 'AAA'],
+  },
+  'surface-text-soft': {
+    base: 'surface',
+    tone: `${TEXT_SOFT_TONE - TINTED_SURFACE_TONE_OFFSET}`,
+    saturation: 0.25,
+    contrast: ['AA', 'AAA'],
+  },
+  'surface-text-soft-2': {
+    base: 'surface',
+    tone: `${TEXT_SOFT2_TONE - TINTED_SURFACE_TONE_OFFSET}`,
+    saturation: 0.25,
+    contrast: ['AA', 'AAA'],
   },
 };
 
@@ -506,64 +537,62 @@ const noteTheme = defaultTheme.extend({
  *     pressed/focused border on the brand-purple primary fill. Matches the
  *     legacy `#fixed-primary-text` alias (= `#primary-accent-surface-hover`).
  *   - `accent-disabled-surface` / `accent-disabled-surface-text` —
- *     brand-tinted disabled chip + label, contrast-driven against the fixed
- *     dark `surface` so the disabled state is scheme-symmetric.
+ *     brand-tinted disabled chip + label, positioned with relative tone
+ *     deltas against the fixed dark `surface` so the disabled state is
+ *     scheme-symmetric.
  */
 const specialTheme = glaze(PURPLE_HUE, SEED_SATURATION);
 
 specialTheme.colors({
-  surface: { lightness: 12, saturation: 0.475, mode: 'fixed' },
+  surface: { tone: 12, saturation: 0.475, mode: 'fixed' },
 
-  'accent-surface-text': { lightness: 100, mode: 'fixed' },
+  'accent-surface-text': { tone: 100, mode: 'fixed' },
   'accent-surface': {
     base: 'accent-surface-text',
-    lightness: '-1',
-    contrast: [4.5, 7],
+    tone: '-49',
+    contrast: ['AA', 'AAA'],
     mode: 'fixed',
   },
   'accent-surface-2': {
     base: 'accent-surface-text',
-    lightness: '-1',
-    contrast: [5, 8],
+    tone: '-52',
+    contrast: ['AA', 'AAA'],
     mode: 'fixed',
   },
   'accent-surface-3': {
     base: 'accent-surface-text',
-    lightness: '-1',
-    contrast: [5.5, 9],
+    tone: '-55',
+    contrast: ['AA', 'AAA'],
     mode: 'fixed',
   },
   'accent-surface-border': {
     base: 'accent-surface',
-    lightness: '+1',
-    contrast: [1.4, 1.8],
+    tone: '+13',
     mode: 'fixed',
   },
   'accent-surface-hover': {
     base: 'accent-surface-text',
-    lightness: '-1',
-    contrast: [6, 8.5],
+    tone: '-58',
+    contrast: ['AA', 'AAA'],
     mode: 'fixed',
   },
   'accent-text': {
     base: 'accent-surface-text',
-    lightness: '-1',
-    contrast: [6, 8.5],
+    tone: '-58',
+    contrast: ['AA', 'AAA'],
     mode: 'fixed',
   },
 
   'accent-disabled-surface': {
     base: 'surface',
-    lightness: '+1',
+    tone: '+4',
     saturation: 0.5,
-    contrast: [1.4, 1.5],
     mode: 'fixed',
   },
   'accent-disabled-surface-text': {
     base: 'accent-disabled-surface',
-    lightness: '+1',
+    tone: '+18',
     saturation: 0.4,
-    contrast: 1.51,
     mode: 'fixed',
   },
 });
@@ -598,26 +627,43 @@ const palette = glaze.palette({
 // ============================================================================
 
 /**
- * All Glaze-generated color tokens as a tasty `Styles` map.
+ * Resolve Glaze palette tokens against the **live** `glaze` global config.
+ *
+ * Memoized on first call so subsequent reads are free. Resolution is deferred
+ * (not done at module import) so host apps can call `glaze.configure(...)`
+ * after importing `@cube-dev/ui-kit` and still affect these tokens — as long as
+ * configure runs before the first `getPaletteTokens()` / `<Root>` paint.
  *
  * Keys use `#name` syntax; values are state maps:
- *   '#surface': { '': 'okhsl(...)', '@dark': 'okhsl(...)', '@hc': 'okhsl(...)' }
- *
- * Spread into `useGlobalStyles('body', tokens)` (already wired through
- * `src/components/GlobalStyles.tsx`).
+ *   '#surface': { '': 'oklch(...)', '@dark': 'oklch(...)', '@hc': 'oklch(...)' }
  */
-export const PALETTE_TOKENS: Styles = palette.tasty({
-  prefix: {
-    default: '',
-    primary: 'primary-',
-    purple: 'purple-',
-    success: 'success-',
-    danger: 'danger-',
-    warning: 'warning-',
-    note: 'note-',
-    special: 'special-',
-  },
-}) as Styles;
+let paletteTokensCache: Styles | null = null;
+
+export function getPaletteTokens(): Styles {
+  if (!paletteTokensCache) {
+    paletteTokensCache = palette.tasty({
+      prefix: {
+        default: '',
+        primary: 'primary-',
+        purple: 'purple-',
+        success: 'success-',
+        danger: 'danger-',
+        warning: 'warning-',
+        note: 'note-',
+        special: 'special-',
+      },
+      format: 'oklch',
+    }) as Styles;
+  }
+  return paletteTokensCache;
+}
+
+/**
+ * Lazy proxy of {@link getPaletteTokens}. Prefer `getPaletteTokens()` in new
+ * code. First property / enumeration access resolves against the live glaze
+ * config (same memo as the getter).
+ */
+export const PALETTE_TOKENS: Styles = lazyStyles(getPaletteTokens);
 
 /** Re-exported for advanced consumers / tests. */
 export {

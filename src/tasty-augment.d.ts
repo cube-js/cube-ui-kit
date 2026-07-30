@@ -32,10 +32,12 @@ declare module '@tenphi/tasty' {
     'accent-icon': true;
     'accent-disabled-surface': true;
     'accent-disabled-surface-text': true;
-    // Note: `accent-surface-hover` (and its per-theme `<theme>-accent-surface-hover`
-    // variants + `<theme>-hover` aliases) are intentionally omitted from this
-    // type list to stay under TS7056. They resolve at runtime and still
-    // type-check via tasty's `(string & {})` fallback in `ColorValue`.
+    // Note: `accent-surface-hover` / `accent-selected-fill` (and their
+    // per-theme prefixed variants + `<theme>-hover` aliases) are intentionally
+    // omitted from this type list to stay under TS7056. They resolve at
+    // runtime and still type-check via tasty's `(string & {})` fallback in
+    // `ColorValue`. `accent-selected-fill` is an internal contrast anchor for
+    // `accent-text`, not a style-facing token.
 
     // ---- Other primitives ----
     placeholder: true;
@@ -139,6 +141,9 @@ declare module '@tenphi/tasty' {
     p4: true;
     c1: true;
     c2: true;
+    s2: true;
+    s3: true;
+    s4: true;
     tag: true;
     default: true;
   }
