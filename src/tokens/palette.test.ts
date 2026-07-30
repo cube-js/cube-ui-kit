@@ -8,6 +8,7 @@ import {
   renderPaletteTokens,
 } from './palette';
 import {
+  DEFAULT_CODE_SATURATION,
   DEFAULT_PALETTE_CONFIG,
   getPaletteConfig,
   getPaletteConfigInput,
@@ -334,7 +335,9 @@ describe('setPaletteConfig', () => {
   });
 
   it('applies pastel and restores on reset', () => {
-    setPaletteConfig({ pastel: true });
+    // Pastel is the shipped default, so turning it OFF is what perturbs the
+    // palette here. The round-trip being asserted is the same one either way.
+    setPaletteConfig({ pastel: false });
 
     expect(dumpTokens(getPaletteTokens())).not.toEqual(baseline);
 
@@ -365,7 +368,9 @@ describe('setPaletteConfig', () => {
     // it stops at the code theme's door.
     const before = CODE_TOKENS.map((name) => baseline[name]);
 
-    setPaletteConfig({ pastel: true });
+    // Toggled OFF rather than on: pastel ships enabled, so this is the direction
+    // that actually moves the palette out from under the code theme.
+    setPaletteConfig({ pastel: false });
 
     const tuned = dumpTokens(getPaletteTokens());
 
@@ -374,7 +379,7 @@ describe('setPaletteConfig', () => {
     expect(CODE_TOKENS.map((name) => tuned[name])).toEqual(before);
     expect(getCodeTheme().getConfig().pastel).toBe(false);
 
-    // Not a no-op config — the rest of the palette did soften.
+    // Not a no-op config — the rest of the palette did move.
     expect(tuned['#surface']).not.toBe(baseline['#surface']);
   });
 
@@ -551,8 +556,11 @@ describe('code syntax tokens', () => {
   it('defaults to the shipped saturation rather than inheriting', () => {
     setPaletteConfig({ saturation: 20 });
 
+    // `DEFAULT_CODE_SATURATION`, not `DEFAULT_PALETTE_CONFIG.saturation`: the two
+    // parted ways when the app seed moved to 100 for pastel. Asserting against the
+    // palette-level default here would silently re-couple them.
     expect(getPaletteConfig().themes.code.saturation).toBe(
-      DEFAULT_PALETTE_CONFIG.saturation,
+      DEFAULT_CODE_SATURATION,
     );
   });
 
@@ -568,6 +576,13 @@ describe('code syntax tokens', () => {
   });
 
   it('anchors its contrast floors to the real surface', () => {
+    // Pinned non-pastel: bit-for-bit equality is the invariant only when the page
+    // is non-pastel too. Under the pastel default the code theme stays unsoftened
+    // while `surface` softens, so the mirror's chroma diverges by design — the
+    // sibling test below covers that case on tone, which is what the floors are
+    // actually solved against.
+    setPaletteConfig({ pastel: false });
+
     // The mirrored base must resolve to the same colour the code sits on, or the
     // AA/AAA floors would be solved against the wrong background.
     const mirrored = getCodeTheme().tokens({
