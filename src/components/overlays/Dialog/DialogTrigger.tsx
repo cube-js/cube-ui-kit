@@ -91,7 +91,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
   let {
     children,
     type = 'modal',
-    mobileType = type === 'popover' ? 'modal' : type,
+    mobileType = type,
     hideArrow,
     targetRef,
     onDismiss,
