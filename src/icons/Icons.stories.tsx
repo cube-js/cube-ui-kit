@@ -82,6 +82,32 @@ const TemplateDirectionIcon: StoryFn<CubeIconProps> = (args) => {
 export const Default = Template.bind({});
 Default.args = {};
 
+/**
+ * This story renders every exported icon, which includes `LoadingIcon` — and that
+ * carries `.cube-animation-spin`, an infinite 1s rotation (see `GlobalStyles`).
+ * A snapshot therefore catches it at whatever angle it happened to reach, and the
+ * story diffs against itself on runs where nothing changed.
+ *
+ * Freeze the rotation for THIS story only. The override is scoped to the wrapper
+ * rather than injected globally, so any other story that legitimately shows a
+ * spinner in motion — and the docs page, where several stories share a document —
+ * is unaffected. `[data-static-spin] .cube-animation-spin` is specificity (0,2,0)
+ * against the global rule's (0,1,0), so it wins without `!important`.
+ *
+ * `animation: none` drops the element back to its untransformed state, i.e. a
+ * deterministic 0deg, instead of pausing at an arbitrary frame.
+ */
+Default.decorators = [
+  (Story: StoryFn) => (
+    <div data-static-spin="">
+      <style>
+        {'[data-static-spin] .cube-animation-spin { animation: none; }'}
+      </style>
+      <Story />
+    </div>
+  ),
+];
+
 export const WithSize = TemplateWithSize.bind({});
 WithSize.args = {
   size: '8x',
