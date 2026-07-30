@@ -1,5 +1,5 @@
 ---
-'@cube-dev/ui-kit': major
+'@cube-dev/ui-kit': minor
 ---
 
 **Breaking:** remove `CloudLogo`. It shipped the previous brand artwork with hard-coded hexes (`#ff6492`, `#141446`, `#7a77ff`, `#a14474`) and the retired "Cube Cloud" wordmark, so it could neither adapt to a colour scheme nor be recoloured.
