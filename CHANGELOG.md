@@ -1,5 +1,33 @@
 # @cube-dev/ui-kit
 
+## 0.150.0
+
+### Minor Changes
+
+- [#1267](https://github.com/cube-js/cube-ui-kit/pull/1267) [`f9d7ebdc`](https://github.com/cube-js/cube-ui-kit/commit/f9d7ebdc1cb15df73eb3cbbd4fe1db45f2c1f319) Thanks [@tenphi](https://github.com/tenphi)! - Add `s2`, `s3`, and `s4` monospace typography presets for code and snippet text (sized to match `t2`–`t4`, using `--font-mono`). `PrismCode` and `CopySnippet` now use `s3` by default.
+
+- [#1267](https://github.com/cube-js/cube-ui-kit/pull/1267) [`f9d7ebdc`](https://github.com/cube-js/cube-ui-kit/commit/f9d7ebdc1cb15df73eb3cbbd4fe1db45f2c1f319) Thanks [@tenphi](https://github.com/tenphi)! - Update `@tenphi/glaze` 0.13.0 → 1.2.0 and migrate the palette from the `lightness` axis to the contrast-shaped `tone` axis.
+
+  **This changes resolved colors.** Glaze 1.x removed `lightness` as a color-def input, so the upgrade and the axis migration are the same change — all 54 palette declarations are re-authored against `tone`. Because `tone` is contrast-shaped rather than lightness-shaped, tokens do not land on their previous values. Measured per-channel RGB delta against the previous release, across every token in all four scheme variants: core surfaces/text mean ~13 (max 51), accent mean ~13 (max 48). Seed hue and saturation are unchanged, so hue relationships and relative ramps are preserved — the shift is in tone placement, not in the palette's structure.
+
+  Also newly available from Glaze 1.2.0: `tone: 'max'` / `'min'` on colors that declare a `base` (the extreme is no longer re-mapped through the dark tone window, which used to compress the base-to-extreme span and lower contrast in dark), and `darkHue` / `darkSaturation` for seeding the dark schemes independently of the flat `darkDesaturation` haircut.
+
+- [#1267](https://github.com/cube-js/cube-ui-kit/pull/1267) [`f9d7ebdc`](https://github.com/cube-js/cube-ui-kit/commit/f9d7ebdc1cb15df73eb3cbbd4fe1db45f2c1f319) Thanks [@tenphi](https://github.com/tenphi)! - Defer Glaze color token resolution until first access (`getPaletteTokens` / `getColorTokens` / `getTokens`) so host apps can call `glaze.configure(...)` after importing the kit and still affect UI Kit tokens. Existing `PALETTE_TOKENS` / `COLOR_TOKENS` / `TOKENS` exports remain as lazy proxies.
+
+### Patch Changes
+
+- [#1267](https://github.com/cube-js/cube-ui-kit/pull/1267) [`f9d7ebdc`](https://github.com/cube-js/cube-ui-kit/commit/f9d7ebdc1cb15df73eb3cbbd4fe1db45f2c1f319) Thanks [@tenphi](https://github.com/tenphi)! - Fix primary (and other solid accent) disabled button labels — `#*-accent-disabled-surface-text` rides the extreme away from its disabled chip (`tone: 'max'`), so the label stays deliberately faint (~cr 1.7, reading as disabled rather than as live text) while keeping a consistent separation from the chip in light, dark, and high-contrast schemes.
+
+  Previously this was a contrast-driven relative step (`lightness: '+1'` with `contrast: 1.51`). Authoring it as an extreme is only viable from `@tenphi/glaze` 1.2.0, which no longer re-maps a based extreme through the dark tone window — that compressed the base-to-extreme span and lowered the dark label's contrast.
+
+- [#1267](https://github.com/cube-js/cube-ui-kit/pull/1267) [`f9d7ebdc`](https://github.com/cube-js/cube-ui-kit/commit/f9d7ebdc1cb15df73eb3cbbd4fe1db45f2c1f319) Thanks [@tenphi](https://github.com/tenphi)! - Keep `#pink` resolving. The legacy alias was dropped while `tasty.config.ts`, `Usage.docs.mdx` and the `pink` key in the Tasty token augmentation all still advertised it, so consumer styles using it would have silently stopped resolving with types still reporting the token as valid. Restored as the same scheme-static literal.
+
+  Fix `CopySnippet`'s `serif` variant rendering monospace. Moving the code element to the `s3` / `t3` presets lost the font family: `s3` carries `fontFamily: var(--font-mono)` but `t3` sets no family at all, so `serif` fell back to the `<code>` element's UA monospace default. The family is explicit again — monospace by default, the design system's default stack under `serif`.
+
+- [#1267](https://github.com/cube-js/cube-ui-kit/pull/1267) [`f9d7ebdc`](https://github.com/cube-js/cube-ui-kit/commit/f9d7ebdc1cb15df73eb3cbbd4fe1db45f2c1f319) Thanks [@tenphi](https://github.com/tenphi)! - Ensure HTML syntax highlighting works in `PrismCode` and `CopySnippet`, including JavaScript inside `<script>` tags. Differentiate tag names, attributes, values, and punctuation so markup is not a single color wash.
+
+- [#1267](https://github.com/cube-js/cube-ui-kit/pull/1267) [`f9d7ebdc`](https://github.com/cube-js/cube-ui-kit/commit/f9d7ebdc1cb15df73eb3cbbd4fe1db45f2c1f319) Thanks [@tenphi](https://github.com/tenphi)! - Selected outline/clear Item labels now use the softer `#primary-accent-text-soft` at rest and intensify to `#primary-accent-text` on hover (mirroring links). Both brand-text tokens are solved for AA against the selected fill, keeping labels readable and saturated.
+
 ## 0.149.2
 
 ### Patch Changes
