@@ -31,8 +31,12 @@ module.exports = [
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // 117.63 kB at the time of writing — only ~370 B of headroom, so this
-    // one is likely to trip next even though it passes today.
-    limit: '118kB',
+    // 121.38 kB at the time of writing. Raised from 118 kB for Tasty v3, which
+    // costs +3.77 kB here: its new dev diagnostics (directional syntax, handler
+    // displacement, chunk conflicts) ship in every bundle, because `isDevEnv()`
+    // is evaluated at runtime so one build serves dev and production. The
+    // previous ~370 B of headroom had no room for it. Headroom stays small so
+    // real bloat still trips the budget.
+    limit: '123kB',
   },
 ];
