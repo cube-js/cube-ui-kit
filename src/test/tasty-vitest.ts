@@ -1,4 +1,4 @@
-import { getCssTextForNode } from '@tenphi/tasty';
+import { getCSSTextForNode } from '@tenphi/tasty';
 import { expect } from 'vitest';
 
 declare module 'vitest' {
@@ -22,7 +22,7 @@ expect.extend({
     }
 
     try {
-      const css = getCssTextForNode(received);
+      const css = getCSSTextForNode(received);
       expect(css).toMatchSnapshot();
 
       return {
@@ -52,7 +52,7 @@ export const tastySerializer = {
 
   print(val: ParentNode, serialize: (v: unknown) => string): string {
     const markup = serialize(val);
-    const css = getCssTextForNode(val);
+    const css = getCSSTextForNode(val);
 
     if (!css.trim()) {
       return markup;

@@ -3,7 +3,6 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   Mods,
-  Props,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -77,6 +76,8 @@ import { highlightText } from '../highlightText';
 import { HotKeys } from '../HotKeys';
 import { ItemBadge } from '../ItemBadge';
 import { useAutoTooltip } from '../use-auto-tooltip';
+
+import type { Props } from '../../../props';
 
 const ITEM_SIZE_VALUES = [
   'xsmall',

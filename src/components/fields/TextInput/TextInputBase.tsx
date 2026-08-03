@@ -9,7 +9,6 @@ import {
   ColorStyleProps,
   OUTER_STYLES,
   OuterStyleProps,
-  Props,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -34,6 +33,8 @@ import {
   ValidationIndicator,
   wrapWithField,
 } from '../../form';
+
+import type { Props } from '../../../props';
 
 const ADD_STYLES = {
   $: '>',

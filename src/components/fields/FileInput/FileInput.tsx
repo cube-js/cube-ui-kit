@@ -5,7 +5,6 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   PositionStyleProps,
-  Props,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -32,6 +31,7 @@ import {
 } from '../../form';
 
 import type { AriaTextFieldProps } from 'react-aria';
+import type { Props } from '../../../props';
 
 const FileInputElement = tasty(Action, {
   qa: 'FileInputWrapper',

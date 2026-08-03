@@ -23,6 +23,12 @@ export interface CubeTitleProps
     PositionStyleProps {
   /** The level of the heading **/
   level?: 1 | 2 | 3 | 4 | 5 | 6;
+  /**
+   * @deprecated Has no effect. `Title` always renders as a block, and this was
+   *   only ever forwarded to an element that ignored it. Previously inherited
+   *   from Tasty's `BaseProps`, which dropped it in v3.
+   */
+  inline?: boolean;
 }
 
 const TitleElement = tasty({
@@ -62,7 +68,15 @@ const TitleElement = tasty({
 });
 
 const Title = forwardRef(function CubeTitle(
-  { qa, as, inline, nowrap, ellipsis, level, ...props }: CubeTitleProps,
+  {
+    qa,
+    as,
+    inline: _inline,
+    nowrap,
+    ellipsis,
+    level,
+    ...props
+  }: CubeTitleProps,
   ref,
 ) {
   const propsWithSlots = useSlotProps(props, 'title');
@@ -79,7 +93,6 @@ const Title = forwardRef(function CubeTitle(
         nowrap,
         ellipsis,
       }}
-      inline={inline}
       {...filterBaseProps(propsWithSlots, { eventProps: true })}
       ref={ref}
       styles={styles}

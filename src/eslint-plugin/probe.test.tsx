@@ -1,4 +1,4 @@
-import { getCssTextForNode } from '@tenphi/tasty';
+import { getCSSTextForNode } from '@tenphi/tasty';
 
 import { Button, ItemAction } from '../components/actions';
 import { ItemActionProvider } from '../components/actions/ItemActionContext';
@@ -18,7 +18,7 @@ import { renderWithRoot } from '../test';
 function probe(ui: React.ReactElement) {
   const { container, unmount } = renderWithRoot(ui);
   const markup = container.innerHTML;
-  const css = getCssTextForNode(container);
+  const css = getCSSTextForNode(container);
 
   unmount();
 

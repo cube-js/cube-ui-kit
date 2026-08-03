@@ -2,7 +2,6 @@ import { mergeRefs } from '@react-aria/utils';
 import {
   CONTAINER_STYLES,
   ContainerStyleProps,
-  Props,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -20,6 +19,8 @@ import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
 } from '../TextInput/TextInputBase';
+
+import type { Props } from '../../../props';
 
 const DateInputWrapperElement = tasty({
   qa: 'DateInputWrapper',

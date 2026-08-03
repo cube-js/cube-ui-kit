@@ -1,5 +1,5 @@
 import { useObjectRef } from '@react-aria/utils';
-import { BaseProps, Props, Styles, tasty } from '@tenphi/tasty';
+import { BaseProps, Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode } from 'react';
 import {
   OverlayProps,
@@ -14,6 +14,8 @@ import { OVERLAY_WRAPPER_STYLES } from './Modal';
 import { Overlay } from './Overlay';
 import { TransitionState, WithCloseBehavior } from './types';
 import { Underlay } from './Underlay';
+
+import type { Props } from '../../../props';
 
 const TrayWrapperElement = tasty({
   qa: 'TrayWrapper',

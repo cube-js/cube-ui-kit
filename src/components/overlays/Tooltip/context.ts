@@ -1,8 +1,9 @@
-import { Props } from '@tenphi/tasty';
 import React, { HTMLAttributes, RefCallback, RefObject } from 'react';
 import { TooltipTriggerState } from 'react-stately';
 
 import { PlacementAxis } from '../../../shared';
+
+import type { Props } from '../../../props';
 
 type Phase = 'enter' | 'entered' | 'exit' | 'unmounted';
 

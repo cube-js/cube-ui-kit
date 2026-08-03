@@ -35,6 +35,13 @@ export interface CubeTextProps<T extends TagName = TagName>
     BaseStyleProps,
     ColorStyleProps {
   /**
+   * Whether the text is rendered as a block.
+   *
+   * Applied as a mod. Previously inherited from Tasty's `BaseProps`, which
+   * dropped it in v3 as an unconsumed prop — the UI Kit does consume it.
+   */
+  block?: boolean;
+  /**
    * Whether the text uses the monospace font.
    */
   monospace?: boolean;

@@ -1,8 +1,10 @@
-import { mergeStyles, Props } from '@tenphi/tasty';
+import { mergeStyles } from '@tenphi/tasty';
 import clsx from 'clsx';
 
 import { chain } from './chain';
 import { mergeIds } from './useId';
+
+import type { Props } from '../../props';
 
 type Merge<T> = T extends [infer F, ...infer R]
   ? F extends undefined
