@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
 import {
   Button,
   Root,
@@ -23,23 +23,17 @@ import * as LayoutStories from './SimpleLayout.stories.jsx';
 
 Flow Component is used to create gaps between blocks inside block layout.
 
-<Canvas>
-  <Story of={LayoutStories.Flow} />
-</Canvas>
+<Canvas of={LayoutStories.Flow} />
 
 ## Flex layout
 
 Use Space Component to create a row or a column of elements.
 
-<Canvas>
-  <Story of={LayoutStories.Flex} />
-</Canvas>
+<Canvas of={LayoutStories.Flex} />
 
 Use Flex Component for more flexible layouts.
 
-<Canvas>
-  <Story of={LayoutStories.FlexCustom} />
-</Canvas>
+<Canvas of={LayoutStories.FlexCustom} />
 
 ## Grid layout
 
@@ -55,6 +49,4 @@ Use Grid Component for grid layouts.
 </Grid>
 ```
 
-<Canvas>
-  <Story of={LayoutStories.Grid} />
-</Canvas>
+<Canvas of={LayoutStories.Grid} />
