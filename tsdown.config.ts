@@ -19,6 +19,11 @@ const define = {
 export default defineConfig({
   entry: {
     index: 'src/index.ts',
+    // Second entry so `@cube-dev/ui-kit/eslint-plugin` stays version-locked to
+    // the components its defaults registry describes. It imports only the
+    // registry and its types, so linting never pulls React into the lint
+    // process.
+    'eslint-plugin/index': 'src/eslint-plugin/index.ts',
   },
   format: 'esm',
   outDir: 'dist',

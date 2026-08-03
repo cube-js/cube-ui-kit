@@ -31,7 +31,7 @@ A date picker combines a text input with a calendar interface, allowing users to
 - **`maxValue`** `DateValue` — The maximum allowed date
 - **`granularity`** `'day' | 'hour' | 'minute' | 'second'` (default: `day`) — Determines the smallest selectable unit
 - **`size`** `'small' | 'medium' | 'large' | (string & {})` (default: `medium`) — DatePicker size
-- **`useLocale`** `boolean` (default: `false`) — Whether to use locale-specific date formatting
+- **`useLocale`** `boolean` (default: `undefined`) — Date segment formatting. Leave unset for the kit's own segment order; `true` uses the active locale's order; `false` forces `en-US`. Note that unset and `false` are **not** the same — unset applies extra segment formatting that `false` skips
 - **`maxVisibleMonths`** `number` (default: `1`) — Maximum number of months to display in calendar
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the calendar popover should flip to fit in the viewport
 - **`isOpen`** `boolean` — Whether the calendar popover is open (controlled)

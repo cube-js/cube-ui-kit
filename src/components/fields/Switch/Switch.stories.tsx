@@ -83,7 +83,7 @@ export default {
       control: { type: 'radio' },
       description: 'Switch size',
       table: {
-        defaultValue: { summary: 'large' },
+        defaultValue: { summary: 'medium' },
       },
     },
 

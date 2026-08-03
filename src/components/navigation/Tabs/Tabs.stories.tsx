@@ -55,11 +55,11 @@ const meta = {
     },
     size: {
       control: 'radio',
-      options: ['normal', 'large'],
+      options: ['xsmall', 'small', 'medium', 'large'],
       description: 'Tab size',
       table: {
-        type: { summary: "'normal' | 'large'" },
-        defaultValue: { summary: 'normal' },
+        type: { summary: "'xsmall' | 'small' | 'medium' | 'large'" },
+        defaultValue: { summary: 'medium' },
       },
     },
     placement: {
