@@ -2,7 +2,7 @@
 '@cube-dev/ui-kit': patch
 ---
 
-Test against the Tasty v3 canary and apply the required migration. Not for release — the `@tenphi/tasty` dependency points at a snapshot build.
+Test against the Tasty v3 canary and apply the required migration. Not for release — the `@tenphi/tasty` dependency points at a snapshot build (`0.0.0-snapshot.cdc961c`).
 
 - `getCssTextForNode` -> `getCSSTextForNode` (test helpers and the ESLint-plugin probe).
 - `Props` is no longer exported by Tasty — it was never a Tasty concept, just `Record<string, any>`. Declared locally in `src/props.ts` and still re-exported from the package root, so the UI Kit's own public API is unchanged.
