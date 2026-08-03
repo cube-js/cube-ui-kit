@@ -19,6 +19,21 @@ export default {
   extends: '@tenphi/tasty',
 
   tokens: [
+    // Declared in src/tasty-augment.d.ts but previously absent here, so the
+    // ESLint plugin reported them as unknown once story files started being
+    // linted. Keep the two lists in sync.
+    '#accent-surface-border',
+    '#black',
+    '#danger-border',
+    '#draft',
+    '#light-grey',
+    '#note-border',
+    '#pink-01',
+    '#pink-02',
+    '#primary-border',
+    '#success-border',
+    '#warning-border',
+    '#white',
     // ---- Glaze: neutral surface ramp (default theme) ----
     '#surface',
     '#surface-2',

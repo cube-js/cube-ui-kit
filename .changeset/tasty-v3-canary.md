@@ -9,6 +9,8 @@ Test against the Tasty v3 canary and apply the required migration. Not for relea
 - `Text` now declares its own `block` prop. It was inherited from Tasty's `BaseProps`, which v3 dropped as unconsumed — but the UI Kit does consume it, as a mod and in the `'ellipsis | block'` style branch.
 - `Title` now declares its own `inline` prop, marked deprecated. It was inherited from the same place and genuinely did nothing: `TitleElement` has no `inline` mod and hardcodes `display: 'block'`, so forwarding it only risked an invalid DOM attribute. Kept on the type so the public prop surface is unchanged; no longer forwarded.
 
-No style values needed changing: v3's stricter directional syntax (one value per group that names directions) is not violated anywhere in the codebase.
+One style value needed changing: `Styles.stories.tsx` had `inset: '2x bottom 4x left'`, the positional form v3 removed, now `inset: '2x bottom, 4x left'`. Verified against the v3 runtime that the comma form reproduces what v2 rendered (`auto auto 16px 32px`) — the old form now drops the `4x` and renders `auto auto 16px 16px`.
+
+Also adds 12 color tokens to `tasty.config.ts` that were declared in `src/tasty-augment.d.ts` but missing from the config the ESLint plugin reads, so they were reported as unknown.
 
 The tree-shaking size budget is raised from 118 kB to 123 kB. Tasty v3 costs +3.77 kB on that entry — its new dev diagnostics ship in every bundle, since `isDevEnv()` is evaluated at runtime so one build serves both modes — and the entry only had ~370 B of headroom.
