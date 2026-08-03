@@ -20,6 +20,7 @@ Project-specific working rules for AI agents. Not published with the package.
 - [documentation.md](docs/rules/documentation.md) — `.docs.mdx` structure + update flow
 - [tests.md](docs/rules/tests.md) — Vitest + React Testing Library patterns
 - [commit-changes.md](docs/rules/commit-changes.md) — commit message convention
+- [eslint-plugin.md](docs/rules/eslint-plugin.md) — the shipped lint rule + the defaults registry it checks against
 
 ## Changesets
 
@@ -58,6 +59,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - `pnpm chromatic` — visual regression
 - `pnpm add-icons` — add new icons from tabler
 - `pnpm audit-docs` — audit component API ↔ docs ↔ argTypes sync. Options: `--component=Name`, `--fix-stories`, `--fix-docs`, `--json`, `--verbose`, `--all-props`. **Run after changing a component's API or adding a new component.**
+- `pnpm audit-defaults` — regenerate the lint plugin's defaults registry (`src/eslint-plugin/defaults.generated.ts`). **Run whenever you change a default prop value.** `pnpm test` fails until the registry matches what the components actually render — see [eslint-plugin.md](docs/rules/eslint-plugin.md).
 - `pnpm run update-tasty` / `pnpm run update-glaze` — bump and pin `@tenphi/tasty` or `@tenphi/glaze` to the latest version. Pass `--version=X.Y.Z` to pin a specific version.
 
 ## Environment

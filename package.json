@@ -15,6 +15,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./eslint-plugin": {
+      "import": "./dist/eslint-plugin/index.js",
+      "types": "./dist/eslint-plugin/index.d.ts"
     }
   },
   "files": [
@@ -54,6 +58,7 @@
     "release": "pnpm build && changeset publish --provenance",
     "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix",
     "audit-docs": "node scripts/audit-docs.mjs",
+    "audit-defaults": "UPDATE_DEFAULTS=1 vitest run src/eslint-plugin/defaults.test.ts && prettier --write src/eslint-plugin/defaults.generated.ts",
     "update-tasty": "pnpm add @tenphi/tasty@${npm_config_version:-latest} --save-exact",
     "update-glaze": "pnpm add @tenphi/glaze@${npm_config_version:-latest} --save-exact"
   },
@@ -136,6 +141,7 @@
     "chromatic": "^13.1.4",
     "csstype": "^3.1.2",
     "dedent": "^0.7.0",
+    "eslint": "^10.8.0",
     "husky": "^6.0.0",
     "jsdom": "^29.1.1",
     "lint-staged": "^17.0.8",

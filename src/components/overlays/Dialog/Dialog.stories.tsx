@@ -42,7 +42,7 @@ export default {
       control: { type: 'radio' },
       description: 'Dialog size',
       table: {
-        defaultValue: { summary: 'S' },
+        defaultValue: { summary: 'M' },
       },
     },
     styles: {
