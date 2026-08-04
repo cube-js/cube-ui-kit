@@ -101,6 +101,9 @@ export const parameters = {
         [
           'Overview',
           'Usage',
+          'Colors',
+          'Theming',
+          'Typography',
           'Create Component',
           'Utilities',
           'Base Properties',
