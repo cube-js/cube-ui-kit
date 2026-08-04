@@ -2,11 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 
 import {
   Button,
+  CubeLogo,
   DEFAULT_PALETTE_CONFIG,
   getPaletteConfigInput,
   getPaletteTokens,
   HueSlider,
   PrismCode,
+  Radio,
+  RadioGroup,
   renderColorTokens,
   resetPaletteConfig,
   Slider,
@@ -17,6 +20,7 @@ import {
 } from '../index';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Tokens } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type {
   PaletteConfig,
@@ -603,41 +607,337 @@ function CodePanel() {
 }
 
 // ============================================================================
-// Region previews
+// Theme builder
 // ============================================================================
 
-const PreviewGrid = tasty({
+type SchemeChoice = 'auto' | 'light' | 'dark';
+type ContrastChoice = 'auto' | 'normal' | 'high';
+
+/**
+ * What `auto` resolves to right now.
+ *
+ * A region preview needs a **concrete** variant: `renderColorTokens()` returns
+ * flat literal values, and a literal cannot express "follow the OS". The document
+ * resolves its own scheme from a `<html>` attribute with a media-query fallback
+ * (see `Root`), so read the same two sources and re-render when either moves.
+ */
+function useAmbientFlag(attribute: string, onValue: string, query: string) {
+  const [enabled, setEnabled] = useState(false);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const media = window.matchMedia(query);
+    const read = () => {
+      const attr = root.getAttribute(`data-${attribute}`);
+
+      setEnabled(attr ? attr === onValue : media.matches);
+    };
+
+    read();
+    media.addEventListener('change', read);
+
+    const observer = new MutationObserver(read);
+
+    observer.observe(root, {
+      attributes: true,
+      attributeFilter: [`data-${attribute}`],
+    });
+
+    return () => {
+      media.removeEventListener('change', read);
+      observer.disconnect();
+    };
+  }, [attribute, onValue, query]);
+
+  return enabled;
+}
+
+// ----------------------------------------------------------------------------
+// Controls
+// ----------------------------------------------------------------------------
+
+const ControlColumn = tasty({
   styles: {
     display: 'grid',
-    gridColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
     gap: '3x',
+    alignContent: 'start',
+    padding: '3x',
+    radius: '1cr',
+    fill: '#surface-2',
+    border: '1bw #border',
+    height: 'max-content',
+  },
+});
+
+const ControlGroup = tasty({
+  styles: { display: 'grid', gap: '1.5x' },
+});
+
+const GroupLabel = tasty({
+  as: 'strong',
+  styles: { preset: 't4m', color: '#surface-text-soft' },
+});
+
+/** Quick-apply seeds, so the builder opens on something other than a blank slate. */
+const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
+  { label: 'Cube', config: { hue: 280.3, saturation: 80, pastel: false } },
+  { label: 'Ocean', config: { hue: 235, saturation: 70, pastel: false } },
+  { label: 'Forest', config: { hue: 150, saturation: 65, pastel: false } },
+  { label: 'Ember', config: { hue: 35, saturation: 85, pastel: false } },
+  { label: 'Slate', config: { hue: 250, baseHue: 250, saturation: 30 } },
+];
+
+function ThemeBuilderControls({
+  scheme,
+  onSchemeChange,
+  contrast,
+  onContrastChange,
+}: {
+  scheme: SchemeChoice;
+  onSchemeChange: (value: SchemeChoice) => void;
+  contrast: ContrastChoice;
+  onContrastChange: (value: ContrastChoice) => void;
+}) {
+  const [palette, setPalette] = usePaletteConfig();
+  const basePinned = getPaletteConfigInput().baseHue !== undefined;
+
+  return (
+    <ControlColumn>
+      <ControlGroup>
+        <GroupLabel>Preview mode</GroupLabel>
+        <Note>
+          Applies to the preview only — the page around it keeps its own.
+        </Note>
+        <RadioGroup
+          aria-label="Color scheme"
+          type="tabs"
+          value={scheme}
+          onChange={(value) => onSchemeChange(value as SchemeChoice)}
+        >
+          <Radio value="auto">Auto</Radio>
+          <Radio value="light">Light</Radio>
+          <Radio value="dark">Dark</Radio>
+        </RadioGroup>
+        <RadioGroup
+          aria-label="High contrast"
+          type="tabs"
+          value={contrast}
+          onChange={(value) => onContrastChange(value as ContrastChoice)}
+        >
+          <Radio value="auto">Auto</Radio>
+          <Radio value="normal">Normal</Radio>
+          <Radio value="high">High</Radio>
+        </RadioGroup>
+      </ControlGroup>
+
+      <ControlGroup>
+        <GroupLabel>Presets</GroupLabel>
+        <Row>
+          {THEME_PRESETS.map((preset) => (
+            <Button
+              key={preset.label}
+              type="outline"
+              size="small"
+              onPress={() => {
+                resetPaletteConfig();
+                setPalette(preset.config);
+              }}
+            >
+              {preset.label}
+            </Button>
+          ))}
+        </Row>
+      </ControlGroup>
+
+      <ControlGroup>
+        <GroupLabel>Brand</GroupLabel>
+        <HueSlider
+          label={`Accent hue — ${palette.hue}°`}
+          value={Math.round(palette.hue)}
+          onChange={(hue) => setPalette({ hue })}
+        />
+        <HueSlider
+          label={`Base hue — ${palette.baseHue}°${
+            basePinned ? '' : ' (inherited)'
+          }`}
+          value={Math.round(palette.baseHue)}
+          onChange={(baseHue) => setPalette({ baseHue })}
+        />
+        <Switch
+          isSelected={!basePinned}
+          onChange={(link) =>
+            setPalette({ baseHue: link ? undefined : palette.baseHue })
+          }
+        >
+          Base follows accent
+        </Switch>
+        <Slider
+          label={`Saturation — ${palette.saturation}`}
+          minValue={0}
+          maxValue={100}
+          value={palette.saturation}
+          onChange={(saturation) => setPalette({ saturation })}
+        />
+        <Switch
+          isSelected={palette.pastel}
+          onChange={(pastel) => setPalette({ pastel })}
+        >
+          Pastel
+        </Switch>
+      </ControlGroup>
+
+      <ControlGroup>
+        <GroupLabel>Status hues</GroupLabel>
+        {STATUS_THEMES.map((name) => (
+          <HueSlider
+            key={name}
+            label={`${name} — ${palette.themes[name].hue}°`}
+            value={Math.round(palette.themes[name].hue)}
+            onChange={(hue) => setPalette(statusSeed(name, { hue }))}
+          />
+        ))}
+      </ControlGroup>
+
+      <ControlGroup>
+        <GroupLabel>Syntax</GroupLabel>
+        <Note>Hues are fixed; only saturation is tunable.</Note>
+        <Slider
+          label={`Code saturation — ${palette.themes.code.saturation}`}
+          minValue={0}
+          maxValue={100}
+          value={palette.themes.code.saturation}
+          onChange={(saturation) =>
+            setPalette({ themes: { code: { saturation } } })
+          }
+        />
+      </ControlGroup>
+
+      <Row>
+        <ResetButton />
+      </Row>
+    </ControlColumn>
+  );
+}
+
+// ----------------------------------------------------------------------------
+// Preview
+// ----------------------------------------------------------------------------
+
+const BuilderLayout = tasty({
+  styles: {
+    display: 'grid',
+    gridColumns: {
+      '': '1fr',
+      '@media(width >= 1100px)': 'minmax(280px, 340px) 1fr',
+    },
+    gap: '4x',
+    alignItems: 'start',
   },
 });
 
 /**
- * A self-contained theme, painted inside whatever scheme the page is using.
+ * The previewed theme, scoped to this subtree by the `tokens` prop.
  *
- * The whole trick is `tokens`: `renderColorTokens()` collapses the palette to one
- * scheme's literal values, and applying them here overrides the inherited custom
- * properties for this subtree only. Everything below — including real components
- * — re-colors, with no scheme attribute and no second `<Root>`.
+ * Everything inside resolves against these values instead of the document's, so a
+ * dark or high-contrast theme renders inside a light page.
  */
-const PreviewRegion = tasty({
+const PreviewShell = tasty({
   styles: {
     display: 'grid',
-    gap: '2x',
-    padding: '3x',
+    gridRows: 'max-content 1fr',
     radius: '1cr',
     border: '1bw #border',
     fill: '#surface',
     color: '#surface-text',
+    overflow: 'hidden',
     shadow: '$card-shadow',
+    minHeight: '40x',
   },
 });
 
-const PreviewLabel = tasty({
-  as: 'strong',
-  styles: { preset: 't3m', color: '#surface-text' },
+const PreviewHeader = tasty({
+  styles: {
+    display: 'flex',
+    flow: 'row',
+    gap: '1.5x',
+    placeItems: 'center',
+    padding: '1.5x 2x',
+    fill: '#surface-2',
+    border: 'bottom 1bw #border',
+  },
+});
+
+const PreviewBody = tasty({
+  styles: {
+    display: 'grid',
+    gridColumns: { '': '1fr', '@media(width >= 700px)': '16x 1fr' },
+  },
+});
+
+const PreviewNav = tasty({
+  styles: {
+    display: 'grid',
+    gap: '.5x',
+    alignContent: 'start',
+    padding: '1.5x 1x',
+    fill: '#surface-2',
+    border: 'right 1bw #border',
+  },
+});
+
+const NavItem = tasty({
+  styles: {
+    padding: '1x 1.5x',
+    radius: '1r',
+    preset: 't4',
+    color: { '': '#surface-2-text-soft', selected: '#accent-text' },
+    fill: { '': '#clear', selected: '#accent-surface.09' },
+  },
+});
+
+const PreviewMain = tasty({
+  styles: {
+    display: 'grid',
+    gap: '2.5x',
+    padding: '3x',
+    alignContent: 'start',
+  },
+});
+
+/** Second surface level: a panel sitting on the page. */
+const Panel2 = tasty({
+  styles: {
+    display: 'grid',
+    gap: '1.5x',
+    padding: '2x',
+    radius: '1cr',
+    fill: '#surface-2',
+    color: '#surface-2-text',
+    border: '1bw #border',
+  },
+});
+
+/** Third surface level: nested inside a panel. */
+const Panel3 = tasty({
+  styles: {
+    display: 'grid',
+    gap: '1x',
+    padding: '2x',
+    radius: '1r',
+    fill: '#surface-3',
+    color: '#surface-3-text',
+  },
+});
+
+const Badge = tasty({
+  styles: {
+    padding: '0 1x',
+    radius: '1r',
+    preset: 't4',
+    border: '1bw #border',
+    color: '#surface-text-soft-2',
+    width: 'max-content',
+  },
 });
 
 const Chip = tasty({
@@ -649,116 +949,217 @@ const Chip = tasty({
   },
 });
 
-function PreviewCard({
-  label,
-  options,
-}: {
-  label: string;
-  options: RenderPaletteOptions;
-}) {
-  // Re-render when the live config moves: `renderColorTokens` merges over it, so
-  // these previews track the tuner above.
+const Link = tasty({
+  as: 'span',
+  styles: { preset: 't3m', color: '#accent-text' },
+});
+
+/** The `surface-N-text` ramp, so each surface level can be judged on its own. */
+function SurfaceTextRamp({ level }: { level: '' | '-2' | '-3' }) {
+  return (
+    <>
+      <SwatchLabel styles={{ preset: 'h5', color: `#surface${level}-text` }}>
+        Heading — surface{level || ''}-text
+      </SwatchLabel>
+      <SwatchLabel
+        styles={{ preset: 't3', color: `#surface${level}-text-soft` }}
+      >
+        Body copy — surface{level || ''}-text-soft
+      </SwatchLabel>
+      {level === '' ? (
+        <SwatchLabel styles={{ preset: 't4', color: '#surface-text-soft-2' }}>
+          Caption — surface-text-soft-2
+        </SwatchLabel>
+      ) : null}
+    </>
+  );
+}
+
+const PREVIEW_TABS = ['Results', 'Chart', 'SQL'];
+const PREVIEW_NAV = [
+  'Quarterly Revenue',
+  'Active Users',
+  'Conversion Funnel',
+  'Retention',
+];
+
+function ThemePreview({ tokens }: { tokens: Tokens }) {
+  const [tab, setTab] = useState(PREVIEW_TABS[0]);
+
+  return (
+    <PreviewShell tokens={tokens}>
+      <PreviewHeader>
+        {/* The mark's own light/dark artwork is swapped by the `@dark` state, which
+            follows the *document* — a state-keyed style cannot be overridden by
+            tokens. Its colour does follow the preview, since that is a token. */}
+        <CubeLogo size="3x" color="#accent-surface" />
+        <SwatchLabel styles={{ preset: 't3m' }}>Quarterly Revenue</SwatchLabel>
+        <Badge>Draft</Badge>
+        <Row styles={{ gap: '1x', marginLeft: 'auto' }}>
+          <Button type="outline" size="small">
+            Share
+          </Button>
+          <Button type="primary" size="small">
+            Run
+          </Button>
+        </Row>
+      </PreviewHeader>
+
+      <PreviewBody>
+        <PreviewNav>
+          {PREVIEW_NAV.map((item, index) => (
+            <NavItem key={item} mods={{ selected: index === 0 }}>
+              {item}
+            </NavItem>
+          ))}
+        </PreviewNav>
+
+        <PreviewMain>
+          <Section styles={{ gap: '1x' }}>
+            <SurfaceTextRamp level="" />
+          </Section>
+
+          <RadioGroup
+            aria-label="Preview tabs"
+            type="tabs"
+            value={tab}
+            onChange={setTab}
+          >
+            {PREVIEW_TABS.map((name) => (
+              <Radio key={name} value={name}>
+                {name}
+              </Radio>
+            ))}
+          </RadioGroup>
+
+          <Panel2>
+            <Row styles={{ placeItems: 'center', gap: '1x' }}>
+              <GroupLabel styles={{ color: '#surface-2-text-soft' }}>
+                MEMBERS
+              </GroupLabel>
+              <Link styles={{ marginLeft: 'auto' }}>View documentation</Link>
+            </Row>
+            <SurfaceTextRamp level="-2" />
+            <Panel3>
+              <SurfaceTextRamp level="-3" />
+              <Token>Third surface level — nested inside a panel</Token>
+            </Panel3>
+          </Panel2>
+
+          <Row>
+            <Chip
+              styles={{
+                fill: '#accent-surface',
+                color: '#accent-surface-text',
+              }}
+            >
+              Accent
+            </Chip>
+            {STATUS_THEMES.map((name) => (
+              <Chip
+                key={name}
+                styles={{
+                  fill: `#${name}-surface`,
+                  color: `#${name}-surface-text`,
+                }}
+              >
+                {name}
+              </Chip>
+            ))}
+          </Row>
+
+          <Row>
+            <Button type="primary">Primary</Button>
+            <Button type="outline">Outline</Button>
+            <Button type="clear">Clear</Button>
+            <Button type="primary" isDisabled>
+              Disabled
+            </Button>
+            <Button type="primary" theme="danger">
+              Danger
+            </Button>
+          </Row>
+
+          <Panel3 styles={{ padding: '2x' }}>
+            <PrismCode code={SAMPLE_CODE} language="javascript" />
+          </Panel3>
+        </PreviewMain>
+      </PreviewBody>
+    </PreviewShell>
+  );
+}
+
+function ThemeBuilderPage() {
+  const [scheme, setScheme] = useState<SchemeChoice>('auto');
+  const [contrast, setContrast] = useState<ContrastChoice>('auto');
   const version = usePaletteVersion();
 
-  // Resolving a palette is not free (~4 ms), and `options` is a stable module
-  // constant, so memoize on it plus the config version.
-  const tokens = useMemo(() => renderColorTokens(options), [options, version]);
+  const ambientDark = useAmbientFlag(
+    'schema',
+    'dark',
+    '(prefers-color-scheme: dark)',
+  );
+  const ambientHighContrast = useAmbientFlag(
+    'contrast',
+    'high',
+    '(prefers-contrast: more)',
+  );
+
+  const resolvedScheme =
+    scheme === 'auto' ? (ambientDark ? 'dark' : 'light') : scheme;
+  const resolvedHighContrast =
+    contrast === 'auto' ? ambientHighContrast : contrast === 'high';
+
+  // Name only the axes that are actually on `auto`, so the note cannot claim the
+  // scheme was inherited when it was picked explicitly.
+  const autoAxes = [
+    scheme === 'auto' ? 'scheme' : null,
+    contrast === 'auto' ? 'contrast' : null,
+  ].filter(Boolean);
+
+  const tokens = useMemo(
+    () =>
+      renderColorTokens({
+        scheme: resolvedScheme,
+        highContrast: resolvedHighContrast,
+      }),
+    [resolvedScheme, resolvedHighContrast, version],
+  );
 
   return (
-    <PreviewRegion tokens={tokens}>
-      <PreviewLabel>{label}</PreviewLabel>
-      <Token>
-        {options.scheme ?? 'light'}
-        {options.highContrast ? ' + high contrast' : ''}
-        {options.contrastLevel !== undefined
-          ? ` · level ${options.contrastLevel}`
+    <StoryPage
+      title="Theme builder"
+      description={
+        <>
+          Every control on the left writes to the live palette config; the panel
+          on the right renders it into a single region through a tasty{' '}
+          <Token>tokens</Token> prop. Pick a scheme and a contrast mode and the
+          preview shows exactly that variant — the page around it does not move.
+        </>
+      }
+    >
+      <Note>
+        Showing <strong>{resolvedScheme}</strong> ·{' '}
+        <strong>
+          {resolvedHighContrast ? 'high contrast' : 'normal contrast'}
+        </strong>
+        {autoAxes.length > 0
+          ? ` — ${autoAxes.join(' and ')} resolved from the document, since a flat` +
+            ' token value cannot mean “follow the OS”.'
           : ''}
-      </Token>
-      <Row>
-        <Chip
-          styles={{ fill: '#accent-surface', color: '#accent-surface-text' }}
-        >
-          Accent
-        </Chip>
-        <Chip
-          styles={{ fill: '#success-surface', color: '#success-surface-text' }}
-        >
-          Success
-        </Chip>
-        <Chip
-          styles={{ fill: '#danger-surface', color: '#danger-surface-text' }}
-        >
-          Danger
-        </Chip>
-      </Row>
-      <Section styles={{ gap: '.5x' }}>
-        <SwatchLabel styles={{ color: '#surface-text' }}>
-          Body copy on #surface
-        </SwatchLabel>
-        <SwatchLabel styles={{ color: '#surface-text-soft', preset: 't4' }}>
-          Secondary copy
-        </SwatchLabel>
-        <SwatchLabel styles={{ color: '#surface-text-soft-2', preset: 't4' }}>
-          Captions — the token contrast moves most
-        </SwatchLabel>
-      </Section>
-      <Row>
-        <Button type="primary" size="small">
-          Primary
-        </Button>
-        <Button type="outline" size="small">
-          Outline
-        </Button>
-      </Row>
-    </PreviewRegion>
+      </Note>
+      <BuilderLayout>
+        <ThemeBuilderControls
+          scheme={scheme}
+          onSchemeChange={setScheme}
+          contrast={contrast}
+          onContrastChange={setContrast}
+        />
+        <ThemePreview tokens={tokens} />
+      </BuilderLayout>
+    </StoryPage>
   );
 }
-
-const PREVIEW_SCHEMES = ['light', 'dark'] as const;
-
-/**
- * Contrast control for the previews, held in local state rather than the palette
- * config — the point is that a region can carry its own contrast level.
- */
-function PreviewContrastControls({
-  value,
-  onChange,
-}: {
-  value: number | 'auto';
-  onChange: (value: number | 'auto') => void;
-}) {
-  const isManual = value !== 'auto';
-
-  return (
-    <Controls>
-      <Switch
-        isSelected={isManual}
-        onChange={(manual) => onChange(manual ? MANUAL_CONTRAST_START : 'auto')}
-      >
-        Manual contrast level
-      </Switch>
-      <Slider
-        label={`Preview contrast level — ${isManual ? value : 'auto'}`}
-        minValue={0}
-        maxValue={100}
-        isDisabled={!isManual}
-        value={isManual ? value : MANUAL_CONTRAST_START}
-        onChange={onChange}
-      />
-    </Controls>
-  );
-}
-
-const CANDIDATE_PREVIEWS: { label: string; options: RenderPaletteOptions }[] = [
-  { label: 'Cube purple', options: { hue: 280.3 } },
-  { label: 'Ocean', options: { hue: 235, saturation: 70 } },
-  { label: 'Forest', options: { hue: 150, saturation: 65 } },
-  { label: 'Ember', options: { hue: 35, saturation: 85 } },
-  {
-    label: 'Pastel ocean',
-    options: { hue: 235, saturation: 70, pastel: true },
-  },
-];
 
 // ============================================================================
 // Stories
@@ -841,87 +1242,6 @@ export const ContrastLevel: Story = {
   ),
 };
 
-function RegionPreviewPage() {
-  // Preview-local, deliberately: driving it through `setPaletteConfig` would
-  // re-contrast the whole page instead of just the two cards.
-  const [contrastLevel, setContrastLevel] = useState<number | 'auto'>('auto');
-
-  return (
-    <StoryPage
-      title="Region preview"
-      description={
-        <>
-          Every card below is a live theme rendered into a single region,
-          applied through a tasty <Token>tokens</Token> prop. Each one paints
-          its own scheme regardless of what the page around it is doing — flip
-          the toolbar dark-mode switch and the two scheme cards stay put.
-        </>
-      }
-    >
-      <Section>
-        <SectionHeading>Previews track the live config</SectionHeading>
-        <Lead>
-          Every preview below merges over the live config, so tuning the brand
-          here moves them all — except the candidates that pin their own hue,
-          which stay where they are.
-        </Lead>
-        <Panel>
-          <BrandControls />
-          <Row>
-            <ResetButton />
-          </Row>
-        </Panel>
-      </Section>
-
-      <Section>
-        <SectionHeading>One config, both schemes — on one page</SectionHeading>
-        <Lead>
-          <Token>getPaletteTokens()</Token> emits state maps, so a document can
-          only ever show one scheme at a time.{' '}
-          <Token>renderColorTokens()</Token> collapses the palette to a chosen
-          scheme&apos;s literal values instead, which is what lets both coexist
-          here.
-        </Lead>
-        <Lead>
-          The contrast level applies to these two previews only — the page
-          around them keeps its own. At <Token>auto</Token> they show the normal
-          tier; drag to 100 and they become the high-contrast one, bit for bit,
-          which is why a separate pair of high-contrast cards is not needed.
-        </Lead>
-        <Panel>
-          <PreviewContrastControls
-            value={contrastLevel}
-            onChange={setContrastLevel}
-          />
-        </Panel>
-        <PreviewGrid>
-          {PREVIEW_SCHEMES.map((scheme) => (
-            <PreviewCard
-              key={scheme}
-              label={scheme === 'light' ? 'Light' : 'Dark'}
-              options={{ scheme, contrastLevel }}
-            />
-          ))}
-        </PreviewGrid>
-      </Section>
-
-      <Section>
-        <SectionHeading>Candidate themes — a theme picker</SectionHeading>
-        <Lead>
-          These previews pass their own seeds, so they show a palette the app is
-          not running. Nothing here touches the live theme — the page keeps its
-          own colors while you shop.
-        </Lead>
-        <PreviewGrid>
-          {CANDIDATE_PREVIEWS.map((preview) => (
-            <PreviewCard key={preview.label} {...preview} />
-          ))}
-        </PreviewGrid>
-      </Section>
-    </StoryPage>
-  );
-}
-
-export const RegionPreview: Story = {
-  render: () => <RegionPreviewPage />,
+export const ThemeBuilder: Story = {
+  render: () => <ThemeBuilderPage />,
 };

@@ -172,6 +172,19 @@ you are giving users their own contrast control.
 
 <Canvas of={ThemingStories.ContrastLevel} />
 
+## Theme builder
+
+The `Theme Builder` story puts the whole config behind controls and renders the
+result into a single region: pick **Auto / Light / Dark** and **Auto / Normal /
+High** and the preview shows exactly that variant while the page around it stays
+as it is. `Auto` is resolved from the document — a flat token value cannot mean
+"follow the OS", so the story reads `<html data-schema>` / `data-contrast` with the
+matching media query as a fallback, the same two sources `Root` uses.
+
+The preview deliberately shows all three surface levels with their own text ramps
+(`#surface-text`, `#surface-2-text`, `#surface-3-text`), because a theme that looks
+fine on the page surface can fall apart two panels deep.
+
 ## Previewing a theme in a region
 
 `setPaletteConfig()` re-themes the whole document, which is no use for a theme
@@ -234,7 +247,7 @@ Notes:
 `renderPaletteTokens()` is the same thing without the aliases and companion
 tokens, if you want only the Glaze palette.
 
-<Canvas of={ThemingStories.RegionPreview} />
+<Canvas of={ThemingStories.ThemeBuilder} />
 
 ## Reading and reacting to the config
 
