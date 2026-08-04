@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import {
+  Alert,
   Button,
   CubeLogo,
   DEFAULT_PALETTE_CONFIG,
   getPaletteConfigInput,
   getPaletteTokens,
   HueSlider,
+  ItemButton,
   PrismCode,
   Radio,
   RadioGroup,
@@ -611,7 +613,7 @@ function CodePanel() {
 // ============================================================================
 
 type SchemeChoice = 'auto' | 'light' | 'dark';
-type ContrastChoice = 'auto' | 'normal' | 'high';
+type ContrastChoice = 'auto' | 'normal' | 'high' | 'custom';
 
 /**
  * What `auto` resolves to right now.
@@ -692,11 +694,15 @@ function ThemeBuilderControls({
   onSchemeChange,
   contrast,
   onContrastChange,
+  customLevel,
+  onCustomLevelChange,
 }: {
   scheme: SchemeChoice;
   onSchemeChange: (value: SchemeChoice) => void;
   contrast: ContrastChoice;
   onContrastChange: (value: ContrastChoice) => void;
+  customLevel: number;
+  onCustomLevelChange: (value: number) => void;
 }) {
   const [palette, setPalette] = usePaletteConfig();
   const basePinned = getPaletteConfigInput().baseHue !== undefined;
@@ -709,7 +715,7 @@ function ThemeBuilderControls({
           Applies to the preview only — the page around it keeps its own.
         </Note>
         <RadioGroup
-          aria-label="Color scheme"
+          label="Color scheme"
           type="tabs"
           value={scheme}
           onChange={(value) => onSchemeChange(value as SchemeChoice)}
@@ -719,7 +725,7 @@ function ThemeBuilderControls({
           <Radio value="dark">Dark</Radio>
         </RadioGroup>
         <RadioGroup
-          aria-label="High contrast"
+          label="Contrast"
           type="tabs"
           value={contrast}
           onChange={(value) => onContrastChange(value as ContrastChoice)}
@@ -727,7 +733,17 @@ function ThemeBuilderControls({
           <Radio value="auto">Auto</Radio>
           <Radio value="normal">Normal</Radio>
           <Radio value="high">High</Radio>
+          <Radio value="custom">Custom</Radio>
         </RadioGroup>
+        {contrast === 'custom' ? (
+          <Slider
+            label={`Contrast level — ${customLevel}`}
+            minValue={0}
+            maxValue={100}
+            value={customLevel}
+            onChange={onCustomLevelChange}
+          />
+        ) : null}
       </ControlGroup>
 
       <ControlGroup>
@@ -870,38 +886,52 @@ const PreviewHeader = tasty({
 const PreviewBody = tasty({
   styles: {
     display: 'grid',
-    gridColumns: { '': '1fr', '@media(width >= 700px)': '16x 1fr' },
+    // Wide enough for the longest label: `Item` is `nowrap`, so a narrow column
+    // would ellipsize rather than wrap.
+    gridColumns: { '': '1fr', '@media(width >= 700px)': '24x 1fr' },
   },
 });
 
+// Mirrors the sidebar pattern from the Layout guide: a hairline gap so the items
+// read as one stack, and even padding so the first and last sit off the edges by
+// the same amount. `ItemButton` also gives us the real selected treatment and its
+// own `nowrap`, so "Conversion Funnel" stays on one line.
 const PreviewNav = tasty({
   styles: {
     display: 'grid',
-    gap: '.5x',
+    gap: '1bw',
     alignContent: 'start',
-    padding: '1.5x 1x',
+    padding: '1x',
     fill: '#surface-2',
     border: 'right 1bw #border',
-  },
-});
-
-const NavItem = tasty({
-  styles: {
-    padding: '1x 1.5x',
-    radius: '1r',
-    preset: 't4',
-    color: { '': '#surface-2-text-soft', selected: '#accent-text' },
-    fill: { '': '#clear', selected: '#accent-surface.09' },
   },
 });
 
 const PreviewMain = tasty({
   styles: {
     display: 'grid',
-    gap: '2.5x',
-    padding: '3x',
+    gridColumns: {
+      '': '1fr',
+      '@media(width >= 900px)': '1fr minmax(200px, 260px)',
+    },
+    gap: '2x',
+    padding: '2x',
     alignContent: 'start',
   },
+});
+
+/** The primary column: surfaces, text, controls. */
+const MainColumn = tasty({
+  styles: { display: 'grid', gap: '2x', alignContent: 'start', gridColumn: 1 },
+});
+
+/**
+ * Every alert theme in one column. Alerts pair a tinted `<theme>-surface` with
+ * `<theme>-surface-text` and a themed border, so they are the quickest read on
+ * whether the status hues still work at a given saturation.
+ */
+const AlertColumn = tasty({
+  styles: { display: 'grid', gap: '1x', alignContent: 'start' },
 });
 
 /** Second surface level: a panel sitting on the page. */
@@ -940,15 +970,6 @@ const Badge = tasty({
   },
 });
 
-const Chip = tasty({
-  styles: {
-    padding: '.5x 1.5x',
-    radius: '1r',
-    preset: 't4m',
-    width: 'max-content',
-  },
-});
-
 const Link = tasty({
   as: 'span',
   styles: { preset: 't3m', color: '#accent-text' },
@@ -976,6 +997,31 @@ function SurfaceTextRamp({ level }: { level: '' | '-2' | '-3' }) {
 }
 
 const PREVIEW_TABS = ['Results', 'Chart', 'SQL'];
+const ALERT_THEMES = ['note', 'success', 'danger', 'warning'] as const;
+
+/**
+ * The two `item-themes` axes, kept separate on purpose: one row varies the *type*
+ * at a fixed theme, the other varies the *theme* at a fixed type. Mixing them (a
+ * `Disabled` next to an `Outline` next to a `Danger`) reads as one row of peers
+ * when it is really three different things.
+ */
+const BUTTON_TYPES = [
+  'primary',
+  'outline',
+  'outline-2',
+  'clear',
+  'link',
+] as const;
+
+const BUTTON_THEMES = [
+  'default',
+  'danger',
+  'success',
+  'warning',
+  'note',
+  'special',
+] as const;
+
 const PREVIEW_NAV = [
   'Quarterly Revenue',
   'Active Users',
@@ -1008,81 +1054,85 @@ function ThemePreview({ tokens }: { tokens: Tokens }) {
       <PreviewBody>
         <PreviewNav>
           {PREVIEW_NAV.map((item, index) => (
-            <NavItem key={item} mods={{ selected: index === 0 }}>
+            <ItemButton
+              key={item}
+              type="clear"
+              size="small"
+              isSelected={index === 0}
+            >
               {item}
-            </NavItem>
+            </ItemButton>
           ))}
         </PreviewNav>
 
         <PreviewMain>
-          <Section styles={{ gap: '1x' }}>
-            <SurfaceTextRamp level="" />
-          </Section>
+          <MainColumn>
+            <Section styles={{ gap: '1x' }}>
+              <SurfaceTextRamp level="" />
+            </Section>
 
-          <RadioGroup
-            aria-label="Preview tabs"
-            type="tabs"
-            value={tab}
-            onChange={setTab}
-          >
-            {PREVIEW_TABS.map((name) => (
-              <Radio key={name} value={name}>
-                {name}
-              </Radio>
-            ))}
-          </RadioGroup>
-
-          <Panel2>
-            <Row styles={{ placeItems: 'center', gap: '1x' }}>
-              <GroupLabel styles={{ color: '#surface-2-text-soft' }}>
-                MEMBERS
-              </GroupLabel>
-              <Link styles={{ marginLeft: 'auto' }}>View documentation</Link>
-            </Row>
-            <SurfaceTextRamp level="-2" />
-            <Panel3>
-              <SurfaceTextRamp level="-3" />
-              <Token>Third surface level — nested inside a panel</Token>
-            </Panel3>
-          </Panel2>
-
-          <Row>
-            <Chip
-              styles={{
-                fill: '#accent-surface',
-                color: '#accent-surface-text',
-              }}
+            <RadioGroup
+              aria-label="Preview tabs"
+              type="tabs"
+              value={tab}
+              onChange={setTab}
             >
-              Accent
-            </Chip>
-            {STATUS_THEMES.map((name) => (
-              <Chip
-                key={name}
-                styles={{
-                  fill: `#${name}-surface`,
-                  color: `#${name}-surface-text`,
-                }}
-              >
-                {name}
-              </Chip>
+              {PREVIEW_TABS.map((name) => (
+                <Radio key={name} value={name}>
+                  {name}
+                </Radio>
+              ))}
+            </RadioGroup>
+
+            <Panel2>
+              <Row styles={{ placeItems: 'center', gap: '1x' }}>
+                <GroupLabel styles={{ color: '#surface-2-text-soft' }}>
+                  MEMBERS
+                </GroupLabel>
+                <Link styles={{ marginLeft: 'auto' }}>View documentation</Link>
+              </Row>
+              <SurfaceTextRamp level="-2" />
+              <Panel3>
+                <SurfaceTextRamp level="-3" />
+                <Token>Third surface level — nested inside a panel</Token>
+              </Panel3>
+            </Panel2>
+
+            <Section styles={{ gap: '1x' }}>
+              <GroupLabel>BUTTON TYPES</GroupLabel>
+              <Row>
+                {BUTTON_TYPES.map((type) => (
+                  <Button key={type} type={type} size="small">
+                    {type}
+                  </Button>
+                ))}
+              </Row>
+            </Section>
+
+            <Section styles={{ gap: '1x' }}>
+              <GroupLabel>BUTTON THEMES</GroupLabel>
+              <Row>
+                {BUTTON_THEMES.map((theme) => (
+                  <Button key={theme} type="primary" theme={theme} size="small">
+                    {theme}
+                  </Button>
+                ))}
+              </Row>
+            </Section>
+
+            <Panel3 styles={{ padding: '2x' }}>
+              <PrismCode code={SAMPLE_CODE} language="javascript" />
+            </Panel3>
+          </MainColumn>
+
+          <AlertColumn>
+            <GroupLabel>ALERTS</GroupLabel>
+            {ALERT_THEMES.map((theme) => (
+              <Alert key={theme} theme={theme}>
+                {theme}
+              </Alert>
             ))}
-          </Row>
-
-          <Row>
-            <Button type="primary">Primary</Button>
-            <Button type="outline">Outline</Button>
-            <Button type="clear">Clear</Button>
-            <Button type="primary" isDisabled>
-              Disabled
-            </Button>
-            <Button type="primary" theme="danger">
-              Danger
-            </Button>
-          </Row>
-
-          <Panel3 styles={{ padding: '2x' }}>
-            <PrismCode code={SAMPLE_CODE} language="javascript" />
-          </Panel3>
+          </AlertColumn>
         </PreviewMain>
       </PreviewBody>
     </PreviewShell>
@@ -1092,6 +1142,7 @@ function ThemePreview({ tokens }: { tokens: Tokens }) {
 function ThemeBuilderPage() {
   const [scheme, setScheme] = useState<SchemeChoice>('auto');
   const [contrast, setContrast] = useState<ContrastChoice>('auto');
+  const [customLevel, setCustomLevel] = useState(MANUAL_CONTRAST_START);
   const version = usePaletteVersion();
 
   const ambientDark = useAmbientFlag(
@@ -1107,6 +1158,7 @@ function ThemeBuilderPage() {
 
   const resolvedScheme =
     scheme === 'auto' ? (ambientDark ? 'dark' : 'light') : scheme;
+  const isCustom = contrast === 'custom';
   const resolvedHighContrast =
     contrast === 'auto' ? ambientHighContrast : contrast === 'high';
 
@@ -1117,13 +1169,26 @@ function ThemeBuilderPage() {
     contrast === 'auto' ? 'contrast' : null,
   ].filter(Boolean);
 
+  const contrastLabel = isCustom
+    ? `contrast level ${customLevel}`
+    : resolvedHighContrast
+      ? 'high contrast'
+      : 'normal contrast';
+
+  // A manual level carries the contrast preference itself, so there is no separate
+  // high-contrast tier to ask for — `highContrast` is meaningless alongside it.
   const tokens = useMemo(
     () =>
-      renderColorTokens({
-        scheme: resolvedScheme,
-        highContrast: resolvedHighContrast,
-      }),
-    [resolvedScheme, resolvedHighContrast, version],
+      renderColorTokens(
+        isCustom
+          ? { scheme: resolvedScheme, contrastLevel: customLevel }
+          : {
+              scheme: resolvedScheme,
+              highContrast: resolvedHighContrast,
+              contrastLevel: 'auto',
+            },
+      ),
+    [isCustom, customLevel, resolvedScheme, resolvedHighContrast, version],
   );
 
   return (
@@ -1140,9 +1205,7 @@ function ThemeBuilderPage() {
     >
       <Note>
         Showing <strong>{resolvedScheme}</strong> ·{' '}
-        <strong>
-          {resolvedHighContrast ? 'high contrast' : 'normal contrast'}
-        </strong>
+        <strong>{contrastLabel}</strong>
         {autoAxes.length > 0
           ? ` — ${autoAxes.join(' and ')} resolved from the document, since a flat` +
             ' token value cannot mean “follow the OS”.'
@@ -1154,6 +1217,8 @@ function ThemeBuilderPage() {
           onSchemeChange={setScheme}
           contrast={contrast}
           onContrastChange={setContrast}
+          customLevel={customLevel}
+          onCustomLevelChange={setCustomLevel}
         />
         <ThemePreview tokens={tokens} />
       </BuilderLayout>
