@@ -64,6 +64,33 @@ export interface FieldCoreProps {
   labelProps?: Props;
 }
 
+/**
+ * Selection contract for the toggle-style fields — `Switch` and `Checkbox`.
+ *
+ * These props belong to React Aria (`AriaSwitchProps` / `AriaCheckboxProps`),
+ * and the components already forward them to `useSwitch` / `useCheckbox`
+ * unchanged. They are re-declared here because those Aria types currently
+ * resolve to `any` under this repo's `preserveSymlinks` TS setting (see the note
+ * in `tsconfig.json`): extending an `any` base contributes no members, so
+ * `onChange` silently vanished from the public prop types and every controlled
+ * call site needed a `@ts-expect-error`.
+ *
+ * Keep these signatures identical to React Aria's. Once `preserveSymlinks` is
+ * gone and the Aria types resolve for real, this interface becomes redundant and
+ * can be dropped.
+ *
+ * `Radio` deliberately does not use this: a single radio has no `onChange` in
+ * React Aria — selection is owned by its `Radio.Group`.
+ */
+export interface ToggleSelectionProps {
+  /** Whether the control is selected (controlled). */
+  isSelected?: boolean;
+  /** Whether the control is selected initially (uncontrolled). */
+  defaultSelected?: boolean;
+  /** Handler that is called when the selection state changes. */
+  onChange?: (isSelected: boolean) => void;
+}
+
 export interface FieldBaseProps extends FormBaseProps, FieldCoreProps {
   /** The label of the field */
   label?: ReactNode;

@@ -13,7 +13,7 @@ import { AriaSwitchProps, useHover, useSwitch } from 'react-aria';
 import { useToggleState } from 'react-stately';
 
 import { LoadingIcon } from '../../../icons';
-import { FieldBaseProps } from '../../../shared';
+import { FieldBaseProps, ToggleSelectionProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import {
@@ -130,6 +130,7 @@ export interface CubeSwitchProps
     OuterStyleProps,
     BlockStyleProps,
     FieldBaseProps,
+    ToggleSelectionProps,
     AriaSwitchProps {
   inputStyles?: Styles;
   isLoading?: boolean;

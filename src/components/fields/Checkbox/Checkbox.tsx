@@ -19,7 +19,7 @@ import {
 import { useToggleState } from 'react-stately';
 
 import { Icon } from '../../../icons/index';
-import { FieldBaseProps } from '../../../shared';
+import { FieldBaseProps, ToggleSelectionProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import {
@@ -47,6 +47,7 @@ export interface CubeCheckboxProps
   extends BaseProps,
     ContainerStyleProps,
     AriaCheckboxProps,
+    ToggleSelectionProps,
     FieldBaseProps {
   inputStyles?: Styles;
   isIndeterminate?: boolean;
@@ -150,6 +151,10 @@ function Checkbox(
     inputStyles,
     isHidden,
     form,
+    // Pulled out so it stays off the `<label>` spread below. The Aria hooks read
+    // it from `props` directly; `filterBaseProps` already dropped it at runtime,
+    // but it typed as a DOM `FormEventHandler` there, which it is not.
+    onChange,
     ...otherProps
   } = props;
 
