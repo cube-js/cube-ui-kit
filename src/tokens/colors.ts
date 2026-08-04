@@ -1,7 +1,11 @@
+import { BASE_TOKENS } from './base';
 import { lazyStyles } from './lazy-styles';
-import { getPaletteTokens } from './palette';
+import { getPaletteTokens, renderPaletteTokens } from './palette';
+import { getPaletteVersion } from './palette-config';
+import { SHADOW_TOKENS } from './shadows';
 
-import type { Styles } from '@tenphi/tasty';
+import type { Styles, Tokens } from '@tenphi/tasty';
+import type { RenderPaletteOptions } from './palette';
 
 /**
  * Color tokens with `#` prefix for tasty color definitions.
@@ -138,22 +142,88 @@ const LEGACY_ALIASES: Styles = {
 /**
  * Combined color token map: Glaze-generated palette + legacy aliases.
  *
- * Deferred until first access so host apps can `glaze.configure(...)` after
- * importing the kit. Prefer {@link getColorTokens} in new code.
+ * Memoized against the palette config version, so a runtime `setPaletteConfig()`
+ * invalidates it while repeated reads stay free. Prefer {@link getColorTokens}
+ * in new code.
  *
  * `#white` and `#black` are intentionally omitted — they are built-in
  * tasty named colors and resolve automatically.
  */
 let colorTokensCache: Styles | null = null;
+let cachedVersion = -1;
 
 export function getColorTokens(): Styles {
-  if (!colorTokensCache) {
+  const version = getPaletteVersion();
+
+  if (!colorTokensCache || cachedVersion !== version) {
     colorTokensCache = {
       ...getPaletteTokens(),
       ...LEGACY_ALIASES,
     };
+    cachedVersion = version;
   }
   return colorTokensCache;
 }
 
 export const COLOR_TOKENS: Styles = lazyStyles(getColorTokens);
+
+/**
+ * Tokens that live outside the palette but whose *values* reference a palette
+ * color, so a region preview has to re-declare them. Kept by reference, exactly
+ * as `<Root>` declares them — see {@link renderColorTokens}.
+ *
+ * Sourced from `./shadows` and the scrollbar block of `./base`; if either grows a
+ * new colour-referencing token, add it here too.
+ */
+const COLOR_DEPENDENT_TOKENS: Styles = {
+  ...SHADOW_TOKENS,
+  '#scrollbar-thumb': BASE_TOKENS['#scrollbar-thumb'],
+  '#scrollbar-outline': BASE_TOKENS['#scrollbar-outline'],
+  '#scrollbar-bg': BASE_TOKENS['#scrollbar-bg'],
+  '#scrollbar-corner': BASE_TOKENS['#scrollbar-corner'],
+};
+
+/**
+ * Render every UI Kit color for one config and one scheme, as flat literal
+ * values ready to apply to a **region** via a tasty `tokens` prop.
+ *
+ * ```tsx
+ * const preview = useMemo(
+ *   () => renderColorTokens({ hue: 210, scheme: 'dark' }),
+ *   [],
+ * );
+ *
+ * <Block tokens={preview} fill="#surface" color="#surface-text">
+ *   …renders in the previewed theme, inside a light page…
+ * </Block>
+ * ```
+ *
+ * Config fields merge over the *current* palette config, so
+ * `renderColorTokens({ scheme: 'dark' })` previews the active theme in dark
+ * without restating it. Nothing is applied globally — the live palette is
+ * untouched.
+ *
+ * The legacy aliases are included **by reference** (`'#dark': '#surface-text'`),
+ * not resolved: tasty re-declares them on the region, so each `var()` resolves
+ * against that region's own overridden value. Resolving them here would instead
+ * freeze them to the outer theme's colors.
+ *
+ * The shadow tokens and the scrollbar colors come along for the same reason: their
+ * values embed a palette color (`$card-shadow` → `#shadow-md`, `#scrollbar-thumb`
+ * → `#text.5`). They are declared on `<Root>`, so CSS has already substituted the
+ * outer theme's colors into them by the time a region inherits — re-declaring them
+ * here is what lets them re-resolve.
+ *
+ * Not included: typography, spacing, sizes and layout. Nothing in their values
+ * references a color, so a region inherits them from `<Root>` unchanged.
+ *
+ * The result is memoized for the last config rendered, but callers driving this
+ * from state should still `useMemo` — a rebuild resolves the whole palette.
+ */
+export function renderColorTokens(options?: RenderPaletteOptions): Tokens {
+  return {
+    ...renderPaletteTokens(options),
+    ...(LEGACY_ALIASES as Tokens),
+    ...(COLOR_DEPENDENT_TOKENS as Tokens),
+  };
+}
