@@ -122,7 +122,7 @@ const RadioNormalElement = tasty({
     },
     color: {
       '': '#clear',
-      checked: '#primary',
+      checked: '#primary-text',
       'invalid & checked': '#danger-text',
       'valid & checked': '#success-text',
       'disabled | !checked': '#clear',
