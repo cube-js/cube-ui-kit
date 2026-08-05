@@ -15,4 +15,4 @@ Also adds 12 color tokens to `tasty.config.ts` that were declared in `src/tasty-
 
 The ESLint plugin's v1 lints Storybook `args.styles` and `styles={{…}}` JSX props for the first time. That is how the `inset` violation above was found — story files had been silently unchecked.
 
-The tree-shaking size budget is raised from 118 kB to 123 kB. Tasty v3 costs +3.77 kB on that entry — its new dev diagnostics ship in every bundle, since `isDevEnv()` is evaluated at runtime so one build serves both modes — and the entry only had ~370 B of headroom.
+Both size budgets are raised: `All` from 460 kB to 462 kB (it went over by 161 B) and tree-shaking from 118 kB to 123 kB. Tasty v3 costs +3.77 kB on that entry — its new dev diagnostics ship in every bundle, since `isDevEnv()` is evaluated at runtime so one build serves both modes — and the entry only had ~370 B of headroom.

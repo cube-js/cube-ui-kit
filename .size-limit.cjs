@@ -20,11 +20,15 @@ module.exports = [
         }),
       );
     },
-    // 451.32 kB at the time of writing. Raised from 450 kB on this branch:
-    // the OKHST migration plus the components main added (InfoBadge, the
-    // form validation module) pushed it just over. Headroom is deliberately
-    // small so real bloat still trips the budget.
-    limit: '460kB',
+    // 460.16 kB at the time of writing. Raised from 460 kB for Tasty v3, which
+    // it exceeded by 161 B — its new dev diagnostics ship in every bundle,
+    // because `isDevEnv()` is evaluated at runtime so one build serves dev and
+    // production. Headroom is deliberately small so real bloat still trips the
+    // budget.
+    //
+    // Note when checking locally: `size-limit` bundles the built `./dist`, it
+    // does not build. Run `pnpm build` first or you will measure a stale bundle.
+    limit: '462kB',
   },
   {
     name: 'Tree shaking (just a Button)',
