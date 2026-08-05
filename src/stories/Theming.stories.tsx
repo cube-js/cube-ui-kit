@@ -1019,16 +1019,22 @@ const PREVIEW_NAV = [
   'Retention',
 ];
 
-function ThemePreview({ tokens }: { tokens: Tokens }) {
+function ThemePreview({
+  tokens,
+  scheme,
+}: {
+  tokens: Tokens;
+  scheme: SchemeChoice;
+}) {
   const [tab, setTab] = useState(PREVIEW_TABS[0]);
 
   return (
     <PreviewShell tokens={tokens}>
       <PreviewHeader>
-        {/* The mark's own light/dark artwork is swapped by the `@dark` state, which
-            follows the *document* — a state-keyed style cannot be overridden by
-            tokens. Its colour does follow the preview, since that is a token. */}
-        <CubeLogo size="3x" color="#accent-surface" />
+        {/* The mark is two drawings swapped by the `@dark` state, which follows the
+            *document* — tokens override token values, not states, so the preview has
+            to pin the scheme explicitly. Its colour is a token and needs no help. */}
+        <CubeLogo size="3x" scheme={scheme} color="#accent-surface" />
         <SwatchLabel styles={{ preset: 't3m' }}>Quarterly Revenue</SwatchLabel>
         <Badge>Draft</Badge>
         <Row styles={{ gap: '1x', marginLeft: 'auto' }}>
@@ -1206,7 +1212,7 @@ function ThemeBuilderPage() {
           customLevel={customLevel}
           onCustomLevelChange={setCustomLevel}
         />
-        <ThemePreview tokens={tokens} />
+        <ThemePreview tokens={tokens} scheme={scheme} />
       </BuilderLayout>
     </StoryPage>
   );
