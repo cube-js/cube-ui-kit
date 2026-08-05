@@ -3,12 +3,14 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Button,
+  Checkbox,
   CubeLogo,
   DEFAULT_PALETTE_CONFIG,
   getPaletteConfigInput,
   getPaletteTokens,
   HueSlider,
   ItemButton,
+  Link,
   PrismCode,
   Radio,
   RadioGroup,
@@ -16,6 +18,7 @@ import {
   resetPaletteConfig,
   Slider,
   Switch,
+  Tag,
   tasty,
   usePaletteConfig,
   usePaletteVersion,
@@ -612,47 +615,17 @@ function CodePanel() {
 // Theme builder
 // ============================================================================
 
-type SchemeChoice = 'auto' | 'light' | 'dark';
-type ContrastChoice = 'auto' | 'normal' | 'high' | 'custom';
-
 /**
- * What `auto` resolves to right now.
- *
- * A region preview needs a **concrete** variant: `renderColorTokens()` returns
- * flat literal values, and a literal cannot express "follow the OS". The document
- * resolves its own scheme from a `<html>` attribute with a media-query fallback
- * (see `Root`), so read the same two sources and re-render when either moves.
+ * A preview renders one concrete variant, so there is no `auto` here: `auto` is a
+ * *preference* ("follow the OS"), and a flat token value cannot express one. Only
+ * the contrast *level* keeps an `auto`, because there the choice is between the
+ * two-tier model and a hand-set number.
  */
-function useAmbientFlag(attribute: string, onValue: string, query: string) {
-  const [enabled, setEnabled] = useState(false);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const media = window.matchMedia(query);
-    const read = () => {
-      const attr = root.getAttribute(`data-${attribute}`);
-
-      setEnabled(attr ? attr === onValue : media.matches);
-    };
-
-    read();
-    media.addEventListener('change', read);
-
-    const observer = new MutationObserver(read);
-
-    observer.observe(root, {
-      attributes: true,
-      attributeFilter: [`data-${attribute}`],
-    });
-
-    return () => {
-      media.removeEventListener('change', read);
-      observer.disconnect();
-    };
-  }, [attribute, onValue, query]);
-
-  return enabled;
-}
+type SchemeChoice = 'light' | 'dark';
+/** Whether the level is derived from the two-tier model or set by hand. */
+type LevelMode = 'auto' | 'custom';
+/** Which tier to show, while the level is `auto`. */
+type ContrastMode = 'normal' | 'high';
 
 // ----------------------------------------------------------------------------
 // Controls
@@ -692,15 +665,19 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
 function ThemeBuilderControls({
   scheme,
   onSchemeChange,
-  contrast,
-  onContrastChange,
+  levelMode,
+  onLevelModeChange,
+  contrastMode,
+  onContrastModeChange,
   customLevel,
   onCustomLevelChange,
 }: {
   scheme: SchemeChoice;
   onSchemeChange: (value: SchemeChoice) => void;
-  contrast: ContrastChoice;
-  onContrastChange: (value: ContrastChoice) => void;
+  levelMode: LevelMode;
+  onLevelModeChange: (value: LevelMode) => void;
+  contrastMode: ContrastMode;
+  onContrastModeChange: (value: ContrastMode) => void;
   customLevel: number;
   onCustomLevelChange: (value: number) => void;
 }) {
@@ -716,34 +693,43 @@ function ThemeBuilderControls({
         </Note>
         <RadioGroup
           label="Color scheme"
-          type="tabs"
+          type="button"
           value={scheme}
           onChange={(value) => onSchemeChange(value as SchemeChoice)}
         >
-          <Radio value="auto">Auto</Radio>
           <Radio value="light">Light</Radio>
           <Radio value="dark">Dark</Radio>
         </RadioGroup>
         <RadioGroup
-          label="Contrast"
-          type="tabs"
-          value={contrast}
-          onChange={(value) => onContrastChange(value as ContrastChoice)}
+          label="Contrast level"
+          type="button"
+          value={levelMode}
+          onChange={(value) => onLevelModeChange(value as LevelMode)}
         >
           <Radio value="auto">Auto</Radio>
-          <Radio value="normal">Normal</Radio>
-          <Radio value="high">High</Radio>
           <Radio value="custom">Custom</Radio>
         </RadioGroup>
-        {contrast === 'custom' ? (
+        {levelMode === 'custom' ? (
           <Slider
-            label={`Contrast level — ${customLevel}`}
+            label={`Level — ${customLevel}`}
             minValue={0}
             maxValue={100}
             value={customLevel}
             onChange={onCustomLevelChange}
           />
-        ) : null}
+        ) : (
+          // Only meaningful while the level is automatic: a manual level carries
+          // the contrast preference itself, leaving no tier to choose between.
+          <RadioGroup
+            label="Contrast mode"
+            type="button"
+            value={contrastMode}
+            onChange={(value) => onContrastModeChange(value as ContrastMode)}
+          >
+            <Radio value="normal">Normal</Radio>
+            <Radio value="high">High</Radio>
+          </RadioGroup>
+        )}
       </ControlGroup>
 
       <ControlGroup>
@@ -970,11 +956,6 @@ const Badge = tasty({
   },
 });
 
-const Link = tasty({
-  as: 'span',
-  styles: { preset: 't3m', color: '#accent-text' },
-});
-
 /** The `surface-N-text` ramp, so each surface level can be judged on its own. */
 function SurfaceTextRamp({ level }: { level: '' | '-2' | '-3' }) {
   return (
@@ -1013,13 +994,22 @@ const BUTTON_TYPES = [
   'link',
 ] as const;
 
-const BUTTON_THEMES = [
+/** `Tag` carries the full theme axis, `special` included. */
+const TAG_THEMES = [
   'default',
   'danger',
   'success',
   'warning',
   'note',
   'special',
+] as const;
+
+const BUTTON_THEMES = [
+  'default',
+  'danger',
+  'success',
+  'warning',
+  'note',
 ] as const;
 
 const PREVIEW_NAV = [
@@ -1073,7 +1063,7 @@ function ThemePreview({ tokens }: { tokens: Tokens }) {
 
             <RadioGroup
               aria-label="Preview tabs"
-              type="tabs"
+              type="button"
               value={tab}
               onChange={setTab}
             >
@@ -1097,6 +1087,29 @@ function ThemePreview({ tokens }: { tokens: Tokens }) {
                 <Token>Third surface level — nested inside a panel</Token>
               </Panel3>
             </Panel2>
+
+            <Section styles={{ gap: '1x' }}>
+              <GroupLabel>CONTROLS</GroupLabel>
+              <Row styles={{ gap: '2x' }}>
+                <Switch isSelected>Switch</Switch>
+                <Checkbox isSelected>Checkbox</Checkbox>
+              </Row>
+              <RadioGroup aria-label="Radio sample" defaultValue="one">
+                <Radio value="one">Radio</Radio>
+                <Radio value="two">Another</Radio>
+              </RadioGroup>
+            </Section>
+
+            <Section styles={{ gap: '1x' }}>
+              <GroupLabel>TAGS</GroupLabel>
+              <Row>
+                {TAG_THEMES.map((theme) => (
+                  <Tag key={theme} theme={theme}>
+                    {theme}
+                  </Tag>
+                ))}
+              </Row>
+            </Section>
 
             <Section styles={{ gap: '1x' }}>
               <GroupLabel>BUTTON TYPES</GroupLabel>
@@ -1140,38 +1153,18 @@ function ThemePreview({ tokens }: { tokens: Tokens }) {
 }
 
 function ThemeBuilderPage() {
-  const [scheme, setScheme] = useState<SchemeChoice>('auto');
-  const [contrast, setContrast] = useState<ContrastChoice>('auto');
+  const [scheme, setScheme] = useState<SchemeChoice>('light');
+  const [levelMode, setLevelMode] = useState<LevelMode>('auto');
+  const [contrastMode, setContrastMode] = useState<ContrastMode>('normal');
   const [customLevel, setCustomLevel] = useState(MANUAL_CONTRAST_START);
   const version = usePaletteVersion();
 
-  const ambientDark = useAmbientFlag(
-    'schema',
-    'dark',
-    '(prefers-color-scheme: dark)',
-  );
-  const ambientHighContrast = useAmbientFlag(
-    'contrast',
-    'high',
-    '(prefers-contrast: more)',
-  );
-
-  const resolvedScheme =
-    scheme === 'auto' ? (ambientDark ? 'dark' : 'light') : scheme;
-  const isCustom = contrast === 'custom';
-  const resolvedHighContrast =
-    contrast === 'auto' ? ambientHighContrast : contrast === 'high';
-
-  // Name only the axes that are actually on `auto`, so the note cannot claim the
-  // scheme was inherited when it was picked explicitly.
-  const autoAxes = [
-    scheme === 'auto' ? 'scheme' : null,
-    contrast === 'auto' ? 'contrast' : null,
-  ].filter(Boolean);
+  const isCustom = levelMode === 'custom';
+  const isHighContrast = contrastMode === 'high';
 
   const contrastLabel = isCustom
     ? `contrast level ${customLevel}`
-    : resolvedHighContrast
+    : isHighContrast
       ? 'high contrast'
       : 'normal contrast';
 
@@ -1181,14 +1174,10 @@ function ThemeBuilderPage() {
     () =>
       renderColorTokens(
         isCustom
-          ? { scheme: resolvedScheme, contrastLevel: customLevel }
-          : {
-              scheme: resolvedScheme,
-              highContrast: resolvedHighContrast,
-              contrastLevel: 'auto',
-            },
+          ? { scheme, contrastLevel: customLevel }
+          : { scheme, highContrast: isHighContrast, contrastLevel: 'auto' },
       ),
-    [isCustom, customLevel, resolvedScheme, resolvedHighContrast, version],
+    [isCustom, customLevel, scheme, isHighContrast, version],
   );
 
   return (
@@ -1204,19 +1193,16 @@ function ThemeBuilderPage() {
       }
     >
       <Note>
-        Showing <strong>{resolvedScheme}</strong> ·{' '}
-        <strong>{contrastLabel}</strong>
-        {autoAxes.length > 0
-          ? ` — ${autoAxes.join(' and ')} resolved from the document, since a flat` +
-            ' token value cannot mean “follow the OS”.'
-          : ''}
+        Showing <strong>{scheme}</strong> · <strong>{contrastLabel}</strong>
       </Note>
       <BuilderLayout>
         <ThemeBuilderControls
           scheme={scheme}
           onSchemeChange={setScheme}
-          contrast={contrast}
-          onContrastChange={setContrast}
+          levelMode={levelMode}
+          onLevelModeChange={setLevelMode}
+          contrastMode={contrastMode}
+          onContrastModeChange={setContrastMode}
           customLevel={customLevel}
           onCustomLevelChange={setCustomLevel}
         />

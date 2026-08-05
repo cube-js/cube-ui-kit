@@ -239,14 +239,14 @@ const TINTED_SURFACE_OVERRIDE: ColorMap = {
   surface: {
     tone: [
       100 - TINTED_SURFACE_TONE_OFFSET,
-      100 - TINTED_SURFACE_TONE_OFFSET * 1.5,
+      100 - TINTED_SURFACE_TONE_OFFSET * 2,
     ],
     saturation: TINTED_SURFACE_SATURATION,
   },
   border: {
     base: 'surface',
-    tone: ['-10', '-20'],
-    saturation: 0.5,
+    tone: ['-10', '-30'],
+    saturation: 0.3,
   },
   'surface-text': {
     base: 'surface',
@@ -321,21 +321,21 @@ function buildPalette(
     'surface-2': {
       hue: baseHue,
       base: 'surface',
-      tone: ['-2', '-3'],
+      tone: ['-2', '-4'],
       saturation: 0.1,
       inherit: false,
     },
     'surface-3': {
       hue: baseHue,
       base: 'surface',
-      tone: ['-4', '-6'],
+      tone: ['-4', '-8'],
       saturation: 0.1,
       inherit: false,
     },
     'surface-4': {
       hue: baseHue,
       base: 'surface',
-      tone: ['-6', '-9'],
+      tone: ['-6', '-12'],
       saturation: 0.1,
       inherit: false,
     },
@@ -407,7 +407,7 @@ function buildPalette(
     border: {
       hue: baseHue,
       base: 'surface',
-      tone: ['-10', '-20'],
+      tone: ['-10', '-30'],
       saturation: 0.175,
     },
     placeholder: {

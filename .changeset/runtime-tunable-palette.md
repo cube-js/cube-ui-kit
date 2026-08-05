@@ -37,7 +37,7 @@ The document palette emits state maps (`@dark` / `@hc`), so a page can only ever
 
 A mounted `<Root>` re-injects the token block automatically when the config changes — no component re-render is involved, since every color compiles to a CSS custom property.
 
-**This refactor changes no colors.** Turning the palette into a function of its seeds is output-neutral: with no config set, every token resolves exactly as it did, and a new snapshot test (156 tokens × 4 scheme variants) enforces it. The separate high-contrast surface-ladder change in this release is the only intentional color movement.
+**This refactor changes no colors.** Turning the palette into a function of its seeds is output-neutral: with no config set, every token resolves exactly as it did, and a new snapshot test (156 tokens × 4 scheme variants) enforces it. The surface-ladder and themed-border retune in this release is the only intentional color movement.
 
 Notes:
 
