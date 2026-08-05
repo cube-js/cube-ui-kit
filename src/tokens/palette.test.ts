@@ -807,4 +807,55 @@ describe('interop with a host driving glaze directly', () => {
 
     expect(dumpTokens(getPaletteTokens())).not.toEqual(before);
   });
+
+  it('re-renders region tokens too, not just the document ones', () => {
+    // The render memo is keyed on the palette config, but the config is not its
+    // only input — `buildPalette` also reads Glaze's global config. Without the
+    // version in that key, a region preview keeps serving the old palette while
+    // the document around it has already moved.
+    const before = renderColorTokens({ scheme: 'dark' });
+
+    glaze.configure({ darkDesaturation: 0.5 });
+    invalidatePaletteTokens();
+
+    expect(renderColorTokens({ scheme: 'dark' })).not.toEqual(before);
+  });
+});
+
+describe('config immutability', () => {
+  afterEach(() => {
+    resetPaletteConfig();
+  });
+
+  it('does not follow the caller mutating the object afterwards', () => {
+    const config: PaletteConfig = { hue: 200 };
+
+    setPaletteConfig(config);
+    config.hue = 300;
+
+    expect(getPaletteConfig().hue).toBe(200);
+    expect(getPaletteConfigInput().hue).toBe(200);
+  });
+
+  it('freezes what it hands out, so a stray write cannot desync the caches', () => {
+    setPaletteConfig({ hue: 200, themes: { danger: { hue: 12 } } });
+
+    // Silent corruption is the failure being prevented: a write that landed
+    // would move the config without bumping the version, leaving every token
+    // cache serving colors that no longer match it.
+    expect(() => {
+      (getPaletteConfig() as { hue: number }).hue = 300;
+    }).toThrow();
+    expect(() => {
+      (getPaletteConfigInput().themes!.danger as { hue: number }).hue = 300;
+    }).toThrow();
+
+    expect(getPaletteConfig().hue).toBe(200);
+    expect(getPaletteConfig().themes.danger.hue).toBe(12);
+  });
+
+  it('freezes the shipped baseline', () => {
+    expect(Object.isFrozen(DEFAULT_PALETTE_CONFIG)).toBe(true);
+    expect(Object.isFrozen(DEFAULT_PALETTE_CONFIG.themes)).toBe(true);
+  });
 });

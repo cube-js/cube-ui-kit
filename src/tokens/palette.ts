@@ -900,7 +900,15 @@ const VARIANT_KEY = {
   'dark:true': 'darkContrast',
 } as const;
 
-/** Single-entry memo: all four variants of the last config rendered. */
+/**
+ * Single-entry memo: all four variants of the last config rendered.
+ *
+ * Keyed on the palette version as well as the config, because the config is not
+ * the only input — `buildPalette` also reads Glaze's own global config
+ * (`darkTone`, `darkDesaturation`, the state map). A host that drives Glaze
+ * directly and then calls `invalidatePaletteTokens()` bumps the version without
+ * touching the config, and the region previews have to follow the document.
+ */
 let renderKey: string | null = null;
 let renderVariants: Record<string, Record<string, string>> = {};
 
@@ -921,7 +929,7 @@ export function renderPaletteTokens(
 ): Tokens {
   const { scheme = 'light', highContrast = false, ...config } = options;
   const resolved = resolvePaletteConfig(config);
-  const key = JSON.stringify(resolved);
+  const key = `${getPaletteVersion()}:${JSON.stringify(resolved)}`;
 
   if (renderKey !== key) {
     // Force the *global* level to `'auto'` for the duration of the export.
@@ -945,13 +953,18 @@ export function renderPaletteTokens(
       });
       const code = built.codeTheme.tokens({ format: 'oklch', modes });
 
-      renderVariants = {};
+      // Built into a local and published together, so a throw part-way through
+      // cannot leave a half-filled map sitting under the previous key.
+      const variants: typeof renderVariants = {};
+
       for (const name of Object.keys(themed)) {
-        renderVariants[name] = {
+        variants[name] = {
           ...themed[name],
           ...pickCodeTokens(code[name] ?? {}),
         };
       }
+
+      renderVariants = variants;
       renderKey = key;
     } finally {
       glaze.configure({ contrastLevel: previousLevel });

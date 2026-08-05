@@ -329,6 +329,11 @@ Because the setter replaces, the prop describes the **whole** palette: drop a
 field from the object and that customization goes away on the next render, which
 is what you want from a declarative prop.
 
+Removing the prop entirely is the one thing that does *not* reset the palette —
+`<Root>` with no `palette` leaves whatever is configured alone, so that the common
+case cannot clobber a host's imperative `setPaletteConfig()` call. Pass
+`palette={{}}` if you do want the default.
+
 This is a convenience wrapper over `setPaletteConfig()`, not a separate scope.
 **The palette is process-global** — Glaze's own config is, and so is the single
 `body` rule the tokens are injected into. One palette per process, not per tree

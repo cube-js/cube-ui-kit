@@ -187,8 +187,14 @@ function resolveConfig(input: PaletteConfig): ResolvedPaletteConfig {
   };
 }
 
-/** The palette as it ships, with no tuning applied. */
-export const DEFAULT_PALETTE_CONFIG: ResolvedPaletteConfig = resolveConfig({});
+/**
+ * The palette as it ships, with no tuning applied. Frozen — it is the baseline
+ * every resolution falls back to, so a stray write to it would move the defaults
+ * for the whole process.
+ */
+export const DEFAULT_PALETTE_CONFIG: ResolvedPaletteConfig = freezeConfig(
+  resolveConfig({}),
+);
 
 // ============================================================================
 // Store
@@ -280,6 +286,51 @@ function pinSignature(config: PaletteConfig): string {
   ].join('');
 }
 
+/**
+ * Snapshot a config so the store owns it outright.
+ *
+ * Two hazards this closes. The caller's object stays theirs, so mutating it after
+ * the call cannot desync `input` from `resolved`. And what we hand back from
+ * {@link getPaletteConfig} / {@link getPaletteConfigInput} is frozen, so a caller
+ * who writes to it gets a clear failure rather than silently corrupting the store
+ * — the version would not bump, and every token cache would go on serving values
+ * that no longer match the config.
+ */
+function freezeConfig<T extends PaletteConfig | ResolvedPaletteConfig>(
+  config: T,
+): T {
+  const themes = config.themes;
+
+  if (themes) {
+    for (const seed of Object.values(themes)) {
+      if (seed) Object.freeze(seed);
+    }
+    Object.freeze(themes);
+  }
+
+  return Object.freeze(config);
+}
+
+/** {@link freezeConfig} on a copy, for a config we did not create ourselves. */
+function snapshotConfig(config: PaletteConfig): PaletteConfig {
+  const themes = config.themes;
+
+  return freezeConfig({
+    ...config,
+    ...(themes
+      ? {
+          themes: {
+            ...(themes.success ? { success: { ...themes.success } } : null),
+            ...(themes.danger ? { danger: { ...themes.danger } } : null),
+            ...(themes.warning ? { warning: { ...themes.warning } } : null),
+            ...(themes.note ? { note: { ...themes.note } } : null),
+            ...(themes.code ? { code: { ...themes.code } } : null),
+          },
+        }
+      : null),
+  });
+}
+
 function commit(nextInput: PaletteConfig) {
   const nextResolved = resolveConfig(nextInput);
 
@@ -293,8 +344,8 @@ function commit(nextInput: PaletteConfig) {
     return;
   }
 
-  input = nextInput;
-  resolved = nextResolved;
+  input = snapshotConfig(nextInput);
+  resolved = freezeConfig(nextResolved);
   version++;
 
   listeners.forEach((listener) => listener());

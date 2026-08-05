@@ -63,6 +63,14 @@ That means the swap costs no re-render, is correct during SSR and before hydrati
 
 Use it only when you know the surface. Omitting it is the right default: a pinned scheme stops following the user's own light/dark preference.
 
+## Properties
+
+- **`scheme`** `'light' | 'dark'` — Pin one mark instead of letting the `@dark` state pick. Omit it unless you know the surface; see [Pinning a scheme](#pinning-a-scheme)
+- **`size`** — Maps onto `font-size`. Both axes on `CubeLogo`, height only on `CubeFullLogo`
+- **`color`** — Any color token. Both marks are drawn with `currentColor`, so this is inherited by default
+
+Everything else is `Icon`'s: `stroke`, the style props, and `qa`. Supports [Base properties](/docs/getting-started-base-properties--docs).
+
 ## Accessibility
 
 Both render `role="img"` with `aria-label="Cube"`, so they announce as an image with a name instead of being skipped or read as decorative.

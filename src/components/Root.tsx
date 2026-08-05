@@ -128,6 +128,10 @@ export interface CubeRootProps extends BaseProps {
    * this prop describes the whole palette and dropping a field from it drops the
    * customization.
    *
+   * Removing the prop entirely is the one thing that does *not* reset the
+   * palette, so `<Root>` with no `palette` cannot clobber a host's imperative
+   * `setPaletteConfig()` call. Pass `{}` to ask for the default.
+   *
    * The palette is global process state, so this is a declarative wrapper over
    * `setPaletteConfig()`; both drive the same store, and the last write wins.
    * See `Getting Started/Theming` in Storybook.
