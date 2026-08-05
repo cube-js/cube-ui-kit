@@ -21,6 +21,7 @@ const CalendarButtonElement = tasty({
     fill: {
       '': '#primary.0',
       ':hover': '#primary.16',
+      rangeHover: '#primary.16',
       pressed: '#primary.10',
 
       selected: '#primary',
@@ -44,7 +45,7 @@ const CalendarButtonElement = tasty({
   },
 });
 
-export function CalendarCell({ state, selectedRange, date }) {
+export function CalendarCell({ state, selectedRange, date, rangeHover }) {
   let ref = useRef(null);
   let {
     cellProps,
@@ -72,6 +73,7 @@ export function CalendarCell({ state, selectedRange, date }) {
         hidden={isOutsideVisibleRange}
         mods={{
           selected: isFinalSelected,
+          rangeHover: rangeHover && !isFinalSelected,
           pressed: isPressed,
           focused: isFocused,
           invalid: isInvalid,
