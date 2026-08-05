@@ -365,7 +365,6 @@ function TreeNodeInner(props: TreeNodeProps) {
         aria-label={
           typeof data.title === 'string' ? data.title : String(node.key)
         }
-        // @ts-expect-error AriaCheckboxProps loses `onChange` where InputDOMProps overlaps (react-types).
         onChange={handleCheckboxChange}
       />
     </TreeNodeCheckboxWrapper>

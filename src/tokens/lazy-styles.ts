@@ -1,13 +1,17 @@
 import type { Styles } from '@tenphi/tasty';
 
 /**
- * Proxy that materializes a `Styles` map on first property / enumeration
- * access. Used so token exports stay import-safe while resolution can wait
- * until after a host app calls `glaze.configure(...)`.
+ * Proxy that defers to `factory()` on every property / enumeration access.
+ * Used so token exports stay import-safe while resolution waits until after a
+ * host app calls `setPaletteConfig(...)` / `glaze.configure(...)`.
+ *
+ * The proxy holds no cache of its own — that is deliberate. Every factory here
+ * memoizes against the palette config version, so delegating on each access is
+ * what keeps these exports live when the palette is re-seeded at runtime. A
+ * factory passed in must memoize.
  */
 export function lazyStyles(factory: () => Styles): Styles {
-  let cache: Styles | undefined;
-  const resolve = () => (cache ??= factory());
+  const resolve = () => factory();
   return new Proxy({} as Styles, {
     get(_target, prop) {
       if (prop === Symbol.toStringTag) return 'Object';

@@ -28,27 +28,27 @@ export default {
   special: {
     fill: '#primary-accent-surface',
     color: '#primary-accent-surface-text',
-    border: '#primary-accent-surface-text',
+    border: '#primary-border',
   },
   success: {
     fill: '#success-surface',
     color: '#success-accent-surface',
-    border: '#success-accent-surface.20',
+    border: '#success-border',
   },
   danger: {
     fill: '#danger-surface',
     color: '#danger-accent-surface',
-    border: '#danger-accent-surface.20',
+    border: '#danger-border',
   },
   warning: {
     fill: '#warning-surface',
     color: '#warning-accent-surface',
-    border: '#warning-accent-surface.20',
+    border: '#warning-border',
   },
   note: {
     fill: '#note-surface',
     color: '#note-accent-surface',
-    border: '#note-accent-surface.20',
+    border: '#note-border',
   },
   disabled: {
     fill: '#surface-2',

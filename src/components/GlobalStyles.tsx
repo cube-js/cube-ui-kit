@@ -2,6 +2,7 @@ import { useGlobalStyles, useRawCSS } from '@tenphi/tasty';
 import { useMemo } from 'react';
 
 import { getTokens } from '../tokens';
+import { usePaletteVersion } from '../tokens/palette-config';
 
 import type { Styles } from '@tenphi/tasty';
 
@@ -280,8 +281,14 @@ const STATIC_CSS = `
 export function GlobalStyles(props: GlobalStylesProps) {
   const { bodyStyles, font, monospaceFont } = props;
 
+  // Re-resolve the tokens whenever the palette is re-seeded at runtime (see
+  // `src/tokens/palette-config.ts`). Nothing else has to re-render: every color
+  // in the kit compiles to `var(--<name>-color)`, so replacing this one rule
+  // recolors the whole UI.
+  const paletteVersion = usePaletteVersion();
+
   // Merge token styles with body styles. getTokens() resolves glaze colors
-  // against the live config on first call (after host glaze.configure).
+  // against the current palette config, memoized against its version.
   const bodyTokenStyles = useMemo((): Styles => {
     const styles: Styles = { ...getTokens() };
 
@@ -295,10 +302,20 @@ export function GlobalStyles(props: GlobalStylesProps) {
     }
 
     return styles;
-  }, [bodyStyles]);
+  }, [bodyStyles, paletteVersion]);
 
-  // Apply tokens and body styles via useGlobalStyles
-  useGlobalStyles('body', bodyTokenStyles);
+  // Apply tokens and body styles via useGlobalStyles.
+  //
+  // Replacement does not depend on the `id`: tasty keys its injection slot on
+  // `id ?? selector`, so `'body'` on its own already disposes the previous block
+  // before writing the new one — which is what removes stale `@hc` rules when the
+  // palette is re-seeded, rather than shadowing them. The `id` buys two other
+  // things. It gives the token block its own slot, so a host app calling
+  // `useGlobalStyles('body', …)` for its own body styles cannot evict ours (and
+  // vice versa) — they would otherwise share the `'body'` slot and dispose each
+  // other on every change. And under SSR it makes the collector key stable and
+  // last-write-wins, instead of content-hashed and first-write-wins.
+  useGlobalStyles('body', bodyTokenStyles, { id: 'cube-ui-kit-tokens' });
 
   // Apply static CSS and font definitions via useRawCSS
   useRawCSS(() => {

@@ -16,6 +16,14 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // NOTE: this is why every `Aria*Props` type imported from `react-aria`
+    // silently resolves to `any`. `react-aria` re-exports them from
+    // `@react-aria/*` subpackages that are not direct dependencies, and with
+    // symlinks preserved TS resolves from the symlink path and never finds
+    // them; `skipLibCheck` then hides the failure. Removing this flag surfaces
+    // ~320 previously-unchecked errors, so it needs its own migration. Until
+    // then, components must declare the Aria props they support explicitly
+    // rather than inheriting them — see the note in `AGENTS.md`.
     "preserveSymlinks": true,
     "noImplicitAny": false,
     "target": "es2022",

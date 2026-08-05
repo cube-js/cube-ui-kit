@@ -31,8 +31,11 @@ module.exports = [
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // 117.63 kB at the time of writing — only ~370 B of headroom, so this
-    // one is likely to trip next even though it passes today.
-    limit: '118kB',
+    // 118.03 kB at the time of writing. The predicted trip happened: the
+    // `@tenphi/tasty` 2.11.0 → 2.11.2 bump added ~400 B here (measured by
+    // rebuilding against both versions — nothing in the UI Kit itself moved),
+    // which ate the previous 118 kB budget's ~370 B of headroom. Raised to
+    // 119 kB, deliberately keeping headroom small so real bloat still trips.
+    limit: '119kB',
   },
 ];

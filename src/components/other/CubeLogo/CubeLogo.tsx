@@ -1,4 +1,4 @@
-import { tasty } from '@tenphi/tasty';
+import { mergeStyles, tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef } from 'react';
 
 import { CubeIconProps, Icon } from '../../../icons/Icon';
@@ -66,6 +66,39 @@ const SCHEME_SWAP = {
 } as const;
 
 /**
+ * Pin one mark instead of letting the `@dark` state choose.
+ *
+ * Needed wherever the background is known but the *document* scheme does not
+ * describe it: a fixed-dark panel in a light app (`#surface-inverse`, the
+ * `special` theme), an exported image, or a themed region — `tokens` overrides
+ * token *values*, and `@dark` is a state, so a region preview cannot reach the
+ * swap on its own.
+ */
+const FORCED_SCHEME = {
+  light: {
+    LightMark: { display: 'block' },
+    DarkMark: { display: 'none' },
+  },
+  dark: {
+    LightMark: { display: 'none' },
+    DarkMark: { display: 'block' },
+  },
+} as const;
+
+export interface CubeLogoProps extends CubeIconProps {
+  /**
+   * Force the light or dark mark. Omit it — the default — to follow the document
+   * scheme in CSS, which costs no re-render and is correct during SSR.
+   */
+  scheme?: 'light' | 'dark';
+}
+
+/** Caller styles win; a forced scheme only overrides the swap itself. */
+function resolveLogoStyles({ scheme, styles }: CubeLogoProps) {
+  return scheme ? mergeStyles(FORCED_SCHEME[scheme], styles) : styles;
+}
+
+/**
  * Square Cube mark, sized through `Icon` — pass `size` (or any `Icon` style prop)
  * and both axes follow it.
  */
@@ -75,11 +108,19 @@ const CubeLogoElement = tasty(Icon, {
 });
 
 export const CubeLogo = forwardRef(function CubeLogo(
-  props: CubeIconProps,
+  props: CubeLogoProps,
   ref: ForwardedRef<HTMLSpanElement>,
 ) {
+  const { scheme, styles, ...rest } = props;
+
   return (
-    <CubeLogoElement aria-label="Cube" role="img" {...props} ref={ref}>
+    <CubeLogoElement
+      aria-label="Cube"
+      role="img"
+      {...rest}
+      styles={resolveLogoStyles(props)}
+      ref={ref}
+    >
       <svg
         fill="none"
         viewBox={MARK_VIEW_BOX}
@@ -116,11 +157,19 @@ const CubeFullLogoElement = tasty(Icon, {
 });
 
 export const CubeFullLogo = forwardRef(function CubeFullLogo(
-  props: CubeIconProps,
+  props: CubeLogoProps,
   ref: ForwardedRef<HTMLSpanElement>,
 ) {
+  const { scheme, styles, ...rest } = props;
+
   return (
-    <CubeFullLogoElement aria-label="Cube" role="img" {...props} ref={ref}>
+    <CubeFullLogoElement
+      aria-label="Cube"
+      role="img"
+      {...rest}
+      styles={resolveLogoStyles(props)}
+      ref={ref}
+    >
       <svg
         fill="none"
         viewBox={FULL_VIEW_BOX}
