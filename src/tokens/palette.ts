@@ -86,11 +86,15 @@ const TINTED_SURFACE_TONE_OFFSET = 2;
  * and selectors, while HTML/XML tag names reuse `code-keyword`. Diff insertion and
  * deletion reuse the `success-*` / `danger-*` ramps instead.
  *
- * Two things are deliberately static here. Every hue is an absolute literal, so a
+ * Three things are deliberately static here. Every hue is an absolute literal, so a
  * re-seeded brand cannot rotate the syntax palette — a green brand would otherwise
- * collide `code-string` with `code-number` (156°). And these factors are relative to
+ * collide `code-string` with `code-number` (156°). These factors are relative to
  * the *code* theme's own seed (`themes.code.saturation`), not the palette-level one,
- * so tuning the app's saturation cannot wash out a code block.
+ * so tuning the app's saturation cannot wash out a code block. And `pastel` is held
+ * off here whatever the palette does, for the same reason: it lowers the chroma
+ * ceiling hard enough to take `code-keyword` from ~0.19 to ~0.07, which is the
+ * difference between distinguishable syntax and mud. Between them, these mean the
+ * emitted `code-*` values are a function of the code saturation alone.
  *
  * That separate seed is the only reason these live outside the default theme: a
  * theme colour can never exceed its own seed, and four of these sit at factor `1.0`,
@@ -155,6 +159,11 @@ const CODE_COLORS: ColorMap = {
  * verbatim and resolves identically at any palette saturation. The mirrored `surface`
  * is an implementation detail — it exists only as the contrast base, and is filtered
  * out of the emitted tokens by {@link pickCodeTokens}.
+ *
+ * `instanceConfig` arrives with `pastel` pinned off, so the mirror is non-pastel too
+ * even when the app is. Harmless: at saturation factor 0.12 the pastel ceiling moves
+ * the mirror's chroma and leaves its tone — the axis every `code-*` contrast floor is
+ * solved against — bit-identical.
  */
 function buildCodeTheme(
   config: ResolvedPaletteConfig,
@@ -295,19 +304,33 @@ function buildPalette(
 ): BuiltPalette {
   const { hue, baseHue, saturation, pastel, themes, contrastLevel } = config;
 
+  // The one override the code theme shares with the rest of the palette.
+  const sharedOverrides: GlazeConfigOverride = options.isolateContrastLevel
+    ? { contrastLevel }
+    : {};
+
   // `pastel` is instance-level in Glaze (not settable via `glaze.configure`).
   // Setting it on the two root themes is enough: `extend({ config })` merges
   // with the parent's override, so the derived themes inherit it. When it is
   // off we omit the field entirely rather than pass `false` — the two are
   // equivalent, and omitting keeps the default output provably untouched.
   const overrides: GlazeConfigOverride = {
+    ...sharedOverrides,
     ...(pastel ? { pastel: true } : null),
-    ...(options.isolateContrastLevel ? { contrastLevel } : null),
   };
   const instanceConfig: GlazeConfigOverride | undefined = Object.keys(overrides)
     .length
     ? overrides
     : undefined;
+
+  // `pastel` deliberately does *not* reach the code theme: syntax colors answer
+  // to `themes.code.saturation` and nothing else. Pinned to `false` rather than
+  // omitted — the same value Glaze defaults to, but here it is the point of the
+  // override, not an absence. See {@link buildCodeTheme}.
+  const codeInstanceConfig: GlazeConfigOverride = {
+    ...sharedOverrides,
+    pastel: false,
+  };
 
   // --------------------------------------------------------------------------
   // Default theme (neutral, primary in palette → exported unprefixed)
@@ -784,7 +807,7 @@ function buildPalette(
     }),
     // Kept out of the palette on purpose: it has to emit `code-*` unprefixed, and
     // its mirrored `surface` would collide with the default theme's.
-    codeTheme: buildCodeTheme(config, instanceConfig),
+    codeTheme: buildCodeTheme(config, codeInstanceConfig),
   };
 }
 

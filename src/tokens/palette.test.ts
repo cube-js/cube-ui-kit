@@ -356,10 +356,36 @@ describe('setPaletteConfig', () => {
     for (const name of palette.list()) {
       expect(palette.theme(name)?.getConfig().pastel, name).toBe(true);
     }
+  });
 
-    // The code theme lives outside the palette, so it is the other easy one to
-    // miss.
-    expect(getCodeTheme().getConfig().pastel).toBe(true);
+  it('keeps pastel out of the syntax palette', () => {
+    // The code theme is seeded off `themes.code.saturation` alone. `pastel`
+    // lowers the chroma ceiling far enough to take `code-keyword` from ~0.19 to
+    // ~0.07 — every syntax hue collapsing toward the same washed-out grey — so
+    // it stops at the code theme's door.
+    const before = CODE_TOKENS.map((name) => baseline[name]);
+
+    setPaletteConfig({ pastel: true });
+
+    const tuned = dumpTokens(getPaletteTokens());
+
+    // Bit-identical, in all four scheme variants: nothing but the code
+    // saturation reaches these.
+    expect(CODE_TOKENS.map((name) => tuned[name])).toEqual(before);
+    expect(getCodeTheme().getConfig().pastel).toBe(false);
+
+    // Not a no-op config — the rest of the palette did soften.
+    expect(tuned['#surface']).not.toBe(baseline['#surface']);
+  });
+
+  it('still answers to the code saturation while pastel is on', () => {
+    setPaletteConfig({ pastel: true, themes: { code: { saturation: 30 } } });
+
+    const tuned = dumpTokens(getPaletteTokens());
+
+    expect(CODE_TOKENS.map((name) => tuned[name])).not.toEqual(
+      CODE_TOKENS.map((name) => baseline[name]),
+    );
   });
 
   it('replaces the whole config rather than accumulating', () => {
@@ -551,6 +577,28 @@ describe('code syntax tokens', () => {
 
     expect(mirrored.light.surface).toBe(live['']);
     expect(mirrored.dark?.surface).toBe(live['@dark']);
+  });
+
+  it('keeps the mirror on the real surface tone under pastel', () => {
+    setPaletteConfig({ pastel: true });
+
+    const mirrored = getCodeTheme().tokens({
+      modes: { dark: true, highContrast: true },
+    });
+    const live = getPaletteTokens()['#surface'] as TokenStates;
+
+    // The mirror goes non-pastel along with the rest of the code theme, so its
+    // chroma no longer tracks the softened page. That is the whole cost of
+    // holding pastel off here, and it is a cheap one: `surface` sits at
+    // saturation factor 0.12, where the pastel ceiling moves chroma only — the
+    // lightness the AA/AAA floors are actually solved against stays exact.
+    const lightnessOf = (value: string) =>
+      value.trim().split(/\s+/)[0].replace('oklch(', '');
+
+    expect(lightnessOf(mirrored.light.surface)).toBe(lightnessOf(live['']));
+    expect(lightnessOf(mirrored.dark!.surface)).toBe(
+      lightnessOf(live['@dark']),
+    );
   });
 
   it('warns instead of silently clamping an unreachable mirror', () => {

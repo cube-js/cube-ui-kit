@@ -666,13 +666,87 @@ const GroupLabel = tasty({
   styles: { preset: 't4m', color: '#surface-text-soft' },
 });
 
-/** Quick-apply seeds, so the builder opens on something other than a blank slate. */
+/**
+ * Quick-apply seeds, so the builder opens on something other than a blank slate.
+ *
+ * Each one re-seeds the **status hues** as well as the brand, because moving `hue`
+ * alone leaves the shipped statuses behind it and they collide: a `Forest` brand at
+ * 150° lands 7° off the shipped `success` (156.9°), so a success banner and the brand
+ * accent resolve to the same green. The bar here is ~35° between any two of the five
+ * hues, roughly where two tinted surfaces stop reading as one color.
+ *
+ * Statuses still have to stay semantically legible — danger red, warning amber,
+ * success green — so `note` does most of the moving, and the brand yields a little
+ * where it has to (`Forest` sits at moss rather than mid-green to leave room for an
+ * emerald success; `Ember` at amber rather than orange to leave room for a crimson
+ * danger).
+ */
 const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
-  { label: 'Cube', config: { hue: 280.3, saturation: 80, pastel: false } },
-  { label: 'Ocean', config: { hue: 235, saturation: 70, pastel: false } },
-  { label: 'Forest', config: { hue: 150, saturation: 65, pastel: false } },
-  { label: 'Ember', config: { hue: 35, saturation: 85, pastel: false } },
-  { label: 'Slate', config: { hue: 250, baseHue: 250, saturation: 30 } },
+  // Empty on purpose: the setter replaces, so this *is* the shipped palette — the
+  // reference the other four depart from, and the way back from any of them.
+  { label: 'Cube', config: {} },
+  {
+    label: 'Ocean',
+    config: {
+      hue: 235,
+      saturation: 70,
+      themes: {
+        success: { hue: 165 },
+        danger: { hue: 25 },
+        warning: { hue: 80 },
+        // Off purple and into magenta: at the shipped 302° a note sits 67° from a
+        // blue brand and reads as a second accent rather than an aside.
+        note: { hue: 315 },
+      },
+    },
+  },
+  {
+    label: 'Forest',
+    config: {
+      hue: 128,
+      saturation: 65,
+      themes: {
+        success: { hue: 172 },
+        danger: { hue: 25 },
+        warning: { hue: 75 },
+        note: { hue: 300 },
+      },
+    },
+  },
+  {
+    label: 'Ember',
+    config: {
+      hue: 48,
+      saturation: 85,
+      themes: {
+        success: { hue: 155 },
+        danger: { hue: 6 },
+        warning: { hue: 100 },
+        note: { hue: 300 },
+      },
+    },
+  },
+  {
+    label: 'Slate',
+    config: {
+      hue: 250,
+      // Pastel is what mutes this one: it swaps the per-hue chroma ceiling for a
+      // flat one, so the saturation seed can stay high and still land soft — 60
+      // here resolves to the same accent chroma a non-pastel 30 does, but even
+      // across hues rather than letting the warm statuses run ahead.
+      saturation: 60,
+      pastel: true,
+      themes: {
+        success: { hue: 160 },
+        danger: { hue: 20 },
+        warning: { hue: 85 },
+        note: { hue: 312 },
+        // Pastel does not reach the syntax palette, by design. Softening a code
+        // block to match the rest of a muted theme goes through its own seed.
+        code: { saturation: 55 },
+      },
+    },
+  },
 ];
 
 function ThemeBuilderControls({
