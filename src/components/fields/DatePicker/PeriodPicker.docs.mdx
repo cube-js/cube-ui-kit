@@ -1,0 +1,93 @@
+import { Canvas, Meta, Story } from '@storybook/addon-docs/blocks';
+
+import { MonthPicker } from './MonthPicker';
+import * as PeriodPickerStories from './PeriodPicker.stories.tsx';
+
+<Meta of={PeriodPickerStories} />
+
+# Period Pickers
+
+`WeekPicker`, `MonthPicker`, `QuarterPicker`, and `YearPicker` let users select a
+whole calendar period instead of a specific day. They mirror Ant Design's
+`DatePicker picker="week|month|quarter|year"` feature, but are exposed as four
+dedicated components that share a single implementation.
+
+The value is always a single `CalendarDate` (from `@internationalized/date`)
+**snapped to the start of the chosen period**:
+
+- **Week** → the first day of the week (locale-aware)
+- **Month** → the 1st of the month
+- **Quarter** → the 1st of the first month of the quarter
+- **Year** → January 1st
+
+The field renders a compact label for the selected period (`2026-W33`, `2026-08`,
+`2026-Q3`, `2026`). Use `formatValue` to override it.
+
+## When to Use
+
+- Filtering or reporting by week, month, quarter, or fiscal year
+- Any input where the natural unit is a period rather than an exact day
+- As a lighter alternative to a full `DatePicker` when day precision is unwanted
+
+## Component
+
+<Story of={PeriodPickerStories.AllPickers} />
+
+---
+
+### Properties
+
+- **`value`** `DateValue` — The current value (controlled), snapped to the period start
+- **`defaultValue`** `DateValue` — The default value (uncontrolled)
+- **`minValue`** `DateValue` — The earliest selectable period
+- **`maxValue`** `DateValue` — The latest selectable period
+- **`isDateUnavailable`** `(date: DateValue) => boolean` — Marks a period (by its start date) as unavailable
+- **`placeholder`** `string` — Text shown when no value is selected
+- **`formatValue`** `(date: DateValue, picker: PickerType) => string` — Overrides the displayed label
+- **`size`** `'small' | 'medium' | 'large' | (string & {})` (default: `medium`) — Field size
+- **`shouldFlip`** `boolean` (default: `true`) — Whether the popover flips to fit the viewport
+- **`isOpen`** `boolean` — Whether the popover is open (controlled)
+- **`defaultOpen`** `boolean` — Whether the popover is open by default (uncontrolled)
+- **`onChange`** `(value: DateValue | null) => void` — Fired when the selected period changes
+- **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
+
+The advanced `PeriodPicker` base component accepts the same props plus a
+**`picker`** `'week' | 'month' | 'quarter' | 'year'` prop; the four named
+components are thin wrappers that set it for you.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/getting-started-field-properties--docs)
+
+### Styling Properties
+
+- **`styles`** — root field styles
+- **`wrapperStyles`** — the input wrapper
+- **`inputStyles`** — the value/label area
+- **`triggerStyles`** — the calendar trigger button
+
+## Examples
+
+### Month
+
+<Story of={PeriodPickerStories.MonthWithValue} />
+
+### Quarter
+
+<Story of={PeriodPickerStories.Quarter} />
+
+### Year
+
+<Story of={PeriodPickerStories.Year} />
+
+### Week
+
+<Story of={PeriodPickerStories.Week} />
+
+### Limited range
+
+<Story of={PeriodPickerStories.WithLimitedRange} />
