@@ -146,7 +146,7 @@ function PeriodPicker<T extends DateValue>(
       ref={targetRef}
       qa={qa || 'PeriodPicker'}
       inputType="datepicker"
-      styles={{ display: 'grid', ...props.wrapperStyles }}
+      styles={{ display: 'grid', ...styles, ...props.wrapperStyles }}
       inputStyles={props.inputStyles}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}
