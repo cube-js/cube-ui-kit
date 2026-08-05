@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.152.0",
+  "version": "0.154.0",
   "type": "module",
   "description": "UIKit for Cube Projects",
   "repository": {
@@ -83,7 +83,7 @@
     "@react-types/shared": "^3.32.1",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
-    "@tenphi/glaze": "1.2.0",
+    "@tenphi/glaze": "1.3.0",
     "@tenphi/tasty": "^3.0.0",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",

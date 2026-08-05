@@ -7,13 +7,14 @@ import {
   setGlobalPredefinedStates,
   tasty,
 } from '@tenphi/tasty';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ModalProvider } from 'react-aria';
 
 import { I18nProvider } from '../i18n';
 import { Provider } from '../provider';
 import { NavigationAdapter } from '../providers/navigation.types';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
+import { PaletteConfig, setPaletteConfig } from '../tokens/palette-config';
 import { EventBusProvider } from '../utils/react/useEventBus';
 import { extractStyles } from '../utils/styles';
 import { TASTY_VERSION, VERSION } from '../version';
@@ -121,6 +122,21 @@ const STYLES = [...BASE_STYLES, ...BLOCK_STYLES];
 
 export interface CubeRootProps extends BaseProps {
   tokens?: { [key: string]: string };
+  /**
+   * Tune the generated color palette — brand hue / saturation, per-status theme
+   * seeds, `pastel`, and `contrastLevel`. Omitted fields take their default, so
+   * this prop describes the whole palette and dropping a field from it drops the
+   * customization.
+   *
+   * Removing the prop entirely is the one thing that does *not* reset the
+   * palette, so `<Root>` with no `palette` cannot clobber a host's imperative
+   * `setPaletteConfig()` call. Pass `{}` to ask for the default.
+   *
+   * The palette is global process state, so this is a declarative wrapper over
+   * `setPaletteConfig()`; both drive the same store, and the last write wins.
+   * See `Getting Started/Theming` in Storybook.
+   */
+  palette?: PaletteConfig;
   bodyStyles?: { [key: string]: string };
   fontDisplay?: 'auto' | 'block' | 'swap' | 'fallback' | 'optional';
   fonts?: boolean;
@@ -157,10 +173,20 @@ export function Root(allProps: CubeRootProps) {
     cursorStrategy = 'web',
     style,
     tokens,
+    palette,
     i18n,
     locale,
     ...props
   } = allProps;
+
+  // Applied during render, not in an effect, so the first paint already uses the
+  // tuned palette instead of flashing the default. `setPaletteConfig` is a no-op
+  // when the resolved config is unchanged, so an inline object literal and
+  // StrictMode's double render both cost nothing. `GlobalStyles` is rendered
+  // below in the same pass and reads the new version directly.
+  useMemo(() => {
+    if (palette) setPaletteConfig(palette);
+  }, [palette]);
 
   const ref = useRef(null);
 

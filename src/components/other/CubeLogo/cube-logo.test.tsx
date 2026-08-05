@@ -17,6 +17,25 @@ describe('<CubeLogo />', () => {
     expect(screen.getByRole('img', { name: 'Cube' })).toBeInTheDocument();
   });
 
+  it.each([
+    ['light', 'block', 'none'],
+    ['dark', 'none', 'block'],
+  ] as const)('pins the %s mark when asked', (scheme, light, dark) => {
+    renderWithRoot(<CubeLogo scheme={scheme} />);
+    const el = screen.getByTestId('CubeLogo');
+    const mark = (name: string) =>
+      getComputedStyle(el.querySelector(`[data-element="${name}"]`)!).display;
+
+    expect(mark('LightMark')).toBe(light);
+    expect(mark('DarkMark')).toBe(dark);
+  });
+
+  it('keeps scheme off the DOM', () => {
+    renderWithRoot(<CubeLogo scheme="dark" />);
+
+    expect(screen.getByTestId('CubeLogo')).not.toHaveAttribute('scheme');
+  });
+
   it('drives sizing from the size prop', () => {
     renderWithRoot(<CubeLogo size="32px" />);
 

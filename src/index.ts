@@ -173,6 +173,7 @@ export type { CubePlaceholderProps } from './components/content/Placeholder/Plac
 export { Skeleton } from './components/content/Skeleton/Skeleton';
 export type { CubeSkeletonProps } from './components/content/Skeleton/Skeleton';
 export { CubeLogo, CubeFullLogo } from './components/other/CubeLogo/CubeLogo';
+export type { CubeLogoProps } from './components/other/CubeLogo/CubeLogo';
 export { Badge } from './components/content/Badge/Badge';
 export type { CubeBadgeProps } from './components/content/Badge/Badge';
 export { Tag } from './components/content/Tag/Tag';

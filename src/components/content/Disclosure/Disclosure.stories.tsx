@@ -405,7 +405,6 @@ export const TriggerWithActions: Story = {
               aria-label="Disable disclosure"
               size="small"
               isSelected={!isDisabled}
-              // @ts-expect-error - onChange exists on AriaSwitchProps but TS inference issue
               onChange={(value) => setIsDisabled(!value)}
             />
           }

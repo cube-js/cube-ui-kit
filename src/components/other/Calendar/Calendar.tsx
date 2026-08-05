@@ -1,4 +1,8 @@
-import { createCalendar } from '@internationalized/date';
+import {
+  createCalendar,
+  startOfWeek,
+  toCalendarDate,
+} from '@internationalized/date';
 import { createDOMRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
 import { tasty } from '@tenphi/tasty';
@@ -40,6 +44,11 @@ export interface CubeCalendarProps extends AriaCalendarProps<DateValue> {
     start: DateValue;
     end: DateValue;
   };
+  /**
+   * When set to `week`, the grid shows a leading week-number column and
+   * highlights the whole week that the selected value belongs to.
+   */
+  pickerMode?: 'day' | 'week';
 }
 
 function Calendar(props: CubeCalendarProps, ref: FocusableRef<HTMLElement>) {
@@ -65,6 +74,12 @@ function Calendar(props: CubeCalendarProps, ref: FocusableRef<HTMLElement>) {
     state,
   );
 
+  let selectedRange = props.selectedRange;
+  if (props.pickerMode === 'week' && state.value) {
+    let start = startOfWeek(toCalendarDate(state.value), locale);
+    selectedRange = { start, end: start.add({ days: 6 }) };
+  }
+
   return (
     <CalendarElement {...calendarProps}>
       <CalendarHeaderElement>
@@ -86,7 +101,11 @@ function Calendar(props: CubeCalendarProps, ref: FocusableRef<HTMLElement>) {
           />
         </Space>
       </CalendarHeaderElement>
-      <CalendarGrid state={state} selectedRange={props.selectedRange} />
+      <CalendarGrid
+        state={state}
+        selectedRange={selectedRange}
+        pickerMode={props.pickerMode}
+      />
     </CalendarElement>
   );
 }

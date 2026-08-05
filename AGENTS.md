@@ -108,6 +108,7 @@ See `src/stories/Usage.docs.mdx` (Storybook → **Getting Started / Usage**) for
 - **Barrel exports:** every category has an `index.ts`; everything re-exports through `src/index.ts`.
 - **Compound components:** `Object.assign(Button, { Group: ButtonGroup, Split: ButtonSplit })`.
 - **Tasty re-exports:** only types are re-exported. Runtime imports (`tasty`, `extractStyles`, `filterBaseProps`) come directly from `@tenphi/tasty`.
+- **`Aria*Props` from `react-aria` silently resolve to `any`.** `tsconfig.json` sets `preserveSymlinks: true`, so TS resolves `react-aria`'s re-exports from the symlink path and never finds the `@react-aria/*` subpackages (they are not direct dependencies); `skipLibCheck` then hides the failure. Consequences: `interface X extends AriaFooProps` contributes **no** members (`keyof X` drops them), while `Omit<AriaFooProps, …>` becomes an index signature that accepts *anything*. Either way those props are unchecked. So declare the Aria props a component genuinely supports — see `ToggleSelectionProps` in `src/shared/form.ts`, which restores `onChange` for `Switch`/`Checkbox`. Removing `preserveSymlinks` is the real fix but surfaces ~320 previously-hidden errors across ~60 files, so it needs its own migration.
 
 ## Testing
 

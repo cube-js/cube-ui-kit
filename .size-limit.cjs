@@ -31,12 +31,13 @@ module.exports = [
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // 121.38 kB at the time of writing. Raised from 118 kB for Tasty v3, which
-    // costs +3.77 kB here: its new dev diagnostics (directional syntax, handler
-    // displacement, chunk conflicts) ship in every bundle, because `isDevEnv()`
-    // is evaluated at runtime so one build serves dev and production. The
-    // previous ~370 B of headroom had no room for it. Headroom stays small so
-    // real bloat still trips the budget.
+    // 121.79 kB at the time of writing, measured on this branch merged with main.
+    // Raised from main's 119 kB for Tasty v3. Two increases stack here: main had
+    // already gone 118 -> 119 kB for the ~400 B that `@tenphi/tasty` 2.11.0 ->
+    // 2.11.2 added, and v3 costs a further ~3.8 kB — its new dev diagnostics
+    // (directional syntax, handler displacement, chunk conflicts) ship in every
+    // bundle, because `isDevEnv()` is evaluated at runtime so one build serves
+    // dev and production. Headroom stays small so real bloat still trips.
     limit: '123kB',
   },
 ];

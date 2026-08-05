@@ -1,5 +1,116 @@
 # @cube-dev/ui-kit
 
+## 0.154.0
+
+### Minor Changes
+
+- [#1279](https://github.com/cube-js/cube-ui-kit/pull/1279) [`296e8ae8`](https://github.com/cube-js/cube-ui-kit/commit/296e8ae8c16e7b162b37ec680028d575bb8d018a) Thanks [@tenphi](https://github.com/tenphi)! - Add period pickers — `WeekPicker`, `MonthPicker`, `QuarterPicker`, and `YearPicker` — mirroring Ant Design's `DatePicker picker="week|month|quarter|year"` feature. Each selects a whole calendar period rather than a specific day and is exposed as its own component, all sharing one internal `PeriodPicker` base.
+
+  The value is always a single `CalendarDate` (from `@internationalized/date`) snapped to the start of the period: week → first day of the week (locale-aware), month → the 1st, quarter → the 1st of the quarter's first month, year → January 1st. The field renders a compact label (`2026-W33`, `2026-08`, `2026-Q3`, `2026`), overridable via the `formatValue` prop.
+
+  ```tsx
+  import { MonthPicker, QuarterPicker, WeekPicker, YearPicker } from '@cube-dev/ui-kit';
+
+  <MonthPicker onChange={onChange} />
+  <QuarterPicker onChange={onChange} minValue={min} maxValue={max} />
+  ```
+
+  Built on the existing DatePicker chrome (`DateInputBase` + `DialogTrigger`/`Dialog`), so they inherit field labeling, validation, sizes, and the mobile tray. React Aria has no month/quarter/year/week panels, so those are custom, while the week panel reuses the React Aria day grid with an added week-number column and full-week highlight (behind a new, additive `pickerMode` on the internal `Calendar`/`CalendarGrid`, leaving existing `DatePicker`/`RangeCalendar` behavior unchanged).
+
+## 0.153.0
+
+### Minor Changes
+
+- [#1277](https://github.com/cube-js/cube-ui-kit/pull/1277) [`1de5e56f`](https://github.com/cube-js/cube-ui-kit/commit/1de5e56f179a9fda4ff9dffbfb5c3c5aaee0d41f) Thanks [@tenphi](https://github.com/tenphi)! - Make the color palette tunable at runtime.
+
+  ```ts
+  setPaletteConfig({
+    hue: 210, // accent hue — the brand
+    baseHue: 60, // neutral chrome hue; inherits `hue` when unset
+    saturation: 72,
+    themes: { danger: { hue: 12 }, code: { saturation: 60 } },
+    pastel: false,
+    contrastLevel: "auto",
+  });
+  ```
+
+  Hue is split into two zones: `hue` drives the **accent** zone (the `accent-*` family, `primary` / `purple` / `special`, plus `focus`, the loading faces and the disabled chip) and `baseHue` drives the **base** zone (the neutral chrome — `surface` and its ladder, the `surface-text*` ramp, `border`, `placeholder`). `baseHue` inherits `hue`, so the chrome keeps its faint brand tint unless you decouple it. Only the `default` theme is affected; a colored theme's tinted `surface` deliberately follows its own hue, because a danger banner should read as red.
+
+  Saturation is deliberately _not_ split: it is one seed per theme, and each color's `saturation` is a 0–1 factor of it, so moving it rescales the palette while keeping the designed proportions between a subtle surface tint and a saturated accent.
+
+  Each status theme (`success` / `danger` / `warning` / `note`) re-seeds hue and saturation independently. `pastel` and `contrastLevel` are global.
+
+  `setPaletteConfig()` **replaces**, like `useState` — the config you pass is the config, resolved against the shipped defaults. Nothing accumulates, so removing a customization means removing it from the object, re-applying the same config twice does the same thing as once, and `<Root palette>` can un-set a field by no longer passing it. To change one field of the config already in place, pass an updater; it receives the config as written, sparse, so spreading it preserves what inherits:
+
+  ```ts
+  setPaletteConfig((config) => ({ ...config, hue: 235 }));
+  ```
+
+  New exports: `setPaletteConfig`, `getPaletteConfig`, `getPaletteConfigInput`, `resolvePaletteConfig`, `resetPaletteConfig`, `subscribePaletteConfig`, `invalidatePaletteTokens`, `usePaletteConfig`, `usePaletteVersion`, `getPalette`, `DEFAULT_PALETTE_CONFIG`, and the types `PaletteConfig` / `ResolvedPaletteConfig` / `PaletteThemeSeed` / `PaletteCodeSeed` / `PaletteThemeName`, plus `getCodeTheme`. `<Root>` gains an equivalent `palette` prop, applied during render so the first paint is already correct.
+
+  **Inherited vs pinned.** Unset fields inherit, so `baseHue` tracks `hue` and `themes.<status>.saturation` tracks `saturation` until something writes them — they are not linked, they just have no value of their own yet. Writing the field pins it; leaving it out unpins it. `getPaletteConfig()` resolves everything and so cannot tell you which is which; `getPaletteConfigInput()` returns the sparse config as set, for settings UIs that need to show an inherited value as inherited — and it is what a `setPaletteConfig` updater is handed.
+
+  **Region previews.** `renderColorTokens({ …config, scheme, highContrast })` resolves the palette for one config and one scheme into flat literal values, ready to apply to a subtree through a tasty `tokens` prop:
+
+  ```tsx
+  <Block
+    tokens={renderColorTokens({ hue: 210, scheme: "dark" })}
+    fill="#surface"
+  >
+    …renders in that theme, inside a light page…
+  </Block>
+  ```
+
+  The document palette emits state maps (`@dark` / `@hc`), so a page can only ever show one scheme at a time; collapsing it to a chosen scheme is what lets several themes coexist — a theme picker, or a dark panel in a light page. Config fields layer over the current config — the one place that differs from `setPaletteConfig` — so `{ scheme: 'dark' }` previews the active theme in dark. A preview means "the theme in use, but in dark", so the fields it does not mention come from the live palette rather than from the defaults. `resolvePaletteConfig()` layers the same way. Nothing is applied globally. Aliases, shadow tokens and scrollbar colors ride along by reference so they re-resolve against the region rather than freezing to the outer theme. `renderPaletteTokens` is the same without those, and `resolvePaletteConfig` resolves a partial without applying it.
+
+  A mounted `<Root>` re-injects the token block automatically when the config changes — no component re-render is involved, since every color compiles to a CSS custom property.
+
+  **This refactor changes no colors.** Turning the palette into a function of its seeds is output-neutral: with no config set, every token resolves exactly as it did, and a new snapshot test (156 tokens × 4 scheme variants) enforces it. The surface-ladder and themed-border retune in this release is the only intentional color movement.
+
+  Notes:
+
+  - The palette is process-global (Glaze's own config is, and the tokens live in a single `body` rule), so `<Root palette>` is a convenience wrapper over `setPaletteConfig()`, not a per-tree scope. Under SSR, apply it in code that runs on both server and client — per-request palettes are not supported.
+  - The `code-*` syntax family is now its own Glaze theme with its own seed, so neither the brand hue nor the palette saturation reaches it. Every `code-*` hue is absolute (a re-seeded brand can no longer collide string literals with `#code-number` at 156°), and the saturation is fixed at `80` rather than inheriting `saturation`, so muting the palette cannot wash out a code block. Tune it with `themes.code.saturation`; the tokens stay adaptive, keeping their `['AA','AAA']` floor against the real surface in every scheme. Resolved values at the default config are unchanged.
+  - A numeric `contrastLevel` removes the high-contrast tier entirely, so `<html data-contrast="high">` and `prefers-contrast: more` stop having an effect while one is set. `pastel: true` changes every resolved color by design. Both are documented in the new `Getting Started/Theming` page.
+
+### Patch Changes
+
+- [#1277](https://github.com/cube-js/cube-ui-kit/pull/1277) [`1de5e56f`](https://github.com/cube-js/cube-ui-kit/commit/1de5e56f179a9fda4ff9dffbfb5c3c5aaee0d41f) Thanks [@tenphi](https://github.com/tenphi)! - Update `@tenphi/glaze` 1.2.0 → 1.3.0. **Resolved colors are unchanged**: every token was dumped in all four scheme variants (`''`, `@dark`, `@hc`, `@dark & @hc`) and diffed against 1.2.0 — byte-identical.
+
+  1.3.0 adds the `contrastLevel` config field (a manual 0–100 contrast level replacing the two-tier high-contrast model, where levels 0 and 100 reproduce the normal and high-contrast output exactly), the `resolveContrastForLevel()` export, and the `preferInitial` contrast-solver option. Nothing existing changed behavior.
+
+  A new snapshot spec (`src/tokens/palette.test.ts`) pins the resolved palette — 156 tokens across four scheme variants — so a future Glaze bump or seed retune cannot move colors silently.
+
+- [#1277](https://github.com/cube-js/cube-ui-kit/pull/1277) [`1de5e56f`](https://github.com/cube-js/cube-ui-kit/commit/1de5e56f179a9fda4ff9dffbfb5c3c5aaee0d41f) Thanks [@tenphi](https://github.com/tenphi)! - Update `@tenphi/tasty` 2.11.0 → 2.11.2, which fixes global-style hook behavior. `useGlobalStyles` now keys its injection slots per root instead of in one module-level map, and the SSR / RSC collectors treat an `id`-keyed entry as replaceable rather than deduplicating it by content.
+
+  That matters for the runtime-tunable palette: `<Root>` injects the token block as `useGlobalStyles('body', …, { id: 'cube-ui-kit-tokens' })`, so re-seeding the palette now replaces the previous block correctly on the server and in shadow roots, not just on the client.
+
+  The bump adds ~400 B to the tree-shaken `Button` entry, so its `size-limit` budget moved 118 kB → 119 kB.
+
+- [#1277](https://github.com/cube-js/cube-ui-kit/pull/1277) [`1de5e56f`](https://github.com/cube-js/cube-ui-kit/commit/1de5e56f179a9fda4ff9dffbfb5c3c5aaee0d41f) Thanks [@tenphi](https://github.com/tenphi)! - Add an optional `scheme` prop to `CubeLogo` / `CubeFullLogo`.
+
+  The mark is two drawings swapped by the `@dark` state, which is resolved against the document. `scheme="light" | "dark"` pins one of them for cases where the background is known but the document scheme does not describe it — a fixed-dark panel in a light app, an exported image, or a region themed through `tokens` (which overrides token _values_, and so cannot reach a state). Omitting it keeps today's behaviour: the CSS swap, with no re-render and correct SSR.
+
+- [#1277](https://github.com/cube-js/cube-ui-kit/pull/1277) [`1de5e56f`](https://github.com/cube-js/cube-ui-kit/commit/1de5e56f179a9fda4ff9dffbfb5c3c5aaee0d41f) Thanks [@tenphi](https://github.com/tenphi)! - Retune the surface ladder, the themed borders and the radio mark.
+
+  - `#surface-2`, `#surface-3` and `#surface-4` gain wider high-contrast tone pairs (`['-2','-4']`, `['-4','-8']`, `['-6','-12']`), so nested panels stay distinguishable when a user asks for more contrast. The tinted `<theme>-surface` widens the same way.
+  - `#border` deepens in high contrast too (`['-10','-30']`).
+  - The tinted `<theme>-border` used by OUTLINE-variant items drops from `saturation: 0.5` to `0.3` and takes the same wider HC pair, so a themed border reads as a border rather than a second accent.
+  - The checked `Radio` mark moves from `#primary` to `#primary-text`, matching the `#danger-text` / `#success-text` its own invalid and valid states already used. `#primary` is a fixed brand fill that barely moves between schemes; `#primary-text` is contrast-solved against the surface, so the dot lightens in dark (L 0.54 → 0.76) and in high contrast instead of staying a mid-tone purple.
+  - `Alert` borders now use `#<theme>-border` instead of a 20%-alpha accent fill, which is what makes the themed borders consistent between alerts and outline items. The `special` alert border moves to `#primary-border` for the same reason.
+
+  Scope, measured across all 156 tokens in all four scheme variants: **68 tokens moved** — 68 in `@dark & @hc` and 62 in `@hc`. Only **six** move in the normal and dark schemes, and they are exactly the themed borders (`#primary-border`, `#purple-border`, `#success-border`, `#danger-border`, `#warning-border`, `#note-border`), from the saturation change. Everything else is high-contrast only. No token was added or removed, and the `code-*` family does not move at all.
+
+- [#1277](https://github.com/cube-js/cube-ui-kit/pull/1277) [`1de5e56f`](https://github.com/cube-js/cube-ui-kit/commit/1de5e56f179a9fda4ff9dffbfb5c3c5aaee0d41f) Thanks [@tenphi](https://github.com/tenphi)! - Fix `onChange` on `Switch` and `Checkbox` not typechecking in controlled mode.
+
+  `CubeSwitchProps` / `CubeCheckboxProps` were missing `onChange`, `isSelected` and `defaultSelected` entirely, so every controlled call site needed a `@ts-expect-error`. Root cause: `tsconfig.json` sets `preserveSymlinks: true`, so TypeScript resolves `react-aria`'s type re-exports from the symlink path and never finds the `@react-aria/*` subpackages (they are not direct dependencies); `skipLibCheck` then hides the failure and every `Aria*Props` silently becomes `any`. Extending an `any` base contributes no members, which is why exactly these props vanished.
+
+  The selection contract is now declared explicitly as `ToggleSelectionProps` (`src/shared/form.ts`) and mixed into both components, restoring real type checking — a wrong handler signature now fails again. Four `@ts-expect-error` suppressions were removed (`Disclosure` and `Tree` internals plus the theming stories), and `Checkbox` no longer types its non-DOM `onChange` onto the `<label>` element it spreads props onto.
+
+  `Radio` deliberately keeps no `onChange`: in React Aria a single radio has none — selection is owned by `Radio.Group`.
+
+  Removing `preserveSymlinks` is the real fix, but it surfaces ~320 previously-hidden type errors across ~60 files, so it needs its own migration. The cause is documented in `AGENTS.md` and `tsconfig.json` so the next person does not re-diagnose it.
+
 ## 0.152.0
 
 ### Minor Changes
