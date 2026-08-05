@@ -1,5 +1,6 @@
 import { getWeeksInMonth } from '@internationalized/date';
 import { tasty } from '@tenphi/tasty';
+import { useState } from 'react';
 import { useCalendarGrid, useLocale } from 'react-aria';
 
 import { getWeekNumber } from '../../fields/DatePicker/period';
@@ -32,6 +33,9 @@ export function CalendarGrid({ state, pickerMode = 'day', ...props }) {
   let weeksInMonth = getWeeksInMonth(state.visibleRange.start, locale);
   let showWeekNumbers = pickerMode === 'week';
 
+  // In week mode, hovering any day highlights the whole week row.
+  let [hoveredWeek, setHoveredWeek] = useState<number | null>(null);
+
   return (
     <TableElement {...gridProps}>
       <thead data-element="Head" {...headerProps}>
@@ -46,9 +50,19 @@ export function CalendarGrid({ state, pickerMode = 'day', ...props }) {
         {[...new Array(weeksInMonth).keys()].map((weekIndex) => {
           let datesInWeek = state.getDatesInWeek(weekIndex);
           let firstDate = datesInWeek.find(Boolean);
+          let isRowHovered = showWeekNumbers && hoveredWeek === weekIndex;
 
           return (
-            <tr key={weekIndex} data-element="Row">
+            <tr
+              key={weekIndex}
+              data-element="Row"
+              onMouseEnter={
+                showWeekNumbers ? () => setHoveredWeek(weekIndex) : undefined
+              }
+              onMouseLeave={
+                showWeekNumbers ? () => setHoveredWeek(null) : undefined
+              }
+            >
               {showWeekNumbers && (
                 <td data-element="WeekNumber" aria-hidden="true">
                   {firstDate ? getWeekNumber(firstDate, locale) : ''}
@@ -61,6 +75,7 @@ export function CalendarGrid({ state, pickerMode = 'day', ...props }) {
                     state={state}
                     date={date}
                     selectedRange={props.selectedRange}
+                    rangeHover={isRowHovered}
                   />
                 ) : (
                   <td key={i} />
