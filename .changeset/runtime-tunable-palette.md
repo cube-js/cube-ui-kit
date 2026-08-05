@@ -19,11 +19,17 @@ Hue is split into two zones: `hue` drives the **accent** zone (the `accent-*` fa
 
 Saturation is deliberately *not* split: it is one seed per theme, and each color's `saturation` is a 0–1 factor of it, so moving it rescales the palette while keeping the designed proportions between a subtle surface tint and a saturated accent.
 
-Each status theme (`success` / `danger` / `warning` / `note`) re-seeds hue and saturation independently. `pastel` and `contrastLevel` are global. Fields merge like `glaze.configure()`, and fields left unset keep inheriting.
+Each status theme (`success` / `danger` / `warning` / `note`) re-seeds hue and saturation independently. `pastel` and `contrastLevel` are global.
+
+`setPaletteConfig()` **replaces**, like `useState` — the config you pass is the config, resolved against the shipped defaults. Nothing accumulates, so removing a customization means removing it from the object, re-applying the same config twice does the same thing as once, and `<Root palette>` can un-set a field by no longer passing it. To change one field of the config already in place, pass an updater; it receives the config as written, sparse, so spreading it preserves what inherits:
+
+```ts
+setPaletteConfig((config) => ({ ...config, hue: 235 }));
+```
 
 New exports: `setPaletteConfig`, `getPaletteConfig`, `getPaletteConfigInput`, `resolvePaletteConfig`, `resetPaletteConfig`, `subscribePaletteConfig`, `invalidatePaletteTokens`, `usePaletteConfig`, `usePaletteVersion`, `getPalette`, `DEFAULT_PALETTE_CONFIG`, and the types `PaletteConfig` / `ResolvedPaletteConfig` / `PaletteThemeSeed` / `PaletteCodeSeed` / `PaletteThemeName`, plus `getCodeTheme`. `<Root>` gains an equivalent `palette` prop, applied during render so the first paint is already correct.
 
-**Inherited vs pinned.** Unset fields inherit, so `baseHue` tracks `hue` and `themes.<status>.saturation` tracks `saturation` until something writes them — they are not linked, they just have no value of their own yet. Writing the field pins it; passing `undefined` clears the pin so it inherits again. `getPaletteConfig()` resolves everything and so cannot tell you which is which; `getPaletteConfigInput()` returns the sparse config as set, for settings UIs that need to show an inherited value as inherited.
+**Inherited vs pinned.** Unset fields inherit, so `baseHue` tracks `hue` and `themes.<status>.saturation` tracks `saturation` until something writes them — they are not linked, they just have no value of their own yet. Writing the field pins it; leaving it out unpins it. `getPaletteConfig()` resolves everything and so cannot tell you which is which; `getPaletteConfigInput()` returns the sparse config as set, for settings UIs that need to show an inherited value as inherited — and it is what a `setPaletteConfig` updater is handed.
 
 **Region previews.** `renderColorTokens({ …config, scheme, highContrast })` resolves the palette for one config and one scheme into flat literal values, ready to apply to a subtree through a tasty `tokens` prop:
 
@@ -33,7 +39,7 @@ New exports: `setPaletteConfig`, `getPaletteConfig`, `getPaletteConfigInput`, `r
 </Block>
 ```
 
-The document palette emits state maps (`@dark` / `@hc`), so a page can only ever show one scheme at a time; collapsing it to a chosen scheme is what lets several themes coexist — a theme picker, or a dark panel in a light page. Config fields merge over the current config, so `{ scheme: 'dark' }` previews the active theme in dark. Nothing is applied globally. Aliases, shadow tokens and scrollbar colors ride along by reference so they re-resolve against the region rather than freezing to the outer theme. `renderPaletteTokens` is the same without those, and `resolvePaletteConfig` resolves a partial without applying it.
+The document palette emits state maps (`@dark` / `@hc`), so a page can only ever show one scheme at a time; collapsing it to a chosen scheme is what lets several themes coexist — a theme picker, or a dark panel in a light page. Config fields layer over the current config — the one place that differs from `setPaletteConfig` — so `{ scheme: 'dark' }` previews the active theme in dark. A preview means "the theme in use, but in dark", so the fields it does not mention come from the live palette rather than from the defaults. `resolvePaletteConfig()` layers the same way. Nothing is applied globally. Aliases, shadow tokens and scrollbar colors ride along by reference so they re-resolve against the region rather than freezing to the outer theme. `renderPaletteTokens` is the same without those, and `resolvePaletteConfig` resolves a partial without applying it.
 
 A mounted `<Root>` re-injects the token block automatically when the config changes — no component re-render is involved, since every color compiles to a CSS custom property.
 

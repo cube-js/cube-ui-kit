@@ -124,7 +124,9 @@ export interface CubeRootProps extends BaseProps {
   tokens?: { [key: string]: string };
   /**
    * Tune the generated color palette — brand hue / saturation, per-status theme
-   * seeds, `pastel`, and `contrastLevel`. Omitted fields keep their default.
+   * seeds, `pastel`, and `contrastLevel`. Omitted fields take their default, so
+   * this prop describes the whole palette and dropping a field from it drops the
+   * customization.
    *
    * The palette is global process state, so this is a declarative wrapper over
    * `setPaletteConfig()`; both drive the same store, and the last write wins.

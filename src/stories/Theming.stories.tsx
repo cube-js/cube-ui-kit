@@ -258,7 +258,7 @@ function BrandControls() {
       <HueSlider
         label={`Accent hue — ${palette.hue}°`}
         value={Math.round(palette.hue)}
-        onChange={(hue) => setPalette({ hue })}
+        onChange={(hue) => setPalette((config) => ({ ...config, hue }))}
       />
       <Section>
         <HueSlider
@@ -266,14 +266,19 @@ function BrandControls() {
             basePinned ? '' : ' (inherited)'
           }`}
           value={Math.round(palette.baseHue)}
-          onChange={(baseHue) => setPalette({ baseHue })}
+          onChange={(baseHue) =>
+            setPalette((config) => ({ ...config, baseHue }))
+          }
         />
         <Switch
           isSelected={!basePinned}
           onChange={(link) =>
             // Clearing the field is what re-links it: an explicit `undefined`
             // means "inherit again", where omitting it would mean "keep 60".
-            setPalette({ baseHue: link ? undefined : palette.baseHue })
+            setPalette((config) => ({
+              ...config,
+              baseHue: link ? undefined : palette.baseHue,
+            }))
           }
         >
           Follow the accent hue
@@ -284,11 +289,13 @@ function BrandControls() {
         minValue={0}
         maxValue={100}
         value={palette.saturation}
-        onChange={(saturation) => setPalette({ saturation })}
+        onChange={(saturation) =>
+          setPalette((config) => ({ ...config, saturation }))
+        }
       />
       <Switch
         isSelected={palette.pastel}
-        onChange={(pastel) => setPalette({ pastel })}
+        onChange={(pastel) => setPalette((config) => ({ ...config, pastel }))}
       >
         Pastel
       </Switch>
@@ -300,16 +307,19 @@ type StatusThemeName = Exclude<PaletteThemeName, 'code'>;
 
 const STATUS_THEMES = ['success', 'danger', 'warning', 'note'] as const;
 
-/** Patch one status theme's seed without naming the other three. */
-function statusSeed(
-  name: StatusThemeName,
-  seed: PaletteThemeSeed,
-): PaletteConfig {
-  const themes: Partial<Record<StatusThemeName, PaletteThemeSeed>> = {
-    [name]: seed,
-  };
-
-  return { themes };
+/**
+ * Patch one status theme's seed, leaving the rest of the config — and the other
+ * three themes — alone. The setter replaces, so a one-field control has to spread
+ * rather than send a bare `{ themes: { danger: … } }`.
+ */
+function statusSeed(name: StatusThemeName, seed: PaletteThemeSeed) {
+  return (config: PaletteConfig): PaletteConfig => ({
+    ...config,
+    themes: {
+      ...config.themes,
+      [name]: { ...config.themes?.[name], ...seed },
+    },
+  });
 }
 
 function StatusControls() {
@@ -360,9 +370,10 @@ function ContrastControls() {
             // normal palette bit for bit, so the only thing flipping the switch
             // changes is that the high-contrast tier goes away. Starting at 50
             // would recolor the page and hide which of the two effects you got.
-            setPalette({
+            setPalette((config) => ({
+              ...config,
               contrastLevel: manual ? MANUAL_CONTRAST_START : 'auto',
-            })
+            }))
           }
         >
           Manual contrast level
@@ -375,7 +386,9 @@ function ContrastControls() {
           value={
             isManual ? (palette.contrastLevel as number) : MANUAL_CONTRAST_START
           }
-          onChange={(contrastLevel) => setPalette({ contrastLevel })}
+          onChange={(contrastLevel) =>
+            setPalette((config) => ({ ...config, contrastLevel }))
+          }
         />
       </Controls>
       {hasContrastTier() ? (
@@ -741,7 +754,8 @@ function ThemeBuilderControls({
               type="outline"
               size="small"
               onPress={() => {
-                resetPaletteConfig();
+                // No reset first — the setter replaces, so the preset config
+                // is the whole config.
                 setPalette(preset.config);
               }}
             >
@@ -756,19 +770,24 @@ function ThemeBuilderControls({
         <HueSlider
           label={`Accent hue — ${palette.hue}°`}
           value={Math.round(palette.hue)}
-          onChange={(hue) => setPalette({ hue })}
+          onChange={(hue) => setPalette((config) => ({ ...config, hue }))}
         />
         <HueSlider
           label={`Base hue — ${palette.baseHue}°${
             basePinned ? '' : ' (inherited)'
           }`}
           value={Math.round(palette.baseHue)}
-          onChange={(baseHue) => setPalette({ baseHue })}
+          onChange={(baseHue) =>
+            setPalette((config) => ({ ...config, baseHue }))
+          }
         />
         <Switch
           isSelected={!basePinned}
           onChange={(link) =>
-            setPalette({ baseHue: link ? undefined : palette.baseHue })
+            setPalette((config) => ({
+              ...config,
+              baseHue: link ? undefined : palette.baseHue,
+            }))
           }
         >
           Base follows accent
@@ -778,11 +797,13 @@ function ThemeBuilderControls({
           minValue={0}
           maxValue={100}
           value={palette.saturation}
-          onChange={(saturation) => setPalette({ saturation })}
+          onChange={(saturation) =>
+            setPalette((config) => ({ ...config, saturation }))
+          }
         />
         <Switch
           isSelected={palette.pastel}
-          onChange={(pastel) => setPalette({ pastel })}
+          onChange={(pastel) => setPalette((config) => ({ ...config, pastel }))}
         >
           Pastel
         </Switch>
@@ -809,7 +830,10 @@ function ThemeBuilderControls({
           maxValue={100}
           value={palette.themes.code.saturation}
           onChange={(saturation) =>
-            setPalette({ themes: { code: { saturation } } })
+            setPalette((config) => ({
+              ...config,
+              themes: { ...config.themes, code: { saturation } },
+            }))
           }
         />
       </ControlGroup>

@@ -195,9 +195,10 @@ export const DEFAULT_PALETTE_CONFIG: ResolvedPaletteConfig = resolveConfig({});
 // ============================================================================
 
 /**
- * The accumulated *input*, not the resolved config. Keeping the sparse form is
- * what makes inheritance live: a later `setPaletteConfig({ saturation })` still
- * cascades into every theme that never set its own.
+ * The last config *as written*, sparse — not the resolved one. Keeping the sparse
+ * form is what makes inheritance live: a `saturation` with no `themes.danger.
+ * saturation` beside it means danger genuinely follows the palette, rather than
+ * having been frozen at whatever the palette read when it was set.
  */
 let input: PaletteConfig = {};
 let resolved: ResolvedPaletteConfig = DEFAULT_PALETTE_CONFIG;
@@ -210,11 +211,17 @@ function mergeSeed<T extends PaletteThemeSeed | PaletteCodeSeed>(
   patch: T | undefined,
 ): T | undefined {
   if (!base) return patch;
+  // A patch that omits the theme entirely says nothing about it, so the base
+  // survives. Clearing one of its fields is `{ theme: { hue: undefined } }`.
   if (!patch) return base;
 
   return { ...base, ...patch };
 }
 
+/**
+ * Layer a patch over a base config. Used by {@link resolvePaletteConfig} for
+ * previews — *not* by {@link setPaletteConfig}, which replaces.
+ */
 function mergeInput(base: PaletteConfig, patch: PaletteConfig): PaletteConfig {
   const next: PaletteConfig = { ...base, ...patch };
 
@@ -294,30 +301,40 @@ function commit(nextInput: PaletteConfig) {
 }
 
 /**
- * Merge tuning into the current palette config.
+ * Set the palette config.
  *
- * Merges, like `glaze.configure()`: omitted fields keep their current value.
+ * **Replaces**, like `useState` — the config you pass *is* the config, resolved
+ * against the shipped defaults. Nothing accumulates, so a field you leave out is a
+ * field you do not have: dropping a customization means dropping it from the
+ * object, and re-applying the same object twice is the same as applying it once.
+ *
+ * ```ts
+ * setPaletteConfig({ hue: 200, baseHue: 60 });
+ * setPaletteConfig({ hue: 200 }); // baseHue is gone — back to inheriting `hue`
+ * ```
+ *
+ * To adjust one field of the config already in place — a slider in a settings UI —
+ * pass an updater. It receives the config as written, sparse, so spreading it
+ * preserves which fields are pinned and which still inherit:
+ *
+ * ```ts
+ * setPaletteConfig((config) => ({ ...config, hue: 200 }));
+ * ```
+ *
  * The palette is rebuilt lazily on the next token read, and any mounted `<Root>`
  * re-injects the token block — no component re-render is involved, because every
  * color in the kit resolves through a CSS custom property.
- *
- * ```ts
- * setPaletteConfig({ hue: 200, themes: { danger: { hue: 12 } } });
- * ```
- *
- * Omitting a field keeps it; passing `undefined` **clears** it, so it goes back to
- * inheriting (per-theme) or to the shipped default (top level):
- *
- * ```ts
- * setPaletteConfig({ themes: { primary: { saturation: 90 } } }); // pin
- * setPaletteConfig({ themes: { primary: { saturation: undefined } } }); // inherit again
- * ```
  */
-export function setPaletteConfig(config: PaletteConfig): void {
-  commit(mergeInput(input, config));
+export function setPaletteConfig(
+  config: PaletteConfig | ((previous: PaletteConfig) => PaletteConfig),
+): void {
+  commit(typeof config === 'function' ? config(input) : config);
 }
 
-/** Drop all tuning and restore the palette the kit ships with. */
+/**
+ * Drop all tuning and restore the palette the kit ships with. Identical to
+ * `setPaletteConfig({})`; it exists to be readable at a call site.
+ */
 export function resetPaletteConfig(): void {
   commit({});
 }
@@ -349,23 +366,25 @@ export function getPaletteConfig(): ResolvedPaletteConfig {
  * to offer a way back:
  *
  * ```ts
- * const pinned = getPaletteConfigInput().themes?.primary?.saturation !== undefined;
+ * const pinned = getPaletteConfigInput().baseHue !== undefined;
  *
- * // Re-link it to the brand by clearing the field.
- * setPaletteConfig({ themes: { primary: { saturation: undefined } } });
+ * // Re-link it to the brand by dropping the field.
+ * setPaletteConfig(({ baseHue, ...config }) => config);
  * ```
+ *
+ * It is also the value handed to a {@link setPaletteConfig} updater.
  */
 export function getPaletteConfigInput(): PaletteConfig {
   return input;
 }
 
 /**
- * Resolve a partial against the current config **without applying it**.
+ * Resolve a patch **over** the current config, without applying it.
  *
- * Same merge semantics as {@link setPaletteConfig} — omitted fields keep their
- * current value, unset per-theme fields keep inheriting — but the store is not
- * touched and no listener fires. Used to render a palette the app is not
- * actually using, e.g. for a theme preview.
+ * This one layers, unlike {@link setPaletteConfig}: a preview wants "the theme in
+ * use, but in dark", so the fields it does not mention have to come from the live
+ * config rather than from the defaults. The store is not touched and no listener
+ * fires.
  */
 export function resolvePaletteConfig(
   config?: PaletteConfig,
@@ -410,23 +429,28 @@ export function usePaletteVersion(): number {
 }
 
 /**
- * Read and tune the palette from React, `useState`-style.
+ * Read and tune the palette from React, `useState`-style — including the part
+ * where the setter *replaces*. A control that changes one field wants the updater
+ * form, or it will drop every other field:
  *
  * ```tsx
  * const [palette, setPalette] = usePaletteConfig();
  *
  * <HueSlider
  *   value={palette.hue}
- *   onChange={(hue) => setPalette({ hue })}
+ *   onChange={(hue) => setPalette((config) => ({ ...config, hue }))}
  * />
  * ```
+ *
+ * The first element is the *resolved* config, so `palette.hue` is always a number.
+ * The updater's argument is the sparse one — see {@link getPaletteConfigInput}.
  *
  * The config is global process state, so every consumer of this hook — and every
  * mounted `<Root>` — sees the same palette.
  */
 export function usePaletteConfig(): readonly [
   ResolvedPaletteConfig,
-  (config: PaletteConfig) => void,
+  typeof setPaletteConfig,
 ] {
   usePaletteVersion();
 

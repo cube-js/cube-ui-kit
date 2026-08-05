@@ -19,6 +19,7 @@ import {
 } from './palette-config';
 
 import type { Styles, Tokens } from '@tenphi/tasty';
+import type { PaletteConfig } from './palette-config';
 
 type TokenStates = Record<string, string>;
 
@@ -227,16 +228,19 @@ describe('setPaletteConfig', () => {
     expect(getPaletteConfig().themes.warning.saturation).toBe(50);
 
     // …setting it pins it…
-    setPaletteConfig({ themes: { warning: { saturation: 90 } } });
+    setPaletteConfig({
+      saturation: 50,
+      themes: { warning: { saturation: 90 } },
+    });
     expect(getPaletteConfig().themes.warning.saturation).toBe(90);
 
-    // …and it then stays put while the seed keeps moving.
-    setPaletteConfig({ saturation: 30 });
+    // …and it then stays put while the seed keeps moving, as long as the config
+    // carrying it survives — which is what the updater form is for.
+    setPaletteConfig((config) => ({ ...config, saturation: 30 }));
     expect(getPaletteConfig().saturation).toBe(30);
     expect(getPaletteConfig().themes.warning.saturation).toBe(90);
 
-    // Reset drops the pin, so it inherits again.
-    resetPaletteConfig();
+    // Dropping the pin makes it inherit again.
     setPaletteConfig({ saturation: 20 });
     expect(getPaletteConfig().themes.warning.saturation).toBe(20);
   });
@@ -284,25 +288,31 @@ describe('setPaletteConfig', () => {
     unsubscribe();
   });
 
-  it('clears a field when it is passed explicitly as undefined', () => {
+  it('drops a field that the new config leaves out', () => {
     setPaletteConfig({
       saturation: 50,
       themes: { warning: { saturation: 90 } },
     });
     expect(getPaletteConfig().themes.warning.saturation).toBe(90);
 
-    // Back to inheriting the brand, rather than "keep 90".
-    setPaletteConfig({ themes: { warning: { saturation: undefined } } });
+    // Omitting the pin is how you remove it — no `undefined` needed.
+    setPaletteConfig({ saturation: 50 });
 
     expect(getPaletteConfig().themes.warning.saturation).toBe(50);
     expect(getPaletteConfigInput().themes?.warning?.saturation).toBeUndefined();
 
-    // At the top level it falls back to the shipped default.
+    // An explicit `undefined` is equivalent, since neither is a value.
     setPaletteConfig({ saturation: undefined });
 
     expect(getPaletteConfig().saturation).toBe(
       DEFAULT_PALETTE_CONFIG.saturation,
     );
+
+    // Dropping it from inside an updater works the same way.
+    setPaletteConfig({ hue: 200, baseHue: 60 });
+    setPaletteConfig(({ baseHue, ...config }) => config);
+
+    expect(getPaletteConfig().baseHue).toBe(200);
   });
 
   it('cascades a palette-level saturation into themes that set none', () => {
@@ -313,8 +323,11 @@ describe('setPaletteConfig', () => {
 
     // An explicit per-theme value wins and keeps winning as the palette-level
     // value moves again.
-    setPaletteConfig({ themes: { warning: { saturation: 95 } } });
-    setPaletteConfig({ saturation: 55 });
+    setPaletteConfig((config) => ({
+      ...config,
+      themes: { warning: { saturation: 95 } },
+    }));
+    setPaletteConfig((config) => ({ ...config, saturation: 55 }));
 
     expect(getPaletteConfig().themes.warning.saturation).toBe(95);
     expect(getPaletteConfig().themes.danger.saturation).toBe(55);
@@ -349,12 +362,55 @@ describe('setPaletteConfig', () => {
     expect(getCodeTheme().getConfig().pastel).toBe(true);
   });
 
-  it('merges partials instead of replacing the whole config', () => {
+  it('replaces the whole config rather than accumulating', () => {
     setPaletteConfig({ hue: 30 });
     setPaletteConfig({ themes: { note: { hue: 12 } } });
 
+    // The second call did not mention `hue`, so there is no `hue` any more.
+    expect(getPaletteConfig().hue).toBe(DEFAULT_PALETTE_CONFIG.hue);
+    expect(getPaletteConfig().themes.note.hue).toBe(12);
+  });
+
+  it('keeps sibling themes when an updater patches one nested seed', () => {
+    // The shape every one-field control in a settings UI needs: `themes` is one
+    // field, so patching a seed without spreading it drops the other three.
+    setPaletteConfig({ hue: 30, themes: { danger: { hue: 12 } } });
+    setPaletteConfig((config) => ({
+      ...config,
+      themes: { ...config.themes, note: { hue: 200 } },
+    }));
+
+    const { hue, themes } = getPaletteConfig();
+
+    expect(hue).toBe(30);
+    expect(themes.danger.hue).toBe(12);
+    expect(themes.note.hue).toBe(200);
+  });
+
+  it('layers onto the current config from an updater', () => {
+    setPaletteConfig({ hue: 30 });
+    setPaletteConfig((config) => ({
+      ...config,
+      themes: { note: { hue: 12 } },
+    }));
+
     expect(getPaletteConfig().hue).toBe(30);
     expect(getPaletteConfig().themes.note.hue).toBe(12);
+  });
+
+  it('hands the updater the sparse config, not the resolved one', () => {
+    setPaletteConfig({ hue: 30 });
+
+    let seen: PaletteConfig | undefined;
+    setPaletteConfig((config) => {
+      seen = config;
+
+      return config;
+    });
+
+    // `baseHue` inherits `hue`, and the updater has to be able to tell that from
+    // a `baseHue` pinned to 30 — otherwise spreading would silently pin it.
+    expect(seen).toEqual({ hue: 30 });
   });
 
   it('resets to the shipped config', () => {
@@ -462,7 +518,7 @@ describe('code syntax tokens', () => {
     // Every other theme follows the palette-level seed…
     expect(getPaletteConfig().themes.danger.saturation).toBe(30);
     // …and `code` keeps its own even after the palette-level one moves again.
-    setPaletteConfig({ saturation: 70 });
+    setPaletteConfig((config) => ({ ...config, saturation: 70 }));
     expect(getPaletteConfig().themes.code.saturation).toBe(90);
   });
 

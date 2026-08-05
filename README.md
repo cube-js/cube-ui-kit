@@ -61,7 +61,12 @@ scheme, re-resolves from them:
 </Root>
 ```
 
-`setPaletteConfig()` does the same thing imperatively, from anywhere.
+`setPaletteConfig()` does the same thing imperatively, from anywhere. It replaces
+rather than accumulates, like `useState` — pass an updater to change one field:
+
+```ts
+setPaletteConfig((config) => ({ ...config, hue: 235 }));
+```
 
 ## Components
 

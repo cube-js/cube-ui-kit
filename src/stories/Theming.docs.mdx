@@ -38,17 +38,37 @@ value so this stays true.
 | `pastel` | Global. Relaxes the sRGB-safe chroma limit. | `false` |
 | `contrastLevel` | Global. `'auto'`, or a manual `0`–`100` level. | `'auto'` |
 
-Fields merge, like `glaze.configure()` — omitted fields keep their current
-value, and per-theme fields left unset keep inheriting. So this leaves `warning`
-at its explicit saturation while everything else follows the new palette-level
-one:
+### The setter replaces
+
+`setPaletteConfig()` works like `useState`, not like `glaze.configure()`: the
+config you pass **is** the config, resolved against the shipped defaults. Nothing
+accumulates, so removing a customization means removing it from the object:
 
 ```ts
-setPaletteConfig({ themes: { warning: { saturation: 95 } } });
-setPaletteConfig({ saturation: 55 }); // warning stays at 95
+setPaletteConfig({ hue: 200, baseHue: 60 });
+setPaletteConfig({ hue: 200 }); // baseHue is gone — back to inheriting `hue`
 ```
 
-`resetPaletteConfig()` drops all tuning at once.
+That is what makes the config safe to keep in your own state and re-apply: the
+same object twice does the same thing as once, and `<Root palette>` can un-set a
+field by no longer passing it.
+
+To change one field of the config already in place — a slider in a settings UI —
+pass an updater. It receives the config **as written**, sparse, so spreading it
+preserves which fields are pinned and which still inherit:
+
+```ts
+setPaletteConfig((config) => ({ ...config, saturation: 55 }));
+
+// Nested seeds need their own spread, or the other themes go with them.
+setPaletteConfig((config) => ({
+  ...config,
+  themes: { ...config.themes, warning: { saturation: 95 } },
+}));
+```
+
+`resetPaletteConfig()` drops all tuning at once — the same as
+`setPaletteConfig({})`, just easier to read at a call site.
 
 ### Two hue zones
 
@@ -108,13 +128,19 @@ Every per-theme field starts out **inheriting** the palette-level value, so
 tracks `saturation`. Moving the accent hue therefore appears to move the base hue
 too — they are not linked, `baseHue` simply has no value of its own yet.
 
-Writing the field pins it; passing `undefined` clears the pin so it inherits again:
+Writing the field pins it; leaving it out of the config unpins it, so it inherits
+again:
 
 ```ts
 setPaletteConfig({ baseHue: 60 }); // pin
-setPaletteConfig({ hue: 235 }); // baseHue stays at 60
-setPaletteConfig({ baseHue: undefined }); // inherit again → 235
+setPaletteConfig((config) => ({ ...config, hue: 235 })); // baseHue stays at 60
+setPaletteConfig({ hue: 235 }); // baseHue dropped — inherits again → 235
+
+// Same thing from inside an updater, when the rest of the config must survive.
+setPaletteConfig(({ baseHue, ...config }) => config);
 ```
+
+An explicit `baseHue: undefined` is equivalent to omitting it; neither is a value.
 
 `getPaletteConfig()` resolves everything, which loses that distinction — it cannot
 tell you whether `80` was chosen or inherited. `getPaletteConfigInput()` returns the
@@ -224,6 +250,12 @@ removes the conditionality, so several themes can coexist.
 Nothing is applied globally — the live palette and the stored config are
 untouched, so previews are safe to render anywhere.
 
+Note the one place the merge/replace split matters: this call **layers** over the
+live config, unlike `setPaletteConfig()`, which replaces. A preview means "the
+theme in use, but in dark", so the fields it does not mention have to come from
+the current palette rather than from the defaults. `resolvePaletteConfig()` layers
+the same way.
+
 Notes:
 
 - Real components work inside a region. Every color in the kit compiles to a CSS
@@ -265,8 +297,11 @@ import {
   usePaletteConfig,
 } from '@cube-dev/ui-kit';
 
-// In React — `useState`-style, and re-renders on change.
+// In React — `useState`-style (including the replacing setter), and re-renders
+// on change. `palette` is the resolved config; the updater's argument is sparse.
 const [palette, setPalette] = usePaletteConfig();
+
+setPalette((config) => ({ ...config, hue: 200 }));
 
 // Outside React.
 getPaletteConfig(); // every field resolved to a concrete value
@@ -289,6 +324,10 @@ paint is already correct:
   <App />
 </Root>
 ```
+
+Because the setter replaces, the prop describes the **whole** palette: drop a
+field from the object and that customization goes away on the next render, which
+is what you want from a declarative prop.
 
 This is a convenience wrapper over `setPaletteConfig()`, not a separate scope.
 **The palette is process-global** — Glaze's own config is, and so is the single
