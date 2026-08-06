@@ -1,5 +1,40 @@
 # @cube-dev/ui-kit
 
+## 0.155.0
+
+### Minor Changes
+
+- [#1275](https://github.com/cube-js/cube-ui-kit/pull/1275) [`2bfe3a80`](https://github.com/cube-js/cube-ui-kit/commit/2bfe3a80f3febeebdaa7f01fe8ae73ac0c3ca5fb) Thanks [@tenphi](https://github.com/tenphi)! - Remove the `block` prop from `Text` and the `inline` prop from `Title`. Use `display` instead:
+
+  ```diff
+  - <Text block>…</Text>
+  + <Text display="block">…</Text>
+
+  - <Title inline>…</Title>
+  + <Title display="inline">…</Title>
+  ```
+
+  Both were inherited from Tasty's `BaseProps` until v3 dropped them, at which point the UI Kit re-declared them locally. `display` already covers the use case on every Tasty component, so a bespoke boolean per component is redundant.
+
+  `inline` on `Title` was already inert — it was destructured and discarded, and `TitleElement` hardcodes `display: 'block'`. Removing it changes nothing at runtime.
+
+  `block` on `Text` was real: it drove a `block` mod feeding the `'ellipsis | block'` display branch. That branch is now just `ellipsis`, so `<Text ellipsis>` still renders as a block. Note that passing `display` replaces the whole default state map, so `<Text ellipsis display="inline">` will not force block — the explicit value wins, which is the intent.
+
+  Proper `isBlock` / `isInline` props may follow later where they earn their place; this is deliberately not that.
+
+- [#1275](https://github.com/cube-js/cube-ui-kit/pull/1275) [`2bfe3a80`](https://github.com/cube-js/cube-ui-kit/commit/2bfe3a80f3febeebdaa7f01fe8ae73ac0c3ca5fb) Thanks [@tenphi](https://github.com/tenphi)! - Upgrade to Tasty v3 (`@tenphi/tasty` `^3.0.0`) and `@tenphi/eslint-plugin-tasty` `^1.0.0`, applying the required migration.
+
+  - `getCssTextForNode` -> `getCSSTextForNode` (test helpers and the ESLint-plugin probe).
+  - `Props` is no longer exported by Tasty — it was never a Tasty concept, just `Record<string, any>`. Declared locally in `src/props.ts` and still re-exported from the package root, so the UI Kit's own public API is unchanged.
+
+  One style value needed changing: `Styles.stories.tsx` had `inset: '2x bottom 4x left'`, the positional form v3 removed, now `inset: '2x bottom, 4x left'`. Verified against the v3 runtime that the comma form reproduces what v2 rendered (`auto auto 16px 32px`) — the old form now drops the `4x` and renders `auto auto 16px 16px`.
+
+  Also adds 12 color tokens to `tasty.config.ts` that were declared in `src/tasty-augment.d.ts` but missing from the config the ESLint plugin reads, so they were reported as unknown.
+
+  The ESLint plugin's v1 lints Storybook `args.styles` and `styles={{…}}` JSX props for the first time. That is how the `inset` violation above was found — story files had been silently unchecked.
+
+  Both size budgets are raised: `All` from 460 kB to 462 kB (it went over by 161 B) and tree-shaking from 118 kB to 123 kB. Tasty v3 costs +3.77 kB on that entry — its new dev diagnostics ship in every bundle, since `isDevEnv()` is evaluated at runtime so one build serves both modes — and the entry only had ~370 B of headroom.
+
 ## 0.154.1
 
 ### Patch Changes
