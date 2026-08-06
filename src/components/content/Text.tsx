@@ -35,13 +35,6 @@ export interface CubeTextProps<T extends TagName = TagName>
     BaseStyleProps,
     ColorStyleProps {
   /**
-   * Whether the text is rendered as a block.
-   *
-   * Applied as a mod. Previously inherited from Tasty's `BaseProps`, which
-   * dropped it in v3 as an unconsumed prop — the UI Kit does consume it.
-   */
-  block?: boolean;
-  /**
    * Whether the text uses the monospace font.
    */
   monospace?: boolean;
@@ -67,7 +60,7 @@ const TextElement = tasty({
   styles: {
     display: {
       '': 'inline',
-      'ellipsis | block': 'block',
+      ellipsis: 'block',
     },
     margin: 0,
     padding: 0,
@@ -93,7 +86,7 @@ const TextElement = tasty({
 const Text = forwardRef(function CubeText(allProps: CubeTextProps, ref) {
   allProps = useSlotProps(allProps, 'text');
 
-  const { as, qa, block, ellipsis, nowrap, ...props } = allProps;
+  const { as, qa, ellipsis, nowrap, ...props } = allProps;
   const styles = extractStyles(props, STYLE_LIST, {}, TEXT_PROP_MAP);
 
   return (
@@ -103,7 +96,6 @@ const Text = forwardRef(function CubeText(allProps: CubeTextProps, ref) {
       mods={{
         nowrap,
         ellipsis: !!ellipsis,
-        block: !!block,
       }}
       {...filterBaseProps(props, { eventProps: true })}
       ref={ref}
