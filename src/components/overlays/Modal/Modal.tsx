@@ -1,5 +1,5 @@
 import { useObjectRef } from '@react-aria/utils';
-import { BaseProps, Props, Styles, tasty } from '@tenphi/tasty';
+import { BaseProps, Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode } from 'react';
 import { useModal, useOverlay, usePreventScroll } from 'react-aria';
 
@@ -8,6 +8,8 @@ import { mergeProps } from '../../../utils/react';
 import { Overlay } from './Overlay';
 import { ModalProps, TransitionState, WithCloseBehavior } from './types';
 import { Underlay } from './Underlay';
+
+import type { Props } from '../../../props';
 
 export const OVERLAY_WRAPPER_STYLES: Styles = {
   position: 'fixed',

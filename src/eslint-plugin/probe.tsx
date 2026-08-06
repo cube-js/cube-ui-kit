@@ -1,4 +1,4 @@
-import { getCssTextForNode } from '@tenphi/tasty';
+import { getCSSTextForNode } from '@tenphi/tasty';
 import { ReactElement } from 'react';
 
 import { cleanup, renderWithRoot } from '../test';
@@ -65,7 +65,7 @@ export function probe(ui: ReactElement): Probe {
   try {
     return {
       markup: canonicalizeIds(baseElement.innerHTML),
-      css: canonicalizeIds(getCssTextForNode(baseElement)),
+      css: canonicalizeIds(getCSSTextForNode(baseElement)),
     };
   } finally {
     // `cleanup()`, not `unmount()`: unmount tears down the React tree but leaves

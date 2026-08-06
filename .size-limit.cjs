@@ -20,22 +20,28 @@ module.exports = [
         }),
       );
     },
-    // 451.32 kB at the time of writing. Raised from 450 kB on this branch:
-    // the OKHST migration plus the components main added (InfoBadge, the
-    // form validation module) pushed it just over. Headroom is deliberately
-    // small so real bloat still trips the budget.
-    limit: '460kB',
+    // 460.16 kB at the time of writing. Raised from 460 kB for Tasty v3, which
+    // it exceeded by 161 B — its new dev diagnostics ship in every bundle,
+    // because `isDevEnv()` is evaluated at runtime so one build serves dev and
+    // production. Headroom is deliberately small so real bloat still trips the
+    // budget.
+    //
+    // Note when checking locally: `size-limit` bundles the built `./dist`, it
+    // does not build. Run `pnpm build` first or you will measure a stale bundle.
+    limit: '462kB',
   },
   {
     name: 'Tree shaking (just a Button)',
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // 118.03 kB at the time of writing. The predicted trip happened: the
-    // `@tenphi/tasty` 2.11.0 → 2.11.2 bump added ~400 B here (measured by
-    // rebuilding against both versions — nothing in the UI Kit itself moved),
-    // which ate the previous 118 kB budget's ~370 B of headroom. Raised to
-    // 119 kB, deliberately keeping headroom small so real bloat still trips.
-    limit: '119kB',
+    // 121.79 kB at the time of writing, measured on this branch merged with main.
+    // Raised from main's 119 kB for Tasty v3. Two increases stack here: main had
+    // already gone 118 -> 119 kB for the ~400 B that `@tenphi/tasty` 2.11.0 ->
+    // 2.11.2 added, and v3 costs a further ~3.8 kB — its new dev diagnostics
+    // (directional syntax, handler displacement, chunk conflicts) ship in every
+    // bundle, because `isDevEnv()` is evaluated at runtime so one build serves
+    // dev and production. Headroom stays small so real bloat still trips.
+    limit: '123kB',
   },
 ];

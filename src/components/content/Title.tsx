@@ -62,7 +62,7 @@ const TitleElement = tasty({
 });
 
 const Title = forwardRef(function CubeTitle(
-  { qa, as, inline, nowrap, ellipsis, level, ...props }: CubeTitleProps,
+  { qa, as, nowrap, ellipsis, level, ...props }: CubeTitleProps,
   ref,
 ) {
   const propsWithSlots = useSlotProps(props, 'title');
@@ -79,7 +79,6 @@ const Title = forwardRef(function CubeTitle(
         nowrap,
         ellipsis,
       }}
-      inline={inline}
       {...filterBaseProps(propsWithSlots, { eventProps: true })}
       ref={ref}
       styles={styles}

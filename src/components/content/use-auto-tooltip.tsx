@@ -1,4 +1,3 @@
-import { Props } from '@tenphi/tasty';
 import {
   HTMLAttributes,
   ReactNode,
@@ -15,6 +14,8 @@ import {
   CubeTooltipProviderProps,
   TooltipProvider,
 } from '../overlays/Tooltip/TooltipProvider';
+
+import type { Props } from '../../props';
 
 export type AutoTooltipValue =
   | string

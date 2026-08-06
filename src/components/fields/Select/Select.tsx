@@ -12,7 +12,6 @@ import {
   ColorStyleProps,
   OUTER_STYLES,
   OuterStyleProps,
-  Props,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -75,6 +74,8 @@ import {
 } from '../../form';
 import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
+
+import type { Props } from '../../../props';
 
 const SelectWrapperElement = tasty({
   qa: 'SelectWrapper',

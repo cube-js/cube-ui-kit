@@ -1,4 +1,3 @@
-import { Props } from '@tenphi/tasty';
 import {
   Children,
   cloneElement,
@@ -16,6 +15,7 @@ import { OpenTransitionContext } from './OpenTransitionContext';
 import { WithCloseBehavior } from './types';
 
 import type { OverlayProps } from 'react-aria';
+import type { Props } from '../../../props';
 import type { ReportedPhase } from '../../helpers/DisplayTransition/DisplayTransition';
 
 export interface CubeOverlayProps

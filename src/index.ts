@@ -273,10 +273,10 @@ export type {
   BlockStyleProps,
   ContainerStyleProps,
   BasePropsWithoutChildren,
-  Props,
   FlowStyleProps,
   ShortGridStyles,
 } from '@tenphi/tasty';
+export type { Props } from './props';
 
 // i18n — the UI Kit owns the i18next + react-i18next libraries and the single
 // shared instance. Consumers (e.g. Cube Cloud) import ALL i18n symbols from

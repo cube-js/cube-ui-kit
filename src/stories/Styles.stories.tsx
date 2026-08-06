@@ -88,7 +88,7 @@ export const InsetTopLeftComplexIndent = {
 
   args: {
     styles: {
-      inset: '2x bottom 4x left',
+      inset: '2x bottom, 4x left',
     },
   },
 };
