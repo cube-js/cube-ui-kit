@@ -39,13 +39,15 @@ export interface PaletteThemeSeed {
 }
 
 /**
- * The `code-*` syntax family takes a saturation and nothing else.
+ * The `code-*` syntax family takes a saturation and nothing else — and answers to
+ * nothing else either. This is the one knob that moves it.
  *
  * Its hues are absolute literals by design, so syntax colors never rotate with the
- * brand — strings would collide with numbers the moment the brand went green. And
- * unlike every other theme, its saturation does **not** inherit the palette-level
- * one: the code palette is calibrated once and stays there, so re-seeding the app
- * cannot quietly wash out a code block.
+ * brand — strings would collide with numbers the moment the brand went green. Unlike
+ * every other theme, its saturation does **not** inherit the palette-level one: the
+ * code palette is calibrated once and stays there, so re-seeding the app cannot
+ * quietly wash out a code block. {@link PaletteConfig.pastel} skips it for the same
+ * reason.
  */
 export interface PaletteCodeSeed {
   /** Saturation (0–100). Defaults to {@link DEFAULT_SATURATION}, not to `saturation`. */
@@ -101,6 +103,11 @@ export interface PaletteConfig {
    * Global. Widens the usable chroma range by relaxing the sRGB-safe limit,
    * producing a softer, more even palette across hues. Glaze treats `pastel` as
    * instance-level, so it is threaded into every theme.
+   *
+   * Every theme except `code`. The syntax family is calibrated on its own
+   * saturation and is deliberately left out — softening it collapses the chroma
+   * spread the syntax hues rely on to stay apart. To soften a code block, lower
+   * {@link PaletteCodeSeed.saturation} instead.
    */
   pastel?: boolean;
   /**
