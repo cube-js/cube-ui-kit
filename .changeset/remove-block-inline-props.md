@@ -1,5 +1,5 @@
 ---
-'@cube-dev/ui-kit': major
+'@cube-dev/ui-kit': minor
 ---
 
 Remove the `block` prop from `Text` and the `inline` prop from `Title`. Use `display` instead:
