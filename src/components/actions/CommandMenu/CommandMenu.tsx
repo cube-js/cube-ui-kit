@@ -18,13 +18,15 @@ import React, {
   useState,
 } from 'react';
 import { useFilter, useMenu } from 'react-aria';
-// Import Item and Section from Menu for CommandMenu compound component
-import { Item, Section, useTreeState } from 'react-stately';
+import { Section, useTreeState } from 'react-stately';
 
 import { useI18n } from '../../../i18n';
 import { LoadingIcon } from '../../../icons';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
+// `CollectionItem` (not react-stately's bare `Item`) is what CommandMenu
+// actually renders through `MenuItem`, so it carries the `Item` props.
+import { CollectionItem as Item } from '../../CollectionItem';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useMenuContext } from '../Menu';
 import { CubeMenuProps } from '../Menu/Menu';
