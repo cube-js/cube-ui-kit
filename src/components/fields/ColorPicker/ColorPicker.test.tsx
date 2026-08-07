@@ -75,24 +75,32 @@ describe('<ColorPicker />', () => {
 
     const LONG_COLOR = 'oklch(0.5276 0.172 298.52)';
 
-    it('offers the whole value up for replacement on focus', async () => {
-      const { getByRole } = renderWithRoot(
-        <ColorPicker
-          aria-label="Color"
-          formatMode="derive"
-          defaultValue={LONG_COLOR}
-        />,
-      );
-      const input = getByRole('textbox') as HTMLInputElement;
+    // Asserting the resulting selection range would prove nothing: tabbing into
+    // a text input selects its contents natively, so such a test passes even
+    // when the focus handler is never wired up. Spying on the call is what
+    // pins the behavior to this component.
+    it.each([
+      ['a pointer', (input: HTMLElement) => userEvent.click(input)],
+      ['the keyboard', () => userEvent.tab()],
+    ])(
+      'offers the whole value up for replacement when %s focuses it',
+      async (_, focusIt) => {
+        const { getByRole } = renderWithRoot(
+          <ColorPicker
+            aria-label="Color"
+            formatMode="derive"
+            defaultValue={LONG_COLOR}
+          />,
+        );
+        const input = getByRole('textbox') as HTMLInputElement;
+        const select = vi.spyOn(input, 'select');
 
-      await userEvent.tab();
+        await focusIt(input);
 
-      expect(input).toHaveFocus();
-      expect([input.selectionStart, input.selectionEnd]).toEqual([
-        0,
-        input.value.length,
-      ]);
-    });
+        expect(input).toHaveFocus();
+        expect(select).toHaveBeenCalled();
+      },
+    );
 
     it('suppresses only the press that takes focus', async () => {
       // The browser applies a click's caret after the focus handler, which would

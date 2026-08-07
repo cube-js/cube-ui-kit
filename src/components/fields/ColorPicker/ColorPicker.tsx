@@ -330,7 +330,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
       value: text,
       type: 'text',
       onChange: handleTextChange,
-      onFocus,
+      onFocus: handleFocus,
       onBlur: handleBlur,
       onKeyDown: handleKeyDown,
     },
