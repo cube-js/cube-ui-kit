@@ -72,6 +72,25 @@ describe('<ColorPicker />', () => {
       }
     });
 
+    it('offers the whole value up for replacement on focus', async () => {
+      const { getByRole } = renderWithRoot(
+        <ColorPicker
+          aria-label="Color"
+          formatMode="derive"
+          defaultValue="oklch(0.5276 0.172 298.52)"
+        />,
+      );
+      const input = getByRole('textbox') as HTMLInputElement;
+
+      await userEvent.tab();
+
+      expect(input).toHaveFocus();
+      expect([input.selectionStart, input.selectionEnd]).toEqual([
+        0,
+        input.value.length,
+      ]);
+    });
+
     it('normalizes the text on blur in `forced` mode', async () => {
       const { getByRole } = renderWithRoot(
         <ColorPicker aria-label="Color" format="hex" />,

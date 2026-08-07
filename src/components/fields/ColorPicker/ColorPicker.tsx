@@ -12,6 +12,7 @@ import {
   ForwardedRef,
   forwardRef,
   KeyboardEvent,
+  MouseEvent,
   useEffect,
   useRef,
   useState,
@@ -260,6 +261,40 @@ export const ColorPicker = forwardRef(function ColorPicker(
     if (formatMode === 'forced') setText(formatColor(parsed, format));
   });
 
+  /**
+   * Focusing offers the whole value up for replacement, the way a hex field
+   * does. The string is the unit of editing here: a single channel is tuned
+   * with the sliders, not by hand-editing one number inside `oklch(…)`.
+   */
+  const selectOnRelease = useRef(false);
+
+  const handleFocus = useEvent((event: FocusEvent<HTMLInputElement>) => {
+    // Read off the event rather than `inputRef`, which `TextInputBase` re-points
+    // through `useCombinedRefs`.
+    event.currentTarget.select();
+    // A pointer places the caret on release, after this — so the selection has
+    // to be reapplied there.
+    selectOnRelease.current = true;
+    onFocus?.(event);
+  });
+
+  const handleMouseUp = useEvent((event: MouseEvent<HTMLInputElement>) => {
+    if (!selectOnRelease.current) return;
+
+    selectOnRelease.current = false;
+
+    // Browsers disagree on when a click's caret lands: Chrome sets it during
+    // mousedown, so the selection made on focus survives and there is nothing
+    // to do; others collapse it by the time this runs. Re-select only in the
+    // collapsed case, which also leaves a dragged range — chosen deliberately —
+    // alone.
+    if (
+      event.currentTarget.selectionStart === event.currentTarget.selectionEnd
+    ) {
+      event.currentTarget.select();
+    }
+  });
+
   const handleBlur = useEvent((event: FocusEvent<HTMLInputElement>) => {
     settle();
     userOnBlur?.(event);
@@ -321,7 +356,11 @@ export const ColorPicker = forwardRef(function ColorPicker(
         />
       }
       inputRef={inputRef}
-      inputProps={{ ...inputProps, spellCheck: false }}
+      inputProps={{
+        ...inputProps,
+        spellCheck: false,
+        onMouseUp: handleMouseUp,
+      }}
       inputStyles={inputStyles}
       labelProps={mergeProps(labelProps, userLabelProps)}
       wrapperRef={targetRef}

@@ -55,6 +55,11 @@ Named CSS colors (`red`, `rebeccapurple`) are **not** accepted — they are not 
 color space, and Glaze does not resolve them either. Alpha is parsed but
 dropped: the value is always opaque.
 
+Focusing the field selects the whole value, so a pasted color replaces it
+outright. The string is the unit of editing here: a single channel is tuned with
+the sliders rather than by hand-editing one number inside `oklch(…)`. Dragging
+across the text still selects a range of your own.
+
 ### Base Properties
 
 Supports [Base properties](/docs/getting-started-base-properties--docs)
