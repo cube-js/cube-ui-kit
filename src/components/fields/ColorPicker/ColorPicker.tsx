@@ -265,34 +265,30 @@ export const ColorPicker = forwardRef(function ColorPicker(
    * Focusing offers the whole value up for replacement, the way a hex field
    * does. The string is the unit of editing here: a single channel is tuned
    * with the sliders, not by hand-editing one number inside `oklch(…)`.
+   *
+   * Read off the event rather than `inputRef`, which `TextInputBase` re-points
+   * through `useCombinedRefs`.
    */
-  const selectOnRelease = useRef(false);
-
   const handleFocus = useEvent((event: FocusEvent<HTMLInputElement>) => {
-    // Read off the event rather than `inputRef`, which `TextInputBase` re-points
-    // through `useCombinedRefs`.
     event.currentTarget.select();
-    // A pointer places the caret on release, after this — so the selection has
-    // to be reapplied there.
-    selectOnRelease.current = true;
     onFocus?.(event);
   });
 
-  const handleMouseUp = useEvent((event: MouseEvent<HTMLInputElement>) => {
-    if (!selectOnRelease.current) return;
+  /**
+   * A click would otherwise drop a caret and undo that selection — the browser
+   * applies it after the focus handler has run. Suppressing the default action
+   * of the focusing press means no caret is ever placed; focus is then moved
+   * here instead, which selects.
+   *
+   * Only the press that *takes* focus is suppressed, so clicking a field that
+   * already has focus still positions the caret, and dragging still selects a
+   * range.
+   */
+  const handleMouseDown = useEvent((event: MouseEvent<HTMLInputElement>) => {
+    if (document.activeElement === event.currentTarget) return;
 
-    selectOnRelease.current = false;
-
-    // Browsers disagree on when a click's caret lands: Chrome sets it during
-    // mousedown, so the selection made on focus survives and there is nothing
-    // to do; others collapse it by the time this runs. Re-select only in the
-    // collapsed case, which also leaves a dragged range — chosen deliberately —
-    // alone.
-    if (
-      event.currentTarget.selectionStart === event.currentTarget.selectionEnd
-    ) {
-      event.currentTarget.select();
-    }
+    event.preventDefault();
+    event.currentTarget.focus();
   });
 
   const handleBlur = useEvent((event: FocusEvent<HTMLInputElement>) => {
@@ -359,7 +355,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
       inputProps={{
         ...inputProps,
         spellCheck: false,
-        onMouseUp: handleMouseUp,
+        onMouseDown: handleMouseDown,
       }}
       inputStyles={inputStyles}
       labelProps={mergeProps(labelProps, userLabelProps)}

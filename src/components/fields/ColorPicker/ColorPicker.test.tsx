@@ -1,5 +1,6 @@
 import {
   act,
+  createEvent,
   fireEvent,
   renderWithForm,
   renderWithRoot,
@@ -72,12 +73,14 @@ describe('<ColorPicker />', () => {
       }
     });
 
+    const LONG_COLOR = 'oklch(0.5276 0.172 298.52)';
+
     it('offers the whole value up for replacement on focus', async () => {
       const { getByRole } = renderWithRoot(
         <ColorPicker
           aria-label="Color"
           formatMode="derive"
-          defaultValue="oklch(0.5276 0.172 298.52)"
+          defaultValue={LONG_COLOR}
         />,
       );
       const input = getByRole('textbox') as HTMLInputElement;
@@ -89,6 +92,28 @@ describe('<ColorPicker />', () => {
         0,
         input.value.length,
       ]);
+    });
+
+    it('suppresses only the press that takes focus', async () => {
+      // The browser applies a click's caret after the focus handler, which would
+      // undo the selection. Defaulting that press away is what stops it, so the
+      // input must focus itself instead — and a press on an already-focused
+      // field has to stay untouched, or the caret could never be positioned.
+      const { getByRole } = renderWithRoot(
+        <ColorPicker aria-label="Color" defaultValue="#26fcb2" />,
+      );
+      const input = getByRole('textbox') as HTMLInputElement;
+
+      const taking = createEvent.mouseDown(input);
+      fireEvent(input, taking);
+
+      expect(taking.defaultPrevented).toBe(true);
+      expect(input).toHaveFocus();
+
+      const afterwards = createEvent.mouseDown(input);
+      fireEvent(input, afterwards);
+
+      expect(afterwards.defaultPrevented).toBe(false);
     });
 
     it('normalizes the text on blur in `forced` mode', async () => {
