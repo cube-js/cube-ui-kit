@@ -330,6 +330,9 @@ export const ColorPicker = forwardRef(function ColorPicker(
       isInvalid={isInvalid}
       isValid={isValid}
       isLoading={isLoading}
+      // The validation state reads left of the trigger, the way `DateInputBase`
+      // orders it for the date pickers.
+      suffixPosition="after"
       suffix={
         <DialogTrigger
           hideArrow

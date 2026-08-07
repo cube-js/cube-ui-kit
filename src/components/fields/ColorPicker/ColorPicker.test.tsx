@@ -23,6 +23,27 @@ describe('<ColorPicker />', () => {
     });
   });
 
+  it.each([['isValid'], ['isInvalid']])(
+    'renders the %s indicator left of the trigger',
+    (state) => {
+      const { getByRole, container } = renderWithRoot(
+        <ColorPicker
+          aria-label="Color"
+          defaultValue="#26fcb2"
+          {...{ [state]: true }}
+        />,
+      );
+      const indicator = container.querySelector('[data-element="State"]')!;
+      const trigger = getByRole('button', { name: /color picker/i });
+
+      expect(indicator).toBeInTheDocument();
+      expect(
+        indicator.compareDocumentPosition(trigger) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    },
+  );
+
   it('marks the swatch empty without a color', () => {
     const { getByTestId } = renderWithRoot(<ColorPicker aria-label="Color" />);
 
