@@ -496,6 +496,13 @@ function BoardInner(
     return registration?.['aria-label'] ?? registration?.qa ?? key;
   });
 
+  // Whether a widget accepts selection at all. Every selection path resolves it
+  // here — press, keyboard and marquee — so a lasso can never pick up a widget
+  // that a press cannot.
+  const isWidgetSelectable = (key: string) =>
+    (registry.store.get(key)?.isSelectable ?? widgetProps?.isSelectable) !==
+    false;
+
   const {
     selectedKeySet,
     selectedKeysRef,
@@ -1043,6 +1050,7 @@ function BoardInner(
       const next = new Set(base);
 
       for (const it of layoutRef.current) {
+        if (!isWidgetSelectable(it.i)) continue;
         const pos = calcGridItemPosition(
           liveRef.current.positionParams,
           it.x,
@@ -1349,9 +1357,7 @@ function BoardInner(
                     false;
                   const widgetQa = registration?.qa ?? widgetProps?.qa;
                   const widgetSelectable =
-                    selectionMode !== 'none' &&
-                    (registration?.isSelectable ??
-                      widgetProps?.isSelectable) !== false;
+                    selectionMode !== 'none' && isWidgetSelectable(item.i);
                   const widgetSelectionCancel =
                     registration?.selectionCancel ??
                     widgetProps?.selectionCancel ??

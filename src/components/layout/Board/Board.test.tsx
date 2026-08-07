@@ -2594,6 +2594,42 @@ describe('Board', () => {
         expect(status.textContent).not.toBe(first);
       });
 
+      it('skips a widget that opted out of selection', () => {
+        const onSelectionChange = vi.fn();
+        render(
+          <Board
+            width={600}
+            cols={6}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            selectionMode="multiple"
+            defaultLayout={selectionLayout}
+            onSelectionChange={onSelectionChange}
+          >
+            <Board.Widget id="a" qa="A">
+              A
+            </Board.Widget>
+            <Board.Widget id="b" qa="B" isSelectable={false}>
+              B
+            </Board.Widget>
+            <Board.Widget id="c" qa="C">
+              C
+            </Board.Widget>
+          </Board>,
+        );
+        const content = screen.getByTestId('A').parentElement as HTMLElement;
+        content.getBoundingClientRect = () => mockRect(0, 0, 600, 400);
+
+        // A band over both `a` and `b`; only `a` may be picked up, matching what
+        // a press on `b` would (not) do.
+        fireEvent(content, pointer('pointerdown', 0, 0));
+        fireEvent(window, pointer('pointermove', 250, 50));
+        fireEvent(window, pointer('pointerup', 250, 50));
+
+        expect(onSelectionChange).toHaveBeenCalledWith(['a']);
+      });
+
       it('is disabled by allowMarqueeSelection={false}', () => {
         const { content } = setupMarquee({ allowMarqueeSelection: false });
 
