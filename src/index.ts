@@ -95,6 +95,8 @@ export { Root } from './components/Root';
 export type { CubeRootProps } from './components/Root';
 export { DisplayTransition } from './components/helpers/DisplayTransition/DisplayTransition';
 export type { DisplayTransitionProps } from './components/helpers/DisplayTransition/DisplayTransition';
+export { IconSwitch } from './components/helpers/IconSwitch/IconSwitch';
+export type { CubeIconSwitchProps } from './components/helpers/IconSwitch/IconSwitch';
 
 // Navigation types and helpers
 export type {
