@@ -57,6 +57,15 @@ describe('ColorPicker color model', () => {
       expect(toHex(parseColor('okhsl(0 500% 200%)')!)).toBe('#ffffff');
     });
 
+    it('rejects a long digit run without backtracking', () => {
+      // Guards the number pattern against polynomial backtracking: the digits
+      // can only be split one way, so a long non-match fails linearly.
+      const started = Date.now();
+
+      expect(parseColor(`rgb(${'9'.repeat(40_000)}x 0 0)`)).toBeNull();
+      expect(Date.now() - started).toBeLessThan(1000);
+    });
+
     it('wraps the hue angle', () => {
       expect(parseColor('okhsl(420 100% 50%)')!.h).toBeCloseTo(60, 6);
       expect(parseColor('okhsl(-60 100% 50%)')!.h).toBeCloseTo(300, 6);

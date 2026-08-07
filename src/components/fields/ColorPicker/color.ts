@@ -52,7 +52,15 @@ export type ColorFormat = (typeof COLOR_FORMATS)[number];
 export type ColorValue = OkhslColor;
 
 const FUNCTION_RE = /^([a-z]+)\(([^()]+)\)$/;
-const NUMBER_RE = /^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?(%|deg)?$/;
+/**
+ * A number with an optional `%` or `deg` unit.
+ *
+ * The integer and fraction parts are deliberately written so that no two
+ * quantifiers can consume the same digit — `\d+(?:\.\d*)?` rather than
+ * `\d+\.?\d*`, whose `\d+` and `\d*` can split a digit run n ways and make
+ * rejecting a long one quadratic. This runs on whatever the user types.
+ */
+const NUMBER_RE = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?(?:%|deg)?$/;
 
 /**
  * Saturation below this rounds to `0%` in every output notation, so the color
