@@ -10,6 +10,22 @@ Entry point for AI agents working on `@cube-dev/ui-kit`.
 
 > **Maintenance note:** The design-system reference (tokens, presets, colors, modifiers, state syntax, form system, icons) lives in `src/stories/Usage.docs.mdx` (Storybook → **Getting Started / Usage**). The component creation guide lives in `src/stories/CreateComponent.docs.mdx` (**Getting Started / Create Component**). Update these whenever you add components, change the API surface, or modify tokens/presets.
 
+## Before You Start
+
+**Run this at the start of every task, before reading code, running tests, or trusting any type error:**
+
+```bash
+pnpm install && pnpm rebuild esbuild
+```
+
+A working copy can sit idle across dependency bumps, so `node_modules` may not match `pnpm-lock.yaml`. A stale tree does not fail loudly — it silently inverts results. Tests pass locally and fail on CI (or the reverse), and `tsc` reports errors that do not exist on the pinned version. Anything you conclude from a stale tree is unreliable, including the conclusion that a failure is "pre-existing".
+
+When local results and CI disagree, suspect the dependency tree first. Compare the installed version against the lockfile before theorising about anything else:
+
+```bash
+pnpm list @tenphi/tasty @tenphi/glaze
+```
+
 ## Rules
 
 Project-specific working rules for AI agents. Not published with the package.
@@ -65,7 +81,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 ## Environment
 
 - Node `>=22.0.0`, pnpm `^10` (pinned to `pnpm@10.32.0`). The publish workflow (`publish.yml`) still runs on Node 24 because OIDC trusted publishing requires npm ≥ 11.5.1+, which Node 24 ships natively (Node 22 ships npm 10.x).
-- After `pnpm install`, run `pnpm rebuild esbuild` (postinstall is blocked in `pnpm-workspace.yaml`).
+- After `pnpm install`, run `pnpm rebuild esbuild` (postinstall is blocked in `pnpm-workspace.yaml`). Do this at the start of every task — see [Before You Start](#before-you-start).
 - Husky hooks: `pre-commit` runs `pnpm lint-staged`; `pre-push` runs `pnpm test`. Skip only intentionally (`--no-verify` or `HUSKY=0`).
 - No external services or databases required for local development.
 
