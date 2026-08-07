@@ -103,16 +103,19 @@ const WidgetElement = tasty({
       drag: 'grabbing',
     },
     touchAction: 'none',
-    // Clip to the boundary only when there is one to clip to. `isCard` is
-    // precisely "this widget draws a visible edge"; a borderless, transparent
-    // widget has no edge to respect, and clipping to it cropped any `outline` a
-    // descendant drew for its own focus/active state (an element's outline is
-    // clipped by an *ancestor's* overflow, never its own). Pass
-    // `widgetProps={{ overflow: 'hidden' }}` to restore the old behavior.
-    overflow: {
-      '': 'visible',
-      card: 'hidden',
-    },
+    // A widget owns its grid cell and must not paint outside it: a nested board
+    // with more rows than currently fit, a mid-drag reflow (an auto-height
+    // container deliberately cannot grow while a drag is in flight), or a long
+    // unbreakable string would otherwise spill over its neighbours. Clipping
+    // holds regardless of `isCard` — a borderless widget has no drawn edge, but
+    // it still has a cell.
+    //
+    // The cost is that a descendant's `outline` is cropped at the edge, since an
+    // outline is clipped by an *ancestor's* overflow rather than its own. A
+    // widget whose content needs to paint outside — a control drawing its own
+    // active ring — opts out with `overflow="visible"`, or draws the ring inset
+    // with a negative `outlineOffset`.
+    overflow: 'hidden',
   },
 });
 

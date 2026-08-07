@@ -53,10 +53,3 @@ described as "Selected", and selection changes are announced through a polite li
 region.
 
 Widget hosts also expose `data-board-widget-id` and `data-selected`.
-
-**Behavior change:** `Board.Widget` no longer clips its content unless it is a
-card. A borderless widget (`isCard={false}`, the default) previously had
-`overflow: hidden`, which cropped any `outline` a descendant drew for its focused
-or active state. Card widgets still clip to their border. If you relied on the old
-clipping, set `widgetProps={{ overflow: 'hidden' }}` on the board or
-`overflow="hidden"` on the widget.

@@ -111,11 +111,12 @@ clipped by an ancestor's `overflow: hidden`.
 - **`selectionCancel`** `string` — Override the board's `selectionCancel` selector for this widget.
 - **`aria-label`** `string` — Accessible name for the widget. Falls back to `qa`, then the layout item id — both developer-facing, so set this whenever the widget is user-visible. Also what the selection announcement reads out.
 
-Note that a widget clips its content only when it is a card. `isCard` means "this
-widget draws a visible edge", and a borderless widget has no edge to clip to —
-clipping one would crop any `outline` a descendant paints for its own focus or
-active state. Set `widgetProps={{ overflow: 'hidden' }}` (or `overflow="hidden"`
-per widget) to clip regardless.
+A widget clips its content to its grid cell, card or not — otherwise a nested
+board with more rows than currently fit, or a mid-drag reflow, would paint over
+its neighbours. The cost is that a descendant's `outline` is cropped at the edge
+(an outline is clipped by an *ancestor's* overflow, not its own), so a widget
+whose content must paint outside — a control drawing its own active ring — sets
+`overflow="visible"`, or draws the ring inset with a negative `outlineOffset`.
 
 ### Board.Provider
 
@@ -354,10 +355,6 @@ it was dropped.
 ### Restyling the selection
 
 <Story of={BoardStories.RestyledSelection} />
-
-### Card and borderless overflow
-
-<Story of={BoardStories.BorderlessOverflow} />
 
 ## Accessibility
 

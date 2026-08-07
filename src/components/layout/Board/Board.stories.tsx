@@ -252,46 +252,6 @@ const RestyledSelectionTemplate: StoryFn<CubeBoardProps> = (args) => (
 export const RestyledSelection = RestyledSelectionTemplate.bind({});
 RestyledSelection.args = { selectionMode: 'multiple' };
 
-const BorderlessOverflowTemplate: StoryFn<CubeBoardProps> = (args) => (
-  <Board
-    fill="#light"
-    padding="1x"
-    radius="1r"
-    defaultLayout={[
-      { i: 'card', x: 0, y: 0, w: 4, h: 2 },
-      { i: 'plain', x: 4, y: 0, w: 4, h: 2 },
-    ]}
-    {...args}
-  >
-    <Board.Widget id="card" isCard aria-label="Card widget">
-      <Flow gap="1x" padding="1.5x" height="100%">
-        <Title level={5} preset="h6">
-          Card — clips
-        </Title>
-        <Button size="small">Focus me</Button>
-      </Flow>
-    </Board.Widget>
-    <Board.Widget id="plain" aria-label="Borderless widget">
-      <Flow gap="1x" padding="1.5x" height="100%">
-        <Title level={5} preset="h6">
-          Borderless — does not clip
-        </Title>
-        <Button size="small">Focus me</Button>
-      </Flow>
-    </Board.Widget>
-  </Board>
-);
-
-export const BorderlessOverflow = BorderlessOverflowTemplate.bind({});
-BorderlessOverflow.parameters = {
-  docs: {
-    description: {
-      story:
-        'A widget only clips its content when it is a card, i.e. when it actually draws an edge. A borderless widget lets a descendant paint outside the box, which is what an `outline` (a focus ring, an active state) needs. Pass `widgetProps={{ overflow: "hidden" }}` to clip everything.',
-    },
-  },
-};
-
 export const Default = Template.bind({});
 Default.args = {};
 

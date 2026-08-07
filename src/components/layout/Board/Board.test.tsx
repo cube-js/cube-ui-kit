@@ -2182,6 +2182,42 @@ describe('Board', () => {
       expect(widget('B')).not.toHaveAttribute('data-selected');
     });
 
+    // Regression: on a selectable board an `input` inside a widget could not be
+    // focused or typed into unless `dragCancel` was also configured, because
+    // `useMove`'s pointer-down calls `preventDefault()` and only `dragCancel`
+    // gated it. `selectionCancel` already declares which descendants are
+    // interactive, so it gates the drag too.
+    it('keeps native focus on an interactive descendant without dragCancel', () => {
+      const onDragStart = vi.fn();
+      render(
+        <Board
+          width={600}
+          cols={6}
+          selectionMode="multiple"
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 4, h: 2 }]}
+          onDragStart={onDragStart}
+        >
+          <Board.Widget id="a" qa="A">
+            <input data-qa="Field" />
+          </Board.Widget>
+        </Board>,
+      );
+
+      const field = screen.getByTestId('Field');
+      const event = new PointerEvent('pointerdown', {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      fireEvent(field, event);
+
+      // `preventDefault()` here is what cancels the browser's focus-on-press.
+      expect(event.defaultPrevented).toBe(false);
+      expect(onDragStart).not.toHaveBeenCalled();
+    });
+
     describe('clearing', () => {
       it('replaces the selection when pressing a widget outside it', async () => {
         const onSelectionChange = vi.fn();
@@ -2225,6 +2261,22 @@ describe('Board', () => {
         fireEvent.pointerDown(widget('B'), { button: 0, pointerId: 1 });
 
         expect(onSelectionChange).not.toHaveBeenCalled();
+      });
+
+      it('parks focus on the board without making it a tab stop', async () => {
+        const onWidgetsDelete = vi.fn();
+        const { widget } = renderSelectableBoard({ onWidgetsDelete });
+
+        await userEvent.click(widget('B'));
+        await userEvent.keyboard('{Delete}');
+
+        // Focus has to land somewhere the board's own Escape/Delete handler can
+        // still see, since the widget that had it is about to unmount...
+        const board = screen.getByTestId('Board');
+        expect(board).toHaveFocus();
+        // ...but the board is never reachable by Tab, so this is a parking spot
+        // rather than a control, and it draws no focus ring.
+        expect(board).toHaveAttribute('tabindex', '-1');
       });
 
       it('does not let a nested widget press select its container', async () => {

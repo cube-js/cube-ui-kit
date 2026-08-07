@@ -74,6 +74,14 @@ const BoardElement = tasty({
     height: 'min 0',
     fill: '#surface',
     boxSizing: 'border-box',
+    // The board takes focus programmatically (never by Tab — it is `tabIndex=-1`)
+    // as a parking spot: after `onWidgetsDelete` the focused widget host is
+    // about to unmount, and after a marquee focus is nowhere near the board, so
+    // in both cases Escape and Delete — handled here rather than on `document` —
+    // would have nothing to reach. A focus ring on a parking spot is noise: it
+    // announces a state the user cannot act on and did not ask for. Same reason
+    // `Dialog` drops it on its own focusable container.
+    outline: 0,
   },
 });
 
