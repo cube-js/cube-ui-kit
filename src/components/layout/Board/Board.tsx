@@ -18,9 +18,11 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
+import { useFocusWithin } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
-import { useCombinedRefs } from '../../../utils/react';
+import { useI18n } from '../../../i18n';
+import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 
 import {
@@ -56,6 +58,8 @@ import {
   ResizeHandleAxis,
 } from './grid-core';
 import { useBoardLayout } from './use-board-layout';
+import { useBoardSelectModifierKey } from './use-board-select-modifier-key';
+import { BoardSelectionMode, useBoardSelection } from './use-board-selection';
 import { ResizePhase, WidgetHost } from './WidgetHost';
 
 import type { CubeBoardWidgetProps } from './Widget';
@@ -80,19 +84,61 @@ const ContentLayer = tasty({
   },
 });
 
+// The drop-slot preview. `#primary` rather than the legacy `#purple` alias -
+// same hue, current token. It has to stay distinguishable from a *selected*
+// widget (a tint + solid border + ring, see `WidgetHost`) and from a live
+// marquee (dashed), since all three can be on screen at once.
 const PlaceholderElement = tasty({
   qa: 'BoardPlaceholder',
   styles: {
     position: 'absolute',
     top: 0,
     left: 0,
-    fill: '#purple.10',
+    fill: '#primary.10',
     radius: '1cr',
-    border: '#purple.40',
+    border: '#primary.40',
     zIndex: 2,
     pointerEvents: 'none',
     transition: 'inset 80ms linear, width 80ms linear, height 80ms linear',
     boxSizing: 'border-box',
+  },
+});
+
+// The rubber-band selection rectangle. Dashed is the discriminator: nothing else
+// on a board is dashed, and it reads as a transient lasso rather than a place
+// something is about to land. Sits above the widgets (1) and the placeholder (2).
+const MarqueeElement = tasty({
+  qa: 'BoardMarquee',
+  styles: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    fill: '#primary-accent-surface.06',
+    border: '1bw dashed #primary-border',
+    radius: '1cr',
+    zIndex: 3,
+    pointerEvents: 'none',
+    boxSizing: 'border-box',
+  },
+});
+
+// Visually-hidden live region. Selection changes are announced here because a
+// board widget cannot carry `aria-selected`: that attribute is only valid on
+// collection roles (`option`, `gridcell`, `row`, …) whose children must be
+// presentational, and widgets host arbitrary interactive content. This element
+// also owns the shared "Selected" hint every selected host points at via
+// `aria-describedby`.
+const A11yLayer = tasty({
+  styles: {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    padding: 0,
+    margin: '-1px',
+    overflow: 'hidden',
+    clipPath: 'inset(50%)',
+    whiteSpace: 'nowrap',
+    border: 0,
   },
 });
 
@@ -122,12 +168,23 @@ export type BoardCompactType = 'vertical' | 'horizontal' | 'free' | null;
  * (falls back to `oldItem` if the item just left this board via a cross-board
  * transfer), `oldItem` is that item as it was when the gesture started, and
  * `placeholder` is the current drop-slot preview (if any).
+ *
+ * The plural fields describe the whole gesture: a group drag moves every
+ * selected widget at once, so `items`/`oldItems`/`placeholders` list them all,
+ * grabbed widget first. An ordinary drag or a resize produces exactly one entry,
+ * so `items[0] === item` and `placeholders[0] === placeholder` always hold.
  */
 export interface BoardInteractionInfo {
   layout: LayoutItem[];
   item: LayoutItem;
   oldItem: LayoutItem;
   placeholder: LayoutItem | null;
+  /** Every item in this gesture, grabbed first. */
+  items: LayoutItem[];
+  /** Those items as they were when the gesture started, same order. */
+  oldItems: LayoutItem[];
+  /** Every drop-slot preview. Empty exactly when `placeholder` is `null`. */
+  placeholders: LayoutItem[];
 }
 
 /** Visibility of the internal grid-line overlay. */
@@ -230,6 +287,41 @@ export interface CubeBoardProps
    * rows at that height. @default false
    */
   isAligned?: boolean;
+  /**
+   * Whether widgets can be selected, and how many at a time. `'multiple'` also
+   * enables the marquee and rigid group movement: dragging any selected widget
+   * moves the whole selection. @default 'none'
+   */
+  selectionMode?: BoardSelectionMode;
+  /** Controlled selection. Keys are layout item ids (`LayoutItem.i`). */
+  selectedKeys?: string[];
+  /** Initial selection for uncontrolled usage. */
+  defaultSelectedKeys?: string[];
+  /**
+   * Called when the selection changes. Keys are deduped and returned in the
+   * board's layout order, never in click order.
+   */
+  onSelectionChange?: (keys: string[]) => void;
+  /**
+   * CSS selector for descendants whose clicks must never change the selection
+   * (form controls, buttons, links). Mirrors `dragCancel`; can be overridden per
+   * widget. Pass `''` to disable the guard entirely.
+   * @default BOARD_SELECTION_CANCEL
+   */
+  selectionCancel?: string;
+  /**
+   * Draw a rubber-band (marquee) selection when a drag starts on empty board
+   * space. Only meaningful with `selectionMode="multiple"`.
+   * @default selectionMode === 'multiple'
+   */
+  allowMarqueeSelection?: boolean;
+  /**
+   * Called when the user presses <kbd>Delete</kbd>/<kbd>Backspace</kbd> with a
+   * non-empty selection, and focus is inside the board but not in an editable
+   * field. Board never mutates the layout itself — removing the widgets is the
+   * consumer's job. Board only handles these keys when this handler is set.
+   */
+  onWidgetsDelete?: (keys: string[]) => void;
   /** Grid/item layout constraints. */
   constraints?: LayoutConstraint[];
   /**
@@ -245,6 +337,33 @@ export interface CubeBoardProps
    */
   widgetProps?: Partial<CubeBoardWidgetDefaults>;
   children?: ReactNode;
+}
+
+/**
+ * Descendants whose clicks never change the selection. A widget is a large
+ * surface the user also clicks to *work with*, so anything interactive inside it
+ * must keep its click. `[data-no-select]` is the escape hatch for an app's own
+ * custom controls.
+ */
+export const BOARD_SELECTION_CANCEL =
+  'input,textarea,select,button,a,[role="button"],[role="menuitem"],' +
+  '[role="checkbox"],[role="switch"],[role="tab"],[contenteditable="true"],' +
+  '[data-no-select]';
+
+/** Manhattan distance a pointer must travel before a press becomes a marquee. */
+const MARQUEE_THRESHOLD = 4;
+
+/**
+ * Whether an event landed in a text-editing context. Checking the *event target*
+ * beats `document.activeElement`: it stays correct for content rendered through
+ * a portal, and it cannot be fooled by focus that moved between the keystroke
+ * and the handler.
+ */
+function isEditableTarget(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  if (!el || typeof el.closest !== 'function') return false;
+
+  return !!el.closest('input,textarea,select,[contenteditable="true"]');
 }
 
 function compactTypeToCore(compact: BoardCompactType): CompactType {
@@ -283,6 +402,13 @@ function BoardInner(
     dragHandle,
     showGridLines,
     isAligned = false,
+    selectionMode = 'none',
+    selectedKeys,
+    defaultSelectedKeys,
+    onSelectionChange,
+    selectionCancel = BOARD_SELECTION_CANCEL,
+    allowMarqueeSelection = selectionMode === 'multiple',
+    onWidgetsDelete,
     constraints,
     width: providedWidth,
     widgetProps,
@@ -311,6 +437,10 @@ function BoardInner(
     showGridLines ?? (inheritedGridLines ? 'drag' : false);
   const generatedId = useId();
   const boardId = providedId ?? generatedId;
+  // One shared description node for every selected widget, so marking a widget
+  // selected costs no per-widget DOM.
+  const selectedHintId = `${generatedId}-selected`;
+  const { t } = useI18n();
 
   const containerRef = useCombinedRefs(ref);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -346,15 +476,43 @@ function BoardInner(
   const {
     layout,
     layoutRef,
+    placeholders,
     placeholder,
+    placeholdersRef,
     placeholderRef,
-    setPlaceholder,
+    setPlaceholders,
     applyLayout,
   } = useBoardLayout({
     layout: controlledLayout,
     defaultLayout,
     onLayoutChange,
   });
+
+  // The accessible name a widget announces under. Mirrors `WidgetHost`'s own
+  // fallback chain so the live region and the host never disagree.
+  const getWidgetLabel = useEvent((key: string) => {
+    const registration = registry.store.get(key);
+
+    return registration?.['aria-label'] ?? registration?.qa ?? key;
+  });
+
+  const {
+    selectedKeySet,
+    selectedKeysRef,
+    setSelection,
+    select,
+    clearSelection,
+    announcement,
+  } = useBoardSelection({
+    selectionMode,
+    selectedKeys,
+    defaultSelectedKeys,
+    onSelectionChange,
+    layout,
+    getLabel: getWidgetLabel,
+  });
+
+  const selectModifierKey = useBoardSelectModifierKey();
 
   // Re-render when any widget's registered content/config changes.
   useSyncExternalStore(registry.store.subscribe, registry.store.getVersion);
@@ -376,7 +534,8 @@ function BoardInner(
 
   const rows = Math.max(
     bottom(layout),
-    placeholder ? placeholder.y + placeholder.h : 0,
+    ...placeholders.map((p) => p.y + p.h),
+    0,
   );
 
   // Derive the aligned column count so each column keeps the parent's pixel
@@ -487,7 +646,7 @@ function BoardInner(
   };
 
   const applyLayoutEvent = useEvent(applyLayout);
-  const setPlaceholderEvent = useEvent(setPlaceholder);
+  const setPlaceholdersEvent = useEvent(setPlaceholders);
 
   const entryRef = useRef<BoardEntry | null>(null);
   if (!entryRef.current) {
@@ -501,8 +660,12 @@ function BoardInner(
       getMaxRows: () => liveRef.current.maxRows,
       getContainerHeight: () => liveRef.current.containerHeight,
       getLayout: () => layoutRef.current,
+      // The registry reads this synchronously at drag start, so it must be the
+      // ref rather than the rendered value.
+      getSelectedKeys: () =>
+        selectedKeysRef.current.size > 0 ? selectedKeysRef.current : null,
       applyLayout: (next, commit) => applyLayoutEvent(next, commit),
-      setPlaceholder: (item) => setPlaceholderEvent(item),
+      setPlaceholders: (items) => setPlaceholdersEvent(items),
       isDroppable: () => liveRef.current.isDroppable,
     };
   }
@@ -633,12 +796,15 @@ function BoardInner(
           accX: 0,
           accY: 0,
         };
-        setPlaceholder({ ...item });
+        setPlaceholders([{ ...item }]);
         onResizeStart?.({
           layout: layoutRef.current,
           item: { ...item },
           oldItem: { ...item },
           placeholder: { ...item },
+          items: [{ ...item }],
+          oldItems: [{ ...item }],
+          placeholders: [{ ...item }],
         });
         return;
       }
@@ -649,12 +815,16 @@ function BoardInner(
       if (phase === 'end') {
         const finalLayout = [...layoutRef.current];
         applyLayout(finalLayout, true);
-        setPlaceholder(null);
+        setPlaceholders([]);
+        const resizedItem = getLayoutItem(finalLayout, id) ?? rs.item;
         onResizeStop?.({
           layout: finalLayout,
-          item: getLayoutItem(finalLayout, id) ?? rs.item,
+          item: resizedItem,
           oldItem: rs.item,
           placeholder: null,
+          items: [resizedItem],
+          oldItems: [rs.item],
+          placeholders: [],
         });
         resizeStateRef.current = null;
         return;
@@ -735,12 +905,16 @@ function BoardInner(
       const compacted = [...compactor.compact(working, pp.cols)];
       applyLayout(compacted, false);
       const nextPlaceholder = getLayoutItem(compacted, id) ?? newItem;
-      setPlaceholder(nextPlaceholder);
+      setPlaceholders([nextPlaceholder]);
+      const resizedItem = getLayoutItem(compacted, id) ?? newItem;
       onResizeProp?.({
         layout: compacted,
-        item: getLayoutItem(compacted, id) ?? newItem,
+        item: resizedItem,
         oldItem: rs.item,
         placeholder: nextPlaceholder,
+        items: [resizedItem],
+        oldItems: [rs.item],
+        placeholders: [nextPlaceholder],
       });
     },
   );
@@ -773,6 +947,9 @@ function BoardInner(
   // original position throughout (and after a cross-board transfer removes the
   // item from this board's layout).
   const dragOldItemRef = useRef<LayoutItem | null>(null);
+  // The same, for every other member of a group drag. Empty for an ordinary
+  // drag, which is what keeps `items`/`oldItems` single-entry there.
+  const dragOldItemsRef = useRef<LayoutItem[]>([]);
 
   const handleDragLifecycle = useEvent((id: string, phase: ResizePhase) => {
     const currentLayout = layoutRef.current;
@@ -780,26 +957,201 @@ function BoardInner(
 
     if (phase === 'start') {
       dragOldItemRef.current = liveItem ? { ...liveItem } : null;
+      // The registry has already resolved the group by the time this fires, so
+      // its drag state is the authority on who is moving.
+      const ds = registry.getDragState();
+      dragOldItemsRef.current =
+        ds && ds.itemId === id ? ds.items.map((it) => ({ ...it })) : [];
     }
     const oldItem = dragOldItemRef.current ?? liveItem;
     if (!oldItem) return;
     const item = liveItem ?? oldItem;
 
+    const oldItems = dragOldItemsRef.current.length
+      ? dragOldItemsRef.current
+      : [oldItem];
+    const items = oldItems.map(
+      (old) => getLayoutItem(currentLayout, old.i) ?? old,
+    );
+
     const info: BoardInteractionInfo = {
       layout: currentLayout,
       item,
       oldItem,
-      // Read the live ref, not render-time state: the registry calls
-      // `setPlaceholder` synchronously right before this fires, and that only
-      // schedules a re-render, so `placeholder` state still holds the previous
-      // value (or a stale preview after the drop clears it to `null`).
+      // Read the live refs, not render-time state: the registry calls
+      // `setPlaceholders` synchronously right before this fires, and that only
+      // schedules a re-render, so `placeholders` state still holds the previous
+      // value (or a stale preview after the drop clears it).
       placeholder: placeholderRef.current,
+      items,
+      oldItems,
+      placeholders: placeholdersRef.current,
     };
     if (phase === 'start') onDragStart?.(info);
     else if (phase === 'move') onDrag?.(info);
     else {
       onDragStop?.(info);
       dragOldItemRef.current = null;
+      dragOldItemsRef.current = [];
+    }
+  });
+
+  // ---- Marquee (rubber-band) selection --------------------------------------
+  //
+  // Board owns this rather than exposing hooks for an app to build it, because
+  // deciding which widgets a band covers needs every widget's box — and the DOM
+  // is the wrong place to read them from. Widget hosts transition `inset`/`width`
+  // /`height` while the board reflows, and a host being dragged is swapped for an
+  // `opacity: 0` stand-in with a fixed-position clone in the overlay, so
+  // `getBoundingClientRect` during a marquee returns interpolated or misleading
+  // boxes. `calcGridItemPosition` derives the same rectangles exactly, from the
+  // layout, with no forced reflow and no sensitivity to ancestor transforms.
+  const [marqueeRect, setMarqueeRect] = useState<Position | null>(null);
+
+  const handleContentPointerDown = useEvent((event: React.PointerEvent) => {
+    if (
+      selectionMode !== 'multiple' ||
+      !allowMarqueeSelection ||
+      event.button !== 0 ||
+      registry.dragState
+    ) {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    // A press on a widget selects it and arms a drag; the lasso owns empty
+    // canvas only.
+    if (target?.closest('[data-board-widget-host]')) return;
+    if (selectionCancel && target?.closest(selectionCancel)) return;
+
+    const content = contentRef.current;
+    if (!content) return;
+
+    const origin = content.getBoundingClientRect();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    // Holding the modifier means "add to what I have"; a bare lasso replaces.
+    const additive = event[selectModifierKey] || event.shiftKey;
+    const base = additive ? [...selectedKeysRef.current] : [];
+    let passedThreshold = false;
+
+    const hitTest = (clientX: number, clientY: number) => {
+      const left = Math.min(startX, clientX) - origin.left;
+      const right = Math.max(startX, clientX) - origin.left;
+      const top = Math.min(startY, clientY) - origin.top;
+      const bottom = Math.max(startY, clientY) - origin.top;
+      const next = new Set(base);
+
+      for (const it of layoutRef.current) {
+        const pos = calcGridItemPosition(
+          liveRef.current.positionParams,
+          it.x,
+          it.y,
+          it.w,
+          it.h,
+        );
+        if (
+          pos.left < right &&
+          pos.left + pos.width > left &&
+          pos.top < bottom &&
+          pos.top + pos.height > top
+        ) {
+          next.add(it.i);
+        }
+      }
+
+      return {
+        next,
+        box: { left, top, width: right - left, height: bottom - top },
+      };
+    };
+
+    const handleMove = (e: PointerEvent) => {
+      if (
+        !passedThreshold &&
+        Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) <
+          MARQUEE_THRESHOLD
+      ) {
+        return;
+      }
+      passedThreshold = true;
+      setMarqueeRect(hitTest(e.clientX, e.clientY).box);
+    };
+
+    const finish = (e: PointerEvent) => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', finish);
+      window.removeEventListener('pointercancel', finish);
+      setMarqueeRect(null);
+
+      // One commit per gesture: `onSelectionChange` and the announcement fire on
+      // release, never once per pointer frame.
+      if (passedThreshold) {
+        setSelection(hitTest(e.clientX, e.clientY).next);
+      } else if (!additive) {
+        // A plain click on empty board space clears.
+        clearSelection();
+      }
+      // Keep focus somewhere inside the board so Escape has a handler to reach.
+      containerRef.current?.focus({ preventScroll: true });
+    };
+
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', finish);
+    window.addEventListener('pointercancel', finish);
+  });
+
+  const marqueeStyle = marqueeRect
+    ? {
+        left: `${marqueeRect.left}px`,
+        top: `${marqueeRect.top}px`,
+        width: `${marqueeRect.width}px`,
+        height: `${marqueeRect.height}px`,
+      }
+    : null;
+
+  // Selection is focus-like, so it does not outlive focus leaving the board.
+  // Tabbing away, or clicking any focusable thing elsewhere on the page, drops
+  // it — the same way a text selection or a focus ring would go.
+  const { focusWithinProps: boardFocusWithinProps } = useFocusWithin({
+    isDisabled: selectionMode === 'none',
+    onBlurWithin: () => clearSelection(),
+  });
+
+  // ---- Board-level keys -----------------------------------------------------
+  //
+  // On the board element, never on `document`: a library-owned document listener
+  // fires for keystrokes that never went near a board, and two boards on a page
+  // would both react.
+  const handleBoardKeyDown = useEvent((event: React.KeyboardEvent) => {
+    if (selectionMode === 'none') return;
+
+    const selected = selectedKeysRef.current;
+    if (selected.size === 0) return;
+
+    if (event.key === 'Escape') {
+      // `preventDefault` only when we actually consumed the key, so an Escape
+      // with nothing selected still closes an ancestor Dialog or Popover.
+      event.preventDefault();
+      event.stopPropagation();
+      clearSelection();
+
+      return;
+    }
+
+    if (
+      (event.key === 'Delete' || event.key === 'Backspace') &&
+      onWidgetsDelete &&
+      !isEditableTarget(event.target)
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      const keys = [...selected];
+      clearSelection();
+      onWidgetsDelete(keys);
+      // The deleted widgets' hosts are about to unmount, so focus would be left
+      // on a detached node. Park it on the board.
+      containerRef.current?.focus({ preventScroll: true });
     }
   });
 
@@ -838,25 +1190,23 @@ function BoardInner(
   const hostWidgetIsDragging =
     !!dragState && dragState.nestedBoardIds.has(boardId);
 
-  const placeholderStyle = placeholder
-    ? (() => {
-        const pos = calcGridItemPosition(
-          positionParams,
-          placeholder.x,
-          placeholder.y,
-          placeholder.w,
-          placeholder.h,
-        );
-        return {
-          left: `${pos.left}px`,
-          top: `${pos.top}px`,
-          width: `${pos.width}px`,
-          height: `${pos.height}px`,
-        };
-      })()
-    : null;
+  const placeholderStyles = useMemo(
+    () =>
+      placeholders.map((p) => {
+        const pos = calcGridItemPosition(positionParams, p.x, p.y, p.w, p.h);
 
-  const showPlaceholder = placeholder && placeholderStyle;
+        return {
+          i: p.i,
+          style: {
+            left: `${pos.left}px`,
+            top: `${pos.top}px`,
+            width: `${pos.width}px`,
+            height: `${pos.height}px`,
+          },
+        };
+      }),
+    [placeholders, positionParams],
+  );
 
   const gridLinesVisible =
     !hostWidgetIsDragging &&
@@ -927,9 +1277,17 @@ function BoardInner(
         }
       >
         <BoardElement
-          {...filterBaseProps(otherProps, { eventProps: true })}
+          {...mergeProps(
+            filterBaseProps(otherProps, { eventProps: true }),
+            boardFocusWithinProps,
+            { onKeyDown: handleBoardKeyDown },
+          )}
           ref={containerRef}
           styles={styles}
+          // A board that owns keys needs somewhere for focus to land after a
+          // marquee or a delete, so Escape always reaches `handleBoardKeyDown`.
+          tabIndex={selectionMode !== 'none' ? -1 : undefined}
+          data-board-id={boardId}
           // Non-aligned: use min-height (not a fixed height) so the board
           // auto-sizes to its content by default but can still grow to fill a
           // taller parent. Widgets are absolutely positioned, so growing never
@@ -943,7 +1301,10 @@ function BoardInner(
             'drop-target': dragState?.currentBoardId === boardId,
           }}
         >
-          <ContentLayer ref={contentRef}>
+          <ContentLayer
+            ref={contentRef}
+            onPointerDown={handleContentPointerDown}
+          >
             {ready && gridOverlayStyle ? (
               <GridOverlayElement aria-hidden="true" style={gridOverlayStyle} />
             ) : null}
@@ -987,6 +1348,14 @@ function BoardInner(
                     widgetProps?.isAutoHeight ??
                     false;
                   const widgetQa = registration?.qa ?? widgetProps?.qa;
+                  const widgetSelectable =
+                    selectionMode !== 'none' &&
+                    (registration?.isSelectable ??
+                      widgetProps?.isSelectable) !== false;
+                  const widgetSelectionCancel =
+                    registration?.selectionCancel ??
+                    widgetProps?.selectionCancel ??
+                    selectionCancel;
                   // Merge board-level `widgetProps` styles (its `styles` object
                   // plus direct style props) with the per-widget styles so
                   // shared defaults survive when a widget sets even a single
@@ -1014,6 +1383,13 @@ function BoardInner(
                       qa={widgetQa}
                       dragCancel={widgetDragCancel}
                       dragHandle={widgetDragHandle}
+                      isSelectable={widgetSelectable}
+                      isSelected={selectedKeySet.has(item.i)}
+                      selectionCancel={widgetSelectionCancel}
+                      selectedHintId={selectedHintId}
+                      onSelect={select}
+                      onSelectionReset={clearSelection}
+                      selectModifierKey={selectModifierKey}
                       registry={registry}
                       dragState={dragState}
                       settled={settled}
@@ -1024,13 +1400,21 @@ function BoardInner(
                   );
                 })
               : null}
-            {showPlaceholder ? (
-              <PlaceholderElement
-                aria-hidden="true"
-                style={placeholderStyle!}
-              />
+            {placeholderStyles.map(({ i, style }) => (
+              <PlaceholderElement key={i} aria-hidden="true" style={style} />
+            ))}
+            {marqueeStyle ? (
+              <MarqueeElement aria-hidden="true" style={marqueeStyle} />
             ) : null}
           </ContentLayer>
+          {selectionMode !== 'none' ? (
+            <A11yLayer>
+              <span id={selectedHintId}>{t('board.selected', 'Selected')}</span>
+              <span role="status" aria-live="polite" aria-atomic="true">
+                {announcement}
+              </span>
+            </A11yLayer>
+          ) : null}
           {children}
         </BoardElement>
       </BoardGridLinesContext.Provider>

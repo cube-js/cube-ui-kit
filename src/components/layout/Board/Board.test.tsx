@@ -5,6 +5,7 @@ import {
   renderWithRoot,
   screen,
   userEvent,
+  waitFor,
 } from '../../../test';
 import { Tab, Tabs } from '../../navigation/Tabs';
 
@@ -2033,6 +2034,920 @@ describe('Board', () => {
       } finally {
         vi.useRealTimers();
       }
+    });
+  });
+  describe('selection', () => {
+    // Deterministic geometry for the marquee: a 600px-wide, 6-column board with
+    // no margins, so column N starts at x = N * 100 and row N at y = N * 100.
+    const mockRect = (
+      left: number,
+      top: number,
+      width: number,
+      height: number,
+    ): DOMRect =>
+      ({
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    /**
+     * Additive press. user-event applies modifiers through the keyboard API,
+     * and a held key only survives across calls within one `setup()` session.
+     */
+    const shiftPress = async (el: HTMLElement) => {
+      const user = userEvent.setup();
+      await user.keyboard('{Shift>}');
+      await user.click(el);
+      await user.keyboard('{/Shift}');
+    };
+
+    const selectionLayout = [
+      { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+      { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+      { i: 'c', x: 0, y: 1, w: 2, h: 1 },
+    ];
+
+    function renderSelectableBoard(props: Record<string, unknown> = {}) {
+      const utils = render(
+        <Board
+          width={600}
+          cols={6}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          selectionMode="multiple"
+          defaultLayout={selectionLayout}
+          {...props}
+        >
+          <Board.Widget id="a" qa="A" aria-label="Alpha">
+            <button type="button">Inner</button>
+          </Board.Widget>
+          <Board.Widget id="b" qa="B" aria-label="Beta">
+            B
+          </Board.Widget>
+          <Board.Widget id="c" qa="C" aria-label="Gamma">
+            C
+          </Board.Widget>
+        </Board>,
+      );
+
+      return { ...utils, widget: (qa: string) => screen.getByTestId(qa) };
+    }
+
+    it('selects a widget on a plain press', async () => {
+      const onSelectionChange = vi.fn();
+      const { widget } = renderSelectableBoard({ onSelectionChange });
+
+      await userEvent.click(widget('B'));
+
+      expect(onSelectionChange).toHaveBeenCalledWith(['b']);
+      expect(widget('B')).toHaveAttribute('data-selected');
+    });
+
+    it('selects on pointer-down, before any drag begins', () => {
+      const onSelectionChange = vi.fn();
+      const { widget } = renderSelectableBoard({ onSelectionChange });
+
+      // No pointerup, no click — the selection is already committed, which is
+      // what lets the drag that follows know what it is moving.
+      fireEvent.pointerDown(widget('B'), { button: 0, pointerId: 1 });
+
+      expect(onSelectionChange).toHaveBeenCalledWith(['b']);
+    });
+
+    it('returns keys in layout order, not click order', async () => {
+      const onSelectionChange = vi.fn();
+      const { widget } = renderSelectableBoard({ onSelectionChange });
+
+      await userEvent.click(widget('C'));
+      await shiftPress(widget('A'));
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith(['a', 'c']);
+    });
+
+    it('toggles a widget on each additive press', async () => {
+      const onSelectionChange = vi.fn();
+      const { widget } = renderSelectableBoard({ onSelectionChange });
+
+      await userEvent.click(widget('A'));
+      await shiftPress(widget('B'));
+      expect(onSelectionChange).toHaveBeenLastCalledWith(['a', 'b']);
+
+      await shiftPress(widget('A'));
+      expect(onSelectionChange).toHaveBeenLastCalledWith(['b']);
+    });
+
+    it('replaces the selection on a plain press', async () => {
+      const onSelectionChange = vi.fn();
+      const { widget } = renderSelectableBoard({ onSelectionChange });
+
+      await userEvent.click(widget('A'));
+      await shiftPress(widget('B'));
+      expect(onSelectionChange).toHaveBeenLastCalledWith(['a', 'b']);
+
+      await userEvent.click(widget('C'));
+      expect(onSelectionChange).toHaveBeenLastCalledWith(['c']);
+    });
+
+    it('replaces instead of accumulating in single mode', async () => {
+      const onSelectionChange = vi.fn();
+      const { widget } = renderSelectableBoard({
+        onSelectionChange,
+        selectionMode: 'single',
+      });
+
+      await userEvent.click(widget('A'));
+      await shiftPress(widget('B'));
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith(['b']);
+    });
+
+    it('does nothing when selectionMode is none', async () => {
+      const onSelectionChange = vi.fn();
+      const { widget } = renderSelectableBoard({
+        onSelectionChange,
+        selectionMode: 'none',
+      });
+
+      await userEvent.click(widget('B'));
+
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(widget('B')).not.toHaveAttribute('data-selected');
+    });
+
+    describe('clearing', () => {
+      it('replaces the selection when pressing a widget outside it', async () => {
+        const onSelectionChange = vi.fn();
+        const { widget } = renderSelectableBoard({ onSelectionChange });
+
+        await userEvent.click(widget('B'));
+        onSelectionChange.mockClear();
+
+        fireEvent.pointerDown(widget('C'), { button: 0, pointerId: 1 });
+
+        // The press grabs `c`, so a drag that follows moves exactly that.
+        expect(onSelectionChange).toHaveBeenCalledWith(['c']);
+        expect(widget('B')).not.toHaveAttribute('data-selected');
+      });
+
+      it('drops the selection when pressing an interactive descendant', async () => {
+        const onSelectionChange = vi.fn();
+        const { widget } = renderSelectableBoard({ onSelectionChange });
+
+        await userEvent.click(widget('A'));
+        onSelectionChange.mockClear();
+
+        // Inside the *selected* widget — interacting with its content is still
+        // interacting with something other than the selection.
+        fireEvent.pointerDown(screen.getByRole('button', { name: 'Inner' }), {
+          button: 0,
+          pointerId: 1,
+        });
+
+        expect(onSelectionChange).toHaveBeenCalledWith([]);
+      });
+
+      it('keeps the selection when pressing a widget inside it', async () => {
+        const onSelectionChange = vi.fn();
+        const { widget } = renderSelectableBoard({ onSelectionChange });
+
+        await userEvent.click(widget('B'));
+        onSelectionChange.mockClear();
+
+        // This press is the start of a group drag, not a change of mind.
+        fireEvent.pointerDown(widget('B'), { button: 0, pointerId: 1 });
+
+        expect(onSelectionChange).not.toHaveBeenCalled();
+      });
+
+      it('does not let a nested widget press select its container', async () => {
+        const onOuter = vi.fn();
+        const onInner = vi.fn();
+        render(
+          <Board
+            width={600}
+            cols={6}
+            selectionMode="multiple"
+            defaultLayout={[{ i: 'outer', x: 0, y: 0, w: 6, h: 4 }]}
+            onSelectionChange={onOuter}
+          >
+            <Board.Widget id="outer" qa="Outer" aria-label="Outer">
+              <Board
+                width={400}
+                cols={4}
+                selectionMode="multiple"
+                // Non-draggable: a draggable widget already stops pointer-down
+                // from bubbling (`stopBubbleProps`), so the gap this guards is
+                // only reachable when dragging is off.
+                isDraggable={false}
+                defaultLayout={[{ i: 'inner', x: 0, y: 0, w: 2, h: 1 }]}
+                onSelectionChange={onInner}
+              >
+                <Board.Widget id="inner" qa="Inner" aria-label="Inner">
+                  inner
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+          </Board>,
+        );
+
+        // Pressing the inner widget twice: the second press is a no-op for the
+        // inner board, but it must still not bubble out and select the
+        // container widget on the outer one.
+        fireEvent.pointerDown(screen.getByTestId('Inner'), {
+          button: 0,
+          pointerId: 1,
+        });
+        fireEvent.pointerDown(screen.getByTestId('Inner'), {
+          button: 0,
+          pointerId: 1,
+        });
+
+        expect(onInner).toHaveBeenCalledWith(['inner']);
+        expect(onOuter).not.toHaveBeenCalled();
+        expect(screen.getByTestId('Outer')).not.toHaveAttribute(
+          'data-selected',
+        );
+      });
+
+      it('drops the selection when focus leaves the board', async () => {
+        const onSelectionChange = vi.fn();
+        render(
+          <>
+            <button type="button">Outside</button>
+            <Board
+              width={600}
+              cols={6}
+              selectionMode="multiple"
+              defaultLayout={selectionLayout}
+              onSelectionChange={onSelectionChange}
+            >
+              <Board.Widget id="a" qa="A" aria-label="Alpha">
+                A
+              </Board.Widget>
+              <Board.Widget id="b" qa="B" aria-label="Beta">
+                B
+              </Board.Widget>
+              <Board.Widget id="c" qa="C" aria-label="Gamma">
+                C
+              </Board.Widget>
+            </Board>
+          </>,
+        );
+
+        await userEvent.click(screen.getByTestId('B'));
+        expect(screen.getByTestId('B')).toHaveAttribute('data-selected');
+        onSelectionChange.mockClear();
+
+        screen.getByRole('button', { name: 'Outside' }).focus();
+        await waitFor(() => expect(onSelectionChange).toHaveBeenCalledWith([]));
+        expect(screen.getByTestId('B')).not.toHaveAttribute('data-selected');
+      });
+    });
+
+    describe('keyboard', () => {
+      // No modifier here: focus already says which widget is meant, and Space
+      // cannot be mistaken for the start of a drag.
+      it('toggles the focused widget with Space', async () => {
+        const onSelectionChange = vi.fn();
+        const { widget } = renderSelectableBoard({ onSelectionChange });
+
+        widget('B').focus();
+        await userEvent.keyboard(' ');
+        expect(onSelectionChange).toHaveBeenLastCalledWith(['b']);
+
+        await userEvent.keyboard(' ');
+        expect(onSelectionChange).toHaveBeenLastCalledWith([]);
+      });
+
+      it('leaves Space alone inside a nested control', async () => {
+        const onSelectionChange = vi.fn();
+        renderSelectableBoard({ onSelectionChange });
+
+        screen.getByRole('button', { name: 'Inner' }).focus();
+        await userEvent.keyboard(' ');
+
+        expect(onSelectionChange).not.toHaveBeenCalled();
+      });
+
+      it('clears the selection on Escape', async () => {
+        const onSelectionChange = vi.fn();
+        const { widget } = renderSelectableBoard({ onSelectionChange });
+
+        await userEvent.click(widget('B'));
+        await userEvent.keyboard('{Escape}');
+
+        expect(onSelectionChange).toHaveBeenLastCalledWith([]);
+        expect(widget('B')).not.toHaveAttribute('data-selected');
+      });
+
+      it('reports a delete request without touching the layout', async () => {
+        const onWidgetsDelete = vi.fn();
+        const onLayoutChange = vi.fn();
+        const { widget } = renderSelectableBoard({
+          onWidgetsDelete,
+          onLayoutChange,
+        });
+
+        await userEvent.click(widget('B'));
+        onLayoutChange.mockClear();
+        await userEvent.keyboard('{Delete}');
+
+        expect(onWidgetsDelete).toHaveBeenCalledWith(['b']);
+        // Board reports; the consumer owns the data.
+        expect(onLayoutChange).not.toHaveBeenCalled();
+        expect(screen.getByTestId('B')).toBeInTheDocument();
+      });
+
+      it('does not delete while focus is in a text field', async () => {
+        const onWidgetsDelete = vi.fn();
+        render(
+          <Board
+            width={600}
+            cols={6}
+            selectionMode="multiple"
+            defaultSelectedKeys={['a']}
+            defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 1 }]}
+            onWidgetsDelete={onWidgetsDelete}
+          >
+            <Board.Widget id="a" qa="A">
+              <input aria-label="Field" />
+            </Board.Widget>
+          </Board>,
+        );
+
+        screen.getByLabelText('Field').focus();
+        await userEvent.keyboard('{Delete}');
+
+        expect(onWidgetsDelete).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('accessibility', () => {
+      it('names each widget as a group with a valid roledescription', () => {
+        renderSelectableBoard();
+
+        const host = screen.getByRole('group', { name: 'Alpha' });
+        // `aria-roledescription` is invalid on a role-less element, so the host
+        // must carry a real role for it to mean anything.
+        expect(host).toHaveAttribute(
+          'aria-roledescription',
+          'Draggable widget',
+        );
+        expect(host).toHaveAttribute('aria-keyshortcuts', 'Space');
+      });
+
+      it('prefers aria-label over qa and the layout id for the name', () => {
+        render(
+          <Board
+            width={600}
+            defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 1 }]}
+          >
+            <Board.Widget id="a" qa="QaName">
+              A
+            </Board.Widget>
+          </Board>,
+        );
+
+        expect(
+          screen.getByRole('group', { name: 'QaName' }),
+        ).toBeInTheDocument();
+      });
+
+      it('describes a selected widget as selected', async () => {
+        const { widget } = renderSelectableBoard();
+
+        expect(widget('B')).not.toHaveAttribute('aria-describedby');
+        await userEvent.click(widget('B'));
+
+        const describedBy = widget('B').getAttribute('aria-describedby');
+        expect(describedBy).toBeTruthy();
+        expect(document.getElementById(describedBy!)).toHaveTextContent(
+          'Selected',
+        );
+      });
+
+      it('announces the selection through a live region', async () => {
+        const { widget } = renderSelectableBoard();
+        const status = screen.getByRole('status');
+
+        await userEvent.click(widget('B'));
+        expect(status).toHaveTextContent('Beta selected');
+
+        await shiftPress(widget('A'));
+        expect(status).toHaveTextContent('2 widgets selected');
+
+        await userEvent.keyboard('{Escape}');
+        expect(status).toHaveTextContent('Selection cleared');
+      });
+
+      it('exposes no live region or hint when selection is off', () => {
+        renderSelectableBoard({ selectionMode: 'none' });
+
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      });
+    });
+
+    describe('marquee', () => {
+      const pointer = (
+        type: string,
+        clientX: number,
+        clientY: number,
+        modifiers: { ctrlKey?: boolean; shiftKey?: boolean } = {},
+      ) => {
+        const event = new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+          pointerId: 1,
+          pointerType: 'mouse',
+          clientX,
+          clientY,
+          ...modifiers,
+        });
+        Object.defineProperty(event, 'clientX', { get: () => clientX });
+        Object.defineProperty(event, 'clientY', { get: () => clientY });
+        return event;
+      };
+
+      function setupMarquee(props: Record<string, unknown> = {}) {
+        const utils = renderSelectableBoard(props);
+        const content = screen.getByTestId('A').parentElement as HTMLElement;
+        content.getBoundingClientRect = () => mockRect(0, 0, 600, 400);
+
+        return { ...utils, content };
+      }
+
+      it('selects every widget the band intersects', () => {
+        const onSelectionChange = vi.fn();
+        const { content } = setupMarquee({ onSelectionChange });
+
+        // Band over x:[0,250], y:[0,50] — covers `a` (0-200) and `b` (200-400).
+        fireEvent(content, pointer('pointerdown', 0, 0));
+        fireEvent(window, pointer('pointermove', 250, 50));
+        fireEvent(window, pointer('pointerup', 250, 50));
+
+        expect(onSelectionChange).toHaveBeenCalledTimes(1);
+        expect(onSelectionChange).toHaveBeenCalledWith(['a', 'b']);
+      });
+
+      it('commits once per gesture, not once per pointer frame', () => {
+        const onSelectionChange = vi.fn();
+        const { content } = setupMarquee({ onSelectionChange });
+
+        fireEvent(content, pointer('pointerdown', 0, 0));
+        fireEvent(window, pointer('pointermove', 100, 50));
+        fireEvent(window, pointer('pointermove', 150, 50));
+        fireEvent(window, pointer('pointermove', 250, 50));
+        fireEvent(window, pointer('pointerup', 250, 50));
+
+        expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      });
+
+      it('renders the band while dragging and removes it on release', () => {
+        const { content } = setupMarquee();
+
+        fireEvent(content, pointer('pointerdown', 0, 0));
+        fireEvent(window, pointer('pointermove', 250, 50));
+        expect(screen.getByTestId('BoardMarquee')).toBeInTheDocument();
+
+        fireEvent(window, pointer('pointerup', 250, 50));
+        expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
+      });
+
+      it('ignores a press below the movement threshold and clears instead', async () => {
+        const onSelectionChange = vi.fn();
+        const { content, widget } = setupMarquee({ onSelectionChange });
+
+        await userEvent.click(widget('B'));
+        onSelectionChange.mockClear();
+
+        fireEvent(content, pointer('pointerdown', 0, 300));
+        fireEvent(window, pointer('pointermove', 1, 300));
+        fireEvent(window, pointer('pointerup', 1, 300));
+
+        expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
+        expect(onSelectionChange).toHaveBeenCalledWith([]);
+      });
+
+      it('adds to the existing selection with Shift', async () => {
+        const onSelectionChange = vi.fn();
+        const { content, widget } = setupMarquee({ onSelectionChange });
+
+        await userEvent.click(widget('C'));
+
+        fireEvent(content, pointer('pointerdown', 0, 0, { shiftKey: true }));
+        fireEvent(window, pointer('pointermove', 250, 50));
+        fireEvent(window, pointer('pointerup', 250, 50));
+
+        expect(onSelectionChange).toHaveBeenLastCalledWith(['a', 'b', 'c']);
+      });
+
+      it('never starts on a widget — that press is a drag', () => {
+        const { widget } = setupMarquee();
+
+        fireEvent(widget('A'), pointer('pointerdown', 0, 0));
+        fireEvent(window, pointer('pointermove', 250, 50));
+
+        expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
+      });
+
+      // Dragging is off while the modifier is held, so the whole board — widgets
+      // included — becomes one selection surface.
+      it('adds to the selection from the platform modifier flag', async () => {
+        const onSelectionChange = vi.fn();
+        const { content } = setupMarquee({ onSelectionChange });
+
+        fireEvent(content, pointer('pointerdown', 0, 0, { ctrlKey: true }));
+        fireEvent(window, pointer('pointermove', 250, 50));
+        fireEvent(window, pointer('pointerup', 250, 50));
+
+        expect(onSelectionChange).toHaveBeenCalledWith(['a', 'b']);
+      });
+
+      it('re-announces two consecutive selections that read the same', () => {
+        const { content } = setupMarquee();
+        const status = screen.getByRole('status');
+
+        // Band over a + b.
+        fireEvent(content, pointer('pointerdown', 0, 0));
+        fireEvent(window, pointer('pointermove', 250, 50));
+        fireEvent(window, pointer('pointerup', 250, 50));
+        const first = status.textContent;
+
+        // Band over a + c — a different selection that renders the same text.
+        fireEvent(content, pointer('pointerdown', 0, 0));
+        fireEvent(window, pointer('pointermove', 50, 150));
+        fireEvent(window, pointer('pointerup', 50, 150));
+
+        // A screen reader skips a live-region update whose text is
+        // byte-identical to the one before it, so these must differ.
+        expect(first).toContain('2 widgets selected');
+        expect(status).toHaveTextContent('2 widgets selected');
+        expect(status.textContent).not.toBe(first);
+      });
+
+      it('is disabled by allowMarqueeSelection={false}', () => {
+        const { content } = setupMarquee({ allowMarqueeSelection: false });
+
+        fireEvent(content, pointer('pointerdown', 0, 0));
+        fireEvent(window, pointer('pointermove', 250, 50));
+
+        expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
+      });
+    });
+
+    describe('controlled selection', () => {
+      it('renders the controlled keys and does not self-update', async () => {
+        const onSelectionChange = vi.fn();
+        renderSelectableBoard({ selectedKeys: ['a'], onSelectionChange });
+
+        expect(screen.getByTestId('A')).toHaveAttribute('data-selected');
+
+        await userEvent.click(screen.getByTestId('B'));
+
+        // A plain press replaces, so the reported selection is just `b`.
+        expect(onSelectionChange).toHaveBeenLastCalledWith(['b']);
+        // The consumer owns the state; nothing moved without them.
+        expect(screen.getByTestId('A')).toHaveAttribute('data-selected');
+        expect(screen.getByTestId('B')).not.toHaveAttribute('data-selected');
+      });
+
+      it('ignores a key with no matching widget', () => {
+        renderSelectableBoard({ selectedKeys: ['ghost', 'b'] });
+
+        expect(screen.getByTestId('B')).toHaveAttribute('data-selected');
+        expect(screen.getByTestId('A')).not.toHaveAttribute('data-selected');
+      });
+    });
+  });
+
+  describe('group move', () => {
+    const mockRect = (
+      left: number,
+      top: number,
+      width: number,
+      height: number,
+    ): DOMRect =>
+      ({
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    /**
+     * A 12-column, 100px-per-cell board with no margins, so grid cell N starts
+     * at exactly N * 100 px on both axes.
+     */
+    function setupGroupBoard(props: Record<string, unknown> = {}) {
+      const layout = (props.defaultLayout as LayoutItem[]) ?? [
+        { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+        { i: 'b', x: 6, y: 0, w: 2, h: 1 },
+        { i: 'far', x: 0, y: 4, w: 2, h: 1 },
+      ];
+      const utils = render(
+        <Board
+          width={1200}
+          cols={12}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact={null}
+          selectionMode="multiple"
+          defaultSelectedKeys={['a', 'b']}
+          {...props}
+          defaultLayout={layout}
+        >
+          {layout.map((item) => (
+            <Board.Widget key={item.i} id={item.i} qa={item.i.toUpperCase()}>
+              {item.i}
+            </Board.Widget>
+          ))}
+        </Board>,
+      );
+
+      const grabbed = screen.getByTestId('A');
+      const content = grabbed.parentElement as HTMLElement;
+      content.getBoundingClientRect = () => mockRect(0, 0, 1200, 800);
+      for (const item of layout) {
+        const el = screen.getByTestId(item.i.toUpperCase());
+        el.getBoundingClientRect = () =>
+          mockRect(item.x * 100, item.y * 100, item.w * 100, item.h * 100);
+      }
+
+      return { ...utils, grabbed };
+    }
+
+    /** Positions keyed by id, e.g. `{ a: '2,0' }`. */
+    const positions = (layout: LayoutItem[]) =>
+      Object.fromEntries(layout.map((it) => [it.i, `${it.x},${it.y}`]));
+
+    it('moves every selected widget by the same delta', () => {
+      const onLayoutChange = vi.fn();
+      const { grabbed } = setupGroupBoard({ onLayoutChange });
+
+      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 200, 100));
+      fireEvent(window, pointerEvent('pointerup', 200, 100));
+
+      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
+      expect(positions(committed)).toMatchObject({ a: '2,1', b: '8,1' });
+    });
+
+    it('commits exactly once, before onDragStop', () => {
+      const calls: string[] = [];
+      const { grabbed } = setupGroupBoard({
+        onLayoutChange: () => calls.push('layout'),
+        onDragStop: () => calls.push('stop'),
+      });
+
+      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 200, 0));
+      fireEvent(window, pointerEvent('pointerup', 200, 0));
+
+      expect(calls.filter((c) => c === 'layout')).toHaveLength(1);
+      expect(calls).toEqual(['layout', 'stop']);
+    });
+
+    // The live bug in the app-level version this replaces: clamping each item
+    // separately collapses the group against the wall and it never recovers.
+    it('keeps the group shape when dragged into an edge', () => {
+      const onLayoutChange = vi.fn();
+      const { grabbed } = setupGroupBoard({ onLayoutChange });
+
+      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', -400, 0));
+      fireEvent(window, pointerEvent('pointerup', -400, 0));
+
+      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
+      const a = committed.find((it) => it.i === 'a')!;
+      const b = committed.find((it) => it.i === 'b')!;
+      expect(b.x - a.x).toBe(6);
+      expect(a.x).toBe(0);
+    });
+
+    it('never leaves a widget pinned after a group drop', () => {
+      const onLayoutChange = vi.fn();
+      const { grabbed } = setupGroupBoard({
+        onLayoutChange,
+        compact: 'vertical',
+      });
+
+      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 200, 100));
+      fireEvent(window, pointerEvent('pointerup', 200, 100));
+
+      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
+      // A leaked pin would freeze the widget forever — and consumers persist
+      // layouts, so it would survive a reload.
+      expect(committed.every((it) => !it.static)).toBe(true);
+    });
+
+    it('reports every mover through the drag callbacks', () => {
+      const onDragStart = vi.fn();
+      const { grabbed } = setupGroupBoard({ onDragStart });
+
+      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 100, 0));
+      fireEvent(window, pointerEvent('pointerup', 100, 0));
+
+      const info = onDragStart.mock.lastCall![0];
+      expect(info.items.map((it: LayoutItem) => it.i)).toEqual(['a', 'b']);
+      expect(info.item).toBe(info.items[0]);
+      expect(info.placeholders).toHaveLength(2);
+    });
+
+    // Reported: dragging a group down on a compacting board shoved the widgets
+    // below it further down, and the board only caught up on the *next* pointer
+    // step. The group was being held in place while everything reflowed around
+    // it — something a single widget is never allowed to do under vertical
+    // compaction, which is why a single drag felt natural and a group did not.
+    it('compacts the group during the drag, like a single widget', () => {
+      const frames: LayoutItem[][] = [];
+      const { grabbed } = setupGroupBoard({
+        compact: 'vertical',
+        defaultLayout: [
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+          { i: 'far', x: 0, y: 3, w: 2, h: 1 },
+        ],
+        onDrag: (info: { layout: LayoutItem[] }) =>
+          frames.push(info.layout.map((it) => ({ ...it }))),
+      });
+
+      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 0, 600));
+
+      expect(frames.length).toBeGreaterThan(0);
+      for (const frame of frames) {
+        // `far` rises to the top, and the group packs in beneath it instead of
+        // hanging six rows down where the pointer is.
+        expect(positions(frame)).toEqual({ far: '0,0', a: '0,1', b: '2,0' });
+      }
+    });
+
+    it('renders one placeholder per moving widget', () => {
+      const { grabbed } = setupGroupBoard();
+
+      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 100, 0));
+
+      expect(screen.getAllByTestId('BoardPlaceholder')).toHaveLength(2);
+    });
+
+    it('moves the whole group with the arrow keys', () => {
+      const onLayoutChange = vi.fn();
+      const { grabbed } = setupGroupBoard({ onLayoutChange });
+
+      grabbed.focus();
+      fireEvent.keyDown(grabbed, { key: 'ArrowRight' });
+      fireEvent.keyUp(grabbed, { key: 'ArrowRight' });
+
+      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
+      expect(positions(committed)).toMatchObject({ a: '1,0', b: '7,0' });
+    });
+
+    it('leaves unselected widgets where they are', () => {
+      const onLayoutChange = vi.fn();
+      const { grabbed } = setupGroupBoard({ onLayoutChange });
+
+      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 100, 0));
+      fireEvent(window, pointerEvent('pointerup', 100, 0));
+
+      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
+      expect(positions(committed).far).toBe('0,4');
+    });
+
+    it('drags only the grabbed widget when it is outside the selection', () => {
+      const onLayoutChange = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact={null}
+          selectionMode="multiple"
+          defaultSelectedKeys={['b']}
+          defaultLayout={[
+            { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+            { i: 'b', x: 6, y: 0, w: 2, h: 1 },
+          ]}
+          onLayoutChange={onLayoutChange}
+          onSelectionChange={onSelectionChange}
+        >
+          <Board.Widget id="a" qa="A">
+            a
+          </Board.Widget>
+          <Board.Widget id="b" qa="B">
+            b
+          </Board.Widget>
+        </Board>,
+      );
+
+      const grabbed = screen.getByTestId('A');
+      (grabbed.parentElement as HTMLElement).getBoundingClientRect = () =>
+        mockRect(0, 0, 1200, 800);
+      grabbed.getBoundingClientRect = () => mockRect(0, 0, 200, 100);
+
+      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 100, 0));
+      fireEvent(window, pointerEvent('pointerup', 100, 0));
+
+      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
+      // The press grabbed `a`, so `a` became the selection and `b` stayed put.
+      expect(positions(committed)).toMatchObject({ a: '1,0', b: '6,0' });
+      expect(onSelectionChange).toHaveBeenCalledWith(['a']);
+      expect(screen.getByTestId('B')).not.toHaveAttribute('data-selected');
+    });
+
+    it('grabs the pressed widget as the new selection', () => {
+      const onSelectionChange = vi.fn();
+      render(
+        <Board
+          width={1200}
+          cols={12}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact={null}
+          selectionMode="multiple"
+          defaultSelectedKeys={['b']}
+          defaultLayout={[
+            { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+            { i: 'b', x: 6, y: 0, w: 2, h: 1 },
+          ]}
+          onSelectionChange={onSelectionChange}
+        >
+          <Board.Widget id="a" qa="A">
+            a
+          </Board.Widget>
+          <Board.Widget id="b" qa="B">
+            b
+          </Board.Widget>
+        </Board>,
+      );
+
+      fireEvent.pointerDown(screen.getByTestId('A'), {
+        button: 0,
+        pointerId: 1,
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith(['a']);
+      expect(screen.getByTestId('B')).not.toHaveAttribute('data-selected');
+    });
+
+    it.each([
+      ['no prop', undefined],
+      ['an empty selection', [] as string[]],
+      ['a single selected widget', ['a']],
+    ])('drags identically with %s', (_label, keys) => {
+      const onLayoutChange = vi.fn();
+      const { grabbed } = setupGroupBoard(
+        keys === undefined
+          ? { onLayoutChange, selectionMode: 'none' }
+          : { onLayoutChange, selectedKeys: keys },
+      );
+
+      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 100, 0));
+      fireEvent(window, pointerEvent('pointerup', 100, 0));
+
+      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
+      expect(positions(committed)).toMatchObject({
+        a: '1,0',
+        b: '6,0',
+        far: '0,4',
+      });
     });
   });
 });

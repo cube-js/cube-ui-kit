@@ -38,6 +38,12 @@ export interface WidgetRegistration {
   dragCancel?: string;
   /** Override the board's `dragHandle` selector for this widget. */
   dragHandle?: string;
+  /** Disable selection for this widget while the board's selection is on. */
+  isSelectable?: boolean;
+  /** Override the board's `selectionCancel` selector for this widget. */
+  selectionCancel?: string;
+  /** Accessible name; falls back to `qa`, then the layout item id. */
+  'aria-label'?: string;
 }
 
 /**
@@ -86,7 +92,10 @@ export class BoardWidgetStore {
       prev.styles !== reg.styles ||
       prev.isAutoHeight !== reg.isAutoHeight ||
       prev.dragCancel !== reg.dragCancel ||
-      prev.dragHandle !== reg.dragHandle;
+      prev.dragHandle !== reg.dragHandle ||
+      prev.isSelectable !== reg.isSelectable ||
+      prev.selectionCancel !== reg.selectionCancel ||
+      prev['aria-label'] !== reg['aria-label'];
 
     if (changed) {
       this.version++;

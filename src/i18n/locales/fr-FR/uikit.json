@@ -124,5 +124,13 @@
   "contextMenu": {
     "openContextMenu": "Ouvrir le menu contextuel",
     "contextMenu": "context-menu"
+  },
+  "board": {
+    "widget": "Widget",
+    "draggableWidget": "Widget déplaçable",
+    "selected": "Sélectionné",
+    "widgetSelected": "{{name}} sélectionné",
+    "widgetsSelected": "{{count}} widgets sélectionnés",
+    "selectionCleared": "Sélection effacée"
   }
 }

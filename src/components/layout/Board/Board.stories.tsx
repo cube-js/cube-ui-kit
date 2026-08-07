@@ -54,6 +54,25 @@ export default {
       description: 'Show grid lines behind the widgets.',
       table: { defaultValue: { summary: 'false' } },
     },
+    selectionMode: {
+      control: { type: 'radio' },
+      options: ['none', 'single', 'multiple'],
+      description:
+        'Whether widgets can be selected, and how many at a time. `multiple` also enables the marquee and group movement.',
+      table: { defaultValue: { summary: 'none' } },
+    },
+    allowMarqueeSelection: {
+      control: { type: 'boolean' },
+      description:
+        'Draw a rubber-band selection when a drag starts on empty board space.',
+      table: { defaultValue: { summary: "selectionMode === 'multiple'" } },
+    },
+    selectionCancel: {
+      control: { type: 'text' },
+      description:
+        'CSS selector for descendants whose clicks must never change the selection.',
+      table: { defaultValue: { summary: 'BOARD_SELECTION_CANCEL' } },
+    },
   },
 } as Meta<CubeBoardProps>;
 
@@ -85,23 +104,193 @@ const Template: StoryFn<CubeBoardProps> = (args) => (
     defaultLayout={defaultLayout}
     {...args}
   >
-    <Board.Widget id="a">
+    <Board.Widget id="a" aria-label="Revenue">
       <WidgetBody title="Revenue" text="Drag or resize me" />
     </Board.Widget>
-    <Board.Widget id="b">
+    <Board.Widget id="b" aria-label="Active users">
       <WidgetBody title="Active users" text="Drag or resize me" />
     </Board.Widget>
-    <Board.Widget id="c">
+    <Board.Widget id="c" aria-label="Latency">
       <WidgetBody title="Latency" text="Drag or resize me" />
     </Board.Widget>
-    <Board.Widget id="d">
+    <Board.Widget id="d" aria-label="Requests over time">
       <WidgetBody title="Requests over time" />
     </Board.Widget>
-    <Board.Widget id="e">
+    <Board.Widget id="e" aria-label="Errors over time">
       <WidgetBody title="Errors over time" />
     </Board.Widget>
   </Board>
 );
+
+export const Selection = Template.bind({});
+Selection.args = {
+  selectionMode: 'multiple',
+  showGridLines: 'drag',
+};
+Selection.parameters = {
+  docs: {
+    description: {
+      story:
+        'Press a widget to select it and <kbd>Shift</kbd>-press to add or remove one — the same press also arms a drag, so move and it drags, stay still and it was just a selection. Grabbing an unselected widget makes it the selection; grabbing a selected one moves the whole block. Drag from empty canvas to lasso. Selection behaves like focus: pressing a control inside a widget, or moving focus off the board, drops it. <kbd>Space</kbd> toggles the focused widget, <kbd>Escape</kbd> clears.',
+    },
+  },
+};
+
+const SelectionCancelTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board
+    fill="#light"
+    padding="1x"
+    radius="1r"
+    widgetProps={{ isCard: true }}
+    defaultLayout={[
+      { i: 'a', x: 0, y: 0, w: 4, h: 2 },
+      { i: 'b', x: 4, y: 0, w: 4, h: 2 },
+    ]}
+    {...args}
+  >
+    <Board.Widget id="a" aria-label="Filters">
+      <Flow gap="1x" padding="1.5x" height="100%">
+        <Title level={5} preset="h6">
+          Filters
+        </Title>
+        <TextInput aria-label="Search" placeholder="Typing never selects" />
+        <Button size="small">Pressing never selects</Button>
+      </Flow>
+    </Board.Widget>
+    <Board.Widget id="b" aria-label="Revenue">
+      <WidgetBody title="Revenue" text="Click anywhere here to select" />
+    </Board.Widget>
+  </Board>
+);
+
+export const SelectionCancel = SelectionCancelTemplate.bind({});
+SelectionCancel.args = { selectionMode: 'multiple' };
+SelectionCancel.parameters = {
+  docs: {
+    description: {
+      story:
+        "Interactive descendants keep their own clicks and their native focus: a press on one neither selects the widget nor starts a drag, and it drops the selection, because interacting with a widget's content means you have moved on. On a selectable board this doubles as the drag guard, so the input below is typeable without configuring `dragCancel`. The default `selectionCancel` selector covers native controls and ARIA widget roles; add `data-no-select` to opt a custom control out.",
+    },
+  },
+};
+
+const ControlledSelectionTemplate: StoryFn<CubeBoardProps> = (args) => {
+  const [layout, setLayout] = useState<LayoutItem[]>(defaultLayout);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+
+  return (
+    <Flow gap="1x">
+      <Text>
+        Selected: {selectedKeys.length ? selectedKeys.join(', ') : 'nothing'}
+        {' — press Delete to remove'}
+      </Text>
+      <Board
+        fill="#light"
+        padding="1x"
+        radius="1r"
+        widgetProps={{ isCard: true }}
+        layout={layout}
+        selectedKeys={selectedKeys}
+        onLayoutChange={setLayout}
+        onSelectionChange={setSelectedKeys}
+        // Board reports the intent; removing the widgets is the app's job.
+        onWidgetsDelete={(keys) =>
+          setLayout((prev) => prev.filter((it) => !keys.includes(it.i)))
+        }
+        {...args}
+      >
+        {layout.map((item) => (
+          <Board.Widget
+            key={item.i}
+            id={item.i}
+            aria-label={`Widget ${item.i}`}
+          >
+            <WidgetBody title={`Widget ${item.i}`} />
+          </Board.Widget>
+        ))}
+      </Board>
+    </Flow>
+  );
+};
+
+export const ControlledSelection = ControlledSelectionTemplate.bind({});
+ControlledSelection.args = { selectionMode: 'multiple' };
+ControlledSelection.parameters = {
+  docs: {
+    description: {
+      story:
+        'A fully controlled selection. `onWidgetsDelete` fires on <kbd>Delete</kbd>/<kbd>Backspace</kbd> — Board never mutates the layout itself, so the app decides what removal means (and can make it undoable).',
+    },
+  },
+};
+
+const RestyledSelectionTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board
+    fill="#light"
+    padding="1x"
+    radius="1r"
+    widgetProps={{
+      isCard: true,
+      // The `selected` modifier is available to any style map a consumer passes,
+      // so restyling the selection needs no dedicated API.
+      styles: {
+        border: { '': true, selected: '#note-border' },
+        shadow: { '': false, selected: '0 0 0 1bw #note' },
+      },
+    }}
+    defaultLayout={defaultLayout}
+    {...args}
+  >
+    {defaultLayout.map((item) => (
+      <Board.Widget key={item.i} id={item.i} aria-label={`Widget ${item.i}`}>
+        <WidgetBody title={`Widget ${item.i}`} />
+      </Board.Widget>
+    ))}
+  </Board>
+);
+
+export const RestyledSelection = RestyledSelectionTemplate.bind({});
+RestyledSelection.args = { selectionMode: 'multiple' };
+
+const BorderlessOverflowTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board
+    fill="#light"
+    padding="1x"
+    radius="1r"
+    defaultLayout={[
+      { i: 'card', x: 0, y: 0, w: 4, h: 2 },
+      { i: 'plain', x: 4, y: 0, w: 4, h: 2 },
+    ]}
+    {...args}
+  >
+    <Board.Widget id="card" isCard aria-label="Card widget">
+      <Flow gap="1x" padding="1.5x" height="100%">
+        <Title level={5} preset="h6">
+          Card — clips
+        </Title>
+        <Button size="small">Focus me</Button>
+      </Flow>
+    </Board.Widget>
+    <Board.Widget id="plain" aria-label="Borderless widget">
+      <Flow gap="1x" padding="1.5x" height="100%">
+        <Title level={5} preset="h6">
+          Borderless — does not clip
+        </Title>
+        <Button size="small">Focus me</Button>
+      </Flow>
+    </Board.Widget>
+  </Board>
+);
+
+export const BorderlessOverflow = BorderlessOverflowTemplate.bind({});
+BorderlessOverflow.parameters = {
+  docs: {
+    description: {
+      story:
+        'A widget only clips its content when it is a card, i.e. when it actually draws an edge. A borderless widget lets a descendant paint outside the box, which is what an `outline` (a focus ring, an active state) needs. Pass `widgetProps={{ overflow: "hidden" }}` to clip everything.',
+    },
+  },
+};
 
 export const Default = Template.bind({});
 Default.args = {};

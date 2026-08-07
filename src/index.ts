@@ -70,9 +70,11 @@ export {
   snapToGrid,
   minSize,
   maxSize,
+  BOARD_SELECTION_CANCEL,
 } from './components/layout/Board';
 export type {
   CubeBoardProps,
+  BoardSelectionMode,
   CubeBoardWidgetProps,
   CubeBoardProviderProps,
   CubeBoardResponsiveProps,

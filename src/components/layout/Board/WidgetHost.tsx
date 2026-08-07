@@ -4,6 +4,7 @@ import { useFocusRing, useFocusWithin, useHover, useMove } from 'react-aria';
 import { createPortal } from 'react-dom';
 
 import { useEvent } from '../../../_internal/hooks';
+import { useI18n } from '../../../i18n';
 import { mergeProps } from '../../../utils/react';
 
 import {
@@ -21,6 +22,7 @@ import {
   PositionParams,
   ResizeHandleAxis,
 } from './grid-core';
+import { BoardSelectModifierKey } from './use-board-select-modifier-key';
 
 export type ResizePhase = 'start' | 'move' | 'end';
 
@@ -42,13 +44,22 @@ const WidgetElement = tasty({
     // their columns flush with the parent grid.
     fill: '#surface-2',
     radius: '1cr',
+    // Selection reads as a focus-like state here - it is transient, it follows
+    // what the user is working with, and it is dropped the moment they touch
+    // something else - so it is drawn as an edge treatment rather than as a
+    // fill. `outline` stays reserved for the real focus ring (the kit's
+    // convention everywhere), and the two are kept legible side by side by
+    // token: selection is a saturated `#primary` ring, focus a `#primary-text`
+    // outline sitting one border-width further out (`outlineOffset`).
     border: {
       '': false,
       card: true,
+      selected: '#primary-border',
     },
     shadow: {
       '': false,
       'hovered & !card & (draggable | resizing)': '0 0 0 1bw #border',
+      selected: '0 0 0 1bw #primary',
       // `$dialog-shadow` uses Glaze `#shadow-lg`, which adapts to dark / high-contrast schemes.
       'drag | resizing': '$dialog-shadow',
     },
@@ -92,7 +103,16 @@ const WidgetElement = tasty({
       drag: 'grabbing',
     },
     touchAction: 'none',
-    overflow: 'hidden',
+    // Clip to the boundary only when there is one to clip to. `isCard` is
+    // precisely "this widget draws a visible edge"; a borderless, transparent
+    // widget has no edge to respect, and clipping to it cropped any `outline` a
+    // descendant drew for its own focus/active state (an element's outline is
+    // clipped by an *ancestor's* overflow, never its own). Pass
+    // `widgetProps={{ overflow: 'hidden' }}` to restore the old behavior.
+    overflow: {
+      '': 'visible',
+      card: 'hidden',
+    },
   },
 });
 
@@ -386,6 +406,19 @@ export interface WidgetHostProps {
    * public drag callbacks. Fires after the registry has updated drag state.
    */
   onDragLifecycle?: (id: string, phase: ResizePhase) => void;
+  /** Whether this widget can be selected (board selection on and not opted out). */
+  isSelectable?: boolean;
+  isSelected?: boolean;
+  /** CSS selector for descendants whose clicks must not change the selection. */
+  selectionCancel?: string;
+  /** Id of the board-owned node holding the shared "Selected" description. */
+  selectedHintId?: string;
+  /** Apply a selection gesture. `additive` toggles instead of replacing. */
+  onSelect?: (id: string, additive: boolean) => void;
+  /** Drop the whole selection. Called when the user interacts elsewhere. */
+  onSelectionReset?: () => void;
+  /** Pointer-event property carrying the platform additive-selection modifier. */
+  selectModifierKey?: BoardSelectModifierKey;
 }
 
 /**
@@ -415,10 +448,24 @@ export function WidgetHost(props: WidgetHostProps) {
     onResize,
     onAutoHeight,
     onDragLifecycle,
+    isSelectable = false,
+    isSelected = false,
+    selectionCancel,
+    selectedHintId,
+    onSelect,
+    onSelectionReset,
+    selectModifierKey = 'metaKey',
   } = props;
 
+  const { t } = useI18n();
+  const ariaLabel = registration?.['aria-label'];
   const hostRef = useRef<HTMLDivElement | null>(null);
   const isActiveDrag = dragState?.itemId === item.i;
+  // Every member of a group drag floats, not just the grabbed one — otherwise
+  // the rest sit motionless while their placeholders move, which reads as
+  // broken. Only the grabbed host owns a live `useMove` gesture, so hiding the
+  // others is trivially safe.
+  const isDragMember = !!dragState?.itemIds.includes(item.i);
 
   // Translate a nested board's reported height deficit (signed px: positive when
   // it is squeezed, negative when it has slack) into the absolute number of rows
@@ -523,10 +570,97 @@ export function WidgetHost(props: WidgetHostProps) {
     },
   });
 
+  // `role="group"` is what makes `aria-roledescription` legal here - it is
+  // invalid on a role-less `div`, which is what this element used to be. A
+  // collection role (`option`, `gridcell`, ...) would be the only way to carry a
+  // real `aria-selected`, but those require presentational children and a
+  // widget hosts arbitrary interactive content, so selection is conveyed by the
+  // board's live region plus the shared description below instead.
   const a11yProps = {
-    tabIndex: isDraggable ? 0 : undefined,
-    'aria-roledescription': isDraggable ? 'Draggable widget' : undefined,
-    'aria-label': qa ?? item.i,
+    role: 'group',
+    tabIndex: isDraggable || isSelectable ? 0 : undefined,
+    'aria-roledescription': isDraggable
+      ? t('board.draggableWidget', 'Draggable widget')
+      : t('board.widget', 'Widget'),
+    'aria-label': ariaLabel ?? qa ?? item.i,
+    'aria-describedby': isSelected ? selectedHintId : undefined,
+    'aria-keyshortcuts': isSelectable ? 'Space' : undefined,
+  };
+
+  // True from the moment a real move begins until the click that ends the
+  // gesture has been swallowed. `useMove` binds only pointerdown/keydown, never
+  // click, so a click handler composes with it cleanly - but the click that
+  // *terminates* a drag would otherwise land as a selection. Event order is
+  // pointerdown -> onMove* -> pointerup -> onMoveEnd -> click, so this ref is
+  // always accurate by the time the click arrives. More reliable than a pixel
+  // threshold, which has to guess.
+  const isInteractiveTarget = (target: EventTarget | null) => {
+    const el = target as HTMLElement | null;
+
+    return !!(selectionCancel && el?.closest?.(selectionCancel));
+  };
+
+  /**
+   * Selecting and starting a drag are the *same* gesture: you grab the thing you
+   * are about to move. So the press selects immediately and the drag arms behind
+   * it — move and it drags, stay still and it was only a selection. This is what
+   * every canvas tool does, and it is why there is no ambiguity to resolve with a
+   * modifier.
+   *
+   *  - a press on an interactive descendant belongs to that control, so the
+   *    selection is dropped and the press is left alone;
+   *  - <kbd>Shift</kbd> or the platform modifier toggles membership;
+   *  - a press on an unselected widget makes it the selection, so the drag that
+   *    follows moves exactly what was grabbed;
+   *  - a press on an already-selected widget changes nothing, so the drag moves
+   *    the whole group.
+   *
+   * Runs before the drag handler (see the `mergeProps` order below), so the
+   * registry resolves the group against the selection this press just made.
+   */
+  const handleSelectPointerDown = (e: React.PointerEvent) => {
+    if (!isSelectable || !onSelect || e.button !== 0) return;
+
+    if (isInteractiveTarget(e.target)) {
+      onSelectionReset?.();
+
+      return;
+    }
+
+    // A press this widget owns must never reach an ancestor widget host: in a
+    // nested board the outer widget would otherwise select itself on top of the
+    // inner selection. This has to cover the already-selected case too, which
+    // changes nothing here but is still a press this board handled — and
+    // `stopBubbleProps` below only guards draggable widgets.
+    e.stopPropagation();
+
+    if (e.shiftKey || e[selectModifierKey]) {
+      onSelect(item.i, true);
+
+      return;
+    }
+
+    if (!isSelected) {
+      onSelect(item.i, false);
+    }
+  };
+
+  const handleSelectKeyDown = (e: React.KeyboardEvent) => {
+    // Same guard the arrow keys use: only act when the host itself is focused,
+    // so Space inside a nested input or button keeps its meaning.
+    if (e.target !== e.currentTarget) return;
+    if (!isSelectable || !onSelect) return;
+    if (e.key !== ' ' && e.key !== 'Spacebar') return;
+
+    // No modifier needed here: focus already says which widget is meant, and
+    // Space cannot be mistaken for the start of a drag. Only swallow the key
+    // once we know we are acting on it, so a board without selection still
+    // scrolls on Space.
+    e.preventDefault();
+    e.stopPropagation();
+    // Space is an explicit selection gesture (a click is also "interact with
+    // this"), so it toggles - that is the keyboard's way to deselect one widget.
+    onSelect(item.i, true);
   };
 
   // When this widget is draggable it owns its gesture, so stop the pointer-down
@@ -549,7 +683,19 @@ export function WidgetHost(props: WidgetHostProps) {
   const shouldGateDrag = (target: EventTarget | null) => {
     if (!(target instanceof Element)) return false;
     if (dragHandle && !target.closest(dragHandle)) return true;
-    return !!(dragCancel && target.closest(dragCancel));
+    if (dragCancel && target.closest(dragCancel)) return true;
+
+    // `selectionCancel` already declares which descendants are interactive, and
+    // a drag must not start from them either — otherwise `useMove`'s
+    // `preventDefault()` on pointer-down swallows the native focus and an input
+    // inside a widget cannot be typed into. Only for selectable widgets, so a
+    // board that never opted into selection keeps its exact previous behaviour
+    // and `dragCancel` stays the only thing that gates a drag there.
+    return !!(
+      isSelectable &&
+      selectionCancel &&
+      target.closest(selectionCancel)
+    );
   };
 
   // The gate wraps `useMove`'s own pointer-down handlers rather than a separate
@@ -600,10 +746,24 @@ export function WidgetHost(props: WidgetHostProps) {
         ...(moveProps.onKeyDown && {
           onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
             if (e.target !== e.currentTarget) return;
+            handleSelectKeyDown(e);
+            if (e.defaultPrevented) return;
             moveProps.onKeyDown!(e);
           },
         }),
       };
+
+  // A non-draggable widget gets no `moveProps` at all, so its Space handling and
+  // its focusability have to come from here instead.
+  const selectionProps = isSelectable
+    ? {
+        onPointerDown: handleSelectPointerDown,
+        // A draggable widget routes Space through the drag gate below, which
+        // already enforces the host-focused rule; a non-draggable one gets no
+        // `moveProps` at all and needs its own handler.
+        ...(isDraggable ? {} : { onKeyDown: handleSelectKeyDown }),
+      }
+    : {};
 
   const handleResize = (
     axis: ResizeHandleAxis,
@@ -624,6 +784,7 @@ export function WidgetHost(props: WidgetHostProps) {
     card: isCard,
     hovered: isHovered,
     'focus-visible': isFocusVisible,
+    selected: isSelected,
   };
 
   const content = (
@@ -680,7 +841,36 @@ export function WidgetHost(props: WidgetHostProps) {
   // gesture for its whole lifetime, and portal a separate, non-interactive
   // visual clone into the overlay.
   const overlayNode = registry.overlayRef.current;
-  const floatInOverlay = useOverlay && !!overlayNode && !!dragState;
+  // Non-grabbed group members float too, from their own drag-start rect plus the
+  // one shared gesture delta. Measuring them here would be wrong (the board is
+  // mid-reflow); the registry measured every member once at drag start, which is
+  // the only safe window.
+  const memberRect = isDragMember
+    ? dragState!.memberRects.get(item.i)
+    : undefined;
+  const floatInOverlay =
+    !!overlayNode &&
+    !!dragState &&
+    dragState.pointerType !== 'keyboard' &&
+    (useOverlay || (isDragMember && !!memberRect));
+
+  // Where the floating clone sits. The grabbed widget tracks the live drag rect
+  // directly; a member tracks its own start rect offset by the same delta, so
+  // the block moves as one.
+  const floatRect =
+    floatInOverlay && dragState
+      ? isActiveDrag || !memberRect
+        ? dragState.rect
+        : {
+            left:
+              memberRect.left +
+              (dragState.rect.left - dragState.startRect.left),
+            top:
+              memberRect.top + (dragState.rect.top - dragState.startRect.top),
+            width: memberRect.width,
+            height: memberRect.height,
+          }
+      : null;
 
   const hostStyle: CSSProperties = {
     left: `${pos.left}px`,
@@ -707,7 +897,16 @@ export function WidgetHost(props: WidgetHostProps) {
       // a nested board while the anchor is still over its host - e.g. the Tabs
       // header above a nested board - instead of reflowing the ancestor board).
       data-board-widget-host=""
+      // Which widget, as opposed to "am I inside a widget host" - the two are
+      // separate questions and the existing attribute is used as a presence
+      // selector, so overloading it would make every such selector implicitly
+      // value-dependent. Namespaced so it cannot collide with an app's own
+      // `data-widget-id`.
+      data-board-widget-id={item.i}
       {...mergeProps(
+        // Before `gatedMoveProps`: the press selects, and only then does the
+        // drag start and read that selection to decide what moves.
+        selectionProps,
         gatedMoveProps,
         stopBubbleProps,
         hoverProps,
@@ -729,10 +928,10 @@ export function WidgetHost(props: WidgetHostProps) {
         <WidgetElement
           style={{
             position: 'absolute',
-            left: `${dragState!.rect.left}px`,
-            top: `${dragState!.rect.top}px`,
-            width: `${dragState!.rect.width}px`,
-            height: `${dragState!.rect.height}px`,
+            left: `${floatRect!.left}px`,
+            top: `${floatRect!.top}px`,
+            width: `${floatRect!.width}px`,
+            height: `${floatRect!.height}px`,
             pointerEvents: 'none',
           }}
           mods={{ ...mods, drag: true, floating: true }}

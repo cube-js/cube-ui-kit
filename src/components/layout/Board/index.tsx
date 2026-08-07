@@ -13,6 +13,7 @@ export { Board };
 export { BoardProvider };
 export { BoardResponsive };
 export { Widget as BoardWidget };
+export { BOARD_SELECTION_CANCEL } from './Board';
 
 export type {
   CubeBoardProps,
@@ -20,6 +21,7 @@ export type {
   BoardGridLines,
   BoardInteractionInfo,
 } from './Board';
+export type { BoardSelectionMode } from './use-board-selection';
 export type { CubeBoardResponsiveProps } from './BoardResponsive';
 export type { CubeBoardWidgetProps } from './Widget';
 export type { CubeBoardProviderProps } from './BoardProvider';
