@@ -106,6 +106,7 @@ export const parameters = {
         [
           'Overview',
           'Usage',
+          'Root',
           'Colors',
           'Theming',
           'Typography',
@@ -113,6 +114,7 @@ export const parameters = {
           'Utilities',
           'Base Properties',
           'Field Properties',
+          'CollectionItem',
           'Complex Layout',
           'Advanced States',
         ],
@@ -124,7 +126,6 @@ export const parameters = {
         'Navigation',
         'Overlays',
         'Status',
-        'Components',
         'Other',
         '*',
       ],

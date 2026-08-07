@@ -225,11 +225,6 @@ export const DEFAULTS: DefaultsRegistry = {
         type: { kind: 'default', value: 'file' },
       },
     },
-    FileTabs: {
-      props: {
-        isClosable: { kind: 'default', value: true },
-      },
-    },
     FilterListBox: {
       props: {
         allowsCustomValue: { kind: 'default', value: false },

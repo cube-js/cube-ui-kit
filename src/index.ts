@@ -231,8 +231,6 @@ export * from './components/content/Alert';
 export * from './components/navigation';
 
 // molecules
-export { FileTabs } from './components/organisms/FileTabs/FileTabs';
-export type { CubeFileTabProps } from './components/organisms/FileTabs/FileTabs';
 export { StatsCard } from './components/organisms/StatsCard/StatsCard';
 export type { CubeStatsCard } from './components/organisms/StatsCard/StatsCard';
 export {

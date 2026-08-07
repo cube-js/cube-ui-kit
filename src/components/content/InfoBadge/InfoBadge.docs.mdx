@@ -1,3 +1,9 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import * as InfoBadgeStories from './InfoBadge.stories';
+
+<Meta of={InfoBadgeStories} />
+
 # InfoBadge
 
 An informational icon with a tooltip. Renders as a plain badge (`ItemBadge`) by default, and upgrades to a link or button (`ItemAction`) as soon as `to` or `onPress` is provided — so the same icon can also point at the docs.
