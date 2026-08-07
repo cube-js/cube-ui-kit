@@ -124,5 +124,13 @@
   "contextMenu": {
     "openContextMenu": "Mở menu ngữ cảnh",
     "contextMenu": "context-menu"
+  },
+  "board": {
+    "widget": "Widget",
+    "draggableWidget": "Widget có thể kéo",
+    "selected": "Đã chọn",
+    "widgetSelected": "Đã chọn {{name}}",
+    "widgetsSelected": "Đã chọn {{count}} widget",
+    "selectionCleared": "Đã bỏ chọn"
   }
 }

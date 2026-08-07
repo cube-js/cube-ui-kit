@@ -43,6 +43,9 @@ export {
   validateLayout,
 } from './layout';
 
+export type { MoveElementsOptions, MoveElementsResult } from './group-move';
+export { moveElements } from './group-move';
+
 export {
   resolveCompactionCollision,
   compactItemVertical,

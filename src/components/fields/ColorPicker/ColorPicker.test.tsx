@@ -268,8 +268,9 @@ describe('<ColorPicker />', () => {
 
   describe('popover', () => {
     const channels = () =>
-      [...document.querySelectorAll('[data-input-type="slider"]')].map((el) =>
-        el.getAttribute('aria-label'),
+      Array.from(
+        document.querySelectorAll('[data-input-type="slider"]'),
+        (el) => el.getAttribute('aria-label'),
       );
 
     it('opens and closes from the trigger', async () => {
