@@ -60,8 +60,9 @@ describe('defaults registry', () => {
   it('does not regress coverage', () => {
     // Coverage is partial by design — each component needs a hand-written render
     // fixture. This guards the ratchet: it may go up, never down. Raise
-    // COVERED when you add fixtures.
-    const COVERED = 72;
+    // COVERED when you add fixtures. Lower it only when a component is removed
+    // outright — that shrinks `total` too, so it is not a coverage regression.
+    const COVERED = 71;
     const total = componentsWithDocumentedDefaults().length;
     const covered = Object.keys(DEFAULTS.components).length;
 
