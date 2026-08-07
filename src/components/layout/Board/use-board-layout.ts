@@ -15,15 +15,26 @@ export interface UseBoardLayoutOptions {
 export interface UseBoardLayoutResult {
   layout: LayoutItem[];
   layoutRef: React.MutableRefObject<LayoutItem[]>;
+  /**
+   * Every drop-slot preview for the gesture in flight. A single-widget drag or
+   * resize produces one; a group drag produces one per moving widget.
+   */
+  placeholders: LayoutItem[];
+  /**
+   * The grabbed widget's placeholder — `placeholders[0]`, or `null` when there
+   * is none. Kept as a derived singular so the public `BoardInteractionInfo`
+   * keeps its exact shape.
+   */
   placeholder: LayoutItem | null;
   /**
-   * Synchronously-updated mirror of `placeholder`. `setPlaceholder` only
+   * Synchronously-updated mirrors of the two above. `setPlaceholders` only
    * schedules a re-render, so consumers that run in the same tick as a
-   * `setPlaceholder` call (e.g. drag lifecycle callbacks fired right after the
-   * registry updates the placeholder) must read the ref to see the live value.
+   * `setPlaceholders` call (e.g. drag lifecycle callbacks fired right after the
+   * registry updates the placeholders) must read a ref to see the live value.
    */
+  placeholdersRef: React.MutableRefObject<LayoutItem[]>;
   placeholderRef: React.MutableRefObject<LayoutItem | null>;
-  setPlaceholder: (item: LayoutItem | null) => void;
+  setPlaceholders: (items: LayoutItem[]) => void;
   /** Update the layout. `commit` fires `onLayoutChange`. */
   applyLayout: (layout: LayoutItem[], commit: boolean) => void;
 }
@@ -47,11 +58,15 @@ export function useBoardLayout(
   const layoutRef = useRef<LayoutItem[]>(layout);
   layoutRef.current = layout;
 
-  const [placeholder, setPlaceholderState] = useState<LayoutItem | null>(null);
+  const [placeholders, setPlaceholdersState] = useState<LayoutItem[]>([]);
+  const placeholdersRef = useRef<LayoutItem[]>([]);
   const placeholderRef = useRef<LayoutItem | null>(null);
-  const setPlaceholder = useCallback((item: LayoutItem | null) => {
-    placeholderRef.current = item;
-    setPlaceholderState(item);
+  const setPlaceholders = useCallback((items: LayoutItem[]) => {
+    placeholdersRef.current = items;
+    // Both mirrors move in the same synchronous call, so a same-tick reader can
+    // never see the two disagree.
+    placeholderRef.current = items[0] ?? null;
+    setPlaceholdersState(items);
   }, []);
 
   const onLayoutChangeEvent = useEvent((next: LayoutItem[]) =>
@@ -83,9 +98,11 @@ export function useBoardLayout(
   return {
     layout,
     layoutRef,
-    placeholder,
+    placeholders,
+    placeholder: placeholders[0] ?? null,
+    placeholdersRef,
     placeholderRef,
-    setPlaceholder,
+    setPlaceholders,
     applyLayout,
   };
 }

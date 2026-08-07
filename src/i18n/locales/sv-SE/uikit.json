@@ -124,5 +124,13 @@
   "contextMenu": {
     "openContextMenu": "Öppna snabbmeny",
     "contextMenu": "context-menu"
+  },
+  "board": {
+    "widget": "Widget",
+    "draggableWidget": "Flyttbar widget",
+    "selected": "Markerad",
+    "widgetSelected": "{{name}} markerad",
+    "widgetsSelected": "{{count}} widgetar markerade",
+    "selectionCleared": "Markeringen rensad"
   }
 }

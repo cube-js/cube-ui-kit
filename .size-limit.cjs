@@ -20,15 +20,20 @@ module.exports = [
         }),
       );
     },
-    // 460.16 kB at the time of writing. Raised from 460 kB for Tasty v3, which
-    // it exceeded by 161 B — its new dev diagnostics ship in every bundle,
-    // because `isDevEnv()` is evaluated at runtime so one build serves dev and
-    // production. Headroom is deliberately small so real bloat still trips the
-    // budget.
+    // 464.27 kB at the time of writing. Raised from 462 kB for Board selection
+    // and group movement: ~3.5 kB of engine (a rigid multi-item move primitive,
+    // selection state, marquee hit-testing, a live region) plus ~0.5 kB for the
+    // six `board.*` strings across twelve locales, which are all registered
+    // eagerly. Measured by building with and without the locale keys.
+    //
+    // The Button budget below is unchanged, which is the check that matters:
+    // none of this reaches a consumer who does not import `Board`.
+    //
+    // Headroom is deliberately small so real bloat still trips the budget.
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '462kB',
+    limit: '466kB',
   },
   {
     name: 'Tree shaking (just a Button)',

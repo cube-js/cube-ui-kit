@@ -60,6 +60,22 @@ export interface CubeBoardWidgetProps extends ContainerStyleProps {
    * inside this widget (overrides the board's `dragHandle`).
    */
   dragHandle?: string;
+  /**
+   * Disable selection for this widget while the board's `selectionMode` is on.
+   * Symmetric with `isDraggable` / `isResizable`.
+   */
+  isSelectable?: boolean;
+  /**
+   * CSS selector for descendants whose clicks must not change the selection
+   * inside this widget (overrides the board's `selectionCancel`).
+   */
+  selectionCancel?: string;
+  /**
+   * Accessible name for the widget. Falls back to `qa`, then the layout item id
+   * — both of which are developer-facing, so set this whenever the widget is
+   * user-visible. Also used for the single-selection announcement.
+   */
+  'aria-label'?: string;
 }
 
 /**
@@ -106,6 +122,9 @@ export function Widget(props: CubeBoardWidgetProps) {
     isAutoHeight,
     dragCancel,
     dragHandle,
+    isSelectable,
+    selectionCancel,
+    'aria-label': ariaLabel,
   } = props;
   const registry = useBoardRegistry();
 
@@ -153,6 +172,9 @@ export function Widget(props: CubeBoardWidgetProps) {
         isAutoHeight,
         dragCancel,
         dragHandle,
+        isSelectable,
+        selectionCancel,
+        'aria-label': ariaLabel,
       },
       ownerRef.current,
     );
