@@ -680,6 +680,13 @@ const GroupLabel = tasty({
  * where it has to (`Forest` sits at moss rather than mid-green to leave room for an
  * emerald success; `Ember` at amber rather than orange to leave room for a crimson
  * danger).
+ *
+ * Every preset except `Cube` also states its `pastel` stance outright rather than
+ * inheriting it. `Ocean` / `Forest` / `Ember` pin it off because their saturation
+ * seeds were picked against the per-hue chroma ceiling, and `Slate` pins it on
+ * because being the soft one is its whole identity — a contrast that only reads
+ * while its siblings are pinned off. `Cube` stays empty by design: it is the
+ * shipped palette, so it should follow the default wherever the default goes.
  */
 const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
   // Empty on purpose: the setter replaces, so this *is* the shipped palette — the
@@ -690,6 +697,13 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
     config: {
       hue: 235,
       saturation: 70,
+      // Pinned off. These three were authored against a non-pastel default and
+      // their saturation seeds are tuned for the per-hue chroma ceiling; now that
+      // the shipped palette is pastel, inheriting it would quietly restyle them
+      // and flatten the contrast with `Slate`, whose whole point is being the
+      // muted one. Stating it also keeps all four presets explicit about a knob
+      // that visibly changes them.
+      pastel: false,
       themes: {
         success: { hue: 165 },
         danger: { hue: 25 },
@@ -705,6 +719,7 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
     config: {
       hue: 128,
       saturation: 65,
+      pastel: false,
       themes: {
         success: { hue: 172 },
         danger: { hue: 25 },
@@ -718,6 +733,7 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
     config: {
       hue: 48,
       saturation: 85,
+      pastel: false,
       themes: {
         success: { hue: 155 },
         danger: { hue: 6 },
@@ -730,10 +746,12 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
     label: 'Slate',
     config: {
       hue: 250,
-      // Pastel is what mutes this one: it swaps the per-hue chroma ceiling for a
-      // flat one, so the saturation seed can stay high and still land soft — 60
-      // here resolves to the same accent chroma a non-pastel 30 does, but even
-      // across hues rather than letting the warm statuses run ahead.
+      // Pastel is what mutes this one relative to the three above, which pin it
+      // off: it swaps the per-hue chroma ceiling for a flat one, so the saturation
+      // seed can stay high and still land soft — 60 here resolves to the same
+      // accent chroma a non-pastel 30 does, but even across hues rather than
+      // letting the warm statuses run ahead. Kept explicit even though it now
+      // matches the shipped default, so the four presets read as a set.
       saturation: 60,
       pastel: true,
       themes: {
