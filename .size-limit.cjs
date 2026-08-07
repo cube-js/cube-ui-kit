@@ -20,15 +20,16 @@ module.exports = [
         }),
       );
     },
-    // 460.16 kB at the time of writing. Raised from 460 kB for Tasty v3, which
-    // it exceeded by 161 B — its new dev diagnostics ship in every bundle,
-    // because `isDevEnv()` is evaluated at runtime so one build serves dev and
-    // production. Headroom is deliberately small so real bloat still trips the
-    // budget.
+    // 463.94 kB at the time of writing. Raised from 462 kB for `ColorPicker`,
+    // which adds ~3.8 kB of component, color model and channel definitions. The
+    // previous raise, from 460 kB, was for Tasty v3: its dev diagnostics ship in
+    // every bundle, because `isDevEnv()` is evaluated at runtime so one build
+    // serves dev and production. Headroom is deliberately small so real bloat
+    // still trips the budget.
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '462kB',
+    limit: '465kB',
   },
   {
     name: 'Tree shaking (just a Button)',
