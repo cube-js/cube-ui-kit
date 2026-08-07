@@ -117,6 +117,28 @@ See `src/stories/CreateComponent.docs.mdx` (Storybook → **Getting Started / Cr
 
 See `src/stories/Usage.docs.mdx` (Storybook → **Getting Started / Usage**) for units, base/spacing/size/shadow/layout tokens, color tokens, typography presets, themes, recipes, modifiers, state syntax, icons, and the form system.
 
+## i18n
+
+Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
+
+- **Scope: strings a component renders.** Anything the component itself puts in
+  front of a user — visible text, `aria-label`, `aria-roledescription`, live-region
+  announcements, `title` — goes through `useI18n()`:
+  `t('component.key', 'English default')`. The inline English stays as a
+  belt-and-braces fallback.
+- **Not for stories, docs, or tests.** Storybook stories, `.docs.mdx`, and specs are
+  demo and fixture copy, not product UI. Use plain literals there — a locale key
+  that exists only to feed a story is noise in twelve files, and a test that reads
+  its expectation from the bundle asserts nothing about the string.
+- **Component props that expose a label stay overrides** that win over the
+  translated default: `emptyLabel = t('...', 'No items')`.
+- **All 12 locales, every time.** `en-US` is the source of truth;
+  `locale-parity.test.ts` fails CI if any locale's key set or `{{interpolation}}`
+  tokens diverge. Interpolation is `{{double}}` braces with no ICU, so plurals need
+  separate keys rather than a plural rule.
+- **If a string doubles as a DOM selector**, build the selector from the same
+  `t(...)` value so the two cannot drift when the language changes.
+
 ## TypeScript & Exports
 
 - **Module augmentation:** `src/tasty-augment.d.ts` extends `@tenphi/tasty` with project-specific color tokens, preset names, and theme names.
