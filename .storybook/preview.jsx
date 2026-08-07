@@ -10,6 +10,11 @@ import { Root } from '../src/components/Root';
 import { getI18n, LOCALE_LABELS, SUPPORTED_LOCALES } from '../src/i18n';
 import { setToolbarScheme } from '../src/stories/decorators/colorSchemeBridge';
 
+// Summarizes DOM/React events before Storybook's action spies see them. Without
+// it, serializing a focus event over the preview channel costs ~600ms per focus
+// change in every story — see `.storybook/actionArgs.js`.
+export { argsEnhancers } from './actionArgs';
+
 // Brand both Storybook themes (manager chrome, sidebar selection, toolbar
 // active tab, etc.) with the design system's primary purple — the same color
 // the `#primary` token resolves to in `src/tokens/palette.ts`.
