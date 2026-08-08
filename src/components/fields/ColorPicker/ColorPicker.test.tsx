@@ -38,13 +38,30 @@ describe('<ColorPicker />', () => {
     );
   });
 
-  it('falls back to the placeholder without a color', () => {
-    const { getByRole, getByTestId } = renderWithRoot(
+  it('falls back to a muted placeholder without a color', () => {
+    const { getByRole, getByText, getByTestId } = renderWithRoot(
       <ColorPicker aria-label="Brand" />,
     );
 
     expect(getByRole('button')).toHaveTextContent('Pick a color');
     expect(getByTestId('ColorSwatch')).toHaveAttribute('data-empty');
+    // Rendered through `Text.Placeholder`, so an unset picker never reads like
+    // one holding a value — a real color is bare text with no such wrapper.
+    expect(getByText('Pick a color')).toHaveAttribute('data-qa', 'Text');
+  });
+
+  it('renders a real color as plain text, not as a placeholder', () => {
+    const { getByText } = renderWithRoot(
+      <ColorPicker aria-label="Brand" defaultValue="#26fcb2" />,
+    );
+
+    expect(getByText('#26fcb2')).not.toHaveAttribute('data-qa', 'Text');
+  });
+
+  it('declares itself a picker to the legacy Field wiring', () => {
+    // `Text` would validate on blur and coerce a null value into '', neither of
+    // which suits a trigger that commits on change.
+    expect((ColorPicker as any).cubeInputType).toBe('Picker');
   });
 
   it('leaves the swatch alone when children are null', () => {

@@ -19,6 +19,7 @@ import { FieldBaseProps } from '../../../shared';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
+import { Text } from '../../content/Text';
 import {
   getValidationIcon,
   getValidationTheme,
@@ -172,11 +173,15 @@ export const ColorPicker = forwardRef(function ColorPicker(
   // The swatch carries the color and the label spells it out. `children`
   // replaces that label, and `null` leaves the swatch on its own.
   const label =
-    children !== undefined
-      ? children
-      : color
-        ? formatColor(color, format)
-        : placeholder;
+    children !== undefined ? (
+      children
+    ) : color ? (
+      formatColor(color, format)
+    ) : (
+      // Muted, so an unset picker never reads like one holding a value —
+      // the same treatment `Picker` and `Select` give their placeholders.
+      <Text.Placeholder>{placeholder}</Text.Placeholder>
+    );
 
   const pickerField = (
     <ColorPickerWrapper styles={styles}>
@@ -225,4 +230,9 @@ export const ColorPicker = forwardRef(function ColorPicker(
   return wrapWithField(pickerField, ref as any, props);
 });
 
-(ColorPicker as any).cubeInputType = 'Text';
+/**
+ * Drives the legacy `<Field>` wiring: `Picker` validates on change and passes
+ * the value through untouched, where `Text` would default to `onBlur` and
+ * coerce `null` into an empty string.
+ */
+(ColorPicker as any).cubeInputType = 'Picker';
