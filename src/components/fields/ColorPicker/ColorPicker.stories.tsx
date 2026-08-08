@@ -1,15 +1,11 @@
 import { StoryFn } from '@storybook/react-vite';
 import { useState } from 'react';
-import { userEvent, within } from 'storybook/test';
 
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Text } from '../../content/Text';
-import { Title } from '../../content/Title';
-import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
+import { COLOR_FORMATS } from '../color/color';
 
-import { COLOR_FORMATS } from './color';
 import { ColorPicker, CubeColorPickerProps } from './ColorPicker';
 
 export default {
@@ -19,9 +15,6 @@ export default {
     controls: {
       exclude: baseProps,
     },
-  },
-  args: {
-    width: '30x',
   },
   argTypes: {
     /* Content */
@@ -33,9 +26,14 @@ export default {
       control: { type: 'text' },
       description: 'The selected color in uncontrolled mode',
     },
+    children: {
+      control: { type: 'text' },
+      description:
+        'Replaces the color shown on the trigger. `null` leaves the swatch on its own',
+    },
     placeholder: {
       control: { type: 'text' },
-      description: 'Text shown while the field is empty',
+      description: 'Shown on the trigger while there is no color',
       table: { defaultValue: { summary: 'Pick a color' } },
     },
 
@@ -46,28 +44,31 @@ export default {
       description: 'Notation the value is written in',
       table: { defaultValue: { summary: 'hex' } },
     },
-    formatMode: {
-      options: ['forced', 'derive', 'free'],
-      control: { type: 'radio' },
-      description: 'How strictly the input text is tied to `format`',
-      table: { defaultValue: { summary: 'forced' } },
-    },
     defaultSpace: {
       options: ['hst', 'lch', 'rgb'],
       control: { type: 'radio' },
       description: 'Color concept the popover opens with',
       table: { defaultValue: { summary: 'hst' } },
     },
+    type: {
+      options: ['outline', 'primary', 'clear', 'neutral'],
+      control: { type: 'radio' },
+      description: 'Visual type of the trigger',
+      table: { defaultValue: { summary: 'outline' } },
+    },
     size: {
       options: ['small', 'medium', 'large'],
       control: { type: 'radio' },
-      description: 'Input size',
-      table: { defaultValue: { summary: 'medium' } },
+      description: 'Size of the trigger',
     },
     shouldFlip: {
       control: { type: 'boolean' },
       description: 'Whether the popover may flip to the other side',
       table: { defaultValue: { summary: true } },
+    },
+    triggerTooltip: {
+      control: { type: null },
+      description: 'Tooltip for the trigger, separate from the field tooltip',
     },
 
     /* State */
@@ -85,9 +86,9 @@ export default {
       description: 'Whether the picker is disabled',
       table: { defaultValue: { summary: false } },
     },
-    isReadOnly: {
+    isLoading: {
       control: { type: 'boolean' },
-      description: 'Whether the color can be read but not changed',
+      description: 'Disable interactions while something is in flight',
       table: { defaultValue: { summary: false } },
     },
     isRequired: {
@@ -95,17 +96,7 @@ export default {
       description: 'Whether a color is required before form submission',
       table: { defaultValue: { summary: false } },
     },
-    isLoading: {
-      control: { type: 'boolean' },
-      description: 'Show loading spinner and disable interactions',
-      table: { defaultValue: { summary: false } },
-    },
     ...VALIDATION_ARGS,
-    autoFocus: {
-      control: { type: 'boolean' },
-      description: 'Whether the element should receive focus on render',
-      table: { defaultValue: { summary: false } },
-    },
 
     /* Events */
     onChange: {
@@ -118,14 +109,8 @@ export default {
       description: 'Callback fired when the popover opens or closes',
       control: { type: null },
     },
-    onBlur: { action: 'blur', control: { type: null } },
-    onFocus: { action: 'focus', control: { type: null } },
 
     /* Styling */
-    inputStyles: {
-      control: { type: null },
-      table: { type: { summary: 'Styles' } },
-    },
     triggerStyles: {
       control: { type: null },
       table: { type: { summary: 'Styles' } },
@@ -145,120 +130,50 @@ export const Default = Template.bind({});
 Default.args = {};
 
 export const WithValue = Template.bind({});
-WithValue.args = { defaultValue: '#26fcb2' };
+WithValue.args = { defaultValue: '#7a4dbf' };
 
 export const WithLabel = Template.bind({});
-WithLabel.args = {
-  label: 'Brand color',
-  description: 'Any hex, rgb, hsl, okhsl, okhst or oklch notation works.',
-  defaultValue: '#7a4dbf',
-};
+WithLabel.args = { label: 'Brand color', defaultValue: '#26fcb2' };
 
-export const Formats: StoryFn<CubeColorPickerProps> = (args) => (
-  <Flow gap="2x">
-    {COLOR_FORMATS.map((format) => (
-      <ColorPicker
-        key={format}
-        {...args}
-        label={format}
-        format={format}
-        defaultValue="#7a4dbf"
-      />
-    ))}
-  </Flow>
-);
-Formats.parameters = {
+export const SwatchOnly = Template.bind({});
+SwatchOnly.args = { defaultValue: '#7a4dbf', children: null };
+SwatchOnly.parameters = {
   docs: {
     description: {
       story:
-        'With the default `forced` mode the text is always rewritten in `format`.',
+        'Passing `children={null}` drops the label, leaving a swatch button for toolbars and dense tables.',
     },
   },
 };
 
-export const FormatModes: StoryFn<CubeColorPickerProps> = (args) => {
-  const [forced, setForced] = useState<string | null>('rgb(122, 77, 191)');
-  const [derived, setDerived] = useState<string | null>('rgb(122, 77, 191)');
-  const [free, setFree] = useState<string | null>('rgb(122, 77, 191)');
+export const CustomLabel = Template.bind({});
+CustomLabel.args = { defaultValue: '#7a4dbf', children: 'Accent' };
 
-  return (
-    <Flow gap="2x">
-      <ColorPicker
-        {...args}
-        label="forced"
-        formatMode="forced"
-        value={forced}
-        onChange={setForced}
-      />
-      <Text preset="s4">{JSON.stringify(forced)}</Text>
-
-      <ColorPicker
-        {...args}
-        label="derive"
-        formatMode="derive"
-        value={derived}
-        onChange={setDerived}
-      />
-      <Text preset="s4">{JSON.stringify(derived)}</Text>
-
-      <ColorPicker
-        {...args}
-        label="free"
-        formatMode="free"
-        value={free}
-        onChange={setFree}
-      />
-      <Text preset="s4">{JSON.stringify(free)}</Text>
-    </Flow>
-  );
-};
-FormatModes.parameters = {
-  docs: {
-    description: {
-      story:
-        'All three start from the same loosely written color. `forced` normalizes the text, `derive` keeps the notation but normalizes the value, and `free` passes the text through untouched.',
-    },
-  },
-};
-
-export const Spaces: StoryFn<CubeColorPickerProps> = (args) => (
-  <Space gap="2x" placeItems="start">
-    <ColorPicker {...args} label="HST" defaultSpace="hst" />
-    <ColorPicker {...args} label="LCH" defaultSpace="lch" />
-    <ColorPicker {...args} label="RGB" defaultSpace="rgb" />
+export const Types: StoryFn<CubeColorPickerProps> = (args) => (
+  <Space gap="1x" placeItems="center start">
+    <ColorPicker {...args} aria-label="Outline" type="outline" />
+    <ColorPicker {...args} aria-label="Primary" type="primary" />
+    <ColorPicker {...args} aria-label="Clear" type="clear" />
+    <ColorPicker {...args} aria-label="Neutral" type="neutral" />
   </Space>
 );
-Spaces.args = { defaultValue: '#26fcb2', width: '20x' };
-Spaces.parameters = {
-  docs: {
-    description: {
-      story:
-        'Each picker opens on its own space. Only one popover can be open at a time, so open them one by one to compare.',
-    },
-  },
-};
+Types.args = { defaultValue: '#7a4dbf' };
 
 export const Sizes: StoryFn<CubeColorPickerProps> = (args) => (
-  <Flow gap="2x">
-    <ColorPicker {...args} label="small" size="small" />
-    <ColorPicker {...args} label="medium" size="medium" />
-    <ColorPicker {...args} label="large" size="large" />
-  </Flow>
+  <Space gap="1x" placeItems="center start">
+    <ColorPicker {...args} aria-label="Small" size="small" />
+    <ColorPicker {...args} aria-label="Medium" size="medium" />
+    <ColorPicker {...args} aria-label="Large" size="large" />
+  </Space>
 );
 Sizes.args = { defaultValue: '#7a4dbf' };
 
 export const Disabled = Template.bind({});
 Disabled.args = { defaultValue: '#7a4dbf', isDisabled: true };
 
-export const ReadOnly = Template.bind({});
-ReadOnly.args = { defaultValue: '#7a4dbf', isReadOnly: true };
-
 export const Validation: StoryFn<CubeColorPickerProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
-    <Title level={5}>Valid State</Title>
     <ColorPicker {...args} label="Valid" isValid defaultValue="#26fcb2" />
-
-    <Title level={5}>Invalid State</Title>
     <ColorPicker {...args} label="Invalid" isInvalid defaultValue="#ff0000" />
   </Space>
 );
@@ -266,12 +181,30 @@ export const Validation: StoryFn<CubeColorPickerProps> = (args) => (
 export const Open = Template.bind({});
 Open.args = { defaultValue: '#7a4dbf', defaultOpen: true };
 
-export const OpensOnTrigger: StoryFn<CubeColorPickerProps> = (args) => (
-  <ColorPicker aria-label="Brand color" {...args} />
-);
-OpensOnTrigger.args = { defaultValue: '#7a4dbf' };
-OpensOnTrigger.play = async ({ canvasElement }) => {
-  const canvas = within(canvasElement);
+export const Controlled: StoryFn<CubeColorPickerProps> = (args) => {
+  const [color, setColor] = useState<string | null>('#7a4dbf');
 
-  await userEvent.click(canvas.getByRole('button'));
+  return (
+    <Space gap="1x" placeItems="center start">
+      <ColorPicker
+        {...args}
+        aria-label="Series color"
+        value={color}
+        onChange={setColor}
+      />
+      <ColorPicker
+        aria-label="Mirror"
+        value={color}
+        onChange={setColor}
+        children={null}
+      />
+    </Space>
+  );
+};
+Controlled.parameters = {
+  docs: {
+    description: {
+      story: 'Both triggers share one value, so either one updates the other.',
+    },
+  },
 };

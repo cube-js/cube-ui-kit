@@ -1,0 +1,284 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as ColorInputStories from './ColorInput.stories.tsx';
+
+<Meta of={ColorInputStories} />
+
+# ColorInput
+
+An input for a single color. It reads and writes color **text** — hex, `rgb()`,
+`hsl()`, `okhsl()`, `okhst()` and `oklch()` — shows the current color as a
+swatch, and opens a popover where the color can be dialed in on three
+perceptual axes.
+
+Every conversion goes through [Glaze](https://github.com/tenphi/glaze), so the
+canonical value the picker holds is OKHSL: bounded on every channel, and always
+inside the sRGB gamut. That is what makes an out-of-gamut state impossible and
+lets the same value be re-serialized into any of the supported notations without
+drift.
+
+## When to Use
+
+- Theme and branding forms — a seed color, an accent, a chart series color
+- Anywhere a color has to be typed *or* explored, rather than chosen from a
+  fixed palette
+- When the stored format matters (a design token file wants `oklch()`, a legacy
+  API wants hex) and the input has to guarantee it
+
+Reach for a `RadioGroup` or `Picker` of swatches instead when the choice is
+limited to a handful of approved colors.
+
+## Component
+
+<Story of={ColorInputStories.WithValue} />
+
+---
+
+### Properties
+
+- **`value`** `string | null` — The selected color (controlled)
+- **`defaultValue`** `string | null` — The selected color (uncontrolled)
+- **`onChange`** `(value: string | null) => void` — Fired with the color string, or `null` when the field is cleared
+- **`format`** `'hex' | 'rgb' | 'hsl' | 'okhsl' | 'okhst' | 'oklch'` (default: `hex`) — Notation the value is written in, and the one `forced` mode displays
+- **`formatMode`** `'forced' | 'derive' | 'free'` (default: `forced`) — How strictly the input text is tied to `format`
+- **`defaultSpace`** `'hst' | 'lch' | 'rgb'` (default: `hst`) — Color concept the popover opens with
+- **`placeholder`** `string` (default: `Pick a color`) — Text shown while the field is empty
+- **`size`** `'small' | 'medium' | 'large' | (string & {})` (default: `medium`) — Input size
+- **`isOpen`** `boolean` — Whether the popover is open (controlled)
+- **`defaultOpen`** `boolean` (default: `false`) — Whether the popover is open initially
+- **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
+- **`shouldFlip`** `boolean` (default: `true`) — Whether the popover may flip to the other side of the input
+- **`onFocus`** `(event: FocusEvent) => void` — Fired when the text input receives focus
+- **`onBlur`** `(event: FocusEvent) => void` — Fired when the text input loses focus
+
+Named CSS colors (`red`, `rebeccapurple`) are **not** accepted — they are not a
+color space, and Glaze does not resolve them either. Alpha is parsed but
+dropped: the value is always opaque.
+
+Focusing the field selects the whole value, so a pasted color replaces it
+outright. The string is the unit of editing here: a single channel is tuned with
+the sliders rather than by hand-editing one number inside `oklch(…)`. Clicking a
+field that already has focus positions the caret as usual, so the text stays
+editable by hand.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/getting-started-field-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the input wrapper — the element that owns the border, fill and size.
+
+**Sub-elements:**
+
+- `Prefix` — the container holding the color swatch
+- `Suffix` — the container holding the validation state, then the popover trigger
+- `InputIcon` — the swatch slot
+- `State` — the validation / loading indicator
+
+#### inputStyles
+
+Customizes the `<input>` element itself.
+
+#### triggerStyles
+
+Customizes the popover trigger button.
+
+#### swatchStyles
+
+Customizes the color swatch shown inside the input.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
+- **Color:** `color`, `fill`, `fade`, `image`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier   | Type      | Description                                       |
+| ---------- | --------- | ------------------------------------------------- |
+| `focused`  | `boolean` | The text input has focus                          |
+| `hovered`  | `boolean` | The pointer is over the input                     |
+| `disabled` | `boolean` | The picker is disabled                            |
+| `valid`    | `boolean` | The field is in the valid state                   |
+| `invalid`  | `boolean` | The field is in the invalid state                 |
+| `prefix`   | `boolean` | A prefix (the swatch) is rendered                 |
+| `suffix`   | `boolean` | A suffix (the trigger) is rendered                |
+
+The swatch carries its own `empty` modifier while there is no color to show.
+
+## Format modes
+
+The three modes differ in how much freedom the *text* gets. The value is always
+a real color in every one of them.
+
+<Story of={ColorInputStories.FormatModes} />
+
+| Mode     | Text                                | Value                                                |
+| -------- | ----------------------------------- | ---------------------------------------------------- |
+| `forced` | Rewritten in `format` on blur/Enter | Always written in `format`                           |
+| `derive` | Left exactly as typed               | Normalized in the notation the text is written in    |
+| `free`   | Left exactly as typed               | The text itself, verbatim                            |
+
+In every mode an entry that is not a color is rejected: the previous valid color
+stays the value while it is being typed, and the text snaps back to it on blur.
+Emptying the field is not an error — it commits `null`.
+
+```jsx
+// A design-token form that must store OKLCH
+<ColorInput label="Accent" format="oklch" onChange={setAccent} />
+
+// A CSS editor: keep whatever the author wrote, but guarantee it parses
+<ColorInput label="Color" formatMode="free" onChange={setCss} />
+```
+
+## Color spaces
+
+The popover edits one canonical color through three sets of axes:
+
+| Space | Axes                          | Good for                                              |
+| ----- | ----------------------------- | ----------------------------------------------------- |
+| `hst` | Hue, Saturation, Tone (OKHST) | Building ramps — equal tone steps read as equal steps |
+| `lch` | Lightness, Chroma, Hue (OKLCH)| Matching a value from a design-token file             |
+| `rgb` | Red, Green, Blue              | Matching a value from a legacy palette or a screenshot|
+
+Each of these opens on its own space; the switcher inside the popover moves
+between them at any time.
+
+<Story of={ColorInputStories.Spaces} />
+
+`H` means the same angle in HST and LCH, so the hue strip is identical in both.
+The chroma slider is bounded by the sRGB gamut at the current lightness and hue,
+which is why its range changes as `L` moves.
+
+## Examples
+
+### Basic usage
+
+```jsx
+<ColorInput label="Brand color" defaultValue="#7a4dbf" />
+```
+
+### Controlled
+
+```jsx
+const [color, setColor] = useState('#7a4dbf');
+
+<ColorInput label="Brand color" value={color} onChange={setColor} />;
+```
+
+### Inside a form
+
+```jsx
+<Form onSubmit={onSubmit}>
+  <ColorInput
+    name="accent"
+    label="Accent color"
+    format="oklch"
+    rules={[{ required: true, message: 'Pick an accent color' }]}
+  />
+</Form>
+```
+
+### Opening on a specific space
+
+```jsx
+<ColorInput label="Series color" defaultSpace="rgb" defaultValue="#26fcb2" />
+```
+
+### Using the value as a style
+
+Because the emitted value is a plain color string, it can go straight into a
+tasty style — including the `okhsl()` and `okhst()` notations, which tasty
+parses natively.
+
+```jsx
+const [color, setColor] = useState('okhst(264 80% 60%)');
+
+<>
+  <ColorInput label="Fill" format="okhst" value={color} onChange={setColor} />
+  <Block fill={color} height="10x" radius="1r" />
+</>;
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` — moves focus to the text input, then to the popover trigger
+- `Enter` — commits and normalizes the typed color without leaving the field
+- `Space` / `Enter` on the trigger — opens the popover
+- `Escape` — closes the popover
+- `Left` / `Right`, `Home` / `End` on a channel slider — moves that channel
+- `Left` / `Right` on the space switcher — moves between HST, LCH and RGB
+
+### Screen Reader Support
+
+- The text input announces as a textbox with the field's label
+- The trigger announces as "Open the color picker"
+- The popover announces as a dialog named "Color picker"
+- Each channel slider sits in a group named after its axis (`Hue`,
+  `Saturation`, `Tone`, `Lightness`, `Chroma`, `Red`, `Green`, `Blue`)
+- The swatch is decorative and is not announced — the text carries the value
+
+### ARIA Properties
+
+- `aria-label` — names the field when there is no visible label
+- `aria-describedby` — wired to the field description by the form system
+
+## Best Practices
+
+1. **Do**: name the field, so the text input is announced meaningfully
+
+   ```jsx
+   <ColorInput label="Brand color" />
+   ```
+
+2. **Don't**: rely on the swatch alone to convey the value
+
+   ```jsx
+   <ColorInput aria-label="" />
+   ```
+
+3. **Do**: pick the `format` your backend stores, and leave `formatMode` at
+   `forced` so the two can never disagree.
+
+4. **Don't**: use `free` mode when the value is later parsed by something
+   stricter than a browser — the text is passed through as written.
+
+## Integration with Forms
+
+This component supports all
+[Field properties](/docs/getting-started-field-properties--docs) when used
+within a Form. The field value is the color string, and clearing the input
+stores `null`, which makes `required` rules behave as expected.
+
+## Suggested Improvements
+
+- An eyedropper that samples a pixel from the page, where
+  [`EyeDropper`](https://developer.mozilla.org/en-US/docs/Web/API/EyeDropper) is
+  available
+- Optional alpha support, which the canonical value currently drops
+- A row of recent or preset swatches inside the popover
+- Editable numeric inputs next to each channel slider, for exact entry without
+  going through the text field
+
+## Related Components
+
+- [ColorPicker](/docs/forms-colorpicker--docs) — the same popover behind a swatch button, when the color is never typed
+- [HueSlider](/docs/forms-hueslider--docs) — just the hue axis, when only a hue is needed
+- [Slider](/docs/forms-slider--docs) — the primitive each channel is built from
+- [TextInput](/docs/forms-textinput--docs) — the input chrome this component reuses

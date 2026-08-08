@@ -22,7 +22,7 @@ import {
 } from './color';
 
 const PanelElement = tasty({
-  qa: 'ColorPickerPanel',
+  qa: 'ColorPanel',
   styles: {
     display: 'grid',
     flow: 'row',
@@ -107,7 +107,7 @@ const THUMB_TOKENS = { '#slider-thumb': '(#color-picker, #surface)' };
 const SPACE_STYLES: Styles = { width: '100%' };
 const TAB_STYLES: Styles = { flexGrow: 1 };
 
-export interface ColorPickerPanelProps {
+export interface ColorPanelProps {
   color: ColorValue;
   space: ColorSpace;
   isDisabled?: boolean;
@@ -162,10 +162,11 @@ function ChannelRow({ channel, color, isDisabled, onChange }: ChannelRowProps) {
 }
 
 /**
- * The popover body of `ColorPicker`: a preview, a switch between the three
- * color concepts, and one gradient slider per channel of the active one.
+ * The popover body shared by `ColorInput` and `ColorPicker`: a preview, a
+ * switch between the three color concepts, and one gradient slider per channel
+ * of the active one.
  */
-export function ColorPickerPanel(props: ColorPickerPanelProps) {
+export function ColorPanel(props: ColorPanelProps) {
   const { color, space, isDisabled, previewFormat, onChange, onSpaceChange } =
     props;
 

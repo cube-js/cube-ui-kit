@@ -1,102 +1,67 @@
 import {
   BaseProps,
-  BaseStyleProps,
-  BlockStyleProps,
-  ColorStyleProps,
+  OUTER_STYLES,
   OuterStyleProps,
   Styles,
   tasty,
 } from '@tenphi/tasty';
 import {
-  FocusEvent,
   ForwardedRef,
   forwardRef,
-  KeyboardEvent,
-  MouseEvent,
+  ReactNode,
   useEffect,
   useRef,
   useState,
 } from 'react';
-import { useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal';
-import { PipetteIcon } from '../../../icons';
 import { FieldBaseProps } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
-import { ItemAction } from '../../actions';
-import { useFieldProps } from '../../form';
+import { extractStyles } from '../../../utils/styles';
+import { ItemButton } from '../../actions';
+import { CubeItemProps } from '../../content/Item';
+import {
+  getValidationIcon,
+  getValidationTheme,
+  useFieldProps,
+  wrapWithField,
+} from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
-import { TextInputBase } from '../TextInput/TextInputBase';
-
-import { ColorSpace } from './channels';
+import { ColorSpace } from '../color/channels';
 import {
   ColorFormat,
   ColorValue,
-  detectFormat,
   formatColor,
   parseColor,
-  toHex,
-} from './color';
-import { ColorPickerPanel } from './ColorPickerPanel';
-
-/**
- * How the text in the input relates to the committed value.
- *
- * - `forced` — the text is rewritten in `format` whenever it is not mid-edit,
- *   and the value is always written in `format`.
- * - `derive` — the user's own notation is left alone, and the value is
- *   normalized in whichever notation the text is written in.
- * - `free` — the text *is* the value, verbatim. It is still verified, so an
- *   unparsable entry falls back to the last valid one.
- */
-export type ColorPickerFormatMode = 'forced' | 'derive' | 'free';
+} from '../color/color';
+import { ColorPanel } from '../color/ColorPanel';
+import { ColorSwatch } from '../color/ColorSwatch';
 
 /** What the popover starts from when there is no color to edit yet. */
 const FALLBACK_COLOR: ColorValue = { h: 264, s: 0.8, l: 0.6 };
 
-const SwatchElement = tasty({
-  qa: 'ColorSwatch',
+const ColorPickerWrapper = tasty({
+  qa: 'ColorPickerWrapper',
   styles: {
-    display: 'block',
-    width: '2.5x',
-    height: '2.5x',
-    radius: '1r',
-    fill: {
-      '': '(#color-picker, #clear)',
-      empty: '#clear',
-    },
-    shadow: 'inset 0 0 0 1bw #dark.15',
-    // A single diagonal stroke is the conventional "no color" swatch.
-    image: {
-      '': false,
-      empty:
-        'linear-gradient(to bottom right, #clear 46%, #danger 46%, #danger 54%, #clear 54%)',
-    },
+    display: 'inline-grid',
+    flow: 'column',
+    gridRows: '1sf',
+    placeContent: 'stretch',
+    placeItems: 'stretch',
   },
-});
-
-const ColorPickerButton = tasty(ItemAction, {
-  qa: 'ColorPickerButton',
-  icon: <PipetteIcon />,
 });
 
 export interface CubeColorPickerProps
   extends BaseProps,
-    BaseStyleProps,
     OuterStyleProps,
-    BlockStyleProps,
-    ColorStyleProps,
     FieldBaseProps {
   /** The selected color, as a color string. */
   value?: string | null;
   /** The initial color of an uncontrolled picker. */
   defaultValue?: string | null;
-  /** Called with the normalized color string, or `null` when the field is cleared. */
+  /** Called with the color string, or `null` when there is no color. */
   onChange?: (value: string | null) => void;
-  /** Notation the value is written in, and the one `forced` mode displays. */
+  /** Notation the value is written in. */
   format?: ColorFormat;
-  /** How strictly the input text is tied to `format`. */
-  formatMode?: ColorPickerFormatMode;
   /** Color concept the popover opens with. */
   defaultSpace?: ColorSpace;
   /** Whether the popover is open. Makes the disclosure controlled. */
@@ -105,36 +70,38 @@ export interface CubeColorPickerProps
   defaultOpen?: boolean;
   /** Called when the popover opens or closes. */
   onOpenChange?: (isOpen: boolean) => void;
-  /** Whether the popover may flip to the other side of the input. */
+  /** Whether the popover may flip to the other side of the trigger. */
   shouldFlip?: boolean;
-  /** Text shown while the field is empty. */
-  placeholder?: string;
-  /** The size of the input. */
-  size?: 'small' | 'medium' | 'large' | (string & {});
-  onFocus?: (event: FocusEvent<HTMLInputElement>) => void;
-  onBlur?: (event: FocusEvent<HTMLInputElement>) => void;
-  'aria-label'?: string;
-  'aria-labelledby'?: string;
-  'aria-describedby'?: string;
+  /** Replaces the color shown on the trigger. Pass `null` for a swatch on its own. */
+  children?: ReactNode;
+  /** Shown on the trigger while there is no color. */
+  placeholder?: ReactNode;
+  /** The size of the trigger. */
+  size?: CubeItemProps['size'];
+  /** The visual type of the trigger. */
+  type?: CubeItemProps['type'];
+  theme?: CubeItemProps['theme'];
+  /** Tooltip for the trigger, separate from the field tooltip. */
+  triggerTooltip?: CubeItemProps['tooltip'];
   styles?: Styles;
-  /** Styles of the text input element. */
-  inputStyles?: Styles;
-  /** Styles of the popover trigger button. */
+  /** Styles of the trigger button. */
   triggerStyles?: Styles;
-  /** Styles of the color swatch shown inside the input. */
+  /** Styles of the color swatch. */
   swatchStyles?: Styles;
+  'aria-label'?: string;
 }
 
 /**
- * A color field: the color as text, a swatch of the current value, and a
- * popover to dial it in across OKHST, OKLCH and RGB.
+ * A color swatch that opens the color popover — the same one `ColorInput`
+ * uses, without the text field. Reach for it when a color is chosen but never
+ * typed: a toolbar, a chart legend, a cell in a dense table.
  */
 export const ColorPicker = forwardRef(function ColorPicker(
   allProps: CubeColorPickerProps,
   ref: ForwardedRef<HTMLElement>,
 ) {
   const props = useFieldProps(allProps, {
-    defaultValidationTrigger: 'onBlur',
+    defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
       value: value as string | null | undefined,
       onChange,
@@ -143,65 +110,42 @@ export const ColorPicker = forwardRef(function ColorPicker(
 
   const {
     qa,
+    id,
     value,
     defaultValue,
     onChange,
     format = 'hex',
-    formatMode = 'forced',
     defaultSpace = 'hst',
     isOpen: controlledOpen,
     defaultOpen,
     onOpenChange,
     shouldFlip,
+    children,
     placeholder = 'Pick a color',
     size,
-    isDisabled,
-    isReadOnly,
-    isInvalid,
-    isValid,
-    isLoading,
-    autoFocus,
-    inputStyles,
+    type = 'outline',
+    theme = 'default',
+    triggerTooltip,
     triggerStyles,
     swatchStyles,
-    labelProps: userLabelProps,
-    onBlur: userOnBlur,
-    onFocus,
-    label,
-    description,
+    isDisabled,
+    isLoading,
+    isInvalid,
+    isValid,
+    autoFocus,
     'aria-label': ariaLabel,
-    'aria-labelledby': ariaLabelledby,
-    'aria-describedby': ariaDescribedby,
-    id,
   } = props;
 
-  const initialText = (value ?? defaultValue ?? '').toString();
-  const [text, setText] = useState(() => {
-    const parsed = parseColor(initialText);
+  const styles = extractStyles(props, OUTER_STYLES);
 
-    return parsed && formatMode === 'forced'
-      ? formatColor(parsed, format)
-      : initialText;
-  });
-  const [color, setColor] = useState(() => parseColor(initialText));
+  const [color, setColor] = useState(() =>
+    parseColor((value ?? defaultValue ?? '').toString()),
+  );
   const [space, setSpace] = useState<ColorSpace>(defaultSpace);
   const [isOpen, setOpen] = useState(defaultOpen ?? false);
 
-  const targetRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  /** The last text that parsed, so an invalid entry has something to fall back to. */
-  const validText = useRef(parseColor(initialText) ? text : '');
-  /** What was last handed to `onChange`, to tell our own updates from outside ones. */
+  /** What was last published, to tell our own updates from outside ones. */
   const emitted = useRef<string | null | undefined>(value);
-
-  const emit = useEvent((next: string | null) => {
-    emitted.current = next;
-    onChange?.(next);
-  });
-
-  /** The notation a value should be written in, given the current text. */
-  const outputFormat = (source: string): ColorFormat =>
-    formatMode === 'forced' ? format : detectFormat(source) ?? format;
 
   // Adopt values that did not come from here — a form reset, or a parent that
   // overrides what the user picked.
@@ -209,104 +153,15 @@ export const ColorPicker = forwardRef(function ColorPicker(
     if (value === undefined || value === emitted.current) return;
 
     emitted.current = value;
+    setColor(parseColor((value ?? '').toString()));
+  }, [value]);
 
-    const raw = (value ?? '').toString();
-    const parsed = parseColor(raw);
-    const nextText =
-      parsed && formatMode === 'forced' ? formatColor(parsed, format) : raw;
+  const handleColorChange = useEvent((next: ColorValue) => {
+    const text = formatColor(next, format);
 
-    setColor(parsed);
-    setText(nextText);
-    validText.current = parsed ? nextText : '';
-  }, [value, format, formatMode]);
-
-  const handleTextChange = useEvent((nextText: string) => {
-    setText(nextText);
-
-    if (!nextText.trim()) {
-      setColor(null);
-      validText.current = '';
-      emit(null);
-
-      return;
-    }
-
-    const parsed = parseColor(nextText);
-
-    // Half-typed input keeps the last valid color, so the value stays a real
-    // color at every keystroke.
-    if (!parsed) return;
-
-    setColor(parsed);
-    validText.current = nextText;
-    emit(
-      formatMode === 'free'
-        ? nextText.trim()
-        : formatColor(parsed, outputFormat(nextText)),
-    );
-  });
-
-  /** Resolve whatever is in the input into a real color, or undo it. */
-  const settle = useEvent(() => {
-    if (!text.trim()) return;
-
-    const parsed = parseColor(text);
-
-    if (!parsed) {
-      setText(validText.current);
-
-      return;
-    }
-
-    if (formatMode === 'forced') setText(formatColor(parsed, format));
-  });
-
-  /**
-   * Focusing offers the whole value up for replacement, the way a hex field
-   * does. The string is the unit of editing here: a single channel is tuned
-   * with the sliders, not by hand-editing one number inside `oklch(…)`.
-   *
-   * Read off the event rather than `inputRef`, which `TextInputBase` re-points
-   * through `useCombinedRefs`.
-   */
-  const handleFocus = useEvent((event: FocusEvent<HTMLInputElement>) => {
-    event.currentTarget.select();
-    onFocus?.(event);
-  });
-
-  /**
-   * A click would otherwise drop a caret and undo that selection — the browser
-   * applies it after the focus handler has run. Suppressing the default action
-   * of the focusing press means no caret is ever placed; focus is then moved
-   * here instead, which selects.
-   *
-   * Only the press that *takes* focus is suppressed, so clicking a field that
-   * already has focus still positions the caret, and dragging still selects a
-   * range.
-   */
-  const handleMouseDown = useEvent((event: MouseEvent<HTMLInputElement>) => {
-    if (document.activeElement === event.currentTarget) return;
-
-    event.preventDefault();
-    event.currentTarget.focus();
-  });
-
-  const handleBlur = useEvent((event: FocusEvent<HTMLInputElement>) => {
-    settle();
-    userOnBlur?.(event);
-  });
-
-  const handleKeyDown = useEvent((event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') settle();
-  });
-
-  const handleColorChange = useEvent((nextColor: ColorValue) => {
-    const nextText = formatColor(nextColor, outputFormat(text));
-
-    setColor(nextColor);
-    setText(nextText);
-    validText.current = nextText;
-    emit(nextText);
+    emitted.current = text;
+    setColor(next);
+    onChange?.(text);
   });
 
   const handleOpenChange = useEvent((next: boolean) => {
@@ -314,91 +169,60 @@ export const ColorPicker = forwardRef(function ColorPicker(
     onOpenChange?.(next);
   });
 
-  const { labelProps, inputProps } = useTextField(
-    {
-      id,
-      label,
-      description,
-      'aria-label': ariaLabel,
-      'aria-labelledby': ariaLabelledby,
-      'aria-describedby': ariaDescribedby,
-      isDisabled,
-      isReadOnly,
-      isInvalid,
-      autoFocus,
-      placeholder,
-      value: text,
-      type: 'text',
-      onChange: handleTextChange,
-      onFocus: handleFocus,
-      onBlur: handleBlur,
-      onKeyDown: handleKeyDown,
-    },
-    inputRef,
+  // The swatch carries the color and the label spells it out. `children`
+  // replaces that label, and `null` leaves the swatch on its own.
+  const label =
+    children !== undefined
+      ? children
+      : color
+        ? formatColor(color, format)
+        : placeholder;
+
+  const pickerField = (
+    <ColorPickerWrapper styles={styles}>
+      <DialogTrigger
+        hideArrow
+        type="popover"
+        mobileType="tray"
+        placement="bottom start"
+        isOpen={controlledOpen ?? isOpen}
+        shouldFlip={shouldFlip}
+        onOpenChange={handleOpenChange}
+      >
+        <ItemButton
+          data-popover-trigger
+          id={id}
+          qa={qa || 'ColorPickerTrigger'}
+          data-input-type="colorpicker"
+          type={type}
+          theme={getValidationTheme(theme, { isInvalid, isValid })}
+          size={size}
+          icon={<ColorSwatch color={color} styles={swatchStyles} />}
+          rightIcon={getValidationIcon({ isInvalid, isValid })}
+          tooltip={triggerTooltip}
+          isDisabled={isDisabled || isLoading}
+          autoFocus={autoFocus}
+          aria-label={ariaLabel}
+          mods={{ placeholder: !color }}
+          styles={triggerStyles}
+        >
+          {label}
+        </ItemButton>
+        <Dialog aria-label="Color picker" width="max-content">
+          <ColorPanel
+            color={color ?? FALLBACK_COLOR}
+            space={space}
+            isDisabled={isDisabled}
+            previewFormat={format}
+            onChange={handleColorChange}
+            onSpaceChange={setSpace}
+          />
+        </Dialog>
+      </DialogTrigger>
+    </ColorPickerWrapper>
   );
 
-  return (
-    <TextInputBase
-      {...props}
-      ref={ref}
-      qa={qa || 'ColorPicker'}
-      size={size}
-      autocomplete="off"
-      icon={
-        <SwatchElement
-          mods={{ empty: !color }}
-          styles={swatchStyles}
-          style={color ? { '--color-picker-color': toHex(color) } : undefined}
-        />
-      }
-      inputRef={inputRef}
-      inputProps={{
-        ...inputProps,
-        spellCheck: false,
-        onMouseDown: handleMouseDown,
-      }}
-      inputStyles={inputStyles}
-      labelProps={mergeProps(labelProps, userLabelProps)}
-      wrapperRef={targetRef}
-      isDisabled={isDisabled}
-      isReadOnly={isReadOnly}
-      isInvalid={isInvalid}
-      isValid={isValid}
-      isLoading={isLoading}
-      // The validation state reads left of the trigger, the way `DateInputBase`
-      // orders it for the date pickers.
-      suffixPosition="after"
-      suffix={
-        <DialogTrigger
-          hideArrow
-          type="popover"
-          mobileType="tray"
-          placement="bottom right"
-          targetRef={targetRef}
-          isOpen={controlledOpen ?? isOpen}
-          shouldFlip={shouldFlip}
-          onOpenChange={handleOpenChange}
-        >
-          <ColorPickerButton
-            size={size}
-            aria-label="Open the color picker"
-            isDisabled={isDisabled || isReadOnly}
-            styles={triggerStyles}
-          />
-          <Dialog aria-label="Color picker" width="max-content">
-            <ColorPickerPanel
-              color={color ?? FALLBACK_COLOR}
-              space={space}
-              isDisabled={isDisabled || isReadOnly}
-              previewFormat={outputFormat(text)}
-              onChange={handleColorChange}
-              onSpaceChange={setSpace}
-            />
-          </Dialog>
-        </DialogTrigger>
-      }
-    />
-  );
+  return wrapWithField(pickerField, ref as any, props);
 });
 
 (ColorPicker as any).cubeInputType = 'Text';

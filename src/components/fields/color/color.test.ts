@@ -10,7 +10,7 @@ import {
   toRgb,
 } from './color';
 
-describe('ColorPicker color model', () => {
+describe('color model', () => {
   describe('parseColor', () => {
     it.each([
       ['#f00', '#ff0000'],

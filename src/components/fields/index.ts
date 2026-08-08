@@ -6,6 +6,8 @@ export * from './FileInput/FileInput';
 export * from './TextArea';
 export * from './CommandTextArea';
 export * from './Checkbox';
+export * from './color';
+export * from './ColorInput';
 export * from './ColorPicker';
 export * from './DatePicker';
 export * from './RadioGroup';
