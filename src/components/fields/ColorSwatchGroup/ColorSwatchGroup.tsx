@@ -26,14 +26,19 @@ import type { RadioGroupState } from 'react-stately';
 /** A swatch: a color, and optionally a name to announce instead of the color. */
 export type CubeColorSwatchItem = string | { color: string; label?: string };
 
+/** The swatch edge in px, per size. `Item` takes an exact number. */
+const SWATCH_PX: Record<string, number> = {
+  small: 16,
+  medium: 20,
+  large: 24,
+};
+
 /**
  * The trailing picker is a button wrapping a swatch, which would otherwise read
  * as a box inside a box. Stripping its chrome leaves just the swatch, so it
  * sits in the row as one of them.
  */
 const CUSTOM_TRIGGER_STYLES: Styles = {
-  width: '$swatch-size $swatch-size',
-  height: '$swatch-size $swatch-size',
   padding: 0,
   radius: '1r',
   border: 0,
@@ -42,7 +47,7 @@ const CUSTOM_TRIGGER_STYLES: Styles = {
 /** Matches the ring a selected swatch gets, for a custom color in the row. */
 const CUSTOM_TRIGGER_SELECTED_STYLES: Styles = {
   ...CUSTOM_TRIGGER_STYLES,
-  shadow: '0 0 0 1bw #surface, 0 0 0 2bw #primary',
+  shadow: '0 0 0 1bw #surface, 0 0 0 3bw #primary',
 };
 
 /** The swatch fills the stripped button rather than keeping its own size. */
@@ -95,7 +100,7 @@ const SwatchElement = tasty({
     shadow: {
       '': 'inset 0 0 0 1bw #dark.15',
       selected:
-        '0 0 0 1bw #surface, 0 0 0 2bw #primary, inset 0 0 0 1bw #dark.15',
+        '0 0 0 1bw #surface, 0 0 0 3bw #primary, inset 0 0 0 1bw #dark.15',
     },
     outline: {
       '': '1bw #primary-text.0',
@@ -331,7 +336,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
           qa="ColorSwatchGroupCustom"
           format={format}
           type="clear"
-          size="small"
+          size={SWATCH_PX[size] ?? SWATCH_PX.medium}
           value={isCustom ? currentValue ?? null : null}
           isDisabled={isDisabled}
           isReadOnly={props.isReadOnly}

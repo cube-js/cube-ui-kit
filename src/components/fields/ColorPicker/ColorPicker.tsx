@@ -45,6 +45,17 @@ import { ColorSwatchGroup, CubeColorSwatchItem } from '../ColorSwatchGroup';
  */
 const POPOVER_STYLES: Styles = { overflow: 'auto' };
 
+/**
+ * The rule separating the palette from the editor. `Divider` is not used: it
+ * places itself on named grid lines meant for menu layouts, which this panel
+ * does not define, so it lands in the wrong row and spawns a stray column.
+ */
+const PALETTE_STYLES: Styles = {
+  border: 'top',
+  padding: '1x top',
+  width: '100%',
+};
+
 /** What the popover starts from when there is no color to edit yet. */
 const FALLBACK_COLOR: ColorValue = { h: 264, s: 0.8, l: 0.6 };
 
@@ -253,7 +264,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
                 swatches?.length ? (
                   <ColorSwatchGroup
                     aria-label="Palette"
-                    size="small"
+                    styles={PALETTE_STYLES}
                     colors={swatches}
                     columns={swatchColumns}
                     format={format}
