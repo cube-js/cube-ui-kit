@@ -39,6 +39,12 @@ import { ColorSwatch } from '../color/ColorSwatch';
 import { ColorPopoverContext } from '../color/context';
 import { ColorSwatchGroup, CubeColorSwatchItem } from '../ColorSwatchGroup';
 
+/**
+ * A popover caps its height at half the viewport. The panel can exceed that on
+ * a short screen, and would otherwise spill outside the popover's own border.
+ */
+const POPOVER_STYLES: Styles = { overflow: 'auto' };
+
 /** What the popover starts from when there is no color to edit yet. */
 const FALLBACK_COLOR: ColorValue = { h: 264, s: 0.8, l: 0.6 };
 
@@ -230,7 +236,11 @@ export const ColorPicker = forwardRef(function ColorPicker(
         >
           {label}
         </ItemButton>
-        <Dialog aria-label="Color picker" width="max-content">
+        <Dialog
+          aria-label="Color picker"
+          width="max-content"
+          styles={POPOVER_STYLES}
+        >
           {/* Marks the subtree so a nested swatch group drops its custom-color
               escape hatch, which is a picker and would recurse forever. */}
           <ColorPopoverContext.Provider value={true}>

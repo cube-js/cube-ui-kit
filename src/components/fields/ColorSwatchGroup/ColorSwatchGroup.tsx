@@ -26,11 +26,29 @@ import type { RadioGroupState } from 'react-stately';
 /** A swatch: a color, and optionally a name to announce instead of the color. */
 export type CubeColorSwatchItem = string | { color: string; label?: string };
 
-/** Sized to the swatch, so the trailing picker sits level with the row. */
+/**
+ * The trailing picker is a button wrapping a swatch, which would otherwise read
+ * as a box inside a box. Stripping its chrome leaves just the swatch, so it
+ * sits in the row as one of them.
+ */
 const CUSTOM_TRIGGER_STYLES: Styles = {
   width: '$swatch-size $swatch-size',
   height: '$swatch-size $swatch-size',
-  padding: '.25x',
+  padding: 0,
+  radius: '1r',
+  border: 0,
+};
+
+/** Matches the ring a selected swatch gets, for a custom color in the row. */
+const CUSTOM_TRIGGER_SELECTED_STYLES: Styles = {
+  ...CUSTOM_TRIGGER_STYLES,
+  shadow: '0 0 0 1bw #surface, 0 0 0 2bw #primary',
+};
+
+/** The swatch fills the stripped button rather than keeping its own size. */
+const CUSTOM_SWATCH_STYLES: Styles = {
+  width: '100%',
+  height: '100%',
   radius: '1r',
 };
 
@@ -38,15 +56,16 @@ const GroupElement = tasty({
   qa: 'ColorSwatchGroup',
   styles: {
     display: 'grid',
-    gap: '1x',
+    gap: '.5x',
     placeItems: 'stretch',
     width: 'max-content',
     gridColumns: 'repeat($columns, 1fr)',
 
+    // 20px, 16px and 24px — 1x is 8px.
     '$swatch-size': {
-      '': '3x',
-      'size=small': '2.5x',
-      'size=large': '4x',
+      '': '2.5x',
+      'size=small': '2x',
+      'size=large': '3x',
     },
   },
 });
@@ -308,11 +327,15 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
           aria-label="Custom color"
           qa="ColorSwatchGroupCustom"
           format={format}
+          type="clear"
           size="small"
           value={isCustom ? currentValue ?? null : null}
           isDisabled={isDisabled}
           isReadOnly={props.isReadOnly}
-          triggerStyles={CUSTOM_TRIGGER_STYLES}
+          triggerStyles={
+            isCustom ? CUSTOM_TRIGGER_SELECTED_STYLES : CUSTOM_TRIGGER_STYLES
+          }
+          swatchStyles={CUSTOM_SWATCH_STYLES}
           onChange={publish}
         >
           {null}
