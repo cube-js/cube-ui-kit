@@ -13,6 +13,7 @@ import { useRadioGroupState } from 'react-stately';
 import { useEvent } from '../../../_internal';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
 import { HiddenInput } from '../../HiddenInput';
@@ -144,6 +145,9 @@ function Swatch({
     state,
     inputRef,
   );
+  // `useRadio` reports selection but not focus, and the swatch is the only
+  // thing a keyboard user can see — without this the ring never appears.
+  const { isFocused, focusProps } = useFocus({ isDisabled }, true);
 
   return (
     <SwatchElement
@@ -151,13 +155,14 @@ function Swatch({
       mods={{
         selected: isSelected,
         disabled: isRadioDisabled,
+        focused: isFocused,
         ...mods,
       }}
       styles={styles}
       style={{ '--color-swatch-color': colorKey }}
     >
       <HiddenInput
-        {...inputProps}
+        {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
         qa="ColorSwatchInput"
         mods={{ button: true, disabled: isRadioDisabled }}
@@ -263,10 +268,12 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
   });
 
   const domRef = useFocusableRef(ref as any, useRef(null));
-  const { radioGroupProps } = useRadioGroup(
+  const { radioGroupProps, labelProps } = useRadioGroup(
     {
       ...props,
-      'aria-label': ariaLabel ?? 'Colors',
+      // Only name the group here when nothing else does: an `aria-label` set
+      // unconditionally would outrank the visible label React Aria wires up.
+      'aria-label': props.label ? undefined : ariaLabel ?? 'Colors',
       orientation: 'horizontal',
     },
     state,
@@ -304,6 +311,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
           size="small"
           value={isCustom ? currentValue ?? null : null}
           isDisabled={isDisabled}
+          isReadOnly={props.isReadOnly}
           triggerStyles={CUSTOM_TRIGGER_STYLES}
           onChange={publish}
         >
@@ -313,7 +321,10 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
     </GroupElement>
   );
 
-  return wrapWithField(group, domRef, props);
+  return wrapWithField(group, domRef, {
+    ...props,
+    labelProps: mergeProps(props.labelProps, labelProps),
+  });
 });
 
 (ColorSwatchGroup as any).cubeInputType = 'Picker';

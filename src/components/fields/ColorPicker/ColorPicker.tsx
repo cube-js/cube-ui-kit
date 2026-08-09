@@ -138,6 +138,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
     triggerStyles,
     swatchStyles,
     isDisabled,
+    isReadOnly,
     isLoading,
     isInvalid,
     isValid,
@@ -221,7 +222,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
           icon={<ColorSwatch color={color} styles={swatchStyles} />}
           rightIcon={getValidationIcon({ isInvalid, isValid })}
           tooltip={triggerTooltip}
-          isDisabled={isDisabled || isLoading}
+          isDisabled={isDisabled || isLoading || isReadOnly}
           autoFocus={autoFocus}
           aria-label={ariaLabel}
           mods={{ placeholder: !color }}

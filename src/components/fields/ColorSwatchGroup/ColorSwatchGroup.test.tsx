@@ -97,6 +97,32 @@ describe('<ColorSwatchGroup />', () => {
     expect(getByRole('radio', { name: '#7a4dbf' })).not.toBeChecked();
   });
 
+  it('shows a focus ring on the focused swatch', async () => {
+    // The swatch is all a keyboard user can see, so without this there is no
+    // way to tell which one is focused.
+    const { getByRole, getAllByTestId } = renderWithRoot(
+      <ColorSwatchGroup aria-label="Palette" colors={PALETTE} />,
+    );
+
+    await userEvent.tab();
+
+    expect(getByRole('radio', { name: '#7a4dbf' })).toHaveFocus();
+    expect(getAllByTestId('ColorSwatchOption')[0]).toHaveAttribute(
+      'data-focused',
+    );
+  });
+
+  it('lets a visible label name the group', () => {
+    // A hardcoded aria-label would outrank the label React Aria wires up.
+    const { getByRole } = renderWithRoot(
+      <ColorSwatchGroup label="Brand color" colors={PALETTE} />,
+    );
+
+    expect(
+      getByRole('radiogroup', { name: 'Brand color' }),
+    ).toBeInTheDocument();
+  });
+
   it('lays the swatches out in the requested number of columns', () => {
     const { getByTestId } = renderWithRoot(
       <ColorSwatchGroup aria-label="Palette" colors={PALETTE} columns={2} />,
@@ -118,6 +144,21 @@ describe('<ColorSwatchGroup />', () => {
       );
 
       expect(queryByTestId('ColorSwatchGroupCustom')).toBeInTheDocument();
+    });
+
+    it('locks the picker when the group is read-only', () => {
+      // Read-only stops the swatches through the radio state; the picker is a
+      // separate control and would otherwise stay live.
+      const { getByTestId } = renderWithRoot(
+        <ColorSwatchGroup
+          aria-label="Palette"
+          colors={PALETTE}
+          allowCustom
+          isReadOnly
+        />,
+      );
+
+      expect(getByTestId('ColorSwatchGroupCustom')).toBeDisabled();
     });
 
     it('drops the picker inside a color popover, where it would recurse', async () => {
