@@ -36,6 +36,8 @@ import {
 } from '../color/color';
 import { ColorPanel } from '../color/ColorPanel';
 import { ColorSwatch } from '../color/ColorSwatch';
+import { ColorPopoverContext } from '../color/context';
+import { ColorSwatchGroup, CubeColorSwatchItem } from '../ColorSwatchGroup';
 
 /** What the popover starts from when there is no color to edit yet. */
 const FALLBACK_COLOR: ColorValue = { h: 264, s: 0.8, l: 0.6 };
@@ -84,6 +86,10 @@ export interface CubeColorPickerProps
   theme?: CubeItemProps['theme'];
   /** Tooltip for the trigger, separate from the field tooltip. */
   triggerTooltip?: CubeItemProps['tooltip'];
+  /** Colors to offer under the editor, for picking without dialing one in. */
+  swatches?: CubeColorSwatchItem[];
+  /** How many swatches per row. Defaults to a single row. */
+  swatchColumns?: number;
   styles?: Styles;
   /** Styles of the trigger button. */
   triggerStyles?: Styles;
@@ -127,6 +133,8 @@ export const ColorPicker = forwardRef(function ColorPicker(
     type = 'outline',
     theme = 'default',
     triggerTooltip,
+    swatches,
+    swatchColumns,
     triggerStyles,
     swatchStyles,
     isDisabled,
@@ -163,6 +171,14 @@ export const ColorPicker = forwardRef(function ColorPicker(
     emitted.current = text;
     setColor(next);
     onChange?.(text);
+  });
+
+  const colorText = color ? formatColor(color, format) : null;
+
+  const handleSwatchChange = useEvent((next: string | null) => {
+    const parsed = next ? parseColor(next) : null;
+
+    if (parsed) handleColorChange(parsed);
   });
 
   const handleOpenChange = useEvent((next: boolean) => {
@@ -214,14 +230,32 @@ export const ColorPicker = forwardRef(function ColorPicker(
           {label}
         </ItemButton>
         <Dialog aria-label="Color picker" width="max-content">
-          <ColorPanel
-            color={color ?? FALLBACK_COLOR}
-            space={space}
-            isDisabled={isDisabled}
-            previewFormat={format}
-            onChange={handleColorChange}
-            onSpaceChange={setSpace}
-          />
+          {/* Marks the subtree so a nested swatch group drops its custom-color
+              escape hatch, which is a picker and would recurse forever. */}
+          <ColorPopoverContext.Provider value={true}>
+            <ColorPanel
+              color={color ?? FALLBACK_COLOR}
+              space={space}
+              isDisabled={isDisabled}
+              previewFormat={format}
+              swatches={
+                swatches?.length ? (
+                  <ColorSwatchGroup
+                    aria-label="Palette"
+                    size="small"
+                    colors={swatches}
+                    columns={swatchColumns}
+                    format={format}
+                    value={colorText}
+                    isDisabled={isDisabled}
+                    onChange={handleSwatchChange}
+                  />
+                ) : null
+              }
+              onChange={handleColorChange}
+              onSpaceChange={setSpace}
+            />
+          </ColorPopoverContext.Provider>
         </Dialog>
       </DialogTrigger>
     </ColorPickerWrapper>

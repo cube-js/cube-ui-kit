@@ -42,6 +42,8 @@ readable and pasteable as text.
 - **`theme`** `CubeItemProps['theme']` (default: `default`) — Theme of the trigger
 - **`size`** `CubeItemProps['size']` — Size of the trigger
 - **`triggerTooltip`** `CubeItemProps['tooltip']` — Tooltip for the trigger, separate from the field tooltip
+- **`swatches`** `Array<string | { color: string; label?: string }>` — Colors to offer under the editor, as a [ColorSwatchGroup](/docs/forms-colorswatchgroup--docs)
+- **`swatchColumns`** `number` — How many swatches per row. Defaults to a single row
 - **`isOpen`** `boolean` — Whether the popover is open (controlled)
 - **`defaultOpen`** `boolean` (default: `false`) — Whether the popover is open initially
 - **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
@@ -91,6 +93,18 @@ The `mods` property accepts the following modifiers you can override:
 | `placeholder` | `boolean` | No color is selected yet             |
 
 The swatch carries its own `empty` modifier while there is no color to show.
+
+### A palette under the editor
+
+Pass `swatches` and a [ColorSwatchGroup](/docs/forms-colorswatchgroup--docs)
+appears below the channels, so a common color is one press away.
+
+```jsx
+<ColorPicker label="Brand color" swatches={palette} swatchColumns={4} />
+```
+
+That group never offers its own custom-color escape hatch, since the escape
+hatch is a `ColorPicker` and would nest popovers without end.
 
 ## Examples
 

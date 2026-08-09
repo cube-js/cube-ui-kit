@@ -1,5 +1,5 @@
 import { Styles, tasty } from '@tenphi/tasty';
-import { useMemo } from 'react';
+import { ReactNode, useMemo } from 'react';
 
 import { useEvent } from '../../../_internal';
 import { Radio } from '../RadioGroup';
@@ -113,6 +113,8 @@ export interface ColorPanelProps {
   isDisabled?: boolean;
   /** Notation used for the preview caption. */
   previewFormat: ColorFormat;
+  /** Optional palette rendered under the channels. */
+  swatches?: ReactNode;
   onChange: (color: ColorValue) => void;
   onSpaceChange: (space: ColorSpace) => void;
 }
@@ -167,8 +169,15 @@ function ChannelRow({ channel, color, isDisabled, onChange }: ChannelRowProps) {
  * of the active one.
  */
 export function ColorPanel(props: ColorPanelProps) {
-  const { color, space, isDisabled, previewFormat, onChange, onSpaceChange } =
-    props;
+  const {
+    color,
+    space,
+    isDisabled,
+    previewFormat,
+    swatches,
+    onChange,
+    onSpaceChange,
+  } = props;
 
   const colorTokens = useMemo(
     () => ({
@@ -215,6 +224,7 @@ export function ColorPanel(props: ColorPanelProps) {
           />
         ))}
       </ChannelsElement>
+      {swatches}
     </PanelElement>
   );
 }

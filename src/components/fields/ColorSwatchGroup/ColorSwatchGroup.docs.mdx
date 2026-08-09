@@ -1,0 +1,202 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as ColorSwatchGroupStories from './ColorSwatchGroup.stories.tsx';
+
+<Meta of={ColorSwatchGroupStories} />
+
+# ColorSwatchGroup
+
+A grid of color swatches, one of which can be selected. It is the palette half
+of choosing a color, where [ColorPicker](/docs/forms-colorpicker--docs) is the
+freeform half — and the two compose: pass `swatches` to a `ColorPicker` and the
+palette appears under the editor.
+
+Under the hood it is a radio group, so one tab stop and arrow keys move between
+swatches. The API is shaped after `Picker` rather than `RadioGroup`: colors go in
+as data, not as children.
+
+## When to Use
+
+- A brand or theme palette where freeform color would be wrong
+- Chart series, tag and label colors — a small approved set
+- Inside a `ColorPicker` popover, as a shortcut past the sliders
+
+## Component
+
+<Story of={ColorSwatchGroupStories.WithSelection} />
+
+---
+
+### Properties
+
+- **`colors`** `Array<string | { color: string; label?: string }>` — The colors to offer
+- **`value`** `string | null` — The selected color (controlled)
+- **`defaultValue`** `string | null` — The selected color (uncontrolled)
+- **`onChange`** `(value: string | null) => void` — Fired with the chosen color, written in `format`
+- **`format`** `'hex' | 'rgb' | 'hsl' | 'okhsl' | 'okhst' | 'oklch'` (default: `hex`) — Notation the value is written in
+- **`columns`** `number` — How many swatches per row. Defaults to a single row
+- **`allowCustom`** `boolean` (default: `false`) — Append a `ColorPicker` for colors outside the set
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of each swatch
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/getting-started-field-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the grid.
+
+#### swatchStyles
+
+Customizes an individual swatch.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier   | Type      | Description                        |
+| ---------- | --------- | ---------------------------------- |
+| `selected` | `boolean` | The swatch is the selected color   |
+| `disabled` | `boolean` | The group is disabled              |
+
+## Swatches must be unique
+
+Equivalent colors are collapsed into one swatch, because two entries for the
+same color make selection ambiguous — there would be no way to say which one is
+selected. Matching is done on the canonical hex, so `#ff0000`, `rgb(255 0 0)`
+and `hsl(0 100% 50%)` are one swatch, not three.
+
+<Story of={ColorSwatchGroupStories.Deduplicated} />
+
+The same matching decides which swatch a value selects, so `value` need not be
+written in the same notation as the swatch it refers to.
+
+## Examples
+
+### Basic usage
+
+```jsx
+<ColorSwatchGroup
+  label="Brand color"
+  colors={['#7a4dbf', '#26fcb2', '#ff0000']}
+  value={color}
+  onChange={setColor}
+/>
+```
+
+### Wrapping onto rows
+
+Without `columns` the swatches sit on a single row.
+
+<Story of={ColorSwatchGroupStories.Columns} />
+
+```jsx
+<ColorSwatchGroup colors={palette} columns={4} />
+```
+
+### Naming the swatches
+
+A swatch announces its color by default, which is rarely the most useful thing
+to hear. Give the colors names when they have them.
+
+<Story of={ColorSwatchGroupStories.Named} />
+
+```jsx
+<ColorSwatchGroup
+  colors={[
+    { color: '#7a4dbf', label: 'Primary' },
+    { color: '#26fcb2', label: 'Success' },
+  ]}
+/>
+```
+
+### Allowing a color outside the set
+
+<Story of={ColorSwatchGroupStories.AllowCustom} />
+
+```jsx
+<ColorSwatchGroup colors={palette} allowCustom />
+```
+
+The trailing picker shows the current color whenever that color is not one of
+the swatches, so a custom choice stays visible.
+
+### Inside a ColorPicker
+
+<Story of={ColorSwatchGroupStories.InsideColorPicker} />
+
+```jsx
+<ColorPicker label="Brand color" swatches={palette} swatchColumns={4} />
+```
+
+`allowCustom` is ignored there, and deliberately so: the escape hatch is itself
+a `ColorPicker`, so offering it inside one would nest popovers without end. The
+group reads a context the popover provides, which means the recursion cannot be
+written even by hand.
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` — moves focus into the group, landing on the selected swatch
+- `Left` / `Right`, `Up` / `Down` — move between swatches, selecting as they go
+- `Space` — selects the focused swatch
+
+### Screen Reader Support
+
+- The group announces as a radiogroup, named by its label or `aria-label`
+- Each swatch announces as a radio named by its `label`, or by its color
+- Give the group a name: "radiogroup" alone says nothing about what is chosen
+
+### ARIA Properties
+
+- `aria-label` — names the group when there is no visible label
+
+## Best Practices
+
+1. **Do**: name the colors when they mean something
+
+   ```jsx
+   <ColorSwatchGroup colors={[{ color: '#ff0000', label: 'Danger' }]} />
+   ```
+
+2. **Don't**: pass the same color twice expecting two swatches — one is dropped
+
+   ```jsx
+   <ColorSwatchGroup colors={['#ff0000', 'rgb(255 0 0)']} />
+   ```
+
+3. **Do**: reach for `allowCustom` only where a color outside the palette is
+   genuinely acceptable. A fixed set is the point of this component.
+
+## Integration with Forms
+
+This component supports all
+[Field properties](/docs/getting-started-field-properties--docs) when used
+within a Form. The field value is the color string.
+
+## Suggested Improvements
+
+- Sections with headings, for palettes with more than one group
+- An optional "no color" swatch that clears the value
+- Multi-selection, for palettes that build a series
+
+## Related Components
+
+- [ColorPicker](/docs/forms-colorpicker--docs) — freeform color behind a swatch button
+- [ColorInput](/docs/forms-colorinput--docs) — freeform color as editable text
+- [RadioGroup](/docs/forms-radiogroup--docs) — the selection primitive this is built on

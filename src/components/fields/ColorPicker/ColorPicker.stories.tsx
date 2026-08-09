@@ -70,6 +70,14 @@ export default {
       control: { type: null },
       description: 'Tooltip for the trigger, separate from the field tooltip',
     },
+    swatches: {
+      control: { type: 'object' },
+      description: 'Colors to offer under the editor, as a ColorSwatchGroup',
+    },
+    swatchColumns: {
+      control: { type: 'number' },
+      description: 'How many swatches per row. Defaults to a single row',
+    },
 
     /* State */
     isOpen: {
@@ -177,6 +185,31 @@ export const Validation: StoryFn<CubeColorPickerProps> = (args) => (
     <ColorPicker {...args} label="Invalid" isInvalid defaultValue="#ff0000" />
   </Space>
 );
+
+export const WithSwatches = Template.bind({});
+WithSwatches.args = {
+  defaultValue: '#7a4dbf',
+  defaultOpen: true,
+  swatchColumns: 4,
+  swatches: [
+    '#7a4dbf',
+    '#26fcb2',
+    '#ff0000',
+    '#ff8800',
+    '#ffd400',
+    '#00a3ff',
+    '#0044cc',
+    '#111111',
+  ],
+};
+WithSwatches.parameters = {
+  docs: {
+    description: {
+      story:
+        'A palette under the editor, so a common color is one press away. It never offers a custom-color escape hatch here — that hatch is a picker, and would nest popovers without end.',
+    },
+  },
+};
 
 export const Open = Template.bind({});
 Open.args = { defaultValue: '#7a4dbf', defaultOpen: true };

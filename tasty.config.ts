@@ -248,6 +248,8 @@ export default {
     // top of it. Both are set as inline custom properties per render.
     '#color-picker',
     '#color-picker-contrast',
+    // ColorSwatchGroup: the color of an individual swatch, set inline per option.
+    '#color-swatch',
 
     // Custom Property Tokens (from src/tokens/base.ts)
     '$tab-indicator-size',
