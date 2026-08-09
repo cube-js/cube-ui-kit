@@ -237,7 +237,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
             <ColorPanel
               color={color ?? FALLBACK_COLOR}
               space={space}
-              isDisabled={isDisabled}
+              isDisabled={isDisabled || isReadOnly}
               previewFormat={format}
               swatches={
                 swatches?.length ? (
@@ -248,7 +248,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
                     columns={swatchColumns}
                     format={format}
                     value={colorText}
-                    isDisabled={isDisabled}
+                    isDisabled={isDisabled || isReadOnly}
                     onChange={handleSwatchChange}
                   />
                 ) : null

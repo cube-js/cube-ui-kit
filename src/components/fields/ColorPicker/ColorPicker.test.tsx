@@ -140,6 +140,30 @@ describe('<ColorPicker />', () => {
     );
   });
 
+  it('leaves an open panel uneditable while read-only', async () => {
+    // Disabling the trigger only stops it being opened; a controlled or
+    // default-open popover would otherwise stay fully editable.
+    const { getByRole, getAllByRole } = renderWithRoot(
+      <ColorPicker
+        aria-label="Brand"
+        defaultValue="#ff0000"
+        swatches={['#7a4dbf', '#26fcb2']}
+        defaultOpen
+        isReadOnly
+      />,
+    );
+
+    await waitFor(() => expect(getByRole('dialog')).toBeInTheDocument());
+
+    for (const slider of getAllByRole('slider')) {
+      expect(slider).toBeDisabled();
+    }
+
+    for (const swatch of getAllByRole('radio')) {
+      expect(swatch).toBeDisabled();
+    }
+  }, 10000);
+
   it('does not open while disabled', async () => {
     const { getByRole, queryByRole } = renderWithRoot(
       <ColorPicker aria-label="Brand" defaultValue="#ff0000" isDisabled />,
