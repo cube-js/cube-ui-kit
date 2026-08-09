@@ -1,4 +1,4 @@
-import { useFocusableRef } from '@react-spectrum/utils';
+import { useObjectRef } from '@react-aria/utils';
 import {
   BaseProps,
   OUTER_STYLES,
@@ -286,7 +286,10 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
     onChange: handleChange,
   });
 
-  const domRef = useFocusableRef(ref as any, useRef(null));
+  // `useFocusableRef` wants the ref of a real focusable control to forward to,
+  // and a group of radios has no single one — `RadioGroup` takes the same
+  // approach for the same reason.
+  const domRef = useObjectRef(ref);
   const { radioGroupProps, labelProps } = useRadioGroup(
     {
       ...props,
