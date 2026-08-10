@@ -53,6 +53,56 @@ jobs:
       - name: Run the tests
         run: pnpm test
 
+  browser-tests:
+    name: 'Browser tests'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update Corepack
+        run: npm i -g corepack@latest
+
+      - name: Enable Corepack (pre)
+        run: corepack enable
+
+      - name: Prepare pnpm (pre)
+        run: corepack prepare pnpm@10.14.0 --activate
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Prepare pnpm
+        run: corepack prepare pnpm@10.14.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install
+
+      # Cached by Playwright's own version, so a browser is only downloaded when
+      # the dependency actually changes rather than on every run.
+      - name: Resolve Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright.outputs.version }}
+
+      # `--with-deps` pulls the system libraries the browser needs on a bare
+      # runner. Only the binary is cached, so this still runs on a cache hit —
+      # it is a no-op when the libraries are already present.
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run the browser tests
+        run: pnpm test:browser
+
   deploy-chromatic:
     name: 'Prepare Storybook for review & tests'
     runs-on: ubuntu-latest

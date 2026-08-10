@@ -9,6 +9,8 @@ import {
 } from 'react';
 import {
   DragItem,
+  DragPreview,
+  DragPreviewRenderer,
   DroppableCollectionReorderEvent,
   ListDropTargetDelegate,
   ListKeyboardDelegate,
@@ -66,6 +68,23 @@ export interface DraggableCollectionProps {
   orderedKeys: string[];
   orientation: 'horizontal' | 'vertical';
   onReorder?: (newOrder: string[]) => void;
+  /**
+   * Dropping *onto* an item rather than between items — a row that is a folder,
+   * a tab that is a group. Mutually exclusive with reordering in practice: a
+   * collection that accepts item drops usually has a meaningful order already.
+   */
+  onItemDrop?: (targetKey: Key, draggedKeys: Key[]) => void;
+  /** Which items may receive a drop. Without it, none may. */
+  shouldAcceptItemDrop?: (targetKey: Key) => boolean;
+  /**
+   * The image dragged under the cursor. Receives the keys being dragged rather
+   * than React Aria's serialized `DragItem`s, because a caller that wants to
+   * render an icon needs the record, not its `text/plain` form.
+   *
+   * Without one the browser drags a screenshot of the source element, which for
+   * a full-width table row is a page-wide slab.
+   */
+  renderPreview?: (keys: Key[]) => ReactNode;
   /** Render function receiving drag/drop states and merged collection+keyboard props */
   children: (
     dragState: DraggableCollectionState,
@@ -91,6 +110,9 @@ export function DraggableCollection({
   orderedKeys,
   orientation,
   onReorder,
+  onItemDrop,
+  shouldAcceptItemDrop,
+  renderPreview,
   children,
 }: DraggableCollectionProps) {
   const handleReorder = useEvent((e: DroppableCollectionReorderEvent) => {
@@ -133,6 +155,8 @@ export function DraggableCollection({
 
   const getItems = useCallback(
     (keys: Set<Key>): DragItem[] => {
+      dragKeysRef.current = [...keys];
+
       return [...keys].map((key) => {
         const item = state.collection.getItem(key);
         return {
@@ -163,11 +187,14 @@ export function DraggableCollection({
     [state.selectionManager],
   );
 
+  const previewRef = useRef<DragPreviewRenderer>(null);
+
   const dragState = useDraggableCollectionState({
     collection: state.collection,
     selectionManager: dragSelectionManager,
     getItems,
     getAllowedDropOperations,
+    preview: renderPreview ? previewRef : undefined,
   });
 
   useDraggableCollection(
@@ -179,10 +206,28 @@ export function DraggableCollection({
     listRef,
   );
 
+  const handleItemDrop = useEvent((e: any) => {
+    if (!onItemDrop) return;
+
+    const keys = [...(e.dropOperation === 'cancel' ? [] : dragKeysRef.current)];
+
+    onItemDrop(e.target.key, keys);
+  });
+
+  // The keys being dragged, captured at drag start: by the time the drop lands
+  // React Aria has already cleared them from the drag state.
+  const dragKeysRef = useRef<Key[]>([]);
+
   const dropState = useDroppableCollectionState({
     collection: state.collection,
     selectionManager: state.selectionManager,
-    onReorder: handleReorder,
+    onReorder: onReorder ? handleReorder : undefined,
+    onItemDrop: onItemDrop ? handleItemDrop : undefined,
+    // `'on'` is only offered for items that accept it; everything else falls
+    // back to reordering, or to nothing.
+    shouldAcceptItemDrop: shouldAcceptItemDrop
+      ? (target: any) => shouldAcceptItemDrop(target.key)
+      : undefined,
   });
 
   const keyboardDelegate = useMemo(
@@ -208,7 +253,8 @@ export function DraggableCollection({
     {
       keyboardDelegate,
       dropTargetDelegate,
-      onReorder: handleReorder,
+      onReorder: onReorder ? handleReorder : undefined,
+      onItemDrop: onItemDrop ? handleItemDrop : undefined,
     },
     dropState,
     listRef,
@@ -285,9 +331,21 @@ export function DraggableCollection({
     onReorder(newKeys);
   });
 
-  return children(
-    dragState,
-    dropState,
-    mergeProps(collectionProps, { onKeyDownCapture: handleKeyDownCapture }),
+  return (
+    <>
+      {children(
+        dragState,
+        dropState,
+        mergeProps(collectionProps, { onKeyDownCapture: handleKeyDownCapture }),
+      )}
+      {renderPreview ? (
+        // Rendered off-screen by React Aria and snapshotted at drag start. The
+        // keys come from the ref rather than the `DragItem`s the render
+        // function is handed, which only carry `text/plain`.
+        <DragPreview ref={previewRef}>
+          {() => renderPreview(dragKeysRef.current)}
+        </DragPreview>
+      ) : null}
+    </>
   );
 }

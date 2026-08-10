@@ -141,6 +141,7 @@ declare module '@tenphi/tasty' {
     p4: true;
     c1: true;
     c2: true;
+    c3: true;
     s2: true;
     s3: true;
     s4: true;

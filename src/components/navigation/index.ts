@@ -5,3 +5,4 @@ export type {
   CubeTabPanelProps,
   CubeTabListProps,
 } from './Tabs';
+export * from './Pagination';

@@ -18,6 +18,10 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    // The browser project owns these. Without the exclusion they run here too,
+    // in an environment with no layout — which is the one thing they exist to
+    // avoid.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/*.browser.test.{ts,tsx}'],
     setupFiles: ['./src/test/setup.ts'],
     // threads + isolate:false: worker_threads are lighter than child_process
     // forks, and reusing the jsdom env + module graph across files in the same

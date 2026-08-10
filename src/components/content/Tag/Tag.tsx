@@ -70,7 +70,7 @@ function Tag(allProps: CubeTagProps, ref) {
         isClosable ? (
           <Item.Action
             aria-label={t('tag.close', 'Close')}
-            styles={{ color: 'currentColor', ...closeButtonStyles }}
+            styles={{ color: '#current', ...closeButtonStyles }}
             icon={<CloseIcon />}
             onPress={onClose}
           />

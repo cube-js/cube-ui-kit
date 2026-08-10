@@ -230,6 +230,9 @@ export * from './components/content/Alert';
 // navigation
 export * from './components/navigation';
 
+// data
+export * from './components/data';
+
 // molecules
 export { StatsCard } from './components/organisms/StatsCard/StatsCard';
 export type { CubeStatsCard } from './components/organisms/StatsCard/StatsCard';
