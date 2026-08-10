@@ -132,5 +132,40 @@
     "widgetSelected": "{{name}} ausgewählt",
     "widgetsSelected": "{{count}} Widgets ausgewählt",
     "selectionCleared": "Auswahl aufgehoben"
+  },
+  "pagination": {
+    "ariaLabel": "Seitennummerierung",
+    "firstPage": "Erste Seite",
+    "previousPage": "Vorherige Seite",
+    "nextPage": "Nächste Seite",
+    "lastPage": "Letzte Seite",
+    "selectPage": "Seite auswählen",
+    "page": "Seite {{page}}",
+    "pageOf": "{{page}} von {{totalPages}}",
+    "itemsPerPage": "Einträge pro Seite",
+    "itemsPerPageOption": "{{size}} / Seite",
+    "summary": "{{from}}–{{to}} von {{total}}"
+  },
+  "itemTable": {
+    "noItems": "Keine Einträge",
+    "noResults": "Keine Ergebnisse gefunden",
+    "search": "Suchen",
+    "searchPlaceholder": "Suchen...",
+    "refresh": "Aktualisieren",
+    "selectAll": "Alle auswählen",
+    "deselectAll": "Auswahl aufheben",
+    "selectRow": "Zeile auswählen",
+    "selectedCount_one": "{{count}} ausgewählt",
+    "selectedCount_other": "{{count}} ausgewählt",
+    "bulkActions": "Massenaktionen",
+    "clearSelection": "Auswahl aufheben",
+    "rowActions": "Zeilenaktionen",
+    "resizeColumn": "Spaltenbreite ändern",
+    "dragCount_one": "{{count}} Element",
+    "dragCount_other": "{{count}} Elemente",
+    "copiedToClipboard": "In die Zwischenablage kopiert",
+    "copiedCells_one": "{{count}} Zelle kopiert",
+    "copiedCells_other": "{{count}} Zellen kopiert",
+    "refreshing": "Wird aktualisiert"
   }
 }

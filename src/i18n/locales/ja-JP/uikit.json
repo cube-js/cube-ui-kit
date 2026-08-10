@@ -132,5 +132,40 @@
     "widgetSelected": "{{name}} を選択しました",
     "widgetsSelected": "{{count}} 個のウィジェットを選択しました",
     "selectionCleared": "選択を解除しました"
+  },
+  "pagination": {
+    "ariaLabel": "ページネーション",
+    "firstPage": "最初のページ",
+    "previousPage": "前のページ",
+    "nextPage": "次のページ",
+    "lastPage": "最後のページ",
+    "selectPage": "ページを選択",
+    "page": "{{page}} ページ",
+    "pageOf": "{{totalPages}} ページ中 {{page}} ページ",
+    "itemsPerPage": "1 ページあたりの件数",
+    "itemsPerPageOption": "{{size}} 件 / ページ",
+    "summary": "{{total}} 件中 {{from}}–{{to}} 件"
+  },
+  "itemTable": {
+    "noItems": "項目がありません",
+    "noResults": "結果が見つかりません",
+    "search": "検索",
+    "searchPlaceholder": "検索...",
+    "refresh": "更新",
+    "selectAll": "すべて選択",
+    "deselectAll": "選択を解除",
+    "selectRow": "行を選択",
+    "selectedCount_one": "{{count}} 件選択中",
+    "selectedCount_other": "{{count}} 件選択中",
+    "bulkActions": "一括操作",
+    "clearSelection": "選択を解除",
+    "rowActions": "行の操作",
+    "resizeColumn": "列の幅を変更",
+    "dragCount_one": "{{count}} 件",
+    "dragCount_other": "{{count}} 件",
+    "copiedToClipboard": "クリップボードにコピーしました",
+    "copiedCells_one": "{{count}} 個のセルをコピーしました",
+    "copiedCells_other": "{{count}} 個のセルをコピーしました",
+    "refreshing": "更新中"
   }
 }

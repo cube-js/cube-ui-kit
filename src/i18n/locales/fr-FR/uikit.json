@@ -132,5 +132,40 @@
     "widgetSelected": "{{name}} sélectionné",
     "widgetsSelected": "{{count}} widgets sélectionnés",
     "selectionCleared": "Sélection effacée"
+  },
+  "pagination": {
+    "ariaLabel": "Pagination",
+    "firstPage": "Première page",
+    "previousPage": "Page précédente",
+    "nextPage": "Page suivante",
+    "lastPage": "Dernière page",
+    "selectPage": "Sélectionner la page",
+    "page": "Page {{page}}",
+    "pageOf": "{{page}} sur {{totalPages}}",
+    "itemsPerPage": "Éléments par page",
+    "itemsPerPageOption": "{{size}} / page",
+    "summary": "{{from}}–{{to}} sur {{total}}"
+  },
+  "itemTable": {
+    "noItems": "Aucun élément",
+    "noResults": "Aucun résultat trouvé",
+    "search": "Rechercher",
+    "searchPlaceholder": "Rechercher...",
+    "refresh": "Actualiser",
+    "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner",
+    "selectRow": "Sélectionner la ligne",
+    "selectedCount_one": "{{count}} sélectionné",
+    "selectedCount_other": "{{count}} sélectionnés",
+    "bulkActions": "Actions groupées",
+    "clearSelection": "Effacer la sélection",
+    "rowActions": "Actions de ligne",
+    "resizeColumn": "Redimensionner la colonne",
+    "dragCount_one": "{{count}} élément",
+    "dragCount_other": "{{count}} éléments",
+    "copiedToClipboard": "Copié dans le presse-papiers",
+    "copiedCells_one": "{{count}} cellule copiée",
+    "copiedCells_other": "{{count}} cellules copiées",
+    "refreshing": "Actualisation"
   }
 }

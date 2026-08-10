@@ -132,5 +132,40 @@
     "widgetSelected": "{{name}} markerad",
     "widgetsSelected": "{{count}} widgetar markerade",
     "selectionCleared": "Markeringen rensad"
+  },
+  "pagination": {
+    "ariaLabel": "Paginering",
+    "firstPage": "Första sidan",
+    "previousPage": "Föregående sida",
+    "nextPage": "Nästa sida",
+    "lastPage": "Sista sidan",
+    "selectPage": "Välj sida",
+    "page": "Sida {{page}}",
+    "pageOf": "{{page}} av {{totalPages}}",
+    "itemsPerPage": "Objekt per sida",
+    "itemsPerPageOption": "{{size}} / sida",
+    "summary": "{{from}}–{{to}} av {{total}}"
+  },
+  "itemTable": {
+    "noItems": "Inga objekt",
+    "noResults": "Inga resultat hittades",
+    "search": "Sök",
+    "searchPlaceholder": "Sök...",
+    "refresh": "Uppdatera",
+    "selectAll": "Markera alla",
+    "deselectAll": "Avmarkera alla",
+    "selectRow": "Markera rad",
+    "selectedCount_one": "{{count}} markerad",
+    "selectedCount_other": "{{count}} markerade",
+    "bulkActions": "Massåtgärder",
+    "clearSelection": "Rensa markering",
+    "rowActions": "Radåtgärder",
+    "resizeColumn": "Ändra kolumnbredd",
+    "dragCount_one": "{{count}} objekt",
+    "dragCount_other": "{{count}} objekt",
+    "copiedToClipboard": "Kopierat till urklipp",
+    "copiedCells_one": "{{count}} cell kopierad",
+    "copiedCells_other": "{{count}} celler kopierade",
+    "refreshing": "Uppdaterar"
   }
 }

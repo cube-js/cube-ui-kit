@@ -1,0 +1,320 @@
+import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+
+import * as DataTableStories from './DataTable.stories';
+
+<Meta of={DataTableStories} />
+
+# DataTable
+
+A grid for query results.
+
+The same engine as [ItemTable](/docs/data-itemtable--docs) — one renderer, one
+column layout, one value pipeline — with the defaults an analytical grid wants
+rather than a list's.
+
+## When to Use
+
+Use `DataTable` for the output of a query: rows the user reads as a block,
+scans down a column of, and sorts by more than one thing at a time.
+
+Use `ItemTable` for a list of things the user acts on — deployments, members,
+API keys. That is the one with selection, bulk actions, row menus and row links.
+
+| | `ItemTable` | `DataTable` |
+| --- | --- | --- |
+| Typography | `t3` | `t4` |
+| Density | `medium` | `small` |
+| Banded rows | off | **on** |
+| Column resize | opt-in | **on** |
+| Sorting | one column | **several, in precedence order** |
+| Pinned rows | — | **totals, top and bottom** |
+| Row numbers | — | **optional** |
+| Selection | rows | **cells, as a rectangle** |
+| Bulk actions, row menu, row link | yes | — |
+| Column rules | off | **on** |
+
+## It knows nothing about Cube
+
+Measures, dimensions, pivots, drill-downs and calculated fields never reach this
+component as concepts. They arrive as ordinary columns, `render` output and
+`column.header.menu` content — which is what keeps Cloud's column-header menu,
+and everything it knows about the query, in Cloud.
+
+<Canvas of={DataTableStories.Default} />
+
+## Component
+
+### Properties
+
+#### Data
+
+- **`data`** `readonly T[]` — The rows.
+- **`columns`** `CubeDataTableColumn<T>[]` — Same shape as `ItemTable`'s, plus `dataType`.
+- **`rowKey`** `string` (default: `'id'`) — Property to read the row identity from.
+- **`getRowKey`** `(row: T, index: number) => Key` — Wins over `rowKey`.
+- **`pinnedTopRows`** `readonly T[]` — Rows stuck to the top of the scroller. Ordinary rows as far as the columns are concerned.
+- **`pinnedBottomRows`** `readonly T[]` — The same, at the bottom. This is where totals go.
+
+#### Status
+
+- **`isLoading`** `boolean`
+- **`loadingIndicator`** `'overlay' | 'skeleton' | 'none'` (default: `'overlay'`) — A translucent overlay keeps the previous result readable while the next one loads.
+- **`skeletonRowCount`** `number` (default: `6`)
+- **`error`** `ReactNode` — Takes precedence over both empty labels.
+- **`emptyLabel`** `ReactNode` — Nothing to show at all.
+- **`noResultsLabel`** `ReactNode` — Shown instead when `isFiltered`.
+- **`isFiltered`** `boolean` — Tells the empty state a filter is why there is nothing.
+
+#### Shape
+
+- **`shape`** `'plain' | 'card'` (default: `'plain'`)
+- **`size`** `SizeName` (default: `'small'`) — An analytical grid packs more rows than a list.
+- **`rowHeight`** `number` — Overrides the height implied by `size`.
+- **`headerHeight`** `number`
+- **`isStriped`** `boolean` (default: `true`) — Banding is what makes a wide row readable across.
+- **`isHeaderHidden`** `boolean`
+- **`isHeaderSticky`** `boolean` (default: `true`)
+- **`isRowMoveAnimated`** `boolean` (default: `true`) — Slide rows to their new positions when the order changes, instead of teleporting them. Respects `prefers-reduced-motion`.
+- **`showRowNumbers`** `boolean` (default: `false`) — A continuous count down the side, which stays continuous across pages.
+
+#### Sorting
+
+- **`sortMode`** `'client' | 'server' | 'off'`
+- **`sorts`** `CubeTableSort[]` — Array order is the sort precedence.
+- **`defaultSorts`** `CubeTableSort[]`
+- **`onSortsChange`** `(sorts: CubeTableSort[]) => void`
+
+#### Pagination
+
+- **`paginationMode`** `'client' | 'server' | 'off'` (default: `'client'`)
+- **`page`** `number` — 1-based.
+- **`defaultPage`** `number`
+- **`onPageChange`** `(page: number) => void`
+- **`pageSize`** `number`
+- **`defaultPageSize`** `number` (default: `100`)
+- **`onPageSizeChange`** `(pageSize: number) => void`
+- **`pageSizeOptions`** `number[]`
+- **`total`** `number` — Server mode: the row count behind the current page.
+- **`totalPages`** `number` — Supply instead of `total` when only the page count is known.
+- **`hasNextPage`** `boolean` — When neither count is known.
+- **`summary`** `boolean | ((info: CubeTablePageInfo) => ReactNode)`
+- **`autoHidePagination`** `boolean` (default: `true`) — Hides the footer when it can do nothing: one page, and fewer rows than the smallest page size.
+- **`footerStart`** `ReactNode`
+- **`footerCenter`** `ReactNode`
+- **`footerEnd`** `ReactNode`
+
+#### Cell selection
+
+- **`cellSelectionMode`** `'none' | 'cell' | 'range'` (default: `'range'`) — Click selects a cell; shift-click and drag grow a rectangle.
+- **`isCellSelectable`** `(ctx) => boolean` — Vetoes individual cells. `ctx` is `{ row, rowKey, columnKey, section }`.
+- **`selectedCellRange`** `CubeTableCellRange | null` — Two opposite corners.
+- **`defaultSelectedCellRange`** `CubeTableCellRange | null`
+- **`onCellRangeChange`** `(range: CubeTableCellRange | null) => void`
+
+#### Columns
+
+- **`isResizable`** `boolean` (default: `true`) — A result grid is the case resizing exists for.
+- **`columnWidths`** `Record<string, number>`
+- **`defaultColumnWidths`** `Record<string, number>`
+- **`onColumnResize`** `(columnKey: string, width: number, all: Record<string, number>) => void`
+
+#### Virtualization
+
+- **`isVirtualized`** `boolean | 'auto'` (default: `'auto'`) — On when the grid is height-bounded and has more rows than the threshold.
+- **`virtualizeThreshold`** `number`
+- **`overscan`** `number`
+
+#### Other
+
+- **`getRowProps`** `(ctx: CubeTableRowContext<T>) => Record<string, any>` — Per-row mods, styles and height.
+- **`storageKey`** `string` — Persists page size and column widths.
+- **`ariaLabel`** `string`
+
+#### `dataType`
+
+Presentational, not a Cube type. `number` right-aligns the column and switches
+it to tabular figures, so digits line up down the column and a total lines up
+with the rows above it.
+
+Loading, empty and error states, pagination, footer slots, virtualization,
+column resize and persistence all behave exactly as they do in `ItemTable` —
+they come from the shared renderer.
+
+### Base Properties
+
+Supports [Base Properties](/docs/tasty-base-properties--docs).
+
+### Styling Properties
+
+#### styles
+
+Customizes the root frame. Every internal part of the grid is a **sub-element**
+reachable from this one prop — the same contract, and the same sub-element
+names, as [ItemTable](/docs/data-itemtable--docs#styling-properties).
+
+`DataTable` adds one: `StateCell`, the full-span cell that carries the empty,
+no-results and error content. It is deliberately not a `Cell`, so it takes none
+of the row's banding or hover paint.
+
+#### Targeted slots
+
+Each merges into the corresponding sub-element at the same selector and
+specificity, so an override lands later in source order and wins without
+`!important`.
+
+- **`headerStyles`** `Styles` — The column header row.
+- **`headerCellStyles`** `Styles`
+- **`bodyStyles`** `Styles`
+- **`rowStyles`** `Styles`
+- **`cellStyles`** `Styles`
+- **`footerStyles`** `Styles`
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Base:** `display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `place`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `padding`, `paddingInline`, `paddingBlock`, `border`, `radius`, `shadow`, `overflow`, `outline`, `scrollbar`, `textAlign`
+- **Color:** `color`, `fill`, `fade`, `image`
+- **Flow:** `flow`, `gap`, `columnGap`, `rowGap`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+`height` is the important one, and more so here than for a list: a result grid
+is almost always taller than the screen, so bounding it is what turns the
+body into a scroller, pins the header, and lets virtualization engage at all.
+
+### Modifiers
+
+| Modifier | Type | Description |
+| -------- | ---- | ----------- |
+| `size` | `SizeName` | Row height scale |
+| `shape` | `'plain' \| 'card'` | Frame treatment |
+| `sticky-header` | `boolean` | Header is pinned |
+| `column-dividers` | `boolean` | Vertical rules between columns — always on here |
+| `range-dragging` | `boolean` | A cell-range drag is in progress |
+
+Cell-level, in addition to `ItemTable`'s: `cell-selected`, `last-column`,
+`pinned`.
+
+## Examples
+
+### Multi-Column Sorting
+
+The main behavioural difference from `ItemTable`. Clicking a second header adds
+it to the sort rather than replacing it, and each sorted column shows its place
+in the precedence.
+
+```jsx
+<DataTable
+  data={rows}
+  columns={columns}
+  sorts={sorts}
+  onSortsChange={setSorts}
+/>
+```
+
+A newly sorted column is **appended**, so it is the least significant — the
+ordering the user already established keeps leading. Cycling a column through
+`ascending → descending → unsorted` leaves the others untouched.
+
+`sortMode="server"` reports the array and never reorders, which is the shape
+Cloud's reports already send to the query.
+
+<Canvas of={DataTableStories.MultiColumnSort} />
+
+### Pinned Totals
+
+<Canvas of={DataTableStories.PinnedTotals} />
+
+Pinned rows stick to the edges of the scroller while the rest scrolls under
+them. They are excluded from sorting and paging — a total is not a row
+competing for a position.
+
+### Row Numbers
+
+<Canvas of={DataTableStories.RowNumbers} />
+
+### The Whole Result
+
+Above `virtualizeThreshold` a bounded grid virtualizes on its own, so
+`paginationMode="off"` is a reasonable default for a result the user scrolls.
+
+<Canvas of={DataTableStories.Unpaginated} />
+
+### Sorting Moves Rows
+
+When a sort reorders rows, they slide to their new positions over 120ms rather
+than jumping. The point is to be able to follow one row to where it went — a
+table that teleports gives the eye nothing to track.
+
+Only rows that were already on screen slide: a row arriving from outside the
+window, or from another page, has no position to come from. Scrolling is never
+mistaken for movement, and `prefers-reduced-motion` turns it off. Set
+`isRowMoveAnimated={false}` to opt out.
+
+### Cell Selection
+
+A list is acted on by row; a result grid is read by cell. Click one, shift-click
+or drag to grow a rectangle, and `⌘/Ctrl+C` copies the block as tab-separated
+values — the format Excel and Sheets both paste as a grid rather than as one run
+of text. `Escape` clears it.
+
+The range is stored as two opposite corners rather than a set of keys, so it
+survives sorting and paging the way a keyed row selection does.
+
+A pinned total takes part — a total is a figure like any other, and selecting the
+column it sums only to copy it separately is the wrong trade. It joins by press
+or shift-click, but a drag will not sweep through it: a pinned row sits *over*
+the scrolling ones and is last in the row order, so brushing it mid-drag would
+otherwise snap the range to the whole rest of the grid.
+
+(ag-grid excludes pinned rows from a range outright. This is a deliberate
+departure.)
+
+The structural columns — row numbers, the checkbox, the row-menu button — stay
+out of every range. They are the grid's own furniture, not data.
+
+`isCellSelectable` vetoes anything else. A total's label cell is the motivating
+case — `"Total"` is a caption for the row, not a figure:
+
+```jsx
+<DataTable
+  isCellSelectable={({ section, columnKey }) =>
+    !(section === 'pinnedBottom' && columnKey === 'region')
+  }
+/>
+```
+
+A vetoed cell is **inert**, not merely unpainted: pressing it neither starts a
+range nor disturbs the standing one, and it cannot be extended onto. A range that
+spans it skips it and copies an empty field in its place, so the pasted block
+keeps its shape.
+
+### Pagination With Totals
+
+<Canvas of={DataTableStories.PaginatedWithTotals} />
+
+The total sits outside the page window, so it stays put as you move through the
+pages and keeps summing the whole result rather than the rows on screen. It is
+excluded from sorting for the same reason.
+
+Copying reports the count in a toast, since nothing on screen changes when a copy
+succeeds.
+
+<Canvas of={DataTableStories.CellSelection} />
+
+### States
+
+<Canvas of={DataTableStories.States} />
+
+## Accessibility
+
+The table is a `role="grid"` with document-absolute `aria-rowindex` /
+`aria-colindex`, and `aria-rowcount` counts pinned rows. Every sorted column
+carries `aria-sort`, not just the first.
+
+## Related Components
+
+- [ItemTable](/docs/data-itemtable--docs) — a list of things to act on.
+- [Pagination](/docs/navigation-pagination--docs) — the footer control.
