@@ -20,10 +20,16 @@ module.exports = [
         }),
       );
     },
-    // 487.19 kB at the time of writing, up from 466.64 kB on the commit this
-    // branched from. The +20.55 kB is `Pagination`, `ItemTable` (with its
+    // 490.30 kB in CI at the time of writing, up from 466.64 kB on the commit
+    // this branched from. The growth is `Pagination`, `ItemTable` (with its
     // toolbar, search and bulk bar), `DataTable`, and the `TableBase` engine
     // they share.
+    //
+    // SET THIS FROM CI'S NUMBER, NOT A LOCAL ONE. `size-limit` gzips with the
+    // platform's zlib, and macOS reads roughly 1.6 kB lower than the Linux
+    // runner — so a limit chosen against a local measurement can fail in CI by
+    // a few hundred bytes while passing on the machine that set it. That is
+    // exactly how this one first landed 302 bytes over.
     //
     // MEASURE WITH A FRESH `pnpm build`. `path` below is `./dist/index.js`, so
     // `pnpm size` happily reports the last build's number against the current
@@ -56,7 +62,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '490kB',
+    limit: '495kB',
   },
   {
     name: 'Tree shaking (just a Button)',
