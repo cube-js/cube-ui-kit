@@ -1,5 +1,225 @@
 # @cube-dev/ui-kit
 
+## 0.157.0
+
+### Minor Changes
+
+- [#1296](https://github.com/cube-js/cube-ui-kit/pull/1296) [`4fc58aec`](https://github.com/cube-js/cube-ui-kit/commit/4fc58aecc896f39a3caecd673f35650d8f4ce391) Thanks [@tenphi](https://github.com/tenphi)! - Keep the caret in place in `TextInput`, `TextArea`, `PasswordInput` and `SearchInput` when the
+  controlled value comes back late.
+
+  A controlled `<input>` renders whatever string its parent hands it. If the parent hands back the
+  pre-keystroke string — because its state arrives through a store that publishes a render late, a
+  debounce, or a deferred update — React writes that stale string into the DOM node, and a native
+  `value` assignment collapses the selection. Typing in the middle of a field threw the caret to the
+  end. The text still landed a render later, so it read as a caret bug rather than a data-flow one.
+
+  These four fields now hold the typed text locally until the parent catches up. `onChange` still
+  fires once per keystroke with the full value, so nothing downstream changes: no debouncing, no
+  commit-on-blur, no coalesced calls. An incoming `value` is adopted whenever it is a genuine change
+  from the parent — an undo, a reset, a transformed string, another record — and on blur the parent's
+  value takes over again.
+
+  Components that already own their typed text are untouched: `NumberInput`, `ComboBox`,
+  `SearchComboBox`, `FilterListBox`, `CommandMenu`, `CommandTextArea`, `ColorPicker` and
+  `InlineInput`.
+
+  Two additions to the public API:
+
+  - `useBufferedValue(value, onChange, options)` — the hook behind it, exported for controls that
+    own their own input. It is generic, and `options.getKey` lets non-string values (an array of
+    colour stops rebuilt on every emit) be matched by signature rather than identity.
+  - `isBuffered` on the four fields — set it to `false` for a caller that must see the field snap
+    back to its own `value` the instant it declines a keystroke.
+
+  ```tsx
+  // A parent whose state arrives a render late no longer fights the caret.
+  <TextInput value={spec.title} onChange={(title) => updateSpec({ title })} />
+  ```
+
+- [#1293](https://github.com/cube-js/cube-ui-kit/pull/1293) [`6696d7fe`](https://github.com/cube-js/cube-ui-kit/commit/6696d7feb6cccdb2cab9fc4c7cdaae7ab0da9d6d) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking:** rename `ColorPicker` to `ColorInput`, and give the `ColorPicker` name to a new trigger-only component.
+
+  The component released in 0.156.0 as `ColorPicker` is a text field — a swatch, an editable color string, and a popover trigger. That is an input, and it is now called `ColorInput`. Its API is unchanged: rename the import and the `CubeColorPickerProps` type (now `CubeColorInputProps`), and everything else works as before.
+
+  ```diff
+  -import { ColorPicker } from '@cube-dev/ui-kit';
+  -<ColorPicker label="Brand" format="oklch" formatMode="derive" />
+  +import { ColorInput } from '@cube-dev/ui-kit';
+  +<ColorInput label="Brand" format="oklch" formatMode="derive" />
+  ```
+
+  Note that this is a silent break rather than a type error: `<ColorPicker value onChange label />` still compiles, but now renders a button instead of a text field.
+
+  `ColorPicker` is now a swatch button that opens the same popover, matching what `Picker` means elsewhere in the kit — a trigger plus an overlay, with no text entry. It shows the color as a swatch and spells it out beside it; `children` replaces that label, and `children={null}` leaves the swatch on its own for toolbars and dense tables. It has no `formatMode`, since there is no text to reconcile.
+
+  ```jsx
+  <ColorPicker label="Series color" value={color} onChange={setColor} />
+  <ColorPicker aria-label="Series color" value={color} onChange={setColor}>{null}</ColorPicker>
+  ```
+
+  The color model, the three editing spaces and the popover are shared by both, so `format`, `defaultSpace`, and every notation they read behave identically. `COLOR_FORMATS`, `COLOR_SPACES`, `ColorPickerFormat` and `ColorPickerSpace` keep their names.
+
+- [#1293](https://github.com/cube-js/cube-ui-kit/pull/1293) [`6696d7fe`](https://github.com/cube-js/cube-ui-kit/commit/6696d7feb6cccdb2cab9fc4c7cdaae7ab0da9d6d) Thanks [@tenphi](https://github.com/tenphi)! - Add `ColorSwatchGroup` — a grid of color swatches, one of which can be selected. It is the palette half of choosing a color, where `ColorPicker` is the freeform half.
+
+  Colors go in as data rather than as children, so the API reads like `Picker` rather than `RadioGroup`, though a radio group is what it is underneath: one tab stop, arrow keys between swatches.
+
+  ```jsx
+  <ColorSwatchGroup
+    label="Brand color"
+    colors={["#7a4dbf", "#26fcb2", { color: "#ff0000", label: "Danger" }]}
+    columns={4}
+    value={color}
+    onChange={setColor}
+  />
+  ```
+
+  Swatches are keyed by their canonical hex, so the same color written two ways collapses into one entry — equivalent colors would otherwise make selection ambiguous. That same matching decides which swatch a value selects, so `value` need not use the notation the swatch was written in.
+
+  `allowCustom` appends a `ColorPicker` for colors outside the set, showing the current color whenever it is not one of the swatches.
+
+  `ColorSwatch` is exported too, for showing a color without a control around it. It takes direct style props, so `<ColorSwatch color="#7a4dbf" radius="round" />` works. `ColorSwatchGroup` and `ColorPicker` both accept the outer and block style props, so `radius`, `border`, `padding` and `shadow` apply directly.
+
+  The selected swatch is marked the way React Aria marks it: two rings drawn _inside_ the swatch, one in `#surface-text` and one in `#surface`. A single ring in one color vanishes against a swatch of that color — an accent ring on an accent-colored swatch — while two tones that flip with the color scheme contrast against anything, and drawing them inset keeps the swatch's footprint fixed.
+
+  `ColorPicker` gains `swatches` and `swatchColumns`, which put a palette under the editor in its popover. The group drops `allowCustom` there — the escape hatch is itself a `ColorPicker`, so offering it inside one would nest popovers without end. That is enforced through context rather than documented, so the recursion cannot be written by hand either.
+
+- [#1289](https://github.com/cube-js/cube-ui-kit/pull/1289) [`c7c85799`](https://github.com/cube-js/cube-ui-kit/commit/c7c8579958fc683f8b69b0c2b10f71953efdcd1c) Thanks [@tenphi](https://github.com/tenphi)! - Remove `FileTabs`. Use `Tabs` instead.
+
+  `FileTabs` was an editor-style tab bar with close buttons and dirty-state dots.
+  Its `FileTabProps` has carried `@deprecated consider using <Tabs /> instead`
+  since before the Glaze migration. Cube Cloud — the component's only known
+  consumer — moved `FilesEditor` onto `Tabs` in October 2025 and has had no
+  reference to it since.
+
+  Removed from the public API: the `FileTabs` component (with its
+  `FileTabs.TabPane` subcomponent) and the `CubeFileTabProps` type.
+
+  ```diff
+  -<FileTabs defaultActiveKey="1" onTabClose={(key) => removeTab(key)}>
+  -  <FileTabs.TabPane id="1" title="index.ts" />
+  -  <FileTabs.TabPane id="2" title="styles.css" />
+  -</FileTabs>
+  +<Tabs defaultActiveKey="1" onDelete={(key) => removeTab(key)}>
+  +  <Tabs.Panel key="1" title="index.ts" />
+  +  <Tabs.Panel key="2" title="styles.css" />
+  +</Tabs>
+  ```
+
+  The close button is the main behaviour to port: on `Tabs` it is `onDelete`, and
+  passing it is what makes the buttons appear (`onTabClose` on `FileTabs`).
+  `Tabs` has no built-in equivalent of `isDirty` — render the unsaved indicator
+  into the tab's `title` or `actions`, which is what Cube Cloud's `FilesEditor`
+  does.
+
+- [#1295](https://github.com/cube-js/cube-ui-kit/pull/1295) [`0bc4113d`](https://github.com/cube-js/cube-ui-kit/commit/0bc4113dde86bba41b6fdc57190f3511b8a8d4f3) Thanks [@tenphi](https://github.com/tenphi)! - Add the `c3` typography preset.
+
+  `c3` extends the uppercase caption scale one step below `c2`: 11px / 16px line
+  height, 600 weight, `0.02em` tracking, uppercase. It is the size used for table
+  column headers, where `c2` is a touch heavy against 14px body text.
+
+  The caption scale now reads `c1` (14px) → `c2` (12px) → `c3` (11px).
+
+- [#1295](https://github.com/cube-js/cube-ui-kit/pull/1295) [`0bc4113d`](https://github.com/cube-js/cube-ui-kit/commit/0bc4113dde86bba41b6fdc57190f3511b8a8d4f3) Thanks [@tenphi](https://github.com/tenphi)! - Add `ItemTable`, `DataTable` and `Pagination`.
+
+  Two tables over one shared engine, replacing the ag-grid wrappers Cube Cloud
+  carries today. They keep the same names, so migration is mechanical, and drop
+  the `Omit<AgGridReactProps, …>` intersection that made every ag-grid option
+  public API.
+
+  **`ItemTable`** — lists of records that get acted on. Sorting, row selection
+  with a bulk action bar, row links and a row menu, a toolbar with client or
+  server search, client/server pagination or infinite scroll, column resize and
+  pinning, row reordering and drop-onto-row, virtualization, and per-row visuals
+  through `getRowProps`.
+
+  **`DataTable`** — query results. The same engine with an analytical grid's
+  defaults rather than a list's: `t4` type, `small` density, banded rows,
+  resizable columns and column rules, all on by default. What is genuinely
+  different is multi-column sorting whose array order is the precedence, pinned
+  totals that sit outside sorting and paging, continuous row numbers, and
+  rectangular cell selection with `⌘/Ctrl+C` copying the block as TSV and as an
+  HTML table so spreadsheets keep the cell boundaries.
+
+  **`Pagination`** and `usePagination`, which the kit did not have. `type="numbers"`
+  is the default deliberately: Cloud's builds a `Select` of every page, which is a
+  thousand collection items per render at 100k rows.
+
+  Neither table knows anything about Cube. Measures, dimensions, pivots and
+  drill-downs arrive as ordinary columns, `render` output and
+  `column.header.menu` content, which is what keeps Cloud's column-header menu in
+  Cloud.
+
+  Built on a native `<table>`: sticky pinned columns need a cell's containing
+  block to be the scrollport, and a grid item's is its own grid area — which is
+  why a div-and-CSS-grid design cannot have them without ag-grid-style flex lanes.
+  Header and body then agree through `<colgroup>` with nothing to sync.
+
+  Some behaviour worth knowing without reading the source:
+
+  - A refresh fades the table, header included, and sweeps a band of lower
+    opacity across it rather than covering the rows with a spinner — the previous
+    result stays readable, which is the point of keeping it on screen.
+  - A sort slides rows to their new positions over 120ms, so a row can be followed
+    to where it went. Only a reorder animates: if the rows keep their relative
+    order the table never moves, however much the layout shifts underneath them —
+    so mounting, resizing and filtering are all silent.
+  - Infinite scroll starts fetching a screen before the end and holds the scroll
+    height with a batch-sized run of skeleton rows, so scrolling is not
+    interrupted and nothing lurches when the rows land.
+  - Both animations respect `prefers-reduced-motion`.
+  - Selection survives sorting and paging: it is keyed, and a cell range is stored
+    as two corners re-resolved against the current order.
+
+  `DraggableCollection` gains `onItemDrop`, `shouldAcceptItemDrop` and
+  `renderPreview`, so a drag preview can be a React node instead of markup written
+  into `innerHTML`.
+
+- [#1291](https://github.com/cube-js/cube-ui-kit/pull/1291) [`90e86d48`](https://github.com/cube-js/cube-ui-kit/commit/90e86d483825bb2ba64da9cb5c258f14a10efa74) Thanks [@tenphi](https://github.com/tenphi)! - Export `IconSwitch` (and its `CubeIconSwitchProps` type) from the package root.
+
+  `IconSwitch` cross-fades between icons when its children change — the animated
+  icon swap used inside buttons and items. It already had a stories file and a
+  published docs page under `Helpers/IconSwitch`, and `src/components/helpers/index.ts`
+  exported it, but that barrel is not re-exported from `src/index.ts` — only
+  `DisplayTransition` was pulled through. So the component was publicly documented
+  while being impossible to import.
+
+  ```tsx
+  import { IconSwitch } from "@cube-dev/ui-kit";
+
+  <IconSwitch>{isLoading ? <LoaderIcon /> : <CheckIcon />}</IconSwitch>;
+  ```
+
+### Patch Changes
+
+- [#1297](https://github.com/cube-js/cube-ui-kit/pull/1297) [`39c49438`](https://github.com/cube-js/cube-ui-kit/commit/39c494383cf55a0e9201489b7deb01712a67f63a) Thanks [@tenphi](https://github.com/tenphi)! - Declare `isBuffered` on the four fields that implement it rather than on the shared
+  `CubeTextInputBaseProps`.
+
+  `TextInput`, `TextArea`, `PasswordInput` and `SearchInput` buffer their value; `NumberInput` and
+  `CommandTextArea` are built on the same base type but keep their own text and never read the prop.
+  Declaring it on the base put it in their declared surface too. It now comes from a
+  `CubeBufferedValueProps` mixin, exported alongside the base props, so a field built on that base in
+  future doesn't inherit a flag it ignores.
+
+  Type-level only — no runtime change, and no behaviour change for the four fields.
+
+- [#1298](https://github.com/cube-js/cube-ui-kit/pull/1298) [`e2c583dc`](https://github.com/cube-js/cube-ui-kit/commit/e2c583dc02d74fc265299920eaef170e985a0b41) Thanks [@solarrust](https://github.com/solarrust)! - Fixed `Picker` and `FilterPicker` with `disallowEmptySelection` in single selection mode: re-selecting the already-selected item (by click or Enter) now closes the popover without firing `onSelectionChange`, matching the react-aria Select behavior. Previously the popover stayed open and no event fired at all.
+
+  Without `disallowEmptySelection` the behavior is unchanged: re-selecting the current item still deselects it and fires `onSelectionChange(null)`.
+
+  `ListBox` and `FilterListBox` now expose the `allowDuplicateSelectionEvents` prop (React Stately pass-through) that the fix is built on.
+
+- [#1295](https://github.com/cube-js/cube-ui-kit/pull/1295) [`0bc4113d`](https://github.com/cube-js/cube-ui-kit/commit/0bc4113dde86bba41b6fdc57190f3511b8a8d4f3) Thanks [@tenphi](https://github.com/tenphi)! - Fix `useContextMenu` opening its popover far from the pointer.
+
+  The hook positions an invisible anchor at the click coordinates, but rendered it
+  wherever the consumer placed `rendered` — so those coordinates resolved against
+  whichever positioned ancestor happened to enclose it, and the menu opened one
+  ancestor-origin away from the click. `Tree` showed this too.
+
+  The anchor now sits in a zero-size `position: fixed` host portalled to `body`.
+  `fixed` makes the containing block's origin the viewport, and the portal keeps
+  it clear of transformed ancestors, which capture `fixed` — a virtualized row is
+  usually translated, so the fixed host alone would still be anchored to the row.
+  Coordinates are now computed in viewport space to match.
+
 ## 0.156.0
 
 ### Minor Changes
