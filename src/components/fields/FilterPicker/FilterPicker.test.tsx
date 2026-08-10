@@ -1113,4 +1113,132 @@ describe('<FilterPicker />', () => {
       expect(modalTriggerButton).not.toHaveAttribute('data-popover-trigger');
     });
   });
+
+  describe('disallowEmptySelection re-select behavior', () => {
+    const optionCount = () =>
+      document.querySelectorAll('[role="option"]').length;
+    const findOption = (text: string) =>
+      Array.from(document.querySelectorAll('[role="option"]')).find(
+        (o) => o.textContent === text,
+      ) as HTMLElement;
+
+    async function openPicker(getByRole: any, getAllByRole: any) {
+      await user.click(getByRole('button'));
+      await waitFor(() => expect(getAllByRole('option').length).toBe(5));
+    }
+
+    it('re-clicking the selected item does not fire onSelectionChange and closes the popover', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, getAllByRole } = renderWithRoot(
+        <FilterPicker
+          disallowEmptySelection
+          label="Filter"
+          selectionMode="single"
+          selectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await openPicker(getByRole, getAllByRole);
+      await user.click(findOption('Apple'));
+
+      await waitFor(() => expect(optionCount()).toBe(0));
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+
+    it('re-selecting the selected item via Enter does not fire onSelectionChange and closes the popover', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, getAllByRole } = renderWithRoot(
+        <FilterPicker
+          disallowEmptySelection
+          label="Filter"
+          selectionMode="single"
+          selectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await openPicker(getByRole, getAllByRole);
+      // Focused key is the selected item; Enter re-selects it
+      await user.keyboard('{Enter}');
+
+      await waitFor(() => expect(optionCount()).toBe(0));
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+
+    it('selecting a different item still fires onSelectionChange and closes the popover', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, getAllByRole } = renderWithRoot(
+        <FilterPicker
+          disallowEmptySelection
+          label="Filter"
+          selectionMode="single"
+          selectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await openPicker(getByRole, getAllByRole);
+      await user.click(findOption('Banana'));
+
+      await waitFor(() => expect(optionCount()).toBe(0));
+      expect(onSelectionChange.mock.calls).toEqual([['banana']]);
+    });
+
+    it('keeps firing for a controlled parent that does not apply the change', async () => {
+      const onSelectionChange = vi.fn();
+      // Fully controlled and the parent never applies the change (async/validated
+      // updates). Since the selection stays "apple", picking "banana" a second
+      // time is still a real change and must be reported again.
+      const { getByRole, getAllByRole } = renderWithRoot(
+        <FilterPicker
+          disallowEmptySelection
+          label="Filter"
+          selectionMode="single"
+          selectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      const trigger = getByRole('button');
+
+      await openPicker(getByRole, getAllByRole);
+      await user.click(findOption('Banana'));
+      await waitFor(() => expect(optionCount()).toBe(0));
+
+      await user.click(trigger);
+      await waitFor(() => expect(getAllByRole('option').length).toBe(5));
+      await user.click(findOption('Banana'));
+
+      expect(onSelectionChange.mock.calls).toEqual([['banana'], ['banana']]);
+    });
+
+    it('without disallowEmptySelection, re-clicking the selected item still deselects (legacy behavior)', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, getAllByRole } = renderWithRoot(
+        <FilterPicker
+          label="Filter"
+          selectionMode="single"
+          selectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await openPicker(getByRole, getAllByRole);
+      await user.click(findOption('Apple'));
+
+      await waitFor(() => expect(optionCount()).toBe(0));
+      expect(onSelectionChange.mock.calls).toEqual([[null]]);
+    });
+  });
 });

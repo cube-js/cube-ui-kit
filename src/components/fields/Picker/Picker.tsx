@@ -622,6 +622,19 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
   const handleSelectionChange = useEvent((selection: any) => {
     if (selectionMode === 'single') {
+      // With `disallowEmptySelection`, re-selecting the current item emits a
+      // duplicate event (see `allowDuplicateSelectionEvents` below). Close the
+      // popover but don't propagate the unchanged selection.
+      if (
+        disallowEmptySelection &&
+        selection != null &&
+        effectiveSelectedKey != null &&
+        String(selection) === String(effectiveSelectedKey)
+      ) {
+        handleOpenChange(false);
+        return;
+      }
+
       if (!isControlledSingle) {
         setInternalSelectedKey(selection as Key | null);
       }
@@ -741,6 +754,9 @@ export const Picker = forwardRef(function Picker<T extends object>(
                 headingStyles={headingStyles}
                 listRef={listRef}
                 disallowEmptySelection={disallowEmptySelection}
+                allowDuplicateSelectionEvents={
+                  selectionMode === 'single' && !!disallowEmptySelection
+                }
                 disabledKeys={disabledKeys}
                 focusOnHover={focusOnHover}
                 shouldFocusWrap={shouldFocusWrap}

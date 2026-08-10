@@ -325,6 +325,13 @@ export interface CubeListBoxProps<T>
   listRef?: RefObject<HTMLUListElement | null>;
   /** Whether to disallow empty selection */
   disallowEmptySelection?: boolean;
+  /**
+   * Whether `onSelectionChange` should fire even when the new selection equals the
+   * current one (e.g. re-selecting the already-selected item with `disallowEmptySelection`).
+   * React Stately suppresses such duplicate events by default. Popover-based wrappers
+   * (Picker, FilterPicker) rely on the duplicate event to close the popover on re-select.
+   */
+  allowDuplicateSelectionEvents?: boolean;
   /** Whether to wrap focus when reaching the end of the list */
   shouldFocusWrap?: boolean;
   /**
@@ -633,6 +640,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     shouldUseVirtualFocus,
     onSelectionChange,
     disableSelectionToggle = false,
+    allowDuplicateSelectionEvents,
     stateRef,
     focusOnHover,
     header,
@@ -712,6 +720,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     disabledBehavior: 'all',
     filter,
     selectionMode: props.selectionMode || 'single',
+    allowDuplicateSelectionEvents,
   };
 
   // Set selection props based on mode
