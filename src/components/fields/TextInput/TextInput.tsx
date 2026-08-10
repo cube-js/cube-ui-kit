@@ -8,9 +8,14 @@ import {
 } from '../../../utils/react/nullableValue';
 import { useFieldProps } from '../../form';
 
-import { CubeTextInputBaseProps, TextInputBase } from './TextInputBase';
+import {
+  CubeBufferedValueProps,
+  CubeTextInputBaseProps,
+  TextInputBase,
+} from './TextInputBase';
 
-export type CubeTextInputProps = WithNullableValue<CubeTextInputBaseProps>;
+export type CubeTextInputProps = WithNullableValue<CubeTextInputBaseProps> &
+  CubeBufferedValueProps;
 
 export { useTextField };
 
