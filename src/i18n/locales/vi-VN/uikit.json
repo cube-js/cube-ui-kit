@@ -165,6 +165,7 @@
     "dragCount_other": "{{count}} mục",
     "copiedToClipboard": "Đã sao chép vào bảng nhớ tạm",
     "copiedCells_one": "Đã sao chép {{count}} ô",
-    "copiedCells_other": "Đã sao chép {{count}} ô"
+    "copiedCells_other": "Đã sao chép {{count}} ô",
+    "refreshing": "Đang làm mới"
   }
 }

@@ -165,6 +165,7 @@
     "dragCount_other": "{{count}} objekt",
     "copiedToClipboard": "Kopierat till urklipp",
     "copiedCells_one": "{{count}} cell kopierad",
-    "copiedCells_other": "{{count}} celler kopierade"
+    "copiedCells_other": "{{count}} celler kopierade",
+    "refreshing": "Uppdaterar"
   }
 }

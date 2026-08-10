@@ -42,7 +42,7 @@ pivots, totals. Use `ListBox` when there is only one column.
   the user sees depends on `loadingIndicator`.
 - **`loadingIndicator`** `'overlay' | 'skeleton' | 'none'` (default: `'overlay'`)
   — What to show while `isLoading` is true over rows the table already has.
-  `overlay` keeps them, dimmed, behind a spinner; `skeleton` replaces them with
+  `overlay` keeps them, faded under a sweeping band; `skeleton` replaces them with
   placeholders; `none` paints nothing beyond `aria-busy`. With no rows yet,
   `overlay` and `skeleton` both fall back to skeleton rows.
 - **`skeletonRowCount`** `number` (default: `6`) — Skeleton rows to show while
@@ -619,7 +619,7 @@ table already has — the window that only exists once a query is involved:
 
 | Value | Behaviour |
 | --- | --- |
-| `overlay` (default) | The previous rows stay readable, dimmed, behind a spinner. Nothing moves, so the eye keeps its place and the table does not change height. |
+| `overlay` (default) | The previous rows stay readable and uncovered. The table fades — header included — and a band of lower opacity sweeps left to right across it, the way ag-grid marks a reloading grid. Nothing moves and nothing is drawn on top, so the eye keeps its place and the table does not change height. |
 | `skeleton` | The previous rows are discarded for placeholders. Honest that the data is gone, but it flashes on every page and a short page makes the table jump. |
 | `none` | No visuals beyond `aria-busy`. For pages that already show a top-level progress bar and do not want a second indicator. |
 

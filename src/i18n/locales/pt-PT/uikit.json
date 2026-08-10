@@ -165,6 +165,7 @@
     "dragCount_other": "{{count}} itens",
     "copiedToClipboard": "Copiado para a área de transferência",
     "copiedCells_one": "{{count}} célula copiada",
-    "copiedCells_other": "{{count}} células copiadas"
+    "copiedCells_other": "{{count}} células copiadas",
+    "refreshing": "A atualizar"
   }
 }

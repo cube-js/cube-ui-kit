@@ -638,9 +638,10 @@ export const ServerPagination: Story = {
  * What the table does while a refresh is in flight over rows it already has.
  * Page through all three at once and watch them diverge:
  *
- * - **`overlay`** (default) — the previous page stays readable, dimmed, behind a
- *   spinner. Nothing moves, so the eye keeps its place and the table does not
- *   change height.
+ * - **`overlay`** (default) — the previous page stays readable and fully
+ *   uncovered: the table fades, header included, and a band of lower opacity
+ *   sweeps across it. Nothing moves and nothing is drawn on top, so the eye
+ *   keeps its place and the table does not change height.
  * - **`skeleton`** — the previous page is discarded for placeholders. Honest
  *   that the rows are gone, but it flashes on every page, and a short page
  *   makes the table jump.

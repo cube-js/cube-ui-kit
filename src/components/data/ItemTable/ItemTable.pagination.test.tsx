@@ -199,10 +199,15 @@ describe('ItemTable loading behaviour', () => {
     );
 
     // The point of `overlay`: a refresh must not blank a table that already has
-    // an answer on screen.
+    // an answer on screen — and nothing may cover those rows either, which is
+    // why the refresh sweeps the table itself rather than parking a spinner on
+    // top of it.
     expect(names()).toEqual(['row-00', 'row-01', 'row-02']);
     expect(screen.getByRole('grid')).toHaveAttribute('aria-busy', 'true');
-    expect(document.querySelector('[data-element="Overlay"]')).not.toBeNull();
+    expect(
+      screen.getByRole('grid').closest('[data-qa="ItemTable"]'),
+    ).toHaveAttribute('data-stale', '');
+    expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   it('discards the previous rows with loadingIndicator="skeleton"', () => {

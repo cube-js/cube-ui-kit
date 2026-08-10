@@ -165,6 +165,7 @@
     "dragCount_other": "{{count}} 件",
     "copiedToClipboard": "クリップボードにコピーしました",
     "copiedCells_one": "{{count}} 個のセルをコピーしました",
-    "copiedCells_other": "{{count}} 個のセルをコピーしました"
+    "copiedCells_other": "{{count}} 個のセルをコピーしました",
+    "refreshing": "更新中"
   }
 }

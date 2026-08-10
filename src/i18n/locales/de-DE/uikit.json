@@ -165,6 +165,7 @@
     "dragCount_other": "{{count}} Elemente",
     "copiedToClipboard": "In die Zwischenablage kopiert",
     "copiedCells_one": "{{count}} Zelle kopiert",
-    "copiedCells_other": "{{count}} Zellen kopiert"
+    "copiedCells_other": "{{count}} Zellen kopiert",
+    "refreshing": "Wird aktualisiert"
   }
 }

@@ -165,6 +165,7 @@
     "dragCount_other": "{{count}} items",
     "copiedToClipboard": "Copied to clipboard",
     "copiedCells_one": "{{count}} cell copied",
-    "copiedCells_other": "{{count}} cells copied"
+    "copiedCells_other": "{{count}} cells copied",
+    "refreshing": "Refreshing"
   }
 }

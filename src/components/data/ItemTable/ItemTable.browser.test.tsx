@@ -421,3 +421,56 @@ describe('token namespacing', () => {
     );
   });
 });
+
+describe('refresh sweep', () => {
+  it('fades the whole table, header included, and sweeps a mask across it', async () => {
+    renderWithRoot(
+      <ItemTable isLoading data={ROWS.slice(0, 5)} columns={COLUMNS} />,
+    );
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    const root = grid().closest('[data-qa="ItemTable"]')!;
+    const table = grid() as HTMLElement;
+
+    expect(root).toHaveAttribute('data-stale', '');
+
+    // The fade is on the `<table>`, so the sticky header goes with it. Dimming
+    // only `<tbody>` left the header at full strength, reading as though the
+    // columns were current and only the data was not.
+    await vi.waitFor(() => expect(getComputedStyle(table).opacity).toBe('0.5'));
+
+    const style = getComputedStyle(table);
+
+    expect(style.maskImage).toContain('linear-gradient');
+    expect(style.animationName).not.toBe('none');
+    expect(style.animationDuration).not.toBe('0s');
+  });
+
+  it('parks nothing over the rows', async () => {
+    renderWithRoot(
+      <ItemTable isLoading data={ROWS.slice(0, 5)} columns={COLUMNS} />,
+    );
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    // Keeping the previous result on screen is the entire point of this mode;
+    // a spinner parked in the middle of it covered the very rows it preserves.
+    expect(document.querySelector('[data-qa="LoadingAnimation"]')).toBeNull();
+
+    // Still announced, just not drawn over the content.
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('leaves a settled table untouched', async () => {
+    renderWithRoot(<ItemTable data={ROWS.slice(0, 5)} columns={COLUMNS} />);
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    const style = getComputedStyle(grid() as HTMLElement);
+
+    expect(style.opacity).toBe('1');
+    expect(style.maskImage).toBe('none');
+    expect(style.animationName).toBe('none');
+  });
+});

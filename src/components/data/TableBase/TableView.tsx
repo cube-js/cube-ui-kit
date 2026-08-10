@@ -21,7 +21,6 @@ import { TextItem } from '../../content/TextItem';
 import { Checkbox } from '../../fields/Checkbox';
 import { useToast } from '../../overlays/Toast';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
-import { LoadingAnimation } from '../../status/LoadingAnimation';
 
 import { ColumnResizer } from './ColumnResizer';
 import {
@@ -1877,10 +1876,18 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           </tbody>
         </table>
       </div>
+      {/*
+        A refresh is shown by sweeping the table itself, not by parking a
+        spinner over it — the rows stay readable, which is the whole point of
+        keeping the previous result on screen. `role="status"` still announces
+        it, with nothing rendered.
+      */}
       {isStale ? (
-        <div data-element="Overlay" role="status">
-          <LoadingAnimation size="small" />
-        </div>
+        <div
+          data-element="LiveStatus"
+          role="status"
+          aria-label={t('itemTable.refreshing', 'Refreshing')}
+        />
       ) : null}
       {overlay}
       {contextMenu.rendered}

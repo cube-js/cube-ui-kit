@@ -1,4 +1,4 @@
-import { tasty } from '@tenphi/tasty';
+import { keyframes, tasty } from '@tenphi/tasty';
 
 import { Item } from '../../content/Item';
 
@@ -9,6 +9,24 @@ import type { Styles } from '@tenphi/tasty';
  * so they share a const — the same technique `Item.tsx` uses for
  * `DEFAULT_ICON_STYLES` / `ADDITION_STYLES`.
  */
+/**
+ * The refresh sweep: a band of reduced opacity travelling left to right, the
+ * way ag-grid marks a grid that is reloading.
+ *
+ * A mask rather than a coloured overlay, so the band genuinely lowers the
+ * content's opacity instead of painting a surface-coloured stripe over it. That
+ * costs nothing in theming — the gradient is pure black and alpha, with no
+ * colour token to resolve — and it stays correct on any backdrop.
+ *
+ * `mask-position` runs 100% → 0% because a mask wider than its box moves the
+ * OPPOSITE way to the position value: raising it slides the image left, which
+ * would send the band right to left.
+ */
+const refreshSweep = keyframes({
+  '0%': { 'mask-position': '100% 0' },
+  '100%': { 'mask-position': '0% 0' },
+});
+
 const ROW_STYLES: Styles = {
   // The stretched `rowLink` anchor positions against this.
   position: 'relative',
@@ -206,6 +224,24 @@ export const TableElement = tasty({
 
     Table: {
       $: '> Scroller >',
+      // The whole table fades while a refresh is in flight — header included.
+      // Dimming only the rows left the header at full strength, which read as
+      // though the columns were current and only the data was not.
+      opacity: { '': 1, stale: 0.5 },
+      maskImage: {
+        '': 'none',
+        stale:
+          'linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 35%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,1) 65%, rgba(0,0,0,1) 100%)',
+      },
+      // Three times the width, so the band is a third of the table and there is
+      // an opaque stretch either side of it. The default `repeat` tiles
+      // seamlessly, both ends of the gradient being fully opaque.
+      maskSize: '300% 100%',
+      animation: {
+        '': 'none',
+        stale: `${refreshSweep} 1.4s linear infinite`,
+      },
+      transition: 'opacity',
       // `fixed` makes `<colgroup>` authoritative, so the header and the body
       // are guaranteed to agree on every column width.
       tableLayout: 'fixed',
@@ -501,10 +537,6 @@ export const TableElement = tasty({
     /* ── body ─────────────────────────────────────────────────────────── */
     Body: {
       $: '> Scroller > Table >',
-      // Dimmed while a refresh is in flight, so stale rows never read as the
-      // fresh answer.
-      opacity: { '': 1, stale: 0.5 },
-      transition: 'opacity',
     },
     Row: {
       $: '> Scroller > Table > Body >',
@@ -710,10 +742,14 @@ export const TableElement = tasty({
     },
 
     /* ── foot (pinned totals) ─────────────────────────────────────────── */
-    /* ── stale / loading overlay ──────────────────────────────────────── */
+    /* ── consumer overlay ─────────────────────────────────────────────── */
     /**
-     * Sits over the Scroller, not inside it, so it stays put while the stale
-     * rows underneath remain scrollable and readable.
+     * Sits over the Scroller, not inside it, so it stays put while the rows
+     * underneath remain scrollable and readable.
+     *
+     * A refresh does NOT use this — it sweeps the table itself (see `Table`).
+     * A spinner parked in the middle of the rows covered the very content the
+     * "keep showing the previous result" behaviour exists to preserve.
      */
     Overlay: {
       $: '>',
@@ -728,6 +764,12 @@ export const TableElement = tasty({
       // one thing this behaviour exists to preserve.
       zIndex: 3,
       pointerEvents: 'none',
+    },
+
+    /** Announces a refresh to assistive tech. Renders nothing visible. */
+    LiveStatus: {
+      $: '>',
+      display: 'contents',
     },
 
     Foot: {
