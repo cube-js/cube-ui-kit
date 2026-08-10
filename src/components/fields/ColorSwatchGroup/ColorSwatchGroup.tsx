@@ -56,12 +56,19 @@ const CUSTOM_TRIGGER_STYLES: Styles = {
   padding: 0,
   radius: '1r',
   border: 0,
+  position: 'relative',
 };
 
-/** The swatch fills the stripped button rather than keeping its own size. */
+/**
+ * The swatch is docked over the whole button rather than placed inside it.
+ * `Item` lays its icon out in a grid that reserves room for a label even when
+ * there is none, which left the swatch a pixel off centre.
+ */
 const CUSTOM_SWATCH_STYLES: Styles = {
-  width: '100%',
-  height: '100%',
+  position: 'absolute',
+  inset: 0,
+  width: 'auto',
+  height: 'auto',
   radius: '1r',
 };
 

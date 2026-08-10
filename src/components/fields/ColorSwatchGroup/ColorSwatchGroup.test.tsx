@@ -185,6 +185,25 @@ describe('<ColorSwatchGroup />', () => {
       expect(getComputedStyle(swatch).boxShadow).not.toContain(INNER_RING);
     });
 
+    it('fills its trigger exactly, so it sits level with the swatches', () => {
+      // `Item` lays its icon out in a grid that keeps room for a label even
+      // when there is none, which left the swatch off centre by a pixel.
+      const { getByTestId } = renderWithRoot(
+        <ColorSwatchGroup aria-label="Palette" colors={PALETTE} allowCustom />,
+      );
+
+      const swatch = getByTestId('ColorSwatchGroupCustom').querySelector(
+        '[data-qa="ColorSwatch"]',
+      )!;
+      const cs = getComputedStyle(swatch);
+
+      // jsdom does not expand the `inset` shorthand into longhands, so assert
+      // what it does report: docked out of flow and sized by that inset.
+      expect(cs.position).toBe('absolute');
+      expect(cs.inset).toBe('0px');
+      expect([cs.width, cs.height]).toEqual(['auto', 'auto']);
+    });
+
     it('locks the picker when the group is read-only', () => {
       // Read-only stops the swatches through the radio state; the picker is a
       // separate control and would otherwise stay live.
