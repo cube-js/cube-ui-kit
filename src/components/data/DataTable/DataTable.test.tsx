@@ -526,6 +526,36 @@ describe('DataTable', () => {
     });
   });
 
+  it('numbers rows for assistive tech across the whole result', () => {
+    const TOTAL: Row = { id: 'total', region: 'Total', orders: 100 };
+
+    renderWithRoot(
+      <DataTable
+        data={ROWS.slice(0, 2)}
+        columns={COLUMNS}
+        pinnedTopRows={[TOTAL]}
+        pinnedBottomRows={[TOTAL]}
+        paginationMode="server"
+        page={3}
+        pageSize={10}
+        total={100}
+      />,
+    );
+
+    // 1 header + 1 pinned top + 100 body + 1 pinned bottom.
+    expect(grid()).toHaveAttribute('aria-rowcount', '103');
+
+    const indexOf = (selector: string) =>
+      grid().querySelector(selector)?.getAttribute('aria-rowindex');
+
+    // Header 1, pinned top 2, body starts after the 20 rows of pages 1–2, and
+    // the pinned bottom sits past the whole body — not past this page.
+    expect(indexOf('thead tr')).toBe('1');
+    expect(indexOf('tr[data-pinned="top"]')).toBe('2');
+    expect(indexOf('tbody tr:not([data-pinned])')).toBe('23');
+    expect(indexOf('tr[data-pinned="bottom"]')).toBe('103');
+  });
+
   it('names the section a cell was rendered in', () => {
     const TOTAL: Row = { id: 'total', region: 'Total', orders: 100 };
     const seen = new Map<string, string>();

@@ -544,6 +544,13 @@ function ItemTable<T = any>(
       bodyRef={bodyRef}
       qa={qa || 'ItemTable'}
       rows={visibleRows}
+      // `aria-rowindex` is document-absolute by contract: on page 3 a screen
+      // reader should hear "row 51 of 240", not "row 1 of 25". Infinite scroll
+      // never offsets — every loaded row is already in `visibleRows`.
+      // `isPaginated` already excludes infinite scroll, where every loaded row
+      // is in `visibleRows` and there is no page to offset by.
+      rowIndexOffset={isPaginated ? (pageInfo.page - 1) * pageSize : 0}
+      totalRowCount={total}
       getRowKey={resolvedGetRowKey}
       layout={layout}
       onScrollerRef={setScrollerEl}

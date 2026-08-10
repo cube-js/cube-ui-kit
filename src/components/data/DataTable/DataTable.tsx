@@ -367,6 +367,13 @@ function DataTable<T = any>(
       rowNumberOffset={
         paginationMode === 'off' ? 0 : (pageInfo.page - 1) * pageSize
       }
+      // The same offset drives `aria-rowindex`, which is document-absolute by
+      // contract — a screen reader on page 3 should hear "row 51 of 240", not
+      // "row 1 of 25".
+      rowIndexOffset={
+        paginationMode === 'off' ? 0 : (pageInfo.page - 1) * pageSize
+      }
+      totalRowCount={total}
       layout={layout}
       // Always on, unlike `ItemTable`. A result grid is read down a column, and
       // once the values are wide and right-aligned the rule is what keeps a

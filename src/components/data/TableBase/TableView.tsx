@@ -150,6 +150,21 @@ export interface TableViewProps<T = any> {
   cellSelection?: ReturnType<typeof useCellSelection<T>> | null;
   /** 1-based number of the first row, so paging keeps the count continuous. */
   rowNumberOffset?: number;
+  /**
+   * Rows of the full result that precede this page, and the size of that full
+   * result.
+   *
+   * ARIA row indices are document-absolute by contract: `aria-rowindex` is a
+   * row's position in the WHOLE grid and `aria-rowcount` the whole grid's size,
+   * so a paged grid has to say "row 21 of 240" rather than restarting at 1 and
+   * claiming a count of 25. Without them a screen reader hears colliding
+   * indices against a larger count, which is worse than saying nothing.
+   *
+   * Defaults keep an unpaged table correct: no offset, and a count taken from
+   * the rows actually given.
+   */
+  rowIndexOffset?: number;
+  totalRowCount?: number;
   isReorderable?: boolean;
   /** Provided by `DraggableCollection` when reordering is on. */
   dragState?: any;
@@ -393,6 +408,8 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     pinnedBottomRows,
     cellSelection,
     rowNumberOffset = 0,
+    rowIndexOffset = 0,
+    totalRowCount,
     isReorderable = false,
     dragState,
     dropState,
@@ -445,6 +462,36 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   // Header rows count towards `aria-rowcount`, which must be document-absolute.
   const headerRowCount = isHeaderHidden ? 0 : 1;
+
+  /* ── the ARIA row index space ───────────────────────────────────────────
+   * Four bands, in the order a screen reader walks them:
+   *
+   *   1                       the header row
+   *   2 … 1+top               pinned top rows
+   *   …                       the body, offset by the pages before this one
+   *   after the whole body    pinned bottom rows
+   *
+   * Derived once here rather than at each of the four render sites, which is
+   * how the body came to be numbered as though the pinned rows above it did
+   * not exist while `aria-rowcount` counted them.
+   * ─────────────────────────────────────────────────────────────────────── */
+  const pinnedTopCount = pinnedTopRows?.length ?? 0;
+  const pinnedBottomCount = pinnedBottomRows?.length ?? 0;
+  // The whole result, not this page. `rows.length` is the honest fallback when
+  // the adapter does not know a total.
+  const bodyRowCount = Math.max(
+    totalRowCount ?? rows.length,
+    rowIndexOffset + rows.length,
+  );
+
+  /** 1-based `aria-rowindex` for the i-th body row of the current page. */
+  const bodyRowIndex = (rowIndex: number) =>
+    headerRowCount + pinnedTopCount + rowIndexOffset + rowIndex + 1;
+  /** 1-based `aria-rowindex` for the i-th pinned row at `edge`. */
+  const pinnedRowIndex = (index: number, edge: 'top' | 'bottom') =>
+    edge === 'top'
+      ? headerRowCount + index + 1
+      : headerRowCount + pinnedTopCount + bodyRowCount + index + 1;
 
   const mergedStyles = useMemo(
     () => ({
@@ -651,7 +698,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-element="Row"
         data-placeholder=""
         role="row"
-        aria-rowindex={headerRowCount + rowIndex + 1}
+        aria-rowindex={bodyRowIndex(rowIndex)}
         aria-busy="true"
       >
         {columns.map((column) => (
@@ -1171,6 +1218,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-element="Row"
         data-pinned={edge}
         role="row"
+        aria-rowindex={pinnedRowIndex(index, edge)}
       >
         {columns.map((column) =>
           renderCell(column, row, index, rowKey, false, edge),
@@ -1227,7 +1275,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       // Only meaningful in a selectable grid; announcing "not selected" on
       // every row of a plain table is noise.
       'aria-selected': selection?.isEnabled ? isSelected : undefined,
-      'aria-rowindex': headerRowCount + rowIndex + 1,
+      'aria-rowindex': bodyRowIndex(rowIndex),
       title: extra?.tooltip,
       height: extra?.height,
       'data-clickable':
@@ -1588,10 +1636,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     'aria-label': ariaLabel,
     'aria-busy': isLoading || undefined,
     'aria-rowcount':
-      headerRowCount +
-      rows.length +
-      (pinnedTopRows?.length ?? 0) +
-      (pinnedBottomRows?.length ?? 0),
+      headerRowCount + pinnedTopCount + bodyRowCount + pinnedBottomCount,
     'aria-colcount': columnCount,
     'aria-multiselectable':
       selection?.selectionMode === 'multiple' ? true : undefined,

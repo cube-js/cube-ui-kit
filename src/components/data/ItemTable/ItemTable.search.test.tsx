@@ -270,4 +270,48 @@ describe('ItemTable search', () => {
       expect(names()).toEqual(['billing-etl', 'analytics-prod']),
     );
   });
+
+  it('debounces onSearchChange, not just the filter', async () => {
+    const onSearchChange = vi.fn();
+
+    renderWithRoot(
+      <ItemTable
+        isSearchable
+        data={ROWS}
+        columns={COLUMNS}
+        searchMode="server"
+        searchDelay={200}
+        onSearchChange={onSearchChange}
+      />,
+    );
+
+    await userEvent.type(searchBox(), 'grace');
+
+    // The whole point of `searchDelay` in server mode: one request for the
+    // word, not one per character.
+    await waitFor(() => expect(onSearchChange).toHaveBeenCalledWith('grace'));
+    expect(onSearchChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the input immediate while the callback waits', async () => {
+    const onSearchChange = vi.fn();
+
+    renderWithRoot(
+      <ItemTable
+        isSearchable
+        data={ROWS}
+        columns={COLUMNS}
+        searchMode="server"
+        searchDelay={200}
+        onSearchChange={onSearchChange}
+      />,
+    );
+
+    await userEvent.type(searchBox(), 'gr');
+
+    // Typing must never lag behind the debounce — the split between the drafted
+    // and the committed term exists precisely so it does not.
+    expect(searchBox()).toHaveValue('gr');
+    expect(onSearchChange).not.toHaveBeenCalled();
+  });
 });

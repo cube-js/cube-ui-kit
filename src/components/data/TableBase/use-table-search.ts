@@ -1,5 +1,5 @@
 import { useControlledState } from '@react-stately/utils';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useDebouncedValue, useEvent } from '../../../_internal/hooks';
 
@@ -71,17 +71,56 @@ export function useTableSearch<T>({
   delay = 500,
   filter,
 }: UseTableSearchOptions<T>): UseTableSearchResult<T> {
-  const [searchValue, setSearchState] = useControlledState<string>(
+  const [committed, setCommitted] = useControlledState<string>(
     value as string,
     defaultValue ?? '',
     onChange as (v: string) => void,
   );
 
-  // The input stays immediate; only the work is debounced. Cloud debounced the
-  // server callback but ran the client filter on every keystroke.
-  const query = useDebouncedValue(searchValue, delay).trim().toLowerCase();
+  // What the input shows, updated on every keystroke. The committed value —
+  // the one `onChange` reports and the filter runs on — trails it by `delay`.
+  //
+  // Two separate values rather than one, because `useControlledState` calls
+  // `onChange` the moment it is set: routing keystrokes straight into it fired
+  // a request per character in `searchMode="server"`, which is the thing the
+  // debounce exists to prevent. Debouncing the input itself instead would make
+  // typing lag, so the split is the point.
+  const [draft, setDraft] = useState(committed);
+  const debounced = useDebouncedValue(draft, delay);
 
-  const setSearchValue = useEvent((next: string) => setSearchState(next));
+  // What we last pushed outward, so the sync below can tell a genuine external
+  // change from the echo of our own debounce.
+  const pushedRef = useRef(committed);
+
+  // A controlled `searchValue` changing from OUTSIDE — a cleared filter, a
+  // restored URL — wins over whatever is half-typed.
+  //
+  // The echo has to be filtered out or this reverts the input mid-word: with a
+  // short delay the debounce commits letter 1 while letter 2 is already typed,
+  // and syncing unconditionally puts letter 1 back. At `searchDelay={0}` that
+  // happens on every keystroke and nothing longer than one character can ever
+  // be typed.
+  useEffect(() => {
+    if (committed === pushedRef.current) return;
+
+    pushedRef.current = committed;
+    setDraft(committed);
+  }, [committed]);
+
+  useEffect(() => {
+    if (debounced === pushedRef.current) return;
+
+    pushedRef.current = debounced;
+    setCommitted(debounced);
+    // `committed` is deliberately not a dependency: reacting to it here would
+    // fight the effect above and push a stale draft back out.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debounced]);
+
+  const searchValue = draft;
+  const query = debounced.trim().toLowerCase();
+
+  const setSearchValue = useEvent((next: string) => setDraft(next));
 
   const searchedRows = useMemo(() => {
     if (mode !== 'client' || !query) return rows;
