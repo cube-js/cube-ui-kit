@@ -1,6 +1,28 @@
-import { Styles, tasty } from '@tenphi/tasty';
+import {
+  BASE_STYLES,
+  BaseProps,
+  BaseStyleProps,
+  BLOCK_STYLES,
+  BlockStyleProps,
+  DIMENSION_STYLES,
+  DimensionStyleProps,
+  OUTER_STYLES,
+  OuterStyleProps,
+  Styles,
+  tasty,
+} from '@tenphi/tasty';
+import { ForwardedRef, forwardRef } from 'react';
 
-import { ColorValue, toHex } from './color';
+import { extractStyles } from '../../../utils/styles';
+
+import { ColorValue, parseColor, toHex } from './color';
+
+const STYLE_PROPS = [
+  ...BASE_STYLES,
+  ...OUTER_STYLES,
+  ...BLOCK_STYLES,
+  ...DIMENSION_STYLES,
+];
 
 const SwatchElement = tasty({
   qa: 'ColorSwatch',
@@ -23,25 +45,41 @@ const SwatchElement = tasty({
   },
 });
 
-export interface ColorSwatchProps {
-  /** The color to show, or `null` for the empty state. */
-  color: ColorValue | null;
+export interface CubeColorSwatchProps
+  extends BaseProps,
+    BaseStyleProps,
+    OuterStyleProps,
+    BlockStyleProps,
+    DimensionStyleProps {
+  /** The color to show. Anything the color inputs accept; `null` shows the empty state. */
+  color?: string | ColorValue | null;
   styles?: Styles;
 }
 
 /**
- * The square of color both controls put in front of their value. Decorative:
- * the color is always available as text next to it.
+ * A square of color. Decorative on its own — pair it with the value as text, or
+ * with a control that names it.
  *
- * The color travels as an inline custom property so the swatch keeps a single
- * cached style rule however often it changes.
+ * The color travels as an inline custom property rather than through `styles`,
+ * so the swatch keeps a single cached style rule however often it changes.
  */
-export function ColorSwatch({ color, styles }: ColorSwatchProps) {
+export const ColorSwatch = forwardRef(function ColorSwatch(
+  props: CubeColorSwatchProps,
+  ref: ForwardedRef<HTMLDivElement>,
+) {
+  const { color, mods, qa } = props;
+  const styles = extractStyles(props, STYLE_PROPS);
+
+  const resolved =
+    typeof color === 'string' ? parseColor(color) : color ?? null;
+
   return (
     <SwatchElement
-      mods={{ empty: !color }}
+      ref={ref}
+      qa={qa}
+      mods={{ empty: !resolved, ...mods }}
       styles={styles}
-      style={color ? { '--color-picker-color': toHex(color) } : undefined}
+      style={resolved ? { '--color-picker-color': toHex(resolved) } : undefined}
     />
   );
-}
+});

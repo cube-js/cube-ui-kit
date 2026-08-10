@@ -192,3 +192,17 @@ InsideColorPicker.parameters = {
     },
   },
 };
+
+export const RoundSwatches = Template.bind({});
+RoundSwatches.args = {
+  defaultValue: '#26fcb2',
+  swatchStyles: { radius: 'round' },
+};
+RoundSwatches.parameters = {
+  docs: {
+    description: {
+      story:
+        '`ColorSwatch` is exported on its own and takes direct style props, so `radius="round"` (or any other) works on a bare swatch too.',
+    },
+  },
+};

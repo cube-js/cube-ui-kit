@@ -62,7 +62,12 @@ These properties allow direct style application without using the `styles` prop:
 
 - **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
-- **Block:** `border`, `radius`, `shadow`, `outline`
+- **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
+
+### Style Props on the group
+
+`ColorSwatchGroup` and `ColorPicker` both take the outer and block style props,
+so `radius`, `border`, `padding` and `shadow` work directly on them.
 
 ### Modifiers
 
@@ -71,7 +76,21 @@ The `mods` property accepts the following modifiers you can override:
 | Modifier   | Type      | Description                        |
 | ---------- | --------- | ---------------------------------- |
 | `selected` | `boolean` | The swatch is the selected color   |
+| `empty`    | `boolean` | The swatch has no color to show    |
 | `disabled` | `boolean` | The group is disabled              |
+
+## ColorSwatch
+
+The square itself is exported, for the times you need to show a color without a
+control around it — a legend, a table cell, a summary line. It takes direct
+style props, so its shape and size are yours:
+
+```jsx
+<ColorSwatch color="#7a4dbf" radius="round" width="4x" height="4x" />
+```
+
+It is decorative on its own: pair it with the value as text, or with something
+that names it.
 
 ## Swatches must be unique
 

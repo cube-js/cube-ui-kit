@@ -1,5 +1,7 @@
 import {
   BaseProps,
+  BLOCK_STYLES,
+  BlockStyleProps,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -73,6 +75,7 @@ const ColorPickerWrapper = tasty({
 export interface CubeColorPickerProps
   extends BaseProps,
     OuterStyleProps,
+    BlockStyleProps,
     FieldBaseProps {
   /** The selected color, as a color string. */
   value?: string | null;
@@ -163,7 +166,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
     'aria-label': ariaLabel,
   } = props;
 
-  const styles = extractStyles(props, OUTER_STYLES);
+  const styles = extractStyles(props, [...OUTER_STYLES, ...BLOCK_STYLES]);
 
   const [color, setColor] = useState(() =>
     parseColor((value ?? defaultValue ?? '').toString()),

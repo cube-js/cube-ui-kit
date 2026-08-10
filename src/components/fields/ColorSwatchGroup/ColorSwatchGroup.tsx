@@ -1,6 +1,8 @@
 import { useObjectRef } from '@react-aria/utils';
 import {
   BaseProps,
+  BLOCK_STYLES,
+  BlockStyleProps,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -47,7 +49,7 @@ const CUSTOM_TRIGGER_STYLES: Styles = {
 /** Matches the ring a selected swatch gets, for a custom color in the row. */
 const CUSTOM_TRIGGER_SELECTED_STYLES: Styles = {
   ...CUSTOM_TRIGGER_STYLES,
-  shadow: '0 0 0 1bw #surface, 0 0 0 3bw #primary',
+  shadow: 'inset 0 0 0 2bw #surface-text, inset 0 0 0 4bw #surface',
 };
 
 /** The swatch fills the stripped button rather than keeping its own size. */
@@ -99,8 +101,9 @@ const SwatchElement = tasty({
     // deliberately left to the focus ring.
     shadow: {
       '': 'inset 0 0 0 1bw #dark.15',
-      selected:
-        '0 0 0 1bw #surface, 0 0 0 3bw #primary, inset 0 0 0 1bw #dark.15',
+      // Outer ring first: earlier shadows paint over later ones, so this reads
+      // as 2bw of `#surface-text` at the edge, then 2bw of `#surface` inside it.
+      selected: 'inset 0 0 0 2bw #surface-text, inset 0 0 0 4bw #surface',
     },
     outline: {
       '': '1bw #primary-text.0',
@@ -114,6 +117,7 @@ const SwatchElement = tasty({
 export interface CubeColorSwatchGroupProps
   extends BaseProps,
     OuterStyleProps,
+    BlockStyleProps,
     FieldBaseProps {
   /** The colors to offer. Duplicates of the same color are dropped. */
   colors?: CubeColorSwatchItem[];
@@ -232,7 +236,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
     'aria-label': ariaLabel,
   } = props;
 
-  const styles = extractStyles(props, OUTER_STYLES);
+  const styles = extractStyles(props, [...OUTER_STYLES, ...BLOCK_STYLES]);
   const isInsidePopover = useIsInsideColorPopover();
   // A custom picker inside a color popover would open a popover of its own.
   const showCustom = allowCustom && !isInsidePopover;

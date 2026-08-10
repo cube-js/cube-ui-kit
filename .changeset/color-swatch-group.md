@@ -20,4 +20,8 @@ Swatches are keyed by their canonical hex, so the same color written two ways co
 
 `allowCustom` appends a `ColorPicker` for colors outside the set, showing the current color whenever it is not one of the swatches.
 
+`ColorSwatch` is exported too, for showing a color without a control around it. It takes direct style props, so `<ColorSwatch color="#7a4dbf" radius="round" />` works. `ColorSwatchGroup` and `ColorPicker` both accept the outer and block style props, so `radius`, `border`, `padding` and `shadow` apply directly.
+
+The selected swatch is marked the way React Aria marks it: two rings drawn *inside* the swatch, one in `#surface-text` and one in `#surface`. A single ring in one color vanishes against a swatch of that color — an accent ring on an accent-colored swatch — while two tones that flip with the color scheme contrast against anything, and drawing them inset keeps the swatch's footprint fixed.
+
 `ColorPicker` gains `swatches` and `swatchColumns`, which put a palette under the editor in its popover. The group drops `allowCustom` there — the escape hatch is itself a `ColorPicker`, so offering it inside one would nest popovers without end. That is enforced through context rather than documented, so the recursion cannot be written by hand either.
