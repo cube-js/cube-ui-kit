@@ -169,6 +169,13 @@ export const ColorPicker = forwardRef(function ColorPicker(
 
   const styles = extractStyles(props, [...OUTER_STYLES, ...BLOCK_STYLES]);
 
+  /**
+   * Loading locks the trigger, but the popover can outlive that — it may be
+   * controlled, or opened before the load began — so the editor inside has to
+   * refuse edits on the same terms.
+   */
+  const isEditingDisabled = isDisabled || isLoading;
+
   const [color, setColor] = useState(() =>
     parseColor((value ?? defaultValue ?? '').toString()),
   );
@@ -248,7 +255,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
           icon={<ColorSwatch color={color} styles={swatchStyles} />}
           rightIcon={getValidationIcon({ isInvalid, isValid })}
           tooltip={triggerTooltip}
-          isDisabled={isDisabled || isLoading || isReadOnly}
+          isDisabled={isEditingDisabled || isReadOnly}
           autoFocus={autoFocus}
           aria-label={ariaLabel}
           mods={{ placeholder: !color }}
@@ -267,14 +274,14 @@ export const ColorPicker = forwardRef(function ColorPicker(
             <ColorPanel
               color={color ?? FALLBACK_COLOR}
               space={space}
-              isDisabled={isDisabled || isReadOnly}
+              isDisabled={isEditingDisabled || isReadOnly}
               previewFormat={format}
               input={
                 <ColorInput
                   aria-label="Color value"
                   format={format}
                   value={colorText}
-                  isDisabled={isDisabled}
+                  isDisabled={isEditingDisabled}
                   isReadOnly={isReadOnly}
                   onChange={handleValueChange}
                 />
@@ -288,7 +295,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
                     columns={swatchColumns}
                     format={format}
                     value={colorText}
-                    isDisabled={isDisabled || isReadOnly}
+                    isDisabled={isEditingDisabled || isReadOnly}
                     onChange={handleValueChange}
                   />
                 ) : null

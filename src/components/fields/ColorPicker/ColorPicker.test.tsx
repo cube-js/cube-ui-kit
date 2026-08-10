@@ -164,6 +164,32 @@ describe('<ColorPicker />', () => {
     }
   }, 10000);
 
+  it('leaves an open panel uneditable while loading', async () => {
+    // Loading locks the trigger for the same reason read-only does, and an
+    // already-open popover has to follow it down.
+    const { getByRole, getAllByRole } = renderWithRoot(
+      <ColorPicker
+        aria-label="Brand"
+        defaultValue="#ff0000"
+        swatches={['#7a4dbf', '#26fcb2']}
+        defaultOpen
+        isLoading
+      />,
+    );
+
+    await waitFor(() => expect(getByRole('dialog')).toBeInTheDocument());
+
+    for (const slider of getAllByRole('slider')) {
+      expect(slider).toBeDisabled();
+    }
+
+    for (const swatch of getAllByRole('radio')) {
+      expect(swatch).toBeDisabled();
+    }
+
+    expect(getAllByRole('textbox')[0]).toBeDisabled();
+  }, 10000);
+
   describe('the value field in the popover', () => {
     const field = (getAllByRole) =>
       getAllByRole('textbox')[0] as HTMLInputElement;
