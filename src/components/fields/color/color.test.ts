@@ -1,4 +1,5 @@
 import {
+  COLOR_FORMATS,
   ColorFormat,
   detectFormat,
   formatColor,
@@ -84,6 +85,18 @@ describe('color model', () => {
       ['oklch', 'oklch(0.628 0.2577 29.23)'],
     ])('writes %s', (format, expected) => {
       expect(formatColor(red, format as ColorFormat)).toBe(expected);
+    });
+
+    it('writes every format in comma-free modern syntax', () => {
+      // CSS's legacy comma form is still accepted on the way in; nothing this
+      // produces should use it.
+      for (const source of ['#26fcb2', '#1a1a2e', '#808080', '#ffffff']) {
+        for (const format of COLOR_FORMATS) {
+          const text = formatColor(parseColor(source)!, format);
+
+          expect(text, `${source} as ${format}`).not.toContain(',');
+        }
+      }
     });
 
     it('round-trips every format', () => {
