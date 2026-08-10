@@ -49,6 +49,10 @@ const SWATCH_PX: Record<string, number> = {
  * sits in the row as one of them.
  */
 const CUSTOM_TRIGGER_STYLES: Styles = {
+  // `size` sets the control's height; the box is pinned here as well so a flex
+  // row cannot let the button size itself to its content instead.
+  width: '$swatch-size $swatch-size',
+  height: '$swatch-size $swatch-size',
   padding: 0,
   radius: '1r',
   border: 0,

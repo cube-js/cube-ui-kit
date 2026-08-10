@@ -39,6 +39,7 @@ import {
 import { ColorPanel } from '../color/ColorPanel';
 import { ColorSwatch } from '../color/ColorSwatch';
 import { ColorPopoverContext } from '../color/context';
+import { ColorInput } from '../ColorInput';
 import { ColorSwatchGroup, CubeColorSwatchItem } from '../ColorSwatchGroup';
 
 /**
@@ -263,6 +264,16 @@ export const ColorPicker = forwardRef(function ColorPicker(
               space={space}
               isDisabled={isDisabled || isReadOnly}
               previewFormat={format}
+              input={
+                <ColorInput
+                  aria-label="Color value"
+                  format={format}
+                  value={colorText}
+                  isDisabled={isDisabled}
+                  isReadOnly={isReadOnly}
+                  onChange={handleSwatchChange}
+                />
+              }
               swatches={
                 swatches?.length ? (
                   <ColorSwatchGroup

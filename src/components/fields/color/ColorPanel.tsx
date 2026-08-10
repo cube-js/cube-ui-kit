@@ -115,6 +115,8 @@ export interface ColorPanelProps {
   previewFormat: ColorFormat;
   /** Optional palette rendered under the channels. */
   swatches?: ReactNode;
+  /** Optional value field rendered above the preview. */
+  input?: ReactNode;
   onChange: (color: ColorValue) => void;
   onSpaceChange: (space: ColorSpace) => void;
 }
@@ -175,6 +177,7 @@ export function ColorPanel(props: ColorPanelProps) {
     isDisabled,
     previewFormat,
     swatches,
+    input,
     onChange,
     onSpaceChange,
   } = props;
@@ -193,6 +196,7 @@ export function ColorPanel(props: ColorPanelProps) {
 
   return (
     <PanelElement style={colorTokens}>
+      {input}
       <PreviewElement>{formatColor(color, previewFormat)}</PreviewElement>
       <Radio.Tabs
         aria-label="Color space"

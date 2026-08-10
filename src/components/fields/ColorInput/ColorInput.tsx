@@ -36,6 +36,7 @@ import {
 } from '../color/color';
 import { ColorPanel } from '../color/ColorPanel';
 import { ColorSwatch } from '../color/ColorSwatch';
+import { useIsInsideColorPopover } from '../color/context';
 import { TextInputBase } from '../TextInput/TextInputBase';
 
 /**
@@ -158,6 +159,10 @@ export const ColorInput = forwardRef(function ColorInput(
     'aria-describedby': ariaDescribedby,
     id,
   } = props;
+
+  // Already inside a color popover: this is the value field for that popover,
+  // so it must not offer a popover of its own.
+  const isInsidePopover = useIsInsideColorPopover();
 
   const initialText = (value ?? defaultValue ?? '').toString();
   const [text, setText] = useState(() => {
@@ -347,37 +352,39 @@ export const ColorInput = forwardRef(function ColorInput(
       // orders it for the date pickers.
       suffixPosition="after"
       suffix={
-        <DialogTrigger
-          hideArrow
-          type="popover"
-          mobileType="tray"
-          placement="bottom right"
-          targetRef={targetRef}
-          isOpen={controlledOpen ?? isOpen}
-          shouldFlip={shouldFlip}
-          onOpenChange={handleOpenChange}
-        >
-          <ColorInputTrigger
-            size={size}
-            aria-label="Open the color picker"
-            isDisabled={isDisabled || isReadOnly}
-            styles={triggerStyles}
-          />
-          <Dialog
-            aria-label="Color picker"
-            width="max-content"
-            styles={POPOVER_STYLES}
+        isInsidePopover ? null : (
+          <DialogTrigger
+            hideArrow
+            type="popover"
+            mobileType="tray"
+            placement="bottom right"
+            targetRef={targetRef}
+            isOpen={controlledOpen ?? isOpen}
+            shouldFlip={shouldFlip}
+            onOpenChange={handleOpenChange}
           >
-            <ColorPanel
-              color={color ?? FALLBACK_COLOR}
-              space={space}
+            <ColorInputTrigger
+              size={size}
+              aria-label="Open the color picker"
               isDisabled={isDisabled || isReadOnly}
-              previewFormat={outputFormat(text)}
-              onChange={handleColorChange}
-              onSpaceChange={setSpace}
+              styles={triggerStyles}
             />
-          </Dialog>
-        </DialogTrigger>
+            <Dialog
+              aria-label="Color picker"
+              width="max-content"
+              styles={POPOVER_STYLES}
+            >
+              <ColorPanel
+                color={color ?? FALLBACK_COLOR}
+                space={space}
+                isDisabled={isDisabled || isReadOnly}
+                previewFormat={outputFormat(text)}
+                onChange={handleColorChange}
+                onSpaceChange={setSpace}
+              />
+            </Dialog>
+          </DialogTrigger>
+        )
       }
     />
   );
