@@ -34,14 +34,16 @@ function prefersReducedMotion() {
  * to follow a particular one to where it went. The whole value is in tracking
  * one row, which is why this animates positions rather than cross-fading.
  *
- * **Only rows that actually moved**, and only ones that were already on screen.
- * A page turn or fresh data brings keys with no previous position, so nothing
- * slides; a filter slides the survivors, which is what ag-grid does too.
+ * **Only a reorder**, and only rows that were already on screen. If the rows
+ * common to both commits are in the same relative order, nothing animates,
+ * however much their positions moved — that is a relayout, not a reorder, and
+ * it covers the initial mount (widths resolving, the virtualizer measuring, a
+ * scrollbar appearing), a container resize, and a filter that only removes
+ * rows.
  *
- * Scrolling is not movement, and that falls out of measuring `offsetTop` rather
- * than viewport coordinates: it is relative to the scroller's content, so it
- * does not change as the content scrolls past. Without that, every scroll tick
- * would look like a reorder of the entire page.
+ * Scrolling is not movement either, and that falls out of measuring `offsetTop`
+ * rather than viewport coordinates: it is relative to the scroller's content,
+ * so it does not change as the content scrolls past.
  */
 export function useRowMoveAnimation({
   isEnabled,
@@ -49,6 +51,7 @@ export function useRowMoveAnimation({
   duration = ROW_MOVE_DURATION,
 }: UseRowMoveAnimationOptions) {
   const previousRef = useRef<Map<string, number> | null>(null);
+  const previousOrderRef = useRef<string[]>([]);
 
   // No dependency array: the previous positions have to be captured after every
   // commit, because any of them may turn out to be the one a reorder starts
@@ -74,13 +77,36 @@ export function useRowMoveAnimation({
     for (const row of rows) next.set(row.dataset.key!, row.offsetTop);
 
     const previous = previousRef.current;
+    const previousOrder = previousOrderRef.current;
+    const nextOrder = rows.map((row) => row.dataset.key!);
 
     previousRef.current = next;
+    previousOrderRef.current = nextOrder;
 
     // Checked per commit rather than once: the setting can change mid-session,
     // and the position bookkeeping above must keep running either way so the
     // animation is correct the moment it is turned back on.
     if (!isEnabled || prefersReducedMotion() || !previous) return;
+
+    // Animate a REORDER, never a relayout.
+    //
+    // Positions shift for all sorts of reasons that are not a row moving: the
+    // column widths resolving after the first measure, the virtualizer taking
+    // its measurements, a scrollbar appearing, a font landing, the container
+    // being resized. Every one of those happens on the second commit of a
+    // normal mount — so keying off "an offset changed" animated the table into
+    // existence on load, which is exactly what a load should not do.
+    //
+    // Comparing the order of the rows common to both commits answers the real
+    // question. A relayout leaves it identical; a sort does not.
+    const stillHere = new Set(nextOrder);
+    const before = previousOrder.filter((key) => stillHere.has(key));
+    const after = nextOrder.filter((key) => previous.has(key));
+    const isReorder =
+      before.length !== after.length ||
+      before.some((key, index) => key !== after[index]);
+
+    if (!isReorder) return;
 
     const moved: { row: HTMLTableRowElement; delta: number }[] = [];
 

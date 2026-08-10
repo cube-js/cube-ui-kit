@@ -314,6 +314,70 @@ describe('row move animation', () => {
     );
   });
 
+  // NOTE: there is deliberately no "does not animate on mount" test here.
+  // Every version I wrote passed with the guard removed as well — in this
+  // harness the first commit that has a `<tbody>` already has its column widths
+  // resolved, so the mount moves no offsets and there is nothing to catch. A
+  // test that cannot fail is worse than none: it reads as coverage. The
+  // relayout case below exercises the same guard and does fail without it.
+
+  it('does not animate a relayout that leaves the order alone', async () => {
+    const LONG = Array.from({ length: 8 }, (_, i) => ({
+      ...ROWS[i],
+      region: `${'a very long region label '.repeat(4)}${i}`,
+    }));
+
+    renderWithRoot(
+      <DataTable
+        data={LONG}
+        columns={[
+          // Wrapping is what makes a relayout move row offsets at all: with
+          // `table-layout: fixed` and no wrapping, narrowing changes column
+          // widths and nothing else, so there is no movement to animate and
+          // nothing to catch.
+          { key: 'region', title: 'Region', autoHeight: true },
+          { key: 'orders', title: 'Orders', dataType: 'number' },
+        ]}
+        height="300px"
+        width="700px"
+      />,
+    );
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const root = grid().closest('[data-qa="DataTable"]') as HTMLElement;
+    const firstRow = grid().querySelector<HTMLElement>(
+      'tbody tr[data-element="Row"]:nth-child(2)',
+    )!;
+    const offsetBefore = firstRow.offsetTop;
+
+    let seenTranslate = false;
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        if (record.oldValue?.includes('translateY')) seenTranslate = true;
+      }
+    });
+
+    observer.observe(grid().querySelector('tbody')!, {
+      attributes: true,
+      attributeFilter: ['style'],
+      attributeOldValue: true,
+      subtree: true,
+    });
+
+    root.style.width = '360px';
+
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    observer.disconnect();
+
+    // The premise: offsets really did move. Without this the assertion below
+    // passes whether or not the guard does anything.
+    expect(firstRow.offsetTop).not.toBe(offsetBefore);
+    expect(seenTranslate).toBe(false);
+  });
+
   it('does not animate a page turn, only a reorder', async () => {
     renderWithRoot(
       <DataTable

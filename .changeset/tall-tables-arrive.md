@@ -43,7 +43,9 @@ Some behaviour worth knowing without reading the source:
   opacity across it rather than covering the rows with a spinner — the previous
   result stays readable, which is the point of keeping it on screen.
 - A sort slides rows to their new positions over 120ms, so a row can be followed
-  to where it went.
+  to where it went. Only a reorder animates: if the rows keep their relative
+  order the table never moves, however much the layout shifts underneath them —
+  so mounting, resizing and filtering are all silent.
 - Infinite scroll starts fetching a screen before the end and holds the scroll
   height with a batch-sized run of skeleton rows, so scrolling is not
   interrupted and nothing lurches when the rows land.
