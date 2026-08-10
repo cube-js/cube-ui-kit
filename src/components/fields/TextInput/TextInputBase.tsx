@@ -233,6 +233,13 @@ export interface CubeTextInputBaseProps
   /** The size of the input */
   size?: 'small' | 'medium' | 'large' | (string & {});
   autocomplete?: string;
+  /**
+   * Whether the typed text is held locally until the controlled `value` catches up. On by default,
+   * which is what keeps the caret in place when the value round-trips through a store that
+   * re-renders a pass late. Set to `false` for a caller that must see the value snap back to its
+   * own `value` prop the instant it declines a keystroke. See `useBufferedValue`.
+   */
+  isBuffered?: boolean;
 }
 
 /**
