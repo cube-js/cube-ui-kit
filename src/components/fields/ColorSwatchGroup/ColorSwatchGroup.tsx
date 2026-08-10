@@ -106,10 +106,10 @@ const SwatchElement = tasty({
       selected: 'inset 0 0 0 2bw #surface-text, inset 0 0 0 4bw #surface',
     },
     outline: {
-      '': '1bw #primary-text.0',
-      focused: '1bw #primary-text',
+      '': '2bw #focus.0',
+      focused: '2bw #focus',
     },
-    outlineOffset: 3,
+    outlineOffset: 2,
     transition: 'theme',
   },
 });
