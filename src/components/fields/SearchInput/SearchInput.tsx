@@ -12,7 +12,11 @@ import {
 } from '../../../utils/react/nullableValue';
 import { ItemAction } from '../../actions';
 import { getValidationTheme, useValidationProps } from '../../form';
-import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
+import {
+  CubeBufferedValueProps,
+  CubeTextInputBaseProps,
+  TextInputBase,
+} from '../TextInput';
 
 export { useSearchFieldState, useSearchField };
 export type { SearchFieldProps };
@@ -31,7 +35,8 @@ export interface CubeSearchInputProps
       | 'insideForm'
       | 'idPrefix'
     >,
-    SearchFieldProps {
+    SearchFieldProps,
+    CubeBufferedValueProps {
   /** Whether the search input is clearable using ESC keyboard button or clear button inside the input */
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
