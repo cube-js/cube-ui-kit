@@ -40,7 +40,7 @@ Choose a different component when the interaction has another shape:
 - **`allowsCustomValue`** `boolean` (default: `false`) — Whether to allow entering custom values that are not present in the predefined options
 - **`isClearable`** `boolean` (default: `false`) — Whether the filter picker is clearable using a clear button in the rightIcon slot
 - **`isLoadingItems`** `boolean` (default: `false`) — Whether items are currently loading. Shows a loading spinner in the search input suffix inside the popover. Unlike `isLoading`, does not disable the trigger.
-- **`disallowEmptySelection`** `boolean` (default: `false`) — Whether to disallow empty selection
+- **`disallowEmptySelection`** `boolean` (default: `false`) — Whether to disallow empty selection. In single selection mode, re-selecting the current item becomes a no-op: `onSelectionChange` is not fired and the popover closes
 - **`disabledKeys`** `Key[]` — Array of keys for disabled items
 - **`items`** `Iterable<T>` — Array of items to render when using the render function pattern for large datasets with dynamic content
 - **`placeholder`** `string` — Placeholder text when no selection is made

@@ -53,7 +53,7 @@ Choose a different component when the interaction has another shape:
 - **`isCheckable`** `boolean` (default: `false`) — Whether to show checkboxes for multiple selection mode
 - **`showSelectAll`** `boolean` (default: `false`) — Whether to show "Select All" option in multiple selection mode
 - **`selectAllLabel`** `ReactNode` (default: `Select All`) — Label for the "Select All" option
-- **`disallowEmptySelection`** `boolean` (default: `false`) — Whether to disallow empty selection
+- **`disallowEmptySelection`** `boolean` (default: `false`) — Whether to disallow empty selection. In single selection mode, re-selecting the current item becomes a no-op: `onSelectionChange` is not fired and the popover closes
 - **`disabledKeys`** `Key[]` — Array of keys for disabled items
 - **`isClearable`** `boolean` (default: `false`) — Whether the picker shows a clear button when a selection is made
 - **`onClear`** `() => void` — Callback called when the clear button is pressed

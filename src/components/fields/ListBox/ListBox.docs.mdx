@@ -155,6 +155,10 @@ The `mods` property accepts the following modifiers you can override:
 - When `true`, prevents the user from deselecting the last selected item
 - Ensures at least one item is always selected in single selection mode
 
+**allowDuplicateSelectionEvents** (`boolean`, default: `false`)
+- When `true`, `onSelectionChange` fires even when the new selection equals the current one (React Stately suppresses such duplicate events by default)
+- Used by popover-based wrappers (Picker, FilterPicker) together with `disallowEmptySelection` to close the popover when the user re-selects the current item
+
 **disableSelectionToggle** (`boolean`, default: `false`)
 - When `true`, clicking an already-selected item keeps it selected instead of toggling it off
 - Useful when embedding ListBox inside components like ComboBox

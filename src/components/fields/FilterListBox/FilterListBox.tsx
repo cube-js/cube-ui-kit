@@ -1128,6 +1128,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         isInvalid={isInvalid}
         isValid={isValid}
         disallowEmptySelection={props.disallowEmptySelection}
+        allowDuplicateSelectionEvents={props.allowDuplicateSelectionEvents}
         disabledKeys={props.disabledKeys}
         focusOnHover={focusOnHover}
         shouldUseVirtualFocus={!(isReorderable && !searchValue.trim())}

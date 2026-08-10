@@ -822,4 +822,81 @@ describe('<Picker />', () => {
       expect(trigger).toHaveTextContent('Red Apple');
     });
   });
+
+  describe('disallowEmptySelection re-select behavior', () => {
+    const optionCount = () =>
+      document.querySelectorAll('[role="option"]').length;
+    const findOption = (text: string) =>
+      Array.from(document.querySelectorAll('[role="option"]')).find(
+        (o) => o.textContent === text,
+      ) as HTMLElement;
+
+    it('re-clicking the selected item does not fire onSelectionChange and closes the popover', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, getAllByRole } = renderWithRoot(
+        <Picker
+          disallowEmptySelection
+          label="Picker"
+          selectionMode="single"
+          selectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </Picker>,
+      );
+
+      await userEvent.click(getByRole('button'));
+      await waitFor(() => expect(getAllByRole('option').length).toBe(5));
+
+      await userEvent.click(findOption('Apple'));
+
+      await waitFor(() => expect(optionCount()).toBe(0));
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+
+    it('selecting a different item still fires onSelectionChange and closes the popover', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, getAllByRole } = renderWithRoot(
+        <Picker
+          disallowEmptySelection
+          label="Picker"
+          selectionMode="single"
+          selectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </Picker>,
+      );
+
+      await userEvent.click(getByRole('button'));
+      await waitFor(() => expect(getAllByRole('option').length).toBe(5));
+
+      await userEvent.click(findOption('Banana'));
+
+      await waitFor(() => expect(optionCount()).toBe(0));
+      expect(onSelectionChange.mock.calls).toEqual([['banana']]);
+    });
+
+    it('without disallowEmptySelection, re-clicking the selected item still deselects (legacy behavior)', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, getAllByRole } = renderWithRoot(
+        <Picker
+          label="Picker"
+          selectionMode="single"
+          selectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </Picker>,
+      );
+
+      await userEvent.click(getByRole('button'));
+      await waitFor(() => expect(getAllByRole('option').length).toBe(5));
+
+      await userEvent.click(findOption('Apple'));
+
+      await waitFor(() => expect(optionCount()).toBe(0));
+      expect(onSelectionChange.mock.calls).toEqual([[null]]);
+    });
+  });
 });
