@@ -1,6 +1,6 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect, useState } from 'react';
 
-import { act, renderHook } from '../../test';
+import { act, render, renderHook } from '../../test';
 
 import { useBufferedValue, UseBufferedValueOptions } from './useBufferedValue';
 
@@ -126,6 +126,56 @@ describe('useBufferedValue()', () => {
 
       expect(onChange.mock.calls).toEqual([['ab'], ['abc']]);
     });
+  });
+
+  // The buffer sits on every keystroke of every text field, so its render cost is part of its
+  // contract. Two per keystroke is the floor for a lagging parent — one for the typed value, one
+  // for the echo — and this pins that the bookkeeping adds nothing on top. An earlier version held
+  // the queue in state and adjusted it during render, which cost a third render per keystroke whose
+  // output was identical.
+  it('costs no render beyond the keystroke and its echo', () => {
+    let renders = 0;
+    let emit: (next: string) => void = () => {};
+
+    function Field({
+      value,
+      onChange,
+    }: {
+      value: string;
+      onChange: (n: string) => void;
+    }) {
+      renders++;
+      const buffered = useBufferedValue(value, onChange);
+
+      emit = buffered.onChange;
+
+      return <input readOnly value={buffered.value ?? ''} />;
+    }
+
+    function LaggingParent() {
+      const [value, setValue] = useState('');
+      const [inFlight, setInFlight] = useState<string | null>(null);
+
+      useEffect(() => {
+        if (inFlight !== null) {
+          setValue(inFlight);
+          setInFlight(null);
+        }
+      }, [inFlight]);
+
+      return <Field value={value} onChange={setInFlight} />;
+    }
+
+    render(<LaggingParent />);
+
+    renders = 0;
+    let text = '';
+    for (let i = 0; i < 10; i++) {
+      text += 'x';
+      act(() => emit(text));
+    }
+
+    expect(renders / 10).toBeLessThanOrEqual(2);
   });
 
   describe('reset()', () => {

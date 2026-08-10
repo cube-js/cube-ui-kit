@@ -71,60 +71,45 @@ export function useBufferedValue<T>(
     getKey && next != null ? getKey(next) : next;
   const valueKey = keyOf(value);
 
+  // The only state, and the only thing that can force a render: what the user typed. It is rendered
+  // *while we are ahead of the parent* and ignored otherwise — which is what makes adopting an
+  // external value free, since there is nothing to write.
   const [draft, setDraft] = useState(value);
   // Keys we have emitted that the parent hasn't echoed back yet. A queue rather than one slot: the
   // user can type again before the first echo returns, and each echo has to be recognised as ours
   // or applying it would swallow everything typed after it.
-  //
-  // State, not refs, though it is only ever read here. The decision below is taken during render,
-  // and React may discard a render — an interrupted concurrent pass, a StrictMode double-invoke.
-  // A discarded render throws away these updates together with the matching `setDraft`, whereas
-  // ref writes would survive it and leave the bookkeeping describing a render that never
-  // committed: an echo could then be read as an external change, or the reverse.
-  const [pending, setPending] = useState<unknown[]>(NOTHING_PENDING);
+  const pendingRef = useRef<unknown[]>(NOTHING_PENDING);
   // The last value we accepted as the parent's opinion — not the last one we rendered.
-  const [seenKey, setSeenKey] = useState<unknown>(valueKey);
+  const seenKeyRef = useRef<unknown>(valueKey);
   const latestRef = useRef({ value, onChange, keyOf, isActive });
 
-  // Synced after commit rather than during render, for the same reason.
+  // These three refs are read during render but written *only* in an event handler or after commit,
+  // never during a render. That is what keeps them honest under concurrent rendering: React may
+  // discard a render (an interrupted pass, a StrictMode double-invoke), and a discarded render runs
+  // no effects, so it cannot leave the bookkeeping describing a pass that never committed.
+  const pending = pendingRef.current;
+  const propMoved = valueKey !== seenKeyRef.current;
+  // Our own echo, a render or more late — possibly an earlier emit a later one superseded.
+  const echoAt = propMoved ? pending.indexOf(valueKey) : -1;
+  // A real change from the parent: undo/redo, a reset, a transformed value, another record.
+  const isExternal = propMoved && echoAt < 0;
+  const isAhead = isActive && !isExternal && pending.length > 0;
+  // Not being ahead is the whole of "the parent wins", so an external change needs no state write
+  // and costs no extra render. Being ahead — including when the value is the stale one the parent
+  // held *before* the keystroke — is what stops React writing that string back and collapsing the
+  // selection.
+  const rendered = isAhead ? draft : value;
+
   useLayoutEffect(() => {
     latestRef.current = { value, onChange, keyOf, isActive };
+    seenKeyRef.current = valueKey;
+
+    if (!isActive || isExternal) {
+      pendingRef.current = NOTHING_PENDING;
+    } else if (echoAt >= 0) {
+      pendingRef.current = pending.slice(echoAt + 1);
+    }
   });
-
-  if (!isActive) {
-    // Mirror the parent, so the buffer is already current if the control becomes editable.
-    if (pending.length) {
-      setPending(NOTHING_PENDING);
-    }
-
-    if (seenKey !== valueKey) {
-      setSeenKey(valueKey);
-    }
-
-    if (keyOf(draft) !== valueKey) {
-      setDraft(value);
-    }
-  } else if (valueKey !== seenKey) {
-    const pendingAt = pending.indexOf(valueKey);
-
-    setSeenKey(valueKey);
-
-    if (pendingAt >= 0) {
-      // Our own echo, a render or more late. Consume it along with any earlier emit it superseded,
-      // and keep the draft.
-      setPending(pending.slice(pendingAt + 1));
-    } else {
-      // A real change from the parent: undo/redo, a reset, a transformed value, another record.
-      if (pending.length) {
-        setPending(NOTHING_PENDING);
-      }
-
-      setDraft(value);
-    }
-  }
-  // The remaining case — active, and the value is the same one we last saw — is the one this hook
-  // exists for: the parent re-rendered us with the string it held *before* the keystroke. Keeping
-  // the draft is what stops React writing that stale string back and collapsing the selection.
 
   const handleChange = useCallback((next: T) => {
     const {
@@ -134,21 +119,22 @@ export function useBufferedValue<T>(
     } = latestRef.current;
 
     if (latestIsActive) {
+      // A ref write in an event handler, which runs after a commit — never mid-render.
+      pendingRef.current = [...pendingRef.current, latestKeyOf(next)];
       setDraft(next);
-      // Functional, so two keystrokes inside one event both make it onto the queue.
-      setPending((queue) => [...queue, latestKeyOf(next)]);
     }
 
     latestOnChange?.(next);
   }, []);
 
   const reset = useCallback(() => {
-    const { value: latestValue, keyOf: latestKeyOf } = latestRef.current;
+    const { value: latestValue } = latestRef.current;
 
-    setPending(NOTHING_PENDING);
-    setSeenKey(latestKeyOf(latestValue));
+    // Emptying the queue is what hands control back: with nothing in flight we are no longer ahead,
+    // so the parent's value is rendered again. `setDraft` is only here to schedule that render.
+    pendingRef.current = NOTHING_PENDING;
     setDraft(latestValue);
   }, []);
 
-  return { value: isActive ? draft : value, onChange: handleChange, reset };
+  return { value: rendered, onChange: handleChange, reset };
 }
