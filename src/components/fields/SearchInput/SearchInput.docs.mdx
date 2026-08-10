@@ -26,6 +26,7 @@ A search input provides a specialized text field for search functionality, featu
 
 - **`value`** `string` — The search value in controlled mode
 - **`defaultValue`** `string` — The default search value in uncontrolled mode
+- **`isBuffered`** `boolean` (default: `true`) — Whether typed text is held locally until the controlled `value` catches up. This is what keeps the caret in place when the value round-trips through a store that re-renders a pass late; `onChange` still fires on every keystroke. Set to `false` for a caller that must see the field snap back to its own `value` the moment it declines a keystroke.
 - **`placeholder`** `string` — Placeholder text when input is empty
 - **`icon`** `ReactElement` — Icon element rendered before the input (default: search icon)
 - **`prefix`** `ReactNode` — Content rendered before the input
