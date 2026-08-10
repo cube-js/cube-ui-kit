@@ -4,7 +4,7 @@ import { SearchFieldProps, useSearchFieldState } from 'react-stately';
 
 import { CloseIcon, SearchIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
-import { mergeProps } from '../../../utils/react';
+import { chain, mergeProps, useBufferedValue } from '../../../utils/react';
 import { ariaToCubeButtonProps } from '../../../utils/react/mapProps';
 import {
   castNullableStringValue,
@@ -53,14 +53,29 @@ export const SearchInput = forwardRef(function SearchInput(
     isValid,
     onClear,
     labelProps: userLabelProps,
+    isBuffered,
     ...restProps
   } = props;
 
   let inputRef = useRef(null);
 
-  let state = useSearchFieldState(restProps);
+  // Hold the typed text locally until the controlled value catches up — see `useBufferedValue`.
+  // Applied before the state hook, so `state.value` (and the clear button) follow the draft.
+  let buffered = useBufferedValue(restProps.value, restProps.onChange, {
+    isBuffered,
+    isDisabled: restProps.isDisabled,
+    isReadOnly: restProps.isReadOnly,
+  });
+  let fieldProps = {
+    ...restProps,
+    value: buffered.value,
+    onChange: buffered.onChange,
+    onBlur: chain(restProps.onBlur, buffered.reset),
+  };
+
+  let state = useSearchFieldState(fieldProps);
   let { labelProps, inputProps, clearButtonProps } = useSearchField(
-    restProps,
+    fieldProps,
     state,
     inputRef,
   );

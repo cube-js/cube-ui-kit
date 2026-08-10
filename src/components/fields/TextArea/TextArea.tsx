@@ -8,7 +8,7 @@ import {
 import { useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal/index';
-import { chain, mergeProps } from '../../../utils/react';
+import { chain, mergeProps, useBufferedValue } from '../../../utils/react';
 import {
   castNullableStringValue,
   WithNullableValue,
@@ -49,6 +49,7 @@ function TextArea(
     labelProps: userLabelProps,
     inputRef: propsInputRef,
     value,
+    isBuffered,
     ...otherProps
   } = props;
 
@@ -96,14 +97,22 @@ function TextArea(
     textarea.style.height = `${totalHeight}px`;
   });
 
+  // Hold the typed text locally until the controlled value catches up — see `useBufferedValue`.
+  const buffered = useBufferedValue(value, onChange, {
+    isBuffered,
+    isDisabled,
+    isReadOnly,
+  });
+
   let { labelProps, inputProps } = useTextField(
     {
       ...otherProps,
-      value,
+      value: buffered.value,
       isDisabled,
       isReadOnly,
       isRequired,
-      onChange: chain(onChange, adjustHeight),
+      onChange: chain(buffered.onChange, adjustHeight),
+      onBlur: chain(otherProps.onBlur, buffered.reset),
       inputElementType: 'textarea',
     },
     inputRef,
@@ -128,12 +137,13 @@ function TextArea(
     return () => resizeObserver.disconnect();
   }, [autoSize, inputRef?.current]);
 
-  // Adjust height when value changes programmatically (controlled mode with autoSize)
+  // Adjust height when value changes programmatically (controlled mode with autoSize).
+  // Keyed on the rendered value, not the prop, so a buffered draft is measured.
   useEnvironmentalEffect(() => {
     if (autoSize && inputRef.current) {
       adjustHeight();
     }
-  }, [value]);
+  }, [buffered.value]);
 
   return (
     <TextInputBase

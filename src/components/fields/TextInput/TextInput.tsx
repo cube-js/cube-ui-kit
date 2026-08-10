@@ -1,7 +1,7 @@
 import { ForwardedRef, forwardRef, useRef } from 'react';
 import { useTextField } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react';
+import { chain, mergeProps, useBufferedValue } from '../../../utils/react';
 import {
   castNullableStringValue,
   WithNullableValue,
@@ -31,12 +31,29 @@ export const TextInput = forwardRef(function TextInput(
     labelProps: userLabelProps,
     inputRef: propsInputRef,
     form,
+    isBuffered,
     ...restProps
   } = props;
   let localInputRef = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
   let inputRef = propsInputRef ?? localInputRef;
 
-  let { labelProps, inputProps } = useTextField(restProps, inputRef);
+  // Hold the typed text locally until the controlled value catches up, so a parent that echoes it
+  // back a render late can't overwrite the DOM node and throw the caret to the end.
+  let buffered = useBufferedValue(restProps.value, restProps.onChange, {
+    isBuffered,
+    isDisabled: restProps.isDisabled,
+    isReadOnly: restProps.isReadOnly,
+  });
+
+  let { labelProps, inputProps } = useTextField(
+    {
+      ...restProps,
+      value: buffered.value,
+      onChange: buffered.onChange,
+      onBlur: chain(restProps.onBlur, buffered.reset),
+    },
+    inputRef,
+  );
 
   // Merge user-provided labelProps with aria labelProps
   const mergedLabelProps = mergeProps(labelProps, userLabelProps);
