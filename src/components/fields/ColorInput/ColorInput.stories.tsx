@@ -177,9 +177,9 @@ Formats.parameters = {
 };
 
 export const FormatModes: StoryFn<CubeColorInputProps> = (args) => {
-  const [forced, setForced] = useState<string | null>('rgb(122, 77, 191)');
-  const [derived, setDerived] = useState<string | null>('rgb(122, 77, 191)');
-  const [free, setFree] = useState<string | null>('rgb(122, 77, 191)');
+  const [forced, setForced] = useState<string | null>('rgb(122 77 191)');
+  const [derived, setDerived] = useState<string | null>('rgb(122 77 191)');
+  const [free, setFree] = useState<string | null>('rgb(122 77 191)');
 
   return (
     <Flow gap="2x">
