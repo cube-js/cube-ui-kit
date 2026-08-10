@@ -3,7 +3,7 @@ import { useTextField } from 'react-aria';
 
 import { useI18n } from '../../../i18n';
 import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
-import { mergeProps } from '../../../utils/react';
+import { chain, mergeProps, useBufferedValue } from '../../../utils/react';
 import {
   castNullableStringValue,
   WithNullableValue,
@@ -36,13 +36,25 @@ function PasswordInput(
     suffix,
     multiLine,
     inputRef: propsInputRef,
+    isBuffered,
     ...rest
   } = props;
   let localInputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   let inputRef = propsInputRef ?? localInputRef;
+
+  // Hold the typed text locally until the controlled value catches up — see `useBufferedValue`.
+  let buffered = useBufferedValue(rest.value, rest.onChange, {
+    isBuffered,
+    isDisabled: rest.isDisabled,
+    isReadOnly: rest.isReadOnly,
+  });
+
   let { labelProps, inputProps } = useTextField(
     {
       ...rest,
+      value: buffered.value,
+      onChange: buffered.onChange,
+      onBlur: chain(rest.onBlur, buffered.reset),
       type,
     },
     inputRef,
