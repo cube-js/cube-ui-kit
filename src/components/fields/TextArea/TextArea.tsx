@@ -14,9 +14,15 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { useFieldProps } from '../../form';
-import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
+import {
+  CubeBufferedValueProps,
+  CubeTextInputBaseProps,
+  TextInputBase,
+} from '../TextInput';
 
-export interface CubeTextAreaProps extends CubeTextInputBaseProps {
+export interface CubeTextAreaProps
+  extends CubeTextInputBaseProps,
+    CubeBufferedValueProps {
   /** Whether the textarea should change its size depends on the content */
   autoSize?: boolean;
   /** Max number of visible rows when autoSize is `true`. Defaults to 10  */
