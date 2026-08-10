@@ -28,6 +28,14 @@ import type { RadioGroupState } from 'react-stately';
 /** A swatch: a color, and optionally a name to announce instead of the color. */
 export type CubeColorSwatchItem = string | { color: string; label?: string };
 
+/**
+ * Two rings drawn inside the swatch, as React Aria marks selection. Outer ring
+ * first: earlier shadows paint over later ones, so this reads as 2bw of
+ * `#surface-text` at the edge and 2bw of `#surface` within it. Two tones that
+ * flip with the scheme stay visible against any color the swatch holds.
+ */
+const SELECTED_RING = 'inset 0 0 0 2bw #surface-text, inset 0 0 0 4bw #surface';
+
 /** The swatch edge in px, per size. `Item` takes an exact number. */
 const SWATCH_PX: Record<string, number> = {
   small: 16,
@@ -46,17 +54,20 @@ const CUSTOM_TRIGGER_STYLES: Styles = {
   border: 0,
 };
 
-/** Matches the ring a selected swatch gets, for a custom color in the row. */
-const CUSTOM_TRIGGER_SELECTED_STYLES: Styles = {
-  ...CUSTOM_TRIGGER_STYLES,
-  shadow: 'inset 0 0 0 2bw #surface-text, inset 0 0 0 4bw #surface',
-};
-
 /** The swatch fills the stripped button rather than keeping its own size. */
 const CUSTOM_SWATCH_STYLES: Styles = {
   width: '100%',
   height: '100%',
   radius: '1r',
+};
+
+/**
+ * The ring goes on the swatch, not on the button around it: an inset shadow
+ * paints under child content, and the swatch covers the button edge to edge.
+ */
+const CUSTOM_SWATCH_SELECTED_STYLES: Styles = {
+  ...CUSTOM_SWATCH_STYLES,
+  shadow: SELECTED_RING,
 };
 
 const GroupElement = tasty({
@@ -101,9 +112,7 @@ const SwatchElement = tasty({
     // deliberately left to the focus ring.
     shadow: {
       '': 'inset 0 0 0 1bw #dark.15',
-      // Outer ring first: earlier shadows paint over later ones, so this reads
-      // as 2bw of `#surface-text` at the edge, then 2bw of `#surface` inside it.
-      selected: 'inset 0 0 0 2bw #surface-text, inset 0 0 0 4bw #surface',
+      selected: SELECTED_RING,
     },
     outline: {
       '': '2bw #focus.0',
@@ -344,10 +353,10 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
           value={isCustom ? currentValue ?? null : null}
           isDisabled={isDisabled}
           isReadOnly={props.isReadOnly}
-          triggerStyles={
-            isCustom ? CUSTOM_TRIGGER_SELECTED_STYLES : CUSTOM_TRIGGER_STYLES
+          triggerStyles={CUSTOM_TRIGGER_STYLES}
+          swatchStyles={
+            isCustom ? CUSTOM_SWATCH_SELECTED_STYLES : CUSTOM_SWATCH_STYLES
           }
-          swatchStyles={CUSTOM_SWATCH_STYLES}
           onChange={publish}
         >
           {null}

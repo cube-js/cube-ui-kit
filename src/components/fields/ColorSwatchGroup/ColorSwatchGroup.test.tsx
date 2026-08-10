@@ -12,6 +12,9 @@ vi.mock('../../../_internal/hooks/use-warn');
 
 const PALETTE = ['#7a4dbf', '#26fcb2', '#ff0000'];
 
+/** The inner ring of the selection mark, which nothing else draws. */
+const INNER_RING = 'calc(4 * var(--border-width))';
+
 describe('<ColorSwatchGroup />', () => {
   it('renders one swatch per color', () => {
     const { getAllByRole } = renderWithRoot(
@@ -144,6 +147,42 @@ describe('<ColorSwatchGroup />', () => {
       );
 
       expect(queryByTestId('ColorSwatchGroupCustom')).toBeInTheDocument();
+    });
+
+    it('marks the picker selected when the value is not a swatch', () => {
+      // The ring has to sit on the swatch, not the button: an inset shadow on
+      // the button paints under the swatch that fills it.
+      const { getByTestId } = renderWithRoot(
+        <ColorSwatchGroup
+          aria-label="Palette"
+          colors={PALETTE}
+          allowCustom
+          value="#123456"
+        />,
+      );
+
+      const swatch = getByTestId('ColorSwatchGroupCustom').querySelector(
+        '[data-qa="ColorSwatch"]',
+      )!;
+
+      expect(getComputedStyle(swatch).boxShadow).toContain(INNER_RING);
+    });
+
+    it('leaves the picker unmarked when a swatch holds the value', () => {
+      const { getByTestId } = renderWithRoot(
+        <ColorSwatchGroup
+          aria-label="Palette"
+          colors={PALETTE}
+          allowCustom
+          value="#7a4dbf"
+        />,
+      );
+
+      const swatch = getByTestId('ColorSwatchGroupCustom').querySelector(
+        '[data-qa="ColorSwatch"]',
+      )!;
+
+      expect(getComputedStyle(swatch).boxShadow).not.toContain(INNER_RING);
     });
 
     it('locks the picker when the group is read-only', () => {
