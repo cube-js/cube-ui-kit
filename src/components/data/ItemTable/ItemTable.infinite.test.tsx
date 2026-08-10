@@ -190,10 +190,90 @@ describe('ItemTable infinite scroll', () => {
       .getByRole('grid')
       .querySelectorAll('tr[data-placeholder]');
 
-    expect(placeholders).toHaveLength(3);
+    // As many as the batch that is coming, measured from the one that arrived:
+    // the list keeps its length through the load, so the user can carry on
+    // scrolling into it and nothing lurches when the rows land. A fixed few
+    // left them stopped at the bottom with nothing to scroll into.
+    expect(placeholders).toHaveLength(ROWS.length);
     // Real cells, so the columns still line up with the rows above.
     expect(placeholders[0].querySelectorAll('td')).toHaveLength(1);
     expect(placeholders[0].querySelector('[data-state]')).toBeNull();
+  });
+
+  it('sizes the burst to the last batch, not the total', () => {
+    const first = ROWS.slice(0, 2);
+    const { rerender } = renderWithRoot(
+      <ItemTable
+        data={first}
+        columns={COLUMNS}
+        paginationMode="infinite"
+        hasMore
+        onLoadMore={() => {}}
+      />,
+    );
+
+    // A second batch of 3 arrives.
+    const second = ROWS.slice(0, 5);
+
+    rerender(
+      <ItemTable
+        data={second}
+        columns={COLUMNS}
+        paginationMode="infinite"
+        hasMore
+        onLoadMore={() => {}}
+      />,
+    );
+
+    rerender(
+      <ItemTable
+        data={second}
+        columns={COLUMNS}
+        paginationMode="infinite"
+        hasMore
+        isLoadingMore
+        onLoadMore={() => {}}
+      />,
+    );
+
+    // 3, the size of the last increment — not 5, the length of the list.
+    expect(
+      screen.getByRole('grid').querySelectorAll('tr[data-placeholder]'),
+    ).toHaveLength(3);
+  });
+
+  it('caps the burst so a huge batch cannot flood the DOM', () => {
+    const many = Array.from({ length: 400 }, (_, i) => ({
+      id: `x${i}`,
+      name: `row-${i}`,
+    }));
+
+    const { rerender } = renderWithRoot(
+      <ItemTable
+        data={many}
+        columns={COLUMNS}
+        paginationMode="infinite"
+        hasMore
+        onLoadMore={() => {}}
+      />,
+    );
+
+    rerender(
+      <ItemTable
+        data={many}
+        columns={COLUMNS}
+        paginationMode="infinite"
+        hasMore
+        isLoadingMore
+        onLoadMore={() => {}}
+      />,
+    );
+
+    // These rows are not virtualized, so the count is real DOM. 50 is already
+    // taller than any viewport, which is all the burst has to be.
+    expect(
+      screen.getByRole('grid').querySelectorAll('tr[data-placeholder]'),
+    ).toHaveLength(50);
   });
 
   it('re-arms after the batch arrives', async () => {

@@ -357,7 +357,14 @@ export interface TableViewProps<T = any> {
  * scrollbar adjustment, not a layout bug. The `+ 1` is the row separator.
  */
 /** Enough to read as "more is coming" without pretending to know how much. */
-const LOAD_MORE_SKELETON_ROWS = 3;
+/**
+ * Ceiling on the load-more placeholder burst.
+ *
+ * These rows are not virtualized — they sit after the window, at the end of the
+ * body — so the count is real DOM. 50 rows is already taller than any viewport,
+ * which is all the burst has to be.
+ */
+const MAX_LOAD_MORE_SKELETON_ROWS = 50;
 
 const ESTIMATED_ROW_HEIGHT = {
   xsmall: 28,
@@ -1462,6 +1469,33 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     bodyRef: localBodyRef,
   });
 
+  /**
+   * How many rows the next batch is likely to bring, measured from the last one
+   * that actually arrived.
+   *
+   * The placeholder burst is sized to this so the scroll height is right both
+   * before and after the load: a short burst under a long batch makes the
+   * content jump the moment the rows land, and leaves the user stopped at the
+   * bottom of the list in the meantime with nothing left to scroll into.
+   *
+   * Measured rather than taken from `pageSize`, which infinite-scroll consumers
+   * often do not set — and the first batch is its own best predictor of the
+   * second.
+   */
+  const lastBatchSizeRef = useRef(0);
+  const previousRowCountRef = useRef(0);
+
+  if (rows.length > previousRowCountRef.current) {
+    lastBatchSizeRef.current = rows.length - previousRowCountRef.current;
+  }
+
+  previousRowCountRef.current = rows.length;
+
+  const loadMoreSkeletonCount = Math.min(
+    Math.max(lastBatchSizeRef.current || skeletonRowCount, 1),
+    MAX_LOAD_MORE_SKELETON_ROWS,
+  );
+
   const [focusedRowIndex, setFocusedRowIndex] = useState(0);
   // Only used to suppress text selection during the gesture; the range itself
   // lives in a ref so growing it does not re-render on every cell crossed.
@@ -1849,14 +1883,13 @@ export function TableView<T = any>(props: TableViewProps<T>) {
               smoothly instead of a block that appears and vanishes. It also
               matches what the first load already shows.
 
-              A short burst, not a full `skeletonRowCount` — this is an
-              increment appended to a list the user is already reading.
+              Sized to the batch that is coming (see `loadMoreSkeletonCount`),
+              not to a fixed few: the point is that the list keeps its length
+              through the load, so the user can carry on scrolling into it and
+              nothing lurches when the rows arrive.
             */}
             {isLoadingMore
-              ? renderSkeletonRows(
-                  Math.min(skeletonRowCount, LOAD_MORE_SKELETON_ROWS),
-                  'load-more',
-                )
+              ? renderSkeletonRows(loadMoreSkeletonCount, 'load-more')
               : null}
             {onLoadMore && hasRows ? (
               <tr data-sentinel="" aria-hidden="true">

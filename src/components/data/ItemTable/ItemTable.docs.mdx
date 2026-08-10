@@ -563,9 +563,15 @@ twice by a sentinel still sitting in view.
 While a batch is in flight the table appends **skeleton rows**, not a spinner.
 They keep the row grid, read as "more rows of this shape are coming", and grow
 the scroll height smoothly instead of a block that appears and vanishes — and it
-matches what the first load already shows. `skeletonRowCount` caps them; the
-appended burst is short, because this is an increment to a list the user is
-already reading.
+matches what the first load already shows.
+
+The burst is sized to **the batch that is coming**, measured from the last one
+that arrived, so the list keeps its length through the load: the user can carry
+on scrolling into it, and nothing lurches when the rows land. Measured rather
+than read from `pageSize`, which infinite-scroll consumers often do not set —
+and the first batch is the best predictor of the second. Capped at 50 rows,
+which is taller than any viewport, because these particular rows are not
+virtualized.
 
 Under virtualization the trailing spacer holds the remaining height, so the
 sentinel still marks the true end of the list rather than the end of the
