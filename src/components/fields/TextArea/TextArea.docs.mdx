@@ -55,6 +55,7 @@ These properties allow direct style application without using the `styles` prop:
 - **`rows`** `number` (default: `3`) — Number of visible text rows
 - **`value`** `string` — The text value in controlled mode
 - **`defaultValue`** `string` — The default text value in uncontrolled mode
+- **`isBuffered`** `boolean` (default: `true`) — Whether typed text is held locally until the controlled `value` catches up. This is what keeps the caret in place when the value round-trips through a store that re-renders a pass late; `onChange` still fires on every keystroke. Set to `false` for a caller that must see the field snap back to its own `value` the moment it declines a keystroke.
 - **`placeholder`** `string` — Placeholder text when input is empty
 - **`icon`** `ReactElement` — Icon element rendered before the input
 - **`prefix`** `ReactNode` — Input decoration before the main input

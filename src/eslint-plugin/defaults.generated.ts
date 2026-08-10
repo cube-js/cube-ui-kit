@@ -446,6 +446,7 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     PasswordInput: {
       props: {
+        isBuffered: { kind: 'default', value: true },
         size: { kind: 'default', value: 'medium' },
         suffixPosition: { kind: 'default', value: 'after' },
       },
@@ -516,6 +517,7 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     SearchInput: {
       props: {
+        isBuffered: { kind: 'default', value: true },
         isClearable: { kind: 'default', value: false },
         size: { kind: 'default', value: 'medium' },
         suffixPosition: { kind: 'default', value: 'after' },
@@ -628,6 +630,7 @@ export const DEFAULTS: DefaultsRegistry = {
     TextArea: {
       props: {
         autoSize: { kind: 'default', value: false },
+        isBuffered: { kind: 'default', value: true },
         maxRows: { kind: 'default', value: 10 },
         rows: { kind: 'default', value: 3 },
         size: { kind: 'default', value: 'medium' },
@@ -636,6 +639,7 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     TextInput: {
       props: {
+        isBuffered: { kind: 'default', value: true },
         multiLine: { kind: 'default', value: false },
         size: { kind: 'default', value: 'medium' },
         suffixPosition: { kind: 'default', value: 'before' },
