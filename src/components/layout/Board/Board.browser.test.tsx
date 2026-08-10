@@ -21,9 +21,11 @@ const ROW = 100;
 function renderBoard(
   layout: LayoutItem[],
   props: Record<string, unknown> = {},
+  widgetProps: Record<string, Record<string, unknown>> = {},
+  containerWidth = 600,
 ) {
   const result = renderWithRoot(
-    <div style={{ width: '600px' }}>
+    <div style={{ width: `${containerWidth}px` }}>
       <Board
         cols={12}
         rowHeight={ROW}
@@ -34,7 +36,12 @@ function renderBoard(
         {...props}
       >
         {layout.map((item) => (
-          <Board.Widget key={item.i} id={item.i} qa={item.i.toUpperCase()}>
+          <Board.Widget
+            key={item.i}
+            id={item.i}
+            qa={item.i.toUpperCase()}
+            {...widgetProps[item.i]}
+          >
             {item.i}
           </Board.Widget>
         ))}
@@ -44,6 +51,23 @@ function renderBoard(
 
   return result;
 }
+
+/**
+ * One instance per test, rather than the bare `userEvent.*` calls the jsdom
+ * suite uses. Each bare call builds a fresh instance with fresh state, so a
+ * button pressed in one call is not held in the next and a modifier held in one
+ * is not held in the next — both of which a marquee gesture depends on.
+ */
+let user: ReturnType<typeof userEvent.setup>;
+
+beforeEach(() => {
+  // `pointerEventsCheck: 0` because the board deliberately swaps the widget
+  // being dragged for an `opacity: 0`, `pointer-events: none` stand-in and
+  // renders a clone in the overlay. The release therefore lands on an element
+  // that is, correctly, not interactive — refusing to dispatch it would be
+  // refusing to finish a gesture the component supports.
+  user = userEvent.setup({ pointerEventsCheck: 0 });
+});
 
 const board = () => screen.getByTestId('Board');
 const widget = (id: string) => screen.getByTestId(id.toUpperCase());
@@ -59,7 +83,9 @@ async function settled() {
 
 /** Ids top-to-bottom, then left-to-right — "did the group split" in one line. */
 function stackOrder(): string[] {
-  return [...document.querySelectorAll<HTMLElement>('[data-board-widget-host]')]
+  return Array.from(
+    document.querySelectorAll<HTMLElement>('[data-board-widget-host]'),
+  )
     .map((el) => ({
       id: el.getAttribute('data-board-widget-id')!,
       rect: el.getBoundingClientRect(),
@@ -79,7 +105,15 @@ function stackOrder(): string[] {
  * Aria's `useMove` — which owns widget dragging — reads the page pair, and a
  * gesture that only carries client coords looks like a press that never moved.
  */
-async function dragPointer(
+const coordsAt = (p: { x: number; y: number }) => ({
+  clientX: p.x,
+  clientY: p.y,
+  pageX: p.x,
+  pageY: p.y,
+});
+
+/** Press and walk to `to` without releasing — for asserting mid-gesture state. */
+async function pressAndMove(
   target: HTMLElement,
   from: { x: number; y: number },
   to: { x: number; y: number },
@@ -87,20 +121,58 @@ async function dragPointer(
 ) {
   const at = (i: number) => {
     const t = i / steps;
-    const x = from.x + (to.x - from.x) * t;
-    const y = from.y + (to.y - from.y) * t;
 
-    return { clientX: x, clientY: y, pageX: x, pageY: y };
+    return coordsAt({
+      x: from.x + (to.x - from.x) * t,
+      y: from.y + (to.y - from.y) * t,
+    });
   };
 
-  await userEvent.pointer([
+  await user.pointer([
     { keys: '[MouseLeft>]', target, coords: at(0) },
     ...Array.from({ length: steps }, (_, i) => ({
       target,
       coords: at(i + 1),
     })),
-    { keys: '[/MouseLeft]', target, coords: at(steps) },
   ]);
+}
+
+async function release(target: HTMLElement, at: { x: number; y: number }) {
+  await user.pointer([{ keys: '[/MouseLeft]', target, coords: coordsAt(at) }]);
+}
+
+async function dragPointer(
+  target: HTMLElement,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  steps = 4,
+) {
+  await pressAndMove(target, from, to, steps);
+  await release(target, to);
+}
+
+/**
+ * A marquee gesture in board-relative pixels.
+ *
+ * The press is aimed at the content layer, the same element the handler sits
+ * on, but the coordinates still have to land on empty grid: the handler bails
+ * when the press resolves to a widget, and in a real browser the point decides
+ * that rather than the mock.
+ */
+async function marquee(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  modifier?: 'Shift' | 'Control',
+) {
+  const origin = board().getBoundingClientRect();
+  const abs = (p: { x: number; y: number }) => ({
+    x: origin.left + p.x,
+    y: origin.top + p.y,
+  });
+
+  if (modifier) await user.keyboard(`{${modifier}>}`);
+  await dragPointer(content(), abs(from), abs(to));
+  if (modifier) await user.keyboard(`{/${modifier}}`);
 }
 
 const TWO_ROWS: LayoutItem[] = [
@@ -152,6 +224,356 @@ describe('Board extraRows', () => {
     );
 
     expect(onSelectionChange).toHaveBeenCalledWith(['a', 'b', 'c']);
+  });
+});
+
+/**
+ * Which widgets a band covers is decided by measured rectangles, so these ran
+ * in jsdom only by mocking the content layer's rect and hand-computing the
+ * intersections against it. Here the rects are the browser's.
+ *
+ * `extraRows` is on throughout for a reason that is itself the feature: a lasso
+ * needs empty grid to start from, and this three-widget layout has almost none
+ * without it.
+ */
+describe('Board marquee', () => {
+  // cols 6 over 600px -> a(0-200, 0-100)  b(200-400, 0-100)  c(0-200, 100-200),
+  // with rows 2-3 left empty by `extraRows`.
+  const SELECTION: LayoutItem[] = [
+    { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+    { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+    { i: 'c', x: 0, y: 1, w: 2, h: 1 },
+  ];
+
+  const renderMarquee = (
+    props: Record<string, unknown> = {},
+    widgetProps: Record<string, Record<string, unknown>> = {},
+  ) => renderBoard(SELECTION, { cols: 6, extraRows: 2, ...props }, widgetProps);
+
+  /** Empty space right of `b`, down to a point left of it — covers `a` and `b`. */
+  const OVER_A_B = [
+    { x: 580, y: 20 },
+    { x: 20, y: 80 },
+  ] as const;
+  /** Up the left-hand column from the empty band — covers `a` and `c`, not `b`. */
+  const OVER_A_C = [
+    { x: 100, y: 380 },
+    { x: 50, y: 20 },
+  ] as const;
+
+  it('selects every widget the band intersects', async () => {
+    const onSelectionChange = vi.fn();
+    renderMarquee({ onSelectionChange });
+    await settled();
+
+    await marquee(...OVER_A_B);
+
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    expect(onSelectionChange).toHaveBeenCalledWith(['a', 'b']);
+  });
+
+  it('commits once per gesture, not once per pointer frame', async () => {
+    const onSelectionChange = vi.fn();
+    renderMarquee({ onSelectionChange });
+    await settled();
+
+    // `dragPointer` walks the band across several intermediate positions.
+    await marquee(...OVER_A_B);
+
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the band while dragging and removes it on release', async () => {
+    renderMarquee();
+    await settled();
+
+    const origin = board().getBoundingClientRect();
+    const at = (x: number, y: number) => ({
+      clientX: origin.left + x,
+      clientY: origin.top + y,
+      pageX: origin.left + x,
+      pageY: origin.top + y,
+    });
+
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: content(), coords: at(580, 20) },
+      { target: content(), coords: at(300, 60) },
+    ]);
+    expect(screen.getByTestId('BoardMarquee')).toBeInTheDocument();
+
+    await user.pointer([
+      { keys: '[/MouseLeft]', target: content(), coords: at(300, 60) },
+    ]);
+    expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
+  });
+
+  it('ignores a press below the movement threshold and clears instead', async () => {
+    const onSelectionChange = vi.fn();
+    renderMarquee({ onSelectionChange, defaultSelectedKeys: ['b'] });
+    await settled();
+
+    await marquee({ x: 500, y: 300 }, { x: 501, y: 300 });
+
+    expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
+    expect(onSelectionChange).toHaveBeenLastCalledWith([]);
+  });
+
+  it('adds to the existing selection with Shift', async () => {
+    const onSelectionChange = vi.fn();
+    renderMarquee({ onSelectionChange, defaultSelectedKeys: ['c'] });
+    await settled();
+
+    await marquee(...OVER_A_B, 'Shift');
+
+    expect(onSelectionChange).toHaveBeenLastCalledWith(['a', 'b', 'c']);
+  });
+
+  // Dragging is off while the modifier is held, so the whole board — widgets
+  // included — becomes one selection surface.
+  it('adds to the selection from the platform modifier flag', async () => {
+    const onSelectionChange = vi.fn();
+    renderMarquee({ onSelectionChange });
+    await settled();
+
+    await marquee(...OVER_A_B, 'Control');
+
+    expect(onSelectionChange).toHaveBeenLastCalledWith(['a', 'b']);
+  });
+
+  it('never starts on a widget — that press is a drag', async () => {
+    renderMarquee();
+    await settled();
+
+    const rect = widget('a').getBoundingClientRect();
+
+    await dragPointer(
+      widget('a'),
+      { x: rect.left + 10, y: rect.top + 10 },
+      { x: rect.left + 200, y: rect.top + 40 },
+    );
+
+    expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
+  });
+
+  it('re-announces two consecutive selections that read the same', async () => {
+    renderMarquee();
+    await settled();
+    const status = screen.getByRole('status');
+
+    await marquee(...OVER_A_B);
+    const first = status.textContent;
+
+    // `a` + `c` this time — a different selection that renders the same text.
+    await marquee(...OVER_A_C);
+
+    // A screen reader skips a live-region update whose text is byte-identical
+    // to the one before it, so these must differ.
+    expect(first).toContain('2 widgets selected');
+    expect(status).toHaveTextContent('2 widgets selected');
+    expect(status.textContent).not.toBe(first);
+  });
+
+  it('skips a widget that opted out of selection', async () => {
+    const onSelectionChange = vi.fn();
+    renderMarquee({ onSelectionChange }, { b: { isSelectable: false } });
+    await settled();
+
+    // A band over both `a` and `b`; only `a` may be picked up, matching what a
+    // press on `b` would (not) do.
+    await marquee(...OVER_A_B);
+
+    expect(onSelectionChange).toHaveBeenCalledWith(['a']);
+  });
+
+  it('is disabled by allowMarqueeSelection={false}', async () => {
+    renderMarquee({ allowMarqueeSelection: false });
+    await settled();
+
+    await marquee(...OVER_A_B);
+
+    expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * Where a group lands is measured geometry from end to end: the pointer delta
+ * becomes a cell delta through the board's own column width. In jsdom every one
+ * of these rectangles was a mock, so the tests could only confirm the mocks were
+ * self-consistent.
+ *
+ * 1200px over 12 columns, no margins or padding — cell N starts at exactly
+ * N * 100px, matching the arithmetic the assertions are written in.
+ */
+describe('Board group drag', () => {
+  const PAIR: LayoutItem[] = [
+    { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+    { i: 'b', x: 6, y: 0, w: 2, h: 1 },
+    { i: 'far', x: 0, y: 4, w: 2, h: 1 },
+  ];
+
+  const renderPair = (props: Record<string, unknown> = {}, layout = PAIR) =>
+    renderBoard(
+      layout,
+      {
+        compact: null,
+        defaultSelectedKeys: ['a', 'b'],
+        ...props,
+      },
+      {},
+      1200,
+    );
+
+  /** Grab a widget at its centre and travel `(dx, dy)` device pixels. */
+  const grabAndDrag = async (id: string, dx: number, dy: number) => {
+    const el = widget(id);
+    const r = el.getBoundingClientRect();
+    const from = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+
+    await dragPointer(el, from, { x: from.x + dx, y: from.y + dy });
+  };
+
+  const positions = (items: LayoutItem[]) =>
+    Object.fromEntries(items.map((it) => [it.i, `${it.x},${it.y}`]));
+
+  it('moves every selected widget by the same delta', async () => {
+    const onLayoutChange = vi.fn();
+    renderPair({ onLayoutChange });
+    await settled();
+
+    await grabAndDrag('a', 200, 100);
+
+    await vi.waitFor(() => expect(onLayoutChange).toHaveBeenCalled());
+    expect(positions(onLayoutChange.mock.lastCall![0])).toMatchObject({
+      a: '2,1',
+      b: '8,1',
+    });
+  });
+
+  it('commits exactly once, before onDragStop', async () => {
+    const calls: string[] = [];
+    renderPair({
+      onLayoutChange: () => calls.push('layout'),
+      onDragStop: () => calls.push('stop'),
+    });
+    await settled();
+
+    await grabAndDrag('a', 200, 0);
+
+    expect(calls.filter((c) => c === 'layout')).toHaveLength(1);
+    expect(calls).toEqual(['layout', 'stop']);
+  });
+
+  // Clamping each item separately collapses the group against the wall, and it
+  // never recovers — the delta has to be clamped once, against the whole group.
+  it('keeps the group shape when dragged into an edge', async () => {
+    const onLayoutChange = vi.fn();
+    renderPair({ onLayoutChange });
+    await settled();
+
+    await grabAndDrag('a', -400, 0);
+
+    await vi.waitFor(() => expect(onLayoutChange).toHaveBeenCalled());
+    const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
+    const a = committed.find((it) => it.i === 'a')!;
+    const b = committed.find((it) => it.i === 'b')!;
+
+    expect(a.x).toBe(0);
+    expect(b.x - a.x).toBe(6);
+  });
+
+  it('never leaves a widget pinned after a group drop', async () => {
+    const onLayoutChange = vi.fn();
+    renderPair({ onLayoutChange, compact: 'vertical' });
+    await settled();
+
+    await grabAndDrag('a', 200, 100);
+
+    await vi.waitFor(() => expect(onLayoutChange).toHaveBeenCalled());
+    // A leaked pin would freeze the widget forever — and consumers persist
+    // layouts, so it would survive a reload.
+    expect(
+      (onLayoutChange.mock.lastCall![0] as LayoutItem[]).every(
+        (it) => !it.static,
+      ),
+    ).toBe(true);
+  });
+
+  it('reports every mover through the drag callbacks', async () => {
+    const onDragStart = vi.fn();
+    renderPair({ onDragStart });
+    await settled();
+
+    await grabAndDrag('a', 100, 0);
+
+    const info = onDragStart.mock.lastCall![0];
+    expect(info.items.map((it: LayoutItem) => it.i)).toEqual(['a', 'b']);
+    expect(info.item).toBe(info.items[0]);
+    expect(info.placeholders).toHaveLength(2);
+  });
+
+  it('renders one placeholder per moving widget', async () => {
+    renderPair();
+    await settled();
+
+    const r = widget('a').getBoundingClientRect();
+    await pressAndMove(
+      widget('a'),
+      { x: r.left + r.width / 2, y: r.top + r.height / 2 },
+      { x: r.left + r.width / 2 + 100, y: r.top + r.height / 2 },
+    );
+
+    expect(screen.getAllByTestId('BoardPlaceholder')).toHaveLength(2);
+  });
+
+  // Reported: dragging a group down on a compacting board shoved the widgets
+  // below it further down, and the board only caught up on the *next* pointer
+  // step. The group was being held in place while everything reflowed around
+  // it — something a single widget is never allowed to do under vertical
+  // compaction, which is why a single drag felt natural and a group did not.
+  it('compacts the group during the drag, like a single widget', async () => {
+    const frames: LayoutItem[][] = [];
+    renderPair(
+      {
+        compact: 'vertical',
+        onDrag: (info: { layout: LayoutItem[] }) =>
+          frames.push(info.layout.map((it) => ({ ...it }))),
+      },
+      [
+        { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+        { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+        { i: 'far', x: 0, y: 3, w: 2, h: 1 },
+      ],
+    );
+    await settled();
+
+    const r = widget('a').getBoundingClientRect();
+    // One jump rather than a walk: the claim is that *every* frame is already
+    // compacted, and intermediate frames at 1.5 or 3 rows down are legitimately
+    // different arrangements, not lagging ones.
+    await pressAndMove(
+      widget('a'),
+      { x: r.left + r.width / 2, y: r.top + r.height / 2 },
+      { x: r.left + r.width / 2, y: r.top + r.height / 2 + 600 },
+      1,
+    );
+
+    expect(frames.length).toBeGreaterThan(0);
+    for (const frame of frames) {
+      // `far` rises to the top and the group packs in beneath it, rather than
+      // hanging six rows down where the pointer is.
+      expect(positions(frame)).toEqual({ far: '0,0', a: '0,1', b: '2,0' });
+    }
+  });
+
+  it('leaves unselected widgets where they are', async () => {
+    const onLayoutChange = vi.fn();
+    renderPair({ onLayoutChange });
+    await settled();
+
+    await grabAndDrag('a', 100, 0);
+
+    await vi.waitFor(() => expect(onLayoutChange).toHaveBeenCalled());
+    expect(positions(onLayoutChange.mock.lastCall![0]).far).toBe('0,4');
   });
 });
 

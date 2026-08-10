@@ -2507,216 +2507,31 @@ describe('Board', () => {
       });
     });
 
-    describe('marquee', () => {
-      const pointer = (
-        type: string,
-        clientX: number,
-        clientY: number,
-        modifiers: { ctrlKey?: boolean; shiftKey?: boolean } = {},
-      ) => {
-        const event = new PointerEvent(type, {
-          bubbles: true,
-          cancelable: true,
-          button: 0,
-          pointerId: 1,
-          pointerType: 'mouse',
-          clientX,
-          clientY,
-          ...modifiers,
-        });
-        Object.defineProperty(event, 'clientX', { get: () => clientX });
-        Object.defineProperty(event, 'clientY', { get: () => clientY });
-        return event;
+    // `extraRows` keeps a band of empty board below the content, so a full grid
+    // still has somewhere to start a lasso. Only the sizing arithmetic belongs
+    // here. Every marquee gesture — which widgets a band covers, the movement
+    // threshold, the modifiers — is decided by measured rectangles, and lives
+    // in `Board.browser.test.tsx` rather than being asserted against a mock.
+    describe('extraRows sizing', () => {
+      // Two content rows at 100px, no margins or padding.
+      const contentHeight = 200;
+
+      const boardHeight = (props: Record<string, unknown>) => {
+        renderSelectableBoard(props);
+
+        return screen.getByTestId('Board').style.minHeight;
       };
 
-      function setupMarquee(props: Record<string, unknown> = {}) {
-        const utils = renderSelectableBoard(props);
-        const content = screen.getByTestId('A').parentElement as HTMLElement;
-        content.getBoundingClientRect = () => mockRect(0, 0, 600, 400);
-
-        return { ...utils, content };
-      }
-
-      it('selects every widget the band intersects', () => {
-        const onSelectionChange = vi.fn();
-        const { content } = setupMarquee({ onSelectionChange });
-
-        // Band over x:[0,250], y:[0,50] — covers `a` (0-200) and `b` (200-400).
-        fireEvent(content, pointer('pointerdown', 0, 0));
-        fireEvent(window, pointer('pointermove', 250, 50));
-        fireEvent(window, pointer('pointerup', 250, 50));
-
-        expect(onSelectionChange).toHaveBeenCalledTimes(1);
-        expect(onSelectionChange).toHaveBeenCalledWith(['a', 'b']);
+      it('clamps the band to maxRows', () => {
+        expect(boardHeight({ extraRows: 5, maxRows: 3 })).toBe('300px');
       });
 
-      it('commits once per gesture, not once per pointer frame', () => {
-        const onSelectionChange = vi.fn();
-        const { content } = setupMarquee({ onSelectionChange });
+      it('paints grid cells over the band, so it reads as board', () => {
+        renderSelectableBoard({ extraRows: 3, showGridLines: true });
 
-        fireEvent(content, pointer('pointerdown', 0, 0));
-        fireEvent(window, pointer('pointermove', 100, 50));
-        fireEvent(window, pointer('pointermove', 150, 50));
-        fireEvent(window, pointer('pointermove', 250, 50));
-        fireEvent(window, pointer('pointerup', 250, 50));
-
-        expect(onSelectionChange).toHaveBeenCalledTimes(1);
-      });
-
-      it('renders the band while dragging and removes it on release', () => {
-        const { content } = setupMarquee();
-
-        fireEvent(content, pointer('pointerdown', 0, 0));
-        fireEvent(window, pointer('pointermove', 250, 50));
-        expect(screen.getByTestId('BoardMarquee')).toBeInTheDocument();
-
-        fireEvent(window, pointer('pointerup', 250, 50));
-        expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
-      });
-
-      it('ignores a press below the movement threshold and clears instead', async () => {
-        const onSelectionChange = vi.fn();
-        const { content, widget } = setupMarquee({ onSelectionChange });
-
-        await userEvent.click(widget('B'));
-        onSelectionChange.mockClear();
-
-        fireEvent(content, pointer('pointerdown', 0, 300));
-        fireEvent(window, pointer('pointermove', 1, 300));
-        fireEvent(window, pointer('pointerup', 1, 300));
-
-        expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
-        expect(onSelectionChange).toHaveBeenCalledWith([]);
-      });
-
-      it('adds to the existing selection with Shift', async () => {
-        const onSelectionChange = vi.fn();
-        const { content, widget } = setupMarquee({ onSelectionChange });
-
-        await userEvent.click(widget('C'));
-
-        fireEvent(content, pointer('pointerdown', 0, 0, { shiftKey: true }));
-        fireEvent(window, pointer('pointermove', 250, 50));
-        fireEvent(window, pointer('pointerup', 250, 50));
-
-        expect(onSelectionChange).toHaveBeenLastCalledWith(['a', 'b', 'c']);
-      });
-
-      // `extraRows` keeps a band of empty board below the content, so a full
-      // grid still has somewhere to start a lasso. Only the sizing arithmetic
-      // belongs here — that the band is really board, and that a press in it
-      // starts a marquee, are layout and hit-testing questions and live in
-      // `Board.browser.test.tsx`.
-      describe('extraRows', () => {
-        // Two content rows at 100px, no margins or padding.
-        const contentHeight = 200;
-
-        const boardHeight = (props: Record<string, unknown>) => {
-          renderSelectableBoard(props);
-
-          return screen.getByTestId('Board').style.minHeight;
-        };
-
-        it('clamps the band to maxRows', () => {
-          expect(boardHeight({ extraRows: 5, maxRows: 3 })).toBe('300px');
-        });
-
-        it('paints grid cells over the band, so it reads as board', () => {
-          renderSelectableBoard({ extraRows: 3, showGridLines: true });
-
-          expect(screen.getByTestId('BoardGridOverlay').style.height).toBe(
-            `${contentHeight + 300}px`,
-          );
-        });
-      });
-
-      it('never starts on a widget — that press is a drag', () => {
-        const { widget } = setupMarquee();
-
-        fireEvent(widget('A'), pointer('pointerdown', 0, 0));
-        fireEvent(window, pointer('pointermove', 250, 50));
-
-        expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
-      });
-
-      // Dragging is off while the modifier is held, so the whole board — widgets
-      // included — becomes one selection surface.
-      it('adds to the selection from the platform modifier flag', async () => {
-        const onSelectionChange = vi.fn();
-        const { content } = setupMarquee({ onSelectionChange });
-
-        fireEvent(content, pointer('pointerdown', 0, 0, { ctrlKey: true }));
-        fireEvent(window, pointer('pointermove', 250, 50));
-        fireEvent(window, pointer('pointerup', 250, 50));
-
-        expect(onSelectionChange).toHaveBeenCalledWith(['a', 'b']);
-      });
-
-      it('re-announces two consecutive selections that read the same', () => {
-        const { content } = setupMarquee();
-        const status = screen.getByRole('status');
-
-        // Band over a + b.
-        fireEvent(content, pointer('pointerdown', 0, 0));
-        fireEvent(window, pointer('pointermove', 250, 50));
-        fireEvent(window, pointer('pointerup', 250, 50));
-        const first = status.textContent;
-
-        // Band over a + c — a different selection that renders the same text.
-        fireEvent(content, pointer('pointerdown', 0, 0));
-        fireEvent(window, pointer('pointermove', 50, 150));
-        fireEvent(window, pointer('pointerup', 50, 150));
-
-        // A screen reader skips a live-region update whose text is
-        // byte-identical to the one before it, so these must differ.
-        expect(first).toContain('2 widgets selected');
-        expect(status).toHaveTextContent('2 widgets selected');
-        expect(status.textContent).not.toBe(first);
-      });
-
-      it('skips a widget that opted out of selection', () => {
-        const onSelectionChange = vi.fn();
-        render(
-          <Board
-            width={600}
-            cols={6}
-            rowHeight={100}
-            margin={[0, 0]}
-            containerPadding={[0, 0]}
-            selectionMode="multiple"
-            defaultLayout={selectionLayout}
-            onSelectionChange={onSelectionChange}
-          >
-            <Board.Widget id="a" qa="A">
-              A
-            </Board.Widget>
-            <Board.Widget id="b" qa="B" isSelectable={false}>
-              B
-            </Board.Widget>
-            <Board.Widget id="c" qa="C">
-              C
-            </Board.Widget>
-          </Board>,
+        expect(screen.getByTestId('BoardGridOverlay').style.height).toBe(
+          `${contentHeight + 300}px`,
         );
-        const content = screen.getByTestId('A').parentElement as HTMLElement;
-        content.getBoundingClientRect = () => mockRect(0, 0, 600, 400);
-
-        // A band over both `a` and `b`; only `a` may be picked up, matching what
-        // a press on `b` would (not) do.
-        fireEvent(content, pointer('pointerdown', 0, 0));
-        fireEvent(window, pointer('pointermove', 250, 50));
-        fireEvent(window, pointer('pointerup', 250, 50));
-
-        expect(onSelectionChange).toHaveBeenCalledWith(['a']);
-      });
-
-      it('is disabled by allowMarqueeSelection={false}', () => {
-        const { content } = setupMarquee({ allowMarqueeSelection: false });
-
-        fireEvent(content, pointer('pointerdown', 0, 0));
-        fireEvent(window, pointer('pointermove', 250, 50));
-
-        expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
       });
     });
 
@@ -2824,110 +2639,6 @@ describe('Board', () => {
     const positions = (layout: LayoutItem[]) =>
       Object.fromEntries(layout.map((it) => [it.i, `${it.x},${it.y}`]));
 
-    it('moves every selected widget by the same delta', () => {
-      const onLayoutChange = vi.fn();
-      const { grabbed } = setupGroupBoard({ onLayoutChange });
-
-      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
-      fireEvent(window, pointerEvent('pointermove', 200, 100));
-      fireEvent(window, pointerEvent('pointerup', 200, 100));
-
-      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
-      expect(positions(committed)).toMatchObject({ a: '2,1', b: '8,1' });
-    });
-
-    it('commits exactly once, before onDragStop', () => {
-      const calls: string[] = [];
-      const { grabbed } = setupGroupBoard({
-        onLayoutChange: () => calls.push('layout'),
-        onDragStop: () => calls.push('stop'),
-      });
-
-      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
-      fireEvent(window, pointerEvent('pointermove', 200, 0));
-      fireEvent(window, pointerEvent('pointerup', 200, 0));
-
-      expect(calls.filter((c) => c === 'layout')).toHaveLength(1);
-      expect(calls).toEqual(['layout', 'stop']);
-    });
-
-    // The live bug in the app-level version this replaces: clamping each item
-    // separately collapses the group against the wall and it never recovers.
-    it('keeps the group shape when dragged into an edge', () => {
-      const onLayoutChange = vi.fn();
-      const { grabbed } = setupGroupBoard({ onLayoutChange });
-
-      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
-      fireEvent(window, pointerEvent('pointermove', -400, 0));
-      fireEvent(window, pointerEvent('pointerup', -400, 0));
-
-      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
-      const a = committed.find((it) => it.i === 'a')!;
-      const b = committed.find((it) => it.i === 'b')!;
-      expect(b.x - a.x).toBe(6);
-      expect(a.x).toBe(0);
-    });
-
-    it('never leaves a widget pinned after a group drop', () => {
-      const onLayoutChange = vi.fn();
-      const { grabbed } = setupGroupBoard({
-        onLayoutChange,
-        compact: 'vertical',
-      });
-
-      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
-      fireEvent(window, pointerEvent('pointermove', 200, 100));
-      fireEvent(window, pointerEvent('pointerup', 200, 100));
-
-      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
-      // A leaked pin would freeze the widget forever — and consumers persist
-      // layouts, so it would survive a reload.
-      expect(committed.every((it) => !it.static)).toBe(true);
-    });
-
-    it('reports every mover through the drag callbacks', () => {
-      const onDragStart = vi.fn();
-      const { grabbed } = setupGroupBoard({ onDragStart });
-
-      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
-      fireEvent(window, pointerEvent('pointermove', 100, 0));
-      fireEvent(window, pointerEvent('pointerup', 100, 0));
-
-      const info = onDragStart.mock.lastCall![0];
-      expect(info.items.map((it: LayoutItem) => it.i)).toEqual(['a', 'b']);
-      expect(info.item).toBe(info.items[0]);
-      expect(info.placeholders).toHaveLength(2);
-    });
-
-    // Reported: dragging a group down on a compacting board shoved the widgets
-    // below it further down, and the board only caught up on the *next* pointer
-    // step. The group was being held in place while everything reflowed around
-    // it — something a single widget is never allowed to do under vertical
-    // compaction, which is why a single drag felt natural and a group did not.
-    it('compacts the group during the drag, like a single widget', () => {
-      const frames: LayoutItem[][] = [];
-      const { grabbed } = setupGroupBoard({
-        compact: 'vertical',
-        defaultLayout: [
-          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
-          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
-          { i: 'far', x: 0, y: 3, w: 2, h: 1 },
-        ],
-        onDrag: (info: { layout: LayoutItem[] }) =>
-          frames.push(info.layout.map((it) => ({ ...it }))),
-      });
-
-      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
-      fireEvent(window, pointerEvent('pointermove', 0, 600));
-
-      expect(frames.length).toBeGreaterThan(0);
-      for (const frame of frames) {
-        // `far` rises to the top, and the group packs in beneath it instead of
-        // hanging six rows down where the pointer is.
-        expect(positions(frame)).toEqual({ far: '0,0', a: '0,1', b: '2,0' });
-      }
-    });
-
     // Pointer group-drags live in `Board.browser.test.tsx`: the arrangement a
     // drag produces is decided by measured geometry, and mocking every rect to
     // assert it in jsdom only proves the mocks agree with each other. The
@@ -2960,15 +2671,6 @@ describe('Board', () => {
       expect(Math.abs(order.indexOf('c') - order.indexOf('d'))).toBe(1);
     });
 
-    it('renders one placeholder per moving widget', () => {
-      const { grabbed } = setupGroupBoard();
-
-      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
-      fireEvent(window, pointerEvent('pointermove', 100, 0));
-
-      expect(screen.getAllByTestId('BoardPlaceholder')).toHaveLength(2);
-    });
-
     it('moves the whole group with the arrow keys', () => {
       const onLayoutChange = vi.fn();
       const { grabbed } = setupGroupBoard({ onLayoutChange });
@@ -2979,18 +2681,6 @@ describe('Board', () => {
 
       const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
       expect(positions(committed)).toMatchObject({ a: '1,0', b: '7,0' });
-    });
-
-    it('leaves unselected widgets where they are', () => {
-      const onLayoutChange = vi.fn();
-      const { grabbed } = setupGroupBoard({ onLayoutChange });
-
-      fireEvent(grabbed, pointerEvent('pointerdown', 0, 0));
-      fireEvent(window, pointerEvent('pointermove', 100, 0));
-      fireEvent(window, pointerEvent('pointerup', 100, 0));
-
-      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
-      expect(positions(committed).far).toBe('0,4');
     });
 
     it('drags only the grabbed widget when it is outside the selection', () => {
