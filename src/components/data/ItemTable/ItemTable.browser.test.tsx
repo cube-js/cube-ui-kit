@@ -532,3 +532,90 @@ describe('refresh sweep', () => {
     expect(style.animationName).toBe('none');
   });
 });
+
+describe('infinite scroll prefetch distance', () => {
+  const TALL = Array.from({ length: 60 }, (_, i) => ({
+    id: `t${i}`,
+    name: `row-${String(i).padStart(3, '0')}`,
+    region: 'us-east-1',
+    queries: i,
+  }));
+
+  it('fires a screen before the end, not at it', async () => {
+    const onLoadMore = vi.fn();
+
+    renderWithRoot(
+      <ItemTable
+        hasMore
+        data={TALL}
+        columns={COLUMNS}
+        paginationMode="infinite"
+        height="300px"
+        onLoadMore={onLoadMore}
+      />,
+    );
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    const scroller = document.querySelector<HTMLElement>(
+      '[data-element="Scroller"]',
+    )!;
+
+    await vi.waitFor(() =>
+      expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight * 3),
+    );
+
+    // Not near the end yet: nothing should have been requested.
+    expect(onLoadMore).not.toHaveBeenCalled();
+
+    // Stop a full viewport short of the bottom. With a 200px margin this row
+    // is still out of range; with a one-screen margin it is exactly in it.
+    const short = scroller.scrollHeight - scroller.clientHeight * 2;
+
+    scroller.scrollTop = short;
+
+    await vi.waitFor(() => expect(onLoadMore).toHaveBeenCalled());
+
+    // And the user still has a screen of rows left to read while it loads.
+    expect(scroller.scrollTop + scroller.clientHeight).toBeLessThan(
+      scroller.scrollHeight,
+    );
+  });
+
+  it('honours an explicit loadMoreMargin', async () => {
+    const onLoadMore = vi.fn();
+
+    renderWithRoot(
+      <ItemTable
+        hasMore
+        data={TALL}
+        columns={COLUMNS}
+        paginationMode="infinite"
+        height="300px"
+        loadMoreMargin={0}
+        onLoadMore={onLoadMore}
+      />,
+    );
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    const scroller = document.querySelector<HTMLElement>(
+      '[data-element="Scroller"]',
+    )!;
+
+    await vi.waitFor(() =>
+      expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight * 3),
+    );
+
+    scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight * 2;
+
+    // With no margin the sentinel has to be genuinely in view, so a screen
+    // short of the end is not enough.
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(onLoadMore).not.toHaveBeenCalled();
+
+    scroller.scrollTop = scroller.scrollHeight;
+
+    await vi.waitFor(() => expect(onLoadMore).toHaveBeenCalled());
+  });
+});

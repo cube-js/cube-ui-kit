@@ -139,7 +139,14 @@ export interface TableViewProps<T = any> {
   onLoadMore?: () => void;
   hasMore?: boolean;
   isLoadingMore?: boolean;
-  /** How far before the end to prefetch, in px. @default 200 */
+  /**
+   * How far before the end to start fetching, in px.
+   *
+   * Defaults to one viewport height, so the next batch is requested a whole
+   * screen before the user could reach the bottom. A fixed 200px — about five
+   * rows — meant a fast scroll arrived at the end before the request did, which
+   * is the stall this is meant to avoid.
+   */
   loadMoreMargin?: number;
   /**
    * Rows pinned above and below the scrolling ones — totals, subtotals.
@@ -366,6 +373,12 @@ export interface TableViewProps<T = any> {
  */
 const MAX_LOAD_MORE_SKELETON_ROWS = 50;
 
+/**
+ * Floor on the prefetch distance, for a table too short to measure usefully —
+ * an unbounded one reports a viewport of nearly zero before it has any rows.
+ */
+const MIN_LOAD_MORE_MARGIN = 200;
+
 const ESTIMATED_ROW_HEIGHT = {
   xsmall: 28,
   small: 32,
@@ -420,7 +433,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     onLoadMore,
     hasMore = false,
     isLoadingMore = false,
-    loadMoreMargin = 200,
+    loadMoreMargin,
     pinnedTopRows,
     pinnedBottomRows,
     cellSelection,
@@ -1562,11 +1575,18 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       return;
     }
 
+    // One screen ahead by default: the request goes out while the user still
+    // has a viewport of rows left to read, so the batch is usually there before
+    // they arrive. Read at arm time rather than tracked — a resize mid-scroll
+    // leaves the margin slightly stale, which costs nothing.
+    const margin =
+      loadMoreMargin ?? Math.max(scrollerEl.clientHeight, MIN_LOAD_MORE_MARGIN);
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) onLoadMoreEvent();
       },
-      { root: scrollerEl, rootMargin: `0px 0px ${loadMoreMargin}px 0px` },
+      { root: scrollerEl, rootMargin: `0px 0px ${margin}px 0px` },
     );
 
     observer.observe(sentinel);

@@ -161,8 +161,8 @@ pivots, totals. Use `ListBox` when there is only one column.
 - **`hasMore`** `boolean` — Whether there is anything left to fetch.
 - **`isLoadingMore`** `boolean` — Suppresses further calls while a batch is in
   flight and shows a loading row.
-- **`loadMoreMargin`** `number` (default: `200`) — How far before the end to
-  prefetch, in px.
+- **`loadMoreMargin`** `number` (default: one viewport height) — How far before
+  the end to start fetching, in px.
 - **`autoHidePagination`** `boolean` (default: `true`) — Hides the pagination
   control when it cannot do anything: a single page whose total even the
   smallest `pageSizeOptions` entry would not split. The footer still renders if
@@ -559,6 +559,13 @@ rather than a scroll handler: `loadMoreMargin` then expresses "prefetch this far
 before the end" directly, and it costs nothing per scroll tick. The observer
 re-arms only once `isLoadingMore` clears, so a request in flight is never fired
 twice by a sentinel still sitting in view.
+
+The fetch starts **a full screen before the end** — `loadMoreMargin` defaults to
+the scroller's own height — so the request goes out while there is still a
+viewport of rows left to read, and the batch has usually arrived by the time the
+user gets there. A fixed 200px, about five rows, meant a fast scroll reached the
+bottom before the response did, which is exactly the stall infinite scroll is
+supposed to avoid.
 
 While a batch is in flight the table appends **skeleton rows**, not a spinner.
 They keep the row grid, read as "more rows of this shape are coming", and grow

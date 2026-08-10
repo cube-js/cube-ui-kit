@@ -15,3 +15,10 @@ Measured rather than read from `pageSize`, which infinite-scroll consumers often
 do not set, and the first batch is the best predictor of the second. Capped at
 50 rows, taller than any viewport, because these rows sit after the virtualized
 window and so are real DOM.
+
+Infinite scroll also starts fetching **a full screen before the end** rather
+than 200px before it. `loadMoreMargin` now defaults to the scroller's own
+height, so the request goes out while a viewport of rows is still left to read.
+200px is about five rows: a fast scroll reached the bottom before the response
+did, which is the stall infinite scroll exists to prevent. Pass an explicit
+`loadMoreMargin` to override, including `0` to fetch only on arrival.

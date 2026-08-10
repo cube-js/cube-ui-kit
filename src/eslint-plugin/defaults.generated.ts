@@ -427,7 +427,6 @@ export const DEFAULTS: DefaultsRegistry = {
         isSearchable: { kind: 'default', value: false },
         isStriped: { kind: 'default', value: false },
         isVirtualized: { kind: 'default', value: 'auto' },
-        loadMoreMargin: { kind: 'default', value: 200 },
         loadingIndicator: { kind: 'default', value: 'overlay' },
         overscan: { kind: 'default', value: 12 },
         paginationMode: { kind: 'default', value: 'client' },
