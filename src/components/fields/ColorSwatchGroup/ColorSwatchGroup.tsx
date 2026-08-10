@@ -73,11 +73,28 @@ const CUSTOM_SWATCH_SELECTED_STYLES: Styles = {
 const GroupElement = tasty({
   qa: 'ColorSwatchGroup',
   styles: {
-    display: 'grid',
+    // Wrapping is the better default: it is a single row wherever there is
+    // room, and folds instead of overflowing where there is not. A fixed
+    // `columns` switches to a grid, sized to the swatches rather than to the
+    // container — `1fr` tracks would stretch them apart.
+    display: {
+      '': 'flex',
+      columns: 'grid',
+    },
+    flow: {
+      '': 'row wrap',
+      columns: 'row',
+    },
     gap: '.5x',
-    placeItems: 'stretch',
-    width: 'max-content',
-    gridColumns: 'repeat($columns, 1fr)',
+    placeItems: {
+      '': 'center start',
+      columns: 'stretch',
+    },
+    width: {
+      '': 'auto',
+      columns: 'max-content',
+    },
+    gridColumns: 'repeat($columns, max-content)',
 
     // 20px, 16px and 24px — 1x is 8px.
     '$swatch-size': {
@@ -326,10 +343,11 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
       data-size={size}
       data-input-type="colorswatchgroup"
       styles={styles}
-      mods={getValidationMods({ isInvalid, isValid })}
-      style={{
-        '--columns': String(columns ?? swatches.length + (showCustom ? 1 : 0)),
+      mods={{
+        ...getValidationMods({ isInvalid, isValid }),
+        columns: !!columns,
       }}
+      style={columns ? { '--columns': String(columns) } : undefined}
       {...mergeProps(radioGroupProps, {})}
     >
       {swatches.map((swatch) => (

@@ -110,7 +110,23 @@ Columns.args = { defaultValue: '#7a4dbf', columns: 4 };
 Columns.parameters = {
   docs: {
     description: {
-      story: 'Without `columns` the swatches sit on one row.',
+      story:
+        'Without `columns` the swatches wrap to fill whatever width they are given. Set it to pin them to a fixed grid instead.',
+    },
+  },
+};
+
+export const Wrapping: StoryFn<CubeColorSwatchGroupProps> = (args) => (
+  <div style={{ width: 132 }}>
+    <ColorSwatchGroup aria-label="Palette" {...args} />
+  </div>
+);
+Wrapping.args = { defaultValue: '#26fcb2' };
+Wrapping.parameters = {
+  docs: {
+    description: {
+      story:
+        'The default flows onto as many rows as the container needs — here it is 132px wide.',
     },
   },
 };
@@ -178,7 +194,6 @@ export const InsideColorPicker: StoryFn<CubeColorSwatchGroupProps> = () => {
       label="Brand color"
       value={color}
       swatches={PALETTE}
-      swatchColumns={4}
       defaultOpen
       onChange={setColor}
     />

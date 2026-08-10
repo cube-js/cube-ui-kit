@@ -34,7 +34,7 @@ as data, not as children.
 - **`defaultValue`** `string | null` — The selected color (uncontrolled)
 - **`onChange`** `(value: string | null) => void` — Fired with the chosen color, written in `format`
 - **`format`** `'hex' | 'rgb' | 'hsl' | 'okhsl' | 'okhst' | 'oklch'` (default: `hex`) — Notation the value is written in
-- **`columns`** `number` — How many swatches per row. Defaults to a single row
+- **`columns`** `number` — Pin the swatches to a fixed grid. By default they wrap to fill the available width
 - **`allowCustom`** `boolean` (default: `false`) — Append a `ColorPicker` for colors outside the set
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of each swatch
 
@@ -119,7 +119,10 @@ written in the same notation as the swatch it refers to.
 
 ### Wrapping onto rows
 
-Without `columns` the swatches sit on a single row.
+By default the swatches wrap to fill whatever width they are given: a single row
+where there is room, more rows where there is not. `columns` pins them to a
+fixed grid instead, sized to the swatches rather than stretched across the
+container.
 
 <Story of={ColorSwatchGroupStories.Columns} />
 

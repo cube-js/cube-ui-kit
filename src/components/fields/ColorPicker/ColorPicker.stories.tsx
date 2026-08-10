@@ -190,7 +190,6 @@ export const WithSwatches = Template.bind({});
 WithSwatches.args = {
   defaultValue: '#7a4dbf',
   defaultOpen: true,
-  swatchColumns: 4,
   swatches: [
     '#7a4dbf',
     '#26fcb2',
