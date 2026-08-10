@@ -91,11 +91,11 @@ describe('useBufferedValue()', () => {
       expect(result.current.value).toBe('abc');
     });
 
-    // A guard on the double-invoked-render path, not a reproduction: StrictMode runs the render
-    // twice and keeps both, and the bookkeeping below is guarded by a key comparison that makes the
-    // second pass a no-op either way. An interrupted concurrent pass — where React throws a render
-    // away — is the case that argues for holding this in state rather than refs, and it cannot be
-    // provoked from jsdom. Measured: this test passes against a ref-based implementation too.
+    // A guard on the double-invoked-render path, not a reproduction. StrictMode runs the render
+    // twice and keeps both, and the hook writes nothing during render, so the second pass is a
+    // no-op by construction. The case this cannot reach is an *interrupted* pass, where React throws
+    // a render away — that one is handled by writing the bookkeeping only from event handlers and
+    // layout effects, neither of which a discarded render runs, and it cannot be provoked from jsdom.
     it('classifies correctly when every render is double-invoked', () => {
       const { result, rerender } = renderHook(
         ({ value }: { value: string }) => useBufferedValue(value),
