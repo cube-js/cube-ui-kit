@@ -1,4 +1,5 @@
 import {
+  act,
   renderWithForm,
   renderWithRoot,
   userEvent,
@@ -217,6 +218,30 @@ describe('<ColorSwatchGroup />', () => {
       );
 
       expect(getByTestId('ColorSwatchGroupCustom')).toBeDisabled();
+    });
+
+    it('keeps the picker out of the radiogroup', async () => {
+      // A button is not a radio option, and React Aria hands every arrow key
+      // inside the group to its radio walker — from the picker, one press
+      // would jump into a swatch and change the color on the way.
+      const onChange = vi.fn();
+      const { getByRole, getByTestId } = renderWithRoot(
+        <ColorSwatchGroup
+          aria-label="Palette"
+          colors={PALETTE}
+          allowCustom
+          onChange={onChange}
+        />,
+      );
+
+      const custom = getByTestId('ColorSwatchGroupCustom');
+
+      expect(getByRole('radiogroup')).not.toContainElement(custom);
+
+      await act(async () => custom.focus());
+      await userEvent.keyboard('{ArrowRight}');
+
+      expect(onChange).not.toHaveBeenCalled();
     });
 
     it('drops the picker inside a color popover, where it would recurse', async () => {

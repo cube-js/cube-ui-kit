@@ -116,6 +116,17 @@ const GroupElement = tasty({
   },
 });
 
+/**
+ * Only the swatches belong to the radiogroup. The custom picker is a button,
+ * and inside `role="radiogroup"` it both misreports what the palette holds and
+ * hands arrow keys to React Aria's radio walker — pressing one while the picker
+ * is focused jumps into a swatch and changes the color. The box is dropped so
+ * the swatches remain direct children of the group's own layout.
+ */
+const RadiosElement = tasty({
+  styles: { display: 'contents' },
+});
+
 const SwatchElement = tasty({
   as: 'label',
   qa: 'ColorSwatchOption',
@@ -359,19 +370,20 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
         columns: !!columns,
       }}
       style={columns ? { '--columns': String(columns) } : undefined}
-      {...mergeProps(radioGroupProps, {})}
     >
-      {swatches.map((swatch) => (
-        <Swatch
-          key={swatch.key}
-          colorKey={swatch.key}
-          label={swatch.label}
-          state={state}
-          isDisabled={isDisabled}
-          size={size}
-          styles={swatchStyles}
-        />
-      ))}
+      <RadiosElement {...radioGroupProps}>
+        {swatches.map((swatch) => (
+          <Swatch
+            key={swatch.key}
+            colorKey={swatch.key}
+            label={swatch.label}
+            state={state}
+            isDisabled={isDisabled}
+            size={size}
+            styles={swatchStyles}
+          />
+        ))}
+      </RadiosElement>
       {showCustom ? (
         <ColorPicker
           aria-label="Custom color"
