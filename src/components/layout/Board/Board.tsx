@@ -248,6 +248,14 @@ export interface CubeBoardProps
   /** Maximum number of rows. @default Infinity */
   maxRows?: number;
   /**
+   * Empty grid rows kept below the content. The board renders this many rows
+   * taller than its widgets need, so there is always somewhere to start a
+   * marquee and somewhere to drop a widget past the end — a board that hugs its
+   * content has neither once the grid is full. Clamped by `maxRows`.
+   * @default 0
+   */
+  extraRows?: number;
+  /**
    * Compaction behavior. `'vertical'` / `'horizontal'` reflow widgets to remove
    * gaps; `'free'` places each widget exactly where dropped and never pushes its
    * neighbours (pair with `allowOverlap` to let widgets stack, otherwise moving
@@ -399,6 +407,7 @@ function BoardInner(
     margin = [8, 8],
     containerPadding,
     maxRows = Infinity,
+    extraRows = 0,
     compact = 'vertical',
     allowOverlap = false,
     preventCollision = false,
@@ -553,6 +562,13 @@ function BoardInner(
     0,
   );
 
+  // Rows the board actually paints. `rows` stays the *content* extent — layout
+  // math must not see the reserved band — while this is the extent the board
+  // renders, so the band is real board surface: `ContentLayer` (inset: 0)
+  // covers it, which is what lets a marquee start there and a widget be dropped
+  // past the end.
+  const renderedRows = Math.min(rows + Math.max(0, extraRows), maxRows);
+
   // Derive the aligned column count so each column keeps the parent's pixel
   // pitch: as the container widget is resized, columns are added/removed rather
   // than stretched. `containerWidth` is then back-solved so `calcGridColWidth`
@@ -632,9 +648,9 @@ function BoardInner(
   const resolvedConstraints = constraints ?? defaultConstraints;
 
   const computedHeight =
-    rows > 0
-      ? rows * effectiveRowHeight +
-        Math.max(0, rows - 1) * effectiveMargin[1] +
+    renderedRows > 0
+      ? renderedRows * effectiveRowHeight +
+        Math.max(0, renderedRows - 1) * effectiveMargin[1] +
         resolvedPadding[1] * 2
       : effectiveRowHeight;
   // An aligned board fills the height the container grants it, so it reports its
@@ -737,9 +753,9 @@ function BoardInner(
   // the container is shorter than this, an `isAutoHeight` host grows to fit it
   // (aligned boards no longer shrink their rows).
   const naturalHeight =
-    rows > 0
-      ? rows * effectiveRowHeight +
-        Math.max(0, rows - 1) * effectiveMargin[1] +
+    renderedRows > 0
+      ? renderedRows * effectiveRowHeight +
+        Math.max(0, renderedRows - 1) * effectiveMargin[1] +
         resolvedPadding[1] * 2
       : effectiveRowHeight;
 
@@ -1251,8 +1267,13 @@ function BoardInner(
         const padX = resolvedPadding[0];
         const padY = resolvedPadding[1];
         const gridWidth = Math.max(0, effectiveContainerWidth - padX * 2);
+        // Painted over the reserved band too — grid cells are what make the
+        // band read as board rather than as page background behind it.
         const gridHeight =
-          rows > 0 ? rows * rowHeightPx + (rows - 1) * effectiveMargin[1] : 0;
+          renderedRows > 0
+            ? renderedRows * rowHeightPx +
+              (renderedRows - 1) * effectiveMargin[1]
+            : 0;
         const fill = 'var(--border-color)';
         const columns = `repeating-linear-gradient(to right, ${fill} 0, ${fill} ${colWidth}px, transparent ${colWidth}px, transparent ${pitchX}px)`;
         const rowsGrad = `repeating-linear-gradient(to bottom, #000 0, #000 ${rowHeightPx}px, transparent ${rowHeightPx}px, transparent ${pitchY}px)`;

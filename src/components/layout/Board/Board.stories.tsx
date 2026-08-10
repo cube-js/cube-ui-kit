@@ -67,6 +67,12 @@ export default {
         'Draw a rubber-band selection when a drag starts on empty board space.',
       table: { defaultValue: { summary: "selectionMode === 'multiple'" } },
     },
+    extraRows: {
+      control: { type: 'number' },
+      description:
+        'Empty grid rows kept below the content, so there is always somewhere to start a marquee and somewhere to drop a widget past the end.',
+      table: { defaultValue: { summary: '0' } },
+    },
     selectionCancel: {
       control: { type: 'text' },
       description:
