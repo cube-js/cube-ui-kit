@@ -1,0 +1,269 @@
+import {
+  act,
+  renderWithForm,
+  renderWithRoot,
+  userEvent,
+  waitFor,
+} from '../../../test';
+import { ColorPicker } from '../ColorPicker';
+
+import { ColorSwatchGroup } from './ColorSwatchGroup';
+
+vi.mock('../../../_internal/hooks/use-warn');
+
+const PALETTE = ['#7a4dbf', '#26fcb2', '#ff0000'];
+
+/** The inner ring of the selection mark, which nothing else draws. */
+const INNER_RING = 'calc(4 * var(--border-width))';
+
+describe('<ColorSwatchGroup />', () => {
+  it('renders one swatch per color', () => {
+    const { getAllByRole } = renderWithRoot(
+      <ColorSwatchGroup aria-label="Palette" colors={PALETTE} />,
+    );
+
+    expect(getAllByRole('radio')).toHaveLength(3);
+  });
+
+  it('collapses the same color written different ways', () => {
+    // Equivalent colors would make selection ambiguous, so only one survives.
+    const { getAllByRole } = renderWithRoot(
+      <ColorSwatchGroup
+        aria-label="Palette"
+        colors={['#ff0000', 'rgb(255 0 0)', 'hsl(0 100% 50%)', '#26fcb2']}
+      />,
+    );
+
+    expect(getAllByRole('radio')).toHaveLength(2);
+  });
+
+  it('announces each swatch by its color', () => {
+    const { getByRole } = renderWithRoot(
+      <ColorSwatchGroup aria-label="Palette" colors={PALETTE} />,
+    );
+
+    expect(getByRole('radio', { name: '#7a4dbf' })).toBeInTheDocument();
+  });
+
+  it('prefers a given label over the color', () => {
+    const { getByRole } = renderWithRoot(
+      <ColorSwatchGroup
+        aria-label="Palette"
+        colors={[{ color: '#7a4dbf', label: 'Primary' }]}
+      />,
+    );
+
+    expect(getByRole('radio', { name: 'Primary' })).toBeInTheDocument();
+  });
+
+  it('marks the swatch matching the value, whatever notation it is in', () => {
+    const { getByRole } = renderWithRoot(
+      <ColorSwatchGroup
+        aria-label="Palette"
+        colors={PALETTE}
+        value="rgb(38 252 178)"
+      />,
+    );
+
+    expect(getByRole('radio', { name: '#26fcb2' })).toBeChecked();
+  });
+
+  it('publishes the chosen color in the requested notation', async () => {
+    const onChange = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <ColorSwatchGroup
+        aria-label="Palette"
+        colors={PALETTE}
+        format="oklch"
+        onChange={onChange}
+      />,
+    );
+
+    await userEvent.click(
+      getByRole('radio', { name: 'oklch(0.8789 0.1857 162.47)' }),
+    );
+
+    expect(onChange).toHaveBeenCalledWith('oklch(0.8789 0.1857 162.47)');
+  });
+
+  it('tracks the selection when uncontrolled', async () => {
+    const { getByRole } = renderWithRoot(
+      <ColorSwatchGroup
+        aria-label="Palette"
+        colors={PALETTE}
+        defaultValue="#7a4dbf"
+      />,
+    );
+
+    await userEvent.click(getByRole('radio', { name: '#ff0000' }));
+
+    expect(getByRole('radio', { name: '#ff0000' })).toBeChecked();
+    expect(getByRole('radio', { name: '#7a4dbf' })).not.toBeChecked();
+  });
+
+  it('shows a focus ring on the focused swatch', async () => {
+    // The swatch is all a keyboard user can see, so without this there is no
+    // way to tell which one is focused.
+    const { getByRole, getAllByTestId } = renderWithRoot(
+      <ColorSwatchGroup aria-label="Palette" colors={PALETTE} />,
+    );
+
+    await userEvent.tab();
+
+    expect(getByRole('radio', { name: '#7a4dbf' })).toHaveFocus();
+    expect(getAllByTestId('ColorSwatchOption')[0]).toHaveAttribute(
+      'data-focused',
+    );
+  });
+
+  it('lets a visible label name the group', () => {
+    // A hardcoded aria-label would outrank the label React Aria wires up.
+    const { getByRole } = renderWithRoot(
+      <ColorSwatchGroup label="Brand color" colors={PALETTE} />,
+    );
+
+    expect(
+      getByRole('radiogroup', { name: 'Brand color' }),
+    ).toBeInTheDocument();
+  });
+
+  it('lays the swatches out in the requested number of columns', () => {
+    const { getByTestId } = renderWithRoot(
+      <ColorSwatchGroup aria-label="Palette" colors={PALETTE} columns={2} />,
+    );
+
+    expect(getByTestId('ColorSwatchGroup')).toHaveStyle({ '--columns': '2' });
+  });
+
+  describe('custom colors', () => {
+    it('appends a picker when allowed', () => {
+      const { queryByTestId, rerender } = renderWithRoot(
+        <ColorSwatchGroup aria-label="Palette" colors={PALETTE} />,
+      );
+
+      expect(queryByTestId('ColorSwatchGroupCustom')).not.toBeInTheDocument();
+
+      rerender(
+        <ColorSwatchGroup aria-label="Palette" colors={PALETTE} allowCustom />,
+      );
+
+      expect(queryByTestId('ColorSwatchGroupCustom')).toBeInTheDocument();
+    });
+
+    it('marks the picker selected when the value is not a swatch', () => {
+      // The ring has to sit on the swatch, not the button: an inset shadow on
+      // the button paints under the swatch that fills it.
+      const { getByTestId } = renderWithRoot(
+        <ColorSwatchGroup
+          aria-label="Palette"
+          colors={PALETTE}
+          allowCustom
+          value="#123456"
+        />,
+      );
+
+      const swatch = getByTestId('ColorSwatchGroupCustom').querySelector(
+        '[data-qa="ColorSwatch"]',
+      )!;
+
+      expect(getComputedStyle(swatch).boxShadow).toContain(INNER_RING);
+    });
+
+    it('leaves the picker unmarked when a swatch holds the value', () => {
+      const { getByTestId } = renderWithRoot(
+        <ColorSwatchGroup
+          aria-label="Palette"
+          colors={PALETTE}
+          allowCustom
+          value="#7a4dbf"
+        />,
+      );
+
+      const swatch = getByTestId('ColorSwatchGroupCustom').querySelector(
+        '[data-qa="ColorSwatch"]',
+      )!;
+
+      expect(getComputedStyle(swatch).boxShadow).not.toContain(INNER_RING);
+    });
+
+    it('fills its trigger exactly, so it sits level with the swatches', () => {
+      // `Item` lays its icon out in a grid that keeps room for a label even
+      // when there is none, which left the swatch off centre by a pixel.
+      const { getByTestId } = renderWithRoot(
+        <ColorSwatchGroup aria-label="Palette" colors={PALETTE} allowCustom />,
+      );
+
+      const swatch = getByTestId('ColorSwatchGroupCustom').querySelector(
+        '[data-qa="ColorSwatch"]',
+      )!;
+      const cs = getComputedStyle(swatch);
+
+      // jsdom does not expand the `inset` shorthand into longhands, so assert
+      // what it does report: docked out of flow and sized by that inset.
+      expect(cs.position).toBe('absolute');
+      expect(cs.inset).toBe('0px');
+      expect([cs.width, cs.height]).toEqual(['auto', 'auto']);
+    });
+
+    it('locks the picker when the group is read-only', () => {
+      // Read-only stops the swatches through the radio state; the picker is a
+      // separate control and would otherwise stay live.
+      const { getByTestId } = renderWithRoot(
+        <ColorSwatchGroup
+          aria-label="Palette"
+          colors={PALETTE}
+          allowCustom
+          isReadOnly
+        />,
+      );
+
+      expect(getByTestId('ColorSwatchGroupCustom')).toBeDisabled();
+    });
+
+    it('keeps the picker out of the radiogroup', async () => {
+      // A button is not a radio option, and React Aria hands every arrow key
+      // inside the group to its radio walker — from the picker, one press
+      // would jump into a swatch and change the color on the way.
+      const onChange = vi.fn();
+      const { getByRole, getByTestId } = renderWithRoot(
+        <ColorSwatchGroup
+          aria-label="Palette"
+          colors={PALETTE}
+          allowCustom
+          onChange={onChange}
+        />,
+      );
+
+      const custom = getByTestId('ColorSwatchGroupCustom');
+
+      expect(getByRole('radiogroup')).not.toContainElement(custom);
+
+      await act(async () => custom.focus());
+      await userEvent.keyboard('{ArrowRight}');
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('drops the picker inside a color popover, where it would recurse', async () => {
+      // The escape hatch is itself a ColorPicker, so offering it inside one
+      // would nest popovers without end.
+      const { getByRole, queryByTestId } = renderWithRoot(
+        <ColorPicker aria-label="Brand" swatches={PALETTE} defaultOpen />,
+      );
+
+      await waitFor(() => expect(getByRole('dialog')).toBeInTheDocument());
+
+      expect(queryByTestId('ColorSwatchGroupCustom')).not.toBeInTheDocument();
+    }, 10000);
+  });
+
+  it('registers with a form and publishes the chosen color', async () => {
+    const { getByRole, formInstance } = renderWithForm(
+      <ColorSwatchGroup name="accent" label="Accent" colors={PALETTE} />,
+    );
+
+    await userEvent.click(getByRole('radio', { name: '#ff0000' }));
+
+    expect(formInstance.getFieldValue('accent')).toBe('#ff0000');
+  });
+});
