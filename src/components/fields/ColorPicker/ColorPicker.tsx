@@ -197,10 +197,15 @@ export const ColorPicker = forwardRef(function ColorPicker(
 
   const colorText = color ? formatColor(color, format) : null;
 
-  const handleSwatchChange = useEvent((next: string | null) => {
-    const parsed = next ? parseColor(next) : null;
-
-    if (parsed) handleColorChange(parsed);
+  /**
+   * The palette and the value field both speak in strings, and the field can
+   * hand back `null` when it is cleared — which has to reach the picker, or the
+   * text empties while the preview and trigger keep the old color.
+   */
+  const handleValueChange = useEvent((next: string | null) => {
+    emitted.current = next;
+    setColor(next ? parseColor(next) : null);
+    onChange?.(next);
   });
 
   const handleOpenChange = useEvent((next: boolean) => {
@@ -271,7 +276,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
                   value={colorText}
                   isDisabled={isDisabled}
                   isReadOnly={isReadOnly}
-                  onChange={handleSwatchChange}
+                  onChange={handleValueChange}
                 />
               }
               swatches={
@@ -284,7 +289,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
                     format={format}
                     value={colorText}
                     isDisabled={isDisabled || isReadOnly}
-                    onChange={handleSwatchChange}
+                    onChange={handleValueChange}
                   />
                 ) : null
               }

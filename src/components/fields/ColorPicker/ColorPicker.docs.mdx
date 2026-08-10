@@ -94,6 +94,13 @@ The `mods` property accepts the following modifiers you can override:
 
 The swatch carries its own `empty` modifier while there is no color to show.
 
+### The value as text
+
+The popover carries a `ColorInput` above the preview, so the exact color can be
+read, copied, pasted and normalized in place rather than only dialed in. It has
+no trigger of its own — a disclosure inside the thing it discloses would be
+meaningless — and clearing it clears the picker.
+
 ### A palette under the editor
 
 Pass `swatches` and a [ColorSwatchGroup](/docs/forms-colorswatchgroup--docs)

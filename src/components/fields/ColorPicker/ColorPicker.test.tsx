@@ -164,6 +164,51 @@ describe('<ColorPicker />', () => {
     }
   }, 10000);
 
+  describe('the value field in the popover', () => {
+    const field = (getAllByRole) =>
+      getAllByRole('textbox')[0] as HTMLInputElement;
+
+    it('offers no trigger of its own', async () => {
+      // A disclosure inside the thing it discloses is meaningless, so the
+      // nested input drops its trigger — leaving only the picker's own.
+      const { getByRole, getAllByRole, queryByTestId } = renderWithRoot(
+        <ColorPicker aria-label="Brand" defaultValue="#ff0000" defaultOpen />,
+      );
+
+      await waitFor(() => expect(getByRole('dialog')).toBeInTheDocument());
+
+      expect(field(getAllByRole)).toHaveValue('#ff0000');
+      // `ColorInputTrigger` is the pipette a standalone ColorInput renders.
+      expect(queryByTestId('ColorInputTrigger')).not.toBeInTheDocument();
+    }, 10000);
+
+    it('clears the picker when the field is cleared', async () => {
+      // Dropping the null would empty the text while the preview and trigger
+      // kept the old color.
+      const onChange = vi.fn();
+      const { getByRole, getAllByRole, getByTestId } = renderWithRoot(
+        <ColorPicker
+          aria-label="Brand"
+          defaultValue="#ff0000"
+          defaultOpen
+          onChange={onChange}
+        />,
+      );
+
+      await waitFor(() => expect(getByRole('dialog')).toBeInTheDocument());
+
+      await userEvent.clear(field(getAllByRole));
+
+      expect(onChange).toHaveBeenLastCalledWith(null);
+      // Scoped to the trigger: the nested field renders a swatch of its own.
+      expect(
+        getByTestId('ColorPickerTrigger').querySelector(
+          '[data-qa="ColorSwatch"]',
+        ),
+      ).toHaveAttribute('data-empty');
+    }, 10000);
+  });
+
   it('does not open while disabled', async () => {
     const { getByRole, queryByRole } = renderWithRoot(
       <ColorPicker aria-label="Brand" defaultValue="#ff0000" isDisabled />,
