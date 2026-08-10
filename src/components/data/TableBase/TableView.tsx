@@ -31,6 +31,8 @@ import {
 } from './row-menu';
 import { TableElement, TableHeaderItem } from './styled';
 import { TableRow, TableRowDropIndicator } from './TableRow';
+import { selectionRowKey } from './types';
+import { toTsv } from './use-cell-selection';
 import { useRowMoveAnimation } from './use-row-move-animation';
 import { useScrollability } from './use-scrollability';
 import { getColumnText, getColumnValue } from './use-table-columns';
@@ -251,15 +253,11 @@ export interface TableViewProps<T = any> {
  * of every field; the HTML flavour is what makes a value that looks like a date
  * stay the text it was on screen.
  */
-function toClipboardHtml(tsv: string) {
-  const rows = tsv
-    .split('\n')
+function toClipboardHtml(matrix: string[][]) {
+  const rows = matrix
     .map(
-      (line) =>
-        `<tr>${line
-          .split('\t')
-          .map((cell) => `<td>${escapeHtml(cell)}</td>`)
-          .join('')}</tr>`,
+      (row) =>
+        `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`,
     )
     .join('');
 
@@ -568,24 +566,6 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       headerHeight,
     ],
   );
-
-  // Before the first measure there are no columns to lay out yet — show the
-  // generic table skeleton rather than an empty frame.
-  if (columnCount === 0 && isLoading) {
-    return (
-      <TableElement
-        ref={rootRef}
-        qa={qa || 'Table'}
-        styles={mergedStyles}
-        mods={{ size, shape, ...mods }}
-      >
-        {toolbar}
-        <div data-element="Scroller" ref={handleScrollerRef}>
-          <Skeleton layout="table" />
-        </div>
-      </TableElement>
-    );
-  }
 
   /**
    * Whether a cell is inside the current range.
@@ -1086,6 +1066,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     // mods — state keys inside `Cell` resolve against the table root.
     pinnedEdge?: 'top' | 'bottom',
   ) {
+    // Section-qualified, because the same record is routinely pinned at both
+    // edges. `rowKey` below stays the consumer's own — this identity is the
+    // range's alone.
+    const rangeKey = selectionRowKey(sectionOf(pinnedEdge), rowKey);
     if (column.key === SELECTION_COLUMN_KEY) {
       return renderSelectionCell(
         column,
@@ -1214,11 +1198,13 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-pinned={pinnedEdge}
         data-last-column={lastColumnFlag(column)}
         data-corner={bottomCornerFlag(column, rowIndex, isLastRow, pinnedEdge)}
-        data-cell-selected={isCellSelected(rowKey, column.key) ? '' : undefined}
+        data-cell-selected={
+          isCellSelected(rangeKey, column.key) ? '' : undefined
+        }
         {...(column.isRowHeader
           ? { scope: 'row' as const }
           : { role: 'gridcell' as const })}
-        {...cellSelectionProps(rowKey, column.key, pinnedEdge)}
+        {...cellSelectionProps(rangeKey, column.key, pinnedEdge)}
         aria-colindex={column.ariaColIndex}
         style={{
           ...pinStyle(column),
@@ -1767,6 +1753,32 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     bodyContent = rows.map((row, index) => withDropIndicators(row, index));
   }
 
+  // Before the first measure there are no columns to lay out yet — show the
+  // generic table skeleton rather than an empty frame.
+  //
+  // Returned HERE, below every hook, not at the point in the render where the
+  // condition is known. Returning early skipped sixteen hooks — the virtualizer,
+  // the scrollability observer, the move animation, the context menu, two
+  // `useState`s — so the first render with columns called more hooks than the
+  // last one without them, and React threw "Rendered more hooks than during the
+  // previous render". A consumer that mounts with `columns={[]}` while loading
+  // and fills them in from a response is the ordinary case, not an exotic one.
+  if (columnCount === 0 && isLoading) {
+    return (
+      <TableElement
+        ref={rootRef}
+        qa={qa || 'Table'}
+        styles={mergedStyles}
+        mods={{ size, shape, ...mods }}
+      >
+        {toolbar}
+        <div data-element="Scroller" ref={handleScrollerRef}>
+          <Skeleton layout="table" />
+        </div>
+      </TableElement>
+    );
+  }
+
   return (
     <TableElement
       ref={rootRef}
@@ -1873,18 +1885,21 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         onCopy={(event) => {
           if (!cellSelection?.range) return;
 
-          const text = cellSelection.getSelectionText(
+          const matrix = cellSelection.getSelectionMatrix(
             (column, row, rowIndex) =>
               column.isStructural
                 ? ''
                 : getColumnText(column, row, rowIndex) ?? '',
           );
 
-          if (!text) return;
+          if (!matrix.length) return;
 
+          // Both formats from the same matrix. Building the HTML by re-parsing
+          // the TSV tore any cell whose value contained a tab or a newline —
+          // exactly the values the TSV had to quote in the first place.
           event.preventDefault();
-          event.clipboardData.setData('text/plain', text);
-          event.clipboardData.setData('text/html', toClipboardHtml(text));
+          event.clipboardData.setData('text/plain', toTsv(matrix));
+          event.clipboardData.setData('text/html', toClipboardHtml(matrix));
 
           // A copy that writes to the clipboard leaves nothing on screen to say
           // it worked — the range looks the same before and after. The count is

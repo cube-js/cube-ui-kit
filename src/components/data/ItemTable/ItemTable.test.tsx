@@ -371,4 +371,25 @@ describe('<ItemTable />', () => {
       'data-odd',
     );
   });
+
+  it('survives columns arriving after the loading skeleton', () => {
+    const { rerender } = renderWithRoot(
+      <ItemTable isLoading data={[]} columns={[]} />,
+    );
+
+    // Mounting with no columns while loading and filling them in from the
+    // response is the ordinary shape. It used to throw "Rendered more hooks
+    // than during the previous render": the skeleton path returned before
+    // sixteen hooks, so the first render with columns called more of them than
+    // the render without.
+    rerender(
+      <ItemTable
+        data={[{ id: '1', name: 'alpha' }]}
+        columns={[{ key: 'name', title: 'Name' }]}
+      />,
+    );
+
+    expect(screen.getByRole('grid')).toBeInTheDocument();
+    expect(screen.getByText('alpha')).toBeInTheDocument();
+  });
 });

@@ -9,6 +9,7 @@ import { extractStyles } from '../../../utils/styles';
 import { clampPage, getPageInfo } from '../../navigation/Pagination';
 import { ItemTableFooter } from '../ItemTable/ItemTableFooter';
 import { TableView } from '../TableBase/TableView';
+import { selectionRowKey } from '../TableBase/types';
 import { useCellSelection } from '../TableBase/use-cell-selection';
 import { useContainerWidth } from '../TableBase/use-container-width';
 import { useTableColumns } from '../TableBase/use-table-columns';
@@ -289,9 +290,16 @@ function DataTable<T = any>(
   );
   const selectionRowKeys = useMemo(
     () => [
-      ...(pinnedTopRows ?? []).map(resolvedGetRowKey),
+      // Section-qualified, matching what the renderer stamps: the same record
+      // is routinely pinned at both edges, and one flat key space collapsed the
+      // two into whichever came first.
+      ...(pinnedTopRows ?? []).map((row, index) =>
+        selectionRowKey('pinnedTop', resolvedGetRowKey(row, index)),
+      ),
       ...visibleRows.map(resolvedGetRowKey),
-      ...(pinnedBottomRows ?? []).map(resolvedGetRowKey),
+      ...(pinnedBottomRows ?? []).map((row, index) =>
+        selectionRowKey('pinnedBottom', resolvedGetRowKey(row, index)),
+      ),
     ],
     [pinnedTopRows, visibleRows, pinnedBottomRows, resolvedGetRowKey],
   );

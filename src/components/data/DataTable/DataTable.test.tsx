@@ -463,6 +463,80 @@ describe('DataTable', () => {
       expect(written['text/plain']).toBe('us-east-1\t40\n\t100');
     });
 
+    it('tells the two pinned edges apart when they are the same record', async () => {
+      const user = userEvent.setup();
+      const TOTAL: Row = { id: 'total', region: 'Total', orders: 100 };
+
+      renderWithRoot(
+        <DataTable
+          data={ROWS}
+          columns={COLUMNS}
+          pinnedTopRows={[TOTAL]}
+          pinnedBottomRows={[TOTAL]}
+        />,
+      );
+
+      const bottom = grid().querySelector<HTMLElement>(
+        'tr[data-pinned="bottom"] [data-key="orders"]',
+      )!;
+
+      await user.pointer({ target: bottom, keys: '[MouseLeft]' });
+
+      // Pinning the same record at both edges is ordinary — one `TOTALS` array
+      // used twice. With a flat key space both rows answered to `total`, so
+      // `indexOf` found the top one and the selection landed on the wrong row,
+      // or on both.
+      await waitFor(() =>
+        expect(
+          grid().querySelectorAll(
+            'tr[data-pinned="bottom"] [data-cell-selected]',
+          ),
+        ).toHaveLength(1),
+      );
+      expect(
+        grid().querySelectorAll('tr[data-pinned="top"] [data-cell-selected]'),
+      ).toHaveLength(0);
+    });
+
+    it('keeps the HTML flavour intact when a value contains a tab', async () => {
+      const user = userEvent.setup();
+      const rows: Row[] = [{ id: 'r0', region: 'a\tb', orders: 1 }];
+
+      renderWithRoot(<DataTable data={rows} columns={COLUMNS} />);
+
+      const cell = grid().querySelector<HTMLElement>(
+        'tbody [data-key="region"]',
+      )!;
+
+      await user.pointer({ target: cell, keys: '[MouseLeft]' });
+      await user.keyboard('{Shift>}');
+      await user.pointer({
+        target: grid().querySelector<HTMLElement>('tbody [data-key="orders"]')!,
+        keys: '[MouseLeft]',
+      });
+      await user.keyboard('{/Shift}');
+
+      const written: Record<string, string> = {};
+      const event = new Event('copy', { bubbles: true, cancelable: true });
+
+      Object.defineProperty(event, 'clipboardData', {
+        value: {
+          setData: (type: string, value: string) => {
+            written[type] = value;
+          },
+        },
+      });
+      cell.dispatchEvent(event);
+
+      // The TSV has to quote it, or the paste gains a column.
+      expect(written['text/plain']).toBe('"a\tb"\t1');
+      // The HTML must still be two cells — it used to be built by splitting
+      // that quoted TSV back apart on tabs, which tore this one in half.
+      expect(written['text/html']).toBe(
+        '<table><tr><td>a\tb</td><td>1</td></tr></table>',
+      );
+    });
+
     it('clears on Escape', async () => {
       const user = userEvent.setup();
 

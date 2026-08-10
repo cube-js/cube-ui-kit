@@ -20,6 +20,22 @@ export type CubeTableRowSection = 'body' | 'pinnedTop' | 'pinnedBottom';
  * page change the way a keyed row selection does: "the block between these two
  * cells" is re-resolved against the current order every render.
  */
+/**
+ * The key a cell range identifies a row by.
+ *
+ * Not the consumer's row key: a pinned total is commonly the SAME record at the
+ * top and the bottom (`id: 'total'`), and one flat key space collapsed the two
+ * into whichever `indexOf` found first — so a range aimed at the footer total
+ * resolved against the header one. The section is part of the identity here,
+ * and only here; `ctx.rowKey` stays the consumer's own.
+ */
+export function selectionRowKey(
+  section: CubeTableRowSection,
+  rowKey: Key,
+): Key {
+  return section === 'body' ? rowKey : `${section}:${rowKey}`;
+}
+
 export interface CubeTableCellRange {
   fromRowKey: Key;
   toRowKey: Key;
