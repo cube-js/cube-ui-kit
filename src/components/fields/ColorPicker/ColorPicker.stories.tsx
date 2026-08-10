@@ -158,7 +158,7 @@ export const CustomLabel = Template.bind({});
 CustomLabel.args = { defaultValue: '#7a4dbf', children: 'Accent' };
 
 export const Types: StoryFn<CubeColorPickerProps> = (args) => (
-  <Space gap="1x" placeItems="center start">
+  <Space placeItems="center start">
     <ColorPicker {...args} aria-label="Outline" type="outline" />
     <ColorPicker {...args} aria-label="Primary" type="primary" />
     <ColorPicker {...args} aria-label="Clear" type="clear" />
@@ -168,7 +168,7 @@ export const Types: StoryFn<CubeColorPickerProps> = (args) => (
 Types.args = { defaultValue: '#7a4dbf' };
 
 export const Sizes: StoryFn<CubeColorPickerProps> = (args) => (
-  <Space gap="1x" placeItems="center start">
+  <Space placeItems="center start">
     <ColorPicker {...args} aria-label="Small" size="small" />
     <ColorPicker {...args} aria-label="Medium" size="medium" />
     <ColorPicker {...args} aria-label="Large" size="large" />
@@ -217,7 +217,7 @@ export const Controlled: StoryFn<CubeColorPickerProps> = (args) => {
   const [color, setColor] = useState<string | null>('#7a4dbf');
 
   return (
-    <Space gap="1x" placeItems="center start">
+    <Space placeItems="center start">
       <ColorPicker
         {...args}
         aria-label="Series color"
