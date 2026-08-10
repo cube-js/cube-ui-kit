@@ -153,6 +153,7 @@ function ItemTable<T = any>(
     bodyStyles,
     rowStyles,
     cellStyles,
+    isRowMoveAnimated,
   } = props;
 
   const { t } = useI18n();
@@ -564,6 +565,7 @@ function ItemTable<T = any>(
       virtualizeThreshold={virtualizeThreshold}
       overscan={overscan}
       isStriped={isStriped}
+      isRowMoveAnimated={isRowMoveAnimated}
       isLoading={isLoading}
       loadingIndicator={loadingIndicator}
       selection={selection}

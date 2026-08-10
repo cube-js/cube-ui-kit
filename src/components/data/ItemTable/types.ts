@@ -65,6 +65,11 @@ export interface CubeItemTableProps<T = any>
   /** Header height in px. Defaults to `rowHeight`. */
   headerHeight?: number;
   /** Alternating row background. @default false */
+  /**
+   * Slide rows to their new positions when the sort changes, instead of
+   * teleporting them. @default true
+   */
+  isRowMoveAnimated?: boolean;
   isStriped?: boolean;
   /** @default false */
   isHeaderHidden?: boolean;

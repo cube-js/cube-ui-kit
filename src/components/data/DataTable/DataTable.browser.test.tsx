@@ -1,4 +1,4 @@
-import { renderWithRoot, screen } from '../../../test';
+import { renderWithRoot, screen, userEvent } from '../../../test';
 
 import { DataTable } from './DataTable';
 
@@ -220,5 +220,127 @@ describe('cell selection', () => {
     moveOver(cellAt(1, 'region'), cellAt(3, 'revenue'));
 
     expect(selectedCount()).toBe(2);
+  });
+});
+
+describe('row move animation', () => {
+  const rowTransforms = () =>
+    Array.from(
+      grid().querySelectorAll<HTMLElement>('tbody tr[data-element="Row"]'),
+    ).map((row) => row.style.transform);
+
+  it('slides rows from where they were when the sort changes', async () => {
+    renderWithRoot(
+      <DataTable
+        data={ROWS.slice(0, 6)}
+        columns={[{ key: 'orders', title: 'Orders', isSortable: true }]}
+        height="420px"
+      />,
+    );
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    const header = grid().querySelector<HTMLElement>('thead th')!;
+    const before = Array.from(
+      grid().querySelectorAll('tbody [data-key="orders"]'),
+    ).map((cell) => cell.textContent?.trim());
+
+    let seenTranslate = false;
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        // `oldValue`, not the live style: invert and play happen in one
+        // synchronous block, so by the time this callback runs the transform is
+        // already back to none. The old value is the only trace of the invert.
+        if (record.oldValue?.includes('translateY')) seenTranslate = true;
+
+        const target = record.target as HTMLElement;
+
+        if (target.style?.transform?.includes('translateY')) {
+          seenTranslate = true;
+        }
+      }
+    });
+
+    observer.observe(grid().querySelector('tbody')!, {
+      attributes: true,
+      attributeFilter: ['style'],
+      attributeOldValue: true,
+      subtree: true,
+    });
+
+    // Twice: `ROWS` is already ascending by `orders`, so one click sorts it
+    // into the order it is already in and nothing moves.
+    await userEvent.click(header);
+    await userEvent.click(header);
+
+    // The DOM order changes immediately — the animation only lags the paint —
+    // so nothing has to wait for it to read the sorted result.
+    await vi.waitFor(() =>
+      expect(
+        Array.from(grid().querySelectorAll('tbody [data-key="orders"]')).map(
+          (cell) => cell.textContent?.trim(),
+        ),
+      ).not.toEqual(before),
+    );
+
+    // Observed rather than sampled: the invert lasts a single frame, so reading
+    // the style after the fact races the animation and usually loses.
+    observer.disconnect();
+
+    expect(seenTranslate).toBe(true);
+  });
+
+  it('settles back to no transform once it has played', async () => {
+    renderWithRoot(
+      <DataTable
+        data={ROWS.slice(0, 6)}
+        columns={[{ key: 'orders', title: 'Orders', isSortable: true }]}
+        height="420px"
+      />,
+    );
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    const header = grid().querySelector<HTMLElement>('thead th')!;
+
+    await userEvent.click(header);
+    await userEvent.click(header);
+
+    // Left behind, a stale `transition` would animate transforms this feature
+    // never set — a dragged row, for one.
+    await vi.waitFor(
+      () => expect(rowTransforms().every((t) => t === '')).toBe(true),
+      { timeout: 2000 },
+    );
+  });
+
+  it('does not animate a page turn, only a reorder', async () => {
+    renderWithRoot(
+      <DataTable
+        data={ROWS.slice(0, 12)}
+        columns={[{ key: 'orders', title: 'Orders' }]}
+        defaultPageSize={6}
+        autoHidePagination={false}
+        height="420px"
+      />,
+    );
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    const pageTwo = await vi.waitFor(() => {
+      const button = Array.from(
+        document.querySelectorAll<HTMLElement>('button'),
+      ).find((b) => b.textContent?.trim() === '2');
+
+      expect(button).toBeTruthy();
+
+      return button!;
+    });
+
+    await userEvent.click(pageTwo);
+
+    // Different rows, not moved ones — sliding them around would read as noise.
+    await vi.waitFor(() => expect(rowTransforms().length).toBeGreaterThan(0));
+    expect(rowTransforms().every((t) => t === '')).toBe(true);
   });
 });

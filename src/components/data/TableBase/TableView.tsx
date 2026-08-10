@@ -31,6 +31,7 @@ import {
 } from './row-menu';
 import { TableElement, TableHeaderItem } from './styled';
 import { TableRow, TableRowDropIndicator } from './TableRow';
+import { useRowMoveAnimation } from './use-row-move-animation';
 import { useScrollability } from './use-scrollability';
 import { getColumnText, getColumnValue } from './use-table-columns';
 import {
@@ -102,6 +103,14 @@ export interface TableViewProps<T = any> {
    * Cloud grids today.
    */
   hasColumnDividers?: boolean;
+  /**
+   * Slide rows to their new positions when the order changes, instead of
+   * teleporting them.
+   *
+   * On by default, and only ever on a pure reorder — see
+   * `use-row-move-animation`. Suppressed under `prefers-reduced-motion`.
+   */
+  isRowMoveAnimated?: boolean;
   /** @default true */
   isHeaderSticky?: boolean;
   /** @default 'auto' — on above `virtualizeThreshold` rows, needs a bounded height. */
@@ -384,6 +393,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     isHeaderHidden = false,
     isStriped = false,
     hasColumnDividers,
+    isRowMoveAnimated = true,
     isHeaderSticky = true,
     isVirtualized = 'auto',
     virtualizeThreshold = 50,
@@ -451,6 +461,17 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   const [scrollerEl, setScrollerEl] = useState<HTMLDivElement | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  // `bodyRef` is optional — only the drag-and-drop path supplies one — but the
+  // move animation needs the `<tbody>` either way, so it keeps its own and both
+  // are filled from one callback.
+  const localBodyRef = useRef<HTMLTableSectionElement | null>(null);
+  const handleBodyRef = useCallback(
+    (element: HTMLTableSectionElement | null) => {
+      localBodyRef.current = element;
+      if (bodyRef) bodyRef.current = element;
+    },
+    [bodyRef],
+  );
   const handleScrollerRef = useCallback(
     (element: HTMLDivElement | null) => {
       scrollerRef.current = element;
@@ -1434,6 +1455,13 @@ export function TableView<T = any>(props: TableViewProps<T>) {
    * tab stop for the grid, arrows to move within it, matching how every other
    * collection in the kit behaves.
    */
+  // Not while a drag is in flight: React Aria is already moving the row under
+  // the pointer, and a second transform fighting it reads as a stutter.
+  useRowMoveAnimation({
+    isEnabled: isRowMoveAnimated && !dragState?.draggingKeys?.size,
+    bodyRef: localBodyRef,
+  });
+
   const [focusedRowIndex, setFocusedRowIndex] = useState(0);
   // Only used to suppress text selection during the gesture; the range itself
   // lives in a ref so growing it does not re-render on every cell crossed.
@@ -1807,7 +1835,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           {isHeaderHidden ? null : (
             <thead data-element="Head">{headerRow}</thead>
           )}
-          <tbody data-element="Body" {...collectionProps} ref={bodyRef}>
+          <tbody data-element="Body" {...collectionProps} ref={handleBodyRef}>
             {pinnedTopRows?.map((row, index) =>
               renderPinnedRow(row, index, 'top'),
             )}

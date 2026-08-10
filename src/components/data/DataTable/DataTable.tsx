@@ -100,6 +100,7 @@ function DataTable<T = any>(
     selectedCellRange,
     defaultSelectedCellRange,
     onCellRangeChange,
+    isRowMoveAnimated,
     isResizable = true,
     columnWidths: columnWidthsProp,
     defaultColumnWidths,
@@ -399,6 +400,7 @@ function DataTable<T = any>(
       rowHeight={rowHeight}
       headerHeight={headerHeight}
       isStriped={isStriped}
+      isRowMoveAnimated={isRowMoveAnimated}
       isHeaderHidden={isHeaderHidden}
       isHeaderSticky={isHeaderSticky}
       // The header shows the column name at body size — a result grid has no

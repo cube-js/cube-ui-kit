@@ -338,3 +338,47 @@ describe('ItemTable layout', () => {
     expect(getComputedStyle(scroller()).overscrollBehaviorY).toBe('none');
   });
 });
+
+describe('row move animation vs sticky columns', () => {
+  it('keeps a pinned column pinned while rows are mid-slide', async () => {
+    renderWithRoot(
+      <ItemTable
+        data={ROWS.slice(0, 8)}
+        columns={[
+          { ...COLUMNS[0], pin: 'start', isSortable: true },
+          ...COLUMNS.slice(1),
+        ]}
+        height="300px"
+        width="400px"
+      />,
+    );
+
+    const scroller = document.querySelector<HTMLElement>(
+      '[data-element="Scroller"]',
+    )!;
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    scroller.scrollLeft = 120;
+
+    const header = grid().querySelector<HTMLElement>('thead th')!;
+
+    header.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    header.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    // A transform on the `<tr>` makes it a containing block, which is exactly
+    // the kind of thing that quietly breaks `position: sticky` on its cells.
+    // Measured mid-animation, while the transform is still applied.
+    const pinned = grid().querySelector<HTMLElement>(
+      'tbody [data-key="name"]',
+    )!;
+
+    expect(getComputedStyle(pinned).position).toBe('sticky');
+    expect(
+      Math.round(
+        pinned.getBoundingClientRect().left -
+          scroller.getBoundingClientRect().left,
+      ),
+    ).toBe(0);
+  });
+});

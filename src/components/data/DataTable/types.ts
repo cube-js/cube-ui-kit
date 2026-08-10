@@ -64,6 +64,11 @@ export interface CubeDataTableProps<T = any>
   isStriped?: boolean;
   isHeaderHidden?: boolean;
   isHeaderSticky?: boolean;
+  /**
+   * Slide rows to their new positions when the sort changes, instead of
+   * teleporting them. @default true
+   */
+  isRowMoveAnimated?: boolean;
   /** Numbers each row down the side. @default false */
   showRowNumbers?: boolean;
 

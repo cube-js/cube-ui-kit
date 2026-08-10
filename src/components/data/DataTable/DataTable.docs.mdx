@@ -74,6 +74,7 @@ and everything it knows about the query, in Cloud.
 - **`isStriped`** `boolean` (default: `true`) — Banding is what makes a wide row readable across.
 - **`isHeaderHidden`** `boolean`
 - **`isHeaderSticky`** `boolean` (default: `true`)
+- **`isRowMoveAnimated`** `boolean` (default: `true`) — Slide rows to their new positions when the order changes, instead of teleporting them. Respects `prefers-reduced-motion`.
 - **`showRowNumbers`** `boolean` (default: `false`) — A continuous count down the side, which stays continuous across pages.
 
 #### Sorting
@@ -240,6 +241,17 @@ Above `virtualizeThreshold` a bounded grid virtualizes on its own, so
 `paginationMode="off"` is a reasonable default for a result the user scrolls.
 
 <Canvas of={DataTableStories.Unpaginated} />
+
+### Sorting Moves Rows
+
+When a sort reorders rows, they slide to their new positions over 120ms rather
+than jumping. The point is to be able to follow one row to where it went — a
+table that teleports gives the eye nothing to track.
+
+Only rows that were already on screen slide: a row arriving from outside the
+window, or from another page, has no position to come from. Scrolling is never
+mistaken for movement, and `prefers-reduced-motion` turns it off. Set
+`isRowMoveAnimated={false}` to opt out.
 
 ### Cell Selection
 
