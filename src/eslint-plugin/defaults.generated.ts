@@ -65,6 +65,7 @@ export const DEFAULTS: DefaultsRegistry = {
         allowOverlap: { kind: 'default', value: false },
         cols: { kind: 'default', value: 12 },
         compact: { kind: 'default', value: 'vertical' },
+        extraRows: { kind: 'default', value: 0 },
         isAligned: { kind: 'default', value: false },
         isAutoHeight: { kind: 'default', value: false },
         isCard: { kind: 'default', value: false },

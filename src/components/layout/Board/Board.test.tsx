@@ -2602,6 +2602,57 @@ describe('Board', () => {
         expect(onSelectionChange).toHaveBeenLastCalledWith(['a', 'b', 'c']);
       });
 
+      // A board hugs its content, so once the grid fills up there is no empty
+      // space left to grab and the lasso reads as broken. `extraRows` keeps a
+      // band of board below the content for exactly that.
+      describe('extraRows', () => {
+        // Two content rows at 100px, no margins or padding.
+        const contentHeight = 200;
+
+        const boardHeight = (props: Record<string, unknown>) => {
+          renderSelectableBoard(props);
+
+          return screen.getByTestId('Board').style.minHeight;
+        };
+
+        it('reserves no space by default', () => {
+          expect(boardHeight({})).toBe(`${contentHeight}px`);
+        });
+
+        it('reserves a band of empty rows below the content', () => {
+          expect(boardHeight({ extraRows: 3 })).toBe(
+            `${contentHeight + 300}px`,
+          );
+        });
+
+        it('clamps the band to maxRows', () => {
+          expect(boardHeight({ extraRows: 5, maxRows: 3 })).toBe('300px');
+        });
+
+        it('paints grid cells over the band, so it reads as board', () => {
+          renderSelectableBoard({ extraRows: 3, showGridLines: true });
+
+          expect(screen.getByTestId('BoardGridOverlay').style.height).toBe(
+            `${contentHeight + 300}px`,
+          );
+        });
+
+        it('starts a marquee in the reserved band', () => {
+          const onSelectionChange = vi.fn();
+          renderSelectableBoard({ extraRows: 3, onSelectionChange });
+          const content = screen.getByTestId('A').parentElement as HTMLElement;
+          content.getBoundingClientRect = () => mockRect(0, 0, 600, 500);
+
+          // Press below the last widget — page background before `extraRows`,
+          // board now — and drag back up across `a` and `b`.
+          fireEvent(content, pointer('pointerdown', 0, 450));
+          fireEvent(window, pointer('pointermove', 250, 50));
+          fireEvent(window, pointer('pointerup', 250, 50));
+
+          expect(onSelectionChange).toHaveBeenCalledWith(['a', 'b', 'c']);
+        });
+      });
+
       it('never starts on a widget — that press is a drag', () => {
         const { widget } = setupMarquee();
 
@@ -2898,6 +2949,86 @@ describe('Board', () => {
         // hanging six rows down where the pointer is.
         expect(positions(frame)).toEqual({ far: '0,0', a: '0,1', b: '2,0' });
       }
+    });
+
+    // Compaction packs every item independently, by a global `(y, x)` sort. It
+    // used to run that way after a group move too, so the widgets the group was
+    // dragged past got packed *between* its members and the selection came
+    // apart. Gravity still wins; the group is just compacted as one run.
+    const stackLayout = () => [
+      { i: 'a', x: 0, y: 0, w: 12, h: 1 },
+      { i: 'b', x: 0, y: 1, w: 12, h: 1 },
+      { i: 'c', x: 0, y: 2, w: 12, h: 1 },
+      { i: 'd', x: 0, y: 3, w: 12, h: 1 },
+    ];
+
+    it('keeps the group contiguous when dragged up on a compacting board', () => {
+      const onLayoutChange = vi.fn();
+      setupGroupBoard({
+        compact: 'vertical',
+        defaultSelectedKeys: ['c', 'd'],
+        defaultLayout: stackLayout(),
+        onLayoutChange,
+      });
+
+      const grabbed = screen.getByTestId('C');
+      fireEvent(grabbed, pointerEvent('pointerdown', 0, 200));
+      fireEvent(window, pointerEvent('pointermove', 0, 0));
+      fireEvent(window, pointerEvent('pointerup', 0, 0));
+
+      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
+      expect(positions(committed)).toEqual({
+        c: '0,0',
+        d: '0,1',
+        a: '0,2',
+        b: '0,3',
+      });
+    });
+
+    // The commit re-compacts the source board, so an arrangement that only the
+    // group-aware pass can produce would be undone the moment the pointer is
+    // released — the drag would preview right and land wrong.
+    it('commits exactly the arrangement the last drag frame showed', () => {
+      const frames: LayoutItem[][] = [];
+      const onLayoutChange = vi.fn();
+      setupGroupBoard({
+        compact: 'vertical',
+        defaultSelectedKeys: ['c', 'd'],
+        defaultLayout: stackLayout(),
+        onLayoutChange,
+        onDrag: (info: { layout: LayoutItem[] }) =>
+          frames.push(info.layout.map((it) => ({ ...it }))),
+      });
+
+      const grabbed = screen.getByTestId('C');
+      fireEvent(grabbed, pointerEvent('pointerdown', 0, 200));
+      fireEvent(window, pointerEvent('pointermove', 0, 0));
+      fireEvent(window, pointerEvent('pointerup', 0, 0));
+
+      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
+      expect(frames.length).toBeGreaterThan(0);
+      expect(positions(committed)).toEqual(positions(frames.at(-1)!));
+    });
+
+    it('moves a group up with the arrow keys without splitting it', () => {
+      const onLayoutChange = vi.fn();
+      setupGroupBoard({
+        compact: 'vertical',
+        defaultSelectedKeys: ['c', 'd'],
+        defaultLayout: stackLayout(),
+        onLayoutChange,
+      });
+
+      const grabbed = screen.getByTestId('C');
+      grabbed.focus();
+      for (let step = 0; step < 2; step++) {
+        fireEvent.keyDown(grabbed, { key: 'ArrowUp' });
+        fireEvent.keyUp(grabbed, { key: 'ArrowUp' });
+      }
+
+      const committed = onLayoutChange.mock.lastCall![0] as LayoutItem[];
+      const order = [...committed].sort((x, y) => x.y - y.y).map((it) => it.i);
+      expect(Math.abs(order.indexOf('c') - order.indexOf('d'))).toBe(1);
     });
 
     it('renders one placeholder per moving widget', () => {

@@ -9,14 +9,17 @@
  *
  * `moveElements` moves a set of items rigidly instead. Every mover receives the
  * same `(dx, dy)`, so the group's shape is invariant *by construction* rather
- * than by repair.
+ * than by repair — and the compaction that follows is ordered so it cannot
+ * undo that (see `compactWithGroupOrder`).
  *
  * This module is UI-Kit-specific; it is not part of the vendored react-grid-layout
  * core (see ./NOTICE.md).
  */
 
 import { collides, getFirstCollision } from './collision';
-import { bottom, cloneLayout } from './layout';
+import { compactItemHorizontal, compactItemVertical } from './compactors';
+import { bottom, cloneLayout, cloneLayoutItem, getStatics } from './layout';
+import { sortLayoutItemsByColRow, sortLayoutItemsByRowCol } from './sort';
 
 import type { Compactor, Layout, LayoutItem, Mutable } from './types';
 
@@ -66,6 +69,10 @@ function isMovable(item: LayoutItem): boolean {
  *   positions, so only mover↔non-mover and non-mover↔non-mover overlaps resolve.
  * - **A static item is never a mover**, matching `moveElement`'s own guard, and
  *   a mover can never displace a static item — that frame is rejected instead.
+ * - **Gravity still wins, but it cannot reach inside the group.** A compacting
+ *   board reflows the movers along with everyone else, so the block is not held
+ *   in mid-air; the group is merely compacted as one consecutive run, which is
+ *   what stops a displaced neighbour being packed *between* two members.
  *
  * Returns a new layout in the input's item order; the input is never mutated.
  */
@@ -155,9 +162,150 @@ export function moveElements(
   // place. On a vertically-compacted board a lone widget can never be parked in
   // empty space, and a group must not be able to either: neighbours have to
   // close the gap the moment it opens, or the board reads as a step behind.
-  const out = [...compactor.compact(working, cols)];
+  //
+  // But *order* the pass so the group stays one run. A plain compaction sorts
+  // every item by `(y, x)` and packs each one independently, with no idea a
+  // group exists — so the moment movers and non-movers interleave in y, a
+  // displaced neighbour gets packed between two members and the selection comes
+  // apart mid-drag. Check `allowOverlap` first: the overlap compactors report a
+  // `type` but their `compact` is a plain clone, so there is nothing to order.
+  const groupAware =
+    !compactor.allowOverlap &&
+    (compactor.type === 'vertical' || compactor.type === 'horizontal');
+
+  const out = groupAware
+    ? compactWithGroupOrder(working, moverIds, {
+        axis: compactor.type as CompactionAxis,
+        travel: compactor.type === 'horizontal' ? clampedDx : clampedDy,
+        cols,
+      })
+    : [...compactor.compact(working, cols)];
 
   return { layout: out, dx: clampedDx, dy: clampedDy, moved: true };
+}
+
+type CompactionAxis = 'vertical' | 'horizontal';
+
+interface GroupOrderOptions {
+  /** The axis the board compacts along. */
+  axis: CompactionAxis;
+  /**
+   * The group's clamped travel along that axis. Only the sign is read — it
+   * decides who wins a tie for the same row (or column).
+   */
+  travel: number;
+  cols: number;
+}
+
+/** A group of movers, or a single non-mover, as one thing to place. */
+interface CompactionUnit {
+  isGroup: boolean;
+  /** Leading edge along the compaction axis. */
+  head: number;
+  /** Leading edge across it, among the members sitting at `head`. */
+  cross: number;
+  members: LayoutItem[];
+}
+
+/**
+ * Compact a layout the way the board's own compactor would, except that the
+ * movers are placed as one consecutive run instead of being interleaved with
+ * everyone else by a global `(y, x)` sort.
+ *
+ * Each member still floats individually under gravity, so the result is a fixed
+ * point of the plain compactor — nothing is parked in mid-air, and a later
+ * unrelated drag (which re-compacts the whole board) cannot shear the group
+ * after the fact. The single invariant this adds is that a non-mover can never
+ * end up *between* two members.
+ *
+ * Placement order decides everything, and it turns on the direction of travel:
+ *
+ * - Moving **against** gravity (`travel < 0`), the group claims the row it was
+ *   dropped on and the widgets it passed fall in below it.
+ * - Moving **with** gravity, the non-movers close the vacated space first.
+ *   Handing the group the tie here would leave it exactly where it started and
+ *   the drag would read as a no-op.
+ *
+ * The comparison is a strict `travel < 0`, so a zero-travel re-run lands in the
+ * second branch — that is what makes the pass idempotent, which the live drag
+ * and the keyboard path both depend on.
+ */
+function compactWithGroupOrder(
+  layout: Layout,
+  moverIds: ReadonlySet<string>,
+  { axis, travel, cols }: GroupOrderOptions,
+): LayoutItem[] {
+  const horizontal = axis === 'horizontal';
+  const head = horizontal ? 'x' : 'y';
+  const cross = horizontal ? 'y' : 'x';
+  const groupFirst = travel < 0;
+
+  const clones = layout.map(cloneLayoutItem);
+  const movers: LayoutItem[] = [];
+  const units: CompactionUnit[] = [];
+
+  for (const it of clones) {
+    if (moverIds.has(it.i)) {
+      movers.push(it);
+    } else {
+      units.push({
+        isGroup: false,
+        head: it[head],
+        cross: it[cross],
+        members: [it],
+      });
+    }
+  }
+
+  if (movers.length > 0) {
+    const groupHead = Math.min(...movers.map((it) => it[head]));
+
+    units.push({
+      isGroup: true,
+      head: groupHead,
+      cross: Math.min(
+        ...movers.filter((it) => it[head] === groupHead).map((it) => it[cross]),
+      ),
+      // Members are placed in the same reading order the compactor would have
+      // used, so within the run each one lands exactly where it would have.
+      members: horizontal
+        ? sortLayoutItemsByColRow(movers)
+        : sortLayoutItemsByRowCol(movers),
+    });
+  }
+
+  units.sort((a, b) => {
+    if (a.head !== b.head) return a.head - b.head;
+    // Same row: direction decides whether the group or the displaced non-movers
+    // get first claim on it.
+    if (a.isGroup !== b.isGroup) return a.isGroup === groupFirst ? -1 : 1;
+    if (a.cross !== b.cross) return a.cross - b.cross;
+
+    return 0;
+  });
+
+  // From here on this mirrors `verticalCompactor` / `horizontalCompactor`
+  // exactly: statics seed the obstacle set and are never floated, every other
+  // item is packed against what is already placed, and `maxY` tracks how far
+  // down the board has filled.
+  const order = units.flatMap((unit) => unit.members);
+  const compareWith = getStatics(clones);
+  let maxY = bottom(compareWith);
+
+  for (const l of order) {
+    if (!l.static) {
+      if (horizontal) {
+        compactItemHorizontal(compareWith, l, cols, order);
+      } else {
+        compactItemVertical(compareWith, l, order, maxY);
+        maxY = Math.max(maxY, l.y + l.h);
+      }
+      compareWith.push(l);
+    }
+    l.moved = false;
+  }
+
+  return clones;
 }
 
 /**
