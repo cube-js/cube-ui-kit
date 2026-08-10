@@ -10,10 +10,15 @@ import {
 } from '../../../utils/react/nullableValue';
 import { ItemAction } from '../../actions';
 import { useFieldProps } from '../../form';
-import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
+import {
+  CubeBufferedValueProps,
+  CubeTextInputBaseProps,
+  TextInputBase,
+} from '../TextInput';
 
 export interface CubePasswordInputProps
-  extends WithNullableValue<CubeTextInputBaseProps> {}
+  extends WithNullableValue<CubeTextInputBaseProps>,
+    CubeBufferedValueProps {}
 
 function PasswordInput(
   props: CubePasswordInputProps,

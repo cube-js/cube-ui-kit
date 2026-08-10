@@ -233,6 +233,16 @@ export interface CubeTextInputBaseProps
   /** The size of the input */
   size?: 'small' | 'medium' | 'large' | (string & {});
   autocomplete?: string;
+}
+
+/**
+ * Mixed into the fields that actually buffer their value — `TextInput`, `TextArea`,
+ * `PasswordInput`, `SearchInput` — rather than declared on `CubeTextInputBaseProps`. Every field
+ * built on that base would otherwise inherit the prop, including `NumberInput` and
+ * `CommandTextArea`, which keep their own text and ignore it: a public API that accepts a flag and
+ * does nothing with it.
+ */
+export interface CubeBufferedValueProps {
   /**
    * Whether the typed text is held locally until the controlled `value` catches up. On by default,
    * which is what keeps the caret in place when the value round-trips through a store that
