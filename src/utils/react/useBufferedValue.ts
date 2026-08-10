@@ -1,5 +1,9 @@
 import { useCallback, useRef, useState } from 'react';
 
+import { useLayoutEffect } from './useLayoutEffect';
+
+const NOTHING_PENDING: unknown[] = [];
+
 export interface UseBufferedValueOptions<T> {
   /**
    * Identity of a value, for values `Object.is` doesn't compare usefully — an array of colour
@@ -71,36 +75,50 @@ export function useBufferedValue<T>(
   // Keys we have emitted that the parent hasn't echoed back yet. A queue rather than one slot: the
   // user can type again before the first echo returns, and each echo has to be recognised as ours
   // or applying it would swallow everything typed after it.
-  const pendingRef = useRef<unknown[]>([]);
+  //
+  // State, not refs, though it is only ever read here. The decision below is taken during render,
+  // and React may discard a render — an interrupted concurrent pass, a StrictMode double-invoke.
+  // A discarded render throws away these updates together with the matching `setDraft`, whereas
+  // ref writes would survive it and leave the bookkeeping describing a render that never
+  // committed: an echo could then be read as an external change, or the reverse.
+  const [pending, setPending] = useState<unknown[]>(NOTHING_PENDING);
   // The last value we accepted as the parent's opinion — not the last one we rendered.
-  const seenKeyRef = useRef<unknown>(valueKey);
+  const [seenKey, setSeenKey] = useState<unknown>(valueKey);
   const latestRef = useRef({ value, onChange, keyOf, isActive });
 
-  latestRef.current = { value, onChange, keyOf, isActive };
+  // Synced after commit rather than during render, for the same reason.
+  useLayoutEffect(() => {
+    latestRef.current = { value, onChange, keyOf, isActive };
+  });
 
   if (!isActive) {
     // Mirror the parent, so the buffer is already current if the control becomes editable.
-    if (pendingRef.current.length) {
-      pendingRef.current = [];
+    if (pending.length) {
+      setPending(NOTHING_PENDING);
     }
 
-    seenKeyRef.current = valueKey;
+    if (seenKey !== valueKey) {
+      setSeenKey(valueKey);
+    }
 
     if (keyOf(draft) !== valueKey) {
       setDraft(value);
     }
-  } else if (valueKey !== seenKeyRef.current) {
-    const pendingAt = pendingRef.current.indexOf(valueKey);
+  } else if (valueKey !== seenKey) {
+    const pendingAt = pending.indexOf(valueKey);
 
-    seenKeyRef.current = valueKey;
+    setSeenKey(valueKey);
 
     if (pendingAt >= 0) {
       // Our own echo, a render or more late. Consume it along with any earlier emit it superseded,
       // and keep the draft.
-      pendingRef.current = pendingRef.current.slice(pendingAt + 1);
+      setPending(pending.slice(pendingAt + 1));
     } else {
       // A real change from the parent: undo/redo, a reset, a transformed value, another record.
-      pendingRef.current = [];
+      if (pending.length) {
+        setPending(NOTHING_PENDING);
+      }
+
       setDraft(value);
     }
   }
@@ -117,7 +135,8 @@ export function useBufferedValue<T>(
 
     if (latestIsActive) {
       setDraft(next);
-      pendingRef.current = [...pendingRef.current, latestKeyOf(next)];
+      // Functional, so two keystrokes inside one event both make it onto the queue.
+      setPending((queue) => [...queue, latestKeyOf(next)]);
     }
 
     latestOnChange?.(next);
@@ -126,8 +145,8 @@ export function useBufferedValue<T>(
   const reset = useCallback(() => {
     const { value: latestValue, keyOf: latestKeyOf } = latestRef.current;
 
-    pendingRef.current = [];
-    seenKeyRef.current = latestKeyOf(latestValue);
+    setPending(NOTHING_PENDING);
+    setSeenKey(latestKeyOf(latestValue));
     setDraft(latestValue);
   }, []);
 

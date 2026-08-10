@@ -1,3 +1,5 @@
+import { StrictMode } from 'react';
+
 import { act, renderHook } from '../../test';
 
 import { useBufferedValue, UseBufferedValueOptions } from './useBufferedValue';
@@ -87,6 +89,32 @@ describe('useBufferedValue()', () => {
 
       rerender({ value: 'abc' });
       expect(result.current.value).toBe('abc');
+    });
+
+    // A guard on the double-invoked-render path, not a reproduction: StrictMode runs the render
+    // twice and keeps both, and the bookkeeping below is guarded by a key comparison that makes the
+    // second pass a no-op either way. An interrupted concurrent pass — where React throws a render
+    // away — is the case that argues for holding this in state rather than refs, and it cannot be
+    // provoked from jsdom. Measured: this test passes against a ref-based implementation too.
+    it('classifies correctly when every render is double-invoked', () => {
+      const { result, rerender } = renderHook(
+        ({ value }: { value: string }) => useBufferedValue(value),
+        {
+          initialProps: { value: 'abc' },
+          wrapper: ({ children }) => <StrictMode>{children}</StrictMode>,
+        },
+      );
+
+      act(() => result.current.onChange('abxc'));
+
+      rerender({ value: 'abc' }); // the stale pass
+      expect(result.current.value).toBe('abxc');
+
+      rerender({ value: 'abxc' }); // our own echo
+      expect(result.current.value).toBe('abxc');
+
+      rerender({ value: 'zzz' }); // a real external change
+      expect(result.current.value).toBe('zzz');
     });
 
     it('emits every change verbatim, once, in the same tick', () => {
