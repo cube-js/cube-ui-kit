@@ -124,5 +124,39 @@
   "contextMenu": {
     "openContextMenu": "Åpne kontekstmeny",
     "contextMenu": "context-menu"
+  },
+  "pagination": {
+    "ariaLabel": "Paginering",
+    "firstPage": "Første side",
+    "previousPage": "Forrige side",
+    "nextPage": "Neste side",
+    "lastPage": "Siste side",
+    "selectPage": "Velg side",
+    "page": "Side {{page}}",
+    "pageOf": "{{page}} av {{totalPages}}",
+    "itemsPerPage": "Elementer per side",
+    "itemsPerPageOption": "{{size}} / side",
+    "summary": "{{from}}–{{to}} av {{total}}"
+  },
+  "itemTable": {
+    "noItems": "Ingen elementer",
+    "noResults": "Ingen resultater funnet",
+    "search": "Søk",
+    "searchPlaceholder": "Søk...",
+    "refresh": "Oppdater",
+    "selectAll": "Velg alle",
+    "deselectAll": "Fjern alle valg",
+    "selectRow": "Velg rad",
+    "selectedCount_one": "{{count}} valgt",
+    "selectedCount_other": "{{count}} valgt",
+    "bulkActions": "Massehandlinger",
+    "clearSelection": "Tøm utvalg",
+    "rowActions": "Radhandlinger",
+    "resizeColumn": "Endre kolonnebredde",
+    "dragCount_one": "{{count}} element",
+    "dragCount_other": "{{count}} elementer",
+    "copiedToClipboard": "Kopiert til utklippstavlen",
+    "copiedCells_one": "{{count}} celle kopiert",
+    "copiedCells_other": "{{count}} celler kopiert"
   }
 }

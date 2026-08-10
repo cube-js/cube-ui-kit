@@ -124,5 +124,39 @@
   "contextMenu": {
     "openContextMenu": "Mở menu ngữ cảnh",
     "contextMenu": "context-menu"
+  },
+  "pagination": {
+    "ariaLabel": "Phân trang",
+    "firstPage": "Trang đầu",
+    "previousPage": "Trang trước",
+    "nextPage": "Trang sau",
+    "lastPage": "Trang cuối",
+    "selectPage": "Chọn trang",
+    "page": "Trang {{page}}",
+    "pageOf": "{{page}} / {{totalPages}}",
+    "itemsPerPage": "Số mục mỗi trang",
+    "itemsPerPageOption": "{{size}} / trang",
+    "summary": "{{from}}–{{to}} trên {{total}}"
+  },
+  "itemTable": {
+    "noItems": "Không có mục nào",
+    "noResults": "Không tìm thấy kết quả",
+    "search": "Tìm kiếm",
+    "searchPlaceholder": "Tìm kiếm...",
+    "refresh": "Làm mới",
+    "selectAll": "Chọn tất cả",
+    "deselectAll": "Bỏ chọn tất cả",
+    "selectRow": "Chọn hàng",
+    "selectedCount_one": "Đã chọn {{count}}",
+    "selectedCount_other": "Đã chọn {{count}}",
+    "bulkActions": "Thao tác hàng loạt",
+    "clearSelection": "Xóa lựa chọn",
+    "rowActions": "Thao tác hàng",
+    "resizeColumn": "Đổi kích thước cột",
+    "dragCount_one": "{{count}} mục",
+    "dragCount_other": "{{count}} mục",
+    "copiedToClipboard": "Đã sao chép vào bảng nhớ tạm",
+    "copiedCells_one": "Đã sao chép {{count}} ô",
+    "copiedCells_other": "Đã sao chép {{count}} ô"
   }
 }

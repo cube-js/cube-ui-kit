@@ -359,6 +359,7 @@ export default {
     // Caption/uppercase styles (c1-c2)
     'c1',
     'c2',
+    'c3',
 
     // Snippet / monospace styles (s2-s4)
     's2',

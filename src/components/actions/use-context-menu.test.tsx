@@ -24,6 +24,17 @@ const HookWrapper = ({ children }: { children: React.ReactNode }) => (
   <EventBusProvider>{children}</EventBusProvider>
 );
 
+/**
+ * The invisible anchor lives in a fixed host portalled to `body`, not inside
+ * the container — that is what makes its coordinates mean viewport position
+ * rather than "wherever the consumer happened to render `rendered`".
+ */
+function findAnchor() {
+  return document.body.querySelector<HTMLElement>(
+    'div[style*="position: fixed"] > span[style*="position: absolute"]',
+  );
+}
+
 describe('useContextMenu', () => {
   // Test component that uses the hook with Menu
   const TestMenuComponent = ({
@@ -342,16 +353,24 @@ describe('useContextMenu', () => {
       });
     });
 
-    // Wait for menu to be positioned
+    // The anchor sits at the pointer in **viewport** coordinates, not offset by
+    // the container's own position.
     await waitFor(() => {
-      const invisibleAnchor = container.querySelector(
-        'span[style*="position: absolute"]',
-      );
-      expect(invisibleAnchor).toBeInTheDocument();
+      const anchor = findAnchor();
+
+      expect(anchor).not.toBeNull();
+      expect(anchor!.style.left).toBe('110px');
+      expect(anchor!.style.top).toBe('70px');
     });
+
+    // Outside the container, so it cannot be resolving against the container's
+    // containing block.
+    expect(container.querySelector('span[style*="position: absolute"]')).toBe(
+      null,
+    );
   });
 
-  it('should clamp coordinates to container bounds', async () => {
+  it('should anchor at the pointer even outside the container bounds', async () => {
     const onAction = vi.fn();
 
     const { getByTestId } = renderWithRoot(
@@ -385,12 +404,15 @@ describe('useContextMenu', () => {
       });
     });
 
-    // Should clamp to container bounds
+    // Deliberately not clamped to the container: the coordinates are viewport
+    // coordinates, and clamping them to a box that is not the anchor's
+    // containing block is what used to misplace the menu.
     await waitFor(() => {
-      const invisibleAnchor = container.querySelector(
-        'span[style*="position: absolute"]',
-      );
-      expect(invisibleAnchor).toBeInTheDocument();
+      const anchor = findAnchor();
+
+      expect(anchor).not.toBeNull();
+      expect(anchor!.style.left).toBe('300px');
+      expect(anchor!.style.top).toBe('200px');
     });
   });
 
@@ -952,12 +974,9 @@ describe('useContextMenu', () => {
 
     expect(getByText('Edit')).toBeInTheDocument();
 
-    // Verify that invisible anchor is positioned (we can't easily verify exact center coordinates in tests)
-    const container = getByTestId('Container');
-    const invisibleAnchor = container.querySelector(
-      'span[style*="position: absolute"]',
-    );
-    expect(invisibleAnchor).toBeInTheDocument();
+    // Opened without an event, so there are no pointer coordinates to use and
+    // the anchor falls back to the target element's centre.
+    expect(findAnchor()).not.toBeNull();
 
     // Click on an item to test action
     const editItem = getByText('Edit');

@@ -226,6 +226,9 @@ export * from './components/content/Alert';
 // navigation
 export * from './components/navigation';
 
+// data
+export * from './components/data';
+
 // molecules
 export { FileTabs } from './components/organisms/FileTabs/FileTabs';
 export type { CubeFileTabProps } from './components/organisms/FileTabs/FileTabs';

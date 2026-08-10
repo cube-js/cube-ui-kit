@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react';
 import { VisuallyHidden } from 'react-aria';
+import { createPortal } from 'react-dom';
 
 import { useEvent } from '../../_internal';
 import { useI18n } from '../../i18n';
@@ -143,70 +144,34 @@ export function useContextMenu<
     }
   }
 
-  // Helper function to calculate position relative to targetRef, taking the
-  // element's scroll offset into account. Without the scroll offset the menu
-  // would be rendered at the wrong place inside scrollable containers.
+  /**
+   * Where to put the invisible anchor, in **viewport** coordinates.
+   *
+   * Viewport rather than container-relative on purpose. The anchor is rendered
+   * into a fixed-position host pinned to the viewport origin (see
+   * `renderedMenu`), so the two agree by construction. Computing coordinates
+   * against the target element while the anchor's containing block was
+   * whichever positioned ancestor happened to enclose `rendered` is what used
+   * to open the menu one ancestor-origin away from the pointer.
+   */
   const calculatePosition = (
     event?: NativeMouseEvent | NativePointerEvent | MouseEvent | PointerEvent,
   ) => {
-    const container = targetRef.current;
-
-    // If no event is provided, position at the center of the element
-    if (!event) {
-      if (!container) {
-        return { x: 0, y: 0 };
-      }
-
-      const containerRect = container.getBoundingClientRect();
-      const scrollLeft = container.scrollLeft;
-      const scrollTop = container.scrollTop;
-
-      const computed = window.getComputedStyle(container);
-      const borderLeft = parseFloat(computed.borderLeftWidth) || 0;
-      const borderTop = parseFloat(computed.borderTopWidth) || 0;
-
-      // Position at the center of the element's content area
-      const x = container.clientWidth / 2 + scrollLeft;
-      const y = container.clientHeight / 2 + scrollTop;
-
-      // Clamp to the full scroll size
-      const clampedX = Math.max(0, Math.min(x, container.scrollWidth));
-      const clampedY = Math.max(0, Math.min(y, container.scrollHeight));
-
-      return { x: clampedX, y: clampedY };
-    }
-
-    // If the target reference is missing, fall back to viewport coordinates.
-    if (!container) {
+    if (event) {
       const { clientX = 0, clientY = 0 } = event;
 
       return { x: clientX, y: clientY };
     }
 
-    const containerRect = container.getBoundingClientRect();
+    // No event — a keyboard opening, which has no coordinates. Anchor on the
+    // target element's centre instead.
+    const container = targetRef.current;
 
-    // Get coordinates from the event (viewport-relative)
-    const { clientX, clientY } = event;
+    if (!container) return { x: 0, y: 0 };
 
-    // Take the element's scroll offset into account so that the coordinates are
-    // relative to the **content** box, not the visible viewport of the
-    // element.
-    const scrollLeft = container.scrollLeft;
-    const scrollTop = container.scrollTop;
+    const rect = container.getBoundingClientRect();
 
-    const computed = window.getComputedStyle(container);
-    const borderLeft = parseFloat(computed.borderLeftWidth) || 0;
-    const borderTop = parseFloat(computed.borderTopWidth) || 0;
-
-    const x = clientX - containerRect.left - borderLeft + scrollLeft;
-    const y = clientY - containerRect.top - borderTop + scrollTop;
-
-    // Clamp to the full scroll size so that the invisible anchor always stays
-    // inside the element regardless of the scroll position.
-    const clampedX = Math.max(0, Math.min(x, container.scrollWidth));
-    const clampedY = Math.max(0, Math.min(y, container.scrollHeight));
-
-    return { x: clampedX, y: clampedY };
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   };
 
   // 'open' accepts props, trigger props, and optional event for positioning, then opens the menu
@@ -301,20 +266,46 @@ export function useContextMenu<
 
     return (
       <>
-        {/* Invisible anchor element positioned at click coordinates */}
-        <span
-          ref={invisibleAnchorRef}
-          style={{
-            position: 'absolute',
-            left: `${anchorPosition.x}px`,
-            top: `${anchorPosition.y}px`,
-            width: '0px',
-            height: '0px',
-            lineHeight: '0',
-            pointerEvents: 'none',
-            visibility: 'hidden',
-          }}
-        />
+        {/*
+          Invisible anchor at the click coordinates.
+
+          Two things make those coordinates mean what they say:
+
+          1. A `fixed` host, so the containing block's origin is the viewport
+             rather than whichever positioned ancestor encloses `rendered` — the
+             table root, the tree row — which is what used to open the menu one
+             ancestor-origin away from the pointer.
+          2. A portal to `body`, because `position: fixed` is captured by any
+             ancestor carrying a transform, filter or `will-change`. A
+             virtualized row is usually translated, so the `fixed` host alone
+             would still be anchored to the row.
+        */}
+        {createPortal(
+          <div
+            style={{
+              position: 'fixed',
+              left: 0,
+              top: 0,
+              width: 0,
+              height: 0,
+            }}
+          >
+            <span
+              ref={invisibleAnchorRef}
+              style={{
+                position: 'absolute',
+                left: `${anchorPosition.x}px`,
+                top: `${anchorPosition.y}px`,
+                width: '0px',
+                height: '0px',
+                lineHeight: '0',
+                pointerEvents: 'none',
+                visibility: 'hidden',
+              }}
+            />
+          </div>,
+          document.body,
+        )}
         <MenuTrigger
           offset={0}
           crossOffset={0}

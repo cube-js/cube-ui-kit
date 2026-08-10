@@ -124,5 +124,39 @@
   "contextMenu": {
     "openContextMenu": "Apri il menu contestuale",
     "contextMenu": "context-menu"
+  },
+  "pagination": {
+    "ariaLabel": "Impaginazione",
+    "firstPage": "Prima pagina",
+    "previousPage": "Pagina precedente",
+    "nextPage": "Pagina successiva",
+    "lastPage": "Ultima pagina",
+    "selectPage": "Seleziona pagina",
+    "page": "Pagina {{page}}",
+    "pageOf": "{{page}} di {{totalPages}}",
+    "itemsPerPage": "Elementi per pagina",
+    "itemsPerPageOption": "{{size}} / pagina",
+    "summary": "{{from}}–{{to}} di {{total}}"
+  },
+  "itemTable": {
+    "noItems": "Nessun elemento",
+    "noResults": "Nessun risultato trovato",
+    "search": "Cerca",
+    "searchPlaceholder": "Cerca...",
+    "refresh": "Aggiorna",
+    "selectAll": "Seleziona tutto",
+    "deselectAll": "Deseleziona tutto",
+    "selectRow": "Seleziona riga",
+    "selectedCount_one": "{{count}} selezionato",
+    "selectedCount_other": "{{count}} selezionati",
+    "bulkActions": "Azioni multiple",
+    "clearSelection": "Cancella selezione",
+    "rowActions": "Azioni riga",
+    "resizeColumn": "Ridimensiona colonna",
+    "dragCount_one": "{{count}} elemento",
+    "dragCount_other": "{{count}} elementi",
+    "copiedToClipboard": "Copiato negli appunti",
+    "copiedCells_one": "{{count}} cella copiata",
+    "copiedCells_other": "{{count}} celle copiate"
   }
 }

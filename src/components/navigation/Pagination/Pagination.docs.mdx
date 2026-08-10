@@ -1,0 +1,266 @@
+import { Canvas, Meta, Story } from '@storybook/addon-docs/blocks';
+
+import { Pagination } from './Pagination';
+import * as PaginationStories from './Pagination.stories';
+
+<Meta of={PaginationStories} />
+
+# Pagination
+
+Pagination is the control for moving through a paged collection. It renders a
+bounded run of page buttons, optional first/last jumps, an optional page-size
+selector, and an optional item-range summary.
+
+It is a pure control: it owns no data. Client-side slicing lives in the
+companion `usePagination` hook, and `ItemTable` composes the two.
+
+## When to Use
+
+- Paging through a list, table, or grid where the user needs to jump around
+  rather than scroll.
+- Cursor pagination with an unknown total — supply `hasNextPage` and omit
+  `total`/`totalPages`, and the control degrades to prev/next.
+- Anywhere you need a page-size selector wired to the same state.
+
+Prefer infinite scroll when the collection is a feed the user skims, and
+pagination when they need stable, addressable positions.
+
+## Component
+
+### Properties
+
+- **`page`** `number` — Controlled current page, 1-based. Pair with
+  `onPageChange`.
+- **`defaultPage`** `number` (default: `1`) — Initial page for uncontrolled
+  usage.
+- **`onPageChange`** `(page: number) => void` — Never fires with a page outside
+  `1…totalPages` when the total is known.
+- **`total`** `number` — Total items across all pages. Preferred over
+  `totalPages`; it also powers the range summary and the `select` type's range
+  labels.
+- **`totalPages`** `number` — Total pages. Only needed when the item count is
+  genuinely unavailable. Wins over the value derived from `total` + `pageSize`.
+- **`pageSize`** `number` — Controlled page size.
+- **`defaultPageSize`** `number` (default: `50`) — Initial page size for
+  uncontrolled usage.
+- **`onPageSizeChange`** `(pageSize: number) => void` — Changing the size also
+  resets to page 1, because the old page index no longer refers to the same
+  items.
+- **`pageSizeOptions`** `number[]` — Supplying this **and** `onPageSizeChange`
+  renders the size selector.
+- **`type`** `'numbers' | 'select' | 'compact'` (default: `'numbers'`) — How the
+  page control is rendered. `numbers` is the default because it is the only mode
+  whose rendered element count is independent of the page count; `select`
+  materializes one entry per page, so above a safety cap the component falls
+  back to `compact` on its own.
+- **`siblingCount`** `number` (default: `1`) — Page buttons either side of the
+  current page.
+- **`boundaryCount`** `number` (default: `1`) — Page buttons pinned at each end.
+  Together with `siblingCount` this bounds the rendered count at
+  `boundaryCount * 2 + siblingCount * 2 + 3`.
+- **`size`** `'small' | 'medium'` (default: `'small'`) — Control size.
+- **`isDisabled`** `boolean` — Disable every control.
+- **`hasNextPage`** `boolean` — Keeps "next" enabled when the total is unknown.
+  Ignored once `total` or `totalPages` is supplied — a known total is always
+  authoritative.
+- **`isCompact`** `boolean` (default: `false`) — Hide the first/last jump
+  buttons.
+- **`summary`** `boolean | ((info: CubeTablePageInfo) => ReactNode)` (default:
+  `false`) — `true` renders the localized `1–50 of 1,204`, with numbers
+  formatted for the active locale. Pass a function for full control.
+- **`labelFormatter`** `(info: CubeTablePageInfo) => ReactNode` — Labels the
+  entries of `type="select"`. Receives the page info with `page` set to the
+  entry being labelled.
+- **`ariaLabel`** `string` — Labels the `<nav>` landmark. Defaults to the
+  localized "Pagination".
+
+#### `CubeTablePageInfo`
+
+Handed to `summary` and `labelFormatter`:
+
+```ts
+interface CubeTablePageInfo {
+  page: number;       // 1-based
+  pageSize: number;
+  totalPages: number;
+  total: number;      // 0 when unknown
+  from: number;       // 1-based index of the first item on this page
+  to: number;         // 1-based index of the last item on this page
+}
+```
+
+### Base Properties
+
+Supports [Base Properties](/docs/tasty-base-properties--docs).
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element.
+
+**Sub-elements:**
+
+- `Summary` — the range summary and the `compact` page label
+- `Controls` — the row of nav and page buttons
+- `Gap` — the `…` between two runs of page numbers
+
+#### pageSizeSelectStyles
+
+Customizes the page-size `Select`.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`
+
+### Modifiers
+
+| Modifier | Type | Description |
+| -------- | ---- | ----------- |
+| `size` | `'small' \| 'medium'` | Control size |
+
+## Examples
+
+### Basic Usage
+
+```jsx
+const [page, setPage] = useState(1);
+
+<Pagination page={page} pageSize={50} total={1204} onPageChange={setPage} />;
+```
+
+<Canvas of={PaginationStories.Default} />
+
+### With a Summary
+
+```jsx
+<Pagination page={3} pageSize={50} total={1204} summary onPageChange={setPage} />
+```
+
+<Canvas of={PaginationStories.WithSummary} />
+
+### Many Pages
+
+A million rows at 50 per page is 20 000 pages — and still ~7 buttons.
+
+```jsx
+<Pagination page={9421} pageSize={50} total={1000000} summary onPageChange={setPage} />
+```
+
+<Canvas of={PaginationStories.ManyPages} />
+
+### Page Size Selector
+
+```jsx
+const [page, setPage] = useState(1);
+const [pageSize, setPageSize] = useState(50);
+
+<Pagination
+  page={page}
+  pageSize={pageSize}
+  total={1204}
+  pageSizeOptions={[10, 20, 50, 100, 500]}
+  summary
+  onPageChange={setPage}
+  onPageSizeChange={setPageSize}
+/>;
+```
+
+<Canvas of={PaginationStories.WithPageSizeSelector} />
+
+### Unknown Total (Cursor Pagination)
+
+```jsx
+<Pagination page={page} hasNextPage={hasNextPage} onPageChange={setPage} />
+```
+
+<Canvas of={PaginationStories.UnknownTotal} />
+
+### Compact
+
+```jsx
+<Pagination type="compact" page={3} pageSize={50} total={1204} summary />
+```
+
+<Canvas of={PaginationStories.Compact} />
+
+### Client-side Slicing with `usePagination`
+
+```jsx
+const { pageItems, page, pageSize, total, setPage, setPageSize } =
+  usePagination(items, { defaultPageSize: 10 });
+
+return (
+  <>
+    {pageItems.map((item) => (
+      <Text key={item}>{item}</Text>
+    ))}
+    <Pagination
+      page={page}
+      pageSize={pageSize}
+      total={total}
+      pageSizeOptions={[5, 10, 25]}
+      summary
+      onPageChange={setPage}
+      onPageSizeChange={setPageSize}
+    />
+  </>
+);
+```
+
+<Canvas of={PaginationStories.WithUsePagination} />
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` — moves through the controls in visual order.
+- `Enter` / `Space` — activates the focused button.
+
+Every control is a real `<button>`, so there is nothing bespoke to learn.
+
+### Screen Reader Support
+
+- The root is a `<nav>` landmark labelled "Pagination" (override with
+  `ariaLabel`).
+- The current page button carries `aria-current="page"`.
+- Every button has an explicit `aria-label` — "Page 3", "Next page", and so on
+  — so an icon-only button is never announced as unlabelled.
+- The `…` gap is `aria-hidden`; it conveys nothing a screen reader user needs.
+
+### ARIA Properties
+
+| Property | Applied to |
+| -------- | ---------- |
+| `aria-label` | The `<nav>` and every button |
+| `aria-current="page"` | The current page button |
+| `aria-hidden="true"` | The `…` gap |
+
+## Best Practices
+
+- Do: pass `total` rather than `totalPages` when you know the item count — the
+  summary and range labels both need it.
+- Do: use `type="numbers"` (the default) for anything that can grow. It is the
+  only mode whose cost does not scale with the page count.
+- Do: reset to page 1 whenever the underlying query changes (a new search term,
+  a new filter). A stale page index against a smaller result set shows an empty
+  page.
+- Don't: render `type="select"` over a large page count. It builds one
+  collection item per page.
+- Don't: pass both `hasNextPage` and a known total and expect the former to win
+  — it doesn't.
+
+## Suggested Improvements
+
+- A "jump to page" input for very large page counts.
+- Optional URL synchronization, so a page is linkable.
+
+## Related Components
+
+- [ItemTable](/docs/data-itemtable--docs) — composes `Pagination` in its footer
+- [Select](/docs/forms-select--docs) — used for the page-size selector
+- [Button](/docs/actions-button--docs) — used for every nav and page control

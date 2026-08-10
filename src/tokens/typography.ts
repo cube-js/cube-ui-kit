@@ -23,7 +23,7 @@ export interface TypographyPreset {
  * - `t1m`-`t4m`: Text styles medium weight
  * - `m1`-`m3`: Markdown/prose styles (larger line-height)
  * - `p1`-`p4`: Paragraph styles
- * - `c1`-`c2`: Caption/uppercase styles
+ * - `c1`-`c3`: Caption/uppercase styles
  * - `s2`-`s4`: Snippet / monospace styles (parallel to `t2`-`t4`)
  * - `tag`: Tag/badge typography
  * - `default`: Base text style
@@ -205,7 +205,7 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     iconSize: '16px',
   },
 
-  // Caption/uppercase styles (c1-c2)
+  // Caption/uppercase styles (c1-c3)
   c1: {
     fontSize: '14px',
     lineHeight: '20px',
@@ -223,6 +223,15 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     boldFontWeight: '700',
     textTransform: 'uppercase',
     iconSize: '16px',
+  },
+  c3: {
+    fontSize: '11px',
+    lineHeight: '16px',
+    letterSpacing: '0.02em',
+    fontWeight: '600',
+    boldFontWeight: '700',
+    textTransform: 'uppercase',
+    iconSize: '14px',
   },
 
   // Tag typography

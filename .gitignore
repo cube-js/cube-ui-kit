@@ -23,3 +23,7 @@ docs/*
 !docs/glaze
 scratch
 
+
+# Browser-test failure artifacts
+.vitest-attachments
+__screenshots__

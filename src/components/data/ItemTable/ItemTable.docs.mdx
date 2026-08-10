@@ -1,0 +1,1023 @@
+import { Canvas, Meta, Story } from '@storybook/addon-docs/blocks';
+
+import { ItemTable } from './ItemTable';
+import * as ItemTableStories from './ItemTable.stories';
+
+<Meta of={ItemTableStories} />
+
+# ItemTable
+
+ItemTable renders a list of records as a table: one row per entity, columns
+declared as data rather than JSX. It is the general-purpose table for list and
+admin pages.
+
+It renders a real `<table>` with `role="grid"`, and is styled entirely through
+tasty sub-elements — `Row`, `Cell`, `HeaderCell` and friends are reachable from
+the single `styles` prop.
+
+> `ItemTable` and `DataTable` are siblings over one internal engine. `ItemTable`
+> is for records; `DataTable` is for analytics results (pivoted columns, pinned
+> totals, cell-range selection).
+
+## When to Use
+
+- Listing entities the user acts on: deployments, users, API keys, roles.
+- Any table where a row is a *thing* — it can be opened, selected, or given a
+  menu.
+- Tables that need a column header richer than a label: icon, description,
+  tooltip, actions.
+
+Use `DataTable` instead when a *cell* is the unit of interest — query results,
+pivots, totals. Use `ListBox` when there is only one column.
+
+## Component
+
+### Properties
+
+- **`data`** `readonly T[]` — The rows to render.
+- **`columns`** `CubeItemTableColumn<T>[]` — Column definitions. See below.
+- **`rowKey`** `string` (default: `'id'`) — Property used as the row key.
+- **`getRowKey`** `(row: T, index: number) => Key` — Wins over `rowKey`.
+- **`isLoading`** `boolean` (default: `false`) — Marks a fetch in flight. What
+  the user sees depends on `loadingIndicator`.
+- **`loadingIndicator`** `'overlay' | 'skeleton' | 'none'` (default: `'overlay'`)
+  — What to show while `isLoading` is true over rows the table already has.
+  `overlay` keeps them, dimmed, behind a spinner; `skeleton` replaces them with
+  placeholders; `none` paints nothing beyond `aria-busy`. With no rows yet,
+  `overlay` and `skeleton` both fall back to skeleton rows.
+- **`skeletonRowCount`** `number` (default: `6`) — Skeleton rows to show while
+  loading.
+- **`emptyLabel`** `ReactNode` — Shown when there is nothing at all. Defaults to
+  a localized "No items".
+- **`noResultsLabel`** `ReactNode` — Shown instead of `emptyLabel` when
+  `isFiltered` is set. Defaults to a localized "No results found".
+- **`isFiltered`** `boolean` — Marks the emptiness as the result of a filter, so
+  `noResultsLabel` is shown instead of `emptyLabel`. The built-in search sets it
+  on its own; pass it explicitly when you filter `data` yourself.
+- **`error`** `ReactNode` — Takes precedence over both labels.
+- **`shape`** `'plain' | 'card'` (default: `'plain'`) — `card` adds a border and
+  a card radius.
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default:
+  `'medium'`) — Drives both heights. At `medium` a row is 40px and the header
+  32px, each plus its 1px separator.
+- **`rowHeight`** `number` — Row height in px, overriding the one `size`
+  implies. Excludes the 1px separator.
+- **`headerHeight`** `number` — Header height in px, excluding its 1px border.
+- **`headerPreset`** `string` (default: `'c3'`) — Typography preset for the
+  column header. `c3` is the small uppercase caption the Cloud list tables use;
+  pass `'t3m'` for body-sized headers.
+- **`isStriped`** `boolean` (default: `false`) — Alternating row background.
+- **`isHeaderHidden`** `boolean` (default: `false`) — Hides the column header
+  row and drops it from `aria-rowcount`.
+- **`isHeaderSticky`** `boolean` (default: `true`) — Pins the column header
+  while the body scrolls.
+- **`sortMode`** `'client' | 'server' | 'off'` (default: `'client'` when any
+  column is sortable, else `'off'`) — `client` reorders `data` itself; `server`
+  only reflects `sort` and fires `onSortChange`; `off` removes the affordance.
+- **`sort`** `CubeTableSort | null` — Controlled sort, `{ columnKey, direction }`
+  with `direction` being `'asc' | 'desc'`.
+- **`defaultSort`** `CubeTableSort | null` — Initial sort for uncontrolled usage.
+- **`onSortChange`** `(sort: CubeTableSort | null) => void` — Fires on every step
+  of the cycle, including the return to unsorted.
+- **`toolbar`** `ReactNode` — Replaces the entire toolbar row. Compose it from
+  `ItemTable.Search` / `ItemTable.Toolbar`, which read the table's state from
+  context.
+- **`isSearchable`** `boolean` (default: `false`) — Render the built-in search
+  input in the toolbar.
+- **`searchMode`** `'client' | 'server'` (default: `'client'`) — `client`
+  filters `data` with the built-in matcher; `server` only reports the term.
+- **`searchPlaceholder`** `string` — Placeholder for the search input.
+- **`searchValue`** `string` — Controlled term. Works with
+  `isSearchable={false}` too, so a page can render its own input anywhere and
+  still drive the table's matcher.
+- **`defaultSearchValue`** `string` — Initial term for uncontrolled usage.
+- **`onSearchChange`** `(value: string) => void` — Debounced.
+- **`searchDelay`** `number` (default: `500`) — Debounces the filter **and** the
+  callback, in both modes. The input itself stays immediate.
+- **`searchFilter`** `(row: T, query: string) => boolean` — Replaces the default
+  client matcher.
+- **`filters`** `ReactNode` — Left group, after the search input.
+- **`actions`** `ReactNode` — Right group. Arbitrary JSX.
+- **`onRefresh`** `() => void` — Renders a refresh button at the end of the
+  toolbar.
+- **`isVirtualized`** `boolean | 'auto'` (default: `'auto'`) — `'auto'` turns
+  virtualization on once the row count passes `virtualizeThreshold`. It needs a
+  bounded height to have a viewport to work against.
+- **`virtualizeThreshold`** `number` (default: `50`) — Row count above which
+  `'auto'` virtualizes.
+- **`overscan`** `number` (default: `12`) — Rows mounted beyond each viewport
+  edge while virtualized. Higher than a list's, because a fast flick outruns
+  React's re-render and the gap shows as blank rows.
+- **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'none'`) —
+  `multiple` adds the checkbox column and a select-all header checkbox;
+  `single` adds the column without the header checkbox.
+- **`selectedKeys`** `Key[] | 'all'` — Controlled selection. `'all'` is a
+  sentinel meaning "everything, including rows the client has not loaded".
+- **`defaultSelectedKeys`** `Key[] | 'all'` — Initial selection.
+- **`onSelectionChange`** `(keys: Key[] | 'all', rows: T[]) => void` — `rows`
+  holds only the rows the client has loaded.
+- **`selectAllMode`** `'page' | 'filtered' | 'all'` (default: `'page'`) — What
+  the header checkbox acts on.
+- **`isRowSelectable`** `(row: T) => boolean` — The row stays focusable and
+  clickable; only its checkbox goes inert.
+- **`selectionTooltip`** `string | ((row: T) => string | undefined)` — Explains
+  an inert checkbox.
+- **`disabledKeys`** `Key[]` — Rows that cannot be interacted with at all.
+- **`rowLink`** `(row: T, index: number) => NavigateArg | undefined` — Turns the
+  row-header cell into a stretched link covering the whole row. Return
+  `undefined` for a row that should not navigate.
+- **`onRowAction`** `(row: T, key: Key) => void` — Non-navigational activation:
+  Enter, or a click that did not land on a control inside a cell.
+- **`rowMenu`** `ReactNode | ((row, ctx) => ReactNode | null)` — `Menu.Item`
+  children. Inert until `rowContextMenu` exposes it.
+- **`rowContextMenu`** `boolean | 'context-only'` (default: `false`) — `true`
+  gives a `⋮` trigger column **and** right-click / Shift+F10;
+  `'context-only'` gives the keyboard and pointer paths without the column.
+- **`onRowMenuAction`** `(action: string, row: T, key: Key) => void` — The
+  action key as written on `Menu.Item`.
+- **`rowMenuTriggerProps`** `Partial<CubeItemActionProps>` — Forwarded to every
+  `⋮` trigger.
+- **`bulkActions`** `CubeTableBulkAction<T>[]` — Actions offered while rows are
+  selected. Supplying any implies `selectionMode="multiple"`.
+- **`bulkBarPlacement`** `'floating' | 'toolbar'` (default: `'floating'`) —
+  `floating` centres the bar over the body without changing the table's height;
+  `toolbar` replaces the `actions` group while a selection exists.
+- **`bulkBarStyles`** `Styles` — Styles for the bar.
+- **`paginationMode`** `'client' | 'server' | 'off'` (default: `'client'`) —
+  `client` slices the searched and sorted rows; `server` never slices and only
+  reflects `page` / `total`; `off` removes the control.
+- **`pageSize`** `number` — Controlled page size.
+- **`defaultPageSize`** `number` (default: `50`) — Initial page size.
+- **`onPageSizeChange`** `(pageSize: number) => void` — Fires with the new size.
+  Changing the size returns to page 1.
+- **`pageSizeOptions`** `number[]` (default: `[10, 20, 50, 100, 500]`) — Choices
+  in the page-size selector.
+- **`page`** `number` — Controlled 1-based page.
+- **`defaultPage`** `number` (default: `1`) — Initial page.
+- **`onPageChange`** `(page: number) => void` — Fires with the clamped page.
+- **`onLoadMore`** `() => void` — `paginationMode="infinite"` only. Fires once
+  the end of the list comes into view.
+- **`hasMore`** `boolean` — Whether there is anything left to fetch.
+- **`isLoadingMore`** `boolean` — Suppresses further calls while a batch is in
+  flight and shows a loading row.
+- **`loadMoreMargin`** `number` (default: `200`) — How far before the end to
+  prefetch, in px.
+- **`autoHidePagination`** `boolean` (default: `true`) — Hides the pagination
+  control when it cannot do anything: a single page whose total even the
+  smallest `pageSizeOptions` entry would not split. The footer still renders if
+  any slot has content.
+- **`total`** `number` — Server mode: total row count behind the query.
+- **`totalPages`** `number` — Server mode alternative to `total` when the count
+  is unknown.
+- **`hasNextPage`** `boolean` — Server mode: keeps "next" enabled when neither
+  `total` nor `totalPages` is known.
+- **`summary`** `boolean | ((info: CubeTablePageInfo) => ReactNode)` (default:
+  `true`) — The localized item range in the footer, e.g. "1–50 of 1,204".
+- **`footer`** `ReactNode` — Replaces the entire footer row.
+- **`footerStart`** `ReactNode` — Start footer slot. Renders even with
+  `paginationMode="off"` — this is where a "Load all results" button belongs.
+- **`footerCenter`** `ReactNode` — Center footer slot.
+- **`footerEnd`** `ReactNode` — End footer slot, before the pagination control.
+- **`footerStyles`** `Styles` — Styles for the footer row.
+- **`isReorderable`** `boolean` (default: `false`) — Lets rows be dragged into a
+  new order.
+- **`onReorder`** `(keys: Key[], rows: T[]) => void` — The **whole** new order,
+  not just the moved row, so it can be persisted directly.
+- **`dropOnRow`** `{ isTarget, isAllowed?, onDrop }` — Dropping rows *onto* a
+  row, e.g. a workbook into a folder. Enables dragging on its own, and composes
+  with `isReorderable`.
+- **`getItemDragInfo`** `(row: T) => { label, icon? }` — What the cursor drags.
+  One row shows its icon and label; several show a count. Without it the browser
+  drags a screenshot of the row.
+- **`isResizable`** `boolean` (default: `false`) — Adds a resize handle to every
+  column; a column overrides with its own `isResizable`.
+- **`columnWidths`** `Record<string, number>` — Controlled widths by column key.
+- **`defaultColumnWidths`** `Record<string, number>` — Initial widths.
+- **`onColumnResize`** `(columnKey, width, all) => void` — Fires once the
+  gesture ends, not on every pixel.
+- **`storageKey`** `string` — Persists the table's own state under
+  `cube-ui-kit:table:${storageKey}`. Controlled state is never stored — a
+  controlled `pageSize` or `sort` belongs to the page, and restoring it would
+  give the table a second, competing source of truth.
+- **`persist`** `('pageSize' | 'columnWidths' | 'sort')[]` (default:
+  `['pageSize', 'columnWidths']`) — What `storageKey` covers. Sort is opt-in,
+  because a stored sort silently changes what the first screen of a table means.
+- **`getRowProps`** `(ctx) => { isDimmed?, mods?, styles?, height?, qa?, tooltip? }`
+  — Per-row visuals.
+- **`ariaLabel`** `string` — Labels the grid.
+
+#### `CubeItemTableColumn<T>`
+
+```ts
+interface CubeItemTableColumn<T> {
+  key: string;              // column id; also the data path — dots walk objects
+  title?: ReactNode;        // header label
+  header?: CubeTableColumnHeader;
+  isRowHeader?: boolean;    // renders <th scope="row"> and names the row
+
+  width?: number;           // fixed px; mutually exclusive with `flex`
+  flex?: number;            // weight for the leftover space (default 1)
+  minWidth?: number;        // default 150
+  maxWidth?: number;
+  pin?: 'start' | 'end';    // sticky to an edge during horizontal scroll
+  isHidden?: boolean;
+
+  getValue?: (row, i) => unknown;          // when `key` is not the data path
+  format?: (value, row, i) => string;      // raw value → display text
+  compare?: (a, b, rowA, rowB) => number;  // client-side comparator
+
+  render?: (value, row, i, ctx) => ReactNode;
+  cellStyles?: Styles | ((ctx) => Styles | undefined);
+  cellProps?: (ctx) => Record<string, any> | undefined;
+
+  align?: 'start' | 'center' | 'end';
+  isSortable?: boolean;
+  isSearchable?: boolean;   // include in the built-in search (default true)
+  isCopyable?: boolean;     // include in TSV copy (default true)
+  autoHeight?: boolean;     // wrap text and let the row grow
+  meta?: Record<string, unknown>;
+}
+```
+
+**The value pipeline is the escape hatch.** `getValue`, `format` and `compare`
+exist so a column whose displayed text differs from its raw value stays
+sortable, searchable and copyable. `render` is for appearance only — sorting and
+searching never see its output, which is why an object-valued column with no
+`format` renders empty rather than `"[object Object]"`.
+
+#### `CubeTableColumnHeader`
+
+Every slot maps 1:1 onto the `Item` rendered inside the header cell, so a header
+gets an icon, a description, a tooltip and actions for free:
+
+```jsx
+{
+  key: 'owner',
+  title: 'Owner',
+  header: {
+    icon: <UserIcon />,
+    description: 'Who created it',
+    descriptionPlacement: 'block',
+    tooltip: true,          // auto tooltip when the label truncates
+    actions: <ItemAction icon={<MoreIcon />} />,
+  },
+}
+```
+
+`header.render(ctx)` takes over the cell's content entirely.
+
+On a sortable column the sort arrow occupies the `rightIcon` slot — it is an
+icon, and that slot is sized and aligned for one. The slot stays reserved while
+unsorted, so toggling a sort never shifts the label. If you set
+`header.rightIcon` yourself it keeps the slot and the arrow falls back to
+`suffix`.
+
+### Base Properties
+
+Supports [Base Properties](/docs/tasty-base-properties--docs).
+
+### Styling Properties
+
+#### styles
+
+Customizes the root frame. Every internal part of the table is a **sub-element**
+reachable from this one prop — that is the whole styling contract.
+
+**Sub-elements:**
+
+- `Scroller` — the single scroll container (both axes)
+- `Table` — the `<table>`
+- `Head`, `HeadRow`, `HeaderCell` — the column header
+- `Body`, `Row`, `Cell` — the data rows
+- `SortIndicator` — the sort arrow, inside the header `Item`'s suffix
+- `Foot`, `FootRow`, `FootCell` — pinned totals
+- `StateContent` — the empty / no-results / error content
+
+```jsx
+const Compact = tasty(ItemTable, {
+  styles: {
+    Cell: { padding: '1x' },
+    Row: { height: 'min 6x' },
+  },
+});
+```
+
+Rows publish their paint as inherited custom properties — `#row-base`,
+`#row-overlay`, `#row-text` and `$dim` — which cells consume. That is what lets
+a pinned (and therefore opaque) cell match its row's state without duplicating
+the state matrix.
+
+Geometry runs through tokens too: `$row-height`, `$header-height`,
+`$cell-padding-x` (16px) and `$cell-padding-y`. Height lives on the **cells**,
+not the `<tr>` — table layout ignores `min-height` on a row and sizes it from
+its cells instead.
+
+#### toolbarStyles
+
+The toolbar row. Sub-elements: `Start` (search + filters) and `End` (actions +
+refresh).
+
+#### searchStyles
+
+The built-in search input.
+
+#### headerStyles
+
+The **column header row**. (The top chrome, when it arrives, is `toolbarStyles`
+— a table has two things called "header" and this one is the columns.)
+
+#### headerCellStyles
+
+Every column header cell. Wins over `headerPreset`, so this is where you go for
+anything the preset does not cover.
+
+#### bodyStyles
+
+The `<tbody>`.
+
+#### rowStyles
+
+Every body row.
+
+#### cellStyles
+
+Every body cell.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Base:** `display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `place`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `padding`, `paddingInline`, `paddingBlock`, `border`, `radius`, `shadow`, `overflow`, `outline`, `scrollbar`, `textAlign`
+- **Color:** `color`, `fill`, `fade`, `image`
+- **Flow:** `flow`, `gap`, `columnGap`, `rowGap`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+`height` is the important one: there is no page-scroll mode, so
+bounding the table is what turns the body into a scroller and pins the header.
+An unbounded table simply sizes to its content.
+
+### Modifiers
+
+| Modifier | Type | Description |
+| -------- | ---- | ----------- |
+| `size` | `SizeName` | Row height scale |
+| `shape` | `'plain' \| 'card'` | Frame treatment |
+| `sticky-header` | `boolean` | Header is pinned |
+
+Row-level modifiers, set on each `<tr>`: `odd`, `selected`, `focused`, `dimmed`,
+`disabled`, `drop-target`, `placeholder`. Cell-level: `pin`, `pin-edge`,
+`align`, `wrap`, `state`.
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<ItemTable
+  data={deployments}
+  columns={[
+    { key: 'name', title: 'Name', isRowHeader: true, flex: 2 },
+    { key: 'status', title: 'Status', width: 140 },
+    { key: 'owner.name', title: 'Owner' },
+    { key: 'queries', title: 'Queries', width: 140, align: 'end',
+      format: (v) => v.toLocaleString() },
+  ]}
+  ariaLabel="Deployments"
+/>
+```
+
+<Canvas of={ItemTableStories.Default} />
+
+### Custom Cells
+
+```jsx
+{
+  key: 'status',
+  title: 'Status',
+  width: 140,
+  render: (value) => <Tag theme={STATUS_THEME[value]}>{value}</Tag>,
+}
+```
+
+### Appearance
+
+`shape="card"` frames the table, `isStriped` bands the rows, `size` drives both
+row and header height, and `isHeaderHidden` drops the header row.
+
+<Canvas of={ItemTableStories.Appearance} />
+
+### Empty, No-results and Error States
+
+`isFiltered` is what separates "no matches" from "nothing exists"; the built-in
+search sets it for you.
+
+<Canvas of={ItemTableStories.States} />
+
+### Sorting
+
+Mark columns `isSortable` and clicking a header cycles
+`ascending → descending → unsorted`. The third state matters whenever the source
+order is meaningful, which is why it is the default cycle; set
+`disallowSortRemoval` on a column to reduce it to `asc ↔ desc`.
+
+```jsx
+<ItemTable
+  data={rows}
+  columns={[
+    { key: 'name', title: 'Name', isSortable: true },
+    { key: 'queries', title: 'Queries', isSortable: true,
+      format: (v) => v.toLocaleString() },
+  ]}
+  defaultSort={{ columnKey: 'queries', direction: 'desc' }}
+/>
+```
+
+Client-side sorting compares raw `getValue` results — numerically for numbers,
+chronologically for dates — and falls back to a locale-aware collator over the
+column's display text, so a formatted column sorts the way it reads. `compare`
+overrides all of it. Nullish values sort first, then flip with the direction.
+
+`sortMode="server"` reflects the state and reports changes without ever
+reordering the rows. The second table below is server-sorted over a simulated
+round trip:
+
+```jsx
+<ItemTable
+  sortMode="server"
+  sort={sort}
+  onSortChange={setSort}
+  isLoading={isFetching}
+  data={rowsFromQuery}
+  columns={columns}
+/>
+```
+
+<Canvas of={ItemTableStories.Sorting} />
+
+### Search
+
+`isSearchable` puts the input in the toolbar and the table filters itself:
+
+```jsx
+<ItemTable
+  data={deployments}
+  columns={columns}
+  isSearchable
+  searchPlaceholder="Search deployments..."
+  noResultsLabel="No deployments match that search"
+/>
+```
+
+<Canvas of={ItemTableStories.Search} />
+
+The default matcher tests each column's **display text** — `format?.(value) ??
+String(getValue(row))` — not the raw value. So a formatted column matches what
+the user can actually see, a dotted `key` like `owner.name` is searchable, and a
+column holding an object with no `format` is skipped rather than stringified
+into `"[object Object]"` (which would make the query "object" match every row).
+Opt a column out with `isSearchable: false`, or replace the matcher entirely
+with `searchFilter`.
+
+Searching also selects `noResultsLabel` over `emptyLabel` on its own, and resets
+to page 1, so a client-search table distinguishes "no matches" from "nothing
+exists" without the page owning the term.
+
+### Server-side Search
+
+`searchMode="server"` never filters — it reports the debounced term and the
+query does the work.
+
+<Canvas of={ItemTableStories.ServerSearch} />
+
+### An External Search Box, and a Custom Toolbar
+
+The input does not have to live in the table. `isSearchable={false}` hides the
+built-in one while a controlled `searchValue` still drives the table's matcher —
+a first-class path, not a workaround. The second table rebuilds the toolbar
+entirely; `ItemTable.Search` reads the table's state from context, so the term
+still has one owner.
+
+```jsx
+const [term, setTerm] = useState('');
+
+<SearchInput value={term} onChange={setTerm} />
+<ItemTable data={rows} columns={columns} isSearchable={false} searchValue={term} />
+```
+
+<Canvas of={ItemTableStories.CustomSearchPlacement} />
+
+### Pagination
+
+Pagination lives in the footer and is on by default (`paginationMode="client"`,
+50 rows a page). The page-size selector appears whenever `pageSizeOptions` is
+set, and `summary` prints the localized item range.
+
+```jsx
+<ItemTable data={rows} columns={columns} defaultPageSize={20} pageSizeOptions={[20, 50, 100]} />
+```
+
+<Canvas of={ItemTableStories.Pagination_} />
+
+Client pagination slices the **searched and sorted** rows, so a page always
+reflects what the user is looking at, and the summary counts filtered rows
+rather than the raw array. Changing the page size returns to page 1, because the
+old page index points at different rows under a new size.
+
+Pagination that cannot do anything hides itself. One page of five rows would
+otherwise render "1–5 of 5", a page-size selector whose every option shows the
+same five rows, and a solitary "1" button. The test is both conditions together
+— a single page **and** a total the smallest page size would not split — so a
+15-row single page keeps its control, because "10 / page" would genuinely
+paginate it. Set `autoHidePagination={false}` to always show it.
+
+Note that pagination and virtualization are alternatives: a 50-row page is well
+under `virtualizeThreshold`, so a paginated table normally renders every row.
+Set `paginationMode="off"` for the long-scroll case.
+
+### Infinite Scroll
+
+`paginationMode="infinite"` replaces the page control with load-on-scroll. The
+table never slices in this mode — `data` is the list accumulated so far:
+
+```jsx
+<ItemTable
+  height="420px"
+  data={loaded}
+  columns={columns}
+  paginationMode="infinite"
+  hasMore={hasMore}
+  isLoadingMore={isFetching}
+  onLoadMore={fetchNextPage}
+/>
+```
+
+It is driven by an `IntersectionObserver` on a sentinel at the end of the body
+rather than a scroll handler: `loadMoreMargin` then expresses "prefetch this far
+before the end" directly, and it costs nothing per scroll tick. The observer
+re-arms only once `isLoadingMore` clears, so a request in flight is never fired
+twice by a sentinel still sitting in view.
+
+While a batch is in flight the table appends **skeleton rows**, not a spinner.
+They keep the row grid, read as "more rows of this shape are coming", and grow
+the scroll height smoothly instead of a block that appears and vanishes — and it
+matches what the first load already shows. `skeletonRowCount` caps them; the
+appended burst is short, because this is an increment to a list the user is
+already reading.
+
+Under virtualization the trailing spacer holds the remaining height, so the
+sentinel still marks the true end of the list rather than the end of the
+rendered window.
+
+<Canvas of={ItemTableStories.InfiniteScroll} />
+
+### Footer Slots
+
+The footer has three named slots, and they render whether or not pagination is
+on. `footerStart` is where Cloud's "Load all results" button belongs — the thing
+that today needs a `MutationObserver` to inject into ag-grid's paging panel,
+because Community has no status bar.
+
+```jsx
+<ItemTable
+  data={rows}
+  columns={columns}
+  footerStart={<Button type="outline" size="small">Load all results</Button>}
+  footerCenter={<Text color="#dark-03">Partial result set</Text>}
+/>
+```
+
+<Canvas of={ItemTableStories.FooterSlots} />
+
+### Server-side Pagination
+
+`paginationMode="server"` never slices — it reflects `page` and reports changes,
+and `total` comes from the query. `data` is the current page.
+
+```jsx
+<ItemTable
+  data={pageFromQuery}
+  columns={columns}
+  paginationMode="server"
+  page={page}
+  pageSize={pageSize}
+  total={totalFromQuery}
+  isLoading={isFetching}
+  onPageChange={setPage}
+  onPageSizeChange={setPageSize}
+/>
+```
+
+<Canvas of={ItemTableStories.ServerPagination} />
+
+### Loading Behaviour
+
+`loadingIndicator` chooses what happens while `isLoading` is true over rows the
+table already has — the window that only exists once a query is involved:
+
+| Value | Behaviour |
+| --- | --- |
+| `overlay` (default) | The previous rows stay readable, dimmed, behind a spinner. Nothing moves, so the eye keeps its place and the table does not change height. |
+| `skeleton` | The previous rows are discarded for placeholders. Honest that the data is gone, but it flashes on every page and a short page makes the table jump. |
+| `none` | No visuals beyond `aria-busy`. For pages that already show a top-level progress bar and do not want a second indicator. |
+
+With no rows yet, `overlay` and `skeleton` both render skeleton rows — there is
+nothing to keep — and `none` renders an empty body rather than flashing the
+`emptyLabel` before the first response arrives.
+
+<Canvas of={ItemTableStories.LoadingBehavior} />
+
+### Bounded Height, Sticky Header and Pinned Columns
+
+A bounded height turns the body into a scroller and pins the header. Pinned
+columns are sticky `<th>`/`<td>` — one scroller, no lanes, no scroll sync. They
+are moved to the edges in DOM order too, so `aria-colindex` stays truthful.
+
+```jsx
+<ItemTable
+  height="400px"
+  columns={[
+    { key: 'name', title: 'Name', pin: 'start', width: 220 },
+    /* … */
+    { key: 'status', title: 'Status', pin: 'end', width: 140 },
+  ]}
+  data={rows}
+/>
+```
+
+<Canvas of={ItemTableStories.ScrollingAndPinnedColumns} />
+
+### Virtualization
+
+Above `virtualizeThreshold` rows a bounded table virtualizes automatically. The
+DOM and the styles are identical either way — only the number of mounted rows
+changes, so sorting, search, pinned columns and the sticky header all behave the
+same.
+
+```jsx
+<ItemTable height="420px" paginationMode="off" data={tenThousandRows} columns={columns} />
+```
+
+<Canvas of={ItemTableStories.Virtualized} />
+
+Overscroll is locked per axis, and only where the table can actually scroll, so
+a table whose content fits never traps the wheel — the page behind it scrolls as
+usual. On an axis that does scroll, a swipe at the edge neither chains to the
+page (which is what would trigger browser back-navigation) nor rubber-bands,
+since bouncing drags the rows off the sticky header and shows blank surface
+behind them.
+
+A native table cannot absolutely position a `<tr>` without breaking the table
+box, so the offset comes from leading and trailing spacer rows. Those are
+`aria-hidden`, and `aria-rowcount` / `aria-rowindex` continue to describe the
+whole dataset rather than the mounted window.
+
+Virtualization is skipped for the empty, error and loading states, and turns off
+entirely with `isVirtualized={false}`.
+
+### Wrapping Cells
+
+Rows are **measured, not assumed**, so a column with `autoHeight` can wrap to a
+different number of lines per row and the virtualized window still tracks
+correctly.
+
+<Canvas of={ItemTableStories.WrappingCells} />
+
+### Selection
+
+`selectionMode="multiple"` adds the checkbox column:
+
+```jsx
+const [keys, setKeys] = useState([]);
+
+<ItemTable
+  data={deployments}
+  columns={columns}
+  selectionMode="multiple"
+  selectedKeys={keys}
+  onSelectionChange={(next) => setKeys(next)}
+/>
+```
+
+Selection is **keyed, not indexed**, so it survives sorting, searching and
+paging — the same row stays selected wherever it lands, and a row filtered out
+by a search keeps its key rather than being silently deselected.
+
+Shift-click a checkbox to extend the range from the last one you clicked
+plainly. Shift-clicking back toward the anchor shrinks the range rather than
+leaving the overshoot selected.
+
+<Canvas of={ItemTableStories.Selection} />
+
+#### Three ways a row can be special
+
+Deliberately distinct, and not interchangeable:
+
+| Prop | Focusable | Interactive | Selectable |
+| --- | --- | --- | --- |
+| `disabledKeys` | no | no | no |
+| `isRowSelectable` | yes | yes | no |
+| `getRowProps().isDimmed` | yes | yes | **yes** — it is purely visual |
+
+`selectionTooltip` explains an inert checkbox, which is the difference between
+"this is broken" and "this row is still deploying".
+
+#### What select-all reaches
+
+`selectAllMode` decides the scope of the header checkbox:
+
+- **`'page'`** (default) — the rows on the current page.
+- **`'filtered'`** — every row passing the current search or filter, across
+  pages.
+- **`'all'`** — emits the `'all'` sentinel instead of a key list. This is the
+  only mode that can mean rows the client has never loaded, so the consumer
+  decides what it means for its query — usually a `DELETE … WHERE <filter>`
+  rather than `WHERE id IN (…)`.
+
+Unselectable rows are excluded from every scope. Pressing the header checkbox
+while everything in scope is selected clears the **whole** selection, not just
+the scope — leaving keys selected on other pages behind an unchecked-looking box
+is how people delete things they did not mean to.
+
+<Canvas of={ItemTableStories.SelectAllScope} />
+
+### Row Links and Row Actions
+
+`rowLink` turns the row-header cell into a stretched anchor covering the whole
+row:
+
+```jsx
+<ItemTable
+  data={deployments}
+  columns={columns}
+  rowLink={(row) => `/deployments/${row.id}`}
+/>
+```
+
+Because it is a real `<a href>`, ⌘-click, middle-click and "Open in new tab"
+all work natively — none of which an `onClick` handler can give you. The anchor
+sits below the cells' own content in the stacking order, so a button or `⋮`
+trigger inside a cell still takes its own clicks, and its accessible name comes
+from the row-header cell rather than being announced as "link".
+
+The row-header cell is styled as a link — `#purple-text` at weight 600, matching
+the kit's `Link`, with an underline while the row is hovered. The anchor itself
+is invisible, so without that the row would give no sign that it navigates.
+
+`onRowAction` is the non-navigational alternative — Enter, or a click that did
+not land on a control inside a cell. Use one or the other, not both.
+
+### Row Menu
+
+`rowMenu` supplies `Menu.Item` children, and `rowContextMenu` decides where they
+are exposed. The split is deliberate: `rowMenu` alone renders nothing, so a row
+never grows a `⋮` nobody asked for.
+
+```jsx
+<ItemTable
+  data={deployments}
+  columns={columns}
+  rowContextMenu
+  rowMenu={(row) => (
+    <>
+      <Menu.Item key="open">Open {row.name}</Menu.Item>
+      <Menu.Item key="delete">Delete</Menu.Item>
+    </>
+  )}
+  onRowMenuAction={(action, row) => run(action, row)}
+/>
+```
+
+| `rowContextMenu` | `⋮` column | Right-click / Shift+F10 |
+| --- | --- | --- |
+| `false` (default) | no | no |
+| `true` | yes | yes |
+| `'context-only'` | no | yes |
+
+A row whose resolver returns `null` gets no trigger, and right-clicking it falls
+through to the browser's own context menu — more useful than an empty popover.
+
+<Canvas of={ItemTableStories.RowInteraction} />
+
+### Bulk Actions
+
+`bulkActions` implies `selectionMode="multiple"` — a bulk action with no way to
+select rows is a contradiction, not a configuration.
+
+```jsx
+<ItemTable
+  data={deployments}
+  columns={columns}
+  bulkActions={[
+    {
+      key: 'restart',
+      label: 'Restart',
+      onAction: async (rows, { setLoading }) => {
+        setLoading(true);
+        await restart(rows.map((row) => row.id));
+      },
+    },
+    {
+      key: 'delete',
+      label: 'Delete',
+      theme: 'danger',
+      isDisabled: (rows) => rows.some((row) => row.status === 'running'),
+      disabledTooltip: 'A running deployment cannot be deleted',
+      onAction: (rows) => remove(rows),
+    },
+  ]}
+/>
+```
+
+Each action drives its own spinner through `setLoading`, so one slow request
+does not freeze the others, and the selection clears when the action resolves.
+Opt out with `deselectAfter: false` for an action that only reads — the default
+exists because the rows an action just deleted or moved are usually gone.
+
+`bulkBarPlacement="floating"` (the default) centres the bar over the body
+without changing the table's height, so the rows never shift under the cursor.
+`"toolbar"` takes over the `actions` group instead, for a page whose toolbar is
+already crowded — the two compete for the same space, and while rows are
+selected the bulk actions are what the user is reaching for.
+
+**Escape** clears the selection from anywhere inside the table.
+
+<Canvas of={ItemTableStories.BulkActions} />
+
+`ItemTable.BulkBar` is available as a compound member for placing the bar
+outside the default chrome; it reads the selection from context, so there is
+still exactly one owner.
+
+### Reordering Rows
+
+`isReorderable` lets rows be dragged into a new order:
+
+```jsx
+<ItemTable
+  isReorderable
+  data={rows}
+  columns={columns}
+  onReorder={(keys, nextRows) => setRows(nextRows)}
+/>
+```
+
+It is built on React Aria's collection drag-and-drop, through the same
+`DraggableCollection` wrapper `Tabs` and `ListBox` use — `RowCollection` and the
+table's own `SelectionManager` satisfy its contract unchanged.
+
+That buys the keyboard path as well as the pointer one: the grid takes a single
+tab stop, arrows move between rows, Enter picks a row up and drops it, Escape
+cancels. The drop line is drawn **on** the row rather than between rows, because
+a native table has nowhere to put an element between two `<tr>`s.
+
+`onReorder` reports the whole key order rather than just the moved row, so the
+result can be persisted without reconstructing it.
+
+<Canvas of={ItemTableStories.Reorderable} />
+
+### Dropping Rows onto a Row
+
+Some tables move rows *into* other rows rather than around them — a workbook
+into a folder. `dropOnRow` covers that, and enables dragging on its own:
+
+```jsx
+<ItemTable
+  data={items}
+  columns={columns}
+  dropOnRow={{
+    isTarget: (row) => row.type === 'folder',
+    isAllowed: (dragged, target) => dragged.every((row) => row.id !== target.id),
+    onDrop: (dragged, target) => move(dragged, target),
+  }}
+/>
+```
+
+This is a **different case from reordering**, and usually the only one a given
+table wants: Cloud's Workbooks page drags items into folders and never reorders
+them. The story below is that shape.
+
+They do compose if you need it — set `isReorderable` as well and a row that
+refuses a drop falls back to reordering — but that combination is rare. Cloud
+has to treat them as mutually exclusive because ag-grid cannot express both at
+once; that restriction does not carry over.
+
+`dropOnRow` replaces Cloud's `isDropOnRowEnabled`, `isDropTarget`,
+`isDropOnRowAllowed` and `onDropOnRow` with one object, and drops the two
+ag-grid workarounds beside them (`dropTargetRowKeyRef`,
+`dropTargetRefreshColumnKey`) that existed only because ag-grid cannot re-render
+a single cell from React state. Here the hovered row is just
+`ctx.isDropTarget`.
+
+<Canvas of={ItemTableStories.DropOntoRow} />
+
+### Column Resize
+
+`isResizable` puts a grab handle on each column's trailing edge:
+
+```jsx
+<ItemTable isResizable storageKey="deployments" data={rows} columns={columns} />
+```
+
+It is built on React Aria's `useMove` — the same hook behind `Board`'s widgets —
+so the handle takes **keyboard** input for free: focus it and use the arrow
+keys, or Home/End to jump to the column's minimum and maximum. Widths clamp to
+each column's `minWidth` / `maxWidth`, and a column opts out with
+`isResizable: false`.
+
+`onColumnResize` fires once the gesture ends rather than on every pixel, and
+`columnWidths` is in the default `persist` list, so pairing `isResizable` with
+`storageKey` makes a resized table come back the way the user left it.
+
+<Canvas of={ItemTableStories.ColumnResize} />
+
+### Persisting State
+
+`storageKey` remembers the parts of the table's state a user expects to survive
+a reload:
+
+```jsx
+<ItemTable data={rows} columns={columns} storageKey="deployments" />
+```
+
+Only state the **table** owns is stored, so a controlled `pageSize` or `sort`
+stays entirely the page's business. Sort is opt-in via `persist` — a stored sort
+silently changes what the first screen of a table means, which is rarely what
+you want by default:
+
+```jsx
+<ItemTable storageKey="deployments" persist={['pageSize', 'sort']} data={rows} columns={columns} />
+```
+
+Reads and writes are best-effort: private mode, a disabled store, a quota error
+or a hand-edited value all degrade to "no persistence" rather than failing.
+
+### Per-row Visuals
+
+```jsx
+<ItemTable
+  getRowProps={({ row }) => ({ isDimmed: row.status === 'stopped' })}
+  data={rows}
+  columns={columns}
+/>
+```
+
+<Canvas of={ItemTableStories.PerRowVisuals} />
+
+## Accessibility
+
+### Screen Reader Support
+
+- The `<table>` carries `role="grid"` with `aria-rowcount` and `aria-colcount`.
+- Row and column indices are **1-based and document-absolute** — header rows are
+  counted, and the indices stay truthful when rows are virtualized or columns
+  are pinned.
+- A column marked `isRowHeader` renders `<th scope="row">`, so a screen reader
+  announces the row by name when moving between cells.
+- `aria-sort` is set on the sorted header only, never `"none"` on the rest.
+- `aria-busy` is set while loading; skeleton rows keep the full cell structure so
+  nothing shifts when the data lands.
+
+### ARIA Properties
+
+| Property | Applied to |
+| -------- | ---------- |
+| `role="grid"` | the `<table>` |
+| `aria-rowcount` / `aria-colcount` | the `<table>` |
+| `aria-rowindex` | every `<tr>` |
+| `aria-colindex` | every cell and column header |
+| `aria-sort` | the sorted column header |
+| `aria-busy` | the grid and its skeleton rows |
+
+## Best Practices
+
+- Do: mark one column `isRowHeader`. It names the row for assistive tech and is
+  where a row link will anchor.
+- Do: give a column `format` when its display text differs from its raw value —
+  that is what keeps it sortable, searchable and copyable.
+- Do: bound the table's height. Without a bound it grows to fit, the header
+  cannot stick, and virtualization has no viewport to work against.
+- Do: leave the header preset alone unless you have a reason. `c3` is what the
+  Cloud list tables use, and the header `Item` inherits the cell's typography so
+  overriding `headerPreset` restyles the whole header consistently.
+- Do: pass `isFiltered` when you filter `data` yourself, so the empty state says
+  "no matches".
+- Don't: reach for `render` to reformat text. `format` does it in a way the rest
+  of the table understands — including sorting and search.
+- Don't: filter `data` yourself *and* leave `isFiltered` unset, or an empty
+  result will read as "nothing exists".
+- Don't: put an `Item` in every cell. `Item` runs a hotkey subscription per
+  instance; use `TextItem` (which the table does automatically for plain text)
+  and reserve `Item` for the row-header cell.
+
+## Suggested Improvements
+
+- Selection, pagination, row menus and drag & drop are arriving in follow-ups.
+- Multi-column sorting (the sibling `DataTable` will take `sorts: []`).
+
+## Related Components
+
+- [Pagination](/docs/navigation-pagination--docs) — pairs with the table footer
+- [Item](/docs/content-item--docs) — the header cell's content
+- [TextItem](/docs/content-textitem--docs) — truncating body text
+- [ListBox](/docs/forms-listbox--docs) — when there is only one column

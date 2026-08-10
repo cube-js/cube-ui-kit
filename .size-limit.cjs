@@ -20,15 +20,27 @@ module.exports = [
         }),
       );
     },
-    // 460.16 kB at the time of writing. Raised from 460 kB for Tasty v3, which
-    // it exceeded by 161 B — its new dev diagnostics ship in every bundle,
-    // because `isDevEnv()` is evaluated at runtime so one build serves dev and
+    // 468.46 kB at the time of writing. Raised from 462 kB for `Pagination` and
+    // `ItemTable` (including its toolbar and search), which together cost ~8 kB.
+    //
+    // (An interim bump to 464 kB was measured against a stale `node_modules`
+    // still on Tasty 2.11.2, so it read ~4 kB low. Re-baselined on 3.0.1.)
+    //
+    // Before that: raised from
+    // 460 kB for Tasty v3, whose new dev diagnostics ship in every bundle
+    // because `isDevEnv()` is evaluated at runtime, so one build serves dev and
     // production. Headroom is deliberately small so real bloat still trips the
     // budget.
     //
+    // Expect a larger, deliberate bump when table virtualization lands:
+    // `react-virtuoso` is ~94 kB raw. That is a considered trade — it is what
+    // buys the native-`<table>` design its sticky header, sticky pinned columns
+    // and variable row heights — and Cube Cloud already ships virtuoso, so it
+    // costs the main consumer nothing.
+    //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '462kB',
+    limit: '470kB',
   },
   {
     name: 'Tree shaking (just a Button)',

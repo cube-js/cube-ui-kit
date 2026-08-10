@@ -124,5 +124,39 @@
   "contextMenu": {
     "openContextMenu": "Open context menu",
     "contextMenu": "context-menu"
+  },
+  "pagination": {
+    "ariaLabel": "Pagination",
+    "firstPage": "First page",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "lastPage": "Last page",
+    "selectPage": "Select page",
+    "page": "Page {{page}}",
+    "pageOf": "{{page}} of {{totalPages}}",
+    "itemsPerPage": "Items per page",
+    "itemsPerPageOption": "{{size}} / page",
+    "summary": "{{from}}–{{to}} of {{total}}"
+  },
+  "itemTable": {
+    "noItems": "No items",
+    "noResults": "No results found",
+    "search": "Search",
+    "searchPlaceholder": "Search...",
+    "refresh": "Refresh",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "selectRow": "Select row",
+    "selectedCount_one": "{{count}} selected",
+    "selectedCount_other": "{{count}} selected",
+    "bulkActions": "Bulk actions",
+    "clearSelection": "Clear selection",
+    "rowActions": "Row actions",
+    "resizeColumn": "Resize column",
+    "dragCount_one": "{{count}} item",
+    "dragCount_other": "{{count}} items",
+    "copiedToClipboard": "Copied to clipboard",
+    "copiedCells_one": "{{count}} cell copied",
+    "copiedCells_other": "{{count}} cells copied"
   }
 }

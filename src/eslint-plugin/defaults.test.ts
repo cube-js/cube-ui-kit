@@ -61,7 +61,7 @@ describe('defaults registry', () => {
     // Coverage is partial by design — each component needs a hand-written render
     // fixture. This guards the ratchet: it may go up, never down. Raise
     // COVERED when you add fixtures.
-    const COVERED = 72;
+    const COVERED = 75;
     const total = componentsWithDocumentedDefaults().length;
     const covered = Object.keys(DEFAULTS.components).length;
 

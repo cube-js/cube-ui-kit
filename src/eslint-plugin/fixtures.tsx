@@ -14,6 +14,7 @@ import {
   CommandTextArea,
   CopyPasteBlock,
   CopySnippet,
+  DataTable,
   DatePicker,
   Dialog,
   DialogContainer,
@@ -36,12 +37,14 @@ import {
   ItemBadge,
   ItemButton,
   ItemCard,
+  ItemTable,
   Layout,
   ListBox,
   LoadingAnimation,
   Menu,
   MenuTrigger,
   NumberInput,
+  Pagination,
   PasswordInput,
   Picker,
   Placeholder,
@@ -635,6 +638,54 @@ export const FIXTURES: Fixture[] = [
       />
     ),
     ignoreProps: ['actions', 'defaultActionKey'],
+  },
+  {
+    name: 'Pagination',
+    render: (props) => <Pagination total={200} pageSize={20} {...props} />,
+    ignoreProps: ['total', 'pageSize'],
+  },
+  {
+    name: 'DataTable',
+    render: (props) => (
+      <DataTable
+        data={[{ id: '1', name: 'Alpha' }]}
+        columns={[{ key: 'name', title: 'Name' }]}
+        {...props}
+      />
+    ),
+    conditions: [
+      // Same shape as `ItemTable`: `sortMode` only resolves to `'client'` when
+      // a column opts into sorting.
+      {
+        label: 'with a sortable column',
+        props: { columns: [{ key: 'name', title: 'Name', isSortable: true }] },
+      },
+    ],
+    ignoreProps: ['data', 'columns', 'isFiltered', 'sorts', 'defaultSorts'],
+  },
+  {
+    name: 'ItemTable',
+    render: (props) => (
+      <ItemTable
+        data={[{ id: '1', name: 'Alpha' }]}
+        columns={[{ key: 'name', title: 'Name' }]}
+        {...props}
+      />
+    ),
+    conditions: [
+      // `sortMode` defaults to `'client'` only when a column opts into sorting,
+      // and to `'off'` otherwise. Probing both shapes lets the prover exclude
+      // it if the verdict is not stable.
+      {
+        label: 'with a sortable column',
+        props: { columns: [{ key: 'name', title: 'Name', isSortable: true }] },
+      },
+    ],
+    // `isFiltered` has no literal default — it falls back to whatever the
+    // built-in search reports, which settles through a debounce. Probing it
+    // yields either verdict depending on timing, and `isFiltered={false}` is
+    // not redundant anyway once a search is active.
+    ignoreProps: ['data', 'columns', 'isFiltered'],
   },
 ];
 
