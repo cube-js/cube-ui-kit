@@ -1483,29 +1483,48 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   });
 
   /**
-   * How many rows the next batch is likely to bring, measured from the last one
-   * that actually arrived.
+   * How many rows the next batch is likely to bring, measured across the last
+   * fetch that actually happened.
    *
    * The placeholder burst is sized to this so the scroll height is right both
    * before and after the load: a short burst under a long batch makes the
    * content jump the moment the rows land, and leaves the user stopped at the
    * bottom of the list in the meantime with nothing left to scroll into.
    *
-   * Measured rather than taken from `pageSize`, which infinite-scroll consumers
-   * often do not set — and the first batch is its own best predictor of the
-   * second.
+   * Measured across `isLoadingMore`, not from any growth in `rows`. Plenty of
+   * things lengthen the list without being a fetch — clearing a client search
+   * over an infinite list restores every filtered-out row at once — and reading
+   * that as a batch of ninety sized the next burst at ninety.
+   *
+   * Measured at all, rather than taken from `pageSize`, because infinite-scroll
+   * consumers often do not set it.
    */
   const lastBatchSizeRef = useRef(0);
-  const previousRowCountRef = useRef(0);
+  const rowCountBeforeFetchRef = useRef<number | null>(null);
 
-  if (rows.length > previousRowCountRef.current) {
-    lastBatchSizeRef.current = rows.length - previousRowCountRef.current;
-  }
+  useEffect(() => {
+    if (isLoadingMore) {
+      rowCountBeforeFetchRef.current = rows.length;
 
-  previousRowCountRef.current = rows.length;
+      return;
+    }
+
+    const before = rowCountBeforeFetchRef.current;
+
+    if (before != null && rows.length > before) {
+      lastBatchSizeRef.current = rows.length - before;
+    }
+
+    rowCountBeforeFetchRef.current = null;
+    // Deliberately keyed on the flag alone: the row count wanted is the one at
+    // each edge of the fetch, not every value it passes through.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingMore]);
 
   const loadMoreSkeletonCount = Math.min(
-    Math.max(lastBatchSizeRef.current || skeletonRowCount, 1),
+    // Until a fetch has been measured, the rows already loaded are the best
+    // guess at what the next batch brings — that IS the first page.
+    Math.max(lastBatchSizeRef.current || rows.length || skeletonRowCount, 1),
     MAX_LOAD_MORE_SKELETON_ROWS,
   );
 

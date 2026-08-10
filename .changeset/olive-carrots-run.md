@@ -11,10 +11,16 @@ under a placeholder of three. The burst is now sized to the batch that is
 coming — measured from the last one that arrived — so the list keeps its length
 through the load and the scroll height is right both before and after it.
 
-Measured rather than read from `pageSize`, which infinite-scroll consumers often
-do not set, and the first batch is the best predictor of the second. Capped at
-50 rows, taller than any viewport, because these rows sit after the virtualized
-window and so are real DOM.
+The batch is measured across `isLoadingMore`, not from any growth in the row
+array: plenty of things lengthen the list without being a fetch — clearing a
+client search over an infinite list restores every filtered-out row at once —
+and reading that as a batch of ninety would size the next burst at ninety.
+
+Measured at all, rather than read from `pageSize`, because infinite-scroll
+consumers often do not set it; until a fetch has been measured the rows already
+loaded are the best guess, since that is the first page. Capped at 50 rows,
+taller than any viewport, because these rows sit after the virtualized window
+and so are real DOM.
 
 Infinite scroll also starts fetching **a full screen before the end** rather
 than 200px before it. `loadMoreMargin` now defaults to the scroller's own

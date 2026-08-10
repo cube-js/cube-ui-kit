@@ -201,45 +201,66 @@ describe('ItemTable infinite scroll', () => {
   });
 
   it('sizes the burst to the last batch, not the total', () => {
-    const first = ROWS.slice(0, 2);
+    const props = (data: typeof ROWS, isLoadingMore: boolean) => ({
+      data,
+      columns: COLUMNS,
+      paginationMode: 'infinite' as const,
+      hasMore: true,
+      isLoadingMore,
+      onLoadMore: () => {},
+    });
+
     const { rerender } = renderWithRoot(
-      <ItemTable
-        data={first}
-        columns={COLUMNS}
-        paginationMode="infinite"
-        hasMore
-        onLoadMore={() => {}}
-      />,
+      <ItemTable {...props(ROWS.slice(0, 2), false)} />,
     );
 
-    // A second batch of 3 arrives.
-    const second = ROWS.slice(0, 5);
+    // A fetch: flag on, three rows arrive, flag off.
+    rerender(<ItemTable {...props(ROWS.slice(0, 2), true)} />);
+    rerender(<ItemTable {...props(ROWS.slice(0, 5), false)} />);
 
-    rerender(
-      <ItemTable
-        data={second}
-        columns={COLUMNS}
-        paginationMode="infinite"
-        hasMore
-        onLoadMore={() => {}}
-      />,
-    );
+    // The next fetch starts.
+    rerender(<ItemTable {...props(ROWS.slice(0, 5), true)} />);
 
-    rerender(
-      <ItemTable
-        data={second}
-        columns={COLUMNS}
-        paginationMode="infinite"
-        hasMore
-        isLoadingMore
-        onLoadMore={() => {}}
-      />,
-    );
-
-    // 3, the size of the last increment — not 5, the length of the list.
+    // 3, the size of the batch that actually arrived — not 5, the length of
+    // the list.
     expect(
       screen.getByRole('grid').querySelectorAll('tr[data-placeholder]'),
     ).toHaveLength(3);
+  });
+
+  it('ignores growth that was not a fetch', () => {
+    const many = Array.from({ length: 90 }, (_, i) => ({
+      id: `m${i}`,
+      name: `row-${i}`,
+    }));
+    const props = (data: typeof many, isLoadingMore: boolean) => ({
+      data,
+      columns: COLUMNS,
+      paginationMode: 'infinite' as const,
+      hasMore: true,
+      isLoadingMore,
+      onLoadMore: () => {},
+    });
+
+    const { rerender } = renderWithRoot(
+      <ItemTable {...props(many.slice(0, 10), false)} />,
+    );
+
+    // A real fetch of 5.
+    rerender(<ItemTable {...props(many.slice(0, 10), true)} />);
+    rerender(<ItemTable {...props(many.slice(0, 15), false)} />);
+
+    // Now a client filter cuts the list down and is then cleared — 90 rows
+    // reappear at once. That is not a batch, and reading it as one sized the
+    // next burst at the cap.
+    rerender(<ItemTable {...props(many.slice(0, 3), false)} />);
+    rerender(<ItemTable {...props(many, false)} />);
+
+    rerender(<ItemTable {...props(many, true)} />);
+
+    expect(
+      screen.getByRole('grid').querySelectorAll('tr[data-placeholder]'),
+    ).toHaveLength(5);
   });
 
   it('caps the burst so a huge batch cannot flood the DOM', () => {
@@ -258,6 +279,8 @@ describe('ItemTable infinite scroll', () => {
       />,
     );
 
+    // No fetch measured yet, so the burst falls back to the rows already
+    // loaded — 400 of them, which is what the cap is for.
     rerender(
       <ItemTable
         data={many}
