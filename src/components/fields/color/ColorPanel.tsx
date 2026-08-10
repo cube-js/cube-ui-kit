@@ -1,5 +1,5 @@
 import { Styles, tasty } from '@tenphi/tasty';
-import { useMemo } from 'react';
+import { ReactNode, useMemo } from 'react';
 
 import { useEvent } from '../../../_internal';
 import { Radio } from '../RadioGroup';
@@ -22,7 +22,7 @@ import {
 } from './color';
 
 const PanelElement = tasty({
-  qa: 'ColorPickerPanel',
+  qa: 'ColorPanel',
   styles: {
     display: 'grid',
     flow: 'row',
@@ -107,12 +107,16 @@ const THUMB_TOKENS = { '#slider-thumb': '(#color-picker, #surface)' };
 const SPACE_STYLES: Styles = { width: '100%' };
 const TAB_STYLES: Styles = { flexGrow: 1 };
 
-export interface ColorPickerPanelProps {
+export interface ColorPanelProps {
   color: ColorValue;
   space: ColorSpace;
   isDisabled?: boolean;
   /** Notation used for the preview caption. */
   previewFormat: ColorFormat;
+  /** Optional palette rendered under the channels. */
+  swatches?: ReactNode;
+  /** Optional value field rendered above the preview. */
+  input?: ReactNode;
   onChange: (color: ColorValue) => void;
   onSpaceChange: (space: ColorSpace) => void;
 }
@@ -162,12 +166,21 @@ function ChannelRow({ channel, color, isDisabled, onChange }: ChannelRowProps) {
 }
 
 /**
- * The popover body of `ColorPicker`: a preview, a switch between the three
- * color concepts, and one gradient slider per channel of the active one.
+ * The popover body shared by `ColorInput` and `ColorPicker`: a preview, a
+ * switch between the three color concepts, and one gradient slider per channel
+ * of the active one.
  */
-export function ColorPickerPanel(props: ColorPickerPanelProps) {
-  const { color, space, isDisabled, previewFormat, onChange, onSpaceChange } =
-    props;
+export function ColorPanel(props: ColorPanelProps) {
+  const {
+    color,
+    space,
+    isDisabled,
+    previewFormat,
+    swatches,
+    input,
+    onChange,
+    onSpaceChange,
+  } = props;
 
   const colorTokens = useMemo(
     () => ({
@@ -183,6 +196,7 @@ export function ColorPickerPanel(props: ColorPickerPanelProps) {
 
   return (
     <PanelElement style={colorTokens}>
+      {input}
       <PreviewElement>{formatColor(color, previewFormat)}</PreviewElement>
       <Radio.Tabs
         aria-label="Color space"
@@ -214,6 +228,7 @@ export function ColorPickerPanel(props: ColorPickerPanelProps) {
           />
         ))}
       </ChannelsElement>
+      {swatches}
     </PanelElement>
   );
 }

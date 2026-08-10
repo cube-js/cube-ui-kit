@@ -1,0 +1,415 @@
+import { useObjectRef } from '@react-aria/utils';
+import {
+  BaseProps,
+  BLOCK_STYLES,
+  BlockStyleProps,
+  OUTER_STYLES,
+  OuterStyleProps,
+  Styles,
+  tasty,
+} from '@tenphi/tasty';
+import { ForwardedRef, forwardRef, useMemo, useRef, useState } from 'react';
+import { useRadio, useRadioGroup } from 'react-aria';
+import { useRadioGroupState } from 'react-stately';
+
+import { useEvent } from '../../../_internal';
+import { FieldBaseProps } from '../../../shared';
+import { mergeProps } from '../../../utils/react';
+import { useFocus } from '../../../utils/react/interactions';
+import { extractStyles } from '../../../utils/styles';
+import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
+import { HiddenInput } from '../../HiddenInput';
+import { ColorFormat, formatColor, parseColor, toHex } from '../color/color';
+import { useIsInsideColorPopover } from '../color/context';
+import { ColorPicker } from '../ColorPicker';
+
+import type { RadioGroupState } from 'react-stately';
+
+/** A swatch: a color, and optionally a name to announce instead of the color. */
+export type CubeColorSwatchItem = string | { color: string; label?: string };
+
+/**
+ * Two rings drawn inside the swatch, as React Aria marks selection. Outer ring
+ * first: earlier shadows paint over later ones, so this reads as 2bw of
+ * `#surface-text` at the edge and 2bw of `#surface` within it. Two tones that
+ * flip with the scheme stay visible against any color the swatch holds.
+ */
+const SELECTED_RING = 'inset 0 0 0 2bw #surface-text, inset 0 0 0 4bw #surface';
+
+/** The swatch edge in px, per size. `Item` takes an exact number. */
+const SWATCH_PX: Record<string, number> = {
+  small: 16,
+  medium: 20,
+  large: 24,
+};
+
+/**
+ * The trailing picker is a button wrapping a swatch, which would otherwise read
+ * as a box inside a box. Stripping its chrome leaves just the swatch, so it
+ * sits in the row as one of them.
+ */
+const CUSTOM_TRIGGER_STYLES: Styles = {
+  // `size` sets the control's height; the box is pinned here as well so a flex
+  // row cannot let the button size itself to its content instead.
+  width: '$swatch-size $swatch-size',
+  height: '$swatch-size $swatch-size',
+  padding: 0,
+  radius: '1r',
+  border: 0,
+  position: 'relative',
+};
+
+/**
+ * The swatch is docked over the whole button rather than placed inside it.
+ * `Item` lays its icon out in a grid that reserves room for a label even when
+ * there is none, which left the swatch a pixel off centre.
+ */
+const CUSTOM_SWATCH_STYLES: Styles = {
+  position: 'absolute',
+  inset: 0,
+  width: 'auto',
+  height: 'auto',
+  radius: '1r',
+};
+
+/**
+ * The ring goes on the swatch, not on the button around it: an inset shadow
+ * paints under child content, and the swatch covers the button edge to edge.
+ */
+const CUSTOM_SWATCH_SELECTED_STYLES: Styles = {
+  ...CUSTOM_SWATCH_STYLES,
+  shadow: SELECTED_RING,
+};
+
+const GroupElement = tasty({
+  qa: 'ColorSwatchGroup',
+  styles: {
+    // Wrapping is the better default: it is a single row wherever there is
+    // room, and folds instead of overflowing where there is not. A fixed
+    // `columns` switches to a grid, sized to the swatches rather than to the
+    // container — `1fr` tracks would stretch them apart.
+    display: {
+      '': 'flex',
+      columns: 'grid',
+    },
+    flow: {
+      '': 'row wrap',
+      columns: 'row',
+    },
+    gap: '.5x',
+    placeItems: {
+      '': 'center start',
+      columns: 'stretch',
+    },
+    width: {
+      '': 'auto',
+      columns: 'max-content',
+    },
+    gridColumns: 'repeat($columns, max-content)',
+
+    // 20px, 16px and 24px — 1x is 8px.
+    '$swatch-size': {
+      '': '2.5x',
+      'size=small': '2x',
+      'size=large': '3x',
+    },
+  },
+});
+
+/**
+ * Only the swatches belong to the radiogroup. The custom picker is a button,
+ * and inside `role="radiogroup"` it both misreports what the palette holds and
+ * hands arrow keys to React Aria's radio walker — pressing one while the picker
+ * is focused jumps into a swatch and changes the color. The box is dropped so
+ * the swatches remain direct children of the group's own layout.
+ */
+const RadiosElement = tasty({
+  styles: { display: 'contents' },
+});
+
+const SwatchElement = tasty({
+  as: 'label',
+  qa: 'ColorSwatchOption',
+  styles: {
+    display: 'grid',
+    placeItems: 'stretch',
+    position: 'relative',
+    radius: '1r',
+    cursor: {
+      '': 'pointer',
+      disabled: 'default',
+    },
+    width: '$swatch-size $swatch-size',
+    height: '$swatch-size $swatch-size',
+    fill: '(#color-swatch, #clear)',
+    opacity: {
+      '': 1,
+      disabled: '$disabled-opacity',
+    },
+    // A ring at one border-width's distance, so the color area stays whole —
+    // the inner ring is the surface showing through as the gap. `outline` is
+    // deliberately left to the focus ring.
+    shadow: {
+      '': 'inset 0 0 0 1bw #dark.15',
+      selected: SELECTED_RING,
+    },
+    // A 1bw offset keeps the ring clear of the 4px gap to its neighbours.
+    outline: {
+      '': '2bw #focus.0 / 1bw',
+      focused: '2bw #focus / 1bw',
+    },
+    transition: 'theme',
+  },
+});
+
+export interface CubeColorSwatchGroupProps
+  extends BaseProps,
+    OuterStyleProps,
+    BlockStyleProps,
+    FieldBaseProps {
+  /** The colors to offer. Duplicates of the same color are dropped. */
+  colors?: CubeColorSwatchItem[];
+  /** The selected color (controlled). */
+  value?: string | null;
+  /** The selected color (uncontrolled). */
+  defaultValue?: string | null;
+  /** Called with the chosen color, written in `format`. */
+  onChange?: (value: string | null) => void;
+  /** Notation the value is written in. */
+  format?: ColorFormat;
+  /** How many swatches per row. Defaults to a single row. */
+  columns?: number;
+  /**
+   * Append a `ColorPicker` for colors outside the set. Ignored inside a color
+   * popover, which is where that picker would otherwise recurse.
+   */
+  allowCustom?: boolean;
+  /** The size of each swatch. */
+  size?: 'small' | 'medium' | 'large' | (string & {});
+  styles?: Styles;
+  /** Styles of an individual swatch. */
+  swatchStyles?: Styles;
+  'aria-label'?: string;
+}
+
+interface SwatchProps {
+  colorKey: string;
+  label: string;
+  state: RadioGroupState;
+  isDisabled?: boolean;
+  size?: string;
+  styles?: Styles;
+  mods?: Record<string, boolean | undefined>;
+}
+
+function Swatch({
+  colorKey,
+  label,
+  state,
+  isDisabled,
+  size,
+  styles,
+  mods,
+}: SwatchProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const {
+    inputProps,
+    isSelected,
+    isDisabled: isRadioDisabled,
+  } = useRadio(
+    { value: colorKey, 'aria-label': label, isDisabled },
+    state,
+    inputRef,
+  );
+  // `useRadio` reports selection but not focus, and the swatch is the only
+  // thing a keyboard user can see — without this the ring never appears.
+  const { isFocused, focusProps } = useFocus({ isDisabled }, true);
+
+  return (
+    <SwatchElement
+      data-size={size}
+      mods={{
+        selected: isSelected,
+        disabled: isRadioDisabled,
+        focused: isFocused,
+        ...mods,
+      }}
+      styles={styles}
+      style={{ '--color-swatch-color': colorKey }}
+    >
+      <HiddenInput
+        {...mergeProps(inputProps, focusProps)}
+        ref={inputRef}
+        qa="ColorSwatchInput"
+        mods={{ button: true, disabled: isRadioDisabled }}
+      />
+    </SwatchElement>
+  );
+}
+
+/**
+ * A grid of color swatches, one of which can be selected — the palette half of
+ * choosing a color, where `ColorPicker` is the freeform half.
+ *
+ * Swatches are keyed by their canonical hex, so the same color written two ways
+ * collapses into one entry. Equivalent colors would otherwise make selection
+ * ambiguous.
+ */
+export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
+  allProps: CubeColorSwatchGroupProps,
+  ref: ForwardedRef<HTMLElement>,
+) {
+  const props = useFieldProps(allProps, {
+    defaultValidationTrigger: 'onChange',
+    valuePropsMapper: ({ value, onChange }) => ({
+      value: value as string | null | undefined,
+      onChange,
+    }),
+  });
+
+  const {
+    qa,
+    colors = [],
+    value,
+    defaultValue,
+    onChange,
+    format = 'hex',
+    columns,
+    allowCustom,
+    size = 'medium',
+    isDisabled,
+    isInvalid,
+    isValid,
+    swatchStyles,
+    'aria-label': ariaLabel,
+  } = props;
+
+  const styles = extractStyles(props, [...OUTER_STYLES, ...BLOCK_STYLES]);
+  const isInsidePopover = useIsInsideColorPopover();
+  // A custom picker inside a color popover would open a popover of its own.
+  const showCustom = allowCustom && !isInsidePopover;
+
+  /** Keyed by canonical hex so the same color written two ways is one swatch. */
+  const swatches = useMemo(() => {
+    const seen = new Map<string, { key: string; label: string }>();
+
+    for (const entry of colors) {
+      const raw = typeof entry === 'string' ? entry : entry.color;
+      const parsed = parseColor(raw);
+
+      if (!parsed) continue;
+
+      const key = toHex(parsed);
+
+      if (seen.has(key)) continue;
+
+      seen.set(key, {
+        key,
+        label:
+          (typeof entry === 'string' ? undefined : entry.label) ??
+          formatColor(parsed, format),
+      });
+    }
+
+    return [...seen.values()];
+  }, [colors, format]);
+
+  const [internalValue, setInternalValue] = useState<string | null>(
+    () => defaultValue ?? null,
+  );
+  const currentValue = value !== undefined ? value : internalValue;
+
+  const selectedColor = parseColor((currentValue ?? '').toString());
+  const selectedKey = selectedColor ? toHex(selectedColor) : null;
+  const isCustom =
+    !!selectedKey && !swatches.some((s) => s.key === selectedKey);
+
+  const publish = useEvent((next: string | null) => {
+    if (value === undefined) setInternalValue(next);
+
+    onChange?.(next);
+  });
+
+  const handleChange = useEvent((nextKey: string) => {
+    const parsed = parseColor(nextKey);
+
+    publish(parsed ? formatColor(parsed, format) : null);
+  });
+
+  const state = useRadioGroupState({
+    value: selectedKey ?? null,
+    isDisabled,
+    isReadOnly: props.isReadOnly,
+    onChange: handleChange,
+  });
+
+  // `useFocusableRef` wants the ref of a real focusable control to forward to,
+  // and a group of radios has no single one — `RadioGroup` takes the same
+  // approach for the same reason.
+  const domRef = useObjectRef(ref);
+  const { radioGroupProps, labelProps } = useRadioGroup(
+    {
+      ...props,
+      // Only name the group here when nothing else does: an `aria-label` set
+      // unconditionally would outrank the visible label React Aria wires up.
+      'aria-label': props.label ? undefined : ariaLabel ?? 'Colors',
+      orientation: 'horizontal',
+    },
+    state,
+  );
+
+  const group = (
+    <GroupElement
+      ref={domRef}
+      qa={qa || 'ColorSwatchGroup'}
+      data-size={size}
+      data-input-type="colorswatchgroup"
+      styles={styles}
+      mods={{
+        ...getValidationMods({ isInvalid, isValid }),
+        columns: !!columns,
+      }}
+      style={columns ? { '--columns': String(columns) } : undefined}
+    >
+      <RadiosElement {...radioGroupProps}>
+        {swatches.map((swatch) => (
+          <Swatch
+            key={swatch.key}
+            colorKey={swatch.key}
+            label={swatch.label}
+            state={state}
+            isDisabled={isDisabled}
+            size={size}
+            styles={swatchStyles}
+          />
+        ))}
+      </RadiosElement>
+      {showCustom ? (
+        <ColorPicker
+          aria-label="Custom color"
+          qa="ColorSwatchGroupCustom"
+          format={format}
+          type="clear"
+          size={SWATCH_PX[size] ?? SWATCH_PX.medium}
+          value={isCustom ? currentValue ?? null : null}
+          isDisabled={isDisabled}
+          isReadOnly={props.isReadOnly}
+          triggerStyles={CUSTOM_TRIGGER_STYLES}
+          swatchStyles={
+            isCustom ? CUSTOM_SWATCH_SELECTED_STYLES : CUSTOM_SWATCH_STYLES
+          }
+          onChange={publish}
+        >
+          {null}
+        </ColorPicker>
+      ) : null}
+    </GroupElement>
+  );
+
+  return wrapWithField(group, domRef, {
+    ...props,
+    labelProps: mergeProps(props.labelProps, labelProps),
+  });
+});
+
+(ColorSwatchGroup as any).cubeInputType = 'Picker';
