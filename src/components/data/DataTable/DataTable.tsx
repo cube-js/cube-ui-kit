@@ -360,8 +360,12 @@ function DataTable<T = any>(
       pinnedTopRows={pinnedTopRows}
       pinnedBottomRows={pinnedBottomRows}
       // Continuous across pages: row 101 is row 101, not row 1 of page two.
+      //
+      // Server mode counts too — the page and its size are known there just the
+      // same, and `rows` is that page. Only `'off'` starts at 1, because then
+      // there is no page to be on.
       rowNumberOffset={
-        paginationMode === 'client' ? (pageInfo.page - 1) * pageSize : 0
+        paginationMode === 'off' ? 0 : (pageInfo.page - 1) * pageSize
       }
       layout={layout}
       // Always on, unlike `ItemTable`. A result grid is read down a column, and

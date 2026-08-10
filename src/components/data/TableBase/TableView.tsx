@@ -56,6 +56,7 @@ import type {
   CubeTableHeaderContext,
   CubeTableLoadingIndicator,
   CubeTableRowContext,
+  CubeTableRowSection,
   CubeTableSort,
 } from './types';
 import type { useCellSelection } from './use-cell-selection';
@@ -577,6 +578,14 @@ export function TableView<T = any>(props: TableViewProps<T>) {
    * scroll onto blank space. And it draws no vertical rule: that rule would
    * land flush against the frame and read as a doubled edge.
    */
+  /** The pinned edge a row was rendered at, as the documented section name. */
+  function sectionOf(pinnedEdge?: 'top' | 'bottom'): CubeTableRowSection {
+    if (pinnedEdge === 'top') return 'pinnedTop';
+    if (pinnedEdge === 'bottom') return 'pinnedBottom';
+
+    return 'body';
+  }
+
   function lastColumnFlag(column: CubeResolvedColumn<T>) {
     return column.index === columns.length - 1 ? '' : undefined;
   }
@@ -1047,10 +1056,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       rowIndex,
       columnKey: column.key,
       columnIndex: column.index,
-      section: 'body',
-      isSelected: false,
-      isRowFocused: false,
-      isDropTarget: false,
+      section: sectionOf(pinnedEdge),
+      // The ROW's selection, matching the field's siblings (`isRowFocused`).
+      // Cell-range membership is a different question and has its own answer in
+      // `data-cell-selected`.
+      isSelected: selection?.isSelected(rowKey) ?? false,
     };
 
     const value = column.isStructural
@@ -1192,8 +1202,6 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       rowIndex,
       section: 'body',
       isSelected,
-      isFocused: false,
-      isDropTarget: false,
     };
     const extra = getRowProps?.(ctx);
 

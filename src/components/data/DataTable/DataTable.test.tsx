@@ -241,6 +241,28 @@ describe('DataTable', () => {
       expect(grid()).toHaveAttribute('aria-colcount', '3');
     });
 
+    it('stay continuous across SERVER pages too', () => {
+      renderWithRoot(
+        <DataTable
+          showRowNumbers
+          data={ROWS.slice(0, 2)}
+          columns={COLUMNS}
+          paginationMode="server"
+          page={3}
+          pageSize={10}
+          total={100}
+        />,
+      );
+
+      // The server handed us page 3 of 10, so these are rows 21 and 22 — the
+      // page and its size are just as known here as in client mode.
+      expect(
+        Array.from(
+          grid().querySelectorAll('tbody [data-kind="row-number"]'),
+        ).map((cell) => cell.textContent?.trim()),
+      ).toEqual(['21', '22']);
+    });
+
     it('stay continuous across pages', async () => {
       renderWithRoot(
         <DataTable
@@ -502,6 +524,37 @@ describe('DataTable', () => {
       ).toBeInTheDocument();
       expect(await screen.findByText('4 cells copied')).toBeInTheDocument();
     });
+  });
+
+  it('names the section a cell was rendered in', () => {
+    const TOTAL: Row = { id: 'total', region: 'Total', orders: 100 };
+    const seen = new Map<string, string>();
+
+    renderWithRoot(
+      <DataTable
+        data={ROWS.slice(0, 1)}
+        columns={[
+          {
+            key: 'orders',
+            title: 'Orders',
+            render: (value, row, _i, ctx) => {
+              // Keyed, not appended: `render` runs more than once per cell.
+              seen.set(String(row.id) + ':' + ctx.section, ctx.section);
+
+              return String(value);
+            },
+          },
+        ]}
+        pinnedTopRows={[TOTAL]}
+        pinnedBottomRows={[TOTAL]}
+      />,
+    );
+
+    // A `render` / `cellStyles` callback has to be able to tell a total from a
+    // row of data.
+    expect(new Set(seen.values())).toEqual(
+      new Set(['pinnedTop', 'body', 'pinnedBottom']),
+    );
   });
 
   it('adds resize handles by default', () => {

@@ -500,4 +500,41 @@ describe('ItemTable selection', () => {
     expect(rowBoxes()[3]).toBeDisabled();
     expect(rowBoxes()[0]).not.toBeDisabled();
   });
+
+  it('tells a cell renderer whether its row is selected', async () => {
+    const seen = new Map<string, boolean>();
+
+    renderWithRoot(
+      <ItemTable
+        selectionMode="multiple"
+        data={[
+          { id: '1', name: 'alpha' },
+          { id: '2', name: 'beta' },
+        ]}
+        columns={[
+          {
+            key: 'name',
+            title: 'Name',
+            render: (value, row, _i, ctx) => {
+              // Keyed, not appended: `render` runs more than once per cell.
+              seen.set(String(row.id), ctx.isSelected);
+
+              return String(value);
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(seen.get('1')).toBe(false);
+
+    await userEvent.click(
+      screen.getAllByRole('checkbox', { name: 'Select row' })[0],
+    );
+
+    // The context has to reflect it, or a `render` that highlights a selected
+    // row can never see the state it is supposed to react to.
+    await waitFor(() => expect(seen.get('1')).toBe(true));
+    expect(seen.get('2')).toBe(false);
+  });
 });

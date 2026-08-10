@@ -42,9 +42,20 @@ export interface CubeTableCellContext<T = any> {
   columnKey: string;
   columnIndex: number;
   section: CubeTableRowSection;
+  /** Whether the ROW is selected, matching `isRowFocused` below. */
   isSelected: boolean;
-  isRowFocused: boolean;
-  isDropTarget: boolean;
+  /**
+   * Not yet wired — always absent.
+   *
+   * Optional rather than `boolean`, because there is nowhere honest to compute
+   * them from where this context is built. Focus lives in the DOM, and drop
+   * state comes out of `useDropIndicator`, a hook that can only run inside the
+   * row component — so populating either means moving the `render` / `cellStyles`
+   * call sites into `TableRow`. Declaring them required and passing `false`
+   * would just be a documented lie.
+   */
+  isRowFocused?: boolean;
+  isDropTarget?: boolean;
 }
 
 export interface CubeTableRowContext<T = any> {
@@ -53,8 +64,9 @@ export interface CubeTableRowContext<T = any> {
   rowIndex: number;
   section: CubeTableRowSection;
   isSelected: boolean;
-  isFocused: boolean;
-  isDropTarget: boolean;
+  /** Not yet wired — always absent. See `CubeTableCellContext` for why. */
+  isFocused?: boolean;
+  isDropTarget?: boolean;
 }
 
 export interface CubeTableHeaderContext {
