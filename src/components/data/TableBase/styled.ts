@@ -91,8 +91,14 @@ const CELL_STYLES: Styles = {
   // cell sits inside the frame's own border.
   radius: {
     '': 0,
-    '@own(corner=start)': '($radius - 1bw) bottom-left',
-    '@own(corner=end)': '($radius - 1bw) bottom-right',
+    // `1cr` is the card radius (`--card-radius`), used directly rather than
+    // aliased onto a token of our own — and emphatically not onto `$radius`,
+    // which is the kit's GLOBAL radius. Declaring that here handed every
+    // Button, Input and Tag rendered inside a cell the card's 10px instead of
+    // the 6px they inherit everywhere else, and took every `1r`/`2r` unit in
+    // the subtree with it.
+    '@own(corner=start)': '(1cr - 1bw) bottom-left',
+    '@own(corner=end)': '(1cr - 1bw) bottom-right',
   },
   // The vertical rule, resolved in two steps so the border maps below stay
   // small. `$column-rule` is the TABLE's answer (root-level `column-dividers`);
@@ -157,8 +163,7 @@ export const TableElement = tasty({
     boxSizing: 'border-box',
     fill: '#surface',
     color: '#surface-text',
-    $radius: '1cr',
-    radius: { '': 0, 'shape=card': '$radius' },
+    radius: { '': 0, 'shape=card': '1cr' },
     border: { '': false, 'shape=card': true },
     overflow: 'hidden',
     // Bounded by the consumer (`height` / `maxHeight`). There is no page-scroll

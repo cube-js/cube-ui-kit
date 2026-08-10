@@ -1,5 +1,6 @@
 import { DatabaseIcon } from '../../../icons';
 import { renderWithRoot, screen } from '../../../test';
+import { Button } from '../../actions/Button';
 
 import { ItemTable } from './ItemTable';
 
@@ -380,5 +381,43 @@ describe('row move animation vs sticky columns', () => {
           scroller.getBoundingClientRect().left,
       ),
     ).toBe(0);
+  });
+});
+
+describe('token namespacing', () => {
+  it('does not redefine the global radius for its contents', async () => {
+    renderWithRoot(
+      <ItemTable
+        shape="card"
+        data={ROWS.slice(0, 2)}
+        columns={[
+          {
+            key: 'name',
+            title: 'Name',
+            render: () => <Button qa="InCell">Act</Button>,
+          },
+        ]}
+        height="300px"
+      />,
+    );
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    const root = grid();
+    const button = document.querySelector<HTMLElement>('[data-qa="InCell"]')!;
+
+    // A component-owned token named after a global one is emitted as a custom
+    // property on the element that declares it, so it silently redefines that
+    // global for EVERYTHING rendered inside. Naming the card's corner radius
+    // `$radius` gave every Button, Input and Tag in a cell the card's 10px
+    // instead of the 6px they have everywhere else — and took every `1r`/`2r`
+    // unit in the subtree with it. The table looked fine; the Button did not.
+    expect(getComputedStyle(root).getPropertyValue('--radius').trim()).not.toBe(
+      '',
+    );
+    expect(getComputedStyle(button).borderTopLeftRadius).toBe(
+      getComputedStyle(document.body).getPropertyValue('--radius').trim() ||
+        '6px',
+    );
   });
 });
