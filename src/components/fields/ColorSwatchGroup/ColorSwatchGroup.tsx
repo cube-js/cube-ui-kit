@@ -142,11 +142,11 @@ const SwatchElement = tasty({
       '': 'inset 0 0 0 1bw #dark.15',
       selected: SELECTED_RING,
     },
+    // A 1bw offset keeps the ring clear of the 4px gap to its neighbours.
     outline: {
-      '': '2bw #focus.0',
-      focused: '2bw #focus',
+      '': '2bw #focus.0 / 1bw',
+      focused: '2bw #focus / 1bw',
     },
-    outlineOffset: 2,
     transition: 'theme',
   },
 });
