@@ -70,9 +70,11 @@ export {
   snapToGrid,
   minSize,
   maxSize,
+  BOARD_SELECTION_CANCEL,
 } from './components/layout/Board';
 export type {
   CubeBoardProps,
+  BoardSelectionMode,
   CubeBoardWidgetProps,
   CubeBoardProviderProps,
   CubeBoardResponsiveProps,
@@ -93,6 +95,8 @@ export { Root } from './components/Root';
 export type { CubeRootProps } from './components/Root';
 export { DisplayTransition } from './components/helpers/DisplayTransition/DisplayTransition';
 export type { DisplayTransitionProps } from './components/helpers/DisplayTransition/DisplayTransition';
+export { IconSwitch } from './components/helpers/IconSwitch/IconSwitch';
+export type { CubeIconSwitchProps } from './components/helpers/IconSwitch/IconSwitch';
 
 // Navigation types and helpers
 export type {
@@ -230,8 +234,6 @@ export * from './components/navigation';
 export * from './components/data';
 
 // molecules
-export { FileTabs } from './components/organisms/FileTabs/FileTabs';
-export type { CubeFileTabProps } from './components/organisms/FileTabs/FileTabs';
 export { StatsCard } from './components/organisms/StatsCard/StatsCard';
 export type { CubeStatsCard } from './components/organisms/StatsCard/StatsCard';
 export {

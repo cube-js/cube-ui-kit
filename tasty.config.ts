@@ -244,6 +244,10 @@ export default {
     '#tabs-fade-right',
     '#slider-thumb',
     '#slider-thumb-hovered',
+    // ColorPicker: the color being edited, and the black/white that reads on
+    // top of it. Both are set as inline custom properties per render.
+    '#color-picker',
+    '#color-picker-contrast',
 
     // Custom Property Tokens (from src/tokens/base.ts)
     '$tab-indicator-size',

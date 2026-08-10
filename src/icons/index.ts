@@ -86,6 +86,7 @@ export { PauseCircleIcon } from './PauseCircleIcon';
 export { PauseIcon } from './PauseIcon';
 export { PercentageIcon } from './PercentageIcon';
 export { PieChartIcon } from './PieChartIcon';
+export { PipetteIcon } from './PipetteIcon';
 export { PlayCircleIcon } from './PlayCircleIcon';
 export { PlayIcon } from './PlayIcon';
 export { PlusIcon } from './PlusIcon';

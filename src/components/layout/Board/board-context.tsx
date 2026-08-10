@@ -33,9 +33,16 @@ export interface BoardEntry {
   getMaxRows: () => number;
   getContainerHeight: () => number;
   getLayout: () => LayoutItem[];
+  /**
+   * Keys of the widgets currently selected on this board, or `null` when the
+   * board has no selection. Read at drag start to decide whether the gesture
+   * moves one widget or a whole group.
+   */
+  getSelectedKeys: () => ReadonlySet<string> | null;
   /** Update the board layout. `commit` fires `onLayoutChange`. */
   applyLayout: (layout: LayoutItem[], commit: boolean) => void;
-  setPlaceholder: (item: LayoutItem | null) => void;
+  /** Replace every drop-slot preview. Pass `[]` to clear. */
+  setPlaceholders: (items: LayoutItem[]) => void;
   isDroppable: () => boolean;
 }
 
@@ -55,8 +62,24 @@ export interface BoardDragState {
   itemId: string;
   /** Snapshot of the dragged item (grid units; w/h preserved across boards). */
   item: LayoutItem;
+  /**
+   * Every widget moving in this gesture, the grabbed one first. Length 1 for an
+   * ordinary drag, so `itemIds[0] === itemId` always holds and any check against
+   * this set is a strict superset of the equivalent check against `itemId`.
+   */
+  itemIds: string[];
+  /** Drag-start snapshots of `itemIds`, in the same order. */
+  items: LayoutItem[];
   /** Dragged widget rect in viewport coordinates (follows the pointer). */
   rect: ViewportRect;
+  /** `rect` as measured at drag start — lets any host derive the gesture delta. */
+  startRect: ViewportRect;
+  /**
+   * Viewport rect of every group member's host, measured once at drag start.
+   * Drag start is the only safe window to measure (see `frozenRectsRef` in the
+   * registry); measuring later would feed the preview back into itself.
+   */
+  memberRects: Map<string, ViewportRect>;
   pointerType: string;
   /**
    * Ids of boards nested inside the dragged widget, captured at drag start.
@@ -82,6 +105,13 @@ export interface BoardRegistryContextValue {
   onDragMove: (deltaX: number, deltaY: number, pointerType: string) => void;
   onDragEnd: () => void;
   dragState: BoardDragState | null;
+  /**
+   * Synchronously-updated mirror of `dragState`. `dragState` is React state, so
+   * a handler running in the same tick as `onDragStart` — such as the drag
+   * lifecycle `WidgetHost` fires immediately afterwards — still sees the
+   * previous value and must read this instead.
+   */
+  getDragState: () => BoardDragState | null;
 }
 
 export const BoardRegistryContext =

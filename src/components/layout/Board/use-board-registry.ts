@@ -19,6 +19,7 @@ import {
   getLayoutItem,
   LayoutItem,
   moveElement,
+  moveElements,
 } from './grid-core';
 
 /**
@@ -207,6 +208,8 @@ export function useBoardRegistry(
     setDragStateInternal(next);
   }, []);
 
+  const getDragState = useCallback(() => dragStateRef.current, []);
+
   // Record the live cursor for the ancestor-handoff gate (see `pointerPosRef`).
   // Capture phase so it lands before `useMove`'s own window listeners drive the
   // frame's `onDragMove`.
@@ -341,18 +344,75 @@ export function useBoardRegistry(
       widgetNode: HTMLElement | null,
     ) => {
       const entry = boardsRef.current.get(boardId);
-      const item = entry ? getLayoutItem(entry.getLayout(), itemId) : undefined;
+      const layoutAtStart = entry?.getLayout() ?? [];
+      const item = entry ? getLayoutItem(layoutAtStart, itemId) : undefined;
       if (!entry || !item) return;
 
-      // Record boards nested inside the dragged widget so they are never picked
-      // as a drop target (dropping a widget into a board nested within itself
-      // would unmount it). Computed here, before the widget floats into the
-      // overlay, while its nested boards are still in-grid descendants.
+      // ---- Resolve the gesture's membership --------------------------------
+      //
+      // This is the ONE place a group drag is decided. Everything downstream
+      // branches on `itemIds.length`, never on the selection itself, which is
+      // what keeps the single-widget path provably untouched.
+      //
+      // Three rules, all enforced here:
+      //  1. The grabbed widget must already be in the selection. Grabbing an
+      //     unselected widget is an ordinary drag and never moves the selection
+      //     — whether the grab should *replace* the selection is app policy.
+      //  2. Members are resolved against this board's own layout, so a nested
+      //     board's ids can never leak into another board's group.
+      //  3. A static widget is never a member, matching `moveElement`'s guard.
+      const selected = entry.getSelectedKeys();
+      const memberIds =
+        selected && selected.has(itemId)
+          ? layoutAtStart
+              .filter(
+                (l) =>
+                  l.i !== itemId &&
+                  selected.has(l.i) &&
+                  (!l.static || l.isDraggable === true),
+              )
+              .map((l) => l.i)
+          : [];
+      const itemIds = [itemId, ...memberIds];
+
+      // Host nodes of every member, needed both to exclude nested boards and to
+      // measure the float rects below. Ids are unique per provider and `itemIds`
+      // only holds ids from this board, so the query cannot pick up a nested
+      // board's widgets.
+      const memberNodes: HTMLElement[] = widgetNode ? [widgetNode] : [];
+      const memberRects = new Map<string, ViewportRect>();
+
+      if (memberIds.length > 0) {
+        const contentNode = entry.getContentNode();
+        const idSet = new Set(itemIds);
+
+        contentNode
+          ?.querySelectorAll<HTMLElement>('[data-board-widget-id]')
+          .forEach((el) => {
+            const id = el.dataset.boardWidgetId;
+            if (!id || !idSet.has(id)) return;
+            if (id !== itemId) memberNodes.push(el);
+            const r = el.getBoundingClientRect();
+            memberRects.set(id, {
+              left: r.left,
+              top: r.top,
+              width: r.width,
+              height: r.height,
+            });
+          });
+      }
+
+      // Record boards nested inside the dragged widget(s) so they are never
+      // picked as a drop target (dropping a widget into a board nested within
+      // itself would unmount it). Computed here, before the widget floats into
+      // the overlay, while its nested boards are still in-grid descendants.
       const nested = new Set<string>();
-      if (widgetNode) {
+      if (memberNodes.length > 0) {
         boardsRef.current.forEach((e) => {
           const node = e.getContentNode();
-          if (node && widgetNode.contains(node)) nested.add(e.id);
+          if (node && memberNodes.some((host) => host.contains(node))) {
+            nested.add(e.id);
+          }
         });
       }
       nestedInDraggedRef.current = nested;
@@ -382,17 +442,26 @@ export function useBoardRegistry(
         ...item,
         constraints: item.constraints ?? store.get(itemId)?.constraints,
       };
+      const items = itemIds
+        .map((id) =>
+          id === itemId ? draggedItem : getLayoutItem(layoutAtStart, id),
+        )
+        .filter((it): it is LayoutItem => it !== undefined);
       const next: BoardDragState = {
         sourceBoardId: boardId,
         currentBoardId: boardId,
         itemId,
         item: draggedItem,
+        itemIds,
+        items,
         rect,
+        startRect: rect,
+        memberRects,
         pointerType,
         nestedBoardIds: nested,
       };
       setDragState(next);
-      entry.setPlaceholder({ ...item });
+      entry.setPlaceholders(items.map((it) => ({ ...it })));
     },
   );
 
@@ -473,7 +542,49 @@ export function useBoardRegistry(
         return;
       }
       entry.applyLayout(compacted, false);
-      entry.setPlaceholder(getLayoutItem(compacted, item.i) ?? null);
+      entry.setPlaceholders(
+        [getLayoutItem(compacted, item.i)].filter(
+          (it): it is LayoutItem => it !== undefined,
+        ),
+      );
+    },
+    [],
+  );
+
+  /**
+   * Move the whole selection rigidly to an absolute delta.
+   *
+   * Unlike the single-widget path, each frame is recomputed from the drag-start
+   * snapshot rather than from the previous frame. A rigid group at an absolute
+   * delta is a pure function of that delta, so dragging back retraces the
+   * arrangement exactly, pushed neighbours never accumulate, and there is no
+   * hysteresis. The single path's frame-to-frame continuity exists to stop
+   * `moveElement` sinking a no-op placement to the bottom of a column;
+   * `moveElements` places the group explicitly, so that does not apply here.
+   */
+  const moveGroupWithinBoard = useCallback(
+    (entry: BoardEntry, ds: BoardDragState, dx: number, dy: number) => {
+      const pp = entry.getPositionParams();
+      const result = moveElements(
+        sourceSnapshotRef.current,
+        new Set(ds.itemIds),
+        dx,
+        dy,
+        {
+          compactor: entry.getCompactor(),
+          cols: pp.cols,
+          maxRows: entry.getMaxRows(),
+        },
+      );
+
+      if (!result.moved) return;
+
+      entry.applyLayout(result.layout, false);
+      entry.setPlaceholders(
+        ds.itemIds
+          .map((id) => getLayoutItem(result.layout, id))
+          .filter((it): it is LayoutItem => it !== undefined),
+      );
     },
     [],
   );
@@ -588,7 +699,120 @@ export function useBoardRegistry(
         if (!advanced || overlaps) continue;
 
         entry.applyLayout(compacted, false);
-        entry.setPlaceholder(landed);
+        entry.setPlaceholders([landed]);
+        lastLandingRef.current = { x: landed.x, y: landed.y };
+        return;
+      }
+    },
+    [],
+  );
+
+  /**
+   * Keyboard equivalent of `moveGroupWithinBoard`: scan outward for the nearest
+   * whole-group delta that resolves cleanly.
+   *
+   * Constraints are resolved through the **grabbed** widget only, and the delta
+   * it yields is applied to the rest. `applyPositionConstraints` returns an
+   * absolute position, so running it per member would shear the group apart
+   * under `snapToGrid` or any app constraint — and the grabbed widget is the one
+   * the user is aiming with.
+   *
+   * Unlike the pointer path this steps from the live layout, not the drag-start
+   * snapshot, because keyboard moves accumulate one cell at a time.
+   */
+  const moveGroupWithKeyboard = useCallback(
+    (entry: BoardEntry, ds: BoardDragState, deltaX: number, deltaY: number) => {
+      const pp = entry.getPositionParams();
+      const compactor = entry.getCompactor();
+      const layout = entry.getLayout();
+      const live = getLayoutItem(layout, ds.itemId);
+      if (!live) return;
+
+      const directionX = Math.sign(deltaX);
+      const directionY = Math.sign(deltaY);
+      if (directionX === 0 && directionY === 0) return;
+
+      const maxRows = entry.getMaxRows();
+      const ids = new Set(ds.itemIds);
+      const members = layout.filter((l) => ids.has(l.i));
+      if (members.length === 0) return;
+
+      // Headroom of the whole block, so the scan never proposes a delta that is
+      // clamped back to a no-op.
+      const attempts =
+        directionX < 0
+          ? Math.min(...members.map((l) => l.x))
+          : directionX > 0
+            ? Math.min(...members.map((l) => pp.cols - l.w - l.x))
+            : directionY < 0
+              ? Math.min(...members.map((l) => l.y))
+              : Number.isFinite(maxRows)
+                ? Math.min(...members.map((l) => maxRows - l.h - l.y))
+                : Math.max(1, bottom(layout) - live.y);
+      const seen = new Set<string>();
+      const beforePairs = overlappingPairs(layout);
+
+      for (let distance = 1; distance <= Math.max(0, attempts); distance++) {
+        const candidate = applyPositionConstraints(
+          entry.getConstraints(),
+          ds.item,
+          live.x + directionX * distance,
+          live.y + directionY * distance,
+          {
+            cols: pp.cols,
+            maxRows,
+            containerWidth: pp.containerWidth,
+            containerHeight: entry.getContainerHeight(),
+            rowHeight: pp.rowHeight,
+            margin: pp.margin,
+            layout,
+          },
+        );
+        const candidateKey = `${candidate.x}:${candidate.y}`;
+        if (seen.has(candidateKey)) continue;
+        seen.add(candidateKey);
+
+        if (
+          (directionX !== 0 &&
+            (Math.sign(candidate.x - live.x) !== directionX ||
+              candidate.y !== live.y)) ||
+          (directionY !== 0 &&
+            (Math.sign(candidate.y - live.y) !== directionY ||
+              candidate.x !== live.x))
+        ) {
+          continue;
+        }
+
+        const result = moveElements(
+          layout,
+          ids,
+          candidate.x - live.x,
+          candidate.y - live.y,
+          { compactor, cols: pp.cols, maxRows },
+        );
+        if (!result.moved) continue;
+
+        const landed = getLayoutItem(result.layout, ds.itemId);
+        if (!landed) continue;
+
+        const advanced =
+          directionX !== 0
+            ? Math.sign(landed.x - live.x) === directionX && landed.y === live.y
+            : Math.sign(landed.y - live.y) === directionY &&
+              landed.x === live.x;
+        if (
+          !advanced ||
+          (!compactor.allowOverlap && hasNewOverlap(beforePairs, result.layout))
+        ) {
+          continue;
+        }
+
+        entry.applyLayout(result.layout, false);
+        entry.setPlaceholders(
+          ds.itemIds
+            .map((id) => getLayoutItem(result.layout, id))
+            .filter((it): it is LayoutItem => it !== undefined),
+        );
         lastLandingRef.current = { x: landed.x, y: landed.y };
         return;
       }
@@ -672,7 +896,7 @@ export function useBoardRegistry(
         compacted.filter((l) => l.i !== item.i),
         false,
       );
-      target.setPlaceholder({ ...landed });
+      target.setPlaceholders([{ ...landed }]);
     },
     [],
   );
@@ -682,9 +906,16 @@ export function useBoardRegistry(
       const ds = dragStateRef.current;
       if (!ds) return;
 
+      const isGroup = ds.itemIds.length > 1;
+
       if (pointerType === 'keyboard') {
         const source = boardsRef.current.get(ds.sourceBoardId);
-        if (source) moveWithKeyboard(source, ds.item, deltaX, deltaY);
+        if (!source) return;
+        if (isGroup) {
+          moveGroupWithKeyboard(source, ds, deltaX, deltaY);
+        } else {
+          moveWithKeyboard(source, ds.item, deltaX, deltaY);
+        }
         return;
       }
 
@@ -703,7 +934,12 @@ export function useBoardRegistry(
       // it came from. Frozen rects make this deterministic (no preview-induced
       // flip-flop).
       const anchor = rectCenter(newRect);
-      let target = hitTest(anchor) ?? source ?? null;
+      // A group drag never leaves its source board. Cross-board transfer is
+      // single-item throughout (`WidgetTransferInfo`, the carried preview, the
+      // free-slot fallback), and degrading a group to a single-widget transfer
+      // would silently split a selection the user deliberately made. Pinning the
+      // target keeps the whole gesture in-board and makes the limit testable.
+      let target = isGroup ? source : hitTest(anchor) ?? source ?? null;
 
       // Keep the drag on a nested source board while the cursor is still within
       // the widget that hosts it, instead of handing off to an ancestor board.
@@ -745,10 +981,17 @@ export function useBoardRegistry(
           const prev = boardsRef.current.get(ds.currentBoardId);
           const snap = targetSnapshotsRef.current.get(ds.currentBoardId);
           if (snap) prev?.applyLayout(cloneLayout(snap), false);
-          prev?.setPlaceholder(null);
+          prev?.setPlaceholders([]);
           previewRef.current = null;
         }
-        moveWithinBoard(target, ds.item, x, y);
+        if (isGroup) {
+          // The group moves by the delta the grabbed widget travelled from its
+          // drag-start position — an absolute delta, recomputed from the
+          // snapshot each frame.
+          moveGroupWithinBoard(target, ds, x - ds.item.x, y - ds.item.y);
+        } else {
+          moveWithinBoard(target, ds.item, x, y);
+        }
         setDragState({
           ...ds,
           currentBoardId: ds.sourceBoardId,
@@ -771,7 +1014,7 @@ export function useBoardRegistry(
           const snap = targetSnapshotsRef.current.get(ds.currentBoardId);
           if (snap) prev?.applyLayout(cloneLayout(snap), false);
         }
-        prev?.setPlaceholder(null);
+        prev?.setPlaceholders([]);
         // Drop the carried working layout so the newly entered target seeds a
         // fresh preview from its own clean snapshot.
         previewRef.current = null;
@@ -909,7 +1152,7 @@ export function useBoardRegistry(
     const ids = new Set(affectedRef.current);
     ids.add(ds.sourceBoardId);
     ids.add(ds.currentBoardId);
-    ids.forEach((id) => boardsRef.current.get(id)?.setPlaceholder(null));
+    ids.forEach((id) => boardsRef.current.get(id)?.setPlaceholders([]));
 
     affectedRef.current.clear();
     sourceSnapshotRef.current = [];
@@ -930,7 +1173,16 @@ export function useBoardRegistry(
       onDragMove,
       onDragEnd,
       dragState,
+      getDragState,
     }),
-    [store, registerBoard, onDragStart, onDragMove, onDragEnd, dragState],
+    [
+      store,
+      registerBoard,
+      onDragStart,
+      onDragMove,
+      onDragEnd,
+      dragState,
+      getDragState,
+    ],
   );
 }

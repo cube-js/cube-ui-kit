@@ -22,8 +22,7 @@ import {
   useState,
 } from 'react';
 import { useFilter, useKeyboard } from 'react-aria';
-import { Section as BaseSection, Item, useListState } from 'react-stately';
-import { CubeCollectionItemProps } from 'src/components/CollectionItem';
+import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useI18n } from '../../../i18n';
 import { LoadingIcon } from '../../../icons';
@@ -31,6 +30,10 @@ import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
 import { StyledHeader } from '../../actions/Menu/styled';
+import {
+  CubeCollectionItemProps,
+  CollectionItem as Item,
+} from '../../CollectionItem';
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import {
@@ -587,7 +590,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       <Item
         key={term}
         textValue={term}
-        {...mergeProps(customValueProps, newCustomValueProps)}
+        {...mergeProps(customValueProps ?? {}, newCustomValueProps ?? {})}
       >
         {term}
       </Item>
@@ -1166,7 +1169,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   props: CubeFilterListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
 ) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
 
-FilterListBox.Item = ListBox.Item;
+FilterListBox.Item = Item;
 
 FilterListBox.Section = BaseSection;
 

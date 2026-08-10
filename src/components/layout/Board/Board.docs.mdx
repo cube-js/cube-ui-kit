@@ -40,6 +40,16 @@ clipped by an ancestor's `overflow: hidden`.
   widget is placed exactly where you drop it and its neighbours are never pushed
   or swapped; without `allowOverlap` a drop onto an occupied cell is blocked, and
   with `allowOverlap` widgets may stack for a fully free canvas.
+- **Selection** — off by default. Pressing a widget selects it and arms a drag
+  of the selection: selecting and grabbing are one gesture, so move the pointer
+  and it drags, stay still and it was just a selection. <kbd>Shift</kbd> (or
+  <kbd>Cmd</kbd>/<kbd>Ctrl</kbd>) toggles a widget's membership. Keys are layout
+  item ids, scoped to a single board, and always reported in layout order.
+- **Selection is focus-like** — it tracks what the user is working with, and
+  touching anything else moves it on: pressing another widget makes *that* the
+  selection, pressing a control inside a widget drops it, and so does focus
+  leaving the board. With `'multiple'`, pressing an already-selected widget
+  keeps the selection so a drag moves the whole block.
 
 ## Properties
 
@@ -66,6 +76,13 @@ clipped by an ancestor's `overflow: hidden`.
 - **`dragHandle`** `string` — CSS selector for the only elements from which a pointer drag may start. Can be overridden per widget.
 - **`showGridLines`** `boolean | 'drag'` (default: `false`) — Show grid lines behind the widgets. `true` always, `'drag'` only while a widget is being dragged or resized. A nested board that does not set this inherits an enabled ancestor's grid lines, showing its own while a drag is in progress.
 - **`isAligned`** `boolean` (default: `false`) — Align a nested board with its ancestor `Board`'s layout. Only takes effect when the board is nested inside another `Board`'s widget. When set, every cell matches the parent's cell size exactly: the board inherits the parent's column pitch (deriving its own column count from its measured width so cells stay parent-sized as the container is resized) and uses the parent's row height verbatim. It never shrinks rows to fit — pair it with an `isAutoHeight` container so the widget grows to fit its rows at that height. `cols`/`rowHeight` then act as fallbacks used only until the parent metrics resolve.
+- **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'none'`) — Whether widgets can be selected, and how many at a time. `'multiple'` also enables the marquee and rigid group movement.
+- **`selectedKeys`** `string[]` — Controlled selection. Keys are layout item ids (`LayoutItem.i`).
+- **`defaultSelectedKeys`** `string[]` — Initial selection for uncontrolled usage.
+- **`onSelectionChange`** `(keys: string[]) => void` — Called when the selection changes. Keys are deduped and returned in the board's layout order, never in click order.
+- **`selectionCancel`** `string` (default: `BOARD_SELECTION_CANCEL`) — CSS selector marking interactive descendants. A press on one never selects and never starts a drag, so the control keeps its own click *and* its native focus; it also drops the selection, since interacting with a widget's content means the user has moved on. On a selectable board this doubles as the drag guard, so form controls stay usable without also configuring `dragCancel`. The default covers native form controls, links, and the common ARIA widget roles, plus `[data-no-select]` as an escape hatch. Pass `''` to disable the guard. Can be overridden per widget.
+- **`allowMarqueeSelection`** `boolean` (default: `selectionMode === 'multiple'`) — Draw a rubber-band selection when a drag starts on empty board space. A press on a widget selects and drags instead, so the lasso owns empty canvas only. Hold <kbd>Shift</kbd> or <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> to add to the existing selection rather than replacing it.
+- **`onWidgetsDelete`** `(keys: string[]) => void` — Called when <kbd>Delete</kbd>/<kbd>Backspace</kbd> is pressed with a non-empty selection and focus is not in an editable field. **Board never mutates the layout itself** — removing the widgets is yours to do, which is what lets you make it undoable. Board only handles these keys when this handler is set.
 - **`constraints`** `LayoutConstraint[]` — Grid/item layout constraints.
 - **`width`** `number` — Explicit width (disables measurement; useful for SSR/tests).
 - **`widgetProps`** `Partial<Board.Widget props>` — Default props applied to every widget this board hosts (per-widget `Board.Widget` props override these). Use it to add a card border to every widget (`widgetProps={{ isCard: true }}`) or set shared `styles`/sizing defaults without repeating them on each widget.
@@ -90,6 +107,16 @@ clipped by an ancestor's `overflow: hidden`.
 - **`isAutoHeight`** `boolean` (default: `false`) — Grow this widget's height in its board to fit its content (only ever increases, never shrinks). Pair it with a nested `Board isAligned` so the container expands until the inner board's rows fit at the parent's row height. It also pins the widget's resize floor: you cannot drag the widget shorter than the height its content currently needs.
 - **`dragCancel`** `string` — Override the board's `dragCancel` selector for this widget.
 - **`dragHandle`** `string` — Override the board's `dragHandle` selector for this widget.
+- **`isSelectable`** `boolean` — Disable selection for this widget while the board's `selectionMode` is on.
+- **`selectionCancel`** `string` — Override the board's `selectionCancel` selector for this widget.
+- **`aria-label`** `string` — Accessible name for the widget. Falls back to `qa`, then the layout item id — both developer-facing, so set this whenever the widget is user-visible. Also what the selection announcement reads out.
+
+A widget clips its content to its grid cell, card or not — otherwise a nested
+board with more rows than currently fit, or a mid-drag reflow, would paint over
+its neighbours. The cost is that a descendant's `outline` is cropped at the edge
+(an outline is clipped by an *ancestor's* overflow, not its own), so a widget
+whose content must paint outside — a control drawing its own active ring — sets
+`overflow="visible"`, or draws the ring inset with a negative `outlineOffset`.
 
 ### Board.Provider
 
@@ -126,6 +153,48 @@ container's measured width, mirroring react-grid-layout's `Responsive` +
 
 A breakpoint with no layout is synthesized from the nearest available one,
 corrected into bounds and compacted for the target column count.
+
+### Modifiers
+
+Every widget host exposes these as `data-*` attributes, and any style map passed
+through `widgetProps.styles` or a per-widget `styles` resolves against them.
+
+- **`selected`** — the widget is in the board's selection.
+- **`card`** — the widget draws a card border (`isCard`).
+- **`draggable`** — the widget can be dragged and no drag is in flight.
+- **`drag`** — the widget is being dragged.
+- **`floating`** — this is the clone floating in the drag overlay.
+- **`resizing`** — the widget is being resized.
+- **`static`** — the layout item is `static`.
+- **`hovered`**, **`focus-visible`** — pointer and keyboard-focus states.
+- **`settled`** — the board has painted its widgets once, so position changes animate.
+
+Selection is an *edge* treatment — a `#primary-border` border plus a `#primary`
+ring — because it reads as a focus-like state rather than a fill. `outline` stays
+reserved for the real focus ring, which is what keeps the two legible together:
+they use different tokens and the focus outline sits one border-width further
+out. To restyle it, override the same keys:
+
+```jsx
+<Board
+  selectionMode="multiple"
+  widgetProps={{
+    styles: {
+      border: { '': true, selected: '#note-border' },
+      shadow: { '': false, selected: '0 0 0 1bw #note' },
+    },
+  }}
+/>
+```
+
+### Data attributes
+
+Supported hooks for tests, E2E, and building your own selection overlay:
+
+- **`data-board-id`** on the board element — the board's `id`.
+- **`data-board-widget-host`** on every widget host — presence only, "this is a widget host".
+- **`data-board-widget-id`** on every widget host — which widget.
+- **`data-selected`** on a selected host.
 
 ### Base Properties
 
@@ -257,14 +326,84 @@ touch drags capture the pointer, so they do not trigger it.
 
 <Story of={BoardStories.TabsBoard} />
 
+### Selection
+
+Click to select, Shift/Cmd/Ctrl-click to add or remove, and drag from empty board
+Press a widget to select it, <kbd>Shift</kbd>-press to add or remove one, and
+drag from empty board space to lasso. Because the press both selects and arms the
+drag, grabbing a widget you have not selected simply makes it the selection and
+moves it; grabbing one that *is* selected moves the whole block rigidly — keeping
+its shape horizontally, clamping against the grid edge as a unit rather than
+collapsing, and committing once.
+
+A group reflows exactly like a single widget: it is compacted by the same rules,
+so on a `vertical` board it can no more be parked in empty space than one widget
+can, and the widgets around it close the gap in the same frame. Under
+`compact="free"` (or `null`) nothing compacts, so the block stays precisely where
+it was dropped.
+
+<Story of={BoardStories.Selection} />
+
+### Interactive content keeps its clicks
+
+<Story of={BoardStories.SelectionCancel} />
+
+### Controlled selection and deleting widgets
+
+<Story of={BoardStories.ControlledSelection} />
+
+### Restyling the selection
+
+<Story of={BoardStories.RestyledSelection} />
+
 ## Accessibility
 
-- Widgets are focusable when draggable. Press <kbd>Tab</kbd> to focus a widget,
-  then use the arrow keys to move it one cell at a time. Arrow keys only move
-  the widget when the widget host itself is focused — not when focus is inside
-  a nested control (e.g. an <kbd>input</kbd> or <kbd>textarea</kbd>).
-- Dragging, resizing, and keyboard movement are all handled by React Aria's
-  `useMove`, which normalizes mouse, touch, and keyboard interactions.
+### Keyboard Navigation
+
+| Key | Action |
+| --- | --- |
+| <kbd>Tab</kbd> | Move focus to the next widget. |
+| <kbd>Arrow</kbd> keys | Move the focused widget one cell. With a selection, moves the whole selection. |
+| <kbd>Space</kbd> | Toggle the focused widget's selection (`selectionMode` only). |
+| <kbd>Shift</kbd> / <kbd>Cmd</kbd> / <kbd>Ctrl</kbd> + press | Add or remove a widget from the selection. |
+| <kbd>Escape</kbd> | Clear the selection. |
+| <kbd>Delete</kbd> / <kbd>Backspace</kbd> | Request deletion of the selection via `onWidgetsDelete`. |
+
+Arrow keys and <kbd>Space</kbd> only act when the widget host **itself** is
+focused, never when focus is inside a nested control, so an `input`,
+`textarea`, or `button` inside a widget keeps every key it needs. Board's own
+keys are handled on the board element rather than on `document`, and are only
+consumed when they actually do something — an <kbd>Escape</kbd> with nothing
+selected still reaches an ancestor Dialog, and <kbd>Backspace</kbd> stays
+available for text editing and browser-back.
+
+Every draggable or selectable widget is its own tab stop. Roving tabindex would
+be an improvement on a large board, but arrow keys are already claimed for
+movement, so it needs a navigation key set of its own — see below.
+
+### Screen Reader Support
+
+Each widget host is a `group` with an accessible name, taken from
+`aria-label`, then `qa`, then the layout item id — set `aria-label` on any
+user-visible widget, since the other two are developer-facing. Draggable widgets
+carry a localized `aria-roledescription`, and selectable ones advertise
+`aria-keyshortcuts="Space"`.
+
+Selection state is conveyed two ways: a selected widget is described as
+"Selected" via `aria-describedby`, and every selection change is announced
+through a polite live region owned by the board ("Revenue selected", "3 widgets
+selected", "Selection cleared"). A marquee announces once, on release — not once
+per pointer frame.
+
+### ARIA Properties
+
+Board deliberately does **not** use a collection role. `aria-selected` is only
+valid on `option`, `gridcell`, `row`, `treeitem` and friends, and every one of
+those requires presentational children — but a Board widget hosts arbitrary
+interactive content (nested boards, tabs, inputs), and a `grid`'s keyboard model
+would fight `useMove`'s arrow keys. Rather than ship ARIA that lies about the
+structure, selection is exposed through the name, description, and live region
+described above. Set `aria-label` on your widgets and this reads correctly.
 
 ## Not yet supported
 
@@ -276,6 +415,23 @@ touch drags capture the pointer, so they do not trigger it.
   placeholder, and new `onDrop`/`droppingItem` props). Add widgets
   programmatically (render a new `Board.Widget` and add its layout item), or drag
   between boards with `Board.Provider`.
+- **Cross-board group transfer** — a group drag never leaves its source board.
+  Cross-board transfer is single-item throughout (`WidgetTransferInfo`, the
+  carried preview, the free-slot fallback), and landing a group on a board with a
+  different column count has no obvious right answer. Degrading to a
+  single-widget transfer would silently split a selection the user made, so the
+  gesture is confined instead. Drag widgets across one at a time.
+- **Collection ARIA semantics** — `role="grid"`/`option`, `aria-selected` and
+  `aria-multiselectable`, for the reason above.
+- **Roving tabindex** — needs a widget-navigation key set that does not collide
+  with `useMove`'s arrow keys.
+- **<kbd>Cmd/Ctrl</kbd>+<kbd>A</kbd>** — select all.
+- **Cross-board marquee and cross-board selection** — selection is per board; a
+  `Board.Provider` shares drag, not selection.
+- **Windows High Contrast Mode** — no component in the kit styles for
+  `forced-colors` yet. The selected state uses a tint, a border *and* an extra
+  ring, so it does not rely on hue alone, but a full forced-colors pass is a
+  system-wide change.
 
 ## Attribution
 

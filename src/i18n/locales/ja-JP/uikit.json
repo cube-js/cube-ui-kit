@@ -125,6 +125,14 @@
     "openContextMenu": "コンテキストメニューを開く",
     "contextMenu": "context-menu"
   },
+  "board": {
+    "widget": "ウィジェット",
+    "draggableWidget": "ドラッグ可能なウィジェット",
+    "selected": "選択中",
+    "widgetSelected": "{{name}} を選択しました",
+    "widgetsSelected": "{{count}} 個のウィジェットを選択しました",
+    "selectionCleared": "選択を解除しました"
+  },
   "pagination": {
     "ariaLabel": "ページネーション",
     "firstPage": "最初のページ",

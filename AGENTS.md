@@ -10,6 +10,22 @@ Entry point for AI agents working on `@cube-dev/ui-kit`.
 
 > **Maintenance note:** The design-system reference (tokens, presets, colors, modifiers, state syntax, form system, icons) lives in `src/stories/Usage.docs.mdx` (Storybook → **Getting Started / Usage**). The component creation guide lives in `src/stories/CreateComponent.docs.mdx` (**Getting Started / Create Component**). Update these whenever you add components, change the API surface, or modify tokens/presets.
 
+## Before You Start
+
+**Run this at the start of every task, before reading code, running tests, or trusting any type error:**
+
+```bash
+pnpm install && pnpm rebuild esbuild
+```
+
+A working copy can sit idle across dependency bumps, so `node_modules` may not match `pnpm-lock.yaml`. A stale tree does not fail loudly — it silently inverts results. Tests pass locally and fail on CI (or the reverse), and `tsc` reports errors that do not exist on the pinned version. Anything you conclude from a stale tree is unreliable, including the conclusion that a failure is "pre-existing".
+
+When local results and CI disagree, suspect the dependency tree first. Compare the installed version against the lockfile before theorising about anything else:
+
+```bash
+pnpm list @tenphi/tasty @tenphi/glaze
+```
+
 ## Rules
 
 Project-specific working rules for AI agents. Not published with the package.
@@ -65,7 +81,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 ## Environment
 
 - Node `>=22.0.0`, pnpm `^10` (pinned to `pnpm@10.32.0`). The publish workflow (`publish.yml`) still runs on Node 24 because OIDC trusted publishing requires npm ≥ 11.5.1+, which Node 24 ships natively (Node 22 ships npm 10.x).
-- After `pnpm install`, run `pnpm rebuild esbuild` (postinstall is blocked in `pnpm-workspace.yaml`).
+- After `pnpm install`, run `pnpm rebuild esbuild` (postinstall is blocked in `pnpm-workspace.yaml`). Do this at the start of every task — see [Before You Start](#before-you-start).
 - Husky hooks: `pre-commit` runs `pnpm lint-staged`; `pre-push` runs `pnpm test`. Skip only intentionally (`--no-verify` or `HUSKY=0`).
 - No external services or databases required for local development.
 
@@ -100,6 +116,28 @@ See `src/stories/CreateComponent.docs.mdx` (Storybook → **Getting Started / Cr
 ## Design System Reference
 
 See `src/stories/Usage.docs.mdx` (Storybook → **Getting Started / Usage**) for units, base/spacing/size/shadow/layout tokens, color tokens, typography presets, themes, recipes, modifiers, state syntax, icons, and the form system.
+
+## i18n
+
+Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
+
+- **Scope: strings a component renders.** Anything the component itself puts in
+  front of a user — visible text, `aria-label`, `aria-roledescription`, live-region
+  announcements, `title` — goes through `useI18n()`:
+  `t('component.key', 'English default')`. The inline English stays as a
+  belt-and-braces fallback.
+- **Not for stories, docs, or tests.** Storybook stories, `.docs.mdx`, and specs are
+  demo and fixture copy, not product UI. Use plain literals there — a locale key
+  that exists only to feed a story is noise in twelve files, and a test that reads
+  its expectation from the bundle asserts nothing about the string.
+- **Component props that expose a label stay overrides** that win over the
+  translated default: `emptyLabel = t('...', 'No items')`.
+- **All 12 locales, every time.** `en-US` is the source of truth;
+  `locale-parity.test.ts` fails CI if any locale's key set or `{{interpolation}}`
+  tokens diverge. Interpolation is `{{double}}` braces with no ICU, so plurals need
+  separate keys rather than a plural rule.
+- **If a string doubles as a DOM selector**, build the selector from the same
+  `t(...)` value so the two cannot drift when the language changes.
 
 ## TypeScript & Exports
 

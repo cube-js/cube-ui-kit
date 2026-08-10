@@ -74,6 +74,8 @@ export const DEFAULTS: DefaultsRegistry = {
         maxRows: { kind: 'default', value: 'Infinity' },
         preventCollision: { kind: 'default', value: false },
         rowHeight: { kind: 'default', value: 100 },
+        selectionCancel: { kind: 'default', value: 'BOARD_SELECTION_CANCEL' },
+        selectionMode: { kind: 'default', value: 'none' },
         showGridLines: { kind: 'default', value: false },
       },
     },
@@ -239,11 +241,6 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         size: { kind: 'default', value: 'default' },
         type: { kind: 'default', value: 'file' },
-      },
-    },
-    FileTabs: {
-      props: {
-        isClosable: { kind: 'default', value: true },
       },
     },
     FilterListBox: {

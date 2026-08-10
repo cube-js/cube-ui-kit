@@ -23,7 +23,6 @@ import {
   Disclosure,
   DisplayTransition,
   FileInput,
-  FileTabs,
   FilterListBox,
   FilterPicker,
   Form,
@@ -491,15 +490,6 @@ export const FIXTURES: Fixture[] = [
       </Form>
     ),
     ignoreProps: ['children'],
-  },
-  {
-    name: 'FileTabs',
-    render: (props) => (
-      <FileTabs defaultActiveKey="1" {...props}>
-        <FileTabs.TabPane id="1" title="index.ts" />
-      </FileTabs>
-    ),
-    ignoreProps: ['children', 'defaultActiveKey'],
   },
   {
     name: 'ResizablePanel',

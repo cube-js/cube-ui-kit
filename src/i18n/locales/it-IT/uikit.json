@@ -125,6 +125,14 @@
     "openContextMenu": "Apri il menu contestuale",
     "contextMenu": "context-menu"
   },
+  "board": {
+    "widget": "Widget",
+    "draggableWidget": "Widget trascinabile",
+    "selected": "Selezionato",
+    "widgetSelected": "{{name}} selezionato",
+    "widgetsSelected": "{{count}} widget selezionati",
+    "selectionCleared": "Selezione annullata"
+  },
   "pagination": {
     "ariaLabel": "Impaginazione",
     "firstPage": "Prima pagina",
