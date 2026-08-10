@@ -232,6 +232,13 @@ export const TableElement = tasty({
         '': 'none',
         stale:
           'linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 35%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,1) 65%, rgba(0,0,0,1) 100%)',
+        // A flat, fully opaque mask is a no-op, so there is nothing to sweep —
+        // the table still fades, it just does not move. A loading state can
+        // last a long time, and this one would otherwise animate continuously
+        // beside the data with no way to stop it. Written as its own gradient
+        // rather than `none` so it cannot merge with the default above.
+        '@media(prefers-reduced-motion)':
+          'linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 100%)',
       },
       // Three times the width, so the band is a third of the table and there is
       // an opaque stretch either side of it. The default `repeat` tiles
@@ -240,6 +247,12 @@ export const TableElement = tasty({
       animation: {
         '': 'none',
         stale: `${refreshSweep} 1.4s linear infinite`,
+      },
+      // Belt and braces with the flat mask above, and the same shape `Spin`
+      // already uses.
+      animationPlayState: {
+        '': 'running',
+        '@media(prefers-reduced-motion)': 'paused',
       },
       transition: 'opacity',
       // `fixed` makes `<colgroup>` authoritative, so the header and the body
@@ -764,12 +777,6 @@ export const TableElement = tasty({
       // one thing this behaviour exists to preserve.
       zIndex: 3,
       pointerEvents: 'none',
-    },
-
-    /** Announces a refresh to assistive tech. Renders nothing visible. */
-    LiveStatus: {
-      $: '>',
-      display: 'contents',
     },
 
     Foot: {

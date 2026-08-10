@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { VisuallyHidden } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
@@ -1879,16 +1880,19 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       {/*
         A refresh is shown by sweeping the table itself, not by parking a
         spinner over it — the rows stay readable, which is the whole point of
-        keeping the previous result on screen. `role="status"` still announces
-        it, with nothing rendered.
+        keeping the previous result on screen. This is what announces it.
+
+        Always mounted, with the TEXT appearing and disappearing: a live region
+        announces changes to its CONTENT, so an empty node that merely carries
+        an `aria-label` says nothing, and one that is inserted already-populated
+        is unreliable across screen readers. The region has to be there first
+        and then fill.
       */}
-      {isStale ? (
-        <div
-          data-element="LiveStatus"
-          role="status"
-          aria-label={t('itemTable.refreshing', 'Refreshing')}
-        />
-      ) : null}
+      <VisuallyHidden>
+        <span role="status">
+          {isStale ? t('itemTable.refreshing', 'Refreshing') : ''}
+        </span>
+      </VisuallyHidden>
       {overlay}
       {contextMenu.rendered}
       {footer}

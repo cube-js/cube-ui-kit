@@ -462,6 +462,64 @@ describe('refresh sweep', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
+  it('emits a reduced-motion escape for the sweep', async () => {
+    renderWithRoot(
+      <ItemTable isLoading data={ROWS.slice(0, 5)} columns={COLUMNS} />,
+    );
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    // Asserted against the emitted CSS rather than by trusting the style
+    // object: a state-map key tasty does not understand compiles to nothing at
+    // all, and the fix would be invisible either way.
+    const rules: string[] = [];
+
+    for (const sheet of Array.from(document.styleSheets)) {
+      let list: CSSRuleList;
+
+      try {
+        list = sheet.cssRules;
+      } catch {
+        continue;
+      }
+
+      for (const rule of Array.from(list)) {
+        if (rule.cssText.includes('prefers-reduced-motion')) {
+          rules.push(rule.cssText);
+        }
+      }
+    }
+
+    // `mask-image` specifically, not `animation-play-state`: `Spin` already
+    // emits a reduced-motion rule for the latter, so matching on it would pass
+    // whether or not the table emitted anything.
+    const forTheSweep = rules.filter((text) => text.includes('mask-image'));
+
+    expect(forTheSweep.length).toBeGreaterThan(0);
+  });
+
+  it('announces the refresh through a live region that fills', async () => {
+    const { rerender } = renderWithRoot(
+      <ItemTable data={ROWS.slice(0, 5)} columns={COLUMNS} />,
+    );
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    const status = screen.getByRole('status');
+
+    // Present but empty before the refresh: a live region announces changes to
+    // its content, so it has to exist first and then fill. One inserted
+    // already-populated is unreliable, and an empty one carrying only an
+    // `aria-label` says nothing at all.
+    expect(status).toHaveTextContent('');
+
+    rerender(<ItemTable isLoading data={ROWS.slice(0, 5)} columns={COLUMNS} />);
+
+    await vi.waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent('Refreshing'),
+    );
+  });
+
   it('leaves a settled table untouched', async () => {
     renderWithRoot(<ItemTable data={ROWS.slice(0, 5)} columns={COLUMNS} />);
 
