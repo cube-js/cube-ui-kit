@@ -12,6 +12,8 @@ import { VisuallyHidden } from 'react-aria';
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
 import { MoreIcon, UpIcon } from '../../../icons';
+import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
+import { usePaletteVersion } from '../../../tokens/palette-config';
 import { Action } from '../../actions/Action/Action';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
@@ -28,6 +30,7 @@ import {
   isColumnMenuSortKey,
   processColumnMenuItems,
 } from './column-menu';
+import { buildColumnTints, tintSlot } from './column-tint';
 import { ColumnResizer } from './ColumnResizer';
 import {
   isMenuEmpty,
@@ -57,6 +60,7 @@ import type {
   RefObject,
 } from 'react';
 import type { NavigateArg } from '../../../providers/navigation.types';
+import type { ColorThemeConfig } from '../../../tokens/color-theme';
 import type { CubeColumnMenuContext } from './column-menu';
 import type {
   CubeResolvedColumn,
@@ -311,6 +315,25 @@ function escapeHtml(value: string) {
 const ARIA_SORT = { asc: 'ascending', desc: 'descending' } as const;
 
 /**
+ * Registers one column tint's tokens.
+ *
+ * A component per theme rather than a loop of `useColorTheme` calls: the number
+ * of tinted columns is data-dependent, and hooks cannot be called in a loop. Each
+ * of these has a fixed hook count, and mounting a different NUMBER of them is
+ * fine. Keyed on the theme name, so remounting only happens when the set of
+ * colours actually changes.
+ *
+ * Renders nothing — `useColorTheme` injects into a global slot keyed by the
+ * theme's own hash, so two tables sharing a colour share one injection and
+ * neither can evict the other's.
+ */
+function ColumnTintRegistrar({ config }: { config: ColorThemeConfig }) {
+  useColorTheme(config);
+
+  return null;
+}
+
+/**
  * Content height per size step, mirroring `$row-height` in `styled.ts`. Only the
  * initial estimate — every rendered row is measured, so a wrong guess costs a
  * scrollbar adjustment, not a layout bug. The `+ 1` is the row separator.
@@ -503,22 +526,44 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       ? headerRowCount + index + 1
       : headerRowCount + pinnedTopCount + bodyRowCount + index + 1;
 
+  /**
+   * Per-column tints.
+   *
+   * The colour maths is `getColorTheme`'s, cached globally by a hash of its
+   * config; `buildColumnTints` only maps columns onto `data-tint` slots and the
+   * state maps that read them. `getColorTheme` rather than `useColorTheme` here
+   * because the number of tinted columns is data-dependent and a hook cannot be
+   * called in a loop — registration happens in `ColumnTintRegistrar` below, one
+   * component per distinct theme, which is a legal fixed hook count each.
+   */
+  const paletteVersion = usePaletteVersion();
+  const tints = useMemo(
+    () => buildColumnTints(columns, { resolveTheme: getColorTheme }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-derive on a re-seed
+    [columns, paletteVersion],
+  );
+
   const mergedStyles = useMemo(
     () => ({
       ...styles,
       ...(contentPreset ? { Table: { preset: contentPreset } } : null),
       ...(headerStyles ? { HeadRow: headerStyles } : null),
-      ...(headerPreset || headerCellStyles
+      ...(headerPreset || headerCellStyles || tints.headerCellStyles
         ? {
             HeaderCell: {
               ...(headerPreset ? { preset: headerPreset } : null),
+              ...tints.headerCellStyles,
+              // The consumer's own overrides land last, so a `headerCellStyles`
+              // that sets `#cell-base` outright still wins over a tint.
               ...headerCellStyles,
             },
           }
         : null),
       ...(bodyStyles ? { Body: bodyStyles } : null),
       ...(rowStyles ? { Row: rowStyles } : null),
-      ...(cellStyles ? { Cell: cellStyles } : null),
+      ...(cellStyles || tints.cellStyles
+        ? { Cell: { ...tints.cellStyles, ...cellStyles } }
+        : null),
       ...(rowHeight != null ? { '$row-height': `${rowHeight}px` } : null),
       ...(headerHeight != null
         ? { '$header-height': `${headerHeight}px` }
@@ -535,6 +580,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       cellStyles,
       rowHeight,
       headerHeight,
+      tints,
     ],
   );
 
@@ -664,6 +710,24 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     return undefined;
   }
 
+  /**
+   * The row band, mirrored from the `<tr>` onto its cells.
+   *
+   * `Row` already carries `data-odd` and publishes `#row-base` from it, which is
+   * all an untinted cell needs. A TINTED cell has to pick its own band, and a
+   * sub-element's state keys resolve against the table root rather than its DOM
+   * parent — so the flag has to be on the cell itself. Same reason `data-pinned`
+   * is mirrored.
+   *
+   * Pinned rows are exempt: they carry no `data-odd` on the `<tr>` either, and
+   * banding a totals row would be wrong.
+   */
+  function cellBandFlag(rowIndex: number, pinnedEdge?: 'top' | 'bottom') {
+    return pinnedEdge == null && isStriped && rowIndex % 2 === 1
+      ? ''
+      : undefined;
+  }
+
   function renderStateRow(content: ReactNode) {
     return (
       <tr data-element="Row" role="row" aria-rowindex={headerRowCount + 1}>
@@ -778,6 +842,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-pin-edge={column.isPinEdge ? '' : undefined}
         data-last-row={isLastRow ? '' : undefined}
         data-pinned={pinnedEdge}
+        data-odd={cellBandFlag(rowIndex, pinnedEdge)}
         data-last-column={lastColumnFlag(column)}
         data-corner={bottomCornerFlag(column, rowIndex, isLastRow, pinnedEdge)}
         role="gridcell"
@@ -824,6 +889,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-pin-edge={column.isPinEdge ? '' : undefined}
         data-last-row={isLastRow ? '' : undefined}
         data-pinned={pinnedEdge}
+        data-odd={cellBandFlag(rowIndex, pinnedEdge)}
         data-last-column={lastColumnFlag(column)}
         data-corner={bottomCornerFlag(column, rowIndex, isLastRow, pinnedEdge)}
         role="gridcell"
@@ -1044,6 +1110,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-last-column={lastColumnFlag(column)}
         data-sorted={isSorted ? '' : undefined}
         data-menu-open={openMenuColumnKey === column.key ? '' : undefined}
+        data-tint={tintSlot(tints, column.key, 'header')}
         role="columnheader"
         scope="col"
         // A sortable header is a control, so it takes a tab stop — and so does a
@@ -1144,6 +1211,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           data-kind="row-number"
           data-last-row={isLastRow ? '' : undefined}
           data-pinned={pinnedEdge}
+          data-odd={cellBandFlag(rowIndex, pinnedEdge)}
           data-last-column={lastColumnFlag(column)}
           data-corner={bottomCornerFlag(
             column,
@@ -1250,6 +1318,12 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-link={link !== undefined ? '' : undefined}
         data-last-row={isLastRow ? '' : undefined}
         data-pinned={pinnedEdge}
+        data-odd={cellBandFlag(rowIndex, pinnedEdge)}
+        data-tint={tintSlot(
+          tints,
+          column.key,
+          pinnedEdge == null ? 'body' : 'totals',
+        )}
         data-last-column={lastColumnFlag(column)}
         data-corner={bottomCornerFlag(column, rowIndex, isLastRow, pinnedEdge)}
         data-cell-selected={
@@ -2126,6 +2200,13 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       </VisuallyHidden>
       {overlay}
       {contextMenu.rendered}
+      {tints.configs.map((config, index) => (
+        // Keyed positionally on purpose: `configs` is deduped and stable for a
+        // given set of column colours, and the theme name is not on the config.
+        // Remounting one of these is harmless anyway — the tokens it registers
+        // live in a permanent global slot.
+        <ColumnTintRegistrar key={index} config={config} />
+      ))}
       {footer}
     </TableElement>
   );

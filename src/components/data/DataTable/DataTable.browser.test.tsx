@@ -527,3 +527,147 @@ describe('DataTable column menu visibility', () => {
     expect(getComputedStyle(cell).backgroundImage).not.toBe(restFill);
   });
 });
+
+/**
+ * Per-column tints, in the only tier that can see paint.
+ *
+ * The three things Cube Cloud's ag-grid version gets wrong are the three things
+ * asserted here: banding survives inside a tinted column, the fill stays opaque
+ * so a pinned column still occludes, and the text clears WCAG AA in every
+ * scheme rather than only the one it was picked in.
+ */
+describe('DataTable column colors', () => {
+  const TINTED: CubeDataTableColumn<Row>[] = [
+    { key: 'region', title: 'Region', minWidth: 140 },
+    { key: 'orders', title: 'Orders', dataType: 'number', minWidth: 110 },
+    {
+      key: 'revenue',
+      title: 'Revenue',
+      dataType: 'number',
+      minWidth: 140,
+      color: '#0ea5e9',
+    },
+  ];
+
+  const TOTAL = { ...ROWS[0], id: 'total', region: 'Total' };
+
+  /** WCAG 2 contrast from two computed `rgb(...)` strings. */
+  function contrast(a: string, b: string): number {
+    const channel = (value: number) => {
+      const c = value / 255;
+
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = (color: string) => {
+      const [r, g, blue] = color.match(/[\d.]+/g)!.map(Number);
+
+      return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(blue);
+    };
+    const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p);
+
+    return (x + 0.05) / (y + 0.05);
+  }
+
+  const cellsOf = (key: string) =>
+    Array.from(
+      grid().querySelectorAll<HTMLElement>(
+        `tbody tr[data-element="Row"]:not([data-pinned]) [data-key="${key}"]`,
+      ),
+    );
+
+  async function mount() {
+    renderWithRoot(
+      <DataTable
+        data={ROWS.slice(0, 4)}
+        columns={TINTED}
+        pinnedBottomRows={[TOTAL]}
+        height="420px"
+        width="600px"
+      />,
+    );
+
+    await vi.waitFor(() =>
+      expect(cellsOf('revenue').length).toBeGreaterThan(1),
+    );
+  }
+
+  it('keeps the row banding inside a tinted column', async () => {
+    await mount();
+
+    const tinted = cellsOf('revenue');
+    const plain = cellsOf('orders');
+
+    const evenFill = getComputedStyle(tinted[0]).backgroundColor;
+    const oddFill = getComputedStyle(tinted[1]).backgroundColor;
+
+    // The assertion Cloud fails: there a per-column background wins outright over
+    // the banding fill, so the stripe vanishes in that column. Here the tint
+    // carries its own band.
+    expect(oddFill).not.toBe(evenFill);
+    // And it is genuinely a tint, not the neutral row colour.
+    expect(evenFill).not.toBe(getComputedStyle(plain[0]).backgroundColor);
+    expect(oddFill).not.toBe(getComputedStyle(plain[1]).backgroundColor);
+  });
+
+  it('paints an opaque fill, so a pinned tinted column still occludes', async () => {
+    await mount();
+
+    for (const cell of cellsOf('revenue').slice(0, 2)) {
+      const fill = getComputedStyle(cell).backgroundColor;
+
+      // `rgb(...)` with no alpha channel, or an explicit alpha of 1. A
+      // translucent fill would let scrolling cells show through a sticky column.
+      expect(fill).toMatch(/^rgba?\([^)]*\)$/);
+      expect(fill).not.toMatch(/rgba\([^)]*,\s*0?\.\d+\s*\)$/);
+    }
+  });
+
+  it.each([
+    ['light', {}],
+    ['dark', { schema: 'dark' }],
+    ['high contrast', { contrast: 'high' }],
+    ['dark high contrast', { schema: 'dark', contrast: 'high' }],
+  ] as const)('clears WCAG AA in %s', async (_name, attrs) => {
+    const root = document.documentElement;
+
+    Object.assign(root.dataset, attrs);
+
+    try {
+      await mount();
+
+      const header = grid().querySelector<HTMLElement>(
+        'thead [data-key="revenue"]',
+      )!;
+      const [even, odd] = cellsOf('revenue');
+
+      // Both bands and the header. Glaze re-solves the tone per scheme against a
+      // real contrast floor, which is exactly what a hex pair picked once in
+      // light mode cannot do.
+      for (const element of [even, odd, header]) {
+        const style = getComputedStyle(element);
+
+        expect(
+          contrast(style.backgroundColor, style.color),
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    } finally {
+      delete root.dataset.schema;
+      delete root.dataset.contrast;
+    }
+  });
+
+  it('still shows hover and cell selection over a tint', async () => {
+    await mount();
+
+    const [even] = cellsOf('revenue');
+    const rest = getComputedStyle(even).backgroundImage;
+
+    await realInput.hover(even);
+    await vi.waitFor(() =>
+      // The tint is pre-composed into the cell's BASE, which leaves the second
+      // fill layer free for the interaction paint. Stacking the tint as an
+      // overlay instead would have displaced this.
+      expect(getComputedStyle(even).backgroundImage).not.toBe(rest),
+    );
+  });
+});

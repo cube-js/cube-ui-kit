@@ -69,11 +69,28 @@ const CELL_STYLES: Styles = {
   // without it a wide range is a mesh of per-cell rings rather than one block,
   // and the row's hover would keep moving underneath a selection the user has
   // already committed to.
+  /**
+   * One more level of indirection than the row publishes, and the level a
+   * per-column tint plugs into.
+   *
+   * An untinted cell is simply its row. A tinted one swaps its own base and text
+   * — see `column-tint.ts`, which generates a `@own(tint=…)` branch per distinct
+   * column colour and merges it in through `styles.Cell` / `styles.HeaderCell`.
+   *
+   * The tint is pre-composed into the BASE rather than stacked as a second
+   * overlay, because `fill` has exactly two layers and the interaction paint
+   * needs the other one. That is what keeps hover, focus, selection and
+   * drop-target working over a tinted column instead of being displaced by it —
+   * and it is why the row band has to reach the cell (`data-odd` is mirrored onto
+   * body cells) rather than staying on the `<tr>`.
+   */
+  '#cell-base': '#row-base',
+  '#cell-text': '#row-text',
   fill: {
-    '': '#row-base #row-overlay',
-    '@own(cell-selected)': '#row-base #purple.10',
+    '': '#cell-base #row-overlay',
+    '@own(cell-selected)': '#cell-base #purple.10',
   },
-  color: '#row-text',
+  color: '#cell-text',
   opacity: '$dim',
   position: { '': 'static', '@own(pin=start | pin=end)': 'sticky' },
   insetInlineStart: { '': 'auto', '@own(pin=start)': '$pin-offset' },
@@ -172,6 +189,11 @@ export const TableElement = tasty({
     '#row-base': '#surface',
     '#row-overlay': '#clear',
     '#row-text': '#surface-text',
+    // The cell-level pair defaults to the row's, and a tinted column overrides
+    // its own — see `CELL_STYLES`. Declared here too so the chain has a root even
+    // for a cell that is somehow outside a row.
+    '#cell-base': '#row-base',
+    '#cell-text': '#row-text',
 
     /* ── frame ────────────────────────────────────────────────────────── */
     display: 'grid',
@@ -311,9 +333,9 @@ export const TableElement = tasty({
       // priority and negates them against everything below — see the row state
       // matrix below and `src/data/AGENTS.md`.
       fill: {
-        '': '#row-base #row-overlay',
+        '': '#cell-base #row-overlay',
         '(@own(sortable) & @own(:hover)) | @own(menu-open)':
-          '#row-base #surface-text.04',
+          '#cell-base #surface-text.04',
       },
       cursor: { '': 'default', '@own(sortable)': 'pointer' },
       userSelect: 'none',
@@ -655,7 +677,7 @@ export const TableElement = tasty({
         '@own(link)': 600,
       },
       color: {
-        '': '#row-text',
+        '': '#cell-text',
         '@own(link)': '#purple-text',
       },
       // Underline only while the row is hovered, matching how the kit's `Link`

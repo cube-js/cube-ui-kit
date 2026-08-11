@@ -73,6 +73,10 @@ export const TOKENS: Styles = lazyStyles(getTokens);
 
 // Re-export category modules for direct access
 export { COLOR_TOKENS, getColorTokens, renderColorTokens } from './colors';
+// Adaptive one-off themes built at runtime from an arbitrary hue, named by a
+// hash of their config so identical requests share one injection.
+export { colorThemeSeed, getColorTheme, useColorTheme } from './color-theme';
+export type { ColorTheme, ColorThemeConfig } from './color-theme';
 export {
   getCodeTheme,
   getPalette,

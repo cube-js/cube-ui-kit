@@ -146,6 +146,57 @@ export interface CubeTableColumnHeader {
   styles?: Styles;
 }
 
+/* ── column colour ───────────────────────────────────────────────────────── */
+
+/**
+ * A palette theme a column can borrow its tint from.
+ *
+ * Resolved through the same runtime generator as a custom colour, seeded from the
+ * theme's own hue and saturation in `palette-config` — so it tracks a re-seeded
+ * palette, and it gets the banding step the palette itself does not define.
+ *
+ * `special` is absent deliberately: it is a standalone `mode: 'fixed'` theme with
+ * no tinted-surface ramp to borrow.
+ */
+export type CubeTableColumnTheme =
+  | 'primary'
+  | 'purple'
+  | 'success'
+  | 'danger'
+  | 'warning'
+  | 'note';
+
+/**
+ * How a column is tinted.
+ *
+ * Every form but the last is *derived*: only a hue and a saturation are kept, and
+ * the tone ramp plus an `AA`/`AAA` text floor are re-solved per colour scheme. So
+ * a column stays readable in light, dark and high contrast without the caller
+ * checking — which is the part hand-picked hex pairs get wrong.
+ */
+export type CubeTableColumnColor =
+  /** A palette theme name. */
+  | CubeTableColumnTheme
+  /** Any colour Glaze parses — hex, `rgb()`, `hsl()`, `okhsl()`, `oklch()`. */
+  | (string & {})
+  /** The seed said directly. `saturation` is 0–100. */
+  | { hue: number; saturation?: number }
+  /**
+   * Full manual control, as tasty colour strings (`'#note-surface'`, `'#purple.10'`).
+   *
+   * Nothing is derived and nothing is contrast-checked — this is the escape
+   * hatch, and readability in every scheme becomes the caller's problem.
+   * `fillBand` defaults to `fill`, which turns banding off for the column.
+   */
+  | { fill: string; fillBand?: string; text?: string };
+
+/**
+ * Which parts of a column `color` reaches.
+ *
+ * @default ['header','body','totals']
+ */
+export type CubeTableColumnColorScope = 'header' | 'body' | 'totals';
+
 export interface CubeTableColumn<T = any> {
   /**
    * Column id. Also the default data path — dot notation is supported
@@ -195,6 +246,17 @@ export interface CubeTableColumn<T = any> {
   ) => ReactNode;
   cellStyles?: Styles | ((ctx: CubeTableCellContext<T>) => Styles | undefined);
   cellProps?: (ctx: CubeTableCellContext<T>) => Record<string, any> | undefined;
+
+  /**
+   * Tints the column — header, cells and pinned totals — with an adaptive fill
+   * and a text colour solved to stay readable on it in every scheme.
+   *
+   * Row banding survives: the tint carries its own band one tone step away, so
+   * the stripe still reads down the column instead of being painted over.
+   */
+  color?: CubeTableColumnColor;
+  /** Narrows what `color` reaches. @default ['header','body','totals'] */
+  colorScope?: readonly CubeTableColumnColorScope[];
 
   /* behaviour */
   align?: CubeTableAlign;
