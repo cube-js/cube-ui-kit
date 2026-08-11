@@ -366,7 +366,7 @@ export const FIXTURES: Fixture[] = [
   {
     name: 'FilterPicker',
     render: (props) => (
-      <FilterPicker label="Filter" selectionMode="single" {...props}>
+      <FilterPicker label="Filter" {...props}>
         <FilterPicker.Item key="1">Blue</FilterPicker.Item>
         <FilterPicker.Item key="2">Red</FilterPicker.Item>
       </FilterPicker>
@@ -492,20 +492,18 @@ export const FIXTURES: Fixture[] = [
     ignoreProps: ['children'],
   },
   {
-    // Never hardcode a prop that has a documented default here. The probe proves
-    // a default by rendering with and without the prop; a hardcoded value is
-    // present in both renders, so they match and the prop is recorded as
-    // defaulted whether it actually is or not. `direction="right"` used to sit
-    // here — it was needed only because the prop was typed required, and it made
-    // the rule strip an explicit `direction="right"` from consumers, whose code
-    // then failed to typecheck. The prop is optional now, so this can render bare.
+    // Renders bare: `direction="right"` used to sit here, needed only because the
+    // prop was mistyped as required, and it made the rule strip an explicit
+    // `direction="right"` from consumers whose build then failed. See
+    // `fixture-hygiene.test.tsx` for why hardcoding a documented default here
+    // makes the probe unable to prove it — that guard now enforces this.
     name: 'ResizablePanel',
     render: (props) => <ResizablePanel {...props} />,
   },
   {
     name: 'GridProvider',
     render: (props) => (
-      <GridProvider columns={2} {...props}>
+      <GridProvider {...props}>
         <div>cell</div>
       </GridProvider>
     ),
