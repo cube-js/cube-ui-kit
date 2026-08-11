@@ -223,6 +223,11 @@ export interface CubeTableColumn<T = any> {
   maxWidth?: number;
   /** Inherits the table's `isResizable`. */
   isResizable?: boolean;
+  /**
+   * Inherits the table's `isColumnReorderable`; `false` pins this column in
+   * place while the others still move around it.
+   */
+  isReorderable?: boolean;
   /** Stick to the start/end edge during horizontal scroll. */
   pin?: 'start' | 'end';
   /** Hide without losing width or order state. */

@@ -165,7 +165,9 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         autoHidePagination: { kind: 'default', value: true },
         cellSelectionMode: { kind: 'default', value: 'range' },
+        columnContextMenu: { kind: 'default', value: true },
         defaultPageSize: { kind: 'default', value: 100 },
+        isColumnReorderable: { kind: 'default', value: false },
         isHeaderSticky: { kind: 'default', value: true },
         isResizable: { kind: 'default', value: true },
         isRowMoveAnimated: { kind: 'default', value: true },

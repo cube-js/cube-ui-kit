@@ -38,9 +38,11 @@ import {
   ROW_MENU_COLUMN_KEY,
 } from './row-menu';
 import { TableElement, TableHeaderItem } from './styled';
+import { TableHeaderCell } from './TableHeaderCell';
 import { TableRow, TableRowDropIndicator } from './TableRow';
 import { selectionRowKey } from './types';
 import { toTsv } from './use-cell-selection';
+import { getDraggableColumnKeys, isColumnDraggable } from './use-column-order';
 import { useRowMoveAnimation } from './use-row-move-animation';
 import { useScrollability } from './use-scrollability';
 import { getColumnText, getColumnValue } from './use-table-columns';
@@ -198,6 +200,19 @@ export interface TableViewProps<T = any> {
   /** Provided by `DraggableCollection` when reordering is on. */
   dragState?: any;
   dropState?: any;
+  /* column reordering — named apart from the ROW drag props above, so a table
+   * can eventually run both at once. */
+  isColumnReorderable?: boolean;
+  columnDragState?: any;
+  columnDropState?: any;
+  /**
+   * Drop handling for the header. Must land on the element that directly
+   * contains the header cells — the `<tr>` — or drops are never received.
+   */
+  headCollectionProps?: Record<string, any>;
+  headRowRef?: RefObject<HTMLTableRowElement | null>;
+  /** Keeps React Aria's `focusedKey` current, which Alt+Arrow reorder reads. */
+  onColumnFocus?: (columnKey: string | null) => void;
   /**
    * Drop handling from `useDroppableCollection`. Must land on the element that
    * directly contains the rows — the `<tbody>` — or drops are never received.
@@ -419,6 +434,12 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     dragState,
     dropState,
     collectionProps,
+    isColumnReorderable = false,
+    columnDragState,
+    columnDropState,
+    headCollectionProps,
+    headRowRef,
+    onColumnFocus,
     bodyRef,
     isResizable = false,
     onColumnResize,
@@ -453,6 +474,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   const { columns } = layout;
   const columnCount = columns.length;
+  // Only the trailing draggable column carries an `after` indicator; every other
+  // gap is covered by the next column's `before` one.
+  const lastDraggableKey = isColumnReorderable
+    ? getDraggableColumnKeys(columns, true).at(-1) ?? null
+    : null;
 
   // The element is held here as well as reported upwards: the virtualizer needs
   // it locally, and the adapter needs it to measure column widths.
@@ -1097,71 +1123,85 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       </TableHeaderItem>
     );
 
+    const isDraggable = isColumnDraggable(column, isColumnReorderable);
+
     return (
-      <th
+      <TableHeaderCell
         key={column.key}
-        data-element="HeaderCell"
-        data-key={column.key}
-        data-pin={column.pin}
-        data-pin-edge={column.isPinEdge ? '' : undefined}
-        data-align={header?.align ?? column.align}
-        data-sortable={isSortable ? '' : undefined}
-        data-resizable={canResize ? '' : undefined}
-        data-last-column={lastColumnFlag(column)}
-        data-sorted={isSorted ? '' : undefined}
-        data-menu-open={openMenuColumnKey === column.key ? '' : undefined}
-        data-tint={tintSlot(tints, column.key, 'header')}
-        role="columnheader"
-        scope="col"
-        // A sortable header is a control, so it takes a tab stop — and so does a
-        // header carrying a menu, since Shift+F10 has to have somewhere to land.
-        // Row/cell keyboard navigation lands in a follow-up and will move this
-        // to the grid's roving-tabindex model.
-        tabIndex={isSortable || hasMenu ? 0 : -1}
-        aria-colindex={column.ariaColIndex}
-        aria-sort={activeSort ? ARIA_SORT[activeSort.direction] : undefined}
-        aria-haspopup={hasMenu ? 'menu' : undefined}
-        style={pinStyle(column)}
-        onClick={isSortable ? () => onColumnSort?.(column.key) : undefined}
-        // Both `true` and `'context-only'` answer to a right-click, and
-        // `false` already made `hasMenu` false in `resolveColumnMenu`.
-        onContextMenu={
-          hasMenu
-            ? (event) =>
+        columnKey={column.key}
+        // Enter belongs to the sort when there is one, so React Aria re-gates
+        // its own Enter capture behind Alt.
+        hasAction={isSortable}
+        isLastDraggable={isDraggable && column.key === lastDraggableKey}
+        dragState={isDraggable ? columnDragState : undefined}
+        dropState={isDraggable ? columnDropState : undefined}
+        cellProps={{
+          'data-element': 'HeaderCell',
+          'data-key': column.key,
+          'data-pin': column.pin,
+          'data-pin-edge': column.isPinEdge ? '' : undefined,
+          'data-align': header?.align ?? column.align,
+          'data-sortable': isSortable ? '' : undefined,
+          'data-resizable': canResize ? '' : undefined,
+          'data-last-column': lastColumnFlag(column),
+          'data-sorted': isSorted ? '' : undefined,
+          'data-menu-open': openMenuColumnKey === column.key ? '' : undefined,
+          'data-tint': tintSlot(tints, column.key, 'header'),
+          role: 'columnheader',
+          scope: 'col',
+          // A sortable header is a control, so it takes a tab stop — and so does
+          // one carrying a menu (Shift+F10 needs somewhere to land) or one that
+          // can be moved with Alt+Arrow. Row/cell keyboard navigation lands in a
+          // follow-up and will move this to the grid's roving-tabindex model.
+          tabIndex: isSortable || hasMenu || isDraggable ? 0 : -1,
+          'aria-colindex': column.ariaColIndex,
+          'aria-sort': activeSort ? ARIA_SORT[activeSort.direction] : undefined,
+          'aria-haspopup': hasMenu ? 'menu' : undefined,
+          style: pinStyle(column),
+          // React Aria's Alt+Arrow reorder reads `focusedKey`, and nothing else
+          // sets it — `useDroppableCollection` only ever reads it.
+          onFocus: isColumnReorderable
+            ? () => onColumnFocus?.(isDraggable ? column.key : null)
+            : undefined,
+          onClick: isSortable ? () => onColumnSort?.(column.key) : undefined,
+          // Both `true` and `'context-only'` answer to a right-click, and
+          // `false` already made `hasMenu` false in `resolveColumnMenu`.
+          onContextMenu: hasMenu
+            ? (event: ReactMouseEvent) =>
                 openColumnContextMenu(column, isSortable, activeSort, event)
-            : undefined
-        }
-        onKeyDown={
-          isSortable || hasMenu
-            ? (event) => {
-                // Shift+F10 is the standard keyboard route to a context menu,
-                // and the only route to this one — the trigger is not a tab stop.
-                if (event.key === 'F10' && event.shiftKey && hasMenu) {
-                  if (isContextOnly) {
-                    openColumnContextMenu(
-                      column,
-                      isSortable,
-                      activeSort,
-                      event,
-                    );
-                  } else {
-                    event.preventDefault();
-                    // The Scroller listens for Shift+F10 too, for the row menu.
-                    event.stopPropagation();
-                    setOpenMenuColumnKey(column.key);
+            : undefined,
+          onKeyDown:
+            isSortable || hasMenu
+              ? (event: ReactKeyboardEvent) => {
+                  // Shift+F10 is the standard keyboard route to a context menu,
+                  // and the only route to this one — the trigger is not a tab
+                  // stop.
+                  if (event.key === 'F10' && event.shiftKey && hasMenu) {
+                    if (isContextOnly) {
+                      openColumnContextMenu(
+                        column,
+                        isSortable,
+                        activeSort,
+                        event,
+                      );
+                    } else {
+                      event.preventDefault();
+                      // The Scroller listens for Shift+F10 too, for the row menu.
+                      event.stopPropagation();
+                      setOpenMenuColumnKey(column.key);
+                    }
+
+                    return;
                   }
 
-                  return;
+                  if (!isSortable) return;
+                  if (event.key !== 'Enter' && event.key !== ' ') return;
+                  // Space would scroll the grid otherwise.
+                  event.preventDefault();
+                  onColumnSort?.(column.key);
                 }
-
-                if (!isSortable) return;
-                if (event.key !== 'Enter' && event.key !== ' ') return;
-                // Space would scroll the grid otherwise.
-                event.preventDefault();
-                onColumnSort?.(column.key);
-              }
-            : undefined
-        }
+              : undefined,
+        }}
       >
         {content}
         {canResize ? (
@@ -1172,7 +1212,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
             onResizeEnd={onColumnResizeEnd!}
           />
         ) : null}
-      </th>
+      </TableHeaderCell>
     );
   }
 
@@ -1930,7 +1970,25 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   );
 
   const headerRow = isHeaderHidden ? null : (
-    <tr data-element="HeadRow" role="row" aria-rowindex={1}>
+    <tr
+      data-element="HeadRow"
+      role="row"
+      aria-rowindex={1}
+      ref={headRowRef}
+      {...headCollectionProps}
+      onKeyDownCapture={(event) => {
+        // `DraggableCollection`'s Alt+Arrow reorder sits on this row and fires
+        // in the capture phase, so it would beat the resize handle's own
+        // Alt+Arrow bubble handler and move the column instead of sizing it.
+        if (
+          (event.target as HTMLElement)?.closest?.('[data-element="Resizer"]')
+        ) {
+          return;
+        }
+
+        (headCollectionProps as any)?.onKeyDownCapture?.(event);
+      }}
+    >
       {columns.map(renderHeaderCell)}
     </tr>
   );

@@ -337,7 +337,17 @@ export const TableElement = tasty({
         '(@own(sortable) & @own(:hover)) | @own(menu-open)':
           '#cell-base #surface-text.04',
       },
-      cursor: { '': 'default', '@own(sortable)': 'pointer' },
+      // `pointer` wins on a sortable header: sorting is the primary action, and a
+      // native drag needs movement while a click does not, so both still work.
+      // `grab` is only honest where there is nothing else to click.
+      cursor: {
+        '': 'default',
+        '@own(sortable)': 'pointer',
+        '@own(draggable) & !@own(sortable)': 'grab',
+        '@own(dragging)': 'grabbing',
+      },
+      // Matches the row being dragged.
+      opacity: { '': 1, '@own(dragging)': 0.4 },
       userSelect: 'none',
       // The containing block for `Resizer`. Cells are `static` by default, so
       // without this every handle resolves against the scroller instead and
@@ -432,6 +442,32 @@ export const TableElement = tasty({
       width: '$resizer-line-width',
       fill: '#resizer-line',
       transition: 'theme',
+    },
+
+    /**
+     * Where a dragged column would land.
+     *
+     * A distinct sub-element NAME from the row's `DropIndicator` rather than a
+     * second selector chain on the same one: two entries whose chains differ is
+     * exactly the shape that produced an indicator matching nothing at all.
+     *
+     * Positioned fully INSIDE the cell box. `HeaderCell` is `overflow: hidden`
+     * and only opts out to `visible` when it is resizable, so the centred
+     * `translate: -50%` the resizer line uses would lose its outer half on every
+     * non-resizable column.
+     */
+    ColumnDropIndicator: {
+      $: '> Scroller > Table > Head > HeadRow > HeaderCell >',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      width: '2bw',
+      insetInlineStart: { '': 'auto', '@own(position=before)': 0 },
+      insetInlineEnd: { '': 'auto', '@own(position=after)': 0 },
+      fill: '#purple',
+      radius: '1r',
+      // Above the pinned header cell (3) and the resize handle (2).
+      zIndex: 4,
     },
 
     /**

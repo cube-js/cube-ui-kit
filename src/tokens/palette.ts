@@ -319,6 +319,20 @@ export const TINT_RECIPE: ColorMap = {
     // is met, so a caller cannot persist an unreadable pair.
     contrast: ['AA', 'AAA'],
   },
+  /**
+   * The softer step, for a tinted column HEADER.
+   *
+   * A neutral header is deliberately muted (`HeadRow` publishes `#dark-03`), so
+   * a tinted one taking the full-strength body text read markedly darker than
+   * the headers either side of it — measured at 16:1 against their 4.9:1. This
+   * keeps the two consistent, and the `AA` floor still applies.
+   */
+  'surface-2-text-soft': {
+    base: 'surface-2',
+    tone: `${TEXT_SOFT_TONE - TINTED_SURFACE_TONE_OFFSET - SURFACE_2_TEXT_OFFSET}`,
+    saturation: 0.25,
+    contrast: ['AA', 'AAA'],
+  },
 };
 
 // ============================================================================

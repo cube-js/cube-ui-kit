@@ -149,6 +149,32 @@ export interface CubeDataTableProps<T = any>
     all: Record<string, number>,
   ) => void;
 
+  /* ── column order ─────────────────────────────────────────────────── */
+  /**
+   * Drag column headers sideways to reorder them.
+   *
+   * Named for the axis: `ItemTable`'s `isReorderable` already means ROW
+   * reordering, and the two are different features.
+   *
+   * Structural and pinned columns stay put. `pin` is already the ordering
+   * authority for a pinned column, and a sticky `<th>` cannot be hit-tested
+   * reliably under horizontal scroll.
+   *
+   * @default false
+   */
+  isColumnReorderable?: boolean;
+  /**
+   * Controlled order, as column keys. Works with or without dragging, so a
+   * column manager elsewhere in the page can drive it on its own.
+   *
+   * Stale keys are ignored, and a column missing from the list lands after the
+   * neighbour it had in `columns` rather than at the end.
+   */
+  columnOrder?: string[];
+  defaultColumnOrder?: string[];
+  /** The FULL key list, including hidden and pinned columns. */
+  onColumnOrderChange?: (order: string[]) => void;
+
   /* ── column menu ──────────────────────────────────────────────────── */
   /**
    * Where a column's `header.menu` is exposed.

@@ -30,6 +30,8 @@ interface TintPaint {
   fill: string;
   fillBand: string;
   text: string;
+  /** The header's text — muted, to match an untinted header. */
+  headerText: string;
 }
 
 export interface ColumnTints {
@@ -108,7 +110,9 @@ export function tintConfig(
 function manualKey(paint: TintPaint): string {
   // Hashed, not literal: the values contain `#`, `.` and `|`, none of which
   // survive being interpolated into a tasty `@own(tint=…)` state key.
-  return `raw-${hashString(`${paint.fill}|${paint.fillBand}|${paint.text}`)}`;
+  return `raw-${hashString(
+    `${paint.fill}|${paint.fillBand}|${paint.text}|${paint.headerText}`,
+  )}`;
 }
 
 export interface BuildColumnTintsOptions {
@@ -158,6 +162,7 @@ export function buildColumnTints<T>(
         fill: theme.colors.surface,
         fillBand: theme.colors['surface-2'],
         text: theme.colors['surface-2-text'],
+        headerText: theme.colors['surface-2-text-soft'],
       };
 
       if (!paints.has(slot)) configs.push(config);
@@ -174,6 +179,8 @@ export function buildColumnTints<T>(
         // exactly these values, so inventing a second one would be a surprise.
         fillBand: manual.fillBand ?? manual.fill,
         text: manual.text ?? '#row-text',
+        // The manual form derives nothing, so the header takes the same text.
+        headerText: manual.text ?? '#row-text',
       };
       slot = manualKey(paint);
     }
@@ -228,7 +235,7 @@ function headerTintStyles(paints: Map<string, TintPaint>): Styles {
 
   for (const [slot, paint] of paints) {
     base[`@own(tint=${slot})`] = paint.fillBand;
-    text[`@own(tint=${slot})`] = paint.text;
+    text[`@own(tint=${slot})`] = paint.headerText;
   }
 
   return { '#cell-base': base, '#cell-text': text };

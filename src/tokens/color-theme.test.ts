@@ -32,7 +32,7 @@ describe('getColorTheme', () => {
     resetPaletteConfig();
   });
 
-  it('emits the three tint colors under a hashed prefix', () => {
+  it('emits the tint colors under a hashed prefix', () => {
     const theme = getColorTheme({ hue: 200 });
 
     expect(theme.name).toMatch(/^tint-[a-z0-9]+$/);
@@ -40,13 +40,12 @@ describe('getColorTheme', () => {
       'surface',
       'surface-2',
       'surface-2-text',
+      'surface-2-text-soft',
     ]);
     expect(theme.colors.surface).toBe(`#${theme.name}-surface`);
-    expect(Object.keys(theme.tokens).sort()).toEqual([
-      `#${theme.name}-surface`,
-      `#${theme.name}-surface-2`,
-      `#${theme.name}-surface-2-text`,
-    ]);
+    expect(Object.keys(theme.tokens).sort()).toEqual(
+      Object.values(theme.colors).sort(),
+    );
   });
 
   it('covers all four scheme variants', () => {

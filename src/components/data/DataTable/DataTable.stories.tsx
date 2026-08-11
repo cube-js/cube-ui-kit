@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
+import { Menu } from '../../actions/Menu';
 import { Text } from '../../content/Text';
 import { Flow } from '../../layout/Flow';
+import { columnSortMenu } from '../TableBase/column-menu';
 
 import { DataTable } from './DataTable';
 
@@ -95,6 +97,29 @@ const meta: Meta<typeof DataTable> = {
     height: '420px',
   },
   parameters: { layout: 'padded' },
+  argTypes: {
+    data: { control: { type: null } },
+    columns: { control: { type: null } },
+    isColumnReorderable: {
+      control: 'boolean',
+      description: 'Drag column headers sideways to reorder them.',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    columnContextMenu: {
+      control: 'radio',
+      options: [true, false, 'context-only'],
+      description: "Where a column's `header.menu` is exposed.",
+      table: { defaultValue: { summary: 'true' } },
+    },
+    onColumnMenuAction: {
+      action: 'columnMenuAction',
+      table: { category: 'Events' },
+    },
+    onColumnOrderChange: {
+      action: 'columnOrderChange',
+      table: { category: 'Events' },
+    },
+  },
 };
 
 export default meta;
@@ -254,5 +279,158 @@ export const CellSelection: Story = {
         </Text>
       </Flow>
     );
+  },
+};
+
+/**
+ * A column menu, opened from the `⋮` in the header, by right-click, or with
+ * `Shift`+`F10`.
+ *
+ * The contents are the consumer's — the grid mounts an opaque node and reports
+ * the pressed key back, which is what keeps Cube vocabulary out of the kit.
+ * Sorting is the exception: it is the one thing the table itself can do, so
+ * `columnSortMenu()` returns ready-made `sort-asc` / `sort-desc` / `clear-sort`
+ * items that the table labels, disables when they would do nothing, and applies.
+ *
+ * `pin` and `hide` below are ordinary keys the grid understands nothing about.
+ */
+export const ColumnMenu: Story = {
+  render: (args) => {
+    const [log, setLog] = useState<string | null>(null);
+    const columns = useMemo(
+      () =>
+        COLUMNS.map((column) => ({
+          ...column,
+          header: {
+            ...(column.key === 'region'
+              ? { description: 'Where the order shipped from' }
+              : null),
+            menu: (
+              <>
+                {columnSortMenu()}
+                <Menu.Item key="pin">Pin column</Menu.Item>
+                <Menu.Item key="hide">Hide column</Menu.Item>
+              </>
+            ),
+          },
+        })),
+      [],
+    );
+
+    return (
+      <Flow gap="1x">
+        <DataTable<ResultRow>
+          {...args}
+          columns={columns}
+          onColumnMenuAction={(action, columnKey) =>
+            setLog(`${action} → ${columnKey}`)
+          }
+        />
+        <Text color="#dark-03">{log ?? 'No action yet'}</Text>
+      </Flow>
+    );
+  },
+};
+
+/**
+ * Drag a column header sideways to move it, or press `Alt` + `←` / `→` with a
+ * header focused.
+ *
+ * Clicking still sorts — a native drag needs movement and a click does not — and
+ * the resize handle on the trailing edge still resizes.
+ *
+ * Structural and pinned columns stay put: `pin` is already the ordering
+ * authority for a pinned column, so `region` below cannot be moved and neither
+ * can the row-number ruler. `channel` opts out with `isReorderable: false` while
+ * everything else moves around it.
+ */
+export const ColumnReordering: Story = {
+  render: (args) => {
+    const [order, setOrder] = useState<string[] | undefined>();
+    const columns = useMemo(
+      () =>
+        COLUMNS.map((column) =>
+          column.key === 'region'
+            ? { ...column, pin: 'start' as const }
+            : column.key === 'channel'
+              ? { ...column, isReorderable: false }
+              : column,
+        ),
+      [],
+    );
+
+    return (
+      <Flow gap="1x">
+        <DataTable<ResultRow>
+          {...args}
+          isColumnReorderable
+          showRowNumbers
+          columns={columns}
+          columnOrder={order}
+          onColumnOrderChange={setOrder}
+        />
+        <Text color="#dark-03">{order?.join(' · ') ?? 'source order'}</Text>
+      </Flow>
+    );
+  },
+};
+
+/**
+ * With a `storageKey`, the column layout a user arranges by hand — order *and*
+ * widths — survives a reload. Drag a header, drag a resize handle, then refresh
+ * the preview.
+ *
+ * Only uncontrolled state is stored: a controlled `columnOrder` belongs to the
+ * page, and persisting it would fight the page's own source of truth.
+ */
+export const PersistedColumnLayout: Story = {
+  args: { isColumnReorderable: true, storageKey: 'datatable-columns-demo' },
+};
+
+/**
+ * `column.color` tints a whole column — header, cells and pinned totals.
+ *
+ * A palette theme name (`'success'`, `'note'`, …) is the cheap form. Any CSS
+ * colour works too: only its hue and saturation are kept, and the tone ramp plus
+ * an AA/AAA text floor are re-solved per scheme by Glaze. Flip the toolbar to
+ * dark or high contrast and every column stays readable — which is the point,
+ * and the thing hand-picked hex pairs get wrong.
+ *
+ * Row banding survives inside a tinted column: the tint carries its own band one
+ * tone step away, so the stripe still reads down the column.
+ */
+export const ColumnColors: Story = {
+  args: {
+    pinnedBottomRows: TOTALS,
+    paginationMode: 'off',
+    columns: COLUMNS.map((column) =>
+      column.key === 'orders'
+        ? { ...column, color: 'note' as const }
+        : column.key === 'revenue'
+          ? { ...column, color: 'success' as const }
+          : column.key === 'conversion'
+            ? { ...column, color: '#0ea5e9' }
+            : column,
+    ),
+  },
+};
+
+/**
+ * `colorScope` narrows what the colour reaches — here the headers are tinted and
+ * the cells below them stay neutral.
+ */
+export const ColumnColorScope: Story = {
+  args: {
+    columns: COLUMNS.map((column) =>
+      column.key === 'orders'
+        ? { ...column, color: 'note' as const, colorScope: ['header'] as const }
+        : column.key === 'revenue'
+          ? {
+              ...column,
+              color: 'success' as const,
+              colorScope: ['header'] as const,
+            }
+          : column,
+    ),
   },
 };

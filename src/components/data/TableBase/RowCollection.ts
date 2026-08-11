@@ -21,14 +21,25 @@ export class RowCollection<T> implements Collection<Node<T>> {
   private nodeCache = new Map<Key, Node<T>>();
   private disabledKeys: Set<Key>;
 
+  private getItemText?: (row: T) => string;
+
   constructor(
     rows: readonly T[],
     getKey: (row: T, index: number) => Key,
     disabledKeys: Set<Key> = new Set(),
+    /**
+     * The item's accessible name, for screen-reader drag announcements.
+     *
+     * Without it `useDropIndicator` says "Insert between  and " — React Aria
+     * builds that string from `node.textValue`. Optional because selection, the
+     * original caller, never reads it.
+     */
+    getItemText?: (row: T) => string,
   ) {
     this.rows = rows;
     this.keys = rows.map(getKey);
     this.disabledKeys = disabledKeys;
+    this.getItemText = getItemText;
     this.indexByKey = new Map();
 
     // A duplicate key would make selection ambiguous — two rows would answer to
@@ -64,7 +75,7 @@ export class RowCollection<T> implements Collection<Node<T>> {
       hasChildNodes: false,
       childNodes: [],
       rendered: null,
-      textValue: '',
+      textValue: this.getItemText?.(this.rows[index]) ?? '',
       index,
       // `SelectionManager` reads this to decide whether a key can be selected
       // at all, before `disabledBehavior` is even considered.
