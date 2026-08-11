@@ -262,6 +262,17 @@ export function DisplayTransition({
     });
   };
 
+  // frame N: "exit-pending" (still shown) → frame N+1: "exit" (hidden) → ensureExitFlow.
+  // Idempotent and re-callable, mirroring ensureEnterFlow: whoever cancels the
+  // pending rAF is responsible for re-arming it.
+  const ensureExitPendingFlow = () => {
+    nextPaint(() => {
+      if (phaseRef.current !== 'exit-pending') return;
+      setPhase('exit');
+      ensureExitFlow();
+    });
+  };
+
   useLayoutEffect(() => {
     ++flowRef.current; // invalidate any pending work
     const current = phaseRef.current;
@@ -291,8 +302,13 @@ export function DisplayTransition({
         setPhase('exit-pending');
       } else if (current === 'exit') {
         ensureExitFlow();
+      } else {
+        // Still "exit-pending": our own cleanup just cancelled the rAF the
+        // [phase] effect scheduled, and that effect will not re-run because
+        // `phase` did not change. Re-arm it here or the content stays visible
+        // forever while the driver reports hidden.
+        ensureExitPendingFlow();
       }
-      // 'exit-pending' is handled in useLayoutEffect below
     }
 
     return () => {
@@ -308,12 +324,7 @@ export function DisplayTransition({
       ensureEnterFlow();
     } else if (phaseRef.current === 'exit-pending') {
       // Schedule RAF for exit, mirroring the enter flow timing
-      nextPaint(() => {
-        if (phaseRef.current === 'exit-pending') {
-          setPhase('exit');
-          ensureExitFlow();
-        }
-      });
+      ensureExitPendingFlow();
     }
     return cancelRAF;
   }, [phase]);

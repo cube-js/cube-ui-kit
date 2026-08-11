@@ -545,9 +545,11 @@ describe('Content Preservation', () => {
       vi.advanceTimersByTime(150);
     });
 
-    // After completing the exit transition, content should have been preserved
-    // throughout the exit animation
-    // The content may no longer be visible after transition completes, but it
-    // should have been preserved during the exit phase
+    // Once the exit completes the panel unmounts, so the preserved content goes
+    // with it — it was kept only for the duration of the animation.
+    expect(container.textContent).not.toContain('original content');
+    expect(
+      container.querySelector('[data-qa="DisclosureContentWrapper"]'),
+    ).not.toBeInTheDocument();
   });
 });
