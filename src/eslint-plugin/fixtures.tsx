@@ -366,7 +366,7 @@ export const FIXTURES: Fixture[] = [
   {
     name: 'FilterPicker',
     render: (props) => (
-      <FilterPicker label="Filter" selectionMode="single" {...props}>
+      <FilterPicker label="Filter" {...props}>
         <FilterPicker.Item key="1">Blue</FilterPicker.Item>
         <FilterPicker.Item key="2">Red</FilterPicker.Item>
       </FilterPicker>
@@ -492,13 +492,18 @@ export const FIXTURES: Fixture[] = [
     ignoreProps: ['children'],
   },
   {
+    // Renders bare: `direction="right"` used to sit here, needed only because the
+    // prop was mistyped as required, and it made the rule strip an explicit
+    // `direction="right"` from consumers whose build then failed. See
+    // `fixture-hygiene.test.tsx` for why hardcoding a documented default here
+    // makes the probe unable to prove it — that guard now enforces this.
     name: 'ResizablePanel',
-    render: (props) => <ResizablePanel direction="right" {...props} />,
+    render: (props) => <ResizablePanel {...props} />,
   },
   {
     name: 'GridProvider',
     render: (props) => (
-      <GridProvider columns={2} {...props}>
+      <GridProvider {...props}>
         <div>cell</div>
       </GridProvider>
     ),

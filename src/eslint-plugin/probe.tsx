@@ -14,9 +14,10 @@ import { DefaultValue, PropEntry, SkipReason } from './types';
  * style — we *prove* a default by rendering twice and comparing output. If
  * passing the prop changes nothing observable, it is redundant.
  *
- * Validated in `probe.test.tsx`: tasty class names are content-hashed and
- * deterministic, so raw markup + CSS compares byte-for-byte with no
- * normalisation.
+ * Validated in `probe.test.tsx`. The comparison is byte-for-byte apart from two
+ * normalisations, both of which drop an arbitrary generated value while keeping
+ * structure comparable: React/react-aria element IDs, and tasty class-name hashes
+ * (which key on the input style object, so identical CSS can still hash apart).
  */
 
 export interface Probe {
@@ -57,6 +58,46 @@ export function canonicalizeIds(text: string): string {
   );
 }
 
+/**
+ * Replace tasty's generated class names with positional placeholders.
+ *
+ * The hash is derived from the *input* style object, not the CSS it produces, so two
+ * inputs that normalise to identical CSS still get different class names. `<Space>`
+ * sets `gap: true` and `<Space gap="1x">` resolves to the same `gap: var(--gap)` — the
+ * emitted rules are byte-identical and only the hash differs. Comparing raw output
+ * therefore reported a real redundancy as "differs", and the prop never became a
+ * registry candidate.
+ *
+ * Placeholders are assigned in order of first appearance, so this cannot hide a
+ * genuine difference: an extra, missing or reordered class shifts the sequence and
+ * still compares unequal. Only the arbitrary hash value is normalised away.
+ *
+ * The pattern requires a digit so it matches `t1iuxaru` / `tp3unhd` without touching
+ * all-letter CSS keywords that happen to start with `t` (`translate`, `transform`).
+ */
+export function canonicalizeClassNames(text: string): string {
+  const seen = new Map<string, string>();
+
+  return text.replace(
+    /\bt(?=[a-z0-9]{6,8}\b)(?![a-z]+\b)[a-z0-9]{6,8}\b/g,
+    (match) => {
+      let placeholder = seen.get(match);
+
+      if (!placeholder) {
+        placeholder = `tcls${seen.size}`;
+        seen.set(match, placeholder);
+      }
+
+      return placeholder;
+    },
+  );
+}
+
+/** Both normalisations, in the order the probe applies them. */
+export function canonicalize(text: string): string {
+  return canonicalizeClassNames(canonicalizeIds(text));
+}
+
 export function probe(ui: ReactElement): Probe {
   // `baseElement` (document.body), not `container`: overlay components render
   // through a portal, so their markup never appears inside the container.
@@ -64,8 +105,8 @@ export function probe(ui: ReactElement): Probe {
 
   try {
     return {
-      markup: canonicalizeIds(baseElement.innerHTML),
-      css: canonicalizeIds(getCSSTextForNode(baseElement)),
+      markup: canonicalize(baseElement.innerHTML),
+      css: canonicalize(getCSSTextForNode(baseElement)),
     };
   } finally {
     // `cleanup()`, not `unmount()`: unmount tears down the React tree but leaves

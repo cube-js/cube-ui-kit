@@ -19,7 +19,14 @@ type Direction = 'top' | 'right' | 'bottom' | 'left';
 
 export interface CubeResizablePanelProps extends CubePanelProps {
   handlerStyles?: Styles;
-  direction: Direction;
+  /**
+   * Optional because both `ResizablePanel` and `Handler` destructure it as
+   * `direction = 'right'`. Declaring it required contradicted that default and
+   * made `no-redundant-default-prop` unusable: the rule reads the same `'right'`
+   * default out of the generated registry and strips an explicit
+   * `direction="right"`, which then fails to typecheck.
+   */
+  direction?: Direction;
   size?: number;
   onSizeChange?: (size: number) => void;
   minSize?: string | number;
@@ -160,7 +167,7 @@ const HandlerElement = tasty({
 });
 
 interface HandlerProps extends BasePropsWithoutChildren {
-  direction: Direction;
+  direction?: Direction;
 }
 
 const Handler = (props: HandlerProps) => {

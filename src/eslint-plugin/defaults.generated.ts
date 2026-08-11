@@ -11,6 +11,9 @@ export const DEFAULTS: DefaultsRegistry = {
   components: {
     Alert: {
       props: {
+        display: { kind: 'default', value: 'block' },
+        flow: { kind: 'default', value: 'column' },
+        preset: { kind: 'default', value: 't3' },
         shape: { kind: 'default', value: 'card' },
         theme: { kind: 'default', value: 'note' },
       },
@@ -22,6 +25,10 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     Avatar: {
       props: {
+        display: { kind: 'default', value: 'grid' },
+        fontWeight: { kind: 'default', value: 500 },
+        placeContent: { kind: 'default', value: 'center' },
+        radius: { kind: 'default', value: 'round' },
         size: { kind: 'default', value: '4x' },
       },
     },
@@ -150,13 +157,17 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     CopyPasteBlock: {
       props: {
+        radius: { kind: 'default', value: '1r' },
         size: { kind: 'default', value: 'medium' },
       },
     },
     CopySnippet: {
       props: {
+        border: { kind: 'default', value: 0 },
         language: { kind: 'default', value: 'javascript' },
+        padding: { kind: 'default', value: 0 },
         prefix: { kind: 'default', value: '' },
+        radius: { kind: 'default', value: '1r' },
         showTooltip: { kind: 'default', value: false },
         title: { kind: 'default', value: 'Code example' },
       },
@@ -293,6 +304,7 @@ export const DEFAULTS: DefaultsRegistry = {
     GridProvider: {
       props: {
         columns: { kind: 'default', value: 2 },
+        display: { kind: 'default', value: 'contents' },
         gap: { kind: 'default', value: '0' },
       },
     },
@@ -446,9 +458,18 @@ export const DEFAULTS: DefaultsRegistry = {
     Layout: {
       props: {
         contentPadding: { kind: 'default', value: '1x' },
+        display: { kind: 'default', value: 'flex' },
         doNotOverflow: { kind: 'default', value: false },
+        flexGrow: { kind: 'default', value: 1 },
+        flow: { kind: 'default', value: 'column' },
         hasTransition: { kind: 'default', value: false },
         minContentSize: { kind: 'default', value: 320 },
+        placeSelf: { kind: 'default', value: 'stretch' },
+        position: {
+          kind: 'skip',
+          reason: 'unverified',
+          note: 'Rendering <Layout position={"absolute"}> differs from omitting it, so the documented default could not be reproduced. Check for docs drift, an alias mapping, or a state-map style default. Docs say `absolute`.',
+        },
       },
     },
     ListBox: {
@@ -527,6 +548,8 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     Placeholder: {
       props: {
+        display: { kind: 'default', value: 'block' },
+        height: { kind: 'default', value: '2x' },
         size: { kind: 'default', value: '2x' },
       },
     },
@@ -537,11 +560,21 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     Prefix: {
       props: {
+        display: { kind: 'default', value: 'grid' },
+        flow: { kind: 'default', value: 'column' },
+        gap: { kind: 'default', value: 0 },
         outerGap: { kind: 'default', value: '1bw' },
+        placeItems: { kind: 'default', value: 'center' },
+        position: { kind: 'default', value: 'absolute' },
       },
     },
     PrismCode: {
-      props: {},
+      props: {
+        margin: { kind: 'default', value: 0 },
+        overflow: { kind: 'default', value: 'auto' },
+        padding: { kind: 'default', value: 0 },
+        scrollbar: { kind: 'default', value: 'styled' },
+      },
     },
     RadioGroup: {
       props: {
@@ -558,6 +591,7 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     Result: {
       props: {
+        flow: { kind: 'default', value: 'column' },
         isCompact: { kind: 'default', value: false },
         status: { kind: 'default', value: 'info' },
       },
@@ -623,6 +657,8 @@ export const DEFAULTS: DefaultsRegistry = {
     Space: {
       props: {
         direction: { kind: 'default', value: 'horizontal' },
+        display: { kind: 'default', value: 'flex' },
+        gap: { kind: 'default', value: '1x' },
       },
     },
     Spin: {
@@ -633,7 +669,12 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     Suffix: {
       props: {
+        display: { kind: 'default', value: 'grid' },
+        flow: { kind: 'default', value: 'column' },
+        gap: { kind: 'default', value: 0 },
         outerGap: { kind: 'default', value: '1bw' },
+        placeItems: { kind: 'default', value: 'center' },
+        position: { kind: 'default', value: 'absolute' },
       },
     },
     Switch: {
@@ -687,6 +728,8 @@ export const DEFAULTS: DefaultsRegistry = {
     Text: {
       props: {
         as: { kind: 'default', value: 'span' },
+        margin: { kind: 'default', value: 0 },
+        padding: { kind: 'default', value: 0 },
       },
     },
     TextArea: {
@@ -723,7 +766,10 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     Title: {
       props: {
+        display: { kind: 'default', value: 'block' },
+        gridArea: { kind: 'default', value: 'title' },
         level: { kind: 'default', value: 1 },
+        margin: { kind: 'default', value: 0 },
       },
     },
     Tooltip: {
