@@ -4,6 +4,8 @@ import { Button, ItemAction } from '../components/actions';
 import { ItemActionProvider } from '../components/actions/ItemActionContext';
 import { renderWithRoot } from '../test';
 
+import { canonicalizeClassNames } from './probe';
+
 /**
  * Tests for the probe primitive itself: is a differential render byte-stable
  * enough to prove that a prop equals a component's default, and does it draw the
@@ -124,5 +126,36 @@ describe('spike: differential render probe', () => {
 
     expect(b.markup).toBe(a.markup);
     expect(b.css).toBe(a.css);
+  });
+});
+
+describe('canonicalizeClassNames', () => {
+  it('normalises hashes that differ while the CSS is identical', () => {
+    const a = '.t1iuxaru.t1iuxaru { display: flex; gap: var(--gap); }';
+    const b = '.t1it4mdz.t1it4mdz { display: flex; gap: var(--gap); }';
+
+    expect(canonicalizeClassNames(a)).toBe(canonicalizeClassNames(b));
+  });
+
+  it('still distinguishes a real difference', () => {
+    const a = '.t1iuxaru { display: flex; }';
+    const b = '.t1it4mdz { display: grid; }';
+
+    expect(canonicalizeClassNames(a)).not.toBe(canonicalizeClassNames(b));
+  });
+
+  it('distinguishes an extra class, since placeholders are positional', () => {
+    const a = 'class="t1iuxaru tp3unhd"';
+    const b = 'class="t1iuxaru tp3unhd tzsuqk4"';
+
+    expect(canonicalizeClassNames(a)).not.toBe(canonicalizeClassNames(b));
+  });
+
+  it('leaves all-letter CSS keywords starting with t alone', () => {
+    // `translate` and `transform` are within the length window; only the
+    // digit requirement keeps them out.
+    const css = 'transform: translate(1px); transition: none;';
+
+    expect(canonicalizeClassNames(css)).toBe(css);
   });
 });
