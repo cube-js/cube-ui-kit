@@ -22,5 +22,8 @@ The lint fixture is why this was not caught here: it rendered
 `<ResizablePanel direction="right" {...props} />`, hardcoding the prop purely to satisfy the
 required type. The probe proves a default by rendering with and without the prop, so a hardcoded
 value sits in both renders, they match, and the prop is recorded as defaulted whether it is or not.
-It renders bare now — the registry is unchanged, because the default is real — and carries a comment
-so the shortcut is not reintroduced.
+
+A new `fixture-hygiene` test now fails on that shape anywhere in the fixture list. It caught two
+more: `FilterPicker` hardcoded `selectionMode="single"` and `GridProvider` hardcoded `columns={2}`.
+Both happened to be correct, but neither was proven. All three render bare now, and the registry
+output is unchanged — so those defaults are proven rather than assumed.
