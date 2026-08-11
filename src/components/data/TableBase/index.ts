@@ -12,6 +12,12 @@ export {
 } from './use-table-columns';
 export type { UseTableColumnsOptions } from './use-table-columns';
 export { useContainerWidth } from './use-container-width';
+export {
+  columnSortMenu,
+  COLUMN_MENU_SORT_KEYS,
+  isColumnMenuSortKey,
+} from './column-menu';
+export type { CubeColumnMenuSortKey } from './column-menu';
 export type {
   CubeResolvedColumn,
   CubeTableAlign,

@@ -6,7 +6,11 @@ import { useEvent } from '../../../_internal/hooks';
 
 import { compareByColumn } from './use-table-sort';
 
-import type { CubeTableColumn, CubeTableSort } from './types';
+import type {
+  CubeTableColumn,
+  CubeTableSort,
+  CubeTableSortDirection,
+} from './types';
 
 export interface UseTableSortsOptions<T> {
   columns: CubeTableColumn<T>[];
@@ -90,6 +94,54 @@ export function useTableSorts<T>({
     setSorts(next);
   });
 
+  /**
+   * Set one column's direction outright instead of advancing the cycle.
+   *
+   * The column menu's `sort-desc` has to reach `desc` in one step. Reaching it
+   * by calling `toggleSort` twice cannot work here: under `disallowSortRemoval`
+   * the cycle never leaves `asc`/`desc`, and a column that was unsorted would
+   * be appended and then re-read, so every intermediate state is observable.
+   *
+   * Precedence is preserved — an already-sorted column keeps its slot, and a
+   * newly sorted one is appended as the least significant, the same rule
+   * `toggleSort` follows.
+   */
+  const setColumnSort = useEvent(
+    (columnKey: string, direction: CubeTableSortDirection | null) => {
+      const column = columns.find((entry) => entry.key === columnKey);
+
+      if (!column || !isSortable(column)) return;
+
+      const index = sorts.findIndex((entry) => entry.columnKey === columnKey);
+
+      if (direction == null) {
+        // `disallowSortRemoval` means the column is never *left* unsorted, so an
+        // explicit clear is refused too rather than quietly re-sorting.
+        if (index === -1 || column.disallowSortRemoval) return;
+
+        const next = [...sorts];
+
+        next.splice(index, 1);
+        setSorts(next);
+
+        return;
+      }
+
+      if (index === -1) {
+        setSorts([...sorts, { columnKey, direction }]);
+
+        return;
+      }
+
+      if (sorts[index].direction === direction) return;
+
+      const next = [...sorts];
+
+      next[index] = { columnKey, direction };
+      setSorts(next);
+    },
+  );
+
   const sortedRows = useMemo(() => {
     if (resolvedMode !== 'client' || !sorts.length) return rows;
 
@@ -143,6 +195,7 @@ export function useTableSorts<T>({
     sorts,
     sortedRows,
     toggleSort,
+    setColumnSort,
     isSortable,
     sortRank,
     mode: resolvedMode,

@@ -1,4 +1,7 @@
+import { userEvent as realInput } from '@vitest/browser/context';
+
 import { renderWithRoot, screen, userEvent } from '../../../test';
+import { Menu } from '../../actions/Menu';
 
 import { DataTable } from './DataTable';
 
@@ -406,5 +409,121 @@ describe('row move animation', () => {
     // Different rows, not moved ones — sliding them around would read as noise.
     await vi.waitFor(() => expect(rowTransforms().length).toBeGreaterThan(0));
     expect(rowTransforms().every((t) => t === '')).toBe(true);
+  });
+});
+
+/**
+ * The auto-hidden `⋮` trigger.
+ *
+ * `realInput`, not the `userEvent` the rest of this file uses: that one is
+ * `@testing-library/user-event`, which dispatches synthetic events and so never
+ * produces a CSS `:hover`. Reveal here is driven by `:hover` on the `<th>`, so a
+ * synthetic hover reports the trigger as permanently invisible and every
+ * assertion below passes for the wrong reason.
+ */
+describe('DataTable column menu visibility', () => {
+  const MENU_COLUMNS: CubeDataTableColumn<Row>[] = COLUMNS.map((column) =>
+    column.key === 'region'
+      ? {
+          ...column,
+          title: 'Conversion rate by region',
+          width: 130,
+          isSortable: true,
+          header: { menu: <Menu.Item key="pin">Pin column</Menu.Item> },
+        }
+      : column,
+  );
+
+  function mount() {
+    renderWithRoot(
+      <>
+        {/* Somewhere to park the pointer that is not the table. */}
+        <div id="away" style={{ height: 40 }}>
+          away
+        </div>
+        <DataTable
+          data={ROWS}
+          columns={MENU_COLUMNS}
+          height="420px"
+          width="600px"
+        />
+      </>,
+    );
+
+    return vi.waitFor(() => {
+      const cell = grid().querySelector<HTMLElement>(
+        'thead [data-key="region"]',
+      )!;
+
+      expect(cell).toBeTruthy();
+
+      return {
+        cell,
+        away: document.getElementById('away')!,
+        slot: cell.querySelector<HTMLElement>('[data-element="Actions"]')!,
+        label: cell.querySelector<HTMLElement>('[data-element="Label"]')!,
+      };
+    });
+  }
+
+  const opacity = (el: HTMLElement) => Number(getComputedStyle(el).opacity);
+
+  it('hides the trigger at rest and reveals it on hover', async () => {
+    const { cell, away, slot } = await mount();
+
+    await realInput.hover(away);
+    await vi.waitFor(() => expect(opacity(slot)).toBe(0));
+
+    // Handled entirely by `Item`'s own `auto-hide-actions` rule, via its
+    // `@interacted` alias. Pinned here because the whole menu is undiscoverable
+    // if it ever stops resolving — and because a synthetic hover cannot see it,
+    // so nothing in the jsdom suite can.
+    await realInput.hover(cell);
+    await vi.waitFor(() => expect(opacity(slot)).toBe(1));
+  });
+
+  it('does not reflow the header label when the trigger appears', async () => {
+    const { cell, away, label } = await mount();
+
+    await realInput.hover(away);
+    await vi.waitFor(() =>
+      expect(label.getBoundingClientRect().width).toBe(53),
+    );
+
+    await realInput.hover(cell);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // `preserveActionsSpace` reserves the slot up front, so only the opacity
+    // moves. Without it the slot's width animates 8px → 30px and this label
+    // re-truncates from 75px to 53px — the header text shifting under the
+    // cursor as it arrives.
+    expect(label.getBoundingClientRect().width).toBe(53);
+  });
+
+  it('keeps the cell lit and the trigger visible while its menu is open', async () => {
+    const { cell, away, slot } = await mount();
+
+    await realInput.hover(away);
+    await vi.waitFor(() => expect(opacity(slot)).toBe(0));
+
+    // `backgroundImage`, not `backgroundColor`: the two-colour `fill` form paints
+    // the base as the colour and the overlay as a gradient LAYER, so the
+    // interaction paint never touches `background-color` at all.
+    const restFill = getComputedStyle(cell).backgroundImage;
+
+    await realInput.hover(cell);
+    await realInput.click(screen.getByRole('button', { name: 'Column menu' }));
+    await screen.findByRole('menuitem', { name: 'Pin column' });
+
+    // Pointer away, menu still open.
+    await realInput.hover(away);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // The `⋮` stays put because `MenuTrigger` marks the trigger pressed while
+    // open, which `Item`'s `@interacted` alias picks up through `data-pressed`.
+    expect(opacity(slot)).toBe(1);
+    // And the cell keeps its hover fill, from `menu-open` in `HeaderCell.fill` —
+    // an open popover hanging off an unlit column reads as detached from it.
+    expect(getComputedStyle(cell).backgroundImage).not.toBe(restFill);
   });
 });

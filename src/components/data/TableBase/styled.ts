@@ -306,9 +306,14 @@ export const TableElement = tasty({
       preset: 't3m',
       border: '1bw #border bottom, $column-divider #border right',
       zIndex: { '': 'auto', '@own(pin=start | pin=end)': 3 },
+      // One entry, not two sharing a value: tasty coalesces entries in a state
+      // map that serialize identically, promotes them to the group's maximum
+      // priority and negates them against everything below — see the row state
+      // matrix below and `src/data/AGENTS.md`.
       fill: {
         '': '#row-base #row-overlay',
-        '@own(sortable) & @own(:hover)': '#row-base #surface-text.04',
+        '(@own(sortable) & @own(:hover)) | @own(menu-open)':
+          '#row-base #surface-text.04',
       },
       cursor: { '': 'default', '@own(sortable)': 'pointer' },
       userSelect: 'none',

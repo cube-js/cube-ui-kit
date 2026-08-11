@@ -106,6 +106,10 @@ function DataTable<T = any>(
     columnWidths: columnWidthsProp,
     defaultColumnWidths,
     onColumnResize,
+    columnContextMenu,
+    onColumnMenuAction,
+    columnMenuTriggerProps,
+    columnMenuProps,
     isVirtualized,
     virtualizeThreshold,
     overscan,
@@ -161,6 +165,7 @@ function DataTable<T = any>(
     sorts,
     sortedRows,
     toggleSort,
+    setColumnSort,
     mode: resolvedSortMode,
   } = useTableSorts<T>({
     columns: resolvedColumns,
@@ -421,6 +426,11 @@ function DataTable<T = any>(
       sortMode={resolvedSortMode}
       sorts={sorts}
       onColumnSort={toggleSort}
+      onColumnSortChange={setColumnSort}
+      columnContextMenu={columnContextMenu}
+      onColumnMenuAction={onColumnMenuAction}
+      columnMenuTriggerProps={columnMenuTriggerProps}
+      columnMenuProps={columnMenuProps}
       isVirtualized={isVirtualized}
       virtualizeThreshold={virtualizeThreshold}
       overscan={overscan}

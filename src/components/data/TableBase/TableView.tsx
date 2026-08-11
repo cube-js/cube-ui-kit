@@ -23,6 +23,11 @@ import { Checkbox } from '../../fields/Checkbox';
 import { useToast } from '../../overlays/Toast';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 
+import {
+  COLUMN_MENU_SORT_DIRECTION,
+  isColumnMenuSortKey,
+  processColumnMenuItems,
+} from './column-menu';
 import { ColumnResizer } from './ColumnResizer';
 import {
   isMenuEmpty,
@@ -52,6 +57,7 @@ import type {
   RefObject,
 } from 'react';
 import type { NavigateArg } from '../../../providers/navigation.types';
+import type { CubeColumnMenuContext } from './column-menu';
 import type {
   CubeResolvedColumn,
   CubeTableCellContext,
@@ -61,6 +67,7 @@ import type {
   CubeTableRowContext,
   CubeTableRowSection,
   CubeTableSort,
+  CubeTableSortDirection,
 } from './types';
 import type { useCellSelection } from './use-cell-selection';
 import type { CubeTableSelectionState } from './use-table-selection';
@@ -212,6 +219,36 @@ export interface TableViewProps<T = any> {
    */
   sorts?: CubeTableSort[];
   onColumnSort?: (columnKey: string) => void;
+  /**
+   * Set a column's direction outright, for the column menu's reserved sort keys.
+   *
+   * Separate from `onColumnSort`, which is a cycle: reaching `desc` by toggling
+   * twice never terminates under `disallowSortRemoval` and disturbs the
+   * precedence of every other sorted column.
+   */
+  onColumnSortChange?: (
+    columnKey: string,
+    direction: CubeTableSortDirection | null,
+  ) => void;
+
+  /* column menu */
+  /**
+   * Where a column's `header.menu` is exposed.
+   *
+   * - `true` — a `⋮` trigger, plus right-click and Shift+F10.
+   * - `'context-only'` — right-click and Shift+F10, no trigger.
+   * - `false` — suppressed entirely.
+   *
+   * Defaults to `true`, unlike `rowContextMenu`: for rows the flag also decides
+   * whether there is a menu at all, whereas here `header.menu` is that gate and
+   * this only picks the surfaces.
+   *
+   * @default true
+   */
+  columnContextMenu?: boolean | 'context-only';
+  onColumnMenuAction?: (action: string, columnKey: string) => void;
+  columnMenuTriggerProps?: Record<string, any>;
+  columnMenuProps?: Record<string, any>;
 
   /* per-row hooks */
   getRowProps?: (
@@ -272,89 +309,6 @@ function escapeHtml(value: string) {
 }
 
 const ARIA_SORT = { asc: 'ascending', desc: 'descending' } as const;
-
-export interface TableViewProps<T = any> {
-  qa?: string;
-  rows: readonly T[];
-  getRowKey: (row: T, index: number) => Key;
-  layout: CubeTableColumnLayout<T>;
-  /**
-   * Receives the scroll container once it exists. A callback rather than a ref
-   * because the virtualized path does not create the element itself — Virtuoso
-   * does, and hands it over after mount.
-   */
-  onScrollerRef: (element: HTMLDivElement | null) => void;
-  /** Attached to the table's root frame. */
-  rootRef?: RefObject<HTMLDivElement | null>;
-
-  size?: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge';
-  shape?: 'plain' | 'card';
-  rowHeight?: number;
-  headerHeight?: number;
-  isHeaderHidden?: boolean;
-  isStriped?: boolean;
-  /** @default true */
-  isHeaderSticky?: boolean;
-  /** @default 'auto' — on above `virtualizeThreshold` rows, needs a bounded height. */
-  isVirtualized?: boolean | 'auto';
-  /** @default 50 */
-  virtualizeThreshold?: number;
-  /** Rows rendered beyond each edge of the viewport. @default 20 */
-  overscan?: number;
-
-  /* status */
-  isLoading?: boolean;
-  loadingIndicator?: CubeTableLoadingIndicator;
-  skeletonRowCount?: number;
-  emptyLabel?: ReactNode;
-  noResultsLabel?: ReactNode;
-  error?: ReactNode;
-  /** Selects `noResultsLabel` over `emptyLabel` when there is nothing to show. */
-  isFiltered?: boolean;
-
-  /* sorting */
-  /** @default 'off' */
-  sortMode?: 'client' | 'server' | 'off';
-  sort?: CubeTableSort | null;
-  /**
-   * Multi-column sort. Takes precedence over `sort` when given, and the array
-   * order is the precedence — `DataTable` uses it, `ItemTable` uses `sort`.
-   */
-  sorts?: CubeTableSort[];
-  onColumnSort?: (columnKey: string) => void;
-
-  /* per-row hooks */
-  getRowProps?: (
-    ctx: CubeTableRowContext<T>,
-  ) => CubeTableRowRenderProps | undefined;
-
-  /**
-   * Typography preset for the column header. A per-adapter default rather than
-   * a table-wide constant: `ItemTable` uses the uppercase caption look (`c2`),
-   * while an analytics grid wants its headers to read at body size.
-   * `headerCellStyles` still wins over it.
-   */
-  headerPreset?: string;
-  /**
-   * Typography for the body. `ItemTable` reads as a list at `t3`; a result grid
-   * packs more in and wants `t4`.
-   */
-  contentPreset?: string;
-
-  /** Chrome rendered above the table, in the frame's first grid row. */
-  toolbar?: ReactNode;
-  /** Chrome rendered below the table, in the frame's last grid row. */
-  footer?: ReactNode;
-
-  ariaLabel?: string;
-  styles?: Styles;
-  headerStyles?: Styles;
-  headerCellStyles?: Styles;
-  bodyStyles?: Styles;
-  rowStyles?: Styles;
-  cellStyles?: Styles;
-  mods?: Record<string, boolean | undefined>;
-}
 
 /**
  * Content height per size step, mirroring `$row-height` in `styled.ts`. Only the
@@ -454,6 +408,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     sort,
     sorts,
     onColumnSort,
+    onColumnSortChange,
+    columnContextMenu = true,
+    onColumnMenuAction,
+    columnMenuTriggerProps,
+    columnMenuProps,
     getRowProps,
     headerPreset,
     contentPreset,
@@ -479,6 +438,18 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   const [scrollerEl, setScrollerEl] = useState<HTMLDivElement | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  /**
+   * The column whose menu is open, held for the whole table rather than per
+   * header cell.
+   *
+   * `renderHeaderCell` is a closure inside this component, not a component of
+   * its own, so it cannot hold state — and only one column menu can be open at a
+   * time anyway. Controlled rather than letting `MenuTrigger` own it: Shift+F10
+   * has to be able to open it from the `<th>`, and the trigger is not a tab stop.
+   */
+  const [openMenuColumnKey, setOpenMenuColumnKey] = useState<string | null>(
+    null,
+  );
   // `bodyRef` is optional — only the drag-and-drop path supplies one — but the
   // move animation needs the `<tbody>` either way, so it keeps its own and both
   // are filled from one callback.
@@ -989,6 +960,52 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         </>
       ) : undefined;
 
+    const menuItems = resolveColumnMenu(column);
+    const hasMenu = menuItems != null;
+    const isContextOnly = columnContextMenu === 'context-only';
+
+    const menuAction =
+      hasMenu && !isContextOnly ? (
+        <MenuTrigger
+          isOpen={openMenuColumnKey === column.key}
+          // `bottom end`: the trigger sits at the column's trailing edge, so a
+          // start-aligned popover hangs off the table on the last column.
+          placement="bottom end"
+          onOpenChange={(open) =>
+            setOpenMenuColumnKey(open ? column.key : null)
+          }
+        >
+          <ItemAction
+            // The grid is one tab stop; the trigger is reached from the header
+            // cell with Shift+F10, matching the row menu.
+            tabIndex={-1}
+            icon={<MoreIcon />}
+            aria-label={t('itemTable.columnMenu', 'Column menu')}
+            {...columnMenuTriggerProps}
+            {...header?.menuTriggerProps}
+          />
+          <Menu
+            {...columnMenuProps}
+            {...header?.menuProps}
+            onAction={columnMenuActionHandler(column, false)}
+          >
+            {processColumnMenuItems(
+              menuItems,
+              columnMenuContext(column, isSortable, activeSort),
+            )}
+          </Menu>
+        </MenuTrigger>
+      ) : null;
+
+    // The consumer's own actions first, the overflow menu last — matching Tabs.
+    const actions =
+      header?.actions != null || menuAction ? (
+        <>
+          {header?.actions}
+          {menuAction}
+        </>
+      ) : undefined;
+
     const content = header?.render ? (
       header.render(ctx)
     ) : column.title == null && !header ? null : (
@@ -1001,8 +1018,13 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         descriptionPlacement={header?.descriptionPlacement}
         tooltip={header?.tooltip ?? true}
         theme={header?.theme}
-        actions={header?.actions}
+        actions={actions}
         autoHideActions={header?.autoHideActions ?? true}
+        // Without it the actions slot animates its width from 0 on hover, which
+        // re-truncates the label — so the header text shifts under the cursor.
+        // Only the opacity should move; `TabElement` reserves the space for the
+        // same reason.
+        preserveActionsSpace={actions != null}
         styles={header?.styles}
       >
         {column.title}
@@ -1021,19 +1043,51 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-resizable={canResize ? '' : undefined}
         data-last-column={lastColumnFlag(column)}
         data-sorted={isSorted ? '' : undefined}
+        data-menu-open={openMenuColumnKey === column.key ? '' : undefined}
         role="columnheader"
         scope="col"
-        // A sortable header is a control, so it takes a tab stop. Row/cell
-        // keyboard navigation lands in a follow-up and will move this to the
-        // grid's roving-tabindex model.
-        tabIndex={isSortable ? 0 : -1}
+        // A sortable header is a control, so it takes a tab stop — and so does a
+        // header carrying a menu, since Shift+F10 has to have somewhere to land.
+        // Row/cell keyboard navigation lands in a follow-up and will move this
+        // to the grid's roving-tabindex model.
+        tabIndex={isSortable || hasMenu ? 0 : -1}
         aria-colindex={column.ariaColIndex}
         aria-sort={activeSort ? ARIA_SORT[activeSort.direction] : undefined}
+        aria-haspopup={hasMenu ? 'menu' : undefined}
         style={pinStyle(column)}
         onClick={isSortable ? () => onColumnSort?.(column.key) : undefined}
+        // Both `true` and `'context-only'` answer to a right-click, and
+        // `false` already made `hasMenu` false in `resolveColumnMenu`.
+        onContextMenu={
+          hasMenu
+            ? (event) =>
+                openColumnContextMenu(column, isSortable, activeSort, event)
+            : undefined
+        }
         onKeyDown={
-          isSortable
+          isSortable || hasMenu
             ? (event) => {
+                // Shift+F10 is the standard keyboard route to a context menu,
+                // and the only route to this one — the trigger is not a tab stop.
+                if (event.key === 'F10' && event.shiftKey && hasMenu) {
+                  if (isContextOnly) {
+                    openColumnContextMenu(
+                      column,
+                      isSortable,
+                      activeSort,
+                      event,
+                    );
+                  } else {
+                    event.preventDefault();
+                    // The Scroller listens for Shift+F10 too, for the row menu.
+                    event.stopPropagation();
+                    setOpenMenuColumnKey(column.key);
+                  }
+
+                  return;
+                }
+
+                if (!isSortable) return;
                 if (event.key !== 'Enter' && event.key !== ' ') return;
                 // Space would scroll the grid otherwise.
                 event.preventDefault();
@@ -1670,6 +1724,96 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         undefined,
         // Shift+F10 carries no coordinates; the hook then anchors on the
         // element that produced the event, which is the row.
+        'clientX' in event.nativeEvent
+          ? (event.nativeEvent as MouseEvent)
+          : undefined,
+      );
+    },
+  );
+
+  /* ── column menu ─────────────────────────────────────────────────────────
+   * Shares the `contextMenu` instance above. A header right-click is the same
+   * pointer-anchored popover with different children, and attaching the hook's
+   * `targetRef` to a `<th>` would bind its listener with fixed props — the same
+   * reason the row menu leaves it unattached.
+   * ──────────────────────────────────────────────────────────────────────── */
+
+  function resolveColumnMenu(column: CubeResolvedColumn<T>): ReactNode | null {
+    if (columnContextMenu === false || column.isStructural) return null;
+
+    const items = column.header?.menu;
+
+    return isMenuEmpty(items) ? null : items;
+  }
+
+  /** The reserved sort keys, labelled here so `column-menu.ts` stays pure. */
+  function columnMenuContext(
+    column: CubeResolvedColumn<T>,
+    isSortable: boolean,
+    activeSort: CubeTableSort | null,
+  ): CubeColumnMenuContext {
+    return {
+      isSortable,
+      sort: activeSort?.direction ?? null,
+      disallowSortRemoval: column.disallowSortRemoval === true,
+      labels: {
+        'sort-asc': t('itemTable.sortAscending', 'Sort ascending'),
+        'sort-desc': t('itemTable.sortDescending', 'Sort descending'),
+        'clear-sort': t('itemTable.clearSort', 'Clear sort'),
+      },
+    };
+  }
+
+  function columnMenuActionHandler(
+    column: CubeResolvedColumn<T>,
+    closeAfter: boolean,
+  ) {
+    return (action: Key) => {
+      const normalized = normalizeMenuAction(action);
+
+      // The table's own keys are applied first, then the consumer hears about
+      // them anyway — so a key can be both understood here and observed there.
+      if (isColumnMenuSortKey(normalized)) {
+        onColumnSortChange?.(
+          column.key,
+          COLUMN_MENU_SORT_DIRECTION[normalized],
+        );
+      }
+
+      column.header?.onMenuAction?.(normalized);
+      onColumnMenuAction?.(normalized, column.key);
+
+      // `useContextMenu` leaves its popover open after an action; see
+      // `menuActionHandler` above.
+      if (closeAfter) contextMenu.close();
+    };
+  }
+
+  const openColumnContextMenu = useEvent(
+    (
+      column: CubeResolvedColumn<T>,
+      isSortable: boolean,
+      activeSort: CubeTableSort | null,
+      event: ReactMouseEvent | ReactKeyboardEvent,
+    ) => {
+      const items = resolveColumnMenu(column);
+
+      if (items == null) return;
+
+      event.preventDefault();
+      // The Scroller listens for Shift+F10 too, for the row menu.
+      event.stopPropagation();
+      contextMenu.open(
+        {
+          ...columnMenuProps,
+          ...column.header?.menuProps,
+          children: processColumnMenuItems(
+            items,
+            columnMenuContext(column, isSortable, activeSort),
+          ),
+          onAction: columnMenuActionHandler(column, true),
+        },
+        undefined,
         'clientX' in event.nativeEvent
           ? (event.nativeEvent as MouseEvent)
           : undefined,

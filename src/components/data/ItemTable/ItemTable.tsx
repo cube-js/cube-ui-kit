@@ -112,6 +112,10 @@ function ItemTable<T = any>(
     columnWidths: columnWidthsProp,
     defaultColumnWidths,
     onColumnResize,
+    columnContextMenu,
+    onColumnMenuAction,
+    columnMenuTriggerProps,
+    columnMenuProps,
     onPageSizeChange,
     pageSizeOptions = [10, 20, 50, 100, 500],
     page: pageProp,
@@ -194,6 +198,7 @@ function ItemTable<T = any>(
     sort,
     sortedRows,
     toggleSort,
+    setColumnSort,
     mode: resolvedSortMode,
   } = useTableSort<T>({
     columns,
@@ -596,6 +601,11 @@ function ItemTable<T = any>(
       sortMode={resolvedSortMode}
       sort={sort}
       onColumnSort={toggleSort}
+      onColumnSortChange={setColumnSort}
+      columnContextMenu={columnContextMenu}
+      onColumnMenuAction={onColumnMenuAction}
+      columnMenuTriggerProps={columnMenuTriggerProps}
+      columnMenuProps={columnMenuProps}
       getRowProps={getRowProps}
       ariaLabel={ariaLabel}
       styles={rootStyles}

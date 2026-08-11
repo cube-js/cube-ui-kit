@@ -97,9 +97,10 @@ export interface CubeTableHeaderContext {
 /* ── column ──────────────────────────────────────────────────────────────── */
 
 /**
- * Rich header content. Every slot maps 1:1 onto the `Item` rendered inside the
- * header `<th>`, so a header gets icon / description / tooltip / suffix /
- * actions for free.
+ * Rich header content. Every slot except `menu` maps 1:1 onto the `Item`
+ * rendered inside the header `<th>`, so a header gets icon / description /
+ * tooltip / suffix / actions for free; `menu` is mounted into that `Item`'s
+ * `actions` slot behind a `⋮` trigger.
  */
 export interface CubeTableColumnHeader {
   icon?: CubeItemProps['icon'];
@@ -113,8 +114,32 @@ export interface CubeTableColumnHeader {
   actions?: ReactNode;
   /** Hide `actions` until hover/focus. @default true */
   autoHideActions?: boolean;
+  /**
+   * A column menu, opened from a `⋮` trigger in the header's actions slot and —
+   * unless the table says otherwise — by right-click or Shift+F10.
+   *
+   * `Menu.Item` children. Opaque: the table mounts the node and reports the
+   * pressed key back through `onColumnMenuAction`, so what a "pin" or a "drill
+   * down" means stays in the consuming app. The exception is the reserved sort
+   * keys (`sort-asc`, `sort-desc`, `clear-sort`), which the table labels,
+   * disables when redundant, and applies itself before telling the consumer.
+   *
+   * An empty menu renders no trigger at all, rather than one that opens nothing.
+   * Ignored when `header.render` takes the cell over.
+   */
+  menu?: ReactNode;
+  /** Props for the `⋮` trigger. Merged over the table's `columnMenuTriggerProps`. */
+  menuTriggerProps?: Record<string, any>;
+  /** Props for the `Menu`. Merged over the table's `columnMenuProps`. */
+  menuProps?: Record<string, any>;
+  /** Called before the table-level `onColumnMenuAction`. */
+  onMenuAction?: (action: string) => void;
   theme?: CubeItemProps['theme'];
-  /** Full takeover of the header cell's content. Overrides `title` and every slot. */
+  /**
+   * Full takeover of the header cell's content. Overrides `title` and every
+   * slot — including `actions` and `menu`, which are simply not rendered. A
+   * takeover that wants a menu owns the trigger too.
+   */
   render?: (ctx: CubeTableHeaderContext) => ReactNode;
   /** Overrides `column.align` for the header only. */
   align?: CubeTableAlign;
