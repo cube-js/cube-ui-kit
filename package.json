@@ -30,7 +30,8 @@
     "docs/components",
     "docs/tasty",
     "docs/glaze",
-    "docs/*.md"
+    "docs/*.md",
+    "tasty.config.ts"
   ],
   "scripts": {
     "start": "pnpm storybook",

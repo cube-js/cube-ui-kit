@@ -18,6 +18,15 @@
 export default {
   extends: '@tenphi/tasty',
 
+  /**
+   * Consumers re-export `tasty` from this package rather than from
+   * `@tenphi/tasty`, and the ESLint plugin only inspects `tasty({ styles })`
+   * calls whose import it can trace back to a tracked source. Without this,
+   * every downstream project sees zero findings. Unioned with the parent's
+   * list, so ui-kit's own `@tenphi/tasty` imports stay covered.
+   */
+  importSources: ['@cube-dev/ui-kit'],
+
   tokens: [
     // Declared in src/tasty-augment.d.ts but previously absent here, so the
     // ESLint plugin reported them as unknown once story files started being

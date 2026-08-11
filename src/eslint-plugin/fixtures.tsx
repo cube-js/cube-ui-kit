@@ -492,8 +492,15 @@ export const FIXTURES: Fixture[] = [
     ignoreProps: ['children'],
   },
   {
+    // Never hardcode a prop that has a documented default here. The probe proves
+    // a default by rendering with and without the prop; a hardcoded value is
+    // present in both renders, so they match and the prop is recorded as
+    // defaulted whether it actually is or not. `direction="right"` used to sit
+    // here — it was needed only because the prop was typed required, and it made
+    // the rule strip an explicit `direction="right"` from consumers, whose code
+    // then failed to typecheck. The prop is optional now, so this can render bare.
     name: 'ResizablePanel',
-    render: (props) => <ResizablePanel direction="right" {...props} />,
+    render: (props) => <ResizablePanel {...props} />,
   },
   {
     name: 'GridProvider',
