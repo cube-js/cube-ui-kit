@@ -6,7 +6,11 @@ import { useEvent } from '../../../_internal/hooks';
 
 import { getColumnText, getColumnValue } from './use-table-columns';
 
-import type { CubeTableColumn, CubeTableSort } from './types';
+import type {
+  CubeTableColumn,
+  CubeTableSort,
+  CubeTableSortDirection,
+} from './types';
 
 export type CubeTableSortMode = 'client' | 'server' | 'off';
 
@@ -26,6 +30,16 @@ export interface UseTableSortResult<T> {
   sortedRows: readonly T[];
   /** Advances a column through the sort cycle. */
   toggleSort: (columnKey: string) => void;
+  /**
+   * Sets a column's direction outright. `null` clears it.
+   *
+   * For the column menu's reserved sort keys, which have to reach a specific
+   * direction in one step rather than cycling to it.
+   */
+  setColumnSort: (
+    columnKey: string,
+    direction: CubeTableSortDirection | null,
+  ) => void;
   isSortable: (column: CubeTableColumn<T>) => boolean;
   /**
    * The mode after defaulting. The renderer needs this exact answer to decide
@@ -93,6 +107,32 @@ export function useTableSort<T>({
     );
   });
 
+  /**
+   * Set the column's direction outright instead of advancing the cycle — see
+   * `use-table-sorts.ts` for why the column menu cannot reuse `toggleSort`.
+   */
+  const setColumnSort = useEvent(
+    (columnKey: string, direction: CubeTableSortDirection | null) => {
+      const column = columns.find((entry) => entry.key === columnKey);
+
+      if (!column || !isSortable(column)) return;
+
+      if (direction == null) {
+        // Clearing a column that is not the sorted one is a no-op rather than a
+        // reset, and `disallowSortRemoval` refuses the clear outright.
+        if (sort?.columnKey !== columnKey || column.disallowSortRemoval) return;
+
+        setSort(null);
+
+        return;
+      }
+
+      if (sort?.columnKey === columnKey && sort.direction === direction) return;
+
+      setSort({ columnKey, direction });
+    },
+  );
+
   const sortedRows = useMemo(() => {
     if (resolvedMode !== 'client' || !sort) return rows;
 
@@ -125,7 +165,14 @@ export function useTableSort<T>({
   // The resolved mode is returned rather than left for the caller to derive
   // again: the renderer needs the same answer to decide whether a header is
   // clickable, and two independent derivations drift.
-  return { sort, sortedRows, toggleSort, isSortable, mode: resolvedMode };
+  return {
+    sort,
+    sortedRows,
+    toggleSort,
+    setColumnSort,
+    isSortable,
+    mode: resolvedMode,
+  };
 }
 
 export function compareByColumn<T>(

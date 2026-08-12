@@ -1,7 +1,19 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
+import {
+  NumberIcon,
+  ReloadIcon,
+  StringIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
+  TimeIcon,
+} from '../../../icons';
+import { Button } from '../../actions/Button';
+import { Menu } from '../../actions/Menu';
 import { Text } from '../../content/Text';
 import { Flow } from '../../layout/Flow';
+import { Space } from '../../layout/Space';
+import { columnSortMenu } from '../TableBase/column-menu';
 
 import { DataTable } from './DataTable';
 
@@ -31,13 +43,12 @@ const ROWS: ResultRow[] = Array.from({ length: 240 }, (_, i) => ({
 }));
 
 const COLUMNS: CubeDataTableColumn<ResultRow>[] = [
-  { key: 'region', title: 'Region', isSortable: true, minWidth: 140 },
-  { key: 'channel', title: 'Channel', isSortable: true, minWidth: 120 },
+  { key: 'region', title: 'Region', minWidth: 140 },
+  { key: 'channel', title: 'Channel', minWidth: 120 },
   {
     key: 'orders',
     title: 'Orders',
     dataType: 'number',
-    isSortable: true,
     minWidth: 110,
     format: (value) => value.toLocaleString(),
   },
@@ -45,7 +56,6 @@ const COLUMNS: CubeDataTableColumn<ResultRow>[] = [
     key: 'revenue',
     title: 'Revenue',
     dataType: 'number',
-    isSortable: true,
     minWidth: 140,
     format: (value) =>
       value.toLocaleString(undefined, {
@@ -58,7 +68,6 @@ const COLUMNS: CubeDataTableColumn<ResultRow>[] = [
     key: 'conversion',
     title: 'Conversion',
     dataType: 'number',
-    isSortable: true,
     minWidth: 130,
     format: (value) =>
       value.toLocaleString(undefined, {
@@ -67,6 +76,21 @@ const COLUMNS: CubeDataTableColumn<ResultRow>[] = [
       }),
   },
 ];
+
+/** Namespaced by `useTableStorage` as `cube-ui-kit:table:${key}`. */
+const STORAGE_KEY = 'datatable-columns-demo';
+
+/**
+ * `COLUMNS` with every column opted in.
+ *
+ * Only the stories that are *about* sorting use this. Everything else shows the
+ * component's real default — inert headers, no hover — because sorting is opt in
+ * per column, and a shared fixture that quietly turns it on misrepresents every
+ * story built on it.
+ */
+const SORTABLE_COLUMNS: CubeDataTableColumn<ResultRow>[] = COLUMNS.map(
+  (column) => ({ ...column, isSortable: true }),
+);
 
 const TOTALS: ResultRow[] = [
   {
@@ -95,6 +119,34 @@ const meta: Meta<typeof DataTable> = {
     height: '420px',
   },
   parameters: { layout: 'padded' },
+  argTypes: {
+    data: { control: { type: null } },
+    columns: { control: { type: null } },
+    rowSize: {
+      control: 'radio',
+      options: ['small', 'medium', 'large'],
+      description: 'Row height: 28px / 32px / 40px.',
+    },
+    isColumnReorderable: {
+      control: 'boolean',
+      description: 'Drag column headers sideways to reorder them.',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    columnContextMenu: {
+      control: 'radio',
+      options: [true, false, 'context-only'],
+      description: "Where a column's `header.menu` is exposed.",
+      table: { defaultValue: { summary: 'true' } },
+    },
+    onColumnMenuAction: {
+      action: 'columnMenuAction',
+      table: { category: 'Events' },
+    },
+    onColumnOrderChange: {
+      action: 'columnOrderChange',
+      table: { category: 'Events' },
+    },
+  },
 };
 
 export default meta;
@@ -127,6 +179,7 @@ export const MultiColumnSort: Story = {
       <Flow gap="1x">
         <DataTable<ResultRow>
           {...args}
+          columns={SORTABLE_COLUMNS}
           sorts={sorts}
           onSortsChange={setSorts}
         />
@@ -255,4 +308,319 @@ export const CellSelection: Story = {
       </Flow>
     );
   },
+};
+
+/**
+ * A column menu, opened from the `⋮` in the header, by right-click, or with
+ * `Shift`+`F10`.
+ *
+ * The contents are the consumer's — the grid mounts an opaque node and reports
+ * the pressed key back, which is what keeps Cube vocabulary out of the kit.
+ * Sorting is the exception: it is the one thing the table itself can do, so
+ * `columnSortMenu()` returns ready-made `sort-asc` / `sort-desc` / `clear-sort`
+ * items that the table labels, disables when they would do nothing, and applies.
+ *
+ * `pin` and `hide` below are ordinary keys the grid understands nothing about.
+ */
+export const ColumnMenu: Story = {
+  render: (args) => {
+    const [log, setLog] = useState<string | null>(null);
+    const columns = useMemo(
+      () =>
+        SORTABLE_COLUMNS.map((column) => ({
+          ...column,
+          header: {
+            ...(column.key === 'region'
+              ? { description: 'Where the order shipped from' }
+              : null),
+            menu: (
+              <>
+                {columnSortMenu()}
+                <Menu.Item key="pin">Pin column</Menu.Item>
+                <Menu.Item key="hide">Hide column</Menu.Item>
+              </>
+            ),
+          },
+        })),
+      [],
+    );
+
+    return (
+      <Flow gap="1x">
+        <DataTable<ResultRow>
+          {...args}
+          columns={columns}
+          onColumnMenuAction={(action, columnKey) =>
+            setLog(`${action} → ${columnKey}`)
+          }
+        />
+        <Text color="#dark-03">{log ?? 'No action yet'}</Text>
+      </Flow>
+    );
+  },
+};
+
+/**
+ * Drag a column header sideways to move it, or press `Alt` + `←` / `→` with a
+ * header focused.
+ *
+ * Clicking still sorts — a native drag needs movement and a click does not — and
+ * the resize handle on the trailing edge still resizes.
+ *
+ * Structural and pinned columns stay put: `pin` is already the ordering
+ * authority for a pinned column, so `region` below cannot be moved and neither
+ * can the row-number ruler. `channel` opts out with `isReorderable: false` while
+ * everything else moves around it.
+ */
+export const ColumnReordering: Story = {
+  render: (args) => {
+    const [order, setOrder] = useState<string[] | undefined>();
+    // Two columns deliberately opt out, by the two different routes. Their
+    // titles say so: the prose above only renders in Docs mode, and a header
+    // that silently refuses to move reads as a bug rather than a demo.
+    const columns = useMemo(
+      () =>
+        SORTABLE_COLUMNS.map((column) =>
+          column.key === 'region'
+            ? {
+                ...column,
+                title: 'Region (pinned)',
+                pin: 'start' as const,
+              }
+            : column.key === 'channel'
+              ? {
+                  ...column,
+                  title: 'Channel (locked)',
+                  isReorderable: false,
+                }
+              : column,
+        ),
+      [],
+    );
+
+    return (
+      <Flow gap="1x">
+        <DataTable<ResultRow>
+          {...args}
+          isColumnReorderable
+          showRowNumbers
+          columns={columns}
+          columnOrder={order}
+          onColumnOrderChange={setOrder}
+        />
+        <Text color="#dark-03">{order?.join(' · ') ?? 'source order'}</Text>
+      </Flow>
+    );
+  },
+};
+
+/**
+ * With a `storageKey`, the column layout a user arranges by hand — order *and*
+ * widths — survives a reload. Drag a header, drag a resize handle, then refresh
+ * the preview.
+ *
+ * Only uncontrolled state is stored: a controlled `columnOrder` belongs to the
+ * page, and persisting it would fight the page's own source of truth.
+ *
+ * This story really does write to `localStorage`, so it will remember whatever
+ * you do to it — hence the reset button, which is not part of the feature.
+ */
+export const PersistedColumnLayout: Story = {
+  render: (args) => {
+    // Remounts the table, so it re-reads storage: `useTableStorage` snapshots
+    // at mount on purpose, so a second table sharing the key cannot yank this
+    // one's layout mid-session.
+    const [instance, setInstance] = useState(0);
+
+    return (
+      <Flow gap="1x">
+        <DataTable<ResultRow>
+          {...args}
+          key={instance}
+          isColumnReorderable
+          storageKey={STORAGE_KEY}
+        />
+        <Space gap="1x" placeItems="center start">
+          <Button
+            size="small"
+            onPress={() => {
+              window.localStorage.removeItem(
+                `cube-ui-kit:table:${STORAGE_KEY}`,
+              );
+              setInstance((n) => n + 1);
+            }}
+          >
+            Reset stored layout
+          </Button>
+          <Text color="#dark-03">
+            Drag a header or a resize handle, then reload the preview.
+          </Text>
+        </Space>
+      </Flow>
+    );
+  },
+};
+
+/**
+ * `column.color` tints a whole column — header, cells and pinned totals.
+ *
+ * A palette theme name (`'success'`, `'note'`, …) is the cheap form. Any CSS
+ * colour works too: only its hue and saturation are kept, and the tone ramp plus
+ * an AA/AAA text floor are re-solved per scheme by Glaze. Flip the toolbar to
+ * dark or high contrast and every column stays readable — which is the point,
+ * and the thing hand-picked hex pairs get wrong.
+ *
+ * Row banding survives inside a tinted column: the tint carries its own band one
+ * tone step away, so the stripe still reads down the column.
+ */
+export const ColumnColors: Story = {
+  args: {
+    pinnedBottomRows: TOTALS,
+    paginationMode: 'off',
+    columns: COLUMNS.map((column) =>
+      column.key === 'orders'
+        ? { ...column, color: 'note' as const }
+        : column.key === 'revenue'
+          ? { ...column, color: 'success' as const }
+          : column.key === 'conversion'
+            ? { ...column, color: '#0ea5e9' }
+            : column,
+    ),
+  },
+};
+
+/**
+ * `colorScope` narrows what the colour reaches — here the headers are tinted and
+ * the cells below them stay neutral.
+ */
+export const ColumnColorScope: Story = {
+  args: {
+    columns: COLUMNS.map((column) =>
+      column.key === 'orders'
+        ? { ...column, color: 'note' as const, colorScope: ['header'] as const }
+        : column.key === 'revenue'
+          ? {
+              ...column,
+              color: 'success' as const,
+              colorScope: ['header'] as const,
+            }
+          : column,
+    ),
+  },
+};
+
+/**
+ * `rowSize` sets the row height to a named step — `small` 28px, `medium` 32px,
+ * `large` 40px — without touching the header, which keeps answering to `size`.
+ *
+ * Unset, the height comes from `size` as it always did; at this table's default
+ * that is the same 32px `medium` gives. Reach for `rowHeight` when none of the
+ * three is the answer.
+ */
+export const RowSize: Story = {
+  render: (args) => (
+    <Flow gap="2x">
+      {(['small', 'medium', 'large'] as const).map((rowSize) => (
+        <Flow key={rowSize} gap=".5x">
+          <Text preset="t3m">
+            {rowSize} — {{ small: 28, medium: 32, large: 40 }[rowSize]}px
+          </Text>
+          <DataTable<ResultRow>
+            {...args}
+            // Overrides the meta's `height`. An unbounded table sizes to its
+            // content, so each one here is exactly its header plus five rows —
+            // which is the only way the three are comparable. A fixed height
+            // pads the short one with dead space and scrolls the tall one.
+            height={undefined}
+            rowSize={rowSize}
+            paginationMode="off"
+            data={ROWS.slice(0, 5)}
+          />
+        </Flow>
+      ))}
+    </Flow>
+  ),
+};
+
+/**
+ * The layout Cube Cloud's query results panel uses.
+ *
+ * Three things make it, none of them special-cased in the component:
+ *
+ * - **Pagination off, slots instead.** `paginationMode="off"` leaves the footer
+ *   with nothing but `footerStart` / `footerEnd`, so the row count and a "load
+ *   the rest" affordance sit where the pager would have been. The footer renders
+ *   whenever any slot has content, so it survives the pager going away.
+ * - **A tighter footer.** `footerStyles={{ padding: '.5x' }}` — the default is
+ *   sized for the pager's controls, and without them it reads as too much air.
+ * - **The column's type in its header.** `header.icon` is just a slot, so the
+ *   time/string/number marks are the consumer's vocabulary rather than the
+ *   kit's: nothing under `src/components/data` knows what a dimension is.
+ */
+export const QueryResultsLayout: Story = {
+  render: (args) => (
+    <DataTable<ResultRow>
+      {...args}
+      showRowNumbers
+      paginationMode="off"
+      rowSize="small"
+      columns={[
+        {
+          key: 'region',
+          title: 'created_at_month',
+          minWidth: 180,
+          header: { icon: <TimeIcon /> },
+        },
+        {
+          key: 'channel',
+          title: 'status',
+          minWidth: 140,
+          header: { icon: <StringIcon /> },
+        },
+        {
+          key: 'orders',
+          title: 'order_count',
+          dataType: 'number',
+          minWidth: 140,
+          header: { icon: <NumberIcon /> },
+          format: (value) => value.toLocaleString(),
+        },
+        {
+          key: 'revenue',
+          title: 'revenue',
+          dataType: 'number',
+          minWidth: 140,
+          header: { icon: <NumberIcon /> },
+          format: (value) => value.toLocaleString(),
+        },
+      ]}
+      footerStyles={{ padding: '.5x' }}
+      footerStart={
+        <Space gap=".5x">
+          <Button
+            type="neutral"
+            size="xsmall"
+            icon={<ThumbsUpIcon />}
+            aria-label="Good result"
+          />
+          <Button
+            type="neutral"
+            size="xsmall"
+            icon={<ThumbsDownIcon />}
+            aria-label="Bad result"
+          />
+        </Space>
+      }
+      footerEnd={
+        <Space gap="1x" placeItems="center">
+          <Text color="#dark-03" preset="t4">
+            showing {ROWS.length} out of 649 total rows
+          </Text>
+          <Button type="outline" size="xsmall" icon={<ReloadIcon />}>
+            Load All Results
+          </Button>
+        </Space>
+      }
+    />
+  ),
 };

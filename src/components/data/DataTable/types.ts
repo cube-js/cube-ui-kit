@@ -9,6 +9,7 @@ import type {
   CubeTableLoadingIndicator,
   CubeTableRowContext,
   CubeTableRowSection,
+  CubeTableRowSize,
   CubeTableSort,
 } from '../TableBase/types';
 
@@ -58,6 +59,18 @@ export interface CubeDataTableProps<T = any>
   shape?: 'plain' | 'card';
   /** @default 'small' — an analytical grid packs more rows than a list. */
   size?: SizeName;
+  /**
+   * Row height as a named step: `small` 28px, `medium` 32px, `large` 40px.
+   *
+   * Only the rows — the header keeps whatever `size` gives it, so a denser body
+   * does not drag the header down with it. `rowHeight` wins when both are set.
+   *
+   * Unset, the row height comes from `size` as before, which at this table's
+   * default (`size="small"`) is the same 32px `medium` gives. They diverge only
+   * if you also move `size`: `size="large"` alone is 48px rows.
+   */
+  rowSize?: CubeTableRowSize;
+  /** An exact height in px, when none of the named steps is the answer. */
   rowHeight?: number;
   headerHeight?: number;
   /** @default true — banding is what makes a wide row readable across. */
@@ -148,6 +161,53 @@ export interface CubeDataTableProps<T = any>
     width: number,
     all: Record<string, number>,
   ) => void;
+
+  /* ── column order ─────────────────────────────────────────────────── */
+  /**
+   * Drag column headers sideways to reorder them.
+   *
+   * Named for the axis: `ItemTable`'s `isReorderable` already means ROW
+   * reordering, and the two are different features.
+   *
+   * Structural and pinned columns stay put. `pin` is already the ordering
+   * authority for a pinned column, and a sticky `<th>` cannot be hit-tested
+   * reliably under horizontal scroll.
+   *
+   * @default false
+   */
+  isColumnReorderable?: boolean;
+  /**
+   * Controlled order, as column keys. Works with or without dragging, so a
+   * column manager elsewhere in the page can drive it on its own.
+   *
+   * Stale keys are ignored, and a column missing from the list lands after the
+   * neighbour it had in `columns` rather than at the end.
+   */
+  columnOrder?: string[];
+  defaultColumnOrder?: string[];
+  /** The FULL key list, including hidden and pinned columns. */
+  onColumnOrderChange?: (order: string[]) => void;
+
+  /* ── column menu ──────────────────────────────────────────────────── */
+  /**
+   * Where a column's `header.menu` is exposed.
+   *
+   * - `true` — a `⋮` trigger in the header, plus right-click and Shift+F10.
+   * - `'context-only'` — right-click and Shift+F10 only, no trigger.
+   * - `false` — suppressed entirely.
+   *
+   * @default true
+   */
+  columnContextMenu?: boolean | 'context-only';
+  /**
+   * The key of the pressed `Menu.Item`, as written — no `.$` prefix.
+   *
+   * Fires for the reserved sort keys too (`sort-asc`, `sort-desc`,
+   * `clear-sort`), after the table has already applied them.
+   */
+  onColumnMenuAction?: (action: string, columnKey: string) => void;
+  columnMenuTriggerProps?: Record<string, any>;
+  columnMenuProps?: Record<string, any>;
 
   /* ── virtualization ───────────────────────────────────────────────── */
   isVirtualized?: boolean | 'auto';

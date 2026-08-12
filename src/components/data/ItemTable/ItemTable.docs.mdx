@@ -196,6 +196,14 @@ pivots, totals. Use `ListBox` when there is only one column.
 - **`defaultColumnWidths`** `Record<string, number>` — Initial widths.
 - **`onColumnResize`** `(columnKey, width, all) => void` — Fires once the
   gesture ends, not on every pixel.
+- **`columnContextMenu`** `boolean | 'context-only'` (default: `true`) — Where a
+  column's `header.menu` is exposed: a `⋮` trigger plus right-click and
+  Shift+F10, right-click only, or nowhere.
+- **`onColumnMenuAction`** `(action, columnKey) => void` — The pressed
+  `Menu.Item` key, as written. Fires for the reserved sort keys too, after the
+  table has applied them.
+- **`columnMenuTriggerProps`** `Record<string, any>` — Props for the `⋮` trigger.
+- **`columnMenuProps`** `Record<string, any>` — Props for the `Menu`.
 - **`storageKey`** `string` — Persists the table's own state under
   `cube-ui-kit:table:${storageKey}`. Controlled state is never stored — a
   controlled `pageSize` or `sort` belongs to the page, and restoring it would
@@ -232,7 +240,7 @@ interface CubeItemTableColumn<T> {
   cellProps?: (ctx) => Record<string, any> | undefined;
 
   align?: 'start' | 'center' | 'end';
-  isSortable?: boolean;
+  isSortable?: boolean;     // opt in per column (default false)
   isSearchable?: boolean;   // include in the built-in search (default true)
   isCopyable?: boolean;     // include in TSV copy (default true)
   autoHeight?: boolean;     // wrap text and let the row grow
@@ -418,10 +426,11 @@ search sets it for you.
 
 ### Sorting
 
-Mark columns `isSortable` and clicking a header cycles
-`ascending → descending → unsorted`. The third state matters whenever the source
-order is meaningful, which is why it is the default cycle; set
-`disallowSortRemoval` on a column to reduce it to `asc ↔ desc`.
+Sorting is **opt in, per column**: a table with no `isSortable` column has inert
+headers and `sortMode` resolves to `'off'`. Mark columns `isSortable` and
+clicking a header cycles `ascending → descending → unsorted`. The third state
+matters whenever the source order is meaningful, which is why it is the default
+cycle; set `disallowSortRemoval` on a column to reduce it to `asc ↔ desc`.
 
 ```jsx
 <ItemTable
@@ -434,6 +443,31 @@ order is meaningful, which is why it is the default cycle; set
   defaultSort={{ columnKey: 'queries', direction: 'desc' }}
 />
 ```
+
+#### A fixed order the user cannot change
+
+For a list that arrives in a meaningful order — most of them — leave every column
+alone and pass the order you want. `sortMode="client"` keeps the engine sorting
+while the headers stay inert, so nothing is clickable and no header takes a tab
+stop:
+
+```jsx
+<ItemTable
+  data={rows}
+  columns={[{ key: 'name', title: 'Name' }]}
+  sortMode="client"
+  sort={{ columnKey: 'name', direction: 'asc' }}
+/>
+```
+
+The sorted column still carries `aria-sort`, so a screen reader announces the
+order even though the header cannot be operated. It is **not** drawn — the sort
+arrow belongs to the clickable affordance — so add your own marker through
+`header.suffix` if sighted users need to see which column the order follows.
+
+Data already in the right order needs none of this: pass it and set nothing.
+
+<Canvas of={ItemTableStories.FixedSort} />
 
 Client-side sorting compares raw `getValue` results — numerically for numbers,
 chronologically for dates — and falls back to a locale-aware collator over the

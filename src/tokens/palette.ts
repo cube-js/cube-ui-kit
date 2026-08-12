@@ -277,6 +277,64 @@ const TINTED_SURFACE_OVERRIDE: ColorMap = {
   },
 };
 
+/**
+ * A tinted surface, a banding step, and text guaranteed to read on both.
+ *
+ * The recipe behind {@link getColorTheme} in `./color-theme.ts`, which builds
+ * one-off themes at runtime from an arbitrary hue. It lives here so it shares
+ * `TINTED_SURFACE_SATURATION`, the tone offsets and the text ramp with
+ * {@link TINTED_SURFACE_OVERRIDE} above rather than forking them — a runtime tint
+ * and a built-in theme's `surface` should be the same colour for the same hue.
+ *
+ * Three colours, because that is what banded, readable table column needs:
+ * `surface` for even rows, `surface-2` one tone step down for odd rows and
+ * pinned totals, and `surface-2-text`.
+ *
+ * The text is anchored to `surface-2`, not `surface`. `surface-2` has the lower
+ * contrast headroom in BOTH schemes — a darker background under dark text in
+ * light, a lighter one under light text in dark — so solving the floor there
+ * clears it on both bands. The neutral ramp's own `surface-2-text` is shaped the
+ * same way for the same reason.
+ */
+export const TINT_RECIPE: ColorMap = {
+  surface: {
+    tone: [
+      100 - TINTED_SURFACE_TONE_OFFSET,
+      100 - TINTED_SURFACE_TONE_OFFSET * 2,
+    ],
+    saturation: TINTED_SURFACE_SATURATION,
+  },
+  'surface-2': {
+    base: 'surface',
+    // Mirrors the neutral ramp's step from `surface` to `surface-2`: enough to
+    // read as banding down a column, not enough to read as two colours.
+    tone: ['-2', '-4'],
+    saturation: TINTED_SURFACE_SATURATION,
+  },
+  'surface-2-text': {
+    base: 'surface-2',
+    tone: `${TEXT_TONE - TINTED_SURFACE_TONE_OFFSET - SURFACE_2_TEXT_OFFSET}`,
+    saturation: 0.25,
+    // The whole point: Glaze binary-searches the tone per scheme until the floor
+    // is met, so a caller cannot persist an unreadable pair.
+    contrast: ['AA', 'AAA'],
+  },
+  /**
+   * The softer step, for a tinted column HEADER.
+   *
+   * A neutral header is deliberately muted (`HeadRow` publishes `#dark-03`), so
+   * a tinted one taking the full-strength body text read markedly darker than
+   * the headers either side of it — measured at 16:1 against their 4.9:1. This
+   * keeps the two consistent, and the `AA` floor still applies.
+   */
+  'surface-2-text-soft': {
+    base: 'surface-2',
+    tone: `${TEXT_SOFT_TONE - TINTED_SURFACE_TONE_OFFSET - SURFACE_2_TEXT_OFFSET}`,
+    saturation: 0.25,
+    contrast: ['AA', 'AAA'],
+  },
+};
+
 // ============================================================================
 // Palette construction
 // ============================================================================

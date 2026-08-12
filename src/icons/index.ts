@@ -2,6 +2,8 @@ export { AdjustmentsHorizontalIcon } from './AdjustmentsHorizontalIcon';
 export { AdjustmentsIcon } from './AdjustmentsIcon';
 export { AiIcon } from './AiIcon';
 export { AreaChartIcon } from './AreaChartIcon';
+export { ArrowNarrowDownIcon } from './ArrowNarrowDownIcon';
+export { ArrowNarrowUpIcon } from './ArrowNarrowUpIcon';
 export { BackwardIcon } from './BackwardIcon';
 export { BarChartIcon } from './BarChartIcon';
 export { BellFilledIcon } from './BellFilledIcon';
