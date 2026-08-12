@@ -338,6 +338,38 @@ function useServerQuery<T>(compute: () => T, deps: unknown[]) {
  * re-sorts on `onSortChange`, over a 700ms round trip. The header shows
  * the new direction immediately while the rows lag behind it.
  */
+/**
+ * Sorting is **opt in, per column** — this is what a table looks like without it.
+ *
+ * No column sets `isSortable`, so no header is clickable and none takes a tab
+ * stop. `sortMode="client"` still orders the rows, so the list arrives in the
+ * order you asked for and the user cannot disturb it. Most lists want exactly
+ * this: the order is a property of the data, not a control.
+ *
+ * The sorted column keeps `aria-sort`, so the order is announced even though the
+ * header cannot be operated. It is deliberately not drawn — the arrow belongs to
+ * the clickable affordance — so `Name` carries its own `↑` through
+ * `header.suffix` to show how you would mark it.
+ *
+ * Rows already in the right order need none of this: pass them and set nothing.
+ */
+export const FixedSort: Story = {
+  args: {
+    // Every column plain. Compare with `Sorting` below, where they opt in.
+    columns: COLUMNS.map((column) =>
+      column.key === 'name'
+        ? {
+            ...column,
+            isSortable: false,
+            header: { suffix: <Text color="#dark-04">↑</Text> },
+          }
+        : { ...column, isSortable: false },
+    ),
+    sortMode: 'client',
+    sort: { columnKey: 'name', direction: 'asc' },
+  },
+};
+
 export const Sorting: Story = {
   render: (args) => {
     const [sort, setSort] = useState<CubeTableSort | null>({

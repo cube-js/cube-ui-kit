@@ -273,7 +273,16 @@ export interface CubeTableColumn<T = any> {
 
   /* behaviour */
   align?: CubeTableAlign;
-  /** @default true unless the table's `sortMode` is `'off'` */
+  /**
+   * Opt IN, per column — a table is not sortable until at least one column says
+   * so, and `sortMode` then defaults to `'client'`.
+   *
+   * (This read `@default true` for a long time, which was never what the code
+   * did: `TableView` requires `isSortable === true` before a header becomes a
+   * control at all.)
+   *
+   * @default false
+   */
   isSortable?: boolean;
   /** Two-state cycling (asc ↔ desc), never back to unsorted. @default false */
   disallowSortRemoval?: boolean;

@@ -270,3 +270,72 @@ describe('ItemTable sort indicator placement', () => {
     expect(indicator.closest('[data-element="Suffix"]')).not.toBeNull();
   });
 });
+
+describe('ItemTable sortability defaults', () => {
+  const PLAIN = [{ key: 'name', title: 'Name' }];
+  const UNSORTED = [
+    { id: 'c', name: 'Charlie' },
+    { id: 'a', name: 'Alpha' },
+    { id: 'b', name: 'Bravo' },
+  ];
+  const header = () =>
+    screen.getByRole('grid').querySelector('thead [data-key="name"]')!;
+  const names = () =>
+    Array.from(
+      screen.getByRole('grid').querySelectorAll('tbody [data-key="name"]'),
+    ).map((cell) => cell.textContent?.trim());
+
+  it('is not sortable until a column opts in', async () => {
+    const onSortChange = vi.fn();
+
+    renderWithRoot(
+      <ItemTable data={UNSORTED} columns={PLAIN} onSortChange={onSortChange} />,
+    );
+
+    // Opt IN, per column. The type doc claimed `@default true` for a long time,
+    // which is the opposite of what `TableView` does — it requires
+    // `isSortable === true` before a header becomes a control at all.
+    expect(header()).not.toHaveAttribute('data-sortable');
+    expect(header()).toHaveAttribute('tabindex', '-1');
+    expect(header()).not.toHaveAttribute('aria-sort');
+
+    await userEvent.click(header() as HTMLElement);
+
+    expect(onSortChange).not.toHaveBeenCalled();
+    expect(names()).toEqual(['Charlie', 'Alpha', 'Bravo']);
+  });
+
+  it('orders rows from a fixed sort the user cannot change', () => {
+    renderWithRoot(
+      <ItemTable
+        data={UNSORTED}
+        columns={PLAIN}
+        sortMode="client"
+        sort={{ columnKey: 'name', direction: 'asc' }}
+      />,
+    );
+
+    // The pattern most Cloud lists want: the engine sorts, the headers stay
+    // inert. `sortMode` has to be explicit — left to default it resolves to
+    // `'off'` when no column is sortable, and the rows come through untouched.
+    expect(names()).toEqual(['Alpha', 'Bravo', 'Charlie']);
+    expect(header()).not.toHaveAttribute('data-sortable');
+    expect(header()).toHaveAttribute('tabindex', '-1');
+    // Announced even though it cannot be operated — it describes the data.
+    expect(header()).toHaveAttribute('aria-sort', 'ascending');
+  });
+
+  it('leaves the rows alone when sortMode is left to default', () => {
+    renderWithRoot(
+      <ItemTable
+        data={UNSORTED}
+        columns={PLAIN}
+        sort={{ columnKey: 'name', direction: 'asc' }}
+      />,
+    );
+
+    // The footgun the story and docs exist to head off: with no sortable column
+    // `sortMode` resolves to `'off'`, so a `sort` prop alone sorts nothing.
+    expect(names()).toEqual(['Charlie', 'Alpha', 'Bravo']);
+  });
+});
