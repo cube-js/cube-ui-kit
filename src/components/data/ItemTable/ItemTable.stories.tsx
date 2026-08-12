@@ -84,14 +84,12 @@ const COLUMNS: CubeItemTableColumn<Deployment>[] = [
     title: 'Name',
     isRowHeader: true,
     flex: 2,
-    isSortable: true,
     header: { icon: <DatabaseIcon /> },
   },
   {
     key: 'status',
     title: 'Status',
     width: 140,
-    isSortable: true,
     render: (value: Deployment['status']) => (
       <Tag theme={STATUS_THEME[value]}>{value}</Tag>
     ),
@@ -100,19 +98,28 @@ const COLUMNS: CubeItemTableColumn<Deployment>[] = [
     // Dot notation reads a nested path without a `getValue` closure.
     key: 'owner.name',
     title: 'Owner',
-    isSortable: true,
     header: { icon: <UserIcon /> },
   },
-  { key: 'region', title: 'Region', width: 160, isSortable: true },
+  { key: 'region', title: 'Region', width: 160 },
   {
     key: 'queries',
     title: 'Queries',
     width: 140,
     align: 'end',
-    isSortable: true,
     format: (value: number) => value.toLocaleString('en-US'),
   },
 ];
+
+/**
+ * `COLUMNS` with every column opted in.
+ *
+ * Only the sorting stories use this. Everything else shows the component's real
+ * default — inert headers, no hover — because sorting is opt in per column and a
+ * shared fixture that quietly turns it on misrepresents every story built on it.
+ */
+const SORTABLE_COLUMNS: CubeItemTableColumn<Deployment>[] = COLUMNS.map(
+  (column) => ({ ...column, isSortable: true }),
+);
 
 const meta = {
   title: 'Data/ItemTable',
@@ -355,15 +362,12 @@ function useServerQuery<T>(compute: () => T, deps: unknown[]) {
  */
 export const FixedSort: Story = {
   args: {
-    // Every column plain. Compare with `Sorting` below, where they opt in.
+    // `COLUMNS` as-is — no column opts in. Compare with `Sorting` below, which
+    // uses `SORTABLE_COLUMNS`.
     columns: COLUMNS.map((column) =>
       column.key === 'name'
-        ? {
-            ...column,
-            isSortable: false,
-            header: { suffix: <Text color="#dark-04">↑</Text> },
-          }
-        : { ...column, isSortable: false },
+        ? { ...column, header: { suffix: <Text color="#dark-04">↑</Text> } }
+        : column,
     ),
     sortMode: 'client',
     sort: { columnKey: 'name', direction: 'asc' },
@@ -399,11 +403,13 @@ export const Sorting: Story = {
         <ItemTable
           {...args}
           shape="card"
+          columns={SORTABLE_COLUMNS}
           defaultSort={{ columnKey: 'queries', direction: 'desc' }}
         />
         <ItemTable
           {...args}
           shape="card"
+          columns={SORTABLE_COLUMNS}
           data={rows}
           isLoading={isLoading}
           sortMode="server"

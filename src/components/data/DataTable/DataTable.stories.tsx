@@ -43,13 +43,12 @@ const ROWS: ResultRow[] = Array.from({ length: 240 }, (_, i) => ({
 }));
 
 const COLUMNS: CubeDataTableColumn<ResultRow>[] = [
-  { key: 'region', title: 'Region', isSortable: true, minWidth: 140 },
-  { key: 'channel', title: 'Channel', isSortable: true, minWidth: 120 },
+  { key: 'region', title: 'Region', minWidth: 140 },
+  { key: 'channel', title: 'Channel', minWidth: 120 },
   {
     key: 'orders',
     title: 'Orders',
     dataType: 'number',
-    isSortable: true,
     minWidth: 110,
     format: (value) => value.toLocaleString(),
   },
@@ -57,7 +56,6 @@ const COLUMNS: CubeDataTableColumn<ResultRow>[] = [
     key: 'revenue',
     title: 'Revenue',
     dataType: 'number',
-    isSortable: true,
     minWidth: 140,
     format: (value) =>
       value.toLocaleString(undefined, {
@@ -70,7 +68,6 @@ const COLUMNS: CubeDataTableColumn<ResultRow>[] = [
     key: 'conversion',
     title: 'Conversion',
     dataType: 'number',
-    isSortable: true,
     minWidth: 130,
     format: (value) =>
       value.toLocaleString(undefined, {
@@ -82,6 +79,18 @@ const COLUMNS: CubeDataTableColumn<ResultRow>[] = [
 
 /** Namespaced by `useTableStorage` as `cube-ui-kit:table:${key}`. */
 const STORAGE_KEY = 'datatable-columns-demo';
+
+/**
+ * `COLUMNS` with every column opted in.
+ *
+ * Only the stories that are *about* sorting use this. Everything else shows the
+ * component's real default — inert headers, no hover — because sorting is opt in
+ * per column, and a shared fixture that quietly turns it on misrepresents every
+ * story built on it.
+ */
+const SORTABLE_COLUMNS: CubeDataTableColumn<ResultRow>[] = COLUMNS.map(
+  (column) => ({ ...column, isSortable: true }),
+);
 
 const TOTALS: ResultRow[] = [
   {
@@ -170,6 +179,7 @@ export const MultiColumnSort: Story = {
       <Flow gap="1x">
         <DataTable<ResultRow>
           {...args}
+          columns={SORTABLE_COLUMNS}
           sorts={sorts}
           onSortsChange={setSorts}
         />
@@ -317,7 +327,7 @@ export const ColumnMenu: Story = {
     const [log, setLog] = useState<string | null>(null);
     const columns = useMemo(
       () =>
-        COLUMNS.map((column) => ({
+        SORTABLE_COLUMNS.map((column) => ({
           ...column,
           header: {
             ...(column.key === 'region'
@@ -370,7 +380,7 @@ export const ColumnReordering: Story = {
     // that silently refuses to move reads as a bug rather than a demo.
     const columns = useMemo(
       () =>
-        COLUMNS.map((column) =>
+        SORTABLE_COLUMNS.map((column) =>
           column.key === 'region'
             ? {
                 ...column,
