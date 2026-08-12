@@ -7,7 +7,11 @@ import {
 } from '@tenphi/glaze';
 
 import { colorThemeSeed, getColorTheme } from './color-theme';
-import { resetPaletteConfig, setPaletteConfig } from './palette-config';
+import {
+  DEFAULT_SATURATION,
+  resetPaletteConfig,
+  setPaletteConfig,
+} from './palette-config';
 
 const SCHEMES = ['', '@dark', '@hc', '@dark & @hc'] as const;
 
@@ -28,6 +32,15 @@ function wcag(background: string, foreground: string): number {
 }
 
 describe('getColorTheme', () => {
+  // `beforeEach` as well as `afterEach`: `vitest.config.ts` runs with
+  // `isolate: false`, so the module graph — and therefore `palette-config`'s
+  // module-level state — is shared with every other file in the same worker.
+  // `palette.test.ts` re-seeds the palette too, and leaning on its cleanup is
+  // what made the re-seed assertion below pass locally and fail in CI.
+  beforeEach(() => {
+    resetPaletteConfig();
+  });
+
   afterEach(() => {
     resetPaletteConfig();
   });
@@ -144,21 +157,39 @@ describe('getColorTheme', () => {
   });
 
   it('re-derives when the palette is re-seeded', () => {
+    // Saturation, not `pastel`. This theme inherits the palette's saturation
+    // when its own config does not pin one, so halving it moves the chroma by a
+    // wide margin. `pastel` was the original lever here and it is a poor one: at
+    // a near-neutral tint it shifts chroma in the 4th decimal (0.0027 → 0.0015),
+    // which is close enough to round together that the assertion failed in CI
+    // and could not be reproduced locally.
+    setPaletteConfig({ saturation: 80 });
+
     const before = getColorTheme({ hue: 200 });
     const beforeSurface = before.tokens[before.colors.surface];
 
-    setPaletteConfig({ pastel: true });
+    setPaletteConfig({ saturation: 10 });
 
     const after = getColorTheme({ hue: 200 });
 
     expect(after).not.toBe(before);
     expect(after.tokens[after.colors.surface]).not.toEqual(beforeSurface);
-    // And a DIFFERENT name, because the name hashes the resolved seed and
-    // `pastel` is part of it. Two genuinely different colours cannot end up
-    // sharing one injection slot — which is the property that matters. The cost
-    // is that the pre-seed slot is left behind as dead CSS; it is bounded by how
-    // many distinct palettes a session actually uses.
+    // A different name too: the name hashes the RESOLVED seed, and saturation is
+    // part of it. Two genuinely different colours cannot share one injection
+    // slot — which is the property that matters. The cost is that the pre-seed
+    // slot is left behind as dead CSS, bounded by how many distinct palettes a
+    // session actually uses.
     expect(after.name).not.toBe(before.name);
+  });
+
+  it('puts pastel in the name, so the two cannot share a slot', () => {
+    // Asserted on the NAME rather than the values: what pastel does to a
+    // near-neutral tint is too small to compare strings on reliably, but it is
+    // part of the resolved seed either way.
+    const plain = getColorTheme({ hue: 200, pastel: false });
+    const pastel = getColorTheme({ hue: 200, pastel: true });
+
+    expect(pastel.name).not.toBe(plain.name);
   });
 
   it('keeps the name stable when the palette cannot affect the seed', () => {
