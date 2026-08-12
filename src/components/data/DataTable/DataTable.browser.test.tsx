@@ -809,3 +809,36 @@ describe('DataTable column resize', () => {
     expect(after.revenue).toBe(before.revenue);
   });
 });
+
+describe('DataTable focus', () => {
+  it('draws no focus ring around the scroller', async () => {
+    renderWithRoot(
+      <DataTable
+        data={ROWS.slice(0, 5)}
+        columns={COLUMNS}
+        height="240px"
+        width="700px"
+        paginationMode="off"
+      />,
+    );
+
+    await vi.waitFor(() => expect(grid()).toBeInTheDocument());
+
+    const scroller = document.querySelector<HTMLElement>(
+      '[data-element="Scroller"]',
+    )!;
+
+    // A real key first, so the browser's `:focus-visible` heuristic treats the
+    // programmatic focus that follows as keyboard-driven — which is exactly the
+    // path a cell press takes.
+    await realInput.keyboard('{Tab}');
+    scroller.focus({ preventScroll: true });
+
+    expect(scroller.matches(':focus-visible')).toBe(true);
+    // The scroller is focusable only so the range's shortcuts have somewhere to
+    // land. The browser's default `outline: auto` drew a box round the whole
+    // scrollport, and the frame's `overflow: hidden` clipped all but the bottom
+    // edge — which shipped as a stray line above the footer.
+    expect(getComputedStyle(scroller).outlineStyle).toBe('none');
+  });
+});

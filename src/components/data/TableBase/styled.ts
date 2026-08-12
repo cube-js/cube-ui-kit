@@ -216,6 +216,26 @@ export const TableElement = tasty({
       gridRow: 2,
       position: 'relative',
       overflow: 'auto',
+      /**
+       * No focus ring of its own.
+       *
+       * The scroller takes `tabIndex={-1}` so a cell press can move focus here
+       * and the range's shortcuts (Escape, ⌘/Ctrl+C) have somewhere to land. It
+       * is a mechanism, not a control the user aimed at — but the browser does
+       * not know that, and drew its default `outline: auto` around the whole
+       * scrollport. Three edges are clipped by the frame's `overflow: hidden`,
+       * so what actually shipped was a stray line across the bottom of the
+       * table, right above the footer.
+       *
+       * Nothing is lost by removing it: focus only ever arrives here alongside a
+       * selected cell, and that cell draws its own ring.
+       *
+       * `'none'`, not `false` — tasty reads `false` as "no ring of the kit's
+       * own" and emits no declaration at all, which leaves the browser's default
+       * in place. Verified: with `false` the Scroller's rule carried no
+       * `outline` property.
+       */
+      outline: 'none',
       // A reserved gutter stops an appearing scrollbar from reflowing every
       // column. With one scroller for head and body there is nothing else to
       // keep in sync — this is the whole reason for the native-table design.
