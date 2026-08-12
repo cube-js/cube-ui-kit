@@ -11,7 +11,14 @@ import { VisuallyHidden } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
-import { MoreIcon, UpIcon } from '../../../icons';
+import {
+  ArrowNarrowDownIcon,
+  ArrowNarrowUpIcon,
+  MoreIcon,
+} from '../../../icons';
+import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
+import { usePaletteVersion } from '../../../tokens/palette-config';
+import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { Action } from '../../actions/Action/Action';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
@@ -23,6 +30,12 @@ import { Checkbox } from '../../fields/Checkbox';
 import { useToast } from '../../overlays/Toast';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 
+import {
+  COLUMN_MENU_SORT_DIRECTION,
+  isColumnMenuSortKey,
+  processColumnMenuItems,
+} from './column-menu';
+import { buildColumnTints, tintSlot } from './column-tint';
 import { ColumnResizer } from './ColumnResizer';
 import {
   isMenuEmpty,
@@ -30,9 +43,11 @@ import {
   ROW_MENU_COLUMN_KEY,
 } from './row-menu';
 import { TableElement, TableHeaderItem } from './styled';
+import { TableHeaderCell } from './TableHeaderCell';
 import { TableRow, TableRowDropIndicator } from './TableRow';
 import { selectionRowKey } from './types';
 import { toTsv } from './use-cell-selection';
+import { getDraggableColumnKeys, isColumnDraggable } from './use-column-order';
 import { useRowMoveAnimation } from './use-row-move-animation';
 import { useScrollability } from './use-scrollability';
 import { getColumnText, getColumnValue } from './use-table-columns';
@@ -52,6 +67,8 @@ import type {
   RefObject,
 } from 'react';
 import type { NavigateArg } from '../../../providers/navigation.types';
+import type { ColorThemeConfig } from '../../../tokens/color-theme';
+import type { CubeColumnMenuContext } from './column-menu';
 import type {
   CubeResolvedColumn,
   CubeTableCellContext,
@@ -60,7 +77,9 @@ import type {
   CubeTableLoadingIndicator,
   CubeTableRowContext,
   CubeTableRowSection,
+  CubeTableRowSize,
   CubeTableSort,
+  CubeTableSortDirection,
 } from './types';
 import type { useCellSelection } from './use-cell-selection';
 import type { CubeTableSelectionState } from './use-table-selection';
@@ -91,6 +110,14 @@ export interface TableViewProps<T = any> {
 
   size?: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge';
   shape?: 'plain' | 'card';
+  /**
+   * Row height as a named step — 28px / 32px / 40px.
+   *
+   * Only the rows: the header keeps whatever `size` gives it. Unset, the height
+   * falls through to `size` as before. `rowHeight` wins over both, being the
+   * most specific answer.
+   */
+  rowSize?: CubeTableRowSize;
   rowHeight?: number;
   headerHeight?: number;
   isHeaderHidden?: boolean;
@@ -187,6 +214,19 @@ export interface TableViewProps<T = any> {
   /** Provided by `DraggableCollection` when reordering is on. */
   dragState?: any;
   dropState?: any;
+  /* column reordering — named apart from the ROW drag props above, so a table
+   * can eventually run both at once. */
+  isColumnReorderable?: boolean;
+  columnDragState?: any;
+  columnDropState?: any;
+  /**
+   * Drop handling for the header. Must land on the element that directly
+   * contains the header cells — the `<tr>` — or drops are never received.
+   */
+  headCollectionProps?: Record<string, any>;
+  headRowRef?: RefObject<HTMLTableRowElement | null>;
+  /** Keeps React Aria's `focusedKey` current, which Alt+Arrow reorder reads. */
+  onColumnFocus?: (columnKey: string | null) => void;
   /**
    * Drop handling from `useDroppableCollection`. Must land on the element that
    * directly contains the rows — the `<tbody>` — or drops are never received.
@@ -212,6 +252,36 @@ export interface TableViewProps<T = any> {
    */
   sorts?: CubeTableSort[];
   onColumnSort?: (columnKey: string) => void;
+  /**
+   * Set a column's direction outright, for the column menu's reserved sort keys.
+   *
+   * Separate from `onColumnSort`, which is a cycle: reaching `desc` by toggling
+   * twice never terminates under `disallowSortRemoval` and disturbs the
+   * precedence of every other sorted column.
+   */
+  onColumnSortChange?: (
+    columnKey: string,
+    direction: CubeTableSortDirection | null,
+  ) => void;
+
+  /* column menu */
+  /**
+   * Where a column's `header.menu` is exposed.
+   *
+   * - `true` — a `⋮` trigger, plus right-click and Shift+F10.
+   * - `'context-only'` — right-click and Shift+F10, no trigger.
+   * - `false` — suppressed entirely.
+   *
+   * Defaults to `true`, unlike `rowContextMenu`: for rows the flag also decides
+   * whether there is a menu at all, whereas here `header.menu` is that gate and
+   * this only picks the surfaces.
+   *
+   * @default true
+   */
+  columnContextMenu?: boolean | 'context-only';
+  onColumnMenuAction?: (action: string, columnKey: string) => void;
+  columnMenuTriggerProps?: Record<string, any>;
+  columnMenuProps?: Record<string, any>;
 
   /* per-row hooks */
   getRowProps?: (
@@ -273,87 +343,23 @@ function escapeHtml(value: string) {
 
 const ARIA_SORT = { asc: 'ascending', desc: 'descending' } as const;
 
-export interface TableViewProps<T = any> {
-  qa?: string;
-  rows: readonly T[];
-  getRowKey: (row: T, index: number) => Key;
-  layout: CubeTableColumnLayout<T>;
-  /**
-   * Receives the scroll container once it exists. A callback rather than a ref
-   * because the virtualized path does not create the element itself — Virtuoso
-   * does, and hands it over after mount.
-   */
-  onScrollerRef: (element: HTMLDivElement | null) => void;
-  /** Attached to the table's root frame. */
-  rootRef?: RefObject<HTMLDivElement | null>;
+/**
+ * Registers one column tint's tokens.
+ *
+ * A component per theme rather than a loop of `useColorTheme` calls: the number
+ * of tinted columns is data-dependent, and hooks cannot be called in a loop. Each
+ * of these has a fixed hook count, and mounting a different NUMBER of them is
+ * fine. Keyed on the theme name, so remounting only happens when the set of
+ * colours actually changes.
+ *
+ * Renders nothing — `useColorTheme` injects into a global slot keyed by the
+ * theme's own hash, so two tables sharing a colour share one injection and
+ * neither can evict the other's.
+ */
+function ColumnTintRegistrar({ config }: { config: ColorThemeConfig }) {
+  useColorTheme(config);
 
-  size?: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge';
-  shape?: 'plain' | 'card';
-  rowHeight?: number;
-  headerHeight?: number;
-  isHeaderHidden?: boolean;
-  isStriped?: boolean;
-  /** @default true */
-  isHeaderSticky?: boolean;
-  /** @default 'auto' — on above `virtualizeThreshold` rows, needs a bounded height. */
-  isVirtualized?: boolean | 'auto';
-  /** @default 50 */
-  virtualizeThreshold?: number;
-  /** Rows rendered beyond each edge of the viewport. @default 20 */
-  overscan?: number;
-
-  /* status */
-  isLoading?: boolean;
-  loadingIndicator?: CubeTableLoadingIndicator;
-  skeletonRowCount?: number;
-  emptyLabel?: ReactNode;
-  noResultsLabel?: ReactNode;
-  error?: ReactNode;
-  /** Selects `noResultsLabel` over `emptyLabel` when there is nothing to show. */
-  isFiltered?: boolean;
-
-  /* sorting */
-  /** @default 'off' */
-  sortMode?: 'client' | 'server' | 'off';
-  sort?: CubeTableSort | null;
-  /**
-   * Multi-column sort. Takes precedence over `sort` when given, and the array
-   * order is the precedence — `DataTable` uses it, `ItemTable` uses `sort`.
-   */
-  sorts?: CubeTableSort[];
-  onColumnSort?: (columnKey: string) => void;
-
-  /* per-row hooks */
-  getRowProps?: (
-    ctx: CubeTableRowContext<T>,
-  ) => CubeTableRowRenderProps | undefined;
-
-  /**
-   * Typography preset for the column header. A per-adapter default rather than
-   * a table-wide constant: `ItemTable` uses the uppercase caption look (`c2`),
-   * while an analytics grid wants its headers to read at body size.
-   * `headerCellStyles` still wins over it.
-   */
-  headerPreset?: string;
-  /**
-   * Typography for the body. `ItemTable` reads as a list at `t3`; a result grid
-   * packs more in and wants `t4`.
-   */
-  contentPreset?: string;
-
-  /** Chrome rendered above the table, in the frame's first grid row. */
-  toolbar?: ReactNode;
-  /** Chrome rendered below the table, in the frame's last grid row. */
-  footer?: ReactNode;
-
-  ariaLabel?: string;
-  styles?: Styles;
-  headerStyles?: Styles;
-  headerCellStyles?: Styles;
-  bodyStyles?: Styles;
-  rowStyles?: Styles;
-  cellStyles?: Styles;
-  mods?: Record<string, boolean | undefined>;
+  return null;
 }
 
 /**
@@ -406,6 +412,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     rootRef,
     size = 'medium',
     shape = 'plain',
+    rowSize,
     rowHeight,
     headerHeight,
     isHeaderHidden = false,
@@ -442,6 +449,12 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     dragState,
     dropState,
     collectionProps,
+    isColumnReorderable = false,
+    columnDragState,
+    columnDropState,
+    headCollectionProps,
+    headRowRef,
+    onColumnFocus,
     bodyRef,
     isResizable = false,
     onColumnResize,
@@ -454,6 +467,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     sort,
     sorts,
     onColumnSort,
+    onColumnSortChange,
+    columnContextMenu = true,
+    onColumnMenuAction,
+    columnMenuTriggerProps,
+    columnMenuProps,
     getRowProps,
     headerPreset,
     contentPreset,
@@ -472,6 +490,20 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   const { columns } = layout;
   const columnCount = columns.length;
 
+  /**
+   * `rowSize` resolved to the size scale, or `null` when it was not given.
+   *
+   * Both halves come from `SIZE_NAME_TO_KEY` rather than being written out
+   * twice: the CSS keeps the token so it follows the scale, and the virtualizer
+   * needs the number, and the two must not drift.
+   */
+  const rowSizeKey = rowSize ? SIZE_NAME_TO_KEY[rowSize] : null;
+  // Only the trailing draggable column carries an `after` indicator; every other
+  // gap is covered by the next column's `before` one.
+  const lastDraggableKey = isColumnReorderable
+    ? getDraggableColumnKeys(columns, true).at(-1) ?? null
+    : null;
+
   // The element is held here as well as reported upwards: the virtualizer needs
   // it locally, and the adapter needs it to measure column widths.
   const { t } = useI18n();
@@ -479,6 +511,18 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   const [scrollerEl, setScrollerEl] = useState<HTMLDivElement | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  /**
+   * The column whose menu is open, held for the whole table rather than per
+   * header cell.
+   *
+   * `renderHeaderCell` is a closure inside this component, not a component of
+   * its own, so it cannot hold state — and only one column menu can be open at a
+   * time anyway. Controlled rather than letting `MenuTrigger` own it: Shift+F10
+   * has to be able to open it from the `<th>`, and the trigger is not a tab stop.
+   */
+  const [openMenuColumnKey, setOpenMenuColumnKey] = useState<string | null>(
+    null,
+  );
   // `bodyRef` is optional — only the drag-and-drop path supplies one — but the
   // move animation needs the `<tbody>` either way, so it keeps its own and both
   // are filled from one callback.
@@ -532,23 +576,50 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       ? headerRowCount + index + 1
       : headerRowCount + pinnedTopCount + bodyRowCount + index + 1;
 
+  /**
+   * Per-column tints.
+   *
+   * The colour maths is `getColorTheme`'s, cached globally by a hash of its
+   * config; `buildColumnTints` only maps columns onto `data-tint` slots and the
+   * state maps that read them. `getColorTheme` rather than `useColorTheme` here
+   * because the number of tinted columns is data-dependent and a hook cannot be
+   * called in a loop — registration happens in `ColumnTintRegistrar` below, one
+   * component per distinct theme, which is a legal fixed hook count each.
+   */
+  const paletteVersion = usePaletteVersion();
+  const tints = useMemo(
+    () => buildColumnTints(columns, { resolveTheme: getColorTheme }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-derive on a re-seed
+    [columns, paletteVersion],
+  );
+
   const mergedStyles = useMemo(
     () => ({
       ...styles,
       ...(contentPreset ? { Table: { preset: contentPreset } } : null),
       ...(headerStyles ? { HeadRow: headerStyles } : null),
-      ...(headerPreset || headerCellStyles
+      ...(headerPreset || headerCellStyles || tints.headerCellStyles
         ? {
             HeaderCell: {
               ...(headerPreset ? { preset: headerPreset } : null),
+              ...tints.headerCellStyles,
+              // The consumer's own overrides land last, so a `headerCellStyles`
+              // that sets `#cell-base` outright still wins over a tint.
               ...headerCellStyles,
             },
           }
         : null),
       ...(bodyStyles ? { Body: bodyStyles } : null),
       ...(rowStyles ? { Row: rowStyles } : null),
-      ...(cellStyles ? { Cell: cellStyles } : null),
-      ...(rowHeight != null ? { '$row-height': `${rowHeight}px` } : null),
+      ...(cellStyles || tints.cellStyles
+        ? { Cell: { ...tints.cellStyles, ...cellStyles } }
+        : null),
+      // `rowHeight` first — an exact px answer beats a named step.
+      ...(rowHeight != null
+        ? { '$row-height': `${rowHeight}px` }
+        : rowSizeKey
+          ? { '$row-height': `$size-${rowSizeKey.toLowerCase()}` }
+          : null),
       ...(headerHeight != null
         ? { '$header-height': `${headerHeight}px` }
         : null),
@@ -562,8 +633,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       bodyStyles,
       rowStyles,
       cellStyles,
+      rowSizeKey,
       rowHeight,
       headerHeight,
+      tints,
     ],
   );
 
@@ -693,6 +766,24 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     return undefined;
   }
 
+  /**
+   * The row band, mirrored from the `<tr>` onto its cells.
+   *
+   * `Row` already carries `data-odd` and publishes `#row-base` from it, which is
+   * all an untinted cell needs. A TINTED cell has to pick its own band, and a
+   * sub-element's state keys resolve against the table root rather than its DOM
+   * parent — so the flag has to be on the cell itself. Same reason `data-pinned`
+   * is mirrored.
+   *
+   * Pinned rows are exempt: they carry no `data-odd` on the `<tr>` either, and
+   * banding a totals row would be wrong.
+   */
+  function cellBandFlag(rowIndex: number, pinnedEdge?: 'top' | 'bottom') {
+    return pinnedEdge == null && isStriped && rowIndex % 2 === 1
+      ? ''
+      : undefined;
+  }
+
   function renderStateRow(content: ReactNode) {
     return (
       <tr data-element="Row" role="row" aria-rowindex={headerRowCount + 1}>
@@ -807,6 +898,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-pin-edge={column.isPinEdge ? '' : undefined}
         data-last-row={isLastRow ? '' : undefined}
         data-pinned={pinnedEdge}
+        data-odd={cellBandFlag(rowIndex, pinnedEdge)}
         data-last-column={lastColumnFlag(column)}
         data-corner={bottomCornerFlag(column, rowIndex, isLastRow, pinnedEdge)}
         role="gridcell"
@@ -853,6 +945,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-pin-edge={column.isPinEdge ? '' : undefined}
         data-last-row={isLastRow ? '' : undefined}
         data-pinned={pinnedEdge}
+        data-odd={cellBandFlag(rowIndex, pinnedEdge)}
         data-last-column={lastColumnFlag(column)}
         data-corner={bottomCornerFlag(column, rowIndex, isLastRow, pinnedEdge)}
         role="gridcell"
@@ -959,6 +1052,14 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
     // The arrow keeps its slot even when unsorted, so turning a sort on and off
     // never shifts the label.
+    //
+    // Two glyphs rather than one flipped with `scale`. A narrow arrow flipped
+    // vertically does land on its own opposite, but rendering the real icon is
+    // what keeps that true — a glyph that is not perfectly symmetric would come
+    // out subtly wrong, and nothing would say why.
+    //
+    // Unsorted shows the UP arrow, because that is what the first press gives:
+    // the hint predicts the press rather than advertising that one is possible.
     const sortIndicator = isSortable ? (
       <div
         data-element="SortIndicator"
@@ -967,7 +1068,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-dir={activeSort?.direction}
         aria-hidden="true"
       >
-        <UpIcon />
+        {activeSort?.direction === 'desc' ? (
+          <ArrowNarrowDownIcon />
+        ) : (
+          <ArrowNarrowUpIcon />
+        )}
       </div>
     ) : null;
 
@@ -989,6 +1094,52 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         </>
       ) : undefined;
 
+    const menuItems = resolveColumnMenu(column);
+    const hasMenu = menuItems != null;
+    const isContextOnly = columnContextMenu === 'context-only';
+
+    const menuAction =
+      hasMenu && !isContextOnly ? (
+        <MenuTrigger
+          isOpen={openMenuColumnKey === column.key}
+          // `bottom end`: the trigger sits at the column's trailing edge, so a
+          // start-aligned popover hangs off the table on the last column.
+          placement="bottom end"
+          onOpenChange={(open) =>
+            setOpenMenuColumnKey(open ? column.key : null)
+          }
+        >
+          <ItemAction
+            // The grid is one tab stop; the trigger is reached from the header
+            // cell with Shift+F10, matching the row menu.
+            tabIndex={-1}
+            icon={<MoreIcon />}
+            aria-label={t('itemTable.columnMenu', 'Column menu')}
+            {...columnMenuTriggerProps}
+            {...header?.menuTriggerProps}
+          />
+          <Menu
+            {...columnMenuProps}
+            {...header?.menuProps}
+            onAction={columnMenuActionHandler(column, false)}
+          >
+            {processColumnMenuItems(
+              menuItems,
+              columnMenuContext(column, isSortable, activeSort),
+            )}
+          </Menu>
+        </MenuTrigger>
+      ) : null;
+
+    // The consumer's own actions first, the overflow menu last — matching Tabs.
+    const actions =
+      header?.actions != null || menuAction ? (
+        <>
+          {header?.actions}
+          {menuAction}
+        </>
+      ) : undefined;
+
     const content = header?.render ? (
       header.render(ctx)
     ) : column.title == null && !header ? null : (
@@ -1001,46 +1152,98 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         descriptionPlacement={header?.descriptionPlacement}
         tooltip={header?.tooltip ?? true}
         theme={header?.theme}
-        actions={header?.actions}
+        actions={actions}
         autoHideActions={header?.autoHideActions ?? true}
+        // Without it the actions slot animates its width from 0 on hover, which
+        // re-truncates the label — so the header text shifts under the cursor.
+        // Only the opacity should move; `TabElement` reserves the space for the
+        // same reason.
+        preserveActionsSpace={actions != null}
         styles={header?.styles}
       >
         {column.title}
       </TableHeaderItem>
     );
 
+    const isDraggable = isColumnDraggable(column, isColumnReorderable);
+
     return (
-      <th
+      <TableHeaderCell
         key={column.key}
-        data-element="HeaderCell"
-        data-key={column.key}
-        data-pin={column.pin}
-        data-pin-edge={column.isPinEdge ? '' : undefined}
-        data-align={header?.align ?? column.align}
-        data-sortable={isSortable ? '' : undefined}
-        data-resizable={canResize ? '' : undefined}
-        data-last-column={lastColumnFlag(column)}
-        data-sorted={isSorted ? '' : undefined}
-        role="columnheader"
-        scope="col"
-        // A sortable header is a control, so it takes a tab stop. Row/cell
-        // keyboard navigation lands in a follow-up and will move this to the
-        // grid's roving-tabindex model.
-        tabIndex={isSortable ? 0 : -1}
-        aria-colindex={column.ariaColIndex}
-        aria-sort={activeSort ? ARIA_SORT[activeSort.direction] : undefined}
-        style={pinStyle(column)}
-        onClick={isSortable ? () => onColumnSort?.(column.key) : undefined}
-        onKeyDown={
-          isSortable
-            ? (event) => {
-                if (event.key !== 'Enter' && event.key !== ' ') return;
-                // Space would scroll the grid otherwise.
-                event.preventDefault();
-                onColumnSort?.(column.key);
-              }
-            : undefined
-        }
+        columnKey={column.key}
+        // Enter belongs to the sort when there is one, so React Aria re-gates
+        // its own Enter capture behind Alt.
+        hasAction={isSortable}
+        isLastDraggable={isDraggable && column.key === lastDraggableKey}
+        dragState={isDraggable ? columnDragState : undefined}
+        dropState={isDraggable ? columnDropState : undefined}
+        cellProps={{
+          'data-element': 'HeaderCell',
+          'data-key': column.key,
+          'data-pin': column.pin,
+          'data-pin-edge': column.isPinEdge ? '' : undefined,
+          'data-align': header?.align ?? column.align,
+          'data-sortable': isSortable ? '' : undefined,
+          'data-resizable': canResize ? '' : undefined,
+          'data-last-column': lastColumnFlag(column),
+          'data-sorted': isSorted ? '' : undefined,
+          'data-menu-open': openMenuColumnKey === column.key ? '' : undefined,
+          'data-tint': tintSlot(tints, column.key, 'header'),
+          role: 'columnheader',
+          scope: 'col',
+          // A sortable header is a control, so it takes a tab stop — and so does
+          // one carrying a menu (Shift+F10 needs somewhere to land) or one that
+          // can be moved with Alt+Arrow. Row/cell keyboard navigation lands in a
+          // follow-up and will move this to the grid's roving-tabindex model.
+          tabIndex: isSortable || hasMenu || isDraggable ? 0 : -1,
+          'aria-colindex': column.ariaColIndex,
+          'aria-sort': activeSort ? ARIA_SORT[activeSort.direction] : undefined,
+          'aria-haspopup': hasMenu ? 'menu' : undefined,
+          style: pinStyle(column),
+          // React Aria's Alt+Arrow reorder reads `focusedKey`, and nothing else
+          // sets it — `useDroppableCollection` only ever reads it.
+          onFocus: isColumnReorderable
+            ? () => onColumnFocus?.(isDraggable ? column.key : null)
+            : undefined,
+          onClick: isSortable ? () => onColumnSort?.(column.key) : undefined,
+          // Both `true` and `'context-only'` answer to a right-click, and
+          // `false` already made `hasMenu` false in `resolveColumnMenu`.
+          onContextMenu: hasMenu
+            ? (event: ReactMouseEvent) =>
+                openColumnContextMenu(column, isSortable, activeSort, event)
+            : undefined,
+          onKeyDown:
+            isSortable || hasMenu
+              ? (event: ReactKeyboardEvent) => {
+                  // Shift+F10 is the standard keyboard route to a context menu,
+                  // and the only route to this one — the trigger is not a tab
+                  // stop.
+                  if (event.key === 'F10' && event.shiftKey && hasMenu) {
+                    if (isContextOnly) {
+                      openColumnContextMenu(
+                        column,
+                        isSortable,
+                        activeSort,
+                        event,
+                      );
+                    } else {
+                      event.preventDefault();
+                      // The Scroller listens for Shift+F10 too, for the row menu.
+                      event.stopPropagation();
+                      setOpenMenuColumnKey(column.key);
+                    }
+
+                    return;
+                  }
+
+                  if (!isSortable) return;
+                  if (event.key !== 'Enter' && event.key !== ' ') return;
+                  // Space would scroll the grid otherwise.
+                  event.preventDefault();
+                  onColumnSort?.(column.key);
+                }
+              : undefined,
+        }}
       >
         {content}
         {canResize ? (
@@ -1051,7 +1254,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
             onResizeEnd={onColumnResizeEnd!}
           />
         ) : null}
-      </th>
+      </TableHeaderCell>
     );
   }
 
@@ -1090,6 +1293,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           data-kind="row-number"
           data-last-row={isLastRow ? '' : undefined}
           data-pinned={pinnedEdge}
+          data-odd={cellBandFlag(rowIndex, pinnedEdge)}
           data-last-column={lastColumnFlag(column)}
           data-corner={bottomCornerFlag(
             column,
@@ -1196,6 +1400,12 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-link={link !== undefined ? '' : undefined}
         data-last-row={isLastRow ? '' : undefined}
         data-pinned={pinnedEdge}
+        data-odd={cellBandFlag(rowIndex, pinnedEdge)}
+        data-tint={tintSlot(
+          tints,
+          column.key,
+          pinnedEdge == null ? 'body' : 'totals',
+        )}
         data-last-column={lastColumnFlag(column)}
         data-corner={bottomCornerFlag(column, rowIndex, isLastRow, pinnedEdge)}
         data-cell-selected={
@@ -1436,7 +1646,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     getScrollElement: () => scrollerRef.current,
     getItemKey: (index) => String(getRowKey(rowsRef.current[index], index)),
     estimateSize: () =>
-      (rowHeight ?? ESTIMATED_ROW_HEIGHT[size ?? 'medium']) + 1,
+      (rowHeight ??
+        (rowSizeKey
+          ? SIZES[rowSizeKey]
+          : ESTIMATED_ROW_HEIGHT[size ?? 'medium'])) + 1,
     measureElement: (element) => element.getBoundingClientRect().height,
     // Rows beyond each viewport edge. Higher than a list's, because a fast
     // flick outruns React's re-render and the gap shows as blank rows — and a
@@ -1677,6 +1890,96 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     },
   );
 
+  /* ── column menu ─────────────────────────────────────────────────────────
+   * Shares the `contextMenu` instance above. A header right-click is the same
+   * pointer-anchored popover with different children, and attaching the hook's
+   * `targetRef` to a `<th>` would bind its listener with fixed props — the same
+   * reason the row menu leaves it unattached.
+   * ──────────────────────────────────────────────────────────────────────── */
+
+  function resolveColumnMenu(column: CubeResolvedColumn<T>): ReactNode | null {
+    if (columnContextMenu === false || column.isStructural) return null;
+
+    const items = column.header?.menu;
+
+    return isMenuEmpty(items) ? null : items;
+  }
+
+  /** The reserved sort keys, labelled here so `column-menu.ts` stays pure. */
+  function columnMenuContext(
+    column: CubeResolvedColumn<T>,
+    isSortable: boolean,
+    activeSort: CubeTableSort | null,
+  ): CubeColumnMenuContext {
+    return {
+      isSortable,
+      sort: activeSort?.direction ?? null,
+      disallowSortRemoval: column.disallowSortRemoval === true,
+      labels: {
+        'sort-asc': t('itemTable.sortAscending', 'Sort ascending'),
+        'sort-desc': t('itemTable.sortDescending', 'Sort descending'),
+        'clear-sort': t('itemTable.clearSort', 'Clear sort'),
+      },
+    };
+  }
+
+  function columnMenuActionHandler(
+    column: CubeResolvedColumn<T>,
+    closeAfter: boolean,
+  ) {
+    return (action: Key) => {
+      const normalized = normalizeMenuAction(action);
+
+      // The table's own keys are applied first, then the consumer hears about
+      // them anyway — so a key can be both understood here and observed there.
+      if (isColumnMenuSortKey(normalized)) {
+        onColumnSortChange?.(
+          column.key,
+          COLUMN_MENU_SORT_DIRECTION[normalized],
+        );
+      }
+
+      column.header?.onMenuAction?.(normalized);
+      onColumnMenuAction?.(normalized, column.key);
+
+      // `useContextMenu` leaves its popover open after an action; see
+      // `menuActionHandler` above.
+      if (closeAfter) contextMenu.close();
+    };
+  }
+
+  const openColumnContextMenu = useEvent(
+    (
+      column: CubeResolvedColumn<T>,
+      isSortable: boolean,
+      activeSort: CubeTableSort | null,
+      event: ReactMouseEvent | ReactKeyboardEvent,
+    ) => {
+      const items = resolveColumnMenu(column);
+
+      if (items == null) return;
+
+      event.preventDefault();
+      // The Scroller listens for Shift+F10 too, for the row menu.
+      event.stopPropagation();
+      contextMenu.open(
+        {
+          ...columnMenuProps,
+          ...column.header?.menuProps,
+          children: processColumnMenuItems(
+            items,
+            columnMenuContext(column, isSortable, activeSort),
+          ),
+          onAction: columnMenuActionHandler(column, true),
+        },
+        undefined,
+        'clientX' in event.nativeEvent
+          ? (event.nativeEvent as MouseEvent)
+          : undefined,
+      );
+    },
+  );
+
   /** Resolves the row a pointer or keyboard event landed in. */
   function rowFromEvent(target: EventTarget | null) {
     const element = (target as HTMLElement | null)?.closest?.(
@@ -1712,7 +2015,25 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   );
 
   const headerRow = isHeaderHidden ? null : (
-    <tr data-element="HeadRow" role="row" aria-rowindex={1}>
+    <tr
+      data-element="HeadRow"
+      role="row"
+      aria-rowindex={1}
+      ref={headRowRef}
+      {...headCollectionProps}
+      onKeyDownCapture={(event) => {
+        // `DraggableCollection`'s Alt+Arrow reorder sits on this row and fires
+        // in the capture phase, so it would beat the resize handle's own
+        // Alt+Arrow bubble handler and move the column instead of sizing it.
+        if (
+          (event.target as HTMLElement)?.closest?.('[data-element="Resizer"]')
+        ) {
+          return;
+        }
+
+        (headCollectionProps as any)?.onKeyDownCapture?.(event);
+      }}
+    >
       {columns.map(renderHeaderCell)}
     </tr>
   );
@@ -1982,6 +2303,13 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       </VisuallyHidden>
       {overlay}
       {contextMenu.rendered}
+      {tints.configs.map((config, index) => (
+        // Keyed positionally on purpose: `configs` is deduped and stable for a
+        // given set of column colours, and the theme name is not on the config.
+        // Remounting one of these is harmless anyway — the tokens it registers
+        // live in a permanent global slot.
+        <ColumnTintRegistrar key={index} config={config} />
+      ))}
       {footer}
     </TableElement>
   );

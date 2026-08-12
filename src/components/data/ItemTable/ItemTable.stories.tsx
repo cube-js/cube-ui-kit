@@ -84,14 +84,12 @@ const COLUMNS: CubeItemTableColumn<Deployment>[] = [
     title: 'Name',
     isRowHeader: true,
     flex: 2,
-    isSortable: true,
     header: { icon: <DatabaseIcon /> },
   },
   {
     key: 'status',
     title: 'Status',
     width: 140,
-    isSortable: true,
     render: (value: Deployment['status']) => (
       <Tag theme={STATUS_THEME[value]}>{value}</Tag>
     ),
@@ -100,19 +98,28 @@ const COLUMNS: CubeItemTableColumn<Deployment>[] = [
     // Dot notation reads a nested path without a `getValue` closure.
     key: 'owner.name',
     title: 'Owner',
-    isSortable: true,
     header: { icon: <UserIcon /> },
   },
-  { key: 'region', title: 'Region', width: 160, isSortable: true },
+  { key: 'region', title: 'Region', width: 160 },
   {
     key: 'queries',
     title: 'Queries',
     width: 140,
     align: 'end',
-    isSortable: true,
     format: (value: number) => value.toLocaleString('en-US'),
   },
 ];
+
+/**
+ * `COLUMNS` with every column opted in.
+ *
+ * Only the sorting stories use this. Everything else shows the component's real
+ * default — inert headers, no hover — because sorting is opt in per column and a
+ * shared fixture that quietly turns it on misrepresents every story built on it.
+ */
+const SORTABLE_COLUMNS: CubeItemTableColumn<Deployment>[] = COLUMNS.map(
+  (column) => ({ ...column, isSortable: true }),
+);
 
 const meta = {
   title: 'Data/ItemTable',
@@ -338,6 +345,35 @@ function useServerQuery<T>(compute: () => T, deps: unknown[]) {
  * re-sorts on `onSortChange`, over a 700ms round trip. The header shows
  * the new direction immediately while the rows lag behind it.
  */
+/**
+ * Sorting is **opt in, per column** — this is what a table looks like without it.
+ *
+ * No column sets `isSortable`, so no header is clickable and none takes a tab
+ * stop. `sortMode="client"` still orders the rows, so the list arrives in the
+ * order you asked for and the user cannot disturb it. Most lists want exactly
+ * this: the order is a property of the data, not a control.
+ *
+ * The sorted column keeps `aria-sort`, so the order is announced even though the
+ * header cannot be operated. It is deliberately not drawn — the arrow belongs to
+ * the clickable affordance — so `Name` carries its own `↑` through
+ * `header.suffix` to show how you would mark it.
+ *
+ * Rows already in the right order need none of this: pass them and set nothing.
+ */
+export const FixedSort: Story = {
+  args: {
+    // `COLUMNS` as-is — no column opts in. Compare with `Sorting` below, which
+    // uses `SORTABLE_COLUMNS`.
+    columns: COLUMNS.map((column) =>
+      column.key === 'name'
+        ? { ...column, header: { suffix: <Text color="#dark-04">↑</Text> } }
+        : column,
+    ),
+    sortMode: 'client',
+    sort: { columnKey: 'name', direction: 'asc' },
+  },
+};
+
 export const Sorting: Story = {
   render: (args) => {
     const [sort, setSort] = useState<CubeTableSort | null>({
@@ -367,11 +403,13 @@ export const Sorting: Story = {
         <ItemTable
           {...args}
           shape="card"
+          columns={SORTABLE_COLUMNS}
           defaultSort={{ columnKey: 'queries', direction: 'desc' }}
         />
         <ItemTable
           {...args}
           shape="card"
+          columns={SORTABLE_COLUMNS}
           data={rows}
           isLoading={isLoading}
           sortMode="server"

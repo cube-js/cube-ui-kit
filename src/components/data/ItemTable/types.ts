@@ -323,6 +323,27 @@ export interface CubeItemTableProps<T = any>
     all: Record<string, number>,
   ) => void;
 
+  /* ── column menu ──────────────────────────────────────────────────── */
+  /**
+   * Where a column's `header.menu` is exposed.
+   *
+   * - `true` — a `⋮` trigger in the header, plus right-click and Shift+F10.
+   * - `'context-only'` — right-click and Shift+F10 only, no trigger.
+   * - `false` — suppressed entirely.
+   *
+   * @default true
+   */
+  columnContextMenu?: boolean | 'context-only';
+  /**
+   * The key of the pressed `Menu.Item`, as written — no `.$` prefix.
+   *
+   * Fires for the reserved sort keys too (`sort-asc`, `sort-desc`,
+   * `clear-sort`), after the table has already applied them.
+   */
+  onColumnMenuAction?: (action: string, columnKey: string) => void;
+  columnMenuTriggerProps?: Record<string, any>;
+  columnMenuProps?: Record<string, any>;
+
   /* ── persistence ──────────────────────────────────────────────────── */
   /**
    * Persists the table's own state under `cube-ui-kit:table:${storageKey}`.

@@ -15,7 +15,14 @@ The escape hatches that keep this line holdable:
 
 - `column.header.menu` / `column.header.actions` take an opaque `ReactNode`, so
   a caller can mount an arbitrarily complex column menu without the kit knowing
-  what is in it.
+  what is in it. `onColumnMenuAction(action, columnKey)` reports the pressed key
+  back as a bare string. The single exception is the reserved sort keys, and
+  only because sorting is a capability the table itself owns — `pin` and `hide`
+  are deliberately NOT reserved, because there is no column pin/visibility state
+  behind them to drive.
+- `column.color` takes a hue rather than a resolved colour, so the kit derives
+  the ramp and the contrast floor per scheme instead of trusting a caller's
+  hex pair. See `column-tint.ts` and `src/tokens/color-theme.ts`.
 - `renderCellMenu`, `column.render`, `column.cellStyles` and `renderRow` cover
   the rest.
 
@@ -90,6 +97,22 @@ even with no `hotkeys` prop, and its `@interacted` alias uses `:has()`. One per
 cell would churn hundreds of subscriptions per scroll tick. Every other cell
 uses `TextItem`.
 
+## Column reordering excludes pinned columns
+
+Three independent reasons, all pointing the same way. A pinned `<th>` is
+`position: sticky`, so under horizontal scroll its rect sits on top of columns it
+is nowhere near, and React Aria's drop-target search is a binary search over
+those rects. `use-table-columns` hoists pinned columns to the edges regardless of
+source order, so a cross-boundary drop would be undone the moment it landed. And
+`pin` is already the ordering authority there.
+
+What that buys is the thing the delegate actually needs: the draggable set is one
+contiguous, non-sticky run, so every permutation of it stays monotonic.
+
+`isColumnDraggable` is the single predicate both the renderer and the state read.
+Two derivations of "can this move" drifting apart is exactly how the drop
+indicator that matched nothing happened.
+
 ## Layout bugs need a real browser
 
 `pnpm test` runs jsdom, which reports every element as zero-sized. That is fine
@@ -117,5 +140,7 @@ that no variable-height row ever exercises.
 Reach for it when a change touches geometry, sticky positioning, pointer
 hit-testing, focus order, or an observer. Three things cannot be tested any
 other way: React Aria's drag-and-drop ignores synthetic events (verified — the
-same sequence fails against `ListBox` too), `IntersectionObserver` never fires
+same sequence fails against `ListBox` too, and against a real `DragEvent` with a
+real `DataTransfer` in headless Chromium, which gets as far as React Aria writing
+the drag payload and no further), `IntersectionObserver` never fires
 in a hidden document, and `useMove` needs real pointer and key events.

@@ -9,17 +9,26 @@ import type { CubeTableSort } from './types';
  */
 const PREFIX = 'cube-ui-kit:table:';
 
-export type CubeTablePersistKey = 'pageSize' | 'columnWidths' | 'sort';
+export type CubeTablePersistKey =
+  | 'pageSize'
+  | 'columnWidths'
+  | 'columnOrder'
+  | 'sort';
 
 export interface CubeTableStoredState {
   pageSize?: number;
   sort?: CubeTableSort | null;
   columnWidths?: Record<string, number>;
+  /** Every column key in order, including hidden and pinned ones. */
+  columnOrder?: string[];
 }
 
 export const DEFAULT_PERSIST_KEYS: CubeTablePersistKey[] = [
   'pageSize',
   'columnWidths',
+  // A column layout the user arranged by hand is the same kind of state as the
+  // widths they dragged — losing it on reload would be as surprising.
+  'columnOrder',
 ];
 
 function read(storageKey: string | undefined): CubeTableStoredState {

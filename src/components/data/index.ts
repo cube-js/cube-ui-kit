@@ -3,6 +3,12 @@ export type { CubeDataTableProps, CubeDataTableColumn } from './DataTable';
 export { ItemTable } from './ItemTable';
 export type { CubeItemTableProps, CubeItemTableColumn } from './ItemTable';
 
+// The reserved column-menu sort items. A helper rather than magic strings,
+// because `Menu.Item` requires `children` and the table owns the translated
+// label — see `columnSortMenu`.
+export { columnSortMenu, COLUMN_MENU_SORT_KEYS } from './TableBase';
+export type { CubeColumnMenuSortKey } from './TableBase';
+
 // Shared table types. The engine itself (`TableBase`) is internal.
 export type {
   CubeTableAlign,
@@ -12,6 +18,7 @@ export type {
   CubeTableHeaderContext,
   CubeTableRowContext,
   CubeTableRowSection,
+  CubeTableRowSize,
   CubeTableSort,
   CubeTableSortDirection,
 } from './TableBase';

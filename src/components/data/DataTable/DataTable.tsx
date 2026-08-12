@@ -1,25 +1,40 @@
+import { SelectionManager } from '@react-stately/selection';
 import { useControlledState } from '@react-stately/utils';
 import { CONTAINER_STYLES } from '@tenphi/tasty';
 import { forwardRef, useMemo, useRef, useState } from 'react';
+import { useMultipleSelectionState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
 import { useCombinedRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { clampPage, getPageInfo } from '../../navigation/Pagination';
+import { DraggableCollection } from '../../shared/DraggableCollection';
 import { ItemTableFooter } from '../ItemTable/ItemTableFooter';
+import { RowCollection } from '../TableBase/RowCollection';
 import { TableView } from '../TableBase/TableView';
 import { selectionRowKey } from '../TableBase/types';
 import { useCellSelection } from '../TableBase/use-cell-selection';
+import {
+  getDraggableColumnKeys,
+  isColumnDraggable,
+  useColumnOrder,
+} from '../TableBase/use-column-order';
 import { useContainerWidth } from '../TableBase/use-container-width';
-import { useTableColumns } from '../TableBase/use-table-columns';
+import {
+  freezeColumnWidths,
+  useTableColumns,
+} from '../TableBase/use-table-columns';
 import { ROW_NUMBER_COLUMN_KEY } from '../TableBase/use-table-selection';
 import { useTableSorts } from '../TableBase/use-table-sorts';
 import { useTableStorage } from '../TableBase/use-table-storage';
 
 import type { Key } from '@react-types/shared';
 import type { ForwardedRef, ReactElement } from 'react';
-import type { CubeTableRowSection } from '../TableBase/types';
+import type {
+  CubeTableColumnLayout,
+  CubeTableRowSection,
+} from '../TableBase/types';
 import type { CubeDataTableColumn, CubeDataTableProps } from './types';
 
 /** Wide enough for five digits at the dense default. */
@@ -70,6 +85,7 @@ function DataTable<T = any>(
     // Denser than `ItemTable`'s `medium`: a result grid is read as a block, and
     // more rows on screen is the point of it.
     size = 'small',
+    rowSize,
     rowHeight,
     headerHeight,
     isStriped = true,
@@ -106,6 +122,14 @@ function DataTable<T = any>(
     columnWidths: columnWidthsProp,
     defaultColumnWidths,
     onColumnResize,
+    isColumnReorderable = false,
+    columnOrder,
+    defaultColumnOrder,
+    onColumnOrderChange,
+    columnContextMenu,
+    onColumnMenuAction,
+    columnMenuTriggerProps,
+    columnMenuProps,
     isVirtualized,
     virtualizeThreshold,
     overscan,
@@ -157,13 +181,26 @@ function DataTable<T = any>(
     [columns],
   );
 
+  // Applied to the SOURCE columns, before `useTableColumns`, so hidden-column
+  // filtering, structural injection and pinned hoisting all still happen
+  // downstream and `columnOrder` can never fight `pin`.
+  const columnOrderState = useColumnOrder<T>({
+    columns: resolvedColumns,
+    columnOrder,
+    defaultColumnOrder,
+    onColumnOrderChange,
+    storage,
+  });
+  const orderedColumns = columnOrderState.columns;
+
   const {
     sorts,
     sortedRows,
     toggleSort,
+    setColumnSort,
     mode: resolvedSortMode,
   } = useTableSorts<T>({
-    columns: resolvedColumns,
+    columns: orderedColumns,
     rows: data,
     mode: sortMode,
     sorts: sortsProp,
@@ -230,11 +267,21 @@ function DataTable<T = any>(
   const baseColumnWidths = columnWidthsProp ?? ownColumnWidths;
   const columnWidths = draftColumnWidths ?? baseColumnWidths;
 
+  /**
+   * The resolved widths, for the freeze below. A ref because `layout` is
+   * computed *after* this handler is defined, and `useEvent` only reads it when
+   * the drag actually runs.
+   */
+  const layoutRef = useRef<CubeTableColumnLayout<T> | null>(null);
+
   const handleColumnResize = useEvent((key: string, width: number) => {
-    draftRef.current = {
-      ...(draftRef.current ?? baseColumnWidths),
-      [key]: Math.round(width),
-    };
+    // First move of a drag freezes every column, so this changes exactly one
+    // width instead of re-splitting the flex pool. See `freezeColumnWidths`.
+    const base =
+      draftRef.current ??
+      freezeColumnWidths(layoutRef.current, baseColumnWidths);
+
+    draftRef.current = { ...base, [key]: Math.round(width) };
     setDraftColumnWidths(draftRef.current);
   });
 
@@ -260,11 +307,13 @@ function DataTable<T = any>(
   );
 
   const layout = useTableColumns<T>({
-    columns: resolvedColumns,
+    columns: orderedColumns,
     containerWidth,
     columnWidths,
     leadingColumns,
   });
+
+  layoutRef.current = layout;
 
   const { t } = useI18n();
 
@@ -360,7 +409,58 @@ function DataTable<T = any>(
     footerCenter != null ||
     footerEnd != null;
 
-  return (
+  /* ── column reordering ────────────────────────────────────────────────── */
+
+  const headRowRef = useRef<HTMLTableRowElement>(null);
+  const draggableColumnKeys = useMemo(
+    () => getDraggableColumnKeys(layout.columns, isColumnReorderable),
+    [layout.columns, isColumnReorderable],
+  );
+  const columnCollection = useMemo(
+    () =>
+      new RowCollection(
+        layout.columns.filter((column) =>
+          isColumnDraggable(column, isColumnReorderable),
+        ),
+        (column) => column.key,
+        new Set(),
+        // The drag announcements read this — otherwise a screen reader hears
+        // "Insert between  and ".
+        (column) =>
+          typeof column.title === 'string' ? column.title : column.key,
+      ),
+    [layout.columns, isColumnReorderable],
+  );
+  /**
+   * `'single'`, not `'none'`.
+   *
+   * `useDraggableItem` only deletes its own `onClick` — the one that would
+   * hijack a screen-reader click away from the sort — when the selection mode is
+   * not `'none'`, and only then does it attach the keyboard drag description.
+   * Nothing is ever actually selected here.
+   */
+  const columnSelectionState = useMultipleSelectionState({
+    selectionMode: 'single',
+    disabledBehavior: 'all',
+  });
+  const columnSelectionManager = useMemo(
+    () => new SelectionManager(columnCollection, columnSelectionState),
+    [columnCollection, columnSelectionState],
+  );
+  const handleColumnFocus = useEvent((columnKey: string | null) => {
+    columnSelectionManager.setFocusedKey(columnKey);
+  });
+
+  // One draggable column cannot be reordered, so the machinery stays unmounted
+  // and the header keeps its exact DOM.
+  const isColumnDragEnabled =
+    isColumnReorderable && draggableColumnKeys.length > 1;
+
+  const renderTable = (
+    columnDragState?: any,
+    columnDropState?: any,
+    headCollectionProps?: Record<string, any>,
+  ) => (
     <TableView<T>
       {...rest}
       rootRef={rootRef}
@@ -405,6 +505,7 @@ function DataTable<T = any>(
       isFiltered={isFiltered}
       shape={shape}
       size={size}
+      rowSize={rowSize}
       rowHeight={rowHeight}
       headerHeight={headerHeight}
       isStriped={isStriped}
@@ -421,6 +522,11 @@ function DataTable<T = any>(
       sortMode={resolvedSortMode}
       sorts={sorts}
       onColumnSort={toggleSort}
+      onColumnSortChange={setColumnSort}
+      columnContextMenu={columnContextMenu}
+      onColumnMenuAction={onColumnMenuAction}
+      columnMenuTriggerProps={columnMenuTriggerProps}
+      columnMenuProps={columnMenuProps}
       isVirtualized={isVirtualized}
       virtualizeThreshold={virtualizeThreshold}
       overscan={overscan}
@@ -436,6 +542,12 @@ function DataTable<T = any>(
       rowStyles={rowStyles}
       cellStyles={cellStyles}
       mods={mods}
+      isColumnReorderable={isColumnDragEnabled}
+      columnDragState={columnDragState}
+      columnDropState={columnDropState}
+      headCollectionProps={headCollectionProps}
+      headRowRef={headRowRef}
+      onColumnFocus={handleColumnFocus}
       footer={
         hasFooter ? (
           <ItemTableFooter
@@ -462,6 +574,30 @@ function DataTable<T = any>(
         ) : null
       }
     />
+  );
+
+  return isColumnDragEnabled ? (
+    <DraggableCollection
+      state={{
+        collection: columnCollection as any,
+        selectionManager: columnSelectionManager as any,
+        disabledKeys: new Set(),
+      }}
+      // The element that DIRECTLY contains the header cells. React Aria's
+      // `ListDropTargetDelegate` resolves a drop by measuring `[data-key]`
+      // descendants of this element, so pointing it anywhere else leaves every
+      // drop unresolvable — the column lifts but never lands.
+      listRef={headRowRef}
+      orderedKeys={draggableColumnKeys}
+      orientation="horizontal"
+      onReorder={columnOrderState.reorder}
+    >
+      {(dragState, dropState, collectionProps) =>
+        renderTable(dragState, dropState, collectionProps)
+      }
+    </DraggableCollection>
+  ) : (
+    renderTable()
   );
 }
 

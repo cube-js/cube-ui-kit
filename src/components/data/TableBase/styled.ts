@@ -69,11 +69,28 @@ const CELL_STYLES: Styles = {
   // without it a wide range is a mesh of per-cell rings rather than one block,
   // and the row's hover would keep moving underneath a selection the user has
   // already committed to.
+  /**
+   * One more level of indirection than the row publishes, and the level a
+   * per-column tint plugs into.
+   *
+   * An untinted cell is simply its row. A tinted one swaps its own base and text
+   * — see `column-tint.ts`, which generates a `@own(tint=…)` branch per distinct
+   * column colour and merges it in through `styles.Cell` / `styles.HeaderCell`.
+   *
+   * The tint is pre-composed into the BASE rather than stacked as a second
+   * overlay, because `fill` has exactly two layers and the interaction paint
+   * needs the other one. That is what keeps hover, focus, selection and
+   * drop-target working over a tinted column instead of being displaced by it —
+   * and it is why the row band has to reach the cell (`data-odd` is mirrored onto
+   * body cells) rather than staying on the `<tr>`.
+   */
+  '#cell-base': '#row-base',
+  '#cell-text': '#row-text',
   fill: {
-    '': '#row-base #row-overlay',
-    '@own(cell-selected)': '#row-base #purple.10',
+    '': '#cell-base #row-overlay',
+    '@own(cell-selected)': '#cell-base #purple.10',
   },
-  color: '#row-text',
+  color: '#cell-text',
   opacity: '$dim',
   position: { '': 'static', '@own(pin=start | pin=end)': 'sticky' },
   insetInlineStart: { '': 'auto', '@own(pin=start)': '$pin-offset' },
@@ -172,6 +189,11 @@ export const TableElement = tasty({
     '#row-base': '#surface',
     '#row-overlay': '#clear',
     '#row-text': '#surface-text',
+    // The cell-level pair defaults to the row's, and a tinted column overrides
+    // its own — see `CELL_STYLES`. Declared here too so the chain has a root even
+    // for a cell that is somehow outside a row.
+    '#cell-base': '#row-base',
+    '#cell-text': '#row-text',
 
     /* ── frame ────────────────────────────────────────────────────────── */
     display: 'grid',
@@ -194,6 +216,26 @@ export const TableElement = tasty({
       gridRow: 2,
       position: 'relative',
       overflow: 'auto',
+      /**
+       * No focus ring of its own.
+       *
+       * The scroller takes `tabIndex={-1}` so a cell press can move focus here
+       * and the range's shortcuts (Escape, ⌘/Ctrl+C) have somewhere to land. It
+       * is a mechanism, not a control the user aimed at — but the browser does
+       * not know that, and drew its default `outline: auto` around the whole
+       * scrollport. Three edges are clipped by the frame's `overflow: hidden`,
+       * so what actually shipped was a stray line across the bottom of the
+       * table, right above the footer.
+       *
+       * Nothing is lost by removing it: focus only ever arrives here alongside a
+       * selected cell, and that cell draws its own ring.
+       *
+       * `'none'`, not `false` — tasty reads `false` as "no ring of the kit's
+       * own" and emits no declaration at all, which leaves the browser's default
+       * in place. Verified: with `false` the Scroller's rule carried no
+       * `outline` property.
+       */
+      outline: 'none',
       // A reserved gutter stops an appearing scrollbar from reflowing every
       // column. With one scroller for head and body there is nothing else to
       // keep in sync — this is the whole reason for the native-table design.
@@ -228,21 +270,30 @@ export const TableElement = tasty({
       // Dimming only the rows left the header at full strength, which read as
       // though the columns were current and only the data was not.
       opacity: { '': 1, stale: 0.5 },
+      // `#black` throughout, but only its ALPHA is doing anything: a gradient
+      // mask defaults to `mask-mode: alpha`, so the colour channel is discarded
+      // and `#black.4` is simply "40% through". Any opaque token would render
+      // identically — `#black` is the conventional way to write it.
       maskImage: {
         '': 'none',
         stale:
-          'linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 35%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,1) 65%, rgba(0,0,0,1) 100%)',
+          'linear-gradient(90deg, #black 0%, #black 35%, #black.4 50%, #black 65%, #black 100%)',
         // A flat, fully opaque mask is a no-op, so there is nothing to sweep —
         // the table still fades, it just does not move. A loading state can
         // last a long time, and this one would otherwise animate continuously
         // beside the data with no way to stop it. Written as its own gradient
         // rather than `none` so it cannot merge with the default above.
         '@media(prefers-reduced-motion)':
-          'linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 100%)',
+          'linear-gradient(90deg, #black 0%, #black 100%)',
       },
       // Three times the width, so the band is a third of the table and there is
       // an opaque stretch either side of it. The default `repeat` tiles
       // seamlessly, both ends of the gradient being fully opaque.
+      //
+      // oxlint's `tasty(known-property)` flags this — its property list has
+      // `maskImage` but not `maskSize`, in either spelling. Tasty passes an
+      // unknown key through as raw CSS, so it emits fine: verified computing to
+      // `300% 100%` with the sweep running. The warning is the linter's gap.
       maskSize: '300% 100%',
       animation: {
         '': 'none',
@@ -306,11 +357,26 @@ export const TableElement = tasty({
       preset: 't3m',
       border: '1bw #border bottom, $column-divider #border right',
       zIndex: { '': 'auto', '@own(pin=start | pin=end)': 3 },
+      // One entry, not two sharing a value: tasty coalesces entries in a state
+      // map that serialize identically, promotes them to the group's maximum
+      // priority and negates them against everything below — see the row state
+      // matrix below and `src/data/AGENTS.md`.
       fill: {
-        '': '#row-base #row-overlay',
-        '@own(sortable) & @own(:hover)': '#row-base #surface-text.04',
+        '': '#cell-base #row-overlay',
+        '(@own(sortable) & @own(:hover)) | @own(menu-open)':
+          '#cell-base #surface-text.04',
       },
-      cursor: { '': 'default', '@own(sortable)': 'pointer' },
+      // `pointer` wins on a sortable header: sorting is the primary action, and a
+      // native drag needs movement while a click does not, so both still work.
+      // `grab` is only honest where there is nothing else to click.
+      cursor: {
+        '': 'default',
+        '@own(sortable)': 'pointer',
+        '@own(draggable) & !@own(sortable)': 'grab',
+        '@own(dragging)': 'grabbing',
+      },
+      // Matches the row being dragged.
+      opacity: { '': 1, '@own(dragging)': 0.4 },
       userSelect: 'none',
       // The containing block for `Resizer`. Cells are `static` by default, so
       // without this every handle resolves against the scroller instead and
@@ -320,6 +386,24 @@ export const TableElement = tasty({
       // neighbour, but the resize handle straddles the boundary on purpose and
       // would lose its outer half. Only cells that actually have one opt out.
       overflow: { '': 'hidden', '@own(resizable)': 'visible' },
+      /**
+       * How visible the sort arrow is when the column is NOT sorted — read by
+       * `SortIndicator`.
+       *
+       * Published as an inherited custom property because a sub-element's state
+       * keys resolve against the ROOT, not its DOM parent: from inside
+       * `SortIndicator`, `@own(:hover)` asks whether the 16px arrow itself is
+       * hovered, not the header cell it sits in. Same mechanism as `$dim` and
+       * `$resizer-offset`.
+       *
+       * `:focus-visible` as well as `:hover`, so a keyboard user gets the same
+       * hint. One grouped key rather than two entries sharing `.4`: a state map
+       * whose entries serialize identically gets coalesced and negated.
+       */
+      '$sort-hint': {
+        '': 0,
+        '@own(sortable) & (@own(:hover) | @own(:focus-visible))': 0.4,
+      },
       // How far the handle hangs past this cell's trailing edge — read by
       // `Resizer`. Published as an inherited custom property rather than asked
       // for from the handle with `@parent(...)`: a sub-element's state keys
@@ -405,6 +489,32 @@ export const TableElement = tasty({
       width: '$resizer-line-width',
       fill: '#resizer-line',
       transition: 'theme',
+    },
+
+    /**
+     * Where a dragged column would land.
+     *
+     * A distinct sub-element NAME from the row's `DropIndicator` rather than a
+     * second selector chain on the same one: two entries whose chains differ is
+     * exactly the shape that produced an indicator matching nothing at all.
+     *
+     * Positioned fully INSIDE the cell box. `HeaderCell` is `overflow: hidden`
+     * and only opts out to `visible` when it is resizable, so the centred
+     * `translate: -50%` the resizer line uses would lose its outer half on every
+     * non-resizable column.
+     */
+    ColumnDropIndicator: {
+      $: '> Scroller > Table > Head > HeadRow > HeaderCell >',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      width: '2bw',
+      insetInlineStart: { '': 'auto', '@own(position=before)': 0 },
+      insetInlineEnd: { '': 'auto', '@own(position=after)': 0 },
+      fill: '#purple',
+      radius: '1r',
+      // Above the pinned header cell (3) and the resize handle (2).
+      zIndex: 4,
     },
 
     /**
@@ -537,14 +647,23 @@ export const TableElement = tasty({
       width: '2x',
       height: '2x',
       color: '#surface-text',
+      // Hovering a sortable header previews the arrow it would get; sorting for
+      // real makes it solid. `$sort-hint` is the header cell's answer — see
+      // there for why this cannot just ask about hover itself.
+      //
+      // The preview points the right way for free: `data-dir` is absent while
+      // unsorted, so the `scale` map below leaves the chevron pointing up, and
+      // the first press of an unsorted column sorts ascending. The hint predicts
+      // the press rather than just advertising that one is possible.
       opacity: {
-        '': 0,
+        '': '$sort-hint',
         '@own(sorted)': 1,
       },
-      // `scale` rather than `rotate`: a chevron flipped by 180° reads as the
-      // same glyph moved, which is harder to track than one that flips.
-      scale: { '': '1 1', '@own(dir=desc)': '1 -1' },
-      transition: 'opacity, scale',
+      // No `scale` flip any more: `TableView` renders the real
+      // `ArrowNarrowDownIcon` for `desc` rather than turning the up arrow over,
+      // so there is no transform left to animate. `opacity` still is — that is
+      // the hover hint fading in.
+      transition: 'opacity',
     },
 
     /* ── body ─────────────────────────────────────────────────────────── */
@@ -650,7 +769,7 @@ export const TableElement = tasty({
         '@own(link)': 600,
       },
       color: {
-        '': '#row-text',
+        '': '#cell-text',
         '@own(link)': '#purple-text',
       },
       // Underline only while the row is hovered, matching how the kit's `Link`
