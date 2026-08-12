@@ -842,3 +842,82 @@ describe('DataTable focus', () => {
     expect(getComputedStyle(scroller).outlineStyle).toBe('none');
   });
 });
+
+/**
+ * The sort-direction hint.
+ *
+ * Browser tier with `realInput`: the hint is driven by CSS `:hover` on the header
+ * cell, and `@testing-library/user-event` dispatches synthetic events that never
+ * produce one — so nothing in the jsdom suite can see this.
+ */
+describe('DataTable sort hint', () => {
+  const SORTABLE = COLUMNS.map((column) => ({ ...column, isSortable: true }));
+
+  function mount(extra: Record<string, any> = {}) {
+    renderWithRoot(
+      <>
+        <div id="away" style={{ height: 40 }}>
+          away
+        </div>
+        <DataTable
+          data={ROWS.slice(0, 5)}
+          columns={SORTABLE}
+          height="240px"
+          width="800px"
+          paginationMode="off"
+          {...extra}
+        />
+      </>,
+    );
+
+    return vi.waitFor(() => {
+      const header = grid().querySelector<HTMLElement>(
+        'thead [data-key="channel"]',
+      )!;
+
+      expect(header).toBeTruthy();
+
+      return {
+        header,
+        away: document.getElementById('away')!,
+        indicator: header.querySelector<HTMLElement>(
+          '[data-element="SortIndicator"]',
+        )!,
+      };
+    });
+  }
+
+  const opacity = (el: HTMLElement) => Number(getComputedStyle(el).opacity);
+
+  it('previews the arrow on hover and solidifies it once sorted', async () => {
+    const { header, away, indicator } = await mount();
+
+    await realInput.hover(away);
+    await vi.waitFor(() => expect(opacity(indicator)).toBe(0));
+
+    // Hovering a sortable-but-unsorted header shows what pressing it would do.
+    await realInput.hover(header);
+    await vi.waitFor(() => expect(opacity(indicator)).toBeCloseTo(0.4, 2));
+
+    // Pressing it commits, and the arrow goes solid — and stays solid with the
+    // pointer moved away, which is the difference between a hint and a state.
+    await realInput.click(header);
+    await realInput.hover(away);
+
+    await vi.waitFor(() => expect(opacity(indicator)).toBe(1));
+  });
+
+  it('leaves a non-sortable header without a hint', async () => {
+    const { header, away } = await mount({ columns: COLUMNS });
+
+    // No indicator at all when the column cannot sort — the hint must not become
+    // a reason to render one.
+    expect(header.querySelector('[data-element="SortIndicator"]')).toBeNull();
+
+    await realInput.hover(header);
+    expect(
+      getComputedStyle(header).getPropertyValue('--sort-hint').trim(),
+    ).toBe('0');
+    await realInput.hover(away);
+  });
+});

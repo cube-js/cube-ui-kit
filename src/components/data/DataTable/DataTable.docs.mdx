@@ -323,6 +323,17 @@ succeeds.
 
 <Canvas of={DataTableStories.States} />
 
+### Sorting Affordance
+
+A sortable header shows nothing at rest. Hover it — or focus it from the keyboard
+— and the sort arrow fades in at 40%, pointing the way a press would sort it
+(ascending, for a column that is currently unsorted). Press it and the arrow goes
+solid and stays that way with the pointer gone, which is what separates a hint
+from a state.
+
+The arrow keeps its slot throughout, so none of this shifts the label. A
+non-sortable column has no arrow at all — the hint is not a reason to render one.
+
 ### Column Menu
 
 A column exposes a menu through `header.menu`, opened from a `⋮` trigger in the

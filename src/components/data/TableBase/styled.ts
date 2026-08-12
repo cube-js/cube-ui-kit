@@ -386,6 +386,24 @@ export const TableElement = tasty({
       // neighbour, but the resize handle straddles the boundary on purpose and
       // would lose its outer half. Only cells that actually have one opt out.
       overflow: { '': 'hidden', '@own(resizable)': 'visible' },
+      /**
+       * How visible the sort arrow is when the column is NOT sorted — read by
+       * `SortIndicator`.
+       *
+       * Published as an inherited custom property because a sub-element's state
+       * keys resolve against the ROOT, not its DOM parent: from inside
+       * `SortIndicator`, `@own(:hover)` asks whether the 16px arrow itself is
+       * hovered, not the header cell it sits in. Same mechanism as `$dim` and
+       * `$resizer-offset`.
+       *
+       * `:focus-visible` as well as `:hover`, so a keyboard user gets the same
+       * hint. One grouped key rather than two entries sharing `.4`: a state map
+       * whose entries serialize identically gets coalesced and negated.
+       */
+      '$sort-hint': {
+        '': 0,
+        '@own(sortable) & (@own(:hover) | @own(:focus-visible))': 0.4,
+      },
       // How far the handle hangs past this cell's trailing edge — read by
       // `Resizer`. Published as an inherited custom property rather than asked
       // for from the handle with `@parent(...)`: a sub-element's state keys
@@ -629,8 +647,16 @@ export const TableElement = tasty({
       width: '2x',
       height: '2x',
       color: '#surface-text',
+      // Hovering a sortable header previews the arrow it would get; sorting for
+      // real makes it solid. `$sort-hint` is the header cell's answer — see
+      // there for why this cannot just ask about hover itself.
+      //
+      // The preview points the right way for free: `data-dir` is absent while
+      // unsorted, so the `scale` map below leaves the chevron pointing up, and
+      // the first press of an unsorted column sorts ascending. The hint predicts
+      // the press rather than just advertising that one is possible.
       opacity: {
-        '': 0,
+        '': '$sort-hint',
         '@own(sorted)': 1,
       },
       // `scale` rather than `rotate`: a chevron flipped by 180° reads as the
