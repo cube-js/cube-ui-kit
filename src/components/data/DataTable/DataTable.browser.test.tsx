@@ -736,3 +736,76 @@ describe('DataTable rowSize', () => {
     expect(headerPx()).toBe(before);
   });
 });
+
+/**
+ * Resizing moves one divider.
+ *
+ * Browser tier because it is entirely about resolved widths, which jsdom reports
+ * as zero. Driven from the keyboard: `useMove` implements both halves of the
+ * interaction, and the arrow path is deterministic where a synthetic pointer
+ * drag is not.
+ */
+describe('DataTable column resize', () => {
+  const RESIZE_COLUMNS: CubeDataTableColumn<Row>[] = [
+    { key: 'region', title: 'Region', minWidth: 100 },
+    { key: 'channel', title: 'Channel', minWidth: 100 },
+    { key: 'orders', title: 'Orders', minWidth: 100 },
+    { key: 'revenue', title: 'Revenue', minWidth: 100 },
+  ];
+
+  const widths = () =>
+    Object.fromEntries(
+      Array.from(
+        grid().querySelectorAll<HTMLElement>(
+          'thead th[data-element="HeaderCell"]',
+        ),
+      ).map((th) => [
+        th.getAttribute('data-key'),
+        Math.round(th.getBoundingClientRect().width),
+      ]),
+    );
+
+  it('changes only the dragged column, not its neighbours', async () => {
+    renderWithRoot(
+      <DataTable
+        data={ROWS.slice(0, 3)}
+        columns={RESIZE_COLUMNS}
+        width="800px"
+        height="200px"
+        paginationMode="off"
+      />,
+    );
+
+    await vi.waitFor(() => expect(widths().region).toBeGreaterThan(0));
+
+    const before = widths();
+    const resizer = grid().querySelector<HTMLElement>(
+      'thead [data-key="channel"] [data-element="Resizer"]',
+    )!;
+
+    resizer.focus();
+
+    for (let i = 0; i < 8; i++) {
+      resizer.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+      );
+      resizer.dispatchEvent(
+        new KeyboardEvent('keyup', { key: 'ArrowRight', bubbles: true }),
+      );
+    }
+
+    await vi.waitFor(() =>
+      expect(widths().channel).toBeGreaterThan(before.channel),
+    );
+
+    const after = widths();
+
+    // `region` is BEFORE the handle. It moving at all is the bug: every column
+    // without an explicit width is `flex: 1`, so making only the dragged one
+    // fixed re-split the leftover across all the others. Measured before the
+    // fix: +8 on `channel` took 3px off each of the other three.
+    expect(after.region).toBe(before.region);
+    expect(after.orders).toBe(before.orders);
+    expect(after.revenue).toBe(before.revenue);
+  });
+});

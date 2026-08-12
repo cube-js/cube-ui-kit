@@ -21,14 +21,20 @@ import {
   useColumnOrder,
 } from '../TableBase/use-column-order';
 import { useContainerWidth } from '../TableBase/use-container-width';
-import { useTableColumns } from '../TableBase/use-table-columns';
+import {
+  freezeColumnWidths,
+  useTableColumns,
+} from '../TableBase/use-table-columns';
 import { ROW_NUMBER_COLUMN_KEY } from '../TableBase/use-table-selection';
 import { useTableSorts } from '../TableBase/use-table-sorts';
 import { useTableStorage } from '../TableBase/use-table-storage';
 
 import type { Key } from '@react-types/shared';
 import type { ForwardedRef, ReactElement } from 'react';
-import type { CubeTableRowSection } from '../TableBase/types';
+import type {
+  CubeTableColumnLayout,
+  CubeTableRowSection,
+} from '../TableBase/types';
 import type { CubeDataTableColumn, CubeDataTableProps } from './types';
 
 /** Wide enough for five digits at the dense default. */
@@ -261,11 +267,21 @@ function DataTable<T = any>(
   const baseColumnWidths = columnWidthsProp ?? ownColumnWidths;
   const columnWidths = draftColumnWidths ?? baseColumnWidths;
 
+  /**
+   * The resolved widths, for the freeze below. A ref because `layout` is
+   * computed *after* this handler is defined, and `useEvent` only reads it when
+   * the drag actually runs.
+   */
+  const layoutRef = useRef<CubeTableColumnLayout<T> | null>(null);
+
   const handleColumnResize = useEvent((key: string, width: number) => {
-    draftRef.current = {
-      ...(draftRef.current ?? baseColumnWidths),
-      [key]: Math.round(width),
-    };
+    // First move of a drag freezes every column, so this changes exactly one
+    // width instead of re-splitting the flex pool. See `freezeColumnWidths`.
+    const base =
+      draftRef.current ??
+      freezeColumnWidths(layoutRef.current, baseColumnWidths);
+
+    draftRef.current = { ...base, [key]: Math.round(width) };
     setDraftColumnWidths(draftRef.current);
   });
 
@@ -296,6 +312,8 @@ function DataTable<T = any>(
     columnWidths,
     leadingColumns,
   });
+
+  layoutRef.current = layout;
 
   const { t } = useI18n();
 

@@ -10,6 +10,38 @@ import type {
 export const DEFAULT_MIN_WIDTH = 150;
 
 /**
+ * Every column's current width, so a resize can change exactly one of them.
+ *
+ * A column with no explicit width is `flex: 1` and shares the leftover (see the
+ * spec builder below). Making only the DRAGGED column fixed leaves every other
+ * one in the flex pool, re-splitting a leftover that just changed — so one
+ * divider moved all of them, including columns to the LEFT of the handle, which
+ * cannot be what dragging a right edge means. Measured before this existed:
+ * dragging column B by +8px took 3px off A, C and D each.
+ *
+ * Freezing first means a drag changes one width. Columns after it are pushed
+ * along, which is what being after it means, and the table grows or shrinks
+ * rather than the neighbours absorbing the difference.
+ *
+ * Structural columns are skipped — they are sized by the table, not the user.
+ */
+export function freezeColumnWidths<T>(
+  layout: CubeTableColumnLayout<T> | null,
+  base: Record<string, number>,
+): Record<string, number> {
+  return (layout?.columns ?? []).reduce<Record<string, number>>(
+    (widths, column) => {
+      if (!column.isStructural && column.width != null) {
+        widths[column.key] = Math.round(column.width);
+      }
+
+      return widths;
+    },
+    { ...base },
+  );
+}
+
+/**
  * Reads `key` as a data path. A plain key is a single property lookup; dots
  * walk nested objects (`'owner.name'`). Anything richer belongs in `getValue`.
  */

@@ -14,7 +14,10 @@ import {
 } from '../TableBase/row-menu';
 import { TableView } from '../TableBase/TableView';
 import { useContainerWidth } from '../TableBase/use-container-width';
-import { useTableColumns } from '../TableBase/use-table-columns';
+import {
+  freezeColumnWidths,
+  useTableColumns,
+} from '../TableBase/use-table-columns';
 import { useTableSearch } from '../TableBase/use-table-search';
 import {
   SELECTION_COLUMN_KEY,
@@ -35,7 +38,11 @@ import {
 
 import type { Key } from '@react-types/shared';
 import type { ForwardedRef, ReactElement, ReactNode } from 'react';
-import type { CubeTableRowContext, CubeTableSort } from '../TableBase/types';
+import type {
+  CubeTableColumnLayout,
+  CubeTableRowContext,
+  CubeTableSort,
+} from '../TableBase/types';
 import type { CubeItemTableProps } from './types';
 
 /** Stable identity, so the uncontrolled default does not change every render. */
@@ -375,11 +382,17 @@ function ItemTable<T = any>(
   const baseColumnWidths = columnWidthsProp ?? ownColumnWidths;
   const columnWidths = draftColumnWidths ?? baseColumnWidths;
 
+  /** `layout` is computed below; `useEvent` only reads this when a drag runs. */
+  const layoutRef = useRef<CubeTableColumnLayout<T> | null>(null);
+
   const handleColumnResize = useEvent((key: string, width: number) => {
-    draftColumnWidthsRef.current = {
-      ...(draftColumnWidthsRef.current ?? baseColumnWidths),
-      [key]: Math.round(width),
-    };
+    // First move of a drag freezes every column, so this changes exactly one
+    // width instead of re-splitting the flex pool. See `freezeColumnWidths`.
+    const base =
+      draftColumnWidthsRef.current ??
+      freezeColumnWidths(layoutRef.current, baseColumnWidths);
+
+    draftColumnWidthsRef.current = { ...base, [key]: Math.round(width) };
     setDraftColumnWidths(draftColumnWidthsRef.current);
   });
 
@@ -409,6 +422,8 @@ function ItemTable<T = any>(
     leadingColumns,
     trailingColumns,
   });
+
+  layoutRef.current = layout;
 
   const hasBulkSelection =
     bulkActions != null &&
