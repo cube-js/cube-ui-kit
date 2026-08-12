@@ -1,5 +1,144 @@
 # @cube-dev/ui-kit
 
+## 0.159.0
+
+### Minor Changes
+
+- [#1305](https://github.com/cube-js/cube-ui-kit/pull/1305) [`74630ba1`](https://github.com/cube-js/cube-ui-kit/commit/74630ba166fa4e052a41964bb4fe08731f2c05a1) Thanks [@tenphi](https://github.com/tenphi)! - **DataTable**: column reordering. `isColumnReorderable` lets a user drag a header
+  sideways or move the focused column with `Alt`+`←` / `→`; clicking still sorts
+  and the resize handle still resizes. `columnOrder` / `defaultColumnOrder` /
+  `onColumnOrderChange` work with or without dragging, so a column manager
+  elsewhere in the page can drive the order on its own, and `storageKey` now
+  persists the order alongside the widths.
+
+  Structural and pinned columns stay put — `pin` is already the ordering authority
+  for a pinned column — and a single column opts out with `isReorderable: false`.
+  A stale order is safe: unknown keys are ignored, and a column missing from the
+  list lands after the neighbour it had in `columns` rather than at the end.
+
+- [#1305](https://github.com/cube-js/cube-ui-kit/pull/1305) [`74630ba1`](https://github.com/cube-js/cube-ui-kit/commit/74630ba166fa4e052a41964bb4fe08731f2c05a1) Thanks [@tenphi](https://github.com/tenphi)! - **DataTable**: `rowSize` sets the row height to a named step — `small` 28px,
+  `medium` 32px, `large` 40px. It moves the rows only: the header keeps answering
+  to `size`, so a denser body no longer means reaching for `size` and dragging the
+  header down with it.
+
+  Unset, the height comes from `size` exactly as before, so nothing changes for
+  existing tables. `rowHeight` still wins when an exact pixel value is needed.
+
+- [#1305](https://github.com/cube-js/cube-ui-kit/pull/1305) [`74630ba1`](https://github.com/cube-js/cube-ui-kit/commit/74630ba166fa4e052a41964bb4fe08731f2c05a1) Thanks [@tenphi](https://github.com/tenphi)! - **DataTable, ItemTable**: add a built-in column menu. A column exposes one
+  through `header.menu`, opened from a `⋮` trigger in the header, by right-click,
+  or with Shift+F10 — `columnContextMenu` picks which of those surfaces are live.
+  The pressed key comes back through `header.onMenuAction` and then
+  `onColumnMenuAction(action, columnKey)`, as written and without React's `.# @cube-dev/ui-kit
+  prefix, so the menu's contents stay entirely the consumer's.
+
+  Sorting is the one thing the table knows how to do itself, so the reserved keys
+  `sort-asc`, `sort-desc` and `clear-sort` are labelled, disabled when they would
+  do nothing, and applied before the consumer hears about them. `columnSortMenu()`
+  returns those items ready to drop into `header.menu`.
+
+  Also fixes `isMenuEmpty` so an empty fragment counts as an empty menu, which is
+  the shape a conditionally-assembled `rowMenu` or `header.menu` produces — such a
+  menu now renders no trigger instead of one that opens nothing.
+
+- [#1305](https://github.com/cube-js/cube-ui-kit/pull/1305) [`74630ba1`](https://github.com/cube-js/cube-ui-kit/commit/74630ba166fa4e052a41964bb4fe08731f2c05a1) Thanks [@tenphi](https://github.com/tenphi)! - **DataTable, ItemTable**: per-column adaptive colors. `column.color` takes a
+  palette theme name (`'success'`), any CSS color, a `{ hue, saturation }` seed, or
+  a `{ fill, text }` pair for full manual control. Everything but the last is
+  _derived_: only the hue and saturation are kept, and the tone ramp plus an
+  `AA`/`AAA` text floor are re-solved per color scheme — so a tinted column stays
+  readable in light, dark and high contrast without the caller checking.
+  `column.colorScope` narrows it to any of `header` / `body` / `totals`.
+
+  Row banding survives inside a tinted column: the tint carries its own band one
+  tone step away, so the stripe still reads down the column instead of being
+  painted over.
+
+  **New**: `useColorTheme(config)` / `getColorTheme(config)` build an adaptive
+  mini-theme from a hue at runtime and name it by a hash of its config, so every
+  component asking for the same color shares one global token injection. Also
+  exports `colorThemeSeed(color)` for the hue/saturation of a color.
+
+- [#1305](https://github.com/cube-js/cube-ui-kit/pull/1305) [`74630ba1`](https://github.com/cube-js/cube-ui-kit/commit/74630ba166fa4e052a41964bb4fe08731f2c05a1) Thanks [@tenphi](https://github.com/tenphi)! - **DataTable, ItemTable**: the sort indicator is now Tabler's narrow arrow rather
+  than a chevron — `ArrowNarrowUpIcon` for ascending, `ArrowNarrowDownIcon` for
+  descending. Both are also exported for use elsewhere.
+
+  The descending state renders the real down arrow instead of flipping the up one
+  with a transform, so the glyph is always the one Tabler drew.
+
+### Patch Changes
+
+- [#1305](https://github.com/cube-js/cube-ui-kit/pull/1305) [`74630ba1`](https://github.com/cube-js/cube-ui-kit/commit/74630ba166fa4e052a41964bb4fe08731f2c05a1) Thanks [@tenphi](https://github.com/tenphi)! - **DataTable, ItemTable**: a sortable header now previews its sort arrow. Hovering
+  or keyboard-focusing a sortable column fades the arrow in at 40%, pointing the
+  way a press would sort it; pressing it makes the arrow solid, and it stays solid
+  once the pointer leaves. Previously a sortable column looked identical to a
+  non-sortable one until it was already sorted.
+
+  The arrow keeps its slot throughout, so nothing shifts, and a non-sortable column
+  still has no arrow.
+
+- [#1305](https://github.com/cube-js/cube-ui-kit/pull/1305) [`74630ba1`](https://github.com/cube-js/cube-ui-kit/commit/74630ba166fa4e052a41964bb4fe08731f2c05a1) Thanks [@tenphi](https://github.com/tenphi)! - **ItemTable, DataTable**: stories no longer turn sorting on behind your back.
+
+  Both shared story fixtures marked every column `isSortable: true`, so all 15
+  `DataTable` stories and every `ItemTable` story rendered clickable headers with
+  hover affordances — including `Default`, which is where people go to learn what
+  the component does without configuration. Sorting is opt in per column, so those
+  stories were showing the opposite of the default.
+
+  The fixtures are now plain, and the stories that are actually about sorting use
+  an explicit `SORTABLE_COLUMNS`.
+
+- [#1305](https://github.com/cube-js/cube-ui-kit/pull/1305) [`74630ba1`](https://github.com/cube-js/cube-ui-kit/commit/74630ba166fa4e052a41964bb4fe08731f2c05a1) Thanks [@tenphi](https://github.com/tenphi)! - **ItemTable, DataTable**: correct the `isSortable` documentation. It read
+  `@default true`, which was never what the code did — `TableView` requires
+  `isSortable === true` before a header becomes a control at all, so sorting is
+  opt in per column and a table with no sortable column has inert headers.
+
+  Adds the pattern most lists actually want, which had no story: a fixed order the
+  user cannot change, via `sortMode="client"` with a `sort` and no sortable
+  column. `sortMode` has to be explicit there — left to default it resolves to
+  `'off'` when nothing is sortable, and a `sort` prop alone sorts nothing.
+
+  Also documents `ItemTable`'s column-menu props, and adds a `DataTable` story for
+  the query-results layout: pagination off, footer slots in its place, and a
+  tighter `.5x` footer.
+
+- [#1305](https://github.com/cube-js/cube-ui-kit/pull/1305) [`74630ba1`](https://github.com/cube-js/cube-ui-kit/commit/74630ba166fa4e052a41964bb4fe08731f2c05a1) Thanks [@tenphi](https://github.com/tenphi)! - **DataTable, ItemTable**: resizing a column no longer moves its neighbours.
+
+  A column with no explicit width is `flex: 1` and shares the leftover space.
+  Resizing made only the dragged column fixed, leaving every other one in the flex
+  pool to re-split a leftover that had just changed — so dragging one divider
+  resized all of them, including columns to the _left_ of the handle. Dragging a
+  column by +8px measurably took 3px off each of the other three.
+
+  Every column is now frozen at its current width when a drag starts, so the drag
+  changes exactly one. Columns after it are pushed along and the table grows or
+  shrinks, rather than the neighbours absorbing the difference.
+
+- [#1308](https://github.com/cube-js/cube-ui-kit/pull/1308) [`82306d62`](https://github.com/cube-js/cube-ui-kit/commit/82306d62cf6c5264566a11fd4b03ab34978070a4) Thanks [@tenphi](https://github.com/tenphi)! - `Item`, `Button`: show the tooltip while the element is disabled, and stop putting the native
+  `disabled` attribute on elements that cannot carry it.
+
+  A tooltip on a disabled control is usually where the reason for being unavailable is written, but
+  browsers do not dispatch mouse events on elements carrying the native `disabled` attribute, so the
+  hover that opens the tooltip never arrived. What a disabled `Button` did instead was rely on a
+  quirk: Chromium still delivers _pointer_ events to a natively disabled control, so the tooltip
+  opened there and nowhere else — not on a fallback to mouse events, and not under test. `Item` had
+  it worse, since it also set the attribute on whatever it rendered — a `div` or an `li` in most
+  cases, where it is invalid markup that only got in the way. When such an element has a tooltip that
+  can open, the disabled state now reaches the DOM as
+  `aria-disabled="true"` instead, and the element is kept inert by hand: activation handlers are
+  dropped and clicks (including the ones Enter and Space produce) do nothing, so `onPress` / `onClick`
+  stay silent and a `submit` button no longer submits its form. Such an element stays in the tab
+  order, so keyboard users can focus it and read the tooltip too.
+
+  Nothing changes for a disabled element without a tooltip: a `Button`, `ItemButton`, or `Item`
+  rendered as a form control keeps the native attribute. A disabled `Item` that is not a form control
+  does become inert, though — until now the attribute it carried did nothing there, so handlers passed
+  to it still ran.
+
+  Three related fixes come with it: a `Button` rendered as a link (`to`) is now announced as disabled
+  through `aria-disabled` — it previously had no accessible disabled state at all, only an invalid
+  `disabled` attribute on the anchor; `Item` now treats a `disabled` prop as an alias of `isDisabled`
+  rather than letting it overwrite what the component decided; and `ItemTable`'s `disabledTooltip` for
+  a bulk action reaches the user, which it could not while the button was natively disabled.
+
 ## 0.158.0
 
 ### Minor Changes
