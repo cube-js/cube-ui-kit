@@ -2639,6 +2639,7 @@ export const DisabledWithTooltip: StoryFn<CubeItemProps> = (args) => (
     </Item>
     <Item
       {...args}
+      qa="DisabledItemButton"
       as="button"
       isDisabled
       icon={<IconUser />}
@@ -2648,6 +2649,21 @@ export const DisabledWithTooltip: StoryFn<CubeItemProps> = (args) => (
     </Item>
   </Space>
 );
+
+DisabledWithTooltip.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const item = await canvas.findByTestId('DisabledItemButton');
+
+  // The `as="button"` item is the interesting one: it is the case where the
+  // native `disabled` attribute used to swallow this hover.
+  // React Aria opens a tooltip only when the last interaction came from a
+  // pointer, and it learns that from a mouse move — which the leading
+  // `unhover` provides. Without it the first hover of the page is ignored.
+  await userEvent.unhover(item);
+  await userEvent.hover(item);
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+};
 
 DisabledWithTooltip.args = {
   width: '300px',

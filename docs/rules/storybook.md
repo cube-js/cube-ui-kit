@@ -120,6 +120,44 @@ export const Interactive: StoryObj = {
 
 **Important:** Always import `userEvent` and `within` from `'storybook/test'` in story files. This ensures they respect Storybook's configuration (e.g., `testIdAttribute: 'data-qa'` set in `.storybook/preview.jsx`). Do NOT use `@testing-library/react` imports in stories.
 
+### Interaction-Only States Need a Play Function
+
+A state that only exists during an interaction — an open tooltip, a hover or focus style, an expanded
+overlay — is invisible to Chromatic unless a `play` function puts the story into it. Chromatic runs
+`play` before it snapshots, so the state it leaves behind is what gets captured and diffed. A story
+whose whole point is such a state must drive it:
+
+```tsx
+export const DisabledWithTooltip: StoryFn<CubeButtonProps> = () => (
+  <Button qa="DisabledButton" isDisabled tooltip="Not enough permissions">
+    Delete project
+  </Button>
+);
+
+DisabledWithTooltip.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.findByTestId('DisabledButton');
+
+  // React Aria opens a tooltip only when the last interaction came from a
+  // pointer, and it learns that from a mouse move — which the leading
+  // `unhover` provides. Without it the first hover of the page is ignored.
+  await userEvent.unhover(button);
+  await userEvent.hover(button);
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+};
+```
+
+- Give the target a `qa` and find it with `findByTestId`, so the story does not depend on the order of
+  roles on the page.
+- Always `unhover` before `hover`. `userEvent.hover` alone fires `mouseEnter` before its `mouseMove`,
+  so on the first interaction of the page React Aria's modality is still unset and the tooltip stays
+  closed. The `unhover` moves the pointer over the body first, which sets it.
+- End on an `await waitFor(...)` assertion for the state you want captured. It doubles as the wait
+  Chromatic needs — a snapshot taken before the overlay has mounted is a flaky diff.
+- Drive **one** element per story. Hovering a second one closes the first, and only the final state
+  is snapshotted, so a story showing several variants should hover the most interesting one.
+
 ## MDX Documentation Structure
 
 ```mdx

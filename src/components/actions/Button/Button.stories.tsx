@@ -6,6 +6,7 @@ import {
   IconHeartFilled,
 } from '@tabler/icons-react';
 import { useState } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Title } from '../../content/Title';
@@ -471,7 +472,12 @@ CustomSize.parameters = {
 
 export const DisabledWithTooltip: StoryFn<CubeButtonProps> = () => (
   <Space gap="2x" flow="column" placeItems="start">
-    <Button isDisabled tooltip="Not enough permissions" type="primary">
+    <Button
+      qa="DisabledButton"
+      isDisabled
+      tooltip="Not enough permissions"
+      type="primary"
+    >
       Delete project
     </Button>
     <Button isDisabled tooltip="Nothing to export yet" icon={<IconCoin />}>
@@ -479,6 +485,19 @@ export const DisabledWithTooltip: StoryFn<CubeButtonProps> = () => (
     </Button>
   </Space>
 );
+
+DisabledWithTooltip.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.findByTestId('DisabledButton');
+
+  // React Aria opens a tooltip only when the last interaction came from a
+  // pointer, and it learns that from a mouse move — which the leading
+  // `unhover` provides. Without it the first hover of the page is ignored.
+  await userEvent.unhover(button);
+  await userEvent.hover(button);
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+};
 
 DisabledWithTooltip.parameters = {
   docs: {

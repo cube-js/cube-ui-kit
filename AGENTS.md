@@ -32,7 +32,7 @@ Project-specific working rules for AI agents. Not published with the package.
 
 - [coding.md](docs/rules/coding.md) — development flow, code style, knowledge maintenance
 - [input-components.md](docs/rules/input-components.md) — form-attachable input components (`useFieldProps`, validation props, `wrapWithField`)
-- [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring
+- [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring, including the `play`-function rule below
 - [documentation.md](docs/rules/documentation.md) — `.docs.mdx` structure + update flow
 - [tests.md](docs/rules/tests.md) — Vitest + React Testing Library patterns
 - [commit-changes.md](docs/rules/commit-changes.md) — commit message convention
@@ -47,6 +47,10 @@ When making code changes that affect end users or the public API, **always add a
 - Keep the summary concise and user-focused (`"@cube-dev/ui-kit": patch|minor` frontmatter).
 - Skip changesets for docs-only, test-only, Storybook-only, or internal tooling that does not affect package consumers. Also skip fixes for issues introduced and resolved within the same PR.
 - Add changeset manually (no CLI) — full guidelines: [`.cursor/commands/add-changeset.md`](.cursor/commands/add-changeset.md).
+
+## Stories: Interaction-Only States
+
+A state that only exists during an interaction — an open tooltip, a hover or focus style, an expanded overlay — is invisible to Chromatic unless a `play` function puts the story into it. Chromatic runs `play` before it snapshots, so a story whose point is such a state **must** drive it with `play` and end on a `waitFor` assertion for the state itself (that assertion is also the wait Chromatic needs). Drive one element per story — only the final state is captured. Pattern, the `unhover`-before-`hover` caveat, and why it is needed: [storybook.md](docs/rules/storybook.md#interaction-only-states-need-a-play-function).
 
 ## Project Structure
 
