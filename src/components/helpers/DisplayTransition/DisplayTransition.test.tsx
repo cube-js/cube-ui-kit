@@ -4,13 +4,42 @@ import { render } from '../../../test';
 
 import { DisplayTransition } from './DisplayTransition';
 
+import type { DisplayTransitionProps } from './DisplayTransition';
+
+/** Renders the transition with a probe element exposing phase/isShown as attributes. */
+function Probe(props: Omit<DisplayTransitionProps, 'children'>) {
+  return (
+    <DisplayTransition {...props}>
+      {({ phase, isShown, ref }) => (
+        <div ref={ref} data-phase={phase} data-shown={isShown}>
+          content
+        </div>
+      )}
+    </DisplayTransition>
+  );
+}
+
+const phaseOf = (container: HTMLElement) =>
+  container.querySelector('[data-phase]')?.getAttribute('data-phase');
+
+const shownOf = (container: HTMLElement) =>
+  container.querySelector('[data-shown]')?.getAttribute('data-shown');
+
 describe('DisplayTransition', () => {
+  const originalMatchMedia = window.matchMedia;
+
   beforeEach(() => {
     vi.useFakeTimers();
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    // Tests that stub matchMedia must not leak it into the rest of the file:
+    // the jsdom project shares one environment across a worker.
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: originalMatchMedia,
+    });
   });
 
   it('should handle initial states correctly based on props', () => {
@@ -515,5 +544,297 @@ describe('DisplayTransition', () => {
 
     // Content should be gone immediately since preserveContent=false
     expect(container.textContent).not.toContain('original content');
+  });
+
+  describe('exit interrupted mid-collapse', () => {
+    // The collapse is a two-step flow: the main flow effect sets 'exit-pending',
+    // then the [phase] effect schedules the double-rAF that advances it to
+    // 'exit' → 'unmounted'. Anything that re-runs the flow effect while
+    // 'exit-pending' is still on screen cancels that rAF, so the flow effect has
+    // to re-arm it — otherwise the [phase] effect never re-runs (phase did not
+    // change) and the content is stranded visible while the driver says hidden.
+
+    it('should finish the exit when duration flips 0 → undefined mid-collapse', () => {
+      // Reproduces CUB-3793: Disclosure passes transitionDuration={isStreaming ? 0 : undefined},
+      // and in chat the collapse and the streaming flag land in separate renders.
+      const onRest = vi.fn();
+
+      const { container, rerender } = render(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={0}
+          isShown={true}
+          onRest={onRest}
+        />,
+      );
+
+      expect(phaseOf(container)).toBe('entered');
+
+      // Collapse. Do not advance time: this leaves 'exit-pending' on screen with
+      // the double-rAF still pending.
+      rerender(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={0}
+          isShown={false}
+          onRest={onRest}
+        />,
+      );
+
+      expect(phaseOf(container)).toBe('entered'); // 'exit-pending' reports as 'entered'
+      expect(shownOf(container)).toBe('true');
+
+      // Streaming ends one render later, so the duration changes while still pending.
+      rerender(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={undefined}
+          isShown={false}
+          onRest={onRest}
+        />,
+      );
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(phaseOf(container)).toBe('unmounted');
+      expect(shownOf(container)).toBe('false');
+      expect(onRest).toHaveBeenCalledWith('exit');
+    });
+
+    it('should finish the exit when a numeric duration changes mid-collapse', () => {
+      const onRest = vi.fn();
+
+      const { container, rerender } = render(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={150}
+          isShown={true}
+          onRest={onRest}
+        />,
+      );
+
+      rerender(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={150}
+          isShown={false}
+          onRest={onRest}
+        />,
+      );
+
+      expect(phaseOf(container)).toBe('entered');
+
+      rerender(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={300}
+          isShown={false}
+          onRest={onRest}
+        />,
+      );
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(phaseOf(container)).toBe('unmounted');
+      expect(onRest).toHaveBeenCalledWith('exit');
+      expect(onRest).toHaveBeenCalledTimes(1);
+    });
+
+    it('should stay entered when re-shown during exit-pending', () => {
+      const onRest = vi.fn();
+
+      const { container, rerender } = render(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={150}
+          isShown={true}
+          onRest={onRest}
+        />,
+      );
+
+      rerender(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={150}
+          isShown={false}
+          onRest={onRest}
+        />,
+      );
+
+      // Re-shown before the exit ever started.
+      rerender(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={150}
+          isShown={true}
+          onRest={onRest}
+        />,
+      );
+
+      expect(phaseOf(container)).toBe('entered');
+      expect(shownOf(container)).toBe('true');
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      // The cancelled exit must not sneak through afterwards.
+      expect(phaseOf(container)).toBe('entered');
+      expect(shownOf(container)).toBe('true');
+      expect(onRest).not.toHaveBeenCalledWith('exit');
+    });
+
+    it('should re-enter when re-shown during the exit phase', () => {
+      const { container, rerender } = render(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={150}
+          isShown={true}
+        />,
+      );
+
+      rerender(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={150}
+          isShown={false}
+        />,
+      );
+
+      act(() => {
+        vi.advanceTimersByTime(50);
+      });
+
+      expect(phaseOf(container)).toBe('exit');
+
+      rerender(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={150}
+          isShown={true}
+        />,
+      );
+
+      act(() => {
+        vi.advanceTimersByTime(50);
+      });
+
+      expect(phaseOf(container)).toBe('entered');
+      expect(shownOf(container)).toBe('true');
+    });
+
+    it('should not fire callbacks after unmounting mid-exit', () => {
+      const onRest = vi.fn();
+      const onPhaseChange = vi.fn();
+
+      const { rerender, unmount } = render(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={150}
+          isShown={true}
+          onRest={onRest}
+          onPhaseChange={onPhaseChange}
+        />,
+      );
+
+      rerender(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={150}
+          isShown={false}
+          onRest={onRest}
+          onPhaseChange={onPhaseChange}
+        />,
+      );
+
+      act(() => {
+        vi.advanceTimersByTime(50);
+      });
+
+      onRest.mockClear();
+      onPhaseChange.mockClear();
+      unmount();
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(onRest).not.toHaveBeenCalled();
+      expect(onPhaseChange).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('callbacks', () => {
+    it('should report exit phases without ever exposing exit-pending', () => {
+      const onPhaseChange = vi.fn();
+      const onToggle = vi.fn();
+
+      const { rerender } = render(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={150}
+          isShown={true}
+          onPhaseChange={onPhaseChange}
+          onToggle={onToggle}
+        />,
+      );
+
+      // Mounting straight into 'entered' is not a change.
+      expect(onPhaseChange).not.toHaveBeenCalled();
+      expect(onToggle).not.toHaveBeenCalled();
+
+      rerender(
+        <Probe
+          exposeUnmounted
+          animateOnMount={false}
+          duration={150}
+          isShown={false}
+          onPhaseChange={onPhaseChange}
+          onToggle={onToggle}
+        />,
+      );
+
+      // 'exit-pending' is an internal phase — it reports as 'entered', which is
+      // what we were already in, so neither callback fires yet.
+      expect(onPhaseChange).not.toHaveBeenCalled();
+      expect(onToggle).not.toHaveBeenCalled();
+
+      // Step through the double-rAF and the duration separately. Advancing past
+      // both inside one act() collapses the commits, so the intermediate 'exit'
+      // render would never be observed.
+      act(() => {
+        vi.advanceTimersByTime(50);
+      });
+
+      expect(onPhaseChange.mock.calls.flat()).toEqual(['exit']);
+      expect(onToggle.mock.calls.flat()).toEqual([false]);
+
+      act(() => {
+        vi.advanceTimersByTime(150);
+      });
+
+      expect(onPhaseChange.mock.calls.flat()).toEqual(['exit', 'unmounted']);
+      // Visibility already changed at 'exit'; unmounting is not a second toggle.
+      expect(onToggle.mock.calls.flat()).toEqual([false]);
+    });
   });
 });

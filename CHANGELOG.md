@@ -1,5 +1,88 @@
 # @cube-dev/ui-kit
 
+## 0.157.3
+
+### Patch Changes
+
+- [#1304](https://github.com/cube-js/cube-ui-kit/pull/1304) [`79cef50c`](https://github.com/cube-js/cube-ui-kit/commit/79cef50cbf3dd2b30e24de28b917a3b328b3f770) Thanks [@tenphi](https://github.com/tenphi)! - `no-redundant-default-prop`: cover the defaults components set as styles.
+
+  `<Space gap="1x">` restates what `Space` already does, and the rule did not notice. Two
+  independent gaps had to line up for that, and both are fixed here — the registry grows from
+  401 proven defaults to 441.
+
+  **The docs parser only read one of the two default sections.** A component's tasty style
+  defaults are documented under `### Style Defaults` as `` - `gap` — `1x` ``, not as a
+  `## Properties` bullet with a `(default: …)` annotation, so all 30 components with such a
+  section contributed nothing. Those styles are defaults in every sense that matters here:
+  ui-kit components forward style props, so passing one restates the component's own value.
+  Bullets carrying a conditional note — `` `flow` — `row` (switches to `column` when
+`direction="vertical"`) `` — are skipped rather than probed, since the note is an explicit
+  statement that the value depends on something the probe may not vary.
+
+  **The probe compared class names it should have ignored.** Tasty derives its class hash from
+  the _input_ style object rather than the CSS it produces, so `gap: true` (what `Space` sets)
+  and `gap: '1x'` (what the prop passes) emit byte-identical rules under different class names.
+  The differential render therefore reported a genuine redundancy as "differs", and the prop
+  was recorded as unverified instead of becoming a candidate. Class names are now canonicalised
+  the same way React's generated IDs already were: positional placeholders assigned in order of
+  first appearance, so an extra, missing or reordered class still compares unequal and only the
+  arbitrary hash is normalised away.
+
+  Every new entry is a style prop, so all of them are optional — this cannot repeat the
+  `ResizablePanel.direction` problem, where the rule removed a prop that was typed required.
+
+- [#1304](https://github.com/cube-js/cube-ui-kit/pull/1304) [`79cef50c`](https://github.com/cube-js/cube-ui-kit/commit/79cef50cbf3dd2b30e24de28b917a3b328b3f770) Thanks [@tenphi](https://github.com/tenphi)! - Ship `tasty.config.ts` to consumers, and stop `no-redundant-default-prop` breaking `ResizablePanel` call sites.
+
+  `tasty.config.ts` was missing from the package's `files` list, so it never reached the tarball and
+  `extends: '@cube-dev/ui-kit'` in a consumer's own tasty config silently resolved to nothing. The
+  ESLint plugin's token-existence rules then reported every real token (`#border`, `#surface`,
+  `#dark`) as unknown — around 660 phantom findings in one downstream app alone. The config also now
+  declares `importSources`, since consumers import `tasty` from this package rather than from
+  `@tenphi/tasty` and the plugin only inspects calls it can trace to a tracked import. It unions with
+  the parent config's list, so this package's own `@tenphi/tasty` imports stay covered.
+
+  `CubeResizablePanelProps.direction` is now optional. It was typed required even though both
+  `ResizablePanel` and `Handler` destructure it as `direction = 'right'`, so the defaults registry
+  recorded that runtime default and the rule removed explicit `direction="right"` from consumer call
+  sites, which then failed to typecheck. The type now agrees with the implementation and the rule's
+  advice is actionable.
+
+  The lint fixture is why this was not caught here: it rendered
+  `<ResizablePanel direction="right" {...props} />`, hardcoding the prop purely to satisfy the
+  required type. The probe proves a default by rendering with and without the prop, so a hardcoded
+  value sits in both renders, they match, and the prop is recorded as defaulted whether it is or not.
+
+  A new `fixture-hygiene` test now fails on that shape anywhere in the fixture list. It caught two
+  more: `FilterPicker` hardcoded `selectionMode="single"` and `GridProvider` hardcoded `columns={2}`.
+  Both happened to be correct, but neither was proven. All three render bare now, and the registry
+  output is unchanged — so those defaults are proven rather than assumed.
+
+## 0.157.2
+
+### Patch Changes
+
+- [#1302](https://github.com/cube-js/cube-ui-kit/pull/1302) [`a850f19c`](https://github.com/cube-js/cube-ui-kit/commit/a850f19cf757fd0c2a3c0ddfc55e9631b7456c89) Thanks [@tenphi](https://github.com/tenphi)! - `DisplayTransition`: finish the collapse when the flow is interrupted one frame before it starts,
+  so `Disclosure` can no longer render an open panel under a collapsed header.
+
+  Hiding is a two-step flow: the main effect sets the internal `exit-pending` phase, and the
+  `[phase]` effect then schedules the double-rAF that advances it to `exit` and on to `unmounted`.
+  Anything that re-ran the main effect while `exit-pending` was still on screen cancelled that rAF
+  — and because `phase` had not changed, the `[phase]` effect never re-ran to replace it. The
+  component was stranded in `exit-pending`, which reports as `entered`: the content stayed at full
+  height indefinitely while `isShown` was already `false`, recovering only on the next toggle. The
+  pending exit is now re-armed by whoever cancels it, mirroring how the enter flow already behaved.
+
+  `Disclosure` is the one consumer that changes `transitionDuration` at runtime, so it is where this
+  surfaced: a caller that disables the animation on the same event that collapses the panel — for
+  example `transitionDuration={isBusy ? 0 : undefined}` — hit it whenever the two landed in separate
+  renders. The trigger read as collapsed while the panel below it stayed fully expanded.
+
+  Also adds a browser test tier for `DisplayTransition` and `Disclosure`. The
+  `duration === undefined` path, which times the exit off the element's own `transitionend` and is
+  what most consumers use, could not be tested under jsdom — with no layout, transition events never
+  fire and the fallback timer always won — and `Disclosure`'s `height: 0 → max-content` animation has
+  no measurable height there either.
+
 ## 0.157.1
 
 ### Patch Changes

@@ -25,6 +25,18 @@ const STOP_H3 =
 const BULLET = /^\s*-\s+\*\*`([^`]+)`\*\*/;
 const DEFAULT_ANNOTATION = /\(default:\s+`([^`]*)`/;
 
+/**
+ * `### Style Defaults` lists the tasty styles a component sets on itself. They are
+ * defaults just as much as the `## Properties` ones — ui-kit components forward
+ * style props, so `<Space gap="1x">` restates what the component already does — but
+ * they are written in a different shape, so the Properties parser skipped all 30
+ * components that have such a section.
+ */
+const STYLE_DEFAULTS_SECTION = /^#{2,3}\s+Style Defaults\s*$/;
+
+/** `- \`gap\` — \`1x\`` — single backticks and an em dash, no `(default: …)`. */
+const STYLE_BULLET = /^\s*-\s+`([^`]+)`\s+—\s+`([^`]*)`\s*(.*)$/;
+
 function findDocsFiles(dir: string, out: Map<string, string> = new Map()) {
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
@@ -75,20 +87,46 @@ export function readDocumentedDefaults(component: string): DocumentedDefault[] {
   if (!path) return [];
 
   const results: DocumentedDefault[] = [];
-  let inPropSection = false;
+  let section: 'none' | 'props' | 'styleDefaults' = 'none';
 
   for (const line of readFileSync(path, 'utf8').split('\n')) {
+    if (STYLE_DEFAULTS_SECTION.test(line)) {
+      section = 'styleDefaults';
+      continue;
+    }
+
     if (STOP_H2.test(line) || STOP_H3.test(line)) {
-      inPropSection = false;
+      section = 'none';
       continue;
     }
 
     if (PROP_SECTION.test(line)) {
-      inPropSection = true;
+      section = 'props';
       continue;
     }
 
-    if (!inPropSection) continue;
+    if (section === 'styleDefaults') {
+      const bullet = line.match(STYLE_BULLET);
+
+      if (!bullet) continue;
+
+      // A trailing note means the value is conditional — "switches to `column`
+      // when `direction=\"vertical\"`". The probe can only rule that out when the
+      // fixture happens to declare the matching condition, and a wrong entry here
+      // makes the rule delete a load-bearing prop. The note is an explicit signal,
+      // so believe it and skip rather than hope the fixture covers it.
+      if (bullet[3].trim()) continue;
+
+      results.push({
+        prop: bullet[1],
+        raw: bullet[2],
+        value: parseDocDefault(bullet[2]),
+      });
+
+      continue;
+    }
+
+    if (section !== 'props') continue;
 
     const bullet = line.match(BULLET);
 
