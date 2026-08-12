@@ -1,5 +1,13 @@
 import { useMemo, useState } from 'react';
 
+import {
+  NumberIcon,
+  ReloadIcon,
+  StringIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
+  TimeIcon,
+} from '../../../icons';
 import { Button } from '../../actions/Button';
 import { Menu } from '../../actions/Menu';
 import { Text } from '../../content/Text';
@@ -521,5 +529,88 @@ export const RowSize: Story = {
         </Flow>
       ))}
     </Flow>
+  ),
+};
+
+/**
+ * The layout Cube Cloud's query results panel uses.
+ *
+ * Three things make it, none of them special-cased in the component:
+ *
+ * - **Pagination off, slots instead.** `paginationMode="off"` leaves the footer
+ *   with nothing but `footerStart` / `footerEnd`, so the row count and a "load
+ *   the rest" affordance sit where the pager would have been. The footer renders
+ *   whenever any slot has content, so it survives the pager going away.
+ * - **A tighter footer.** `footerStyles={{ padding: '.5x' }}` — the default is
+ *   sized for the pager's controls, and without them it reads as too much air.
+ * - **The column's type in its header.** `header.icon` is just a slot, so the
+ *   time/string/number marks are the consumer's vocabulary rather than the
+ *   kit's: nothing under `src/components/data` knows what a dimension is.
+ */
+export const QueryResultsLayout: Story = {
+  render: (args) => (
+    <DataTable<ResultRow>
+      {...args}
+      showRowNumbers
+      paginationMode="off"
+      rowSize="small"
+      columns={[
+        {
+          key: 'region',
+          title: 'created_at_month',
+          minWidth: 180,
+          header: { icon: <TimeIcon /> },
+        },
+        {
+          key: 'channel',
+          title: 'status',
+          minWidth: 140,
+          header: { icon: <StringIcon /> },
+        },
+        {
+          key: 'orders',
+          title: 'order_count',
+          dataType: 'number',
+          minWidth: 140,
+          header: { icon: <NumberIcon /> },
+          format: (value) => value.toLocaleString(),
+        },
+        {
+          key: 'revenue',
+          title: 'revenue',
+          dataType: 'number',
+          minWidth: 140,
+          header: { icon: <NumberIcon /> },
+          format: (value) => value.toLocaleString(),
+        },
+      ]}
+      footerStyles={{ padding: '.5x' }}
+      footerStart={
+        <Space gap=".5x">
+          <Button
+            type="neutral"
+            size="xsmall"
+            icon={<ThumbsUpIcon />}
+            aria-label="Good result"
+          />
+          <Button
+            type="neutral"
+            size="xsmall"
+            icon={<ThumbsDownIcon />}
+            aria-label="Bad result"
+          />
+        </Space>
+      }
+      footerEnd={
+        <Space gap="1x" placeItems="center">
+          <Text color="#dark-03" preset="t4">
+            showing {ROWS.length} out of 649 total rows
+          </Text>
+          <Button type="outline" size="xsmall" icon={<ReloadIcon />}>
+            Load All Results
+          </Button>
+        </Space>
+      }
+    />
   ),
 };
