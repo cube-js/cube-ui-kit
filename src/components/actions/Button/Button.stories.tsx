@@ -6,12 +6,16 @@ import {
   IconHeartFilled,
 } from '@tabler/icons-react';
 import { useState } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Title } from '../../content/Title';
 import { Space } from '../../layout/Space';
 
 import { Button, CubeButtonProps } from './Button';
+
+const timeout = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 export default {
   title: 'Actions/Button',
@@ -465,6 +469,50 @@ CustomSize.parameters = {
     description: {
       story:
         'Demonstrates custom size values using the `size` prop. Supports both string values (like `8x`) and number values (converted to pixels, like `64`). Custom sizes override the default size token via the `tokens` prop.',
+    },
+  },
+};
+
+export const DisabledWithTooltip: StoryFn<CubeButtonProps> = () => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Button
+      qa="DisabledButton"
+      isDisabled
+      // `delay: 0` only so the snapshot does not depend on the open delay
+      tooltip={{ title: 'Not enough permissions', delay: 0 }}
+      type="primary"
+    >
+      Delete project
+    </Button>
+    <Button isDisabled tooltip="Nothing to export yet" icon={<IconCoin />}>
+      Export
+    </Button>
+  </Space>
+);
+
+DisabledWithTooltip.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  // `TooltipProvider` wires the trigger up in a mount effect, so a hover fired
+  // before that lands is dropped with nothing to replay it.
+  await timeout(250);
+
+  const button = await canvas.findByTestId('DisabledButton');
+
+  // React Aria opens a tooltip only when the last interaction came from a
+  // pointer, and it learns that from a mouse move — which the leading
+  // `unhover` provides. Without it the first hover of the page is ignored.
+  await userEvent.unhover(button);
+  await userEvent.hover(button);
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+};
+
+DisabledWithTooltip.parameters = {
+  docs: {
+    description: {
+      story:
+        'A disabled button keeps showing its tooltip, which is usually where the reason for being unavailable is written. The disabled state is expressed with `aria-disabled` in that case, because the native `disabled` attribute would stop the browser from dispatching the hover that opens the tooltip. The button stays inert either way.',
     },
   },
 };

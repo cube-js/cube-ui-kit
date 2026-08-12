@@ -6,7 +6,6 @@ import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons';
 import { Button } from '../../actions';
 import { Text } from '../../content/Text';
-import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 
 import { useItemTableChrome } from './ItemTableToolbar';
 
@@ -100,7 +99,8 @@ export function ItemTableBulkBar<T = any>(props: ItemTableBulkBarProps<T>) {
 
       {actions.map((action) => {
         const isDisabled = action.isDisabled?.(selectedRows as T[]) ?? false;
-        const button = (
+
+        return (
           <Button
             key={action.key}
             size="small"
@@ -109,18 +109,18 @@ export function ItemTableBulkBar<T = any>(props: ItemTableBulkBarProps<T>) {
             icon={action.icon}
             isDisabled={isDisabled}
             isLoading={loadingKeys[action.key]}
+            // The button's own prop rather than a wrapping `TooltipProvider`:
+            // that is what lets it stay hoverable while disabled, which is the
+            // only state this tooltip is shown in.
+            tooltip={
+              isDisabled && action.disabledTooltip
+                ? action.disabledTooltip
+                : undefined
+            }
             onPress={() => run(action)}
           >
             {action.label}
           </Button>
-        );
-
-        return isDisabled && action.disabledTooltip ? (
-          <TooltipProvider key={action.key} title={action.disabledTooltip}>
-            {button}
-          </TooltipProvider>
-        ) : (
-          button
         );
       })}
 

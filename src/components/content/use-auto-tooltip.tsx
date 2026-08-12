@@ -143,6 +143,60 @@ export function useAutoTooltip({
     return props;
   }, [labelProps]);
 
+  /**
+   * The `TooltipProvider` props this tooltip resolves to, or `null` when no
+   * tooltip is rendered at all. Resolved once so that both the rendering below
+   * and `isTooltipActive` speak about the same tooltip.
+   */
+  const resolvedTooltip = useMemo<Omit<
+    CubeTooltipProviderProps,
+    'children'
+  > | null>(() => {
+    if (!tooltip) return null;
+
+    // String tooltip - simple case
+    if (typeof tooltip === 'string') {
+      return { title: tooltip };
+    }
+
+    const hasAutoContent =
+      !!(children || labelProps) && (isLabelOverflowed || isDynamicLabel);
+
+    // Boolean tooltip - auto tooltip on overflow
+    if (tooltip === true) {
+      if (!hasAutoContent) return null;
+
+      return {
+        title: children,
+        isDisabled: !isLabelOverflowed && isDynamicLabel,
+      };
+    }
+
+    // Object tooltip - advanced configuration
+    const { auto, ...tooltipProps } = tooltip;
+
+    // If title is provided and auto is not explicitly true, always show the tooltip
+    if (tooltipProps.title && auto !== true) {
+      return tooltipProps;
+    }
+
+    // If title is provided with auto=true, OR no title but auto behavior enabled
+    if (!hasAutoContent) return null;
+
+    return {
+      title: tooltipProps.title ?? children,
+      isDisabled:
+        !isLabelOverflowed &&
+        isDynamicLabel &&
+        tooltipProps.isDisabled !== true,
+      ...tooltipProps,
+    };
+  }, [tooltip, children, labelProps, isLabelOverflowed, isDynamicLabel]);
+
+  /** Whether a tooltip is rendered and able to open. */
+  const isTooltipActive =
+    !!resolvedTooltip && resolvedTooltip.isDisabled !== true;
+
   const renderWithTooltip = (
     renderElement: (
       tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
@@ -150,69 +204,13 @@ export function useAutoTooltip({
     ) => ReactNode,
     defaultTooltipPlacement: OverlayProps['placement'],
   ) => {
-    // Handle tooltip rendering based on tooltip prop type
-    if (tooltip) {
-      // String tooltip - simple case
-      if (typeof tooltip === 'string') {
-        return (
-          <TooltipProvider placement={defaultTooltipPlacement} title={tooltip}>
-            {(triggerProps, ref) => renderElement(triggerProps, ref)}
-          </TooltipProvider>
-        );
-      }
+    if (!resolvedTooltip) return renderElement();
 
-      // Boolean tooltip - auto tooltip on overflow
-      if (tooltip === true) {
-        if ((children || labelProps) && (isLabelOverflowed || isDynamicLabel)) {
-          return (
-            <TooltipProvider
-              placement={defaultTooltipPlacement}
-              title={children}
-              isDisabled={!isLabelOverflowed && isDynamicLabel}
-            >
-              {(triggerProps, ref) => renderElement(triggerProps, ref)}
-            </TooltipProvider>
-          );
-        }
-      }
-
-      // Object tooltip - advanced configuration
-      if (typeof tooltip === 'object') {
-        const { auto, ...tooltipProps } = tooltip;
-
-        // If title is provided and auto is not explicitly true, always show the tooltip
-        if (tooltipProps.title && auto !== true) {
-          return (
-            <TooltipProvider
-              placement={defaultTooltipPlacement}
-              {...tooltipProps}
-            >
-              {(triggerProps, ref) => renderElement(triggerProps, ref)}
-            </TooltipProvider>
-          );
-        }
-
-        // If title is provided with auto=true, OR no title but auto behavior enabled
-        if ((children || labelProps) && (isLabelOverflowed || isDynamicLabel)) {
-          return (
-            <TooltipProvider
-              placement={defaultTooltipPlacement}
-              title={tooltipProps.title ?? children}
-              isDisabled={
-                !isLabelOverflowed &&
-                isDynamicLabel &&
-                tooltipProps.isDisabled !== true
-              }
-              {...tooltipProps}
-            >
-              {(triggerProps, ref) => renderElement(triggerProps, ref)}
-            </TooltipProvider>
-          );
-        }
-      }
-    }
-
-    return renderElement();
+    return (
+      <TooltipProvider placement={defaultTooltipPlacement} {...resolvedTooltip}>
+        {(triggerProps, ref) => renderElement(triggerProps, ref)}
+      </TooltipProvider>
+    );
   };
 
   return {
@@ -221,6 +219,7 @@ export function useAutoTooltip({
     isLabelOverflowed,
     isAutoTooltipEnabled,
     hasTooltip: !!tooltip,
+    isTooltipActive,
     renderWithTooltip,
   };
 }

@@ -2631,3 +2631,58 @@ Disabled.parameters = {
     },
   },
 };
+
+export const DisabledWithTooltip: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Item {...args} isDisabled tooltip="Available on the Enterprise plan">
+      Row-level security
+    </Item>
+    <Item
+      {...args}
+      qa="DisabledItemButton"
+      as="button"
+      isDisabled
+      icon={<IconUser />}
+      // `delay: 0` only so the snapshot does not depend on the open delay
+      tooltip={{
+        title: 'Only the workspace owner can transfer a project',
+        delay: 0,
+      }}
+    >
+      Transfer project
+    </Item>
+  </Space>
+);
+
+DisabledWithTooltip.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  // `TooltipProvider` wires the trigger up in a mount effect, so a hover fired
+  // before that lands is dropped with nothing to replay it.
+  await timeout(250);
+
+  // The `as="button"` item is the interesting one: it is the case where the
+  // native `disabled` attribute used to swallow this hover.
+  const item = await canvas.findByTestId('DisabledItemButton');
+
+  // React Aria opens a tooltip only when the last interaction came from a
+  // pointer, and it learns that from a mouse move — which the leading
+  // `unhover` provides. Without it the first hover of the page is ignored.
+  await userEvent.unhover(item);
+  await userEvent.hover(item);
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+};
+
+DisabledWithTooltip.args = {
+  width: '300px',
+};
+
+DisabledWithTooltip.parameters = {
+  docs: {
+    description: {
+      story:
+        'A disabled item keeps showing its tooltip, which is usually where the reason for being unavailable is written. The disabled state is expressed with `aria-disabled` in that case, because the native `disabled` attribute would stop the browser from dispatching the hover that opens the tooltip. The item stays inert either way.',
+    },
+  },
+};

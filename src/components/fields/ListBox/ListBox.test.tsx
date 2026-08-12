@@ -3,8 +3,10 @@ import { createRef } from 'react';
 import { Field, ListBox } from '../../../index';
 import {
   act,
+  hoverWithPointer,
   render,
   renderWithForm,
+  renderWithRoot,
   screen,
   userEvent,
   waitFor,
@@ -754,6 +756,31 @@ describe('<ListBox />', () => {
         '[data-element="Checkbox"]',
       );
       expect(checkboxElement).toBeInTheDocument();
+    });
+  });
+
+  describe('disabled options', () => {
+    it('should show the tooltip of a disabled option', async () => {
+      renderWithRoot(
+        <ListBox label="Select a fruit" disabledKeys={['banana']}>
+          <ListBox.Item key="apple">Apple</ListBox.Item>
+          <ListBox.Item key="banana" tooltip="Out of season">
+            Banana
+          </ListBox.Item>
+        </ListBox>,
+      );
+
+      const option = screen.getByRole('option', { name: 'Banana' });
+
+      expect(option).toHaveAttribute('aria-disabled', 'true');
+
+      // A disabled option is the case a tooltip is needed the most: it is where
+      // the reason the option cannot be picked is written.
+      await hoverWithPointer(option);
+
+      await waitFor(() => {
+        expect(screen.getByText('Out of season')).toBeInTheDocument();
+      });
     });
   });
 });

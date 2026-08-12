@@ -120,6 +120,73 @@ export const Interactive: StoryObj = {
 
 **Important:** Always import `userEvent` and `within` from `'storybook/test'` in story files. This ensures they respect Storybook's configuration (e.g., `testIdAttribute: 'data-qa'` set in `.storybook/preview.jsx`). Do NOT use `@testing-library/react` imports in stories.
 
+### Interaction-Only States Need a Play Function
+
+A state that only exists during an interaction — an open tooltip, a hover or focus style, an expanded
+overlay — is invisible to Chromatic unless a `play` function puts the story into it. Chromatic runs
+`play` before it snapshots, so the state it leaves behind is what gets captured and diffed. A story
+whose whole point is such a state must drive it:
+
+```tsx
+const timeout = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+export const DisabledWithTooltip: StoryFn<CubeButtonProps> = () => (
+  <Button
+    qa="DisabledButton"
+    isDisabled
+    // `delay: 0` only so the snapshot does not depend on the open delay
+    tooltip={{ title: 'Not enough permissions', delay: 0 }}
+  >
+    Delete project
+  </Button>
+);
+
+DisabledWithTooltip.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  // `TooltipProvider` wires the trigger up in a mount effect, so a hover fired
+  // before that lands is dropped with nothing to replay it.
+  await timeout(250);
+
+  const button = await canvas.findByTestId('DisabledButton');
+
+  // React Aria opens a tooltip only when the last interaction came from a
+  // pointer, and it learns that from a mouse move — which the leading
+  // `unhover` provides. Without it the first hover of the page is ignored.
+  await userEvent.unhover(button);
+  await userEvent.hover(button);
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+};
+```
+
+Every line of that recipe is load-bearing for a tooltip. Two independent things make a hover fired
+from `play` do nothing, and both fail silently — the story renders, the snapshot just shows no
+tooltip:
+
+- **The trigger is not wired yet.** `TooltipProvider` renders its child without trigger props until
+  its mount effect flips `rendered`. A hover that lands before that has no handler to reach, and
+  nothing replays it later. Wait ~250ms first (`timeout(250)`), as the other tooltip stories do.
+- **React Aria has no interaction modality yet.** It opens a tooltip only when the last interaction
+  came from a pointer, which it learns from a mouse move on the document. `userEvent.hover` fires
+  `mouseEnter` *before* its `mouseMove`, so the page's first hover is ignored. The leading `unhover`
+  moves the pointer over the body and supplies that move.
+
+Then:
+
+- Give the target a `qa` and find it with `findByTestId`, so the story does not depend on the order of
+  roles on the page.
+- Pass `delay: 0` in the tooltip config. The default 250ms open delay is real time the snapshot would
+  otherwise have to wait out, and it makes any retry racy.
+- End on an `await waitFor(...)` assertion for the state you want captured. It doubles as the wait
+  Chromatic needs — a snapshot taken before the overlay has mounted is a flaky diff.
+- Drive **one** element per story. Hovering a second one closes the first, and only the final state
+  is snapshotted, so a story showing several variants should hover the most interesting one.
+- Chromatic is the only real check on a `play` function: it fails the build with "component threw an
+  error during testing" when one throws. A local render test can pass while the story fails, because
+  the mount-effect timing above only shows up in Storybook.
+
 ## MDX Documentation Structure
 
 ```mdx

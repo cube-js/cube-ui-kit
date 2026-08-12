@@ -1,4 +1,12 @@
 export { chain } from './chain';
+export {
+  getDisabledElementProps,
+  omitActivationEventProps,
+} from './disabledProps';
+export type {
+  DisabledElementOptions,
+  DisabledElementProps,
+} from './disabledProps';
 export { forwardRefWithGenerics } from './forwardRefWithGenerics';
 export { isTextOnly } from './isTextOnly';
 export { mergeProps } from './mergeProps';

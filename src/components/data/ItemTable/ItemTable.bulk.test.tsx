@@ -1,4 +1,5 @@
 import {
+  hoverWithPointer,
   renderWithRoot,
   screen,
   userEvent,
@@ -147,8 +148,23 @@ describe('ItemTable bulk actions', () => {
     );
 
     await userEvent.click(rowBoxes()[0]);
+
+    // The disabled action carries the tooltip explaining why it cannot run, so
+    // it stays hoverable and is disabled through ARIA rather than the native
+    // attribute, which would make the browser drop that hover.
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Go' })).toBeDisabled(),
+      expect(screen.getByRole('button', { name: 'Go' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      ),
+    );
+
+    await hoverWithPointer(screen.getByRole('button', { name: 'Go' }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText('A running deployment cannot be deleted'),
+      ).toBeInTheDocument(),
     );
 
     await userEvent.click(rowBoxes()[0]);
@@ -156,6 +172,24 @@ describe('ItemTable bulk actions', () => {
 
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Go' })).not.toBeDisabled(),
+    );
+  });
+
+  it('uses the native attribute for a disabled action without a tooltip', async () => {
+    renderWithRoot(
+      <ItemTable
+        data={ROWS}
+        columns={COLUMNS}
+        bulkActions={actions({
+          isDisabled: (rows) => rows.some((row) => row.status === 'running'),
+        })}
+      />,
+    );
+
+    await userEvent.click(rowBoxes()[0]);
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Go' })).toBeDisabled(),
     );
   });
 
