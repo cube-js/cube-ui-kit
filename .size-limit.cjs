@@ -20,8 +20,21 @@ module.exports = [
         }),
       );
     },
-    // 490.30 kB in CI at the time of writing, up from 466.64 kB on the commit
-    // this branched from. The growth is `Pagination`, `ItemTable` (with its
+    // 495.09 kB in CI at the time of writing, 86 bytes over the previous
+    // 495 kB. Two things stack into that: `DataTable`'s column menu, adaptive
+    // column colors and column reordering, which left `main` itself ~300 bytes
+    // under the old budget, and the ~0.4 kB of disabled-state handling that
+    // lets `Item` and `Button` keep a tooltip hoverable. Raised to 497 kB.
+    //
+    // WATCH THE UNITS WHEN READING THE CI COMMENT. `size-limit` parses this
+    // `limit` with `bytes-iec`, where `kB` is decimal — `'495kB'` is 495,000
+    // bytes. The PR comment is formatted by `scripts/ci/measure-size.js` with
+    // the `bytes` package, whose `KB` is binary, so the same bundle reads as
+    // "483.48 KB" there. That is why a report can show a number well below the
+    // limit and still fail: 483.48 KiB is 495,084 bytes.
+    //
+    // Before this: 490.30 kB in CI, up from 466.64 kB on the commit that
+    // branched from. That growth was `Pagination`, `ItemTable` (with its
     // toolbar, search and bulk bar), `DataTable`, and the `TableBase` engine
     // they share.
     //
@@ -62,7 +75,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '495kB',
+    limit: '497kB',
   },
   {
     name: 'Tree shaking (just a Button)',
