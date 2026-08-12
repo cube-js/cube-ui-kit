@@ -468,3 +468,23 @@ CustomSize.parameters = {
     },
   },
 };
+
+export const DisabledWithTooltip: StoryFn<CubeButtonProps> = () => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Button isDisabled tooltip="Not enough permissions" type="primary">
+      Delete project
+    </Button>
+    <Button isDisabled tooltip="Nothing to export yet" icon={<IconCoin />}>
+      Export
+    </Button>
+  </Space>
+);
+
+DisabledWithTooltip.parameters = {
+  docs: {
+    description: {
+      story:
+        'A disabled button keeps showing its tooltip, which is usually where the reason for being unavailable is written. The disabled state is expressed with `aria-disabled` in that case, because the native `disabled` attribute would stop the browser from dispatching the hover that opens the tooltip. The button stays inert either way.',
+    },
+  },
+};

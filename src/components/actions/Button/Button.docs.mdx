@@ -188,7 +188,24 @@ import { IconPlus } from '@tabler/icons-react';
 <Button tooltip={true} width="100px">
   This text will be truncated
 </Button>;
+
+{
+  /* Explain why the button is unavailable */
+}
+<Button isDisabled tooltip="Not enough permissions">
+  Delete
+</Button>;
 ```
+
+A disabled button keeps showing its tooltip. Browsers stop dispatching mouse
+events on elements carrying the native `disabled` attribute, so a button that
+has a tooltip is marked with `aria-disabled` instead and kept inert: `onPress`
+never fires and clicks (including the ones Enter and Space produce) do nothing.
+Such a button also stays in the tab order, so keyboard users can focus it and
+read the tooltip. Buttons rendered as links (`to`) are always marked this way,
+since `disabled` is not a valid attribute on an anchor.
+
+<Story of={ButtonStories.DisabledWithTooltip} />
 
 ### Custom Size
 
@@ -221,6 +238,8 @@ import { IconPlus } from '@tabler/icons-react';
 
 - `aria-label`, `aria-labelledby` – Accessible name.
 - `aria-pressed` – Managed automatically when `isSelected` is used.
+- `aria-disabled` – Announces the disabled state whenever the native `disabled`
+  attribute cannot be used: on links, and on buttons that carry a tooltip.
 - Additional ARIA attributes supported by React Aria's `useButton`.
 
 ## Behaviour Inside Popovers

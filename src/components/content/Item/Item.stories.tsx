@@ -2631,3 +2631,33 @@ Disabled.parameters = {
     },
   },
 };
+
+export const DisabledWithTooltip: StoryFn<CubeItemProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Item {...args} isDisabled tooltip="Available on the Enterprise plan">
+      Row-level security
+    </Item>
+    <Item
+      {...args}
+      as="button"
+      isDisabled
+      icon={<IconUser />}
+      tooltip="Only the workspace owner can transfer a project"
+    >
+      Transfer project
+    </Item>
+  </Space>
+);
+
+DisabledWithTooltip.args = {
+  width: '300px',
+};
+
+DisabledWithTooltip.parameters = {
+  docs: {
+    description: {
+      story:
+        'A disabled item keeps showing its tooltip, which is usually where the reason for being unavailable is written. The disabled state is expressed with `aria-disabled` in that case, because the native `disabled` attribute would stop the browser from dispatching the hover that opens the tooltip. The item stays inert either way.',
+    },
+  },
+};

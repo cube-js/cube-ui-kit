@@ -402,7 +402,16 @@ By default, Item shows an auto tooltip when content overflows.
 >
   This shows custom tooltip only when text overflows
 </Item>
+
+{/* Explain why the item is unavailable */}
+<Item isDisabled tooltip="Available on the Enterprise plan">
+  Row-level security
+</Item>
 ```
+
+A disabled item keeps showing its tooltip — that is usually where the reason for being unavailable is written. Browsers stop dispatching mouse events on elements carrying the native `disabled` attribute, so an item that has a tooltip is marked with `aria-disabled` instead and kept inert: activation handlers are dropped and clicks (including the ones Enter and Space produce) do nothing.
+
+<Story of={ItemStories.DisabledWithTooltip} />
 
 ## Accessibility
 
@@ -422,7 +431,7 @@ By default, Item shows an auto tooltip when content overflows.
 ### ARIA Properties
 
 - `aria-label` - Provides accessible label when no visible label exists
-- `aria-disabled` - Indicates disabled state
+- `aria-disabled` - Indicates disabled state. The native `disabled` attribute is only added on top of it when the item renders as a form control (`as="button"`, for instance) and has no tooltip to keep hoverable
 - `aria-selected` - Indicates selection state when applicable
 - `tabIndex` - Controls focus behavior
 

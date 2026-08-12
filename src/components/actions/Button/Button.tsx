@@ -56,6 +56,7 @@ import {
 import { LoadingIcon } from '../../../icons';
 import {
   DynamicIcon,
+  getDisabledElementProps,
   mergeProps,
   resolveIcon,
   useDismissParentPopover,
@@ -544,10 +545,23 @@ export const Button = forwardRef(function Button(
     labelProps: finalLabelProps,
     labelRef,
     renderWithTooltip,
+    isTooltipActive,
   } = useAutoTooltip({
     tooltip,
     children,
     labelProps: undefined,
+  });
+
+  // A disabled button still has to be able to show its tooltip — that is
+  // usually where the reason for being unavailable is written. The native
+  // `disabled` attribute would make the browser drop the hover that opens it,
+  // so when a tooltip is present the button is marked `aria-disabled` and kept
+  // inert instead. The attribute is skipped for links too, where it is not
+  // valid markup and `aria-disabled` is the only thing announcing the state.
+  const { isNativelyDisabled, inertProps } = getDisabledElementProps({
+    isDisabled: isDisabledElement,
+    keepEvents: isTooltipActive,
+    as: typeof actionProps.as === 'string' ? actionProps.as : undefined,
   });
 
   // Render function that creates the button element
@@ -590,10 +604,10 @@ export const Button = forwardRef(function Button(
     return (
       <ButtonElement
         download={download}
-        {...mergeProps(actionProps, tooltipTriggerProps || {})}
+        {...mergeProps(actionProps, tooltipTriggerProps || {}, inertProps)}
         ref={handleRef}
         mods={{ ...actionProps.mods, ...modifiers }}
-        disabled={isDisabledElement}
+        disabled={isNativelyDisabled}
         variant={`${theme}.${effectiveType ?? 'outline'}` as ButtonVariant}
         data-theme={theme}
         data-type={effectiveType ?? 'outline'}

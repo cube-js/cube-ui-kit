@@ -1,6 +1,13 @@
 import { IconCopy } from '@tabler/icons-react';
 
-import { render, screen } from '../../../test';
+import {
+  hoverWithPointer,
+  render,
+  renderWithRoot,
+  screen,
+  userEvent,
+  waitFor,
+} from '../../../test';
 
 import { Button } from './Button';
 
@@ -83,5 +90,83 @@ describe('<Button />', () => {
     expect(spy).not.toHaveBeenCalled();
 
     spy.mockRestore();
+  });
+
+  describe('disabled state', () => {
+    it('should use the native attribute when there is no tooltip', () => {
+      render(<Button isDisabled>Label</Button>);
+
+      expect(screen.getByRole('button')).toBeDisabled();
+    });
+
+    it('should show the tooltip while disabled', async () => {
+      renderWithRoot(
+        <Button isDisabled tooltip="Not enough permissions">
+          Label
+        </Button>,
+      );
+
+      const button = screen.getByRole('button');
+
+      // The native attribute makes the browser drop the events the tooltip
+      // trigger listens to, so a disabled button with a tooltip is marked
+      // with `aria-disabled` instead.
+      expect(button).not.toBeDisabled();
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+      expect(button).toHaveAttribute('data-disabled');
+
+      await hoverWithPointer(button);
+
+      await waitFor(() => {
+        expect(screen.getByText('Not enough permissions')).toBeInTheDocument();
+      });
+    });
+
+    it('should stay inert while disabled with a tooltip', async () => {
+      const onPress = vi.fn();
+
+      renderWithRoot(
+        <Button isDisabled tooltip="Not enough permissions" onPress={onPress}>
+          Label
+        </Button>,
+      );
+
+      await userEvent.click(screen.getByRole('button'));
+
+      expect(onPress).not.toHaveBeenCalled();
+    });
+
+    it('should let the keyboard reach the tooltip while disabled', async () => {
+      renderWithRoot(
+        <Button isDisabled tooltip="Not enough permissions">
+          Label
+        </Button>,
+      );
+
+      // Staying in the tab order is the point: the tooltip carries the reason
+      // the button is unavailable, so keyboard users have to be able to read it.
+      await userEvent.tab();
+
+      expect(screen.getByRole('button')).toHaveFocus();
+
+      await waitFor(() => {
+        expect(screen.getByText('Not enough permissions')).toBeInTheDocument();
+      });
+    });
+
+    it('should mark a disabled link with aria-disabled', () => {
+      render(
+        <Button isDisabled to="/somewhere" qa="Link">
+          Label
+        </Button>,
+      );
+
+      // `disabled` is not a valid attribute on an anchor, so the state can only
+      // be announced through ARIA.
+      const link = screen.getByTestId('Link');
+
+      expect(link).toHaveAttribute('aria-disabled', 'true');
+      expect(link).not.toHaveAttribute('disabled');
+    });
   });
 });

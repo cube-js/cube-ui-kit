@@ -67,7 +67,13 @@ import {
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { DynamicIcon, mergeProps, resolveIcon } from '../../../utils/react';
+import {
+  DynamicIcon,
+  getDisabledElementProps,
+  mergeProps,
+  omitActivationEventProps,
+  resolveIcon,
+} from '../../../utils/react';
 import { ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
@@ -231,6 +237,13 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * @default "top"
    */
   defaultTooltipPlacement?: OverlayProps['placement'];
+  /**
+   * @private
+   * The native `disabled` attribute, which `useAction` forwards through
+   * `ItemButton`. Treated as an alias of `isDisabled` so that the item stays
+   * the only place deciding how the disabled state reaches the DOM.
+   */
+  disabled?: boolean;
   /**
    * Ref to access the label element directly
    */
@@ -620,6 +633,10 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     hotkeys,
     tooltip = true,
     isDisabled,
+    // `useAction` (through `ItemButton`) hands the native attribute down as
+    // well. Fold it into the disabled state so this component stays the only
+    // place deciding how that state reaches the DOM.
+    disabled: nativeDisabledProp,
     style,
     loadingSlot = 'auto',
     isLoading = false,
@@ -651,9 +668,11 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   // Set default shape based on type
   const finalShape = shape ?? (type === 'card' ? 'card' : 'button');
 
+  const isDisabledProp = isDisabled ?? (nativeDisabledProp || undefined);
+
   // Loading state makes the component disabled
   const finalIsDisabled =
-    isDisabled === true || (isLoading && isDisabled !== false);
+    isDisabledProp === true || (isLoading && isDisabledProp !== false);
 
   // Validate type+theme combinations
   const STANDARD_THEMES = [
@@ -893,11 +912,23 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     labelProps: finalLabelProps,
     labelRef,
     renderWithTooltip,
+    isTooltipActive,
   } = useAutoTooltip({
     tooltip,
     children,
     labelProps,
     isDynamicLabel: !!actions,
+  });
+
+  // A disabled item still has to be able to show its tooltip — that is usually
+  // where the reason for being unavailable is written. The native `disabled`
+  // attribute would make the browser drop the hover that opens it, so when a
+  // tooltip is present the item is marked `aria-disabled` and kept inert
+  // instead.
+  const { isNativelyDisabled, isInert, inertProps } = getDisabledElementProps({
+    isDisabled: finalIsDisabled,
+    keepEvents: isTooltipActive,
+    as: (rest as { as?: string }).as,
   });
 
   // Process children with highlight if applicable
@@ -959,7 +990,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
             ? (`${effectiveType === 'header' ? 'default' : theme}.${effectiveType === 'header' ? 'item' : effectiveType}` as ItemVariant)
             : undefined
         }
-        disabled={finalIsDisabled}
+        disabled={isNativelyDisabled}
         aria-disabled={finalIsDisabled}
         aria-selected={isSelected}
         mods={finalMods}
@@ -969,7 +1000,11 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           ...(sizeTokenValue ? { $size: sizeTokenValue } : {}),
         }}
         type={htmlType as any}
-        {...mergeProps(rest, tooltipTriggerProps || {})}
+        {...mergeProps(
+          isInert ? omitActivationEventProps(rest) : rest,
+          tooltipTriggerProps || {},
+          inertProps,
+        )}
         style={style}
       >
         {hasIconSlot && (
