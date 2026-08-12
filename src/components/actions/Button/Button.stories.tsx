@@ -14,6 +14,9 @@ import { Space } from '../../layout/Space';
 
 import { Button, CubeButtonProps } from './Button';
 
+const timeout = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
 export default {
   title: 'Actions/Button',
   component: Button,
@@ -475,7 +478,8 @@ export const DisabledWithTooltip: StoryFn<CubeButtonProps> = () => (
     <Button
       qa="DisabledButton"
       isDisabled
-      tooltip="Not enough permissions"
+      // `delay: 0` only so the snapshot does not depend on the open delay
+      tooltip={{ title: 'Not enough permissions', delay: 0 }}
       type="primary"
     >
       Delete project
@@ -488,6 +492,11 @@ export const DisabledWithTooltip: StoryFn<CubeButtonProps> = () => (
 
 DisabledWithTooltip.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
+
+  // `TooltipProvider` wires the trigger up in a mount effect, so a hover fired
+  // before that lands is dropped with nothing to replay it.
+  await timeout(250);
+
   const button = await canvas.findByTestId('DisabledButton');
 
   // React Aria opens a tooltip only when the last interaction came from a

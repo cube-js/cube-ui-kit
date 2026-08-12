@@ -2643,7 +2643,11 @@ export const DisabledWithTooltip: StoryFn<CubeItemProps> = (args) => (
       as="button"
       isDisabled
       icon={<IconUser />}
-      tooltip="Only the workspace owner can transfer a project"
+      // `delay: 0` only so the snapshot does not depend on the open delay
+      tooltip={{
+        title: 'Only the workspace owner can transfer a project',
+        delay: 0,
+      }}
     >
       Transfer project
     </Item>
@@ -2652,10 +2656,15 @@ export const DisabledWithTooltip: StoryFn<CubeItemProps> = (args) => (
 
 DisabledWithTooltip.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  const item = await canvas.findByTestId('DisabledItemButton');
+
+  // `TooltipProvider` wires the trigger up in a mount effect, so a hover fired
+  // before that lands is dropped with nothing to replay it.
+  await timeout(250);
 
   // The `as="button"` item is the interesting one: it is the case where the
   // native `disabled` attribute used to swallow this hover.
+  const item = await canvas.findByTestId('DisabledItemButton');
+
   // React Aria opens a tooltip only when the last interaction came from a
   // pointer, and it learns that from a mouse move — which the leading
   // `unhover` provides. Without it the first hover of the page is ignored.
