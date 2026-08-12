@@ -11,7 +11,11 @@ import { VisuallyHidden } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
-import { MoreIcon, UpIcon } from '../../../icons';
+import {
+  ArrowNarrowDownIcon,
+  ArrowNarrowUpIcon,
+  MoreIcon,
+} from '../../../icons';
 import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
 import { usePaletteVersion } from '../../../tokens/palette-config';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
@@ -1048,6 +1052,14 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
     // The arrow keeps its slot even when unsorted, so turning a sort on and off
     // never shifts the label.
+    //
+    // Two glyphs rather than one flipped with `scale`. A narrow arrow flipped
+    // vertically does land on its own opposite, but rendering the real icon is
+    // what keeps that true — a glyph that is not perfectly symmetric would come
+    // out subtly wrong, and nothing would say why.
+    //
+    // Unsorted shows the UP arrow, because that is what the first press gives:
+    // the hint predicts the press rather than advertising that one is possible.
     const sortIndicator = isSortable ? (
       <div
         data-element="SortIndicator"
@@ -1056,7 +1068,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-dir={activeSort?.direction}
         aria-hidden="true"
       >
-        <UpIcon />
+        {activeSort?.direction === 'desc' ? (
+          <ArrowNarrowDownIcon />
+        ) : (
+          <ArrowNarrowUpIcon />
+        )}
       </div>
     ) : null;
 

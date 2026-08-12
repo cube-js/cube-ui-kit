@@ -739,3 +739,33 @@ describe('DataTable rowSize', () => {
     expect(headerHeight()).toBe(before);
   });
 });
+
+describe('DataTable sort indicator', () => {
+  const SORTABLE = COLUMNS.map((column) => ({ ...column, isSortable: true }));
+  const glyph = () => {
+    const svg = grid().querySelector(
+      'thead [data-key="region"] [data-element="SortIndicator"] svg',
+    );
+
+    return svg?.getAttribute('class')?.match(/tabler-icon-[\w-]+/)?.[0] ?? null;
+  };
+
+  it.each([
+    [null, 'tabler-icon-arrow-narrow-up'],
+    ['asc', 'tabler-icon-arrow-narrow-up'],
+    ['desc', 'tabler-icon-arrow-narrow-down'],
+  ] as const)('renders %s as %s', (direction, expected) => {
+    renderWithRoot(
+      <DataTable
+        data={ROWS}
+        columns={SORTABLE}
+        sorts={direction ? [{ columnKey: 'region', direction }] : []}
+      />,
+    );
+
+    // The real down glyph for `desc`, not the up one flipped with `scale`. An
+    // asymmetric icon would come out subtly wrong under a flip, and the unsorted
+    // hint shows UP because that is what the first press gives.
+    expect(glyph()).toBe(expected);
+  });
+});

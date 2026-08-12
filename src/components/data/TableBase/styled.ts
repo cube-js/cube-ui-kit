@@ -659,10 +659,11 @@ export const TableElement = tasty({
         '': '$sort-hint',
         '@own(sorted)': 1,
       },
-      // `scale` rather than `rotate`: a chevron flipped by 180° reads as the
-      // same glyph moved, which is harder to track than one that flips.
-      scale: { '': '1 1', '@own(dir=desc)': '1 -1' },
-      transition: 'opacity, scale',
+      // No `scale` flip any more: `TableView` renders the real
+      // `ArrowNarrowDownIcon` for `desc` rather than turning the up arrow over,
+      // so there is no transform left to animate. `opacity` still is — that is
+      // the hover hint fading in.
+      transition: 'opacity',
     },
 
     /* ── body ─────────────────────────────────────────────────────────── */
