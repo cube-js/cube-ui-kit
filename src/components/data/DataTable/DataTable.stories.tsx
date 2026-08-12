@@ -509,8 +509,12 @@ export const RowSize: Story = {
           </Text>
           <DataTable<ResultRow>
             {...args}
+            // Overrides the meta's `height`. An unbounded table sizes to its
+            // content, so each one here is exactly its header plus five rows —
+            // which is the only way the three are comparable. A fixed height
+            // pads the short one with dead space and scrolls the tall one.
+            height={undefined}
             rowSize={rowSize}
-            height="200px"
             paginationMode="off"
             data={ROWS.slice(0, 5)}
           />
