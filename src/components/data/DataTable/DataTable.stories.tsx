@@ -105,6 +105,11 @@ const meta: Meta<typeof DataTable> = {
   argTypes: {
     data: { control: { type: null } },
     columns: { control: { type: null } },
+    rowSize: {
+      control: 'radio',
+      options: ['small', 'medium', 'large'],
+      description: 'Row height: 28px / 32px / 40px.',
+    },
     isColumnReorderable: {
       control: 'boolean',
       description: 'Drag column headers sideways to reorder them.',
@@ -484,4 +489,33 @@ export const ColumnColorScope: Story = {
           : column,
     ),
   },
+};
+
+/**
+ * `rowSize` sets the row height to a named step — `small` 28px, `medium` 32px,
+ * `large` 40px — without touching the header, which keeps answering to `size`.
+ *
+ * Unset, the height comes from `size` as it always did; at this table's default
+ * that is the same 32px `medium` gives. Reach for `rowHeight` when none of the
+ * three is the answer.
+ */
+export const RowSize: Story = {
+  render: (args) => (
+    <Flow gap="2x">
+      {(['small', 'medium', 'large'] as const).map((rowSize) => (
+        <Flow key={rowSize} gap=".5x">
+          <Text preset="t3m">
+            {rowSize} — {{ small: 28, medium: 32, large: 40 }[rowSize]}px
+          </Text>
+          <DataTable<ResultRow>
+            {...args}
+            rowSize={rowSize}
+            height="200px"
+            paginationMode="off"
+            data={ROWS.slice(0, 5)}
+          />
+        </Flow>
+      ))}
+    </Flow>
+  ),
 };

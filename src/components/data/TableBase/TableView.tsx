@@ -14,6 +14,7 @@ import { useI18n } from '../../../i18n';
 import { MoreIcon, UpIcon } from '../../../icons';
 import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
 import { usePaletteVersion } from '../../../tokens/palette-config';
+import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { Action } from '../../actions/Action/Action';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
@@ -72,6 +73,7 @@ import type {
   CubeTableLoadingIndicator,
   CubeTableRowContext,
   CubeTableRowSection,
+  CubeTableRowSize,
   CubeTableSort,
   CubeTableSortDirection,
 } from './types';
@@ -104,6 +106,14 @@ export interface TableViewProps<T = any> {
 
   size?: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge';
   shape?: 'plain' | 'card';
+  /**
+   * Row height as a named step — 28px / 32px / 40px.
+   *
+   * Only the rows: the header keeps whatever `size` gives it. Unset, the height
+   * falls through to `size` as before. `rowHeight` wins over both, being the
+   * most specific answer.
+   */
+  rowSize?: CubeTableRowSize;
   rowHeight?: number;
   headerHeight?: number;
   isHeaderHidden?: boolean;
@@ -398,6 +408,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     rootRef,
     size = 'medium',
     shape = 'plain',
+    rowSize,
     rowHeight,
     headerHeight,
     isHeaderHidden = false,
@@ -474,6 +485,15 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   const { columns } = layout;
   const columnCount = columns.length;
+
+  /**
+   * `rowSize` resolved to the size scale, or `null` when it was not given.
+   *
+   * Both halves come from `SIZE_NAME_TO_KEY` rather than being written out
+   * twice: the CSS keeps the token so it follows the scale, and the virtualizer
+   * needs the number, and the two must not drift.
+   */
+  const rowSizeKey = rowSize ? SIZE_NAME_TO_KEY[rowSize] : null;
   // Only the trailing draggable column carries an `after` indicator; every other
   // gap is covered by the next column's `before` one.
   const lastDraggableKey = isColumnReorderable
@@ -590,7 +610,12 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       ...(cellStyles || tints.cellStyles
         ? { Cell: { ...tints.cellStyles, ...cellStyles } }
         : null),
-      ...(rowHeight != null ? { '$row-height': `${rowHeight}px` } : null),
+      // `rowHeight` first — an exact px answer beats a named step.
+      ...(rowHeight != null
+        ? { '$row-height': `${rowHeight}px` }
+        : rowSizeKey
+          ? { '$row-height': `$size-${rowSizeKey.toLowerCase()}` }
+          : null),
       ...(headerHeight != null
         ? { '$header-height': `${headerHeight}px` }
         : null),
@@ -604,6 +629,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       bodyStyles,
       rowStyles,
       cellStyles,
+      rowSizeKey,
       rowHeight,
       headerHeight,
       tints,
@@ -1604,7 +1630,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     getScrollElement: () => scrollerRef.current,
     getItemKey: (index) => String(getRowKey(rowsRef.current[index], index)),
     estimateSize: () =>
-      (rowHeight ?? ESTIMATED_ROW_HEIGHT[size ?? 'medium']) + 1,
+      (rowHeight ??
+        (rowSizeKey
+          ? SIZES[rowSizeKey]
+          : ESTIMATED_ROW_HEIGHT[size ?? 'medium'])) + 1,
     measureElement: (element) => element.getBoundingClientRect().height,
     // Rows beyond each viewport edge. Higher than a list's, because a fast
     // flick outruns React's re-render and the gap shows as blank rows — and a

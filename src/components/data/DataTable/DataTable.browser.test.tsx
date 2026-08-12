@@ -671,3 +671,68 @@ describe('DataTable column colors', () => {
     );
   });
 });
+
+/**
+ * `rowSize` in the only tier that can measure a rendered row.
+ *
+ * jsdom can assert which token won, but every element there is zero-sized, so it
+ * cannot tell whether `$size-sm` actually lands as 28px of row.
+ */
+describe('DataTable rowSize', () => {
+  const rowPx = () =>
+    Math.round(
+      grid()
+        .querySelector<HTMLElement>(
+          'tbody tr[data-element="Row"]:not([data-pinned]) td',
+        )!
+        .getBoundingClientRect().height,
+    );
+  const headerPx = () =>
+    Math.round(
+      grid()
+        .querySelector<HTMLElement>('thead th[data-element="HeaderCell"]')!
+        .getBoundingClientRect().height,
+    );
+
+  async function mount(props: Record<string, any>) {
+    renderWithRoot(
+      <DataTable
+        data={ROWS.slice(0, 5)}
+        columns={COLUMNS}
+        height="300px"
+        width="700px"
+        paginationMode="off"
+        {...props}
+      />,
+    );
+
+    await vi.waitFor(() => expect(rowPx()).toBeGreaterThan(0));
+  }
+
+  // The separator is added on top of the content box — see `CELL_STYLES.height`,
+  // where a cell is `($row-height + 1bw)`.
+  it.each([
+    ['small', 29],
+    ['medium', 33],
+    ['large', 41],
+  ] as const)(
+    'renders %s rows at %spx including the separator',
+    async (rowSize, expected) => {
+      await mount({ rowSize });
+
+      expect(rowPx()).toBe(expected);
+    },
+  );
+
+  it('leaves the header where `size` put it', async () => {
+    await mount({});
+
+    const before = headerPx();
+
+    document.body.innerHTML = '';
+    await mount({ rowSize: 'large' });
+
+    expect(rowPx()).toBe(41);
+    expect(headerPx()).toBe(before);
+  });
+});

@@ -4,6 +4,14 @@ import type { ReactNode } from 'react';
 import type { CubeItemProps } from '../../content/Item';
 
 export type CubeTableSortDirection = 'asc' | 'desc';
+/**
+ * Named row heights: 28px, 32px and 40px.
+ *
+ * A subset of the kit's size scale, and the same three steps `size` would give —
+ * but `rowSize` moves only the ROWS. `size` also drives the header, so reaching
+ * for a denser body through it drags the header down too.
+ */
+export type CubeTableRowSize = 'small' | 'medium' | 'large';
 export type CubeTableAlign = 'start' | 'center' | 'end';
 export type CubeTableRowSection = 'body' | 'pinnedTop' | 'pinnedBottom';
 

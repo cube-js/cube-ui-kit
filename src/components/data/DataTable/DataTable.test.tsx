@@ -671,3 +671,71 @@ describe('DataTable', () => {
     ).toBeGreaterThan(0);
   });
 });
+
+describe('DataTable rowSize', () => {
+  /** The effective row-height token, after the state maps have been resolved. */
+  const rowHeight = () =>
+    getComputedStyle(grid()).getPropertyValue('--row-height').trim();
+  const headerHeight = () =>
+    getComputedStyle(grid()).getPropertyValue('--header-height').trim();
+
+  it('leaves the height to `size` when unset', () => {
+    renderWithRoot(<DataTable data={ROWS} columns={COLUMNS} />);
+
+    // `size` defaults to `small`, whose row step is `$size-md` — 32px. `rowSize`
+    // is a named override, not a new default, so an unset one changes nothing.
+    expect(rowHeight()).toBe('var(--size-md)');
+  });
+
+  it.each([
+    ['small', 'sm'],
+    ['medium', 'md'],
+    ['large', 'lg'],
+  ] as const)('maps %s onto $size-%s', (rowSize, step) => {
+    renderWithRoot(
+      <DataTable data={ROWS} columns={COLUMNS} rowSize={rowSize} />,
+    );
+
+    // The token rather than a literal, so the height follows the size scale
+    // instead of freezing today's pixel value.
+    expect(rowHeight()).toBe(`var(--size-${step})`);
+  });
+
+  it('overrides the height `size` would have given', () => {
+    renderWithRoot(
+      <DataTable data={ROWS} columns={COLUMNS} size="large" rowSize="medium" />,
+    );
+
+    // `size="large"` alone is `$size-xl`; `rowSize` has to win, or the prop is
+    // decorative on any table that also sets `size`.
+    expect(rowHeight()).toBe('var(--size-md)');
+  });
+
+  it('lets an exact rowHeight win over the named step', () => {
+    renderWithRoot(
+      <DataTable
+        data={ROWS}
+        columns={COLUMNS}
+        rowSize="small"
+        rowHeight={52}
+      />,
+    );
+
+    expect(rowHeight()).toBe('52px');
+  });
+
+  it('moves the rows without moving the header', () => {
+    const { unmount } = renderWithRoot(
+      <DataTable data={ROWS} columns={COLUMNS} />,
+    );
+    const before = headerHeight();
+
+    unmount();
+    renderWithRoot(<DataTable data={ROWS} columns={COLUMNS} rowSize="large" />);
+
+    // The header answers to `size`, which is the whole reason `rowSize` exists
+    // as its own prop rather than being folded into it.
+    expect(rowHeight()).toBe('var(--size-lg)');
+    expect(headerHeight()).toBe(before);
+  });
+});

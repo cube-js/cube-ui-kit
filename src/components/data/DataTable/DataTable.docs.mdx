@@ -69,7 +69,8 @@ and everything it knows about the query, in Cloud.
 
 - **`shape`** `'plain' | 'card'` (default: `'plain'`)
 - **`size`** `SizeName` (default: `'small'`) — An analytical grid packs more rows than a list.
-- **`rowHeight`** `number` — Overrides the height implied by `size`.
+- **`rowSize`** `'small' | 'medium' | 'large'` — Row height as a named step: 28px / 32px / 40px. Rows only; the header keeps answering to `size`. Unset, the height comes from `size`.
+- **`rowHeight`** `number` — An exact height, when none of the named steps is the answer. Wins over both `rowSize` and `size`.
 - **`headerHeight`** `number`
 - **`isStriped`** `boolean` (default: `true`) — Banding is what makes a wide row readable across.
 - **`isHeaderHidden`** `boolean`

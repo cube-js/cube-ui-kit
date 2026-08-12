@@ -79,6 +79,7 @@ function DataTable<T = any>(
     // Denser than `ItemTable`'s `medium`: a result grid is read as a block, and
     // more rows on screen is the point of it.
     size = 'small',
+    rowSize,
     rowHeight,
     headerHeight,
     isStriped = true,
@@ -486,6 +487,7 @@ function DataTable<T = any>(
       isFiltered={isFiltered}
       shape={shape}
       size={size}
+      rowSize={rowSize}
       rowHeight={rowHeight}
       headerHeight={headerHeight}
       isStriped={isStriped}

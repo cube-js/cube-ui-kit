@@ -18,6 +18,7 @@ export type {
   CubeTableHeaderContext,
   CubeTableRowContext,
   CubeTableRowSection,
+  CubeTableRowSize,
   CubeTableSort,
   CubeTableSortDirection,
 } from './TableBase';

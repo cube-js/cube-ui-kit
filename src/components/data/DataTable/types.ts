@@ -9,6 +9,7 @@ import type {
   CubeTableLoadingIndicator,
   CubeTableRowContext,
   CubeTableRowSection,
+  CubeTableRowSize,
   CubeTableSort,
 } from '../TableBase/types';
 
@@ -58,6 +59,18 @@ export interface CubeDataTableProps<T = any>
   shape?: 'plain' | 'card';
   /** @default 'small' — an analytical grid packs more rows than a list. */
   size?: SizeName;
+  /**
+   * Row height as a named step: `small` 28px, `medium` 32px, `large` 40px.
+   *
+   * Only the rows — the header keeps whatever `size` gives it, so a denser body
+   * does not drag the header down with it. `rowHeight` wins when both are set.
+   *
+   * Unset, the row height comes from `size` as before, which at this table's
+   * default (`size="small"`) is the same 32px `medium` gives. They diverge only
+   * if you also move `size`: `size="large"` alone is 48px rows.
+   */
+  rowSize?: CubeTableRowSize;
+  /** An exact height in px, when none of the named steps is the answer. */
   rowHeight?: number;
   headerHeight?: number;
   /** @default true — banding is what makes a wide row readable across. */
