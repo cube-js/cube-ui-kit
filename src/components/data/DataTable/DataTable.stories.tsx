@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
 
+import { Button } from '../../actions/Button';
 import { Menu } from '../../actions/Menu';
 import { Text } from '../../content/Text';
 import { Flow } from '../../layout/Flow';
+import { Space } from '../../layout/Space';
 import { columnSortMenu } from '../TableBase/column-menu';
 
 import { DataTable } from './DataTable';
@@ -69,6 +71,9 @@ const COLUMNS: CubeDataTableColumn<ResultRow>[] = [
       }),
   },
 ];
+
+/** Namespaced by `useTableStorage` as `cube-ui-kit:table:${key}`. */
+const STORAGE_KEY = 'datatable-columns-demo';
 
 const TOTALS: ResultRow[] = [
   {
@@ -347,13 +352,24 @@ export const ColumnMenu: Story = {
 export const ColumnReordering: Story = {
   render: (args) => {
     const [order, setOrder] = useState<string[] | undefined>();
+    // Two columns deliberately opt out, by the two different routes. Their
+    // titles say so: the prose above only renders in Docs mode, and a header
+    // that silently refuses to move reads as a bug rather than a demo.
     const columns = useMemo(
       () =>
         COLUMNS.map((column) =>
           column.key === 'region'
-            ? { ...column, pin: 'start' as const }
+            ? {
+                ...column,
+                title: 'Region (pinned)',
+                pin: 'start' as const,
+              }
             : column.key === 'channel'
-              ? { ...column, isReorderable: false }
+              ? {
+                  ...column,
+                  title: 'Channel (locked)',
+                  isReorderable: false,
+                }
               : column,
         ),
       [],
@@ -382,9 +398,44 @@ export const ColumnReordering: Story = {
  *
  * Only uncontrolled state is stored: a controlled `columnOrder` belongs to the
  * page, and persisting it would fight the page's own source of truth.
+ *
+ * This story really does write to `localStorage`, so it will remember whatever
+ * you do to it — hence the reset button, which is not part of the feature.
  */
 export const PersistedColumnLayout: Story = {
-  args: { isColumnReorderable: true, storageKey: 'datatable-columns-demo' },
+  render: (args) => {
+    // Remounts the table, so it re-reads storage: `useTableStorage` snapshots
+    // at mount on purpose, so a second table sharing the key cannot yank this
+    // one's layout mid-session.
+    const [instance, setInstance] = useState(0);
+
+    return (
+      <Flow gap="1x">
+        <DataTable<ResultRow>
+          {...args}
+          key={instance}
+          isColumnReorderable
+          storageKey={STORAGE_KEY}
+        />
+        <Space gap="1x" placeItems="center start">
+          <Button
+            size="small"
+            onPress={() => {
+              window.localStorage.removeItem(
+                `cube-ui-kit:table:${STORAGE_KEY}`,
+              );
+              setInstance((n) => n + 1);
+            }}
+          >
+            Reset stored layout
+          </Button>
+          <Text color="#dark-03">
+            Drag a header or a resize handle, then reload the preview.
+          </Text>
+        </Space>
+      </Flow>
+    );
+  },
 };
 
 /**
