@@ -250,21 +250,30 @@ export const TableElement = tasty({
       // Dimming only the rows left the header at full strength, which read as
       // though the columns were current and only the data was not.
       opacity: { '': 1, stale: 0.5 },
+      // `#black` throughout, but only its ALPHA is doing anything: a gradient
+      // mask defaults to `mask-mode: alpha`, so the colour channel is discarded
+      // and `#black.4` is simply "40% through". Any opaque token would render
+      // identically — `#black` is the conventional way to write it.
       maskImage: {
         '': 'none',
         stale:
-          'linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 35%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,1) 65%, rgba(0,0,0,1) 100%)',
+          'linear-gradient(90deg, #black 0%, #black 35%, #black.4 50%, #black 65%, #black 100%)',
         // A flat, fully opaque mask is a no-op, so there is nothing to sweep —
         // the table still fades, it just does not move. A loading state can
         // last a long time, and this one would otherwise animate continuously
         // beside the data with no way to stop it. Written as its own gradient
         // rather than `none` so it cannot merge with the default above.
         '@media(prefers-reduced-motion)':
-          'linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 100%)',
+          'linear-gradient(90deg, #black 0%, #black 100%)',
       },
       // Three times the width, so the band is a third of the table and there is
       // an opaque stretch either side of it. The default `repeat` tiles
       // seamlessly, both ends of the gradient being fully opaque.
+      //
+      // oxlint's `tasty(known-property)` flags this — its property list has
+      // `maskImage` but not `maskSize`, in either spelling. Tasty passes an
+      // unknown key through as raw CSS, so it emits fine: verified computing to
+      // `300% 100%` with the sweep running. The warning is the linter's gap.
       maskSize: '300% 100%',
       animation: {
         '': 'none',
