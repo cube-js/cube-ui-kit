@@ -31,11 +31,11 @@ value so this stays true.
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | `hue`                        | **Accent** hue in degrees — the brand. Drives the `accent-*` family, `primary` / `purple` / `special`, and the brand-tinted `focus`, loading faces and disabled chip. | `280.3`                             |
 | `baseHue`                    | **Base** hue in degrees — the neutral chrome: `surface` and its ladder, the `surface-text*` ramp, `border`, `placeholder`.                                            | inherits `hue`                      |
-| `saturation`                 | Seed saturation (0–100) for the `default` theme, and the fallback for every theme that sets none.                                                                     | `80`                                |
+| `saturation`                 | Seed saturation (0–100) for the `default` theme, and the fallback for every theme that sets none.                                                                     | `100`                               |
 | `themes.<status>.hue`        | Hue for `success` / `danger` / `warning` / `note`.                                                                                                                    | `156.9` / `23.1` / `84.3` / `302.3` |
 | `themes.<status>.saturation` | Saturation for that status theme.                                                                                                                                     | inherits `saturation`               |
-| `themes.code.saturation`     | Saturation for the `code-*` syntax family. Hues are fixed, and this does **not** inherit `saturation`.                                                                | `80`                                |
-| `pastel`                     | Global. Relaxes the sRGB-safe chroma limit. Every theme except `code`.                                                                                                | `false`                             |
+| `themes.code.saturation`     | Saturation for the `code-*` syntax family. Hues are fixed, and this does **not** inherit `saturation`, nor track its default.                                         | `80`                                |
+| `pastel`                     | Global. Relaxes the sRGB-safe chroma limit. Every theme except `code`.                                                                                                | `true`                              |
 | `contrastLevel`              | Global. `'auto'`, or a manual `0`–`100` level.                                                                                                                        | `'auto'`                            |
 
 ### The setter replaces
@@ -107,9 +107,12 @@ Syntax colors are their own theme with their own seed, so neither the brand hue 
 the palette saturation reaches them. Hues are absolute literals — a brand re-seeded
 toward green would otherwise collide `code-string` with `code-number` (156°) — and
 the saturation is fixed at `80` rather than inheriting, so muting the app cannot
-wash out a code block. `pastel` skips them for the same reason: it lowers the chroma
-ceiling far enough to take `code-keyword` from ~0.19 to ~0.07, collapsing the spread
-that keeps the syntax hues apart.
+wash out a code block. That `80` is its own constant (`DEFAULT_CODE_SATURATION`),
+deliberately not the palette default it once shared a value with: the app seed moved
+to `100` with the pastel palette and the syntax colors stayed put, which is the whole
+point of them not inheriting. `pastel` skips them for the same reason: it lowers
+the chroma ceiling far enough to take `code-keyword` from ~0.19 to ~0.07,
+collapsing the spread that keeps the syntax hues apart.
 
 So `themes.code.saturation` is the only thing that moves them. Tune it on its own:
 
@@ -123,7 +126,8 @@ and saturation are pinned.
 
 That separate seed is also a hard requirement, not a preference: a Glaze colour can
 never exceed its own theme seed, and four of these sit at factor `1.0`. Inside a
-default theme seeded below 80 they simply could not hold their chroma.
+default theme seeded below `80` they simply could not hold their chroma — which is
+also why the pinned seed is a floor to respect rather than a number to tidy up.
 
 ### Inherited vs pinned
 
@@ -147,7 +151,7 @@ setPaletteConfig(({ baseHue, ...config }) => config);
 An explicit `baseHue: undefined` is equivalent to omitting it; neither is a value.
 
 `getPaletteConfig()` resolves everything, which loses that distinction — it cannot
-tell you whether `80` was chosen or inherited. `getPaletteConfigInput()` returns the
+tell you whether `100` was chosen or inherited. `getPaletteConfigInput()` returns the
 sparse config as set, which is what a settings UI needs to render an inherited value
 as inherited and offer a way back:
 
@@ -351,11 +355,14 @@ and not per request:
 
 ## Caveats
 
-**`pastel: true` is a redesign, not a filter.** It changes every resolved color
-outside the `code-*` family. The per-color saturation factors in this palette were
-tuned for the non-pastel space — pastel equalizes chroma across hues, so a pastel
-palette on the shipped seeds resolves more saturated than you may expect. Re-tune
-the seeds alongside it.
+**`pastel` is a redesign, not a filter — in either direction.** It changes every
+resolved color outside the `code-*` family, and the shipped palette is now pastel
+(`pastel: true`, seed `100`), so it is `pastel: false` that is the departure. The two
+spaces want different seeds: pastel equalizes the chroma ceiling across hues, where
+the non-pastel one is per-hue and lets warm hues run further. Flipping the flag alone
+therefore re-tunes nothing — a seed picked in one space lands somewhere else in the
+other, and the warm statuses move most. Re-tune the seeds alongside it, in whichever
+direction you flip.
 
 **Re-seeding costs about 10 ms.** Rebuilding the eight themes and re-solving
 ~156 tokens across four scheme variants is not free, though it is inside a frame.

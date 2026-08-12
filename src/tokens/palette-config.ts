@@ -24,7 +24,20 @@ export const DEFAULT_WARNING_HUE = 84.3;
 export const DEFAULT_NOTE_HUE = 302.3;
 
 /** Seed saturation. Per-color `saturation` in the recipe is a 0–1 factor of it. */
-export const DEFAULT_SATURATION = 80;
+export const DEFAULT_SATURATION = 100;
+
+/**
+ * Seed saturation for the `code-*` syntax family, deliberately **not** the same
+ * constant as {@link DEFAULT_SATURATION}.
+ *
+ * The two were one value until the app seed moved to 100 for the pastel palette.
+ * Sharing it would have dragged the syntax colors along for the ride — the exact
+ * coupling that `PaletteCodeSeed` and the `pastel` opt-out both exist to prevent,
+ * and the reason the code family answers to its own saturation and nothing else.
+ * Splitting the constant is what lets the app seed move while the code palette
+ * stays on the value it was calibrated against.
+ */
+export const DEFAULT_CODE_SATURATION = 80;
 
 // ============================================================================
 // Types
@@ -50,7 +63,7 @@ export interface PaletteThemeSeed {
  * reason.
  */
 export interface PaletteCodeSeed {
-  /** Saturation (0–100). Defaults to {@link DEFAULT_SATURATION}, not to `saturation`. */
+  /** Saturation (0–100). Defaults to {@link DEFAULT_CODE_SATURATION}, not to `saturation`. */
   saturation?: number;
 }
 
@@ -168,7 +181,7 @@ function resolveConfig(input: PaletteConfig): ResolvedPaletteConfig {
     hue,
     baseHue: input.baseHue ?? hue,
     saturation,
-    pastel: input.pastel ?? false,
+    pastel: input.pastel ?? true,
     contrastLevel: input.contrastLevel ?? 'auto',
     themes: {
       success: {
@@ -189,7 +202,7 @@ function resolveConfig(input: PaletteConfig): ResolvedPaletteConfig {
       },
       // Deliberately NOT `?? saturation`: the code palette is calibrated once and
       // does not follow the palette-level seed. See `PaletteCodeSeed`.
-      code: { saturation: themes.code?.saturation ?? DEFAULT_SATURATION },
+      code: { saturation: themes.code?.saturation ?? DEFAULT_CODE_SATURATION },
     },
   };
 }
