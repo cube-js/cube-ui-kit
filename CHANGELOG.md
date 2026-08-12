@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.158.0
+
+### Minor Changes
+
+- [#1229](https://github.com/cube-js/cube-ui-kit/pull/1229) [`c80f22b3`](https://github.com/cube-js/cube-ui-kit/commit/c80f22b3a33698cf4a67f7545145caa5f89a0a88) Thanks [@tenphi](https://github.com/tenphi)! - Make the pastel palette the default: the app seed moves to saturation 100 with
+  `pastel: true`, producing a softer, more even spread across hues.
+
+  Both are `PaletteConfig` defaults rather than a rewritten recipe, so anything that
+  already tunes the palette at runtime keeps working and can opt back out with
+  `{ saturation: 80, pastel: false }`.
+
+  The `code-*` syntax family is unaffected. It answers to its own seed, which now
+  reads a separate `DEFAULT_CODE_SATURATION` (still 80) instead of sharing
+  `DEFAULT_SATURATION`; sharing it would have pulled syntax colors to 100 as a side
+  effect of moving the app seed. `pastel` was already held off the code theme.
+
 ## 0.157.3
 
 ### Patch Changes
