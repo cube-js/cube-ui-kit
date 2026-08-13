@@ -307,6 +307,94 @@ describe('Board marquee', () => {
     expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
   });
 
+  /** Press and drag a band in board coordinates, without releasing. */
+  async function marqueePress(
+    from: { x: number; y: number },
+    to: { x: number; y: number },
+    modifier?: 'Shift' | 'Control',
+  ) {
+    const origin = board().getBoundingClientRect();
+    const abs = (p: { x: number; y: number }) => ({
+      x: origin.left + p.x,
+      y: origin.top + p.y,
+    });
+
+    if (modifier) await user.keyboard(`{${modifier}>}`);
+    await pressAndMove(content(), abs(from), abs(to));
+
+    return async () => {
+      await release(content(), abs(to));
+      if (modifier) await user.keyboard(`{/${modifier}}`);
+    };
+  }
+
+  // Only the band used to move: the widgets it enclosed lit up after release, so
+  // there was no way to see what a lasso was about to take.
+  it('marks the widgets under the band before the pointer is released', async () => {
+    const onSelectionChange = vi.fn();
+    renderMarquee({ onSelectionChange });
+    await settled();
+
+    const finish = await marqueePress(...OVER_A_B);
+
+    for (const id of ['a', 'b']) {
+      expect(widget(id)).toHaveAttribute('data-pre-selected');
+      // Provisional only — nothing has been committed yet.
+      expect(widget(id)).not.toHaveAttribute('data-selected');
+    }
+    expect(widget('c')).not.toHaveAttribute('data-pre-selected');
+    expect(onSelectionChange).not.toHaveBeenCalled();
+
+    await finish();
+
+    for (const id of ['a', 'b']) {
+      expect(widget(id)).toHaveAttribute('data-selected');
+      expect(widget(id)).not.toHaveAttribute('data-pre-selected');
+    }
+  });
+
+  // A widget the lasso is *adding* to reads as a preview; one it already owns
+  // must keep reading as selected rather than being downgraded to one.
+  it('leaves an already-selected widget selected during an additive lasso', async () => {
+    renderMarquee({ defaultSelectedKeys: ['c'] });
+    await settled();
+
+    const finish = await marqueePress(...OVER_A_C, 'Shift');
+
+    expect(widget('c')).toHaveAttribute('data-selected');
+    expect(widget('c')).not.toHaveAttribute('data-pre-selected');
+    expect(widget('a')).toHaveAttribute('data-pre-selected');
+
+    await finish();
+  });
+
+  it('suppresses text selection for the length of the gesture', async () => {
+    renderMarquee();
+    await settled();
+
+    const finish = await marqueePress(...OVER_A_B);
+
+    expect(board()).toHaveAttribute('data-marquee');
+    expect(getComputedStyle(board()).userSelect).toBe('none');
+    // The band starts on empty canvas but travels across widget text, which is
+    // where the browser would otherwise begin a selection.
+    expect(
+      widget('a').dispatchEvent(
+        new Event('selectstart', { bubbles: true, cancelable: true }),
+      ),
+    ).toBe(false);
+
+    await finish();
+
+    expect(board()).not.toHaveAttribute('data-marquee');
+    expect(getComputedStyle(board()).userSelect).toBe('auto');
+    expect(
+      widget('a').dispatchEvent(
+        new Event('selectstart', { bubbles: true, cancelable: true }),
+      ),
+    ).toBe(true);
+  });
+
   it('ignores a press below the movement threshold and clears instead', async () => {
     const onSelectionChange = vi.fn();
     renderMarquee({ onSelectionChange, defaultSelectedKeys: ['b'] });
@@ -560,8 +648,11 @@ describe('Board group drag', () => {
     expect(frames.length).toBeGreaterThan(0);
     for (const frame of frames) {
       // `far` rises to the top and the group packs in beneath it, rather than
-      // hanging six rows down where the pointer is.
-      expect(positions(frame)).toEqual({ far: '0,0', a: '0,1', b: '2,0' });
+      // hanging six rows down where the pointer is. `b` follows `a` down instead
+      // of staying on row 0 beside `far`: the block floats as a unit for the
+      // whole drag, and the drop re-compacts the board to settle the cell it
+      // leaves open.
+      expect(positions(frame)).toEqual({ far: '0,0', a: '0,1', b: '2,1' });
     }
   });
 
@@ -584,6 +675,183 @@ describe('Board group move', () => {
     { i: 'c', x: 0, y: 2, w: 12, h: 1 },
     { i: 'd', x: 0, y: 3, w: 12, h: 1 },
   ];
+
+  // Reported against a real dashboard: a pair sitting diagonally under a wide
+  // widget would not move at all, however far up it was dragged — the widget on
+  // top looked pinned. Each member only overlaps the one below it in columns, so
+  // this exercises the whole pipeline (registry delta -> `moveElements` ->
+  // placeholders), not just the algorithm.
+  const STAIRCASE: LayoutItem[] = [
+    { i: 'top', x: 4, y: 0, w: 4, h: 2 },
+    { i: 'a', x: 3, y: 2, w: 4, h: 2 },
+    { i: 'b', x: 5, y: 4, w: 4, h: 2 },
+  ];
+
+  // The `Selection` story's own layout, geometry and selection gesture: board
+  // defaults for cols/rowHeight/margin/containerPadding (not the zeroed ones the
+  // rest of this file uses — the landing cell is derived from those pixels), the
+  // pair built by pressing one widget and Shift-pressing the next rather than
+  // seeded through `defaultSelectedKeys`.
+  const STORY: LayoutItem[] = [
+    { i: 'a', x: 0, y: 0, w: 4, h: 2 },
+    { i: 'b', x: 4, y: 0, w: 4, h: 2 },
+    { i: 'c', x: 8, y: 0, w: 4, h: 2 },
+    { i: 'd', x: 0, y: 2, w: 6, h: 2 },
+    { i: 'e', x: 6, y: 2, w: 6, h: 2 },
+  ];
+
+  const renderStory = (onLayoutChange: () => void) =>
+    renderWithRoot(
+      <div style={{ width: '1168px' }}>
+        <Board
+          padding="1x"
+          widgetProps={{ isCard: true }}
+          selectionMode="multiple"
+          defaultLayout={STORY}
+          onLayoutChange={onLayoutChange}
+        >
+          {STORY.map((it) => (
+            <Board.Widget key={it.i} id={it.i} qa={it.i.toUpperCase()}>
+              {it.i}
+            </Board.Widget>
+          ))}
+        </Board>
+      </div>,
+    );
+
+  /** Modifiers are held through the keyboard API; the pointer API ignores them. */
+  const press = async (id: string, modifier?: 'Shift') => {
+    const el = widget(id);
+    const r = el.getBoundingClientRect();
+    if (modifier) await user.keyboard(`{${modifier}>}`);
+    await user.pointer([
+      {
+        keys: '[MouseLeft]',
+        target: el,
+        coords: coordsAt({ x: r.left + r.width / 2, y: r.top + r.height / 2 }),
+      },
+    ]);
+    if (modifier) await user.keyboard(`{/${modifier}}`);
+  };
+
+  const committed = (onLayoutChange: ReturnType<typeof vi.fn>) =>
+    Object.fromEntries(
+      onLayoutChange.mock.lastCall![0].map((it: LayoutItem) => [
+        it.i,
+        `${it.x},${it.y}`,
+      ]),
+    );
+
+  it('lifts a pressed-and-Shift-pressed pair to the top row', async () => {
+    const onLayoutChange = vi.fn();
+
+    renderStory(onLayoutChange);
+    await settled();
+
+    await press('d');
+    await press('e', 'Shift');
+    expect(widget('d')).toHaveAttribute('data-selected');
+    expect(widget('e')).toHaveAttribute('data-selected');
+
+    const grabbed = widget('d');
+    const from = grabbed.getBoundingClientRect();
+    // Measured, not assumed: this board runs on the default rowHeight/margin.
+    // `a` is on row 0 and `d` on row 2, so their gap is two rows of pitch.
+    const rowPitch = (from.top - widget('a').getBoundingClientRect().top) / 2;
+
+    await dragPointer(
+      grabbed,
+      { x: from.left + from.width / 2, y: from.top + from.height / 2 },
+      {
+        x: from.left + from.width / 2,
+        y: from.top + from.height / 2 - 2 * rowPitch,
+      },
+    );
+
+    await vi.waitFor(() => expect(onLayoutChange).toHaveBeenCalled());
+    expect(committed(onLayoutChange)).toEqual({
+      d: '0,0',
+      e: '6,0',
+      a: '0,2',
+      b: '4,2',
+      c: '8,2',
+    });
+  });
+
+  // Reported: dragging a pair *sideways* slid it down under the widgets it
+  // should have pushed aside, and they looked pinned. Travel along the
+  // compaction axis is zero here, so nothing about the direction says the group
+  // is taking ground — but it is, and the widgets standing on it have to move.
+  it('pushes the widget in the way down when a pair is dragged sideways', async () => {
+    const onLayoutChange = vi.fn();
+
+    renderStory(onLayoutChange);
+    await settled();
+
+    await press('a');
+    await press('d', 'Shift');
+
+    const grabbed = widget('a');
+    const from = grabbed.getBoundingClientRect();
+    // Four columns right, measured off `b` (which starts exactly four across).
+    const colShift = widget('b').getBoundingClientRect().left - from.left;
+
+    await dragPointer(
+      grabbed,
+      { x: from.left + from.width / 2, y: from.top + from.height / 2 },
+      {
+        x: from.left + from.width / 2 + colShift,
+        y: from.top + from.height / 2,
+      },
+    );
+
+    await vi.waitFor(() => expect(onLayoutChange).toHaveBeenCalled());
+    expect(committed(onLayoutChange)).toEqual({
+      // The pair keeps the rows it was on, `b` moves below it, and `c` — which
+      // it never overlapped — stays exactly where it was.
+      a: '4,0',
+      d: '4,2',
+      b: '4,4',
+      c: '8,0',
+      e: '6,6',
+    });
+  });
+
+  it('moves a diagonal pair to the top and pushes the widget above below it', async () => {
+    const onLayoutChange = vi.fn();
+    renderBoard(STAIRCASE, {
+      compact: 'vertical',
+      defaultSelectedKeys: ['a', 'b'],
+      onLayoutChange,
+    });
+    await settled();
+
+    expect(stackOrder()).toEqual(['top', 'a', 'b']);
+
+    const grabbed = widget('b');
+    const from = grabbed.getBoundingClientRect();
+
+    await dragPointer(
+      grabbed,
+      { x: from.left + from.width / 2, y: from.top + from.height / 2 },
+      {
+        x: from.left + from.width / 2,
+        y: from.top + from.height / 2 - 4 * ROW,
+      },
+    );
+
+    await vi.waitFor(() => expect(onLayoutChange).toHaveBeenCalled());
+    // The pair keeps its diagonal and `top` ends up under it, rather than the
+    // whole drag being a no-op.
+    expect(
+      Object.fromEntries(
+        onLayoutChange.mock.lastCall![0].map((it: LayoutItem) => [
+          it.i,
+          `${it.x},${it.y}`,
+        ]),
+      ),
+    ).toEqual({ a: '3,0', b: '5,2', top: '4,4' });
+  });
 
   // Compaction packs every item independently by a global `(y, x)` sort, so the
   // widgets a group is dragged past used to be packed *between* its members.

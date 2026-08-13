@@ -82,6 +82,14 @@ const BoardElement = tasty({
     // announces a state the user cannot act on and did not ask for. Same reason
     // `Dialog` drops it on its own focusable container.
     outline: 0,
+    // A lasso is a widget gesture, not a text gesture: without this, dragging a
+    // band across the widgets paints a native text selection under it and leaves
+    // stray highlighted text behind. `WidgetHost` does the same for a widget
+    // drag (`'drag | resizing'`), which the marquee never goes through.
+    userSelect: {
+      '': 'auto',
+      marquee: 'none',
+    },
   },
 });
 
@@ -368,6 +376,9 @@ export const BOARD_SELECTION_CANCEL =
 
 /** Manhattan distance a pointer must travel before a press becomes a marquee. */
 const MARQUEE_THRESHOLD = 4;
+
+/** Shared empty set, so "no pre-selection" is a stable reference. */
+const NO_KEYS: ReadonlySet<string> = new Set();
 
 /**
  * Whether an event landed in a text-editing context. Checking the *event target*
@@ -1038,6 +1049,16 @@ function BoardInner(
   // boxes. `calcGridItemPosition` derives the same rectangles exactly, from the
   // layout, with no forced reflow and no sensitivity to ancestor transforms.
   const [marqueeRect, setMarqueeRect] = useState<Position | null>(null);
+  // Which widgets the band covers *right now*. Committing only on release
+  // leaves the user guessing what they are about to select, so the band drives a
+  // provisional state on the hosts as it grows and shrinks. The board already
+  // re-renders once per pointer frame for the band itself, so this is free.
+  const [preSelectedKeys, setPreSelectedKeys] =
+    useState<ReadonlySet<string>>(NO_KEYS);
+  // Drives `user-select: none` for the duration of the gesture. Set on press
+  // rather than at the threshold, so even a press that never becomes a marquee
+  // cannot start painting a text selection.
+  const [isMarqueeActive, setIsMarqueeActive] = useState(false);
 
   const handleContentPointerDown = useEvent((event: React.PointerEvent) => {
     if (
@@ -1057,6 +1078,13 @@ function BoardInner(
 
     const content = contentRef.current;
     if (!content) return;
+
+    // Suppress the compatibility mouse events that would begin a native text
+    // selection. Safe here specifically because every case that wants default
+    // behaviour — a widget, an interactive descendant — has already bailed out
+    // above, and focus is placed explicitly in `finish`.
+    event.preventDefault();
+    setIsMarqueeActive(true);
 
     const origin = content.getBoundingClientRect();
     const startX = event.clientX;
@@ -1098,6 +1126,12 @@ function BoardInner(
       };
     };
 
+    // Belt and braces for the `preventDefault` above: a press that starts on
+    // empty canvas and then travels into text still gets a `selectstart` in some
+    // browsers, and `user-select: none` alone does not unwind a selection that is
+    // already growing.
+    const blockSelectStart = (e: Event) => e.preventDefault();
+
     const handleMove = (e: PointerEvent) => {
       if (
         !passedThreshold &&
@@ -1106,15 +1140,31 @@ function BoardInner(
       ) {
         return;
       }
+      if (!passedThreshold) {
+        // Drop a selection the user made inside this board *before* the lasso
+        // started, so the band never drags a stale highlight along with it.
+        // Scoped to this board: a selection anywhere else on the page is theirs.
+        const selection = window.getSelection();
+        const anchor = selection?.anchorNode;
+        if (anchor && containerRef.current?.contains(anchor)) {
+          selection?.removeAllRanges();
+        }
+      }
       passedThreshold = true;
-      setMarqueeRect(hitTest(e.clientX, e.clientY).box);
+
+      const { box, next } = hitTest(e.clientX, e.clientY);
+      setMarqueeRect(box);
+      setPreSelectedKeys(next);
     };
 
     const finish = (e: PointerEvent) => {
       window.removeEventListener('pointermove', handleMove);
       window.removeEventListener('pointerup', finish);
       window.removeEventListener('pointercancel', finish);
+      window.removeEventListener('selectstart', blockSelectStart);
       setMarqueeRect(null);
+      setPreSelectedKeys(NO_KEYS);
+      setIsMarqueeActive(false);
 
       // One commit per gesture: `onSelectionChange` and the announcement fire on
       // release, never once per pointer frame.
@@ -1131,6 +1181,7 @@ function BoardInner(
     window.addEventListener('pointermove', handleMove);
     window.addEventListener('pointerup', finish);
     window.addEventListener('pointercancel', finish);
+    window.addEventListener('selectstart', blockSelectStart);
   });
 
   const marqueeStyle = marqueeRect
@@ -1336,6 +1387,7 @@ function BoardInner(
           mods={{
             dragging: !!dragState,
             'drop-target': dragState?.currentBoardId === boardId,
+            marquee: isMarqueeActive,
           }}
         >
           <ContentLayer
@@ -1420,6 +1472,7 @@ function BoardInner(
                       dragHandle={widgetDragHandle}
                       isSelectable={widgetSelectable}
                       isSelected={selectedKeySet.has(item.i)}
+                      isPreSelected={preSelectedKeys.has(item.i)}
                       selectionCancel={widgetSelectionCancel}
                       selectedHintId={selectedHintId}
                       onSelect={select}
