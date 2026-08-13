@@ -137,7 +137,7 @@ Selection.parameters = {
   docs: {
     description: {
       story:
-        'Press a widget to select it and <kbd>Shift</kbd>-press to add or remove one — the same press also arms a drag, so move and it drags, stay still and it was just a selection. Grabbing an unselected widget makes it the selection; grabbing a selected one moves the whole block. Drag from empty canvas to lasso. Selection behaves like focus: pressing a control inside a widget, or moving focus off the board, drops it. <kbd>Space</kbd> toggles the focused widget, <kbd>Escape</kbd> clears.',
+        'Press a widget to select it and <kbd>Shift</kbd>-press to add or remove one — the same press also arms a drag, so move and it drags, stay still and it was just a selection. Grabbing an unselected widget makes it the selection; grabbing a selected one moves the whole block, which keeps its shape for the whole drag. Drag from empty canvas to lasso: the widgets the band covers preview the selected edge at half strength while the button is down, and no text is selected under it. Selection behaves like focus: pressing a control inside a widget, or moving focus off the board, drops it. <kbd>Space</kbd> toggles the focused widget, <kbd>Escape</kbd> clears.',
     },
   },
 };
@@ -237,11 +237,20 @@ const RestyledSelectionTemplate: StoryFn<CubeBoardProps> = (args) => (
     radius="1r"
     widgetProps={{
       isCard: true,
-      // The `selected` modifier is available to any style map a consumer passes,
-      // so restyling the selection needs no dedicated API.
+      // The `selected` and `pre-selected` modifiers are available to any style
+      // map a consumer passes, so restyling the selection — including the
+      // preview a live marquee paints — needs no dedicated API.
       styles: {
-        border: { '': true, selected: '#note-border' },
-        shadow: { '': false, selected: '0 0 0 1bw #note' },
+        border: {
+          '': true,
+          'pre-selected': '#note-border',
+          selected: '#note-border',
+        },
+        shadow: {
+          '': false,
+          'pre-selected': '0 0 0 1bw #note.40',
+          selected: '0 0 0 1bw #note',
+        },
       },
     }}
     defaultLayout={defaultLayout}

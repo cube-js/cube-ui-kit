@@ -161,6 +161,8 @@ Every widget host exposes these as `data-*` attributes, and any style map passed
 through `widgetProps.styles` or a per-widget `styles` resolves against them.
 
 - **`selected`** — the widget is in the board's selection.
+- **`pre-selected`** — a live marquee covers the widget, so releasing the pointer
+  will select it. Never set at the same time as `selected`.
 - **`card`** — the widget draws a card border (`isCard`).
 - **`draggable`** — the widget can be dragged and no drag is in flight.
 - **`drag`** — the widget is being dragged.
@@ -174,15 +176,17 @@ Selection is an *edge* treatment — a `#primary-border` border plus a `#primary
 ring — because it reads as a focus-like state rather than a fill. `outline` stays
 reserved for the real focus ring, which is what keeps the two legible together:
 they use different tokens and the focus outline sits one border-width further
-out. To restyle it, override the same keys:
+out. `pre-selected` draws the same edge with the ring dimmed, so committing a
+lasso only changes the strength of something already on screen. To restyle
+either, override the same keys:
 
 ```jsx
 <Board
   selectionMode="multiple"
   widgetProps={{
     styles: {
-      border: { '': true, selected: '#note-border' },
-      shadow: { '': false, selected: '0 0 0 1bw #note' },
+      border: { '': true, 'pre-selected': '#note-border', selected: '#note-border' },
+      shadow: { '': false, 'pre-selected': '0 0 0 1bw #note.40', selected: '0 0 0 1bw #note' },
     },
   }}
 />
@@ -196,6 +200,8 @@ Supported hooks for tests, E2E, and building your own selection overlay:
 - **`data-board-widget-host`** on every widget host — presence only, "this is a widget host".
 - **`data-board-widget-id`** on every widget host — which widget.
 - **`data-selected`** on a selected host.
+- **`data-pre-selected`** on a host a live marquee currently covers.
+- **`data-marquee`** on the board element while a marquee gesture is in progress.
 
 ### Base Properties
 
@@ -329,19 +335,23 @@ touch drags capture the pointer, so they do not trigger it.
 
 ### Selection
 
-Click to select, Shift/Cmd/Ctrl-click to add or remove, and drag from empty board
 Press a widget to select it, <kbd>Shift</kbd>-press to add or remove one, and
 drag from empty board space to lasso. Because the press both selects and arms the
 drag, grabbing a widget you have not selected simply makes it the selection and
 moves it; grabbing one that *is* selected moves the whole block rigidly — keeping
-its shape horizontally, clamping against the grid edge as a unit rather than
-collapsing, and committing once.
+its shape, clamping against the grid edge as a unit rather than collapsing, and
+committing once. While the band is out, the widgets it covers show a dimmed
+version of the selected edge (`pre-selected`), and no text can be selected under
+it.
 
-A group reflows exactly like a single widget: it is compacted by the same rules,
-so on a `vertical` board it can no more be parked in empty space than one widget
-can, and the widgets around it close the gap in the same frame. Under
-`compact="free"` (or `null`) nothing compacts, so the block stays precisely where
-it was dropped.
+A group reflows like a single widget — it is compacted by the same rules, so on a
+`vertical` board it can no more be parked in empty space than one widget can, and
+the widgets around it close the gap in the same frame — but it does so as one
+block. Its members keep their exact offsets for the whole drag: the widgets it
+climbs over move out of the way rather than being packed between them. When the
+drag ends the board compacts normally, so a group whose members could each float
+further settles on release. Under `compact="free"` (or `null`) nothing compacts,
+so the block stays precisely where it was dropped.
 
 <Story of={BoardStories.Selection} />
 

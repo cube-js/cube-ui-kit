@@ -305,13 +305,16 @@ describe('moveElements', () => {
         cols: 12,
       });
 
-      // `e` rises to the top and the group settles around it, rather than the
-      // group parking in mid-air with `e` shoved below it. A vertically
-      // compacted board never leaves a gap, for a group no more than for one
-      // widget.
+      // `e` rises to the top and the group settles under it, rather than the
+      // group parking in mid-air with `e` shoved below it.
+      //
+      // `b` follows `a` down even though the cell above it is free: the block
+      // floats as a unit, so `b` cannot be left behind on row 0 with `e`. That
+      // leftover cell is the accepted cost of holding the shape while the
+      // pointer is down — the drop re-compacts the board and settles it.
       expect(positions(result.layout)).toEqual({
         a: '0,1',
-        b: '2,0',
+        b: '2,1',
         e: '0,0',
       });
     });
@@ -552,6 +555,317 @@ describe('moveElements', () => {
         b: '4,4',
         e: '0,6',
       });
+    });
+  });
+
+  // Ordering alone is not enough. A non-mover sitting even one row above the
+  // group's landing row sorts first, and then each member floats against
+  // whatever happens to be above *it* — so the group stalls, and members with
+  // different obstacles above them end up on different rows. Moving against
+  // gravity therefore displaces the widgets in the way first (exactly as
+  // `moveElement` does for one widget), and the group is floated as one block.
+  describe('moving against gravity', () => {
+    /** `{ id: 'x,y' }` plus the offsets between members, which must never change. */
+    function offsets(layout: LayoutItem[], a: string, b: string) {
+      const first = layout.find((it) => it.i === a)!;
+      const second = layout.find((it) => it.i === b)!;
+
+      return `${second.x - first.x},${second.y - first.y}`;
+    }
+
+    // Every fixture here is a fixed point of `verticalCompactor` — i.e. a real
+    // board at rest — because that is the only state a drag can start from.
+    it('keeps a pair on one row when the widgets above them differ', () => {
+      const layout = [
+        item('x', 0, 0, 6, 3),
+        item('d', 6, 2, 6, 1),
+        item('a', 0, 3, 6, 1),
+        item('b', 6, 3, 6, 1),
+      ];
+
+      const result = moveElements(layout, new Set(['a', 'b']), 0, -1, {
+        compactor: vertical,
+        cols: 12,
+      });
+
+      // `a` is blocked by the tall `x` and `b` only by the short `d`, so packing
+      // them one at a time used to leave `a` where it started and float `b` to
+      // the top row — with `d` wedged between them.
+      expect(positions(result.layout)).toEqual({
+        a: '0,0',
+        b: '6,0',
+        x: '0,1',
+        d: '6,1',
+      });
+    });
+
+    it('advances the group instead of standing still under a taller widget', () => {
+      const layout = [
+        item('x', 0, 0, 12, 2),
+        item('a', 0, 2, 6, 1),
+        item('b', 6, 2, 6, 1),
+      ];
+
+      const result = moveElements(layout, new Set(['a', 'b']), 0, -1, {
+        compactor: vertical,
+        cols: 12,
+      });
+
+      // `x` moves below and the pair floats to the top — the same thing that
+      // happens when one widget is dragged a row up into a taller neighbour.
+      // Previously nothing moved at all: `x` sorted first and blocked both.
+      expect(positions(result.layout)).toEqual({
+        a: '0,0',
+        b: '6,0',
+        x: '0,1',
+      });
+    });
+
+    it('never wedges a full-width divider between two members', () => {
+      const layout = [
+        item('x', 0, 0, 12, 1),
+        item('divider', 0, 1, 12, 1),
+        item('a', 0, 2, 6, 1),
+        item('b', 6, 2, 6, 1),
+      ];
+
+      const result = moveElements(layout, new Set(['a', 'b']), 0, -1, {
+        compactor: vertical,
+        cols: 12,
+      });
+
+      expect(positions(result.layout)).toEqual({
+        x: '0,0',
+        a: '0,1',
+        b: '6,1',
+        divider: '0,2',
+      });
+    });
+
+    it('holds the group shape at every delta over a ragged layout', () => {
+      const layout = [
+        item('x', 0, 0, 6, 2),
+        item('d', 6, 0, 6, 1),
+        item('b', 6, 1, 6, 1),
+        item('a', 0, 2, 6, 1),
+      ];
+      const ids = new Set(['a', 'b']);
+
+      for (let dy = -4; dy <= 4; dy++) {
+        const result = moveElements(layout, ids, 0, dy, {
+          compactor: vertical,
+          cols: 12,
+        });
+
+        // `b` sits one row above `a` and six columns across; a rigid block keeps
+        // both offsets no matter what it has to climb over.
+        expect(offsets(result.layout, 'a', 'b')).toBe('6,-1');
+      }
+    });
+
+    it('mirrors the displacement under horizontal compaction', () => {
+      const layout = [
+        item('x', 0, 0, 2, 12),
+        item('a', 2, 0, 1, 6),
+        item('b', 2, 6, 1, 6),
+      ];
+
+      const result = moveElements(layout, new Set(['a', 'b']), -1, 0, {
+        compactor: horizontal,
+        cols: 12,
+      });
+
+      expect(positions(result.layout)).toEqual({
+        a: '0,0',
+        b: '0,6',
+        x: '1,0',
+      });
+    });
+
+    it('packs a sideways-displaced widget back inside the grid', () => {
+      const layout = [
+        item('x', 0, 0, 3, 12),
+        item('a', 3, 0, 3, 6),
+        item('b', 3, 6, 3, 6),
+      ];
+
+      // Clearing the group puts `x` at column 5 of 6, past the last column.
+      // Freezing the drag over that would cost a quarter of all leftward group
+      // drags; the compactor pulls it back in instead.
+      const result = moveElements(layout, new Set(['a', 'b']), -1, 0, {
+        compactor: horizontal,
+        cols: 6,
+      });
+
+      expect(result.moved).toBe(true);
+      expect(positions(result.layout)).toEqual({
+        a: '0,0',
+        b: '0,6',
+        x: '3,0',
+      });
+    });
+  });
+
+  // `compactItemVertical` cascades through `resolveCompactionCollision`, which
+  // shoves items *later in the placement order* out of a non-mover's way. When
+  // the group is placed after a non-mover — which is every with-gravity drag —
+  // that cascade reaches inside the group and moves one member without the
+  // others, so a block placed from those coordinates preserves an already-broken
+  // shape, and two members can end up on top of each other.
+  describe('frame integrity', () => {
+    function overlappingPairs(layout: LayoutItem[]): string[] {
+      const pairs: string[] = [];
+
+      for (let i = 0; i < layout.length; i++) {
+        for (let j = i + 1; j < layout.length; j++) {
+          const a = layout[i]!;
+          const b = layout[j]!;
+          if (
+            a.x < b.x + b.w &&
+            a.x + a.w > b.x &&
+            a.y < b.y + b.h &&
+            a.y + a.h > b.y
+          ) {
+            pairs.push(`${a.i}/${b.i}`);
+          }
+        }
+      }
+
+      return pairs;
+    }
+
+    it('never emits overlapping widgets when dragged with gravity', () => {
+      const layout = [
+        item('w1', 0, 0, 2, 1),
+        item('w3', 5, 0, 4, 1),
+        item('w2', 0, 1, 12, 1),
+        item('w4', 0, 2, 12, 1),
+        item('w5', 0, 3, 6, 1),
+        item('w0', 6, 3, 4, 3),
+      ];
+
+      const result = moveElements(layout, new Set(['w5', 'w3']), 0, 3, {
+        compactor: vertical,
+        cols: 12,
+      });
+
+      expect(overlappingPairs(result.layout)).toEqual([]);
+    });
+
+    it('holds the group offsets when dragged with gravity too', () => {
+      const layout = [
+        item('w1', 0, 0, 2, 1),
+        item('w3', 5, 0, 4, 1),
+        item('w2', 0, 1, 12, 1),
+        item('w4', 0, 2, 12, 1),
+        item('w5', 0, 3, 6, 1),
+        item('w0', 6, 3, 4, 3),
+      ];
+      const ids = new Set(['w5', 'w3']);
+
+      for (let dy = 0; dy <= 5; dy++) {
+        const result = moveElements(layout, ids, 0, dy, {
+          compactor: vertical,
+          cols: 12,
+        });
+        const w3 = result.layout.find((it) => it.i === 'w3')!;
+        const w5 = result.layout.find((it) => it.i === 'w5')!;
+
+        expect(`${w3.x - w5.x},${w3.y - w5.y}`).toBe('5,-3');
+      }
+    });
+
+    // The hand-written cases above are the ones that were actually reported;
+    // this is the net cast wide enough to catch the next one. Deterministic
+    // (xorshift32 off a fixed seed) and ~150ms, so it is a regression guard
+    // rather than a flaky search.
+    it('never overlaps, escapes the grid, or shears a group, over many layouts', () => {
+      const random = ((s: number) => () => {
+        s ^= s << 13;
+        s ^= s >>> 17;
+        s ^= s << 5;
+
+        return (s >>> 0) / 0x100000000;
+      })(0xc0ffee);
+
+      const shape = (l: LayoutItem[], ids: string[]) => {
+        const members = ids.map((id) => l.find((it) => it.i === id)!);
+
+        return members
+          .map((m) => `${m.x - members[0]!.x},${m.y - members[0]!.y}`)
+          .join(' ');
+      };
+
+      let checked = 0;
+
+      for (let round = 0; round < 4000; round++) {
+        const raw = Array.from(
+          { length: 3 + Math.floor(random() * 5) },
+          (_, i) => {
+            const w = 1 + Math.floor(random() * 6);
+
+            return item(
+              `w${i}`,
+              Math.floor(random() * (12 - w + 1)),
+              Math.floor(random() * 6),
+              w,
+              1 + Math.floor(random() * 3),
+            );
+          },
+        );
+
+        // A drag can only ever start from a resting board, so compact first and
+        // skip anything that did not settle in one pass.
+        const base = [...vertical.compact(raw, 12)];
+        if (overlappingPairs(base).length) continue;
+
+        const ids = base.map((it) => it.i).filter(() => random() < 0.5);
+        if (ids.length < 2) continue;
+
+        const result = moveElements(
+          base,
+          new Set(ids),
+          Math.floor(random() * 9) - 4,
+          Math.floor(random() * 9) - 4,
+          { compactor: vertical, cols: 12 },
+        );
+        if (!result.moved) continue;
+
+        checked++;
+        expect(overlappingPairs(result.layout)).toEqual([]);
+        for (const it of result.layout) {
+          expect(`${it.i}:${it.x >= 0 && it.y >= 0 && it.x + it.w <= 12}`).toBe(
+            `${it.i}:true`,
+          );
+        }
+        // The whole point: on the axis a dashboard actually compacts along, the
+        // block is rigid without exception.
+        expect(shape(result.layout, ids)).toBe(shape(base, ids));
+      }
+
+      expect(checked).toBeGreaterThan(500);
+    });
+
+    it('keeps every widget inside the grid on a horizontal board', () => {
+      const layout = [
+        item('w0', 4, 1, 2, 12),
+        item('w1', 0, 4, 4, 12),
+        item('w2', 0, 0, 3, 1),
+        item('w3', 6, 2, 4, 2),
+        item('w4', 6, 4, 3, 12),
+      ];
+
+      for (let dx = -4; dx <= 4; dx++) {
+        const result = moveElements(layout, new Set(['w3', 'w0']), dx, 0, {
+          compactor: horizontal,
+          cols: 12,
+        });
+
+        for (const it of result.layout) {
+          expect(`${it.i}:${it.x + it.w <= 12}`).toBe(`${it.i}:true`);
+        }
+        expect(overlappingPairs(result.layout)).toEqual([]);
+      }
     });
   });
 

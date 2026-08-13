@@ -307,6 +307,94 @@ describe('Board marquee', () => {
     expect(screen.queryByTestId('BoardMarquee')).not.toBeInTheDocument();
   });
 
+  /** Press and drag a band in board coordinates, without releasing. */
+  async function marqueePress(
+    from: { x: number; y: number },
+    to: { x: number; y: number },
+    modifier?: 'Shift' | 'Control',
+  ) {
+    const origin = board().getBoundingClientRect();
+    const abs = (p: { x: number; y: number }) => ({
+      x: origin.left + p.x,
+      y: origin.top + p.y,
+    });
+
+    if (modifier) await user.keyboard(`{${modifier}>}`);
+    await pressAndMove(content(), abs(from), abs(to));
+
+    return async () => {
+      await release(content(), abs(to));
+      if (modifier) await user.keyboard(`{/${modifier}}`);
+    };
+  }
+
+  // Only the band used to move: the widgets it enclosed lit up after release, so
+  // there was no way to see what a lasso was about to take.
+  it('marks the widgets under the band before the pointer is released', async () => {
+    const onSelectionChange = vi.fn();
+    renderMarquee({ onSelectionChange });
+    await settled();
+
+    const finish = await marqueePress(...OVER_A_B);
+
+    for (const id of ['a', 'b']) {
+      expect(widget(id)).toHaveAttribute('data-pre-selected');
+      // Provisional only — nothing has been committed yet.
+      expect(widget(id)).not.toHaveAttribute('data-selected');
+    }
+    expect(widget('c')).not.toHaveAttribute('data-pre-selected');
+    expect(onSelectionChange).not.toHaveBeenCalled();
+
+    await finish();
+
+    for (const id of ['a', 'b']) {
+      expect(widget(id)).toHaveAttribute('data-selected');
+      expect(widget(id)).not.toHaveAttribute('data-pre-selected');
+    }
+  });
+
+  // A widget the lasso is *adding* to reads as a preview; one it already owns
+  // must keep reading as selected rather than being downgraded to one.
+  it('leaves an already-selected widget selected during an additive lasso', async () => {
+    renderMarquee({ defaultSelectedKeys: ['c'] });
+    await settled();
+
+    const finish = await marqueePress(...OVER_A_C, 'Shift');
+
+    expect(widget('c')).toHaveAttribute('data-selected');
+    expect(widget('c')).not.toHaveAttribute('data-pre-selected');
+    expect(widget('a')).toHaveAttribute('data-pre-selected');
+
+    await finish();
+  });
+
+  it('suppresses text selection for the length of the gesture', async () => {
+    renderMarquee();
+    await settled();
+
+    const finish = await marqueePress(...OVER_A_B);
+
+    expect(board()).toHaveAttribute('data-marquee');
+    expect(getComputedStyle(board()).userSelect).toBe('none');
+    // The band starts on empty canvas but travels across widget text, which is
+    // where the browser would otherwise begin a selection.
+    expect(
+      widget('a').dispatchEvent(
+        new Event('selectstart', { bubbles: true, cancelable: true }),
+      ),
+    ).toBe(false);
+
+    await finish();
+
+    expect(board()).not.toHaveAttribute('data-marquee');
+    expect(getComputedStyle(board()).userSelect).toBe('auto');
+    expect(
+      widget('a').dispatchEvent(
+        new Event('selectstart', { bubbles: true, cancelable: true }),
+      ),
+    ).toBe(true);
+  });
+
   it('ignores a press below the movement threshold and clears instead', async () => {
     const onSelectionChange = vi.fn();
     renderMarquee({ onSelectionChange, defaultSelectedKeys: ['b'] });
@@ -560,8 +648,11 @@ describe('Board group drag', () => {
     expect(frames.length).toBeGreaterThan(0);
     for (const frame of frames) {
       // `far` rises to the top and the group packs in beneath it, rather than
-      // hanging six rows down where the pointer is.
-      expect(positions(frame)).toEqual({ far: '0,0', a: '0,1', b: '2,0' });
+      // hanging six rows down where the pointer is. `b` follows `a` down instead
+      // of staying on row 0 beside `far`: the block floats as a unit for the
+      // whole drag, and the drop re-compacts the board to settle the cell it
+      // leaves open.
+      expect(positions(frame)).toEqual({ far: '0,0', a: '0,1', b: '2,1' });
     }
   });
 
