@@ -23,6 +23,7 @@ import { useEvent } from '../../../_internal';
 import { useIsFirstRender } from '../../../_internal/hooks/use-is-first-render';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
+  CURRENT_BUTTON_STYLES,
   DANGER_CLEAR_STYLES,
   DANGER_LINK_STYLES,
   DANGER_OUTLINE_2_STYLES,
@@ -104,6 +105,7 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'clear'
     | 'outline'
     | 'outline-2'
+    | 'current'
     | (string & {});
   size?:
     | 'xsmall'
@@ -133,6 +135,9 @@ export interface CubeButtonProps extends CubeActionProps {
 }
 
 export type ButtonVariant =
+  // The `current` type derives every color from the inherited `currentcolor`,
+  // so it has no per-theme flavours — see `CURRENT_BUTTON_STYLES`.
+  | 'default.current'
   | 'default.primary'
   | 'default.outline'
   | 'default.outline-2'
@@ -317,6 +322,9 @@ const ButtonElement = tasty({
   qa: 'Button',
   styles: DEFAULT_BUTTON_STYLES,
   variants: {
+    // Inherited-color type — theme-agnostic, see `CURRENT_BUTTON_STYLES`
+    'default.current': CURRENT_BUTTON_STYLES,
+
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
@@ -601,6 +609,10 @@ export const Button = forwardRef(function Button(
     const effectiveType =
       theme === 'special' && type === 'outline-2' ? 'outline' : type;
 
+    // `current` paints from the inherited `currentcolor`, so a theme would have
+    // nothing to change — it has a single, theme-agnostic variant.
+    const variantTheme = effectiveType === 'current' ? 'default' : theme;
+
     return (
       <ButtonElement
         download={download}
@@ -608,7 +620,9 @@ export const Button = forwardRef(function Button(
         ref={handleRef}
         mods={{ ...actionProps.mods, ...modifiers }}
         disabled={isNativelyDisabled}
-        variant={`${theme}.${effectiveType ?? 'outline'}` as ButtonVariant}
+        variant={
+          `${variantTheme}.${effectiveType ?? 'outline'}` as ButtonVariant
+        }
         data-theme={theme}
         data-type={effectiveType ?? 'outline'}
         data-size={size}
