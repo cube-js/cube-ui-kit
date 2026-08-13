@@ -676,6 +676,53 @@ describe('Board group move', () => {
     { i: 'd', x: 0, y: 3, w: 12, h: 1 },
   ];
 
+  // Reported against a real dashboard: a pair sitting diagonally under a wide
+  // widget would not move at all, however far up it was dragged — the widget on
+  // top looked pinned. Each member only overlaps the one below it in columns, so
+  // this exercises the whole pipeline (registry delta -> `moveElements` ->
+  // placeholders), not just the algorithm.
+  const STAIRCASE: LayoutItem[] = [
+    { i: 'top', x: 4, y: 0, w: 4, h: 2 },
+    { i: 'a', x: 3, y: 2, w: 4, h: 2 },
+    { i: 'b', x: 5, y: 4, w: 4, h: 2 },
+  ];
+
+  it('moves a diagonal pair to the top and pushes the widget above below it', async () => {
+    const onLayoutChange = vi.fn();
+    renderBoard(STAIRCASE, {
+      compact: 'vertical',
+      defaultSelectedKeys: ['a', 'b'],
+      onLayoutChange,
+    });
+    await settled();
+
+    expect(stackOrder()).toEqual(['top', 'a', 'b']);
+
+    const grabbed = widget('b');
+    const from = grabbed.getBoundingClientRect();
+
+    await dragPointer(
+      grabbed,
+      { x: from.left + from.width / 2, y: from.top + from.height / 2 },
+      {
+        x: from.left + from.width / 2,
+        y: from.top + from.height / 2 - 4 * ROW,
+      },
+    );
+
+    await vi.waitFor(() => expect(onLayoutChange).toHaveBeenCalled());
+    // The pair keeps its diagonal and `top` ends up under it, rather than the
+    // whole drag being a no-op.
+    expect(
+      Object.fromEntries(
+        onLayoutChange.mock.lastCall![0].map((it: LayoutItem) => [
+          it.i,
+          `${it.x},${it.y}`,
+        ]),
+      ),
+    ).toEqual({ a: '3,0', b: '5,2', top: '4,4' });
+  });
+
   // Compaction packs every item independently by a global `(y, x)` sort, so the
   // widgets a group is dragged past used to be packed *between* its members.
   it('keeps a selected pair together when dragged up past other widgets', async () => {
