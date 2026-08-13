@@ -137,6 +137,17 @@ export function moveElements(
   // pick a direction and down is the one a grid always has room in.
   const axis: 'x' | 'y' = compactor.type === 'horizontal' ? 'x' : 'y';
   const travel = axis === 'x' ? clampedDx : clampedDy;
+  const drift = axis === 'x' ? clampedDy : clampedDx;
+  /**
+   * Whether the group is taking ground rather than giving it up — the question
+   * that decides who has to move aside.
+   *
+   * Only a move *along* the compaction axis gives ground up: the group leaves
+   * rows behind it, and the widgets below fall into them. Moving against the
+   * axis, or purely *across* it, takes ground instead: every cell the group
+   * lands on has to be vacated for it.
+   */
+  const takesGround = travel < 0 || (travel === 0 && drift !== 0);
 
   if (!compactor.allowOverlap) {
     // A static non-mover cannot be pushed out of the way, so overlapping one is
@@ -158,25 +169,29 @@ export function moveElements(
     } else if (
       compactor.type === null ||
       ((compactor.type === 'vertical' || compactor.type === 'horizontal') &&
-        travel < 0)
+        takesGround)
     ) {
       // Nothing else will resolve it:
       //
       // - `type === null` has no compaction pass at all.
-      // - Moving *against* gravity, the group is claiming ground the widgets it
-      //   passed are still standing on. Compaction alone cannot do this: it
-      //   places items in `head` order, so a non-mover sitting even one row
-      //   above the group's landing row is placed first and then blocks it —
-      //   the group stops short (or does not move at all) while the widgets it
-      //   did overlap slide down, which is exactly the "only some of them
-      //   moved" symptom. Displacing them first is what the single-widget path
-      //   does too (`moveElementAwayFromCollision` runs before compaction),
-      //   and it costs nothing extra: `compactWithGroupOrder` reads each unit's
-      //   `head` from these updated coordinates, so the pushed items sort after
-      //   the group and gravity floats them straight back to their minimal
-      //   positions in the same frame.
+      // - Whenever the group *takes* ground, the widgets standing on it have to
+      //   be moved off first. Compaction alone cannot do that: it places items
+      //   in `head` order, so a non-mover on the group's landing row is placed
+      //   first and then blocks it. Against the axis the group stops short (or
+      //   does not move at all) while the widgets it did overlap slide down —
+      //   the "only some of them moved" symptom. Across the axis it is worse:
+      //   the group is the one gravity shoves aside, so dragging a pair
+      //   sideways slides *it* down under the widgets it was supposed to
+      //   displace, and they look pinned in place.
       //
-      // Moving *with* gravity needs the opposite: the non-movers must claim the
+      //   Displacing first is what the single-widget path does too
+      //   (`moveElementAwayFromCollision` runs before compaction), and it costs
+      //   nothing extra: `compactWithGroupOrder` reads each unit's `head` from
+      //   these updated coordinates, so the pushed items sort after the group
+      //   and gravity floats them straight back to their minimal positions in
+      //   the same frame.
+      //
+      // Giving ground up needs the opposite: the non-movers must claim the
       // vacated rows first, or the group lands back where it started and the
       // drag reads as a no-op.
       if (!displaceOthers(movers, others, axis)) {

@@ -700,9 +700,7 @@ describe('Board group move', () => {
     { i: 'e', x: 6, y: 2, w: 6, h: 2 },
   ];
 
-  it('lifts a pressed-and-Shift-pressed pair to the top row', async () => {
-    const onLayoutChange = vi.fn();
-
+  const renderStory = (onLayoutChange: () => void) =>
     renderWithRoot(
       <div style={{ width: '1168px' }}>
         <Board
@@ -720,24 +718,35 @@ describe('Board group move', () => {
         </Board>
       </div>,
     );
-    await settled();
 
-    const press = async (id: string, modifier?: 'Shift') => {
-      const el = widget(id);
-      const r = el.getBoundingClientRect();
-      if (modifier) await user.keyboard(`{${modifier}>}`);
-      await user.pointer([
-        {
-          keys: '[MouseLeft]',
-          target: el,
-          coords: coordsAt({
-            x: r.left + r.width / 2,
-            y: r.top + r.height / 2,
-          }),
-        },
-      ]);
-      if (modifier) await user.keyboard(`{/${modifier}}`);
-    };
+  /** Modifiers are held through the keyboard API; the pointer API ignores them. */
+  const press = async (id: string, modifier?: 'Shift') => {
+    const el = widget(id);
+    const r = el.getBoundingClientRect();
+    if (modifier) await user.keyboard(`{${modifier}>}`);
+    await user.pointer([
+      {
+        keys: '[MouseLeft]',
+        target: el,
+        coords: coordsAt({ x: r.left + r.width / 2, y: r.top + r.height / 2 }),
+      },
+    ]);
+    if (modifier) await user.keyboard(`{/${modifier}}`);
+  };
+
+  const committed = (onLayoutChange: ReturnType<typeof vi.fn>) =>
+    Object.fromEntries(
+      onLayoutChange.mock.lastCall![0].map((it: LayoutItem) => [
+        it.i,
+        `${it.x},${it.y}`,
+      ]),
+    );
+
+  it('lifts a pressed-and-Shift-pressed pair to the top row', async () => {
+    const onLayoutChange = vi.fn();
+
+    renderStory(onLayoutChange);
+    await settled();
 
     await press('d');
     await press('e', 'Shift');
@@ -760,14 +769,52 @@ describe('Board group move', () => {
     );
 
     await vi.waitFor(() => expect(onLayoutChange).toHaveBeenCalled());
-    expect(
-      Object.fromEntries(
-        onLayoutChange.mock.lastCall![0].map((it: LayoutItem) => [
-          it.i,
-          `${it.x},${it.y}`,
-        ]),
-      ),
-    ).toEqual({ d: '0,0', e: '6,0', a: '0,2', b: '4,2', c: '8,2' });
+    expect(committed(onLayoutChange)).toEqual({
+      d: '0,0',
+      e: '6,0',
+      a: '0,2',
+      b: '4,2',
+      c: '8,2',
+    });
+  });
+
+  // Reported: dragging a pair *sideways* slid it down under the widgets it
+  // should have pushed aside, and they looked pinned. Travel along the
+  // compaction axis is zero here, so nothing about the direction says the group
+  // is taking ground — but it is, and the widgets standing on it have to move.
+  it('pushes the widget in the way down when a pair is dragged sideways', async () => {
+    const onLayoutChange = vi.fn();
+
+    renderStory(onLayoutChange);
+    await settled();
+
+    await press('a');
+    await press('d', 'Shift');
+
+    const grabbed = widget('a');
+    const from = grabbed.getBoundingClientRect();
+    // Four columns right, measured off `b` (which starts exactly four across).
+    const colShift = widget('b').getBoundingClientRect().left - from.left;
+
+    await dragPointer(
+      grabbed,
+      { x: from.left + from.width / 2, y: from.top + from.height / 2 },
+      {
+        x: from.left + from.width / 2 + colShift,
+        y: from.top + from.height / 2,
+      },
+    );
+
+    await vi.waitFor(() => expect(onLayoutChange).toHaveBeenCalled());
+    expect(committed(onLayoutChange)).toEqual({
+      // The pair keeps the rows it was on, `b` moves below it, and `c` — which
+      // it never overlapped — stays exactly where it was.
+      a: '4,0',
+      d: '4,2',
+      b: '4,4',
+      c: '8,0',
+      e: '6,6',
+    });
   });
 
   it('moves a diagonal pair to the top and pushes the widget above below it', async () => {

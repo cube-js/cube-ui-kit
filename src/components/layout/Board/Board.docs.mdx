@@ -347,10 +347,11 @@ it.
 A group reflows like a single widget — it is compacted by the same rules, so on a
 `vertical` board it can no more be parked in empty space than one widget can, and
 the widgets around it close the gap in the same frame — but it does so as one
-block. Its members keep their exact offsets for the whole drag: the widgets it
-climbs over move out of the way rather than being packed between them. When the
-drag ends the board compacts normally, so a group whose members could each float
-further settles on release. Under `compact="free"` (or `null`) nothing compacts,
+block. Its members keep their exact offsets for the whole drag, and the widgets
+standing where it lands move out of its way rather than being packed between its
+members — whether it is dragged against the compaction axis or across it. When
+the drag ends the board compacts normally, so a group whose members could each
+float further settles on release. Under `compact="free"` (or `null`) nothing compacts,
 so the block stays precisely where it was dropped.
 
 <Story of={BoardStories.Selection} />

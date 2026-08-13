@@ -706,6 +706,79 @@ describe('moveElements', () => {
     });
   });
 
+  // Moving *across* the compaction axis takes ground just as moving against it
+  // does — every cell the group lands on has to be vacated — but the travel
+  // along the axis is zero, so nothing about the direction says so. Reported: a
+  // pair dragged sideways slid *down* under the widgets it should have pushed
+  // aside, which looked like those widgets were pinned in place.
+  describe('moving across gravity', () => {
+    // The `Board` stories' own layout, which is where this was found.
+    const board = () => [
+      item('a', 0, 0, 4, 2),
+      item('b', 4, 0, 4, 2),
+      item('c', 8, 0, 4, 2),
+      item('d', 0, 2, 6, 2),
+      item('e', 6, 2, 6, 2),
+    ];
+
+    it('pushes the widget in the way down instead of sinking the group', () => {
+      const result = moveElements(board(), new Set(['a', 'd']), 4, 0, {
+        compactor: vertical,
+        cols: 12,
+      });
+
+      expect(positions(result.layout)).toEqual({
+        // The pair holds the rows it was on...
+        a: '4,0',
+        d: '4,2',
+        // ...`b` was standing there and moves below, `c` never overlapped it and
+        // is left alone, and `e` cascades off `d`.
+        b: '4,4',
+        c: '8,0',
+        e: '6,6',
+      });
+    });
+
+    it('never sinks the group, at any sideways delta', () => {
+      const ids = new Set(['a', 'd']);
+
+      for (let dx = -4; dx <= 8; dx++) {
+        const result = moveElements(board(), ids, dx, 0, {
+          compactor: vertical,
+          cols: 12,
+        });
+        const head = Math.min(
+          ...result.layout.filter((it) => ids.has(it.i)).map((it) => it.y),
+        );
+
+        expect(`dx=${dx} head=${head}`).toBe(`dx=${dx} head=0`);
+      }
+    });
+
+    it('mirrors that across the axis on a horizontal board', () => {
+      const layout = [
+        item('a', 0, 0, 2, 4),
+        item('b', 0, 4, 2, 4),
+        item('c', 0, 8, 2, 4),
+        item('d', 2, 0, 2, 6),
+        item('e', 2, 6, 2, 6),
+      ];
+
+      const result = moveElements(layout, new Set(['a', 'd']), 0, 4, {
+        compactor: horizontal,
+        cols: 12,
+      });
+
+      expect(positions(result.layout)).toEqual({
+        a: '0,4',
+        d: '2,4',
+        b: '4,4',
+        c: '0,8',
+        e: '6,6',
+      });
+    });
+  });
+
   // `compactItemVertical` cascades through `resolveCompactionCollision`, which
   // shoves items *later in the placement order* out of a non-mover's way. When
   // the group is placed after a non-mover — which is every with-gravity drag —
