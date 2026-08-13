@@ -10,7 +10,7 @@ import {
 } from 'react';
 
 import {
-  CURRENT_STYLES,
+  CURRENT_ITEM_STYLES,
   DANGER_CLEAR_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
@@ -64,7 +64,7 @@ export interface CubeItemActionProps
 }
 
 type ItemActionVariant =
-  // Theme-agnostic inherited-color type — see `CURRENT_STYLES`.
+  // Theme-agnostic inherited-color type — see `CURRENT_ITEM_STYLES`.
   | 'default.current'
   | 'default.primary'
   | 'default.outline'
@@ -117,8 +117,9 @@ const ItemActionElement = tasty({
     },
   },
   variants: {
-    // Inherited-color type — theme-agnostic, see `CURRENT_STYLES`
-    'default.current': CURRENT_STYLES,
+    // Inherited-color type — theme-agnostic, see `CURRENT_ITEM_STYLES`. Actions
+    // inside a `current` Item use the borderless item flavour, not the chip.
+    'default.current': CURRENT_ITEM_STYLES,
 
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,

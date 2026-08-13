@@ -5,7 +5,7 @@ import {
   IconHeart,
   IconHeartFilled,
 } from '@tabler/icons-react';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -24,7 +24,7 @@ export default {
   argTypes: {
     /* Visual presentation */
     type: {
-      options: ['primary', 'outline', 'outline-2', 'clear', 'link'],
+      options: ['primary', 'outline', 'outline-2', 'clear', 'link', 'current'],
       control: { type: 'radio' },
       description: 'Visual style variant of the button',
       table: {
@@ -174,14 +174,20 @@ const BUTTON_TYPES = [
   'outline-2',
   'clear',
   'link',
+  'current',
 ] as const;
 
-const SELECTED_TYPES: string[] = ['outline', 'outline-2', 'clear'];
+const SELECTED_TYPES: string[] = ['outline', 'outline-2', 'clear', 'current'];
 
 // Types whose base fill is `#surface-3` and are therefore designed to sit
 // on a `#surface-2` container (so they remain visible against the
 // surrounding ladder).
 const SURFACE_2_TYPES: string[] = ['outline-2'];
+
+// `current` mixes every color from the inherited text color, so it only means
+// anything inside a container that paints one. Shown on a note-colored block
+// here; `CurrentType` below sweeps the rest of the contexts.
+const INHERITED_COLOR_TYPES: string[] = ['current'];
 
 const BASE_MODS = {
   hovered: false,
@@ -318,9 +324,14 @@ const ThemeStatesTemplate: StoryFn<CubeButtonProps> = ({ theme }) => {
   // `outline-2` uses `#surface-3` as its base fill (so it stands out on a
   // `#surface-2` container) and has no counterpart in the special theme,
   // which is anchored on the fixed `#special-surface` base.
-  const visibleTypes = isSpecial
-    ? BUTTON_TYPES.filter((type) => type !== 'outline-2')
-    : BUTTON_TYPES;
+  // `current` derives its colors from the inherited text color and has a
+  // single, theme-agnostic variant — showing it once (on the default theme)
+  // says everything the per-theme repeats would.
+  const visibleTypes = BUTTON_TYPES.filter(
+    (type) =>
+      !(isSpecial && type === 'outline-2') &&
+      !(theme && theme !== 'default' && type === 'current'),
+  );
 
   return (
     <Space
@@ -336,6 +347,17 @@ const ThemeStatesTemplate: StoryFn<CubeButtonProps> = ({ theme }) => {
             key={type}
             flow="column"
             fill="#surface-2"
+            padding="1.5x"
+            radius="1x"
+          >
+            <TypeStatesRow key={type} type={type} theme={theme} />
+          </Space>
+        ) : INHERITED_COLOR_TYPES.includes(type) ? (
+          <Space
+            key={type}
+            flow="column"
+            fill="#note-surface"
+            color="#note-accent-text"
             padding="1.5x"
             radius="1x"
           >
@@ -516,3 +538,116 @@ DisabledWithTooltip.parameters = {
     },
   },
 };
+
+// Contexts the `current` type is meant to live in: each one paints its own text
+// color, and the button is expected to adopt it without any theme prop.
+const CURRENT_CONTEXTS = [
+  { label: 'Page surface (inherited)', fill: undefined, color: undefined },
+  { label: 'Danger', fill: '#danger-surface', color: '#danger-accent-text' },
+  { label: 'Success', fill: '#success-surface', color: '#success-accent-text' },
+  { label: 'Note', fill: '#note-surface', color: '#note-accent-text' },
+  { label: 'Warning', fill: '#warning-surface', color: '#warning-accent-text' },
+  { label: 'Dark banner', fill: '#fixed-dark', color: '#white' },
+  { label: 'Brand', fill: '#primary', color: '#white' },
+] as const;
+
+const CurrentContext = ({
+  label,
+  fill,
+  color,
+  children,
+}: {
+  label: string;
+  fill?: string;
+  color?: string;
+  children: ReactNode;
+}) => (
+  <Space
+    flow="column"
+    gap="1x"
+    padding="1.5x"
+    radius="1x"
+    border={fill ? undefined : true}
+    fill={fill}
+    color={color}
+  >
+    <Title level={6} color={color}>
+      {label}
+    </Title>
+    {children}
+  </Space>
+);
+
+export const CurrentType: StoryFn<CubeButtonProps> = () => (
+  <Space flow="column" gap="3x">
+    <Title level={5}>Inherited Colors</Title>
+    {CURRENT_CONTEXTS.map(({ label, fill, color }) => (
+      <CurrentContext key={label} color={color} fill={fill} label={label}>
+        <Space>
+          <Button type="current" icon={<IconCoin />}>
+            Default
+          </Button>
+          <Button isSelected type="current" icon={<IconCoin />}>
+            Selected
+          </Button>
+          <Button isDisabled type="current" icon={<IconCoin />}>
+            Disabled
+          </Button>
+          <Button isLoading type="current" icon={<IconCoin />}>
+            Loading
+          </Button>
+          <Button type="current" icon={<IconCoin />} />
+        </Space>
+      </CurrentContext>
+    ))}
+
+    <Title level={5}>Resting Fill Calibration</Title>
+    <Title level={6}>
+      Ships with `#current.03`; these override only the resting fill, so the
+      step can be compared against the same hover (`.07`) and border (`.08`).
+    </Title>
+    {[
+      { label: 'On page surface', fill: undefined, color: undefined },
+      { label: 'On #surface-2', fill: '#surface-2', color: undefined },
+      { label: 'On dark', fill: '#fixed-dark', color: '#white' },
+    ].map(({ label, fill, color }) => (
+      <CurrentContext key={label} color={color} fill={fill} label={label}>
+        <Space>
+          {['.02', '.03', '.04', '.05'].map((alpha) => (
+            <Button
+              key={alpha}
+              styles={{ fill: `#current${alpha}` }}
+              type="current"
+            >
+              {alpha === '.03' ? `${alpha} (current)` : alpha}
+            </Button>
+          ))}
+        </Space>
+      </CurrentContext>
+    ))}
+
+    <Title level={5}>Sizes</Title>
+    <CurrentContext color="#note-accent-text" fill="#note-surface" label="Note">
+      <Space placeItems="center">
+        {(['xsmall', 'small', 'medium', 'large', 'xlarge'] as const).map(
+          (size) => (
+            <Button key={size} size={size} type="current" icon={<IconCoin />}>
+              {size}
+            </Button>
+          ),
+        )}
+      </Space>
+    </CurrentContext>
+  </Space>
+);
+
+CurrentType.parameters = {
+  docs: {
+    description: {
+      story:
+        'The `current` type derives every color — fill, border, label, focus ring — from the inherited text color (`currentcolor`), so a button adopts whatever color its container paints with and needs no `theme` (the type has a single, theme-agnostic variant). The label stays fully opaque; the resting chip is a `#current.03` fill inside a `#current.08` border, and hover, pressed and selected step the same alpha ramp up from there. Use it inside colored containers — alerts, banners, dark overlays, tooltips — where a themed type would either clash with the container or have to be picked to match it. `Item` has a `current` type too, shaped like the neutral `item` type instead: borderless and invisible at rest.',
+    },
+  },
+};
+
+CurrentType.args = {};

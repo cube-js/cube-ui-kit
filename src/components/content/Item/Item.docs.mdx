@@ -108,7 +108,7 @@ The `mods` property accepts the following modifiers:
 - `clear` - Transparent item with minimal styling; `isSelected` adds brand-tinted fill
 - `link` - Link-styled item appearance (does not support icons or loading state)
 - `card` - Card appearance for notifications (supports `default`, `success`, `danger`, `warning`, `note` themes; defaults to `shape="card"`, `descriptionPlacement="block"`, uses semantic heading tags via `level` prop, and has `.5x` padding)
-- `current` - Every color — fill, border, label, focus ring — is derived from the inherited text color (`#current`), so the item adopts the color of whatever container it sits in. The label stays fully opaque; the resting fill is a barely-there `#current.02` chip with a `#current.08` border, and hover, pressed and selected step the same alpha ramp up from there. Theme-agnostic: only supports the `default` theme (any other theme warns, since there is nothing for it to change). Use it inside colored containers — alerts, banners, dark overlays, tooltips
+- `current` - Same shape as `item` — no border, nothing painted at rest — but every color is derived from the inherited text color (`#current`) instead of the fixed `#surface-text`, so the item adopts the color of whatever container it sits in. The fill steps in on hover (`.04`), pressed (`.06`) and selected (`.09` → `.15`); the label stays fully opaque. Theme-agnostic: only supports the `default` theme (any other theme warns, since there is nothing for it to change). Use it inside colored containers — alerts, banners, dark overlays, tooltips. `Button` has a `current` type too, shaped like a standalone control instead: a resting `#current.03` chip inside a `#current.08` border
 
 ### Themes
 
@@ -269,7 +269,7 @@ Like headers, card labels use semantic heading tags (h1-h6) controlled by the `l
 
 ### Current Type
 
-Use `type="current"` inside a container that paints its own text color. Fill, border, label and focus ring are all mixed from that inherited color, so the item matches the container without picking a theme — and keeps matching it if the container's color changes:
+Use `type="current"` inside a container that paints its own text color. The fill and label are mixed from that inherited color, so the item matches the container without picking a theme — and keeps matching it if the container's color changes:
 
 ```jsx
 <Block fill="#note-surface" color="#note-accent-text" padding="1.5x" radius="1cr">

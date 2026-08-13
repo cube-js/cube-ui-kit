@@ -2556,15 +2556,19 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
     </Flow>
 
     <Flow gap="2x">
-      <Title level={5}>Resting Fill Calibration</Title>
+      <Title level={5}>Against the Neutral `item` Type</Title>
       <Block preset="t4">
-        The type ships with <code>#current.02</code>. These rows override only
-        the resting fill so the step can be compared against the same hover
-        (.06) and border (.08).
+        Same ramp, same steps — `current` only swaps the fixed `#surface-text`
+        anchor for the inherited color, so on the page surface the two are
+        near-identical, and only `current` follows a colored container.
       </Block>
       {[
         { label: 'On page surface', fill: undefined, color: undefined },
-        { label: 'On #surface-2', fill: '#surface-2', color: undefined },
+        {
+          label: 'On note surface',
+          fill: '#note-surface',
+          color: '#note-accent-text',
+        },
         { label: 'On dark', fill: '#fixed-dark', color: '#white' },
       ].map(({ label, fill, color }) => (
         <Block
@@ -2577,34 +2581,21 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
         >
           <Flow gap="1x" placeItems="start">
             <Block preset="c2">{label}</Block>
-            <Space gap="1x" flow="row wrap" placeItems="start">
-              {['0', '.01', '.015', '.02', '.03', '.05'].map((alpha) => (
-                <Item
-                  key={alpha}
-                  {...args}
-                  type="current"
-                  styles={{ fill: `#current${alpha === '0' ? '.0' : alpha}` }}
-                >
-                  {alpha === '.02' ? `${alpha} (current)` : alpha}
-                </Item>
-              ))}
-            </Space>
+            {(['item', 'current'] as const).map((type) => (
+              <Space key={type} gap="1x" flow="row wrap" placeItems="center">
+                <Block preset="c2" width="8x">
+                  {type}
+                </Block>
+                {CURRENT_STATES.map(({ label: stateLabel, mods }) => (
+                  <Item key={stateLabel} {...args} mods={mods} type={type}>
+                    {stateLabel}
+                  </Item>
+                ))}
+              </Space>
+            ))}
           </Flow>
         </Block>
       ))}
-      <Block preset="t4">Without the border, for comparison:</Block>
-      <Space gap="1x" flow="row wrap" placeItems="start">
-        {['.01', '.02', '.03', '.05'].map((alpha) => (
-          <Item
-            key={alpha}
-            {...args}
-            type="current"
-            styles={{ border: '#clear', fill: `#current${alpha}` }}
-          >
-            {alpha} borderless
-          </Item>
-        ))}
-      </Space>
     </Flow>
 
     <Flow gap="2x">
@@ -2676,7 +2667,7 @@ CurrentType.parameters = {
   docs: {
     description: {
       story:
-        'The `current` type derives every color — fill, border, label, focus ring — from the inherited text color (`currentcolor`), so an item adopts whatever color its context paints with and needs no `theme` (passing one other than `default` warns). The label stays fully opaque; the resting fill is a barely-there `#current.02` chip with a `#current.08` border, and hover, pressed and selected step the same alpha ramp up from there. Use it inside colored containers — alerts, banners, dark overlays, tooltips — where a themed type would either clash with the container or have to be picked to match it.',
+        'The `current` type derives every color — fill and label — from the inherited text color (`currentcolor`), so an item adopts whatever color its context paints with and needs no `theme` (passing one other than `default` warns). It is shaped like the neutral `item` type: no border, nothing painted at rest, the fill stepping in on hover (`.04`), pressed (`.06`) and selected (`.09` → `.15`); the label stays fully opaque. Use it inside colored containers — alerts, banners, dark overlays, tooltips — where a themed type would either clash with the container or have to be picked to match it. `Button` has a `current` type too, shaped like a standalone control instead: a resting `#current.03` chip inside a `#current.08` border.',
     },
   },
 };

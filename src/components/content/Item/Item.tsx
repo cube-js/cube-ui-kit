@@ -23,7 +23,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
-  CURRENT_STYLES,
+  CURRENT_ITEM_STYLES,
   DANGER_CARD_STYLES,
   DANGER_CLEAR_STYLES,
   DANGER_ITEM_STYLES,
@@ -560,8 +560,8 @@ const ItemElement = tasty({
     },
   },
   variants: {
-    // Inherited-color type — theme-agnostic, see `CURRENT_STYLES`
-    'default.current': CURRENT_STYLES,
+    // Inherited-color type — theme-agnostic, see `CURRENT_ITEM_STYLES`
+    'default.current': CURRENT_ITEM_STYLES,
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
