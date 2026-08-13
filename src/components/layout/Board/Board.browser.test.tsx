@@ -687,6 +687,89 @@ describe('Board group move', () => {
     { i: 'b', x: 5, y: 4, w: 4, h: 2 },
   ];
 
+  // The `Selection` story's own layout, geometry and selection gesture: board
+  // defaults for cols/rowHeight/margin/containerPadding (not the zeroed ones the
+  // rest of this file uses — the landing cell is derived from those pixels), the
+  // pair built by pressing one widget and Shift-pressing the next rather than
+  // seeded through `defaultSelectedKeys`.
+  const STORY: LayoutItem[] = [
+    { i: 'a', x: 0, y: 0, w: 4, h: 2 },
+    { i: 'b', x: 4, y: 0, w: 4, h: 2 },
+    { i: 'c', x: 8, y: 0, w: 4, h: 2 },
+    { i: 'd', x: 0, y: 2, w: 6, h: 2 },
+    { i: 'e', x: 6, y: 2, w: 6, h: 2 },
+  ];
+
+  it('lifts a pressed-and-Shift-pressed pair to the top row', async () => {
+    const onLayoutChange = vi.fn();
+
+    renderWithRoot(
+      <div style={{ width: '1168px' }}>
+        <Board
+          padding="1x"
+          widgetProps={{ isCard: true }}
+          selectionMode="multiple"
+          defaultLayout={STORY}
+          onLayoutChange={onLayoutChange}
+        >
+          {STORY.map((it) => (
+            <Board.Widget key={it.i} id={it.i} qa={it.i.toUpperCase()}>
+              {it.i}
+            </Board.Widget>
+          ))}
+        </Board>
+      </div>,
+    );
+    await settled();
+
+    const press = async (id: string, modifier?: 'Shift') => {
+      const el = widget(id);
+      const r = el.getBoundingClientRect();
+      if (modifier) await user.keyboard(`{${modifier}>}`);
+      await user.pointer([
+        {
+          keys: '[MouseLeft]',
+          target: el,
+          coords: coordsAt({
+            x: r.left + r.width / 2,
+            y: r.top + r.height / 2,
+          }),
+        },
+      ]);
+      if (modifier) await user.keyboard(`{/${modifier}}`);
+    };
+
+    await press('d');
+    await press('e', 'Shift');
+    expect(widget('d')).toHaveAttribute('data-selected');
+    expect(widget('e')).toHaveAttribute('data-selected');
+
+    const grabbed = widget('d');
+    const from = grabbed.getBoundingClientRect();
+    // Measured, not assumed: this board runs on the default rowHeight/margin.
+    // `a` is on row 0 and `d` on row 2, so their gap is two rows of pitch.
+    const rowPitch = (from.top - widget('a').getBoundingClientRect().top) / 2;
+
+    await dragPointer(
+      grabbed,
+      { x: from.left + from.width / 2, y: from.top + from.height / 2 },
+      {
+        x: from.left + from.width / 2,
+        y: from.top + from.height / 2 - 2 * rowPitch,
+      },
+    );
+
+    await vi.waitFor(() => expect(onLayoutChange).toHaveBeenCalled());
+    expect(
+      Object.fromEntries(
+        onLayoutChange.mock.lastCall![0].map((it: LayoutItem) => [
+          it.i,
+          `${it.x},${it.y}`,
+        ]),
+      ),
+    ).toEqual({ d: '0,0', e: '6,0', a: '0,2', b: '4,2', c: '8,2' });
+  });
+
   it('moves a diagonal pair to the top and pushes the widget above below it', async () => {
     const onLayoutChange = vi.fn();
     renderBoard(STAIRCASE, {
