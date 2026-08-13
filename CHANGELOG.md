@@ -1,5 +1,25 @@
 # @cube-dev/ui-kit
 
+## 0.160.0
+
+### Minor Changes
+
+- [#1313](https://github.com/cube-js/cube-ui-kit/pull/1313) [`773cb5b0`](https://github.com/cube-js/cube-ui-kit/commit/773cb5b090caeb2c7099f788b5ab3dd5aabba12f) Thanks [@tenphi](https://github.com/tenphi)! - Add a `current` type to `Item` (plus `Item.Action`, and by inheritance `ItemButton`) and to `Button`. Fill, border and label are derived from the inherited text color, so the element adopts the color of whatever container it sits in — alerts, banners, dark overlays, tooltips — with no `theme` to pick. The label stays fully opaque, and the type is theme-agnostic.
+
+  The two components take the shape their neutral types take: on `Item` it matches the `item` type (no border, nothing painted at rest, the fill stepping in on hover/pressed/selected), while on `Button` it is a standalone chip (a resting `#current.03` fill inside a `#current.08` border).
+
+### Patch Changes
+
+- [#1310](https://github.com/cube-js/cube-ui-kit/pull/1310) [`264dca74`](https://github.com/cube-js/cube-ui-kit/commit/264dca74787640b449f9b30b493af5e35284212a) Thanks [@tenphi](https://github.com/tenphi)! - Fix `Disclosure` trigger corners in the `card` shape: the trigger now matches the card's inner radius while collapsed and rounds only its top corners while expanded, and the change is animated. The animation follows `transitionDuration` so the corners stay in step with the panel.
+
+  Fix `Disclosure` overflowing a flex or grid parent. The root now opts out of the automatic minimum size, so wide panel content (a code block, a table) is clipped by the panel rather than stretching the whole disclosure past its parent — `width="max 100%"` is no longer needed at the call site. Growing to fill a row flex parent remains the caller's decision via `flexGrow`.
+
+- [#1311](https://github.com/cube-js/cube-ui-kit/pull/1311) [`aa3fd0b8`](https://github.com/cube-js/cube-ui-kit/commit/aa3fd0b8ad0ec5eed7c3e516cb6a4c8fca4e7a36) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: a marquee (lasso) drag no longer selects text under it. Dragging a band across widgets used to paint a native text selection and leave stray highlighted text behind once the band was gone. The board carries a `marquee` modifier (`data-marquee`) for the length of the gesture.
+
+- [#1311](https://github.com/cube-js/cube-ui-kit/pull/1311) [`aa3fd0b8`](https://github.com/cube-js/cube-ui-kit/commit/aa3fd0b8ad0ec5eed7c3e516cb6a4c8fca4e7a36) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: widgets a marquee (lasso) currently covers now preview the selection while the pointer is still down, instead of only lighting up on release. They carry a new `pre-selected` modifier (`data-pre-selected`) — the selected edge with its ring dimmed — which is restylable exactly like `selected` and is never set on a widget that is already selected.
+
+- [#1311](https://github.com/cube-js/cube-ui-kit/pull/1311) [`aa3fd0b8`](https://github.com/cube-js/cube-ui-kit/commit/aa3fd0b8ad0ec5eed7c3e516cb6a4c8fca4e7a36) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: a multi-widget selection now moves as one rigid block for the whole drag, and displaces the widgets standing wherever it lands instead of being pushed around by them. Previously, dragging a group **up** could leave it where it was while only some of the widgets above it slid down, and members with different neighbours above them ended up on different rows — letting an unrelated widget (a full-width divider, for example) land between them. Dragging a group **sideways** was worse: the group itself sank below the widgets it was supposed to move aside, which made those widgets look pinned in place. Members keep their exact offsets until the drag ends, at which point the board compacts as usual.
+
 ## 0.159.0
 
 ### Minor Changes
