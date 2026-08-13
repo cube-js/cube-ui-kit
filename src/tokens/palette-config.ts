@@ -95,10 +95,11 @@ export interface PaletteConfig {
    * is authored as a fixed tone step off white, so every accent hue lands at roughly
    * the same lightness and the color you asked for never actually appears.
    *
-   * The color is rendered exactly wherever a 3:1 floor against `surface` allows, and
-   * moved only as far as that floor requires. Two things cost exactness:
-   * {@link PaletteConfig.pastel} caps chroma (so `#FFD400` softens to `#e4d8ad`),
-   * and a light color on a light page has to darken to stay distinguishable.
+   * The **light, normal-contrast** variant reproduces the color; dark and high
+   * contrast adapt, as every other color in the palette does. Two things cost
+   * exactness even there: {@link PaletteConfig.pastel} caps chroma (so `#FFD400`
+   * softens), and a color that misses the 3:1 floor against `surface` darkens until
+   * it clears it — and no further.
    *
    * {@link PaletteConfig.hue} and {@link PaletteConfig.saturation} still win when
    * set — the number is the more specific instruction — and the tone keeps coming
@@ -208,12 +209,20 @@ export interface ResolvedPaletteConfig {
   baseHue: number;
   saturation: number;
   /**
-   * Tone (0–100, OKHST) the brand fill is pinned to, read off
-   * {@link PaletteConfig.accentColor}.
+   * The accent color as given, handed to Glaze's `from` so the brand family renders
+   * as that literal value rather than as a shade re-derived from the seed.
    *
-   * `null` — the common case — means no accent color was given and the fill keeps its
-   * white-anchored derivation, which is the only arrangement that reproduces the
+   * `null` — the common case — means no accent color was supplied and the family keeps
+   * its white-anchored derivation, which is the only arrangement that reproduces the
    * shipped palette bit for bit.
+   */
+  accentColor: string | null;
+  /**
+   * The tone of {@link ResolvedPaletteConfig.accentColor}, or `null` alongside it.
+   *
+   * `from` carries the tone itself, so this exists for the one thing that needs the
+   * *number*: the hover brand text sits a fixed tone step past the rest one, and a
+   * step has to be computed.
    */
   accentTone: number | null;
   pastel: boolean;
@@ -290,14 +299,19 @@ function resolveConfig(input: PaletteConfig): ResolvedPaletteConfig {
     );
   }
 
+  // Deliberately NOT `?? accent?.saturation`: the accent family carries the color's
+  // own chroma through Glaze's `from`, so the palette-level seed no longer has to be
+  // raised to reach it. Leaving it alone is what keeps a saturated brand from
+  // re-chromatizing the neutral chrome and every status theme as a side effect.
   const saturation = pastel
     ? DEFAULT_SATURATION
-    : input.saturation ?? accent?.saturation ?? DEFAULT_SATURATION;
+    : input.saturation ?? DEFAULT_SATURATION;
 
   return {
     hue,
     baseHue,
     saturation,
+    accentColor: accent ? input.accentColor! : null,
     accentTone: accent?.tone ?? null,
     pastel,
     contrastLevel: input.contrastLevel ?? 'auto',
@@ -387,10 +401,10 @@ function isSameConfig(a: ResolvedPaletteConfig, b: ResolvedPaletteConfig) {
     a.hue === b.hue &&
     a.baseHue === b.baseHue &&
     a.saturation === b.saturation &&
-    // `hue` and `saturation` already carry whatever an accent color derived, so tone
-    // is the one reading they cannot discriminate: two colors can agree on both and
-    // still be a different lightness of the brand.
-    a.accentTone === b.accentTone &&
+    // The color itself, not just what it derived: `hue` no longer carries its chroma
+    // (the accent family gets that through Glaze's `from`), so two different brands
+    // can agree on every numeric seed and still render differently.
+    a.accentColor === b.accentColor &&
     a.pastel === b.pastel &&
     a.contrastLevel === b.contrastLevel &&
     a.themes.code.saturation === b.themes.code.saturation &&

@@ -137,6 +137,14 @@ const ACCENT_RAMP = {
 const ACCENT_TEXT_HOVER_STEP = 6;
 
 /**
+ * The caller's brand color, or `null` for the shipped derivation.
+ *
+ * Carries the literal — which is what Glaze's `from` consumes — alongside its tone,
+ * because {@link ACCENT_TEXT_HOVER_STEP} needs the number to compute a step past it.
+ */
+type AccentSeed = { color: string; tone: number } | null;
+
+/**
  * Opaque stand-in for the BASE selected fill used by outline / outline-2 / clear Item
  * types (`#surface|#surface-2|#surface-3` + `#accent-surface.09`).
  *
@@ -434,27 +442,24 @@ export const TINT_RECIPE: ColorMap = {
  * light tone from 38.76 to 48.63 and the `accent-surface` high-contrast tone from
  * 36.08 to 51.00. Nothing on this path may change — `palette.test.ts` snapshots it.
  *
- * **A number** — the caller handed us a color, and the job is to render *that*. The
- * fill is pinned to the color's own tone against `surface`, and the floors drop to
- * {@link ACCENT_FILL_CONTRAST}. Both halves are necessary: anchored the shipped way,
- * every accent hue lands at roughly tone 50 whatever lightness went in, and a 4.5
- * floor then crushes anything light on top of that.
+ * **A color** — the caller handed us one, and the job is to render *that*. Glaze's
+ * `from` takes the value directly: it supplies the hue, the tone, and an absolute
+ * saturation that does not answer to the theme seed, and it reproduces the value
+ * exactly in the light/normal-contrast variant. The floors drop to
+ * {@link ACCENT_FILL_CONTRAST} on top, because anchored the shipped way every accent
+ * lands at roughly tone 50 whatever went in, and a 4.5 floor then crushes anything
+ * light besides.
  *
- * Three details worth keeping straight:
+ * Two details worth keeping straight:
  *
- * - **`mode: 'static'`, not `'fixed'`.** `fixed` still remaps the authored tone through
- *   `lightTone: [10, 100]`, which lands ~3 tone units off even when no floor binds
- *   (`#7A4DBF` renders `#8053c6`). `static` bypasses the windows, so the color is
- *   byte-exact wherever the floor allows. The floor is still solved per scheme, which
- *   is why a near-black brand correctly lifts off a dark page.
  * - **The ramp carries no floor.** Re-anchored onto the fill, an `['AA','AAA']` floor
  *   is measured against the *fill* rather than white and collapses all three steps to
  *   near-black. A plain tone step is what the relationship actually is.
  * - **The text pair stays `mode: 'auto'`.** Link text has to invert on a dark page, so
- *   byte-exactness belongs to the fill; the text is a brand-toned companion of it.
+ *   exactness belongs to the fill; the text is a brand-toned companion of it.
  */
-function accentFillColors(accentTone: number | null): ColorMap {
-  if (accentTone == null) {
+function accentFillColors(accent: AccentSeed): ColorMap {
+  if (accent == null) {
     return {
       // ---- Accent system (theme-aware, inherited by colored themes) ----
       // Everything here is anchored to a fixed white "accent-surface-text" via
@@ -511,25 +516,25 @@ function accentFillColors(accentTone: number | null): ColorMap {
     // white label keeps working on it.
     'accent-surface-text': { tone: 100, mode: 'fixed' },
     'accent-surface': {
+      from: accent.color,
       base: 'surface',
-      tone: accentTone,
       contrast: ACCENT_FILL_CONTRAST,
-      mode: 'static',
+      mode: 'fixed',
     },
     'accent-surface-2': {
       base: 'accent-surface',
       tone: ACCENT_RAMP.surface2,
-      mode: 'static',
+      mode: 'fixed',
     },
     'accent-surface-3': {
       base: 'accent-surface',
       tone: ACCENT_RAMP.surface3,
-      mode: 'static',
+      mode: 'fixed',
     },
     'accent-surface-hover': {
       base: 'accent-surface',
       tone: ACCENT_RAMP.hover,
-      mode: 'static',
+      mode: 'fixed',
     },
     // `'+13'` overshoots 100 on a light brand and `autoFlip` mirrors it to `-13`,
     // which is the right answer either way: a border on a light fill has to be the
@@ -537,7 +542,7 @@ function accentFillColors(accentTone: number | null): ColorMap {
     'accent-surface-border': {
       base: 'accent-surface',
       tone: '+13',
-      mode: 'static',
+      mode: 'fixed',
     },
   };
 }
@@ -553,8 +558,8 @@ function accentFillColors(accentTone: number | null): ColorMap {
  * These stay `mode: 'auto'` in both arrangements — a link has to invert on a dark page,
  * so exactness belongs to the fill and these are its brand-toned companions.
  */
-function accentTextColors(accentTone: number | null): ColorMap {
-  if (accentTone == null) {
+function accentTextColors(accent: AccentSeed): ColorMap {
+  if (accent == null) {
     return {
       ...ACCENT_SELECTED_FILL,
       // Stronger brand text for HOVERED selected outline/clear labels and LINK
@@ -595,32 +600,32 @@ function accentTextColors(accentTone: number | null): ColorMap {
     // The rest link color IS the brand, which is the visible payoff of a color seed;
     // the hover one steps past it so the intensify survives. See
     // ACCENT_TEXT_HOVER_STEP.
+    // The hover text is the one place the derived NUMBER is still needed: `from`
+    // carries the tone, but a step past it has to be computed.
     'accent-text': {
+      from: accent.color,
       base: 'accent-selected-fill',
-      tone: Math.max(0, accentTone - ACCENT_TEXT_HOVER_STEP),
-      saturation: 1,
+      tone: Math.max(0, accent.tone - ACCENT_TEXT_HOVER_STEP),
       contrast: ACCENT_TEXT_HOVER_CONTRAST,
     },
     'accent-text-soft': {
+      from: accent.color,
       base: 'accent-selected-fill',
-      tone: accentTone,
-      saturation: 1,
       contrast: ACCENT_TEXT_CONTRAST,
     },
     'accent-icon': {
+      from: accent.color,
       base: 'surface',
-      tone: accentTone,
-      saturation: 0.9375,
       contrast: ACCENT_TEXT_CONTRAST,
     },
   };
 }
 
 /** Every accent token the default theme carries — fills, foregrounds, and the mix. */
-function accentColors(accentTone: number | null): ColorMap {
+function accentColors(accent: AccentSeed): ColorMap {
   return {
-    ...accentFillColors(accentTone),
-    ...accentTextColors(accentTone),
+    ...accentFillColors(accent),
+    ...accentTextColors(accent),
   };
 }
 
@@ -653,11 +658,17 @@ function buildPalette(
     hue,
     baseHue,
     saturation,
+    accentColor,
     accentTone,
     pastel,
     themes,
     contrastLevel,
   } = config;
+
+  const accent: AccentSeed =
+    accentColor !== null && accentTone !== null
+      ? { color: accentColor, tone: accentTone }
+      : null;
 
   // The one override the code theme shares with the rest of the palette.
   const sharedOverrides: GlazeConfigOverride = options.isolateContrastLevel
@@ -848,7 +859,7 @@ function buildPalette(
 
     // ---- Accent system (theme-aware, inherited by colored themes) ----
     // Two arrangements, one per seeding mode — see `accentColors`.
-    ...accentColors(accentTone),
+    ...accentColors(accent),
 
     // Brand-tinted disabled chip + label for PRIMARY-style buttons (solid brand
     // fill). The chip is scheme-symmetric (`mode: 'fixed'`) so the muted state
@@ -955,7 +966,7 @@ function buildPalette(
   // With no accent color this is `TINTED_SURFACE_OVERRIDE` itself, so the shipped
   // palette is provably untouched.
   const statusColors: ColorMap =
-    accentTone == null
+    accent == null
       ? TINTED_SURFACE_OVERRIDE
       : { ...TINTED_SURFACE_OVERRIDE, ...accentColors(null) };
 
@@ -1026,7 +1037,7 @@ function buildPalette(
     // Only the fills: `accent-selected-fill`, `accent-text-soft` and `accent-icon` are
     // not part of this theme's purpose-built shape, and adding them would grow the
     // emitted token set.
-    ...accentFillColors(accentTone),
+    ...accentFillColors(accent),
 
     // Special's `accent-text` is "dark brand, readable on a WHITE pill" (the CLEAR
     // selected fill) — not on `surface`, which here is the fixed dark backdrop. It

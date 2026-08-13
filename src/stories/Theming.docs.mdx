@@ -126,16 +126,20 @@ setPaletteConfig({ accentColor: '#2F5BFF', hue: 300 }); // hue 300, tone still #
 The palette renders the color you asked for, and moves it only as far as it has to. Two
 things can make it move.
 
+First, **exactness is scoped to the light, normal-contrast variant.** That is the one
+that reproduces your color. Dark and high contrast adapt, as every other color in the
+palette does — they are different pages, and a brand pinned across all four would be
+less faithful, not more. What holds everywhere is the floor below.
+
 **The fill has a 3:1 floor against the page.** That is WCAG's non-text floor: enough
 that a button reads as a shape on the surface. It is a floor and not a target — a brand
-already at 5:1, or 17:1, is emitted exactly as given. It is also solved **per scheme**,
-so which scheme is exact depends on the color: `#FFD400` cannot clear 3:1 against a
-white page and darkens in light, while on a dark page it clears it easily and renders
-byte-exact. A near-black brand is the mirror image.
+already at 5:1, or 17:1, is emitted exactly as given, and one that misses moves only as
+far as the floor. `#FFD400` cannot clear 3:1 on a white page, so it darkens to
+`#b09200`; `#7A4DBF` measures 5.8:1 and is left alone.
 
-High contrast is the exception, deliberately. There the floor goes back to AAA whatever
-you passed, because that tier is selected by `prefers-contrast: more` or an explicit
-`data-contrast="high"` — anyone reading it has asked for separation over brand.
+High contrast tightens it further, deliberately: there the floor goes back to AAA
+whatever you passed, because that tier is selected by `prefers-contrast: more` or an
+explicit `data-contrast="high"` — anyone reading it has asked for separation over brand.
 
 **`pastel` caps chroma.** The flat, hue-independent ceiling is what makes pastel even
 across hues, and it sits below where a saturated color would land, so under it a color

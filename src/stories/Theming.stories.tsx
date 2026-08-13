@@ -479,13 +479,6 @@ function BaseSourceControls() {
 
 function SaturationControls() {
   const [palette, setPalette] = usePaletteConfig();
-  const input = getPaletteConfigInput();
-  const mode = useAccentMode();
-
-  // With a color seed and pastel off, the color's own chroma IS the saturation, so the
-  // slider is reporting a derived value rather than one it owns.
-  const fromColor =
-    mode === 'color' && !palette.pastel && input.saturation === undefined;
 
   return (
     <Section>
@@ -497,19 +490,13 @@ function SaturationControls() {
         Pastel
       </Switch>
       <Slider
-        // Rounded like the hue labels, and for a new reason as well: a saturation read
-        // off a color is a float, so the raw value would print as 99.9998610927005.
-        label={`Saturation — ${Math.round(palette.saturation)}${
-          palette.pastel
-            ? ' (pinned by pastel)'
-            : fromColor
-              ? ' (from the color)'
-              : ''
+        label={`Saturation — ${palette.saturation}${
+          palette.pastel ? ' (pinned by pastel)' : ''
         }`}
         minValue={0}
         maxValue={100}
-        isDisabled={palette.pastel || fromColor}
-        value={Math.round(palette.saturation)}
+        isDisabled={palette.pastel}
+        value={palette.saturation}
         onChange={(saturation) =>
           setPalette((config) => ({ ...config, saturation }))
         }
@@ -520,7 +507,13 @@ function SaturationControls() {
           ceiling is what makes it even across hues, and a second scale on top
           of it would only undo that. Turn pastel off for a free 0–100 scale.
         </Note>
-      ) : null}
+      ) : (
+        <Note>
+          Independent of the accent color: the brand family carries its own
+          chroma, so a color seed no longer moves this — and cannot wash the
+          neutral chrome or the status themes along with it.
+        </Note>
+      )}
     </Section>
   );
 }
@@ -570,12 +563,10 @@ function StatusControls() {
               onChange={(hue) => setPalette(statusSeed(name, { hue }))}
             />
             <Slider
-              // Rounded because this inherits the palette seed until it is pinned, and
-              // a palette seed read off an accent color is a float.
-              label={`${name} saturation — ${Math.round(seed.saturation)}`}
+              label={`${name} saturation — ${seed.saturation}`}
               minValue={0}
               maxValue={100}
-              value={Math.round(seed.saturation)}
+              value={seed.saturation}
               onChange={(saturation) =>
                 setPalette(statusSeed(name, { saturation }))
               }

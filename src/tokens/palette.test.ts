@@ -132,6 +132,11 @@ function toneOf(value: string): number {
   );
 }
 
+/** Hue of an emitted `oklch(L C H)` token value. */
+function hueOf(value: string): number {
+  return Number(value.trim().split(/\s+/)[2].replace(')', ''));
+}
+
 /** WCAG contrast ratio between two emitted token values. */
 function contrastOf(a: string, b: string): number {
   const luminance = (value: string) => {
@@ -1045,55 +1050,57 @@ describe('accent color seeds', () => {
    */
   it('renders the requested color exactly wherever the floor allows', () => {
     for (const accentColor of BRANDS) {
-      for (const scheme of ['light', 'dark'] as const) {
-        const tokens = renderPaletteTokens({ ...EXACT, accentColor, scheme });
-        const fill = String(tokens['#accent-surface']);
-        const surface = String(tokens['#surface']);
-        const label = `${accentColor} ${scheme}`;
+      const tokens = renderPaletteTokens({
+        ...EXACT,
+        accentColor,
+        scheme: 'light',
+      });
+      const fill = String(tokens['#accent-surface']);
+      const surface = String(tokens['#surface']);
 
-        const wanted = contrastOf(accentColor, surface);
-        const got = contrastOf(fill, surface);
+      const wanted = contrastOf(accentColor, surface);
+      const got = contrastOf(fill, surface);
 
-        if (wanted >= 3) {
-          // Nothing to solve, so nothing may move.
-          expectSameColor(hexOf(fill), accentColor.toLowerCase(), label);
-          expect(got, label).toBeCloseTo(wanted, 2);
-        } else {
-          // Solved to the floor and stopped there — not to AA, not to the far side.
-          expect(got, label).toBeGreaterThanOrEqual(3);
-          expect(got, label).toBeLessThan(3.2);
-        }
+      if (wanted >= 3) {
+        // Nothing to solve, so nothing may move.
+        expectSameColor(hexOf(fill), accentColor.toLowerCase(), accentColor);
+        expect(got, accentColor).toBeCloseTo(wanted, 2);
+      } else {
+        // Solved to the floor and stopped there — not to AA, not to the far side.
+        expect(got, accentColor).toBeGreaterThanOrEqual(3);
+        expect(got, accentColor).toBeLessThan(3.2);
       }
     }
   });
 
-  it('flips which scheme is exact according to the brand’s own lightness', () => {
-    // The concrete shape of the invariant above, and the evidence that the floor is
-    // solved per scheme rather than once: a light brand cannot clear 3:1 on a white
-    // page but clears it easily on a dark one, so `#FFD400` is exact in dark and
-    // floored in light. A dark brand is the mirror image.
-    const light = (c: string) =>
-      hexOf(
-        String(
-          renderPaletteTokens({ ...EXACT, accentColor: c, scheme: 'light' })[
-            '#accent-surface'
-          ],
-        ),
-      );
-    const dark = (c: string) =>
-      hexOf(
-        String(
-          renderPaletteTokens({ ...EXACT, accentColor: c, scheme: 'dark' })[
-            '#accent-surface'
-          ],
-        ),
-      );
+  it('lets dark adapt rather than pinning the color across schemes', () => {
+    // Exactness is scoped to light / normal contrast on purpose. Dark is a
+    // different page, and a fill pinned to one lightness across both would be a
+    // worse `mode: 'fixed'` rather than a faithful brand — so the dark variant
+    // maps through the dark tone window like any other fixed-mode color.
+    //
+    // What must hold in dark is the floor, not the value.
+    for (const accentColor of BRANDS) {
+      const tokens = renderPaletteTokens({
+        ...EXACT,
+        accentColor,
+        scheme: 'dark',
+      });
+      const fill = String(tokens['#accent-surface']);
 
-    expectSameColor(dark('#FFD400'), '#ffd400', '#FFD400 dark');
-    expect(light('#FFD400')).not.toBe('#ffd400');
+      expect(
+        contrastOf(fill, String(tokens['#surface'])),
+        accentColor,
+      ).toBeGreaterThanOrEqual(3);
+    }
 
-    expectSameColor(light('#111827'), '#111827', '#111827 light');
-    expect(dark('#111827')).not.toBe('#111827');
+    // …and it really is a different value, for a color the window has to move.
+    const dark = renderPaletteTokens({
+      ...EXACT,
+      accentColor: '#FFD400',
+      scheme: 'dark',
+    });
+    expect(hexOf(String(dark['#accent-surface']))).not.toBe('#ffd400');
   });
 
   it('keeps the fill ramp separated in high contrast', () => {
@@ -1245,23 +1252,21 @@ describe('accent color seeds', () => {
 
   it('leaves the status themes on their own fill derivation', () => {
     // A status hue signals a meaning, so it keeps the white-anchored derivation that
-    // lands every hue at a comparable weight. Inherited, a light brand would put
-    // `#danger-accent-surface` at tone 88 in a red hue — a pale pink danger button.
+    // lands every hue at a comparable weight. The stakes are higher now that the
+    // brand is a literal: `extend()` copies defs, so an inherited `from` would make
+    // `#danger-accent-surface` the brand color outright — a yellow danger button, not
+    // merely a washed-out one.
     //
-    // Compared at a matched saturation rather than against the shipped default,
-    // because `saturation` is one palette-wide scale and a color seed legitimately
-    // moves it for every theme. The tone is the part that must not travel.
-    const seed = colorSeed('#FFD400')!;
+    // Compared against the untouched baseline, which is the strong form of the claim.
+    // It holds because the accent family carries its own chroma through `from` and no
+    // longer raises the palette-level `saturation` to reach it — so a brand color has
+    // nothing left to leak into a status theme.
     const seeded = renderPaletteTokens({
       ...EXACT,
       accentColor: '#FFD400',
       scheme: 'light',
     });
-    const reference = renderPaletteTokens({
-      ...EXACT,
-      saturation: seed.saturation,
-      scheme: 'light',
-    });
+    const baseline = renderPaletteTokens({ ...EXACT, scheme: 'light' });
 
     for (const name of [
       '#danger-accent-surface',
@@ -1269,8 +1274,17 @@ describe('accent color seeds', () => {
       '#warning-accent-surface',
       '#note-accent-surface',
     ]) {
-      expect(seeded[name], name).toBe(reference[name]);
+      expect(seeded[name], name).toBe(baseline[name]);
     }
+
+    // The neutral chrome still re-hues, and should: `baseHue` inherits the accent
+    // hue, so the greys keep their faint tint of the brand. What it no longer does is
+    // change *chroma* — only the hue moved.
+    expect(seeded['#border']).not.toBe(baseline['#border']);
+    expect(hueOf(String(seeded['#border']))).toBeCloseTo(
+      colorSeed('#FFD400')!.hue,
+      1,
+    );
   });
 
   it('carries the brand into the special theme', () => {
@@ -1280,7 +1294,7 @@ describe('accent color seeds', () => {
     const tokens = renderPaletteTokens({
       ...EXACT,
       accentColor: '#FFD400',
-      scheme: 'dark',
+      scheme: 'light',
     });
 
     expectSameColor(
