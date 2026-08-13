@@ -971,9 +971,13 @@ export const CURRENT_ITEM_STYLES: Styles = {
 // `.024`/`.048`) so the chip stays a muted version of itself instead of
 // vanishing.
 export const CURRENT_BUTTON_STYLES: Styles = {
+  // The focus ring is the one color NOT taken from `#current`: every type in
+  // this file uses `#primary-accent-text` (the special theme swapping in its
+  // fixed-mode counterpart), so the focus indicator stays the same wherever it
+  // appears.
   outline: {
-    '': '0 #current.0',
-    focused: '1bw #current',
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
   },
   border: {
     '': '#current.08',

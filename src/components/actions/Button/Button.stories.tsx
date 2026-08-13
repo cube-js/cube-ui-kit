@@ -645,7 +645,7 @@ CurrentType.parameters = {
   docs: {
     description: {
       story:
-        'The `current` type derives every color — fill, border, label, focus ring — from the inherited text color (`currentcolor`), so a button adopts whatever color its container paints with and needs no `theme` (the type has a single, theme-agnostic variant). The label stays fully opaque; the resting chip is a `#current.03` fill inside a `#current.08` border, and hover, pressed and selected step the same alpha ramp up from there. Use it inside colored containers — alerts, banners, dark overlays, tooltips — where a themed type would either clash with the container or have to be picked to match it. `Item` has a `current` type too, shaped like the neutral `item` type instead: borderless and invisible at rest.',
+        'The `current` type derives its colors — fill, border, label — from the inherited text color (`currentcolor`), so a button adopts whatever color its container paints with and needs no `theme` (the type has a single, theme-agnostic variant). The label stays fully opaque; the resting chip is a `#current.03` fill inside a `#current.08` border, and hover, pressed and selected step the same alpha ramp up from there. The focus ring stays `#primary-accent-text`, like every other type. Use it inside colored containers — alerts, banners, dark overlays, tooltips — where a themed type would either clash with the container or have to be picked to match it. `Item` has a `current` type too, shaped like the neutral `item` type instead: borderless and invisible at rest.',
     },
   },
 };

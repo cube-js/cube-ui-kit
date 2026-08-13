@@ -91,7 +91,7 @@ The `mods` prop accepts the following modifiers you can override:
 - `outline` – Border with transparent background; `isSelected` adds brand-tinted fill.
 - `clear` – No border, transparent background; `isSelected` adds brand-tinted fill.
 - `link` – Styled as a textual link.
-- `current` – Every color — fill, border, label, focus ring — is mixed from the inherited text color (`#current`), so the button adopts the color of whatever container it sits in. The resting chip is a `#current.03` fill inside a `#current.08` border, and hover, pressed and selected step the same alpha ramp up from there; the label stays fully opaque. Theme-agnostic — there is a single variant, and `theme` has no effect. Use it inside colored containers (alerts, banners, dark overlays, tooltips). `Item` has a `current` type too, shaped like its neutral `item` type instead: borderless and invisible at rest.
+- `current` – Fill, border and label are mixed from the inherited text color (`#current`), so the button adopts the color of whatever container it sits in. The resting chip is a `#current.03` fill inside a `#current.08` border, and hover, pressed and selected step the same alpha ramp up from there; the label stays fully opaque. The focus ring stays `#primary-accent-text`, like every other type. Theme-agnostic — there is a single variant, and `theme` has no effect. Use it inside colored containers (alerts, banners, dark overlays, tooltips). `Item` has a `current` type too, shaped like its neutral `item` type instead: borderless and invisible at rest.
 
 ### Themes. `theme` prop
 
