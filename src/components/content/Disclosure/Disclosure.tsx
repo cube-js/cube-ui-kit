@@ -162,6 +162,13 @@ const DisclosureRoot = tasty({
     flow: 'column',
     gap: 0,
     position: 'relative',
+    // Flex and grid items get `min-width: auto`, which resolves to the
+    // min-content width of the panel — so a disclosure holding a code block or
+    // a table used to blow out of any flex/grid parent, and no amount of
+    // `flexShrink` could pull it back. The panel is already clipped by the
+    // wrapper's `overflow: hidden`, so opting out of that minimum is what lets
+    // the disclosure take its width from the parent.
+    width: 'min 0',
     border: {
       '': 'none',
       'shape=card': '1bw solid #border',
@@ -232,10 +239,17 @@ const StyledTrigger = tasty(ItemButton, {
   styles: {
     radius: {
       '': '1r',
-      'expanded & shape=card': '(1cr - 1bw) (1cr - 1bw) 0 0',
+      // Card shape: the trigger sits inside the bordered root, so it follows
+      // the root's inner radius and drops its bottom corners while open so the
+      // header reads as one surface with the panel below it.
+      'shape=card': '(1cr - 1bw)',
+      'expanded & shape=card': '(1cr - 1bw) top',
       'shape=sharp': '0',
     },
     border: '#clear',
+    // `radius` on the disclosure timing so the corners un-round in step with
+    // the panel opening, and follow `transitionDuration` when it is set.
+    transition: 'theme, radius $disclosure-transition',
   },
 });
 
@@ -333,9 +347,25 @@ const DisclosureComponent = forwardRef<HTMLDivElement, CubeDisclosureProps>(
     const content =
       typeof children === 'function' ? children(stateContext) : children;
 
+    // Declared on the root rather than the panel so both animations driven by
+    // it — the panel height and the trigger radius — share one duration.
+    const tokens = useMemo(
+      () =>
+        transitionDuration != null
+          ? { '$disclosure-transition': `${transitionDuration}ms` }
+          : undefined,
+      [transitionDuration],
+    );
+
     return (
       <DisclosureContext.Provider value={contextValue}>
-        <DisclosureRoot ref={ref} qa={qa} mods={finalMods} styles={outerStyles}>
+        <DisclosureRoot
+          ref={ref}
+          qa={qa}
+          mods={finalMods}
+          styles={outerStyles}
+          tokens={tokens}
+        >
           {content}
         </DisclosureRoot>
       </DisclosureContext.Provider>
@@ -426,11 +456,6 @@ const DisclosureContent = forwardRef<
         <ContentWrapperElement
           ref={transitionRef}
           mods={{ shown: isShown, phase }}
-          tokens={
-            transitionDuration != null
-              ? { '$disclosure-transition': `${transitionDuration}ms` }
-              : undefined
-          }
         >
           <ContentElement
             ref={mergeRefs(ref, panelRef)}
