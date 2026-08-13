@@ -23,6 +23,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
+  CURRENT_STYLES,
   DANGER_CARD_STYLES,
   DANGER_CLEAR_STYLES,
   DANGER_ITEM_STYLES,
@@ -181,6 +182,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'clear'
     | 'link'
     | 'card'
+    | 'current'
     | (string & {});
   theme?:
     | 'default'
@@ -558,6 +560,8 @@ const ItemElement = tasty({
     },
   },
   variants: {
+    // Inherited-color type — theme-agnostic, see `CURRENT_STYLES`
+    'default.current': CURRENT_STYLES,
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
@@ -685,11 +689,16 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   ];
   const CARD_THEMES = ['default', 'success', 'danger', 'warning', 'note'];
   const HEADER_THEMES = ['default'];
+  // `current` takes every color from the inherited `currentcolor`, so a theme
+  // would have nothing to change.
+  const CURRENT_THEMES = ['default'];
 
   const isInvalidCombination =
     (type === 'header' && !HEADER_THEMES.includes(theme)) ||
+    (type === 'current' && !CURRENT_THEMES.includes(theme)) ||
     (type === 'card' && !CARD_THEMES.includes(theme)) ||
-    (!['header', 'card'].includes(type) && !STANDARD_THEMES.includes(theme));
+    (!['header', 'current', 'card'].includes(type) &&
+      !STANDARD_THEMES.includes(theme));
 
   useWarn(isInvalidCombination, {
     key: ['Item', 'invalid-type-theme', type, theme],
@@ -697,9 +706,11 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       `Item: Invalid type+theme combination. type="${type}" does not support theme="${theme}".` +
         (type === 'header'
           ? ' The "header" type only supports theme: default.'
-          : type === 'card'
-            ? ' The "card" type only supports themes: default, success, danger, warning, note.'
-            : ' Standard types support themes: default, success, danger, warning, note, special.'),
+          : type === 'current'
+            ? ' The "current" type derives every color from the inherited text color and only supports theme: default.'
+            : type === 'card'
+              ? ' The "card" type only supports themes: default, success, danger, warning, note.'
+              : ' Standard types support themes: default, success, danger, warning, note, special.'),
     ],
   });
 
@@ -982,12 +993,20 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     const effectiveType =
       theme === 'special' && type === 'outline-2' ? 'outline' : type;
 
+    // `header` reuses the `item` visuals, and both `header` and `current` are
+    // theme-agnostic — `current` paints from the inherited `currentcolor`.
+    const variantType = effectiveType === 'header' ? 'item' : effectiveType;
+    const variantTheme =
+      effectiveType === 'header' || effectiveType === 'current'
+        ? 'default'
+        : theme;
+
     return (
       <ItemElement
         ref={handleRef}
         variant={
-          theme && effectiveType
-            ? (`${effectiveType === 'header' ? 'default' : theme}.${effectiveType === 'header' ? 'item' : effectiveType}` as ItemVariant)
+          theme && variantType
+            ? (`${variantTheme}.${variantType}` as ItemVariant)
             : undefined
         }
         disabled={isNativelyDisabled}

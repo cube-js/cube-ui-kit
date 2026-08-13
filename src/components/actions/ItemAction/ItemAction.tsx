@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 import {
+  CURRENT_STYLES,
   DANGER_CLEAR_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
@@ -44,7 +45,7 @@ export interface CubeItemActionProps
   children?: ReactNode;
   isLoading?: boolean;
   isSelected?: boolean;
-  type?: 'primary' | 'outline' | 'clear' | (string & {});
+  type?: 'primary' | 'outline' | 'clear' | 'current' | (string & {});
   theme?:
     | 'default'
     | 'danger'
@@ -63,6 +64,8 @@ export interface CubeItemActionProps
 }
 
 type ItemActionVariant =
+  // Theme-agnostic inherited-color type — see `CURRENT_STYLES`.
+  | 'default.current'
   | 'default.primary'
   | 'default.outline'
   | 'default.clear'
@@ -114,6 +117,9 @@ const ItemActionElement = tasty({
     },
   },
   variants: {
+    // Inherited-color type — theme-agnostic, see `CURRENT_STYLES`
+    'default.current': CURRENT_STYLES,
+
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
@@ -284,7 +290,9 @@ export const ItemAction = forwardRef(function ItemAction(
     return (
       <ItemActionElement
         {...mergedProps}
-        variant={`${theme}.${finalType}` as ItemActionVariant}
+        variant={
+          `${finalType === 'current' ? 'default' : theme}.${finalType}` as ItemActionVariant
+        }
         data-theme={theme}
         data-type={finalType}
         tabIndex={finalTabIndex}

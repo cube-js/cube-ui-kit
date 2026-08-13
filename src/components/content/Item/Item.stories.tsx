@@ -2458,6 +2458,229 @@ TypesAndThemes.parameters = {
   },
 };
 
+// Contexts the `current` type is meant to live in: each one paints its own text
+// color, and the item is expected to adopt it without any theme prop.
+const CURRENT_CONTEXTS = [
+  { label: 'Page surface (inherited)', fill: undefined, color: undefined },
+  { label: 'Danger', fill: '#danger-surface', color: '#danger-accent-text' },
+  { label: 'Success', fill: '#success-surface', color: '#success-accent-text' },
+  { label: 'Note', fill: '#note-surface', color: '#note-accent-text' },
+  { label: 'Warning', fill: '#warning-surface', color: '#warning-accent-text' },
+  { label: 'Dark banner', fill: '#fixed-dark', color: '#white' },
+  { label: 'Brand', fill: '#primary', color: '#white' },
+] as const;
+
+// `hovered` / `pressed` / `focused` are plain tasty mods, so the whole ramp can
+// be rendered statically side by side instead of one hover at a time.
+const CURRENT_STATES = [
+  { label: 'default', mods: {} },
+  { label: 'hovered', mods: { hovered: true } },
+  { label: 'focused', mods: { focused: true } },
+  { label: 'pressed', mods: { pressed: true } },
+  { label: 'selected', mods: { selected: true } },
+  { label: 'selected + hovered', mods: { selected: true, hovered: true } },
+  { label: 'selected + pressed', mods: { selected: true, pressed: true } },
+  { label: 'disabled', mods: { disabled: true } },
+] as const;
+
+export const CurrentType: StoryFn<CubeItemProps> = (args) => (
+  <Flow gap="4x">
+    <Flow gap="2x">
+      <Title level={5}>Inherited Colors</Title>
+      <Space gap="2x" flow="row wrap" placeItems="start">
+        {CURRENT_CONTEXTS.map(({ label, fill, color }) => (
+          <Block
+            key={label}
+            padding="1.5x"
+            radius="1cr"
+            border={fill ? undefined : true}
+            fill={fill}
+            color={color}
+          >
+            <Flow gap="1x" placeItems="start">
+              <Block preset="c2">{label}</Block>
+              <Space gap="1x" flow="row wrap" placeItems="start">
+                <Item {...args} type="current" icon={<IconUser />}>
+                  Default
+                </Item>
+                <Item {...args} isSelected type="current" icon={<IconUser />}>
+                  Selected
+                </Item>
+                <Item {...args} isDisabled type="current" icon={<IconUser />}>
+                  Disabled
+                </Item>
+              </Space>
+            </Flow>
+          </Block>
+        ))}
+      </Space>
+    </Flow>
+
+    <Flow gap="2x">
+      <Title level={5}>State Ramp</Title>
+      {[
+        { label: 'On page surface', fill: undefined, color: undefined },
+        { label: 'On dark', fill: '#fixed-dark', color: '#white' },
+        {
+          label: 'On danger surface',
+          fill: '#danger-surface',
+          color: '#danger-accent-text',
+        },
+      ].map(({ label, fill, color }) => (
+        <Block
+          key={label}
+          padding="1.5x"
+          radius="1cr"
+          border={fill ? undefined : true}
+          fill={fill}
+          color={color}
+        >
+          <Flow gap="1x" placeItems="start">
+            <Block preset="c2">{label}</Block>
+            <Space gap="1x" flow="row wrap" placeItems="start">
+              {CURRENT_STATES.map(({ label: stateLabel, mods }) => (
+                <Item
+                  key={stateLabel}
+                  {...args}
+                  mods={mods}
+                  type="current"
+                  icon={<IconUser />}
+                >
+                  {stateLabel}
+                </Item>
+              ))}
+            </Space>
+          </Flow>
+        </Block>
+      ))}
+    </Flow>
+
+    <Flow gap="2x">
+      <Title level={5}>Resting Fill Calibration</Title>
+      <Block preset="t4">
+        The type ships with <code>#current.02</code>. These rows override only
+        the resting fill so the step can be compared against the same hover
+        (.06) and border (.08).
+      </Block>
+      {[
+        { label: 'On page surface', fill: undefined, color: undefined },
+        { label: 'On #surface-2', fill: '#surface-2', color: undefined },
+        { label: 'On dark', fill: '#fixed-dark', color: '#white' },
+      ].map(({ label, fill, color }) => (
+        <Block
+          key={label}
+          padding="1.5x"
+          radius="1cr"
+          border={fill ? undefined : true}
+          fill={fill}
+          color={color}
+        >
+          <Flow gap="1x" placeItems="start">
+            <Block preset="c2">{label}</Block>
+            <Space gap="1x" flow="row wrap" placeItems="start">
+              {['0', '.01', '.015', '.02', '.03', '.05'].map((alpha) => (
+                <Item
+                  key={alpha}
+                  {...args}
+                  type="current"
+                  styles={{ fill: `#current${alpha === '0' ? '.0' : alpha}` }}
+                >
+                  {alpha === '.02' ? `${alpha} (current)` : alpha}
+                </Item>
+              ))}
+            </Space>
+          </Flow>
+        </Block>
+      ))}
+      <Block preset="t4">Without the border, for comparison:</Block>
+      <Space gap="1x" flow="row wrap" placeItems="start">
+        {['.01', '.02', '.03', '.05'].map((alpha) => (
+          <Item
+            key={alpha}
+            {...args}
+            type="current"
+            styles={{ border: '#clear', fill: `#current${alpha}` }}
+          >
+            {alpha} borderless
+          </Item>
+        ))}
+      </Space>
+    </Flow>
+
+    <Flow gap="2x">
+      <Title level={5}>Content and Size</Title>
+      <Block
+        padding="1.5x"
+        radius="1cr"
+        fill="#note-surface"
+        color="#note-accent-text"
+      >
+        <Flow gap="1x" placeItems="start">
+          <Space gap="1x" flow="row wrap" placeItems="start">
+            {(['xsmall', 'small', 'medium', 'large', 'xlarge'] as const).map(
+              (size) => (
+                <Item
+                  key={size}
+                  {...args}
+                  icon={<IconUser />}
+                  size={size}
+                  type="current"
+                >
+                  {size}
+                </Item>
+              ),
+            )}
+          </Space>
+          <Space gap="1x" flow="row wrap" placeItems="start">
+            <Item {...args} type="current" icon={<IconUser />} />
+            <Item {...args} type="current" icon={<IconCoin />} shape="pill">
+              Pill
+            </Item>
+            <Item
+              {...args}
+              type="current"
+              icon={<IconUser />}
+              rightIcon={<IconSettings />}
+            >
+              Both icons
+            </Item>
+            <Item {...args} type="current" hotkeys="cmd+k">
+              With hotkeys
+            </Item>
+            <Item {...args} isLoading type="current" icon={<IconUser />}>
+              Loading
+            </Item>
+          </Space>
+          <Item
+            {...args}
+            description="Actions and description inherit the same color"
+            icon={<IconUser />}
+            type="current"
+            width="40x"
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} tooltip="Edit" />
+                <ItemAction icon={<IconTrash />} tooltip="Delete" />
+              </>
+            }
+          >
+            With actions
+          </Item>
+        </Flow>
+      </Block>
+    </Flow>
+  </Flow>
+);
+
+CurrentType.parameters = {
+  docs: {
+    description: {
+      story:
+        'The `current` type derives every color — fill, border, label, focus ring — from the inherited text color (`currentcolor`), so an item adopts whatever color its context paints with and needs no `theme` (passing one other than `default` warns). The label stays fully opaque; the resting fill is a barely-there `#current.02` chip with a `#current.08` border, and hover, pressed and selected step the same alpha ramp up from there. Use it inside colored containers — alerts, banners, dark overlays, tooltips — where a themed type would either clash with the container or have to be picked to match it.',
+    },
+  },
+};
+
 export const SemanticHeadingLevel: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Header and Card with Semantic Heading Level</Title>

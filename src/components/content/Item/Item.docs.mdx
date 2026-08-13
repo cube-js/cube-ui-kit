@@ -30,7 +30,7 @@ A foundational component that provides a standardized layout and styling for ite
 - **`suffix`** `ReactNode` — Element rendered after the content (before rightIcon)
 - **`description`** `ReactNode` — Description text displayed with the item
 - **`descriptionPlacement`** `'inline' | 'block'` (default: `inline`) — How the description is positioned relative to the main content. Defaults to `'block'` for `type="card"` and `type="header"`
-- **`type`** `'item' | 'header' | 'primary' | 'outline' | 'outline-2' | 'clear' | 'link' | 'card'` (default: `item`) — Visual style variant
+- **`type`** `'item' | 'header' | 'primary' | 'outline' | 'outline-2' | 'clear' | 'link' | 'card' | 'current'` (default: `item`) — Visual style variant
 - **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `default`) — Semantic colour palette theme
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Item size. Accepts custom number or string values
 - **`shape`** `'card' | 'button' | 'sharp' | 'pill'` (default: `button`) — Shape of the item border radius. Defaults to `'card'` for `type="card"`
@@ -92,7 +92,7 @@ The `mods` property accepts the following modifiers:
 - **`disabled`** `boolean` — Applied when isDisabled is true or when loading
 - **`loading`** `boolean` — Applied when isLoading is true
 - **`size`** `string` — Applied based on size prop value (xsmall, small, medium, large, xlarge, inline)
-- **`type`** `string` — Applied based on type prop value (item, header, primary, outline, outline-2, clear, link, card)
+- **`type`** `string` — Applied based on type prop value (item, header, primary, outline, outline-2, clear, link, card, current)
 - **`theme`** `string` — Applied based on theme prop value (default, danger, success, special, warning, note)
 - **`shape`** `string` — Applied based on shape prop value (card, button, sharp, pill)
 
@@ -108,6 +108,7 @@ The `mods` property accepts the following modifiers:
 - `clear` - Transparent item with minimal styling; `isSelected` adds brand-tinted fill
 - `link` - Link-styled item appearance (does not support icons or loading state)
 - `card` - Card appearance for notifications (supports `default`, `success`, `danger`, `warning`, `note` themes; defaults to `shape="card"`, `descriptionPlacement="block"`, uses semantic heading tags via `level` prop, and has `.5x` padding)
+- `current` - Every color — fill, border, label, focus ring — is derived from the inherited text color (`#current`), so the item adopts the color of whatever container it sits in. The label stays fully opaque; the resting fill is a barely-there `#current.02` chip with a `#current.08` border, and hover, pressed and selected step the same alpha ramp up from there. Theme-agnostic: only supports the `default` theme (any other theme warns, since there is nothing for it to change). Use it inside colored containers — alerts, banners, dark overlays, tooltips
 
 ### Themes
 
@@ -264,6 +265,20 @@ Like headers, card labels use semantic heading tags (h1-h6) controlled by the `l
 <Item type="card" theme="default" level={2} icon={<IconInfo />} description="Important section">
   Section Card (h2)
 </Item>
+```
+
+### Current Type
+
+Use `type="current"` inside a container that paints its own text color. Fill, border, label and focus ring are all mixed from that inherited color, so the item matches the container without picking a theme — and keeps matching it if the container's color changes:
+
+```jsx
+<Block fill="#note-surface" color="#note-accent-text" padding="1.5x" radius="1cr">
+  <Item type="current" icon={<IconInfo />}>Adopts the note color</Item>
+</Block>
+
+<Block fill="#fixed-dark" color="#white" padding="1.5x" radius="1cr">
+  <Item type="current" icon={<IconInfo />}>Adopts white on a dark banner</Item>
+</Block>
 ```
 
 ### With Loading State

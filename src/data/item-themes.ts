@@ -909,6 +909,64 @@ export const SPECIAL_ITEM_STYLES: Styles = {
   },
 } as const;
 
+// ---------- CURRENT TYPE ----------
+// Every color is derived from the *inherited* text color (`#current` →
+// `currentcolor`), so the item adopts whatever color its context paints with:
+// a colored Alert, a dark banner, an image overlay, a chart tooltip. That makes
+// the type theme-agnostic — there is a single style object registered under
+// `default.current`, and `Item` forces the theme to `default` for it.
+//
+// `color: '#current'` compiles to `color: currentcolor`, which CSS resolves as
+// `color: inherit` — so the label stays fully opaque and, crucially, the
+// element's own `currentcolor` (used by `fill`/`border` below) is the INHERITED
+// color rather than a faded one. The alpha steps are then mixed off that same
+// color, which is why the whole ramp tracks the context automatically.
+//
+// The ramp keeps the monotonic-contrast pattern of the neutral types
+// (default < hover < pressed, and the same again one level up when selected),
+// starting from a barely-there resting chip: `.02` is enough to separate the
+// item from a flat background without reading as a filled surface, while still
+// leaving room for four distinguishable steps above it.
+//
+// IMPORTANT: every alpha step within one state-map must be a unique value
+// string — Tasty's `mergeEntriesByValue` pass coalesces equal values into one
+// OR-entry at the group's max priority, which then negates against
+// lower-priority rules. So no two steps in one map may share an alpha. See
+// `SPECIAL_OUTLINE_STYLES` for the full explanation.
+export const CURRENT_STYLES: Styles = {
+  outline: {
+    '': '0 #current.0',
+    focused: '1bw #current',
+  },
+  border: {
+    '': '#current.08',
+    'hovered | focused': '#current.15',
+    pressed: '#current.25',
+    selected: '#current.3',
+    'selected & pressed': '#current.4',
+    // Pre-multiplied — see the `color.disabled` note below.
+    disabled: '#current.12',
+  },
+  fill: {
+    '': '#current.02',
+    'hovered | focused': '#current.06',
+    pressed: '#current.1',
+    selected: '#current.12',
+    'selected & (hovered | focused)': '#current.16',
+    'selected & pressed': '#current.2',
+    disabled: '#current.04',
+  },
+  // Disabled fades the label, which also fades the element's own
+  // `currentcolor` — so the alphas above are multiplied by .4 on this state.
+  // The disabled `fill`/`border` are therefore written pre-multiplied: `.04`
+  // and `.12` land at an effective `.016`/`.048`, i.e. a slightly muted
+  // version of the resting chip rather than a chip that vanishes.
+  color: {
+    '': '#current',
+    disabled: '#current.4',
+  },
+} as const;
+
 // ---------- CARD TYPE STYLES ----------
 // Card type only supports: default, success, danger, note themes
 
@@ -943,6 +1001,9 @@ export const NOTE_CARD_STYLES: Styles = {
 } as const;
 
 export type ItemVariant =
+  // The `current` type derives every color from the inherited `currentcolor`,
+  // so it has no per-theme flavours — see `CURRENT_STYLES`.
+  | 'default.current'
   | 'default.primary'
   | 'default.outline'
   | 'default.outline-2'
