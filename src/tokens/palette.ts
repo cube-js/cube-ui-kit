@@ -76,6 +76,91 @@ const TINTED_SURFACE_SATURATION = 0.2;
 const TINTED_SURFACE_TONE_OFFSET = 2;
 
 /**
+ * Contrast floors for a pinned brand color: `[normal, highContrast]`.
+ *
+ * `3` is WCAG's non-text floor — enough that the button reads as a shape against the
+ * page, and low enough that most brands clear it untouched. It is a FLOOR and not a
+ * target: a brand already at 5:1 or 17:1 is emitted exactly as given. Lower would let a
+ * fill vanish into the page; the shipped `['AA','AAA']` is too high to survive a light
+ * brand at all (it crushes `#FFD400` from tone 88 to 50).
+ *
+ * The high-contrast entry stays at AAA regardless. Fidelity to a requested color is a
+ * preference; the high-contrast tier is not — it exists for users who cannot read the
+ * normal one, and it is selected by `prefers-contrast: more` or an explicit
+ * `data-contrast="high"`, so anyone seeing it has asked for separation over brand.
+ * Note the pair also means an unreachable HC target is a real possibility for a very
+ * light brand, and Glaze pins it to the nearest tone and warns rather than failing.
+ */
+const ACCENT_FILL_CONTRAST: [number, number] = [3, 7];
+
+/**
+ * Floors for the two brand TEXT tokens: rest, then hover.
+ *
+ * The normal entries relax so a vivid brand can be the actual link color. The
+ * high-contrast entries do not — same reasoning as {@link ACCENT_FILL_CONTRAST} — and
+ * they stay one step apart so the rest→hover intensify survives the tier that needs it
+ * most. A single shared HC number would collapse the pair onto one color: both would
+ * simply solve to it.
+ *
+ * The hover's `9` is measured, not chosen for roundness. It is the highest target
+ * reachable across `#7A4DBF` `#EF4444` `#0EA5E9` `#22C55E` `#FFD400` `#111827` in both
+ * high-contrast schemes, and it holds a ~2.0 gap over the rest color in every one. The
+ * shipped `11` is not usable here: 11:1 from a fully saturated hue against a chromatic
+ * `accent-selected-fill` is unreachable, and `#FFD400` in dark high contrast pins to
+ * pure black — a hover link *less* readable than its rest state, at 2.23 against 7.07.
+ * The shipped palette can afford 11 because its fill is a desaturated mix; a pinned
+ * brand color is not.
+ */
+const ACCENT_TEXT_CONTRAST: [number, number] = [3, 7];
+const ACCENT_TEXT_HOVER_CONTRAST: [number, number] = [4.5, 9];
+
+/**
+ * Tone steps of the brand fill ramp, measured from `accent-surface`.
+ *
+ * They reproduce the white-anchored `-49 / -52 / -55 / -58` ladder exactly once the
+ * fill is pinned, because those four deltas share an anchor and differ by 3 / 6 / 9.
+ */
+const ACCENT_RAMP = {
+  surface2: '-3',
+  surface3: '-6',
+  hover: '-9',
+} as const;
+
+/**
+ * How far the hover brand text sits past the rest one, in tone.
+ *
+ * Both are pinned to the caller's tone otherwise, and a pair at the same tone behind
+ * the same floor resolves to one color — which would silently delete the rest→hover
+ * intensify that `accent-text` exists for. Tone is contrast-uniform, so one step is
+ * one step in either scheme.
+ */
+const ACCENT_TEXT_HOVER_STEP = 6;
+
+/**
+ * Opaque stand-in for the BASE selected fill used by outline / outline-2 / clear Item
+ * types (`#surface|#surface-2|#surface-3` + `#accent-surface.09`).
+ *
+ * Anchors the `accent-text*` contrast. `value: 9` matches the `.09` alpha overlay;
+ * `space: 'srgb'` approximates CSS two-layer compositing. Inherited so colored themes
+ * re-resolve against their own `surface` + `accent-surface` (default `surface-2` /
+ * `surface-3` are `inherit: false` and can't be the mix base). Primary's tinted
+ * `surface` makes this slightly harder than default clear-selected, covering
+ * outline / outline-2 selected fills as well.
+ *
+ * The same in both accent arrangements — it is defined by its two ends, and both of
+ * those move with the seed on their own.
+ */
+const ACCENT_SELECTED_FILL: ColorMap = {
+  'accent-selected-fill': {
+    type: 'mix',
+    base: 'surface',
+    target: 'accent-surface',
+    value: 9,
+    space: 'srgb',
+  },
+};
+
+/**
  * Syntax highlighting for `PrismCode`, as its own theme.
  *
  * A small palette of *adaptive* colored tokens. Each one is anchored to `surface`
@@ -336,6 +421,210 @@ export const TINT_RECIPE: ColorMap = {
 };
 
 // ============================================================================
+// The accent system
+// ============================================================================
+
+/**
+ * The brand family, in one of two arrangements.
+ *
+ * **`null`** — the shipped one, verbatim. Every fill hangs off a fixed white
+ * `accent-surface-text` at a relative tone delta behind an `['AA','AAA']` floor, and
+ * the text pair hangs off `accent-selected-fill` at `-49`. Those floors are
+ * load-bearing rather than decorative: relaxing them moves the shipped `accent-text`
+ * light tone from 38.76 to 48.63 and the `accent-surface` high-contrast tone from
+ * 36.08 to 51.00. Nothing on this path may change — `palette.test.ts` snapshots it.
+ *
+ * **A number** — the caller handed us a color, and the job is to render *that*. The
+ * fill is pinned to the color's own tone against `surface`, and the floors drop to
+ * {@link ACCENT_FILL_CONTRAST}. Both halves are necessary: anchored the shipped way,
+ * every accent hue lands at roughly tone 50 whatever lightness went in, and a 4.5
+ * floor then crushes anything light on top of that.
+ *
+ * Three details worth keeping straight:
+ *
+ * - **`mode: 'static'`, not `'fixed'`.** `fixed` still remaps the authored tone through
+ *   `lightTone: [10, 100]`, which lands ~3 tone units off even when no floor binds
+ *   (`#7A4DBF` renders `#8053c6`). `static` bypasses the windows, so the color is
+ *   byte-exact wherever the floor allows. The floor is still solved per scheme, which
+ *   is why a near-black brand correctly lifts off a dark page.
+ * - **The ramp carries no floor.** Re-anchored onto the fill, an `['AA','AAA']` floor
+ *   is measured against the *fill* rather than white and collapses all three steps to
+ *   near-black. A plain tone step is what the relationship actually is.
+ * - **The text pair stays `mode: 'auto'`.** Link text has to invert on a dark page, so
+ *   byte-exactness belongs to the fill; the text is a brand-toned companion of it.
+ */
+function accentFillColors(accentTone: number | null): ColorMap {
+  if (accentTone == null) {
+    return {
+      // ---- Accent system (theme-aware, inherited by colored themes) ----
+      // Everything here is anchored to a fixed white "accent-surface-text" via
+      // `mode: 'fixed'` + relative tone deltas, so accent colors stay visually
+      // consistent across light/dark/high-contrast schemes (the brand color does
+      // not flip). The solid fills are white-text-on-brand backgrounds, so they
+      // keep an `['AA','AAA']` contrast floor even though the chosen tone deltas
+      // already exceed it. This leaves room for a future low-contrast scale.
+      'accent-surface-text': { tone: 100, mode: 'fixed' },
+      'accent-surface': {
+        base: 'accent-surface-text',
+        tone: '-49',
+        contrast: ['AA', 'AAA'],
+        mode: 'fixed',
+      },
+      'accent-surface-2': {
+        base: 'accent-surface-text',
+        tone: '-52',
+        contrast: ['AA', 'AAA'],
+        mode: 'fixed',
+      },
+      'accent-surface-3': {
+        base: 'accent-surface-text',
+        tone: '-55',
+        contrast: ['AA', 'AAA'],
+        mode: 'fixed',
+      },
+      // Hover variant of `accent-surface` — a *fixed*-mode darker shade used as
+      // the hover fill for solid PRIMARY-type buttons. Anchored to the same
+      // accent-surface-text so it stays in the same hue family. The relative tone
+      // lands a few steps darker than the pressed state in both schemes.
+      'accent-surface-hover': {
+        base: 'accent-surface-text',
+        tone: '-58',
+        contrast: ['AA', 'AAA'],
+        mode: 'fixed',
+      },
+      // Border for accent surfaces — a small relative tone step away from the
+      // brand fill so it stays in the brand hue family and does not flip in dark
+      // mode. No contrast prop needed; the delta is chosen directly on the tone
+      // scale.
+      'accent-surface-border': {
+        base: 'accent-surface',
+        tone: '+13',
+        mode: 'fixed',
+      },
+    };
+  }
+
+  return {
+    // Still a hard white root, and still the PRIMARY label: every `type="primary"`
+    // item in `src/data/item-themes.ts` writes `#white` directly. That is exactly what
+    // ACCENT_FILL_CONTRAST protects — the fill is held far enough off the page that a
+    // white label keeps working on it.
+    'accent-surface-text': { tone: 100, mode: 'fixed' },
+    'accent-surface': {
+      base: 'surface',
+      tone: accentTone,
+      contrast: ACCENT_FILL_CONTRAST,
+      mode: 'static',
+    },
+    'accent-surface-2': {
+      base: 'accent-surface',
+      tone: ACCENT_RAMP.surface2,
+      mode: 'static',
+    },
+    'accent-surface-3': {
+      base: 'accent-surface',
+      tone: ACCENT_RAMP.surface3,
+      mode: 'static',
+    },
+    'accent-surface-hover': {
+      base: 'accent-surface',
+      tone: ACCENT_RAMP.hover,
+      mode: 'static',
+    },
+    // `'+13'` overshoots 100 on a light brand and `autoFlip` mirrors it to `-13`,
+    // which is the right answer either way: a border on a light fill has to be the
+    // darker of the two (`#FFD400` → `#d3af00`).
+    'accent-surface-border': {
+      base: 'accent-surface',
+      tone: '+13',
+      mode: 'static',
+    },
+  };
+}
+
+/**
+ * The brand FOREGROUNDS — text on a neutral surface, and the icon.
+ *
+ * Split from {@link accentFillColors} because the two have different audiences: the
+ * fill ramp is shared with the standalone `special` theme, which builds its own
+ * purpose-made subset and must not gain tokens it does not consume. Only the default
+ * theme (and the colored themes that inherit from it) takes these.
+ *
+ * These stay `mode: 'auto'` in both arrangements — a link has to invert on a dark page,
+ * so exactness belongs to the fill and these are its brand-toned companions.
+ */
+function accentTextColors(accentTone: number | null): ColorMap {
+  if (accentTone == null) {
+    return {
+      ...ACCENT_SELECTED_FILL,
+      // Stronger brand text for HOVERED selected outline/clear labels and LINK
+      // hover. Same anchor + preferred tone as `accent-text-soft`, but a higher
+      // `contrast: [6, 11]` floor against `accent-selected-fill` so it reads as a
+      // clear step up from the soft rest color while staying saturated (a bare
+      // `AAA`/`7` floor over-darkens light and desaturates dark). The HC pair keeps
+      // it at/above the soft variant (which auto-promotes AA→AAA in HC).
+      // `mode: 'auto'` (default) keeps dark-mode text readable on dark surfaces.
+      'accent-text': {
+        base: 'accent-selected-fill',
+        tone: '-49',
+        saturation: 1,
+        contrast: [6, 11],
+      },
+      // Rest brand text for selected outline/clear labels and LINK base color.
+      // Anchored to `accent-selected-fill` with `contrast: 'AA'` — the measured
+      // floor for every BASE state of those Item types (surface / outline /
+      // outline-2 / clear selected fills). Sits visibly less prominent than
+      // `accent-text` (lighter in light, darker in dark) so the rest→hover
+      // intensify is real.
+      'accent-text-soft': {
+        base: 'accent-selected-fill',
+        tone: '-49',
+        saturation: 1,
+        contrast: ['AA', 'AAA'],
+      },
+      'accent-icon': {
+        base: 'surface',
+        tone: '-38',
+        saturation: 0.9375,
+      },
+    };
+  }
+
+  return {
+    ...ACCENT_SELECTED_FILL,
+    // The rest link color IS the brand, which is the visible payoff of a color seed;
+    // the hover one steps past it so the intensify survives. See
+    // ACCENT_TEXT_HOVER_STEP.
+    'accent-text': {
+      base: 'accent-selected-fill',
+      tone: Math.max(0, accentTone - ACCENT_TEXT_HOVER_STEP),
+      saturation: 1,
+      contrast: ACCENT_TEXT_HOVER_CONTRAST,
+    },
+    'accent-text-soft': {
+      base: 'accent-selected-fill',
+      tone: accentTone,
+      saturation: 1,
+      contrast: ACCENT_TEXT_CONTRAST,
+    },
+    'accent-icon': {
+      base: 'surface',
+      tone: accentTone,
+      saturation: 0.9375,
+      contrast: ACCENT_TEXT_CONTRAST,
+    },
+  };
+}
+
+/** Every accent token the default theme carries — fills, foregrounds, and the mix. */
+function accentColors(accentTone: number | null): ColorMap {
+  return {
+    ...accentFillColors(accentTone),
+    ...accentTextColors(accentTone),
+  };
+}
+
+// ============================================================================
 // Palette construction
 // ============================================================================
 
@@ -360,7 +649,15 @@ function buildPalette(
     isolateContrastLevel?: boolean;
   } = {},
 ): BuiltPalette {
-  const { hue, baseHue, saturation, pastel, themes, contrastLevel } = config;
+  const {
+    hue,
+    baseHue,
+    saturation,
+    accentTone,
+    pastel,
+    themes,
+    contrastLevel,
+  } = config;
 
   // The one override the code theme shares with the rest of the palette.
   const sharedOverrides: GlazeConfigOverride = options.isolateContrastLevel
@@ -550,95 +847,8 @@ function buildPalette(
     },
 
     // ---- Accent system (theme-aware, inherited by colored themes) ----
-    // Everything here is anchored to a fixed white "accent-surface-text" via
-    // `mode: 'fixed'` + relative tone deltas, so accent colors stay visually
-    // consistent across light/dark/high-contrast schemes (the brand color does
-    // not flip). The solid fills are white-text-on-brand backgrounds, so they
-    // keep an `['AA','AAA']` contrast floor even though the chosen tone deltas
-    // already exceed it. This leaves room for a future low-contrast scale.
-    'accent-surface-text': { tone: 100, mode: 'fixed' },
-    'accent-surface': {
-      base: 'accent-surface-text',
-      tone: '-49',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    'accent-surface-2': {
-      base: 'accent-surface-text',
-      tone: '-52',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    'accent-surface-3': {
-      base: 'accent-surface-text',
-      tone: '-55',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    // Hover variant of `accent-surface` — a *fixed*-mode darker shade used as
-    // the hover fill for solid PRIMARY-type buttons. Anchored to the same
-    // accent-surface-text so it stays in the same hue family. The relative tone
-    // lands a few steps darker than the pressed state in both schemes.
-    'accent-surface-hover': {
-      base: 'accent-surface-text',
-      tone: '-58',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    // Border for accent surfaces — a small relative tone step away from the
-    // brand fill so it stays in the brand hue family and does not flip in dark
-    // mode. No contrast prop needed; the delta is chosen directly on the tone
-    // scale.
-    'accent-surface-border': {
-      base: 'accent-surface',
-      tone: '+13',
-      mode: 'fixed',
-    },
-    // Opaque stand-in for the BASE selected fill used by outline / outline-2 /
-    // clear Item types (`#surface|#surface-2|#surface-3` + `#accent-surface.09`).
-    // Anchors `accent-text` contrast. `value: 9` matches the `.09` alpha overlay;
-    // `space: 'srgb'` approximates CSS two-layer compositing. Inherited so
-    // colored themes re-resolve against their own `surface` + `accent-surface`
-    // (default `surface-2`/`surface-3` are `inherit: false` and can't be the mix
-    // base). Primary's tinted `surface` makes this slightly harder than default
-    // clear-selected, covering outline / outline-2 selected fills as well.
-    'accent-selected-fill': {
-      type: 'mix',
-      base: 'surface',
-      target: 'accent-surface',
-      value: 9,
-      space: 'srgb',
-    },
-    // Stronger brand text for HOVERED selected outline/clear labels and LINK
-    // hover. Same anchor + preferred tone as `accent-text-soft`, but a higher
-    // `contrast: { wcag: [6, 7] }` floor against `accent-selected-fill` so it
-    // reads as a clear step up from the soft rest color while staying saturated
-    // (a bare `AAA`/`7` floor over-darkens light and desaturates dark). The HC
-    // pair keeps it at/above the soft variant (which auto-promotes AA→AAA in HC).
-    // `mode: 'auto'` (default) keeps dark-mode text readable on dark surfaces.
-    'accent-text': {
-      base: 'accent-selected-fill',
-      tone: '-49',
-      saturation: 1,
-      contrast: [6, 11],
-    },
-    // Rest brand text for selected outline/clear labels and LINK base color.
-    // Anchored to `accent-selected-fill` with `contrast: 'AA'` — the measured
-    // floor for every BASE state of those Item types (surface / outline /
-    // outline-2 / clear selected fills). Sits visibly less prominent than
-    // `accent-text` (lighter in light, darker in dark) so the rest→hover
-    // intensify is real.
-    'accent-text-soft': {
-      base: 'accent-selected-fill',
-      tone: '-49',
-      saturation: 1,
-      contrast: ['AA', 'AAA'],
-    },
-    'accent-icon': {
-      base: 'surface',
-      tone: '-38',
-      saturation: 0.9375,
-    },
+    // Two arrangements, one per seeding mode — see `accentColors`.
+    ...accentColors(accentTone),
 
     // Brand-tinted disabled chip + label for PRIMARY-style buttons (solid brand
     // fill). The chip is scheme-symmetric (`mode: 'fixed'`) so the muted state
@@ -732,25 +942,42 @@ function buildPalette(
   const primaryTheme = defaultTheme.extend({
     colors: TINTED_SURFACE_OVERRIDE,
   });
+
+  // A status theme takes the ACCENT COLOR'S TONE back out.
+  //
+  // The tone is the brand's, and only the brand's. Inherited, a light brand would put
+  // `#danger-accent-surface` at tone 88 in a red hue — a pale pink danger button, which
+  // is not a danger button. Status themes carry a *meaning* their hue exists to signal,
+  // so they keep the white-anchored derivation that lands every hue at a comparable
+  // weight. `extend({ colors })` redefines each listed color from scratch, so restating
+  // the null arrangement is enough to undo it.
+  //
+  // With no accent color this is `TINTED_SURFACE_OVERRIDE` itself, so the shipped
+  // palette is provably untouched.
+  const statusColors: ColorMap =
+    accentTone == null
+      ? TINTED_SURFACE_OVERRIDE
+      : { ...TINTED_SURFACE_OVERRIDE, ...accentColors(null) };
+
   const successTheme = defaultTheme.extend({
     hue: themes.success.hue,
     saturation: themes.success.saturation,
-    colors: TINTED_SURFACE_OVERRIDE,
+    colors: statusColors,
   });
   const dangerTheme = defaultTheme.extend({
     hue: themes.danger.hue,
     saturation: themes.danger.saturation,
-    colors: TINTED_SURFACE_OVERRIDE,
+    colors: statusColors,
   });
   const warningTheme = defaultTheme.extend({
     hue: themes.warning.hue,
     saturation: themes.warning.saturation,
-    colors: TINTED_SURFACE_OVERRIDE,
+    colors: statusColors,
   });
   const noteTheme = defaultTheme.extend({
     hue: themes.note.hue,
     saturation: themes.note.saturation,
-    colors: TINTED_SURFACE_OVERRIDE,
+    colors: statusColors,
   });
 
   // --------------------------------------------------------------------------
@@ -791,36 +1018,20 @@ function buildPalette(
   specialTheme.colors({
     surface: { tone: 12, saturation: 0.475, mode: 'fixed' },
 
-    'accent-surface-text': { tone: 100, mode: 'fixed' },
-    'accent-surface': {
-      base: 'accent-surface-text',
-      tone: '-49',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    'accent-surface-2': {
-      base: 'accent-surface-text',
-      tone: '-52',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    'accent-surface-3': {
-      base: 'accent-surface-text',
-      tone: '-55',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    'accent-surface-border': {
-      base: 'accent-surface',
-      tone: '+13',
-      mode: 'fixed',
-    },
-    'accent-surface-hover': {
-      base: 'accent-surface-text',
-      tone: '-58',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
+    // The same fill ramp as the default theme, and for the same reason: this IS the
+    // brand CTA — `SPECIAL_PRIMARY_STYLES.fill` mirrors `#primary-accent-surface` — so
+    // leaving it on the white-anchored derivation would give a yellow brand a
+    // dark-purple hero button.
+    //
+    // Only the fills: `accent-selected-fill`, `accent-text-soft` and `accent-icon` are
+    // not part of this theme's purpose-built shape, and adding them would grow the
+    // emitted token set.
+    ...accentFillColors(accentTone),
+
+    // Special's `accent-text` is "dark brand, readable on a WHITE pill" (the CLEAR
+    // selected fill) — not on `surface`, which here is the fixed dark backdrop. It
+    // stays anchored to `accent-surface-text`, which is a hard white root in both
+    // arrangements, so the `-58` delta keeps its meaning either way.
     'accent-text': {
       base: 'accent-surface-text',
       tone: '-58',

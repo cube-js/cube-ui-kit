@@ -73,6 +73,10 @@ export const TOKENS: Styles = lazyStyles(getTokens);
 
 // Re-export category modules for direct access
 export { COLOR_TOKENS, getColorTokens, renderColorTokens } from './colors';
+// Reads hue / saturation / tone off a colour — what the palette's `accentColor` and
+// `baseColor` seeds are resolved through.
+export { colorSeed } from './color-seed';
+export type { ColorSeed } from './color-seed';
 // Adaptive one-off themes built at runtime from an arbitrary hue, named by a
 // hash of their config so identical requests share one injection.
 export { colorThemeSeed, getColorTheme, useColorTheme } from './color-theme';

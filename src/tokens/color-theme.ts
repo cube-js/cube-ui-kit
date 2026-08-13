@@ -9,8 +9,10 @@ import { useGlobalStyles } from '@tenphi/tasty';
 // a runtime theme falls back to Glaze's defaults — `@media(prefers-color-scheme:
 // dark)` keys and NO high-contrast tier — which still renders, so the failure is
 // silent. `color-theme.test.ts` asserts the `'@hc'` key exists to catch it.
+import { colorSeed } from './color-seed';
 import { TINT_RECIPE } from './palette';
 import {
+  DEFAULT_HUE,
   DEFAULT_SATURATION,
   getPaletteConfig,
   getPaletteVersion,
@@ -128,15 +130,23 @@ function stableStringify(value: unknown): string {
  * ```ts
  * colorThemeSeed('#0ea5e9'); // → { hue: 237.32, saturation: 98.19 }
  * ```
+ *
+ * The tone {@link colorSeed} also reads is dropped here on purpose: a tint theme
+ * re-derives its lightness per scheme, which is what makes it adaptive. The palette's
+ * `accentColor` keeps the tone, because a brand fill has to *be* the colour.
+ *
+ * An unparseable value falls back to the shipped seed rather than throwing — a hue
+ * typed into a settings field should not take the render down.
  */
 export function colorThemeSeed(value: string): {
   hue: number;
   saturation: number;
 } {
-  const light = glaze.color(value).resolve().light;
+  const seed = colorSeed(value);
 
-  // Glaze reports saturation as a 0–1 factor; the palette's seeds are 0–100.
-  return { hue: light.h, saturation: light.s * 100 };
+  if (!seed) return { hue: DEFAULT_HUE, saturation: DEFAULT_SATURATION };
+
+  return { hue: seed.hue, saturation: seed.saturation };
 }
 
 /**

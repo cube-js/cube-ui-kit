@@ -4,6 +4,8 @@ import {
   Alert,
   Button,
   Checkbox,
+  ColorInput,
+  ColorSwatch,
   CubeLogo,
   DEFAULT_PALETTE_CONFIG,
   getPaletteConfigInput,
@@ -182,7 +184,14 @@ function hasContrastTier(): boolean {
   return '@hc' in token;
 }
 
-function ColorSwatch({
+/**
+ * A swatch of one palette TOKEN — the name, the reference and the resolved value.
+ *
+ * Named for what it takes rather than what it draws, because the kit exports its own
+ * `ColorSwatch` for an arbitrary color string and this page uses both. Shadowing that
+ * export inside the canonical theming doc would be the wrong place to do it.
+ */
+function TokenSwatch({
   label,
   fill,
   color,
@@ -244,61 +253,284 @@ function ResetButton() {
   );
 }
 
-function BrandControls() {
-  const [palette, setPalette] = usePaletteConfig();
+/**
+ * What was asked for, next to what the palette landed on.
+ *
+ * A color seed is a REQUEST, and two things can stop it arriving. Pastel caps chroma,
+ * so a saturated brand can never resolve to itself under it — `#FFD400` softens to
+ * `#e4d8ad`. And on a light page a light brand has to darken to clear the fill's 3:1
+ * floor. Both are correct; both look like a bug if the only thing on screen is the
+ * color you typed. Showing the pair makes them a visible cap instead.
+ *
+ * `#accent-text` is here as well as `#accent-surface` because the tone reaches both —
+ * the seed sets the button fill and the link color together, which is the part that is
+ * hard to believe without seeing it.
+ */
+function ColorResolution({ resolved }: { resolved?: Tokens }) {
+  usePaletteVersion();
 
-  // `baseHue` follows the accent hue until something sets it, so the two sliders
-  // move together at first. Only the *sparse* config knows the difference between
-  // "explicitly 280.3" and "280.3 because it inherits", so read it from there and
-  // say which one this is — otherwise inheritance looks like a stuck control.
-  const basePinned = getPaletteConfigInput().baseHue !== undefined;
+  const [palette] = usePaletteConfig();
+  const requested = getPaletteConfigInput().accentColor;
+
+  if (!requested) return null;
+
+  // The preview's own tokens when there are any, so the chip answers "what did I get in
+  // the variant I am looking at". `resolvedValue` only ever reports the document's
+  // light scheme, which is the wrong answer inside a dark preview.
+  const valueOf = (name: string) =>
+    (resolved?.[name] as string | undefined) ?? resolvedValue(name);
 
   return (
-    <Controls>
+    <Section styles={{ gap: '1x' }}>
+      <Row>
+        {[
+          { label: 'Requested', color: requested },
+          { label: 'Fill', color: valueOf('#accent-surface') },
+          { label: 'Link', color: valueOf('#accent-text') },
+        ].map(({ label, color }) => (
+          <Row key={label} styles={{ gap: '.75x' }}>
+            {/* The chip carries no text of its own, so an arbitrary requested
+                color cannot land unreadable on itself. */}
+            <ColorSwatch
+              color={color}
+              styles={{ width: '3x', height: '3x', radius: '.5r' }}
+            />
+            <Token>{label}</Token>
+          </Row>
+        ))}
+      </Row>
+      {palette.pastel ? (
+        <Warning>
+          Pastel caps chroma, so this color cannot render exactly — the palette
+          takes its hue and its tone and finds the nearest color inside the
+          ceiling. Turn Pastel off to land on it.
+        </Warning>
+      ) : null}
+    </Section>
+  );
+}
+
+/**
+ * Where color mode starts when you switch a zone into it.
+ *
+ * A hex rather than the live `#accent-surface`, for the same reason
+ * {@link MANUAL_CONTRAST_START} is `0`: flipping the mode should change which control
+ * is in charge, not repaint the page on the way.
+ */
+const ACCENT_COLOR_START = '#7a4dbf';
+const BASE_COLOR_START = '#6e7076';
+
+/**
+ * Which control owns a zone right now, read off the SPARSE config.
+ *
+ * Deriving it rather than keeping it in `useState` is what makes a preset able to flip
+ * the mode switch for free — and what stops the two from ever disagreeing. It is the
+ * same trick the base-hue label already used to say "(inherited)": only the sparse
+ * config knows the difference between a value that was chosen and one that was
+ * inherited or derived.
+ */
+type SeedMode = 'hue' | 'color';
+
+function useAccentMode(): SeedMode {
+  usePaletteVersion();
+
+  return getPaletteConfigInput().accentColor !== undefined ? 'color' : 'hue';
+}
+
+/**
+ * A control is disabled exactly when the config field it writes is not the field in
+ * charge. That one rule covers every inert control on this page: a hue slider under a
+ * color seed, and the saturation slider under pastel.
+ *
+ * Disabled and still on screen, never hidden. A hue slider that vanished would take
+ * the derived hue with it — and the derived hue is the whole point, since seeing the
+ * same slider you drag by hand move on its own is what makes the two ways of seeding a
+ * zone legible as two ways of doing one thing.
+ */
+function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
+  const [palette, setPalette] = usePaletteConfig();
+  const input = getPaletteConfigInput();
+  const mode = useAccentMode();
+
+  return (
+    <Section>
+      <RadioGroup
+        label="Accent seeded by"
+        type="button"
+        value={mode}
+        onChange={(next) =>
+          setPalette(({ accentColor, hue, ...config }) =>
+            next === 'color'
+              ? { ...config, accentColor: ACCENT_COLOR_START }
+              : // Hand the slider the hue the color derived, so the value it was
+                // *showing* is the value it now owns.
+                { ...config, hue: Math.round(palette.hue) },
+          )
+        }
+      >
+        <Radio value="hue">Hue</Radio>
+        <Radio value="color">Color</Radio>
+      </RadioGroup>
+      {mode === 'color' ? (
+        <ColorInput
+          label="Accent color"
+          size="small"
+          value={input.accentColor ?? null}
+          onChange={(accentColor) =>
+            // Clearing the field is a mode change, so it lands back on a hue seed
+            // pinned where the color left it rather than on a half-set config.
+            setPalette(({ accentColor: previous, ...config }) =>
+              accentColor
+                ? { ...config, accentColor }
+                : { ...config, hue: Math.round(palette.hue) },
+            )
+          }
+        />
+      ) : null}
       <HueSlider
-        label={`Accent hue — ${palette.hue}°`}
+        label={`Accent hue — ${Math.round(palette.hue)}°${
+          mode === 'color' ? ' (from the color)' : ''
+        }`}
+        isDisabled={mode === 'color'}
         value={Math.round(palette.hue)}
         onChange={(hue) => setPalette((config) => ({ ...config, hue }))}
       />
-      <Section>
-        <HueSlider
-          label={`Base hue — ${palette.baseHue}°${
-            basePinned ? '' : ' (inherited)'
-          }`}
-          value={Math.round(palette.baseHue)}
-          onChange={(baseHue) =>
-            setPalette((config) => ({ ...config, baseHue }))
-          }
-        />
-        <Switch
-          isSelected={!basePinned}
-          onChange={(link) =>
-            // Clearing the field is what re-links it: an explicit `undefined`
-            // means "inherit again", where omitting it would mean "keep 60".
-            setPalette((config) => ({
-              ...config,
-              baseHue: link ? undefined : palette.baseHue,
-            }))
-          }
-        >
-          Follow the accent hue
-        </Switch>
-      </Section>
-      <Slider
-        label={`Saturation — ${palette.saturation}`}
-        minValue={0}
-        maxValue={100}
-        value={palette.saturation}
-        onChange={(saturation) =>
-          setPalette((config) => ({ ...config, saturation }))
+      {mode === 'color' ? <ColorResolution resolved={resolved} /> : null}
+    </Section>
+  );
+}
+
+function BaseSourceControls() {
+  const [palette, setPalette] = usePaletteConfig();
+  const input = getPaletteConfigInput();
+
+  // Three states, not two: the base zone can follow the accent, carry its own hue, or
+  // be seeded by a color. `baseHue` follows the accent hue until something sets it, so
+  // without the first state inheritance would read as a stuck control.
+  const mode: SeedMode | 'accent' =
+    input.baseColor !== undefined
+      ? 'color'
+      : input.baseHue !== undefined
+        ? 'hue'
+        : 'accent';
+
+  return (
+    <Section>
+      <RadioGroup
+        label="Base seeded by"
+        type="button"
+        value={mode}
+        onChange={(next) =>
+          setPalette(({ baseColor, baseHue, ...config }) => {
+            if (next === 'color') {
+              return { ...config, baseColor: BASE_COLOR_START };
+            }
+
+            // Dropping both fields is what re-links the zone: an absent `baseHue`
+            // means "inherit again", where keeping it would mean "stay at 60".
+            return next === 'accent'
+              ? config
+              : { ...config, baseHue: Math.round(palette.baseHue) };
+          })
         }
+      >
+        <Radio value="accent">Follow accent</Radio>
+        <Radio value="hue">Hue</Radio>
+        <Radio value="color">Color</Radio>
+      </RadioGroup>
+      {mode === 'color' ? (
+        <>
+          <ColorInput
+            label="Base color"
+            size="small"
+            value={input.baseColor ?? null}
+            onChange={(baseColor) =>
+              setPalette(({ baseColor: previous, ...config }) =>
+                baseColor
+                  ? { ...config, baseColor }
+                  : { ...config, baseHue: Math.round(palette.baseHue) },
+              )
+            }
+          />
+          <Note>
+            Only the hue is taken. A base color&rsquo;s chroma and lightness are
+            discarded — the chrome&rsquo;s own lightness ladder and its
+            0.10–0.20 saturation factors are the design.
+          </Note>
+        </>
+      ) : null}
+      <HueSlider
+        label={`Base hue — ${Math.round(palette.baseHue)}°${
+          mode === 'accent'
+            ? ' (inherited)'
+            : mode === 'color'
+              ? ' (from the color)'
+              : ''
+        }`}
+        // Left enabled while it inherits: dragging pins `baseHue`, which flips the
+        // radio to Hue on its own, and that drag-to-pin affordance predates the radio.
+        isDisabled={mode === 'color'}
+        value={Math.round(palette.baseHue)}
+        onChange={(baseHue) => setPalette((config) => ({ ...config, baseHue }))}
       />
+    </Section>
+  );
+}
+
+function SaturationControls() {
+  const [palette, setPalette] = usePaletteConfig();
+  const input = getPaletteConfigInput();
+  const mode = useAccentMode();
+
+  // With a color seed and pastel off, the color's own chroma IS the saturation, so the
+  // slider is reporting a derived value rather than one it owns.
+  const fromColor =
+    mode === 'color' && !palette.pastel && input.saturation === undefined;
+
+  return (
+    <Section>
+      {/* Above the slider it governs — see the rule on `AccentSourceControls`. */}
       <Switch
         isSelected={palette.pastel}
         onChange={(pastel) => setPalette((config) => ({ ...config, pastel }))}
       >
         Pastel
       </Switch>
+      <Slider
+        // Rounded like the hue labels, and for a new reason as well: a saturation read
+        // off a color is a float, so the raw value would print as 99.9998610927005.
+        label={`Saturation — ${Math.round(palette.saturation)}${
+          palette.pastel
+            ? ' (pinned by pastel)'
+            : fromColor
+              ? ' (from the color)'
+              : ''
+        }`}
+        minValue={0}
+        maxValue={100}
+        isDisabled={palette.pastel || fromColor}
+        value={Math.round(palette.saturation)}
+        onChange={(saturation) =>
+          setPalette((config) => ({ ...config, saturation }))
+        }
+      />
+      {palette.pastel ? (
+        <Note>
+          Pastel pins saturation at 100. The flat, hue-independent chroma
+          ceiling is what makes it even across hues, and a second scale on top
+          of it would only undo that. Turn pastel off for a free 0–100 scale.
+        </Note>
+      ) : null}
+    </Section>
+  );
+}
+
+function BrandControls() {
+  return (
+    <Controls>
+      <AccentSourceControls />
+      <BaseSourceControls />
+      <SaturationControls />
     </Controls>
   );
 }
@@ -338,10 +570,12 @@ function StatusControls() {
               onChange={(hue) => setPalette(statusSeed(name, { hue }))}
             />
             <Slider
-              label={`${name} saturation — ${seed.saturation}`}
+              // Rounded because this inherits the palette seed until it is pinned, and
+              // a palette seed read off an accent color is a float.
+              label={`${name} saturation — ${Math.round(seed.saturation)}`}
               minValue={0}
               maxValue={100}
-              value={seed.saturation}
+              value={Math.round(seed.saturation)}
               onChange={(saturation) =>
                 setPalette(statusSeed(name, { saturation }))
               }
@@ -429,23 +663,23 @@ function NeutralRamp() {
         solid accents below hide that entirely.
       </Lead>
       <Grid>
-        <ColorSwatch
+        <TokenSwatch
           label="surface"
           fill="#surface"
           color="#surface-text"
           border="#border"
         />
-        <ColorSwatch
+        <TokenSwatch
           label="surface-2"
           fill="#surface-2"
           color="#surface-2-text"
         />
-        <ColorSwatch
+        <TokenSwatch
           label="surface-3"
           fill="#surface-3"
           color="#surface-3-text"
         />
-        <ColorSwatch
+        <TokenSwatch
           label="surface-4"
           fill="#surface-4"
           color="#surface-text"
@@ -482,32 +716,32 @@ function AccentRamp() {
     <Section>
       <SectionHeading>Accent system — the brand hue drives this</SectionHeading>
       <Grid>
-        <ColorSwatch
+        <TokenSwatch
           label="accent-surface"
           fill="#accent-surface"
           color="#accent-surface-text"
         />
-        <ColorSwatch
+        <TokenSwatch
           label="accent-surface-hover"
           fill="#accent-surface-hover"
           color="#accent-surface-text"
         />
-        <ColorSwatch
+        <TokenSwatch
           label="accent-surface-2"
           fill="#accent-surface-2"
           color="#accent-surface-text"
         />
-        <ColorSwatch
+        <TokenSwatch
           label="accent-surface-3"
           fill="#accent-surface-3"
           color="#accent-surface-text"
         />
-        <ColorSwatch
+        <TokenSwatch
           label="primary-surface"
           fill="#primary-surface"
           color="#primary-surface-text"
         />
-        <ColorSwatch
+        <TokenSwatch
           label="special-surface"
           fill="#special-surface"
           color="#white"
@@ -545,12 +779,12 @@ function StatusPanels() {
       <Grid>
         {STATUS_THEMES.map((name) => (
           <Section key={name}>
-            <ColorSwatch
+            <TokenSwatch
               label={`${name}-surface`}
               fill={`#${name}-surface`}
               color={`#${name}-surface-text`}
             />
-            <ColorSwatch
+            <TokenSwatch
               label={`${name}-accent-surface`}
               fill={`#${name}-accent-surface`}
               color={`#${name}-accent-surface-text`}
@@ -682,11 +916,18 @@ const GroupLabel = tasty({
  * danger).
  *
  * Every preset except `Cube` also states its `pastel` stance outright rather than
- * inheriting it. `Ocean` / `Forest` / `Ember` pin it off because their saturation
- * seeds were picked against the per-hue chroma ceiling, and `Slate` pins it on
- * because being the soft one is its whole identity — a contrast that only reads
- * while its siblings are pinned off. `Cube` stays empty by design: it is the
- * shipped palette, so it should follow the default wherever the default goes.
+ * inheriting it. `Ocean` / `Forest` / `Ember` pin it off because their saturation seeds
+ * were picked against the per-hue chroma ceiling — their `saturation` would turn pastel
+ * off on its own, so the field is there to be read rather than to do work. `Slate` pins
+ * it on because being the soft one is its whole identity, a contrast that only reads
+ * while its siblings are pinned off. `Cube` stays empty by design: it is the shipped
+ * palette, so it should follow the default wherever the default goes.
+ *
+ * `Cobalt` is the odd one out, and deliberately so: it departs on the *mechanism*
+ * rather than on the numbers, seeding both zones from real colors instead of hues.
+ * Its `pastel: false` is not a chroma preference but a precondition — the pastel
+ * ceiling cannot reproduce an arbitrary color, so a preset whose point is "the color
+ * you asked for" has to have it off to make the point.
  */
 const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
   // Empty on purpose: the setter replaces, so this *is* the shipped palette — the
@@ -746,13 +987,14 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
     label: 'Slate',
     config: {
       hue: 250,
-      // Pastel is what mutes this one relative to the three above, which pin it
-      // off: it swaps the per-hue chroma ceiling for a flat one, so the saturation
-      // seed can stay high and still land soft — 60 here resolves to the same
-      // accent chroma a non-pastel 30 does, but even across hues rather than
-      // letting the warm statuses run ahead. Kept explicit even though it now
-      // matches the shipped default, so the four presets read as a set.
-      saturation: 60,
+      // Pastel alone is what mutes this one relative to the three above, which pin
+      // it off — and it needs nothing else, because pastel swaps the per-hue chroma
+      // ceiling for a flat one that sits below where a saturated hue would land. A
+      // pastel accent at the pinned 100 resolves softer than `Ember`'s non-pastel 85,
+      // and evenly across hues rather than letting the warm statuses run ahead.
+      //
+      // No `saturation` here on purpose: pastel pins it to 100, so a number would be
+      // inert and would read as doing work it is not doing.
       pastel: true,
       themes: {
         success: { hue: 160 },
@@ -762,6 +1004,32 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
         // Pastel does not reach the syntax palette, by design. Softening a code
         // block to match the rest of a muted theme goes through its own seed.
         code: { saturation: 55 },
+      },
+    },
+  },
+  {
+    // The one preset seeded by a COLOR rather than a hue, and the way into that half
+    // of the API.
+    label: 'Cobalt',
+    config: {
+      accentColor: '#2F5BFF',
+      // Hue only — and a near-neutral color makes that legible: 9% saturation and a
+      // mid tone are both thrown away, and only the ~71° reaches the chrome. Against
+      // a ~266° brand that is a warm grey UI under a cool blue accent, which is the
+      // case `baseHue` was split out for in the first place.
+      baseColor: '#7A7269',
+      // Pinned off, because this preset's whole claim is that you get the color you
+      // asked for. Under pastel the flat ceiling caps `#2F5BFF` well short of itself
+      // — turn Pastel on afterwards and the requested/resolved chips separate, which
+      // is the cap made visible rather than a rounding error.
+      pastel: false,
+      // Borrowed from `Ocean`: the derived hue lands in the same blue family, and the
+      // closest of the four still sits 48.8° off it.
+      themes: {
+        success: { hue: 165 },
+        danger: { hue: 25 },
+        warning: { hue: 80 },
+        note: { hue: 315 },
       },
     },
   },
@@ -776,6 +1044,7 @@ function ThemeBuilderControls({
   onContrastModeChange,
   customLevel,
   onCustomLevelChange,
+  tokens,
 }: {
   scheme: SchemeChoice;
   onSchemeChange: (value: SchemeChoice) => void;
@@ -785,9 +1054,10 @@ function ThemeBuilderControls({
   onContrastModeChange: (value: ContrastMode) => void;
   customLevel: number;
   onCustomLevelChange: (value: number) => void;
+  /** The variant on screen, so the resolved chips report it rather than the document. */
+  tokens: Tokens;
 }) {
   const [palette, setPalette] = usePaletteConfig();
-  const basePinned = getPaletteConfigInput().baseHue !== undefined;
 
   return (
     <ControlColumn>
@@ -858,47 +1128,22 @@ function ThemeBuilderControls({
       </ControlGroup>
 
       <ControlGroup>
-        <GroupLabel>Brand</GroupLabel>
-        <HueSlider
-          label={`Accent hue — ${palette.hue}°`}
-          value={Math.round(palette.hue)}
-          onChange={(hue) => setPalette((config) => ({ ...config, hue }))}
-        />
-        <HueSlider
-          label={`Base hue — ${palette.baseHue}°${
-            basePinned ? '' : ' (inherited)'
-          }`}
-          value={Math.round(palette.baseHue)}
-          onChange={(baseHue) =>
-            setPalette((config) => ({ ...config, baseHue }))
-          }
-        />
-        <Switch
-          isSelected={!basePinned}
-          onChange={(link) =>
-            setPalette((config) => ({
-              ...config,
-              baseHue: link ? undefined : palette.baseHue,
-            }))
-          }
-        >
-          Base follows accent
-        </Switch>
-        <Slider
-          label={`Saturation — ${palette.saturation}`}
-          minValue={0}
-          maxValue={100}
-          value={palette.saturation}
-          onChange={(saturation) =>
-            setPalette((config) => ({ ...config, saturation }))
-          }
-        />
-        <Switch
-          isSelected={palette.pastel}
-          onChange={(pastel) => setPalette((config) => ({ ...config, pastel }))}
-        >
-          Pastel
-        </Switch>
+        <GroupLabel>Accent</GroupLabel>
+        {/* The same three clusters the Playground uses, so the two stories cannot
+            drift — and so a knob added here appears there too. `ColorResolution`
+            reads the PREVIEW's tokens rather than the document's, which is the one
+            thing the builder has that the Playground does not. */}
+        <AccentSourceControls resolved={tokens} />
+      </ControlGroup>
+
+      <ControlGroup>
+        <GroupLabel>Base</GroupLabel>
+        <BaseSourceControls />
+      </ControlGroup>
+
+      <ControlGroup>
+        <GroupLabel>Saturation</GroupLabel>
+        <SaturationControls />
       </ControlGroup>
 
       <ControlGroup>
@@ -1327,6 +1572,7 @@ function ThemeBuilderPage() {
           onContrastModeChange={setContrastMode}
           customLevel={customLevel}
           onCustomLevelChange={setCustomLevel}
+          tokens={tokens}
         />
         <ThemePreview tokens={tokens} scheme={scheme} />
       </BuilderLayout>

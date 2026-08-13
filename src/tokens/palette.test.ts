@@ -1,5 +1,15 @@
-import { glaze } from '@tenphi/glaze';
+import {
+  contrastRatioFromLuminance,
+  glaze,
+  okhslToLinearSrgb,
+  okhslToOkhst,
+  okhslToSrgb,
+  relativeLuminanceFromLinearRgb,
+  srgbToHex,
+  variantToOkhsl,
+} from '@tenphi/glaze';
 
+import { colorSeed } from './color-seed';
 import { getColorTokens, renderColorTokens } from './colors';
 import {
   getCodeTheme,
@@ -92,6 +102,66 @@ function statesOf(tokens: Styles): string[] {
   }
 
   return [...states].sort();
+}
+
+/**
+ * An emitted `oklch(…)` token value, back as a hex string.
+ *
+ * The palette emits absolute colors, so this reads them at face value —
+ * `pastel: false` on the way out is not a claim about the palette, just the identity
+ * mapping for a color that has already been gamut-mapped. Rounding in the emitted
+ * four-decimal oklch can move a channel by 1/255, so compare with
+ * {@link expectSameColor} rather than string equality.
+ */
+function hexOf(value: string): string {
+  const okhsl = variantToOkhsl(glaze.color(value).resolve().light);
+
+  return srgbToHex(okhslToSrgb(okhsl.h, okhsl.s, okhsl.l, false));
+}
+
+/**
+ * An emitted token value's OKHST tone (0–100) — the axis the recipe is authored on.
+ *
+ * Reading the tone rather than the color is what lets a test say "this landed where the
+ * seed asked" for a token whose hue and chroma are settled but whose lightness went
+ * through a scheme window.
+ */
+function toneOf(value: string): number {
+  return (
+    okhslToOkhst(variantToOkhsl(glaze.color(value).resolve().light)).t * 100
+  );
+}
+
+/** WCAG contrast ratio between two emitted token values. */
+function contrastOf(a: string, b: string): number {
+  const luminance = (value: string) => {
+    const { h, s, l } = variantToOkhsl(glaze.color(value).resolve().light);
+
+    return relativeLuminanceFromLinearRgb(okhslToLinearSrgb(h, s, l, false));
+  };
+
+  return contrastRatioFromLuminance(luminance(a), luminance(b));
+}
+
+/**
+ * Two colors are the same to within one 8-bit channel step.
+ *
+ * The tolerance is the emitted oklch string's own rounding, not slack in the
+ * palette: `#FFD400` serializes to `oklch(0.8809 0.1806 94.02)`, which reads back as
+ * `#ffd401`. Asserting exact hex equality would make the test a hostage to the
+ * serializer's decimal count.
+ */
+function expectSameColor(actual: string, expected: string, label: string) {
+  const channels = (hex: string) =>
+    [1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16));
+
+  const [ar, ag, ab] = channels(actual);
+  const [er, eg, eb] = channels(expected);
+
+  expect(
+    Math.max(Math.abs(ar - er), Math.abs(ag - eg), Math.abs(ab - eb)),
+    `${label}: ${actual} vs ${expected}`,
+  ).toBeLessThanOrEqual(1);
 }
 
 describe('palette tokens', () => {
@@ -920,5 +990,462 @@ describe('config immutability', () => {
   it('freezes the shipped baseline', () => {
     expect(Object.isFrozen(DEFAULT_PALETTE_CONFIG)).toBe(true);
     expect(Object.isFrozen(DEFAULT_PALETTE_CONFIG.themes)).toBe(true);
+  });
+});
+
+/**
+ * The brand seeded by a COLOR rather than a hue.
+ *
+ * The contract is narrower than "the palette moves": the color the caller passed has
+ * to come out the other side, moved only as far as the fill's 3:1 floor against the
+ * page forces it. Every case here is a way that can fail — a tone window quietly
+ * remapping it, a contrast floor overshooting, a status theme inheriting a lightness
+ * that means nothing to it.
+ */
+describe('accent color seeds', () => {
+  /**
+   * Non-pastel unless a case is about pastel.
+   *
+   * The pastel chroma ceiling makes an exact rendering impossible by construction, so
+   * every exactness assertion below has to be on this path.
+   */
+  const EXACT = { pastel: false } as const;
+
+  const BRANDS = [
+    '#7A4DBF',
+    '#EF4444',
+    '#0EA5E9',
+    '#22C55E',
+    '#FFD400',
+    '#111827',
+  ];
+
+  afterEach(() => {
+    resetPaletteConfig();
+  });
+
+  it('leaves the palette untouched when no color is given', () => {
+    const baseline = dumpTokens(getPaletteTokens());
+
+    setPaletteConfig({ hue: DEFAULT_PALETTE_CONFIG.hue });
+
+    expect(getPaletteConfig().accentTone).toBeNull();
+    expect(dumpTokens(getPaletteTokens())).toEqual(baseline);
+  });
+
+  /**
+   * The whole contract, as one invariant: for every brand and every scheme, the fill
+   * is EITHER exactly the color asked for, OR sitting on the 3:1 floor — and it is
+   * floored only when the color could not clear the floor by itself.
+   *
+   * Both directions matter. Drop the first and the palette is free to re-derive a
+   * shade of the brand (which is what it did before this existed, landing every hue at
+   * roughly tone 50). Drop the second and a floor could quietly become a target,
+   * darkening a brand that was already legible.
+   */
+  it('renders the requested color exactly wherever the floor allows', () => {
+    for (const accentColor of BRANDS) {
+      for (const scheme of ['light', 'dark'] as const) {
+        const tokens = renderPaletteTokens({ ...EXACT, accentColor, scheme });
+        const fill = String(tokens['#accent-surface']);
+        const surface = String(tokens['#surface']);
+        const label = `${accentColor} ${scheme}`;
+
+        const wanted = contrastOf(accentColor, surface);
+        const got = contrastOf(fill, surface);
+
+        if (wanted >= 3) {
+          // Nothing to solve, so nothing may move.
+          expectSameColor(hexOf(fill), accentColor.toLowerCase(), label);
+          expect(got, label).toBeCloseTo(wanted, 2);
+        } else {
+          // Solved to the floor and stopped there — not to AA, not to the far side.
+          expect(got, label).toBeGreaterThanOrEqual(3);
+          expect(got, label).toBeLessThan(3.2);
+        }
+      }
+    }
+  });
+
+  it('flips which scheme is exact according to the brand’s own lightness', () => {
+    // The concrete shape of the invariant above, and the evidence that the floor is
+    // solved per scheme rather than once: a light brand cannot clear 3:1 on a white
+    // page but clears it easily on a dark one, so `#FFD400` is exact in dark and
+    // floored in light. A dark brand is the mirror image.
+    const light = (c: string) =>
+      hexOf(
+        String(
+          renderPaletteTokens({ ...EXACT, accentColor: c, scheme: 'light' })[
+            '#accent-surface'
+          ],
+        ),
+      );
+    const dark = (c: string) =>
+      hexOf(
+        String(
+          renderPaletteTokens({ ...EXACT, accentColor: c, scheme: 'dark' })[
+            '#accent-surface'
+          ],
+        ),
+      );
+
+    expectSameColor(dark('#FFD400'), '#ffd400', '#FFD400 dark');
+    expect(light('#FFD400')).not.toBe('#ffd400');
+
+    expectSameColor(light('#111827'), '#111827', '#111827 light');
+    expect(dark('#111827')).not.toBe('#111827');
+  });
+
+  it('keeps the fill ramp separated in high contrast', () => {
+    // Regression guard, and a latent bug fixed in passing: on the shipped chain all
+    // four fills are solved against white behind the same AAA floor, so in high
+    // contrast `accent-surface` and `accent-surface-2` collapse onto one value and the
+    // hover step disappears. Re-anchoring the ramp onto the fill as a plain tone step
+    // is what keeps them apart.
+    const hc = renderPaletteTokens({
+      ...EXACT,
+      accentColor: '#0EA5E9',
+      scheme: 'light',
+      highContrast: true,
+    });
+
+    const ramp = [
+      '#accent-surface',
+      '#accent-surface-2',
+      '#accent-surface-3',
+      '#accent-surface-hover',
+    ].map((name) => String(hc[name]));
+
+    expect(new Set(ramp).size).toBe(ramp.length);
+  });
+
+  /**
+   * High contrast keeps AAA whatever the caller asked for.
+   *
+   * Fidelity to a requested color is a preference; the high-contrast tier is not. It is
+   * selected by `prefers-contrast: more` or an explicit `data-contrast="high"`, so
+   * anyone reading it has asked for separation over brand — and the relaxed normal floor
+   * must not follow them into it.
+   */
+  it('holds AAA on the brand fill in high contrast, whatever the color', () => {
+    for (const accentColor of BRANDS) {
+      for (const scheme of ['light', 'dark'] as const) {
+        const hc = renderPaletteTokens({
+          ...EXACT,
+          accentColor,
+          scheme,
+          highContrast: true,
+        });
+
+        // 6.99 rather than 7: Glaze binary-searches the tone to a 1e-4 epsilon, so a
+        // solved floor can land a thousandth of a ratio short of its target. Anything
+        // that has actually stopped honouring the floor misses by whole points.
+        expect(
+          contrastOf(String(hc['#accent-surface']), String(hc['#surface'])),
+          `${accentColor} ${scheme}`,
+        ).toBeGreaterThan(6.99);
+      }
+    }
+  });
+
+  it('keeps the hover link above the rest link in every variant', () => {
+    // Not just distinct — correctly ORDERED. The two are pinned to the caller's tone
+    // and separated by their floors, so an unreachable target on the hover half does
+    // not fail loudly: Glaze pins the tone to an extreme and the hover comes out
+    // *less* readable than the rest state. That is how an 11:1 HC target on a
+    // saturated hue behaves (`#FFD400` in dark high contrast lands on pure black at
+    // 2.23 against the rest state's 7.07), and it is why the hover target is 9.
+    for (const accentColor of BRANDS) {
+      for (const scheme of ['light', 'dark'] as const) {
+        for (const highContrast of [false, true]) {
+          const tokens = renderPaletteTokens({
+            ...EXACT,
+            accentColor,
+            scheme,
+            highContrast,
+          });
+          const base = String(tokens['#accent-selected-fill']);
+          const label = `${accentColor} ${scheme}${highContrast ? ' hc' : ''}`;
+
+          expect(
+            contrastOf(String(tokens['#accent-text']), base),
+            label,
+          ).toBeGreaterThan(
+            contrastOf(String(tokens['#accent-text-soft']), base),
+          );
+        }
+      }
+    }
+  });
+
+  it('resolves every brand without an unreachable-contrast warning', () => {
+    // The guard on the measured `9`. An unmeetable floor is a warning rather than a
+    // throw, so without this the pinned-to-an-extreme failure above would be silent.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    for (const accentColor of BRANDS) {
+      for (const scheme of ['light', 'dark'] as const) {
+        renderPaletteTokens({ ...EXACT, accentColor, scheme });
+        renderPaletteTokens({
+          ...EXACT,
+          accentColor,
+          scheme,
+          highContrast: true,
+        });
+      }
+    }
+
+    expect(
+      warn.mock.calls
+        .map((call) => String(call[0]))
+        .filter((message) => /cannot meet|drifts below/.test(message)),
+    ).toEqual([]);
+
+    warn.mockRestore();
+  });
+
+  it('puts the brand’s own tone on the rest link color', () => {
+    // `#accent-text-soft` is the LINK base color, and the payoff of a color seed is
+    // that it reads as the brand rather than as a re-derived shade of it.
+    //
+    // Near, not exact: the text pair stays `mode: 'auto'` so a link inverts on a dark
+    // page, and passing through the light tone window costs it ~3 units. Exactness
+    // belongs to the fill, which is `mode: 'static'` precisely because it does not have
+    // to invert. Two brands three tone-tens apart, so the assertion is that the link
+    // TRACKS the seed rather than that one number happens to match.
+    for (const accentColor of ['#7A4DBF', '#EF4444']) {
+      const tokens = renderPaletteTokens({
+        ...EXACT,
+        accentColor,
+        scheme: 'light',
+      });
+      const drift = Math.abs(
+        toneOf(String(tokens['#accent-text-soft'])) -
+          colorSeed(accentColor)!.tone,
+      );
+
+      expect(drift, accentColor).toBeLessThan(4);
+    }
+  });
+
+  it('keeps the rest and hover brand text distinct', () => {
+    // Both are pinned to the caller's tone, so a missing hover step would silently
+    // collapse them into one color and delete the rest→hover intensify that
+    // `#accent-text` exists for.
+    for (const accentColor of BRANDS) {
+      for (const scheme of ['light', 'dark'] as const) {
+        const tokens = renderPaletteTokens({ ...EXACT, accentColor, scheme });
+
+        expect(tokens['#accent-text'], `${accentColor} ${scheme}`).not.toBe(
+          tokens['#accent-text-soft'],
+        );
+      }
+    }
+  });
+
+  it('leaves the status themes on their own fill derivation', () => {
+    // A status hue signals a meaning, so it keeps the white-anchored derivation that
+    // lands every hue at a comparable weight. Inherited, a light brand would put
+    // `#danger-accent-surface` at tone 88 in a red hue — a pale pink danger button.
+    //
+    // Compared at a matched saturation rather than against the shipped default,
+    // because `saturation` is one palette-wide scale and a color seed legitimately
+    // moves it for every theme. The tone is the part that must not travel.
+    const seed = colorSeed('#FFD400')!;
+    const seeded = renderPaletteTokens({
+      ...EXACT,
+      accentColor: '#FFD400',
+      scheme: 'light',
+    });
+    const reference = renderPaletteTokens({
+      ...EXACT,
+      saturation: seed.saturation,
+      scheme: 'light',
+    });
+
+    for (const name of [
+      '#danger-accent-surface',
+      '#success-accent-surface',
+      '#warning-accent-surface',
+      '#note-accent-surface',
+    ]) {
+      expect(seeded[name], name).toBe(reference[name]);
+    }
+  });
+
+  it('carries the brand into the special theme', () => {
+    // `special` is the brand-on-dark CTA and `SPECIAL_PRIMARY_STYLES.fill` mirrors
+    // `#primary-accent-surface`, so a brand that stopped at the default theme would
+    // leave every hero button on the old hue.
+    const tokens = renderPaletteTokens({
+      ...EXACT,
+      accentColor: '#FFD400',
+      scheme: 'dark',
+    });
+
+    expectSameColor(
+      hexOf(String(tokens['#special-accent-surface'])),
+      '#ffd400',
+      'special-accent-surface',
+    );
+  });
+
+  it('derives only the hue from a base color', () => {
+    // A base color says which way the greys lean, not how dark or how vivid they are —
+    // so its tone and saturation must not reach anything.
+    const seed = colorSeed('#FFD400')!;
+    const baseline = renderPaletteTokens({ scheme: 'light' });
+
+    setPaletteConfig({ baseColor: '#FFD400' });
+
+    expect(getPaletteConfig().baseHue).toBeCloseTo(seed.hue, 6);
+    expect(getPaletteConfig().hue).toBe(DEFAULT_PALETTE_CONFIG.hue);
+    expect(getPaletteConfig().accentTone).toBeNull();
+    expect(getPaletteConfig().saturation).toBe(
+      DEFAULT_PALETTE_CONFIG.saturation,
+    );
+
+    // The base zone moved and the accent zone did not. `baseline` is captured before
+    // the write on purpose: `renderPaletteTokens` LAYERS over the live config, so a
+    // baseline taken afterwards would already carry the base color.
+    const seeded = renderPaletteTokens({ scheme: 'light' });
+
+    expect(seeded['#border']).not.toBe(baseline['#border']);
+    expect(seeded['#accent-surface']).toBe(baseline['#accent-surface']);
+    expect(seeded['#special-accent-surface']).toBe(
+      baseline['#special-accent-surface'],
+    );
+  });
+
+  it('prefers an explicit hue over the derived one, keeping the tone', () => {
+    // The number is the more specific instruction. Keeping the tone regardless is what
+    // lets a preview rotate the hue of a stored brand without discarding its
+    // lightness.
+    const seed = colorSeed('#FFD400')!;
+
+    setPaletteConfig({ accentColor: '#FFD400', hue: 200, ...EXACT });
+
+    expect(getPaletteConfig().hue).toBe(200);
+    expect(getPaletteConfig().accentTone).toBeCloseTo(seed.tone, 6);
+    expect(getPaletteConfig().saturation).toBeCloseTo(seed.saturation, 6);
+  });
+
+  it('takes the hue and tone but not the chroma of a color under pastel', () => {
+    const seed = colorSeed('#EF4444')!;
+
+    setPaletteConfig({ accentColor: '#EF4444' });
+
+    // Pastel is one flat ceiling, so there is one saturation and it is the top of the
+    // scale — the color's own is deliberately dropped.
+    expect(getPaletteConfig().pastel).toBe(true);
+    expect(getPaletteConfig().saturation).toBe(
+      DEFAULT_PALETTE_CONFIG.saturation,
+    );
+    expect(getPaletteConfig().saturation).not.toBeCloseTo(seed.saturation, 1);
+
+    // Hue and tone still arrive, so the fill is recognisably the brand — just softer.
+    expect(getPaletteConfig().hue).toBeCloseTo(seed.hue, 6);
+    expect(getPaletteConfig().accentTone).toBeCloseTo(seed.tone, 6);
+
+    // …and softer is measurable: pastel cannot reproduce the color, non-pastel can.
+    // This is the divergence the Theme Builder shows as requested-vs-resolved chips.
+    const softened = renderPaletteTokens({
+      accentColor: '#EF4444',
+      scheme: 'light',
+    });
+    const exact = renderPaletteTokens({
+      ...EXACT,
+      accentColor: '#EF4444',
+      scheme: 'light',
+    });
+
+    expectSameColor(
+      hexOf(String(exact['#accent-surface'])),
+      '#ef4444',
+      'non-pastel',
+    );
+    expect(hexOf(String(softened['#accent-surface']))).not.toBe('#ef4444');
+  });
+
+  it('reads a lone saturation as a request to leave pastel', () => {
+    // Tuning a saturation IS the non-pastel path, so writing one picks it. This is
+    // also what keeps `setPaletteConfig({ saturation: 55 })` doing what it always
+    // did, rather than silently resolving to the value pastel pins.
+    setPaletteConfig({ saturation: 55 });
+
+    expect(getPaletteConfig().pastel).toBe(false);
+    expect(getPaletteConfig().saturation).toBe(55);
+
+    // Not a pin, though — the config still says nothing about pastel, so a UI
+    // reading the sparse config sees a field it may set either way.
+    expect(getPaletteConfigInput().pastel).toBeUndefined();
+  });
+
+  it('lets an explicit pastel override a saturation, and remembers the number', () => {
+    setPaletteConfig({ saturation: 40, pastel: true });
+
+    // `pastel` is the coarser of the two choices — a color space rather than a value
+    // on one — so it wins wherever both are set.
+    expect(getPaletteConfig().saturation).toBe(
+      DEFAULT_PALETTE_CONFIG.saturation,
+    );
+
+    // Kept rather than dropped, so turning pastel off restores the caller's number
+    // instead of resetting it. That is what makes the two paths a toggle rather than
+    // a one-way door — and what lets the Theme Builder's Pastel switch round-trip.
+    expect(getPaletteConfigInput().saturation).toBe(40);
+
+    setPaletteConfig((config) => ({ ...config, pastel: false }));
+    expect(getPaletteConfig().saturation).toBe(40);
+  });
+
+  it('falls back to the numeric seed on a color it cannot parse', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const baseline = dumpTokens(getPaletteTokens());
+
+    // A CSS keyword is the likely typo in a settings field: it looks like a color and
+    // Glaze rejects it. Taking the render down over it would be the wrong trade.
+    setPaletteConfig({ accentColor: 'rebeccapurple' });
+
+    expect(warn).toHaveBeenCalled();
+    expect(getPaletteConfig().hue).toBe(DEFAULT_PALETTE_CONFIG.hue);
+    expect(getPaletteConfig().accentTone).toBeNull();
+    expect(dumpTokens(getPaletteTokens())).toEqual(baseline);
+
+    warn.mockRestore();
+  });
+
+  it('counts a color seed as a pinned field', () => {
+    const seen: number[] = [];
+    const unsubscribe = subscribePaletteConfig(() =>
+      seen.push(getPaletteVersion()),
+    );
+
+    const seed = colorSeed('#FFD400')!;
+
+    setPaletteConfig({ hue: seed.hue, saturation: seed.saturation, ...EXACT });
+    expect(seen).toHaveLength(1);
+
+    // The same resolved hue and saturation, said a different WAY. A settings UI reads
+    // the sparse config to decide whether its hue slider or its color field is in
+    // charge, so the swap has to be observable even where the numbers agree.
+    setPaletteConfig({ accentColor: '#FFD400', ...EXACT });
+    expect(seen).toHaveLength(2);
+    expect(getPaletteConfigInput().accentColor).toBe('#FFD400');
+
+    unsubscribe();
+  });
+
+  it('previews a color seed without applying it', () => {
+    const preview = renderPaletteTokens({
+      ...EXACT,
+      accentColor: '#FFD400',
+      scheme: 'light',
+    });
+
+    expect(preview['#accent-surface']).not.toBe(
+      renderPaletteTokens({ scheme: 'light' })['#accent-surface'],
+    );
+    expect(getPaletteConfig()).toEqual(DEFAULT_PALETTE_CONFIG);
   });
 });

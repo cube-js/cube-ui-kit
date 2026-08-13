@@ -11,6 +11,10 @@ handful of seeds: an accent hue, a base hue, a saturation, and a hue per status
 theme. Those seeds are tunable at runtime — change one and every token re-resolves, in light,
 dark, and high-contrast schemes at once.
 
+The accent and base zones can each be seeded by a **color** instead of a hue, which is
+usually what you have: `accentColor: '#2F5BFF'` rather than `hue: 266`. See
+[Two zones, two ways to seed them](#two-zones-two-ways-to-seed-them).
+
 ```ts
 import { setPaletteConfig } from '@cube-dev/ui-kit';
 
@@ -29,13 +33,15 @@ value so this stays true.
 
 | Option                       | Scope                                                                                                                                                                 | Default                             |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `accentColor`                | **Accent** zone seeded by a color. Derives the hue, the saturation (with `pastel` off) and the accent **tone**, so the brand fill renders as the color you passed.    | unset                               |
+| `baseColor`                  | **Base** zone seeded by a color. **Hue only** — its tone and saturation are discarded.                                                                                | unset                               |
 | `hue`                        | **Accent** hue in degrees — the brand. Drives the `accent-*` family, `primary` / `purple` / `special`, and the brand-tinted `focus`, loading faces and disabled chip. | `280.3`                             |
 | `baseHue`                    | **Base** hue in degrees — the neutral chrome: `surface` and its ladder, the `surface-text*` ramp, `border`, `placeholder`.                                            | inherits `hue`                      |
-| `saturation`                 | Seed saturation (0–100) for the `default` theme, and the fallback for every theme that sets none.                                                                     | `100`                               |
+| `saturation`                 | Seed saturation (0–100) for the `default` theme, and the fallback for every theme that sets none. Setting it **turns `pastel` off**, which is the path it belongs to. | `100`                               |
 | `themes.<status>.hue`        | Hue for `success` / `danger` / `warning` / `note`.                                                                                                                    | `156.9` / `23.1` / `84.3` / `302.3` |
 | `themes.<status>.saturation` | Saturation for that status theme.                                                                                                                                     | inherits `saturation`               |
 | `themes.code.saturation`     | Saturation for the `code-*` syntax family. Hues are fixed, and this does **not** inherit `saturation`, nor track its default.                                         | `80`                                |
-| `pastel`                     | Global. Relaxes the sRGB-safe chroma limit. Every theme except `code`.                                                                                                | `true`                              |
+| `pastel`                     | Global. Relaxes the sRGB-safe chroma limit, and **pins `saturation` to 100**. Wins wherever both are set. Every theme except `code`.                                  | `true`                              |
 | `contrastLevel`              | Global. `'auto'`, or a manual `0`–`100` level.                                                                                                                        | `'auto'`                            |
 
 ### The setter replaces
@@ -70,13 +76,13 @@ setPaletteConfig((config) => ({
 `resetPaletteConfig()` drops all tuning at once — the same as
 `setPaletteConfig({})`, just easier to read at a call site.
 
-### Two hue zones
+### Two zones, two ways to seed them
 
 Hue is split into an **accent** zone and a **base** zone:
 
-- **Accent** (`hue`) — the `accent-*` family on every theme, `primary` / `purple` /
-  `special`, plus `focus`, the loading faces and the disabled chip.
-- **Base** (`baseHue`) — the neutral chrome: `surface` and its ladder, the
+- **Accent** (`hue` / `accentColor`) — the `accent-*` family on every theme, `primary` /
+  `purple` / `special`, plus `focus`, the loading faces and the disabled chip.
+- **Base** (`baseHue` / `baseColor`) — the neutral chrome: `surface` and its ladder, the
   `surface-text*` ramp, `border`, `placeholder`.
 
 `baseHue` inherits `hue`, so out of the box the chrome carries a faint tint of the
@@ -89,6 +95,57 @@ setPaletteConfig({ hue: 235, baseHue: 60 });
 Only the `default` theme is affected. A colored theme's tinted `surface`
 deliberately follows _its own_ hue, because a danger banner should read as red.
 
+Either zone can take a **color** instead, which is usually the form a brand arrives in.
+Anything Glaze parses works — hex, `rgb()`, `hsl()`, `okhsl()`, `okhst()`, `oklch()`.
+CSS color keywords (`rebeccapurple`) are not supported; an unparseable value warns and
+falls back to the numeric seed.
+
+```ts
+setPaletteConfig({ accentColor: '#2F5BFF', baseColor: '#7A7269' });
+```
+
+The two are not symmetric, and the difference is the point:
+
+- `accentColor` contributes hue, saturation **and tone**. The tone is what makes the
+  brand fill actually _be_ your color. Without it the fill is authored as a fixed tone
+  step off white, so every accent hue lands at roughly the same lightness — a yellow
+  brand comes out olive.
+- `baseColor` contributes **hue only**. Its tone and saturation are discarded, because
+  the chrome's lightness ladder and its 0.10–0.20 saturation factors are the design. A
+  base color says which way the greys lean, not how dark or how vivid they are.
+
+The numeric fields still win where both are set, and the tone keeps coming from the
+color either way — so a preview can rotate the hue without losing the brand's lightness:
+
+```ts
+setPaletteConfig({ accentColor: '#2F5BFF', hue: 300 }); // hue 300, tone still #2F5BFF's
+```
+
+### A color seed is a request
+
+The palette renders the color you asked for, and moves it only as far as it has to. Two
+things can make it move.
+
+**The fill has a 3:1 floor against the page.** That is WCAG's non-text floor: enough
+that a button reads as a shape on the surface. It is a floor and not a target — a brand
+already at 5:1, or 17:1, is emitted exactly as given. It is also solved **per scheme**,
+so which scheme is exact depends on the color: `#FFD400` cannot clear 3:1 against a
+white page and darkens in light, while on a dark page it clears it easily and renders
+byte-exact. A near-black brand is the mirror image.
+
+High contrast is the exception, deliberately. There the floor goes back to AAA whatever
+you passed, because that tier is selected by `prefers-contrast: more` or an explicit
+`data-contrast="high"` — anyone reading it has asked for separation over brand.
+
+**`pastel` caps chroma.** The flat, hue-independent ceiling is what makes pastel even
+across hues, and it sits below where a saturated color would land, so under it a color
+seed can never resolve to itself: `#EF4444` renders `#c47069`. Under pastel the color
+contributes its hue and its tone; turn pastel off to get its chroma too.
+
+Read the result back from the tokens themselves — `#accent-surface` is the fill,
+`#accent-text-soft` the rest link color — or watch the requested/resolved chips in the
+[Theme builder](#theme-builder).
+
 ### One saturation scale per theme
 
 Saturation is _not_ split, deliberately: `saturation` is the theme's **seed**, and
@@ -100,6 +157,24 @@ proportions: turning `saturation` down mutes the brand fills and the neutral tin
 together, in the ratios the palette was designed around. That is the point — the
 relationship between a subtle surface tint and a saturated accent is part of the
 design, not something to tune per token.
+
+All of which describes the `pastel: false` path. Under `pastel` there is still one seed
+and it is pinned to `100`, because a flat chroma ceiling is the whole mechanism and a
+second scale on top of it would only undo the evenness. So there are two paths:
+
+```ts
+setPaletteConfig({ pastel: true }); // even across hues; saturation is 100, full stop
+setPaletteConfig({ saturation: 65 }); // your scale, per-hue ceiling — pastel goes off
+```
+
+Note the second line does not mention `pastel`. **Setting a `saturation` turns pastel
+off**, because tuning a saturation is the non-pastel path by definition — so you pick a
+path by asking for what you want from it, not by setting a flag first.
+
+State `pastel` only to override that. It is the coarser of the two choices — a color
+space rather than a value on one — so it wins wherever both are set, and a saturation it
+shadows is ignored with a dev-mode warning. The number is **kept** rather than dropped,
+though: it stays in the sparse config, so turning pastel back off restores it.
 
 ### The `code-*` family is the exception
 
@@ -147,6 +222,20 @@ setPaletteConfig({ hue: 235 }); // baseHue dropped — inherits again → 235
 // Same thing from inside an updater, when the rest of the config must survive.
 setPaletteConfig(({ baseHue, ...config }) => config);
 ```
+
+The color seeds are pinned fields too, which makes the base zone three-state: unset and
+it follows the accent, `baseHue` and it is pinned to a number, `baseColor` and it is
+derived from a color. A settings UI reads the sparse config to know which of its own
+controls is in charge:
+
+```ts
+const input = getPaletteConfigInput();
+const accentMode = input.accentColor !== undefined ? 'color' : 'hue';
+```
+
+Swapping one form for the other counts as a change even when the numbers agree — a
+`hue: 45` replaced by a color that derives hue 45 resolves identically, but the UI still
+has to re-render to move its mode control.
 
 An explicit `baseHue: undefined` is equivalent to omitting it; neither is a value.
 
@@ -218,6 +307,21 @@ the OS" — a _preference_, and a flat token value cannot express one. A preview
 renders one concrete variant, so it has to name which. The contrast _level_ keeps
 its `Auto`, because there the choice is between the two-tier model and a hand-set
 number rather than between following and not following the system.
+
+Each of the two zones has a **Seeded by** switch — Hue or Color, plus _Follow accent_
+for the base. The hue slider stays on screen in color mode, disabled, showing the hue the
+color derived; switching back therefore hands the slider a value it was already
+displaying. One rule covers every inert control on the panel: **a control is disabled
+exactly when the config field it writes is not the field in charge.** That is also why
+the saturation slider greys out under Pastel rather than disappearing — it keeps showing
+the pinned `100`, which _is_ the contract, and your own number comes back when you turn
+Pastel off.
+
+In color mode the panel also shows the requested color beside the resolved
+`#accent-surface` and `#accent-text`. Under Pastel the two visibly diverge, which is the
+chroma cap made legible rather than mysterious; the `Cobalt` preset is seeded from a
+color with `pastel: false`, so it is the quickest way to see both halves — apply it, then
+turn Pastel on and watch the chips separate.
 
 The preview deliberately shows all three surface levels with their own text ramps
 (`#surface-text`, `#surface-2-text`, `#surface-3-text`), because a theme that looks
@@ -363,6 +467,13 @@ the non-pastel one is per-hue and lets warm hues run further. Flipping the flag 
 therefore re-tunes nothing — a seed picked in one space lands somewhere else in the
 other, and the warm statuses move most. Re-tune the seeds alongside it, in whichever
 direction you flip.
+
+It also owns `saturation` outright — pinned to `100`, so a number passed _explicitly
+alongside_ it is inert and warned about (a number passed on its own turns pastel off
+instead). And it caps an `accentColor` short of itself: the ceiling sits below where a
+saturated color lands, so `#EF4444` resolves to `#c47069`. Both are visible in the
+[Theme builder](#theme-builder), the first as a disabled slider and the second as the
+requested/resolved chips.
 
 **Re-seeding costs about 10 ms.** Rebuilding the eight themes and re-solving
 ~156 tokens across four scheme variants is not free, though it is inside a frame.
