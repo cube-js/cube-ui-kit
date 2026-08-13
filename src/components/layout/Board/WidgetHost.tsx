@@ -51,14 +51,22 @@ const WidgetElement = tasty({
     // convention everywhere), and the two are kept legible side by side by
     // token: selection is a saturated `#primary` ring, focus a `#primary-text`
     // outline sitting one border-width further out (`outlineOffset`).
+    // A widget a live marquee currently covers gets the same treatment with the
+    // ring dimmed, so releasing the pointer only changes the strength of an edge
+    // that is already there — no geometry shift, nothing to re-read. The border
+    // is *not* dimmed with it: `#primary-border` is close to `#border` on a dark
+    // scheme, so fading it lands below the border a widget already has and the
+    // preview would read as weaker than doing nothing.
     border: {
       '': false,
       card: true,
+      'pre-selected': '#primary-border',
       selected: '#primary-border',
     },
     shadow: {
       '': false,
       'hovered & !card & (draggable | resizing)': '0 0 0 1bw #border',
+      'pre-selected': '0 0 0 1bw #primary.40',
       selected: '0 0 0 1bw #primary',
       // `$dialog-shadow` uses Glaze `#shadow-lg`, which adapts to dark / high-contrast schemes.
       'drag | resizing': '$dialog-shadow',
@@ -412,6 +420,12 @@ export interface WidgetHostProps {
   /** Whether this widget can be selected (board selection on and not opted out). */
   isSelectable?: boolean;
   isSelected?: boolean;
+  /**
+   * A live marquee currently covers this widget, so it *will* be selected when
+   * the pointer is released. Provisional: it never reaches the selection model,
+   * the callbacks or the live region.
+   */
+  isPreSelected?: boolean;
   /** CSS selector for descendants whose clicks must not change the selection. */
   selectionCancel?: string;
   /** Id of the board-owned node holding the shared "Selected" description. */
@@ -453,6 +467,7 @@ export function WidgetHost(props: WidgetHostProps) {
     onDragLifecycle,
     isSelectable = false,
     isSelected = false,
+    isPreSelected = false,
     selectionCancel,
     selectedHintId,
     onSelect,
@@ -788,6 +803,11 @@ export function WidgetHost(props: WidgetHostProps) {
     hovered: isHovered,
     'focus-visible': isFocusVisible,
     selected: isSelected,
+    // Mutually exclusive with `selected` by construction, so the two never
+    // compete for precedence in a style map — and an additive lasso leaves the
+    // widgets it already owns looking fully selected rather than downgrading
+    // them to a preview.
+    'pre-selected': isPreSelected && !isSelected,
   };
 
   const content = (
