@@ -30,6 +30,15 @@ module.exports = [
     // registered eagerly. Measured against `main` at 496.25 kB with both sides
     // rebuilt: +2.53 kB. Raised to 501 kB.
     //
+    // Before this, on the palette branch this merges with: 497.13 kB in CI, 131
+    // bytes over the then-current 497 kB, and all of it the dependency —
+    // `@tenphi/glaze` gained `from`, which lets a theme color be seeded from a
+    // literal value instead of the theme seed. Measured at +325 bytes locally
+    // between the two Glaze builds with the kit's own source held constant; the
+    // kit's own source got *smaller* over the same commit, since `from` replaced a
+    // derive-then-re-seed workaround. That bump asked for 498 kB and is subsumed by
+    // the 501 kB above, which was measured after it.
+    //
     // Before this: 495.09 kB in CI, 86 bytes over the previous
     // 495 kB. Two things stack into that: `DataTable`'s column menu, adaptive
     // column colors and column reordering, which left `main` itself ~300 bytes
