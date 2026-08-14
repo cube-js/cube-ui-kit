@@ -87,14 +87,18 @@ const suppressedConsoleError = (...args: any[]) => {
 console.error = suppressedConsoleError;
 
 // Suppress console.warn for tasty @container query rejections
-// These warnings occur because jsdom/cssom doesn't support CSS container style queries
+// These warnings occur because jsdom/cssom doesn't support CSS container style queries.
+//
+// Matched case-insensitively: tasty emits `[Tasty] Browser rejected CSS rule:`
+// with a capital T, and `String.prototype.includes` is case-sensitive — so the
+// original lowercase check never matched and this filter suppressed nothing.
 const originalWarn = console.warn;
 console.warn = (...args: any[]) => {
   const firstArg = args[0];
   const secondArg = args[1];
   if (
     typeof firstArg === 'string' &&
-    firstArg.includes('[tasty] Browser rejected CSS rule:')
+    firstArg.toLowerCase().includes('[tasty] browser rejected css rule:')
   ) {
     // Only suppress @container query warnings (style() not supported in jsdom)
     if (typeof secondArg === 'string' && secondArg.includes('@container')) {

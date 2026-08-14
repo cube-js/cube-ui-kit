@@ -19,6 +19,10 @@
     "./eslint-plugin": {
       "import": "./dist/eslint-plugin/index.js",
       "types": "./dist/eslint-plugin/index.d.ts"
+    },
+    "./probe": {
+      "import": "./dist/probe/index.js",
+      "types": "./dist/probe/index.d.ts"
     }
   },
   "files": [
