@@ -39,7 +39,7 @@ value so this stays true.
 | `baseHue`                    | **Base** hue in degrees — the neutral chrome: `surface` and its ladder, the `surface-text*` ramp, `border`, `placeholder`.                                            | inherits `hue`                      |
 | `saturation`                 | Seed saturation (0–100) for the `default` theme, and the fallback for every theme that sets none. Setting it **turns `pastel` off**, which is the path it belongs to. | `100`                               |
 | `baseSaturation`             | Seed saturation (0–100) of the **base** zone — the same family `baseHue` governs. On the same scale as `saturation`; the shipped chrome is `12`.                      | `baseColor`'s, clipped to 50, else `(accentColor ?? saturation) × 0.12` |
-| `surfaceMode`                | Global. `'tinted'` moves the neutral surface ramp two tones off the end of the tone scale, which is what gives `baseSaturation` room to reach the page surface.        | `'default'`                         |
+| `surfaceMode`                | Global. `'tinted'` moves the neutral surface ramp two tones off the end of the tone scale, which is what gives `baseSaturation` room to reach the page surface.        | `'neutral'`                         |
 | `themes.<status>.hue`        | Hue for `success` / `danger` / `warning` / `note`.                                                                                                                    | `156.9` / `23.1` / `84.3` / `302.3` |
 | `themes.<status>.saturation` | Saturation for that status theme.                                                                                                                                     | inherits `saturation`               |
 | `themes.code.saturation`     | Saturation for the `code-*` syntax family. Hues are fixed, and this does **not** inherit `saturation`, nor track its default.                                         | `80`                                |
@@ -433,40 +433,47 @@ Every caveat on the panel is an **InfoBadge** beside the control it qualifies ra
 than a paragraph under it. A tuner is a dense column of controls, and prose between
 them pushes the next knob off the screen to explain something you need once.
 
-### Two systems, one switch
+### Three states, one tab bar
 
-The panel offers the palette's two chroma models as two states, rather than as knobs
-that argue:
+An unlabelled tab bar spans the top of the panel, and everything below reads as the state
+it has selected:
 
-|                | Pastel                | Tunable, seeded by Hue | Tunable, seeded by Color             |
-| -------------- | --------------------- | ---------------------- | ----------------------------------- |
-| **Accent**     | Hue                   | Hue + Saturation       | Color (hue + chroma + tone)         |
-| **Base**       | Hue, or _Follow accent_ | Hue + Saturation, or _Follow accent_ | Color, or _Follow accent_ |
-| **Status**     | Hue                   | Hue + Saturation       | Hue + Saturation                    |
-| **Syntax**     | Saturation            | Saturation             | Saturation                          |
+|              | **Pastel**              | **Advanced**                         | **Color**                 |
+| ------------ | ----------------------- | ------------------------------------ | ------------------------- |
+| **Accent**   | Hue                     | Hue + Saturation                     | Color (hue+chroma+tone)   |
+| **Base**     | Hue, or _Follow accent_ | Hue + Saturation, or _Follow accent_ | Color, or _Follow accent_ |
+| **Status**   | Hue                     | Hue + Saturation                     | Hue + Saturation          |
+| **Syntax**   | Saturation              | Saturation                           | Saturation                |
 
-Two rules carry it:
+`Advanced` and `Color` are the **same chroma space** — the per-hue ceiling — and differ
+only in what you hand it. `Pastel` is the other space, and it takes hues because a flat
+ceiling has nothing to do with a color.
+
+It began as two controls, a `pastel` switch and a per-zone **Seeded by**, which described
+a 2×2 grid with one impossible cell: pastel cannot honour a color, so one of the two spent
+its life disabled. Three tabs spend three buttons on the three reachable states, and make
+Pastel → Color one press instead of two. The bar carries no label, because naming it would
+mean finding a word for "the palette" — and both candidates, _Mode_ and _Surfaces_, are
+spoken for further down.
+
+Two rules follow from it:
 
 - **`pastel` gates saturation.** It is one flat, hue-independent ceiling, which is what
   makes the palette even across hues and what leaves nothing for a saturation scale to
-  do. Every saturation control is hidden while it is on — except the syntax one, which
-  `pastel` never reaches — and **Seeded by** is disabled, because a flat ceiling caps an
-  arbitrary color well short of itself.
+  do. There is no saturation control in that state except the syntax one, which `pastel`
+  never reaches.
 - **A derived control is not shown.** Whatever a seed already supplies, its slider goes
   away rather than sitting on screen disabled. A disabled slider under a color seed is a
   read-out dressed as a control, and it cost two rows to repeat what the color field
   above it already said.
 
-**Seeded by is one switch for both zones**, in Global. It used to be per-zone, which made
-four combinations out of a decision nobody makes twice — a brand arrives as hexes or as
-numbers, not one of each. The base zone keeps its own **Follow accent | Own**, because
-that is orthogonal: it is about whether the chrome has a seed at all, not about how a
-seed is spelled.
+The base zone keeps its own **Follow accent | Own**, which is orthogonal to the tabs: it
+is about whether the chrome has a seed at all, not about how a seed is spelled.
 
-Every transition hands the incoming control the value the outgoing one was displaying, so
-switching changes who is in charge without repainting on the way. Turning `pastel` on
-while a color is in charge performs the same conversion — it cannot honour a color, so it
-pins the numbers the color was deriving and drops the hex.
+Every transition hands the incoming controls the values the outgoing ones were displaying,
+so switching changes who is in charge without repainting on the way. Leaving `Color`
+therefore pins each zone at what its color derived and drops the hex — including on the
+way to `Pastel`, which cannot honour a color at all.
 
 In color mode the panel shows where the color actually landed — **Accent Fill** and
 **Accent Text**, the two tokens the seed's tone reaches. The requested color is not

@@ -2,7 +2,7 @@
 '@cube-dev/ui-kit': minor
 ---
 
-Add `surfaceMode: 'tinted'` and a separate `baseSaturation` seed.
+Add `surfaceMode: 'neutral' | 'tinted'` and a separate `baseSaturation` seed.
 
 A neutral `surface` sits at the extreme of the tone scale — pure white in light — and chroma needs distance from the extreme to exist at all, so on a light page the surface was white whatever saturation the palette carried. `surfaceMode: 'tinted'` moves the whole surface ramp two tones inward, which is the room the base hue needs to land on the page itself:
 
@@ -19,4 +19,4 @@ The **tinted** surfaces move with it as well. A status theme's `surface`, and a 
 - Left unset it is `0.12` — `surface`'s own factor — of whatever the accent zone carries, so an untouched palette resolves exactly as before and a muted `saturation` still mutes the chrome.
 - Unlike `saturation`, writing it does **not** turn `pastel` off: how much hue the chrome carries says nothing about which chroma space the palette is in.
 
-Both are shipped defaults-off: `surfaceMode` defaults to `'default'`, and the resolved palette is unchanged token for token.
+Both are shipped defaults-off: `surfaceMode` defaults to `'neutral'` — the surface at the end of the tone scale, which is exactly what a neutral one is — and the resolved palette is unchanged token for token.

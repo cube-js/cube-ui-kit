@@ -13,6 +13,7 @@ import {
   DEFAULT_PALETTE_CONFIG,
   Dialog,
   DialogTrigger,
+  getPaletteConfig,
   getPaletteConfigInput,
   getPaletteTokens,
   HueSlider,
@@ -341,29 +342,47 @@ const ACCENT_COLOR_START = '#7a4dbf';
 const BASE_COLOR_START = '#6c717f';
 
 /**
- * How the palette is seeded right now, read off the SPARSE config.
+ * The whole palette in one of three states, read off the SPARSE config.
  *
- * Deriving it rather than keeping it in `useState` is what makes a preset able to flip
- * the switch for free — and what stops the two from ever disagreeing. Only the sparse
+ * Deriving it rather than keeping it in `useState` is what makes a preset able to move
+ * the tabs for free — and what stops the two from ever disagreeing. Only the sparse
  * config knows the difference between a value that was chosen and one that was
  * inherited or derived.
  *
- * **One switch for both zones.** It used to be per-zone, which made four combinations
- * out of a decision nobody makes twice: a brand arrives as hexes or as numbers, not one
- * of each. The base zone keeps its own *Follow accent* choice, because that is
- * orthogonal — it is about whether the chrome has a seed at all, not about how a seed is
- * spelled.
+ * **Three states, one control.** `pastel` and a per-zone `Seeded by` used to be two
+ * controls describing a 2×2 grid with one impossible cell — pastel cannot honour a
+ * color — so one of them spent its life disabled. Three tabs spend three buttons on
+ * three reachable states and make Pastel → Color one press instead of two.
+ *
+ * `Advanced` and `Color` are the same chroma space; they differ only in what you hand
+ * it. `Pastel` is the other space, and it takes hues because a flat ceiling has nothing
+ * else to do with a color.
+ *
+ * The base zone keeps its own *Follow accent*, which is orthogonal to all of this: it
+ * is about whether the chrome has a seed at all, not about how a seed is spelled.
  */
-type SeedMode = 'hue' | 'color';
+type PaletteMode = 'pastel' | 'advanced' | 'color';
 
-function useSeedMode(): SeedMode {
+function usePaletteMode(): PaletteMode {
   usePaletteVersion();
 
   const input = getPaletteConfigInput();
 
-  return input.accentColor !== undefined || input.baseColor !== undefined
-    ? 'color'
-    : 'hue';
+  // A color wins even next to `pastel: true`, which the tabs cannot produce but a
+  // pasted config can. Reporting `color` is the more informative of the two, and the
+  // colors are what the reader will be looking for.
+  if (input.accentColor !== undefined || input.baseColor !== undefined) {
+    return 'color';
+  }
+
+  return getPaletteConfig().pastel ? 'pastel' : 'advanced';
+}
+
+/** What the two zones are seeded WITH — the half of the mode they care about. */
+type SeedMode = 'hue' | 'color';
+
+function useSeedMode(): SeedMode {
+  return usePaletteMode() === 'color' ? 'color' : 'hue';
 }
 
 /**
@@ -513,7 +532,7 @@ function BaseSourceControls() {
               tooltip={
                 palette.surfaceMode === 'tinted'
                   ? `The same 0–100 scale the accent saturation uses, on the chrome alone. The shipped value is 12 — a faint tint is what a neutral surface is — so the interesting range is the low end, and past about 25 the base colors run out of scale and converge.`
-                  : `Reaches surface-2…surface-4, the borders and the text ramp, but not the page surface: at the end of the tone scale there is no room for chroma. Switch Surface mode to Tinted to give it some.`
+                  : `Reaches surface-2…surface-4, the borders and the text ramp, but not the page surface: at the end of the tone scale there is no room for chroma. Switch Surfaces to Tinted to give it some.`
               }
               minValue={0}
               // The clip a derived base color gets, so the manual and the derived
@@ -534,127 +553,126 @@ function BaseSourceControls() {
   );
 }
 
+/** Full-width tabs, so the three states divide the column rather than huddling left. */
+const MODE_TABS_STYLES: Styles = { width: '100%' };
+const MODE_TAB_STYLES: Styles = { flexGrow: 1 };
+
 /**
- * How both zones are seeded — numbers or colors — as one switch.
+ * The palette's three states, as one unlabelled tab bar at the top of the column.
  *
- * Disabled under pastel rather than hidden: it is the entry to half the API, and a
- * control that vanishes teaches nothing about why. The tooltip says why.
+ * Tabs rather than a labelled switch, and no label at all: it governs everything under
+ * it, so naming it would mean finding a word for "the palette" — and the two candidates,
+ * *Mode* and *Surfaces*, are both already spoken for further down. A tab bar spanning the
+ * column says "these are the states of the thing below" without a caption.
  *
- * Flipping to `color` seeds each zone with a start hex and drops the numeric pins, so
- * the colors are genuinely in charge. Flipping back pins each zone at the value its
- * color was deriving, so a control takes over the number it was already showing rather
- * than repainting on the way.
+ * Every transition hands the incoming controls the values the outgoing ones were
+ * displaying, so switching changes who is in charge rather than repainting on the way.
+ * Leaving `Color` therefore pins each zone at what its color derived; entering it seeds
+ * the start hexes and drops the numeric pins.
  */
-function SeedModeSwitch() {
+function PaletteModeTabs() {
   const [palette, setPalette] = usePaletteConfig();
-  const mode = useSeedMode();
-  const input = getPaletteConfigInput();
+  const mode = usePaletteMode();
+
+  /** Colors out, and the numbers they were deriving pinned in their place. */
+  const toNumbers = (config: PaletteConfig): PaletteConfig => ({
+    ...config,
+    accentColor: undefined,
+    baseColor: undefined,
+    ...(config.accentColor !== undefined
+      ? { hue: Math.round(palette.hue) }
+      : null),
+    ...(config.baseColor !== undefined
+      ? {
+          baseHue: Math.round(palette.baseHue),
+          baseSaturation: Math.round(palette.baseSaturation * 2) / 2,
+        }
+      : null),
+  });
 
   return (
-    <RadioGroup
-      label="Seeded by"
-      labelPosition="split"
-      type="button"
+    <Radio.Tabs
+      aria-label="Palette mode"
       value={mode}
-      isDisabled={palette.pastel}
-      tooltip={
-        palette.pastel
-          ? 'A color seed needs a per-hue chroma ceiling to land on. Pastel is one flat ceiling, so it caps an arbitrary color well short of itself — turn pastel off to seed from colors.'
-          : 'Hue seeds each zone with numbers you can dial; Color takes the hexes a brand usually arrives as. The accent color contributes hue, chroma and tone; a base color contributes hue and saturation. Whatever a seed supplies, its slider goes away.'
-      }
+      styles={MODE_TABS_STYLES}
       onChange={(next) =>
-        setPalette(({ accentColor, baseColor, ...config }) =>
-          next === 'color'
-            ? // Only the zones that had a seed of their own get a color: a base zone
-              // following the accent keeps following it.
-              {
-                ...config,
-                hue: undefined,
-                accentColor: ACCENT_COLOR_START,
-                ...(config.baseHue !== undefined ||
-                config.baseSaturation !== undefined
-                  ? {
-                      baseHue: undefined,
-                      baseSaturation: undefined,
-                      baseColor: BASE_COLOR_START,
-                    }
-                  : null),
-              }
-            : {
-                ...config,
-                hue: Math.round(palette.hue),
-                ...(baseColor !== undefined
-                  ? {
-                      baseHue: Math.round(palette.baseHue),
-                      baseSaturation:
-                        Math.round(palette.baseSaturation * 2) / 2,
-                    }
-                  : null),
-              },
-        )
+        setPalette((config) => {
+          if (next === 'color') {
+            return {
+              ...config,
+              pastel: false,
+              hue: undefined,
+              accentColor: ACCENT_COLOR_START,
+              // Only a zone that had a seed of its own gets a color; one following the
+              // accent keeps following it.
+              ...(config.baseHue !== undefined ||
+              config.baseSaturation !== undefined
+                ? {
+                    baseHue: undefined,
+                    baseSaturation: undefined,
+                    baseColor: BASE_COLOR_START,
+                  }
+                : null),
+            };
+          }
+
+          // Pastel and Advanced are the same seeds in two chroma spaces, so both take
+          // the numeric form — a flat ceiling has nothing to do with a color, and
+          // `pastel` has to be explicit either way: an absent one is inferred from
+          // whether a `saturation` is pinned.
+          return { ...toNumbers(config), pastel: next === 'pastel' };
+        })
       }
     >
-      <Radio value="hue">Hue</Radio>
-      <Radio value="color">Color</Radio>
-    </RadioGroup>
+      <Radio
+        value="pastel"
+        styles={MODE_TAB_STYLES}
+        tooltip="One flat, hue-independent chroma ceiling. It is what makes the palette even across hues, and it leaves nothing for a saturation scale to do — so there are no saturation sliders here except the syntax one, which pastel never reaches."
+      >
+        Pastel
+      </Radio>
+      <Radio
+        value="advanced"
+        styles={MODE_TAB_STYLES}
+        tooltip="The per-hue ceiling, with a hue and a saturation on each zone. The same space Color uses; this is the half where you dial the numbers yourself."
+      >
+        Advanced
+      </Radio>
+      <Radio
+        value="color"
+        styles={MODE_TAB_STYLES}
+        tooltip="The same space as Advanced, seeded from the hexes a brand usually arrives as. The accent color contributes hue, chroma and tone; a base color contributes hue and saturation. Whatever a color supplies, its slider goes away."
+      >
+        Color
+      </Radio>
+    </Radio.Tabs>
   );
 }
 
 /**
- * The knobs that belong to neither zone: the chroma space, how both zones are seeded,
- * and where the surface ramp sits on the tone scale.
+ * The knobs that belong to neither zone: where the surface ramp sits on the tone scale,
+ * and the contrast level.
  *
- * `Surface mode` reads as a base-zone setting — it is the neutral surfaces it
- * moves — but it is global in the config and global in effect: the status themes'
- * surfaces follow it, and so does the mirrored surface the syntax palette solves
- * against. Filed by what it reaches rather than by what it is named after.
+ * `Surfaces` reads as a base-zone setting — it is the neutral surfaces it moves — but it
+ * is global in the config and global in effect: the status themes' tinted surfaces follow
+ * it, and so does the mirrored surface the syntax palette solves against. Filed by what
+ * it reaches rather than by what it is named after.
  */
 function GlobalControls() {
   const [palette, setPalette] = usePaletteConfig();
 
   return (
     <Section>
-      {/* `split` rather than the switch's own inline label, so it sits on the same
-          label-left / control-right grid as the seeding switchers do. */}
-      <Switch
-        label="Pastel"
-        labelPosition="split"
-        tooltip="One flat, hue-independent chroma ceiling — which is what makes the palette even across hues, and what leaves nothing for a saturation scale to do. Every saturation slider is hidden while it is on (except the syntax one, which pastel never reaches), and a color seed cannot be honoured under it. Turn it off for the tunable palette: a per-hue ceiling with a saturation on each zone."
-        isSelected={palette.pastel}
-        onChange={(pastel) =>
-          setPalette((config) =>
-            pastel
-              ? // Pastel cannot honour a color, so turning it on converts any color
-                // seed to the numbers it was deriving — the same conversion leaving
-                // color mode already performs. The hex does not survive, and the
-                // alternative was two controls each disabling the other.
-                {
-                  ...config,
-                  pastel,
-                  accentColor: undefined,
-                  baseColor: undefined,
-                  ...(config.accentColor !== undefined
-                    ? { hue: Math.round(palette.hue) }
-                    : null),
-                  ...(config.baseColor !== undefined
-                    ? {
-                        baseHue: Math.round(palette.baseHue),
-                        baseSaturation:
-                          Math.round(palette.baseSaturation * 2) / 2,
-                      }
-                    : null),
-                }
-              : { ...config, pastel },
-          )
-        }
-      />
-      <SeedModeSwitch />
       <RadioGroup
-        label="Surface mode"
+        // Not "Surface mode": the palette's own three states are the mode on this page,
+        // and two things called a mode is one too many. `Neutral` rather than `Default`
+        // for the same reason a label should say what it is instead of that it is the
+        // one you get — a surface at the end of the tone scale is exactly neutral.
+        label="Surfaces"
         labelPosition="split"
         type="button"
         value={palette.surfaceMode}
-        tooltip="Tinted moves the whole surface ramp two tones off the end of the tone scale — the neutral surfaces, the status themes' tinted ones, and the mirrored surface the syntax palette solves against. Not a lightness change: chroma needs distance from the extreme to exist at all, so at the default a light page is white whatever the base saturation asks for. Two tones is the cheapest room in which the base hue becomes visible."
+        tooltip="Tinted moves the whole surface ramp two tones off the end of the tone scale — the neutral surfaces, the status themes' tinted ones, and the mirrored surface the syntax palette solves against. Not a lightness change: chroma needs distance from the extreme to exist at all, so a neutral light page is white whatever the base saturation asks for. Two tones is the cheapest room in which the base hue becomes visible."
         onChange={(surfaceMode) =>
           setPalette((config) => ({
             ...config,
@@ -662,7 +680,7 @@ function GlobalControls() {
           }))
         }
       >
-        <Radio value="default">Default</Radio>
+        <Radio value="neutral">Neutral</Radio>
         <Radio value="tinted">Tinted</Radio>
       </RadioGroup>
     </Section>
@@ -679,20 +697,26 @@ function GlobalControls() {
  */
 function BrandControls() {
   return (
-    <Controls>
-      <Section>
-        <GroupLabel>Global</GroupLabel>
-        <GlobalControls />
-      </Section>
-      <Section>
-        <GroupLabel>Accent</GroupLabel>
-        <AccentSourceControls />
-      </Section>
-      <Section>
-        <GroupLabel>Base</GroupLabel>
-        <BaseSourceControls />
-      </Section>
-    </Controls>
+    <Section>
+      {/* The Playground needs the tabs too, or Advanced and Color are unreachable —
+          they used to be a `pastel` switch and a per-zone `Seeded by` living inside
+          the columns below. */}
+      <PaletteModeTabs />
+      <Controls>
+        <Section>
+          <GroupLabel>Global</GroupLabel>
+          <GlobalControls />
+        </Section>
+        <Section>
+          <GroupLabel>Accent</GroupLabel>
+          <AccentSourceControls />
+        </Section>
+        <Section>
+          <GroupLabel>Base</GroupLabel>
+          <BaseSourceControls />
+        </Section>
+      </Controls>
+    </Section>
   );
 }
 
@@ -1500,6 +1524,10 @@ function ThemeBuilderControls({
   return (
     <ControlColumn>
       <BuilderActions />
+
+      {/* Above the groups rather than inside one, because it governs all of them.
+          Everything below reads as the state the tabs have selected. */}
+      <PaletteModeTabs />
 
       <ControlGroup>
         <GroupLabel>Presets</GroupLabel>

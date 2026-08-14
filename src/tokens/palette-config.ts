@@ -102,7 +102,7 @@ export interface PaletteCodeSeed {
  * Where the neutral surface ramp sits on the tone scale — see
  * {@link PaletteConfig.surfaceMode}.
  */
-export type SurfaceMode = 'default' | 'tinted';
+export type SurfaceMode = 'neutral' | 'tinted';
 
 /** Names of the themes whose seeds can be overridden individually. */
 export type PaletteThemeName =
@@ -199,7 +199,7 @@ export interface PaletteConfig {
    * `surface`, the text ramp more than `border` — until the highest of them hits
    * the top of the scale, which happens around `25`. Past that they converge.
    *
-   * Under {@link PaletteConfig.surfaceMode} `'default'` this reaches
+   * Under {@link PaletteConfig.surfaceMode} `'neutral'` this reaches
    * `surface-2`…`surface-4`, `border`, `placeholder` and the text ramp, but not
    * the page surface: at the end of the tone scale there is no room for chroma,
    * whatever the seed says. `'tinted'` is what gives it somewhere to land.
@@ -208,8 +208,9 @@ export interface PaletteConfig {
   /**
    * Global. Where the neutral surface ramp sits on the tone scale.
    *
-   * - `'default'` — `surface` is the extreme: pure white in light, the darkest
-   *   step the dark tone window allows in dark.
+   * - `'neutral'` — `surface` is the extreme: pure white in light, the darkest
+   *   step the dark tone window allows in dark. No room for chroma, so the page
+   *   carries no hue however saturated the base zone is.
    * - `'tinted'` — the whole ramp moves two tones inward, off the extreme.
    *
    * Two tones is not a visible lightness change; what it buys is *room*. Chroma
@@ -455,7 +456,7 @@ function resolveConfig(input: PaletteConfig): ResolvedPaletteConfig {
         ? Math.min(base.saturation, MAX_BASE_SATURATION, saturation)
         : Math.min(accent?.saturation ?? saturation, saturation) *
           SURFACE_SATURATION_SHARE),
-    surfaceMode: input.surfaceMode ?? 'default',
+    surfaceMode: input.surfaceMode ?? 'neutral',
     accentColor: accent ? input.accentColor! : null,
     baseColor: base ? input.baseColor! : null,
     accentTone: accent?.tone ?? null,
