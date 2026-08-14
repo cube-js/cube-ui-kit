@@ -379,8 +379,18 @@ keep following it until you press one, after which they are yours. There is no
 preview resolves to flat token values, which can only express one concrete
 variant. Following is the default behaviour rather than a third choice.
 
-The **contrast level** is on the theme side, and always visible as a plain
-slider. It has no on/off switch because it needs none: level `0` and `'auto'` are
+On the theme side, the panel is grouped by **what a knob reaches** rather than by
+what it is named after: **Global** for the ones that govern both zones — `pastel`,
+`saturation`, `surfaceMode` and `contrastLevel` — then **Accent** and **Base** for
+the ones that do not. `surfaceMode` files under Global despite moving the *base*
+surfaces, because the status themes' tinted surfaces follow it too, and so does the
+mirrored surface the syntax palette solves against.
+
+Those headings are also why the field labels are bare. `Seeded by` and `Hue` appear
+in both zones, and the heading above them is what says which — repeating it in
+every label was two words of noise on every line of a narrow column.
+
+The **contrast level** needs no on/off switch: level `0` and `'auto'` are
 output-identical, tier included, so the slider at rest _is_ the shipped palette.
 
 Status themes are four chips on one line rather than eight sliders. Each chip is a

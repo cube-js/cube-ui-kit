@@ -143,6 +143,14 @@ const SwatchLabel = tasty({
   styles: { preset: 't4m' },
 });
 
+// `c2` is the kit's settings-heading preset: uppercase, tracked, 12px. It reads as
+// a section divider rather than as another bold line of prose, which is what a
+// column of labelled controls needs.
+const GroupLabel = tasty({
+  as: 'strong',
+  styles: { preset: 'c2', color: '#surface-text-soft' },
+});
+
 const Token = tasty({
   as: 'code',
   styles: { preset: 's4', opacity: 0.75, wordBreak: 'break-all' },
@@ -357,7 +365,7 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
   return (
     <Section>
       <RadioGroup
-        label="Accent seeded by"
+        label="Seeded by"
         labelPosition="split"
         type="button"
         value={mode}
@@ -376,7 +384,7 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
       </RadioGroup>
       {mode === 'color' ? (
         <ColorInput
-          label="Accent color"
+          label="Color"
           size="small"
           value={input.accentColor ?? null}
           onChange={(accentColor) =>
@@ -393,7 +401,7 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
       <HueSlider
         // No value in the label: the slider already prints it on the right, and
         // the same number twice on one line reads as two facts.
-        label={mode === 'color' ? 'Accent hue (from the color)' : 'Accent hue'}
+        label={mode === 'color' ? 'Hue (from the color)' : 'Hue'}
         tooltip={
           mode === 'color'
             ? 'Derived from the accent color, and disabled while that color is in charge. Left on screen because watching it move on its own is what makes a hue seed and a color seed legible as two ways of doing one thing.'
@@ -425,7 +433,7 @@ function BaseSourceControls() {
   return (
     <Section>
       <RadioGroup
-        label="Base seeded by"
+        label="Seeded by"
         labelPosition="split"
         type="button"
         value={mode}
@@ -449,7 +457,7 @@ function BaseSourceControls() {
       </RadioGroup>
       {mode === 'color' ? (
         <ColorInput
-          label="Base color"
+          label="Color"
           size="small"
           tooltip="Only the hue is taken. A base color's chroma and lightness are discarded — the chrome's own lightness ladder and its 0.10–0.20 saturation factors are the design."
           value={input.baseColor ?? null}
@@ -465,10 +473,10 @@ function BaseSourceControls() {
       <HueSlider
         label={
           mode === 'accent'
-            ? 'Base hue (inherited)'
+            ? 'Hue (inherited)'
             : mode === 'color'
-              ? 'Base hue (from the color)'
-              : 'Base hue'
+              ? 'Hue (from the color)'
+              : 'Hue'
         }
         tooltip="The neutral chrome — surface and its ladder, the surface-text ramp, border, placeholder. A colored theme's tinted surface deliberately follows its own hue instead, because a danger banner should read as red."
         // Left enabled while it inherits: dragging pins `baseHue`, which flips the
@@ -477,24 +485,8 @@ function BaseSourceControls() {
         value={Math.round(palette.baseHue)}
         onChange={(baseHue) => setPalette((config) => ({ ...config, baseHue }))}
       />
-      <RadioGroup
-        label="Surface mode"
-        labelPosition="split"
-        type="button"
-        value={palette.surfaceMode}
-        tooltip="Tinted moves the whole surface ramp two tones off the end of the tone scale. Not a lightness change — chroma needs distance from the extreme to exist at all, so at the default a light page is white whatever the base saturation asks for. Two tones is the cheapest room in which the base hue becomes visible."
-        onChange={(surfaceMode) =>
-          setPalette((config) => ({
-            ...config,
-            surfaceMode: surfaceMode as SurfaceMode,
-          }))
-        }
-      >
-        <Radio value="default">Default</Radio>
-        <Radio value="tinted">Tinted</Radio>
-      </RadioGroup>
       <Slider
-        label="Base saturation"
+        label="Saturation"
         tooltip={
           palette.surfaceMode === 'tinted'
             ? 'The same 0–100 scale the palette saturation uses, on the chrome alone. The shipped value is 12 — a faint tint is what a neutral surface is — so the interesting range is the low end, and past about 25 the base colors run out of scale and converge.'
@@ -516,7 +508,16 @@ function BaseSourceControls() {
   );
 }
 
-function SaturationControls() {
+/**
+ * The knobs that belong to neither zone: the chroma space, the palette-wide
+ * saturation seed, and where the surface ramp sits on the tone scale.
+ *
+ * `Surface mode` reads as a base-zone setting — it is the neutral surfaces it
+ * moves — but it is global in the config and global in effect: the status themes'
+ * surfaces follow it, and so does the mirrored surface the syntax palette solves
+ * against. Filed by what it reaches rather than by what it is named after.
+ */
+function GlobalControls() {
   const [palette, setPalette] = usePaletteConfig();
 
   return (
@@ -534,7 +535,7 @@ function SaturationControls() {
         label={palette.pastel ? 'Saturation (pinned by pastel)' : 'Saturation'}
         tooltip={
           palette.pastel
-            ? 'Pastel pins saturation at 100. The flat, hue-independent chroma ceiling is what makes it even across hues, and a second scale on top of it would only undo that. Turn pastel off for a free 0–100 scale.'
+            ? 'Pastel pins saturation at 100 — here and on every status theme, whose own saturation sliders are hidden for the same reason. The flat, hue-independent chroma ceiling is what makes it even across hues, and a second scale on top of it would only undo that. Turn pastel off for a free 0–100 scale.'
             : 'Independent of the accent color: the brand family carries its own chroma, so a color seed no longer moves this — and cannot wash the neutral chrome or the status themes along with it.'
         }
         minValue={0}
@@ -545,16 +546,49 @@ function SaturationControls() {
           setPalette((config) => ({ ...config, saturation }))
         }
       />
+      <RadioGroup
+        label="Surface mode"
+        labelPosition="split"
+        type="button"
+        value={palette.surfaceMode}
+        tooltip="Tinted moves the whole surface ramp two tones off the end of the tone scale — the neutral surfaces, the status themes' tinted ones, and the mirrored surface the syntax palette solves against. Not a lightness change: chroma needs distance from the extreme to exist at all, so at the default a light page is white whatever the base saturation asks for. Two tones is the cheapest room in which the base hue becomes visible."
+        onChange={(surfaceMode) =>
+          setPalette((config) => ({
+            ...config,
+            surfaceMode: surfaceMode as SurfaceMode,
+          }))
+        }
+      >
+        <Radio value="default">Default</Radio>
+        <Radio value="tinted">Tinted</Radio>
+      </RadioGroup>
     </Section>
   );
 }
 
+/**
+ * The Playground's panel, and the reason the field labels can drop their zone
+ * prefix: the headings carry it.
+ *
+ * Without them `Seeded by` and `Hue` would each appear twice with nothing to say
+ * which zone they belong to — the builder's group labels were doing that work, and
+ * this story had none.
+ */
 function BrandControls() {
   return (
     <Controls>
-      <AccentSourceControls />
-      <BaseSourceControls />
-      <SaturationControls />
+      <Section>
+        <GroupLabel>Global</GroupLabel>
+        <GlobalControls />
+      </Section>
+      <Section>
+        <GroupLabel>Accent</GroupLabel>
+        <AccentSourceControls />
+      </Section>
+      <Section>
+        <GroupLabel>Base</GroupLabel>
+        <BaseSourceControls />
+      </Section>
     </Controls>
   );
 }
@@ -593,15 +627,20 @@ function StatusControls() {
               value={Math.round(seed.hue)}
               onChange={(hue) => setPalette(statusSeed(name, { hue }))}
             />
-            <Slider
-              label={`${name} saturation`}
-              minValue={0}
-              maxValue={100}
-              value={seed.saturation}
-              onChange={(saturation) =>
-                setPalette(statusSeed(name, { saturation }))
-              }
-            />
+            {/* Hidden under pastel, for the reason `StatusThemeButton` spells
+                out: pastel is one flat ceiling with the palette seed pinned to
+                the top of it, so a per-theme scale underneath contradicts it. */}
+            {palette.pastel ? null : (
+              <Slider
+                label={`${name} saturation`}
+                minValue={0}
+                maxValue={100}
+                value={seed.saturation}
+                onChange={(saturation) =>
+                  setPalette(statusSeed(name, { saturation }))
+                }
+              />
+            )}
           </Section>
         );
       })}
@@ -975,14 +1014,6 @@ const ControlGroup = tasty({
   styles: { display: 'grid', gap: '1.5x' },
 });
 
-// `c2` is the kit's settings-heading preset: uppercase, tracked, 12px. It reads as
-// a section divider rather than as another bold line of prose, which is what a
-// column of labelled controls needs.
-const GroupLabel = tasty({
-  as: 'strong',
-  styles: { preset: 'c2', color: '#surface-text-soft' },
-});
-
 /**
  * Quick-apply seeds, so the builder opens on something other than a blank slate.
  *
@@ -1165,6 +1196,9 @@ function StatusThemeButton({
 }) {
   const [palette, setPalette] = usePaletteConfig();
   const seed = palette.themes[name];
+  // The SPARSE config: only a saturation that was actually written counts as
+  // pinned. The resolved one always carries a number, inherited or not.
+  const pinnedSaturation = getPaletteConfigInput().themes?.[name]?.saturation;
 
   return (
     <DialogTrigger
@@ -1194,23 +1228,40 @@ function StatusThemeButton({
             value={Math.round(seed.hue)}
             onChange={(hue) => setPalette(statusSeed(name, { hue }))}
           />
-          <Slider
-            label="Saturation"
-            tooltip={
-              palette.pastel
-                ? // It does work under pastel — but the flat ceiling caps the
-                  // range at about a third of the non-pastel one, which reads as
-                  // a dead control unless you are told.
-                  'Live, but pastel caps the top of the range at roughly a third of the non-pastel one, so the whole slider covers a narrower spread. Turn pastel off for the full range.'
-                : 'Inherits the palette saturation until you move it, and stays pinned afterwards — so a re-seeded palette leaves this theme where you put it.'
-            }
-            minValue={0}
-            maxValue={100}
-            value={seed.saturation}
-            onChange={(saturation) =>
-              setPalette(statusSeed(name, { saturation }))
-            }
-          />
+          {/* No saturation slider under pastel.
+
+              Pastel is one flat chroma ceiling and the palette-level saturation is
+              pinned to the top of it, so offering a *per-theme* scale underneath
+              reads as a contradiction — and the range that survives the ceiling is
+              about a third of the non-pastel one, narrow enough that dragging it
+              looks like nothing happening. Hue is the knob that still means
+              something here.
+
+              The engine still honours a `themes.<status>.saturation` under pastel,
+              which is why the pinned case below gets said out loud rather than
+              hidden: a number set before pastel went on is still in effect. */}
+          {palette.pastel ? (
+            pinnedSaturation !== undefined ? (
+              <Row>
+                <Token>Saturation {pinnedSaturation} — pinned</Token>
+                <InfoBadge
+                  theme="danger"
+                  tooltip={`Set while pastel was off, and still in effect. Pastel's flat ceiling is what governs status chroma now, so there is no scale to offer on top of it — turn pastel off to reach this number again, or to clear it.`}
+                />
+              </Row>
+            ) : null
+          ) : (
+            <Slider
+              label="Saturation"
+              tooltip="Inherits the palette saturation until you move it, and stays pinned afterwards — so a re-seeded palette leaves this theme where you put it."
+              minValue={0}
+              maxValue={100}
+              value={seed.saturation}
+              onChange={(saturation) =>
+                setPalette(statusSeed(name, { saturation }))
+              }
+            />
+          )}
         </Section>
       </Dialog>
     </DialogTrigger>
@@ -1370,13 +1421,14 @@ function ThemeBuilderControls({
         </Row>
       </ControlGroup>
 
-      {/* Ahead of the zones, because it governs both of them — and because
-          `pastel` decides whether the number below it is even live. Reading the
-          panel top to bottom now goes global, then accent, then base, which is
-          the order the config resolves in. */}
+      {/* Ahead of the zones, because everything in here governs both of them —
+          and because `pastel` decides whether the saturation under it is even
+          live. Reading the panel top to bottom now goes global, then accent, then
+          base, which is the order the config resolves in. */}
       <ControlGroup>
-        <GroupLabel>Global saturation</GroupLabel>
-        <SaturationControls />
+        <GroupLabel>Global</GroupLabel>
+        <GlobalControls />
+        <ContrastControls />
       </ControlGroup>
 
       <ControlGroup>
@@ -1391,11 +1443,6 @@ function ThemeBuilderControls({
       <ControlGroup>
         <GroupLabel>Base</GroupLabel>
         <BaseSourceControls />
-      </ControlGroup>
-
-      <ControlGroup>
-        <GroupLabel>Contrast level</GroupLabel>
-        <ContrastControls />
       </ControlGroup>
 
       <ControlGroup>
@@ -1929,7 +1976,7 @@ export const StatusThemes: Story = {
   render: () => (
     <StoryPage
       title="Status themes"
-      description="Each status theme carries its own hue and saturation. Tuning one leaves every other token untouched."
+      description="Each status theme carries its own hue and saturation, and tuning one leaves every other token untouched. The saturation sliders appear only with pastel off: pastel is a single flat chroma ceiling with the palette seed pinned to the top of it, so a per-theme scale underneath it would be arguing with the mode."
     >
       <Panel>
         <StatusControls />
