@@ -66,7 +66,20 @@
     "time": "Tid",
     "startTime": "Starttid",
     "endTime": "Sluttid",
-    "showEndCalendar": "Visa kalender för slutdatum"
+    "showEndCalendar": "Visa kalender för slutdatum",
+    "selectWeek": "Välj vecka",
+    "selectMonth": "Välj månad",
+    "selectQuarter": "Välj kvartal",
+    "selectYear": "Välj år"
+  },
+  "calendar": {
+    "previousYear": "Föregående år",
+    "nextYear": "Nästa år",
+    "previousYears": "Föregående år",
+    "nextYears": "Nästa år",
+    "months": "Månader",
+    "quarters": "Kvartal",
+    "years": "År"
   },
   "fileInput": {
     "chooseFile": "Välj fil",

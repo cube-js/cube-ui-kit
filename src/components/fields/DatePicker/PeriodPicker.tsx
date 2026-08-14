@@ -6,7 +6,7 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, useRef } from 'react';
+import { forwardRef, useId, useRef } from 'react';
 import {
   AriaDatePickerProps,
   DateValue,
@@ -16,6 +16,7 @@ import {
 } from 'react-aria';
 import { useDatePickerState } from 'react-stately';
 
+import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
@@ -29,21 +30,18 @@ import { DatePickerButton } from './DatePickerButton';
 import { formatPeriod, PickerType, snapToPeriod } from './period';
 import { useFocusManagerRef } from './utils';
 
-const DEFAULT_PLACEHOLDER: Record<PickerType, string> = {
-  week: 'Select week',
-  month: 'Select month',
-  quarter: 'Select quarter',
-  year: 'Select year',
-};
-
 const PeriodValueElement = tasty({
+  qa: 'PeriodPickerValue',
   styles: {
     preset: 't3',
     width: 'max 100%',
     whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
     color: {
       '': '#dark',
       placeholder: '#dark.30',
+      disabled: '#dark.30',
     },
   },
 });
@@ -64,13 +62,15 @@ export interface CubePeriodPickerProps<T extends DateValue = DateValue>
   /** Placeholder shown when no value is selected. */
   placeholder?: string;
   /** Override how the selected value is rendered as text. */
-  formatValue?: (date: DateValue, picker: PickerType) => string;
+  formatValue?: (date: DateValue, picker: PickerType, locale: string) => string;
 }
 
 function PeriodPicker<T extends DateValue>(
   props: CubePeriodPickerProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
+  const { t } = useI18n();
+
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
   });
@@ -84,10 +84,18 @@ function PeriodPicker<T extends DateValue>(
     placeholder,
     formatValue,
     isDisabled,
+    isReadOnly,
     isInvalid,
     isValid,
     autoFocus,
   } = props;
+
+  let defaultPlaceholder: Record<PickerType, string> = {
+    week: t('datePicker.selectWeek', 'Select week'),
+    month: t('datePicker.selectMonth', 'Select month'),
+    quarter: t('datePicker.selectQuarter', 'Select quarter'),
+    year: t('datePicker.selectYear', 'Select year'),
+  };
 
   let { locale } = useLocale();
   let targetRef = useRef<HTMLDivElement>(null);
@@ -117,7 +125,11 @@ function PeriodPicker<T extends DateValue>(
 
   let displayText = state.value
     ? (formatValue ?? formatPeriod)(state.value, picker, locale)
-    : placeholder ?? DEFAULT_PLACEHOLDER[picker];
+    : placeholder ?? defaultPlaceholder[picker];
+
+  // The value is rendered as text rather than editable segments, so the trigger
+  // has to point at it to announce the current selection.
+  let valueId = useId();
 
   const panel =
     picker === 'week' ? (
@@ -147,7 +159,10 @@ function PeriodPicker<T extends DateValue>(
       qa={qa || 'PeriodPicker'}
       inputType="datepicker"
       styles={{ display: 'grid', ...styles, ...props.wrapperStyles }}
-      inputStyles={props.inputStyles}
+      inputStyles={{
+        cursor: isDisabled || isReadOnly ? 'default' : 'pointer',
+        ...props.inputStyles,
+      }}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}
       isInvalid={isInvalid}
@@ -168,7 +183,8 @@ function PeriodPicker<T extends DateValue>(
           <DatePickerButton
             size={size}
             {...mergeProps(buttonProps, focusPropsButton)}
-            isDisabled={isDisabled}
+            aria-describedby={valueId}
+            isDisabled={isDisabled || isReadOnly}
             styles={props.triggerStyles}
           />
           <Dialog {...dialogProps} width="max-content">
@@ -178,9 +194,9 @@ function PeriodPicker<T extends DateValue>(
       }
     >
       <PeriodValueElement
-        {...labelProps}
-        mods={{ placeholder: !state.value }}
-        onClick={() => !isDisabled && setOpen(true)}
+        id={valueId}
+        mods={{ placeholder: !state.value, disabled: isDisabled }}
+        onClick={() => !isDisabled && !isReadOnly && setOpen(true)}
       >
         {displayText}
       </PeriodValueElement>

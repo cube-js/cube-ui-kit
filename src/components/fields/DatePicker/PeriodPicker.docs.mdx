@@ -23,6 +23,10 @@ The value is always a single `CalendarDate` (from `@internationalized/date`)
 The field renders a compact label for the selected period (`2026-W33`, `2026-08`,
 `2026-Q3`, `2026`). Use `formatValue` to override it.
 
+In the month and quarter panels the year in the header is a button that opens a
+year list, so picking a period several years away takes two clicks instead of
+paging through the arrows.
+
 ## When to Use
 
 - Filtering or reporting by week, month, quarter, or fiscal year
@@ -37,13 +41,14 @@ The field renders a compact label for the selected period (`2026-W33`, `2026-08`
 
 ### Properties
 
+- **`picker`** `'week' | 'month' | 'quarter' | 'year'` (default: `month`) — Which period is selected. The four named components set it for you; only the base `PeriodPicker` takes it directly
 - **`value`** `DateValue` — The current value (controlled), snapped to the period start
 - **`defaultValue`** `DateValue` — The default value (uncontrolled)
 - **`minValue`** `DateValue` — The earliest selectable period
 - **`maxValue`** `DateValue` — The latest selectable period
 - **`isDateUnavailable`** `(date: DateValue) => boolean` — Marks a period (by its start date) as unavailable
 - **`placeholder`** `string` — Text shown when no value is selected
-- **`formatValue`** `(date: DateValue, picker: PickerType) => string` — Overrides the displayed label
+- **`formatValue`** `(date: DateValue, picker: PickerType, locale: string) => string` — Overrides the displayed label
 - **`size`** `'small' | 'medium' | 'large' | (string & {})` (default: `medium`) — Field size
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the popover flips to fit the viewport
 - **`isOpen`** `boolean` — Whether the popover is open (controlled)
@@ -51,9 +56,8 @@ The field renders a compact label for the selected period (`2026-W33`, `2026-08`
 - **`onChange`** `(value: DateValue | null) => void` — Fired when the selected period changes
 - **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
 
-The advanced `PeriodPicker` base component accepts the same props plus a
-**`picker`** `'week' | 'month' | 'quarter' | 'year'` prop; the four named
-components are thin wrappers that set it for you.
+`WeekPicker`, `MonthPicker`, `QuarterPicker` and `YearPicker` are thin wrappers
+that pin `picker`; everything else is identical.
 
 ### Base Properties
 
@@ -69,6 +73,17 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 - **`wrapperStyles`** — the input wrapper
 - **`inputStyles`** — the value/label area
 - **`triggerStyles`** — the calendar trigger button
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
+- **Color:** `color`, `fill`, `fade`, `image`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ## Examples
 
@@ -90,4 +105,30 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 
 ### Limited range
 
+Periods that fall entirely outside `minValue` / `maxValue` are disabled, and the
+navigation arrows stop at the edge of the range.
+
 <Story of={PeriodPickerStories.WithLimitedRange} />
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` — Moves focus to the calendar trigger
+- `Enter` / `Space` — Opens the panel; focus lands on the selected period
+- `Arrow keys` — Move between periods, rolling over into the neighbouring year or decade
+- `PageUp` / `PageDown` — Previous / next year (or decade in the year list)
+- `Home` / `End` — First / last selectable period on the page
+- `Escape` — Steps back from the year list to the period list
+
+### Screen Reader Support
+
+- The panel is a `grid` labelled `Months`, `Quarters` or `Years`
+- The trigger is described by the field's current value, so the selection is
+  announced along with the button
+
+## Related Components
+
+- [DatePicker](/docs/forms-datepicker--docs) — pick an exact day
+- [DateRangePicker](/docs/forms-daterangepicker--docs) — pick a start and end date
+- [Calendar](/docs/other-calendar--docs) — the panels these fields render

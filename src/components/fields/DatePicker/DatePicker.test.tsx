@@ -14,6 +14,21 @@ describe('<DatePicker />', () => {
   const isCalendarOpen = (baseElement: HTMLElement) =>
     !!baseElement.querySelector('[data-qa="Dialog"]');
 
+  /**
+   * The calendar heading is made of two buttons that open the month and year
+   * pickers, so assert on those instead of the heading's raw text.
+   */
+  const expectVisibleMonth = (
+    dialog: HTMLElement,
+    month: string,
+    year: string,
+  ) => {
+    const heading = within(dialog).getByRole('heading', { level: 6 });
+
+    expect(within(heading).getByRole('button', { name: month })).toBeTruthy();
+    expect(within(heading).getByRole('button', { name: year })).toBeTruthy();
+  };
+
   describe('calendar popover month navigation', () => {
     it('clicking next-month inside a nested popover keeps the parent popover open', async () => {
       const { baseElement } = renderWithRoot(
@@ -85,9 +100,7 @@ describe('<DatePicker />', () => {
         '[data-qa="Dialog"]',
       ) as HTMLElement;
 
-      expect(
-        within(dialog).getByRole('heading', { level: 6 }),
-      ).toHaveTextContent('June 2025');
+      expectVisibleMonth(dialog, 'June', '2025');
 
       // Click the "Next" month navigation button
       await user.click(within(dialog).getByRole('button', { name: /next/i }));
@@ -96,9 +109,7 @@ describe('<DatePicker />', () => {
       await new Promise((resolve) => setTimeout(resolve, 16));
 
       expect(isCalendarOpen(baseElement)).toBe(true);
-      expect(
-        within(dialog).getByRole('heading', { level: 6 }),
-      ).toHaveTextContent('July 2025');
+      expectVisibleMonth(dialog, 'July', '2025');
     });
 
     it('clicking prev-month keeps the popover open', async () => {
@@ -126,9 +137,7 @@ describe('<DatePicker />', () => {
       await new Promise((resolve) => setTimeout(resolve, 16));
 
       expect(isCalendarOpen(baseElement)).toBe(true);
-      expect(
-        within(dialog).getByRole('heading', { level: 6 }),
-      ).toHaveTextContent('May 2025');
+      expectVisibleMonth(dialog, 'May', '2025');
     });
 
     it('selecting a date closes the popover', async () => {

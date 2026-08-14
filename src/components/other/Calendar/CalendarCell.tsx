@@ -1,11 +1,14 @@
+import { CalendarDate, isSameDay } from '@internationalized/date';
 import { tasty } from '@tenphi/tasty';
 import { useRef } from 'react';
-import { useCalendarCell } from 'react-aria';
+import { DateValue, useCalendarCell } from 'react-aria';
+import { CalendarState, RangeCalendarState } from 'react-stately';
+
+import { CALENDAR_CELL_STYLES } from './styled';
 
 const CalendarCellElement = tasty({
   as: 'td',
   styles: {
-    preset: 't3m',
     margin: 0,
     padding: '2bw right bottom',
   },
@@ -14,38 +17,25 @@ const CalendarCellElement = tasty({
 const CalendarButtonElement = tasty({
   'data-popover-keep': true,
   styles: {
-    display: 'grid',
-    placeItems: 'center',
+    ...CALENDAR_CELL_STYLES,
     width: '3x',
     height: '3x',
-    fill: {
-      '': '#primary.0',
-      ':hover': '#primary.16',
-      rangeHover: '#primary.16',
-      pressed: '#primary.10',
-
-      selected: '#primary',
-      'selected & :hover': '#primary-text',
-      'selected & pressed': '#primary',
-
-      'disabled | unavailable': '#primary.0',
-    },
-    color: {
-      '': '#dark',
-      selected: '#white',
-      'disabled | unavailable': '#dark.30',
-    },
-    outline: {
-      '': '1bw #primary-text.0',
-      focused: '1bw #primary-text',
-    },
-    outlineOffset: 0.5,
-    radius: true,
-    cursor: '$pointer',
   },
 });
 
-export function CalendarCell({ state, selectedRange, date, rangeHover }) {
+export interface CubeCalendarCellProps {
+  state: CalendarState | RangeCalendarState;
+  date: CalendarDate;
+  /** Today, expressed in the calendar system of the grid. */
+  today?: CalendarDate;
+  /** Explicit range highlight, used when the range lives outside the state. */
+  selectedRange?: { start: DateValue; end: DateValue };
+  /** Whether the whole row is highlighted (week picker mode). */
+  rangeHover?: boolean;
+}
+
+export function CalendarCell(props: CubeCalendarCellProps) {
+  let { state, selectedRange, date, today, rangeHover } = props;
   let ref = useRef(null);
   let {
     cellProps,
@@ -60,19 +50,22 @@ export function CalendarCell({ state, selectedRange, date, rangeHover }) {
     formattedDate,
   } = useCalendarCell({ date }, state, ref);
 
-  const isFinalSelected = selectedRange
-    ? date.compare(selectedRange.start) >= 0 &&
-      date.compare(selectedRange.end) <= 0
-    : isSelected;
+  const isFinalSelected =
+    !isOutsideVisibleRange &&
+    (selectedRange
+      ? date.compare(selectedRange.start) >= 0 &&
+        date.compare(selectedRange.end) <= 0
+      : isSelected);
 
   return (
     <CalendarCellElement {...cellProps}>
       <CalendarButtonElement
         {...buttonProps}
         ref={ref}
-        hidden={isOutsideVisibleRange}
         mods={{
           selected: isFinalSelected,
+          current: !!today && !isOutsideVisibleRange && isSameDay(date, today),
+          outside: isOutsideVisibleRange,
           rangeHover: rangeHover && !isFinalSelected,
           pressed: isPressed,
           focused: isFocused,

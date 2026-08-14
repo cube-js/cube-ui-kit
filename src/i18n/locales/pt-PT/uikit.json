@@ -66,7 +66,20 @@
     "time": "Hora",
     "startTime": "Hora de início",
     "endTime": "Hora de fim",
-    "showEndCalendar": "Mostrar o calendário da data de fim"
+    "showEndCalendar": "Mostrar o calendário da data de fim",
+    "selectWeek": "Selecionar semana",
+    "selectMonth": "Selecionar mês",
+    "selectQuarter": "Selecionar trimestre",
+    "selectYear": "Selecionar ano"
+  },
+  "calendar": {
+    "previousYear": "Ano anterior",
+    "nextYear": "Ano seguinte",
+    "previousYears": "Anos anteriores",
+    "nextYears": "Anos seguintes",
+    "months": "Meses",
+    "quarters": "Trimestres",
+    "years": "Anos"
   },
   "fileInput": {
     "chooseFile": "Escolher ficheiro",

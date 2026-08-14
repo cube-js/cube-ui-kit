@@ -5,7 +5,6 @@ import {
 } from '@internationalized/date';
 import { createDOMRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
-import { tasty } from '@tenphi/tasty';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import {
   AriaCalendarProps,
@@ -15,31 +14,16 @@ import {
 } from 'react-aria';
 import { useCalendarState } from 'react-stately';
 
-import { LeftIcon, RightIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
-import { Button } from '../../actions';
-import { Title } from '../../content/Title';
-import { Space } from '../../layout/Space';
 
-import { CalendarGrid } from './CalendarGrid';
+import { CalendarPanel } from './CalendarPanel';
+import { CalendarCoreProps, CalendarValueProps } from './types';
 
-const CalendarElement = tasty({
-  styles: {
-    padding: '1x',
-    gap: '1x',
-  },
-});
-
-const CalendarHeaderElement = tasty({
-  styles: {
-    display: 'flex',
-    placeContent: 'center space-between',
-    placeItems: 'center',
-    gap: '1.5x',
-  },
-});
-
-export interface CubeCalendarProps extends AriaCalendarProps<DateValue> {
+export interface CubeCalendarProps
+  extends AriaCalendarProps<DateValue>,
+    CalendarCoreProps,
+    CalendarValueProps {
+  /** Highlights a range that lives outside the calendar's own state. */
   selectedRange?: {
     start: DateValue;
     end: DateValue;
@@ -81,32 +65,17 @@ function Calendar(props: CubeCalendarProps, ref: FocusableRef<HTMLElement>) {
   }
 
   return (
-    <CalendarElement {...calendarProps}>
-      <CalendarHeaderElement>
-        <Title level={6} preset="h6">
-          {title}
-        </Title>
-        <Space gap=".5x">
-          <Button
-            data-popover-keep
-            size="xsmall"
-            {...prevButtonProps}
-            icon={<LeftIcon />}
-          />
-          <Button
-            data-popover-keep
-            size="xsmall"
-            {...nextButtonProps}
-            icon={<RightIcon />}
-          />
-        </Space>
-      </CalendarHeaderElement>
-      <CalendarGrid
-        state={state}
-        selectedRange={selectedRange}
-        pickerMode={props.pickerMode}
-      />
-    </CalendarElement>
+    <CalendarPanel
+      elementRef={domRef}
+      state={state}
+      title={title}
+      calendarProps={calendarProps}
+      prevButtonProps={prevButtonProps}
+      nextButtonProps={nextButtonProps}
+      hasMonthYearNavigation={props.hasMonthYearNavigation}
+      selectedRange={selectedRange}
+      pickerMode={props.pickerMode}
+    />
   );
 }
 
