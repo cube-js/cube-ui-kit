@@ -24,6 +24,11 @@ export default defineConfig({
     // registry and its types, so linting never pulls React into the lint
     // process.
     'eslint-plugin/index': 'src/eslint-plugin/index.ts',
+    // Third entry: DOM-pure helpers for tooling that inspects rendered output
+    // (`@cube-dev/ui-kit/probe`). Version-locked for the same reason as above —
+    // the class-name pattern it normalises is tasty's, and the CSS it reads is
+    // this package's.
+    'probe/index': 'src/probe/index.ts',
   },
   format: 'esm',
   outDir: 'dist',
