@@ -10,18 +10,22 @@ import { CalendarHeaderElement } from './styled';
 
 import type { Props } from '../../../props';
 
+/**
+ * A heading that holds the view switcher. Its own preset matches the type scale
+ * of an `xsmall` button so the plain-title fallback (a decade range, or a
+ * calendar with navigation turned off) doesn't outweigh the interactive one.
+ */
 const CalendarTitleElement = tasty(Title, {
   level: 6,
-  preset: 'h6',
+  preset: 't4',
   styles: {
     display: 'flex',
     placeItems: 'center',
     gap: '.25x',
-    // When the title doubles as the view switcher its buttons carry their own
-    // padding — pull them back so the label keeps its original alignment.
-    margin: {
-      '': 0,
-      interactive: '0 -.75x',
+    // Line the plain title up with the label inside a button.
+    padding: {
+      '': '0 (1x - 1bw)',
+      interactive: 0,
     },
   },
 });
@@ -29,11 +33,7 @@ const CalendarTitleElement = tasty(Title, {
 const CalendarTitleButton = tasty(Button, {
   'data-popover-keep': true,
   type: 'clear',
-  size: 'small',
-  styles: {
-    preset: 'h6',
-    padding: '0 .75x',
-  },
+  size: 'xsmall',
 });
 
 export interface CubeCalendarHeaderSegment {
