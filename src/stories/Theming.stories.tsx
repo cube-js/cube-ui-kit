@@ -1,3 +1,4 @@
+import { IconDownload } from '@tabler/icons-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import {
@@ -21,6 +22,7 @@ import {
   PrismCode,
   Radio,
   RadioGroup,
+  ReloadIcon,
   renderColorTokens,
   resetPaletteConfig,
   Slider,
@@ -252,26 +254,34 @@ function ResetButton() {
   );
 }
 
+/** The chips are read alongside their labels, so they only need to be legible. */
+const RESOLUTION_SWATCH_STYLES: Styles = {
+  width: '2.5x',
+  height: '2.5x',
+  radius: '.5r',
+};
+
 /**
- * What was asked for, next to what the palette landed on.
+ * Where the accent color actually landed.
  *
  * A color seed is a REQUEST, and two things can stop it arriving. Pastel caps chroma,
  * so a saturated brand can never resolve to itself under it — `#FFD400` softens to
  * `#e4d8ad`. And on a light page a light brand has to darken to clear the fill's 3:1
  * floor. Both are correct; both look like a bug if the only thing on screen is the
- * color you typed. Showing the pair makes them a visible cap instead.
+ * color you typed.
  *
- * `#accent-text` is here as well as `#accent-surface` because the tone reaches both —
- * the seed sets the button fill and the link color together, which is the part that is
- * hard to believe without seeing it.
+ * The requested color is deliberately NOT repeated here: the field above holds it, and
+ * its own swatch already shows it. What is worth showing is the pair it resolved to —
+ * `#accent-text` as well as `#accent-surface`, because the tone reaches both. The seed
+ * setting the button fill and the link color together is the part that is hard to
+ * believe without seeing it.
  */
 function ColorResolution({ resolved }: { resolved?: Tokens }) {
   usePaletteVersion();
 
   const [palette] = usePaletteConfig();
-  const requested = getPaletteConfigInput().accentColor;
 
-  if (!requested) return null;
+  if (!getPaletteConfigInput().accentColor) return null;
 
   // The preview's own tokens when there are any, so the chip answers "what did I get in
   // the variant I am looking at". `resolvedValue` only ever reports the document's
@@ -280,19 +290,15 @@ function ColorResolution({ resolved }: { resolved?: Tokens }) {
     (resolved?.[name] as string | undefined) ?? resolvedValue(name);
 
   return (
-    <Row styles={{ gap: '1.5x' }}>
+    <Row styles={{ gap: '2.5x' }}>
       {[
-        { label: 'Requested', color: requested },
-        { label: 'Fill', color: valueOf('#accent-surface') },
-        { label: 'Link', color: valueOf('#accent-text') },
+        { label: 'Accent Fill', color: valueOf('#accent-surface') },
+        { label: 'Accent Text', color: valueOf('#accent-text') },
       ].map(({ label, color }) => (
         <Row key={label} styles={{ gap: '.75x' }}>
-          {/* The chip carries no text of its own, so an arbitrary requested
+          {/* The chip carries no text of its own, so an arbitrary resolved
               color cannot land unreadable on itself. */}
-          <ColorSwatch
-            color={color}
-            styles={{ width: '3x', height: '3x', radius: '.5r' }}
-          />
+          <ColorSwatch color={color} styles={RESOLUTION_SWATCH_STYLES} />
           <Token>{label}</Token>
         </Row>
       ))}
@@ -1000,11 +1006,11 @@ const GroupLabel = tasty({
  * while its siblings are pinned off. `Cube` stays empty by design: it is the shipped
  * palette, so it should follow the default wherever the default goes.
  *
- * `Cobalt` is the odd one out, and deliberately so: it departs on the *mechanism*
- * rather than on the numbers, seeding both zones from real colors instead of hues.
- * Its `pastel: false` is not a chroma preference but a precondition — the pastel
- * ceiling cannot reproduce an arbitrary color, so a preset whose point is "the color
- * you asked for" has to have it off to make the point.
+ * All five depart on the *numbers*. There is deliberately no preset for the other
+ * half of the API — seeding a zone from a real color — because a preset that only
+ * demonstrated the mechanism would be a worse teacher than the switch itself: flip
+ * **Accent seeded by** to Color and the field opens on a color you can replace with
+ * your own, which is the thing you actually came to do.
  */
 const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
   // Empty on purpose: the setter replaces, so this *is* the shipped palette — the
@@ -1084,54 +1090,60 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
       },
     },
   },
-  {
-    // The one preset seeded by a COLOR rather than a hue, and the way into that half
-    // of the API.
-    label: 'Cobalt',
-    config: {
-      accentColor: '#2F5BFF',
-      // Hue only — and a near-neutral color makes that legible: 9% saturation and a
-      // mid tone are both thrown away, and only the ~71° reaches the chrome. Against
-      // a ~266° brand that is a warm grey UI under a cool blue accent, which is the
-      // case `baseHue` was split out for in the first place.
-      baseColor: '#7A7269',
-      // Pinned off, because this preset's whole claim is that you get the color you
-      // asked for. Under pastel the flat ceiling caps `#2F5BFF` well short of itself
-      // — turn Pastel on afterwards and the requested/resolved chips separate, which
-      // is the cap made visible rather than a rounding error.
-      pastel: false,
-      // Borrowed from `Ocean`: the derived hue lands in the same blue family, and the
-      // closest of the four still sits 48.8° off it.
-      themes: {
-        success: { hue: 165 },
-        danger: { hue: 25 },
-        warning: { hue: 80 },
-        note: { hue: 315 },
-      },
-    },
-  },
 ];
 
 /**
- * One status theme, as a row you can read at a glance and open to tune.
+ * Which preset the live config *is*, if any.
+ *
+ * The setter replaces rather than merges, so applying a preset makes the sparse
+ * config exactly that preset's — which is what allows an equality check here
+ * instead of per-field bookkeeping. Touch any control afterwards and no preset
+ * matches, which is the honest answer: the theme is yours now.
+ *
+ * Key order cannot be relied on (`{ hue, pastel }` and `{ pastel, hue }` are the
+ * same config), so the comparison sorts as it walks.
+ */
+function stableJson(value: unknown): string {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+
+  return `{${Object.entries(value as Record<string, unknown>)
+    .filter(([, item]) => item !== undefined)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([key, item]) => `${JSON.stringify(key)}:${stableJson(item)}`)
+    .join(',')}}`;
+}
+
+function useActivePreset(): string | null {
+  usePaletteVersion();
+
+  const input = stableJson(getPaletteConfigInput());
+
+  return (
+    THEME_PRESETS.find((preset) => stableJson(preset.config) === input)
+      ?.label ?? null
+  );
+}
+
+/**
+ * One status theme, as a chip you can read at a glance and open to tune.
  *
  * Four themes used to mean eight sliders standing open — a wall that pushed the
  * brand controls off the screen and gave no answer to the question actually
  * being asked, which is "do these four still read as four different things".
- * A row of the theme's own colors answers that; the sliders are one press away
- * for the theme that does not.
+ * Four chips of the themes' own colors, side by side, answer exactly that; the
+ * sliders are one press away for the theme that does not.
  *
- * `type="current"` is what makes the row *be* its theme rather than describe
- * one: every part of the button — the resting chip, the border, the hover step
- * — is mixed from the inherited text color, so setting `color` to the theme's
- * own text token colors the whole control from a single value.
+ * The hue is not printed on the chip. It belongs to the slider that sets it, and
+ * carrying it here cost the whole row: `success — 157°` is wide enough that four
+ * of them had to stack, which is the arrangement the chips were meant to replace.
+ *
+ * `type="current"` is what makes a chip *be* its theme rather than describe one:
+ * every part of the button — the resting fill, the border, the hover step — is
+ * mixed from the inherited text color, so setting `color` to the theme's own text
+ * token colors the whole control from a single value.
  */
-const STATUS_BUTTON_STYLES: Styles = {
-  width: '100%',
-  // `Button` centers its content; these rows are a list, and a list reads down
-  // the left edge.
-  placeContent: 'center start',
-};
 
 // `Dialog` pads through its `Content` slot, and this popover holds raw children —
 // the same arrangement `ColorPanel` is in, and the same `1x` a popover's own
@@ -1155,18 +1167,24 @@ function StatusThemeButton({
   const seed = palette.themes[name];
 
   return (
-    <DialogTrigger hideArrow type="popover" mobileType="tray" placement="right">
+    <DialogTrigger
+      hideArrow
+      type="popover"
+      mobileType="tray"
+      placement="bottom start"
+    >
       <Button
         type="current"
+        size="small"
         color={`#${name}-text`}
-        styles={STATUS_BUTTON_STYLES}
+        tooltip={`Tune the ${name} theme — currently ${Math.round(seed.hue)}°`}
         icon={
           <ColorSwatch
             color={tokens[`#${name}-accent-surface`] as string | undefined}
           />
         }
       >
-        {name} — {Math.round(seed.hue)}°
+        {name}
       </Button>
       <Dialog aria-label={`${name} theme`} width="max-content">
         <Section styles={STATUS_POPOVER_STYLES}>
@@ -1202,30 +1220,64 @@ function StatusThemeButton({
 /**
  * The theme, on its way out of this page.
  *
- * The sparse input rather than the resolved config: it is both far shorter and
- * the honest answer, since an inherited `baseHue` written out as a number would
- * stop following the accent the moment it was pasted.
- *
- * A popover rather than a panel in the column. The snippet is the one thing here
- * nobody needs while tuning and everybody needs once — at the bottom of a scroll
- * it was neither reachable nor legible, cropped to two lines by the column it
- * sat in.
+ * The sparse input rather than the resolved config, in both forms: it is far
+ * shorter, and it is the honest answer, since an inherited `baseHue` written out
+ * as a number would stop following the accent the moment it was pasted.
  */
 const EXPORT_POPOVER_STYLES: Styles = {
   display: 'grid',
-  gap: '1.5x',
   padding: '1x',
   width: '48x',
 };
 
-function ExportButton() {
+/** The sparse config as JSON, and as a `setPaletteConfig()` call. */
+function useConfigExport() {
   usePaletteVersion();
 
-  const input = getPaletteConfigInput();
-  const json = JSON.stringify(input, null, 2);
-  // JSON quotes every key; these are all plain identifiers, and the snippet is
-  // meant to be pasted into a `.ts` file.
-  const source = `setPaletteConfig(${json.replace(/"([A-Za-z][\w]*)":/g, '$1:')});`;
+  const json = JSON.stringify(getPaletteConfigInput(), null, 2);
+
+  return {
+    json,
+    // JSON quotes every key; these are all plain identifiers, and the snippet is
+    // meant to be pasted into a `.ts` file.
+    source: `setPaletteConfig(${json.replace(/"([A-Za-z][\w]*)":/g, '$1:')});`,
+  };
+}
+
+/**
+ * The snippet stays behind a popover — it is the one thing here that needs room
+ * to be read rather than a place in the toolbar. The download does not: it has no
+ * intermediate state worth showing, so a second click to reach it was a click for
+ * nothing.
+ */
+function ExportButton() {
+  const { source } = useConfigExport();
+
+  return (
+    <DialogTrigger
+      hideArrow
+      type="popover"
+      mobileType="tray"
+      placement="bottom start"
+    >
+      <Button type="outline" size="small" icon={<CopyIcon />}>
+        Export
+      </Button>
+      <Dialog aria-label="Export the palette config" width="max-content">
+        <Section styles={EXPORT_POPOVER_STYLES}>
+          <CopySnippet
+            language="javascript"
+            title="Palette config"
+            code={source}
+          />
+        </Section>
+      </Dialog>
+    </DialogTrigger>
+  );
+}
+
+function DownloadButton() {
+  const { json } = useConfigExport();
 
   const download = () => {
     const url = URL.createObjectURL(
@@ -1242,25 +1294,40 @@ function ExportButton() {
   };
 
   return (
-    <DialogTrigger hideArrow type="popover" mobileType="tray" placement="top">
-      <Button type="outline" icon={<CopyIcon />}>
-        Export
+    <Button
+      type="outline"
+      size="small"
+      icon={<IconDownload />}
+      tooltip="Download the config as palette.json"
+      onPress={download}
+    >
+      JSON
+    </Button>
+  );
+}
+
+/**
+ * Reset, Export, Download — at the TOP of the column.
+ *
+ * They were at the bottom, which put the one button you reach for when a
+ * experiment goes wrong behind 1100px of the controls that caused it. Actions on
+ * a settings panel belong where they can be found without reading it.
+ */
+function BuilderActions() {
+  return (
+    <Row>
+      <Button
+        type="outline"
+        size="small"
+        icon={<ReloadIcon />}
+        tooltip="Discard every change and return to the shipped palette"
+        onPress={resetPaletteConfig}
+      >
+        Reset
       </Button>
-      <Dialog aria-label="Export the palette config" width="max-content">
-        <Section styles={EXPORT_POPOVER_STYLES}>
-          <CopySnippet
-            language="javascript"
-            title="Palette config"
-            code={source}
-          />
-          <Row>
-            <Button type="outline" size="small" onPress={download}>
-              Download palette.json
-            </Button>
-          </Row>
-        </Section>
-      </Dialog>
-    </DialogTrigger>
+      <ExportButton />
+      <DownloadButton />
+    </Row>
   );
 }
 
@@ -1274,9 +1341,12 @@ function ThemeBuilderControls({
   documentTokens: Tokens;
 }) {
   const [palette, setPalette] = usePaletteConfig();
+  const activePreset = useActivePreset();
 
   return (
     <ControlColumn>
+      <BuilderActions />
+
       <ControlGroup>
         <GroupLabel>Presets</GroupLabel>
         <Row>
@@ -1285,6 +1355,9 @@ function ThemeBuilderControls({
               key={preset.label}
               type="outline"
               size="small"
+              // `outline` shows selection as a filled chip, so the active preset
+              // reads as the state it is rather than as a fifth style.
+              isSelected={activePreset === preset.label}
               onPress={() => {
                 // No reset first — the setter replaces, so the preset config
                 // is the whole config.
@@ -1327,9 +1400,11 @@ function ThemeBuilderControls({
 
       <ControlGroup>
         <GroupLabel>Status themes</GroupLabel>
-        {STATUS_THEMES.map((name) => (
-          <StatusThemeButton key={name} name={name} tokens={documentTokens} />
-        ))}
+        <Row>
+          {STATUS_THEMES.map((name) => (
+            <StatusThemeButton key={name} name={name} tokens={documentTokens} />
+          ))}
+        </Row>
       </ControlGroup>
 
       <ControlGroup>
@@ -1348,11 +1423,6 @@ function ThemeBuilderControls({
           }
         />
       </ControlGroup>
-
-      <Row>
-        <ResetButton />
-        <ExportButton />
-      </Row>
     </ControlColumn>
   );
 }

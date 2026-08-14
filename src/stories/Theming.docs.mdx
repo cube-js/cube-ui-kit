@@ -383,17 +383,22 @@ The **contrast level** is on the theme side, and always visible as a plain
 slider. It has no on/off switch because it needs none: level `0` and `'auto'` are
 output-identical, tier included, so the slider at rest _is_ the shipped palette.
 
-Status themes are four rows rather than eight sliders. Each row is a
+Status themes are four chips on one line rather than eight sliders. Each chip is a
 `type="current"` `Button` colored by its own theme with a
 [ColorSwatch](/docs/forms-colorswatch--docs) of its accent, so the group answers
 the question you actually have — do these four still read as four different
-things — at a glance; press one to open its hue and saturation.
+things — at a glance; press one to open its hue and saturation. The hue is not
+printed on the chip: it belongs to the slider that sets it, and carrying it there
+cost the whole row, since `success — 157°` is wide enough that four of them have
+to stack.
 
-**Export** — beside _Reset to defaults_, where the actions belong — hands the theme
-over as a `setPaletteConfig()` call to copy or a `palette.json` to download. Both
-carry the config _as written_ rather than the resolved one, so an inherited
-`baseHue` stays inherited instead of being frozen to whatever the accent happened
-to be.
+**Reset**, **Export** and **JSON** sit at the top of the column, not the bottom.
+The one button you reach for when an experiment goes wrong should not be behind
+the controls that caused it. `Export` opens the config as a `setPaletteConfig()`
+call to copy; `JSON` downloads `palette.json` on the press, with no intermediate
+state worth a second click. Both carry the config _as written_ rather than the
+resolved one, so an inherited `baseHue` stays inherited instead of being frozen to
+whatever the accent happened to be.
 
 Every caveat on the panel is an **InfoBadge** beside the control it qualifies rather
 than a paragraph under it. A tuner is a dense column of controls, and prose between
@@ -408,11 +413,17 @@ the saturation slider greys out under Pastel rather than disappearing — it kee
 the pinned `100`, which _is_ the contract, and your own number comes back when you turn
 Pastel off.
 
-In color mode the panel also shows the requested color beside the resolved
-`#accent-surface` and `#accent-text`. Under Pastel the two visibly diverge, which is the
-chroma cap made legible rather than mysterious; the `Cobalt` preset is seeded from a
-color with `pastel: false`, so it is the quickest way to see both halves — apply it, then
-turn Pastel on and watch the chips separate.
+In color mode the panel shows where the color actually landed — **Accent Fill** and
+**Accent Text**, the two tokens the seed's tone reaches. The requested color is not
+repeated beside them: the field above holds it, with a swatch of its own. Under Pastel
+the pair visibly diverges from what you typed, which is the chroma cap made legible
+rather than mysterious — type a saturated hex with Pastel off, then turn Pastel on and
+watch the chips soften.
+
+The **preset** buttons show which one is active, and stop showing it the moment you
+touch a control. The setter replaces rather than merges, so a preset is either the
+whole config or it is not the config at all; anything else would claim a theme is
+still `Ocean` after you had re-seeded half of it.
 
 The preview deliberately shows all three surface levels with their own text ramps
 (`#surface-text`, `#surface-2-text`, `#surface-3-text`), because a theme that looks
