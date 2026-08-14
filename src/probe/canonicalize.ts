@@ -37,7 +37,14 @@ export function canonicalizeIds(text: string): string {
 
   return (
     text
-      .replace(/«[^»]*»/g, replace)
+      // `[^«»]`, not `[^»]`: excluding the OPENING delimiter too keeps this
+      // linear. With `[^»]*` an unterminated run of `«` makes the engine scan
+      // to the end of the input from every one of them — quadratic, and
+      // reachable now that this is published API called on caller-supplied
+      // markup rather than only on our own renders (CodeQL js/polynomial-redos).
+      // It is also the tighter reading: an unterminated `«r0` should not
+      // swallow the next ID.
+      .replace(/«[^«»]*»/g, replace)
       // react-aria mints its own counter-based IDs in several shapes:
       // `react-aria1`, `react-aria-1`, and `react-aria-description-0`.
       .replace(/\breact-aria[\w-]*?\d+\b/g, replace)
