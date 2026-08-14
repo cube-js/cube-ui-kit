@@ -137,6 +137,16 @@ function hueOf(value: string): number {
   return Number(value.trim().split(/\s+/)[2].replace(')', ''));
 }
 
+/**
+ * Chroma of an emitted `oklch(L C H)` token value.
+ *
+ * The one channel that answers "is this grey?", which is the whole question the
+ * base saturation seed and `surfaceMode` are about.
+ */
+function chromaOf(value: string): number {
+  return Number(value.trim().split(/\s+/)[1]);
+}
+
 /** WCAG contrast ratio between two emitted token values. */
 function contrastOf(a: string, b: string): number {
   const luminance = (value: string) => {
@@ -296,6 +306,126 @@ describe('setPaletteConfig', () => {
     expect(tuned['#danger-surface-text']).toBe(
       baseline['#danger-surface-text'],
     );
+  });
+
+  it('ships with a white page surface that no saturation can tint', () => {
+    // The premise `surfaceMode: 'tinted'` exists to fix: at the end of the tone
+    // scale there is no room for chroma, so the base seed has nothing to act on.
+    setPaletteConfig({ pastel: false, baseSaturation: 100 });
+
+    expect(chromaOf(variant(getPaletteTokens(), '')['#surface'])).toBe(0);
+  });
+
+  it('moves the surface ramp two tones inward when tinted', () => {
+    const before = variant(getPaletteTokens(), '');
+
+    setPaletteConfig({ surfaceMode: 'tinted' });
+
+    const after = variant(getPaletteTokens(), '');
+
+    expect(toneOf(before['#surface'])).toBeCloseTo(100, 1);
+    // Within half a tone: the emitted value has been through the light tone
+    // window and an sRGB gamut map, neither of which lands on exact integers.
+    expect(toneOf(after['#surface'])).toBeCloseTo(98, 0);
+
+    // The ladder is positioned relative to `surface`, so it follows on its own.
+    for (const name of ['#surface-2', '#surface-3', '#surface-4'])
+      expect(toneOf(after[name]), name).toBeCloseTo(
+        toneOf(before[name]) - 2,
+        0,
+      );
+  });
+
+  it('lets the base seed tint the page once there is room for it', () => {
+    setPaletteConfig({ surfaceMode: 'tinted', pastel: false });
+
+    const chroma = (baseSaturation: number) =>
+      chromaOf(
+        (
+          renderColorTokens({
+            surfaceMode: 'tinted',
+            pastel: false,
+            baseSaturation,
+          })['#surface'] as string
+        ).toString(),
+      );
+
+    expect(chroma(0)).toBe(0);
+    expect(chroma(100)).toBeGreaterThan(chroma(40));
+    expect(chroma(40)).toBeGreaterThan(0);
+  });
+
+  it('keeps the accent zone still while the base seed moves', () => {
+    setPaletteConfig({ pastel: false, saturation: 80 });
+
+    const baseline80 = variant(getPaletteTokens(), '');
+
+    // Under `80` the base zone sits at `9.6`; `2` is genuinely below it.
+    setPaletteConfig({ pastel: false, saturation: 80, baseSaturation: 2 });
+
+    const muted = variant(getPaletteTokens(), '');
+
+    // The chrome desaturates…
+    for (const name of ['#surface-2', '#surface-3', '#border', '#placeholder'])
+      expect(chromaOf(muted[name]), name).toBeLessThan(
+        chromaOf(baseline80[name]),
+      );
+
+    // …and takes on more when asked, rather than only ever less.
+    setPaletteConfig({ pastel: false, saturation: 80, baseSaturation: 30 });
+
+    const tinted = variant(getPaletteTokens(), '');
+
+    for (const name of ['#surface-2', '#surface-3', '#border', '#placeholder'])
+      expect(chromaOf(tinted[name]), name).toBeGreaterThan(
+        chromaOf(baseline80[name]),
+      );
+
+    // Through all of it the brand does not move.
+    for (const name of ['#accent-surface', '#accent-text', '#focus']) {
+      expect(muted[name], name).toBe(baseline80[name]);
+      expect(tinted[name], name).toBe(baseline80[name]);
+    }
+  });
+
+  it('follows the palette seed at the recipe share until the base seed is set', () => {
+    setPaletteConfig({ pastel: false, saturation: 55 });
+
+    // 12% of the seed — the factor `surface` carries in the recipe.
+    expect(getPaletteConfig().baseSaturation).toBeCloseTo(6.6, 5);
+
+    setPaletteConfig({ pastel: false, saturation: 55, baseSaturation: 20 });
+
+    expect(getPaletteConfig().baseSaturation).toBe(20);
+    expect(getPaletteConfig().saturation).toBe(55);
+  });
+
+  it('reproduces the shipped chrome at the default base seed', () => {
+    const shipped = variant(getPaletteTokens(), '');
+
+    // Stating the number the default resolves to has to be a no-op, or the two
+    // halves of the default have drifted apart.
+    setPaletteConfig({ baseSaturation: 100 * 0.12 });
+
+    const stated = variant(getPaletteTokens(), '');
+
+    for (const name of [
+      '#surface',
+      '#surface-2',
+      '#border',
+      '#surface-text',
+      '#code-keyword',
+    ])
+      expect(stated[name], name).toBe(shipped[name]);
+  });
+
+  it('leaves pastel alone when only the base seed is written', () => {
+    // A palette-level `saturation` turns pastel off, because tuning it is the
+    // non-pastel path. How much hue the chrome carries says nothing about which
+    // chroma space the palette is in, so this one must not.
+    setPaletteConfig({ baseSaturation: 40 });
+
+    expect(getPaletteConfig().pastel).toBe(true);
   });
 
   it('unlinks a status saturation from the palette seed once set explicitly', () => {

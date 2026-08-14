@@ -30,6 +30,18 @@ export const DEFAULT_NOTE_HUE = 302.3;
 export const DEFAULT_SATURATION = 100;
 
 /**
+ * Share of {@link DEFAULT_SATURATION} the neutral `surface` carries — the recipe's
+ * own `SURFACE_SATURATION` factor, as a fraction.
+ *
+ * It lives here rather than in the recipe because the dependency runs one way:
+ * `./palette.ts` imports the config, not the reverse — and the config needs this
+ * number to default `baseSaturation`. It is the anchor of the base zone's own
+ * 0–100 scale, so `baseSaturation` defaults to
+ * `saturation × SURFACE_SATURATION_SHARE` and the shipped palette lands on `12`.
+ */
+export const SURFACE_SATURATION_SHARE = 0.12;
+
+/**
  * Seed saturation for the `code-*` syntax family, deliberately **not** the same
  * constant as {@link DEFAULT_SATURATION}.
  *
@@ -69,6 +81,12 @@ export interface PaletteCodeSeed {
   /** Saturation (0–100). Defaults to {@link DEFAULT_CODE_SATURATION}, not to `saturation`. */
   saturation?: number;
 }
+
+/**
+ * Where the neutral surface ramp sits on the tone scale — see
+ * {@link PaletteConfig.surfaceMode}.
+ */
+export type SurfaceMode = 'default' | 'tinted';
 
 /** Names of the themes whose seeds can be overridden individually. */
 export type PaletteThemeName =
@@ -136,6 +154,50 @@ export interface PaletteConfig {
    * danger banner should read as red.
    */
   baseHue?: number;
+  /**
+   * Saturation seed (0–100) of the **base** zone — the same family
+   * {@link PaletteConfig.baseHue} governs: `surface` and its ladder, the
+   * `surface-text*` ramp, `border`, `placeholder`.
+   *
+   * On the same 0–100 scale as {@link PaletteConfig.saturation}, and read the same
+   * way: `100` is a fully saturated base hue. **The shipped chrome is `12`** — a
+   * faint tint is what a neutral surface is — so the useful range is mostly below
+   * a third, and the numbers above it are a deliberately tinted theme rather than
+   * a neutral one.
+   *
+   * Left unset it is `saturation × 0.12`, which reproduces the recipe's own factor
+   * exactly and keeps a muted palette muting the chrome along with everything
+   * else. Set it and the base zone stops following the brand: a vivid accent over
+   * near-grey chrome, or a muted accent over visibly warm chrome, are both one
+   * number away and neither is reachable from a single scale.
+   *
+   * The base colors keep their proportions to one another — `border` more than
+   * `surface`, the text ramp more than `border` — until the highest of them hits
+   * the top of the scale, which happens around `25`. Past that they converge.
+   *
+   * Under {@link PaletteConfig.surfaceMode} `'default'` this reaches
+   * `surface-2`…`surface-4`, `border`, `placeholder` and the text ramp, but not
+   * the page surface: at the end of the tone scale there is no room for chroma,
+   * whatever the seed says. `'tinted'` is what gives it somewhere to land.
+   */
+  baseSaturation?: number;
+  /**
+   * Global. Where the neutral surface ramp sits on the tone scale.
+   *
+   * - `'default'` — `surface` is the extreme: pure white in light, the darkest
+   *   step the dark tone window allows in dark.
+   * - `'tinted'` — the whole ramp moves two tones inward, off the extreme.
+   *
+   * Two tones is not a visible lightness change; what it buys is *room*. Chroma
+   * needs distance from white to exist at all, so at the extreme a light page is
+   * white no matter what {@link PaletteConfig.baseSaturation} says. Tinted trades
+   * two tones of headroom for a page that actually carries its base hue.
+   *
+   * Everything below `surface` is positioned relative to it, so the ladder, the
+   * borders and the text ramp all follow — and the contrast floors on the text
+   * re-solve against the new background rather than drifting.
+   */
+  surfaceMode?: SurfaceMode;
   /**
    * Seed saturation (0–100), and the fallback for every theme that does not set
    * its own.
@@ -214,6 +276,8 @@ export interface ResolvedPaletteConfig {
   hue: number;
   baseHue: number;
   saturation: number;
+  baseSaturation: number;
+  surfaceMode: SurfaceMode;
   /**
    * The accent color as given, handed to Glaze's `from` so the brand family renders
    * as that literal value rather than as a shade re-derived from the seed.
@@ -317,6 +381,14 @@ function resolveConfig(input: PaletteConfig): ResolvedPaletteConfig {
     hue,
     baseHue,
     saturation,
+    // Follows the palette seed at the recipe's own share of it, so an untouched
+    // base zone resolves to exactly what it always did — and a muted palette still
+    // mutes the chrome. Unlike the palette seed, writing this one does *not* turn
+    // pastel off: how much hue the chrome carries says nothing about which chroma
+    // space the palette is in.
+    baseSaturation:
+      input.baseSaturation ?? saturation * SURFACE_SATURATION_SHARE,
+    surfaceMode: input.surfaceMode ?? 'default',
     accentColor: accent ? input.accentColor! : null,
     accentTone: accent?.tone ?? null,
     pastel,
@@ -407,6 +479,8 @@ function isSameConfig(a: ResolvedPaletteConfig, b: ResolvedPaletteConfig) {
     a.hue === b.hue &&
     a.baseHue === b.baseHue &&
     a.saturation === b.saturation &&
+    a.baseSaturation === b.baseSaturation &&
+    a.surfaceMode === b.surfaceMode &&
     // The color itself, not just what it derived: `hue` no longer carries its chroma
     // (the accent family gets that through Glaze's `from`), so two different brands
     // can agree on every numeric seed and still render differently.
@@ -443,6 +517,8 @@ function pinSignature(config: PaletteConfig): string {
     set(config.hue),
     set(config.baseHue),
     set(config.saturation),
+    set(config.baseSaturation),
+    set(config.surfaceMode),
     set(config.pastel),
     set(config.contrastLevel),
     set(config.themes?.code?.saturation),

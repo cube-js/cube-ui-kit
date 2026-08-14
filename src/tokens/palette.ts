@@ -5,6 +5,7 @@ import {
   getPaletteConfig,
   getPaletteVersion,
   resolvePaletteConfig,
+  SURFACE_SATURATION_SHARE,
 } from './palette-config';
 
 import type {
@@ -68,12 +69,67 @@ const CODE_STRING_HUE = 280.3;
  * Saturation factor of the neutral `surface`.
  *
  * Shared with the code theme, which mirrors `surface` to solve its contrast floors
- * against the real page background — the two must not drift apart.
+ * against the real page background — the two must not drift apart. Shared with the
+ * config too, which needs it to default `baseSaturation` to the share of the seed
+ * this factor represents; it lives there because the config cannot import from
+ * here, and is re-exported under this name because that is what the recipe calls it.
  */
-const SURFACE_SATURATION = 0.12;
+const SURFACE_SATURATION = SURFACE_SATURATION_SHARE;
 
 const TINTED_SURFACE_SATURATION = 0.2;
 const TINTED_SURFACE_TONE_OFFSET = 2;
+
+/**
+ * How far `surfaceMode: 'tinted'` moves the neutral ramp off the end of the tone
+ * scale.
+ *
+ * Small on purpose. Two tones is below the threshold where a page reads as
+ * "grey" rather than "white", and it is not lightness this buys: chroma needs
+ * distance from the extreme to exist at all, so at tone 100 a light surface is
+ * white whatever saturation it asks for. Two tones is the cheapest room in which
+ * the base hue becomes visible.
+ *
+ * Everything under `surface` is positioned relative to it, so the shift carries
+ * the whole ladder — and the text ramp's contrast floors re-solve against the new
+ * background instead of drifting.
+ */
+const TINTED_SURFACE_TONE_SHIFT = 2;
+
+/** Tone of the neutral `surface`, per {@link ResolvedPaletteConfig.surfaceMode}. */
+function surfaceTone(config: ResolvedPaletteConfig): number {
+  return config.surfaceMode === 'tinted'
+    ? 100 - TINTED_SURFACE_TONE_SHIFT
+    : 100;
+}
+
+/**
+ * Rescale the base-zone saturation factors onto the base zone's own seed.
+ *
+ * Every color's `saturation` is a 0–1 factor of its **theme's** seed, and the
+ * neutral family shares a theme instance with the accent one — it has to, since
+ * `accent-surface` is positioned against `surface`. A separate base seed therefore
+ * cannot be a second theme; it arrives as a scale over the authored factors.
+ *
+ * The scale is anchored on `surface`: dividing by `SURFACE_SATURATION` turns each
+ * factor into its share *of the surface's tint*, and multiplying by
+ * `baseSaturation / saturation` re-expresses that share against the base seed.
+ * `surface` therefore lands on exactly `baseSaturation` on the 0–100 scale, and
+ * every sibling keeps its proportion to it. At the shipped
+ * `baseSaturation = saturation × 0.12` the scale is `1` and nothing moves.
+ *
+ * Clamped because Glaze reads the factor as 0–1, which is also why the proportions
+ * converge at the top: `surface-inverse` (the highest at `0.475`) saturates first,
+ * around `baseSaturation: 25`.
+ *
+ * A palette seed of `0` leaves no chroma for any factor to scale, so the base zone
+ * is grey there whatever it asks for — the ceiling belongs to the theme instance,
+ * not to this scale.
+ */
+function baseSaturationScale(config: ResolvedPaletteConfig): number {
+  return config.saturation > 0
+    ? config.baseSaturation / (SURFACE_SATURATION * config.saturation)
+    : 0;
+}
 
 /**
  * Contrast floors for a pinned brand color: `[normal, highContrast]`.
@@ -266,9 +322,14 @@ function buildCodeTheme(
   const theme = glaze(config.hue, codeSaturation, instanceConfig);
 
   // Re-express the default theme's `surface` as a factor of the *code* seed, so it
-  // resolves to the same colour the code actually sits on. Written as a ratio of
-  // seeds so the default config lands on exactly `SURFACE_SATURATION`.
-  let mirrorFactor = SURFACE_SATURATION * (config.saturation / codeSaturation);
+  // resolves to the same colour the code actually sits on.
+  //
+  // The BASE seed, not the palette one: the real `surface` takes its chroma from
+  // the base zone, and a mirror that tracked the palette seed would solve every
+  // syntax contrast floor against a background the page does not have. `surface`
+  // lands on exactly `baseSaturation` on the 0–100 scale, so the ratio of the two
+  // seeds *is* the factor — there is no `SURFACE_SATURATION` left to apply.
+  let mirrorFactor = config.baseSaturation / codeSaturation;
 
   if (mirrorFactor > 1) {
     // Only reachable with a code saturation far below the palette's. Glaze would
@@ -277,15 +338,17 @@ function buildCodeTheme(
     // eslint-disable-next-line no-console
     console.warn(
       `[cube-ui-kit] themes.code.saturation (${codeSaturation}) is too low for ` +
-        `saturation ${config.saturation}: the mirrored code surface would need a ` +
-        `factor of ${mirrorFactor.toFixed(3)}. Clamped to 1; raise the code ` +
+        `baseSaturation ${config.baseSaturation}: the mirrored code surface would ` +
+        `need a factor of ${mirrorFactor.toFixed(3)}. Clamped to 1; raise the code ` +
         `saturation to keep syntax contrast accurate.`,
     );
     mirrorFactor = 1;
   }
 
   theme.colors({
-    surface: { tone: 100, saturation: mirrorFactor },
+    // Tone as well as chroma: under `surfaceMode: 'tinted'` the page moved two
+    // tones off the extreme, and the mirror exists to be the page.
+    surface: { tone: surfaceTone(config), saturation: mirrorFactor },
     ...CODE_COLORS,
   });
 
@@ -670,6 +733,12 @@ function buildPalette(
       ? { color: accentColor, tone: accentTone }
       : null;
 
+  // The base zone's tone anchor and its own chroma share, applied to every color
+  // that carries `hue: baseHue` below — that prop is the boundary of the zone.
+  const baseTone = surfaceTone(config);
+  const baseScale = baseSaturationScale(config);
+  const baseChroma = (factor: number) => Math.min(1, factor * baseScale);
+
   // The one override the code theme shares with the rest of the palette.
   const sharedOverrides: GlazeConfigOverride = options.isolateContrastLevel
     ? { contrastLevel }
@@ -706,26 +775,30 @@ function buildPalette(
 
   defaultTheme.colors({
     // ---- Surfaces (neutral, very low saturation) ----
-    surface: { tone: 100, saturation: SURFACE_SATURATION, hue: baseHue },
+    surface: {
+      tone: baseTone,
+      saturation: baseChroma(SURFACE_SATURATION),
+      hue: baseHue,
+    },
     'surface-2': {
       hue: baseHue,
       base: 'surface',
       tone: ['-2', '-4'],
-      saturation: 0.1,
+      saturation: baseChroma(0.1),
       inherit: false,
     },
     'surface-3': {
       hue: baseHue,
       base: 'surface',
       tone: ['-4', '-8'],
-      saturation: 0.1,
+      saturation: baseChroma(0.1),
       inherit: false,
     },
     'surface-4': {
       hue: baseHue,
       base: 'surface',
       tone: ['-6', '-12'],
-      saturation: 0.1,
+      saturation: baseChroma(0.1),
       inherit: false,
     },
 
@@ -740,14 +813,14 @@ function buildPalette(
       hue: baseHue,
       base: 'surface',
       tone: `${TEXT_TONE - 2}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
     },
     'surface-text-soft': {
       hue: baseHue,
       base: 'surface',
       tone: `${TEXT_SOFT_TONE - 2}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
       inherit: false,
     },
@@ -755,7 +828,7 @@ function buildPalette(
       hue: baseHue,
       base: 'surface',
       tone: `${TEXT_SOFT2_TONE - 2}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
       inherit: false,
     },
@@ -763,7 +836,7 @@ function buildPalette(
       hue: baseHue,
       base: 'surface-2',
       tone: `${TEXT_TONE + SURFACE_2_TEXT_OFFSET}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
       inherit: false,
     },
@@ -771,7 +844,7 @@ function buildPalette(
       hue: baseHue,
       base: 'surface-2',
       tone: `${TEXT_SOFT_TONE + SURFACE_2_TEXT_OFFSET}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
       inherit: false,
     },
@@ -779,7 +852,7 @@ function buildPalette(
       hue: baseHue,
       base: 'surface-3',
       tone: `${TEXT_TONE + SURFACE_3_TEXT_OFFSET}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
       inherit: false,
     },
@@ -787,7 +860,7 @@ function buildPalette(
       hue: baseHue,
       base: 'surface-3',
       tone: `${TEXT_SOFT_TONE + SURFACE_3_TEXT_OFFSET}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
       inherit: false,
     },
@@ -797,13 +870,13 @@ function buildPalette(
       hue: baseHue,
       base: 'surface',
       tone: ['-10', '-30'],
-      saturation: 0.175,
+      saturation: baseChroma(0.175),
     },
     placeholder: {
       hue: baseHue,
       base: 'surface',
       tone: '-33',
-      saturation: 0.175,
+      saturation: baseChroma(0.175),
       inherit: false,
     },
     focus: {
@@ -834,7 +907,7 @@ function buildPalette(
       hue: baseHue,
       base: 'surface',
       tone: '-3.5',
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       inherit: false,
     },
     'disabled-surface-text': {
@@ -852,7 +925,7 @@ function buildPalette(
     'surface-inverse': {
       hue: baseHue,
       tone: 12,
-      saturation: 0.475,
+      saturation: baseChroma(0.475),
       mode: 'fixed',
       inherit: false,
     },

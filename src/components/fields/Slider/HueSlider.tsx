@@ -14,6 +14,19 @@ const HUE_GRADIENT = HUE_STOPS.map(
   (h) => `okhsl(${h} ${HUE_SATURATION}% ${HUE_LIGHTNESS}%)`,
 ).join(', ');
 
+/**
+ * A hue is an angle, so the value label says so.
+ *
+ * `unitDisplay: 'narrow'` is what turns `23 deg` into `23°`. Left to the plain
+ * number, a caller who wanted the unit had to put it in the label — which then
+ * repeated the value the slider already prints beside it.
+ */
+const HUE_FORMAT_OPTIONS: Intl.NumberFormatOptions = {
+  style: 'unit',
+  unit: 'degree',
+  unitDisplay: 'narrow',
+};
+
 const horizontalTrackStyles: Styles = {
   image: `linear-gradient(to right, ${HUE_GRADIENT})`,
   Fill: false,
@@ -41,6 +54,7 @@ function HueSlider(
     defaultValue = 0,
     onChange,
     orientation = 'horizontal',
+    formatOptions = HUE_FORMAT_OPTIONS,
     thumbTokens: userThumbTokens,
     thumbStyles: userThumbStyles,
     trackStyles: userTrackStyles,
@@ -103,6 +117,7 @@ function HueSlider(
       minValue={0}
       maxValue={359}
       step={1}
+      formatOptions={formatOptions}
       thumbStyles={thumbStyles}
       trackStyles={trackStyles}
       thumbTokens={thumbTokens}

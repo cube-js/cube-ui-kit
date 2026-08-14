@@ -38,6 +38,8 @@ value so this stays true.
 | `hue`                        | **Accent** hue in degrees — the brand. Drives the `accent-*` family, `primary` / `purple` / `special`, and the brand-tinted `focus`, loading faces and disabled chip. | `280.3`                             |
 | `baseHue`                    | **Base** hue in degrees — the neutral chrome: `surface` and its ladder, the `surface-text*` ramp, `border`, `placeholder`.                                            | inherits `hue`                      |
 | `saturation`                 | Seed saturation (0–100) for the `default` theme, and the fallback for every theme that sets none. Setting it **turns `pastel` off**, which is the path it belongs to. | `100`                               |
+| `baseSaturation`             | Seed saturation (0–100) of the **base** zone — the same family `baseHue` governs. On the same scale as `saturation`; the shipped chrome is `12`.                      | `saturation × 0.12`                 |
+| `surfaceMode`                | Global. `'tinted'` moves the neutral surface ramp two tones off the end of the tone scale, which is what gives `baseSaturation` room to reach the page surface.        | `'default'`                         |
 | `themes.<status>.hue`        | Hue for `success` / `danger` / `warning` / `note`.                                                                                                                    | `156.9` / `23.1` / `84.3` / `302.3` |
 | `themes.<status>.saturation` | Saturation for that status theme.                                                                                                                                     | inherits `saturation`               |
 | `themes.code.saturation`     | Saturation for the `code-*` syntax family. Hues are fixed, and this does **not** inherit `saturation`, nor track its default.                                         | `80`                                |
@@ -152,15 +154,62 @@ Read the result back from the tokens themselves — `#accent-surface` is the fil
 
 ### One saturation scale per theme
 
-Saturation is _not_ split, deliberately: `saturation` is the theme's **seed**, and
-every color's own `saturation` is a 0–1 factor of it. `surface` sits at `0.12`,
-`border` at `0.175`, the text ramp at `0.2`, the accent family at ~`1.0`.
+Saturation is _not_ split per token, deliberately: `saturation` is the theme's
+**seed**, and every color's own `saturation` is a 0–1 factor of it. `surface` sits
+at `0.12`, `border` at `0.175`, the text ramp at `0.2`, the accent family at
+~`1.0`.
 
 So the palette has one saturation _scale_, and everything on it keeps its
 proportions: turning `saturation` down mutes the brand fills and the neutral tint
 together, in the ratios the palette was designed around. That is the point — the
 relationship between a subtle surface tint and a saturated accent is part of the
 design, not something to tune per token.
+
+The one seam is the **base zone**, and it is the same seam `baseHue` opens: the
+chrome is the one family whose job is _not_ to look like the brand. `baseSaturation`
+gives it its own seed, on the same 0–100 scale, so a vivid accent over near-grey
+chrome — or a muted accent over visibly warm chrome — is one number rather than a
+choice between them:
+
+```ts
+setPaletteConfig({ pastel: false, saturation: 90, baseSaturation: 3 });
+```
+
+It defaults to `saturation × 0.12`, which is `surface`'s own factor, so leaving it
+alone reproduces the shipped palette exactly and a muted `saturation` still mutes
+the chrome along with everything else. **The shipped value is `12`** — a faint tint
+is what a neutral surface _is_ — so the interesting range is the low end. The base
+colors keep their proportions to one another until the highest of them (`0.475`,
+`surface-inverse`) hits the top of the scale, around `25`; past that they converge.
+
+Note the asymmetry with `saturation`: writing `baseSaturation` does **not** turn
+`pastel` off. How much hue the chrome carries says nothing about which chroma space
+the palette is in.
+
+### Tinted surfaces
+
+A neutral `surface` sits at the extreme of the tone scale — pure white in light,
+the darkest step the dark tone window allows in dark. Chroma needs distance from
+the extreme to exist at all, so on a light page `surface` is white whatever
+`baseSaturation` asks for. The base seed reaches `surface-2`…`surface-4`, `border`,
+`placeholder` and the text ramp, and stops at the page itself.
+
+`surfaceMode: 'tinted'` moves the whole ramp two tones inward:
+
+```ts
+setPaletteConfig({ surfaceMode: 'tinted', baseSaturation: 25 });
+```
+
+Two tones is not a lightness change you would name — it is _room_. Everything below
+`surface` is positioned relative to it, so the ladder, the borders and the text ramp
+all follow, and the text's `['AA','AAA']` floors re-solve against the new background
+rather than drifting. The `code-*` family follows too: its mirrored `surface` exists
+to be the page, so it tracks both the tone and the base seed.
+
+The tint stays subtle by construction. Near white the sRGB gamut has very little
+chroma to give, so `tinted` buys a surface that reads as warm or cool rather than
+one that reads as colored — which is the whole ask. For a genuinely colored panel,
+reach for a status theme's `surface` instead.
 
 All of which describes the `pastel: false` path. Under `pastel` there is still one seed
 and it is pinned to `100`, because a flat chroma ceiling is the whole mechanism and a
@@ -331,10 +380,15 @@ Status themes are four rows rather than eight sliders. Each row is a
 the question you actually have — do these four still read as four different
 things — at a glance; press one to open its hue and saturation.
 
-The **Take it with you** panel prints the live config as a
-`setPaletteConfig()` call. It prints the config *as written* rather than the
-resolved one, so an inherited `baseHue` stays inherited instead of being frozen
-to whatever the accent happened to be.
+**Export** — beside _Reset to defaults_, where the actions belong — hands the theme
+over as a `setPaletteConfig()` call to copy or a `palette.json` to download. Both
+carry the config _as written_ rather than the resolved one, so an inherited
+`baseHue` stays inherited instead of being frozen to whatever the accent happened
+to be.
+
+Every caveat on the panel is an **InfoBadge** beside the control it qualifies rather
+than a paragraph under it. A tuner is a dense column of controls, and prose between
+them pushes the next knob off the screen to explain something you need once.
 
 Each of the two zones has a **Seeded by** switch — Hue or Color, plus _Follow accent_
 for the base. The hue slider stays on screen in color mode, disabled, showing the hue the

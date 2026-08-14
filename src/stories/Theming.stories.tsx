@@ -6,6 +6,7 @@ import {
   Checkbox,
   ColorInput,
   ColorSwatch,
+  CopyIcon,
   CopySnippet,
   CubeLogo,
   DEFAULT_PALETTE_CONFIG,
@@ -14,6 +15,7 @@ import {
   getPaletteConfigInput,
   getPaletteTokens,
   HueSlider,
+  InfoBadge,
   ItemButton,
   Link,
   PrismCode,
@@ -37,6 +39,7 @@ import type {
   PaletteThemeName,
   PaletteThemeSeed,
   RenderPaletteOptions,
+  SurfaceMode,
 } from '../index';
 
 /**
@@ -143,23 +146,11 @@ const Token = tasty({
   styles: { preset: 's4', opacity: 0.75, wordBreak: 'break-all' },
 });
 
-const Note = tasty({
-  as: 'p',
-  styles: { margin: 0, preset: 't4', color: '#surface-text-soft-2' },
-});
-
-const Warning = tasty({
-  styles: {
-    padding: '1.5x 2x',
-    radius: '1r',
-    fill: '#note-surface',
-    color: '#note-surface-text',
-    // The tinted surface alone is nearly invisible against `#surface-2` in the
-    // dark scheme; the themed border is what makes this read as a callout.
-    border: '1bw #note-border',
-    preset: 't4',
-  },
-});
+// No `Note` / `Warning` block elements any more. Every caveat on this page is now
+// an `InfoBadge` beside the control it qualifies — reached through the field
+// `tooltip` prop, or placed directly where there is no field. A tuner is a dense
+// column of controls, and a paragraph under each one pushed the next knob off the
+// screen to explain something you only need once.
 
 // ============================================================================
 // Helpers
@@ -289,32 +280,29 @@ function ColorResolution({ resolved }: { resolved?: Tokens }) {
     (resolved?.[name] as string | undefined) ?? resolvedValue(name);
 
   return (
-    <Section styles={{ gap: '1x' }}>
-      <Row>
-        {[
-          { label: 'Requested', color: requested },
-          { label: 'Fill', color: valueOf('#accent-surface') },
-          { label: 'Link', color: valueOf('#accent-text') },
-        ].map(({ label, color }) => (
-          <Row key={label} styles={{ gap: '.75x' }}>
-            {/* The chip carries no text of its own, so an arbitrary requested
-                color cannot land unreadable on itself. */}
-            <ColorSwatch
-              color={color}
-              styles={{ width: '3x', height: '3x', radius: '.5r' }}
-            />
-            <Token>{label}</Token>
-          </Row>
-        ))}
-      </Row>
+    <Row styles={{ gap: '1.5x' }}>
+      {[
+        { label: 'Requested', color: requested },
+        { label: 'Fill', color: valueOf('#accent-surface') },
+        { label: 'Link', color: valueOf('#accent-text') },
+      ].map(({ label, color }) => (
+        <Row key={label} styles={{ gap: '.75x' }}>
+          {/* The chip carries no text of its own, so an arbitrary requested
+              color cannot land unreadable on itself. */}
+          <ColorSwatch
+            color={color}
+            styles={{ width: '3x', height: '3x', radius: '.5r' }}
+          />
+          <Token>{label}</Token>
+        </Row>
+      ))}
       {palette.pastel ? (
-        <Warning>
-          Pastel caps chroma, so this color cannot render exactly — the palette
-          takes its hue and its tone and finds the nearest color inside the
-          ceiling. Turn Pastel off to land on it.
-        </Warning>
+        <InfoBadge
+          theme="danger"
+          tooltip="Pastel caps chroma, so this color cannot render exactly — the palette takes its hue and its tone and finds the nearest color inside the ceiling. Turn Pastel off to land on it."
+        />
       ) : null}
-    </Section>
+    </Row>
   );
 }
 
@@ -396,9 +384,14 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
         />
       ) : null}
       <HueSlider
-        label={`Accent hue — ${Math.round(palette.hue)}°${
-          mode === 'color' ? ' (from the color)' : ''
-        }`}
+        // No value in the label: the slider already prints it on the right, and
+        // the same number twice on one line reads as two facts.
+        label={mode === 'color' ? 'Accent hue (from the color)' : 'Accent hue'}
+        tooltip={
+          mode === 'color'
+            ? 'Derived from the accent color, and disabled while that color is in charge. Left on screen because watching it move on its own is what makes a hue seed and a color seed legible as two ways of doing one thing.'
+            : 'Drives the whole accent family, `primary` / `purple` / `special`, and the brand-tinted odds and ends — the focus ring, the loading faces, the disabled chip.'
+        }
         isDisabled={mode === 'color'}
         value={Math.round(palette.hue)}
         onChange={(hue) => setPalette((config) => ({ ...config, hue }))}
@@ -447,39 +440,68 @@ function BaseSourceControls() {
         <Radio value="color">Color</Radio>
       </RadioGroup>
       {mode === 'color' ? (
-        <>
-          <ColorInput
-            label="Base color"
-            size="small"
-            value={input.baseColor ?? null}
-            onChange={(baseColor) =>
-              setPalette(({ baseColor: previous, ...config }) =>
-                baseColor
-                  ? { ...config, baseColor }
-                  : { ...config, baseHue: Math.round(palette.baseHue) },
-              )
-            }
-          />
-          <Note>
-            Only the hue is taken. A base color&rsquo;s chroma and lightness are
-            discarded — the chrome&rsquo;s own lightness ladder and its
-            0.10–0.20 saturation factors are the design.
-          </Note>
-        </>
+        <ColorInput
+          label="Base color"
+          size="small"
+          tooltip="Only the hue is taken. A base color's chroma and lightness are discarded — the chrome's own lightness ladder and its 0.10–0.20 saturation factors are the design."
+          value={input.baseColor ?? null}
+          onChange={(baseColor) =>
+            setPalette(({ baseColor: previous, ...config }) =>
+              baseColor
+                ? { ...config, baseColor }
+                : { ...config, baseHue: Math.round(palette.baseHue) },
+            )
+          }
+        />
       ) : null}
       <HueSlider
-        label={`Base hue — ${Math.round(palette.baseHue)}°${
+        label={
           mode === 'accent'
-            ? ' (inherited)'
+            ? 'Base hue (inherited)'
             : mode === 'color'
-              ? ' (from the color)'
-              : ''
-        }`}
+              ? 'Base hue (from the color)'
+              : 'Base hue'
+        }
+        tooltip="The neutral chrome — surface and its ladder, the surface-text ramp, border, placeholder. A colored theme's tinted surface deliberately follows its own hue instead, because a danger banner should read as red."
         // Left enabled while it inherits: dragging pins `baseHue`, which flips the
         // radio to Hue on its own, and that drag-to-pin affordance predates the radio.
         isDisabled={mode === 'color'}
         value={Math.round(palette.baseHue)}
         onChange={(baseHue) => setPalette((config) => ({ ...config, baseHue }))}
+      />
+      <RadioGroup
+        label="Surface mode"
+        type="button"
+        value={palette.surfaceMode}
+        tooltip="Tinted moves the whole surface ramp two tones off the end of the tone scale. Not a lightness change — chroma needs distance from the extreme to exist at all, so at the default a light page is white whatever the base saturation asks for. Two tones is the cheapest room in which the base hue becomes visible."
+        onChange={(surfaceMode) =>
+          setPalette((config) => ({
+            ...config,
+            surfaceMode: surfaceMode as SurfaceMode,
+          }))
+        }
+      >
+        <Radio value="default">Default</Radio>
+        <Radio value="tinted">Tinted</Radio>
+      </RadioGroup>
+      <Slider
+        label="Base saturation"
+        tooltip={
+          palette.surfaceMode === 'tinted'
+            ? 'The same 0–100 scale the palette saturation uses, on the chrome alone. The shipped value is 12 — a faint tint is what a neutral surface is — so the interesting range is the low end, and past about 25 the base colors run out of scale and converge.'
+            : 'Reaches surface-2…surface-4, the borders and the text ramp, but not the page surface: at the end of the tone scale there is no room for chroma. Switch Surface mode to Tinted to give it some.'
+        }
+        minValue={0}
+        // The top of the useful range rather than of the scale. `surface-inverse`
+        // saturates around 25 and its siblings follow, so a 0–100 track would spend
+        // most of its length on colors that have stopped moving — and put the
+        // shipped 12 in the first eighth of it.
+        maxValue={40}
+        step={0.5}
+        value={Math.min(palette.baseSaturation, 40)}
+        onChange={(baseSaturation) =>
+          setPalette((config) => ({ ...config, baseSaturation }))
+        }
       />
     </Section>
   );
@@ -498,9 +520,12 @@ function SaturationControls() {
         Pastel
       </Switch>
       <Slider
-        label={`Saturation — ${palette.saturation}${
-          palette.pastel ? ' (pinned by pastel)' : ''
-        }`}
+        label={palette.pastel ? 'Saturation (pinned by pastel)' : 'Saturation'}
+        tooltip={
+          palette.pastel
+            ? 'Pastel pins saturation at 100. The flat, hue-independent chroma ceiling is what makes it even across hues, and a second scale on top of it would only undo that. Turn pastel off for a free 0–100 scale.'
+            : 'Independent of the accent color: the brand family carries its own chroma, so a color seed no longer moves this — and cannot wash the neutral chrome or the status themes along with it.'
+        }
         minValue={0}
         maxValue={100}
         isDisabled={palette.pastel}
@@ -509,19 +534,6 @@ function SaturationControls() {
           setPalette((config) => ({ ...config, saturation }))
         }
       />
-      {palette.pastel ? (
-        <Note>
-          Pastel pins saturation at 100. The flat, hue-independent chroma
-          ceiling is what makes it even across hues, and a second scale on top
-          of it would only undo that. Turn pastel off for a free 0–100 scale.
-        </Note>
-      ) : (
-        <Note>
-          Independent of the accent color: the brand family carries its own
-          chroma, so a color seed no longer moves this — and cannot wash the
-          neutral chrome or the status themes along with it.
-        </Note>
-      )}
     </Section>
   );
 }
@@ -566,12 +578,12 @@ function StatusControls() {
         return (
           <Section key={name}>
             <HueSlider
-              label={`${name} hue — ${seed.hue}°`}
+              label={`${name} hue`}
               value={Math.round(seed.hue)}
               onChange={(hue) => setPalette(statusSeed(name, { hue }))}
             />
             <Slider
-              label={`${name} saturation — ${seed.saturation}`}
+              label={`${name} saturation`}
               minValue={0}
               maxValue={100}
               value={seed.saturation}
@@ -604,35 +616,20 @@ function ContrastControls() {
   const level = contrastLevelValue(palette.contrastLevel);
 
   return (
-    <Section>
-      <Slider
-        label={`Contrast level — ${level}`}
-        minValue={0}
-        maxValue={100}
-        value={level}
-        onChange={(contrastLevel) =>
-          setPalette((config) => ({ ...config, contrastLevel }))
-        }
-      />
-      {hasContrastTier() ? (
-        <Note>
-          The level moves the <strong>normal</strong> colors only. The
-          high-contrast tier is the true high-contrast resolution at every
-          level, so the two compose — a contrast preference still escalates on
-          top of whatever the slider is set to.
-        </Note>
-      ) : (
-        <Warning>
-          One tier at level 100. The normal colors already <em>are</em> the
-          high-contrast ones here, so a second set would just duplicate them —{' '}
-          <strong>
-            data-contrast=&quot;high&quot; and prefers-contrast: more have
-            nothing left to escalate to.
-          </strong>{' '}
-          Every level below this keeps both tiers.
-        </Warning>
-      )}
-    </Section>
+    <Slider
+      label="Contrast level"
+      tooltip={
+        hasContrastTier()
+          ? 'The level moves the normal colors only. The high-contrast tier is the true high-contrast resolution at every level, so the two compose — a contrast preference still escalates on top of wherever the slider puts the baseline.'
+          : 'One tier at level 100: the normal colors already are the high-contrast ones here, so data-contrast="high" and prefers-contrast: more have nothing left to escalate to. Every level below this keeps both tiers.'
+      }
+      minValue={0}
+      maxValue={100}
+      value={level}
+      onChange={(contrastLevel) =>
+        setPalette((config) => ({ ...config, contrastLevel }))
+      }
+    />
   );
 }
 
@@ -965,9 +962,12 @@ const ControlGroup = tasty({
   styles: { display: 'grid', gap: '1.5x' },
 });
 
+// `c2` is the kit's settings-heading preset: uppercase, tracked, 12px. It reads as
+// a section divider rather than as another bold line of prose, which is what a
+// column of labelled controls needs.
 const GroupLabel = tasty({
   as: 'strong',
-  styles: { preset: 't4m', color: '#surface-text-soft' },
+  styles: { preset: 'c2', color: '#surface-text-soft' },
 });
 
 /**
@@ -1126,9 +1126,13 @@ const STATUS_BUTTON_STYLES: Styles = {
   placeContent: 'center start',
 };
 
+// `Dialog` pads through its `Content` slot, and this popover holds raw children —
+// the same arrangement `ColorPanel` is in, and the same `1x` a popover's own
+// padding token resolves to.
 const STATUS_POPOVER_STYLES: Styles = {
   display: 'grid',
   gap: '2x',
+  padding: '1x',
   width: '32x',
 };
 
@@ -1160,12 +1164,21 @@ function StatusThemeButton({
       <Dialog aria-label={`${name} theme`} width="max-content">
         <Section styles={STATUS_POPOVER_STYLES}>
           <HueSlider
-            label={`Hue — ${Math.round(seed.hue)}°`}
+            label="Hue"
+            tooltip="Status hues have to stay semantically legible — danger red, warning amber, success green — and about 35° apart from each other and from the brand, which is roughly where two tinted surfaces stop reading as one color."
             value={Math.round(seed.hue)}
             onChange={(hue) => setPalette(statusSeed(name, { hue }))}
           />
           <Slider
-            label={`Saturation — ${seed.saturation}`}
+            label="Saturation"
+            tooltip={
+              palette.pastel
+                ? // It does work under pastel — but the flat ceiling caps the
+                  // range at about a third of the non-pastel one, which reads as
+                  // a dead control unless you are told.
+                  'Live, but pastel caps the top of the range at roughly a third of the non-pastel one, so the whole slider covers a narrower spread. Turn pastel off for the full range.'
+                : 'Inherits the palette saturation until you move it, and stays pinned afterwards — so a re-seeded palette leaves this theme where you put it.'
+            }
             minValue={0}
             maxValue={100}
             value={seed.saturation}
@@ -1180,28 +1193,67 @@ function StatusThemeButton({
 }
 
 /**
- * The config as source, so a theme can leave this page.
+ * The theme, on its way out of this page.
  *
  * The sparse input rather than the resolved config: it is both far shorter and
  * the honest answer, since an inherited `baseHue` written out as a number would
  * stop following the accent the moment it was pasted.
+ *
+ * A popover rather than a panel in the column. The snippet is the one thing here
+ * nobody needs while tuning and everybody needs once — at the bottom of a scroll
+ * it was neither reachable nor legible, cropped to two lines by the column it
+ * sat in.
  */
-function ConfigSnippet() {
+const EXPORT_POPOVER_STYLES: Styles = {
+  display: 'grid',
+  gap: '1.5x',
+  padding: '1x',
+  width: '48x',
+};
+
+function ExportButton() {
   usePaletteVersion();
 
   const input = getPaletteConfigInput();
-  const body = JSON.stringify(input, null, 2)
-    // JSON quotes every key; these are all plain identifiers, and the snippet is
-    // meant to be pasted into a `.ts` file.
-    .replace(/"([A-Za-z][\w]*)":/g, '$1:');
+  const json = JSON.stringify(input, null, 2);
+  // JSON quotes every key; these are all plain identifiers, and the snippet is
+  // meant to be pasted into a `.ts` file.
+  const source = `setPaletteConfig(${json.replace(/"([A-Za-z][\w]*)":/g, '$1:')});`;
+
+  const download = () => {
+    const url = URL.createObjectURL(
+      new Blob([`${json}\n`], { type: 'application/json' }),
+    );
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = 'palette.json';
+    link.click();
+    // The click is synchronous, so the object URL has already been read and the
+    // blob can go. Left alive it would leak for the life of the document.
+    URL.revokeObjectURL(url);
+  };
 
   return (
-    <CopySnippet
-      nowrap
-      language="javascript"
-      title="Palette config"
-      code={`setPaletteConfig(${body});`}
-    />
+    <DialogTrigger hideArrow type="popover" mobileType="tray" placement="top">
+      <Button type="outline" icon={<CopyIcon />}>
+        Export
+      </Button>
+      <Dialog aria-label="Export the palette config" width="max-content">
+        <Section styles={EXPORT_POPOVER_STYLES}>
+          <CopySnippet
+            language="javascript"
+            title="Palette config"
+            code={source}
+          />
+          <Row>
+            <Button type="outline" size="small" onPress={download}>
+              Download palette.json
+            </Button>
+          </Row>
+        </Section>
+      </Dialog>
+    </DialogTrigger>
   );
 }
 
@@ -1271,9 +1323,9 @@ function ThemeBuilderControls({
 
       <ControlGroup>
         <GroupLabel>Syntax</GroupLabel>
-        <Note>Hues are fixed; only saturation is tunable.</Note>
         <Slider
-          label={`Code saturation — ${palette.themes.code.saturation}`}
+          label="Code saturation"
+          tooltip="Hues are fixed; only saturation is tunable. The syntax family carries absolute hues and its own seed, so neither the brand hue nor the palette saturation reaches it — a brand re-seeded toward green would otherwise collide strings with numbers."
           minValue={0}
           maxValue={100}
           value={palette.themes.code.saturation}
@@ -1286,13 +1338,9 @@ function ThemeBuilderControls({
         />
       </ControlGroup>
 
-      <ControlGroup>
-        <GroupLabel>Take it with you</GroupLabel>
-        <ConfigSnippet />
-      </ControlGroup>
-
       <Row>
         <ResetButton />
+        <ExportButton />
       </Row>
     </ControlColumn>
   );
@@ -1734,9 +1782,10 @@ function ThemeBuilderPage() {
               <Radio value="high">High contrast</Radio>
             </RadioGroup>
             {isHighContrast && !hasContrastTier() ? (
-              <Note>
-                No separate tier at level 100 — this is the normal variant.
-              </Note>
+              <InfoBadge
+                theme="danger"
+                tooltip="No separate tier at contrast level 100 — the normal colors already are the high-contrast ones, so this is showing the normal variant."
+              />
             ) : null}
           </PreviewToolbar>
           <ThemePreview tokens={tokens} scheme={scheme} />

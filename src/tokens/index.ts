@@ -107,6 +107,7 @@ export type {
   PaletteThemeName,
   PaletteThemeSeed,
   ResolvedPaletteConfig,
+  SurfaceMode,
 } from './palette-config';
 export { SIZES, SIZE_NAME_TO_KEY, SIZE_TOKENS } from './sizes';
 export type { SizeKey, SizeName } from './sizes';
