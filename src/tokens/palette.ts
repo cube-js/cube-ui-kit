@@ -1275,9 +1275,11 @@ export function renderPaletteTokens(
   }
 
   const variant = VARIANT_KEY[`${scheme}:${highContrast}`];
-  // A manual `contrastLevel` leaves no separate high-contrast tier — Glaze
-  // mirrors the contrast variants onto the normal ones — so asking for
-  // `highContrast` there correctly yields the same colors.
+  // The fallback is for `contrastLevel: 100` only. There the normal variants
+  // already *are* the high-contrast ones, so Glaze emits a single light/dark set
+  // rather than duplicating it — and `highContrast` correctly resolves to the same
+  // colors. At every other level the contrast variants are present and genuinely
+  // escalated, so the fallback is not taken.
   const flat = renderVariants[variant] ?? renderVariants[scheme];
   const out: Tokens = {};
 

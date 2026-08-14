@@ -177,7 +177,12 @@ function resolvedValue(name: string): string {
   return token?.[''] ?? '—';
 }
 
-/** True while the palette still emits a separate high-contrast tier. */
+/**
+ * True while the palette still emits a separate high-contrast tier.
+ *
+ * Only `contrastLevel: 100` drops it, and only because the normal colors already
+ * are the high-contrast ones there. Every other level keeps both tiers.
+ */
 function hasContrastTier(): boolean {
   const token = getPaletteTokens()['#surface'] as Record<string, string>;
 
@@ -620,18 +625,19 @@ function ContrastControls() {
         <Note>
           High-contrast tier active. <Token>data-contrast="high"</Token> on{' '}
           <Token>html</Token>, or a <Token>prefers-contrast: more</Token>{' '}
-          preference, switches every token to its high-contrast variant.
+          preference, switches every token to its high-contrast variant — and it
+          does so <strong>on top of</strong> the level, which only positions the
+          normal colors. The tier itself is the same at every level.
         </Note>
       ) : (
         <Warning>
-          High-contrast tier disabled. A manual level already carries the
-          contrast preference, so no separate high-contrast variant is emitted —{' '}
+          One tier at level 100. The normal colors already <em>are</em> the
+          high-contrast ones here, so a second set would just duplicate them —{' '}
           <strong>
-            data-contrast=&quot;high&quot; and prefers-contrast: more have no
-            effect at this setting.
+            data-contrast=&quot;high&quot; and prefers-contrast: more have
+            nothing left to escalate to.
           </strong>{' '}
-          Level 0 reproduces the normal palette and 100 the high-contrast one,
-          bit for bit.
+          Every level below this keeps both tiers.
         </Warning>
       )}
     </Section>

@@ -547,22 +547,38 @@ describe('contrastLevel', () => {
     resetPaletteConfig();
   });
 
-  it('drops the high-contrast tier once a manual level is set', () => {
+  it('keeps the high-contrast tier at a manual level, unchanged', () => {
+    // The level positions the NORMAL variants on the slider and nothing else. The
+    // high-contrast tier stays the true high-contrast resolution, so the two
+    // compose: a slider raises the baseline while `prefers-contrast: more` still
+    // escalates on top of it.
     setPaletteConfig({ contrastLevel: 50 });
+
+    const tuned = getPaletteTokens();
+
+    expect(statesOf(tuned)).toEqual(['', '@dark', '@dark & @hc', '@hc']);
+    expect(variant(tuned, '@hc')).toEqual(variant(auto, '@hc'));
+    expect(variant(tuned, '@dark & @hc')).toEqual(variant(auto, '@dark & @hc'));
+
+    // …and the normal variants really did move, or the assertion above would be
+    // vacuous.
+    expect(variant(tuned, '')).not.toEqual(variant(auto, ''));
+  });
+
+  it('emits one tier at level 100, where the two would be identical', () => {
+    // At the top of the ramp the normal variants already ARE the high-contrast
+    // ones, so a separate tier would only duplicate them.
+    setPaletteConfig({ contrastLevel: 100 });
 
     expect(statesOf(getPaletteTokens())).toEqual(['', '@dark']);
   });
 
-  it('reproduces the normal output at level 0', () => {
-    const normal = variant(auto, '');
-    const dark = variant(auto, '@dark');
-
+  it('reproduces `auto` exactly at level 0', () => {
+    // Every tier, not just the normal pair: level 0 is the whole `'auto'` palette,
+    // so "ship the slider but default it off" costs a consumer nothing.
     setPaletteConfig({ contrastLevel: 0 });
 
-    const tokens = getPaletteTokens();
-
-    expect(variant(tokens, '')).toEqual(normal);
-    expect(variant(tokens, '@dark')).toEqual(dark);
+    expect(dumpTokens(getPaletteTokens())).toEqual(dumpTokens(auto));
   });
 
   it('reproduces the high-contrast output at level 100', () => {
@@ -794,10 +810,30 @@ describe('renderPaletteTokens', () => {
     expect(glaze.getConfig().contrastLevel).toBe(60);
   });
 
-  it('collapses high contrast onto the normal variant under a manual level', () => {
+  it('still escalates high contrast under a manual level', () => {
+    // A region asking for high contrast at a mid level gets the genuine
+    // high-contrast resolution, not a copy of its own normal variant — the level
+    // moves the baseline, the tier escalates from wherever `'auto'` would put it.
     const normal = renderPaletteTokens({ contrastLevel: 40, scheme: 'light' });
     const hc = renderPaletteTokens({
       contrastLevel: 40,
+      scheme: 'light',
+      highContrast: true,
+    });
+    const autoHc = renderPaletteTokens({
+      contrastLevel: 'auto',
+      scheme: 'light',
+      highContrast: true,
+    });
+
+    expect(hc).not.toEqual(normal);
+    expect(hc).toEqual(autoHc);
+  });
+
+  it('emits one tier at level 100, where the two coincide', () => {
+    const normal = renderPaletteTokens({ contrastLevel: 100, scheme: 'light' });
+    const hc = renderPaletteTokens({
+      contrastLevel: 100,
       scheme: 'light',
       highContrast: true,
     });

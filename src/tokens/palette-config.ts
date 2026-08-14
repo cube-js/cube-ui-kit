@@ -183,14 +183,20 @@ export interface PaletteConfig {
    */
   pastel?: boolean;
   /**
-   * Global. `'auto'` (the default) keeps the two-tier model: normal colors plus
-   * a separate high-contrast tier driven by `<html data-contrast="high">` /
-   * `prefers-contrast: more`.
+   * Global. `'auto'` (the default) leaves contrast entirely to the two-tier model:
+   * normal colors plus a high-contrast tier driven by `<html data-contrast="high">`
+   * / `prefers-contrast: more`.
    *
-   * A number (0–100) replaces that switch with a slider — and, because a manual
-   * level already carries the contrast preference, **drops the high-contrast
-   * tier entirely**. `0` reproduces the normal output and `100` the
-   * high-contrast output, bit for bit.
+   * A number (0–100) additionally positions the **normal** colors on a slider, so
+   * a product can offer its own contrast control. `0` is the shipped palette and
+   * `100` is the high-contrast one, bit for bit.
+   *
+   * The two **compose** rather than replace each other: the high-contrast tier
+   * stays the true high-contrast resolution at every level — identical to what
+   * `'auto'` emits — so a slider raises the baseline while
+   * `prefers-contrast: more` still escalates on top of it. The one exception is
+   * `100`, where the normal colors already *are* the high-contrast ones and a
+   * second tier would only duplicate them.
    */
   contrastLevel?: number | 'auto';
   /** Per-theme seed overrides. */

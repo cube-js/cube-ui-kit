@@ -286,16 +286,22 @@ By default contrast is a two-tier switch: normal colors plus a separate
 high-contrast set, selected by `<html data-contrast="high">` or a
 `prefers-contrast: more` preference.
 
-A manual `contrastLevel` replaces both tiers with a single 0–100 slider. Because
-the level already carries the contrast preference, **no separate high-contrast
-variant is emitted** — which means `data-contrast="high"` and
-`prefers-contrast: more` stop having any effect while a level is set. Levels `0`
-and `100` reproduce the normal and high-contrast palettes bit for bit, so the
-slider is a continuous interpolation between exactly what the two tiers ship
-today.
+A manual `contrastLevel` adds a 0–100 slider that positions the **normal** colors,
+for a product that wants to offer its own contrast control. Level `0` is the
+shipped palette and `100` is the high-contrast one, bit for bit, so the slider
+interpolates between exactly what the two tiers already ship.
 
-That is a real accessibility trade-off: leave `contrastLevel` at `'auto'` unless
-you are giving users their own contrast control.
+The two **compose**; the slider does not replace the switch. The high-contrast
+tier stays the true high-contrast resolution at every level — identical to what
+`'auto'` emits — so `data-contrast="high"` and `prefers-contrast: more` keep
+working and escalate on top of wherever the slider has put the baseline.
+
+The one exception is level `100`: there the normal colors already _are_ the
+high-contrast ones, so a second tier would only duplicate them and a single
+light/dark set is emitted.
+
+Because level `0` reproduces `'auto'` exactly, tier included, shipping the slider
+and defaulting it off costs a consumer nothing.
 
 <Canvas of={ThemingStories.ContrastLevel} />
 
@@ -387,8 +393,10 @@ Notes:
 - `contrastLevel` works per region, so the whole 0–100 ramp can be shown at once —
   something a document cannot do, since it is only ever at one level. Level `0`
   reproduces the normal tier and `100` the high-contrast tier exactly, in both
-  schemes. Because a manual level leaves no separate high-contrast tier,
-  `highContrast: true` correctly returns the same colors as the normal variant.
+  schemes. `highContrast: true` still returns the genuine high-contrast
+  resolution at any level below `100`, because the level moves the baseline and
+  the tier escalates from where `'auto'` would put it; at `100` the two coincide
+  and it returns the same colors as the normal variant.
   Note that tokens carrying a contrast _floor_ (most text) can sit still over part
   of the ramp — the floor is solved, not approximated, so the value only moves once
   the interpolated target does. Tokens positioned by a plain tone pair, like
