@@ -1,0 +1,160 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as ColorSwatchStories from './ColorSwatch.stories.tsx';
+
+<Meta of={ColorSwatchStories} />
+
+# ColorSwatch
+
+A square of color. It is the smallest piece of the color family —
+[ColorPicker](/docs/forms-colorpicker--docs),
+[ColorInput](/docs/forms-colorinput--docs) and
+[ColorSwatchGroup](/docs/forms-colorswatchgroup--docs) all draw one, and it is
+exported so a legend, a list row or a table cell can draw the same one.
+
+It is decorative on its own: it carries no text and no accessible name. Pair it
+with the value written out, or put it in a control that names it.
+
+## When to Use
+
+- Next to a color value in a list, a table or a chart legend
+- In the `icon` / `rightIcon` / `prefix` / `suffix` slot of an `Item` or `Button`
+- As the color part of a custom control built on top of the color fields
+
+## Component
+
+<Story of={ColorSwatchStories.Default} />
+
+---
+
+### Properties
+
+- **`color`** `string | ColorValue | null` — The color to show. Anything the color fields accept — `#7a4dbf`, `rgb(122 77 191)`, `oklch(…)`. `null`, or a string that cannot be parsed, shows the empty state
+- **`size`** `'small' | 'medium' | 'large'` — The edge of the swatch: `20px`, `24px` or `28px`. Left unset, the swatch tracks the control around it (see below)
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the swatch itself. `width` and `height` set here win over both the
+`size` prop and the automatic sizing.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type      | Description                                                    |
+| -------- | --------- | -------------------------------------------------------------- |
+| `empty`  | `boolean` | No color to show — drawn as the conventional diagonal stroke     |
+
+## Sizes
+
+<Story of={ColorSwatchStories.Sizes} />
+
+- `small` — `20px`
+- `medium` — `24px`
+- `large` — `28px`
+
+### Sizing inside a control
+
+Leave `size` off and the swatch sizes itself to whatever it sits in. `Item`,
+`Button` and the text inputs publish their own height as the `$size` custom
+property, and the swatch reads it and lands `8px` inside — `20px` in a `small`
+control, `24px` in a `medium` one, `32px` in a `large` one. Nothing has to be
+passed between the two, so a control that changes size takes its swatch with it.
+
+Outside a control there is nothing to read, and the swatch falls back to
+`medium`.
+
+<Story of={ColorSwatchStories.InsideControls} />
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<ColorSwatch color="#7a4dbf" />
+```
+
+### In a control
+
+```jsx
+<Button icon={<ColorSwatch color={color} />}>{color}</Button>
+
+<Item icon={<ColorSwatch color={color} />} suffix={<ColorSwatch color={hover} />}>
+  Accent
+</Item>
+```
+
+### With the value spelled out
+
+The swatch has no accessible name of its own, so the text beside it is what a
+screen reader announces.
+
+```jsx
+<Space gap="1x" placeItems="center start">
+  <ColorSwatch color={value} />
+  <Text>{value}</Text>
+</Space>
+```
+
+### A fixed size
+
+```jsx
+<ColorSwatch size="large" color="#26fcb2" />
+```
+
+### Any other shape
+
+```jsx
+<ColorSwatch color="#26fcb2" radius="round" width="6x" height="6x" />
+```
+
+## Accessibility
+
+`ColorSwatch` renders a plain `div` with no role and no name — a color on its
+own is not information a screen reader can use, and an announced hex is rarely
+what the user wants to hear.
+
+- **Do** put the value, or the name of the thing the color belongs to, next to it
+- **Do** rely on the surrounding control's `aria-label` when the swatch is its icon
+- **Don't** use color as the only way to tell two rows apart
+
+## Best Practices
+
+1. **Do**: let a swatch inside a control size itself
+
+   ```jsx
+   <Button size="small" icon={<ColorSwatch color={color} />}>
+     {color}
+   </Button>
+   ```
+
+2. **Don't**: hand-tune the box to match a control
+
+   ```jsx
+   <Button size="small" icon={<ColorSwatch color={color} width="2.5x" height="2.5x" />}>
+     {color}
+   </Button>
+   ```
+
+3. **Accessibility**: never let the swatch be the only carrier of the meaning
+
+## Related Components
+
+- [ColorPicker](/docs/forms-colorpicker--docs) — a swatch that opens the color popover
+- [ColorInput](/docs/forms-colorinput--docs) — the color as editable text, with a swatch inside
+- [ColorSwatchGroup](/docs/forms-colorswatchgroup--docs) — a selectable grid of swatches

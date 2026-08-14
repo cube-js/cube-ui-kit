@@ -37,9 +37,9 @@ import {
   parseColor,
 } from '../color/color';
 import { ColorPanel } from '../color/ColorPanel';
-import { ColorSwatch } from '../color/ColorSwatch';
 import { ColorPopoverContext } from '../color/context';
 import { ColorInput } from '../ColorInput';
+import { ColorSwatch } from '../ColorSwatch';
 import { ColorSwatchGroup, CubeColorSwatchItem } from '../ColorSwatchGroup';
 
 /**

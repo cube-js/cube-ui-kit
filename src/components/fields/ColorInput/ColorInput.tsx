@@ -35,8 +35,8 @@ import {
   parseColor,
 } from '../color/color';
 import { ColorPanel } from '../color/ColorPanel';
-import { ColorSwatch } from '../color/ColorSwatch';
 import { useIsInsideColorPopover } from '../color/context';
+import { ColorSwatch } from '../ColorSwatch';
 import { TextInputBase } from '../TextInput/TextInputBase';
 
 /**
@@ -333,7 +333,11 @@ export const ColorInput = forwardRef(function ColorInput(
       qa={qa || 'ColorInput'}
       size={size}
       autocomplete="off"
-      icon={<ColorSwatch color={color} styles={swatchStyles} />}
+      // Pinned to the named size rather than left to track `$size`. A text
+      // input hangs its prefix off the border with no padding of its own, so
+      // the automatic `$size - 1x` would have a large field's swatch touching
+      // the edge; `Item` and `Button` have the padding that makes it work.
+      icon={<ColorSwatch size={size} color={color} styles={swatchStyles} />}
       inputRef={inputRef}
       inputProps={{
         ...inputProps,

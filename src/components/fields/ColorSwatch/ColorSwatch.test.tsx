@@ -25,6 +25,20 @@ describe('<ColorSwatch />', () => {
     expect(getByTestId('Swatch')).toHaveAttribute('data-empty');
   });
 
+  it('carries the size as a data attribute for the style rule to read', () => {
+    const { getByTestId } = render(
+      <ColorSwatch qa="Swatch" size="large" color="#ff0000" />,
+    );
+
+    expect(getByTestId('Swatch')).toHaveAttribute('data-size', 'large');
+  });
+
+  it('leaves the size off so it can track the control around it', () => {
+    const { getByTestId } = render(<ColorSwatch qa="Swatch" color="#ff0000" />);
+
+    expect(getByTestId('Swatch')).not.toHaveAttribute('data-size');
+  });
+
   it('accepts direct style props', () => {
     // `radius="round"` and friends have to work without reaching for `styles`.
     const { getByTestId } = render(

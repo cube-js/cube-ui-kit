@@ -308,15 +308,33 @@ and defaulting it off costs a consumer nothing.
 ## Theme builder
 
 The `Theme Builder` story puts the whole config behind controls and renders the
-result into a single region: pick **Light / Dark**, then either a contrast **mode**
-(Normal / High) or a **custom** 0–100 level, and the preview shows exactly that
-variant while the page around it stays as it is.
+result into a single region, with one line drawn through the middle of the page:
+**the left column is the theme, the two switches over the preview are the
+viewing conditions.** Everything on the left writes to the palette config and
+would ship with the product; **Light / Dark** and **Normal / High contrast**
+write nothing at all — the same theme renders in all four combinations, and
+moving between them is how you check a theme rather than how you change one.
 
-There is no `Auto` for scheme or contrast mode, on purpose. `Auto` means "follow
-the OS" — a _preference_, and a flat token value cannot express one. A preview
-renders one concrete variant, so it has to name which. The contrast _level_ keeps
-its `Auto`, because there the choice is between the two-tier model and a hand-set
-number rather than between following and not following the system.
+Those two switches start on whatever the surrounding page is already showing and
+keep following it until you press one, after which they are yours. There is no
+`Auto` option to press: `Auto` means "follow the OS" — a _preference_ — and the
+preview resolves to flat token values, which can only express one concrete
+variant. Following is the default behaviour rather than a third choice.
+
+The **contrast level** is on the theme side, and always visible as a plain
+slider. It has no on/off switch because it needs none: level `0` and `'auto'` are
+output-identical, tier included, so the slider at rest _is_ the shipped palette.
+
+Status themes are four rows rather than eight sliders. Each row is a
+`type="current"` `Button` colored by its own theme with a
+[ColorSwatch](/docs/forms-colorswatch--docs) of its accent, so the group answers
+the question you actually have — do these four still read as four different
+things — at a glance; press one to open its hue and saturation.
+
+The **Take it with you** panel prints the live config as a
+`setPaletteConfig()` call. It prints the config *as written* rather than the
+resolved one, so an inherited `baseHue` stays inherited instead of being frozen
+to whatever the accent happened to be.
 
 Each of the two zones has a **Seeded by** switch — Hue or Color, plus _Follow accent_
 for the base. The hue slider stays on screen in color mode, disabled, showing the hue the
@@ -489,7 +507,9 @@ requested/resolved chips.
 
 **Re-seeding costs about 10 ms.** Rebuilding the eight themes and re-solving
 ~156 tokens across four scheme variants is not free, though it is inside a frame.
-A manual `contrastLevel` is cheaper, since it skips both high-contrast passes.
+A manual `contrastLevel` costs the same — it runs the same four passes — except
+at level `100`, which skips the two high-contrast ones because the normal pass
+already produced those values.
 Setting the config to a value it already holds is free — it does not even bump
 the version. If you are driving it from a slider, let the input coalesce to
 frames (a pointer-driven `onChange` already does) rather than writing on every

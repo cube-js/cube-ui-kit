@@ -6,8 +6,11 @@ import {
   Checkbox,
   ColorInput,
   ColorSwatch,
+  CopySnippet,
   CubeLogo,
   DEFAULT_PALETTE_CONFIG,
+  Dialog,
+  DialogTrigger,
   getPaletteConfigInput,
   getPaletteTokens,
   HueSlider,
@@ -27,7 +30,7 @@ import {
 } from '../index';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { Tokens } from '@tenphi/tasty';
+import type { Styles, Tokens } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type {
   PaletteConfig,
@@ -583,51 +586,40 @@ function StatusControls() {
   );
 }
 
-/** Where the slider lands when you leave `'auto'`. See the comment below. */
-const MANUAL_CONTRAST_START = 0;
+/**
+ * The level as a number the slider can hold.
+ *
+ * `'auto'` and `0` are output-identical — the level only positions the normal
+ * colors, and at 0 it leaves them exactly where the palette authored them — so
+ * one always-on slider can speak for both, and there is no mode switch to
+ * explain. `'auto'` is still what the config resets to, which is why this reads
+ * the two apart rather than assuming a number.
+ */
+function contrastLevelValue(level: number | 'auto'): number {
+  return level === 'auto' ? 0 : level;
+}
 
 function ContrastControls() {
   const [palette, setPalette] = usePaletteConfig();
-  const isManual = palette.contrastLevel !== 'auto';
+  const level = contrastLevelValue(palette.contrastLevel);
 
   return (
     <Section>
-      <Controls>
-        <Switch
-          isSelected={isManual}
-          onChange={(manual) =>
-            // Enter manual mode at 0, not mid-slider: level 0 reproduces the
-            // normal palette bit for bit, so the only thing flipping the switch
-            // changes is that the high-contrast tier goes away. Starting at 50
-            // would recolor the page and hide which of the two effects you got.
-            setPalette((config) => ({
-              ...config,
-              contrastLevel: manual ? MANUAL_CONTRAST_START : 'auto',
-            }))
-          }
-        >
-          Manual contrast level
-        </Switch>
-        <Slider
-          label={`Contrast level — ${isManual ? palette.contrastLevel : 'auto'}`}
-          minValue={0}
-          maxValue={100}
-          isDisabled={!isManual}
-          value={
-            isManual ? (palette.contrastLevel as number) : MANUAL_CONTRAST_START
-          }
-          onChange={(contrastLevel) =>
-            setPalette((config) => ({ ...config, contrastLevel }))
-          }
-        />
-      </Controls>
+      <Slider
+        label={`Contrast level — ${level}`}
+        minValue={0}
+        maxValue={100}
+        value={level}
+        onChange={(contrastLevel) =>
+          setPalette((config) => ({ ...config, contrastLevel }))
+        }
+      />
       {hasContrastTier() ? (
         <Note>
-          High-contrast tier active. <Token>data-contrast="high"</Token> on{' '}
-          <Token>html</Token>, or a <Token>prefers-contrast: more</Token>{' '}
-          preference, switches every token to its high-contrast variant — and it
-          does so <strong>on top of</strong> the level, which only positions the
-          normal colors. The tier itself is the same at every level.
+          The level moves the <strong>normal</strong> colors only. The
+          high-contrast tier is the true high-contrast resolution at every
+          level, so the two compose — a contrast preference still escalates on
+          top of whatever the slider is set to.
         </Note>
       ) : (
         <Warning>
@@ -861,15 +853,84 @@ function CodePanel() {
 
 /**
  * A preview renders one concrete variant, so there is no `auto` here: `auto` is a
- * *preference* ("follow the OS"), and a flat token value cannot express one. Only
- * the contrast *level* keeps an `auto`, because there the choice is between the
- * two-tier model and a hand-set number.
+ * *preference* ("follow the OS"), and a flat token value cannot express one.
  */
 type SchemeChoice = 'light' | 'dark';
-/** Whether the level is derived from the two-tier model or set by hand. */
-type LevelMode = 'auto' | 'custom';
-/** Which tier to show, while the level is `auto`. */
-type ContrastMode = 'normal' | 'high';
+
+/**
+ * Scheme and contrast tier are **viewing conditions**, not theme settings — the
+ * same theme renders in all four of them, and a designer moves between them to
+ * check their work rather than to change it. They live over the preview for
+ * that reason, and nothing they do reaches the palette config.
+ */
+interface ViewingConditions {
+  scheme: SchemeChoice;
+  highContrast: boolean;
+}
+
+/** What the document is showing right now, per the states `Root` registers. */
+function readViewingConditions(): ViewingConditions {
+  if (typeof document === 'undefined') {
+    return { scheme: 'light', highContrast: false };
+  }
+
+  const schema = document.documentElement.getAttribute('data-schema');
+  const contrast = document.documentElement.getAttribute('data-contrast');
+
+  return {
+    scheme:
+      schema === 'dark' || schema === 'light'
+        ? schema
+        : matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light',
+    highContrast: contrast
+      ? contrast === 'high'
+      : matchMedia('(prefers-contrast: more)').matches,
+  };
+}
+
+/**
+ * The document's own scheme and contrast tier, kept live.
+ *
+ * This is what makes the two switches over the preview *follow* without an
+ * `Auto` option to explain: they start on whatever the page is already showing,
+ * and until someone presses one they keep tracking it. Flipping Storybook's
+ * dark-mode toolbar with a light preview stranded inside a dark page is exactly
+ * the state that reads as broken.
+ *
+ * Both inputs have to be watched, because both can decide the answer: the
+ * attribute when `Root`'s opt-in is set, the media query otherwise.
+ */
+function useDocumentConditions(): ViewingConditions {
+  const [conditions, setConditions] = useState(readViewingConditions);
+
+  useEffect(() => {
+    const sync = () => setConditions(readViewingConditions());
+    const observer = new MutationObserver(sync);
+    const queries = [
+      matchMedia('(prefers-color-scheme: dark)'),
+      matchMedia('(prefers-contrast: more)'),
+    ];
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-schema', 'data-contrast'],
+    });
+    queries.forEach((query) => query.addEventListener('change', sync));
+
+    // The attribute can land before the effect runs, so re-read on mount rather
+    // than trusting the value the first render happened to see.
+    sync();
+
+    return () => {
+      observer.disconnect();
+      queries.forEach((query) => query.removeEventListener('change', sync));
+    };
+  }, []);
+
+  return conditions;
+}
 
 // ----------------------------------------------------------------------------
 // Controls
@@ -885,6 +946,18 @@ const ControlColumn = tasty({
     fill: '#surface-2',
     border: '1bw #border',
     height: 'max-content',
+    // Both halves are taller than the screen, so without this every tweak is a
+    // scroll back to the top to reach the next knob. Pinned, the controls stay
+    // put and the preview scrolls past them.
+    //
+    // Only in the two-column layout: stacked, a sticky panel would sit on top
+    // of the very thing it is there to let you watch. And only with a scroll of
+    // its own — a sticky box taller than the viewport pins its top and hides
+    // its own bottom, which is worse than not pinning at all.
+    position: { '': 'static', '@media(width >= 1100px)': 'sticky' },
+    top: '2x',
+    maxHeight: { '': 'none', '@media(width >= 1100px)': '(100dvh - 4x)' },
+    overflow: { '': 'visible', '@media(width >= 1100px)': 'hidden auto' },
   },
 });
 
@@ -1032,78 +1105,119 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
   },
 ];
 
-function ThemeBuilderControls({
-  scheme,
-  onSchemeChange,
-  levelMode,
-  onLevelModeChange,
-  contrastMode,
-  onContrastModeChange,
-  customLevel,
-  onCustomLevelChange,
+/**
+ * One status theme, as a row you can read at a glance and open to tune.
+ *
+ * Four themes used to mean eight sliders standing open — a wall that pushed the
+ * brand controls off the screen and gave no answer to the question actually
+ * being asked, which is "do these four still read as four different things".
+ * A row of the theme's own colors answers that; the sliders are one press away
+ * for the theme that does not.
+ *
+ * `type="current"` is what makes the row *be* its theme rather than describe
+ * one: every part of the button — the resting chip, the border, the hover step
+ * — is mixed from the inherited text color, so setting `color` to the theme's
+ * own text token colors the whole control from a single value.
+ */
+const STATUS_BUTTON_STYLES: Styles = {
+  width: '100%',
+  // `Button` centers its content; these rows are a list, and a list reads down
+  // the left edge.
+  placeContent: 'center start',
+};
+
+const STATUS_POPOVER_STYLES: Styles = {
+  display: 'grid',
+  gap: '2x',
+  width: '32x',
+};
+
+function StatusThemeButton({
+  name,
   tokens,
 }: {
-  scheme: SchemeChoice;
-  onSchemeChange: (value: SchemeChoice) => void;
-  levelMode: LevelMode;
-  onLevelModeChange: (value: LevelMode) => void;
-  contrastMode: ContrastMode;
-  onContrastModeChange: (value: ContrastMode) => void;
-  customLevel: number;
-  onCustomLevelChange: (value: number) => void;
+  name: StatusThemeName;
+  /** The document's own resolved colors — the control column is painted by them. */
+  tokens: Tokens;
+}) {
+  const [palette, setPalette] = usePaletteConfig();
+  const seed = palette.themes[name];
+
+  return (
+    <DialogTrigger hideArrow type="popover" mobileType="tray" placement="right">
+      <Button
+        type="current"
+        color={`#${name}-text`}
+        styles={STATUS_BUTTON_STYLES}
+        icon={
+          <ColorSwatch
+            color={tokens[`#${name}-accent-surface`] as string | undefined}
+          />
+        }
+      >
+        {name} — {Math.round(seed.hue)}°
+      </Button>
+      <Dialog aria-label={`${name} theme`} width="max-content">
+        <Section styles={STATUS_POPOVER_STYLES}>
+          <HueSlider
+            label={`Hue — ${Math.round(seed.hue)}°`}
+            value={Math.round(seed.hue)}
+            onChange={(hue) => setPalette(statusSeed(name, { hue }))}
+          />
+          <Slider
+            label={`Saturation — ${seed.saturation}`}
+            minValue={0}
+            maxValue={100}
+            value={seed.saturation}
+            onChange={(saturation) =>
+              setPalette(statusSeed(name, { saturation }))
+            }
+          />
+        </Section>
+      </Dialog>
+    </DialogTrigger>
+  );
+}
+
+/**
+ * The config as source, so a theme can leave this page.
+ *
+ * The sparse input rather than the resolved config: it is both far shorter and
+ * the honest answer, since an inherited `baseHue` written out as a number would
+ * stop following the accent the moment it was pasted.
+ */
+function ConfigSnippet() {
+  usePaletteVersion();
+
+  const input = getPaletteConfigInput();
+  const body = JSON.stringify(input, null, 2)
+    // JSON quotes every key; these are all plain identifiers, and the snippet is
+    // meant to be pasted into a `.ts` file.
+    .replace(/"([A-Za-z][\w]*)":/g, '$1:');
+
+  return (
+    <CopySnippet
+      nowrap
+      language="javascript"
+      title="Palette config"
+      code={`setPaletteConfig(${body});`}
+    />
+  );
+}
+
+function ThemeBuilderControls({
+  tokens,
+  documentTokens,
+}: {
   /** The variant on screen, so the resolved chips report it rather than the document. */
   tokens: Tokens;
+  /** The document's own variant — what the control column itself is painted in. */
+  documentTokens: Tokens;
 }) {
   const [palette, setPalette] = usePaletteConfig();
 
   return (
     <ControlColumn>
-      <ControlGroup>
-        <GroupLabel>Preview mode</GroupLabel>
-        <Note>
-          Applies to the preview only — the page around it keeps its own.
-        </Note>
-        <RadioGroup
-          label="Color scheme"
-          type="button"
-          value={scheme}
-          onChange={(value) => onSchemeChange(value as SchemeChoice)}
-        >
-          <Radio value="light">Light</Radio>
-          <Radio value="dark">Dark</Radio>
-        </RadioGroup>
-        <RadioGroup
-          label="Contrast level"
-          type="button"
-          value={levelMode}
-          onChange={(value) => onLevelModeChange(value as LevelMode)}
-        >
-          <Radio value="auto">Auto</Radio>
-          <Radio value="custom">Custom</Radio>
-        </RadioGroup>
-        {levelMode === 'custom' ? (
-          <Slider
-            label={`Level — ${customLevel}`}
-            minValue={0}
-            maxValue={100}
-            value={customLevel}
-            onChange={onCustomLevelChange}
-          />
-        ) : (
-          // Only meaningful while the level is automatic: a manual level carries
-          // the contrast preference itself, leaving no tier to choose between.
-          <RadioGroup
-            label="Contrast mode"
-            type="button"
-            value={contrastMode}
-            onChange={(value) => onContrastModeChange(value as ContrastMode)}
-          >
-            <Radio value="normal">Normal</Radio>
-            <Radio value="high">High</Radio>
-          </RadioGroup>
-        )}
-      </ControlGroup>
-
       <ControlGroup>
         <GroupLabel>Presets</GroupLabel>
         <Row>
@@ -1144,14 +1258,14 @@ function ThemeBuilderControls({
       </ControlGroup>
 
       <ControlGroup>
-        <GroupLabel>Status hues</GroupLabel>
+        <GroupLabel>Contrast level</GroupLabel>
+        <ContrastControls />
+      </ControlGroup>
+
+      <ControlGroup>
+        <GroupLabel>Status themes</GroupLabel>
         {STATUS_THEMES.map((name) => (
-          <HueSlider
-            key={name}
-            label={`${name} — ${palette.themes[name].hue}°`}
-            value={Math.round(palette.themes[name].hue)}
-            onChange={(hue) => setPalette(statusSeed(name, { hue }))}
-          />
+          <StatusThemeButton key={name} name={name} tokens={documentTokens} />
         ))}
       </ControlGroup>
 
@@ -1170,6 +1284,11 @@ function ThemeBuilderControls({
             }))
           }
         />
+      </ControlGroup>
+
+      <ControlGroup>
+        <GroupLabel>Take it with you</GroupLabel>
+        <ConfigSnippet />
       </ControlGroup>
 
       <Row>
@@ -1192,6 +1311,37 @@ const BuilderLayout = tasty({
     },
     gap: '4x',
     alignItems: 'start',
+  },
+});
+
+/** The preview and the switches that say which of its four variants to show. */
+const PreviewColumn = tasty({
+  styles: {
+    display: 'grid',
+    gridRows: 'max-content 1fr',
+    gap: '1.5x',
+    // A `1fr` column inside a grid is `min-width: auto` by default, which lets
+    // the preview's own content set the floor and pushes the controls off a
+    // narrow screen.
+    width: '0 100%',
+  },
+});
+
+/**
+ * Outside the preview shell on purpose, and outside the control column too.
+ *
+ * These two switches are not part of the theme — the same palette renders in
+ * all four combinations, and moving between them is how you *check* a theme
+ * rather than how you change one. Sitting them on the theme controls put a
+ * viewing preference where every other knob writes to the config; sitting them
+ * over the thing they govern says what they are without a caption.
+ */
+const PreviewToolbar = tasty({
+  styles: {
+    display: 'flex',
+    flow: 'row wrap',
+    gap: '1x 2x',
+    placeItems: 'center start',
   },
 });
 
@@ -1517,31 +1667,34 @@ function ThemePreview({
 }
 
 function ThemeBuilderPage() {
-  const [scheme, setScheme] = useState<SchemeChoice>('light');
-  const [levelMode, setLevelMode] = useState<LevelMode>('auto');
-  const [contrastMode, setContrastMode] = useState<ContrastMode>('normal');
-  const [customLevel, setCustomLevel] = useState(MANUAL_CONTRAST_START);
+  const documentConditions = useDocumentConditions();
+  // `null` while the switch is still following the document. Deriving the shown
+  // value from "override ?? document" is what lets a two-option control follow
+  // without an `Auto` option standing for the third state.
+  const [schemeOverride, setSchemeOverride] = useState<SchemeChoice | null>(
+    null,
+  );
+  const [contrastOverride, setContrastOverride] = useState<boolean | null>(
+    null,
+  );
   const version = usePaletteVersion();
 
-  const isCustom = levelMode === 'custom';
-  const isHighContrast = contrastMode === 'high';
+  const scheme = schemeOverride ?? documentConditions.scheme;
+  const isHighContrast = contrastOverride ?? documentConditions.highContrast;
 
-  const contrastLabel = isCustom
-    ? `contrast level ${customLevel}`
-    : isHighContrast
-      ? 'high contrast'
-      : 'normal contrast';
-
-  // A manual level carries the contrast preference itself, so there is no separate
-  // high-contrast tier to ask for — `highContrast` is meaningless alongside it.
+  // The level lives in the palette config now, so it needs no mention here: it
+  // is part of the theme being built, and both of these pick it up.
   const tokens = useMemo(
-    () =>
-      renderColorTokens(
-        isCustom
-          ? { scheme, contrastLevel: customLevel }
-          : { scheme, highContrast: isHighContrast, contrastLevel: 'auto' },
-      ),
-    [isCustom, customLevel, scheme, isHighContrast, version],
+    () => renderColorTokens({ scheme, highContrast: isHighContrast }),
+    [scheme, isHighContrast, version],
+  );
+
+  // Resolved separately for the controls, which the *document* paints. Both
+  // calls land on the same memo inside `renderPaletteTokens` — it holds all four
+  // variants of one config — so the second one costs nothing.
+  const documentTokens = useMemo(
+    () => renderColorTokens(documentConditions),
+    [documentConditions, version],
   );
 
   return (
@@ -1551,27 +1704,43 @@ function ThemeBuilderPage() {
         <>
           Every control on the left writes to the live palette config; the panel
           on the right renders it into a single region through a tasty{' '}
-          <Token>tokens</Token> prop. Pick a scheme and a contrast mode and the
-          preview shows exactly that variant — the page around it does not move.
+          <Token>tokens</Token> prop. The two switches over the preview pick
+          which of the theme&rsquo;s four variants to show — they start on
+          whatever this page is already in, and change nothing about the theme
+          itself.
         </>
       }
     >
-      <Note>
-        Showing <strong>{scheme}</strong> · <strong>{contrastLabel}</strong>
-      </Note>
       <BuilderLayout>
-        <ThemeBuilderControls
-          scheme={scheme}
-          onSchemeChange={setScheme}
-          levelMode={levelMode}
-          onLevelModeChange={setLevelMode}
-          contrastMode={contrastMode}
-          onContrastModeChange={setContrastMode}
-          customLevel={customLevel}
-          onCustomLevelChange={setCustomLevel}
-          tokens={tokens}
-        />
-        <ThemePreview tokens={tokens} scheme={scheme} />
+        <ThemeBuilderControls tokens={tokens} documentTokens={documentTokens} />
+        <PreviewColumn>
+          <PreviewToolbar>
+            <RadioGroup
+              aria-label="Color scheme"
+              type="button"
+              value={scheme}
+              onChange={(value) => setSchemeOverride(value as SchemeChoice)}
+            >
+              <Radio value="light">Light</Radio>
+              <Radio value="dark">Dark</Radio>
+            </RadioGroup>
+            <RadioGroup
+              aria-label="Contrast tier"
+              type="button"
+              value={isHighContrast ? 'high' : 'normal'}
+              onChange={(value) => setContrastOverride(value === 'high')}
+            >
+              <Radio value="normal">Normal</Radio>
+              <Radio value="high">High contrast</Radio>
+            </RadioGroup>
+            {isHighContrast && !hasContrastTier() ? (
+              <Note>
+                No separate tier at level 100 — this is the normal variant.
+              </Note>
+            ) : null}
+          </PreviewToolbar>
+          <ThemePreview tokens={tokens} scheme={scheme} />
+        </PreviewColumn>
       </BuilderLayout>
     </StoryPage>
   );
@@ -1644,7 +1813,7 @@ export const ContrastLevel: Story = {
   render: () => (
     <StoryPage
       title="Contrast level"
-      description="Contrast is a two-tier switch by default: normal colors plus a separate high-contrast set. A manual level replaces both with a single 0–100 slider."
+      description="Contrast is a two-tier switch: normal colors plus a separate high-contrast set. The level puts the normal tier on a 0–100 slider without touching the other one, so the two compose — and level 0 is the shipped palette, tier included."
     >
       <Panel>
         <ContrastControls />

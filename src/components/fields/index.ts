@@ -9,6 +9,7 @@ export * from './Checkbox';
 export * from './color';
 export * from './ColorInput';
 export * from './ColorPicker';
+export * from './ColorSwatch';
 export * from './ColorSwatchGroup';
 export * from './DatePicker';
 export * from './RadioGroup';
