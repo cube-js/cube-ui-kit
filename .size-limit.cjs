@@ -20,7 +20,17 @@ module.exports = [
         }),
       );
     },
-    // 495.09 kB in CI at the time of writing, 86 bytes over the previous
+    // 498.78 kB in CI at the time of writing, 1.78 kB over the previous
+    // 497 kB. That is the calendar's month/year navigation: the shared
+    // `CalendarPanel` / `CalendarHeader` / `PeriodGrid` that `Calendar`,
+    // `RangeCalendar` and `PeriodCalendar` now build on (the three of them
+    // previously carried three copies of a header and two of the cell styles,
+    // so the net is smaller than the new code), plus the eleven `calendar.*`
+    // and `datePicker.select*` strings across twelve locales, which are
+    // registered eagerly. Measured against `main` at 496.25 kB with both sides
+    // rebuilt: +2.53 kB. Raised to 501 kB.
+    //
+    // Before this: 495.09 kB in CI, 86 bytes over the previous
     // 495 kB. Two things stack into that: `DataTable`'s column menu, adaptive
     // column colors and column reordering, which left `main` itself ~300 bytes
     // under the old budget, and the ~0.4 kB of disabled-state handling that
@@ -75,7 +85,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '497kB',
+    limit: '501kB',
   },
   {
     name: 'Tree shaking (just a Button)',
