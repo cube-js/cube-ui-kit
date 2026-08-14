@@ -103,6 +103,29 @@ function surfaceTone(config: ResolvedPaletteConfig): number {
 }
 
 /**
+ * Tone of a TINTED `surface` — a status theme's, or a runtime tint's —
+ * as `[light, highContrast]`.
+ *
+ * A tinted surface is a banner sitting *on* the page, so its tone is authored as
+ * an offset from the page's rather than as an absolute. Under
+ * `surfaceMode: 'tinted'` the page itself moves down to 98, which is exactly where
+ * these used to sit: a `note` banner would come out the same tone as the surface
+ * behind it and stop reading as a banner at all. Anchoring both on
+ * {@link surfaceTone} keeps the separation the offset was chosen for.
+ *
+ * The text ramps on these themes are relative (`base: 'surface'`), so they follow
+ * on their own — only the absolute tone needs the anchor.
+ */
+function tintedSurfaceTone(config: ResolvedPaletteConfig): [number, number] {
+  const page = surfaceTone(config);
+
+  return [
+    page - TINTED_SURFACE_TONE_OFFSET,
+    page - TINTED_SURFACE_TONE_OFFSET * 2,
+  ];
+}
+
+/**
  * Rescale the base-zone saturation factors onto the base zone's own seed.
  *
  * Every color's `saturation` is a 0–1 factor of its **theme's** seed, and the
@@ -392,22 +415,17 @@ glaze.configure({
 });
 
 /**
- * Per-colored-theme overrides on top of the default theme:
- *   - `surface` — bumped saturation so the banner bg is visibly tinted.
- *   - `border`  — bumped saturation so OUTLINE-variant borders pick up the
- *     theme hue (used by `#<theme>-border` in `item-themes.ts`). Mirrors the
- *     default-theme `border` shape (`base: 'surface'`, tone window) but
- *     with higher saturation. Glaze's `extend({ colors })` redefines each
- *     listed color from scratch, so we restate the full definition here.
+ * The config-free half of a colored theme's overrides — everything anchored to
+ * the theme's own `surface` with a *relative* tone, so it follows wherever
+ * {@link tintedSurfaceTone} puts that surface.
+ *
+ *   - `border` — bumped saturation so OUTLINE-variant borders pick up the theme
+ *     hue (used by `#<theme>-border` in `item-themes.ts`). Mirrors the
+ *     default-theme `border` shape (`base: 'surface'`, tone window) but with
+ *     higher saturation. Glaze's `extend({ colors })` redefines each listed color
+ *     from scratch, so we restate the full definition here.
  */
-const TINTED_SURFACE_OVERRIDE: ColorMap = {
-  surface: {
-    tone: [
-      100 - TINTED_SURFACE_TONE_OFFSET,
-      100 - TINTED_SURFACE_TONE_OFFSET * 2,
-    ],
-    saturation: TINTED_SURFACE_SATURATION,
-  },
+const TINTED_SURFACE_RAMP: ColorMap = {
   border: {
     base: 'surface',
     tone: ['-10', '-30'],
@@ -434,13 +452,32 @@ const TINTED_SURFACE_OVERRIDE: ColorMap = {
 };
 
 /**
+ * Per-colored-theme overrides on top of the default theme: a `surface` bumped in
+ * saturation so the banner background is visibly tinted, plus
+ * {@link TINTED_SURFACE_RAMP}.
+ *
+ * A function of the config because the surface's tone is — see
+ * {@link tintedSurfaceTone}.
+ */
+function tintedSurfaceOverride(config: ResolvedPaletteConfig): ColorMap {
+  return {
+    surface: {
+      tone: tintedSurfaceTone(config),
+      saturation: TINTED_SURFACE_SATURATION,
+    },
+    ...TINTED_SURFACE_RAMP,
+  };
+}
+
+/**
  * A tinted surface, a banding step, and text guaranteed to read on both.
  *
  * The recipe behind {@link getColorTheme} in `./color-theme.ts`, which builds
  * one-off themes at runtime from an arbitrary hue. It lives here so it shares
  * `TINTED_SURFACE_SATURATION`, the tone offsets and the text ramp with
- * {@link TINTED_SURFACE_OVERRIDE} above rather than forking them — a runtime tint
- * and a built-in theme's `surface` should be the same colour for the same hue.
+ * {@link tintedSurfaceOverride} above rather than forking them — a runtime tint
+ * and a built-in theme's `surface` should be the same colour for the same hue,
+ * which also means both have to follow the page when `surfaceMode` moves it.
  *
  * Three colours, because that is what banded, readable table column needs:
  * `surface` for even rows, `surface-2` one tone step down for odd rows and
@@ -452,44 +489,43 @@ const TINTED_SURFACE_OVERRIDE: ColorMap = {
  * clears it on both bands. The neutral ramp's own `surface-2-text` is shaped the
  * same way for the same reason.
  */
-export const TINT_RECIPE: ColorMap = {
-  surface: {
-    tone: [
-      100 - TINTED_SURFACE_TONE_OFFSET,
-      100 - TINTED_SURFACE_TONE_OFFSET * 2,
-    ],
-    saturation: TINTED_SURFACE_SATURATION,
-  },
-  'surface-2': {
-    base: 'surface',
-    // Mirrors the neutral ramp's step from `surface` to `surface-2`: enough to
-    // read as banding down a column, not enough to read as two colours.
-    tone: ['-2', '-4'],
-    saturation: TINTED_SURFACE_SATURATION,
-  },
-  'surface-2-text': {
-    base: 'surface-2',
-    tone: `${TEXT_TONE - TINTED_SURFACE_TONE_OFFSET - SURFACE_2_TEXT_OFFSET}`,
-    saturation: 0.25,
-    // The whole point: Glaze binary-searches the tone per scheme until the floor
-    // is met, so a caller cannot persist an unreadable pair.
-    contrast: ['AA', 'AAA'],
-  },
-  /**
-   * The softer step, for a tinted column HEADER.
-   *
-   * A neutral header is deliberately muted (`HeadRow` publishes `#dark-03`), so
-   * a tinted one taking the full-strength body text read markedly darker than
-   * the headers either side of it — measured at 16:1 against their 4.9:1. This
-   * keeps the two consistent, and the `AA` floor still applies.
-   */
-  'surface-2-text-soft': {
-    base: 'surface-2',
-    tone: `${TEXT_SOFT_TONE - TINTED_SURFACE_TONE_OFFSET - SURFACE_2_TEXT_OFFSET}`,
-    saturation: 0.25,
-    contrast: ['AA', 'AAA'],
-  },
-};
+export function tintRecipe(config: ResolvedPaletteConfig): ColorMap {
+  return {
+    surface: {
+      tone: tintedSurfaceTone(config),
+      saturation: TINTED_SURFACE_SATURATION,
+    },
+    'surface-2': {
+      base: 'surface',
+      // Mirrors the neutral ramp's step from `surface` to `surface-2`: enough to
+      // read as banding down a column, not enough to read as two colours.
+      tone: ['-2', '-4'],
+      saturation: TINTED_SURFACE_SATURATION,
+    },
+    'surface-2-text': {
+      base: 'surface-2',
+      tone: `${TEXT_TONE - TINTED_SURFACE_TONE_OFFSET - SURFACE_2_TEXT_OFFSET}`,
+      saturation: 0.25,
+      // The whole point: Glaze binary-searches the tone per scheme until the floor
+      // is met, so a caller cannot persist an unreadable pair.
+      contrast: ['AA', 'AAA'],
+    },
+    /**
+     * The softer step, for a tinted column HEADER.
+     *
+     * A neutral header is deliberately muted (`HeadRow` publishes `#dark-03`), so
+     * a tinted one taking the full-strength body text read markedly darker than
+     * the headers either side of it — measured at 16:1 against their 4.9:1. This
+     * keeps the two consistent, and the `AA` floor still applies.
+     */
+    'surface-2-text-soft': {
+      base: 'surface-2',
+      tone: `${TEXT_SOFT_TONE - TINTED_SURFACE_TONE_OFFSET - SURFACE_2_TEXT_OFFSET}`,
+      saturation: 0.25,
+      contrast: ['AA', 'AAA'],
+    },
+  };
+}
 
 // ============================================================================
 // The accent system
@@ -1023,8 +1059,9 @@ function buildPalette(
   // `primary` is the brand theme: it shares both the accent hue and the palette
   // seed saturation with `default`, and differs only in carrying a tinted surface.
   // Each status theme adds its own hue on top.
+  const tintedSurface = tintedSurfaceOverride(config);
   const primaryTheme = defaultTheme.extend({
-    colors: TINTED_SURFACE_OVERRIDE,
+    colors: tintedSurface,
   });
 
   // A status theme takes the ACCENT COLOR'S TONE back out.
@@ -1036,12 +1073,12 @@ function buildPalette(
   // weight. `extend({ colors })` redefines each listed color from scratch, so restating
   // the null arrangement is enough to undo it.
   //
-  // With no accent color this is `TINTED_SURFACE_OVERRIDE` itself, so the shipped
-  // palette is provably untouched.
+  // With no accent color this is the tinted-surface override itself, so the
+  // shipped palette is provably untouched.
   const statusColors: ColorMap =
     accent == null
-      ? TINTED_SURFACE_OVERRIDE
-      : { ...TINTED_SURFACE_OVERRIDE, ...accentColors(null) };
+      ? tintedSurface
+      : { ...tintedSurface, ...accentColors(null) };
 
   const successTheme = defaultTheme.extend({
     hue: themes.success.hue,

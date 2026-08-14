@@ -336,6 +336,43 @@ describe('setPaletteConfig', () => {
       );
   });
 
+  it('carries the status surfaces down with the page', () => {
+    const before = variant(getPaletteTokens(), '');
+
+    setPaletteConfig({ surfaceMode: 'tinted' });
+
+    const after = variant(getPaletteTokens(), '');
+
+    // A tinted `surface` is authored as an offset from the page's, so it has to
+    // move with it. Left absolute it would land on the page's own new tone and a
+    // banner would stop reading as a banner.
+    for (const name of [
+      '#note-surface',
+      '#success-surface',
+      '#danger-surface',
+      '#warning-surface',
+      '#primary-surface',
+    ])
+      expect(toneOf(after[name]), name).toBeCloseTo(
+        toneOf(before[name]) - 2,
+        0,
+      );
+  });
+
+  it('keeps a status surface clear of the page in either mode', () => {
+    const separation = (tokens: Record<string, string>) =>
+      toneOf(tokens['#surface']) - toneOf(tokens['#note-surface']);
+
+    const shipped = separation(variant(getPaletteTokens(), ''));
+
+    setPaletteConfig({ surfaceMode: 'tinted' });
+
+    const tinted = separation(variant(getPaletteTokens(), ''));
+
+    expect(shipped).toBeGreaterThan(1);
+    expect(tinted).toBeCloseTo(shipped, 0);
+  });
+
   it('lets the base seed tint the page once there is room for it', () => {
     setPaletteConfig({ surfaceMode: 'tinted', pastel: false });
 

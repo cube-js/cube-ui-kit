@@ -12,6 +12,8 @@ setPaletteConfig({ surfaceMode: 'tinted', baseSaturation: 25 });
 
 Everything below `surface` is positioned relative to it, so the ladder, the borders and the text ramp follow, and the text's `['AA','AAA']` floors re-solve against the new background rather than drifting. The `code-*` family's mirrored surface tracks it too — it exists to be the page.
 
+The **tinted** surfaces move with it as well. A status theme's `surface`, and a runtime tint's from `getColorTheme()`, is an offset from the page's rather than an absolute tone — and that offset is exactly the two tones `tinted` shifts by, so anchored absolutely they would land on the page's own new tone and a `note` banner would stop reading as a banner. They keep their separation in both schemes, and pick up a little more chroma for being further from the extreme.
+
 `baseSaturation` is the base zone's own saturation seed, opening the same seam `baseHue` already opens: the chrome is the one family whose job is *not* to look like the brand. It is on the same 0–100 scale as `saturation`, and **the shipped chrome is `12`**, so the interesting range is the low end; the base colors keep their proportions to one another until the highest of them saturates around `25`.
 
 - Left unset it is `saturation × 0.12` — `surface`'s own factor — so an untouched palette resolves exactly as before and a muted `saturation` still mutes the chrome.

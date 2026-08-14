@@ -206,6 +206,15 @@ all follow, and the text's `['AA','AAA']` floors re-solve against the new backgr
 rather than drifting. The `code-*` family follows too: its mirrored `surface` exists
 to be the page, so it tracks both the tone and the base seed.
 
+**The tinted surfaces move with it.** A status theme's `surface` — and a runtime
+tint's, from `getColorTheme()` — is authored as an offset from the page's rather
+than as an absolute tone, and that offset is exactly the two tones `tinted` shifts
+by. Anchored absolutely they would land on the page's own new tone and a `note`
+banner would stop reading as a banner at all; anchored to the page they keep the
+separation the offset was chosen for, in both schemes. They also pick up a little
+more chroma there, being further from the extreme — so `tinted` makes a status
+surface easier to see, not harder.
+
 The tint stays subtle by construction. Near white the sRGB gamut has very little
 chroma to give, so `tinted` buys a surface that reads as warm or cool rather than
 one that reads as colored — which is the whole ask. For a genuinely colored panel,
