@@ -66,7 +66,20 @@
     "time": "時刻",
     "startTime": "開始時刻",
     "endTime": "終了時刻",
-    "showEndCalendar": "終了日のカレンダーを表示"
+    "showEndCalendar": "終了日のカレンダーを表示",
+    "selectWeek": "週を選択",
+    "selectMonth": "月を選択",
+    "selectQuarter": "四半期を選択",
+    "selectYear": "年を選択"
+  },
+  "calendar": {
+    "previousYear": "前年",
+    "nextYear": "翌年",
+    "previousYears": "前の年代",
+    "nextYears": "次の年代",
+    "months": "月",
+    "quarters": "四半期",
+    "years": "年"
   },
   "fileInput": {
     "chooseFile": "ファイルを選択",

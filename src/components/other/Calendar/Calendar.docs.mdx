@@ -1,0 +1,205 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as CalendarStories from './Calendar.stories.tsx';
+
+<Meta of={CalendarStories} />
+
+# Calendar
+
+`Calendar` renders a month grid for picking a single date. `RangeCalendar` picks
+a contiguous range, and `PeriodCalendar` picks a whole month, quarter or year.
+All three are the panels behind the date fields — [DatePicker](/docs/forms-datepicker--docs),
+[DateRangePicker](/docs/forms-daterangepicker--docs) and the
+[period pickers](/docs/forms-periodpicker--docs) — and they are built on
+React Aria's `useCalendar` / `useRangeCalendar`.
+
+The header title is the navigation: the month and the year are buttons that open
+a month list and a year list, so reaching a date two years out takes two clicks
+instead of twenty-four.
+
+## When to Use
+
+- Embedding a calendar directly in a page or panel rather than behind a field
+- Building a custom date input that needs the same grid and states
+- Otherwise, prefer the date fields — they add the text input, label, validation
+  and popover for you
+
+## Component
+
+<Story of={CalendarStories.Default} />
+
+---
+
+### Properties
+
+#### Calendar
+
+- **`value`** `DateValue` — The selected date (controlled)
+- **`defaultValue`** `DateValue` — The initially selected date (uncontrolled)
+- **`minValue`** `DateValue` — The earliest selectable date
+- **`maxValue`** `DateValue` — The latest selectable date
+- **`isDateUnavailable`** `(date: DateValue) => boolean` — Marks individual dates as unavailable
+- **`pickerMode`** `'day' | 'week'` (default: `day`) — `week` shows a week-number column and highlights the whole week of the selected day
+- **`hasMonthYearNavigation`** `boolean` (default: `true`) — Whether the header month and year are buttons that open the month and year lists
+- **`selectedRange`** `{ start: DateValue; end: DateValue }` — Highlights a range that lives outside the calendar's own state (used by `DateRangeSeparatedPicker`)
+- **`isDisabled`** `boolean` — Disables the whole calendar
+- **`isReadOnly`** `boolean` — Allows navigation but not selection
+- **`onChange`** `(value: DateValue) => void` — Fired when a date is selected
+
+#### RangeCalendar
+
+Accepts React Aria's `AriaRangeCalendarProps` (a `{ start, end }` value) plus
+**`hasMonthYearNavigation`**.
+
+#### PeriodCalendar
+
+- **`picker`** `'month' | 'quarter' | 'year'` — Which period the panel selects
+- **`value`** `DateValue | null` — The selected period, represented by its start date
+- **`minValue`** / **`maxValue`** `DateValue | null` — Range limits; a period is disabled only when *all* of it falls outside
+- **`isDateUnavailable`** `(date: DateValue) => boolean` — Called with the period's start date
+- **`isDisabled`** `boolean`
+- **`autoFocus`** `boolean` — Moves focus into the grid on mount
+- **`onChange`** `(date: CalendarDate) => void` — Fired with the period's start date
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Modifiers
+
+Day cells and period cells share one set of modifiers:
+
+| Modifier      | Type      | Description                                          |
+| ------------- | --------- | ---------------------------------------------------- |
+| `selected`    | `boolean` | The cell is part of the current selection            |
+| `current`     | `boolean` | The cell contains today                              |
+| `outside`     | `boolean` | The cell belongs to an adjacent month or decade      |
+| `rangeHover`  | `boolean` | The whole row is highlighted (week mode)             |
+| `pressed`     | `boolean` | The cell is being pressed                            |
+| `focused`     | `boolean` | The cell holds keyboard focus                        |
+| `disabled`    | `boolean` | The cell is outside `minValue` / `maxValue`          |
+| `unavailable` | `boolean` | `isDateUnavailable` returned `true` for the cell     |
+
+## Examples
+
+### Basic Usage
+
+```jsx
+import { parseDate } from '@internationalized/date';
+
+<Calendar
+  defaultValue={parseDate('2026-08-12')}
+  onChange={(date) => console.log(date.toString())}
+/>;
+```
+
+### Week Selection
+
+<Story of={CalendarStories.WeekMode} />
+
+```jsx
+<Calendar pickerMode="week" defaultValue={parseDate('2026-08-12')} />
+```
+
+### Limited Range
+
+Months and years that fall entirely outside `minValue` / `maxValue` are disabled
+in the month and year lists too, and the navigation arrows stop at the edge.
+
+<Story of={CalendarStories.LimitedRange} />
+
+```jsx
+<Calendar
+  defaultValue={parseDate('2026-08-12')}
+  minValue={parseDate('2026-08-05')}
+  maxValue={parseDate('2026-09-20')}
+/>
+```
+
+### Without Month/Year Navigation
+
+<Story of={CalendarStories.WithoutMonthYearNavigation} />
+
+```jsx
+<Calendar hasMonthYearNavigation={false} defaultValue={parseDate('2026-08-12')} />
+```
+
+### Range
+
+<Story of={CalendarStories.Range} />
+
+```jsx
+<RangeCalendar
+  defaultValue={{
+    start: parseDate('2026-08-10'),
+    end: parseDate('2026-08-19'),
+  }}
+/>
+```
+
+### Period Panels
+
+<Story of={CalendarStories.Periods} />
+
+```jsx
+<PeriodCalendar
+  picker="month"
+  value={new CalendarDate(2026, 8, 1)}
+  onChange={(date) => console.log(date.toString())}
+/>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+Day grid (provided by React Aria):
+
+- `Arrow keys` — Move between days
+- `PageUp` / `PageDown` — Previous / next month
+- `Home` / `End` — First / last day of the week
+- `Enter` / `Space` — Select the focused day
+
+Month and year lists:
+
+- `Arrow keys` — Move between periods, rolling over into the neighbouring year or decade
+- `PageUp` / `PageDown` — Previous / next year (month list) or decade (year list)
+- `Home` / `End` — First / last selectable period on the page
+- `Enter` / `Space` — Choose the period
+- `Escape` — Step back to the previous panel without closing a surrounding popover
+
+### Screen Reader Support
+
+- Each panel is a `grid`, labelled `Months` / `Quarters` / `Years`
+- The visible month and year are the calendar's `heading`, and their buttons are
+  the controls that open the lists
+- Cells expose `aria-selected`; out-of-range periods are `disabled`
+
+## Best Practices
+
+1. **Do**: bound the calendar when the domain is bounded — the month and year
+   lists disable everything out of range, which is far clearer than letting the
+   user land somewhere unselectable.
+
+   ```jsx
+   <Calendar minValue={today(getLocalTimeZone())} />
+   ```
+
+2. **Don't**: reach for `PeriodCalendar` to pick a day. Its value is always the
+   *start* of a period, never an exact date.
+
+3. **Accessibility**: always give a standalone calendar an `aria-label` — inside
+   a field the label comes from the field.
+
+## Suggested Improvements
+
+- Range calendars paint every day in the range the same way; distinct start/end
+  caps would read better for long ranges.
+- Multi-month (`visibleDuration`) layouts are not implemented; the header falls
+  back to a plain title when a range spans more than one month.
+
+## Related Components
+
+- [DatePicker](/docs/forms-datepicker--docs) — a date field with this calendar in a popover
+- [DateRangePicker](/docs/forms-daterangepicker--docs) — a range field built on `RangeCalendar`
+- [PeriodPicker](/docs/forms-periodpicker--docs) — week / month / quarter / year fields

@@ -1,7 +1,6 @@
 import { createCalendar } from '@internationalized/date';
 import { createDOMRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
-import { tasty } from '@tenphi/tasty';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import {
   AriaRangeCalendarProps,
@@ -11,32 +10,18 @@ import {
 } from 'react-aria';
 import { useRangeCalendarState } from 'react-stately';
 
-import { LeftIcon, RightIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
-import { Button } from '../../actions';
-import { Title } from '../../content/Title';
-import { Space } from '../../layout/Space';
 
-import { CalendarGrid } from './CalendarGrid';
+import { CalendarPanel } from './CalendarPanel';
+import { CalendarCoreProps, RangeCalendarValueProps } from './types';
 
-const CalendarElement = tasty({
-  styles: {
-    padding: '1x',
-    gap: '1x',
-  },
-});
-
-const CalendarHeaderElement = tasty({
-  styles: {
-    display: 'flex',
-    placeContent: 'center space-between',
-    placeItems: 'center',
-    gap: '1.5x',
-  },
-});
+export interface CubeRangeCalendarProps<T extends DateValue = DateValue>
+  extends AriaRangeCalendarProps<T>,
+    CalendarCoreProps,
+    RangeCalendarValueProps {}
 
 function RangeCalendar<T extends DateValue>(
-  props: AriaRangeCalendarProps<T>,
+  props: CubeRangeCalendarProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
   props = useProviderProps(props);
@@ -60,28 +45,15 @@ function RangeCalendar<T extends DateValue>(
     useRangeCalendar(props, state, domRef);
 
   return (
-    <CalendarElement ref={domRef} {...calendarProps}>
-      <CalendarHeaderElement>
-        <Title level={6} preset="h6">
-          {title}
-        </Title>
-        <Space gap=".5x">
-          <Button
-            data-popover-keep
-            size="small"
-            {...prevButtonProps}
-            icon={<LeftIcon />}
-          />
-          <Button
-            data-popover-keep
-            size="small"
-            {...nextButtonProps}
-            icon={<RightIcon />}
-          />
-        </Space>
-      </CalendarHeaderElement>
-      <CalendarGrid state={state} />
-    </CalendarElement>
+    <CalendarPanel
+      elementRef={domRef}
+      state={state}
+      title={title}
+      calendarProps={calendarProps}
+      prevButtonProps={prevButtonProps}
+      nextButtonProps={nextButtonProps}
+      hasMonthYearNavigation={props.hasMonthYearNavigation}
+    />
   );
 }
 
@@ -90,5 +62,3 @@ const _RangeCalendar = forwardRef(RangeCalendar);
 _RangeCalendar.displayName = 'RangeCalendar';
 
 export { _RangeCalendar as RangeCalendar };
-
-export type { AriaRangeCalendarProps as CubeRangeCalendarProps };

@@ -14,6 +14,21 @@ describe('<DatePicker />', () => {
   const isCalendarOpen = (baseElement: HTMLElement) =>
     !!baseElement.querySelector('[data-qa="Dialog"]');
 
+  /**
+   * The calendar heading is made of two buttons that open the month and year
+   * pickers, so assert on those instead of the heading's raw text.
+   */
+  const expectVisibleMonth = (
+    dialog: HTMLElement,
+    month: string,
+    year: string,
+  ) => {
+    const heading = within(dialog).getByRole('heading', { level: 6 });
+
+    expect(within(heading).getByRole('button', { name: month })).toBeTruthy();
+    expect(within(heading).getByRole('button', { name: year })).toBeTruthy();
+  };
+
   describe('calendar popover month navigation', () => {
     it('clicking next-month inside a nested popover keeps the parent popover open', async () => {
       const { baseElement } = renderWithRoot(
@@ -85,9 +100,7 @@ describe('<DatePicker />', () => {
         '[data-qa="Dialog"]',
       ) as HTMLElement;
 
-      expect(
-        within(dialog).getByRole('heading', { level: 6 }),
-      ).toHaveTextContent('June 2025');
+      expectVisibleMonth(dialog, 'June', '2025');
 
       // Click the "Next" month navigation button
       await user.click(within(dialog).getByRole('button', { name: /next/i }));
@@ -96,9 +109,7 @@ describe('<DatePicker />', () => {
       await new Promise((resolve) => setTimeout(resolve, 16));
 
       expect(isCalendarOpen(baseElement)).toBe(true);
-      expect(
-        within(dialog).getByRole('heading', { level: 6 }),
-      ).toHaveTextContent('July 2025');
+      expectVisibleMonth(dialog, 'July', '2025');
     });
 
     it('clicking prev-month keeps the popover open', async () => {
@@ -126,9 +137,7 @@ describe('<DatePicker />', () => {
       await new Promise((resolve) => setTimeout(resolve, 16));
 
       expect(isCalendarOpen(baseElement)).toBe(true);
-      expect(
-        within(dialog).getByRole('heading', { level: 6 }),
-      ).toHaveTextContent('May 2025');
+      expectVisibleMonth(dialog, 'May', '2025');
     });
 
     it('selecting a date closes the popover', async () => {
@@ -157,6 +166,65 @@ describe('<DatePicker />', () => {
       await waitFor(() => expect(isCalendarOpen(baseElement)).toBe(false), {
         timeout: 1500,
       });
+    });
+
+    it('Escape closes the popover from the day panel', async () => {
+      const { baseElement } = renderWithRoot(
+        <DatePicker
+          label="Date"
+          defaultValue={new CalendarDate(2025, 6, 15)}
+        />,
+      );
+
+      await user.click(
+        baseElement.querySelector('[data-popover-trigger]') as HTMLElement,
+      );
+
+      await waitFor(() => expect(isCalendarOpen(baseElement)).toBe(true));
+
+      await user.keyboard('{Escape}');
+
+      await waitFor(() => expect(isCalendarOpen(baseElement)).toBe(false));
+    });
+
+    it('Escape steps back from the month panel instead of closing', async () => {
+      const { baseElement } = renderWithRoot(
+        <DatePicker
+          label="Date"
+          defaultValue={new CalendarDate(2025, 6, 15)}
+        />,
+      );
+
+      await user.click(
+        baseElement.querySelector('[data-popover-trigger]') as HTMLElement,
+      );
+
+      await waitFor(() => expect(isCalendarOpen(baseElement)).toBe(true));
+
+      const dialog = baseElement.querySelector(
+        '[data-qa="Dialog"]',
+      ) as HTMLElement;
+
+      await user.click(within(dialog).getByRole('button', { name: 'June' }));
+      await waitFor(() =>
+        expect(
+          within(dialog).getByRole('grid', { name: 'Months' }),
+        ).toBeTruthy(),
+      );
+
+      await user.keyboard('{Escape}');
+
+      await waitFor(() =>
+        expect(
+          within(dialog).queryByRole('grid', { name: 'Months' }),
+        ).toBeNull(),
+      );
+      expect(isCalendarOpen(baseElement)).toBe(true);
+
+      // A second Escape leaves the calendar entirely.
+      await user.keyboard('{Escape}');
+
+      await waitFor(() => expect(isCalendarOpen(baseElement)).toBe(false));
     });
   });
 });
