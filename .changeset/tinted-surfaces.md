@@ -16,7 +16,7 @@ The **tinted** surfaces move with it as well. A status theme's `surface`, and a 
 
 `baseSaturation` is the base zone's own saturation seed, opening the same seam `baseHue` already opens: the chrome is the one family whose job is *not* to look like the brand. It is on the same 0–100 scale as `saturation`, and **the shipped chrome is `12`**, so the interesting range is the low end; the base colors keep their proportions to one another until the highest of them saturates around `25`.
 
-- Left unset it is `saturation × 0.12` — `surface`'s own factor — so an untouched palette resolves exactly as before and a muted `saturation` still mutes the chrome.
+- Left unset it is `0.12` — `surface`'s own factor — of whatever the accent zone carries, so an untouched palette resolves exactly as before and a muted `saturation` still mutes the chrome.
 - Unlike `saturation`, writing it does **not** turn `pastel` off: how much hue the chrome carries says nothing about which chroma space the palette is in.
 
 Both are shipped defaults-off: `surfaceMode` defaults to `'default'`, and the resolved palette is unchanged token for token.

@@ -70,9 +70,10 @@ const CODE_STRING_HUE = 280.3;
  *
  * Shared with the code theme, which mirrors `surface` to solve its contrast floors
  * against the real page background — the two must not drift apart. Shared with the
- * config too, which needs it to default `baseSaturation` to the share of the seed
- * this factor represents; it lives there because the config cannot import from
- * here, and is re-exported under this name because that is what the recipe calls it.
+ * config too, which needs it to work out the share of the accent zone's chroma the
+ * chrome takes when no `baseColor` names one outright; it lives there because the
+ * config cannot import from here, and is re-exported under this name because that is
+ * what the recipe calls it.
  */
 const SURFACE_SATURATION = SURFACE_SATURATION_SHARE;
 
@@ -355,9 +356,18 @@ function buildCodeTheme(
   let mirrorFactor = config.baseSaturation / codeSaturation;
 
   if (mirrorFactor > 1) {
-    // Only reachable with a code saturation far below the palette's. Glaze would
-    // clamp this silently and then solve every contrast floor against the wrong
-    // background, so say so.
+    // Glaze would clamp this silently and then solve every contrast floor against a
+    // background the page does not have, so say so.
+    //
+    // Closer to reach than it used to be: a `baseColor` can push `baseSaturation` to
+    // `MAX_BASE_SATURATION`, so any code saturation under 50 now trips it where it
+    // previously took a `baseSaturation` above 80. `Slate` sits at 55 — a five-point
+    // margin — so treat that number as load-bearing when tuning the preset.
+    //
+    // Deliberately NOT deduped once-per-process. It fires per token-cache miss, so a
+    // drag over a misconfigured pair is noisy — but the flag would also have to
+    // survive `resetPaletteConfig`, which is what a caller does to get back to a
+    // config that warns again legitimately. The narrow noise is the better trade.
     // eslint-disable-next-line no-console
     console.warn(
       `[cube-ui-kit] themes.code.saturation (${codeSaturation}) is too low for ` +

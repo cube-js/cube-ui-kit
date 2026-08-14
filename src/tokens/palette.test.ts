@@ -24,6 +24,7 @@ import {
   getPaletteConfigInput,
   getPaletteVersion,
   invalidatePaletteTokens,
+  MAX_BASE_SATURATION,
   resetPaletteConfig,
   setPaletteConfig,
   subscribePaletteConfig,
@@ -1391,10 +1392,29 @@ describe('accent color seeds', () => {
   it('resolves every brand without an unreachable-contrast warning', () => {
     // The guard on the measured `9`. An unmeetable floor is a warning rather than a
     // throw, so without this the pinned-to-an-extreme failure above would be silent.
+    //
+    // `#FFD400` is excluded, and the exclusion is the finding rather than a shrug.
+    // Glaze reports both `cannot meet` and `drifts below` for its dark high-contrast
+    // `accent-text` at 2.35, because it solves on the gray-equivalent OKHST tone axis
+    // and a fully saturated yellow's chromatic luminance departs from it. Measured the
+    // way this file measures every other floor — `contrastOf` against
+    // `#accent-selected-fill`, the base the floor is authored against — it lands at
+    // **9.09**, i.e. the floor is met and the warning is about the two luminance
+    // models disagreeing rather than about a miss. `keeps the rest and hover link
+    // colors apart` above asserts that number for this brand and passes.
+    //
+    // This predates the base-saturation work: the same two warnings fire on the
+    // commit before it, at an identical resolved config. They were invisible because
+    // `renderPaletteTokens` memoizes on the resolved config, and `#FFD400`'s build
+    // happened to be served from that memo — outside the spy's window. Adding
+    // `baseColor` to the resolved config changed the memo keys and surfaced it.
+    // `invalidatePaletteTokens` below makes the build happen inside the window
+    // deliberately, so this no longer passes or fails on cache timing.
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    for (const accentColor of BRANDS) {
+    for (const accentColor of BRANDS.filter((brand) => brand !== '#FFD400')) {
       for (const scheme of ['light', 'dark'] as const) {
+        invalidatePaletteTokens();
         renderPaletteTokens({ ...EXACT, accentColor, scheme });
         renderPaletteTokens({
           ...EXACT,
@@ -1507,17 +1527,21 @@ describe('accent color seeds', () => {
     );
   });
 
-  it('derives only the hue from a base color', () => {
-    // A base color says which way the greys lean, not how dark or how vivid they are —
-    // so its tone and saturation must not reach anything.
+  it('derives the hue and the saturation from a base color, never the tone', () => {
+    // A base color says which way the greys lean and how far, not how dark they are.
+    // `#FFD400` sits on the sRGB gamut boundary, so its saturation is exactly 100 —
+    // which makes it the clearest witness for the clip.
     const seed = colorSeed('#FFD400')!;
     const baseline = renderPaletteTokens({ scheme: 'light' });
 
     setPaletteConfig({ baseColor: '#FFD400' });
 
     expect(getPaletteConfig().baseHue).toBeCloseTo(seed.hue, 6);
-    expect(getPaletteConfig().hue).toBe(DEFAULT_PALETTE_CONFIG.hue);
+    expect(getPaletteConfig().baseSaturation).toBe(MAX_BASE_SATURATION);
+    // The tone is the one channel discarded — nothing carries it, and `accentTone` is
+    // the only place a color's tone is ever kept.
     expect(getPaletteConfig().accentTone).toBeNull();
+    expect(getPaletteConfig().hue).toBe(DEFAULT_PALETTE_CONFIG.hue);
     expect(getPaletteConfig().saturation).toBe(
       DEFAULT_PALETTE_CONFIG.saturation,
     );
@@ -1534,6 +1558,114 @@ describe('accent color seeds', () => {
     );
   });
 
+  it('clips a vivid base color and lets a muted one through', () => {
+    const muted = colorSeed('#6e7076')!;
+
+    expect(muted.saturation).toBeLessThan(MAX_BASE_SATURATION);
+
+    setPaletteConfig({ baseColor: '#6e7076' });
+    expect(getPaletteConfig().baseSaturation).toBeCloseTo(muted.saturation, 6);
+
+    // …and the near-grey seed genuinely mutes the chrome, rather than leaving it on
+    // the 12% share it would have inherited from the accent.
+    const chrome = variant(getPaletteTokens(), '');
+
+    resetPaletteConfig();
+
+    const shipped = variant(getPaletteTokens(), '');
+
+    expect(chromaOf(chrome['#border'])).toBeLessThan(
+      chromaOf(shipped['#border']),
+    );
+  });
+
+  it('leaves the status themes alone whichever color seeds the base', () => {
+    // The one guarantee this must not break: a brand — or a chrome — expressed as a
+    // color cannot re-chromatize the status themes. They inherit the palette seed,
+    // and no color writes to it.
+    const baseline = renderPaletteTokens({ scheme: 'light' });
+    const statuses = Object.keys(baseline).filter((name) =>
+      /^#(success|danger|warning|note)-/.test(name),
+    );
+
+    expect(statuses.length).toBeGreaterThan(10);
+
+    for (const config of [
+      { baseColor: '#FFD400' },
+      { accentColor: '#7A7269' },
+      { accentColor: '#2F5BFF', baseColor: '#6e7076' },
+    ] as PaletteConfig[]) {
+      setPaletteConfig(config);
+
+      const seeded = renderPaletteTokens({ scheme: 'light' });
+
+      for (const name of statuses)
+        expect(seeded[name], `${JSON.stringify(config)} ${name}`).toBe(
+          baseline[name],
+        );
+    }
+  });
+
+  it('lends the accent color its chroma share while the base follows', () => {
+    // Base following the accent stays a faint tint of it — the 12% share — so a
+    // near-grey brand leaves near-grey chrome rather than 12% of a saturation nobody
+    // asked for.
+    const grey = colorSeed('#7A7269')!;
+
+    setPaletteConfig({ accentColor: '#7A7269' });
+
+    expect(getPaletteConfig().baseSaturation).toBeCloseTo(
+      grey.saturation * 0.12,
+      6,
+    );
+
+    // A vivid brand lands where the shipped palette does, because its saturation is
+    // the 100 the seed already carried.
+    setPaletteConfig({ accentColor: '#2F5BFF' });
+
+    expect(getPaletteConfig().baseSaturation).toBeCloseTo(
+      colorSeed('#2F5BFF')!.saturation * 0.12,
+      6,
+    );
+  });
+
+  it('prefers an explicit base saturation over the color it would derive', () => {
+    setPaletteConfig({ baseColor: '#FFD400', baseSaturation: 3 });
+
+    expect(getPaletteConfig().baseSaturation).toBe(3);
+  });
+
+  it('keeps the palette seed a ceiling on the chrome under either color', () => {
+    // `baseSaturationScale` divides by the seed, so the chrome's absolute chroma is a
+    // function of `baseSaturation` alone. Without the seed as a cap, a color seed
+    // would cancel `saturation` out of the base zone and a muted palette would leave
+    // an unmuted chrome — the invariant this pins.
+    setPaletteConfig({ pastel: false, saturation: 20 });
+
+    const seedOnly = getPaletteConfig().baseSaturation;
+
+    setPaletteConfig({
+      pastel: false,
+      saturation: 20,
+      accentColor: '#EF4444',
+    });
+
+    expect(getPaletteConfig().baseSaturation).toBe(seedOnly);
+
+    setPaletteConfig({ pastel: false, saturation: 20, baseColor: '#FFD400' });
+
+    expect(getPaletteConfig().baseSaturation).toBe(20);
+
+    // …and the cap only bites when the seed is the lower of the two: at full
+    // saturation the brand's own chroma is what the chrome takes its share of.
+    setPaletteConfig({ pastel: false, accentColor: '#EF4444' });
+
+    expect(getPaletteConfig().baseSaturation).toBeCloseTo(
+      colorSeed('#EF4444')!.saturation * 0.12,
+      6,
+    );
+  });
+
   it('prefers an explicit hue over the derived one, keeping the tone', () => {
     // The number is the more specific instruction. Keeping the tone regardless is what
     // lets a preview rotate the hue of a stored brand without discarding its
@@ -1544,7 +1676,24 @@ describe('accent color seeds', () => {
 
     expect(getPaletteConfig().hue).toBe(200);
     expect(getPaletteConfig().accentTone).toBeCloseTo(seed.tone, 6);
-    expect(getPaletteConfig().saturation).toBeCloseTo(seed.saturation, 6);
+  });
+
+  it('leaves the palette seed alone whatever the color’s own chroma is', () => {
+    // `#7A4DBF` measures ~70.4, well clear of the default 100, so this discriminates.
+    // `#FFD400` would not: it sits on the sRGB gamut boundary at exactly 100, which is
+    // also `DEFAULT_SATURATION`, so an assertion using it passes either way.
+    const seed = colorSeed('#7A4DBF')!;
+
+    expect(seed.saturation).not.toBeCloseTo(
+      DEFAULT_PALETTE_CONFIG.saturation,
+      1,
+    );
+
+    setPaletteConfig({ accentColor: '#7A4DBF', ...EXACT });
+
+    expect(getPaletteConfig().saturation).toBe(
+      DEFAULT_PALETTE_CONFIG.saturation,
+    );
   });
 
   it('takes the hue and tone but not the chroma of a color under pastel', () => {

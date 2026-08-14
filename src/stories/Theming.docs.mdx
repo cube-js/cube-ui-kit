@@ -34,11 +34,11 @@ value so this stays true.
 | Option                       | Scope                                                                                                                                                                 | Default                             |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | `accentColor`                | **Accent** zone seeded by a color. Derives the hue, the saturation (with `pastel` off) and the accent **tone**, so the brand fill renders as the color you passed.    | unset                               |
-| `baseColor`                  | **Base** zone seeded by a color. **Hue only** — its tone and saturation are discarded.                                                                                | unset                               |
+| `baseColor`                  | **Base** zone seeded by a color. Hue **and saturation** (clipped to 50); its tone is discarded.                                                                       | unset                               |
 | `hue`                        | **Accent** hue in degrees — the brand. Drives the `accent-*` family, `primary` / `purple` / `special`, and the brand-tinted `focus`, loading faces and disabled chip. | `280.3`                             |
 | `baseHue`                    | **Base** hue in degrees — the neutral chrome: `surface` and its ladder, the `surface-text*` ramp, `border`, `placeholder`.                                            | inherits `hue`                      |
 | `saturation`                 | Seed saturation (0–100) for the `default` theme, and the fallback for every theme that sets none. Setting it **turns `pastel` off**, which is the path it belongs to. | `100`                               |
-| `baseSaturation`             | Seed saturation (0–100) of the **base** zone — the same family `baseHue` governs. On the same scale as `saturation`; the shipped chrome is `12`.                      | `saturation × 0.12`                 |
+| `baseSaturation`             | Seed saturation (0–100) of the **base** zone — the same family `baseHue` governs. On the same scale as `saturation`; the shipped chrome is `12`.                      | `baseColor`'s, clipped to 50, else `(accentColor ?? saturation) × 0.12` |
 | `surfaceMode`                | Global. `'tinted'` moves the neutral surface ramp two tones off the end of the tone scale, which is what gives `baseSaturation` room to reach the page surface.        | `'default'`                         |
 | `themes.<status>.hue`        | Hue for `success` / `danger` / `warning` / `note`.                                                                                                                    | `156.9` / `23.1` / `84.3` / `302.3` |
 | `themes.<status>.saturation` | Saturation for that status theme.                                                                                                                                     | inherits `saturation`               |
@@ -111,10 +111,24 @@ The two are not symmetric, and the difference is the point:
 - `accentColor` contributes hue, saturation **and tone**. The tone is what makes the
   brand fill actually _be_ your color. Without it the fill is authored as a fixed tone
   step off white, so every accent hue lands at roughly the same lightness — a yellow
-  brand comes out olive.
-- `baseColor` contributes **hue only**. Its tone and saturation are discarded, because
-  the chrome's lightness ladder and its 0.10–0.20 saturation factors are the design. A
-  base color says which way the greys lean, not how dark or how vivid they are.
+  brand comes out olive. The chroma reaches the accent family through Glaze's `from`
+  rather than through the `saturation` seed, which is what stops a brand from
+  re-chromatising the chrome and the status themes.
+- `baseColor` contributes **hue and saturation**; its **tone** is discarded, because the
+  chrome's own lightness ladder is the design. A base color says which way the greys lean
+  and how far, not how dark they are.
+
+The base color's saturation is **clipped to 50**. Naming a base color says "the chrome
+_is_ this color", so it lands near it rather than at the 12% share `baseSaturation`
+otherwise inherits — but a fully saturated chrome stops being chrome, and the base colors
+begin to converge above 25 anyway (see [Tinted surfaces](#tinted-surfaces)). The tuner's
+manual slider shares the same ceiling, so the two routes agree on what the top of the
+range means.
+
+```ts
+setPaletteConfig({ baseColor: '#6e7076' }); // near-grey in, near-grey chrome out
+setPaletteConfig({ baseColor: '#FFD400' }); // saturation 100 in, clipped to 50
+```
 
 The numeric fields still win where both are set, and the tone keeps coming from the
 color either way — so a preview can rotate the hue without losing the brand's lightness:
@@ -175,12 +189,17 @@ choice between them:
 setPaletteConfig({ pastel: false, saturation: 90, baseSaturation: 3 });
 ```
 
-It defaults to `saturation × 0.12`, which is `surface`'s own factor, so leaving it
-alone reproduces the shipped palette exactly and a muted `saturation` still mutes
-the chrome along with everything else. **The shipped value is `12`** — a faint tint
-is what a neutral surface _is_ — so the interesting range is the low end. The base
-colors keep their proportions to one another until the highest of them (`0.475`,
-`surface-inverse`) hits the top of the scale, around `25`; past that they converge.
+Unset, it takes `0.12` — `surface`'s own factor — of whatever the accent zone carries:
+the `saturation` seed, or an `accentColor`'s own chroma when one is set. So leaving it
+alone reproduces the shipped palette exactly, a muted `saturation` still mutes the
+chrome along with everything else, and a near-grey brand hex leaves near-grey chrome
+rather than 12% of a saturation nobody asked for. A `baseColor` overrides all of that
+with its own, clipped to 50.
+
+**The shipped value is `12`** — a faint tint is what a neutral surface _is_ — so the
+interesting range is the low end. The base colors keep their proportions to one another
+until the highest of them (`0.475`, `surface-inverse`) hits the top of the scale, around
+`25`; past that they converge.
 
 Note the asymmetry with `saturation`: writing `baseSaturation` does **not** turn
 `pastel` off. How much hue the chrome carries says nothing about which chroma space
@@ -414,21 +433,44 @@ Every caveat on the panel is an **InfoBadge** beside the control it qualifies ra
 than a paragraph under it. A tuner is a dense column of controls, and prose between
 them pushes the next knob off the screen to explain something you need once.
 
-Each of the two zones has a **Seeded by** switch — Hue or Color, plus _Follow accent_
-for the base. The hue slider stays on screen in color mode, disabled, showing the hue the
-color derived; switching back therefore hands the slider a value it was already
-displaying. One rule covers every inert control on the panel: **a control is disabled
-exactly when the config field it writes is not the field in charge.** That is also why
-the saturation slider greys out under Pastel rather than disappearing — it keeps showing
-the pinned `100`, which _is_ the contract, and your own number comes back when you turn
-Pastel off.
+### Two systems, one switch
+
+The panel offers the palette's two chroma models as two states, rather than as knobs
+that argue:
+
+|                | Pastel                | Tunable, seeded by Hue | Tunable, seeded by Color             |
+| -------------- | --------------------- | ---------------------- | ----------------------------------- |
+| **Accent**     | Hue                   | Hue + Saturation       | Color (hue + chroma + tone)         |
+| **Base**       | Hue, or _Follow accent_ | Hue + Saturation, or _Follow accent_ | Color, or _Follow accent_ |
+| **Status**     | Hue                   | Hue + Saturation       | Hue + Saturation                    |
+| **Syntax**     | Saturation            | Saturation             | Saturation                          |
+
+Two rules carry it:
+
+- **`pastel` gates saturation.** It is one flat, hue-independent ceiling, which is what
+  makes the palette even across hues and what leaves nothing for a saturation scale to
+  do. Every saturation control is hidden while it is on — except the syntax one, which
+  `pastel` never reaches — and **Seeded by** is disabled, because a flat ceiling caps an
+  arbitrary color well short of itself.
+- **A derived control is not shown.** Whatever a seed already supplies, its slider goes
+  away rather than sitting on screen disabled. A disabled slider under a color seed is a
+  read-out dressed as a control, and it cost two rows to repeat what the color field
+  above it already said.
+
+**Seeded by is one switch for both zones**, in Global. It used to be per-zone, which made
+four combinations out of a decision nobody makes twice — a brand arrives as hexes or as
+numbers, not one of each. The base zone keeps its own **Follow accent | Own**, because
+that is orthogonal: it is about whether the chrome has a seed at all, not about how a
+seed is spelled.
+
+Every transition hands the incoming control the value the outgoing one was displaying, so
+switching changes who is in charge without repainting on the way. Turning `pastel` on
+while a color is in charge performs the same conversion — it cannot honour a color, so it
+pins the numbers the color was deriving and drops the hex.
 
 In color mode the panel shows where the color actually landed — **Accent Fill** and
 **Accent Text**, the two tokens the seed's tone reaches. The requested color is not
-repeated beside them: the field above holds it, with a swatch of its own. Under Pastel
-the pair visibly diverges from what you typed, which is the chroma cap made legible
-rather than mysterious — type a saturated hex with Pastel off, then turn Pastel on and
-watch the chips soften.
+repeated beside them: the field above holds it, with a swatch of its own.
 
 The **preset** buttons show which one is active, and stop showing it the moment you
 touch a control. The setter replaces rather than merges, so a preset is either the

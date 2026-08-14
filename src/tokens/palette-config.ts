@@ -35,11 +35,27 @@ export const DEFAULT_SATURATION = 100;
  *
  * It lives here rather than in the recipe because the dependency runs one way:
  * `./palette.ts` imports the config, not the reverse — and the config needs this
- * number to default `baseSaturation`. It is the anchor of the base zone's own
- * 0–100 scale, so `baseSaturation` defaults to
- * `saturation × SURFACE_SATURATION_SHARE` and the shipped palette lands on `12`.
+ * number to default `baseSaturation`. It is the anchor of the base zone's own 0–100
+ * scale: the share the *accent zone* lends the chrome when no `baseColor` names one
+ * outright, so an untouched palette lands on `12`.
  */
 export const SURFACE_SATURATION_SHARE = 0.12;
+
+/**
+ * Ceiling on a {@link PaletteConfig.baseSaturation} derived from a
+ * {@link PaletteConfig.baseColor}.
+ *
+ * A named base color lands the chrome near itself rather than at the 12% share the
+ * accent lends it, which is the whole reason to name one — but a fully saturated
+ * chrome stops being chrome. `50` is well past where the base colors begin to
+ * converge (`surface-inverse` tops out around `25`), so the clip costs nothing that
+ * was still moving and stops a vivid brand hex from being read as an instruction to
+ * paint the page with it.
+ *
+ * The manual slider in the tuner shares the number, so the two agree on what the top
+ * of the range means.
+ */
+export const MAX_BASE_SATURATION = 50;
 
 /**
  * Seed saturation for the `code-*` syntax family, deliberately **not** the same
@@ -126,13 +142,21 @@ export interface PaletteConfig {
    */
   accentColor?: string;
   /**
-   * Base zone seeded by a **color** rather than a hue.
+   * Base zone seeded by a **color** rather than a hue and a saturation.
    *
-   * Only its **hue** is read; its tone and saturation are discarded, because the
-   * chrome's lightness ladder and its 0.10–0.20 saturation factors are the design —
-   * a base color says which way the greys lean, not how dark or how vivid they are.
+   * Its **hue and saturation** are read; its **tone is discarded**, because the
+   * chrome's lightness ladder is the design — a base color says which way the greys
+   * lean and how far, not how dark they are.
    *
-   * {@link PaletteConfig.baseHue} wins when set.
+   * The saturation is clipped to {@link MAX_BASE_SATURATION}. Naming a base color
+   * says "the chrome is this color", so it lands near it rather than at the 12%
+   * share {@link PaletteConfig.baseSaturation} inherits from the accent — but a
+   * fully saturated chrome is no longer chrome, so there is a ceiling on how far
+   * "near" goes.
+   *
+   * {@link PaletteConfig.baseHue} and {@link PaletteConfig.baseSaturation} each win
+   * over it when set — the number is the more specific instruction, the same
+   * precedence {@link PaletteConfig.accentColor} sits under.
    */
   baseColor?: string;
   /**
@@ -288,6 +312,18 @@ export interface ResolvedPaletteConfig {
    */
   accentColor: string | null;
   /**
+   * The base color as given, or `null`.
+   *
+   * Nothing renders from it — the hue and the saturation it derives are what reach the
+   * palette. It is resolved anyway so {@link isSameConfig} can compare it, which is the
+   * only way a write that changes the *string* without changing either derived number
+   * still counts as a change. `MAX_BASE_SATURATION` makes that a live case rather than
+   * a theoretical one: every color above the clip on a given hue derives the same pair,
+   * so without this a color picker's whole upper range — and its entire tone axis, which
+   * a base color discards — would drop writes silently and leave the field stale.
+   */
+  baseColor: string | null;
+  /**
    * The tone of {@link ResolvedPaletteConfig.accentColor}, or `null` alongside it.
    *
    * `from` carries the tone itself, so this exists for the one thing that needs the
@@ -348,8 +384,9 @@ function resolveConfig(input: PaletteConfig): ResolvedPaletteConfig {
   // without discarding its tone.
   const hue = input.hue ?? accent?.hue ?? DEFAULT_HUE;
 
-  // `base.tone` and `base.saturation` are never read — that is the whole enforcement
-  // of "a base color contributes its hue and nothing else".
+  // `base.tone` is never read — that is the whole enforcement of "a base color says
+  // which way the greys lean and how far, not how dark they are". Its saturation
+  // *is* read, below.
   const baseHue = input.baseHue ?? base?.hue ?? hue;
 
   // Only a CONTRADICTION warns — `pastel: true` written next to a saturation it will
@@ -371,8 +408,13 @@ function resolveConfig(input: PaletteConfig): ResolvedPaletteConfig {
 
   // Deliberately NOT `?? accent?.saturation`: the accent family carries the color's
   // own chroma through Glaze's `from`, so the palette-level seed no longer has to be
-  // raised to reach it. Leaving it alone is what keeps a saturated brand from
-  // re-chromatizing the neutral chrome and every status theme as a side effect.
+  // raised to reach it. Leaving it alone is what keeps a saturated brand out of every
+  // status theme, which all inherit this number.
+  //
+  // The neutral chrome is the one exception, and it is deliberate — `baseSaturation`
+  // below takes its share of the accent's own chroma so a near-grey brand leaves
+  // near-grey chrome. That is scoped to the base zone and capped by this seed; it does
+  // not pass through here.
   const saturation = pastel
     ? DEFAULT_SATURATION
     : input.saturation ?? DEFAULT_SATURATION;
@@ -381,15 +423,41 @@ function resolveConfig(input: PaletteConfig): ResolvedPaletteConfig {
     hue,
     baseHue,
     saturation,
-    // Follows the palette seed at the recipe's own share of it, so an untouched
-    // base zone resolves to exactly what it always did — and a muted palette still
-    // mutes the chrome. Unlike the palette seed, writing this one does *not* turn
-    // pastel off: how much hue the chrome carries says nothing about which chroma
-    // space the palette is in.
+    // Three arms, and the middle two are on deliberately different scales.
+    //
+    // A named `baseColor` means "the chrome IS this color", so it lands near it,
+    // clipped at `MAX_BASE_SATURATION`. Base merely FOLLOWING the accent means "a
+    // faint tint of the brand", so it stays the 12% share it has always been — now
+    // of the accent's own chroma, whether that arrived as a number or as an
+    // `accentColor`. Reading `accent?.saturation` here is the one place a brand color
+    // reaches the base zone, and it has to: without it, picking a near-grey brand
+    // would leave the chrome carrying 12% of a saturation nobody asked for.
+    //
+    // BOTH arms are also capped by `saturation`, and that is load-bearing rather than
+    // defensive. `baseSaturationScale` divides by the seed, so the chrome's absolute
+    // chroma is a function of this field ALONE — without the cap, an accent color
+    // would cancel the seed out of the base zone entirely and a muted
+    // `saturation: 20` would leave the chrome 4.4x more chromatic than asked for.
+    // The seed is a ceiling everywhere else in the palette; it is one here too.
+    //
+    // Nothing here reaches the status themes, which is what keeps the guarantee that
+    // a brand color cannot re-chromatize them.
+    //
+    // Unlike the palette seed, writing this does *not* turn pastel off: how much hue
+    // the chrome carries says nothing about which chroma space the palette is in.
+    //
+    // The accent arm sits INSIDE the parentheses on purpose: hoisting it to
+    // `accent?.saturation ?? saturation * SHARE` would apply the share to only one of
+    // the two and move the shipped default.
     baseSaturation:
-      input.baseSaturation ?? saturation * SURFACE_SATURATION_SHARE,
+      input.baseSaturation ??
+      (base
+        ? Math.min(base.saturation, MAX_BASE_SATURATION, saturation)
+        : Math.min(accent?.saturation ?? saturation, saturation) *
+          SURFACE_SATURATION_SHARE),
     surfaceMode: input.surfaceMode ?? 'default',
     accentColor: accent ? input.accentColor! : null,
+    baseColor: base ? input.baseColor! : null,
     accentTone: accent?.tone ?? null,
     pastel,
     contrastLevel: input.contrastLevel ?? 'auto',
@@ -481,10 +549,15 @@ function isSameConfig(a: ResolvedPaletteConfig, b: ResolvedPaletteConfig) {
     a.saturation === b.saturation &&
     a.baseSaturation === b.baseSaturation &&
     a.surfaceMode === b.surfaceMode &&
-    // The color itself, not just what it derived: `hue` no longer carries its chroma
-    // (the accent family gets that through Glaze's `from`), so two different brands
-    // can agree on every numeric seed and still render differently.
+    // The colors themselves, not just what they derived: `hue` no longer carries the
+    // accent's chroma (the family gets that through Glaze's `from`), so two brands can
+    // agree on every numeric seed and still render differently. And a base color's
+    // derived pair collapses — everything above `MAX_BASE_SATURATION` on one hue lands
+    // on the same two numbers, and its tone is discarded outright — so comparing the
+    // string is the only thing that lets a color picker's upper range and tone axis
+    // register at all.
     a.accentColor === b.accentColor &&
+    a.baseColor === b.baseColor &&
     a.pastel === b.pastel &&
     a.contrastLevel === b.contrastLevel &&
     a.themes.code.saturation === b.themes.code.saturation &&

@@ -94,6 +94,7 @@ export {
   getPaletteConfig,
   getPaletteConfigInput,
   invalidatePaletteTokens,
+  MAX_BASE_SATURATION,
   resetPaletteConfig,
   resolvePaletteConfig,
   setPaletteConfig,
