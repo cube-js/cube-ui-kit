@@ -352,6 +352,7 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
     <Section>
       <RadioGroup
         label="Accent seeded by"
+        labelPosition="split"
         type="button"
         value={mode}
         onChange={(next) =>
@@ -419,6 +420,7 @@ function BaseSourceControls() {
     <Section>
       <RadioGroup
         label="Base seeded by"
+        labelPosition="split"
         type="button"
         value={mode}
         onChange={(next) =>
@@ -471,6 +473,7 @@ function BaseSourceControls() {
       />
       <RadioGroup
         label="Surface mode"
+        labelPosition="split"
         type="button"
         value={palette.surfaceMode}
         tooltip="Tinted moves the whole surface ramp two tones off the end of the tone scale. Not a lightness change — chroma needs distance from the extreme to exist at all, so at the default a light page is white whatever the base saturation asks for. Two tones is the cheapest room in which the base hue becomes visible."
@@ -512,13 +515,15 @@ function SaturationControls() {
 
   return (
     <Section>
-      {/* Above the slider it governs — see the rule on `AccentSourceControls`. */}
+      {/* Above the slider it governs — see the rule on `AccentSourceControls`.
+          `split` rather than the switch's own inline label, so it sits on the same
+          label-left / control-right grid as the seeding switchers do. */}
       <Switch
+        label="Pastel"
+        labelPosition="split"
         isSelected={palette.pastel}
         onChange={(pastel) => setPalette((config) => ({ ...config, pastel }))}
-      >
-        Pastel
-      </Switch>
+      />
       <Slider
         label={palette.pastel ? 'Saturation (pinned by pastel)' : 'Saturation'}
         tooltip={
@@ -938,7 +943,9 @@ const ControlColumn = tasty({
     display: 'grid',
     gap: '3x',
     alignContent: 'start',
-    padding: '3x',
+    // `2x` rather than `3x`: the split rows spend their width on a label and a
+    // control facing each other, so the padding is the cheapest place to find some.
+    padding: '2x',
     radius: '1cr',
     fill: '#surface-2',
     border: '1bw #border',
@@ -1290,6 +1297,15 @@ function ThemeBuilderControls({
         </Row>
       </ControlGroup>
 
+      {/* Ahead of the zones, because it governs both of them — and because
+          `pastel` decides whether the number below it is even live. Reading the
+          panel top to bottom now goes global, then accent, then base, which is
+          the order the config resolves in. */}
+      <ControlGroup>
+        <GroupLabel>Global saturation</GroupLabel>
+        <SaturationControls />
+      </ControlGroup>
+
       <ControlGroup>
         <GroupLabel>Accent</GroupLabel>
         {/* The same three clusters the Playground uses, so the two stories cannot
@@ -1302,11 +1318,6 @@ function ThemeBuilderControls({
       <ControlGroup>
         <GroupLabel>Base</GroupLabel>
         <BaseSourceControls />
-      </ControlGroup>
-
-      <ControlGroup>
-        <GroupLabel>Saturation</GroupLabel>
-        <SaturationControls />
       </ControlGroup>
 
       <ControlGroup>
@@ -1355,7 +1366,10 @@ const BuilderLayout = tasty({
     display: 'grid',
     gridColumns: {
       '': '1fr',
-      '@media(width >= 1100px)': 'minmax(280px, 340px) 1fr',
+      // Wider than it was: a `split` row needs room for a label and a button group
+      // side by side, and the longest pair — "Base seeded by" against three
+      // options — is what sets the floor.
+      '@media(width >= 1100px)': 'minmax(340px, 400px) 1fr',
     },
     gap: '4x',
     alignItems: 'start',
