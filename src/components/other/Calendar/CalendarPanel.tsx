@@ -133,6 +133,9 @@ export function CalendarPanel(props: CubeCalendarPanelProps) {
       e.preventDefault();
       e.stopPropagation();
       setView('day');
+      // The grid the user was in is about to unmount. Claim focus for the day
+      // cell, or it falls out of the popover and the next `Escape` is lost.
+      state.setFocused(true);
     }
   };
 

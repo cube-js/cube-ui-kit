@@ -1,3 +1,4 @@
+import { useObjectRef } from '@react-aria/utils';
 import { BaseProps, tasty } from '@tenphi/tasty';
 import { forwardRef, HTMLAttributes } from 'react';
 import { OverlayProps, useModal, useOverlay } from 'react-aria';
@@ -7,6 +8,8 @@ import { mergeProps } from '../../../utils/react';
 
 import { Overlay } from './Overlay';
 import { TransitionState, WithCloseBehavior } from './types';
+
+import type { Props } from '../../../props';
 
 const PopoverElement = tasty({
   role: 'presentation',
@@ -62,30 +65,36 @@ function Popover(props: CubePopoverProps, ref) {
     children,
     placement,
     arrowProps,
-    onClose,
-    shouldCloseOnBlur,
-    isKeyboardDismissDisabled,
     isNonModal,
     isDismissable = true,
-    shouldCloseOnInteractOutside,
     ...otherProps
   } = props;
+
+  let domRef = useObjectRef(ref);
+
+  // `useOverlay` has to run here rather than inside `PopoverWrapper`, on the
+  // *logical* open state — `Overlay` hands its child an `isOpen` that only
+  // turns true once the enter animation has settled. Registering the overlay
+  // that late leaves it out of React Aria's visible-overlay stack for the first
+  // frames, and `Escape` silently does nothing until the popover finishes
+  // animating in. `Modal` and `Tray` call it from the same place for the same
+  // reason.
+  let { overlayProps } = useOverlay(
+    { ...props, isDismissable: isDismissable && props.isOpen },
+    domRef,
+  );
 
   return (
     <Overlay {...otherProps}>
       <PopoverWrapper
-        ref={ref}
+        ref={domRef}
         qa={qa}
         style={style}
         styles={styles}
         placement={placement}
         arrowProps={arrowProps}
-        shouldCloseOnBlur={shouldCloseOnBlur}
-        isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         isNonModal={isNonModal}
-        isDismissable={isDismissable}
-        shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
-        onClose={onClose}
+        overlayProps={overlayProps}
       >
         {children}
       </PopoverWrapper>
@@ -93,8 +102,14 @@ function Popover(props: CubePopoverProps, ref) {
   );
 }
 
+interface PopoverWrapperProps
+  extends Omit<CubePopoverProps, 'isDismissable'>,
+    TransitionState {
+  overlayProps?: Props;
+}
+
 const PopoverWrapper = forwardRef(function PopoverWrapper(
-  props: CubePopoverProps,
+  props: PopoverWrapperProps,
   ref,
 ) {
   let {
@@ -102,22 +117,16 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
     children,
     placement = 'bottom',
     arrowProps,
+    // `isOpen` here is the transition's settled state, not the trigger's — it
+    // drives the enter/exit styles only.
     isOpen,
     style,
     styles,
-    shouldCloseOnBlur,
-    isKeyboardDismissDisabled,
     isNonModal,
-    isDismissable,
     transitionState,
-    shouldCloseOnInteractOutside,
+    overlayProps,
     ...otherProps
   } = props;
-  let { overlayProps } = useOverlay(
-    { ...props, isDismissable: isDismissable && isOpen },
-    // @ts-ignore
-    ref,
-  );
   let { modalProps } = useModal({
     isDisabled: isNonModal,
   });

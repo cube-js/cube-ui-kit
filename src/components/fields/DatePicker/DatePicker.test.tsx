@@ -167,5 +167,64 @@ describe('<DatePicker />', () => {
         timeout: 1500,
       });
     });
+
+    it('Escape closes the popover from the day panel', async () => {
+      const { baseElement } = renderWithRoot(
+        <DatePicker
+          label="Date"
+          defaultValue={new CalendarDate(2025, 6, 15)}
+        />,
+      );
+
+      await user.click(
+        baseElement.querySelector('[data-popover-trigger]') as HTMLElement,
+      );
+
+      await waitFor(() => expect(isCalendarOpen(baseElement)).toBe(true));
+
+      await user.keyboard('{Escape}');
+
+      await waitFor(() => expect(isCalendarOpen(baseElement)).toBe(false));
+    });
+
+    it('Escape steps back from the month panel instead of closing', async () => {
+      const { baseElement } = renderWithRoot(
+        <DatePicker
+          label="Date"
+          defaultValue={new CalendarDate(2025, 6, 15)}
+        />,
+      );
+
+      await user.click(
+        baseElement.querySelector('[data-popover-trigger]') as HTMLElement,
+      );
+
+      await waitFor(() => expect(isCalendarOpen(baseElement)).toBe(true));
+
+      const dialog = baseElement.querySelector(
+        '[data-qa="Dialog"]',
+      ) as HTMLElement;
+
+      await user.click(within(dialog).getByRole('button', { name: 'June' }));
+      await waitFor(() =>
+        expect(
+          within(dialog).getByRole('grid', { name: 'Months' }),
+        ).toBeTruthy(),
+      );
+
+      await user.keyboard('{Escape}');
+
+      await waitFor(() =>
+        expect(
+          within(dialog).queryByRole('grid', { name: 'Months' }),
+        ).toBeNull(),
+      );
+      expect(isCalendarOpen(baseElement)).toBe(true);
+
+      // A second Escape leaves the calendar entirely.
+      await user.keyboard('{Escape}');
+
+      await waitFor(() => expect(isCalendarOpen(baseElement)).toBe(false));
+    });
   });
 });

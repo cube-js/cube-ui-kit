@@ -22,3 +22,9 @@ Calendar: pick a month or a year from a list instead of paging with arrows.
   truncates overlong custom `formatValue` output. Its placeholders and the new
   calendar labels are translated in all twelve locales.
 - `Calendar` passed its ref through without attaching it to the DOM; it now does.
+- `Popover` (every `DialogTrigger type="popover"`, so also `Select`-style
+  fields, menus and the date pickers) only became keyboard-dismissable once its
+  enter animation had settled, because it registered with React Aria's
+  visible-overlay stack on the transition's `isOpen` rather than the trigger's.
+  `Escape` pressed in the first frames after opening did nothing; it now closes
+  the popover immediately.
