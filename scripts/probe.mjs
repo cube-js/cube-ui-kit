@@ -422,6 +422,18 @@ function main() {
     process.exit(1);
   }
 
+  // A compile failure on the browser tier is Vite's to report, not the harness's:
+  // all the harness sees is Chromium's "failed to fetch dynamically imported
+  // module", while the parse error with its file and line goes to the dev
+  // server's log on stderr — captured here and, before this, dropped, since the
+  // run wrote a result and exited 0. The harness recovers the error itself where
+  // it can and asks for the log only where it cannot: a break in a module the
+  // snippet *imports* is named nowhere else.
+  const harnessLog =
+    result.ok === false && result.needsServerLog && run.status === 0
+      ? run.stderr?.trim()
+      : '';
+
   // The result file is the answer, but a non-zero exit means the harness ALSO
   // failed *after* writing it — a failed assertion, an unhandled rejection.
   // Staying silent about that is how a harness bug hides behind output that
@@ -436,7 +448,7 @@ function main() {
     );
   }
 
-  print(result, options);
+  print(result, options, harnessLog);
   process.exit(result.ok === false ? 1 : 0);
 }
 
@@ -486,9 +498,19 @@ function readJsdomVersion() {
   }
 }
 
-function print(result, options) {
+function print(result, options, harnessLog = '') {
+  // Diagnostics go to stderr on every mode, `--json` included: the log is what
+  // tells you which file to open, and redirecting stdout to a file is exactly
+  // when you would otherwise lose it.
+  const printHarnessLog = () => {
+    if (harnessLog) {
+      console.error(`\n--- dev server log ---\n${harnessLog}`);
+    }
+  };
+
   if (options.json) {
     console.log(JSON.stringify(result, null, 2));
+    printHarnessLog();
 
     return;
   }
@@ -498,6 +520,7 @@ function print(result, options) {
       `Snippet failed to ${result.kind === 'compile' ? 'compile' : 'render'}:\n`,
     );
     console.error(result.message);
+    printHarnessLog();
 
     return;
   }
