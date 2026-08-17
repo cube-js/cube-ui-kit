@@ -26,7 +26,7 @@
  */
 import { getCSSText, renderStyles } from '@tenphi/tasty';
 import { render } from '@testing-library/react';
-import { type ReactElement } from 'react';
+import { type ComponentType } from 'react';
 import { expect, it } from 'vitest';
 
 import { Root } from '../../components/Root';
@@ -110,17 +110,17 @@ it('probe', async () => {
 
   // `render` mode. Import the snippet only now, so a compile error in it
   // surfaces as a rejection we can shape rather than a module-load crash.
-  let snippet: ReactElement;
+  let Snippet: ComponentType;
 
   try {
     // Non-literal specifier on purpose. The snippet does not exist in a fresh
     // checkout, so a literal `import('../../../.probe/snippet')` would fail a
     // typecheck even though it resolves fine at runtime.
     const module = (await import(/* @vite-ignore */ input.snippetPath!)) as {
-      default: () => ReactElement;
+      default: ComponentType;
     };
 
-    snippet = module.default();
+    Snippet = module.default;
   } catch (error) {
     writeResult(input, {
       mode: 'render',
@@ -142,11 +142,36 @@ it('probe', async () => {
   // Pass 2: rerender the SAME root rather than mounting a second one. A remount
   // would tear `<Root>` down and back up, and any rule the injector GC'd in
   // between would reappear in pass 2 looking like the snippet's own.
-  view.rerender(
-    <Root>
-      <div data-probe-scope="">{snippet}</div>
-    </Root>,
-  );
+  //
+  // `<Snippet />` — React renders the default export, rather than this harness
+  // calling it and mounting what comes back. Calling it runs the body outside
+  // React's render phase, so any hook in it throws "invalid hook call" —
+  // including in the `export default function Snippet() { … }` form the CLI
+  // documents. `useState` in a snippet is not exotic: it is what probing a
+  // controlled input or a disclosure takes.
+  //
+  // A throw from here is a RENDER failure, not a compile one, so it is caught
+  // separately. Reporting it as `compile` sent people looking for a syntax error
+  // in code that had parsed perfectly well.
+  try {
+    view.rerender(
+      <Root>
+        <div data-probe-scope="">
+          <Snippet />
+        </div>
+      </Root>,
+    );
+  } catch (error) {
+    writeResult(input, {
+      mode: 'render',
+      ok: false,
+      kind: 'render',
+      message: error instanceof Error ? error.message : String(error),
+      warnings,
+    });
+
+    return;
+  }
 
   const full = captureCss(view.baseElement);
 

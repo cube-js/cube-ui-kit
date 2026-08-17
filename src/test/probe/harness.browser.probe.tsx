@@ -18,7 +18,7 @@
  * re-runs, where a probe run ends when you read it. It does not apply here.
  */
 import { render } from '@testing-library/react';
-import { type ReactElement } from 'react';
+import { type ComponentType } from 'react';
 import { expect, it } from 'vitest';
 import { commands, page } from 'vitest/browser';
 
@@ -78,15 +78,15 @@ it('probe:browser', async () => {
   const view = render(<Root>{null}</Root>);
   const baseline = captureCss(view.baseElement);
 
-  let snippet: ReactElement;
+  let Snippet: ComponentType;
 
   try {
     // `snippetUrl`, not `snippetPath` — see the field's note in `io.ts`.
     const module = (await import(/* @vite-ignore */ input.snippetUrl!)) as {
-      default: () => ReactElement;
+      default: ComponentType;
     };
 
-    snippet = module.default();
+    Snippet = module.default;
   } catch (error) {
     await commands.writeFile(
       input.outPath,
@@ -110,11 +110,32 @@ it('probe:browser', async () => {
   // not render" — on the very tier you reach for to measure an overlay.
   const before = new Set(view.baseElement.querySelectorAll('*'));
 
-  view.rerender(
-    <Root>
-      <div data-probe-scope="">{snippet}</div>
-    </Root>,
-  );
+  // `<Snippet />`, not `module.default()` — see the jsdom harness for why:
+  // calling it runs hooks outside React's render phase. A throw here is a RENDER
+  // failure rather than a compile one, and is reported as such.
+  try {
+    view.rerender(
+      <Root>
+        <div data-probe-scope="">
+          <Snippet />
+        </div>
+      </Root>,
+    );
+  } catch (error) {
+    await commands.writeFile(
+      input.outPath,
+      JSON.stringify({
+        runId: input.runId,
+        mode: 'render',
+        tier: 'browser',
+        ok: false,
+        kind: 'render',
+        message: error instanceof Error ? error.message : String(error),
+      }),
+    );
+
+    return;
+  }
 
   const full = captureCss(view.baseElement);
   const scope = view.baseElement.querySelector('[data-probe-scope]');

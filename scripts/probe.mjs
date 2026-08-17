@@ -20,7 +20,14 @@
  * geometry, pointer behaviour or a screenshot, use `pnpm probe:browser`.
  */
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -72,7 +79,37 @@ Example
 
 function parseArgs(argv) {
   const [mode, ...rest] = argv;
-  const options = { mode, positional: [] };
+  const options = { mode, positional: [], errors: [] };
+
+  /**
+   * Consume the value after a flag that requires one.
+   *
+   * A missing value used to land as `undefined`, which every downstream check
+   * reads as "flag absent" — so `probe:browser render --computed` produced a
+   * plain render and looked like an answer to a computed-values question that was
+   * never asked. Worse, `--computed --scheme dark` took `--scheme` itself as the
+   * selector, silently dropping the scheme too. Both are the failure this tool
+   * refuses to commit elsewhere, so they are errors rather than defaults.
+   */
+  const takeValue = (flag, index) => {
+    const value = rest[index];
+
+    if (value === undefined) {
+      options.errors.push(`${flag} needs a value.`);
+
+      return undefined;
+    }
+
+    if (value.startsWith('--')) {
+      options.errors.push(
+        `${flag} needs a value, but the next argument is the flag "${value}".`,
+      );
+
+      return undefined;
+    }
+
+    return value;
+  };
 
   for (let i = 0; i < rest.length; i += 1) {
     const arg = rest[i];
@@ -86,15 +123,15 @@ function parseArgs(argv) {
     } else if (arg === '--hc') {
       options.highContrast = true;
     } else if (arg === '--scheme') {
-      options.scheme = rest[(i += 1)];
+      options.scheme = takeValue(arg, (i += 1));
     } else if (arg === '--filter') {
-      options.filter = rest[(i += 1)];
+      options.filter = takeValue(arg, (i += 1));
     } else if (arg === '--screenshot') {
       options.screenshot = true;
     } else if (arg === '--rect') {
-      options.rect = rest[(i += 1)];
+      options.rect = takeValue(arg, (i += 1));
     } else if (arg === '--computed') {
-      options.computed = rest[(i += 1)];
+      options.computed = takeValue(arg, (i += 1));
       // Any bare words that follow are property names.
       while (rest[i + 1] && !rest[i + 1].startsWith('--')) {
         (options.computedProps ??= []).push(rest[(i += 1)]);
@@ -174,6 +211,11 @@ function main() {
 
   if (!['styles', 'tokens', 'render', 'globals'].includes(options.mode)) {
     console.error(`Unknown mode "${options.mode}".\n\n${USAGE}`);
+    process.exit(1);
+  }
+
+  if (options.errors.length) {
+    console.error(`probe: ${options.errors.join('\n       ')}`);
     process.exit(1);
   }
 
@@ -261,11 +303,18 @@ function main() {
   // Fresh id per invocation: the absence of THIS run's result file is the
   // unambiguous signal that the harness itself failed, and a leftover file
   // from an earlier run must never be mistaken for an answer.
+  //
+  // EVERY path is per-run, not just the result. The docs tell you to probe as
+  // freely as you like, which invites two runs at once — and a shared
+  // `input.json` / `snippet.tsx` plus a `rmSync` of the whole tree meant the
+  // second run deleted the first one's input mid-flight, or answered it with the
+  // wrong snippet. A private directory removes the interaction entirely.
   const runId = `${Date.now()}-${process.pid}`;
-  const outPath = resolve(SCRATCH_DIR, `out/${runId}.json`);
+  const runDir = resolve(SCRATCH_DIR, runId);
+  const outPath = resolve(runDir, 'out.json');
 
-  rmSync(SCRATCH_DIR, { recursive: true, force: true });
-  mkdirSync(SCRATCH_DIR, { recursive: true });
+  mkdirSync(runDir, { recursive: true });
+  pruneStaleRuns();
 
   const input = {
     runId,
@@ -306,13 +355,13 @@ function main() {
       process.exit(1);
     }
 
-    input.snippetPath = resolve(SCRATCH_DIR, 'snippet.tsx');
+    input.snippetPath = resolve(runDir, 'snippet.tsx');
     // The same file addressed two ways, because the two tiers import it from
     // different sides of the dev server. Node takes the filesystem path; the
     // browser harness runs inside Chromium and can only fetch what Vite serves,
     // so it needs a URL relative to the Vite root — an absolute path there is
     // requested as `http://localhost:PORT/Users/…` and 404s.
-    input.snippetUrl = '/.probe/snippet.tsx';
+    input.snippetUrl = `/.probe/${runId}/snippet.tsx`;
 
     try {
       writeFileSync(input.snippetPath, buildSnippetModule(source));
@@ -334,7 +383,7 @@ function main() {
     input.screenshot = Boolean(options.screenshot);
   }
 
-  const inputPath = resolve(SCRATCH_DIR, 'input.json');
+  const inputPath = resolve(runDir, 'input.json');
 
   writeFileSync(inputPath, JSON.stringify(input, null, 2));
 
@@ -389,6 +438,39 @@ function main() {
 
   print(result, options);
   process.exit(result.ok === false ? 1 : 0);
+}
+
+/**
+ * Drop run directories older than an hour.
+ *
+ * Replaces the old `rmSync(SCRATCH_DIR)`, which kept the scratch dir tidy by
+ * deleting whatever a concurrent run was in the middle of using. Age is the
+ * safe discriminator: a probe run takes seconds, so anything an hour old is
+ * finished, while a live sibling is always far too young to be swept up.
+ *
+ * Best-effort by design — a scratch dir that fails to prune is not a reason to
+ * refuse to answer the question.
+ */
+function pruneStaleRuns() {
+  const cutoff = Date.now() - 60 * 60 * 1000;
+
+  try {
+    for (const entry of readdirSync(SCRATCH_DIR, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+
+      const path = resolve(SCRATCH_DIR, entry.name);
+
+      try {
+        if (statSync(path).mtimeMs < cutoff) {
+          rmSync(path, { recursive: true, force: true });
+        }
+      } catch {
+        // Vanished under us — another run pruning the same dir, which is fine.
+      }
+    }
+  } catch {
+    // No scratch dir yet, or it is unreadable. Nothing to prune either way.
+  }
 }
 
 function readJsdomVersion() {
