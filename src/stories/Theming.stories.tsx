@@ -148,9 +148,14 @@ const SwatchLabel = tasty({
 // `c2` is the kit's settings-heading preset: uppercase, tracked, 12px. It reads as
 // a section divider rather than as another bold line of prose, which is what a
 // column of labelled controls needs.
+//
+// `-text-soft-2` rather than `-text-soft`: this is a divider, not something you
+// read, and every field label under it is full-strength `surface-text`. At the
+// same tier as the labels the headings competed with them for the same column;
+// one step further back is what makes the grouping legible at a glance.
 const GroupLabel = tasty({
   as: 'strong',
-  styles: { preset: 'c2', color: '#surface-text-soft' },
+  styles: { preset: 'c2', color: '#surface-text-soft-2' },
 });
 
 const Token = tasty({
@@ -1878,6 +1883,9 @@ function ThemePreview({
 
             <Panel2>
               <Row styles={{ placeItems: 'center', gap: '1x' }}>
+                {/* Stays on `-text-soft`, unlike the sidebar's headings: the
+                    `-soft-2` tier only exists on the base surface, and this one
+                    has to re-resolve against the panel's `surface-2`. */}
                 <GroupLabel styles={{ color: '#surface-2-text-soft' }}>
                   MEMBERS
                 </GroupLabel>
