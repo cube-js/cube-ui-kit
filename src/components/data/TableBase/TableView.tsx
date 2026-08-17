@@ -824,7 +824,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
             aria-colindex={column.ariaColIndex}
             style={pinStyle(column)}
           >
-            <Placeholder size="2x" />
+            <Placeholder />
           </td>
         ))}
       </tr>

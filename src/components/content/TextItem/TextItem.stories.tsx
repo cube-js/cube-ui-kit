@@ -199,6 +199,7 @@ export const TooltipPlacements: Story = {
   render: () => (
     <Space flow="column" gap="2x" padding="8x">
       <Block width="200px">
+        {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- TooltipPlacements story: the placement is what it demonstrates */}
         <TextItem tooltipPlacement="top">
           Tooltip on top - hover to see long text tooltip
         </TextItem>

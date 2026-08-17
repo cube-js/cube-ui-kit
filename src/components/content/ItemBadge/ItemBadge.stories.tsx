@@ -35,7 +35,7 @@ export const WithLabel: Story = {
 
 export const Types: Story = {
   render: () => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
       <ItemBadge icon={<KeyIcon />} type="primary" tooltip="Primary" />
       <ItemBadge icon={<KeyIcon />} type="outline" tooltip="Outline" />
       <ItemBadge
@@ -57,7 +57,7 @@ export const Types: Story = {
 
 export const Themes: Story = {
   render: () => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
       <ItemBadge icon={<KeyIcon />} theme="default" tooltip="Default" />
       <ItemBadge icon={<KeyIcon />} theme="danger" tooltip="Danger" />
       <ItemBadge icon={<KeyIcon />} theme="success" tooltip="Success" />

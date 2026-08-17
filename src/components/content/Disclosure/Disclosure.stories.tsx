@@ -229,7 +229,7 @@ export const Controlled: Story = {
 
     return (
       <Space flow="column" gap="2x">
-        <Space gap="1x">
+        <Space>
           <Button onPress={() => setExpanded(true)}>Open</Button>
           <Button onPress={() => setExpanded(false)}>Close</Button>
           <Button onPress={() => setExpanded((prev) => !prev)}>Toggle</Button>
@@ -475,7 +475,7 @@ export const ContentPreservation: Story = {
           >
             {({ isExpanded: isExpandedNow, toggle }) => (
               <>
-                <Button type="outline" onPress={toggle}>
+                <Button onPress={toggle}>
                   {isExpandedNow ? 'Hide Content' : 'Show Content'}
                 </Button>
                 <Disclosure.Content>

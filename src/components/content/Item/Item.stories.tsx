@@ -331,7 +331,7 @@ export const TextOverflow: StoryFn<CubeItemProps> = (args) => (
     </Item>
 
     <Title level={5}>Different Sizes with Text Overflow</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         size="small"
@@ -393,7 +393,7 @@ export const ExtraWidth: StoryFn<CubeItemProps> = (args) => (
     </Item>
 
     <Title level={5}>Different Sizes with Extra Width</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         size="small"
@@ -444,7 +444,7 @@ ExtraWidth.parameters = {
 export const WithCheckbox: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Selected Items (Checkmark Visible)</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} isSelected={true}>
         Selected item with checkmark
       </Item>
@@ -457,7 +457,7 @@ export const WithCheckbox: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Non-Selected Items (Checkmark Hidden)</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} isSelected={false}>
         Non-selected item with hidden checkmark
       </Item>
@@ -470,7 +470,7 @@ export const WithCheckbox: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Mixed Selection States</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} isSelected={true} suffix="Selected">
         Item 1
       </Item>
@@ -483,7 +483,7 @@ export const WithCheckbox: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Comparison: Checkmark vs Regular Icon</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} isSelected={true}>
         With checkmark (selected)
       </Item>
@@ -514,7 +514,7 @@ WithCheckbox.parameters = {
 export const WithHotkeys: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Item with Hotkeys</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         hotkeys="cmd+s"
@@ -545,7 +545,7 @@ export const WithHotkeys: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Different Sizes with Hotkeys</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         size="small"
@@ -595,7 +595,7 @@ WithHotkeys.parameters = {
 export const WithTooltip: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Simple String Tooltips</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         tooltip={{ title: 'Simple tooltip text', activeWrap: true }}
@@ -620,7 +620,7 @@ export const WithTooltip: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Advanced Tooltip Configuration</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         tooltip={{
@@ -665,7 +665,7 @@ export const WithTooltip: StoryFn<CubeItemProps> = (args) => (
     </Item>
 
     <Title level={5}>Different Sizes with Tooltips</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         size="small"
@@ -704,7 +704,7 @@ WithTooltip.parameters = {
 export const CombinedFeatures: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Hotkeys + Tooltip + Icons</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         hotkeys="cmd+n"
@@ -737,7 +737,7 @@ export const CombinedFeatures: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>With Checkmark Selection</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         isSelected={true}
@@ -806,7 +806,7 @@ CombinedFeatures.parameters = {
 export const WithLoading: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Auto Loading Slot Selection</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         isLoading={true}
@@ -836,7 +836,7 @@ export const WithLoading: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Specific Loading Slots</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         isLoading={true}
@@ -876,7 +876,7 @@ export const WithLoading: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Different Sizes with Auto Loading</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} size="small" isLoading={true} icon={<IconUser />}>
         Small size
       </Item>
@@ -889,7 +889,7 @@ export const WithLoading: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Loading with Different Visual Types</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} type="item" isLoading={true} icon={<IconUser />}>
         Item type
       </Item>
@@ -925,7 +925,7 @@ WithLoading.parameters = {
 export const WithDescription: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Description Placement: Inline (Default)</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -957,7 +957,7 @@ export const WithDescription: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Description Placement: Block</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1028,7 +1028,7 @@ WithDescription.parameters = {
 export const DescriptionWithSizes: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Inline Description Across Sizes</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1082,7 +1082,7 @@ export const DescriptionWithSizes: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Block Description Across Sizes</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1153,7 +1153,7 @@ DescriptionWithSizes.parameters = {
 export const DescriptionWithTypes: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Inline Description with Different Types</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="item"
@@ -1212,7 +1212,7 @@ export const DescriptionWithTypes: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Block Description with Different Types</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="item"
@@ -1270,7 +1270,7 @@ DescriptionWithTypes.parameters = {
 export const DescriptionWithComplexContent: StoryFn<CubeItemProps> = (args) => (
   <Flow gap="2x">
     <Title level={5}>Inline Description with All Elements</Title>
-    <Space flow="column" gap="1x" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1317,7 +1317,7 @@ export const DescriptionWithComplexContent: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Block Description with All Elements</Title>
-    <Space flow="column" gap="1x" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1364,7 +1364,7 @@ export const DescriptionWithComplexContent: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Description with Actions</Title>
-    <Space flow="column" gap="1x" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1415,7 +1415,7 @@ DescriptionWithComplexContent.parameters = {
 export const DescriptionOverflow: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Long Inline Descriptions (with overflow)</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         styles={{ width: '300px' }}
@@ -1439,7 +1439,7 @@ export const DescriptionOverflow: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Long Block Descriptions (with wrapping)</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         styles={{ width: '300px' }}
@@ -1504,7 +1504,7 @@ DescriptionOverflow.parameters = {
 export const WithActions: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Basic Item with Inline Actions</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1533,7 +1533,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Different Sizes with Actions</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1607,7 +1607,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Different Types with Actions</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="item"
@@ -1664,7 +1664,7 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>With Complex Configurations</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1761,7 +1761,7 @@ WithActions.parameters = {
 export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Actions Shown on Hover</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         qa="HoverActionsItem"
@@ -1826,7 +1826,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Different Sizes with Hover Actions</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1875,7 +1875,7 @@ export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>With Description and Hover Actions</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1930,7 +1930,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
     <Title level={5}>
       Comparison: Collapse vs Preserve Space on Hover Actions
     </Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -1965,7 +1965,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
 
     <Title level={5}>Side by Side Comparison</Title>
     <Space gap="2x" flow="row" placeItems="start">
-      <Space gap="1x" flow="column" placeItems="start">
+      <Space flow="column" placeItems="start">
         <Title level={6}>preserveActionsSpace=false (default)</Title>
         <Item
           {...args}
@@ -1997,7 +1997,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
           Single action item
         </Item>
       </Space>
-      <Space gap="1x" flow="column" placeItems="start">
+      <Space flow="column" placeItems="start">
         <Title level={6}>preserveActionsSpace=true</Title>
         <Item
           {...args}
@@ -2032,7 +2032,7 @@ export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>With Description</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -2207,7 +2207,7 @@ export const DifferentShapes: StoryFn<CubeItemProps> = (args) => (
     </Item>
 
     <Title level={5}>All Shapes Comparison</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} type="outline" shape="card" icon={<IconCoin />}>
         Card shape
       </Item>
@@ -2240,7 +2240,7 @@ DifferentShapes.parameters = {
 export const WithHighlight: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Basic Highlight</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} type="outline" icon={<IconUser />} highlight="user">
         User account settings
       </Item>
@@ -2255,7 +2255,7 @@ export const WithHighlight: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Case Sensitivity</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} type="outline" icon={<IconUser />} highlight="USER">
         Case-insensitive: USER and user match
       </Item>
@@ -2287,7 +2287,7 @@ export const WithHighlight: StoryFn<CubeItemProps> = (args) => (
     </Item>
 
     <Title level={5}>Combined with Other Features</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -2391,7 +2391,7 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
 
       <Space gap="2x" flow="column" placeItems="start">
         <Title level={5}>Type: header (default theme only)</Title>
-        <Space gap="1x" flow="row wrap" placeItems="start">
+        <Space flow="row wrap" placeItems="start">
           <Item {...args} type="header" theme="default" icon={<IconUser />}>
             default
           </Item>
@@ -2401,7 +2401,7 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
       {standardTypes.map((type) => (
         <Space key={type} gap="2x" flow="column" placeItems="start">
           <Title level={5}>Type: {type}</Title>
-          <Space gap="1x" flow="row wrap" placeItems="start">
+          <Space flow="row wrap" placeItems="start">
             {standardThemes.map((theme) => {
               const item = (
                 <Item {...args} type={type} theme={theme} icon={<IconUser />}>
@@ -2430,7 +2430,7 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
 
       <Space gap="2x" flow="column" placeItems="start">
         <Title level={5}>Type: card</Title>
-        <Space gap="1x" flow="row wrap" placeItems="start">
+        <Space flow="row wrap" placeItems="start">
           {cardThemes.map((theme) => (
             <Item
               key={`card-${theme}`}
@@ -2499,7 +2499,7 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
           >
             <Flow gap="1x" placeItems="start">
               <Block preset="c2">{label}</Block>
-              <Space gap="1x" flow="row wrap" placeItems="start">
+              <Space flow="row wrap" placeItems="start">
                 <Item {...args} type="current" icon={<IconUser />}>
                   Default
                 </Item>
@@ -2537,7 +2537,7 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
         >
           <Flow gap="1x" placeItems="start">
             <Block preset="c2">{label}</Block>
-            <Space gap="1x" flow="row wrap" placeItems="start">
+            <Space flow="row wrap" placeItems="start">
               {CURRENT_STATES.map(({ label: stateLabel, mods }) => (
                 <Item
                   key={stateLabel}
@@ -2582,7 +2582,7 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
           <Flow gap="1x" placeItems="start">
             <Block preset="c2">{label}</Block>
             {(['item', 'current'] as const).map((type) => (
-              <Space key={type} gap="1x" flow="row wrap" placeItems="center">
+              <Space key={type} flow="row wrap" placeItems="center">
                 <Block preset="c2" width="8x">
                   {type}
                 </Block>
@@ -2607,7 +2607,7 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
         color="#note-accent-text"
       >
         <Flow gap="1x" placeItems="start">
-          <Space gap="1x" flow="row wrap" placeItems="start">
+          <Space flow="row wrap" placeItems="start">
             {(['xsmall', 'small', 'medium', 'large', 'xlarge'] as const).map(
               (size) => (
                 <Item
@@ -2622,7 +2622,7 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
               ),
             )}
           </Space>
-          <Space gap="1x" flow="row wrap" placeItems="start">
+          <Space flow="row wrap" placeItems="start">
             <Item {...args} type="current" icon={<IconUser />} />
             <Item {...args} type="current" icon={<IconCoin />} shape="pill">
               Pill
@@ -2675,7 +2675,7 @@ CurrentType.parameters = {
 export const SemanticHeadingLevel: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Header and Card with Semantic Heading Level</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} type="header" level={2} icon={<IconUser />}>
         Header (renders as h2)
       </Item>
@@ -2708,7 +2708,7 @@ SemanticHeadingLevel.parameters = {
 export const Disabled: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Basic Disabled Items</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} isDisabled={true}>
         Disabled item
       </Item>
@@ -2718,7 +2718,7 @@ export const Disabled: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Disabled with Icons</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} isDisabled={true} icon={<IconUser />}>
         Disabled with icon
       </Item>
@@ -2733,7 +2733,7 @@ export const Disabled: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Disabled Across Different Types</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} type="primary" isDisabled={true} icon={<IconUser />}>
         Disabled primary
       </Item>
@@ -2755,7 +2755,7 @@ export const Disabled: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Disabled Across Different Sizes</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} size="xsmall" isDisabled={true} icon={<IconUser />}>
         Disabled xsmall
       </Item>
@@ -2774,7 +2774,7 @@ export const Disabled: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Disabled with Description</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -2798,7 +2798,7 @@ export const Disabled: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Disabled with Actions</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item
         {...args}
         type="outline"
@@ -2816,7 +2816,7 @@ export const Disabled: StoryFn<CubeItemProps> = (args) => (
     </Space>
 
     <Title level={5}>Comparison: Enabled vs Disabled</Title>
-    <Space gap="1x" flow="column" placeItems="start">
+    <Space flow="column" placeItems="start">
       <Item {...args} type="primary" icon={<IconUser />} isDisabled={false}>
         Enabled primary button
       </Item>

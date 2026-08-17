@@ -142,7 +142,6 @@ export function ItemTableToolbar({
         {onRefresh ? (
           <Button
             qa="ItemTableRefreshButton"
-            type="outline"
             size="small"
             icon={<ReloadIcon />}
             isLoading={isLoading}

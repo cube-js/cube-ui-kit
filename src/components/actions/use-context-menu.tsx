@@ -308,7 +308,6 @@ export function useContextMenu<
         )}
         <MenuTrigger
           offset={0}
-          crossOffset={0}
           placement={
             (triggerProps as ComponentProps<typeof MenuTrigger>)?.placement ||
             defaultTriggerProps?.placement ||

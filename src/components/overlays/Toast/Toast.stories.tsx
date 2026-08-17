@@ -81,7 +81,7 @@ export const WithDescription: Story = {
  * All toast themes
  */
 export const AllThemes = () => (
-  <Space gap="1x" flow="column">
+  <Space flow="column">
     <ToastItem title="Default toast" theme="default" />
     <ToastItem title="Success toast" theme="success" />
     <ToastItem title="Danger toast" theme="danger" />
@@ -97,7 +97,7 @@ export const UseToastHook = () => {
   const toast = useToast();
 
   return (
-    <Space gap="1x">
+    <Space>
       <Button onPress={() => toast.success('Success message!')}>
         Show Success
       </Button>
@@ -132,7 +132,7 @@ export const DeclarativeToast = () => {
   const [showToast, setShowToast] = useState(false);
 
   return (
-    <Space gap="1x">
+    <Space>
       <Button onPress={() => setShowToast(!showToast)}>
         {showToast ? 'Hide Toast' : 'Show Toast'}
       </Button>
@@ -238,7 +238,7 @@ export const ProgressStateToggle = () => {
   );
 
   return (
-    <Space gap="1x">
+    <Space>
       <Button
         type={state === 'loading' ? 'primary' : 'outline'}
         onPress={() => setState('loading')}
@@ -283,7 +283,7 @@ export const Deduplication = () => {
   const toast = useToast();
 
   return (
-    <Space gap="1x">
+    <Space>
       <Button
         onPress={() =>
           toast.success({ icon: <CheckIcon />, title: 'Copied to clipboard' })
@@ -312,7 +312,7 @@ export const MultipleToasts = () => {
   const counterRef = useRef(0);
 
   return (
-    <Space gap="1x">
+    <Space>
       <Button
         onPress={() => {
           counterRef.current++;

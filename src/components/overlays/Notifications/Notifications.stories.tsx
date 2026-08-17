@@ -76,7 +76,7 @@ function mockNotification(
  * Static NotificationItem preview showing all themes.
  */
 export const AllTypes = () => (
-  <Space gap="1x" flow="column">
+  <Space flow="column">
     <NotificationItem
       notification={mockNotification({
         theme: 'success',
@@ -121,7 +121,7 @@ export const ImperativeAPI = () => {
   const { notify } = useNotifications();
 
   return (
-    <Space gap="1x">
+    <Space>
       <Button
         onPress={() =>
           notify({
@@ -234,7 +234,7 @@ export const DeclarativeNotification = () => {
   const [showNotification, setShowNotification] = useState(false);
 
   return (
-    <Space gap="1x">
+    <Space>
       <Button onPress={() => setShowNotification(!showNotification)}>
         {showNotification ? 'Hide Notification' : 'Show Notification'}
       </Button>
@@ -278,7 +278,7 @@ export const CustomDismissAction = () => {
   const { notify } = useNotifications();
 
   return (
-    <Space gap="1x">
+    <Space>
       <Button
         onPress={() =>
           notify({
@@ -478,7 +478,7 @@ export const PersistentNotifications = () => {
 
   return (
     <Flex gap="2x" flow="column" width="60x">
-      <Space gap="1x">
+      <Space>
         <Button
           onPress={() => {
             counterRef.current++;
@@ -551,7 +551,7 @@ export const UnreadCountBadge = () => {
 
   return (
     <Flex gap="2x" flow="column" width="60x">
-      <Space gap="1x">
+      <Space>
         <Button
           onPress={() => {
             counterRef.current++;
@@ -604,7 +604,7 @@ export const StackCap = () => {
   const counterRef = useRef(0);
 
   return (
-    <Space gap="1x">
+    <Space>
       <Button
         onPress={() => {
           counterRef.current++;

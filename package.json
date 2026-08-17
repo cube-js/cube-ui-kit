@@ -152,6 +152,7 @@
     "dedent": "^0.7.0",
     "eslint": "^10.8.0",
     "husky": "^6.0.0",
+    "jiti": "^2.6.1",
     "jsdom": "^29.1.1",
     "lint-staged": "^17.0.8",
     "markdown-table": "^3.0.3",

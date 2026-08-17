@@ -618,7 +618,7 @@ export const WithHeaderAndFooter: StoryFn<CubeFilterListBoxProps<any>> = (
     {...args}
     header={
       <>
-        <Space gap="1x" flow="row" placeItems="center">
+        <Space flow="row" placeItems="center">
           <Title level={6}>Programming Languages</Title>
           <Badge type="purple">12</Badge>
         </Space>
@@ -774,7 +774,7 @@ export const WithTextValue: Story = {
         key="basic"
         textValue="Basic Plan - Free with limited features"
       >
-        <Space gap="1x" flow="column">
+        <Space flow="column">
           <Text weight="600">Basic Plan</Text>
           <Badge type="disabled">Free</Badge>
         </Space>
@@ -783,7 +783,7 @@ export const WithTextValue: Story = {
         key="pro"
         textValue="Pro Plan - Monthly subscription with all features"
       >
-        <Space gap="1x" flow="column">
+        <Space flow="column">
           <Text weight="600">Pro Plan</Text>
           <Badge type="purple">$19/month</Badge>
         </Space>
@@ -792,7 +792,7 @@ export const WithTextValue: Story = {
         key="enterprise"
         textValue="Enterprise Plan - Custom pricing for large teams"
       >
-        <Space gap="1x" flow="column">
+        <Space flow="column">
           <Text weight="600">Enterprise Plan</Text>
           <Badge type="note">Custom</Badge>
         </Space>
@@ -863,7 +863,7 @@ export const CustomEmptyState: Story = {
     <FilterListBox
       {...args}
       emptyLabel={
-        <Space gap="1x" flow="column" placeItems="center" padding="2x">
+        <Space flow="column" placeItems="center" padding="2x">
           <Text preset="t1">🔍</Text>
           <Text weight="600">No matching countries found</Text>
           <Text preset="t4" color="#dark.60">
@@ -965,7 +965,6 @@ export const ControlledExample: StoryFn<CubeFilterListBoxProps<any>> = () => {
       <FilterListBox
         label="Controlled FilterListBox"
         selectedKey={selectedKey}
-        selectionMode="single"
         searchPlaceholder="Search fruits..."
         onSelectionChange={(key) => setSelectedKey(key as string | null)}
       >
@@ -978,19 +977,11 @@ export const ControlledExample: StoryFn<CubeFilterListBoxProps<any>> = () => {
         Selected: <Text.Strong>{selectedKey || 'None'}</Text.Strong>
       </Text>
 
-      <Space gap="1x" flow="row">
-        <Button
-          size="small"
-          type="outline"
-          onClick={() => setSelectedKey('banana')}
-        >
+      <Space flow="row">
+        <Button size="small" onClick={() => setSelectedKey('banana')}>
           Select Banana
         </Button>
-        <Button
-          size="small"
-          type="outline"
-          onClick={() => setSelectedKey(null)}
-        >
+        <Button size="small" onClick={() => setSelectedKey(null)}>
           Clear Selection
         </Button>
       </Space>
@@ -1031,15 +1022,14 @@ export const MultipleControlledExample: StoryFn<
         </Text.Strong>
       </Text>
 
-      <Space gap="1x" flow="row">
+      <Space flow="row">
         <Button
           size="small"
-          type="outline"
           onClick={() => setSelectedKeys(['read', 'write', 'admin'])}
         >
           Select Admin Set
         </Button>
-        <Button size="small" type="outline" onClick={() => setSelectedKeys([])}>
+        <Button size="small" onClick={() => setSelectedKeys([])}>
           Clear All
         </Button>
       </Space>
@@ -1167,13 +1157,13 @@ export const WithIcons: Story = {
     <FilterListBox {...args}>
       <FilterListBox.Section title="User Management">
         <FilterListBox.Item key="users">
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <UserIcon />
             Users
           </Space>
         </FilterListBox.Item>
         <FilterListBox.Item key="permissions">
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <CheckIcon />
             Permissions
           </Space>
@@ -1181,13 +1171,13 @@ export const WithIcons: Story = {
       </FilterListBox.Section>
       <FilterListBox.Section title="System">
         <FilterListBox.Item key="database">
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <DatabaseIcon />
             Database
           </Space>
         </FilterListBox.Item>
         <FilterListBox.Item key="settings">
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <SettingsIcon />
             Settings
           </Space>
@@ -1271,7 +1261,6 @@ export const EscapeKeyHandling: StoryFn<CubeFilterListBoxProps<any>> = () => {
       <FilterListBox
         label="Custom Escape Handling"
         selectedKey={selectedKey}
-        selectionMode="single"
         searchPlaceholder="Search fruits..."
         onSelectionChange={(key) => setSelectedKey(key as string | null)}
         onEscape={() => {

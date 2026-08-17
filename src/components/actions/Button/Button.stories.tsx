@@ -468,7 +468,7 @@ export const ToggleLoading = () => {
   return (
     <Space>
       <Button isLoading={isLoading}>Target Button</Button>
-      <Button type="outline" onPress={() => setIsLoading((prev) => !prev)}>
+      <Button onPress={() => setIsLoading((prev) => !prev)}>
         {isLoading ? 'Stop Loading' : 'Start Loading'}
       </Button>
     </Space>
@@ -564,7 +564,6 @@ const CurrentContext = ({
 }) => (
   <Space
     flow="column"
-    gap="1x"
     padding="1.5x"
     radius="1x"
     border={fill ? undefined : true}

@@ -212,7 +212,7 @@ export const Stretched: StoryFn<CubeRadioGroupProps> = (args) => (
 
 // Size demonstrations
 export const ButtonGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
-  <Space flow="column" gap="1x">
+  <Space flow="column">
     <Space flow="column">
       <Title level={6}>XSmall</Title>
       <Radio.Group
@@ -282,7 +282,7 @@ export const ButtonGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
 );
 
 export const TabsGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
-  <Space flow="column" gap="1x">
+  <Space flow="column">
     <Space flow="column">
       <Title level={6}>Large (default, 40px)</Title>
       <Radio.Tabs size="large" defaultValue="yes" aria-label="Large">
@@ -304,7 +304,7 @@ export const TabsGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
 
 // Button type variants
 export const CustomButtonTypes: StoryFn<CubeRadioGroupProps> = () => (
-  <Space flow="column" gap="1x">
+  <Space flow="column">
     <Space flow="column">
       <Title level={6}>
         Primary (selected: primary, non-selected: outline)
@@ -368,7 +368,7 @@ export const CustomButtonTypes: StoryFn<CubeRadioGroupProps> = () => (
 
 // Disabled state
 export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
-  <Space flow="column" gap="1x">
+  <Space flow="column">
     <Space flow="column">
       <Title level={6}>Radio (Disabled)</Title>
       <Radio.Group
