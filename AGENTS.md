@@ -35,6 +35,7 @@ Project-specific working rules for AI agents. Not published with the package.
 - [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring, including the `play`-function rule below
 - [documentation.md](docs/rules/documentation.md) — `.docs.mdx` structure + update flow
 - [tests.md](docs/rules/tests.md) — Vitest + React Testing Library patterns
+- [probe.md](docs/rules/probe.md) — `pnpm probe`: inspecting the HTML, CSS and tokens a render actually produces
 - [commit-changes.md](docs/rules/commit-changes.md) — commit message convention
 - [eslint-plugin.md](docs/rules/eslint-plugin.md) — the shipped lint rule + the defaults registry it checks against
 
@@ -51,6 +52,16 @@ When making code changes that affect end users or the public API, **always add a
 ## Stories: Interaction-Only States
 
 A state that only exists during an interaction — an open tooltip, a hover or focus style, an expanded overlay — is invisible to Chromatic unless a `play` function puts the story into it. Chromatic runs `play` before it snapshots, so a story whose point is such a state **must** drive it with `play` and end on a `waitFor` assertion for the state itself (that assertion is also the wait Chromatic needs). Drive one element per story — only the final state is captured. For tooltips, copy the recipe verbatim: `timeout(250)` (the trigger is wired in a mount effect), `unhover` before `hover` (React Aria ignores a hover until a mouse move sets the pointer modality), and `delay: 0` in the tooltip config. Both caveats fail silently, and a local render test can pass while the story does not — Chromatic is the check. Full pattern: [storybook.md](docs/rules/storybook.md#interaction-only-states-need-a-play-function).
+
+## Inspecting Rendered HTML & CSS — `pnpm probe`
+
+Answering "what CSS does this actually produce?" is one call, not a throwaway vitest spec: `pnpm probe styles '{"fill":"#purple"}'` (also `tokens`, `render`, `globals`). It loads the real config — the `configure()` and `setGlobalPredefinedStates()` from `src/components/Root.tsx` and the live Glaze palette. **Never verify a style through `node -e "import {renderStyles} from '@tenphi/tasty'"`** — that path loads none of it, so units, recipes, presets and tokens go unresolved and the output looks authoritative while being wrong.
+
+Use it as freely as you like, either tier: it is a throwaway question-answering tool, so nothing here needs justifying. It is also the honest way to check a styling claim before you write it into a doc or a review. `pnpm probe:browser` adds the four things jsdom cannot do — computed values, geometry, pointer behaviour, screenshots — at the cost of a browser binary and a slower start.
+
+**Read [`docs/rules/probe.md`](docs/rules/probe.md)** for the modes, the jsdom blind spots that make an answer jsdom's rather than the truth, the one-time `pnpm exec playwright install chromium`, and how the `*.browser.test.tsx` suite differs (that one *is* in CI, and the probe's freedom does not extend to it).
+
+The DOM helpers behind it live in `src/probe/` and ship as the `@cube-dev/ui-kit/probe` entry, which Cube Cloud's own `yarn probe` imports. Changing them is a change to published API.
 
 ## Project Structure
 
@@ -74,6 +85,8 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - `pnpm storybook` — start Storybook on port 6060
 - `pnpm build` — build library (`tsdown`, unbundled ESM)
 - `pnpm test` — run all tests (Vitest); add `-- ComponentName` to filter, `-u` to update snapshots
+- `pnpm test:browser` — run the `*.browser.test.tsx` specs in real Chromium (layout, pointer, observers)
+- `pnpm probe` — print the HTML, CSS or tokens a snippet actually produces, with the real config loaded. `pnpm probe:browser` for computed values, geometry and screenshots. See [Inspecting Rendered HTML & CSS](#inspecting-rendered-html--css--pnpm-probe)
 - `pnpm fix` — lint + format (Oxlint + Prettier)
 - `pnpm size` — check bundle size limits
 - `pnpm chromatic` — visual regression
@@ -157,4 +170,5 @@ Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 - **Helpers:** `renderWithRoot` (wraps with `<Root>`), `renderWithForm` (returns `{ formInstance, ...renderResult }`).
 - **QA selectors:** `qa` prop → `data-qa` attribute → `screen.getByTestId('name')` (`testIdAttribute` is configured to `data-qa`).
 - **Tasty snapshots:** `toMatchTastySnapshot()` captures markup + CSS together.
+- **Not every question needs a spec.** If you only want to *see* what something renders, run [`pnpm probe`](#inspecting-rendered-html--css--pnpm-probe) instead of writing a spec to delete afterwards.
 - Patterns: see [docs/rules/tests.md](docs/rules/tests.md).
