@@ -341,7 +341,21 @@ function Radio(props: CubeRadioProps, ref) {
   }
 
   // Use context isDisabled if prop isDisabled is not explicitly set
-  let effectiveIsDisabled = isDisabled ?? contextIsDisabled ?? false;
+  let baseIsDisabled = isDisabled ?? contextIsDisabled ?? false;
+
+  // Loading has to disable the radio here, not inside `Item`. `useRadio` and the
+  // `HiddenInput` covering the button own the actual selection, so leaving it to
+  // `Item` would render a spinner on an option that still takes clicks and arrow
+  // keys. And because this component always passes a resolved `isDisabled` down,
+  // an unresolved `isLoading` would additionally read to `Item` as an explicit
+  // `isDisabled={false}` and cancel its own loading-disables-the-item rule.
+  //
+  // Same precedence as `Item` / `ItemButton`: an explicit `isDisabled={false}`
+  // still wins over loading. Button-type only — a classic radio has no spinner,
+  // so disabling it on `isLoading` would leave no visible reason why.
+  let isLoadingButton = isButton && props.isLoading === true;
+  let effectiveIsDisabled =
+    baseIsDisabled === true || (isLoadingButton && isDisabled !== false);
 
   let { isFocused, focusProps } = useFocus(
     { isDisabled: effectiveIsDisabled },
