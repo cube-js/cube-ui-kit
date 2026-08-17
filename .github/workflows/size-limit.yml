@@ -65,15 +65,41 @@ jobs:
           BASELINE_ARTIFACT: size-limit-report
         run: node ./scripts/ci/resolve-baseline.js
 
+      # The baseline only supplies the delta column. `measure-size.js` already
+      # falls back to absolute sizes when it cannot read one, so a transient
+      # download failure must not fail the check — GitHub's artifact endpoint
+      # 503s intermittently during incidents, and that used to turn "the
+      # library is within its size limit" into a red tick.
+      #
+      # Retry with linear backoff first, since these 503s are usually
+      # short-lived, and wipe the target directory between attempts so a
+      # half-extracted archive is never read as a valid baseline.
       - name: Download baseline stats
+        id: baseline_download
         if: steps.baseline.outputs.found == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh run download '${{ steps.baseline.outputs.run-id }}' \
-            --repo "$GITHUB_REPOSITORY" \
-            --name size-limit-report \
-            --dir './__compare/size-limit-report'
+          for attempt in 1 2 3 4 5; do
+            rm -rf './__compare/size-limit-report'
+
+            if gh run download '${{ steps.baseline.outputs.run-id }}' \
+              --repo "$GITHUB_REPOSITORY" \
+              --name size-limit-report \
+              --dir './__compare/size-limit-report'; then
+              echo 'downloaded=true' >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            if [ "$attempt" -lt 5 ]; then
+              echo "::warning::Baseline download attempt $attempt failed; retrying in $((attempt * 10))s."
+              sleep $((attempt * 10))
+            fi
+          done
+
+          rm -rf './__compare/size-limit-report'
+          echo 'downloaded=false' >> "$GITHUB_OUTPUT"
+          echo '::warning::Could not download the baseline stats after 5 attempts. Reporting absolute sizes with no comparison; the size limit itself is still enforced.'
 
       - name: Measure size
         id: measure_size
@@ -96,12 +122,19 @@ jobs:
           name: size-limit-report
           path: ${{ env.REPORT_FOLDER }}
 
+      # Needs the baseline `stats.json` as its reference, so gate on the
+      # download having actually landed rather than on the baseline merely
+      # having been resolved.
       - name: Build Statoscope Report
-        if: github.event.number && steps.baseline.outputs.found == 'true'
+        if: github.event.number && steps.baseline_download.outputs.downloaded == 'true'
         run: npx statoscope generate -i ${{ env.REPORT_FOLDER }}/stats.json -r ./__compare/size-limit-report/stats.json --output ${{ env.REPORT_FOLDER }}/report.html
 
+      # Posting the report is not the check. A 503 from the issues API while
+      # commenting says nothing about the bundle, so tolerate it and let the
+      # `Throw error` gate below decide the job's outcome.
       - name: Comment PR
         uses: actions/github-script@v6
+        continue-on-error: true
         if: github.event.number
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
