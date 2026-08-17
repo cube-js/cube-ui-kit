@@ -659,13 +659,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         ) : rightIcon !== undefined ? (
           rightIcon
         ) : showClearButton ? (
-          <ItemActionProvider type={type}>
+          <ItemActionProvider
+            type={type}
+            // Forwarded for the special-surface alpha ramp — see `Select`.
+            theme={theme}
+          >
             <ItemAction
               icon={<CloseIcon />}
               size={size}
               qa="FilterPickerClearButton"
-              // No `type` or `theme` — see `Picker`: the default `current` type
-              // inherits the trigger's text color, which already carries
+              // No explicit `type`/`theme` — see `Picker`: the default `current`
+              // type inherits the trigger's text color, which already carries
               // validation state.
               mods={{ pressed: false }}
               onPress={clearValue}

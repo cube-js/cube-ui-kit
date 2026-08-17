@@ -467,14 +467,23 @@ function Select<T extends object>(
           rightIcon !== undefined ? (
             rightIcon
           ) : showClearButton ? (
-            <ItemActionProvider type={type}>
+            <ItemActionProvider
+              type={type}
+              // Forwarded so a `special` trigger tells its action which SURFACE
+              // it sits on: `CURRENT_ITEM_STYLES` only steps up to the stronger
+              // alpha ramp on `theme=special`, and against that dark purple base
+              // the light-scheme alphas are almost invisible. Passing it through
+              // context rather than as a prop is deliberate — the prop is what
+              // opts an action out of `current` back to `clear`, and here we want
+              // to keep `current`.
+              theme={theme}
+            >
               <ItemAction
                 icon={<CloseIcon />}
                 qa="SelectClearButton"
-                // No `type` or `theme`: the default `current` type paints from
-                // the trigger's own inherited text color, so the button matches
-                // whatever the field is currently showing — including a custom
-                // theme — instead of being pinned to one palette.
+                // No explicit `type`/`theme`: the default `current` type paints
+                // from the trigger's own inherited text color, so the button
+                // matches whatever the field is showing instead of one palette.
                 //
                 // NOTE: this trigger keeps NEUTRAL label text when invalid, so
                 // the button reads neutral there too. `Picker` and `FilterPicker`

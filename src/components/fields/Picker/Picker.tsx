@@ -586,15 +586,21 @@ export const Picker = forwardRef(function Picker<T extends object>(
         ) : rightIcon !== undefined ? (
           rightIcon
         ) : showClearButton ? (
-          <ItemActionProvider type={type}>
+          <ItemActionProvider
+            type={type}
+            // Forwarded so a `special` trigger tells its action which surface it
+            // sits on — see the same call in `Select` for why this has to travel
+            // through context rather than as a prop.
+            theme={theme}
+          >
             <ItemAction
               icon={<CloseIcon />}
               size={size}
               qa="PickerClearButton"
-              // No `type` or `theme` — the default `current` type inherits the
-              // trigger's own text color, which already carries validation state
-              // here, so this renders exactly as the explicit theme did while
-              // also following a custom theme.
+              // No explicit `type`/`theme` — the default `current` type inherits
+              // the trigger's own text color, which already carries validation
+              // state here, so this renders exactly as the explicit theme did
+              // while also following a custom theme.
               mods={{ pressed: false }}
               onPress={clearValue}
             />
