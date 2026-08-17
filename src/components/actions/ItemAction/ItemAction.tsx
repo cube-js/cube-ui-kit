@@ -200,6 +200,12 @@ export const ItemAction = forwardRef(function ItemAction(
   // Inherit disabled state from context, but allow local override
   const isDisabled = isDisabledProp ?? contextIsDisabled;
 
+  // Whether that disabled state came from the host row rather than this action's
+  // own prop. The `current` type paints from the inherited color, and a disabled
+  // host has already faded it — so fading a second time washes the label out. See
+  // `CURRENT_ITEM_STYLES.color`.
+  const isDisabledInherited = isDisabledProp == null && !!contextIsDisabled;
+
   // Determine if we should show a checkmark
   const hasCheckmark = icon === 'checkmark';
 
@@ -221,9 +227,18 @@ export const ItemAction = forwardRef(function ItemAction(
       'has-label': !!children,
       context: !!contextType,
       'has-icon': !!icon,
+      'inherit-disabled': isDisabledInherited,
       ...mods,
     }),
-    [hasCheckmark, isSelected, isLoading, children, contextType, mods],
+    [
+      hasCheckmark,
+      isSelected,
+      isLoading,
+      children,
+      contextType,
+      isDisabledInherited,
+      mods,
+    ],
   );
 
   // An explicit label always wins; a tooltip only fills in the accessible name

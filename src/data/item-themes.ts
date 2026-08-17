@@ -1060,7 +1060,17 @@ export const CURRENT_ITEM_STYLES: Styles = {
   },
   color: {
     '': '#current',
-    disabled: '#current.4',
+    // Only fade when this element is disabled ON ITS OWN. `#current` is the
+    // color it inherits, and a disabled host has already faded that color to
+    // `#disabled-surface-text` — so fading again multiplies the two and the label
+    // washes out (an action inside a disabled row measured `.4` of an already
+    // muted token, roughly `rgb(224,225,228)` on white, against the row's own
+    // `rgb(178,181,205)`). Inheriting the host's faded color unchanged is both
+    // correct and what the neutral types did. `ItemAction` sets
+    // `inherit-disabled` when its disabled state came from the surrounding
+    // `ItemActionProvider` rather than its own prop; nothing else sets the mod, so
+    // `Item` keeps fading itself as before.
+    'disabled & !inherit-disabled': '#current.4',
   },
 } as const;
 
