@@ -68,7 +68,6 @@ import { Text } from '../../content/Text';
 import {
   getValidationIcon,
   getValidationMods,
-  getValidationTheme,
   useFieldProps,
   wrapWithField,
 } from '../../form';
@@ -468,13 +467,19 @@ function Select<T extends object>(
           rightIcon !== undefined ? (
             rightIcon
           ) : showClearButton ? (
-            <ItemActionProvider
-              type={type}
-              theme={getValidationTheme(theme, { isInvalid, isValid })}
-            >
+            <ItemActionProvider type={type}>
               <ItemAction
                 icon={<CloseIcon />}
                 qa="SelectClearButton"
+                // No `type` or `theme`: the default `current` type paints from
+                // the trigger's own inherited text color, so the button matches
+                // whatever the field is currently showing — including a custom
+                // theme — instead of being pinned to one palette.
+                //
+                // NOTE: this trigger keeps NEUTRAL label text when invalid, so
+                // the button reads neutral there too. `Picker` and `FilterPicker`
+                // are also `Item`-based but do tint theirs, which is the actual
+                // inconsistency to fix — in `Select`, not here.
                 mods={{ pressed: false }}
                 onPress={clearValue}
               />

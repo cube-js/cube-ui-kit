@@ -90,6 +90,15 @@ const ItemActionElement = tasty({
   styles: {
     ...ITEM_ACTION_BASE_STYLES,
     recipe: 'reset button',
+    // Every variant below defines its own ring and overrides this one. It exists
+    // for `current`, which reuses `CURRENT_ITEM_STYLES` — an `*_ITEM_STYLES`
+    // flavour, and those leave focus to the collection that owns the row. A
+    // focusable action is not a row, so it needs the ring back, and it uses the
+    // same `#primary-accent-text` as every other type in `item-themes.ts`.
+    outline: {
+      '': '0 #primary-accent-text.0',
+      focused: '1bw #primary-accent-text',
+    },
     outlineOffset: 1,
     cursor: { '': '$pointer', disabled: 'default' },
     preset: {
@@ -165,7 +174,17 @@ export const ItemAction = forwardRef(function ItemAction(
   } = useItemActionContext();
 
   const {
-    type = contextType ?? 'clear',
+    // `current` derives every color from the row's inherited `currentcolor`, so
+    // one type covers every host type and theme — no need to mirror the row's
+    // `type` from context.
+    //
+    // An explicitly *themed* action is the exception: it is asking to paint
+    // itself, not to match its host, and `current` is theme-agnostic by
+    // construction, so it would have nothing to color with. Such actions fall
+    // back to `clear`. The `!== 'default'` guard keeps `theme="default"` inert —
+    // passing a prop's own default value must never change what renders, which
+    // is the invariant `no-redundant-default-prop` lints for.
+    type = allProps.theme && allProps.theme !== 'default' ? 'clear' : 'current',
     theme = contextTheme ?? 'default',
     icon,
     children,

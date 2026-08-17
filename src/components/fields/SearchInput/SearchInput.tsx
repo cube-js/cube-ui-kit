@@ -11,7 +11,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { ItemAction } from '../../actions';
-import { getValidationTheme, useValidationProps } from '../../form';
+import { useValidationProps } from '../../form';
 import {
   CubeBufferedValueProps,
   CubeTextInputBaseProps,
@@ -110,8 +110,8 @@ export const SearchInput = forwardRef(function SearchInput(
               <ItemAction
                 icon={<CloseIcon />}
                 size={restProps.size}
-                type="clear"
-                theme={getValidationTheme(undefined, { isInvalid, isValid })}
+                // No `type` or `theme` — the default `current` type inherits the
+                // input's own text color, which already carries validation state.
                 {...ariaToCubeButtonProps(clearButtonProps)}
                 onPress={(e) => {
                   // Call the original clear functionality

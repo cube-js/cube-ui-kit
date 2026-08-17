@@ -970,21 +970,74 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 // Disabled `fill`/`border` are therefore written PRE-MULTIPLIED where they need
 // to stay visible.
 
+// The alpha ramp for the item flavour, held in custom properties rather than
+// written inline in `fill`. Two reasons:
+//
+// 1. Unlike the brand tokens, `#current` alphas do NOT adapt to the color
+//    scheme: a 4% tint of a dark label on a light surface reads far stronger
+//    than a 4% tint of a light label on a dark one, so one ramp cannot serve
+//    both. Each step therefore carries a per-surface value — the base entry for
+//    the light scheme, `@dark` for the dark scheme, and `theme=special` for the
+//    special theme's dark-purple surface. Special is *static* (identical in
+//    light, dark and HC by design — see the SPECIAL section above), so it needs
+//    a single ramp rather than a light/dark pair. `theme=special` resolves
+//    against the element's own `data-theme`, which `ItemAction` sets from the
+//    surrounding `ItemActionProvider`.
+// 2. Writing three ramps straight into one `fill` map would put ~18 alpha
+//    values in a single state-map, and Tasty's `mergeEntriesByValue` pass
+//    coalesces any two equal value strings into one OR-entry at the group's max
+//    priority, which then negates against lower-priority rules. Giving each
+//    step its own 3-entry map keeps every value string unique by construction —
+//    the constraint that `SPECIAL_OUTLINE_STYLES` documents the hard way.
+//
+// The special steps run higher than the light ones because they resolve against
+// a `#white.8` label: an authored `.15` nets roughly the `.12` that
+// `SPECIAL_CLEAR_STYLES` uses on the same base.
+const CURRENT_ITEM_RAMP: Styles = {
+  '$current-hover': {
+    '': '#current.04',
+    '@dark': '#current.07',
+    'theme=special': '#current.15',
+  },
+  '$current-press': {
+    '': '#current.06',
+    '@dark': '#current.1',
+    'theme=special': '#current.22',
+  },
+  '$current-selected': {
+    '': '#current.09',
+    '@dark': '#current.14',
+    'theme=special': '#current.28',
+  },
+  '$current-selected-hover': {
+    '': '#current.12',
+    '@dark': '#current.18',
+    'theme=special': '#current.34',
+  },
+  '$current-selected-press': {
+    '': '#current.15',
+    '@dark': '#current.22',
+    'theme=special': '#current.4',
+  },
+} as const;
+
 // Item flavour — the `current` counterpart of `*_ITEM_STYLES`: no border,
 // nothing painted at rest, the fill appearing only on interaction. Used for
-// list rows (`Item`, `ItemButton`) and the actions inside them, where a resting
-// chip on every row would read as noise. Like the other `*_ITEM_STYLES` it
-// leaves the focus ring to the base styles (the collection that owns the row
-// indicates focus), and only steps the fill.
+// list rows (`Item`, `ItemButton`) and, as the default type, the actions inside
+// them — where a resting chip on every row would read as noise. Like the other
+// `*_ITEM_STYLES` it leaves the focus ring to the base styles (the collection
+// that owns the row indicates focus), and only steps the fill. `ItemAction`
+// adds a ring of its own on top, since a focusable action is not a list row.
 export const CURRENT_ITEM_STYLES: Styles = {
+  ...CURRENT_ITEM_RAMP,
   border: 'transparent',
   fill: {
     '': '#current.0',
-    'hovered | focused': '#current.04',
-    pressed: '#current.06',
-    selected: '#current.09',
-    'selected & (hovered | focused)': '#current.12',
-    'selected & pressed': '#current.15',
+    'hovered | focused': 'var(--current-hover)',
+    pressed: 'var(--current-press)',
+    selected: 'var(--current-selected)',
+    'selected & (hovered | focused)': 'var(--current-selected-hover)',
+    'selected & pressed': 'var(--current-selected-press)',
     disabled: 'transparent',
   },
   color: {
@@ -1114,3 +1167,86 @@ export type ItemVariant =
   | 'special.clear'
   | 'special.link'
   | 'special.item';
+
+// The single `theme.type` → styles map. Exported so `Item` and the projections
+// below cannot drift apart: `ITEM_RESTING_COLOR_VARIANTS` is derived from this
+// object rather than restating the palette.
+export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
+  // Inherited-color type — theme-agnostic, see `CURRENT_ITEM_STYLES`
+  'default.current': CURRENT_ITEM_STYLES,
+  // Default theme
+  'default.primary': DEFAULT_PRIMARY_STYLES,
+  'default.outline': DEFAULT_OUTLINE_STYLES,
+  'default.outline-2': DEFAULT_OUTLINE_2_STYLES,
+  'default.clear': DEFAULT_CLEAR_STYLES,
+  'default.link': DEFAULT_LINK_STYLES,
+  'default.item': DEFAULT_ITEM_STYLES,
+  'default.card': DEFAULT_CARD_STYLES,
+  // Danger theme
+  'danger.primary': DANGER_PRIMARY_STYLES,
+  'danger.outline': DANGER_OUTLINE_STYLES,
+  'danger.outline-2': DANGER_OUTLINE_2_STYLES,
+  'danger.clear': DANGER_CLEAR_STYLES,
+  'danger.link': DANGER_LINK_STYLES,
+  'danger.item': DANGER_ITEM_STYLES,
+  'danger.card': DANGER_CARD_STYLES,
+  // Success theme
+  'success.primary': SUCCESS_PRIMARY_STYLES,
+  'success.outline': SUCCESS_OUTLINE_STYLES,
+  'success.outline-2': SUCCESS_OUTLINE_2_STYLES,
+  'success.clear': SUCCESS_CLEAR_STYLES,
+  'success.link': SUCCESS_LINK_STYLES,
+  'success.item': SUCCESS_ITEM_STYLES,
+  'success.card': SUCCESS_CARD_STYLES,
+  // Warning theme
+  'warning.primary': WARNING_PRIMARY_STYLES,
+  'warning.outline': WARNING_OUTLINE_STYLES,
+  'warning.outline-2': WARNING_OUTLINE_2_STYLES,
+  'warning.clear': WARNING_CLEAR_STYLES,
+  'warning.link': WARNING_LINK_STYLES,
+  'warning.item': WARNING_ITEM_STYLES,
+  'warning.card': WARNING_CARD_STYLES,
+  // Note theme
+  'note.primary': NOTE_PRIMARY_STYLES,
+  'note.outline': NOTE_OUTLINE_STYLES,
+  'note.outline-2': NOTE_OUTLINE_2_STYLES,
+  'note.clear': NOTE_CLEAR_STYLES,
+  'note.link': NOTE_LINK_STYLES,
+  'note.item': NOTE_ITEM_STYLES,
+  'note.card': NOTE_CARD_STYLES,
+  // Special theme
+  'special.primary': SPECIAL_PRIMARY_STYLES,
+  'special.outline': SPECIAL_OUTLINE_STYLES,
+  'special.clear': SPECIAL_CLEAR_STYLES,
+  'special.link': SPECIAL_LINK_STYLES,
+  'special.item': SPECIAL_ITEM_STYLES,
+};
+
+// Each variant reduced to just its resting label color.
+//
+// The `current` type paints from `currentcolor`, which only reaches an action
+// that is a DOM *descendant* of the row. `Item` renders its actions inside the
+// row element, so they inherit the row color for free — but `ItemButton` renders
+// them as a sibling of the button (deliberately, so the actions stay reachable
+// and are not nested inside a `<button>`), where `currentcolor` would inherit
+// from the page instead. Painting this color on that wrapper restores the link.
+//
+// Resting only: the wrapper is not the interactive element, so it never carries
+// the row's `hovered` / `selected` / `disabled` mods and the other entries in a
+// variant's `color` map could never match there anyway.
+export const ITEM_RESTING_COLOR_VARIANTS: Record<ItemVariant, Styles> =
+  Object.fromEntries(
+    Object.entries(ITEM_VARIANTS).map(([variant, styles]) => {
+      const color = styles.color;
+
+      return [
+        variant,
+        {
+          color:
+            color && typeof color === 'object'
+              ? (color as Record<string, string>)['']
+              : color,
+        },
+      ];
+    }),
+  ) as Record<ItemVariant, Styles>;

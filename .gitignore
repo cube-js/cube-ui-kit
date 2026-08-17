@@ -30,3 +30,9 @@ __screenshots__
 
 # `pnpm probe` scratch dir: the generated snippet, its input and its results
 .probe
+
+# Claude Code's per-branch worktrees: full checkouts of other branches. Ignored
+# here as well as in `.git/info/exclude` so the entry is shared rather than
+# per-machine. `vitest.config.ts` excludes the same path from test collection —
+# see the comment there for what leaks in without it.
+.claude/worktrees

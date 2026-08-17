@@ -13,6 +13,10 @@ import { useFocusWithin, useHover } from 'react-aria';
 
 import { useEvent } from '../../../_internal';
 import {
+  ITEM_RESTING_COLOR_VARIANTS,
+  ItemVariant,
+} from '../../../data/item-themes';
+import {
   mergeProps,
   mergeRefs,
   useDismissParentPopover,
@@ -43,6 +47,14 @@ const StyledItem = tasty(Item, {
 });
 
 const ActionsWrapper = tasty({
+  // Actions default to the `current` type, which paints from the inherited
+  // `currentcolor` — but they are rendered as a SIBLING of the button here, not
+  // inside it, so without this they would inherit the page color instead of the
+  // row's. Harmless on the default theme (the two match) and plainly wrong on
+  // any other: a `special` row would hand its actions the page's dark text to
+  // tint with, on a dark purple surface. The variant carries the row's resting
+  // color down so `currentcolor` means the same thing it does inside an `Item`.
+  variants: ITEM_RESTING_COLOR_VARIANTS,
   styles: {
     display: 'grid',
     position: 'relative',
@@ -235,6 +247,13 @@ const ItemButton = forwardRef(function ItemButton(
     return (
       <ActionsWrapper
         {...hoverProps}
+        // Mirrors the normalisation in `Item`, so the wrapper resolves to the
+        // same variant the row itself renders.
+        variant={
+          `${type === 'header' || type === 'current' ? 'default' : theme}.${
+            type === 'header' ? 'item' : type
+          }` as ItemVariant
+        }
         data-size={size}
         data-type={type}
         data-theme={theme}

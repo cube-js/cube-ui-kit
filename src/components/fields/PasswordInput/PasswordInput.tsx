@@ -76,7 +76,9 @@ function PasswordInput(
     <>
       {suffix}
       <ItemAction
-        type="clear"
+        // No `type` — the default `current` type inherits the input's own text
+        // color, so the toggle follows the field's theme and validation state
+        // rather than staying neutral against tinted text.
         tooltip={t('passwordInput.toggleMasking', 'Toggle masking')}
         icon={type === 'password' ? <EyeInvisibleIcon /> : <EyeIcon />}
         onPress={toggleType}

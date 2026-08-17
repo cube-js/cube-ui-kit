@@ -586,14 +586,15 @@ export const Picker = forwardRef(function Picker<T extends object>(
         ) : rightIcon !== undefined ? (
           rightIcon
         ) : showClearButton ? (
-          <ItemActionProvider
-            type={type}
-            theme={getValidationTheme(theme, { isInvalid, isValid })}
-          >
+          <ItemActionProvider type={type}>
             <ItemAction
               icon={<CloseIcon />}
               size={size}
               qa="PickerClearButton"
+              // No `type` or `theme` — the default `current` type inherits the
+              // trigger's own text color, which already carries validation state
+              // here, so this renders exactly as the explicit theme did while
+              // also following a custom theme.
               mods={{ pressed: false }}
               onPress={clearValue}
             />
