@@ -1,5 +1,48 @@
 # @cube-dev/ui-kit
 
+## 0.163.0
+
+### Minor Changes
+
+- [#1323](https://github.com/cube-js/cube-ui-kit/pull/1323) [`82616524`](https://github.com/cube-js/cube-ui-kit/commit/826165244c923627a036a66af386f5a8478986bb) Thanks [@tenphi](https://github.com/tenphi)! - `Radio` / `Radio.Button`: a button- or tabs-type radio now accepts the full content API of the `Item` it renders, matching `ItemButton`. Newly forwarded: `descriptionPlacement`, `descriptionProps`, `keyboardShortcutProps`, `isLoading`, `loadingSlot`, `highlight`, `highlightCaseSensitive`, `highlightStyles`, `level` and `labelRef`. `description` now has a grid area to land in, so it renders in both `inline` and `block` placement, and container style props (`padding`, `gap`, `fill`, `preset`, …) apply to button-type radios instead of being dropped. A loading button radio is also disabled, so it no longer takes clicks or arrow-key selection — pass an explicit `isDisabled={false}` to opt out.
+
+- [#1319](https://github.com/cube-js/cube-ui-kit/pull/1319) [`2a8d0b4a`](https://github.com/cube-js/cube-ui-kit/commit/2a8d0b4ad6e05b913a7aa6ca0eade56ff5e151ff) Thanks [@tenphi](https://github.com/tenphi)! - Lint ui-kit's own source with the `no-redundant-default-prop` rule it ships, and fix four registry entries that autofixing would have broken.
+
+  The plugin was never applied to this repo. Two things prevented it, and the second was silent: nothing loaded the plugin, and provenance is gated on the import specifier literally matching `@cube-dev/ui-kit`, which no file in `src/` uses — every component import here is relative, across 210 distinct specifiers that share no usable prefix. So even once loaded, the rule reported nothing.
+
+  - New `relativeImports` rule option, which also accepts relative specifiers as ui-kit provenance. It exists for linting this repository and must not be enabled in a consumer project, where a relative import is the consumer's own component. Shadowing still bails either way — resolution requires an `ImportBinding`, so a local `const Badge = tasty({})` is never matched.
+  - `configs.recommended` now sets stories and `.docs.mdx` to `warn` instead of `off`. Stories are the code people copy, so redundant props there travel outward and are worth surfacing; a deliberate side-by-side contrast still has a real reason to name a default, so it warns rather than failing a build.
+
+  Four props were classified as plain defaults when they are actually inherited overrides, so the rule would have offered — and `--fix` would have taken — an autofix that changed behaviour. Each is now `skip: 'context'`:
+
+  - `ItemAction` `isDisabled` and `type`. `<Item isDisabled>` renders its `actions` inside `ItemActionProvider`, and `isDisabled = isDisabledProp ?? contextIsDisabled`, so `<ItemAction isDisabled={false}>` is the documented way to keep one action live inside a disabled item. Stripping it silently disabled that action.
+  - `ItemBadge` `type` and `theme`, which read the same context and had no conditions on their fixture at all.
+  - `Dialog` `isDismissable`, resolved as `contextProps.isDismissable` with no literal fallback while `DialogContainer` and `DialogTrigger` default that context value to `true`, so a nested `<Dialog isDismissable={false}>` is an override. Three call sites in shipped source relied on it.
+
+  The cause is general: a prop resolved as `prop ?? context ?? literal` probes as a plain default in a bare tree, because the literal wins when nothing supplies the context. Only `ItemAction`'s `theme` was classified correctly, and only because it happened to be the one prop with a matching condition. The fixtures now supply a differing value for each such prop, so the prover derives these skips itself and the sync guard re-proves them on every test run rather than trusting a hand-written note. A repo-wide audit for the pattern found no other affected component.
+
+### Patch Changes
+
+- [#1323](https://github.com/cube-js/cube-ui-kit/pull/1323) [`82616524`](https://github.com/cube-js/cube-ui-kit/commit/826165244c923627a036a66af386f5a8478986bb) Thanks [@tenphi](https://github.com/tenphi)! - `Item` themes: a disabled item now keeps showing whether it is selected. The `disabled` entry in every `outline`, `outline-2` and `clear` variant used to override `selected` outright, so a disabled segmented control — `RadioGroup type="button"` most visibly — rendered every option identically with no sign of which one was active. Each of those variants gains a `selected & disabled` state that paints the brand-tinted `accent-disabled-surface` chip and its paired label instead of the neutral one, across all six themes (`special` and `current` stay in their own white-alpha / `currentcolor` registers). `type="item"` rows are unchanged — they already keep brand identity in their disabled label and pair selection with a checkmark.
+
+- [#1322](https://github.com/cube-js/cube-ui-kit/pull/1322) [`b56c0073`](https://github.com/cube-js/cube-ui-kit/commit/b56c0073e6eeb622f458cb017cf8c202c9e638d9) Thanks [@tenphi](https://github.com/tenphi)! - Make `no-redundant-default-prop` fire on compound aliases such as `<Radio.Group>`, which it silently ignored.
+
+  The registry is keyed on the name each render fixture carries — the flat `RadioGroup` — while the rule resolves a JSX tag to its dotted path, `Radio.Group`. The lookup missed, so the entry only ever fired on the form nobody writes: every example in `RadioGroup.docs.mdx` uses `<Radio.Group>` / `<Radio.Tabs>`, and two genuinely redundant props in `RadioGroup.stories.tsx` went unreported. `Button.Split`, `Item.Action`, `Menu.Trigger` and `Input` had the same gap.
+
+  `DefaultsRegistry` now carries an `aliases` map from alias path to canonical key, generated by walking the package exports and recording every path whose value **is the same object** as a covered component. Fixtures still name one export each; the 27 alias paths are derived, so adding a fixture needs no alias bookkeeping.
+
+  Identity, not name shape, is what makes this safe. `Radio.Group` is `RadioGroup` itself and cannot behave differently, but `Radio.ButtonGroup` is `tasty(RadioGroup, { type: 'button' })` and `Radio.Tabs` is `tasty(RadioGroup, { type: 'tabs' })` — different objects with a different effective `type` default. A rule that normalised the dotted path by concatenating it would hand those two RadioGroup's entry and offer to strip a `type` that is not their default; identity skips them. Each alias is re-checked against the live exports on every test run, so a refactor that turns an alias into a wrapper fails instead of shipping a wrong entry.
+
+  This is a missed-cleanup fix, not a correctness one — the rule was silent, never wrong. Unrelated to `VerifiedDefault.aliases`, which lists alternate spellings of a prop _value_ and stays hand-curated.
+
+- [#1319](https://github.com/cube-js/cube-ui-kit/pull/1319) [`2a8d0b4a`](https://github.com/cube-js/cube-ui-kit/commit/2a8d0b4ad6e05b913a7aa6ca0eade56ff5e151ff) Thanks [@tenphi](https://github.com/tenphi)! - Fix `RadioGroup`'s documented `size` default, which was wrong in a way the lint rule acted on.
+
+  `RadioGroup.docs.mdx` contradicted both itself and the implementation: the `## Properties` bullet said `(default: xsmall)` while its own prose said `medium`, and `Radio.tsx` resolves `size ?? contextSize ?? 'medium'`. The default is `medium`.
+
+  That annotation is what seeds the `no-redundant-default-prop` registry, so the shipped rule claimed `<RadioGroup size="xsmall">` was redundant and offered to delete it — which silently resized the radios to `medium`. The prover could not catch the drift because `size` only reaches the DOM through the radios and a plain `type="radio"` radio renders identically at every size, so any documented value verified. The fixture now probes under `type="button"` and `type="tabs"` as well, which is what makes a wrong `size` value fail: restoring `xsmall` under the new conditions correctly downgrades the prop to `skip: 'conditional'` instead of passing as a verified default.
+
+  Also corrects the tabs-mode size mapping table. It claimed `xlarge` maps to `large` and listed `xsmall` as passing through, but `Radio.tsx` maps only `large`, funnelling every other size through `RADIO_SIZE_MAP.medium` — so `xsmall`, `small`, `medium` and `xlarge` all collapse to `xsmall`.
+
 ## 0.162.0
 
 ### Minor Changes
