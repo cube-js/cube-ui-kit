@@ -993,31 +993,49 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 // The special steps run higher than the light ones because they resolve against
 // a `#white.8` label: an authored `.15` nets roughly the `.12` that
 // `SPECIAL_CLEAR_STYLES` uses on the same base.
+//
+// SELECTED steps jump well clear of the interaction steps rather than continuing
+// them. Every other type marks selection with a brand *hue* — an accent-tinted
+// fill under an accent label — and `current` has exactly one color to work with,
+// so it cannot. Alpha is the only channel left, and a step that merely continued
+// the hover/press ramp (the original `.04 → .06 → .09`) read as a slightly dirty
+// background rather than an "on" state. Selection is a persistent state, not a
+// transient one, so it earns the bigger jump; hover and press stay subtle so an
+// unselected row full of actions does not look busy.
+// Only the LIGHT ramp can spend freely. There the chip is a pale tint and the
+// label stays opaque and dark, so contrast barely moves (.30 still measures
+// 5.66:1). On a dark surface the same construction inverts: the chip is a light
+// tint climbing toward an equally light label, so it swallows it. Both dark
+// surfaces hit the AA floor (4.5:1) for their label at exactly `.24` — measured,
+// not guessed — which is the ceiling every dark step below is written under, and
+// why `selected` there is a smaller jump than in light. `SPECIAL_CLEAR_STYLES`
+// escaped the same ceiling by INVERTING selected to a white pill with dark text;
+// a single inherited color cannot do that.
 const CURRENT_ITEM_RAMP: Styles = {
   '$current-hover': {
     '': '#current.04',
     '@dark': '#current.07',
-    'theme=special': '#current.15',
+    'theme=special': '#current.08',
   },
   '$current-press': {
     '': '#current.06',
-    '@dark': '#current.1',
-    'theme=special': '#current.22',
+    '@dark': '#current.11',
+    'theme=special': '#current.12',
   },
   '$current-selected': {
-    '': '#current.09',
-    '@dark': '#current.14',
-    'theme=special': '#current.28',
+    '': '#current.18',
+    '@dark': '#current.16',
+    'theme=special': '#current.17',
   },
   '$current-selected-hover': {
-    '': '#current.12',
-    '@dark': '#current.18',
-    'theme=special': '#current.34',
+    '': '#current.24',
+    '@dark': '#current.19',
+    'theme=special': '#current.21',
   },
   '$current-selected-press': {
-    '': '#current.15',
+    '': '#current.3',
     '@dark': '#current.22',
-    'theme=special': '#current.4',
+    'theme=special': '#current.24',
   },
 } as const;
 
