@@ -43,6 +43,8 @@
     "watch": "tsdown --watch",
     "test": "vitest run",
     "test:browser": "vitest run --config vitest.browser.config.ts",
+    "probe": "node scripts/probe.mjs",
+    "probe:browser": "PROBE_TIER=browser node scripts/probe.mjs",
     "test-cover": "vitest run --coverage",
     "test-watch": "vitest",
     "prettier": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
