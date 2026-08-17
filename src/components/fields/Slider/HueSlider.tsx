@@ -114,9 +114,7 @@ function HueSlider(
       value={value}
       defaultValue={defaultValue}
       orientation={orientation}
-      minValue={0}
       maxValue={359}
-      step={1}
       formatOptions={formatOptions}
       thumbStyles={thumbStyles}
       trackStyles={trackStyles}

@@ -498,7 +498,7 @@ export const Controlled: Story = {
 
     return (
       <Space flow="column" gap="2x">
-        <Space gap="1x">
+        <Space>
           <Button onPress={() => setActiveKey('tab1')}>Go to Tab 1</Button>
           <Button onPress={() => setActiveKey('tab2')}>Go to Tab 2</Button>
           <Button onPress={() => setActiveKey('tab3')}>Go to Tab 3</Button>
@@ -1108,7 +1108,7 @@ function RenderCountPanel({
   const count = countsRef.current[tabKey];
 
   return (
-    <Space qa={`panel-${tabKey}`} flow="column" gap="1x">
+    <Space qa={`panel-${tabKey}`} flow="column">
       <Text.Strong>
         {tabKey.charAt(0).toUpperCase() + tabKey.slice(1)} Content
       </Text.Strong>

@@ -130,7 +130,8 @@ export const Default: Story = {
 
 export const Themes: Story = {
   render: () => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
+      {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- Themes story names every theme, the default included */}
       <Badge theme="special">Special</Badge>
       <Badge theme="warning">Warning</Badge>
       <Badge theme="note">Note</Badge>
@@ -143,7 +144,7 @@ export const Themes: Story = {
 
 export const Numbers: Story = {
   render: () => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
       <Badge>1</Badge>
       <Badge>5</Badge>
       <Badge>12</Badge>
@@ -155,7 +156,7 @@ export const Numbers: Story = {
 
 export const TextContent: Story = {
   render: () => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
       <Badge>NEW</Badge>
       <Badge theme="success">OK</Badge>
       <Badge theme="danger">ERR</Badge>
@@ -166,7 +167,8 @@ export const TextContent: Story = {
 
 export const Sizes: Story = {
   render: () => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
+      {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- Sizes story names every size, the default included */}
       <Badge size="inline">8</Badge>
       <Badge size="xsmall">8</Badge>
       <Badge size="small">8</Badge>
@@ -179,7 +181,7 @@ export const Sizes: Story = {
 
 export const WithIcon: Story = {
   render: () => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
       <Badge icon={<IconCoin />}>5</Badge>
       <Badge icon={<IconCoin />} theme="success">
         12
@@ -196,7 +198,7 @@ export const WithIcon: Story = {
 
 export const WithRightIcon: Story = {
   render: () => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
       <Badge rightIcon={<IconCoin />}>5</Badge>
       <Badge rightIcon={<IconCoin />} theme="success">
         OK
@@ -210,7 +212,7 @@ export const WithRightIcon: Story = {
 
 export const WithBothIcons: Story = {
   render: () => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
       <Badge icon={<IconCoin />} rightIcon={<IconCoin />}>
         NEW
       </Badge>

@@ -305,6 +305,7 @@ export const States: Story = {
         <Title level={4}>Selected</Title>
         <Space>
           <ItemAction isSelected icon="checkmark" tooltip="Select" />
+          {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- contrasts with the isSelected sibling; dropping it makes the pair identical */}
           <ItemAction icon="checkmark" tooltip="Select" isSelected={false} />
           <ItemAction isSelected icon={<IconStar />} tooltip="Favorite" />
         </Space>
@@ -318,7 +319,7 @@ export const InsideItemButton: Story = {
     <Flow gap="2x" width="max 600px">
       <Flow gap="1x">
         <Title level={4}>Icon Only Actions</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             type="outline"
             icon={<IconFile />}
@@ -349,7 +350,7 @@ export const InsideItemButton: Story = {
 
       <Flow gap="1x">
         <Title level={4}>With Labels</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             type="outline"
             icon={<IconFile />}
@@ -370,7 +371,7 @@ export const InsideItemButton: Story = {
         <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           Actions automatically inherit type and theme from parent ItemButton
         </Paragraph>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             type="primary"
             theme="default"
@@ -405,7 +406,7 @@ export const InsideItemButton: Story = {
         <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           Actions can override inherited type/theme
         </Paragraph>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             type="outline"
             icon={<IconFile />}
@@ -444,7 +445,7 @@ export const InsideItemButton: Story = {
 
       <Flow gap="1x">
         <Title level={4}>With Different Sizes</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             type="outline"
             size="small"
@@ -460,7 +461,6 @@ export const InsideItemButton: Story = {
           </ItemButton>
           <ItemButton
             type="outline"
-            size="medium"
             icon={<IconFile />}
             actions={
               <>
@@ -492,7 +492,7 @@ export const InsideItemButton: Story = {
         <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           Actions can appear only on hover
         </Paragraph>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             autoHideActions
             type="outline"
@@ -549,9 +549,8 @@ export const InsideItem: Story = {
     <Flow gap="2x" width="max 600px">
       <Flow gap="1x">
         <Title level={4}>Basic Usage</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <Item
-            type="item"
             icon={<IconFile />}
             actions={
               <>
@@ -563,7 +562,6 @@ export const InsideItem: Story = {
             Document.pdf
           </Item>
           <Item
-            type="item"
             icon={<IconFile />}
             actions={
               <>
@@ -580,7 +578,7 @@ export const InsideItem: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Different Item Types</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <Item
             type="primary"
             icon={<IconFile />}
@@ -622,12 +620,10 @@ export const InsideItem: Story = {
 
       <Flow gap="1x">
         <Title level={4}>With Description</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <Item
-            type="item"
             icon={<IconFile />}
             description="Last modified 2 days ago"
-            descriptionPlacement="inline"
             actions={
               <>
                 <ItemAction icon={<IconEdit />} tooltip="Edit" />
@@ -638,7 +634,6 @@ export const InsideItem: Story = {
             Document.pdf
           </Item>
           <Item
-            type="item"
             icon={<IconFile />}
             description="Last modified 2 days ago"
             descriptionPlacement="block"
@@ -656,9 +651,8 @@ export const InsideItem: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Theme Inheritance</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <Item
-            type="item"
             theme="danger"
             icon={<IconFile />}
             actions={
@@ -671,7 +665,6 @@ export const InsideItem: Story = {
             Danger Theme Item
           </Item>
           <Item
-            type="item"
             theme="success"
             icon={<IconFile />}
             actions={
@@ -688,9 +681,8 @@ export const InsideItem: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Mixed Action Types</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <Item
-            type="item"
             icon={<IconFile />}
             actions={
               <>
@@ -712,9 +704,8 @@ export const InsideItem: Story = {
 
       <Flow gap="1x">
         <Title level={4}>With Loading States</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <Item
-            type="item"
             icon={<IconFile />}
             actions={
               <>
@@ -734,10 +725,9 @@ export const InsideItem: Story = {
           Actions inherit disabled state from parent Item. Use isDisabled=false
           to keep action enabled.
         </Paragraph>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <Item
             isDisabled
-            type="item"
             icon={<IconFile />}
             actions={
               <>
@@ -750,7 +740,6 @@ export const InsideItem: Story = {
           </Item>
           <Item
             isDisabled
-            type="item"
             icon={<IconFile />}
             actions={
               <>
@@ -770,9 +759,8 @@ export const InsideItem: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Truncated Content</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <Item
-            type="item"
             icon={<IconFile />}
             styles={{ width: 'max 300px' }}
             actions={
@@ -806,7 +794,7 @@ export const InteractiveExample: Story = {
       <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
         Click on the action buttons to see the interactions
       </Paragraph>
-      <Space flow="column" gap="1x" placeItems="start">
+      <Space flow="column" placeItems="start">
         <ItemButton
           type="outline"
           icon={<IconFile />}

@@ -29,11 +29,37 @@ A radio group allows users to select exactly one option from a set of mutually e
 - **`defaultValue`** `string` — The default selected value (uncontrolled)
 - **`type`** `'radio' | 'button' | 'tabs'` (default: `radio`) — Visual type for all radios in the group (button/tabs default to horizontal)
 - **`orientation`** `undefined | 'vertical' | 'horizontal'` (default: `undefined`) — Orientation of the radio group. When unset it is derived from `type`: `horizontal` for `button` and `tabs`, `vertical` otherwise
-- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `xsmall`) — Size for all radio buttons in the group
+- **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `medium`) — Size for all radio buttons in the group
 - **`buttonType`** `'outline' | 'outline-2' | 'clear' | 'primary'` — Button type for button-style radios (ignored in tabs mode). When set to "primary", selected buttons use primary style and non-selected use outline with brand tint. `outline-2` is identical to `outline` but uses `#surface-3` as its base fill, so it stands out when the radio group sits on a `#surface-2` container
 - **`onChange`** `function` — Callback fired when the selected value changes
 - **`onBlur`** `function` — Callback fired when the radio group loses focus
 - **`onFocus`** `function` — Callback fired when the radio group receives focus
+
+### Radio Properties
+
+Each option is a `Radio` (also exported as `Radio.Button`).
+
+- **`value`** `string` — The value this option contributes to the group
+- **`children`** — The option label
+- **`isDisabled`** `boolean` — Whether this option is disabled. Falls back to the group's `isDisabled`
+- **`type`** `'radio' | 'button'` — Overrides the group's visual type for this option
+- **`size`**, **`buttonType`** — Override the group's `size` / `buttonType` for this option
+
+A `button`- or `tabs`-type radio renders an [Item](/docs/content-item--docs), so it takes the same content props an [ItemButton](/docs/actions-itembutton--docs) does. These are ignored by a classic radio:
+
+- **`icon`**, **`rightIcon`** — Icons before / after the label
+- **`prefix`**, **`suffix`** — Content before / after the label
+- **`description`**, **`descriptionPlacement`**, **`descriptionProps`** — Secondary line, placed `inline` (default) or `block`
+- **`tooltip`** — Tooltip content, or `true` to show one only when the label is truncated
+- **`hotkeys`**, **`keyboardShortcutProps`** — Keyboard shortcut that selects the option, rendered as a hint
+- **`isLoading`**, **`loadingSlot`** — Replaces a slot with a spinner and disables the option
+- **`highlight`**, **`highlightCaseSensitive`**, **`highlightStyles`** — Highlights a substring of the label
+- **`level`** — Heading level for the label when `buttonType` is `card` or `header`
+- **`labelRef`** — Ref to the label element
+
+Container [style properties](#style-properties) also apply to button-type radios (they style the `Item`). A classic radio only reads the outer subset — `margin`, `width`, `height`, `flex*`, `grid*`, `place*`, `position`, `inset`, `zIndex`, `border`, `radius`, `shadow`, `outline`.
+
+`shape` and `actions` are not forwarded: the corner radius is owned by the group layout, which keeps only the outer-side radius on the first and last option so the group reads as one continuous control, and a button radio renders as a `<label>`, where a click on a nested action button would select the option.
 
 ### Base Properties
 
@@ -109,12 +135,10 @@ Controls the size of all radio buttons in the group:
 
 **Size Mapping in Tabs Mode:**
 When `type="tabs"`, sizes are automatically mapped to maintain visual consistency:
-- `small` and `medium` → `xsmall`
 - `large` → `medium`
-- `xlarge` → `large`
-- `xsmall` remains `xsmall`
+- every other size → `xsmall`
 
-This ensures tab groups remain compact and cohesive.
+Only `large` is carried through; `xsmall`, `small`, `medium` and `xlarge` all collapse to `xsmall`. This ensures tab groups remain compact and cohesive.
 
 ### Button Type
 
@@ -166,6 +190,18 @@ When using `type="button"`, you can customize the button appearance:
   <Radio value="inactive">Inactive</Radio>
   <Radio value="pending">Pending</Radio>
 </Radio.Tabs>
+```
+
+### Rich Button Content
+
+<Story of={RadioGroupStories.ButtonGroupRichContent} />
+
+```jsx
+<Radio.ButtonGroup label="Region" defaultValue="eu">
+  <Radio value="eu" icon={<GlobeIcon />} description="Frankfurt">EU</Radio>
+  <Radio value="us" icon={<GlobeIcon />} description="Oregon" hotkeys="alt+2">US</Radio>
+  <Radio value="ap" icon={<GlobeIcon />} isLoading>AP</Radio>
+</Radio.ButtonGroup>
 ```
 
 ### Custom Button Type

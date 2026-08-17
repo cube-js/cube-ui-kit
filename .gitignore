@@ -27,3 +27,6 @@ scratch
 # Browser-test failure artifacts
 .vitest-attachments
 __screenshots__
+
+# `pnpm probe` scratch dir: the generated snippet, its input and its results
+.probe

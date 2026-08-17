@@ -413,7 +413,7 @@ export const AllowsCustomValue = () => {
         <ComboBox.Item key="angular">Angular</ComboBox.Item>
         <ComboBox.Item key="svelte">Svelte</ComboBox.Item>
       </ComboBox>
-      <Space flow="column" gap="1x">
+      <Space flow="column">
         <Text>
           Input value: <Text.Strong>{inputValue || 'none'}</Text.Strong>
         </Text>
@@ -489,7 +489,7 @@ export const ClearOnBlur = () => {
         <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
         <ComboBox.Item key="date">Date</ComboBox.Item>
       </ComboBox>
-      <Space flow="column" gap="1x">
+      <Space flow="column">
         <Text>
           Selected: <Text.Strong>{selectedKey || 'none'}</Text.Strong>
         </Text>
@@ -617,6 +617,7 @@ export const Validation = () => (
 
 export const PopoverTriggers = () => (
   <Flex flow="column" gap="2x">
+    {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- labelled "Trigger on Input (default)" - the trigger is what it demonstrates */}
     <ComboBox label="Trigger on Input (default)" popoverTrigger="input">
       <ComboBox.Item key="apple">Apple</ComboBox.Item>
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
@@ -642,6 +643,7 @@ export const Sizes = () => (
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
       <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
     </ComboBox>
+    {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- labelled "Medium (default)" - the size is what it demonstrates */}
     <ComboBox label="Medium (default)" size="medium" placeholder="Medium size">
       <ComboBox.Item key="apple">Apple</ComboBox.Item>
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
@@ -834,7 +836,7 @@ export const IndependentControls = () => {
         <ComboBox.Item key="date">Date</ComboBox.Item>
         <ComboBox.Item key="elderberry">Elderberry</ComboBox.Item>
       </ComboBox>
-      <Space flow="column" gap="1x">
+      <Space flow="column">
         <Text>
           Input value: <Text.Strong>{inputValue || 'empty'}</Text.Strong>
         </Text>
@@ -874,7 +876,7 @@ export const AllowsCustomValueNoCommitOnBlur = () => {
         <ComboBox.Item key="angular">Angular</ComboBox.Item>
         <ComboBox.Item key="svelte">Svelte</ComboBox.Item>
       </ComboBox>
-      <Space flow="column" gap="1x">
+      <Space flow="column">
         <Text>
           Input value: <Text.Strong>{inputValue || 'none'}</Text.Strong>
         </Text>

@@ -56,7 +56,6 @@ export const IsClearable: Story = {
       <Picker
         placeholder="Select a fruit"
         label="Single Selection (Clearable)"
-        selectionMode="single"
         isClearable={true}
         defaultSelectedKey="apple"
       >
@@ -299,7 +298,6 @@ export const Controlled = () => {
       <Picker
         placeholder="Select a fruit"
         label="Favorite Fruit"
-        selectionMode="single"
         selectedKey={selectedKey}
         onSelectionChange={(key) => setSelectedKey(key as string | null)}
       >
@@ -343,32 +341,17 @@ export const ControlledMultiple = () => {
 export const DifferentSizes: Story = {
   render: () => (
     <Flex flow="column" gap="2x">
-      <Picker
-        placeholder="Select a fruit"
-        label="Small Picker"
-        selectionMode="single"
-        size="small"
-      >
+      <Picker placeholder="Select a fruit" label="Small Picker" size="small">
         {fruits.map((fruit) => (
           <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
         ))}
       </Picker>
-      <Picker
-        placeholder="Select a fruit"
-        label="Medium Picker"
-        selectionMode="single"
-        size="medium"
-      >
+      <Picker placeholder="Select a fruit" label="Medium Picker">
         {fruits.map((fruit) => (
           <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
         ))}
       </Picker>
-      <Picker
-        placeholder="Select a fruit"
-        label="Large Picker"
-        selectionMode="single"
-        size="large"
-      >
+      <Picker placeholder="Select a fruit" label="Large Picker" size="large">
         {fruits.map((fruit) => (
           <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
         ))}

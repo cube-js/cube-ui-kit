@@ -2,7 +2,11 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": [],
   "jsPlugins": [
-    { "name": "tasty", "specifier": "@tenphi/eslint-plugin-tasty" }
+    { "name": "tasty", "specifier": "@tenphi/eslint-plugin-tasty" },
+    {
+      "name": "cube-ui-kit",
+      "specifier": "./scripts/oxlint-cube-ui-kit-plugin.mjs"
+    }
   ],
   "categories": {
     "correctness": "off"
@@ -100,7 +104,13 @@
     "tasty/prefer-hide": "warn",
     "tasty/no-raw-color-values": "warn",
     "tasty/prefer-directional-shorthand": "warn",
-    "tasty/prefer-longhand-property": "error"
+    "tasty/prefer-longhand-property": "error",
+    "cube-ui-kit/no-redundant-default-prop": [
+      "error",
+      {
+        "relativeImports": true
+      }
+    ]
   },
   "overrides": [
     {
@@ -1315,6 +1325,30 @@
         "react",
         "typescript"
       ]
+    },
+    {
+      // Generator input for the differential-render prover, not consumer code.
+      // Autofixing it would rewrite the very inputs that establish the registry.
+      "files": [
+        "**/eslint-plugin/fixtures.tsx"
+      ],
+      "rules": {
+        "cube-ui-kit/no-redundant-default-prop": "off"
+      }
+    },
+    {
+      // A test that pins an expected value should keep stating it. The removals
+      // are render-equivalent today, but stripping `cols={12}` makes the test
+      // assert whatever the default happens to be, so a later change to that
+      // default passes instead of failing.
+      "files": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.test.jsx"
+      ],
+      "rules": {
+        "cube-ui-kit/no-redundant-default-prop": "off"
+      }
     }
   ]
 }

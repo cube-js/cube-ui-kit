@@ -279,7 +279,7 @@ export const ControlledAutoSize = () => {
   const [value, setValue] = useState('Line 1');
 
   return (
-    <Space flow="column" gap="1x" placeItems="start">
+    <Space flow="column" placeItems="start">
       <TextArea
         autoSize
         label="Controlled AutoSize TextArea"

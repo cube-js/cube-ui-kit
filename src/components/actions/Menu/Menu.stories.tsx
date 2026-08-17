@@ -1501,7 +1501,7 @@ export const MenuSynchronization = () => {
       </Space>
 
       <Alert type="info" title="Try it out">
-        <Space flow="column" gap="1x">
+        <Space flow="column">
           <Text>1. Open any menu by clicking a button</Text>
           <Text>
             2. Try opening another menu - the first one will automatically close
@@ -1816,7 +1816,7 @@ export const SubMenuCustomization = () => {
       </Space>
 
       <Alert type="info" title="SubMenu Features">
-        <Space flow="column" gap="1x">
+        <Space flow="column">
           <Text>
             • <Text.Strong>Keyboard Navigation:</Text.Strong> Use arrow keys to
             navigate between menus
@@ -2094,7 +2094,7 @@ export const ComprehensivePopoverSynchronization = () => {
         </DialogTrigger>
 
         {/* DialogTrigger (modal) */}
-        <DialogTrigger type="modal">
+        <DialogTrigger>
           <Button size="small">DialogTrigger (modal)</Button>
           <Dialog>
             <Header>

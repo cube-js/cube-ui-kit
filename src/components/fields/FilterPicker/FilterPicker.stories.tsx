@@ -922,7 +922,7 @@ export const RenderSummaryBehavior: Story = {
           1. renderSummary={'{false}'} (Icon-only triggers)
         </Title>
         <Space gap="2x" flow="row" placeItems="start">
-          <Space flow="column" gap="1x">
+          <Space flow="column">
             <Text preset="t4" weight="600">
               No Selection
             </Text>
@@ -942,7 +942,7 @@ export const RenderSummaryBehavior: Story = {
             </FilterPicker>
           </Space>
 
-          <Space flow="column" gap="1x">
+          <Space flow="column">
             <Text preset="t4" weight="600">
               With Selection
             </Text>
@@ -971,7 +971,7 @@ export const RenderSummaryBehavior: Story = {
       <Space gap="2x" flow="column" placeItems="start">
         <Title preset="h6">2. Custom renderSummary returning null</Title>
         <Space gap="2x" flow="row" placeItems="start">
-          <Space flow="column" gap="1x">
+          <Space flow="column">
             <Text preset="t4" weight="600">
               No Selection
             </Text>
@@ -989,7 +989,7 @@ export const RenderSummaryBehavior: Story = {
             </FilterPicker>
           </Space>
 
-          <Space flow="column" gap="1x">
+          <Space flow="column">
             <Text preset="t4" weight="600">
               With Selection
             </Text>
@@ -1016,7 +1016,7 @@ export const RenderSummaryBehavior: Story = {
       <Space gap="2x" flow="column" placeItems="start">
         <Title preset="h6">3. Custom renderSummary with custom text</Title>
         <Space gap="2x" flow="row" placeItems="start">
-          <Space flow="column" gap="1x">
+          <Space flow="column">
             <Text preset="t4" weight="600">
               No Selection
             </Text>
@@ -1037,7 +1037,7 @@ export const RenderSummaryBehavior: Story = {
             </FilterPicker>
           </Space>
 
-          <Space flow="column" gap="1x">
+          <Space flow="column">
             <Text preset="t4" weight="600">
               With Selection
             </Text>
@@ -1067,7 +1067,7 @@ export const RenderSummaryBehavior: Story = {
       <Space gap="2x" flow="column" placeItems="start">
         <Title preset="h6">4. Custom renderSummary with JSX</Title>
         <Space gap="2x" flow="row" placeItems="start">
-          <Space flow="column" gap="1x">
+          <Space flow="column">
             <Text preset="t4" weight="600">
               No Selection
             </Text>
@@ -1094,7 +1094,7 @@ export const RenderSummaryBehavior: Story = {
             </FilterPicker>
           </Space>
 
-          <Space flow="column" gap="1x">
+          <Space flow="column">
             <Text preset="t4" weight="600">
               With Selection
             </Text>
@@ -1184,7 +1184,7 @@ export const WithHeaderAndFooter: Story = {
       {...args}
       header={
         <>
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <Title level={6}>Programming Languages</Title>
             <Badge type="purple">12</Badge>
           </Space>
@@ -1596,13 +1596,13 @@ export const WithIcons: Story = {
     <FilterPicker {...args}>
       <FilterPicker.Section title="User Management">
         <FilterPicker.Item key="users" textValue="Users">
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <UserIcon />
             Users
           </Space>
         </FilterPicker.Item>
         <FilterPicker.Item key="permissions" textValue="Permissions">
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <CheckIcon />
             Permissions
           </Space>
@@ -1610,13 +1610,13 @@ export const WithIcons: Story = {
       </FilterPicker.Section>
       <FilterPicker.Section title="System">
         <FilterPicker.Item key="database" textValue="Database">
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <DatabaseIcon />
             Database
           </Space>
         </FilterPicker.Item>
         <FilterPicker.Item key="settings" textValue="Settings">
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <SettingsIcon />
             Settings
           </Space>
@@ -1686,7 +1686,7 @@ export const WithTextValue: Story = {
         key="basic"
         textValue="Basic Plan - Free with limited features"
       >
-        <Space gap="1x" flow="row" placeItems="center">
+        <Space flow="row" placeItems="center">
           <Text weight="600">Basic Plan</Text>
           <Badge type="disabled">Free</Badge>
         </Space>
@@ -1695,7 +1695,7 @@ export const WithTextValue: Story = {
         key="pro"
         textValue="Pro Plan - Monthly subscription with all features"
       >
-        <Space gap="1x" flow="row" placeItems="center">
+        <Space flow="row" placeItems="center">
           <Text weight="600">Pro Plan</Text>
           <Badge type="purple">$19/month</Badge>
         </Space>
@@ -1704,7 +1704,7 @@ export const WithTextValue: Story = {
         key="enterprise"
         textValue="Enterprise Plan - Custom pricing for large teams"
       >
-        <Space gap="1x" flow="row" placeItems="center">
+        <Space flow="row" placeItems="center">
           <Text weight="600">Enterprise Plan</Text>
           <Badge type="note">Custom</Badge>
         </Space>
@@ -1729,7 +1729,6 @@ export const ControlledExample = () => {
       <FilterPicker
         label="Controlled Single Selection"
         selectedKey={selectedKey}
-        selectionMode="single"
         searchPlaceholder="Search fruits..."
         width="max 30x"
         onSelectionChange={(key) => setSelectedKey(key as string | null)}
@@ -1745,19 +1744,11 @@ export const ControlledExample = () => {
         Selected: <Text.Strong>{selectedKey || 'None'}</Text.Strong>
       </Text>
 
-      <Space gap="1x" flow="row">
-        <Button
-          size="small"
-          type="outline"
-          onClick={() => setSelectedKey('banana')}
-        >
+      <Space flow="row">
+        <Button size="small" onClick={() => setSelectedKey('banana')}>
           Select Banana
         </Button>
-        <Button
-          size="small"
-          type="outline"
-          onClick={() => setSelectedKey(null)}
-        >
+        <Button size="small" onClick={() => setSelectedKey(null)}>
           Clear Selection
         </Button>
       </Space>
@@ -1797,15 +1788,14 @@ export const MultipleControlledExample = () => {
         </Text.Strong>
       </Text>
 
-      <Space gap="1x" flow="row">
+      <Space flow="row">
         <Button
           size="small"
-          type="outline"
           onClick={() => setSelectedKeys(['read', 'write', 'admin'])}
         >
           Select Admin Set
         </Button>
-        <Button size="small" type="outline" onClick={() => setSelectedKeys([])}>
+        <Button size="small" onClick={() => setSelectedKeys([])}>
           Clear All
         </Button>
       </Space>
@@ -1830,7 +1820,6 @@ export const InForm = () => {
         label="Preferred Technology"
         description="Select your preferred technology stack"
         placeholder="Choose technology..."
-        selectionMode="single"
         searchPlaceholder="Search technologies..."
         selectedKey={selectedTechnology}
         onSelectionChange={(key) => setSelectedTechnology(key as string | null)}
@@ -1886,12 +1875,12 @@ export const ComplexExample: Story = {
       {...args}
       header={
         <>
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <FilterIcon />
             <Title level={6}>Filter Options</Title>
             <Badge type="disabled">24 available</Badge>
           </Space>
-          <Space gap="1x" flow="row">
+          <Space flow="row">
             <Button
               data-popover-keep
               type="clear"
@@ -2414,26 +2403,17 @@ export const MultipleControlled: Story = {
           </Text.Strong>
         </Text>
 
-        <Space gap="1x" flow="row">
+        <Space flow="row">
           <Button
             size="small"
-            type="outline"
             onClick={() => setSelectedKeys(['read', 'write', 'admin'])}
           >
             Select Admin Set
           </Button>
-          <Button
-            size="small"
-            type="outline"
-            onClick={() => setSelectedKeys(['read'])}
-          >
+          <Button size="small" onClick={() => setSelectedKeys(['read'])}>
             Read Only
           </Button>
-          <Button
-            size="small"
-            type="outline"
-            onClick={() => setSelectedKeys([])}
-          >
+          <Button size="small" onClick={() => setSelectedKeys([])}>
             Clear All
           </Button>
         </Space>

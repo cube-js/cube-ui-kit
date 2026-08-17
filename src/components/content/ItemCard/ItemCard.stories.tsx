@@ -112,7 +112,7 @@ export const Default: Story = {
 };
 
 export const Sizes = (args: CubeItemCardProps) => (
-  <Space gap="1x" flow="column" width="max 400px">
+  <Space flow="column" width="max 400px">
     <ItemCard
       {...args}
       size="medium"

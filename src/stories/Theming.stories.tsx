@@ -257,11 +257,7 @@ function StoryPage({
 // ============================================================================
 
 function ResetButton() {
-  return (
-    <Button type="outline" onPress={resetPaletteConfig}>
-      Reset to defaults
-    </Button>
-  );
+  return <Button onPress={resetPaletteConfig}>Reset to defaults</Button>;
 }
 
 /** The chips are read alongside their labels, so they only need to be legible. */
@@ -437,8 +433,6 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
         <Slider
           label="Saturation"
           tooltip="The accent zone's chroma, and the fallback every status theme inherits until it sets its own. It is also a ceiling on the base zone, which takes a 12% share of it while it follows the accent."
-          minValue={0}
-          maxValue={100}
           value={palette.saturation}
           onChange={(saturation) =>
             setPalette((config) => ({ ...config, saturation }))
@@ -534,7 +528,6 @@ function BaseSourceControls() {
                   ? `The same 0–100 scale the accent saturation uses, on the chrome alone. The shipped value is 12 — a faint tint is what a neutral surface is — so the interesting range is the low end, and past about 25 the base colors run out of scale and converge.`
                   : `Reaches surface-2…surface-4, the borders and the text ramp, but not the page surface: at the end of the tone scale there is no room for chroma. Switch Surfaces to Tinted to give it some.`
               }
-              minValue={0}
               // The clip a derived base color gets, so the manual and the derived
               // routes agree on what the top of the range means. `surface-inverse`
               // saturates around 25 and its siblings follow, so the upper half is
@@ -760,8 +753,6 @@ function StatusControls() {
             {palette.pastel ? null : (
               <Slider
                 label={`${name} saturation`}
-                minValue={0}
-                maxValue={100}
                 value={seed.saturation}
                 onChange={(saturation) =>
                   setPalette(statusSeed(name, { saturation }))
@@ -800,8 +791,6 @@ function ContrastControls() {
           ? 'The level moves the normal colors only. The high-contrast tier is the true high-contrast resolution at every level, so the two compose — a contrast preference still escalates on top of wherever the slider puts the baseline.'
           : 'One tier at level 100: the normal colors already are the high-contrast ones here, so data-contrast="high" and prefers-contrast: more have nothing left to escalate to. Every level below this keeps both tiers.'
       }
-      minValue={0}
-      maxValue={100}
       value={level}
       onChange={(contrastLevel) =>
         setPalette((config) => ({ ...config, contrastLevel }))
@@ -970,6 +959,7 @@ function ComponentPanel() {
       </Lead>
       <Row>
         <Button type="primary">Primary</Button>
+        {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- button type row names every type, the default included */}
         <Button type="outline">Outline</Button>
         <Button type="clear">Clear</Button>
         <Button type="link">Link</Button>
@@ -979,9 +969,7 @@ function ComponentPanel() {
         <Button type="primary" theme="danger">
           Danger
         </Button>
-        <Button type="outline" theme="success">
-          Success
-        </Button>
+        <Button theme="success">Success</Button>
         <Button type="primary" theme="special">
           Special
         </Button>
@@ -1381,8 +1369,6 @@ function StatusThemeButton({
             <Slider
               label="Saturation"
               tooltip="Inherits the palette saturation until you move it, and stays pinned afterwards — so a re-seeded palette leaves this theme where you put it."
-              minValue={0}
-              maxValue={100}
               value={seed.saturation}
               onChange={(saturation) =>
                 setPalette(statusSeed(name, { saturation }))
@@ -1438,16 +1424,12 @@ function ExportButton() {
       mobileType="tray"
       placement="bottom start"
     >
-      <Button type="outline" size="small" icon={<CopyIcon />}>
+      <Button size="small" icon={<CopyIcon />}>
         Export
       </Button>
       <Dialog aria-label="Export the palette config" width="max-content">
         <Section styles={EXPORT_POPOVER_STYLES}>
-          <CopySnippet
-            language="javascript"
-            title="Palette config"
-            code={source}
-          />
+          <CopySnippet title="Palette config" code={source} />
         </Section>
       </Dialog>
     </DialogTrigger>
@@ -1473,7 +1455,6 @@ function DownloadButton() {
 
   return (
     <Button
-      type="outline"
       size="small"
       icon={<IconDownload />}
       tooltip="Download the config as palette.json"
@@ -1495,7 +1476,6 @@ function BuilderActions() {
   return (
     <Row>
       <Button
-        type="outline"
         size="small"
         icon={<ReloadIcon />}
         tooltip="Discard every change and return to the shipped palette"
@@ -1535,10 +1515,9 @@ function ThemeBuilderControls({
           {THEME_PRESETS.map((preset) => (
             <Button
               key={preset.label}
-              type="outline"
               size="small"
-              // `outline` shows selection as a filled chip, so the active preset
-              // reads as the state it is rather than as a fifth style.
+              // The default `outline` shows selection as a filled chip, so the
+              // active preset reads as the state it is rather than as a fifth style.
               isSelected={activePreset === preset.label}
               onPress={() => {
                 // No reset first — the setter replaces, so the preset config
@@ -1590,8 +1569,6 @@ function ThemeBuilderControls({
         <Slider
           label="Code saturation"
           tooltip="Hues are fixed; only saturation is tunable. The syntax family carries absolute hues and its own seed, so neither the brand hue nor the palette saturation reaches it — a brand re-seeded toward green would otherwise collide strings with numbers."
-          minValue={0}
-          maxValue={100}
           value={palette.themes.code.saturation}
           onChange={(saturation) =>
             setPalette((config) => ({
@@ -1856,9 +1833,7 @@ function ThemePreview({
         <SwatchLabel styles={{ preset: 't3m' }}>Quarterly Revenue</SwatchLabel>
         <Badge>Draft</Badge>
         <Row styles={{ gap: '1x', marginLeft: 'auto' }}>
-          <Button type="outline" size="small">
-            Share
-          </Button>
+          <Button size="small">Share</Button>
           <Button type="primary" size="small">
             Run
           </Button>

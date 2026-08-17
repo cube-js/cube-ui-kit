@@ -228,6 +228,9 @@ importers:
       husky:
         specifier: ^6.0.0
         version: 6.0.0
+      jiti:
+        specifier: ^2.6.1
+        version: 2.6.1
       jsdom:
         specifier: ^29.1.1
         version: 29.1.1

@@ -990,7 +990,7 @@ DifferentSizes.parameters = {
 export const WithDialog: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <DialogTrigger>
     <Button>Open Command Menu</Button>
-    <Dialog size="medium" isDismissable={false}>
+    <Dialog isDismissable={false}>
       <CommandMenu {...args}>
         {basicCommands.map((command) => (
           <CommandMenu.Item
@@ -1099,7 +1099,7 @@ function CommandMenuDialogContent({
   };
 
   return (
-    <Dialog size="medium" isDismissable={false}>
+    <Dialog isDismissable={false}>
       <CommandMenu {...commandMenuProps}>
         {basicCommands.map((command) => (
           <CommandMenu.Item

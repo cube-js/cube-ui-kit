@@ -2,6 +2,8 @@
 
 Test runner: **Vitest** (globals enabled — `vi`, `describe`, `it`, `expect` etc. are available without imports).
 
+> **Before writing a spec, check you actually want one.** A spec is a permanent artefact someone maintains and re-runs. If the question is "what does this render / what CSS does this produce / what does this token resolve to", that is a *look*, not a test — run [`pnpm probe`](probe.md) and read the answer. Writing a spec to run once and delete is the habit the probe exists to replace.
+
 ## Setup
 
 - Place test files next to components with `.test.tsx` extension

@@ -42,6 +42,7 @@ export const Themes: StoryFn<BannerProps> = () => {
       >
         Warning: API usage at 85% of monthly limit.
       </Banner>
+      {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- themed banner list names every theme, note included, so the set reads */}
       <Banner theme="note" actions={<Banner.Action>Learn More</Banner.Action>}>
         Tip: Enable auto-scaling to handle traffic spikes automatically.
       </Banner>
@@ -57,7 +58,7 @@ export const Themes: StoryFn<BannerProps> = () => {
  */
 export const WithLinks: StoryFn<BannerProps> = () => {
   return (
-    <Space direction="vertical" gap="1x" width="100%">
+    <Space direction="vertical" width="100%">
       <Banner
         theme="warning"
         actions={<Banner.Action>Upgrade tier</Banner.Action>}
@@ -104,6 +105,7 @@ export const Stacked: StoryFn<BannerProps> = () => {
       >
         Warning: You have exceeded 80% of your query limit.
       </Banner>
+      {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- themed banner list names every theme, note included, so the set reads */}
       <Banner isDismissable theme="note" shape="sharp">
         New deployment features are available.
       </Banner>
@@ -129,7 +131,6 @@ CustomIcon.args = {
 export const WithDescription: StoryFn<BannerProps> = () => {
   return (
     <Banner
-      theme="note"
       width="300px"
       description="This is an extended description that spans multiple lines to demonstrate text overflow behavior. When the banner container has limited width, the description should show ellipsis after two lines."
     >

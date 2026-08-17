@@ -1332,7 +1332,7 @@ export const Container: Story = {
             This content is horizontally centered with a constrained max-width.
             It works well for forms, articles, and focused content.
           </Text>
-          <Space flow="column" gap="1x">
+          <Space flow="column">
             <Text preset="t3">• Min width: 40x (320px at default gap)</Text>
             <Text preset="t3">• Max width: 120x (960px at default gap)</Text>
             <Text preset="t3">• Content scrolls vertically when needed</Text>

@@ -11,6 +11,7 @@ concurrency:
 
 permissions:
   contents: read  # Read-only access to repository contents
+  actions: read   # Read access to workflow runs and their artifacts (baseline lookup)
   issues: write   # Write access to issues
   pull-requests: write  # Write access to pull requests
   statuses: write  # Write access to commit statuses
@@ -51,18 +52,40 @@ jobs:
       - name: Build project
         run: pnpm build
 
-      - name: Download baseline stats
-        uses: dawidd6/action-download-artifact@v4
+      # Resolves the baseline explicitly instead of trusting the order the
+      # workflow-runs API replies with — that order is not guaranteed and has
+      # silently pinned PRs against weeks-old runs.
+      - name: Resolve baseline run
+        id: baseline
         if: github.event.number
-        with:
-          workflow: size-limit.yml
-          branch: ${{ github.event.pull_request.base.ref }}
-          path: ./__compare
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASELINE_BRANCH: ${{ github.event.pull_request.base.ref }}
+          BASELINE_WORKFLOW: size-limit.yml
+          BASELINE_ARTIFACT: size-limit-report
+        run: node ./scripts/ci/resolve-baseline.js
+
+      - name: Download baseline stats
+        if: steps.baseline.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download '${{ steps.baseline.outputs.run-id }}' \
+            --repo "$GITHUB_REPOSITORY" \
+            --name size-limit-report \
+            --dir './__compare/size-limit-report'
 
       - name: Measure size
         id: measure_size
         continue-on-error: true
-        run: BASELINE='./__compare/${{ env.REPORT_FOLDER }}/output.json' node ./scripts/ci/measure-size.js
+        env:
+          BASELINE: './__compare/size-limit-report/output.json'
+          BASELINE_BRANCH: ${{ github.event.pull_request.base.ref }}
+          BASELINE_RUN_ID: ${{ steps.baseline.outputs.run-id }}
+          BASELINE_RUN_URL: ${{ steps.baseline.outputs.run-url }}
+          BASELINE_SHA: ${{ steps.baseline.outputs.head-sha }}
+          BASELINE_CREATED_AT: ${{ steps.baseline.outputs.created-at }}
+        run: node ./scripts/ci/measure-size.js
 
       - name: Save stats
         run: echo '${{ steps.measure_size.outputs.result }}' > ./size-limit-report/output.json
@@ -74,8 +97,8 @@ jobs:
           path: ${{ env.REPORT_FOLDER }}
 
       - name: Build Statoscope Report
-        if: github.event.number
-        run: npx statoscope generate -i ${{ env.REPORT_FOLDER }}/stats.json -r ./__compare/${{ env.REPORT_FOLDER }}/stats.json --output ${{ env.REPORT_FOLDER }}/report.html
+        if: github.event.number && steps.baseline.outputs.found == 'true'
+        run: npx statoscope generate -i ${{ env.REPORT_FOLDER }}/stats.json -r ./__compare/size-limit-report/stats.json --output ${{ env.REPORT_FOLDER }}/report.html
 
       - name: Comment PR
         uses: actions/github-script@v6

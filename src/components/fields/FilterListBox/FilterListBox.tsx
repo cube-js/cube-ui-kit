@@ -1137,7 +1137,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
         footer={footer}
         footerStyles={footerStyles}
         mods={mods}
-        size="medium"
         styles={listBoxStyles}
         isCheckable={isCheckable}
         items={items as any}

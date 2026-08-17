@@ -1,4 +1,5 @@
 import { ItemActionProvider } from '../components/actions/ItemActionContext';
+import { DialogContext } from '../components/overlays/Dialog/context';
 import {
   Alert,
   AlertDialog,
@@ -205,6 +206,23 @@ export const FIXTURES: Fixture[] = [
     // Dialog normalises S/M/L onto small/medium/large through a lookup table
     // (Dialog.tsx), so `medium` really is the `M` default spelled differently.
     curatedAliases: { size: ['medium'] },
+    /**
+     * `Dialog.tsx` resolves `isDismissable = contextProps.isDismissable` with no
+     * literal fallback, and `DialogContainer`/`DialogTrigger` default that context
+     * value to `true`. So bare, `isDismissable={false}` matches the undefined
+     * default; nested in a dismissable container it is what opts the inner dialog
+     * out. Probing under the context is the only way to see the difference.
+     */
+    conditions: [
+      {
+        label: 'inside <DialogContext isDismissable>',
+        wrap: (ui) => (
+          <DialogContext.Provider value={{ isDismissable: true }}>
+            {ui}
+          </DialogContext.Provider>
+        ),
+      },
+    ],
   },
 
   /* ── Content ──────────────────────────────────────────────────────────── */
@@ -222,7 +240,26 @@ export const FIXTURES: Fixture[] = [
   { name: 'InfoBadge', render: (props) => <InfoBadge {...props}>1</InfoBadge> },
   {
     name: 'ItemBadge',
+    /**
+     * Reads `type` and `theme` off `ItemActionContext` the same way `ItemAction`
+     * does, so it needs the same conditions — without them both props probe as
+     * plain defaults while actually being inheritance overrides.
+     */
     render: (props) => <ItemBadge {...props}>1</ItemBadge>,
+    conditions: [
+      {
+        label: 'inside <ItemActionProvider theme="danger">',
+        wrap: (ui) => (
+          <ItemActionProvider theme="danger">{ui}</ItemActionProvider>
+        ),
+      },
+      {
+        label: 'inside <ItemActionProvider type="primary">',
+        wrap: (ui) => (
+          <ItemActionProvider type="primary">{ui}</ItemActionProvider>
+        ),
+      },
+    ],
     curatedSkips: { isSelected: ARIA_SELECTED_SKIP },
   },
   {
@@ -239,6 +276,20 @@ export const FIXTURES: Fixture[] = [
   },
   {
     name: 'ItemAction',
+    /**
+     * Every prop `ItemAction` reads off `ItemActionContext` needs a condition
+     * here, because the fallback chain is `prop ?? context ?? literal`
+     * (`ItemAction.tsx`: `type = contextType ?? 'clear'`,
+     * `isDisabled = isDisabledProp ?? contextIsDisabled`). Probed bare, the
+     * literal wins and the prop looks like a plain default; probed under a
+     * provider that supplies a different value, the prop is what stops the
+     * inherited one from applying. `<Item isDisabled>` renders its `actions` in
+     * exactly such a provider, so `<ItemAction isDisabled={false}>` is the
+     * documented way to keep one action live inside a disabled item.
+     *
+     * The provider rewrites item-ish `type`s to `clear`, so `type="primary"` is
+     * used here — one of the values it passes through untouched.
+     */
     render: (props) => <ItemAction {...props}>Label</ItemAction>,
     conditions: [
       {
@@ -246,6 +297,16 @@ export const FIXTURES: Fixture[] = [
         wrap: (ui) => (
           <ItemActionProvider theme="danger">{ui}</ItemActionProvider>
         ),
+      },
+      {
+        label: 'inside <ItemActionProvider type="primary">',
+        wrap: (ui) => (
+          <ItemActionProvider type="primary">{ui}</ItemActionProvider>
+        ),
+      },
+      {
+        label: 'inside <ItemActionProvider isDisabled>',
+        wrap: (ui) => <ItemActionProvider isDisabled>{ui}</ItemActionProvider>,
       },
     ],
   },
@@ -323,13 +384,26 @@ export const FIXTURES: Fixture[] = [
   },
   {
     name: 'RadioGroup',
+    /**
+     * `size` only reaches the DOM through the radios, and a plain `type="radio"`
+     * radio renders identically at every size — so probed bare, *any* documented
+     * value verifies. That is how `(default: xsmall)` survived in the docs while
+     * `Radio.tsx` resolves `size ?? contextSize ?? 'medium'`: the probe could not
+     * tell the two apart, and the rule then offered to strip `size="xsmall"` from
+     * consumer code. The `type="button"` condition is what makes the size probe
+     * able to fail.
+     */
     render: (props) => (
       <RadioGroup label="Radio" {...props}>
         <Radio value="a">A</Radio>
         <Radio value="b">B</Radio>
       </RadioGroup>
     ),
-    conditions: [insideHorizontalForm],
+    conditions: [
+      insideHorizontalForm,
+      { label: 'type="button"', props: { type: 'button' } },
+      { label: 'type="tabs"', props: { type: 'tabs' } },
+    ],
     ignoreProps: ['label', 'children'],
   },
   {
