@@ -601,7 +601,7 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     RadioGroup: {
       props: {
-        size: { kind: 'default', value: 'xsmall' },
+        size: { kind: 'default', value: 'medium' },
         type: { kind: 'default', value: 'radio' },
       },
     },

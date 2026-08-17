@@ -384,13 +384,26 @@ export const FIXTURES: Fixture[] = [
   },
   {
     name: 'RadioGroup',
+    /**
+     * `size` only reaches the DOM through the radios, and a plain `type="radio"`
+     * radio renders identically at every size — so probed bare, *any* documented
+     * value verifies. That is how `(default: xsmall)` survived in the docs while
+     * `Radio.tsx` resolves `size ?? contextSize ?? 'medium'`: the probe could not
+     * tell the two apart, and the rule then offered to strip `size="xsmall"` from
+     * consumer code. The `type="button"` condition is what makes the size probe
+     * able to fail.
+     */
     render: (props) => (
       <RadioGroup label="Radio" {...props}>
         <Radio value="a">A</Radio>
         <Radio value="b">B</Radio>
       </RadioGroup>
     ),
-    conditions: [insideHorizontalForm],
+    conditions: [
+      insideHorizontalForm,
+      { label: 'type="button"', props: { type: 'button' } },
+      { label: 'type="tabs"', props: { type: 'tabs' } },
+    ],
     ignoreProps: ['label', 'children'],
   },
   {
