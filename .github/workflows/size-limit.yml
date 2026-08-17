@@ -125,13 +125,46 @@ jobs:
       # Needs the baseline `stats.json` as its reference, so gate on the
       # download having actually landed rather than on the baseline merely
       # having been resolved.
+      #
+      # Written outside REPORT_FOLDER deliberately. That folder is the baseline
+      # artifact every later run downloads, and it is uploaded by the step
+      # above — which runs BEFORE this one, so a report written into it was
+      # never in any artifact and was simply thrown away with the runner.
+      # Keeping it separate also keeps the baseline download small.
       - name: Build Statoscope Report
+        id: statoscope
         if: github.event.number && steps.baseline_download.outputs.downloaded == 'true'
-        run: npx statoscope generate -i ${{ env.REPORT_FOLDER }}/stats.json -r ./__compare/size-limit-report/stats.json --output ${{ env.REPORT_FOLDER }}/report.html
+        run: |
+          mkdir -p ./__report
+          npx statoscope generate \
+            -i '${{ env.REPORT_FOLDER }}/stats.json' \
+            -r './__compare/size-limit-report/stats.json' \
+            --output './__report/report.html'
+          echo 'built=true' >> "$GITHUB_OUTPUT"
+
+      # ~180 MB on the runner but ~5 MB stored (it is one HTML file with the
+      # stats inlined, which compresses hard). Short retention because it is
+      # only of interest while the PR is open — unlike the baseline artifact
+      # above, nothing later depends on it.
+      - name: Upload Statoscope report
+        if: steps.statoscope.outputs.built == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: size-limit-statoscope-report
+          path: ./__report/report.html
+          retention-days: 14
 
       # Posting the report is not the check. A 503 from the issues API while
       # commenting says nothing about the bundle, so tolerate it and let the
       # `Throw error` gate below decide the job's outcome.
+      #
+      # The module-level report line used to interpolate
+      # `steps.deploy_report.outputs.preview-url`. That step deployed the report
+      # to Netlify and was removed in #108, but the link was left behind — so
+      # for every PR since, the comment has carried a dead link to a bare
+      # `/report.html`. It now points at the artifact, and says so plainly when
+      # there is no report (which happens whenever the baseline is missing,
+      # since Statoscope has nothing to diff against).
       - name: Comment PR
         uses: actions/github-script@v6
         continue-on-error: true
@@ -146,7 +179,7 @@ jobs:
               body: `
                 ${{ steps.measure_size.outputs.table }}
                 ---
-                [Click here if you want to find out what is changed in this build](${{ steps.deploy_report.outputs.preview-url }}/report.html)
+                ${{ steps.statoscope.outputs.built == 'true' && format('To see which modules changed, download the **size-limit-statoscope-report** artifact from [this run]({0}/{1}/actions/runs/{2}) and open report.html.', github.server_url, github.repository, github.run_id) || 'No module-level report for this run — Statoscope needs a baseline build to diff against.' }}
               `,
               github,
               repo: context.repo,
