@@ -1222,6 +1222,38 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'special.item': SPECIAL_ITEM_STYLES,
 };
 
+// Resolve a `theme` + `type` pair to the variant key that actually exists in
+// `ITEM_VARIANTS`. Three of the combinations users can write have no entry of
+// their own and are folded onto one that does.
+//
+// Shared rather than inlined because more than one component has to arrive at
+// the same answer: `Item` renders the row, and `ItemButton` repeats the lookup on
+// the wrapper that carries the row color to actions rendered outside it. Those
+// two drifted the moment they were written separately — the `special` fallback
+// below was missed, which silently resolved to a nonexistent
+// `special.outline-2`, left the wrapper with no color, and handed sibling actions
+// the page's `currentcolor` on a dark surface.
+export function resolveItemVariant(
+  theme: string | undefined,
+  type: string | undefined,
+): ItemVariant {
+  // The `special` theme has no `outline-2` variant (it paints over
+  // `#special-surface`, not `#surface-2`/`#surface-3`); fall back to `outline`
+  // so the item still renders.
+  const effectiveType =
+    theme === 'special' && type === 'outline-2' ? 'outline' : type;
+
+  // `header` reuses the `item` visuals, and both `header` and `current` are
+  // theme-agnostic — `current` paints from the inherited `currentcolor`.
+  const variantType = effectiveType === 'header' ? 'item' : effectiveType;
+  const variantTheme =
+    effectiveType === 'header' || effectiveType === 'current'
+      ? 'default'
+      : theme;
+
+  return `${variantTheme}.${variantType}` as ItemVariant;
+}
+
 // Each variant reduced to just its resting label color.
 //
 // The `current` type paints from `currentcolor`, which only reaches an action

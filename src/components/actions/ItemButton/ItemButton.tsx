@@ -14,7 +14,7 @@ import { useFocusWithin, useHover } from 'react-aria';
 import { useEvent } from '../../../_internal';
 import {
   ITEM_RESTING_COLOR_VARIANTS,
-  ItemVariant,
+  resolveItemVariant,
 } from '../../../data/item-themes';
 import {
   mergeProps,
@@ -247,13 +247,9 @@ const ItemButton = forwardRef(function ItemButton(
     return (
       <ActionsWrapper
         {...hoverProps}
-        // Mirrors the normalisation in `Item`, so the wrapper resolves to the
-        // same variant the row itself renders.
-        variant={
-          `${type === 'header' || type === 'current' ? 'default' : theme}.${
-            type === 'header' ? 'item' : type
-          }` as ItemVariant
-        }
+        // The same resolver `Item` uses, so the wrapper cannot land on a
+        // different variant than the row it wraps.
+        variant={resolveItemVariant(theme, type)}
         data-size={size}
         data-type={type}
         data-theme={theme}

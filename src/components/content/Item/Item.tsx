@@ -22,7 +22,11 @@ import { OverlayProps } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { ITEM_VARIANTS, ItemVariant } from '../../../data/item-themes';
+import {
+  ITEM_VARIANTS,
+  ItemVariant,
+  resolveItemVariant,
+} from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import {
@@ -895,28 +899,12 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       }
     };
 
-    // The `special` theme has no `outline-2` variant (it paints over
-    // `#special-surface`, not `#surface-2`/`#surface-3`); fall back to
-    // `outline` so the item still renders.
-    const effectiveType =
-      theme === 'special' && type === 'outline-2' ? 'outline' : type;
-
-    // `header` reuses the `item` visuals, and both `header` and `current` are
-    // theme-agnostic — `current` paints from the inherited `currentcolor`.
-    const variantType = effectiveType === 'header' ? 'item' : effectiveType;
-    const variantTheme =
-      effectiveType === 'header' || effectiveType === 'current'
-        ? 'default'
-        : theme;
-
     return (
       <ItemElement
         ref={handleRef}
-        variant={
-          theme && variantType
-            ? (`${variantTheme}.${variantType}` as ItemVariant)
-            : undefined
-        }
+        // Shared with `ItemButton`, which repeats this lookup on the wrapper that
+        // carries the row color to actions rendered outside the row.
+        variant={theme && type ? resolveItemVariant(theme, type) : undefined}
         disabled={isNativelyDisabled}
         aria-disabled={finalIsDisabled}
         aria-selected={isSelected}
