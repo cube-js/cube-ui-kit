@@ -242,7 +242,11 @@ export function createRule(registry: DefaultsRegistry = DEFAULTS) {
 
           if (!component) return;
 
-          const entry = registry.components[component];
+          // `<Radio.Group>` and `<RadioGroup>` are the same object, and the
+          // dotted form is the idiomatic one. The entry is keyed on the
+          // fixture's name, so aliases redirect onto it.
+          const entry =
+            registry.components[registry.aliases?.[component] ?? component];
 
           if (!entry) return;
 

@@ -169,6 +169,7 @@ export const Variants: Story = {
           <Button.Split
             actions={actions}
             defaultActionKey="copy"
+            // oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- Variants story names every type, the default included
             type="outline"
           />
           {/* `outline-2` uses `#surface-3` as its base fill so it stands
@@ -213,7 +214,7 @@ export const Variants: Story = {
 
 export const ThreeButtons: Story = {
   render: () => (
-    <Button.Split type="outline">
+    <Button.Split>
       <Button icon={<IconPlus />}>Add</Button>
       <Button icon={<IconCopy />}>Copy</Button>
       <Button icon={<IconDownload />}>Export</Button>

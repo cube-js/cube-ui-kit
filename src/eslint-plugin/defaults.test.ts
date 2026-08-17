@@ -1,6 +1,8 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import * as UIKit from '../index';
+
 import { DEFAULTS } from './defaults.generated';
 import { componentsWithDocumentedDefaults } from './docs-defaults';
 import { FIXTURES } from './fixtures';
@@ -42,9 +44,40 @@ describe('defaults registry', () => {
   });
 
   it('covers every fixture', () => {
+    // Aliases live in their own map rather than as extra `components` keys, so
+    // this stays a plain one-entry-per-fixture assertion.
     expect(Object.keys(DEFAULTS.components).sort()).toEqual(
       FIXTURES.map((f) => f.name).sort(),
     );
+  });
+
+  it('every alias points at a covered component and adds a new key', () => {
+    const aliases = Object.entries(DEFAULTS.aliases ?? {});
+
+    expect(
+      aliases.filter(([, target]) => !DEFAULTS.components[target]),
+    ).toEqual([]);
+
+    // An alias that shadows a real component key would be dead weight at best
+    // and would silently redirect that component's own tag at worst.
+    expect(aliases.filter(([alias]) => DEFAULTS.components[alias])).toEqual([]);
+  });
+
+  it('aliases resolve to the same object as the component they point at', () => {
+    // The whole safety argument is object identity: `Radio.Group` may inherit
+    // `RadioGroup`'s entry only because it *is* `RadioGroup`. Re-checked here
+    // against the live exports so a refactor that turns an alias into a wrapper
+    // (as `Radio.ButtonGroup` already is) fails instead of shipping a wrong entry.
+    const resolve = (path: string) =>
+      path
+        .split('.')
+        .reduce<any>((target, part) => target?.[part], UIKit as any);
+
+    const mismatched = Object.entries(DEFAULTS.aliases ?? {}).filter(
+      ([alias, target]) => resolve(alias) !== resolve(target),
+    );
+
+    expect(mismatched).toEqual([]);
   });
 
   it('every fixture names a component that documents defaults', () => {
