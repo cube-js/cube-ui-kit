@@ -785,7 +785,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       {...filterBaseProps(otherProps, { eventProps: true })}
     >
       <DialogTrigger
-        isDismissable
         type="popover"
         placement={placement}
         isOpen={isPopoverOpen}

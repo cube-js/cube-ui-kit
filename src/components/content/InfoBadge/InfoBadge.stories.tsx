@@ -46,7 +46,7 @@ export const WithoutSuffix: Story = {
 
 export const Sizes: Story = {
   render: (args) => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
       <InfoBadge {...args} size="small" />
       <InfoBadge {...args} size="medium" />
       <InfoBadge {...args} size="large" />
@@ -73,7 +73,7 @@ export const SizesInText: Story = {
 
 export const Themes: Story = {
   render: (args) => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
       <InfoBadge {...args} theme="default" />
       <InfoBadge {...args} theme="danger" />
       <InfoBadge {...args} theme="success" />
@@ -83,7 +83,7 @@ export const Themes: Story = {
 
 export const Disabled: Story = {
   render: (args) => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
       <InfoBadge {...args} isDisabled />
       <InfoBadge {...args} isDisabled to="!https://docs.cube.dev" />
       <InfoBadge {...args} isDisabled onPress={() => {}} />
@@ -93,7 +93,7 @@ export const Disabled: Story = {
 
 export const Types: Story = {
   render: (args) => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
       <InfoBadge {...args} type="clear" />
       <InfoBadge {...args} type="outline" />
       <InfoBadge {...args} type="primary" />

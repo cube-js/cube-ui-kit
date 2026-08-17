@@ -144,7 +144,6 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
 
     return (
       <MenuTrigger
-        placement="bottom start"
         {...mergeProps(defaultTriggerProps, triggerProps || undefined)}
         isDummy
         isOpen={isOpen}

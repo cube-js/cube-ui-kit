@@ -151,7 +151,7 @@ export const Default: Story = {
 
 export const Themes: Story = {
   render: () => (
-    <Space gap="1x">
+    <Space>
       <Tag>Default</Tag>
       <Tag theme="warning">Warning</Tag>
       <Tag theme="note">Note</Tag>
@@ -165,7 +165,7 @@ export const Themes: Story = {
 
 export const WithIcons: Story = {
   render: () => (
-    <Space gap="1x">
+    <Space>
       <Tag icon={<IconCoin />}>With Icon</Tag>
       <Tag icon={<IconCoin />} theme="success">
         Success
@@ -179,7 +179,7 @@ export const WithIcons: Story = {
 
 export const Closable: Story = {
   render: () => (
-    <Space gap="1x">
+    <Space>
       <Tag isClosable>Default</Tag>
       <Tag isClosable theme="warning">
         Warning
@@ -202,7 +202,7 @@ export const Closable: Story = {
 
 export const ClosableWithIcons: Story = {
   render: () => (
-    <Space gap="1x">
+    <Space>
       <Tag isClosable icon={<IconCoin />}>
         Default
       </Tag>
@@ -218,7 +218,8 @@ export const ClosableWithIcons: Story = {
 
 export const Sizes: Story = {
   render: () => (
-    <Space gap="1x" placeItems="center">
+    <Space placeItems="center">
+      {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- Sizes story labels this one "(default)" */}
       <Tag size="inline">Inline (default)</Tag>
       <Tag size="xsmall">Extra Small</Tag>
       <Tag size="small">Small</Tag>

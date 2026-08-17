@@ -281,7 +281,6 @@ export const ListBoxPopover = function ListBoxPopover(
             >
               <ListBox
                 ref={listBoxRef}
-                focusOnHover
                 disableSelectionToggle
                 id={listBoxId}
                 aria-label={
@@ -291,7 +290,6 @@ export const ListBoxPopover = function ListBoxPopover(
                     : t('listBoxPopover.options', 'Options'))
                 }
                 selectedKey={selectedKey}
-                selectionMode="single"
                 isDisabled={isDisabled}
                 disabledKeys={disabledKeys}
                 shouldUseVirtualFocus={true}
@@ -303,7 +301,6 @@ export const ListBoxPopover = function ListBoxPopover(
                 sectionStyles={sectionStyles}
                 headingStyles={headingStyles}
                 stateRef={listStateRef}
-                size="medium"
                 shape="popover"
                 emptyLabel={emptyLabel}
                 onSelectionChange={onSelectionChange}

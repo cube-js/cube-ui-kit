@@ -40,7 +40,7 @@ const Template: StoryFn<CubeIconProps> = (name) => {
           const Icon = Icons[iconName];
 
           return (
-            <Space key={iconName} gap="1x">
+            <Space key={iconName}>
               <Icon size={18} />
               <Text preset="t4">{iconName}</Text>
             </Space>
@@ -60,7 +60,7 @@ const Template: StoryFn<CubeIconProps> = (name) => {
           const Icon = Icons[iconName];
 
           return (
-            <Space key={iconName} gap="1x">
+            <Space key={iconName}>
               <Icon size={24} color="#purple-text" />
               <Text preset="t4">{iconName}</Text>
             </Space>

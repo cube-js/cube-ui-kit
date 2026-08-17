@@ -30,7 +30,6 @@ export default {
 const Template: StoryFn<CubeAlertDialogProps> = (args) => {
   return (
     <DialogTrigger
-      isDismissable
       placement="top"
       onDismiss={(action) => console.log('onDismiss event', action)}
     >

@@ -440,7 +440,7 @@ export const PersistedColumnLayout: Story = {
           isColumnReorderable
           storageKey={STORAGE_KEY}
         />
-        <Space gap="1x" placeItems="center start">
+        <Space placeItems="center start">
           <Button
             size="small"
             onPress={() => {
@@ -612,11 +612,11 @@ export const QueryResultsLayout: Story = {
         </Space>
       }
       footerEnd={
-        <Space gap="1x" placeItems="center">
+        <Space placeItems="center">
           <Text color="#dark-03" preset="t4">
             showing {ROWS.length} out of 649 total rows
           </Text>
-          <Button type="outline" size="xsmall" icon={<ReloadIcon />}>
+          <Button size="xsmall" icon={<ReloadIcon />}>
             Load All Results
           </Button>
         </Space>

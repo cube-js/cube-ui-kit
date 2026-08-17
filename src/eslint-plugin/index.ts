@@ -28,9 +28,12 @@ const plugin = {
  * The rule is `warn` rather than `error` because it is a cleanliness rule, not a
  * correctness one, and it ships with an autofix.
  *
- * Stories and docs are exempt on purpose: a story that enumerates variants side
- * by side has to name the default explicitly to be readable, so linting them
- * buries the real findings.
+ * Stories and docs stay at `warn` rather than dropping to `off`. They are the
+ * code people copy, so redundant props there propagate outward and are worth
+ * surfacing — but a deliberate side-by-side contrast (`<Switch isSelected />`
+ * next to `<Switch isSelected={false} />`) has a real reason to name the default,
+ * and that pattern is common enough in stories that failing a build over it would
+ * be wrong. Silence the individual sites with a disable comment.
  */
 plugin.configs.recommended = [
   {
@@ -42,8 +45,13 @@ plugin.configs.recommended = [
     rules: { 'cube-ui-kit/no-redundant-default-prop': 'warn' },
   },
   {
-    files: ['**/*.stories.tsx', '**/*.stories.jsx', '**/*.docs.mdx'],
-    rules: { 'cube-ui-kit/no-redundant-default-prop': 'off' },
+    files: [
+      '**/*.stories.ts',
+      '**/*.stories.tsx',
+      '**/*.stories.jsx',
+      '**/*.docs.mdx',
+    ],
+    rules: { 'cube-ui-kit/no-redundant-default-prop': 'warn' },
   },
 ];
 

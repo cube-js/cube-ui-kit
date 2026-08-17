@@ -520,7 +520,6 @@ export function OverlayContainer({
           return (
             <DisplayTransition
               key={itemId}
-              animateOnMount
               isShown={!isExiting}
               onRest={(transition) => {
                 if (transition === 'exit') {

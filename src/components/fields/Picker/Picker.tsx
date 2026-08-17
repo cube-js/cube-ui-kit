@@ -705,7 +705,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
       >)}
     >
       <DialogTrigger
-        isDismissable
         type="popover"
         placement="bottom start"
         isOpen={isPopoverOpen}
@@ -768,7 +767,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
                 stateRef={internalListStateRef}
                 isCheckable={isCheckable}
                 shape="popover"
-                size="medium"
                 showSelectAll={showSelectAll}
                 selectAllLabel={selectAllLabel}
                 header={header}

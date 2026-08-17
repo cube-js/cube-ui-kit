@@ -464,7 +464,7 @@ export const WithHeaderAndFooter: StoryObj<CubeListBoxProps<any>>['render'] = (
     {...args}
     header={
       <>
-        <Space gap="1x" flow="row" placeItems="center">
+        <Space flow="row" placeItems="center">
           <Title level={6}>Programming Languages</Title>
           <Badge type="purple">12</Badge>
         </Space>
@@ -642,7 +642,7 @@ export const WithTextValue: Story = {
         key="basic"
         textValue="Basic Plan - Free with limited features"
       >
-        <Space gap="1x" flow="column">
+        <Space flow="column">
           <Text weight="600">Basic Plan</Text>
           <Badge type="disabled">Free</Badge>
         </Space>
@@ -651,7 +651,7 @@ export const WithTextValue: Story = {
         key="pro"
         textValue="Pro Plan - Monthly subscription with all features"
       >
-        <Space gap="1x" flow="column">
+        <Space flow="column">
           <Text weight="600">Pro Plan</Text>
           <Badge type="purple">$19/month</Badge>
         </Space>
@@ -660,7 +660,7 @@ export const WithTextValue: Story = {
         key="enterprise"
         textValue="Enterprise Plan - Custom pricing for large teams"
       >
-        <Space gap="1x" flow="column">
+        <Space flow="column">
           <Text weight="600">Enterprise Plan</Text>
           <Badge type="note">Custom</Badge>
         </Space>
@@ -701,7 +701,6 @@ export const Validation: StoryObj<CubeListBoxProps<any>>['render'] = () => (
     <ListBox
       label="Valid Selection"
       isValid
-      selectionMode="single"
       defaultSelectedKey="option1"
       message="Great choice!"
     >
@@ -712,7 +711,6 @@ export const Validation: StoryObj<CubeListBoxProps<any>>['render'] = () => (
     <ListBox
       label="Invalid Selection"
       isInvalid
-      selectionMode="single"
       defaultSelectedKey="option1"
       message="Please select a different option"
     >
@@ -732,7 +730,6 @@ export const ControlledExample: StoryObj<
       <ListBox
         label="Controlled ListBox"
         selectedKey={selectedKey}
-        selectionMode="single"
         onSelectionChange={(key) => setSelectedKey(key as string | null)}
       >
         <ListBox.Item key="apple">Apple</ListBox.Item>
@@ -745,19 +742,11 @@ export const ControlledExample: StoryObj<
         Selected: <Text.Strong>{selectedKey || 'None'}</Text.Strong>
       </Text>
 
-      <Space gap="1x" flow="row">
-        <Button
-          size="small"
-          type="outline"
-          onClick={() => setSelectedKey('banana')}
-        >
+      <Space flow="row">
+        <Button size="small" onClick={() => setSelectedKey('banana')}>
           Select Banana
         </Button>
-        <Button
-          size="small"
-          type="outline"
-          onClick={() => setSelectedKey(null)}
-        >
+        <Button size="small" onClick={() => setSelectedKey(null)}>
           Clear Selection
         </Button>
       </Space>
@@ -796,15 +785,14 @@ export const MultipleControlledExample: StoryObj<
         </Text.Strong>
       </Text>
 
-      <Space gap="1x" flow="row">
+      <Space flow="row">
         <Button
           size="small"
-          type="outline"
           onClick={() => setSelectedKeys(['read', 'write', 'admin'])}
         >
           Select Admin Set
         </Button>
-        <Button size="small" type="outline" onClick={() => setSelectedKeys([])}>
+        <Button size="small" onClick={() => setSelectedKeys([])}>
           Clear All
         </Button>
       </Space>
@@ -825,7 +813,6 @@ export const InForm: StoryObj<CubeListBoxProps<any>>['render'] = () => {
         name="technology"
         label="Preferred Technology"
         description="Select your preferred technology stack"
-        selectionMode="single"
       >
         <ListBox.Section title="Frontend">
           <ListBox.Item
@@ -888,7 +875,6 @@ export const InPopover: StoryObj<CubeListBoxProps<any>>['render'] = () => {
         <Dialog>
           <ListBox
             selectedKey={selectedKey}
-            selectionMode="single"
             styles={{
               height: '300px',
               border: false,
@@ -1084,7 +1070,7 @@ export const WithIcons: Story = {
 export const FocusBehavior: Story = {
   render: (args) => (
     <Space gap="3x" flow="column">
-      <Space flow="column" gap="1x">
+      <Space flow="column">
         <Text preset="t3" weight="600">
           Standard Focus (focusOnHover=true)
         </Text>
@@ -1099,7 +1085,7 @@ export const FocusBehavior: Story = {
         </ListBox>
       </Space>
 
-      <Space flow="column" gap="1x">
+      <Space flow="column">
         <Text preset="t3" weight="600">
           No Focus on Hover (focusOnHover=false)
         </Text>
@@ -1139,7 +1125,6 @@ export const EscapeKeyHandling: StoryObj<
       <ListBox
         label="Custom Escape Handling"
         selectedKey={selectedKey}
-        selectionMode="single"
         onSelectionChange={(key) => setSelectedKey(key as string | null)}
         onEscape={() => {
           setEscapeCount((prev) => prev + 1);
@@ -1232,19 +1217,19 @@ export const WithHotkeys: Story = {
       </Text>
       <ListBox {...args}>
         <ListBox.Item key="new" hotkeys="ctrl+1">
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <PlusIcon />
             New Project
           </Space>
         </ListBox.Item>
         <ListBox.Item key="edit" hotkeys="ctrl+2">
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <EditIcon />
             Edit Project
           </Space>
         </ListBox.Item>
         <ListBox.Item key="settings" hotkeys="ctrl+3">
-          <Space gap="1x" flow="row" placeItems="center">
+          <Space flow="row" placeItems="center">
             <SettingsIcon />
             Project Settings
           </Space>
@@ -1510,10 +1495,10 @@ export const DifferentShapes: Story = {
   render: () => (
     <Space gap="4x" flow="column">
       <ListBox
+        // oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- DifferentShapes story labels this one "Card Shape (default)"
         shape="card"
         label="Card Shape (default)"
         description="Standard card styling with border and margin"
-        selectionMode="single"
         defaultSelectedKey="apple"
       >
         {fruits.slice(0, 4).map((fruit) => (
@@ -1525,7 +1510,6 @@ export const DifferentShapes: Story = {
         shape="plain"
         label="Plain Shape"
         description="No border, no margin, no radius - suitable for embedded use"
-        selectionMode="single"
         defaultSelectedKey="banana"
       >
         {fruits.slice(0, 4).map((fruit) => (
@@ -1537,7 +1521,6 @@ export const DifferentShapes: Story = {
         shape="popover"
         label="Popover Shape"
         description="No border, but keeps margin and radius - suitable for overlay use"
-        selectionMode="single"
         defaultSelectedKey="cherry"
       >
         {fruits.slice(0, 4).map((fruit) => (
@@ -1549,7 +1532,6 @@ export const DifferentShapes: Story = {
         shape="plain"
         label="Plain Shape with Sections"
         description="Section margins are preserved even with plain shape"
-        selectionMode="single"
         defaultSelectedKey="carrot"
       >
         <ListBox.Section title="Fruits">

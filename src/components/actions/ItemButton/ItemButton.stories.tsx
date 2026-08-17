@@ -154,7 +154,7 @@ export const AsLink: Story = {
 
 export const States: Story = {
   render: (args) => (
-    <Space flow="column" gap="1x" placeItems="start">
+    <Space flow="column" placeItems="start">
       <ItemButton
         {...args}
         mods={{ hovered: false, pressed: false, focused: false }}
@@ -234,7 +234,7 @@ export const WithHotkeys: Story = {
         <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
           Try pressing the keyboard shortcuts to trigger the buttons:
         </Paragraph>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             hotkeys="cmd+s"
@@ -277,7 +277,7 @@ export const WithHotkeys: Story = {
           When a custom suffix is provided, hotkeys are still functional but the
           shortcut hint is not shown:
         </Paragraph>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             hotkeys="cmd+d"
@@ -291,7 +291,7 @@ export const WithHotkeys: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Different Hotkey Formats</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             hotkeys="ctrl+alt+d"
@@ -337,7 +337,7 @@ export const WithCheckbox: Story = {
     <Flow gap="2x">
       <Flow gap="1x">
         <Title level={4}>Selected Items (Checkmark Visible)</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton {...args} isSelected={true}>
             Selected item with checkmark
           </ItemButton>
@@ -352,7 +352,7 @@ export const WithCheckbox: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Non-Selected Items (Checkmark Hidden)</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton {...args} isSelected={false}>
             Non-selected item with hidden checkmark
           </ItemButton>
@@ -367,7 +367,7 @@ export const WithCheckbox: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Mixed Selection States</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton {...args} isSelected={true} type="primary">
             Selected Item 1
           </ItemButton>
@@ -382,7 +382,7 @@ export const WithCheckbox: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Comparison: Checkmark vs Regular Icon</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton {...args} isSelected={true}>
             With checkmark (selected)
           </ItemButton>
@@ -415,7 +415,7 @@ export const WithLoading: Story = {
       <Flow gap="2x">
         <Flow gap="1x">
           <Title level={4}>Loading States with Auto Slot Selection</Title>
-          <Space flow="column" gap="1x" placeItems="start">
+          <Space flow="column" placeItems="start">
             <ItemButton {...cleanArgs} isLoading={false} icon={<IconFile />}>
               Normal state
             </ItemButton>
@@ -437,7 +437,7 @@ export const WithLoading: Story = {
 
         <Flow gap="1x">
           <Title level={4}>Loading with Different Types</Title>
-          <Space flow="column" gap="1x" placeItems="start">
+          <Space flow="column" placeItems="start">
             <ItemButton
               {...cleanArgs}
               type="primary"
@@ -468,7 +468,7 @@ export const WithLoading: Story = {
 
         <Flow gap="1x">
           <Title level={4}>Explicit Loading Slots</Title>
-          <Space flow="column" gap="1x" placeItems="start">
+          <Space flow="column" placeItems="start">
             <ItemButton
               {...cleanArgs}
               isLoading={true}
@@ -505,7 +505,7 @@ export const WithLoading: Story = {
             Loading buttons are automatically disabled and cannot be interacted
             with:
           </Paragraph>
-          <Space flow="column" gap="1x" placeItems="start">
+          <Space flow="column" placeItems="start">
             <ItemButton
               {...cleanArgs}
               isLoading={true}
@@ -542,7 +542,7 @@ export const AutoTooltipOnOverflow: Story = {
     <Flow gap="2x">
       <Flow gap="1x">
         <Title level={4}>Auto Tooltip with tooltip=true</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             tooltip={true}
@@ -564,7 +564,7 @@ export const AutoTooltipOnOverflow: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Auto Tooltip with Configuration Object</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             tooltip={{ auto: true, placement: 'top' }}
@@ -586,7 +586,7 @@ export const AutoTooltipOnOverflow: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Auto vs Explicit Tooltip</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             tooltip={{ title: 'Custom tooltip text', auto: true }}
@@ -608,7 +608,7 @@ export const AutoTooltipOnOverflow: Story = {
 
       <Flow gap="1x">
         <Title level={4}>No Tooltip When Not Overflowed</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             tooltip={true}
@@ -630,7 +630,7 @@ export const AutoTooltipOnOverflow: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Auto Tooltip with Different Button Types</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             tooltip={true}
@@ -663,7 +663,7 @@ export const AutoTooltipOnOverflow: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Auto Tooltip with Hotkeys</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             tooltip={{ auto: true, placement: 'top' }}
@@ -704,7 +704,7 @@ export const WithActionsLayouts: Story = {
     <Flow gap="2x" width="max 600px">
       <Flow gap="1x">
         <Title level={4}>Different Sizes</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -780,7 +780,7 @@ export const WithActionsLayouts: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Only Actions</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -811,7 +811,7 @@ export const WithActionsLayouts: Story = {
 
       <Flow gap="1x">
         <Title level={4}>With Left Icon</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -844,7 +844,7 @@ export const WithActionsLayouts: Story = {
 
       <Flow gap="1x">
         <Title level={4}>With Prefix</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -877,7 +877,7 @@ export const WithActionsLayouts: Story = {
 
       <Flow gap="1x">
         <Title level={4}>With Left Icon and Prefix</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -912,7 +912,7 @@ export const WithActionsLayouts: Story = {
 
       <Flow gap="1x">
         <Title level={4}>With Inline Description</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -947,7 +947,7 @@ export const WithActionsLayouts: Story = {
 
       <Flow gap="1x">
         <Title level={4}>With Inline Description and Left Icon</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -984,7 +984,7 @@ export const WithActionsLayouts: Story = {
 
       <Flow gap="1x">
         <Title level={4}>With Block Description</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1019,7 +1019,7 @@ export const WithActionsLayouts: Story = {
 
       <Flow gap="1x">
         <Title level={4}>With Block Description and Left Icon</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1070,7 +1070,7 @@ export const WithHighlight: Story = {
     <Flow gap="2x" width="max 600px">
       <Flow gap="1x">
         <Title level={4}>Basic Highlight</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton {...args} icon={<IconFile />} highlight="file">
             File management options
           </ItemButton>
@@ -1087,7 +1087,7 @@ export const WithHighlight: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Case Sensitivity</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1110,7 +1110,7 @@ export const WithHighlight: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Multiple Matches</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1124,7 +1124,7 @@ export const WithHighlight: Story = {
 
       <Flow gap="1x">
         <Title level={4}>With Custom Highlight Styles</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1139,7 +1139,7 @@ export const WithHighlight: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Combined with Other Features</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1361,7 +1361,7 @@ export const Disabled: Story = {
     <Flow gap="2x" width="max 600px">
       <Flow gap="1x">
         <Title level={4}>Basic Disabled Buttons</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton {...args} isDisabled={true}>
             Disabled button
           </ItemButton>
@@ -1373,7 +1373,7 @@ export const Disabled: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Disabled with Icons</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton {...args} isDisabled={true} icon={<IconFile />}>
             Disabled with icon
           </ItemButton>
@@ -1390,7 +1390,7 @@ export const Disabled: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Disabled Across Different Types</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="primary"
@@ -1429,7 +1429,7 @@ export const Disabled: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Disabled Across Different Sizes</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             size="xsmall"
@@ -1475,7 +1475,7 @@ export const Disabled: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Disabled with Description</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1501,7 +1501,7 @@ export const Disabled: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Disabled with Actions</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="outline"
@@ -1521,7 +1521,7 @@ export const Disabled: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Disabled with Hotkeys</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             isDisabled={true}
@@ -1536,7 +1536,7 @@ export const Disabled: Story = {
 
       <Flow gap="1x">
         <Title level={4}>Comparison: Enabled vs Disabled</Title>
-        <Space flow="column" gap="1x" placeItems="start">
+        <Space flow="column" placeItems="start">
           <ItemButton
             {...args}
             type="primary"

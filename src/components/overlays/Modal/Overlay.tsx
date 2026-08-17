@@ -82,7 +82,6 @@ function Overlay(props: CubeOverlayProps, ref) {
   let contents = (
     <Provider ref={ref}>
       <DisplayTransition
-        animateOnMount
         isShown={!!isOpen}
         exposeUnmounted={hideOnClose}
         duration={EXIT_DURATION}

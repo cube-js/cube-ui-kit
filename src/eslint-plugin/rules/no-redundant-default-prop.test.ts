@@ -68,6 +68,28 @@ const App = () => <Button type="outline" />;`,
       code: `import { Button } from './ui/Button';
 const App = () => <Button type="outline" />;`,
     },
+
+    // ---------------------------------------------------------------------
+    // `relativeImports` — opt-in provenance for linting the ui-kit repo
+    // itself, where components arrive by path and never by package name.
+    // ---------------------------------------------------------------------
+    {
+      name: 'relative import is still ignored when the option is absent',
+      code: `import { Button } from '../../actions/Button';
+const App = () => <Button type="outline" />;`,
+    },
+    {
+      name: 'relativeImports does not widen bare specifiers',
+      code: `import { Button } from '@mui/material';
+const App = () => <Button type="outline" />;`,
+      options: [{ relativeImports: true }],
+    },
+    {
+      name: 'relativeImports still loses to a local binding',
+      code: `const Button = tasty({});
+const App = () => <Button type="outline" />;`,
+      options: [{ relativeImports: true }],
+    },
     {
       name: 'ui-kit import shadowed by an inner binding',
       code: `${IMPORT}
@@ -208,6 +230,20 @@ const render = (Button) => <Button type="outline" />;`,
       name: 'compound component',
       code: `${IMPORT}<Button.Split theme="default" />;`,
       output: `${IMPORT}<Button.Split />;`,
+      errors: [{ messageId: 'redundant' }],
+    },
+    {
+      name: 'relativeImports reaches a deep relative specifier',
+      code: `import { Button } from '../../actions/Button';<Button type="outline" />;`,
+      output: `import { Button } from '../../actions/Button';<Button />;`,
+      options: [{ relativeImports: true }],
+      errors: [{ messageId: 'redundant' }],
+    },
+    {
+      name: 'relativeImports reaches a bare parent-directory barrel',
+      code: `import { Button } from '..';<Button type="outline" />;`,
+      output: `import { Button } from '..';<Button />;`,
+      options: [{ relativeImports: true }],
       errors: [{ messageId: 'redundant' }],
     },
     {

@@ -145,7 +145,6 @@ const Template: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => (
 const FormTemplate: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => (
   <Form
     defaultValues={{ field: { name: 'value' } }}
-    labelPosition="top"
     onSubmit={(data) => console.log('! onSubmit', data)}
   >
     <TextInputMapper
@@ -161,7 +160,6 @@ const FormTemplate: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => (
 const FormTemplateSync: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => (
   <Form
     defaultValues={{ field: { name: 'value' } }}
-    labelPosition="top"
     onSubmit={(data) => console.log('! onSubmit', data)}
   >
     <TextInputMapper

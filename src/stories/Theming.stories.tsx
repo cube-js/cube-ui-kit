@@ -237,11 +237,7 @@ function StoryPage({
 // ============================================================================
 
 function ResetButton() {
-  return (
-    <Button type="outline" onPress={resetPaletteConfig}>
-      Reset to defaults
-    </Button>
-  );
+  return <Button onPress={resetPaletteConfig}>Reset to defaults</Button>;
 }
 
 function BrandControls() {
@@ -286,8 +282,6 @@ function BrandControls() {
       </Section>
       <Slider
         label={`Saturation — ${palette.saturation}`}
-        minValue={0}
-        maxValue={100}
         value={palette.saturation}
         onChange={(saturation) =>
           setPalette((config) => ({ ...config, saturation }))
@@ -339,8 +333,6 @@ function StatusControls() {
             />
             <Slider
               label={`${name} saturation — ${seed.saturation}`}
-              minValue={0}
-              maxValue={100}
               value={seed.saturation}
               onChange={(saturation) =>
                 setPalette(statusSeed(name, { saturation }))
@@ -380,8 +372,6 @@ function ContrastControls() {
         </Switch>
         <Slider
           label={`Contrast level — ${isManual ? palette.contrastLevel : 'auto'}`}
-          minValue={0}
-          maxValue={100}
           isDisabled={!isManual}
           value={
             isManual ? (palette.contrastLevel as number) : MANUAL_CONTRAST_START
@@ -573,6 +563,7 @@ function ComponentPanel() {
       </Lead>
       <Row>
         <Button type="primary">Primary</Button>
+        {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- button type row names every type, the default included */}
         <Button type="outline">Outline</Button>
         <Button type="clear">Clear</Button>
         <Button type="link">Link</Button>
@@ -582,9 +573,7 @@ function ComponentPanel() {
         <Button type="primary" theme="danger">
           Danger
         </Button>
-        <Button type="outline" theme="success">
-          Success
-        </Button>
+        <Button theme="success">Success</Button>
         <Button type="primary" theme="special">
           Special
         </Button>
@@ -817,8 +806,6 @@ function ThemeBuilderControls({
         {levelMode === 'custom' ? (
           <Slider
             label={`Level — ${customLevel}`}
-            minValue={0}
-            maxValue={100}
             value={customLevel}
             onChange={onCustomLevelChange}
           />
@@ -843,7 +830,6 @@ function ThemeBuilderControls({
           {THEME_PRESETS.map((preset) => (
             <Button
               key={preset.label}
-              type="outline"
               size="small"
               onPress={() => {
                 // No reset first — the setter replaces, so the preset config
@@ -886,8 +872,6 @@ function ThemeBuilderControls({
         </Switch>
         <Slider
           label={`Saturation — ${palette.saturation}`}
-          minValue={0}
-          maxValue={100}
           value={palette.saturation}
           onChange={(saturation) =>
             setPalette((config) => ({ ...config, saturation }))
@@ -918,8 +902,6 @@ function ThemeBuilderControls({
         <Note>Hues are fixed; only saturation is tunable.</Note>
         <Slider
           label={`Code saturation — ${palette.themes.code.saturation}`}
-          minValue={0}
-          maxValue={100}
           value={palette.themes.code.saturation}
           onChange={(saturation) =>
             setPalette((config) => ({
@@ -1154,9 +1136,7 @@ function ThemePreview({
         <SwatchLabel styles={{ preset: 't3m' }}>Quarterly Revenue</SwatchLabel>
         <Badge>Draft</Badge>
         <Row styles={{ gap: '1x', marginLeft: 'auto' }}>
-          <Button type="outline" size="small">
-            Share
-          </Button>
+          <Button size="small">Share</Button>
           <Button type="primary" size="small">
             Run
           </Button>

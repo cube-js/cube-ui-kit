@@ -442,9 +442,7 @@ export const PopoverWithMenuAndSelect: StoryFn<
         <Content>
           <Space flow="row" gap="2x" placeItems="center">
             <MenuTrigger>
-              <Button type="outline" size="small">
-                Menu
-              </Button>
+              <Button size="small">Menu</Button>
               <Menu>
                 <Menu.Item key="copy">Copy</Menu.Item>
                 <Menu.Item key="cut">Cut</Menu.Item>

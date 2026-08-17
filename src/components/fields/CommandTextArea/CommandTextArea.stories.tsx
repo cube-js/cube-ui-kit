@@ -317,7 +317,6 @@ export const TopPopoverPosition: StoryFn = (props) => (
       label="Message"
       placeholder="Type / to see commands…"
       width="40x"
-      direction="top"
       {...props}
     >
       {commands.map((c) => (

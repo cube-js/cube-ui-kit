@@ -338,7 +338,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           name="slider"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Slider minValue={0} maxValue={100} />
+          <Slider />
         </Field>
         <Field
           label="Slider"

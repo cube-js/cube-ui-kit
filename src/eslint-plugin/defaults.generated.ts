@@ -206,7 +206,11 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     Dialog: {
       props: {
-        isDismissable: { kind: 'default', value: false },
+        isDismissable: {
+          kind: 'skip',
+          reason: 'context',
+          note: 'Redundant in a bare tree but load-bearing under "inside <DialogContext isDismissable>", so removing it would change behaviour there.',
+        },
         role: { kind: 'default', value: 'dialog' },
         size: { kind: 'default', value: 'M', aliases: ['medium'] },
       },
@@ -376,7 +380,11 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     ItemAction: {
       props: {
-        isDisabled: { kind: 'default', value: false },
+        isDisabled: {
+          kind: 'skip',
+          reason: 'context',
+          note: 'Redundant in a bare tree but load-bearing under "inside <ItemActionProvider isDisabled>", so removing it would change behaviour there.',
+        },
         isLoading: { kind: 'default', value: false },
         isSelected: { kind: 'default', value: false },
         theme: {
@@ -384,7 +392,11 @@ export const DEFAULTS: DefaultsRegistry = {
           reason: 'context',
           note: 'Redundant in a bare tree but load-bearing under "inside <ItemActionProvider theme="danger">", so removing it would change behaviour there.',
         },
-        type: { kind: 'default', value: 'clear' },
+        type: {
+          kind: 'skip',
+          reason: 'context',
+          note: 'Redundant in a bare tree but load-bearing under "inside <ItemActionProvider type="primary">", so removing it would change behaviour there.',
+        },
       },
     },
     ItemBadge: {
@@ -395,8 +407,16 @@ export const DEFAULTS: DefaultsRegistry = {
           reason: 'reflected-attribute',
           note: 'Reflected as `aria-selected={isSelected}`, so omitting the prop removes the attribute while `false` emits `aria-selected="false"`. Not safe to strip.',
         },
-        theme: { kind: 'default', value: 'default' },
-        type: { kind: 'default', value: 'clear' },
+        theme: {
+          kind: 'skip',
+          reason: 'context',
+          note: 'Redundant in a bare tree but load-bearing under "inside <ItemActionProvider theme="danger">", so removing it would change behaviour there.',
+        },
+        type: {
+          kind: 'skip',
+          reason: 'context',
+          note: 'Redundant in a bare tree but load-bearing under "inside <ItemActionProvider type="primary">", so removing it would change behaviour there.',
+        },
       },
     },
     ItemButton: {
@@ -581,7 +601,7 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     RadioGroup: {
       props: {
-        size: { kind: 'default', value: 'xsmall' },
+        size: { kind: 'default', value: 'medium' },
         type: { kind: 'default', value: 'radio' },
       },
     },

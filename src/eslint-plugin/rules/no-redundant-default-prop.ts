@@ -62,7 +62,7 @@ function isAllowedSource(source: string, packages: string[]): boolean {
 function resolveComponentName(
   nameNode: Node,
   scope: Scope,
-  packages: string[],
+  isAllowed: (source: string) => boolean,
 ): string | null {
   const path: string[] = [];
   let current = nameNode;
@@ -85,7 +85,7 @@ function resolveComponentName(
   if (
     declaration?.type !== 'ImportDeclaration' ||
     typeof declaration.source?.value !== 'string' ||
-    !isAllowedSource(declaration.source.value, packages)
+    !isAllowed(declaration.source.value)
   ) {
     return null;
   }
@@ -174,6 +174,20 @@ export interface RuleOptions {
    * one. Never a wildcard — provenance has to stay provable.
    */
   packages?: string[];
+  /**
+   * Also treat *relative* import specifiers as ui-kit provenance.
+   *
+   * This exists for linting the ui-kit repository itself, where components are
+   * reached by path (`../../layout/Space`, `./Button`, `..`) and never by package
+   * name, so `packages` matches nothing and the rule silently does nothing. The
+   * specifiers share no usable prefix, so `packages` cannot express them either.
+   *
+   * Never enable it in a consumer project: there, a relative import is the
+   * consumer's own component, and trusting it would rewrite props on code this
+   * registry knows nothing about. Shadowing still bails — resolution requires an
+   * `ImportBinding`, so a local `const Badge = tasty({})` is never matched.
+   */
+  relativeImports?: boolean;
 }
 
 export function createRule(registry: DefaultsRegistry = DEFAULTS) {
@@ -194,6 +208,7 @@ export function createRule(registry: DefaultsRegistry = DEFAULTS) {
               items: { type: 'string' },
               minItems: 1,
             },
+            relativeImports: { type: 'boolean' },
           },
           additionalProperties: false,
         },
@@ -207,7 +222,12 @@ export function createRule(registry: DefaultsRegistry = DEFAULTS) {
     create(context: any) {
       const options: RuleOptions = context.options?.[0] ?? {};
       const packages = options.packages ?? [UI_KIT];
+      const relativeImports = options.relativeImports ?? false;
       const sourceCode = context.sourceCode ?? context.getSourceCode();
+
+      const isAllowed = (source: string) =>
+        (relativeImports && source.startsWith('.')) ||
+        isAllowedSource(source, packages);
 
       return {
         // Typed as `any` on purpose: the structural `Node`/`Scope` interfaces
@@ -218,7 +238,7 @@ export function createRule(registry: DefaultsRegistry = DEFAULTS) {
             ? sourceCode.getScope(node)
             : context.getScope();
 
-          const component = resolveComponentName(node.name, scope, packages);
+          const component = resolveComponentName(node.name, scope, isAllowed);
 
           if (!component) return;
 

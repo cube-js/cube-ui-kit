@@ -453,7 +453,6 @@ export const Search: Story = {
         filters={
           <FilterPicker
             aria-label="Filter by region"
-            type="outline"
             size="small"
             selectionMode="multiple"
             placeholder="All regions"
@@ -580,11 +579,7 @@ export const CustomSearchPlacement: Story = {
                   ))}
                 </FilterPicker>
               }
-              actions={
-                <Button type="outline" size="small">
-                  Export
-                </Button>
-              }
+              actions={<Button size="small">Export</Button>}
             />
           }
         />
@@ -629,9 +624,7 @@ export const FooterSlots: Story = {
     footerStart: (
       // The footer's own controls are `xsmall`; a slot button should match them
       // rather than the toolbar above.
-      <Button type="outline" size="xsmall">
-        Load all results
-      </Button>
+      <Button size="xsmall">Load all results</Button>
     ),
     footerCenter: <Text color="#dark-03">Partial result set</Text>,
   },
@@ -1059,7 +1052,7 @@ export const DropOntoRow: Story = {
               // A folder reads as a folder, so it is obvious which rows accept
               // a drop rather than something to be discovered by trying.
               render: (value, row) => (
-                <Space gap="1x" placeItems="center">
+                <Space placeItems="center">
                   {row.isFolder ? <FolderIcon /> : <DatabaseIcon />}
                   <Text>{String(value)}</Text>
                 </Space>
