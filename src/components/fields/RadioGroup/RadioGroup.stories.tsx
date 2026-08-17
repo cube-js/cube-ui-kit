@@ -210,6 +210,66 @@ export const Stretched: StoryFn<CubeRadioGroupProps> = (args) => (
   </Flow>
 );
 
+// A button radio renders an `Item`, so it takes the same content props an
+// `ItemButton` does.
+export const ButtonGroupRichContent: StoryFn<CubeRadioGroupProps> = () => (
+  <Space flow="column" gap="2x" placeItems="start">
+    <Space flow="column">
+      <Title level={6}>Icons, prefix and suffix</Title>
+      <Radio.ButtonGroup defaultValue="yes" aria-label="Icons">
+        <Radio value="yes" icon={<CheckIcon />} suffix="9">
+          Yes
+        </Radio>
+        <Radio value="no" prefix="~" rightIcon={<CloseIcon />}>
+          No
+        </Radio>
+        <Radio value="maybe" icon={<ExclamationIcon />} />
+      </Radio.ButtonGroup>
+    </Space>
+    <Space flow="column">
+      <Title level={6}>Descriptions</Title>
+      <Radio.ButtonGroup size="large" defaultValue="yes" aria-label="Inline">
+        <Radio value="yes" description="Inline">
+          Yes
+        </Radio>
+        <Radio value="no" description="Inline">
+          No
+        </Radio>
+      </Radio.ButtonGroup>
+      <Radio.ButtonGroup size="large" defaultValue="yes" aria-label="Block">
+        <Radio value="yes" description="Block" descriptionPlacement="block">
+          Yes
+        </Radio>
+        <Radio value="no" description="Block" descriptionPlacement="block">
+          No
+        </Radio>
+      </Radio.ButtonGroup>
+    </Space>
+    <Space flow="column">
+      <Title level={6}>Hotkeys and loading</Title>
+      <Radio.ButtonGroup defaultValue="yes" aria-label="Misc">
+        <Radio value="yes" hotkeys="alt+1">
+          Yes
+        </Radio>
+        <Radio value="no" isLoading>
+          No
+        </Radio>
+      </Radio.ButtonGroup>
+    </Space>
+    <Space flow="column">
+      <Title level={6}>Container style props</Title>
+      <Radio.ButtonGroup defaultValue="yes" aria-label="Styled">
+        <Radio value="yes" padding="2x">
+          Yes
+        </Radio>
+        <Radio value="no" padding="2x">
+          No
+        </Radio>
+      </Radio.ButtonGroup>
+    </Space>
+  </Space>
+);
+
 // Size demonstrations
 export const ButtonGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
   <Space flow="column">
@@ -408,6 +468,74 @@ export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
         <Radio value="no">No</Radio>
         <Radio value="maybe">Maybe</Radio>
       </Radio.Tabs>
+    </Space>
+    {/* A disabled group still has to show which option is selected — every
+        button type carries that through its own muted register. */}
+    <Space flow="column">
+      <Title level={6}>Button Types (Disabled, "Yes" selected)</Title>
+      <Radio.ButtonGroup
+        buttonType="outline"
+        isDisabled={true}
+        defaultValue="yes"
+        aria-label="Outline (Disabled)"
+      >
+        <Radio value="yes">Yes</Radio>
+        <Radio value="no">No</Radio>
+        <Radio value="maybe">Maybe</Radio>
+      </Radio.ButtonGroup>
+      <Block fill="#surface-2" padding="1.5x" radius="1cr" width="max-content">
+        <Radio.ButtonGroup
+          buttonType="outline-2"
+          isDisabled={true}
+          defaultValue="yes"
+          aria-label="Outline 2 (Disabled)"
+        >
+          <Radio value="yes">Yes</Radio>
+          <Radio value="no">No</Radio>
+          <Radio value="maybe">Maybe</Radio>
+        </Radio.ButtonGroup>
+      </Block>
+      <Radio.ButtonGroup
+        buttonType="clear"
+        isDisabled={true}
+        defaultValue="yes"
+        aria-label="Clear (Disabled)"
+      >
+        <Radio value="yes">Yes</Radio>
+        <Radio value="no">No</Radio>
+        <Radio value="maybe">Maybe</Radio>
+      </Radio.ButtonGroup>
+      <Radio.ButtonGroup
+        buttonType="primary"
+        isDisabled={true}
+        defaultValue="yes"
+        aria-label="Primary (Disabled)"
+      >
+        <Radio value="yes">Yes</Radio>
+        <Radio value="no">No</Radio>
+        <Radio value="maybe">Maybe</Radio>
+      </Radio.ButtonGroup>
+    </Space>
+    <Space flow="column">
+      <Title level={6}>Validation Themes (Disabled, "Yes" selected)</Title>
+      <Radio.ButtonGroup
+        isValid
+        isDisabled={true}
+        defaultValue="yes"
+        aria-label="Valid (Disabled)"
+      >
+        <Radio value="yes">Yes</Radio>
+        <Radio value="no">No</Radio>
+      </Radio.ButtonGroup>
+      <Radio.ButtonGroup
+        isInvalid
+        isDisabled={true}
+        defaultValue="yes"
+        aria-label="Invalid (Disabled)"
+      >
+        <Radio value="yes">Yes</Radio>
+        <Radio value="no">No</Radio>
+      </Radio.ButtonGroup>
     </Space>
   </Space>
 );
