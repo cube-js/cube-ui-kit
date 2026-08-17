@@ -1016,7 +1016,7 @@ export const CURRENT_BUTTON_STYLES: Styles = {
     selected: '#current.3',
     'selected & pressed': '#current.4',
     disabled: '#current.12',
-    'selected & disabled': '#current.18',
+    'selected & disabled': '#current.35',
   },
   fill: {
     '': '#current.03',
@@ -1027,7 +1027,9 @@ export const CURRENT_BUTTON_STYLES: Styles = {
     'selected & pressed': '#current.2',
     disabled: '#current.06',
     // Alpha step rather than a brand token — `current` inherits `currentcolor`.
-    'selected & disabled': '#current.09',
+    // Authored high because the disabled label already dims `currentcolor` to
+    // `.4`, and these alphas resolve against it: `.18` renders as ~.07.
+    'selected & disabled': '#current.18',
   },
   color: {
     '': '#current',
