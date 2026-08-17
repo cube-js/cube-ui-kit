@@ -506,14 +506,17 @@ function BaseSourceControls() {
         />
       ) : null}
 
-      {/* Under a color seed both of these are derived, so neither is shown. While the
-          zone follows the accent they stay on screen and draggable: a drag pins the
-          field, which flips the radio to Own on its own, and that drag-to-pin
-          affordance predates the radio. */}
-      {seedMode === 'color' && isOwn ? null : (
+      {/* Only while the zone has a seed of its own. Under a color seed both are
+          derived from the hex, and under `Follow accent` both are read-outs of the
+          accent's values — a slider whose number you cannot move without also
+          changing what the radio above it says is not a control. Dragging one used
+          to pin the field and flip the radio to Own by itself; the radio is the only
+          way in now, which is a state fewer on screen and one less way to end up in
+          it by accident. */}
+      {isOwn && seedMode !== 'color' ? (
         <>
           <HueSlider
-            label={isOwn ? 'Hue' : 'Hue (inherited)'}
+            label="Hue"
             tooltip="The neutral chrome — surface and its ladder, the surface-text ramp, border, placeholder. A colored theme's tinted surface deliberately follows its own hue instead, because a danger banner should read as red."
             value={Math.round(palette.baseHue)}
             onChange={(baseHue) =>
@@ -522,7 +525,7 @@ function BaseSourceControls() {
           />
           {palette.pastel ? null : (
             <Slider
-              label={isOwn ? 'Saturation' : 'Saturation (inherited)'}
+              label="Saturation"
               tooltip={
                 palette.surfaceMode === 'tinted'
                   ? `The same 0–100 scale the accent saturation uses, on the chrome alone. The shipped value is 12 — a faint tint is what a neutral surface is — so the interesting range is the low end, and past about 25 the base colors run out of scale and converge.`
@@ -541,7 +544,7 @@ function BaseSourceControls() {
             />
           )}
         </>
-      )}
+      ) : null}
     </Section>
   );
 }
