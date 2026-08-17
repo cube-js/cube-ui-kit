@@ -2012,18 +2012,25 @@ function ThemeBuilderPage() {
             <RadioGroup
               aria-label="Contrast tier"
               type="button"
-              value={isHighContrast ? 'high' : 'normal'}
+              // Off rather than live-and-warned once the tier is gone: there is
+              // no second variant to switch to, so an enabled control would be
+              // offering a state the palette cannot produce. A disabled
+              // segmented control still paints its selected option, so this
+              // reads as "Normal, and that is the only one" instead of going
+              // flat — which is why the badge had to carry the news before.
+              isDisabled={!hasContrastTier()}
+              value={isHighContrast && hasContrastTier() ? 'high' : 'normal'}
               onChange={(value) => setContrastOverride(value === 'high')}
             >
               <Radio value="normal">Normal</Radio>
               <Radio value="high">High contrast</Radio>
             </RadioGroup>
-            {isHighContrast && !hasContrastTier() ? (
+            {hasContrastTier() ? null : (
               <InfoBadge
                 theme="danger"
-                tooltip="No separate tier at contrast level 100 — the normal colors already are the high-contrast ones, so this is showing the normal variant."
+                tooltip="No separate tier at contrast level 100 — the normal colors already are the high-contrast ones, so there is nothing to escalate to and the preview is the normal variant."
               />
-            ) : null}
+            )}
           </PreviewToolbar>
           <ThemePreview tokens={tokens} scheme={scheme} />
         </PreviewColumn>
