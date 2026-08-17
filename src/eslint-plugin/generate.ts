@@ -1,3 +1,5 @@
+import * as UIKit from '../index';
+
 import { readDocumentedDefaults } from './docs-defaults';
 import { FIXTURES } from './fixtures';
 import { classifyProp, Fixture } from './probe';
@@ -57,6 +59,76 @@ export function buildComponentEntry(fixture: Fixture): ComponentEntry {
   return { props };
 }
 
+/** A module namespace or a component object hanging compound aliases off itself. */
+type Namespace = Record<string, unknown>;
+
+function resolveExport(namespace: Namespace, path: string): unknown {
+  return path
+    .split('.')
+    .reduce<unknown>(
+      (target, part) => (target as Namespace)?.[part],
+      namespace as unknown,
+    );
+}
+
+/**
+ * Find every *other* export path that resolves to the same object as a covered
+ * component, so the rule catches `<Radio.Group>` as well as `<RadioGroup>`.
+ *
+ * The test is object identity, deliberately — not the name. `Radio.Group` is
+ * `RadioGroup` itself, so it cannot behave differently and inherits the entry
+ * safely; `Radio.ButtonGroup` is `tasty(RadioGroup, { type: 'button' })`, a
+ * *different* object whose effective `type` default is not RadioGroup's, so it
+ * is skipped. A name-shape heuristic (`Radio` + `ButtonGroup` -> `RadioButtonGroup`,
+ * `Radio.Group` -> `RadioGroup`) cannot tell those two apart; identity cannot get
+ * it wrong.
+ *
+ * Only one level of nesting is scanned, which is all ui-kit uses.
+ */
+export function findAliases(
+  names: string[],
+  namespace: Namespace = UIKit as unknown as Namespace,
+): Record<string, string> {
+  const canonical = new Map<unknown, string>();
+
+  for (const name of names) {
+    const component = resolveExport(namespace, name);
+
+    // First fixture wins, so the output stays stable if two fixtures ever name
+    // the same object.
+    if (component && !canonical.has(component)) canonical.set(component, name);
+  }
+
+  const aliases: Record<string, string> = {};
+
+  const record = (path: string, target: string | undefined) => {
+    if (target && target !== path) aliases[path] = target;
+  };
+
+  for (const [name, exported] of Object.entries(namespace)) {
+    if (
+      !exported ||
+      (typeof exported !== 'function' && typeof exported !== 'object')
+    ) {
+      continue;
+    }
+
+    // A second flat export of the same object: `Input` *is* `TextInput`
+    // (`Object.assign` mutates and returns it), `ItemBase` *is* `Item`.
+    record(name, canonical.get(exported));
+
+    for (const [key, nested] of Object.entries(exported as Namespace)) {
+      record(`${name}.${key}`, canonical.get(nested));
+    }
+  }
+
+  return Object.fromEntries(
+    Object.keys(aliases)
+      .sort()
+      .map((alias) => [alias, aliases[alias]]),
+  );
+}
+
 export function buildRegistry(
   fixtures: Fixture[] = FIXTURES,
 ): DefaultsRegistry {
@@ -66,7 +138,10 @@ export function buildRegistry(
     components[fixture.name] = buildComponentEntry(fixture);
   }
 
-  return { components };
+  return {
+    components,
+    aliases: findAliases(fixtures.map((fixture) => fixture.name)),
+  };
 }
 
 /** Render the registry as the source of `defaults.generated.ts`. */
@@ -118,6 +193,24 @@ export function serializeRegistry(registry: DefaultsRegistry): string {
   }
 
   lines.push('  },');
+
+  const aliases = registry.aliases ?? {};
+  const aliasNames = Object.keys(aliases).sort();
+
+  if (aliasNames.length) {
+    lines.push('  // Export paths that are the same object as the component');
+    lines.push('  // above them — `Radio.Group` *is* `RadioGroup`.');
+    lines.push('  aliases: {');
+
+    for (const alias of aliasNames) {
+      lines.push(
+        `    ${JSON.stringify(alias)}: ${JSON.stringify(aliases[alias])},`,
+      );
+    }
+
+    lines.push('  },');
+  }
+
   lines.push('};');
   lines.push('');
 
@@ -141,6 +234,12 @@ export function summarize(registry: DefaultsRegistry): Record<string, string> {
             }`
           : `skip:${value.reason}`;
     }
+  }
+
+  // An alias that appears or disappears changes what the rule reports just as
+  // much as a moved default, so the sync guard has to see it too.
+  for (const [alias, target] of Object.entries(registry.aliases ?? {})) {
+    out[`alias:${alias}`] = target;
   }
 
   return out;

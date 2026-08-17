@@ -32,6 +32,18 @@ const REGISTRY: DefaultsRegistry = {
         size: { kind: 'default', value: 'M', aliases: ['medium'] },
       },
     },
+    RadioGroup: {
+      props: { size: { kind: 'default', value: 'medium' } },
+    },
+    TextInput: {
+      props: { size: { kind: 'default', value: 'medium' } },
+    },
+  },
+  // `Radio.Group` *is* `RadioGroup` and `Input` *is* `TextInput`; `Radio.Tabs`
+  // and `Radio.ButtonGroup` are `tasty()` wrappers, so they are absent.
+  aliases: {
+    'Radio.Group': 'RadioGroup',
+    Input: 'TextInput',
   },
 };
 
@@ -156,6 +168,24 @@ const render = (Button) => <Button type="outline" />;`,
       name: 'every attribute sits after a spread',
       code: `${IMPORT}<Button {...props} type="outline" theme="default" />;`,
     },
+
+    // ---------------------------------------------------------------------
+    // Compound names. Only a member that is *literally* the registered
+    // component is an alias; a `tasty()` wrapper hung off the same namespace
+    // has its own defaults and must not inherit the entry.
+    // ---------------------------------------------------------------------
+    {
+      name: 'sibling that is a tasty wrapper, not an alias',
+      code: `import { Radio } from '@cube-dev/ui-kit';<Radio.Tabs size="medium" />;`,
+    },
+    {
+      name: 'namespace head is not itself a registered component',
+      code: `import { Radio } from '@cube-dev/ui-kit';<Radio size="medium" />;`,
+    },
+    {
+      name: 'unknown member of a registered component',
+      code: `${IMPORT}<Button.Group type="outline" />;`,
+    },
   ],
 
   invalid: [
@@ -250,6 +280,36 @@ const render = (Button) => <Button type="outline" />;`,
       name: 'subpath import is still ui-kit',
       code: `import { Button } from '@cube-dev/ui-kit/eslint-plugin';<Button type="outline" />;`,
       output: `import { Button } from '@cube-dev/ui-kit/eslint-plugin';<Button />;`,
+      errors: [{ messageId: 'redundant' }],
+    },
+    {
+      name: 'compound alias of a flat registry entry',
+      code: `import { Radio } from '@cube-dev/ui-kit';<Radio.Group size="medium" />;`,
+      output: `import { Radio } from '@cube-dev/ui-kit';<Radio.Group />;`,
+      errors: [
+        {
+          messageId: 'redundant',
+          // Reported under the name that was actually written, not `RadioGroup`.
+          data: { component: 'Radio.Group', prop: 'size', value: '"medium"' },
+        },
+      ],
+    },
+    {
+      name: 'compound alias reached through a namespace import',
+      code: `import * as UI from '@cube-dev/ui-kit';<UI.Radio.Group size="medium" />;`,
+      output: `import * as UI from '@cube-dev/ui-kit';<UI.Radio.Group />;`,
+      errors: [{ messageId: 'redundant' }],
+    },
+    {
+      name: 'compound alias under a renamed import',
+      code: `import { Radio as R } from '@cube-dev/ui-kit';<R.Group size="medium" />;`,
+      output: `import { Radio as R } from '@cube-dev/ui-kit';<R.Group />;`,
+      errors: [{ messageId: 'redundant' }],
+    },
+    {
+      name: 'flat alias of another export',
+      code: `import { Input } from '@cube-dev/ui-kit';<Input size="medium" />;`,
+      output: `import { Input } from '@cube-dev/ui-kit';<Input />;`,
       errors: [{ messageId: 'redundant' }],
     },
     {
