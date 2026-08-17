@@ -44,7 +44,8 @@ Options
   --hc                tokens: resolve the high-contrast variant of --scheme
   --filter <substr>   tokens: only tokens whose name contains this
   --full-css          render: do not subtract the baseline
-  --canonical         render: normalise tasty hashes and React IDs (for diffing)
+  --canonical         render: normalise tasty hashes and React IDs (for
+                      diffing). Applies on both tiers.
   --json              print the raw result JSON
 
 Options for 'pnpm probe:browser' only (these need a real browser)
@@ -52,6 +53,9 @@ Options for 'pnpm probe:browser' only (these need a real browser)
   --rect <sel>                 geometry — jsdom sizes everything at 0
   --screenshot                 write a PNG beside the result
   --scheme <name>              render: drive <html> into light | dark | hc
+  --hc                         render: high contrast, composable with --scheme
+                               so 'dark --hc' reaches the fourth variant
+                               ('--scheme hc' alone means light + hc)
 
 Notes
   The snippet is NOT typechecked — oxc strips types without checking them.
@@ -211,6 +215,49 @@ function main() {
     }
   }
 
+  // Which modes can actually act on a scheme. Silently ignoring `--scheme dark`
+  // on a mode that has no scheme is the same failure as silently ignoring
+  // `--computed`: the answer comes back looking like the light-mode result was
+  // the dark-mode result.
+  const schemeAware = browser ? ['render'] : ['tokens'];
+
+  if (
+    (options.scheme || options.highContrast) &&
+    !schemeAware.includes(options.mode)
+  ) {
+    const flags = [options.scheme && '--scheme', options.highContrast && '--hc']
+      .filter(Boolean)
+      .join(', ');
+
+    console.error(
+      `probe ${options.mode}: ${flags} has no effect here.\n` +
+        (options.mode === 'styles' || options.mode === 'globals'
+          ? `'${options.mode}' reports what tasty generated for every scheme at once — the state ` +
+            `maps and @media blocks in its output ARE the per-scheme answer.\n`
+          : `The jsdom tier cannot resolve a scheme's colors at all. Use 'pnpm probe tokens ` +
+            `--scheme <name>' for literal values, or 'pnpm probe:browser render --scheme <name>' ` +
+            `for what a browser computes.\n`),
+    );
+    process.exit(1);
+  }
+
+  // Validated here rather than left to the palette. An unknown scheme reaches
+  // `renderColorTokens`, misses the variant lookup and throws inside the token
+  // renderer — surfacing as a vitest stack trace about `Object.keys(undefined)`,
+  // which reads as a harness bug rather than as a typo in the flag.
+  const schemes = browser ? ['light', 'dark', 'hc'] : ['light', 'dark'];
+
+  if (options.scheme && !schemes.includes(options.scheme)) {
+    console.error(
+      `probe: unknown --scheme "${options.scheme}". Expected ${schemes.join(' | ')}.` +
+        (browser
+          ? `\n('hc' is light + high contrast, the spelling Cube Cloud's probe uses. ` +
+            `For dark + high contrast, pass '--scheme dark --hc'.)`
+          : `\nAdd --hc for the high-contrast variant of either.`),
+    );
+    process.exit(1);
+  }
+
   // Fresh id per invocation: the absence of THIS run's result file is the
   // unambiguous signal that the harness itself failed, and a leftover file
   // from an earlier run must never be mistaken for an answer.
@@ -280,6 +327,7 @@ function main() {
   // after the write never reaches the harness.
   if (browser) {
     input.scheme = options.scheme;
+    input.highContrast = Boolean(options.highContrast);
     input.computed = options.computed;
     input.computedProps = options.computedProps;
     input.rect = options.rect;

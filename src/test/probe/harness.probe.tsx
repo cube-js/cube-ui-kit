@@ -21,13 +21,10 @@
  * rendered a tasty element first, units and recipes would go unresolved AND
  * rules injected into the first injector would be invisible to
  * `getCSSTextForNode`. Both failures are silent and produce plausible-looking
- * output, so `assertConfigApplied()` checks at runtime before any work.
+ * output, so `assertConfigApplied()` — shared with the browser tier — checks at
+ * runtime before any work.
  */
-import {
-  getCSSText,
-  getGlobalPredefinedStates,
-  renderStyles,
-} from '@tenphi/tasty';
+import { getCSSText, renderStyles } from '@tenphi/tasty';
 import { render } from '@testing-library/react';
 import { type ReactElement } from 'react';
 import { expect, it } from 'vitest';
@@ -37,41 +34,8 @@ import { canonicalize, captureCss, diffRules, splitRules } from '../../probe';
 import { renderColorTokens } from '../../tokens/colors';
 import { getPaletteTokens } from '../../tokens/palette';
 
+import { assertConfigApplied } from './config-guard';
 import { readInput, writeResult } from './io';
-
-/**
- * Fail loudly if the UI Kit's tasty config did not take effect.
- *
- * A probe that reports confidently wrong CSS is worse than one that refuses to
- * run, and this particular failure has no other symptom.
- *
- * Both halves of `<Root>`'s module body are checked, because they fail
- * independently: `setGlobalPredefinedStates` always applies, while `configure()`
- * is the call that no-ops once styles exist. The unit check is end-to-end on
- * purpose — it asserts the thing the probe promises (`1x` resolves to the gap
- * token) rather than the presence of a config key.
- */
-function assertConfigApplied(): void {
-  const states = getGlobalPredefinedStates();
-
-  if (!states || !('@dark' in states)) {
-    throw new Error(
-      'Probe harness: the `@dark` / `@hc` predefined states are missing, so ' +
-        "`<Root>`'s module body did not run. Scheme-keyed styles would resolve " +
-        'wrong. Check what this harness imports before `../../components/Root`.',
-    );
-  }
-
-  const [rule] = renderStyles({ padding: '1x' }, '.probe-config-check');
-
-  if (!rule?.declarations.includes('var(--gap)')) {
-    throw new Error(
-      'Probe harness: the `x` unit did not resolve to `var(--gap)`, so tasty’s ' +
-        '`configure()` ran too late or was a no-op. Every unit, recipe and preset ' +
-        `in this run would be wrong. Got: ${rule?.declarations ?? '(no rule)'}`,
-    );
-  }
-}
 
 it('probe', async () => {
   assertConfigApplied();

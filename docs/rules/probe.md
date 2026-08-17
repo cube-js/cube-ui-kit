@@ -35,7 +35,7 @@ pnpm probe tokens --json > /tmp/tokens-after.json
 diff <(jq -S .palette /tmp/tokens-before.json) <(jq -S .palette /tmp/tokens-after.json)
 ```
 
-**`render`** — module-level code, then a trailing JSX expression (or an explicit `export default`). It reports the markup plus **only the CSS that snippet caused**: the harness renders `<Root>` empty, captures, mounts the snippet, captures again and subtracts. Overlays are reported under `PORTALS` — `<Root>` is the `PortalProvider` target, so a `Dialog` renders as its *sibling* and never appears in the inline markup. `--full-css` keeps the baseline; `--canonical` normalises tasty's class hashes and React's `useId` counters so two renders can be diffed byte-for-byte.
+**`render`** — module-level code, then a trailing JSX expression (or an explicit `export default`). It reports the markup plus **only the CSS that snippet caused**: the harness renders `<Root>` empty, captures, mounts the snippet, captures again and subtracts. Overlays are reported under `PORTALS` — `<Root>` is the `PortalProvider` target, so a `Dialog` renders as its *sibling* and never appears in the inline markup. `--full-css` keeps the baseline; `--canonical` normalises tasty's class hashes and React's `useId` counters so two renders can be diffed byte-for-byte, **on both tiers** — a browser run is exactly where you would diff one scheme or viewport against another.
 
 **`globals`** — everything on the page with only `<Root>` mounted: the `:root` token block, the body styles, `@font-face`, the keyframes. Note that only a handful of those rules are attributed to a node, and **those** are all `render` subtracts; the token block reaches the page through `useGlobalStyles` / `injectRawCSS`, so it lives on a global sheet that no per-node dump can see and `render` never had to exclude it. (Cube Cloud's console-ui hands its palette to `<Root>` through a tasty `tokens` prop instead, so there the same block *is* node-attributed and the subtraction is what keeps ~119KB out of every answer. Same command, different reason for the same clean output.)
 
@@ -47,19 +47,23 @@ jsdom is the default only because it is quicker: it reports the CSS tasty genera
 
 ```bash
 pnpm probe:browser render --computed '[data-qa="Card"]' backgroundColor padding
-pnpm probe:browser render --scheme dark --screenshot
+pnpm probe:browser render --scheme dark --hc --screenshot
 pnpm probe:browser render --rect '[data-qa="Card"]'
 ```
 
 The same component, both tiers: `var(--surface-2-color)` / `calc(3 * var(--gap))` under `probe`, versus `rgb(248, 248, 249)` / `24px` under `probe:browser`. `--computed` and `--rect` take a CSS selector, so give the component a `qa` prop and select on `[data-qa="…"]`.
 
-`--computed`, `--rect` and `--screenshot` are **rejected** on the jsdom tier rather than silently ignored: asking for computed values and getting none back reads as "no styles applied", which is the opposite of the truth. `probe:browser` likewise refuses every mode but `render` — a browser would not change what `styles`, `tokens` or `globals` report.
+Scheme and contrast are independent axes, driven through the `<html>` attributes the `@dark` / `@hc` states resolve against — so `--scheme dark --hc` reaches the fourth variant, which no single `--scheme` value can express. `--scheme hc` stays accepted as the spelling Cloud's probe uses and means light + high contrast.
+
+**Nothing is silently ignored.** `--computed`, `--rect` and `--screenshot` are rejected on the jsdom tier rather than no-oping: asking for computed values and getting none back reads as "no styles applied", the opposite of the truth. Likewise `probe:browser` refuses every mode but `render`; `--scheme` / `--hc` are refused on modes that have no scheme (`styles` and `globals` already report every scheme at once — their state maps and `@media` blocks *are* the per-scheme answer); and an unknown `--scheme` is rejected by the CLI rather than reaching the token renderer, where it surfaces as a stack trace that reads like a harness bug instead of a typo.
 
 Notes: the snippet is **not** typechecked (oxc strips types without checking them); `--json` gives machine-readable output, with the jsdom version recorded in it (Cube Cloud's probe runs a different major against this same `@cube-dev/ui-kit/probe` code, and the two disagree about which CSS rules survive).
 
 ## What this shares, and with whom
 
 The CSS capture/diff pair and the canonicalisers live in `src/probe/` and ship as the **`@cube-dev/ui-kit/probe`** entry. Cube Cloud's probe imports them from there rather than keeping a copy, so the two repos cannot drift on exactly the thing a probe exists to answer. Changing anything in `src/probe/` is a change to published API — treat it as such.
+
+Both tiers run `assertConfigApplied()` from `src/test/probe/config-guard.ts` before answering anything. `configure()` in `<Root>`'s module body becomes a silent no-op once any style has been generated, and that failure has no other symptom — units, recipes and presets go unresolved while the output still looks authoritative. The check is end-to-end (`1x` must resolve to `var(--gap)`) rather than a config-key lookup. It matters *more* on the browser tier, not less: that is the tier trusted for real numbers, so an unresolved unit would surface as a confident `rgb(...)` and a real pixel geometry rather than as visibly missing output.
 
 The harness itself is `src/test/probe/`, named `*.probe.tsx` so it cannot match vitest's default `**/*.{test,spec}.*` include and never runs under `pnpm test`. Its two projects — `vitest.probe.config.ts` and `vitest.probe.browser.config.ts` — extend `vitest.config.ts` and `vitest.browser.config.ts` and narrow `include` to the one harness file. The browser one has to **delete** the base project's `include` before merging: `mergeConfig` concatenates arrays, so merging over it would leave both globs in place and every browser spec in the repo would run on each probe.
 
