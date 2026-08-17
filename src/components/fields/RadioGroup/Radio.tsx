@@ -322,7 +322,10 @@ function Radio(props: CubeRadioProps, ref) {
   // When buttonType is 'primary', non-selected radios use 'outline' with a
   // visual-only `selected` mod (mods.selected=true) to render the brand-tinted
   // outline+selected look — this is the only place mods.selected intentionally
-  // decouples from the aria/isSelected state.
+  // decouples from the aria/isSelected state. Suppressed while disabled: the
+  // real selected radio is then painted with the brand-tinted disabled chip
+  // (`accent-disabled-surface`), and faking `selected` on its siblings would
+  // give them the outline variant of that same chip and erase the distinction.
   let forceSelectedMod = false;
   if (effectiveType === 'tabs') {
     effectiveButtonType = 'clear';
@@ -417,7 +420,10 @@ function Radio(props: CubeRadioProps, ref) {
         {...itemProps}
         isSelected={isRadioSelected}
         isDisabled={isRadioDisabled}
-        mods={{ ...mods, ...(forceSelectedMod ? { selected: true } : {}) }}
+        mods={{
+          ...mods,
+          ...(forceSelectedMod && !isRadioDisabled ? { selected: true } : {}),
+        }}
         styles={styles}
         {...mergeProps(hoverProps, focusProps)}
       >
