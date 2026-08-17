@@ -51,6 +51,34 @@ async function run() {
 
   info(`==> Walking the last ${commits.length} commits of ${branch}`);
 
+  /**
+   * First of `runs` that still holds a downloadable baseline artifact.
+   *
+   * @param runs {{id: number}[]}
+   */
+  async function findArtifact(runs) {
+    for (const workflowRun of runs) {
+      const artifacts = await github.paginate(
+        github.rest.actions.listWorkflowRunArtifacts,
+        { owner, repo, run_id: workflowRun.id, per_page: PER_PAGE },
+      );
+
+      const artifact = artifacts.find(
+        ({ name, expired }) => name === artifactName && !expired,
+      );
+
+      if (artifact) {
+        return { workflowRun, artifact };
+      }
+
+      info(
+        `==> (skipped) run ${workflowRun.id}: no usable "${artifactName}" artifact`,
+      );
+    }
+
+    return null;
+  }
+
   for (const commit of commits) {
     const { data } = await github.rest.actions.listWorkflowRuns({
       owner,
@@ -74,29 +102,23 @@ async function run() {
     }
 
     // A commit can have several runs (re-runs, or a PR run alongside the push
-    // run that merged it). Prefer the latest attempt.
+    // run that merged it). Prefer the latest, but keep trying its siblings —
+    // an artifact can be missing from one run and present on another.
     runs.sort(
       (a, b) =>
         Date.parse(b.created_at) - Date.parse(a.created_at) || b.id - a.id,
     );
 
-    const [workflowRun] = runs;
+    const baseline = await findArtifact(runs);
 
-    const artifacts = await github.paginate(
-      github.rest.actions.listWorkflowRunArtifacts,
-      { owner, repo, run_id: workflowRun.id, per_page: PER_PAGE },
-    );
-
-    const artifact = artifacts.find(
-      ({ name, expired }) => name === artifactName && !expired,
-    );
-
-    if (!artifact) {
+    if (!baseline) {
       info(
-        `==> (skipped) ${commit.sha}: run ${workflowRun.id} has no usable "${artifactName}" artifact`,
+        `==> (skipped) ${commit.sha}: no run with a usable "${artifactName}" artifact`,
       );
       continue;
     }
+
+    const { workflowRun, artifact } = baseline;
 
     info(`==> (found) Run ID: ${workflowRun.id}`);
     info(`==> (found) Run date: ${workflowRun.created_at}`);
