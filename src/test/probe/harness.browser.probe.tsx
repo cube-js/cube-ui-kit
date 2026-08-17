@@ -66,6 +66,117 @@ function applyScheme(scheme: string | undefined, highContrast: boolean): void {
   }
 }
 
+/**
+ * Pull the error out of Vite's 500 page.
+ *
+ * That page is not a message, it is a document: an HTML shell whose only content
+ * is a `<script>` assigning the error as JSON and handing it to Vite's own
+ * overlay. Printing the shell buries the one line that matters — the parse error
+ * and its code frame — under a stack trace through Vite's internals and a copy of
+ * the wrapped snippet, so the JSON is unpacked and only `message` (which already
+ * carries file, line and frame) plus the plugin that raised it are kept.
+ *
+ * Returns undefined rather than guessing if the shape is not what we expect, so
+ * the caller can fall back to the raw body: an unrecognised error page is still
+ * better than a report that the error page was unrecognised.
+ */
+function extractViteError(body: string): string | undefined {
+  const match = body.match(/const error = (\{.*\})\s*$/m);
+
+  if (!match) return undefined;
+
+  try {
+    const error = JSON.parse(match[1]) as {
+      message?: string;
+      plugin?: string;
+      id?: string;
+    };
+
+    if (!error.message) return undefined;
+
+    return [
+      error.message.trim(),
+      error.plugin && `  Plugin: ${error.plugin}`,
+      error.id && `  File: ${error.id}`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Recover the dev server's actual error behind Chromium's opaque import failure.
+ *
+ * `await import(url)` on a module Vite could not transform rejects with
+ * `Failed to fetch dynamically imported module: <url>` and nothing else. The
+ * parse error — message, file, line, code frame — is in the 500 response body,
+ * which the browser deliberately keeps from script. So the SAME typo that the
+ * jsdom tier reports as an oxc parse error at `snippet.tsx:2:11` read here as a
+ * network fault against a URL nobody typed, on the tier that is slower to reach
+ * and therefore the one you are least willing to re-run blind.
+ *
+ * Re-requesting the module is what exposes the body: a failed transform is not
+ * cached as a success, so the second request fails the same way and hands us the
+ * text. A 2xx means `snippet.tsx` compiles fine and the break is in something it
+ * imports — worth saying explicitly, because that is the case where the snippet
+ * is not the thing to go read.
+ *
+ * `needsServerLog` is what the CLI keys the dev server's log off. The log is the
+ * only place a transitive failure is named, but it is also a duplicate of this
+ * message whenever the 500 body could be read — and printing the same parse error
+ * twice, the second copy wrapped in a Vite stack trace, is how the useful half
+ * stops being read.
+ */
+async function explainImportFailure(
+  error: unknown,
+  url: string,
+): Promise<{ message: string; needsServerLog: boolean }> {
+  const message = error instanceof Error ? error.message : String(error);
+
+  // Anything else already names its own cause — a missing export, for one,
+  // reports which export was missing from which module.
+  if (!message.includes('Failed to fetch dynamically imported module')) {
+    return { message, needsServerLog: false };
+  }
+
+  try {
+    const response = await fetch(url);
+    const body = (await response.text()).trim();
+
+    if (!response.ok) {
+      const extracted = extractViteError(body);
+
+      return extracted
+        ? { message: extracted, needsServerLog: false }
+        : {
+            message:
+              `The dev server answered ${response.status} for ${url} with a body this ` +
+              `harness does not recognise:\n\n${body.slice(0, 2000) || '(empty body)'}`,
+            needsServerLog: true,
+          };
+    }
+
+    return {
+      message:
+        `${message}\n\n` +
+        `The module itself compiles — re-requesting it returned ${response.status} — so the ` +
+        `failure is in something it imports, or in linking their exports together. The dev ` +
+        `server's log below names the file.`,
+      needsServerLog: true,
+    };
+  } catch (fetchError) {
+    return {
+      message:
+        `${message}\n\n` +
+        `Re-requesting it to recover the server's error also failed: ` +
+        `${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+      needsServerLog: true,
+    };
+  }
+}
+
 it('probe:browser', async () => {
   // Same guard as the jsdom tier. It matters more here, not less: this is the
   // tier reached for precisely because its numbers are meant to be trustworthy,
@@ -88,6 +199,11 @@ it('probe:browser', async () => {
 
     Snippet = module.default;
   } catch (error) {
+    const { message, needsServerLog } = await explainImportFailure(
+      error,
+      input.snippetUrl!,
+    );
+
     await commands.writeFile(
       input.outPath,
       JSON.stringify({
@@ -96,7 +212,8 @@ it('probe:browser', async () => {
         tier: 'browser',
         ok: false,
         kind: 'compile',
-        message: error instanceof Error ? error.message : String(error),
+        message,
+        needsServerLog,
       }),
     );
 
