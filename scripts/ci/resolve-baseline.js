@@ -88,22 +88,28 @@ async function run() {
       per_page: PER_PAGE,
     });
 
+    // Only a push to the base branch measured the base branch: a
+    // `pull_request` run checks out the merge preview, so its artifact sizes
+    // the PR's code, not the branch's. This matters because `listCommits`
+    // also returns the merge-side commits of everything already merged in.
     const runs = data.workflow_runs.filter(
       (workflowRun) =>
         workflowRun.id !== currentRunId &&
+        workflowRun.event === 'push' &&
+        workflowRun.head_branch === branch &&
         workflowRun.status === 'completed' &&
         workflowRun.conclusion === 'success' &&
         workflowRun.head_repository?.full_name === `${owner}/${repo}`,
     );
 
     if (runs.length === 0) {
-      info(`==> (skipped) ${commit.sha}: no successful run`);
+      info(`==> (skipped) ${commit.sha}: no successful push to ${branch}`);
       continue;
     }
 
-    // A commit can have several runs (re-runs, or a PR run alongside the push
-    // run that merged it). Prefer the latest, but keep trying its siblings —
-    // an artifact can be missing from one run and present on another.
+    // A commit can still have several runs (a re-run of the push). Prefer the
+    // latest, but keep trying its siblings — an artifact can be missing from
+    // one run and present on another.
     runs.sort(
       (a, b) =>
         Date.parse(b.created_at) - Date.parse(a.created_at) || b.id - a.id,
