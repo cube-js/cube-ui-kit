@@ -70,11 +70,30 @@ export interface ComponentEntry {
 export interface DefaultsRegistry {
   /**
    * Keyed by the name the component is *exported* under from
-   * `@cube-dev/ui-kit`, including compound forms such as `Button.Split`. The
-   * lint rule resolves a JSX tag back to this name via its import binding, so
-   * a local component that merely shares a name is never matched.
+   * `@cube-dev/ui-kit` — the name its render fixture carries. The lint rule
+   * resolves a JSX tag back to this name via its import binding, so a local
+   * component that merely shares a name is never matched.
    */
   components: Record<string, ComponentEntry>;
+  /**
+   * Other export paths that are *literally the same component object* as a
+   * `components` key, mapped alias -> canonical key.
+   *
+   * ui-kit hangs compound aliases off its components — `Radio.Group` is the
+   * `RadioGroup` export, `Button.Split` is `ButtonSplit`, `Input` is
+   * `TextInput`. The dotted form is usually the idiomatic one, so without this
+   * the entry is close to dead: the rule resolves `<Radio.Group>` to the dotted
+   * path, misses the flat key, and stays silent.
+   *
+   * Derived by object identity, never by name shape — see `findAliases` in
+   * `generate.ts`. `Radio.ButtonGroup` is `tasty(RadioGroup, { type: 'button' })`
+   * and `Radio.Tabs` is `tasty(RadioGroup, { type: 'tabs' })`: different objects
+   * with a different effective `type` default, so neither is an alias.
+   *
+   * Unrelated to `VerifiedDefault.aliases`, which lists alternate spellings of a
+   * prop *value*.
+   */
+  aliases?: Record<string, string>;
 }
 
 export function isVerified(entry: PropEntry): entry is VerifiedDefault {

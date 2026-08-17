@@ -243,6 +243,7 @@ export const ButtonGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
       <Title level={6}>Medium</Title>
       <Radio.Group
         type="button"
+        // oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- Sizes story names every size, the default included
         size="medium"
         defaultValue="yes"
         aria-label="Medium"
@@ -372,6 +373,7 @@ export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>Radio (Disabled)</Title>
       <Radio.Group
+        // oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- DisabledState story names every type alongside Button and Tabs
         type="radio"
         isDisabled={true}
         defaultValue="yes"

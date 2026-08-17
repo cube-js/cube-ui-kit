@@ -67,7 +67,13 @@ export function probesMatch(a: Probe, b: Probe): boolean {
  * necessary wrappers) is the fixture's job.
  */
 export interface Fixture {
-  /** Exported name from `@cube-dev/ui-kit`, e.g. `Button` or `Button.Split`. */
+  /**
+   * Exported name from `@cube-dev/ui-kit`, e.g. `Button` or `Button.Split`.
+   *
+   * Only one name is needed even when a component is exported under several:
+   * `findAliases` in `generate.ts` finds the others by object identity, so
+   * `<Radio.Group>` reaches the `RadioGroup` fixture's entry on its own.
+   */
   name: string;
   render: (props: Record<string, unknown>) => ReactElement;
   /**
