@@ -588,10 +588,17 @@ export const Picker = forwardRef(function Picker<T extends object>(
         ) : showClearButton ? (
           <ItemActionProvider
             type={type}
-            // Forwarded so a `special` trigger tells its action which surface it
-            // sits on — see the same call in `Select` for why this has to travel
-            // through context rather than as a prop.
-            theme={theme}
+            // Must be the SAME expression the trigger is painted with (above), not
+            // the raw `theme`: this tells the action which surface it sits on, and
+            // validation overrides the theme. With `theme="special"` on an invalid
+            // field the trigger renders `danger` — a light surface — so forwarding
+            // `special` here would hand the action the strong dark-purple alpha
+            // ramp and make hover/press read far too heavy.
+            //
+            // It travels through context rather than as a prop because the prop is
+            // what opts an action out of `current` back to `clear`, and this one
+            // needs to stay `current` so its label keeps inheriting.
+            theme={getValidationTheme(theme, { isInvalid, isValid })}
           >
             <ItemAction
               icon={<CloseIcon />}

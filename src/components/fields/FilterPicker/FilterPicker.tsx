@@ -661,8 +661,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         ) : showClearButton ? (
           <ItemActionProvider
             type={type}
-            // Forwarded for the special-surface alpha ramp — see `Select`.
-            theme={theme}
+            // The same expression the trigger is painted with, not the raw
+            // `theme` — see `Picker` for why validation has to be applied here too.
+            theme={getValidationTheme(theme, { isInvalid, isValid })}
           >
             <ItemAction
               icon={<CloseIcon />}
