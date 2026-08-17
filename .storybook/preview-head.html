@@ -1,3 +1,62 @@
+<!--
+  Pin the wall clock for every story and docs page.
+
+  Anything that asks the browser what day it is renders differently tomorrow.
+  `Calendar` is the loudest case: with no value, React Aria's `useCalendarState`
+  focuses the current month and `useCalendarCell` highlights today, both read
+  from `today(timeZone)` -> `Date.now()`. So every story showing a calendar
+  (Calendar, DatePicker, DateRangePicker, PeriodPicker, and the docs pages that
+  embed them) produced a fresh Chromatic diff on each new day, and a much bigger
+  one on each new month.
+
+  The clock still ticks — it is offset to the pinned instant rather than stopped
+  — so anything measuring elapsed time keeps working (toast auto-dismiss in
+  `src/_internal/hooks/use-timer`, notification relative timestamps, React Aria's
+  own timers). Only the absolute date is fixed, which is all Chromatic needs.
+
+  This lives in `preview-head.html`, not `preview.jsx`, so it is installed
+  before the preview bundle evaluates and cannot lose a race with a module that
+  reads the clock at import time.
+
+  Storybook only — the UI Kit itself has no date override, and consumers get the
+  real clock. To move the pinned date, edit PINNED_DATE below; expect a one-time
+  Chromatic diff on every date-related story when you do.
+-->
+<script>
+  (function pinClock() {
+    // Noon UTC keeps the calendar date identical across almost every timezone,
+    // so a local Storybook and Chromatic agree on which day is highlighted.
+    var PINNED_DATE = '2025-06-15T12:00:00.000Z';
+
+    var NativeDate = window.Date;
+    var pinnedStart = NativeDate.parse(PINNED_DATE);
+    var realStart = NativeDate.now();
+
+    function pinnedNow() {
+      return pinnedStart + (NativeDate.now() - realStart);
+    }
+
+    // A Proxy rather than a subclass: `Date` is also callable without `new`
+    // (returning a string), and everything else — `Date.parse`, `Date.UTC`,
+    // `instanceof`, the prototype — passes straight through untouched.
+    window.Date = new Proxy(NativeDate, {
+      apply: function () {
+        return new NativeDate(pinnedNow()).toString();
+      },
+      construct: function (target, args, newTarget) {
+        return Reflect.construct(
+          target,
+          args.length === 0 ? [pinnedNow()] : args,
+          newTarget,
+        );
+      },
+      get: function (target, prop, receiver) {
+        return prop === 'now' ? pinnedNow : Reflect.get(target, prop, receiver);
+      },
+    });
+  })();
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">

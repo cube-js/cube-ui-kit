@@ -1,9 +1,10 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import {
   BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
   filterBaseProps,
   OUTER_STYLES,
-  OuterStyleProps,
   tasty,
 } from '@tenphi/tasty';
 import { forwardRef, useMemo, useRef } from 'react';
@@ -38,8 +39,20 @@ const RadioButtonElement = tasty(Item, {
     preset: 't3m',
     lineHeight: '1em',
     flexGrow: 1,
-    gridTemplate:
-      '"icon prefix label suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
+    // Same areas as `Item`, but every column is `max-content` — a radio button
+    // is sized by its content, not stretched like a list item. The
+    // `description` rows have to be repeated here because a plain string would
+    // replace `Item`'s whole state map and leave the description without a
+    // grid area to land in.
+    gridTemplate: {
+      '': '"icon prefix label suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
+      'description=inline':
+        '"icon prefix description suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
+      'description=inline & has-label':
+        '"icon prefix label suffix rightIcon actions" auto "icon prefix description suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
+      'description=block':
+        '"icon prefix label suffix rightIcon actions" auto "description description description description description description" auto / max-content max-content max-content max-content max-content max-content',
+    },
     placeContent: 'center',
     shadow: {
       '': false,
@@ -161,11 +174,61 @@ const RadioLabelElement = tasty({
   styles: INLINE_LABEL_STYLES,
 });
 
+/**
+ * `Item` props a button-type radio hands straight to the `Item` it renders, so
+ * `Radio.Button` accepts the same content and presentation API as an
+ * `ItemButton`. Kept as a runtime list so a new `Item` prop only has to be
+ * added in one place.
+ *
+ * Deliberately absent:
+ * - `size`, `type`, `theme`, `isSelected`, `isDisabled`, `mods`, `styles` —
+ *   owned by the radio (they come from the prop/context/validation resolution
+ *   below).
+ * - `shape` — the radius is owned by the button-group layout below, which keeps
+ *   only the outer-side radius on the first/last radio so the group reads as one
+ *   continuous control. Forwarding `shape` would have no effect.
+ * - `htmlType`, `as`, `insideWrapper`, `showActions` — internal to `Item` /
+ *   `ItemButton`.
+ * - `actions`, `autoHideActions`, `preserveActionsSpace`,
+ *   `disableActionsFocus` — a button radio renders as a `<label>`, and a click
+ *   anywhere inside a label activates its control, so nested action buttons
+ *   would select the radio (and nested interactive content is invalid inside a
+ *   label to begin with).
+ */
+const ITEM_PROPS = [
+  'icon',
+  'rightIcon',
+  'prefix',
+  'suffix',
+  'description',
+  'descriptionPlacement',
+  'descriptionProps',
+  'tooltip',
+  'hotkeys',
+  'keyboardShortcutProps',
+  'level',
+  'isLoading',
+  'loadingSlot',
+  'highlight',
+  'highlightCaseSensitive',
+  'highlightStyles',
+  'labelRef',
+] as const;
+
+type RadioItemProps = Pick<CubeItemProps, (typeof ITEM_PROPS)[number]>;
+
 export interface CubeRadioProps
   extends BaseProps,
     AriaRadioProps,
     Omit<FieldBaseProps, 'tooltip'>,
-    OuterStyleProps {
+    /**
+     * Container style props apply to button-type radios (they style the `Item`
+     * the radio renders). A classic radio only reads the outer subset —
+     * everything else belongs to its inner circle and label.
+     */
+    ContainerStyleProps,
+    /** All of these apply to button/tabs-type radios only. */
+    RadioItemProps {
   'aria-label'?: string;
   /* The visual type of the radio button */
   type?: 'button' | 'radio';
@@ -173,20 +236,6 @@ export interface CubeRadioProps
   value?: string;
   /* Size of the button (for button type only) */
   size?: Omit<CubeItemProps['size'], 'inline'>;
-  /* Icon to display (for button type only) */
-  icon?: CubeItemProps['icon'];
-  /* Icon to display on the right (for button type only) */
-  rightIcon?: CubeItemProps['rightIcon'];
-  /* Prefix element (for button type only) */
-  prefix?: CubeItemProps['prefix'];
-  /* Suffix element (for button type only) */
-  suffix?: CubeItemProps['suffix'];
-  /* Description text (for button type only) */
-  description?: CubeItemProps['description'];
-  /* Tooltip configuration (for button type only) */
-  tooltip?: CubeItemProps['tooltip'];
-  /* Keyboard shortcut (for button type only) */
-  hotkeys?: CubeItemProps['hotkeys'];
 }
 
 function Radio(props: CubeRadioProps, ref) {
@@ -205,13 +254,6 @@ function Radio(props: CubeRadioProps, ref) {
     type,
     buttonType,
     size,
-    icon,
-    rightIcon,
-    prefix,
-    suffix,
-    description,
-    tooltip,
-    hotkeys,
     'aria-label': ariaLabel,
     form,
     ...otherProps
@@ -219,7 +261,17 @@ function Radio(props: CubeRadioProps, ref) {
 
   label = label || children;
 
-  let styles = extractStyles(otherProps, OUTER_STYLES);
+  // Only the props the caller actually passed, so an unset one keeps `Item`'s
+  // own default instead of being overridden with `undefined`.
+  const itemProps: Record<string, unknown> = {};
+
+  for (const itemPropName of ITEM_PROPS) {
+    if (itemPropName in props) {
+      itemProps[itemPropName] = (props as Record<string, unknown>)[
+        itemPropName
+      ];
+    }
+  }
 
   labelStyles = {
     ...INLINE_LABEL_STYLES,
@@ -242,6 +294,15 @@ function Radio(props: CubeRadioProps, ref) {
   // Determine effective type from props or context
   let effectiveType = type ?? contextType ?? 'radio';
   let isButton = effectiveType === 'button' || effectiveType === 'tabs';
+
+  // A button radio *is* an `Item`, so it takes the same container style props an
+  // `ItemButton` does. A classic radio only exposes the outer subset: the rest
+  // would land on the wrapper that holds the circle and the label, where
+  // `padding` / `fill` / `preset` mean something entirely different.
+  let styles = extractStyles(
+    otherProps,
+    isButton ? CONTAINER_STYLES : OUTER_STYLES,
+  );
 
   // Determine effective size with priority: prop > context > default
   let effectiveSize: CubeItemProps['size'] = (size ??
@@ -339,13 +400,7 @@ function Radio(props: CubeRadioProps, ref) {
           { includeValid: true },
         )}
         size={effectiveSize}
-        icon={icon}
-        rightIcon={rightIcon}
-        prefix={prefix}
-        suffix={suffix}
-        description={description}
-        tooltip={tooltip}
-        hotkeys={hotkeys}
+        {...itemProps}
         isSelected={isRadioSelected}
         isDisabled={isRadioDisabled}
         mods={{ ...mods, ...(forceSelectedMod ? { selected: true } : {}) }}
