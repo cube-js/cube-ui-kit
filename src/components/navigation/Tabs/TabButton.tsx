@@ -361,62 +361,6 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     }
   });
 
-  // Secondary defense against the Menu/InlineInput focus-theft race when a
-  // consumer triggers rename from a menu item. `InlineInput` itself runs a
-  // blur-side grace period after a programmatic `startEditing()` call (see
-  // `PROGRAMMATIC_EDIT_BLUR_GRACE_MS`); this pass just re-focuses the input
-  // across the Menu popover's exit transition (~350ms) in case another code
-  // path (focus manager, host re-render) stole focus from it.
-  //
-  // The `seenEditingInput` guard ensures we don't reopen rename after the
-  // user has already finished editing (Enter / Escape / blur-to-elsewhere):
-  // once we've observed the editing input in the DOM and it later
-  // disappears, the user committed/cancelled and we stop retrying.
-  // Escape only the characters that are special inside a double-quoted
-  // attribute-selector value (`\` and `"`); spaces and other chars are literal.
-  const renameInputSelector = `input[aria-label="${editTabTitleLabel.replace(
-    /["\\]/g,
-    '\\$&',
-  )}"]`;
-  const scheduleRenameRefocus = useEvent(() => {
-    let seenEditingInput = false;
-    let cancelled = false;
-    const timers: number[] = [];
-
-    // Query the editing input via the tab button `ref` — that's always
-    // wired up regardless of context-menu mode. `containerRef` is shadowed
-    // by `contextMenu.targetRef` when context menu is enabled, and
-    // `actionsRef` may never attach (e.g. `contextMenu="context-only"` with
-    // no delete button and no custom actions).
-    const findEditingInput = (): HTMLInputElement | null =>
-      (ref.current?.querySelector(renameInputSelector) ??
-        null) as HTMLInputElement | null;
-
-    const tick = () => {
-      if (cancelled) return;
-
-      const editingInput = findEditingInput();
-      if (editingInput) {
-        seenEditingInput = true;
-        if (document.activeElement !== editingInput) {
-          inlineInputRef.current?.focus();
-        }
-
-        return;
-      }
-
-      if (seenEditingInput) {
-        cancelled = true;
-        for (const t of timers) clearTimeout(t);
-      }
-    };
-
-    requestAnimationFrame(tick);
-    timers.push(window.setTimeout(tick, 50));
-    timers.push(window.setTimeout(tick, 200));
-    timers.push(window.setTimeout(tick, 400));
-  });
-
   // Handle menu actions - predefined actions first, then callbacks
   const handleMenuAction = useEvent((action: Key) => {
     // Strip the ".$" prefix that React adds via Children.toArray/map
@@ -426,10 +370,11 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
       : actionStr;
 
     // Handle predefined actions first (only if requirements are met)
+    // The rename input claims focus through its own `<FocusScope autoFocus>`,
+    // and the closing Menu no longer takes focus back to its trigger once an
+    // action has moved it (see `MenuTrigger`), so no refocus pass is needed.
     if (normalizedAction === 'rename' && effectiveIsEditable) {
       inlineInputRef.current?.startEditing();
-      // Belt-and-suspenders: see `scheduleRenameRefocus` for the rationale.
-      scheduleRenameRefocus();
     }
     if (normalizedAction === 'delete' && isDeletable) {
       onDelete?.(itemKeyStr);

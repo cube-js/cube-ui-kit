@@ -279,9 +279,10 @@ const InlineInputRoot = tasty({
 const STYLE_PROPS = [...BLOCK_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
 // Grace window after a programmatic `startEditing()` during which a blur
-// (typically a closing overlay's focus restoration) re-focuses the input
-// rather than committing. ~500ms covers the Menu/Popover EXIT_DURATION
-// (350ms in `Overlay.tsx`) with margin.
+// re-focuses the input rather than committing. ~500ms covers the
+// Menu/Popover EXIT_DURATION (350ms in `Overlay.tsx`) with margin, since a
+// host that starts editing from a closing overlay is the case that needs the
+// widest window.
 const PROGRAMMATIC_EDIT_BLUR_GRACE_MS = 500;
 
 // =============================================================================
@@ -379,12 +380,16 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
     const submitTokenRef = useRef(0);
 
     // Timestamp of the most recent programmatic `startEditing()` call (via
-    // the imperative ref). Used to defeat a focus-theft race where a closing
-    // overlay's `<FocusScope restoreFocus>` yanks focus back to its trigger
-    // immediately after a consumer called `startEditing()` from inside the
-    // overlay's `onAction` (e.g. a Tabs menu "Rename" item). Without this
-    // guard the resulting blur would fire `submitOnBlur` and unmount the
-    // input the user just opened.
+    // the imperative ref). Used to defeat a focus-theft race: something else
+    // takes focus in the same tick the input mounts, and the resulting blur
+    // would fire `submitOnBlur` and unmount the input the user just opened.
+    //
+    // The thief varies by host — a host's own focus restoration (`TabButton`
+    // re-focuses the tab button when editing ends), a collection's focus
+    // manager, or an overlay closing around the `startEditing()` call. It is
+    // NOT the closing `Menu` popover: `MenuTrigger` leaves focus alone once
+    // an action has moved it (see CUB-3962). The guard is host-agnostic on
+    // purpose — the imperative path cannot know who else wants focus.
     //
     // Cleared on first user interaction inside the input (`handleInputChange`
     // / `handleKeyDown`) and on leaving editing mode, so any later blur
@@ -615,13 +620,11 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
         if (active && rootRef.current?.contains(active)) return;
 
         // Grace-period guard against focus theft right after a programmatic
-        // `startEditing()` — e.g. a `<FocusScope restoreFocus>` inside a
-        // closing Menu popover yanking focus back to its trigger after the
-        // consumer activated rename from `onAction`. Re-focus the input on
-        // the next frame so the focus-stealing element finishes its own
-        // handler first, then we steal focus back. The guard is cleared on
-        // the first real user interaction with the input (keydown / input
-        // change) so subsequent click-aways commit normally.
+        // `startEditing()` — see `programmaticEditStartRef` for who steals it.
+        // Re-focus the input on the next frame so the focus-stealing element
+        // finishes its own handler first, then we steal focus back. The guard
+        // is cleared on the first real user interaction with the input
+        // (keydown / input change) so subsequent click-aways commit normally.
         const startedAt = programmaticEditStartRef.current;
         if (
           startedAt != null &&
@@ -673,7 +676,8 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
         startEditing: () => {
           // Arm the grace-period blur guard for the imperative path only.
           // Pointer-triggered entries (dblclick / click) don't suffer from
-          // the closing-overlay focus-theft race that motivates this guard.
+          // the focus-theft race that motivates this guard — the user's own
+          // press is what put focus here.
           const wasEditing = isEditingRef.current;
           enterEditing();
           if (!wasEditing && isEditingRef.current) {

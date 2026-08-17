@@ -294,7 +294,7 @@ When `InlineInput` is embedded in a host that already owns keyboard activation (
 
 ### Focus Management
 
-When entering edit mode, focus is taken explicitly by a `FocusScope` with `autoFocus`. This makes the transition deterministic even when triggered from a closing menu (which would otherwise restore focus to the menu trigger). The text content is selected automatically.
+When entering edit mode, focus is taken explicitly by a `FocusScope` with `autoFocus`, and the text content is selected automatically. On top of that, a blur arriving in the same tick as a programmatic `startEditing()` re-focuses the input instead of committing, so hosts that drive editing through the imperative ref stay in edit mode even if something else grabs focus as the input mounts. The guard clears on the user's first keystroke, so later click-aways commit normally.
 
 When leaving edit mode, focus is not restored automatically — the host is responsible for moving focus back to a meaningful element (e.g. the parent button or row).
 

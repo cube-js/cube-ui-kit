@@ -911,10 +911,10 @@ describe('<Tabs />', () => {
 
     // Regression: a "Rename" item inside the tab menu used to mount the
     // inline-edit input only to have it stolen-focus + committed-out by the
-    // closing Menu popover's `<FocusScope restoreFocus>`. The user clicked
-    // Rename and nothing visibly happened. InlineInput's grace period plus
-    // TabButton's refocus pass keep the input mounted and focused across the
-    // overlay's exit.
+    // closing Menu popover, so the user clicked Rename and nothing visibly
+    // happened. `MenuTrigger` no longer takes focus back once an action has
+    // moved it (CUB-3962), and InlineInput's blur-side grace period absorbs
+    // any other same-tick focus theft — including the explicit one below.
     it('keeps the rename input mounted and focused when triggered from the tab menu', async () => {
       const user = userEvent.setup();
       const handleTitleChange = vi.fn();
@@ -952,9 +952,8 @@ describe('<Tabs />', () => {
       });
 
       // Simulate the focus-theft race directly: explicitly steal focus to
-      // the menu trigger right after the input mounts. With the InlineInput
-      // grace period + TabButton refocus pass, the rename session should
-      // survive and not commit-on-blur.
+      // the menu trigger right after the input mounts. InlineInput's grace
+      // period must keep the rename session alive and not commit-on-blur.
       act(() => {
         menuTrigger.focus();
       });
@@ -967,12 +966,11 @@ describe('<Tabs />', () => {
       expect(handleTitleChange).not.toHaveBeenCalled();
     });
 
-    // Regression: with `contextMenu="context-only"` and no delete handler
-    // / custom actions, the `TabContainer` ref is replaced by the context
-    // menu's target ref and the `Actions` element is never rendered — so
-    // both `containerRef` and `actionsRef` are null. The TabButton refocus
-    // pass must still be able to locate the editing input (via the tab
-    // button ref, which is always wired up).
+    // Regression: `contextMenu="context-only"` with no delete handler and no
+    // custom actions is the sparsest wiring — the `TabContainer` ref is
+    // replaced by the context menu's target ref and the `Actions` element is
+    // never rendered, so both `containerRef` and `actionsRef` are null.
+    // Rename must still land the user in a live editing session.
     it('also mounts the rename input in context-only mode with no actions', async () => {
       const handleTitleChange = vi.fn();
       const { findByRole, getByRole, queryByRole } = renderWithRoot(
@@ -1004,9 +1002,8 @@ describe('<Tabs />', () => {
         expect(queryByRole('textbox')).toBeInTheDocument();
       });
 
-      // Let the TabButton refocus pass run (rAF). With the fix, this finds
-      // the editing input via the tab button ref even though both
-      // `containerRef` and `actionsRef` are null in this configuration.
+      // Let InlineInput's grace-period refocus run (it re-focuses on rAF), so
+      // the assertion below sees the settled state rather than a mid-race one.
       await act(async () => {
         await new Promise((resolve) => requestAnimationFrame(resolve));
       });

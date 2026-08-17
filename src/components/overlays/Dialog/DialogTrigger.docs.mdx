@@ -41,6 +41,7 @@ DialogTrigger serves as a wrapper around a Dialog and its associated trigger, li
 - **`targetRef`** — The ref of the element the Dialog should visually attach itself to
 - **`styles`** — The style map for the overlay
 - **`shouldCloseOnInteractOutside`** — Function to determine if overlay should close on outside interaction
+- **`shouldRestoreFocus`** `boolean` (default: `true`) — Whether focus returns to the trigger when the dialog closes. Only needed for a surface that claims focus *later* than the restore (async load, entry animation); an action that focuses the surface it opens is already left alone — see [Focus Management](#best-practices)
 
 ### Base Properties
 
@@ -191,7 +192,7 @@ function ControlledDialog() {
    </DialogTrigger>
    ```
 
-3. **Focus Management**: Always ensure focus returns properly after dialog closes
+3. **Focus Management**: Closing the dialog returns focus to the trigger, unless the action that closed it already moved focus somewhere else — an action that opens a panel or another dialog just focuses that surface, and the trigger leaves it alone. A single `focus()` from a mount effect is enough; no retry loop is needed. Reach for `shouldRestoreFocus={false}` only when the opened surface claims focus *later* than the restore (after an async load or an entry animation), where the trigger would otherwise take focus first and flash.
 4. **Mobile Considerations**: Use appropriate mobile types for better UX
 5. **Dismissible**: Make modal dialogs dismissible unless absolutely necessary
 

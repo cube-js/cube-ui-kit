@@ -1,7 +1,7 @@
 // @ts-nocheck
 // NOTE: Type checking is disabled in this test file to prevent
 // noisy errors from complex generic typings that do not affect runtime behaviour.
-import { createRef } from 'react';
+import { createRef, useEffect, useRef, useState } from 'react';
 
 import {
   act,
@@ -1811,6 +1811,114 @@ describe('Menu inside a contained Dialog (focus management)', () => {
       },
       { timeout: 1500 },
     );
+  });
+});
+
+describe('MenuTrigger focus hand-off (CUB-3962)', () => {
+  // A panel opened by a menu action: takes focus on its own container (not on
+  // its first tabbable child, which would be the ✕ button) with a single
+  // `focus()` from a mount effect. Deliberately no retry loop — the point of
+  // the fix is that one call is enough.
+  function Panel() {
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      ref.current?.focus({ preventScroll: true });
+    }, []);
+
+    return (
+      <div ref={ref} tabIndex={-1} data-qa="Panel">
+        <button type="button">Close</button>
+        Panel content
+      </div>
+    );
+  }
+
+  function renderMenuOpeningPanel(triggerProps = {}) {
+    function App() {
+      const [isPanelOpen, setIsPanelOpen] = useState(false);
+
+      return (
+        <>
+          <MenuTrigger {...triggerProps}>
+            <Button>Menu</Button>
+            <Menu onAction={() => setIsPanelOpen(true)}>
+              <Menu.Item key="open">Open panel</Menu.Item>
+            </Menu>
+          </MenuTrigger>
+          {isPanelOpen ? <Panel /> : null}
+        </>
+      );
+    }
+
+    return renderWithRoot(<App />);
+  }
+
+  it('leaves focus on the surface an action opens', async () => {
+    const user = userEvent.setup({ delay: null });
+
+    const { findByRole, findByTestId, getByRole } = renderMenuOpeningPanel();
+
+    await user.click(getByRole('button', { name: 'Menu' }));
+    await findByRole('menu');
+
+    await user.click(await findByRole('menuitem', { name: 'Open panel' }));
+
+    const panel = await findByTestId('Panel');
+
+    // The panel must still hold focus past both restore attempts: the
+    // trigger's own `setTimeout(0)` restore and the popover FocusScope's
+    // unmount restore after the ~350ms exit animation.
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    expect(panel).toHaveFocus();
+  });
+
+  it('still restores focus to the trigger when an action moves focus nowhere', async () => {
+    const user = userEvent.setup({ delay: null });
+
+    const { findByRole, getByRole } = renderWithRoot(
+      <MenuTrigger>
+        <Button>Menu</Button>
+        <Menu onAction={() => {}}>
+          <Menu.Item key="copy">Copy</Menu.Item>
+        </Menu>
+      </MenuTrigger>,
+    );
+
+    const trigger = getByRole('button', { name: 'Menu' });
+
+    await user.click(trigger);
+    await findByRole('menu');
+
+    await user.click(await findByRole('menuitem', { name: 'Copy' }));
+
+    await waitFor(() => expect(trigger).toHaveFocus(), { timeout: 1500 });
+  });
+
+  it('never restores focus to the trigger with shouldRestoreFocus={false}', async () => {
+    const user = userEvent.setup({ delay: null });
+
+    const trigger = () => screen.getByRole('button', { name: 'Menu' });
+
+    renderWithRoot(
+      <MenuTrigger shouldRestoreFocus={false}>
+        <Button>Menu</Button>
+        <Menu onAction={() => {}}>
+          <Menu.Item key="copy">Copy</Menu.Item>
+        </Menu>
+      </MenuTrigger>,
+    );
+
+    await user.click(trigger());
+    await screen.findByRole('menu');
+
+    await user.click(await screen.findByRole('menuitem', { name: 'Copy' }));
+
+    // Past the `setTimeout(0)` restore and the FocusScope unmount restore.
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    expect(trigger()).not.toHaveFocus();
   });
 });
 
