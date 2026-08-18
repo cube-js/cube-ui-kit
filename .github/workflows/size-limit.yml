@@ -55,8 +55,15 @@ jobs:
       # Resolves the baseline explicitly instead of trusting the order the
       # workflow-runs API replies with — that order is not guaranteed and has
       # silently pinned PRs against weeks-old runs.
+      #
+      # Tolerated too: this step is several unguarded GitHub API calls, so an
+      # API hiccup here would fail the job in front of the retry below and
+      # defeat the point of it. Leaving `found` unset skips the download and
+      # `measure-size.js` reports absolute sizes with a "No baseline found"
+      # note, which is the same graceful path a genuinely missing baseline takes.
       - name: Resolve baseline run
         id: baseline
+        continue-on-error: true
         if: github.event.number
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -65,15 +72,41 @@ jobs:
           BASELINE_ARTIFACT: size-limit-report
         run: node ./scripts/ci/resolve-baseline.js
 
+      # The baseline only supplies the delta column. `measure-size.js` already
+      # falls back to absolute sizes when it cannot read one, so a transient
+      # download failure must not fail the check — GitHub's artifact endpoint
+      # 503s intermittently during incidents, and that used to turn "the
+      # library is within its size limit" into a red tick.
+      #
+      # Retry with linear backoff first, since these 503s are usually
+      # short-lived, and wipe the target directory between attempts so a
+      # half-extracted archive is never read as a valid baseline.
       - name: Download baseline stats
+        id: baseline_download
         if: steps.baseline.outputs.found == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh run download '${{ steps.baseline.outputs.run-id }}' \
-            --repo "$GITHUB_REPOSITORY" \
-            --name size-limit-report \
-            --dir './__compare/size-limit-report'
+          for attempt in 1 2 3 4 5; do
+            rm -rf './__compare/size-limit-report'
+
+            if gh run download '${{ steps.baseline.outputs.run-id }}' \
+              --repo "$GITHUB_REPOSITORY" \
+              --name size-limit-report \
+              --dir './__compare/size-limit-report'; then
+              echo 'downloaded=true' >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            if [ "$attempt" -lt 5 ]; then
+              echo "::warning::Baseline download attempt $attempt failed; retrying in $((attempt * 10))s."
+              sleep $((attempt * 10))
+            fi
+          done
+
+          rm -rf './__compare/size-limit-report'
+          echo 'downloaded=false' >> "$GITHUB_OUTPUT"
+          echo '::warning::Could not download the baseline stats after 5 attempts. Reporting absolute sizes with no comparison; the size limit itself is still enforced.'
 
       - name: Measure size
         id: measure_size
@@ -90,18 +123,75 @@ jobs:
       - name: Save stats
         run: echo '${{ steps.measure_size.outputs.result }}' > ./size-limit-report/output.json
 
+      # Tolerated on pull requests only. Baselines are resolved from runs on
+      # the BASE branch (see `resolve-baseline.js`), so a PR run's artifact is
+      # never consumed by anything and losing it cannot mislead a later run —
+      # whereas failing here would red-tick a bundle that is within budget. On
+      # a push to main the artifact IS the next PR's baseline, so a failure
+      # there stays loud.
       - name: Upload stats
+        continue-on-error: ${{ github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@v4
         with:
           name: size-limit-report
           path: ${{ env.REPORT_FOLDER }}
 
+      # Needs the baseline `stats.json` as its reference, so gate on the
+      # download having actually landed rather than on the baseline merely
+      # having been resolved.
+      #
+      # Written outside REPORT_FOLDER deliberately. That folder is the baseline
+      # artifact every later run downloads, and it is uploaded by the step
+      # above — which runs BEFORE this one, so a report written into it was
+      # never in any artifact and was simply thrown away with the runner.
+      # Keeping it separate also keeps the baseline download small.
+      #
+      # Tolerated for the same reason the comment below is: the module report
+      # is not the check. If generation fails, `built` is never set, so the
+      # upload is skipped and the comment says there is no report — the size
+      # verdict is unaffected.
       - name: Build Statoscope Report
-        if: github.event.number && steps.baseline.outputs.found == 'true'
-        run: npx statoscope generate -i ${{ env.REPORT_FOLDER }}/stats.json -r ./__compare/size-limit-report/stats.json --output ${{ env.REPORT_FOLDER }}/report.html
+        id: statoscope
+        continue-on-error: true
+        if: github.event.number && steps.baseline_download.outputs.downloaded == 'true'
+        run: |
+          mkdir -p ./__report
+          npx statoscope generate \
+            -i '${{ env.REPORT_FOLDER }}/stats.json' \
+            -r './__compare/size-limit-report/stats.json' \
+            --output './__report/report.html'
+          echo 'built=true' >> "$GITHUB_OUTPUT"
 
+      # ~180 MB on the runner but ~5 MB stored (it is one HTML file with the
+      # stats inlined, which compresses hard). Short retention because it is
+      # only of interest while the PR is open — unlike the baseline artifact
+      # above, nothing later depends on it.
+      #
+      # Also tolerated: uploading 180 MB is the step most likely to time out,
+      # and losing the report must not report the bundle as over budget.
+      - name: Upload Statoscope report
+        continue-on-error: true
+        if: steps.statoscope.outputs.built == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: size-limit-statoscope-report
+          path: ./__report/report.html
+          retention-days: 14
+
+      # Posting the report is not the check. A 503 from the issues API while
+      # commenting says nothing about the bundle, so tolerate it and let the
+      # `Throw error` gate below decide the job's outcome.
+      #
+      # The module-level report line used to interpolate
+      # `steps.deploy_report.outputs.preview-url`. That step deployed the report
+      # to Netlify and was removed in #108, but the link was left behind — so
+      # for every PR since, the comment has carried a dead link to a bare
+      # `/report.html`. It now points at the artifact, and says so plainly when
+      # there is no report (which happens whenever the baseline is missing,
+      # since Statoscope has nothing to diff against).
       - name: Comment PR
         uses: actions/github-script@v6
+        continue-on-error: true
         if: github.event.number
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -113,7 +203,7 @@ jobs:
               body: `
                 ${{ steps.measure_size.outputs.table }}
                 ---
-                [Click here if you want to find out what is changed in this build](${{ steps.deploy_report.outputs.preview-url }}/report.html)
+                ${{ steps.statoscope.outputs.built == 'true' && format('To see which modules changed, download the **size-limit-statoscope-report** artifact from [this run]({0}/{1}/actions/runs/{2}) and open report.html.', github.server_url, github.repository, github.run_id) || 'No module-level report for this run — Statoscope needs a baseline build to diff against.' }}
               `,
               github,
               repo: context.repo,

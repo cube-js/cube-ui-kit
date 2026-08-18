@@ -9,7 +9,7 @@ import {
   IconPlus,
   IconReload,
 } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
 import {
@@ -2202,6 +2202,96 @@ ItemsWithActions.parameters = {
     description: {
       story:
         'Demonstrates Menu.Item with inline actions. Actions are displayed on the right side of each item and inherit the item type through ItemActionProvider context. Hover over items to see the actions.',
+    },
+  },
+};
+
+export const ActionOpensPanel = () => {
+  const [openPanel, setOpenPanel] = useState(null);
+  const [isPanelFocused, setIsPanelFocused] = useState(false);
+  const panelRef = useRef(null);
+
+  // A single focus() from a mount effect. The closing menu leaves it alone
+  // because focus is no longer inside the menu — no retry loop needed.
+  useEffect(() => {
+    if (openPanel) {
+      panelRef.current?.focus({ preventScroll: true });
+    }
+  }, [openPanel]);
+
+  return (
+    <Flow gap="4x" placeContent="start start" padding="3x" height="400px">
+      <Paragraph preset="t4" color="#dark-03">
+        Pick an item: the panel it opens takes focus on its own container, so
+        the ✕ button is not what Enter would hit. Focus stays there instead of
+        snapping back to the ⋮ trigger.
+      </Paragraph>
+
+      <MenuTrigger>
+        <Button icon={<MoreIcon />} aria-label="Configure dimension" />
+        <Menu onAction={(key) => setOpenPanel(key)}>
+          <Menu.Item key="bins">Bins…</Menu.Item>
+          <Menu.Item key="groups">Groups…</Menu.Item>
+          <Menu.Item key="tiers">Tiers…</Menu.Item>
+        </Menu>
+      </MenuTrigger>
+
+      {openPanel ? (
+        <Card
+          ref={panelRef}
+          qa="Panel"
+          tabIndex={-1}
+          width="320px"
+          mods={{ focused: isPanelFocused }}
+          styles={{ outline: { '': false, focused: '#purple' } }}
+          onFocus={() => setIsPanelFocused(true)}
+          onBlur={() => setIsPanelFocused(false)}
+        >
+          <Flex gap="2x" placeItems="center" justifyContent="space-between">
+            <Title level={5}>{openPanel}</Title>
+            <Button
+              type="clear"
+              size="small"
+              icon={<CloseIcon />}
+              aria-label="Close panel"
+              onPress={() => setOpenPanel(null)}
+            />
+          </Flex>
+          <Paragraph preset="t4" color="#dark-03">
+            {isPanelFocused
+              ? 'This panel holds focus.'
+              : 'Focus went somewhere else.'}
+          </Paragraph>
+        </Card>
+      ) : null}
+    </Flow>
+  );
+};
+
+ActionOpensPanel.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+
+  const { findByRole, findByTestId } = within(canvasElement);
+
+  await userEvent.click(
+    await findByRole('button', { name: 'Configure dimension' }),
+  );
+  await userEvent.click(await findByRole('menuitem', { name: 'Bins…' }));
+
+  const panel = await findByTestId('Panel');
+
+  // The panel must hold focus past the trigger's `setTimeout(0)` restore and
+  // the popover FocusScope's unmount restore. Note the overlay's exit is
+  // driven by `requestAnimationFrame`, so it does not advance at all in a
+  // hidden tab — assert on focus rather than on the menu being gone.
+  await waitFor(() => expect(panel).toHaveFocus(), { timeout: 1500 });
+};
+
+ActionOpensPanel.parameters = {
+  docs: {
+    description: {
+      story:
+        'A menu action that opens a surface hands focus off to it. `MenuTrigger` skips its focus restore whenever the action already moved focus outside the closing menu, so the opened panel keeps focus with a single `focus()` call. Use `shouldRestoreFocus={false}` when the surface claims focus later than the restore (async load, entry animation).',
     },
   },
 };

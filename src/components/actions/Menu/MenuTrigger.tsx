@@ -43,6 +43,19 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
     closeOnSelect?: boolean;
     isDummy?: boolean;
     /**
+     * Whether focus returns to the trigger when the menu closes. Defaults to
+     * `true`.
+     *
+     * The restore is skipped automatically whenever the action that closed the
+     * menu has already moved focus somewhere else, so an item that opens a
+     * panel/dialog/inline editor and focuses it needs nothing here. Pass
+     * `false` for the remaining case: a surface that claims focus *later* than
+     * the menu's own restore (after an async load, an entry animation, or a
+     * `requestAnimationFrame`), where the trigger would otherwise take focus
+     * first and produce a visible flash.
+     */
+    shouldRestoreFocus?: boolean;
+    /**
      * External ref to the popover container element. When provided, it is
      * aliased to the internal `menuPopoverRef`, letting consumers (e.g.
      * `useAnchoredMenu` / `useContextMenu`) feed the popover container into
@@ -62,6 +75,7 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
 function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
   const internalPopoverRef = useRef<HTMLDivElement>(null);
   const menuPopoverRef = props.popoverRef ?? internalPopoverRef;
+  const trayRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLElement>(null);
   const domRef = useObjectRef(ref);
   const menuTriggerRef = props.targetRef || domRef || triggerRef;
@@ -75,6 +89,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
     isDisabled,
     isDummy,
     mobileType = 'popover',
+    shouldRestoreFocus = true,
   } = props;
 
   // Generate a unique ID for this menu instance
@@ -95,19 +110,6 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
     triggerRef: menuTriggerRef,
     containerRef: menuPopoverRef,
   });
-
-  // Restore focus manually when the menu closes
-  useEffect(() => {
-    if (!state.isOpen && wasOpenRef.current && !isDummy) {
-      wasOpenRef.current = false;
-      // Use setTimeout to ensure focus restoration happens after any animations
-      setTimeout(() => {
-        menuTriggerRef.current?.focus();
-      }, 0);
-    } else if (state.isOpen) {
-      wasOpenRef.current = true;
-    }
-  }, [state.isOpen, menuTriggerRef, isDummy]);
 
   if (typeof menuTrigger === 'function') {
     menuTrigger = (menuTrigger as CubeMenuTriggerProps['children'][0])(state);
@@ -140,6 +142,59 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
     crossOffset: props.crossOffset ?? 0,
   });
 
+  // Whether focus has been claimed by something outside the closing menu —
+  // the signal that a menu action handed focus off and the trigger must not
+  // take it back.
+  //
+  // Focus still inside the menu overlay means nobody claimed it: the pressed
+  // item keeps focus while the popover plays its ~350ms exit animation. Focus
+  // on `<body>` (or on a detached element) means the focused node went away
+  // with the menu. Both are cases where the trigger is where focus belongs.
+  const hasFocusMovedOutsideMenu = useEvent(() => {
+    const activeElement = document.activeElement;
+
+    if (!activeElement || activeElement === document.body) return false;
+    if (!activeElement.isConnected) return false;
+
+    // `menuPopoverRef` is only wired to the `Popover` branch, so the overlay
+    // container is `trayRef` when `mobileType="tray"` is in effect.
+    const overlay = isTray ? trayRef.current : menuPopoverRef.current;
+
+    return !(
+      overlay?.contains(activeElement) ||
+      menuRef.current?.contains(activeElement) ||
+      menuTriggerRef.current?.contains(activeElement)
+    );
+  });
+
+  // Restore focus manually when the menu closes
+  useEffect(() => {
+    if (!state.isOpen && wasOpenRef.current && !isDummy) {
+      wasOpenRef.current = false;
+
+      if (!shouldRestoreFocus) return;
+
+      // Use setTimeout to ensure focus restoration happens after any animations
+      setTimeout(() => {
+        // An action that opened a panel, a dialog or an inline editor has
+        // already focused it by now — taking focus back to the trigger would
+        // undo the hand-off, which consumers previously had to out-race by
+        // re-focusing on every animation frame (CUB-3962).
+        if (hasFocusMovedOutsideMenu()) return;
+
+        menuTriggerRef.current?.focus();
+      }, 0);
+    } else if (state.isOpen) {
+      wasOpenRef.current = true;
+    }
+  }, [
+    state.isOpen,
+    menuTriggerRef,
+    isDummy,
+    shouldRestoreFocus,
+    hasFocusMovedOutsideMenu,
+  ]);
+
   const menuContext = {
     ...menuProps,
     ref: menuRef,
@@ -165,8 +220,13 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
   // scope rejects focus moving into the menu items (which live in a portal
   // and would otherwise belong to no scope) and yanks focus back to the
   // menu trigger.
+  //
+  // `restoreFocus` follows `shouldRestoreFocus`, so opting out silences the
+  // scope's own unmount restore too. Scope registration (and therefore the
+  // guarantee above) is unaffected — `FocusScope` joins the tree and tracks
+  // the active scope regardless of `restoreFocus`.
   const contents = (
-    <FocusScope restoreFocus>
+    <FocusScope restoreFocus={shouldRestoreFocus}>
       <DismissButton onDismiss={state.close} />
       {menu}
       <DismissButton onDismiss={state.close} />
@@ -226,6 +286,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
   if (isTray) {
     overlay = (
       <Tray
+        ref={trayRef}
         isOpen={state.isOpen}
         shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
         onClose={state.close}

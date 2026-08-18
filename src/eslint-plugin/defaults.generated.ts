@@ -238,6 +238,7 @@ export const DEFAULTS: DefaultsRegistry = {
         mobileViewport: { kind: 'default', value: 700 },
         offset: { kind: 'default', value: 8 },
         shouldFlip: { kind: 'default', value: true },
+        shouldRestoreFocus: { kind: 'default', value: true },
         type: { kind: 'default', value: 'modal' },
       },
     },
@@ -518,9 +519,11 @@ export const DEFAULTS: DefaultsRegistry = {
     MenuTrigger: {
       props: {
         crossOffset: { kind: 'default', value: 0 },
+        mobileType: { kind: 'default', value: 'popover' },
         offset: { kind: 'default', value: 8 },
         placement: { kind: 'default', value: 'bottom start' },
         shouldFlip: { kind: 'default', value: true },
+        shouldRestoreFocus: { kind: 'default', value: true },
         trigger: { kind: 'default', value: 'press' },
       },
     },

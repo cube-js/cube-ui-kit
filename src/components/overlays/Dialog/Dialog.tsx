@@ -163,8 +163,14 @@ export const Dialog = forwardRef(function Dialog(
     isEntered && !!context.isOpen && context.type !== 'panel';
 
   return (
-    // This component traps the focus inside the dialog and restores it on close.
-    <FocusScope restoreFocus contain={shouldContainFocus}>
+    // This component traps the focus inside the dialog and restores it on
+    // close. The restore is the one that matters for popover-type dialogs —
+    // `DialogTrigger`'s own restore is a no-op there — so `shouldRestoreFocus`
+    // has to reach it. Containment is unaffected either way.
+    <FocusScope
+      restoreFocus={context.shouldRestoreFocus ?? true}
+      contain={shouldContainFocus}
+    >
       {content}
     </FocusScope>
   );

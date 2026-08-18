@@ -23,6 +23,8 @@ Wraps a trigger element and a `Menu` to create a dropdown menu. Positions the me
 - **`offset`** `number` (default: `8`) — Distance from trigger in pixels
 - **`crossOffset`** `number` (default: `0`) — Cross-axis offset in pixels
 - **`containerPadding`** `number` — Minimum padding from viewport edges in pixels
+- **`mobileType`** `'popover' | 'tray'` (default: `'popover'`) — Overlay variant on mobile screens. `'tray'` opts into the bottom-sheet overlay
+- **`shouldRestoreFocus`** `boolean` (default: `true`) — Whether focus returns to the trigger when the menu closes. See [Focus restoration](#focus-restoration)
 
 Extends React Aria `AriaMenuTriggerProps` and `PositionProps`.
 
@@ -35,11 +37,61 @@ Supports [Base properties](/docs/getting-started-base-properties--docs).
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
-- **Flow:** `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+## Focus restoration
+
+When the menu closes, focus returns to the trigger — **unless the action that
+closed it moved focus somewhere else**. An item whose action opens a panel, a
+dialog or an inline editor just focuses that surface; a single `focus()` call
+from a mount effect is enough, and the menu leaves it alone:
+
+```jsx
+function Panel() {
+  const ref = useRef(null);
+
+  // One call. No retry loop, no racing the closing menu.
+  useEffect(() => {
+    ref.current?.focus({ preventScroll: true });
+  }, []);
+
+  return (
+    <div ref={ref} tabIndex={-1}>
+      …
+    </div>
+  );
+}
+
+<MenuTrigger>
+  <Button icon={<MoreIcon />} aria-label="Actions" />
+  <Menu onAction={(key) => key === 'configure' && setPanelOpen(true)}>
+    <Menu.Item key="configure">Configure…</Menu.Item>
+  </Menu>
+</MenuTrigger>;
+```
+
+Focusing the surface's own container rather than its first tabbable child
+matters when a header carries a close button — `<FocusScope autoFocus>` would
+land the user on ✕, with <kbd>Enter</kbd> already meaning "close the thing that
+just opened".
+
+`shouldRestoreFocus={false}` covers the remaining case: a surface that claims
+focus *later* than the menu's restore — after an async load, an entry
+animation, or a `requestAnimationFrame`. Without it the trigger takes focus
+first and the user sees a flash.
+
+```jsx
+<MenuTrigger shouldRestoreFocus={false}>
+  <Button icon={<MoreIcon />} aria-label="Actions" />
+  <Menu onAction={openPanelThatFocusesAfterItsData}>
+    <Menu.Item key="configure">Configure…</Menu.Item>
+  </Menu>
+</MenuTrigger>
+```
 
 ## Examples
 
