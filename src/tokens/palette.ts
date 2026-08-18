@@ -1,6 +1,5 @@
 import {
   apcaContrast,
-  formatOkhst,
   glaze,
   okhslToLinearSrgb,
   variantToOkhsl,
@@ -17,6 +16,7 @@ import {
 import type {
   ColorMap,
   ContrastSpec,
+  GlazeColorValue,
   GlazeConfigOverride,
   GlazePalette,
   GlazeTheme,
@@ -253,7 +253,7 @@ const ACCENT_TEXT_HOVER_STEP = 6;
  * Carries the literal — which is what Glaze's `from` consumes — alongside its tone,
  * because {@link ACCENT_TEXT_HOVER_STEP} needs the number to compute a step past it.
  */
-type AccentSeed = { color: string; tone: number } | null;
+type AccentSeed = { color: GlazeColorValue; tone: number } | null;
 
 /**
  * The white label's own floor on the brand fill, as an APCA Lc.
@@ -309,12 +309,15 @@ function capAccentTone(color: string, tone: number): number {
 
   const { h: hue, s: saturation } = glaze.color(color).resolve().light;
   const labelLc = (candidate: number): number => {
-    // `saturation` comes off `resolve()` already on the 0–1 scale the writers take
-    // as of Glaze 2 (tenphi/glaze#93). The tone axis stays the authoring API's
-    // 0–100, so it is the only one divided.
+    // `from` takes an `OkhstColor` directly, so the seed never becomes a string.
+    // That skips the writers' scale question entirely and, more to the point, the
+    // two decimal places `okhst()` rounds to — `#7A4DBF` round-tripped through a
+    // string comes back 0.450200 against a true 0.450191. `saturation` is already
+    // the 0–1 factor `resolve()` returns; only the tone axis is the authoring
+    // API's 0–100, so only it is divided.
     const resolved = glaze
       .color({
-        from: formatOkhst(hue, saturation, candidate / 100),
+        from: { h: hue, s: saturation, t: candidate / 100 },
         mode: 'fixed',
       })
       .resolve();
@@ -363,7 +366,7 @@ function cappedAccent(color: string, tone: number): AccentSeed {
 
   const { h, s } = glaze.color(color).resolve().light;
 
-  return { color: formatOkhst(h, s, capped / 100), tone: capped };
+  return { color: { h, s, t: capped / 100 }, tone: capped };
 }
 
 /**

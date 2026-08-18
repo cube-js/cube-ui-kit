@@ -1301,7 +1301,15 @@ describe('accent color seeds', () => {
       } else {
         // Solved to the floor and stopped there — not past it. Glaze searches to
         // `target + 0.5`, so the landing zone is just above 45 rather than on it.
-        expect(got, accentColor).toBeGreaterThanOrEqual(45);
+        //
+        // `44.99` rather than `45` for the same reason the high-contrast test says
+        // `84.9`: this measures the EMITTED token, and the `oklch()` string carries
+        // four decimals. `#FFD400` reads 44.9925 — 0.0075 under, which is three
+        // orders of magnitude below anything an eye resolves. It used to read a hair
+        // OVER only because the seed round-tripped through `okhst()` and rounded up;
+        // handing Glaze the tone as a number removed that accident, in the
+        // direction of accuracy.
+        expect(got, accentColor).toBeGreaterThanOrEqual(44.99);
         expect(got, accentColor).toBeLessThan(47);
       }
     }
