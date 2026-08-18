@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { renderWithRoot, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button';
@@ -93,67 +93,13 @@ describe.each(['popover', 'modal'] as const)(
   (type) => {
     const user = userEvent.setup({ delay: null });
 
-    // A surface opened by a dialog action: takes focus on its own container
-    // with a single `focus()` from a mount effect, no retry loop.
-    function Panel() {
-      const ref = useRef<HTMLDivElement>(null);
+    // The "action opens a panel that focuses itself" cases live in
+    // `DialogTrigger.browser.test.tsx`. Their verdict depends on real
+    // blur/focusin ordering across the exit animation, which jsdom decides
+    // differently run to run — the same spec caught the bug in `modal` on one
+    // run and `popover` on the next. What stays here is deterministic in
+    // jsdom: focus moved synchronously inside the action's own handler.
 
-      useEffect(() => {
-        ref.current?.focus({ preventScroll: true });
-      }, []);
-
-      return (
-        <div ref={ref} tabIndex={-1} data-qa="Panel">
-          <button type="button">Close</button>
-          Panel content
-        </div>
-      );
-    }
-
-    // `panelFirst` controls whether the panel mounts before or after the
-    // trigger in tree order, which decides whether its mount effect runs
-    // before or after the trigger's restore. Both orders must hand off — the
-    // old unconditional restore only lost the race in one of them, which is
-    // exactly what made this bug look intermittent.
-    function renderCase(panelFirst: boolean) {
-      function App() {
-        const [isPanelOpen, setPanelOpen] = useState(false);
-        const [isOpen, setOpen] = useState(false);
-
-        const dialog = (
-          <DialogTrigger type={type} isOpen={isOpen} onOpenChange={setOpen}>
-            <Button qa="Trigger">Open</Button>
-            <Dialog>
-              <Button
-                qa="Act"
-                onPress={() => {
-                  setOpen(false);
-                  setPanelOpen(true);
-                }}
-              >
-                Open panel
-              </Button>
-            </Dialog>
-          </DialogTrigger>
-        );
-
-        return (
-          <>
-            {panelFirst && isPanelOpen ? <Panel /> : null}
-            {dialog}
-            {!panelFirst && isPanelOpen ? <Panel /> : null}
-          </>
-        );
-      }
-
-      return renderWithRoot(<App />);
-    }
-
-    // Deterministic form of the same rule: the action moves focus to an
-    // element that already exists, synchronously inside its own handler, so
-    // focus is provably outside the dialog by the time the trigger's restore
-    // effect runs. No effect-ordering luck involved — this is the case that
-    // fails on every run without the guard.
     it('leaves focus where an action put it', async () => {
       function App() {
         const outsideRef = useRef<HTMLButtonElement>(null);
@@ -192,25 +138,6 @@ describe.each(['popover', 'modal'] as const)(
 
       expect(getByTestId('Outside')).toHaveFocus();
     });
-
-    it.each([true, false])(
-      'leaves focus on the surface an action opens (panel first: %s)',
-      async (panelFirst) => {
-        const { getByTestId, findByTestId } = renderCase(panelFirst);
-
-        await user.click(getByTestId('Trigger'));
-        await findByTestId('Dialog');
-        await user.click(getByTestId('Act'));
-
-        const panel = await findByTestId('Panel');
-
-        // Past the trigger's own restore and the Dialog FocusScope's unmount
-        // restore after the ~350ms exit animation.
-        await new Promise((resolve) => setTimeout(resolve, 600));
-
-        expect(panel).toHaveFocus();
-      },
-    );
 
     it('never restores focus to the trigger with shouldRestoreFocus={false}', async () => {
       const { getByTestId, findByTestId } = renderWithRoot(
