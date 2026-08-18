@@ -20,6 +20,19 @@ module.exports = [
         }),
       );
     },
+    // 505 kB, raised from 501 kB, which the branch exceeded by 596 B locally.
+    // Measured with both sides rebuilt on the same machine: `main` at 500.29 kB,
+    // this branch at 501.60 kB, so the palette work itself is +1.31 kB — the
+    // color-seeded accent arrangement, `color-seed.ts`, and `ColorSwatch` as its
+    // own component. The Button budget below is unchanged at 123.32 kB on both
+    // sides, i.e. the branch adds exactly nothing to a Button-only import, which
+    // is the number that says none of this reaches a consumer who imports none
+    // of it.
+    //
+    // Rounded up to the next 5 kB step rather than set just above the reading:
+    // the local figure runs low (see the macOS/Linux note below), so a limit
+    // fitted to it lands under the runner's own number.
+    //
     // 498.78 kB in CI at the time of writing, 1.78 kB over the previous
     // 497 kB. That is the calendar's month/year navigation: the shared
     // `CalendarPanel` / `CalendarHeader` / `PeriodGrid` that `Calendar`,
@@ -94,7 +107,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '501kB',
+    limit: '505kB',
   },
   {
     name: 'Tree shaking (just a Button)',
