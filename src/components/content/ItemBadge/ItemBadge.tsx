@@ -9,6 +9,7 @@ import {
 } from 'react';
 
 import {
+  CURRENT_ITEM_STYLES,
   DANGER_CLEAR_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
@@ -34,7 +35,7 @@ export interface CubeItemBadgeProps extends BaseProps {
   children?: ReactNode;
   isLoading?: boolean;
   isSelected?: boolean;
-  type?: 'primary' | 'outline' | 'clear' | (string & {});
+  type?: 'primary' | 'outline' | 'clear' | 'current' | (string & {});
   theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
   tooltip?:
     | string
@@ -44,6 +45,8 @@ export interface CubeItemBadgeProps extends BaseProps {
 }
 
 type ItemBadgeVariant =
+  // Theme-agnostic inherited-color type — see `CURRENT_ITEM_STYLES`.
+  | 'default.current'
   | 'default.primary'
   | 'default.outline'
   | 'default.clear'
@@ -67,6 +70,10 @@ const ItemBadgeElement = tasty({
     },
   }),
   variants: {
+    // Inherited-color type — theme-agnostic, see `CURRENT_ITEM_STYLES`. Badges
+    // inside a row use the borderless item flavour, not the chip.
+    'default.current': CURRENT_ITEM_STYLES,
+
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
@@ -91,10 +98,18 @@ const ItemBadgeElement = tasty({
 
 export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
   function ItemBadge(allProps, ref) {
+    // `contextType` is read for its presence only — it marks "inside a row",
+    // which drives the `context` mod below. The variant no longer depends on it.
     const { type: contextType, theme: contextTheme } = useItemActionContext();
 
     const {
-      type = contextType ?? 'clear',
+      // See `ItemAction` for the full rationale: `current` tracks the host
+      // through `currentcolor`, so the row's `type` no longer has to be mirrored
+      // from context, and only an explicitly *themed* badge falls back to a
+      // concrete type. `theme="default"` stays inert.
+      type = allProps.theme && allProps.theme !== 'default'
+        ? 'clear'
+        : 'current',
       theme = contextTheme ?? 'default',
       icon,
       children,
@@ -192,7 +207,12 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
       return (
         <ItemBadgeElement
           ref={handleRef}
-          variant={`${theme}.${finalType}` as ItemBadgeVariant}
+          variant={
+            // `current` has no per-theme flavours — it is registered once under
+            // `default`. `data-theme` still carries the real theme, which is
+            // what the ramp in `CURRENT_ITEM_STYLES` keys off.
+            `${finalType === 'current' ? 'default' : theme}.${finalType}` as ItemBadgeVariant
+          }
           data-theme={theme}
           data-type={finalType}
           aria-label={ariaLabel}

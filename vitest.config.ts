@@ -18,10 +18,24 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    // The browser project owns these. Without the exclusion they run here too,
-    // in an environment with no layout — which is the one thing they exist to
-    // avoid.
-    exclude: ['**/node_modules/**', '**/dist/**', '**/*.browser.test.{ts,tsx}'],
+    // The browser project owns `*.browser.test.*`. Without the exclusion they
+    // run here too, in an environment with no layout — which is the one thing
+    // they exist to avoid.
+    //
+    // `.claude/worktrees/**` holds full checkouts of other branches. Vitest globs
+    // with `dot: true`, so every one of them is otherwise collected alongside the
+    // real suite: each spec runs twice (once per branch), a CLI path argument is
+    // matched as a substring in both trees, and failures get reported from code
+    // that is not on this branch. Worse for anything that writes: the registry
+    // generator behind `pnpm audit-defaults` resolves its output against
+    // `process.cwd()`, so a worktree's copy silently overwrites THIS tree's
+    // `defaults.generated.ts` with its own branch's registry.
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.claude/worktrees/**',
+      '**/*.browser.test.{ts,tsx}',
+    ],
     setupFiles: ['./src/test/setup.ts'],
     // threads + isolate:false: worker_threads are lighter than child_process
     // forks, and reusing the jsdom env + module graph across files in the same

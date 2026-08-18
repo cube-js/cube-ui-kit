@@ -23,48 +23,9 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
-  CURRENT_ITEM_STYLES,
-  DANGER_CARD_STYLES,
-  DANGER_CLEAR_STYLES,
-  DANGER_ITEM_STYLES,
-  DANGER_LINK_STYLES,
-  DANGER_OUTLINE_2_STYLES,
-  DANGER_OUTLINE_STYLES,
-  DANGER_PRIMARY_STYLES,
-  DEFAULT_CARD_STYLES,
-  DEFAULT_CLEAR_STYLES,
-  DEFAULT_ITEM_STYLES,
-  DEFAULT_LINK_STYLES,
-  DEFAULT_OUTLINE_2_STYLES,
-  DEFAULT_OUTLINE_STYLES,
-  DEFAULT_PRIMARY_STYLES,
+  ITEM_VARIANTS,
   ItemVariant,
-  NOTE_CARD_STYLES,
-  NOTE_CLEAR_STYLES,
-  NOTE_ITEM_STYLES,
-  NOTE_LINK_STYLES,
-  NOTE_OUTLINE_2_STYLES,
-  NOTE_OUTLINE_STYLES,
-  NOTE_PRIMARY_STYLES,
-  SPECIAL_CLEAR_STYLES,
-  SPECIAL_ITEM_STYLES,
-  SPECIAL_LINK_STYLES,
-  SPECIAL_OUTLINE_STYLES,
-  SPECIAL_PRIMARY_STYLES,
-  SUCCESS_CARD_STYLES,
-  SUCCESS_CLEAR_STYLES,
-  SUCCESS_ITEM_STYLES,
-  SUCCESS_LINK_STYLES,
-  SUCCESS_OUTLINE_2_STYLES,
-  SUCCESS_OUTLINE_STYLES,
-  SUCCESS_PRIMARY_STYLES,
-  WARNING_CARD_STYLES,
-  WARNING_CLEAR_STYLES,
-  WARNING_ITEM_STYLES,
-  WARNING_LINK_STYLES,
-  WARNING_OUTLINE_2_STYLES,
-  WARNING_OUTLINE_STYLES,
-  WARNING_PRIMARY_STYLES,
+  resolveItemVariant,
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
@@ -559,56 +520,7 @@ const ItemElement = tasty({
       '$side-padding': '(($size - $action-size - 2bw) / 2)',
     },
   },
-  variants: {
-    // Inherited-color type — theme-agnostic, see `CURRENT_ITEM_STYLES`
-    'default.current': CURRENT_ITEM_STYLES,
-    // Default theme
-    'default.primary': DEFAULT_PRIMARY_STYLES,
-    'default.outline': DEFAULT_OUTLINE_STYLES,
-    'default.outline-2': DEFAULT_OUTLINE_2_STYLES,
-    'default.clear': DEFAULT_CLEAR_STYLES,
-    'default.link': DEFAULT_LINK_STYLES,
-    'default.item': DEFAULT_ITEM_STYLES,
-    'default.card': DEFAULT_CARD_STYLES,
-    // Danger theme
-    'danger.primary': DANGER_PRIMARY_STYLES,
-    'danger.outline': DANGER_OUTLINE_STYLES,
-    'danger.outline-2': DANGER_OUTLINE_2_STYLES,
-    'danger.clear': DANGER_CLEAR_STYLES,
-    'danger.link': DANGER_LINK_STYLES,
-    'danger.item': DANGER_ITEM_STYLES,
-    'danger.card': DANGER_CARD_STYLES,
-    // Success theme
-    'success.primary': SUCCESS_PRIMARY_STYLES,
-    'success.outline': SUCCESS_OUTLINE_STYLES,
-    'success.outline-2': SUCCESS_OUTLINE_2_STYLES,
-    'success.clear': SUCCESS_CLEAR_STYLES,
-    'success.link': SUCCESS_LINK_STYLES,
-    'success.item': SUCCESS_ITEM_STYLES,
-    'success.card': SUCCESS_CARD_STYLES,
-    // Warning theme
-    'warning.primary': WARNING_PRIMARY_STYLES,
-    'warning.outline': WARNING_OUTLINE_STYLES,
-    'warning.outline-2': WARNING_OUTLINE_2_STYLES,
-    'warning.clear': WARNING_CLEAR_STYLES,
-    'warning.link': WARNING_LINK_STYLES,
-    'warning.item': WARNING_ITEM_STYLES,
-    'warning.card': WARNING_CARD_STYLES,
-    // Note theme
-    'note.primary': NOTE_PRIMARY_STYLES,
-    'note.outline': NOTE_OUTLINE_STYLES,
-    'note.outline-2': NOTE_OUTLINE_2_STYLES,
-    'note.clear': NOTE_CLEAR_STYLES,
-    'note.link': NOTE_LINK_STYLES,
-    'note.item': NOTE_ITEM_STYLES,
-    'note.card': NOTE_CARD_STYLES,
-    // Special theme
-    'special.primary': SPECIAL_PRIMARY_STYLES,
-    'special.outline': SPECIAL_OUTLINE_STYLES,
-    'special.clear': SPECIAL_CLEAR_STYLES,
-    'special.link': SPECIAL_LINK_STYLES,
-    'special.item': SPECIAL_ITEM_STYLES,
-  },
+  variants: ITEM_VARIANTS,
   styleProps: CONTAINER_STYLES,
 });
 
@@ -987,28 +899,12 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       }
     };
 
-    // The `special` theme has no `outline-2` variant (it paints over
-    // `#special-surface`, not `#surface-2`/`#surface-3`); fall back to
-    // `outline` so the item still renders.
-    const effectiveType =
-      theme === 'special' && type === 'outline-2' ? 'outline' : type;
-
-    // `header` reuses the `item` visuals, and both `header` and `current` are
-    // theme-agnostic — `current` paints from the inherited `currentcolor`.
-    const variantType = effectiveType === 'header' ? 'item' : effectiveType;
-    const variantTheme =
-      effectiveType === 'header' || effectiveType === 'current'
-        ? 'default'
-        : theme;
-
     return (
       <ItemElement
         ref={handleRef}
-        variant={
-          theme && variantType
-            ? (`${variantTheme}.${variantType}` as ItemVariant)
-            : undefined
-        }
+        // Shared with `ItemButton`, which repeats this lookup on the wrapper that
+        // carries the row color to actions rendered outside the row.
+        variant={theme && type ? resolveItemVariant(theme, type) : undefined}
         disabled={isNativelyDisabled}
         aria-disabled={finalIsDisabled}
         aria-selected={isSelected}

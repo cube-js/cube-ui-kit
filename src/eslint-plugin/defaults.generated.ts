@@ -392,11 +392,7 @@ export const DEFAULTS: DefaultsRegistry = {
           reason: 'context',
           note: 'Redundant in a bare tree but load-bearing under "inside <ItemActionProvider theme="danger">", so removing it would change behaviour there.',
         },
-        type: {
-          kind: 'skip',
-          reason: 'context',
-          note: 'Redundant in a bare tree but load-bearing under "inside <ItemActionProvider type="primary">", so removing it would change behaviour there.',
-        },
+        type: { kind: 'default', value: 'current' },
       },
     },
     ItemBadge: {
@@ -412,11 +408,7 @@ export const DEFAULTS: DefaultsRegistry = {
           reason: 'context',
           note: 'Redundant in a bare tree but load-bearing under "inside <ItemActionProvider theme="danger">", so removing it would change behaviour there.',
         },
-        type: {
-          kind: 'skip',
-          reason: 'context',
-          note: 'Redundant in a bare tree but load-bearing under "inside <ItemActionProvider type="primary">", so removing it would change behaviour there.',
-        },
+        type: { kind: 'default', value: 'current' },
       },
     },
     ItemButton: {

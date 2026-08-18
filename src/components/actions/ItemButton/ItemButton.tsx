@@ -13,6 +13,10 @@ import { useFocusWithin, useHover } from 'react-aria';
 
 import { useEvent } from '../../../_internal';
 import {
+  ITEM_RESTING_COLOR_VARIANTS,
+  resolveItemVariant,
+} from '../../../data/item-themes';
+import {
   mergeProps,
   mergeRefs,
   useDismissParentPopover,
@@ -43,6 +47,14 @@ const StyledItem = tasty(Item, {
 });
 
 const ActionsWrapper = tasty({
+  // Actions default to the `current` type, which paints from the inherited
+  // `currentcolor` — but they are rendered as a SIBLING of the button here, not
+  // inside it, so without this they would inherit the page color instead of the
+  // row's. Harmless on the default theme (the two match) and plainly wrong on
+  // any other: a `special` row would hand its actions the page's dark text to
+  // tint with, on a dark purple surface. The variant carries the row's resting
+  // color down so `currentcolor` means the same thing it does inside an `Item`.
+  variants: ITEM_RESTING_COLOR_VARIANTS,
   styles: {
     display: 'grid',
     position: 'relative',
@@ -203,9 +215,19 @@ const ItemButton = forwardRef(function ItemButton(
     ref,
   );
 
+  // `disabled` is on the wrapper so its variant can paint the row's DISABLED
+  // label color, not just the resting one. Actions default to the `current` type
+  // and suppress their own fade when the disabled state is inherited — on the
+  // grounds that the host already faded the color they paint from — so without
+  // this the wrapper would hand them a full-strength color and a disabled button
+  // would sit next to full-strength actions. See `ITEM_RESTING_COLOR_VARIANTS`.
   const finalMods = useMemo(() => {
-    return shouldShowActions ? { ...mods, 'actions-shown': true } : mods;
-  }, [mods, shouldShowActions]);
+    return {
+      ...mods,
+      ...(shouldShowActions ? { 'actions-shown': true } : null),
+      disabled: finalIsDisabled,
+    };
+  }, [mods, shouldShowActions, finalIsDisabled]);
 
   // Merge the useAction-supplied ref with our internal ref so the dismiss
   // wrapper can read the rendered DOM node at press time.
@@ -235,6 +257,9 @@ const ItemButton = forwardRef(function ItemButton(
     return (
       <ActionsWrapper
         {...hoverProps}
+        // The same resolver `Item` uses, so the wrapper cannot land on a
+        // different variant than the row it wraps.
+        variant={resolveItemVariant(theme, type)}
         data-size={size}
         data-type={type}
         data-theme={theme}
