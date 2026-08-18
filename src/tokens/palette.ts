@@ -1,4 +1,10 @@
-import { glaze } from '@tenphi/glaze';
+import {
+  apcaContrast,
+  formatOkhst,
+  glaze,
+  okhslToLinearSrgb,
+  variantToOkhsl,
+} from '@tenphi/glaze';
 
 import { lazyStyles } from './lazy-styles';
 import {
@@ -248,6 +254,114 @@ const ACCENT_TEXT_HOVER_STEP = 6;
  * because {@link ACCENT_TEXT_HOVER_STEP} needs the number to compute a step past it.
  */
 type AccentSeed = { color: string; tone: number } | null;
+
+/**
+ * The white label's own floor on the brand fill, as an APCA Lc.
+ *
+ * The same 45 as {@link ACCENT_FILL_CONTRAST}, and deliberately so: it is the same
+ * surface being constrained, just against the other thing that has to survive on it.
+ *
+ * Two floors rather than one because in dark they pull opposite ways, and dropping
+ * either one produces the mirror image of the other's failure. The fill has to be dark
+ * enough for the `#white` label every `type="primary"` item paints on it, and light
+ * enough to separate from a dark page. In light mode the page IS white, so both
+ * collapse into the single measurement Glaze already makes and this cap never fires.
+ *
+ * Measured, in dark, with only the page floor: `#FFFFFF` clears it at WCAG 14.4 while
+ * the label lands on **Lc 0** — the label is exactly its own fill. With only the white
+ * floor the failure mirrors: `#111827` puts the fill at **Lc 0.0 against the page**, a
+ * blazing white label on a shape that is not there. The border does not stand in for
+ * the fill here — it is deliberately low-contrast — so the fill has to carry it.
+ */
+const ACCENT_LABEL_LC = 45;
+
+const accentCapCache = new Map<string, number>();
+
+/** APCA Lc of pure white on one resolved variant. */
+function labelLcOf(variant: Parameters<typeof variantToOkhsl>[0]): number {
+  const { h, s, l } = variantToOkhsl(variant);
+  const gamma = (c: number) =>
+    c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+  const y = (rgb: number[]) => {
+    const [r, g, b] = rgb.map((c) => Math.max(0, Math.min(1, gamma(c))));
+
+    return 0.2126 * r ** 2.4 + 0.7152 * g ** 2.4 + 0.0722 * b ** 2.4;
+  };
+
+  return Math.abs(
+    apcaContrast(y([1, 1, 1]), y(okhslToLinearSrgb(h, s, l, false))),
+  );
+}
+
+/**
+ * Pull a brand tone down until a white label survives on every variant of the fill.
+ *
+ * The search runs against Glaze's own fixed-mode resolution — the same mapping
+ * `accent-surface` goes through — rather than reimplementing the dark tone window, and
+ * checks all four variants so the cap is a property of the seed and not of one scheme.
+ *
+ * Only ever lowers, so a brand already dark enough comes back untouched.
+ */
+function capAccentTone(color: string, tone: number): number {
+  const cached = accentCapCache.get(color);
+
+  if (cached !== undefined) return Math.min(tone, cached);
+
+  const { h: hue, s: saturation } = glaze.color(color).resolve().light;
+  const labelLc = (candidate: number): number => {
+    const resolved = glaze
+      .color({
+        from: formatOkhst(hue, saturation * 100, candidate),
+        mode: 'fixed',
+      })
+      .resolve();
+
+    return Math.min(
+      labelLcOf(resolved.light),
+      labelLcOf(resolved.dark),
+      labelLcOf(resolved.lightContrast),
+      labelLcOf(resolved.darkContrast),
+    );
+  };
+
+  let cap = 100;
+
+  if (labelLc(tone) < ACCENT_LABEL_LC) {
+    // Monotone in tone — a lighter fill is a weaker white label. Bisect the boundary.
+    let low = 0;
+    let high = tone;
+
+    for (let i = 0; i < 24; i++) {
+      const mid = (low + high) / 2;
+
+      if (labelLc(mid) >= ACCENT_LABEL_LC) low = mid;
+      else high = mid;
+    }
+
+    cap = low;
+  }
+
+  accentCapCache.set(color, cap);
+
+  return Math.min(tone, cap);
+}
+
+/**
+ * The brand seed with its tone capped, rebuilt as a literal Glaze can read.
+ *
+ * The string has to be rebuilt, not just the number: `from` reads the tone off it, so
+ * handing Glaze the original would re-solve at the uncapped tone. An uncapped brand
+ * keeps its original literal rather than round-tripping through `okhst()`.
+ */
+function cappedAccent(color: string, tone: number): AccentSeed {
+  const capped = capAccentTone(color, tone);
+
+  if (capped >= tone) return { color, tone };
+
+  const { h, s } = glaze.color(color).resolve().light;
+
+  return { color: formatOkhst(h, s * 100, capped), tone: capped };
+}
 
 /**
  * Opaque stand-in for the BASE selected fill used by outline / outline-2 / clear Item
@@ -801,7 +915,7 @@ function buildPalette(
 
   const accent: AccentSeed =
     accentColor !== null && accentTone !== null
-      ? { color: accentColor, tone: accentTone }
+      ? cappedAccent(accentColor, accentTone)
       : null;
 
   // The base zone's tone anchor and its own chroma share, applied to every color

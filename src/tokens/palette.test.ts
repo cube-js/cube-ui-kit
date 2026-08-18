@@ -1547,16 +1547,26 @@ describe('accent color seeds', () => {
     // `special` is the brand-on-dark CTA and `SPECIAL_PRIMARY_STYLES.fill` mirrors
     // `#primary-accent-surface`, so a brand that stopped at the default theme would
     // leave every hero button on the old hue.
+    //
+    // The HUE carries, not the literal. `SPECIAL_PRIMARY_STYLES.color` is `#white`
+    // like every other primary, so the brand goes through the same label cap — and
+    // `#FFD400` is one of the colors that cap moves (white on it is Lc 28 untouched).
+    // Exact equality here would be a demand that the hero button's own label be
+    // unreadable, so what this asserts is that the brand arrived, not that it arrived
+    // unchanged.
     const tokens = renderPaletteTokens({
       ...EXACT,
       accentColor: '#FFD400',
       scheme: 'light',
     });
+    const baseline = renderPaletteTokens({ ...EXACT, scheme: 'light' });
 
-    expectSameColor(
-      hexOf(String(tokens['#special-accent-surface'])),
-      '#ffd400',
-      'special-accent-surface',
+    expect(hueOf(String(tokens['#special-accent-surface']))).toBeCloseTo(
+      colorSeed('#FFD400')!.hue,
+      1,
+    );
+    expect(tokens['#special-accent-surface']).not.toBe(
+      baseline['#special-accent-surface'],
     );
   });
 
