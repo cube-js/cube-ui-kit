@@ -99,8 +99,12 @@ jobs:
             npm publish --access public --tag "$PR_TAG" --provenance
           fi
 
+      # The canary is already on npm by this point — `Publish canary to npm`
+      # above owns that outcome. Failing the job because we could not post a
+      # comment about it reports a successful release as broken.
       - name: Comment PR
         if: github.head_ref != 'changeset-release/main'
+        continue-on-error: true
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

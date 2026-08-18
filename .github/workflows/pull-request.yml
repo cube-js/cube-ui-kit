@@ -160,8 +160,12 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
+      # Announcing the deploy is not the check: `Publish to Chromatic` above
+      # has already uploaded and reported its own outcome. A 503 from the
+      # issues API here used to fail the job after all the real work passed.
       - name: Comment PR
         uses: actions/github-script@v6
+        continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

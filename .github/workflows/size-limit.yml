@@ -55,6 +55,7 @@ jobs:
       # Resolves the baseline explicitly instead of trusting the order the
       # workflow-runs API replies with — that order is not guaranteed and has
       # silently pinned PRs against weeks-old runs.
+      #
       # Tolerated too: this step is several unguarded GitHub API calls, so an
       # API hiccup here would fail the job in front of the retry below and
       # defeat the point of it. Leaving `found` unset skips the download and
@@ -122,7 +123,14 @@ jobs:
       - name: Save stats
         run: echo '${{ steps.measure_size.outputs.result }}' > ./size-limit-report/output.json
 
+      # Tolerated on pull requests only. Baselines are resolved from runs on
+      # the BASE branch (see `resolve-baseline.js`), so a PR run's artifact is
+      # never consumed by anything and losing it cannot mislead a later run —
+      # whereas failing here would red-tick a bundle that is within budget. On
+      # a push to main the artifact IS the next PR's baseline, so a failure
+      # there stays loud.
       - name: Upload stats
+        continue-on-error: ${{ github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@v4
         with:
           name: size-limit-report
@@ -137,6 +145,7 @@ jobs:
       # above — which runs BEFORE this one, so a report written into it was
       # never in any artifact and was simply thrown away with the runner.
       # Keeping it separate also keeps the baseline download small.
+      #
       # Tolerated for the same reason the comment below is: the module report
       # is not the check. If generation fails, `built` is never set, so the
       # upload is skipped and the comment says there is no report — the size
