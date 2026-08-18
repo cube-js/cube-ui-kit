@@ -184,7 +184,10 @@ function PeriodPicker<T extends DateValue>(
             size={size}
             {...mergeProps(buttonProps, focusPropsButton)}
             aria-describedby={valueId}
-            isDisabled={isDisabled || isReadOnly}
+            // Passed separately, not merged: only the field-disabled half is
+            // inherited. See `DatePickerButton`.
+            isDisabled={isDisabled}
+            isReadOnly={isReadOnly}
             styles={props.triggerStyles}
           />
           <Dialog {...dialogProps} width="max-content">
