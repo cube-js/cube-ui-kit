@@ -1282,31 +1282,45 @@ export function resolveItemVariant(
   return `${variantTheme}.${variantType}` as ItemVariant;
 }
 
-// Each variant reduced to just its resting label color.
+// Each variant reduced to the label colors an actions wrapper has to reproduce.
 //
 // The `current` type paints from `currentcolor`, which only reaches an action
 // that is a DOM *descendant* of the row. `Item` renders its actions inside the
 // row element, so they inherit the row color for free — but `ItemButton` renders
 // them as a sibling of the button (deliberately, so the actions stay reachable
 // and are not nested inside a `<button>`), where `currentcolor` would inherit
-// from the page instead. Painting this color on that wrapper restores the link.
+// from the page instead. Painting these colors on that wrapper restores the link.
 //
-// Resting only: the wrapper is not the interactive element, so it never carries
-// the row's `hovered` / `selected` / `disabled` mods and the other entries in a
-// variant's `color` map could never match there anyway.
+// Resting AND disabled, and the second one is not optional. `ItemAction`
+// suppresses its own `.4` fade when the disabled state was inherited from the
+// host, on the grounds that the host has already faded the color it paints from —
+// which is only true if the wrapper actually reproduces the host's *disabled*
+// color. With resting alone, a disabled `ItemButton` rendered full-strength
+// actions next to its own faded label.
+//
+// The other states are still skipped: the wrapper is not the interactive element,
+// so it never carries `hovered` / `pressed` / `selected` and those entries could
+// never match there. `disabled` is different only because `ItemButton` passes it
+// down explicitly.
 export const ITEM_RESTING_COLOR_VARIANTS: Record<ItemVariant, Styles> =
   Object.fromEntries(
     Object.entries(ITEM_VARIANTS).map(([variant, styles]) => {
       const color = styles.color;
 
+      if (!color || typeof color !== 'object') {
+        return [variant, { color }];
+      }
+
+      const map = color as Record<string, string>;
+      // Only a plain `disabled` key is usable. `default.current` states it as
+      // `disabled & !inherit-disabled`, which is deliberately not matched here:
+      // that variant paints from `currentcolor` and has no fixed color to hand
+      // down, so the wrapper leaves its resting value in place.
+      const disabled = map.disabled;
+
       return [
         variant,
-        {
-          color:
-            color && typeof color === 'object'
-              ? (color as Record<string, string>)['']
-              : color,
-        },
+        { color: disabled ? { '': map[''], disabled } : map[''] },
       ];
     }),
   ) as Record<ItemVariant, Styles>;

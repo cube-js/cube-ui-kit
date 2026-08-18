@@ -215,9 +215,19 @@ const ItemButton = forwardRef(function ItemButton(
     ref,
   );
 
+  // `disabled` is on the wrapper so its variant can paint the row's DISABLED
+  // label color, not just the resting one. Actions default to the `current` type
+  // and suppress their own fade when the disabled state is inherited — on the
+  // grounds that the host already faded the color they paint from — so without
+  // this the wrapper would hand them a full-strength color and a disabled button
+  // would sit next to full-strength actions. See `ITEM_RESTING_COLOR_VARIANTS`.
   const finalMods = useMemo(() => {
-    return shouldShowActions ? { ...mods, 'actions-shown': true } : mods;
-  }, [mods, shouldShowActions]);
+    return {
+      ...mods,
+      ...(shouldShowActions ? { 'actions-shown': true } : null),
+      disabled: finalIsDisabled,
+    };
+  }, [mods, shouldShowActions, finalIsDisabled]);
 
   // Merge the useAction-supplied ref with our internal ref so the dismiss
   // wrapper can read the rendered DOM node at press time.
