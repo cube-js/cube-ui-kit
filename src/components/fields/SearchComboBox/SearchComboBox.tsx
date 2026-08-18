@@ -46,7 +46,6 @@ import { CollectionItem as Item } from '../../CollectionItem';
 import {
   getValidationIcon,
   getValidationMods,
-  getValidationTheme,
   useValidationProps,
   wrapWithField,
 } from '../../form';
@@ -955,7 +954,8 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
           <Item.Action
             icon={<CloseIcon />}
             size={size}
-            theme={getValidationTheme(undefined, { isInvalid, isValid })}
+            // No `theme` — see `ComboBox`: the default `current` type inherits
+            // the input's already validation-tinted text color.
             qa="SearchComboBoxClearButton"
             data-no-trigger={hideTrigger ? '' : undefined}
             data-popover-dismiss=""

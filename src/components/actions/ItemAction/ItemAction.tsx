@@ -90,6 +90,15 @@ const ItemActionElement = tasty({
   styles: {
     ...ITEM_ACTION_BASE_STYLES,
     recipe: 'reset button',
+    // Every variant below defines its own ring and overrides this one. It exists
+    // for `current`, which reuses `CURRENT_ITEM_STYLES` — an `*_ITEM_STYLES`
+    // flavour, and those leave focus to the collection that owns the row. A
+    // focusable action is not a row, so it needs the ring back, and it uses the
+    // same `#primary-accent-text` as every other type in `item-themes.ts`.
+    outline: {
+      '': '0 #primary-accent-text.0',
+      focused: '1bw #primary-accent-text',
+    },
     outlineOffset: 1,
     cursor: { '': '$pointer', disabled: 'default' },
     preset: {
@@ -165,7 +174,17 @@ export const ItemAction = forwardRef(function ItemAction(
   } = useItemActionContext();
 
   const {
-    type = contextType ?? 'clear',
+    // `current` derives every color from the row's inherited `currentcolor`, so
+    // one type covers every host type and theme — no need to mirror the row's
+    // `type` from context.
+    //
+    // An explicitly *themed* action is the exception: it is asking to paint
+    // itself, not to match its host, and `current` is theme-agnostic by
+    // construction, so it would have nothing to color with. Such actions fall
+    // back to `clear`. The `!== 'default'` guard keeps `theme="default"` inert —
+    // passing a prop's own default value must never change what renders, which
+    // is the invariant `no-redundant-default-prop` lints for.
+    type = allProps.theme && allProps.theme !== 'default' ? 'clear' : 'current',
     theme = contextTheme ?? 'default',
     icon,
     children,
@@ -180,6 +199,12 @@ export const ItemAction = forwardRef(function ItemAction(
 
   // Inherit disabled state from context, but allow local override
   const isDisabled = isDisabledProp ?? contextIsDisabled;
+
+  // Whether that disabled state came from the host row rather than this action's
+  // own prop. The `current` type paints from the inherited color, and a disabled
+  // host has already faded it — so fading a second time washes the label out. See
+  // `CURRENT_ITEM_STYLES.color`.
+  const isDisabledInherited = isDisabledProp == null && !!contextIsDisabled;
 
   // Determine if we should show a checkmark
   const hasCheckmark = icon === 'checkmark';
@@ -202,9 +227,18 @@ export const ItemAction = forwardRef(function ItemAction(
       'has-label': !!children,
       context: !!contextType,
       'has-icon': !!icon,
+      'inherit-disabled': isDisabledInherited,
       ...mods,
     }),
-    [hasCheckmark, isSelected, isLoading, children, contextType, mods],
+    [
+      hasCheckmark,
+      isSelected,
+      isLoading,
+      children,
+      contextType,
+      isDisabledInherited,
+      mods,
+    ],
   );
 
   // An explicit label always wins; a tooltip only fills in the accessible name

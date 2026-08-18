@@ -38,7 +38,6 @@ import { CollectionItem as Item } from '../../CollectionItem';
 import {
   getValidationIcon,
   getValidationMods,
-  getValidationTheme,
   useFieldProps,
   wrapWithField,
 } from '../../form';
@@ -1381,7 +1380,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           <Item.Action
             icon={<CloseIcon />}
             size={size}
-            theme={getValidationTheme(undefined, { isInvalid, isValid })}
+            // No `theme` — the default `current` type inherits the input's own
+            // text color, which is already validation-tinted, so the button
+            // matches the text beside it exactly instead of using the fixed
+            // `danger.clear` palette.
             qa="ComboBoxClearButton"
             data-no-trigger={hideTrigger ? '' : undefined}
             data-popover-dismiss=""
