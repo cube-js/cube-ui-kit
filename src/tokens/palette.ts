@@ -10,6 +10,7 @@ import {
 
 import type {
   ColorMap,
+  ContrastSpec,
   GlazeConfigOverride,
   GlazePalette,
   GlazeTheme,
@@ -156,43 +157,67 @@ function baseSaturationScale(config: ResolvedPaletteConfig): number {
 }
 
 /**
- * Contrast floors for a pinned brand color: `[normal, highContrast]`.
+ * The floor for a pinned brand FILL, measured from white — APCA `large`, Lc 45.
  *
- * `3` is WCAG's non-text floor — enough that the button reads as a shape against the
- * page, and low enough that most brands clear it untouched. It is a FLOOR and not a
- * target: a brand already at 5:1 or 17:1 is emitted exactly as given. Lower would let a
- * fill vanish into the page; the shipped `['AA','AAA']` is too high to survive a light
- * brand at all (it crushes `#FFD400` from tone 88 to 50).
+ * "From white" falls out of the anchor rather than replacing it. The base stays
+ * `surface`, and `roleToPolarity('surface')` gives this the `bg` polarity, so Glaze
+ * solves `apcaContrast(surface, fill)` — in light, where `surface` IS `oklch(1 0 0)`,
+ * that is literally white-on-fill, the pair every `type="primary"` label depends on.
  *
- * The high-contrast entry stays at AAA regardless. Fidelity to a requested color is a
- * preference; the high-contrast tier is not — it exists for users who cannot read the
- * normal one, and it is selected by `prefers-contrast: more` or an explicit
- * `data-contrast="high"`, so anyone seeing it has asked for separation over brand.
- * Note the pair also means an unreachable HC target is a real possibility for a very
- * light brand, and Glaze pins it to the nearest tone and warns rather than failing.
+ * Re-anchoring to `accent-surface-text` to say "from white" in both schemes was tried
+ * and is wrong: in dark the label root is near-white while the page is not, so the
+ * floor stops constraining the fill against the page and a dark brand disappears into
+ * it — `#111827` came out at WCAG 1.16 against the dark surface. Keeping `surface`
+ * means the floor reads as the label pair in light and as page separation in dark,
+ * which is the constraint that actually matters in each.
+ *
+ * Why APCA and not a WCAG ratio. WCAG 2.x is polarity-blind, so one number means two
+ * very different things: the previous `3` measured Lc 56 in light but only Lc 23 in
+ * dark (12 hues, spread under 2 Lc — hue is not a factor, polarity is). That is 2.4x
+ * stricter in light than in dark, which is why light brands kept getting crushed while
+ * dark ones sailed through under the same rule. Lc 45 is one number that means one
+ * thing in both schemes.
+ *
+ * Still a FLOOR, not a target: a brand already past it is emitted exactly as given.
+ *
+ * The HC entry is `85`, spelled rather than left to Glaze's +15 enhancement, because
+ * +15 would land it at Lc 60 — weaker in light than the WCAG `7` it replaces. It also
+ * cannot be written as a WCAG ratio: Glaze rejects a `contrast` pair that switches
+ * metric ("a WCAG ratio and an APCA Lc are different scales"), which is a fair guard,
+ * so the tier moves to APCA with the rest.
+ *
+ * Lc 85 is the closest single value to the old AAA guarantee, and it cannot reproduce
+ * it exactly — WCAG 7 measures Lc 83.5 in light but only Lc 54.4 in dark, so no one
+ * number says "AAA" on both sides. At 85 the fill lands ~6.1 in light (a shade under
+ * AAA) and ~15 in dark (well past it). Fidelity to a requested color is a preference;
+ * the high-contrast tier is not — anyone seeing it has asked for separation over brand.
  */
-const ACCENT_FILL_CONTRAST: [number, number] = [3, 7];
+const ACCENT_FILL_CONTRAST: ContrastSpec = { apca: [45, 85] };
 
 /**
- * Floors for the two brand TEXT tokens: rest, then hover.
+ * Floors for the two brand TEXT tokens: rest, then hover — APCA `content` and `body`.
  *
- * The normal entries relax so a vivid brand can be the actual link color. The
- * high-contrast entries do not — same reasoning as {@link ACCENT_FILL_CONTRAST} — and
- * they stay one step apart so the rest→hover intensify survives the tier that needs it
- * most. A single shared HC number would collapse the pair onto one color: both would
- * simply solve to it.
+ * Also "from white", in the same sense as {@link ACCENT_FILL_CONTRAST}: both solve
+ * against `accent-selected-fill`, which is `oklch(0.975 0.0037 284.4)` in light — white
+ * for every practical purpose, and the surface these labels actually sit on. These are
+ * foreground spots, so they keep the default `fg` polarity and Glaze solves
+ * `apcaContrast(text, base)`.
  *
- * The hover's `9` is measured, not chosen for roundness. It is the highest target
- * reachable across `#7A4DBF` `#EF4444` `#0EA5E9` `#22C55E` `#FFD400` `#111827` in both
- * high-contrast schemes, and it holds a ~2.0 gap over the rest color in every one. The
- * shipped `11` is not usable here: 11:1 from a fully saturated hue against a chromatic
- * `accent-selected-fill` is unreachable, and `#FFD400` in dark high contrast pins to
- * pure black — a hover link *less* readable than its rest state, at 2.23 against 7.07.
- * The shipped palette can afford 11 because its fill is a desaturated mix; a pinned
- * brand color is not.
+ * Lc 60 is APCA's `content` tier, the floor for ordinary body text, which is what a
+ * link is. The hover takes `body`/75 so the rest→hover intensify stays visible; one
+ * preset step apart is what keeps the two from solving onto the same color.
+ *
+ * The HC entries are spelled `85` and `92` rather than left to Glaze's +15, for the
+ * same reason as {@link ACCENT_FILL_CONTRAST}, and they stay apart so the rest→hover
+ * intensify survives the tier that needs it most. They replace the hand-measured
+ * `[4.5, 9]` pair, whose `9` existed only because a WCAG ratio that high is unreachable
+ * for a saturated hue against a chromatic base: `#FFD400` in dark high contrast used to
+ * pin to pure black and come out a hover link *less* readable than its rest state. An
+ * Lc target is reachable in both schemes because it is polarity-aware, so the
+ * pathological case has no equivalent here.
  */
-const ACCENT_TEXT_CONTRAST: [number, number] = [3, 7];
-const ACCENT_TEXT_HOVER_CONTRAST: [number, number] = [4.5, 9];
+const ACCENT_TEXT_CONTRAST: ContrastSpec = { apca: [60, 85] };
+const ACCENT_TEXT_HOVER_CONTRAST: ContrastSpec = { apca: [75, 92] };
 
 /**
  * Tone steps of the brand fill ramp, measured from `accent-surface`.
@@ -621,8 +646,8 @@ function accentFillColors(accent: AccentSeed): ColorMap {
   return {
     // Still a hard white root, and still the PRIMARY label: every `type="primary"`
     // item in `src/data/item-themes.ts` writes `#white` directly. That is exactly what
-    // ACCENT_FILL_CONTRAST protects — the fill is held far enough off the page that a
-    // white label keeps working on it.
+    // ACCENT_FILL_CONTRAST protects — and in light, where `surface` IS white, the
+    // floor below measures that label pair directly.
     'accent-surface-text': { tone: 100, mode: 'fixed' },
     'accent-surface': {
       from: accent.color,

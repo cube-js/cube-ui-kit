@@ -1,4 +1,5 @@
 import {
+  apcaContrast,
   contrastRatioFromLuminance,
   glaze,
   okhslToLinearSrgb,
@@ -157,6 +158,32 @@ function contrastOf(a: string, b: string): number {
   };
 
   return contrastRatioFromLuminance(luminance(a), luminance(b));
+}
+
+/**
+ * APCA Lc of a candidate color against its base, as the palette solves it.
+ *
+ * `accent-surface` is a `surface` role, which `roleToPolarity` maps to `'bg'` — so
+ * Glaze scores it as `apcaContrast(yBase, yCandidate)` and this has to use the same
+ * argument order to read back what the solver targeted. The sign carries the polarity
+ * (negative in light, where the base is the lighter of the two), so callers compare
+ * the magnitude.
+ *
+ * Glaze searches to `target + 0.5` for APCA, so a solved floor lands just above its
+ * target rather than exactly on it.
+ */
+function apcaOf(base: string, candidate: string): number {
+  const luminance = (value: string) => {
+    const { h, s, l } = variantToOkhsl(glaze.color(value).resolve().light);
+    const linear = okhslToLinearSrgb(h, s, l, false);
+    const gamma = (c: number) =>
+      c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+    const [r, g, b] = linear.map((c) => Math.max(0, Math.min(1, gamma(c))));
+
+    return 0.2126 * r ** 2.4 + 0.7152 * g ** 2.4 + 0.0722 * b ** 2.4;
+  };
+
+  return Math.abs(apcaContrast(luminance(base), luminance(candidate)));
 }
 
 /**
@@ -1262,17 +1289,20 @@ describe('accent color seeds', () => {
       const fill = String(tokens['#accent-surface']);
       const surface = String(tokens['#surface']);
 
-      const wanted = contrastOf(accentColor, surface);
-      const got = contrastOf(fill, surface);
+      // The floor is APCA Lc 45 measured from the page, which in light IS white —
+      // so this is the white primary label on the fill, the pair that has to hold.
+      const wanted = apcaOf(surface, accentColor);
+      const got = apcaOf(surface, fill);
 
-      if (wanted >= 3) {
+      if (wanted >= 45) {
         // Nothing to solve, so nothing may move.
         expectSameColor(hexOf(fill), accentColor.toLowerCase(), accentColor);
-        expect(got, accentColor).toBeCloseTo(wanted, 2);
+        expect(got, accentColor).toBeCloseTo(wanted, 1);
       } else {
-        // Solved to the floor and stopped there — not to AA, not to the far side.
-        expect(got, accentColor).toBeGreaterThanOrEqual(3);
-        expect(got, accentColor).toBeLessThan(3.2);
+        // Solved to the floor and stopped there — not past it. Glaze searches to
+        // `target + 0.5`, so the landing zone is just above 45 rather than on it.
+        expect(got, accentColor).toBeGreaterThanOrEqual(45);
+        expect(got, accentColor).toBeLessThan(47);
       }
     }
   });
@@ -1338,7 +1368,7 @@ describe('accent color seeds', () => {
    * anyone reading it has asked for separation over brand — and the relaxed normal floor
    * must not follow them into it.
    */
-  it('holds AAA on the brand fill in high contrast, whatever the color', () => {
+  it('holds Lc 85 on the brand fill in high contrast, whatever the color', () => {
     for (const accentColor of BRANDS) {
       for (const scheme of ['light', 'dark'] as const) {
         const hc = renderPaletteTokens({
@@ -1348,13 +1378,16 @@ describe('accent color seeds', () => {
           highContrast: true,
         });
 
-        // 6.99 rather than 7: Glaze binary-searches the tone to a 1e-4 epsilon, so a
-        // solved floor can land a thousandth of a ratio short of its target. Anything
-        // that has actually stopped honouring the floor misses by whole points.
+        // Lc 85, not WCAG AAA, because the tier is now expressed in APCA — and no
+        // single Lc can restate the old `7` in both schemes. WCAG 7 measures Lc 83.5
+        // in light but only Lc 54.4 in dark (12 hues, spread under 2), so a pair that
+        // held AAA on both sides is not something one APCA number can say. Lc 85 is
+        // the closest single value: it lands ~6.1 in light — a shade under AAA — and
+        // ~15 in dark, well past it.
         expect(
-          contrastOf(String(hc['#accent-surface']), String(hc['#surface'])),
+          apcaOf(String(hc['#surface']), String(hc['#accent-surface'])),
           `${accentColor} ${scheme}`,
-        ).toBeGreaterThan(6.99);
+        ).toBeGreaterThan(84.9);
       }
     }
   });
