@@ -23,7 +23,7 @@ import { useEvent } from '../../../_internal';
 import { PipetteIcon } from '../../../icons';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { ItemAction } from '../../actions';
+import { ItemAction, ItemActionProvider } from '../../actions';
 import { useFieldProps } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { ColorSpace } from '../color/channels';
@@ -367,12 +367,23 @@ export const ColorInput = forwardRef(function ColorInput(
             shouldFlip={shouldFlip}
             onOpenChange={handleOpenChange}
           >
-            <ColorInputTrigger
-              size={size}
-              aria-label="Open the color picker"
-              isDisabled={isDisabled || isReadOnly}
-              styles={triggerStyles}
-            />
+            {/*
+              The trigger is disabled by either flag, but the two arrive through
+              different channels on purpose. A disabled FIELD travels through the
+              provider so `current` treats the state as inherited: the field has
+              already faded the colour the trigger paints from, and fading again
+              multiplies the two (measured `.12` — all but invisible). Read-only
+              alone leaves the field's text opaque, so there the trigger really is
+              disabled on its own and should fade itself.
+            */}
+            <ItemActionProvider isDisabled={isDisabled}>
+              <ColorInputTrigger
+                size={size}
+                aria-label="Open the color picker"
+                isDisabled={isReadOnly && !isDisabled ? true : undefined}
+                styles={triggerStyles}
+              />
+            </ItemActionProvider>
             <Dialog
               aria-label="Color picker"
               width="max-content"

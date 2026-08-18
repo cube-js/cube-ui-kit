@@ -533,12 +533,12 @@ describe('<InlineInput />', () => {
       expect(ref.current?.getValue()).toBe('hello');
     });
 
-    // Regression: clicking "Rename" inside a closing Menu popover used to
-    // unmount the input because the popover's `<FocusScope restoreFocus>`
-    // synchronously yanked focus back to its trigger, which in turn fired
-    // `submitOnBlur` and committed-out of editing. After a programmatic
-    // `startEditing()`, an immediate blur must NOT commit; instead, the
-    // input is re-focused. Once the user actually types, the guard clears.
+    // After a programmatic `startEditing()`, an immediate blur must NOT
+    // commit; instead, the input is re-focused. This is what makes the
+    // imperative path survive a host that takes focus in the same tick the
+    // input mounts (its own focus restoration, a collection focus manager, an
+    // overlay closing around the call). Once the user actually types, the
+    // guard clears and click-aways commit normally.
     describe('startEditing() blur-side grace period', () => {
       it('does not commit when the input blurs immediately after a programmatic startEditing()', async () => {
         const ref = createRef<CubeInlineInputRef>();
@@ -557,9 +557,9 @@ describe('<InlineInput />', () => {
         const input = getByRole('textbox') as HTMLInputElement;
         expect(document.activeElement).toBe(input);
 
-        // Simulate the closing-overlay focus theft: move focus elsewhere
-        // immediately after `startEditing()`. With the guard, `submitOnBlur`
-        // should NOT commit and the input should remain mounted.
+        // Simulate the focus theft: move focus elsewhere immediately after
+        // `startEditing()`. With the guard, `submitOnBlur` should NOT commit
+        // and the input should remain mounted.
         const otherButton = document.querySelector(
           '[data-qa="OtherButton"]',
         ) as HTMLButtonElement;

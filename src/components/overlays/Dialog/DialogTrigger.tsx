@@ -80,6 +80,19 @@ export interface CubeDialogTriggerProps
   shouldUpdatePosition?: boolean;
   /** Minimum padding in pixels between the popover and viewport edges */
   containerPadding?: number;
+  /**
+   * Whether focus returns to the trigger when the dialog closes. Defaults to
+   * `true`.
+   *
+   * The restore is skipped automatically whenever the action that closed the
+   * dialog has already moved focus somewhere else, so an action that opens a
+   * panel/dialog/inline editor and focuses it needs nothing here. Pass `false`
+   * for the remaining case: a surface that claims focus *later* than the
+   * dialog's own restore (after an async load, an entry animation, or a
+   * `requestAnimationFrame`), where the trigger would otherwise take focus
+   * first and produce a visible flash.
+   */
+  shouldRestoreFocus?: boolean;
 }
 
 /**
@@ -101,6 +114,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
     mobileViewport = 700,
     hideOnClose,
     shouldCloseOnInteractOutside,
+    shouldRestoreFocus = true,
     ...positionProps
   } = props;
 
@@ -196,6 +210,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         hideArrow={hideArrow}
         shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
+        shouldRestoreFocus={shouldRestoreFocus}
         syncTriggerRef={syncTriggerRef}
         syncOverlayRef={syncOverlayRef}
         triggerType={type}
@@ -252,6 +267,8 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
       overlay={renderOverlay()}
       hideOnClose={hideOnClose}
       syncTriggerRef={syncTriggerRef}
+      overlayRef={syncOverlayRef}
+      shouldRestoreFocus={shouldRestoreFocus}
       onClose={onClose}
     />
   );
@@ -269,6 +286,7 @@ function PopoverTrigger(allProps) {
     isKeyboardDismissDisabled,
     hideOnClose,
     shouldCloseOnInteractOutside,
+    shouldRestoreFocus,
     keepOpenOnScroll,
     syncTriggerRef,
     syncOverlayRef,
@@ -394,6 +412,8 @@ function PopoverTrigger(allProps) {
       dialogProps={overlayProps}
       trigger={trigger}
       overlay={overlay}
+      overlayRef={overlayRef}
+      shouldRestoreFocus={shouldRestoreFocus}
       onClose={onClose}
     />
   );
@@ -402,6 +422,8 @@ function PopoverTrigger(allProps) {
 function DialogTriggerBase(props: any) {
   const ref = useCombinedRefs<HTMLElement>(props.ref);
   const wasOpenRef = useRef(false);
+  const overlayRef: RefObject<HTMLElement | null> | undefined =
+    props.overlayRef;
 
   // Mirror the press-responder DOM node into the parent's sync trigger ref.
   // Done via `useLayoutEffect` rather than threading through `useCombinedRefs`
@@ -422,6 +444,7 @@ function DialogTriggerBase(props: any) {
     triggerProps = {},
     overlay,
     trigger,
+    shouldRestoreFocus = true,
   } = props;
 
   let context = {
@@ -429,18 +452,51 @@ function DialogTriggerBase(props: any) {
     onClose,
     isDismissable,
     isOpen: state.isOpen,
+    // Reaches `Dialog`'s `FocusScope`, which owns the restore for
+    // popover-type dialogs. `useDialog` filters it out of the DOM props.
+    shouldRestoreFocus,
     ...dialogProps,
   };
 
-  // Restore focus manually when the dialog closes
+  // Whether focus has been claimed by something outside the closing dialog —
+  // the signal that an action handed focus off and the trigger must not take
+  // it back. Same rule as `MenuTrigger` (see CUB-3962): an action that opens
+  // a panel, another dialog or an inline editor focuses that surface, and
+  // restoring here would undo the hand-off.
+  //
+  // Focus still inside the overlay means nobody claimed it (the pressed
+  // control keeps focus while the overlay plays its ~350ms exit animation),
+  // and focus on `<body>` or on a detached node means the focused element
+  // went away with the dialog. Both belong back on the trigger.
+  const hasFocusMovedOutsideDialog = useEvent(() => {
+    const activeElement = document.activeElement;
+
+    if (!activeElement || activeElement === document.body) return false;
+    if (!activeElement.isConnected) return false;
+
+    return !(
+      overlayRef?.current?.contains(activeElement) ||
+      ref.current?.contains(activeElement)
+    );
+  });
+
+  // Restore focus manually when the dialog closes.
+  //
+  // Live for modal/tray/fullscreen/panel types only: in the popover branch
+  // `triggerProps` carries its own `ref`, which overrides the `ref={ref}` on
+  // `PressResponder` below, so `ref.current` stays null and this is a no-op.
+  // Popovers get their restore from `Dialog`'s own `<FocusScope restoreFocus>`
+  // instead, which already declines to restore when focus moved elsewhere.
   useEffect(() => {
     if (!state.isOpen && wasOpenRef.current) {
       wasOpenRef.current = false;
+      if (!shouldRestoreFocus) return;
+      if (hasFocusMovedOutsideDialog()) return;
       ref.current?.focus();
     } else if (state.isOpen) {
       wasOpenRef.current = true;
     }
-  }, [state.isOpen]);
+  }, [state.isOpen, shouldRestoreFocus, hasFocusMovedOutsideDialog]);
 
   // Mark popover-type DialogTrigger children with `data-popover-trigger` so
   // `Button` / `ItemButton`'s default dismiss-on-press behaviour treats them

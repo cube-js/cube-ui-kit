@@ -1,3 +1,5 @@
+import { useRef, useState } from 'react';
+
 import { renderWithRoot, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button';
 
@@ -80,3 +82,111 @@ describe('<DialogTrigger type="popover" />', () => {
     expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy();
   });
 });
+
+// Both types are covered because they restore focus through different paths:
+// modal/tray/fullscreen/panel use `DialogTriggerBase`'s own restore, while
+// popovers get theirs from `Dialog`'s `<FocusScope restoreFocus>` (the manual
+// one is a no-op there — see the comment on it). Only the first path had the
+// unconditional-restore bug, but both must honour a hand-off.
+describe.each(['popover', 'modal'] as const)(
+  'DialogTrigger focus hand-off (type=%s)',
+  (type) => {
+    const user = userEvent.setup({ delay: null });
+
+    // The "action opens a panel that focuses itself" cases live in
+    // `DialogTrigger.browser.test.tsx`. Their verdict depends on real
+    // blur/focusin ordering across the exit animation, which jsdom decides
+    // differently run to run — the same spec caught the bug in `modal` on one
+    // run and `popover` on the next. What stays here is deterministic in
+    // jsdom: focus moved synchronously inside the action's own handler.
+
+    it('leaves focus where an action put it', async () => {
+      function App() {
+        const outsideRef = useRef<HTMLButtonElement>(null);
+        const [isOpen, setOpen] = useState(false);
+
+        return (
+          <>
+            <button ref={outsideRef} type="button" data-qa="Outside">
+              Outside
+            </button>
+            <DialogTrigger type={type} isOpen={isOpen} onOpenChange={setOpen}>
+              <Button qa="Trigger">Open</Button>
+              <Dialog>
+                <Button
+                  qa="Act"
+                  onPress={() => {
+                    setOpen(false);
+                    outsideRef.current?.focus();
+                  }}
+                >
+                  Hand focus off
+                </Button>
+              </Dialog>
+            </DialogTrigger>
+          </>
+        );
+      }
+
+      const { getByTestId, findByTestId } = renderWithRoot(<App />);
+
+      await user.click(getByTestId('Trigger'));
+      await findByTestId('Dialog');
+      await user.click(getByTestId('Act'));
+
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
+      expect(getByTestId('Outside')).toHaveFocus();
+    });
+
+    it('never restores focus to the trigger with shouldRestoreFocus={false}', async () => {
+      const { getByTestId, findByTestId } = renderWithRoot(
+        <DialogTrigger type={type} shouldRestoreFocus={false}>
+          <Button qa="Trigger">Open</Button>
+          {(close) => (
+            <Dialog>
+              <Button qa="Act" onPress={close}>
+                Close
+              </Button>
+            </Dialog>
+          )}
+        </DialogTrigger>,
+      );
+
+      const trigger = getByTestId('Trigger');
+
+      await user.click(trigger);
+      await findByTestId('Dialog');
+      await user.click(getByTestId('Act'));
+
+      // Past the trigger's restore and the Dialog FocusScope's unmount restore
+      // — for popovers the FocusScope is the only one that would have fired.
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
+      expect(trigger).not.toHaveFocus();
+    });
+
+    it('still restores focus to the trigger when the dialog just closes', async () => {
+      const { getByTestId, findByTestId } = renderWithRoot(
+        <DialogTrigger type={type}>
+          <Button qa="Trigger">Open</Button>
+          {(close) => (
+            <Dialog>
+              <Button qa="Act" onPress={close}>
+                Close
+              </Button>
+            </Dialog>
+          )}
+        </DialogTrigger>,
+      );
+
+      const trigger = getByTestId('Trigger');
+
+      await user.click(trigger);
+      await findByTestId('Dialog');
+      await user.click(getByTestId('Act'));
+
+      await waitFor(() => expect(trigger).toHaveFocus(), { timeout: 1500 });
+    });
+  },
+);

@@ -909,111 +909,14 @@ describe('<Tabs />', () => {
       expect(inlineInput).toHaveAttribute('data-qa', 'InlineInput');
     });
 
-    // Regression: a "Rename" item inside the tab menu used to mount the
-    // inline-edit input only to have it stolen-focus + committed-out by the
-    // closing Menu popover's `<FocusScope restoreFocus>`. The user clicked
-    // Rename and nothing visibly happened. InlineInput's grace period plus
-    // TabButton's refocus pass keep the input mounted and focused across the
-    // overlay's exit.
-    it('keeps the rename input mounted and focused when triggered from the tab menu', async () => {
-      const user = userEvent.setup();
-      const handleTitleChange = vi.fn();
-      const { findByRole, getByRole, queryByRole } = renderWithRoot(
-        <Tabs
-          isEditable
-          defaultActiveKey="tab1"
-          menu={<Menu.Item key="rename">Rename</Menu.Item>}
-          onTitleChange={handleTitleChange}
-        >
-          <Tab key="tab1" title="Tab 1">
-            Content 1
-          </Tab>
-        </Tabs>,
-      );
-
-      const tab = getByRole('tab', { name: 'Tab 1' });
-      const menuTrigger = tab.parentElement?.querySelector(
-        'button[aria-haspopup="true"]',
-      ) as HTMLButtonElement;
-
-      expect(menuTrigger).toBeTruthy();
-      await user.click(menuTrigger);
-
-      const renameItem = await findByRole('menuitem', { name: 'Rename' });
-      await user.click(renameItem);
-
-      // The InlineInput should still be in edit mode after the menu closes
-      // and its FocusScope tries to restore focus to the trigger.
-      const input = await waitFor(() => {
-        const el = queryByRole('textbox');
-        expect(el).toBeInTheDocument();
-
-        return el as HTMLInputElement;
-      });
-
-      // Simulate the focus-theft race directly: explicitly steal focus to
-      // the menu trigger right after the input mounts. With the InlineInput
-      // grace period + TabButton refocus pass, the rename session should
-      // survive and not commit-on-blur.
-      act(() => {
-        menuTrigger.focus();
-      });
-
-      await act(async () => {
-        await new Promise((resolve) => requestAnimationFrame(resolve));
-      });
-
-      expect(queryByRole('textbox')).toBeInTheDocument();
-      expect(handleTitleChange).not.toHaveBeenCalled();
-    });
-
-    // Regression: with `contextMenu="context-only"` and no delete handler
-    // / custom actions, the `TabContainer` ref is replaced by the context
-    // menu's target ref and the `Actions` element is never rendered — so
-    // both `containerRef` and `actionsRef` are null. The TabButton refocus
-    // pass must still be able to locate the editing input (via the tab
-    // button ref, which is always wired up).
-    it('also mounts the rename input in context-only mode with no actions', async () => {
-      const handleTitleChange = vi.fn();
-      const { findByRole, getByRole, queryByRole } = renderWithRoot(
-        <Tabs
-          isEditable
-          contextMenu="context-only"
-          defaultActiveKey="tab1"
-          menu={<Menu.Item key="rename">Rename</Menu.Item>}
-          onTitleChange={handleTitleChange}
-        >
-          <Tab key="tab1" title="Tab 1">
-            Content 1
-          </Tab>
-        </Tabs>,
-      );
-
-      const tab = getByRole('tab', { name: 'Tab 1' });
-
-      // Open the context menu via right-click and select Rename.
-      await act(async () => {
-        fireEvent.contextMenu(tab);
-      });
-      const renameItem = await findByRole('menuitem', { name: 'Rename' });
-      await act(async () => {
-        fireEvent.click(renameItem);
-      });
-
-      await waitFor(() => {
-        expect(queryByRole('textbox')).toBeInTheDocument();
-      });
-
-      // Let the TabButton refocus pass run (rAF). With the fix, this finds
-      // the editing input via the tab button ref even though both
-      // `containerRef` and `actionsRef` are null in this configuration.
-      await act(async () => {
-        await new Promise((resolve) => requestAnimationFrame(resolve));
-      });
-
-      expect(queryByRole('textbox')).toBeInTheDocument();
-      expect(handleTitleChange).not.toHaveBeenCalled();
-    });
+    // Renaming from the tab menu is covered in `Tabs.browser.test.tsx`.
+    // It moved because jsdom cannot referee it: the flow turns on a real
+    // blur/focusin order across the menu popover's 350ms exit and on
+    // `InlineInput`'s rAF-driven grace period, so the jsdom version had to
+    // simulate the focus theft with an explicit `.focus()` — which asserts
+    // that the grace period works, not that renaming does. The browser spec
+    // drives the real thing and asserts what the user gets: caret in the
+    // input, title selected, typing commits.
   });
 
   describe('Context menu modes', () => {

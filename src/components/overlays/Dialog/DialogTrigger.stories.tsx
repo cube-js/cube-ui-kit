@@ -146,6 +146,14 @@ export default {
         defaultValue: { summary: true },
       },
     },
+    shouldRestoreFocus: {
+      control: { type: 'boolean' },
+      description:
+        'Whether focus returns to the trigger when the dialog closes. Already skipped when the closing action moved focus elsewhere — set false only for a surface that claims focus later than the restore',
+      table: {
+        defaultValue: { summary: true },
+      },
+    },
 
     /* Events */
     onOpenChange: {

@@ -661,12 +661,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         ) : showClearButton ? (
           <ItemActionProvider
             type={type}
+            // The same expression the trigger is painted with, not the raw
+            // `theme` — see `Picker` for why validation has to be applied here too.
             theme={getValidationTheme(theme, { isInvalid, isValid })}
           >
             <ItemAction
               icon={<CloseIcon />}
               size={size}
               qa="FilterPickerClearButton"
+              // No explicit `type`/`theme` — see `Picker`: the default `current`
+              // type inherits the trigger's text color, which already carries
+              // validation state.
               mods={{ pressed: false }}
               onPress={clearValue}
             />

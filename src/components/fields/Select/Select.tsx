@@ -68,7 +68,6 @@ import { Text } from '../../content/Text';
 import {
   getValidationIcon,
   getValidationMods,
-  getValidationTheme,
   useFieldProps,
   wrapWithField,
 } from '../../form';
@@ -470,11 +469,32 @@ function Select<T extends object>(
           ) : showClearButton ? (
             <ItemActionProvider
               type={type}
-              theme={getValidationTheme(theme, { isInvalid, isValid })}
+              // Forwarded so a `special` trigger tells its action which SURFACE it
+              // sits on: `CURRENT_ITEM_STYLES` only steps up to the stronger alpha
+              // ramp on `theme=special`, and against that dark purple base the
+              // light-scheme alphas are almost invisible. It travels through
+              // context rather than as a prop because the prop is what opts an
+              // action out of `current` back to `clear`, and this one needs to stay
+              // `current` so its label keeps inheriting.
+              //
+              // The RAW theme, unlike `Picker` / `FilterPicker` which forward
+              // `getValidationTheme(...)`: this trigger is painted with the raw
+              // theme too (see above), and surfaces validation through the wrapper
+              // rather than by switching theme. Forwarding must always match what
+              // the trigger paints with.
+              theme={theme}
             >
               <ItemAction
                 icon={<CloseIcon />}
                 qa="SelectClearButton"
+                // No explicit `type`/`theme`: the default `current` type paints
+                // from the trigger's own inherited text color, so the button
+                // matches whatever the field is showing instead of one palette.
+                //
+                // NOTE: this trigger keeps NEUTRAL label text when invalid, so
+                // the button reads neutral there too. `Picker` and `FilterPicker`
+                // are also `Item`-based but do tint theirs, which is the actual
+                // inconsistency to fix — in `Select`, not here.
                 mods={{ pressed: false }}
                 onPress={clearValue}
               />
