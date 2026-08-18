@@ -309,9 +309,12 @@ function capAccentTone(color: string, tone: number): number {
 
   const { h: hue, s: saturation } = glaze.color(color).resolve().light;
   const labelLc = (candidate: number): number => {
+    // `saturation` comes off `resolve()` already on the 0–1 scale the writers take
+    // as of Glaze 2 (tenphi/glaze#93). The tone axis stays the authoring API's
+    // 0–100, so it is the only one divided.
     const resolved = glaze
       .color({
-        from: formatOkhst(hue, saturation * 100, candidate),
+        from: formatOkhst(hue, saturation, candidate / 100),
         mode: 'fixed',
       })
       .resolve();
@@ -360,7 +363,7 @@ function cappedAccent(color: string, tone: number): AccentSeed {
 
   const { h, s } = glaze.color(color).resolve().light;
 
-  return { color: formatOkhst(h, s * 100, capped), tone: capped };
+  return { color: formatOkhst(h, s, capped / 100), tone: capped };
 }
 
 /**

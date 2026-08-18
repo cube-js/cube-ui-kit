@@ -301,8 +301,8 @@ export function formatColor(color: ColorValue, format: ColorFormat): string {
   // whatever angle the source happened to carry. Zero reads better.
   const gray = isAchromatic(color);
   const hue = gray ? 0 : color.h;
-  const saturation = color.s * 100;
-  const lightness = color.l * 100;
+  const saturation = color.s;
+  const lightness = color.l;
 
   switch (format) {
     case 'rgb':
@@ -318,7 +318,7 @@ export function formatColor(color: ColorValue, format: ColorFormat): string {
     case 'okhsl':
       return formatOkhsl(hue, saturation, lightness);
     case 'okhst':
-      return formatOkhst(hue, saturation, toOkhst(color).t * 100);
+      return formatOkhst(hue, saturation, toOkhst(color).t);
     case 'oklch':
       return formatOklch(hue, saturation, lightness);
     default:
