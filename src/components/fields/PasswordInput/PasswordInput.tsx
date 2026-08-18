@@ -8,7 +8,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { ItemAction } from '../../actions';
+import { ItemAction, ItemActionProvider } from '../../actions';
 import { useFieldProps } from '../../form';
 import {
   CubeBufferedValueProps,
@@ -75,14 +75,24 @@ function PasswordInput(
   const wrappedSuffix = (
     <>
       {suffix}
-      <ItemAction
-        // No `type` — the default `current` type inherits the input's own text
-        // color, so the toggle follows the field's theme and validation state
-        // rather than staying neutral against tinted text.
-        tooltip={t('passwordInput.toggleMasking', 'Toggle masking')}
-        icon={type === 'password' ? <EyeInvisibleIcon /> : <EyeIcon />}
-        onPress={toggleType}
-      />
+      {/*
+        The disabled state travels through the provider rather than as a prop on
+        the action. Both disable it, but the provider marks the state as
+        INHERITED from the field, and `current` paints from the colour it
+        inherits — which a disabled field has already faded — so a second fade
+        would multiply the two down to roughly a tenth opacity. No `type` is
+        passed, so the `context` mod stays off and the toggle keeps its margins.
+      */}
+      <ItemActionProvider isDisabled={rest.isDisabled}>
+        <ItemAction
+          // No `type` — the default `current` type inherits the input's own text
+          // color, so the toggle follows the field's theme, validation state and
+          // disabled state rather than staying opaque against faded text.
+          tooltip={t('passwordInput.toggleMasking', 'Toggle masking')}
+          icon={type === 'password' ? <EyeInvisibleIcon /> : <EyeIcon />}
+          onPress={toggleType}
+        />
+      </ItemActionProvider>
     </>
   );
 
