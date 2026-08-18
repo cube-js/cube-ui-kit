@@ -10,7 +10,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { ItemAction } from '../../actions';
+import { ItemAction, ItemActionProvider } from '../../actions';
 import { useValidationProps } from '../../form';
 import {
   CubeBufferedValueProps,
@@ -106,21 +106,41 @@ export const SearchInput = forwardRef(function SearchInput(
         restProps.suffix || showClearButton ? (
           <>
             {restProps.suffix}
-            {showClearButton && (
-              <ItemAction
-                icon={<CloseIcon />}
-                size={restProps.size}
-                // No `type` or `theme` — the default `current` type inherits the
-                // input's own text color, which already carries validation state.
-                {...ariaToCubeButtonProps(clearButtonProps)}
-                onPress={(e) => {
-                  // Call the original clear functionality
-                  clearButtonProps.onPress?.();
-                  // Call the onClear callback
-                  onClear?.();
-                }}
-              />
-            )}
+            {showClearButton &&
+              (() => {
+                const { isDisabled: ariaIsDisabled, ...clearProps } =
+                  ariaToCubeButtonProps(clearButtonProps);
+
+                return (
+                  // A disabled FIELD goes through the provider so `current` treats
+                  // the state as inherited: the field has already faded the colour
+                  // the button paints from, and fading again multiplied the two to
+                  // `.12` — all but invisible. Any OTHER reason react-aria
+                  // disables the button (read-only) leaves the field's text
+                  // opaque, so that one stays a prop and fades itself.
+                  <ItemActionProvider isDisabled={restProps.isDisabled}>
+                    <ItemAction
+                      icon={<CloseIcon />}
+                      size={restProps.size}
+                      // No `type` or `theme` — the default `current` type inherits
+                      // the input's own text color, which already carries
+                      // validation state.
+                      {...clearProps}
+                      isDisabled={
+                        ariaIsDisabled && !restProps.isDisabled
+                          ? true
+                          : undefined
+                      }
+                      onPress={(e) => {
+                        // Call the original clear functionality
+                        clearButtonProps.onPress?.();
+                        // Call the onClear callback
+                        onClear?.();
+                      }}
+                    />
+                  </ItemActionProvider>
+                );
+              })()}
           </>
         ) : undefined
       }
