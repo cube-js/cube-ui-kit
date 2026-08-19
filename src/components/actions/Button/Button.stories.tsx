@@ -241,13 +241,6 @@ const TypeStatesRow = ({
         <Button
           type={type}
           theme={theme}
-          mods={{ ...BASE_MODS, hovered: true, pressed: true }}
-        >
-          Pressed&Hovered
-        </Button>
-        <Button
-          type={type}
-          theme={theme}
           mods={{ ...BASE_MODS, focused: true }}
         >
           Focused
@@ -287,18 +280,6 @@ const TypeStatesRow = ({
               mods={{ ...BASE_MODS, selected: true, pressed: true }}
             >
               Pressed
-            </Button>
-            <Button
-              type={type}
-              theme={theme}
-              mods={{
-                ...BASE_MODS,
-                selected: true,
-                hovered: true,
-                pressed: true,
-              }}
-            >
-              Pressed&Hovered
             </Button>
             <Button
               type={type}
