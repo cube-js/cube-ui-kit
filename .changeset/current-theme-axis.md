@@ -37,6 +37,8 @@ The top step of each ramp stops at `#current.24`. That is the measured AA floor 
 
 This changes one case: an action that named a `type` but no `theme` used to inherit the host row's theme, and now takes the host's color through `currentcolor` instead. Inside a themed row the two are close by construction — a `danger` row paints `#danger-accent-text`, which is what the action then mixes from — but the chip is an alpha tint rather than the brand ramp. Pass `theme="default"` (or any other theme) to opt back into a fixed palette.
 
+`Banner` is the one in-repo consumer that needed a matching edit. Its actions ask for `type="outline"` and then cleared the border, because back then `outline` meant `note.outline` and friends — whose border is the opaque `#note-border`, a pale line built for a `#surface-2` chip on a light page and plainly wrong on a saturated banner. The fill carried the chip on its own there. On the `current` theme the border is `#current.08` mixed from the banner's own white label, and the fill is a 3% tint that cannot carry a chip by itself, so clearing the border left the action invisible. The override is gone and the type renders as designed.
+
 The host theme still reaches the element, as `data-surface`: it names the surface an action is painted _on_, which is a different question from its own theme now that `current` occupies that axis. The `current` ramp reads it to pick the alphas that work over the `special` theme's fixed dark-purple surface — the job `data-theme` used to do before `theme="current"` claimed that attribute.
 
 ### Also

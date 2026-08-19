@@ -59,11 +59,21 @@ const BannerElement = tasty(Item, {
   },
 });
 
+// `outline` on the `current` theme (`Item.Action`'s default): the chip and its
+// border are mixed from the banner's own white label, so the action reads as a
+// control against a saturated surface without naming a color.
+//
+// This used to clear the border. Back then an action inherited the banner's
+// THEME, so `outline` meant `note.outline` and friends, whose border is the
+// opaque `#note-border` — a pale line built for a `#surface-2` chip on a light
+// page, and plainly wrong on a saturated banner. Now that the border is
+// `#current.08` off the inherited label, clearing it only removed the one thing
+// that made the type an outline, leaving a 3% tint that vanished into the
+// banner.
 const BannerActionElement = tasty(Item.Action, {
   type: 'outline',
   styles: {
     preset: 't3m',
-    border: '#clear',
   },
 });
 
