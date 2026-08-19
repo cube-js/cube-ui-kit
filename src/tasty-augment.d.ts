@@ -32,8 +32,7 @@ declare module '@tenphi/tasty' {
     'accent-icon': true;
     'accent-disabled-surface': true;
     'accent-disabled-surface-text': true;
-    'accent-disabled-surface-soft': true;
-    'accent-disabled-surface-soft-text': true;
+    'accent-disabled-text': true;
     // Note: `accent-surface-hover` / `accent-selected-fill` (and their
     // per-theme prefixed variants + `<theme>-hover` aliases) are intentionally
     // omitted from this type list to stay under TS7056. They resolve at

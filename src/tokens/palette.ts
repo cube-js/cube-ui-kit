@@ -1210,35 +1210,28 @@ function buildPalette(
       mode: 'fixed',
     },
 
-    // Brand-tinted counterpart of the neutral `disabled-surface` /
-    // `disabled-surface-text` pair, for the SELECTED disabled state of the
-    // non-solid types (`outline`, `outline-2`, `clear`).
+    // The disabled counterpart of `accent-text-soft`, for the SELECTED disabled
+    // state of the non-solid types (`outline`, `outline-2`, `clear`).
     //
-    // The pair above is built for a PRIMARY button, whose enabled state is
-    // already an opaque brand fill under a `#white` label — so a mid-tone chip
-    // is a step DOWN there. On an outline or clear control it is a step up:
-    // the enabled selected state is a 9% tint under soft accent text, and the
-    // `-13` chip under a `tone: 'max'` label came out heavier and brighter than
-    // the state it is supposed to mute. A disabled control must never outweigh
-    // its enabled self.
+    // Those types express `selected & disabled` by keeping the enabled selected
+    // CHIP and fading only the LABEL, so this is the one token the state needs.
+    // It is the neutral `disabled-surface-text` geometry — the same `-23` tone
+    // delta against `surface`, adaptive, so it reads exactly as disabled as
+    // every other disabled label in light, dark and HC — carrying brand chroma
+    // instead of neutral: roughly 2x `disabled-surface-text` and comfortably
+    // under `accent-text-soft`, which is the live label it must not be mistaken
+    // for. Selection therefore survives as a hue on a label of unchanged
+    // paleness.
     //
-    // These therefore reuse the NEUTRAL disabled geometry exactly — the same
-    // `-3.5` chip and `-23` label deltas against `surface`, adaptive rather
-    // than fixed, so the weight matches in light, dark and HC — and differ from
-    // it only in chroma. Selection survives as a brand tint on a chip of
-    // unchanged weight, which is the one channel left once weight is spoken
-    // for. Saturation is set high because these tones sit near the ends of the
-    // lightness range, where the gamut affords little chroma: `1` on the chip
-    // buys about 3× the neutral's chroma in light and is still a faint tint.
-    'accent-disabled-surface-soft': {
-      base: 'surface',
-      tone: '-3.5',
-      saturation: 1,
-    },
-    'accent-disabled-surface-soft-text': {
+    // The pair above (`accent-disabled-surface` / `-text`) stays what it always
+    // was: the muted chip for a PRIMARY button, whose enabled state is an opaque
+    // brand fill under `#white`. Borrowing it here inverted the state — its
+    // mid-tone chip is a step DOWN from a solid fill but a step UP from a 9%
+    // tint, and its `tone: 'max'` label resolves to literal white in light mode.
+    'accent-disabled-text': {
       base: 'surface',
       tone: '-23',
-      saturation: 1,
+      saturation: 0.6,
     },
 
     // ---- Loading-animation cube faces ----
