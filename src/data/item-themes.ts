@@ -1263,22 +1263,35 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
     pressed: '#current #black.16',
     disabled: '#current.4',
   },
-  // Deliberately left as the inherited color: this is what keeps `currentcolor`
-  // — and therefore the fill above — meaning the color the context paints with.
+  // Deliberately the inherited color in EVERY state, disabled included: this is
+  // the one thing keeping `currentcolor` — and therefore the fill and border
+  // above — meaning the color the context paints with. Fading it here would fade
+  // them too, since they resolve `currentcolor` against this element's own
+  // `color`: a `.4` label under a `.4` fill lands the chip at `.16`, the
+  // pre-multiply trap the other `current` ramps document. Nothing needs it to
+  // move, because the label is painted below and the icons take their own.
   color: {
     '': '#current',
-    disabled: '#current.4',
   },
   '-webkit-text-fill-color': {
     '': '#accent-surface-text',
     disabled: '#accent-surface-text.5',
   },
-  Icon: {
-    color: {
-      '': '#accent-surface-text',
-      disabled: '#accent-surface-text.5',
-    },
-  },
+  // Every icon-bearing slot, not just the leading one. `-webkit-text-fill-color`
+  // paints glyphs and inherits into the text slots for free, but icons are SVG
+  // stroked with `currentColor`, which it does not reach — so an un-recolored
+  // slot would keep the inherited color and vanish into the fill it matches.
+  ...Object.fromEntries(
+    ['Icon', 'RightIcon', 'Prefix', 'Suffix'].map((slot) => [
+      slot,
+      {
+        color: {
+          '': '#accent-surface-text',
+          disabled: '#accent-surface-text.5',
+        },
+      },
+    ]),
+  ),
 } as const;
 
 // Link flavour — no chip at all, only the label. The brand themes intensify from
