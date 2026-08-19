@@ -760,24 +760,26 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   const finalPrefix =
     isLoading && resolvedLoadingSlot === 'prefix' ? <LoadingIcon /> : prefix;
 
-  // Which HotKeys flavour the shortcut hint wears, chosen by what the row's
-  // label is painted with.
+  // Which HotKeys flavour the shortcut hint wears, decided by one question: is
+  // this row's `color` the label, or the fill?
   //
-  // `primary` pins the hint to `#white`, which is right on a filled brand chip
-  // whose own label is `#white` too. `invert` labels itself `#surface`, so the
-  // white hint would land on the wrong side of the fill in dark mode — it takes
-  // `inherit` instead, which paints the hint from `currentcolor` and therefore
-  // tracks the label exactly.
+  // On every type but `primary`, `color` IS the label, so `inherit` is right —
+  // it paints the hint's glyphs and rim from `currentcolor` and therefore tracks
+  // the label exactly, in either scheme. `invert` needs that: it labels itself
+  // `#surface`, so `primary`'s fixed `#white` hint would land on the wrong side
+  // of the fill in dark mode.
   //
-  // Except on the `current` theme, where `invert` and `primary` coincide and
-  // `currentcolor` IS the fill: there `inherit` would draw the hint's rim in the
-  // fill color and erase it, so that pairing stays on `primary`.
+  // `primary` is the exception on both counts. On the brand themes its label is
+  // `#white`, which is what the `primary` flavour paints. On `current` its
+  // `color` is the FILL — the label is painted with `-webkit-text-fill-color`
+  // precisely so `color` can stay free for `fill` to resolve against — so
+  // `inherit` would draw the hint's rim in the fill color and erase it.
+  //
+  // `current.invert` is not that case, despite the shared theme: it fills with
+  // an absolute `#surface` and keeps `color` for the label, like every other
+  // `invert`. It reads `inherit` here for exactly the same reason they do.
   const hotkeysType =
-    type === 'invert' && theme !== 'current'
-      ? 'inherit'
-      : type === 'primary' || type === 'invert'
-        ? 'primary'
-        : 'default';
+    type === 'invert' ? 'inherit' : type === 'primary' ? 'primary' : 'default';
 
   // Build final suffix: loading icon, custom suffix, or HotKeys hint
   const finalSuffix =
