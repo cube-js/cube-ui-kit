@@ -147,15 +147,24 @@ that reproduces your color. Dark and high contrast adapt, as every other color i
 palette does — they are different pages, and a brand pinned across all four would be
 less faithful, not more. What holds everywhere is the floor below.
 
-**The fill has a 3:1 floor against the page.** That is WCAG's non-text floor: enough
-that a button reads as a shape on the surface. It is a floor and not a target — a brand
-already at 5:1, or 17:1, is emitted exactly as given, and one that misses moves only as
-far as the floor. `#FFD400` cannot clear 3:1 on a white page, so it darkens to
-`#b09200`; `#7A4DBF` measures 5.8:1 and is left alone.
+**The fill answers to two floors, both APCA Lc 45.** One against the page, so the
+button reads as a shape on the surface; one against the `#white` label it carries, so
+what is written on it stays readable. They are floors and not targets — a brand already
+past both is emitted exactly as given, and one that misses moves only as far as the
+nearer floor requires.
 
-High contrast tightens it further, deliberately: there the floor goes back to AAA
-whatever you passed, because that tier is selected by `prefers-contrast: more` or an
-explicit `data-contrast="high"` — anyone reading it has asked for separation over brand.
+They are APCA rather than WCAG on purpose. A single WCAG ratio means two different
+things depending on the scheme: measured across twelve hues, a fill sitting exactly at
+3:1 comes out at Lc 56 in light but only Lc 23 in dark. That is why light brands kept
+getting crushed while dark ones sailed through the same rule. **A consequence to state
+plainly: the emitted fill can sit below WCAG 3:1.** `#0EA5E9` renders at 2.77:1 against
+a white page and is correct there — Lc 45 is the guarantee, not the ratio.
+
+High contrast escalates the page floor to Lc 60 and stops. It stops because the two
+floors pull opposite ways in dark — one wants a lighter fill, the other a darker one —
+and the window they share closes entirely somewhere past 60. A fill driven further off
+the page is one its own label has disappeared from, so the tier escalates only as far
+as the label can follow.
 
 **`pastel` caps chroma.** The flat, hue-independent ceiling is what makes pastel even
 across hues, and it sits below where a saturated color would land, so under it a color

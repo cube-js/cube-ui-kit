@@ -1310,7 +1310,10 @@ describe('accent color seeds', () => {
         // handing Glaze the tone as a number removed that accident, in the
         // direction of accuracy.
         expect(got, accentColor).toBeGreaterThanOrEqual(44.99);
-        expect(got, accentColor).toBeLessThan(47);
+        // 49 rather than 47: the ceiling searches to `ACCENT_LABEL_LC + 3` so the
+        // page floor, which can only lighten, cannot eat back through 45. A capped
+        // brand therefore lands near 48 by construction.
+        expect(got, accentColor).toBeLessThan(49);
       }
     }
   });
@@ -1376,7 +1379,7 @@ describe('accent color seeds', () => {
    * anyone reading it has asked for separation over brand — and the relaxed normal floor
    * must not follow them into it.
    */
-  it('holds Lc 85 on the brand fill in high contrast, whatever the color', () => {
+  it('holds Lc 60 on the brand fill in high contrast, whatever the color', () => {
     for (const accentColor of BRANDS) {
       for (const scheme of ['light', 'dark'] as const) {
         const hc = renderPaletteTokens({
@@ -1386,16 +1389,14 @@ describe('accent color seeds', () => {
           highContrast: true,
         });
 
-        // Lc 85, not WCAG AAA, because the tier is now expressed in APCA — and no
-        // single Lc can restate the old `7` in both schemes. WCAG 7 measures Lc 83.5
-        // in light but only Lc 54.4 in dark (12 hues, spread under 2), so a pair that
-        // held AAA on both sides is not something one APCA number can say. Lc 85 is
-        // the closest single value: it lands ~6.1 in light — a shade under AAA — and
-        // ~15 in dark, well past it.
+        // 60, not the old AAA, and it is a ceiling geometry imposed rather than a
+        // preference: the same fill also answers to the white label above it, and in
+        // dark those two floors pull opposite ways. Asking 85 of the page empties the
+        // window they share — see `ACCENT_FILL_CONTRAST`.
         expect(
           apcaOf(String(hc['#surface']), String(hc['#accent-surface'])),
           `${accentColor} ${scheme}`,
-        ).toBeGreaterThan(84.9);
+        ).toBeGreaterThan(59.9);
       }
     }
   });
@@ -1549,6 +1550,86 @@ describe('accent color seeds', () => {
       colorSeed('#FFD400')!.hue,
       1,
     );
+  });
+
+  it('registers replacing one unparseable color with another', () => {
+    // Both resolve to `null`, so `isSameConfig` sees nothing move; the pin signature
+    // is the only thing that can tell them apart, and recording mere presence could
+    // not. The write was dropped silently — input kept the first string and no
+    // subscriber heard about it.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const seen: string[] = [];
+    const unsubscribe = subscribePaletteConfig(() => {
+      seen.push(String(getPaletteConfigInput().accentColor));
+    });
+
+    setPaletteConfig({ accentColor: 'bad-one' });
+    setPaletteConfig({ accentColor: 'bad-two' });
+
+    expect(getPaletteConfigInput().accentColor).toBe('bad-two');
+    expect(seen).toEqual(['bad-one', 'bad-two']);
+
+    unsubscribe();
+    warn.mockRestore();
+  });
+
+  it('rotates the whole accent ramp when a hue outranks the color', () => {
+    // `resolveConfig` ranks an explicit `hue` above the one an `accentColor` carries,
+    // so the fill has to follow it like every sibling does. Handing Glaze the literal
+    // instead pinned `accent-surface` to the color's own hue while `-2`, `-3` and
+    // `hover` followed the theme — a primary button that changed hue on hover.
+    //
+    // Asserted on the EMITTED tokens rather than on `getPaletteConfig().hue`, which
+    // was already correct while the ramp was split.
+    const tokens = renderPaletteTokens({
+      accentColor: '#0EA5E9',
+      hue: 94,
+      scheme: 'light',
+    });
+    const ramp = [
+      '#accent-surface',
+      '#accent-surface-2',
+      '#accent-surface-3',
+      '#accent-surface-hover',
+    ].map((name) => hueOf(String(tokens[name])));
+
+    for (const hue of ramp) expect(hue).toBeCloseTo(94, 1);
+  });
+
+  it('keeps a white label readable on the emitted fill, every hue and tier', () => {
+    // The cap is computed on the bare seed, but what ships is the fill AFTER the page
+    // floor has had its turn — and that floor can only lighten, which is exactly what
+    // weakens a white label. So this measures the emitted token, across the whole
+    // wheel and both tiers, rather than the seed the cap saw.
+    for (let hue = 0; hue < 360; hue += 45) {
+      for (const tone of [20, 60, 88, 100]) {
+        for (const saturation of [0, 60, 100]) {
+          for (const scheme of ['light', 'dark'] as const) {
+            for (const highContrast of [false, true]) {
+              const seed = `okhst(${hue} ${saturation}% ${tone}%)`;
+              const tokens = renderPaletteTokens({
+                accentColor: seed,
+                scheme,
+                highContrast,
+              });
+              const label = `${seed} ${scheme}${highContrast ? ' hc' : ''}`;
+
+              expect(
+                apcaOf('#ffffff', String(tokens['#accent-surface'])),
+                label,
+              ).toBeGreaterThanOrEqual(44.9);
+              expect(
+                apcaOf(
+                  String(tokens['#surface']),
+                  String(tokens['#accent-surface']),
+                ),
+                label,
+              ).toBeGreaterThanOrEqual(44.9);
+            }
+          }
+        }
+      }
+    }
   });
 
   it('carries the brand into the special theme', () => {

@@ -186,19 +186,25 @@ function baseSaturationScale(config: ResolvedPaletteConfig): number {
  *
  * Still a FLOOR, not a target: a brand already past it is emitted exactly as given.
  *
- * The HC entry is `85`, spelled rather than left to Glaze's +15 enhancement, because
- * +15 would land it at Lc 60 — weaker in light than the WCAG `7` it replaces. It also
- * cannot be written as a WCAG ratio: Glaze rejects a `contrast` pair that switches
- * metric ("a WCAG ratio and an APCA Lc are different scales"), which is a fair guard,
- * so the tier moves to APCA with the rest.
+ * The HC entry is `60` — APCA's `content` tier — and it is a CEILING imposed by
+ * geometry, not a preference. The fill answers to two floors that pull opposite ways
+ * in dark: this one pushes it away from a dark page (lighter), while
+ * {@link ACCENT_LABEL_LC} pushes it away from the white label (darker). Measured on
+ * the emitted tokens, the window where both hold in dark high contrast is
+ * `L ∈ [0.605, 0.735]`; asking 85 of the page empties it outright, and a 3072-case
+ * sweep put the white primary label at Lc 20.7 on a fill that satisfied the page.
+ * 60 is the largest value that keeps the window open — 65 reopens 768 failures.
  *
- * Lc 85 is the closest single value to the old AAA guarantee, and it cannot reproduce
- * it exactly — WCAG 7 measures Lc 83.5 in light but only Lc 54.4 in dark, so no one
- * number says "AAA" on both sides. At 85 the fill lands ~6.1 in light (a shade under
- * AAA) and ~15 in dark (well past it). Fidelity to a requested color is a preference;
- * the high-contrast tier is not — anyone seeing it has asked for separation over brand.
+ * So high contrast escalates the fill only as far as the label can follow. That is
+ * the right way round: the tier exists to be READ, and a fill driven to Lc 85 off the
+ * page is one its own label has vanished from.
+ *
+ * It cannot be written as a WCAG ratio either — Glaze rejects a `contrast` pair that
+ * switches metric, which is a fair guard — so the tier moves to APCA with the rest.
+ * For the record, WCAG 7 measures Lc 83.5 in light but only Lc 54.4 in dark, so no
+ * single Lc could have restated the old AAA pair in both schemes regardless.
  */
-const ACCENT_FILL_CONTRAST: ContrastSpec = { apca: [45, 85] };
+const ACCENT_FILL_CONTRAST: ContrastSpec = { apca: [45, 60] };
 
 /**
  * Floors for the two brand TEXT tokens: rest, then hover — APCA `content` and `body`.
@@ -275,7 +281,30 @@ type AccentSeed = { color: GlazeColorValue; tone: number } | null;
  */
 const ACCENT_LABEL_LC = 45;
 
+/**
+ * How far above {@link ACCENT_LABEL_LC} the ceiling actually searches.
+ *
+ * The ceiling is computed on the bare seed, but the emitted `accent-surface` then goes
+ * through the page floor, which can only LIGHTEN — and a lighter fill is a weaker white
+ * label, so the solve eats into the margin the ceiling just established. Measured worst
+ * case across 3072 hue/chroma/tone/scheme/tier combinations is 1.8 Lc, in dark high
+ * contrast where the page floor pushes hardest; 3 covers it with room.
+ */
+const ACCENT_LABEL_MARGIN = 3;
+
+/**
+ * Keyed on the palette VERSION as well as the seed, because the search resolves
+ * through Glaze's global settings — the dark tone window among them. A caller that
+ * runs `glaze.configure(...)` and then `invalidatePaletteTokens()` has changed the
+ * answer without changing the seed, and a cache keyed on the color alone would hand
+ * back a cap computed against the old settings. Versioning it is what makes the
+ * invalidation API mean what it says.
+ *
+ * Bounded for the same reason `colorSeed`'s cache is: a color picker drag resolves a
+ * distinct seed per frame, and stale versions accumulate keys nobody reads again.
+ */
 const accentCapCache = new Map<string, number>();
+const ACCENT_CAP_CACHE_LIMIT = 256;
 
 /** APCA Lc of pure white on one resolved variant. */
 function labelLcOf(variant: Parameters<typeof variantToOkhsl>[0]): number {
@@ -302,22 +331,32 @@ function labelLcOf(variant: Parameters<typeof variantToOkhsl>[0]): number {
  *
  * Only ever lowers, so a brand already dark enough comes back untouched.
  */
-function capAccentTone(color: string, tone: number): number {
-  const cached = accentCapCache.get(color);
+function capAccentTone(hue: number, saturation: number, tone: number): number {
+  return Math.min(tone, accentToneCeiling(hue, saturation));
+}
 
-  if (cached !== undefined) return Math.min(tone, cached);
+/**
+ * The lightest tone at this hue and chroma that a white label still survives on.
+ *
+ * A property of the hue/chroma pair alone, NOT of the tone being asked for — which is
+ * what makes it cacheable, and what the first cut got wrong: it only searched when the
+ * requested tone already failed, so a dark tone probed first cached "no ceiling" and
+ * every later light tone at the same hue escaped uncapped.
+ */
+function accentToneCeiling(hue: number, saturation: number): number {
+  const key = `${hue}|${saturation}|${getPaletteVersion()}`;
+  const cached = accentCapCache.get(key);
 
-  const { h: hue, s: saturation } = glaze.color(color).resolve().light;
+  if (cached !== undefined) return cached;
+
   const labelLc = (candidate: number): number => {
-    // `from` takes an `OkhstColor` directly, so the seed never becomes a string.
-    // That skips the writers' scale question entirely and, more to the point, the
-    // two decimal places `okhst()` rounds to — `#7A4DBF` round-tripped through a
-    // string comes back 0.450200 against a true 0.450191. `saturation` is already
-    // the 0–1 factor `resolve()` returns; only the tone axis is the authoring
-    // API's 0–100, so only it is divided.
+    // `from` takes an `OkhstColor` directly, so the seed never becomes a string —
+    // which skips the writers' scale question and the two decimals `okhst()` rounds
+    // to. Both components arrive on the palette's 0–100 authoring scale and
+    // `OkhstColor` wants factors, so both are divided.
     const resolved = glaze
       .color({
-        from: { h: hue, s: saturation, t: candidate / 100 },
+        from: { h: hue, s: saturation / 100, t: candidate / 100 },
         mode: 'fixed',
       })
       .resolve();
@@ -330,43 +369,50 @@ function capAccentTone(color: string, tone: number): number {
     );
   };
 
-  let cap = 100;
+  let ceiling = 100;
 
-  if (labelLc(tone) < ACCENT_LABEL_LC) {
-    // Monotone in tone — a lighter fill is a weaker white label. Bisect the boundary.
+  const target = ACCENT_LABEL_LC + ACCENT_LABEL_MARGIN;
+
+  if (labelLc(100) < target) {
+    // Monotone in tone — a lighter fill is a weaker white label. Bisect the boundary,
+    // always across the full axis so the answer is the hue's own ceiling.
     let low = 0;
-    let high = tone;
+    let high = 100;
 
     for (let i = 0; i < 24; i++) {
       const mid = (low + high) / 2;
 
-      if (labelLc(mid) >= ACCENT_LABEL_LC) low = mid;
+      if (labelLc(mid) >= target) low = mid;
       else high = mid;
     }
 
-    cap = low;
+    ceiling = low;
   }
 
-  accentCapCache.set(color, cap);
+  if (accentCapCache.size >= ACCENT_CAP_CACHE_LIMIT) accentCapCache.clear();
+  accentCapCache.set(key, ceiling);
 
-  return Math.min(tone, cap);
+  return ceiling;
 }
 
 /**
- * The brand seed with its tone capped, rebuilt as a literal Glaze can read.
+ * The brand seed as the three numbers Glaze consumes, with its tone capped.
  *
- * The string has to be rebuilt, not just the number: `from` reads the tone off it, so
- * handing Glaze the original would re-solve at the uncapped tone. An uncapped brand
- * keeps its original literal rather than round-tripping through `okhst()`.
+ * Takes the RESOLVED hue rather than the one the caller's literal carries, because
+ * `resolveConfig` ranks an explicit {@link PaletteConfig.hue} above a color's own —
+ * see the call site for what handing over the literal instead used to break.
  */
-function cappedAccent(color: string, tone: number): AccentSeed {
-  const capped = capAccentTone(color, tone);
+function cappedAccent(
+  hue: number,
+  saturation: number,
+  tone: number,
+): AccentSeed {
+  const capped = capAccentTone(hue, saturation, tone);
 
-  if (capped >= tone) return { color, tone };
-
-  const { h, s } = glaze.color(color).resolve().light;
-
-  return { color: { h, s, t: capped / 100 }, tone: capped };
+  return {
+    color: { h: hue, s: saturation / 100, t: capped / 100 },
+    tone: capped,
+  };
 }
 
 /**
@@ -914,14 +960,21 @@ function buildPalette(
     saturation,
     accentColor,
     accentTone,
+    accentSaturation,
     pastel,
     themes,
     contrastLevel,
   } = config;
 
+  // Built from the RESOLVED hue, not the literal. `resolveConfig` ranks an explicit
+  // `hue` above the one a color carries — that is what lets a preview rotate a stored
+  // `accentColor` without discarding its tone — but `from: <the original string>`
+  // would hand Glaze the color's own hue and pin `accent-surface` to it while every
+  // sibling followed the theme. The ramp then splits: the fill one hue, its `-2`,
+  // `-3` and hover another, so a primary button changed hue on hover.
   const accent: AccentSeed =
-    accentColor !== null && accentTone !== null
-      ? cappedAccent(accentColor, accentTone)
+    accentColor !== null && accentTone !== null && accentSaturation !== null
+      ? cappedAccent(hue, accentSaturation, accentTone)
       : null;
 
   // The base zone's tone anchor and its own chroma share, applied to every color

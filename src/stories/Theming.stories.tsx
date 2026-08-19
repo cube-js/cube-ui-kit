@@ -277,9 +277,9 @@ const RESOLUTION_SWATCH_STYLES: Styles = {
  *
  * A color seed is a REQUEST, and two things can stop it arriving. Pastel caps chroma,
  * so a saturated brand can never resolve to itself under it — `#FFD400` softens to
- * `#e4d8ad`. And on a light page a light brand has to darken to clear the fill's 3:1
- * floor. Both are correct; both look like a bug if the only thing on screen is the
- * color you typed.
+ * `#e4d8ad`. And a light brand has to darken to clear the fill's APCA floors: Lc 45
+ * off the page, and Lc 45 under the white label it carries. Both are correct; both
+ * look like a bug if the only thing on screen is the color you typed.
  *
  * The requested color is deliberately NOT repeated here: the field above holds it, and
  * its own swatch already shows it. What is worth showing is the pair it resolved to —
@@ -407,12 +407,18 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
         <ColorInput
           label="Color"
           size="small"
-          tooltip="Hue, chroma and tone all come from here — the tone is what makes the brand fill actually be your color rather than a shade re-derived at a fixed lightness. Glaze reproduces it exactly in the light, normal-contrast variant; dark and high contrast adapt, and a 3:1 floor against the page applies everywhere."
+          tooltip="Hue, chroma and tone all come from here — the tone is what makes the brand fill actually be your color rather than a shade re-derived at a fixed lightness. Glaze reproduces it exactly in the light, normal-contrast variant; dark and high contrast adapt. Two APCA floors apply everywhere: Lc 45 against the page so the button reads as a shape, and Lc 45 against the white label it carries. Both are APCA rather than WCAG, so a fill can legitimately sit under 3:1 — #0EA5E9 lands at 2.77:1 and is correct there."
           value={input.accentColor ?? null}
           onChange={(accentColor) =>
             // Clearing the field is a mode change, so it lands back on a hue seed
             // pinned where the color left it rather than on a half-set config.
-            setPalette(({ accentColor: previous, ...config }) =>
+            //
+            // `hue` comes back OUT of the config when a color arrives, and has to:
+            // the pin the previous clear left behind outranks a color-derived hue in
+            // `resolveConfig`, so spreading it back would accept the new color and
+            // then ignore its hue — the field would show cyan while the palette
+            // stayed yellow.
+            setPalette(({ accentColor: previous, hue, ...config }) =>
               accentColor
                 ? { ...config, accentColor }
                 : { ...config, hue: Math.round(palette.hue) },
@@ -498,14 +504,19 @@ function BaseSourceControls() {
           tooltip={`The hue and the saturation are taken; the tone is discarded, because the chrome's own lightness ladder is the design. A base color says which way the greys lean and how far, not how dark they are — and its saturation is clipped at ${MAX_BASE_SATURATION}, since a fully saturated chrome stops being chrome.`}
           value={input.baseColor ?? null}
           onChange={(baseColor) =>
-            setPalette(({ baseColor: previous, ...config }) =>
-              baseColor
-                ? { ...config, baseColor }
-                : {
-                    ...config,
-                    baseHue: Math.round(palette.baseHue),
-                    baseSaturation: Math.round(palette.baseSaturation * 2) / 2,
-                  },
+            // Same shape as the accent field above, and for the same reason: the
+            // numeric pins a previous clear left behind outrank what a color derives,
+            // so they come out when one arrives.
+            setPalette(
+              ({ baseColor: previous, baseHue, baseSaturation, ...config }) =>
+                baseColor
+                  ? { ...config, baseColor }
+                  : {
+                      ...config,
+                      baseHue: Math.round(palette.baseHue),
+                      baseSaturation:
+                        Math.round(palette.baseSaturation * 2) / 2,
+                    },
             )
           }
         />

@@ -132,8 +132,16 @@ export interface PaletteConfig {
    * The **light, normal-contrast** variant reproduces the color; dark and high
    * contrast adapt, as every other color in the palette does. Two things cost
    * exactness even there: {@link PaletteConfig.pastel} caps chroma (so `#FFD400`
-   * softens), and a color that misses the 3:1 floor against `surface` darkens until
-   * it clears it — and no further.
+   * softens), and the fill answers to two APCA floors — **Lc 45 against `surface`**
+   * so the button reads as a shape, and **Lc 45 against the white label** it carries
+   * — moving only as far as the nearer one requires.
+   *
+   * Those floors are APCA, not WCAG, and the difference is deliberate: one WCAG
+   * ratio means two very different things by scheme (3:1 measures Lc 56 in light but
+   * only Lc 23 in dark), which crushed light brands while letting dark ones through.
+   * A consequence worth stating plainly — **the emitted fill can sit below WCAG
+   * 3:1**. `#0EA5E9` renders at 2.77:1 against a white page and is correct at that
+   * value; Lc 45 is the guarantee, not the ratio.
    *
    * {@link PaletteConfig.hue} and {@link PaletteConfig.saturation} still win when
    * set — the number is the more specific instruction — and the tone keeps coming
@@ -332,6 +340,16 @@ export interface ResolvedPaletteConfig {
    * step has to be computed.
    */
   accentTone: number | null;
+  /**
+   * The saturation of {@link ResolvedPaletteConfig.accentColor}, or `null` beside it.
+   *
+   * On the palette's 0–100 scale, like every other saturation here. Kept because the
+   * accent seed is rebuilt from these three numbers rather than from the literal:
+   * {@link PaletteConfig.hue} outranks the color's own hue, so handing Glaze the
+   * original string would let `accent-surface` keep a hue the rest of the ramp has
+   * already rotated away from.
+   */
+  accentSaturation: number | null;
   pastel: boolean;
   contrastLevel: number | 'auto';
   themes: {
@@ -460,6 +478,7 @@ function resolveConfig(input: PaletteConfig): ResolvedPaletteConfig {
     accentColor: accent ? input.accentColor! : null,
     baseColor: base ? input.baseColor! : null,
     accentTone: accent?.tone ?? null,
+    accentSaturation: accent?.saturation ?? null,
     pastel,
     contrastLevel: input.contrastLevel ?? 'auto',
     themes: {
@@ -581,13 +600,23 @@ function isSameConfig(a: ResolvedPaletteConfig, b: ResolvedPaletteConfig) {
  */
 function pinSignature(config: PaletteConfig): string {
   const set = (value: unknown) => (value === undefined ? '0' : '1');
+  // The two color fields carry their VALUE, not just their presence. Presence alone
+  // cannot tell one unparseable string from another: both resolve to `null`, so
+  // `isSameConfig` sees no movement either, and replacing `'bad-one'` with
+  // `'bad-two'` returned early — leaving `getPaletteConfigInput().accentColor` on
+  // the first string with no notification that the write was dropped.
+  //
+  // It also means two spellings of the same color (`'#ff0000'` / `'rgb(255 0 0)'`)
+  // now bump the version. That is the same argument the presence check was already
+  // making: what a settings UI reads back changed, so it has to re-render.
+  const seed = (value: string | undefined) => JSON.stringify(value ?? null);
 
   return [
     // Both color seeds count, and they have to: a UI switching `{ hue: 45 }` for an
     // `accentColor` that happens to derive hue 45 resolves to the same numbers, so
     // without these the version would never bump and the control would look stuck.
-    set(config.accentColor),
-    set(config.baseColor),
+    seed(config.accentColor),
+    seed(config.baseColor),
     set(config.hue),
     set(config.baseHue),
     set(config.saturation),
