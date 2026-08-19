@@ -303,9 +303,10 @@ describe('collisionMode: swap', () => {
     expect(rects(next)).toEqual({ a: '3,0 3x2', b: '0,0 3x2' });
   });
 
-  it('falls back to downscale when two widgets are under the drop', () => {
-    // A 6-wide drop covering both `b` and `c`: no single partner to trade with,
-    // so it shrinks into the free columns instead and nothing is displaced.
+  it('trades with the widget the drop covers most when several are under it', () => {
+    // A 6-wide drop covering `b` and `c` equally: the tie goes to `b`, earlier in
+    // reading order. Refusing such frames instead would leave a band mid-drag
+    // where nothing is swapped at all.
     const layout = [
       item('a', 0, 4, 6, 2),
       item('b', 2, 0, 2, 2),
@@ -314,11 +315,40 @@ describe('collisionMode: swap', () => {
     const next = place(layout, 'a', 0, 0, 'swap');
 
     expect(rects(next)).toEqual({
-      a: '0,0 2x2',
-      b: '2,0 2x2',
+      a: '2,0 2x2',
+      b: '0,4 2x2',
       c: '4,0 2x2',
     });
     expect(isOverlapFree(next)).toBe(true);
+  });
+
+  it('picks the widget with the larger overlap, not the first one found', () => {
+    // `a` is 4 wide and lands covering one column of `b` and three of `c`.
+    const layout = [
+      item('a', 0, 4, 4, 1),
+      item('b', 1, 0, 1, 1),
+      item('c', 2, 0, 3, 1),
+    ];
+    const next = place(layout, 'a', 1, 0, 'swap');
+
+    expect(rects(next).c).toBe('0,4 3x1');
+    expect(rects(next).b).toBe('1,0 1x1');
+    expect(isOverlapFree(next)).toBe(true);
+  });
+
+  it('never displaces more than one widget', () => {
+    const layout = [
+      item('a', 0, 4, 6, 2),
+      item('b', 2, 0, 2, 2),
+      item('c', 4, 0, 2, 2),
+    ];
+    const before = rects(layout);
+    const next = place(layout, 'a', 0, 0, 'swap');
+
+    const moved = next.filter(
+      (it) => it.i !== 'a' && rects([it])[it.i] !== before[it.i],
+    );
+    expect(moved.length).toBeLessThanOrEqual(1);
   });
 
   it('does not exchange with a static widget', () => {

@@ -140,10 +140,10 @@ export type CompactType = 'horizontal' | 'vertical' | 'wrap' | null;
  * - `'revert'` - snap the item back to where it was (the engine's own default).
  * - `'downscale'` - shrink the item into the free space at the cell it was
  *   dropped on, growing rightward and downward. Never upscales.
- * - `'swap'` - exchange with the single widget under the drop: the dragged widget
- *   takes that widget's cell and the displaced one takes the cell the dragged
- *   widget came from, each keeping as much of its own size as fits there. Else
- *   downscale, else revert.
+ * - `'swap'` - exchange with one widget: the dragged widget takes the cell of the
+ *   widget the drop covers most, and that widget takes the cell the dragged one
+ *   came from, each keeping as much of its own size as fits there. Never displaces
+ *   more than that one widget. Else downscale, else revert.
  *
  * Only consulted where a move would otherwise be refused, so it has no effect in
  * the compacting modes (a collision pushes neighbours there) or under

@@ -592,7 +592,7 @@ CollisionModes.parameters = {
   docs: {
     description: {
       story:
-        'A `compact="free"` board refuses a drop onto occupied cells; `collisionMode` resolves it instead. **Downscale** — drag the 4-column widget onto the middle row and it shrinks to the 3 columns free beside the blocker, instead of snapping back. **Swap** — drop one widget onto another and they trade places: the dragged widget takes the other\'s cell, the displaced one takes the cell the drag began at, and each keeps as much of its own size as fits there. A drag exchanges once no matter how many widgets it is swept over, and dragging back retraces the original arrangement. Neither mode ever grows a widget. The default, `"revert"`, is what every other story on this page shows: the widget snaps back.',
+        'A `compact="free"` board refuses a drop onto occupied cells; `collisionMode` resolves it instead. **Downscale** — drag the 4-column widget onto the middle row and it shrinks to the 3 columns free beside the blocker, instead of snapping back. **Swap** — drop one widget onto another and they trade places: the dragged widget takes the other\'s cell, the displaced one takes the cell the drag began at, and each keeps as much of its own size as fits there. Exactly one widget is ever displaced, a drop straddling two of them trades with the one it covers most, and dragging back retraces the original arrangement. Neither mode ever grows a widget. The default, `"revert"`, is what every other story on this page shows: the widget snaps back.',
     },
   },
 };

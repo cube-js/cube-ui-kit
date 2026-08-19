@@ -132,8 +132,15 @@ function downscaleInPlace(
   );
 }
 
+/** Number of cells two items share. Zero when they do not overlap at all. */
+function overlapArea(a: LayoutItem, b: LayoutItem): number {
+  const w = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
+  const h = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+  return w > 0 && h > 0 ? w * h : 0;
+}
+
 /**
- * Exchange the placement with the single widget occupying the target slot.
+ * Exchange the placement with one of the widgets under it.
  *
  * The dragged widget takes the other's cell and the other takes the cell the
  * dragged widget came from. Each keeps as much of its own size as fits there -
@@ -156,16 +163,39 @@ function exchangeWithCollision(
   desired: { w: number; h: number },
   limits: { cols: number; maxRows?: number },
 ): LayoutItem[] | null {
-  // Only an unambiguous exchange: with two or more widgets under the drop there
-  // is no single partner to trade with, and moving one of them would still leave
-  // the placement overlapping the rest.
-  if (collisions.length !== 1) return null;
-  const other = collisions[0]!;
-  if (other.static) return null;
   // Nothing to trade if the widget has not actually left a slot behind - a
   // cross-board drop, where it never had one on this board.
   if (from.x === item.x && from.y === item.y) return null;
 
+  // A drop that spans a boundary covers two widgets at once, and refusing those
+  // frames would leave a band mid-drag where nothing is swapped at all: the
+  // placeholder snaps back to the origin, then jumps to the far swap once the drop
+  // clears the first widget. Trade with the one the drop covers most instead, so
+  // the swap only ever changes which partner it is - never blinks away. Ties go to
+  // the widget earlier in reading order, so the choice is deterministic. Exactly
+  // one widget is ever displaced, whichever is picked.
+  const candidates = collisions
+    .filter((c) => !c.static)
+    .map((c) => ({ c, area: overlapArea(item, c) }))
+    .sort((p, q) => q.area - p.area || p.c.y - q.c.y || p.c.x - q.c.x)
+    .map(({ c }) => c);
+
+  for (const other of candidates) {
+    const exchanged = exchangeWith(layout, item, other, from, desired, limits);
+    if (exchanged) return exchanged;
+  }
+  return null;
+}
+
+/** One concrete two-widget exchange, or `null` if either side cannot fit. */
+function exchangeWith(
+  layout: Layout,
+  item: LayoutItem,
+  other: LayoutItem,
+  from: { x: number; y: number },
+  desired: { w: number; h: number },
+  limits: { cols: number; maxRows?: number },
+): LayoutItem[] | null {
   const rest = layout.filter((l) => l.i !== item.i && l.i !== other.i);
   // The slot being vacated, held back so the dragged widget cannot grow into the
   // space the displaced one is about to need. Ids are never compared here (the
@@ -222,8 +252,8 @@ function exchangeWithCollision(
  * or `undefined` for `'revert'` (and for an unset mode), which keeps the engine
  * on its original path with no added work.
  *
- * `'swap'` is an escalation ladder, tried in order: exchange with the single
- * widget under the drop, else downscale at the drop cell, else revert. A dense
+ * `'swap'` is an escalation ladder, tried in order: exchange with one of the
+ * widgets under the drop, else downscale at the drop cell, else revert. A dense
  * grid stays draggable that way - refusing everything that is not a clean
  * one-to-one trade would make the mode feel broken exactly where it is needed.
  */

@@ -2239,7 +2239,7 @@ describe('Board', () => {
       expect(rectOf('b')).toBe('0,0 2x1');
     });
 
-    it('falls back to downscaling when there is no single partner', () => {
+    it('trades with one widget when the drop covers two', () => {
       const { drag, rectOf } = setupBoard(
         'swap',
         [
@@ -2252,12 +2252,38 @@ describe('Board', () => {
 
       drag([0, 100]);
 
-      // Two widgets under the drop, so nothing is displaced and the widget takes
-      // the two free columns instead.
-      expect(rectOf('a')).toBe('0,1 2x1');
-      expect(rectOf('b')).toBe('2,1 2x1');
+      // Covers `b` and `c` equally; the tie goes to `b`. Only one widget is ever
+      // displaced, and `c` stays exactly where it was.
+      expect(rectOf('a')).toBe('2,1 2x1');
+      expect(rectOf('b')).toBe('0,0 2x1');
       expect(rectOf('c')).toBe('4,1 2x1');
     });
+
+    // Sweeping a widget along a row crosses a band where the drop covers two
+    // neighbours at once. Refusing those frames used to snap the placeholder back
+    // to the origin, so the swap blinked away mid-drag and then reappeared against
+    // the far neighbour. Every landing cell must resolve to *some* swap.
+    it.each([1, 2, 3, 4])(
+      'shows a swap at every step of a sweep (landing column %i)',
+      (col) => {
+        const { drag, rectOf } = setupBoard(
+          'swap',
+          [
+            { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+            { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+            { i: 'c', x: 4, y: 0, w: 2, h: 1 },
+          ],
+          { w: 2, h: 1 },
+        );
+
+        drag([col * 100, 0]);
+
+        // Landed somewhere other than where it started, and one neighbour took the
+        // vacated slot - never the un-swapped original arrangement.
+        expect(rectOf('a')).not.toBe('0,0 2x1');
+        expect([rectOf('b'), rectOf('c')]).toContain('0,0 2x1');
+      },
+    );
 
     it('exchanges once across a sweep, not with every widget passed over', () => {
       const { drag, rectOf } = setupBoard(
