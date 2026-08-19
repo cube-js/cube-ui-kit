@@ -13,6 +13,7 @@ import { useI18n } from '../../../i18n';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 import { Button, CubeButtonProps } from '../Button/Button';
 import { CubeItemActionProps } from '../ItemAction/ItemAction';
+import { useItemActionContext } from '../ItemActionContext';
 
 export type BannerTheme = 'danger' | 'warning' | 'note' | 'success';
 
@@ -59,19 +60,31 @@ const BannerElement = tasty(Item, {
   },
 });
 
-// `outline` on the `current` theme (`Item.Action`'s default): the chip and its
-// border are mixed from the banner's own white label, so the action reads as a
-// control against a saturated surface without naming a color.
+// `invert` on the banner's OWN theme, which is the one pairing that gives a
+// banner a filled action legible in both schemes.
 //
-// This used to clear the border. Back then an action inherited the banner's
-// THEME, so `outline` meant `note.outline` and friends, whose border is the
-// opaque `#note-border` — a pale line built for a `#surface-2` chip on a light
-// page, and plainly wrong on a saturated banner. Now that the border is
-// `#current.08` off the inherited label, clearing it only removed the one thing
-// that made the type an outline, leaving a 3% tint that vanished into the
-// banner.
+// The obvious choice — `Item.Action`'s default `current` theme — cannot do it
+// here, and the reason is specific rather than general. A banner labels itself
+// `#white` in both schemes (see `BannerLinkElement` and `*_PRIMARY_STYLES`), so
+// `currentcolor` inside one is white; and `#surface`, the page token both filled
+// `current` flavours reach for, is ALSO white in light mode. Every arrangement
+// of those two collapses:
+//
+//   theme=current type=primary   fill #current (white)  label #surface (white)
+//   theme=current type=invert    fill #surface (white)  label #current (white)
+//
+// Both measure cr 1.00 in light on all four banner themes. The theme's own
+// tokens have no such coincidence: `accent-text` is the dark end of the brand
+// ramp and `#surface` is the page, so `<theme>.invert` measures 6.87–7.90 across
+// the four themes in both schemes, and the chip still separates from the banner
+// (cr ~1.5 light, ~2.4 dark, either side of the 1.48 a `primary` rim measures).
+//
+// The previous default was `current.outline`: label cr 4.3–5.0, but a chip only
+// 1.06 off the banner, which is what an outline is meant to be. `invert` is the
+// filled counterpart, for a banner whose action should read as the thing to
+// press.
 const BannerActionElement = tasty(Item.Action, {
-  type: 'outline',
+  type: 'invert',
   styles: {
     preset: 't3m',
   },
@@ -91,7 +104,15 @@ const BannerLinkElement = tasty(Button, {
  * Automatically styled to match the banner's theme.
  */
 export function BannerAction(props: BannerActionProps) {
-  return <BannerActionElement {...props} />;
+  // The banner's theme, taken from the row that hosts the action. `Item.Action`
+  // defaults its own `theme` to `current` and no longer reads this context for
+  // styling, so the banner has to name it — which is the point here: `invert`
+  // needs the brand ramp, and `current` is exactly what does not work inside a
+  // banner. Falls back to the banner's own default theme when an action is
+  // rendered outside one, rather than to `current`.
+  const { theme } = useItemActionContext();
+
+  return <BannerActionElement theme={theme ?? 'note'} {...props} />;
 }
 
 /**
