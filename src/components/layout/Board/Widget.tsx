@@ -7,6 +7,20 @@ import { extractStyles } from '../../../utils/styles';
 import { useBoardRegistry } from './board-context';
 import { LayoutConstraint, ResizeHandleAxis } from './grid-core';
 
+/**
+ * Where a corner resize grip sits relative to the widget's corner.
+ *
+ * - `'inside'` - tucked into the widget box (the default).
+ * - `'corner'` - centred on the corner itself, so it lines up with a control
+ *   centred on the opposite corner. The grip is drawn outside the widget's own
+ *   clip to make this possible, so it needs the board to have at least half a
+ *   grip's worth of `containerPadding` to show in full at the board's edge.
+ *
+ * Only affects corner handles (`ne`/`nw`/`se`/`sw`); the dotted edge grips
+ * (`n`/`s`/`e`/`w`) always sit inside the widget.
+ */
+export type BoardResizeGripPlacement = 'inside' | 'corner';
+
 export interface CubeBoardWidgetProps extends ContainerStyleProps {
   /** Unique id, must match the `i` of a layout item in a `Board`. */
   id: string;
@@ -18,6 +32,8 @@ export interface CubeBoardWidgetProps extends ContainerStyleProps {
   isResizable?: boolean;
   /** Which resize handles to show (overrides the board default). */
   resizeHandles?: ResizeHandleAxis[];
+  /** Where the corner resize grips sit (overrides the board default). */
+  resizeGripPlacement?: BoardResizeGripPlacement;
   /**
    * Render this widget as a card by adding a border. Widgets are always filled
    * (`#surface-2`) and rounded; `isCard` adds the border on top. Defaults to
@@ -112,6 +128,7 @@ export function Widget(props: CubeBoardWidgetProps) {
     isDraggable,
     isResizable,
     resizeHandles,
+    resizeGripPlacement,
     isCard,
     minW,
     maxW,
@@ -161,6 +178,7 @@ export function Widget(props: CubeBoardWidgetProps) {
         isDraggable,
         isResizable,
         resizeHandles,
+        resizeGripPlacement,
         isCard,
         minW,
         maxW,

@@ -236,6 +236,87 @@ describe('Board extraRows', () => {
  * needs empty grid to start from, and this three-widget layout has almost none
  * without it.
  */
+describe('Board resize grip placement', () => {
+  /**
+   * The one thing jsdom cannot answer here: a widget clips its children
+   * (`overflow: hidden`, deliberately), so whether a grip centred on the corner
+   * survives at all is a question about real painted geometry, not about which
+   * element it was rendered into.
+   */
+  const layout: LayoutItem[] = [{ i: 'a', x: 2, y: 1, w: 4, h: 2 }];
+
+  async function revealGrips() {
+    await settled();
+    // Grips only appear on hover/focus/resize.
+    await user.hover(widget('a'));
+    await vi.waitFor(() =>
+      expect(
+        screen.getByTestId('BoardResizeGrip').getBoundingClientRect().width,
+      ).toBeGreaterThan(0),
+    );
+  }
+
+  it('keeps the default grip inside the widget box', async () => {
+    renderBoard(layout);
+    await revealGrips();
+
+    const box = widget('a').getBoundingClientRect();
+    const grip = screen.getByTestId('BoardResizeGrip').getBoundingClientRect();
+
+    expect(grip.right).toBeLessThanOrEqual(box.right + 0.5);
+    expect(grip.bottom).toBeLessThanOrEqual(box.bottom + 0.5);
+  });
+
+  it('centres a corner grip on the widget corner without clipping it', async () => {
+    renderBoard(layout, { resizeGripPlacement: 'corner' });
+    await revealGrips();
+
+    const box = widget('a').getBoundingClientRect();
+    const grip = screen.getByTestId('BoardResizeGrip').getBoundingClientRect();
+
+    // Centred on the corner: half of the grip hangs outside on each axis.
+    expect(grip.left + grip.width / 2).toBeCloseTo(box.right, 0);
+    expect(grip.top + grip.height / 2).toBeCloseTo(box.bottom, 0);
+    // And it is really painted, not clipped away to nothing by the widget box -
+    // the whole reason it is drawn outside the widget in the first place.
+    expect(grip.width).toBeGreaterThan(0);
+    expect(grip.height).toBeGreaterThan(0);
+  });
+
+  it('stays revealed and grabbable on the half that hangs outside', async () => {
+    renderBoard(layout, { resizeGripPlacement: 'corner' });
+    await revealGrips();
+
+    const box = widget('a').getBoundingClientRect();
+    // A point just past the widget's corner - on the grip, outside the widget.
+    const outside = { x: box.right + 3, y: box.bottom + 3 };
+
+    // Whatever the browser hit-tests there must be the resize hit-zone, or the
+    // grip is inviting a gesture that lands somewhere else.
+    const hit = document.elementFromPoint(outside.x, outside.y);
+    expect(hit?.closest('[data-qa="BoardResizeHandle"]')).not.toBeNull();
+
+    // Drop the hover first, so the next step cannot pass on an attribute that was
+    // simply left over from hovering the widget.
+    await user.pointer({ target: board(), coords: { x: 2, y: 2 } });
+    await vi.waitFor(() =>
+      expect(screen.getByTestId('BoardResizeGrip')).not.toHaveAttribute(
+        'data-revealed',
+      ),
+    );
+
+    // Now the overhang on its own has to bring the grip back. The widget is not
+    // hovered here, so if this works it is because the hit-zone came out with the
+    // grip - otherwise the affordance retreats from the gesture it invites.
+    await user.pointer({ target: hit as Element, coords: outside });
+    await vi.waitFor(() =>
+      expect(screen.getByTestId('BoardResizeGrip')).toHaveAttribute(
+        'data-revealed',
+      ),
+    );
+  });
+});
+
 describe('Board marquee', () => {
   // cols 6 over 600px -> a(0-200, 0-100)  b(200-400, 0-100)  c(0-200, 100-200),
   // with rows 2-3 left empty by `extraRows`.

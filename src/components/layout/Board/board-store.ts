@@ -1,6 +1,7 @@
 import type { Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type { LayoutConstraint, ResizeHandleAxis } from './grid-core';
+import type { BoardResizeGripPlacement } from './Widget';
 
 /**
  * Declarative registration for a single widget.
@@ -16,6 +17,8 @@ export interface WidgetRegistration {
   isDraggable?: boolean;
   isResizable?: boolean;
   resizeHandles?: ResizeHandleAxis[];
+  /** Where the corner resize grips sit (falls back to the board's default). */
+  resizeGripPlacement?: BoardResizeGripPlacement;
   /**
    * Add a card border to this widget (widgets are always filled and rounded).
    * Falls back to the owning board's `widgetProps.isCard` when unset here.
@@ -82,6 +85,7 @@ export class BoardWidgetStore {
       prev.isDraggable !== reg.isDraggable ||
       prev.isResizable !== reg.isResizable ||
       prev.resizeHandles !== reg.resizeHandles ||
+      prev.resizeGripPlacement !== reg.resizeGripPlacement ||
       prev.isCard !== reg.isCard ||
       prev.minW !== reg.minW ||
       prev.maxW !== reg.maxW ||

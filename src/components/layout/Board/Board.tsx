@@ -43,6 +43,7 @@ import {
   calcGridItemPosition,
   calcWH,
   cloneLayout,
+  CollisionMode,
   Compactor,
   CompactType,
   correctBounds,
@@ -62,7 +63,7 @@ import { useBoardSelectModifierKey } from './use-board-select-modifier-key';
 import { BoardSelectionMode, useBoardSelection } from './use-board-selection';
 import { ResizePhase, WidgetHost } from './WidgetHost';
 
-import type { CubeBoardWidgetProps } from './Widget';
+import type { BoardResizeGripPlacement, CubeBoardWidgetProps } from './Widget';
 
 const BoardElement = tasty({
   qa: 'Board',
@@ -204,7 +205,7 @@ export interface BoardInteractionInfo {
 }
 
 /** Visibility of the internal grid-line overlay. */
-export type BoardGridLines = boolean | 'drag';
+export type BoardGridLines = boolean | 'drag' | 'any-drag';
 
 /**
  * The subset of `Board.Widget` props a `Board` can set as defaults for every
@@ -275,6 +276,24 @@ export interface CubeBoardProps
   allowOverlap?: boolean;
   /** Block movement into occupied cells instead of pushing. @default false */
   preventCollision?: boolean;
+  /**
+   * How to resolve a drop the grid would otherwise refuse. Only applies where a
+   * collision blocks a move - `compact="free"` (which prevents collisions) or an
+   * explicit `preventCollision` - and never under `allowOverlap`. `'revert'`
+   * snaps the widget back, `'downscale'` shrinks it into the free space at the
+   * drop cell, `'swap'` trades places with one widget - the one the drop covers
+   * most - which takes the cell the drag began at (falling back to `'downscale'`,
+   * then `'revert'`). No mode ever grows a widget, `'swap'` never displaces more
+   * than that one widget, and a drop that spans two widgets trades with one of
+   * them rather than refusing, so the swap never blinks away mid-drag.
+   *
+   * Applies to single-widget drags. Arrow keys honour it too, but never resize
+   * anything: each press is a gesture of its own, so a press that shrank a widget
+   * would have nothing to restore from. A multi-widget selection still only moves
+   * where it fits outright, and a resize is still blocked by a collision.
+   * @default 'revert'
+   */
+  collisionMode?: CollisionMode;
   /** Enable dragging for all widgets. @default true */
   isDraggable?: boolean;
   /** Enable resizing for all widgets. @default true */
@@ -283,6 +302,14 @@ export interface CubeBoardProps
   isDroppable?: boolean;
   /** Which resize handles to show. @default ['se'] */
   resizeHandles?: ResizeHandleAxis[];
+  /**
+   * Where the corner resize grips sit: `'inside'` tucks them into the widget
+   * box, `'corner'` centres each one on the widget's corner so it lines up with a
+   * control centred on the opposite corner. Only affects corner handles. Can be
+   * overridden per widget on `Board.Widget`.
+   * @default 'inside'
+   */
+  resizeGripPlacement?: BoardResizeGripPlacement;
   /**
    * CSS selector for elements that must not start a pointer drag (e.g. form
    * controls inside a widget: `"input,textarea,button,a,.no-drag"`). Does not
@@ -296,8 +323,12 @@ export interface CubeBoardProps
    */
   dragHandle?: string;
   /**
-   * Show grid lines behind the widgets. `true` always shows them, `'drag'`
-   * shows them only while a widget is being dragged or resized, `false` never.
+   * Show grid lines behind the widgets. `true` always shows them, `false` never,
+   * `'drag'` only while *this* board is part of the active gesture - it owns the
+   * drag (as its source or as the board the widget is currently over), or one of
+   * its own widgets is being resized. `'any-drag'` widens that to any drag
+   * anywhere under a shared `Board.Provider`, so every board advertises itself as
+   * a place the widget could land.
    * @default false
    */
   showGridLines?: BoardGridLines;
@@ -422,10 +453,12 @@ function BoardInner(
     compact = 'vertical',
     allowOverlap = false,
     preventCollision = false,
+    collisionMode = 'revert',
     isDraggable = true,
     isResizable = true,
     isDroppable = true,
     resizeHandles = ['se'],
+    resizeGripPlacement = 'inside',
     dragCancel,
     dragHandle,
     showGridLines,
@@ -460,9 +493,10 @@ function BoardInner(
     return Object.keys(extracted).length > 0 ? extracted : undefined;
   }, [widgetProps]);
   // A nested board with no explicit `showGridLines` inherits the ancestor's:
-  // when the ancestor has grid lines enabled, show them here while dragging.
+  // when the ancestor has grid lines enabled, show them here while dragging, at
+  // the ancestor's own drag scope (see `BoardInheritedGridLines`).
   const effectiveShowGridLines: BoardGridLines =
-    showGridLines ?? (inheritedGridLines ? 'drag' : false);
+    showGridLines ?? inheritedGridLines;
   const generatedId = useId();
   const boardId = providedId ?? generatedId;
   // One shared description node for every selected widget, so marking a widget
@@ -673,6 +707,7 @@ function BoardInner(
   const liveRef = useRef({
     positionParams,
     compactor,
+    collisionMode,
     constraints: resolvedConstraints,
     maxRows,
     containerHeight,
@@ -681,6 +716,7 @@ function BoardInner(
   liveRef.current = {
     positionParams,
     compactor,
+    collisionMode,
     constraints: resolvedConstraints,
     maxRows,
     containerHeight,
@@ -699,6 +735,7 @@ function BoardInner(
       getPositionParams: () => liveRef.current.positionParams,
       getConstraints: () => liveRef.current.constraints,
       getCompactor: () => liveRef.current.compactor,
+      getCollisionMode: () => liveRef.current.collisionMode,
       getMaxRows: () => liveRef.current.maxRows,
       getContainerHeight: () => liveRef.current.containerHeight,
       getLayout: () => layoutRef.current,
@@ -1291,10 +1328,26 @@ function BoardInner(
     [placeholders, positionParams],
   );
 
+  // Which board a drag belongs to. `registry.dragState` is one value shared by
+  // every board under a `Board.Provider`, so `'drag'` has to narrow it to the
+  // boards actually taking part: the source the widget came from, and the board
+  // it is currently over (kept up to date by the registry as the drag crosses
+  // boards). Without this, dragging on the root board lights up the grid inside
+  // every nested container - noise on boards the widget cannot land in.
+  const ownsDrag =
+    !!dragState &&
+    (dragState.sourceBoardId === boardId ||
+      dragState.currentBoardId === boardId);
+
+  // `placeholder` is this board's own drop-slot preview, so it covers the two
+  // cases `dragState` does not: a resize (never a registry drag) and a board the
+  // registry has just seeded a preview on.
   const gridLinesVisible =
     !hostWidgetIsDragging &&
     (effectiveShowGridLines === true ||
-      (effectiveShowGridLines === 'drag' && (!!dragState || !!placeholder)));
+      (effectiveShowGridLines === 'drag' && (ownsDrag || !!placeholder)) ||
+      (effectiveShowGridLines === 'any-drag' &&
+        (!!dragState || !!placeholder)));
   const gridOverlayStyle = gridLinesVisible
     ? (() => {
         const colWidth = calcGridColWidth(positionParams);
@@ -1361,7 +1414,11 @@ function BoardInner(
     <BoardMetricsContext.Provider value={boardMetrics}>
       <BoardGridLinesContext.Provider
         value={
-          effectiveShowGridLines === true || effectiveShowGridLines === 'drag'
+          effectiveShowGridLines === 'any-drag'
+            ? 'any-drag'
+            : effectiveShowGridLines
+              ? 'drag'
+              : false
         }
       >
         <BoardElement
@@ -1417,6 +1474,10 @@ function BoardInner(
                     registration?.resizeHandles ??
                     widgetProps?.resizeHandles ??
                     resizeHandles;
+                  const gripPlacement =
+                    registration?.resizeGripPlacement ??
+                    widgetProps?.resizeGripPlacement ??
+                    resizeGripPlacement;
                   const widgetDragCancel =
                     registration?.dragCancel ??
                     widgetProps?.dragCancel ??
@@ -1466,6 +1527,7 @@ function BoardInner(
                       isDraggable={widgetDraggable}
                       isResizable={widgetResizable}
                       resizeHandles={handles}
+                      resizeGripPlacement={gripPlacement}
                       isAutoHeight={widgetIsAutoHeight}
                       qa={widgetQa}
                       dragCancel={widgetDragCancel}
