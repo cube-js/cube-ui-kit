@@ -858,16 +858,29 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
     'selected & pressed': '#special-surface #white.3',
     disabled: '#special-surface #white.04',
     // Stays in the white-alpha register: the base here is a fixed dark tone.
-    'selected & disabled': '#special-surface #white.09',
+    // Like the colored themes, a disabled SELECTED control keeps the chip it
+    // has when enabled and fades only the label — `.17` rather than a literal
+    // reuse of `selected`'s `.18` so the two do not serialize identically and
+    // trip `mergeEntriesByValue`, exactly as `SPECIAL_CLEAR_STYLES` documents.
+    'selected & disabled': '#special-surface #white.17',
   },
   // Mirrors the colored-theme soft→opaque pattern (`*-accent-text-soft` →
   // `*-accent-text`) using white-alpha steps: default is slightly muted so
   // that selected reads as the more prominent state.
+  //
+  // Both disabled labels are solved for cr ≈ 2.0 against the chip they sit on
+  // — the house figure for a disabled label, which `disabled-surface-text`
+  // hits against `surface` and which this theme's own `primary` disabled pair
+  // hits at 1.73. They used to measure 3.24 and 4.21: not only too legible for
+  // a dead control, but INVERTED, since the selected one out-read the plain
+  // one. The two alphas differ because they resolve against different chips
+  // (`.04` and `.17`), which lands them on the same contrast rather than the
+  // same opacity.
   color: {
     '': '#white.8',
     selected: '#white',
-    disabled: '#white.4',
-    'selected & disabled': '#white.55',
+    disabled: '#white.23',
+    'selected & disabled': '#white.28',
   },
 } as const;
 
@@ -890,10 +903,17 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
   // negate against `'selected & (hovered | focused)'` (priority 4), making
   // it resolve to FALSE for `selected & hovered` — which is exactly the
   // "selected-hover stays dark" bug. `'selected & disabled'` therefore uses
-  // a slightly different alpha (.16) that's visually similar but a distinct
-  // value string. The default `''` and `disabled` may share `#white.0`
-  // because Tasty keeps the TRUE/default entry separate from non-defaults
-  // during merging.
+  // `#white.98` rather than a literal reuse of `selected`'s `#white`: the 2%
+  // of dark base bleeding through is invisible, and the string is distinct.
+  // The default `''` and `disabled` may share `#white.0` because Tasty keeps
+  // the TRUE/default entry separate from non-defaults during merging.
+  //
+  // Disabling a SELECTED control keeps the inverted pill and fades only the
+  // label, the same rule the rest of this file follows — the chip is what says
+  // "this one is on". Here that means fading the DARK label toward the pill
+  // rather than a white one toward the base, so the disabled label is
+  // `#special-accent-text` at `.45`: cr 1.95 against the pill, the same figure
+  // the white-alpha variants are solved for.
   //
   // Focus ring uses the fixed-mode `#special-accent-text` so the indicator
   // stays scheme-invariant alongside the rest of the special theme — see
@@ -914,7 +934,7 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#white.94',
     'selected & pressed': '#white.88',
     disabled: '#white.0',
-    'selected & disabled': '#white.16',
+    'selected & disabled': '#white.98',
   },
   // Non-selected mirrors the colored-theme soft→opaque pattern with
   // white-alpha steps. Selected keeps its inverted look — dark accent-text
@@ -923,7 +943,10 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
   color: {
     '': '#white.8',
     selected: '#special-accent-text',
-    disabled: '#white.4',
+    // Solved for cr ≈ 2.0 against what each one sits on — the bare surface, and
+    // the inverted white pill. See `SPECIAL_OUTLINE_STYLES.color`.
+    disabled: '#white.23',
+    'selected & disabled': '#special-accent-text.45',
   },
 } as const;
 
@@ -941,7 +964,7 @@ export const SPECIAL_LINK_STYLES: Styles = {
   color: {
     '': '#white',
     'hovered & !pressed': '#white.9',
-    disabled: '#white.4',
+    disabled: '#white.23',
   },
 } as const;
 
@@ -954,7 +977,7 @@ export const SPECIAL_ITEM_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    disabled: '#white.4',
+    disabled: '#white.23',
   },
 } as const;
 
