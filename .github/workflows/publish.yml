@@ -28,14 +28,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update Corepack
-        run: npm i -g corepack@latest
-
-      - name: Enable Corepack (pre)
-        run: corepack enable
-
-      - name: Prepare pnpm (pre)
-        run: corepack prepare pnpm@10.14.0 --activate
+      # Installs the pnpm pinned by `packageManager` — the same field pnpm reads
+      # to switch itself locally, so CI and a contributor cannot drift apart.
+      # Must precede `setup-node`, whose `cache: 'pnpm'` needs `pnpm` on PATH.
+      - uses: pnpm/action-setup@v6
 
       # Publish jobs stay on Node 24 (not .nvmrc) because OIDC trusted
       # publishing requires npm ≥ 11.5.1+, which Node 24 ships natively.
@@ -48,12 +44,6 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Prepare pnpm
-        run: corepack prepare pnpm@10.14.0 --activate
 
       - name: Verify npm version and OIDC availability
         run: |
@@ -130,14 +120,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update Corepack
-        run: npm i -g corepack@latest
-
-      - name: Enable Corepack (pre)
-        run: corepack enable
-
-      - name: Prepare pnpm (pre)
-        run: corepack prepare pnpm@10.14.0 --activate
+      # Installs the pnpm pinned by `packageManager` — the same field pnpm reads
+      # to switch itself locally, so CI and a contributor cannot drift apart.
+      # Must precede `setup-node`, whose `cache: 'pnpm'` needs `pnpm` on PATH.
+      - uses: pnpm/action-setup@v6
 
       # Publish jobs stay on Node 24 (not .nvmrc) because OIDC trusted
       # publishing requires npm ≥ 11.5.1+, which Node 24 ships natively.
@@ -150,12 +136,6 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Prepare pnpm
-        run: corepack prepare pnpm@10.14.0 --activate
 
       - name: Verify npm version and OIDC availability
         run: |
@@ -200,15 +180,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Update Corepack
-        run: npm i -g corepack@latest
-
-      - name: Enable Corepack (pre)
-        run: corepack enable
-
-      - name: Prepare pnpm (pre)
-        run: corepack prepare pnpm@10.14.0 --activate
-
       - uses: actions/cache@v4
         name: Download storybook cache
         with:
@@ -218,16 +189,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-storybook
 
+      # Installs the pnpm pinned by `packageManager` — the same field pnpm reads
+      # to switch itself locally, so CI and a contributor cannot drift apart.
+      # Must precede `setup-node`, whose `cache: 'pnpm'` needs `pnpm` on PATH.
+      - uses: pnpm/action-setup@v6
+
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
-
-      - name: Enable Corepack
-        run: corepack enable
-      
-      - name: Prepare pnpm
-        run: corepack prepare pnpm@10.14.0 --activate
 
       - name: Install dependencies
         run: pnpm install

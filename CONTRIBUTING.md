@@ -3,7 +3,9 @@
 ## Requirements
 
 - [Node.js](https://nodejs.org/) >= 22.0.0
-- [pnpm](https://pnpm.io/) >= 10
+- [pnpm](https://pnpm.io/) >= 10 — no Corepack needed. Any pnpm >= 10 will do:
+  it reads `packageManager` in `package.json` and switches itself to the
+  pinned version when you run a command in this repo.
 
 ## Getting Started
 
