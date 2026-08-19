@@ -84,6 +84,9 @@ jobs:
         run: |
           published() { npm view "@cube-dev/ui-kit@$CANARY_VERSION" version >/dev/null 2>&1; }
           retag() { npm dist-tag add "@cube-dev/ui-kit@$CANARY_VERSION" "$PR_TAG" || true; }
+          # Registry reads lag writes by a few seconds, so a single negative
+          # read right after a publish is not proof that it failed to land.
+          landed() { for _ in 1 2 3; do published && return 0; sleep 5; done; return 1; }
 
           if published; then
             echo "Canary version $CANARY_VERSION is already published; re-tagging '$PR_TAG' and skipping publish."
@@ -108,16 +111,12 @@ jobs:
           # But check whether the publish landed before retrying: the registry
           # can accept a publish and still report an error, and versions are
           # immutable, so a second publish would fail on "cannot publish over"
-          # and turn a soft failure into a hard one. Registry reads lag writes
-          # by a few seconds, so give it a moment before concluding otherwise.
-          for _ in 1 2 3; do
-            if published; then
-              echo "::warning::Publish reported an error but $CANARY_VERSION is on the registry; tagging '$PR_TAG' only."
-              retag
-              exit 0
-            fi
-            sleep 5
-          done
+          # and turn a soft failure into a hard one.
+          if landed; then
+            echo "::warning::Publish reported an error but $CANARY_VERSION is on the registry; tagging '$PR_TAG' only."
+            retag
+            exit 0
+          fi
 
           echo "::warning::Publish failed without landing $CANARY_VERSION; retrying once with a fresh signing certificate."
           if npm publish --access public --tag "$PR_TAG" --provenance; then
@@ -128,7 +127,7 @@ jobs:
           # published versions" if the first attempt landed after the loop above
           # gave up waiting. That means the canary IS on the registry, which is
           # the outcome this step exists to produce — tag it and pass.
-          if published; then
+          if landed; then
             echo "::warning::Retry rejected as a duplicate; $CANARY_VERSION was already on the registry. Tagging '$PR_TAG'."
             retag
             exit 0
