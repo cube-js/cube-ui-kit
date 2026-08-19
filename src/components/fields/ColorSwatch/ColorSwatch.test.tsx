@@ -1,4 +1,5 @@
-import { render } from '../../../test';
+import { render, renderWithRoot } from '../../../test';
+import { ColorInput } from '../ColorInput';
 
 import { ColorSwatch } from './ColorSwatch';
 
@@ -46,5 +47,26 @@ describe('<ColorSwatch />', () => {
     );
 
     expect(getByTestId('Swatch')).toBeInTheDocument();
+  });
+});
+
+describe('inside the color fields', () => {
+  // The swatch in a color field is a fixed badge, not something that grows with the
+  // field. It rendered 20px at every size before `ColorSwatch` gained sizes of its
+  // own, and letting the field's size through silently made it 24px at medium and
+  // 28px at large. Asserted on the emitted `data-size`, which is what selects the
+  // width — jsdom will not resolve the custom property behind it.
+  it('renders at a fixed size inside the color fields', () => {
+    for (const size of ['small', 'medium', 'large'] as const) {
+      const { unmount, getAllByTestId } = renderWithRoot(
+        <ColorInput size={size} value="#7a4dbf" />,
+      );
+
+      expect(getAllByTestId('ColorSwatch')[0]).toHaveAttribute(
+        'data-size',
+        'small',
+      );
+      unmount();
+    }
   });
 });

@@ -252,7 +252,11 @@ export const ColorPicker = forwardRef(function ColorPicker(
           type={type}
           theme={getValidationTheme(theme, { isInvalid, isValid })}
           size={size}
-          icon={<ColorSwatch color={color} styles={swatchStyles} />}
+          // Fixed 20px rather than tracking the trigger, same as `ColorInput`
+          // and same as this has always rendered.
+          icon={
+            <ColorSwatch size="small" color={color} styles={swatchStyles} />
+          }
           rightIcon={getValidationIcon({ isInvalid, isValid })}
           tooltip={triggerTooltip}
           isDisabled={isEditingDisabled || isReadOnly}
